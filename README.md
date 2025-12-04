@@ -17,34 +17,43 @@ A Discourse-inspired forum platform built in Rust.
 nix-shell
 ```
 
-2. Copy the example environment file:
+2. Start PostgreSQL:
 ```bash
-cp .env.example .env
+db_start
 ```
 
-3. Set up the database:
-```bash
-createdb discourse_rs_development
-diesel setup
-```
-
-4. Run migrations:
+3. Run migrations:
 ```bash
 diesel migration run
 ```
 
-5. Start the server:
+4. Start the server:
 ```bash
-cargo run
+RUST_LOG=info cargo run
 ```
 
 The server will be available at http://127.0.0.1:8080
 
 ## API Endpoints
 
+### Core
 - `GET /` - Welcome message
 - `GET /health` - Health check
-- `GET /api/*` - API endpoints (to be implemented)
+
+### Users
+- `GET /api/users` - List all users
+- `GET /api/users/:id` - Get user by ID
+- `POST /api/users` - Create new user
+
+### Topics
+- `GET /api/topics` - List all topics (sorted by created_at desc)
+- `GET /api/topics/:id` - Get topic by ID
+- `POST /api/topics` - Create new topic
+
+### Posts
+- `GET /api/posts` - List recent posts
+- `GET /api/topics/:id/posts` - List posts in a topic
+- `POST /api/posts` - Create new post
 
 ## Development
 
@@ -54,20 +63,26 @@ The server will be available at http://127.0.0.1:8080
 
 ## Roadmap
 
-### Phase 1: Core Models
-- [ ] Users
-- [ ] Topics
-- [ ] Posts
-- [ ] Categories
+### Phase 1: Core Models ✅
+- [x] Users
+- [x] Topics
+- [x] Posts
+- [x] Categories
 
-### Phase 2: Basic Features
-- [ ] User authentication
-- [ ] Create/read/update topics
-- [ ] Create/read posts
-- [ ] Basic permissions
+### Phase 2: Basic Features (In Progress)
+- [x] Create/read users
+- [x] Create/read topics
+- [x] Create/read posts
+- [ ] Update operations (PUT endpoints)
+- [ ] Delete operations (DELETE endpoints)
+- [ ] User authentication (JWT/sessions)
+- [ ] Basic permissions (Guardian-style)
 
 ### Phase 3: Polish
-- [ ] Pagination
-- [ ] Search
+- [ ] Pagination (limit/offset or cursor-based)
+- [ ] Search (PostgreSQL full-text or Tantivy)
 - [ ] Notifications
-- [ ] Moderation tools
+- [ ] Moderation tools (flags, hidden posts)
+- [ ] Markdown rendering (raw -> cooked)
+- [ ] Rate limiting
+- [ ] API documentation (OpenAPI/Swagger)
