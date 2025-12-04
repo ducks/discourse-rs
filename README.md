@@ -79,6 +79,8 @@ The server will be available at http://127.0.0.1:8080
 - [ ] Basic permissions (Guardian-style)
 
 ### Phase 3: Polish
+- [ ] Background jobs (backie with PostgreSQL queue)
+- [ ] Username change propagation (update @mentions in posts)
 - [ ] Pagination (limit/offset or cursor-based)
 - [ ] Search (PostgreSQL full-text or Tantivy)
 - [ ] Notifications

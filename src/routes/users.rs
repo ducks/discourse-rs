@@ -1,7 +1,7 @@
-use actix_web::{get, post, web, HttpResponse, Responder};
+use actix_web::{get, post, put, web, HttpResponse, Responder};
 use diesel::prelude::*;
 
-use crate::models::{NewUser, User};
+use crate::models::{NewUser, UpdateUser, User};
 use crate::schema::users;
 use crate::DbPool;
 
@@ -99,8 +99,47 @@ async fn create_user(
     }
 }
 
+#[put("/users/{id}")]
+async fn update_user(
+    pool: web::Data<DbPool>,
+    user_id: web::Path<i32>,
+    update_user: web::Json<UpdateUser>,
+) -> impl Responder {
+    let mut conn = match pool.get() {
+        Ok(conn) => conn,
+        Err(_) => return HttpResponse::InternalServerError().json(serde_json::json!({
+            "error": "Failed to get database connection"
+        })),
+    };
+
+    let user_id = user_id.into_inner();
+    let update_user = update_user.into_inner();
+
+    let result = web::block(move || {
+        diesel::update(users::table.find(user_id))
+            .set(&update_user)
+            .returning(User::as_returning())
+            .get_result(&mut conn)
+    })
+    .await;
+
+    match result {
+        Ok(Ok(user)) => HttpResponse::Ok().json(user),
+        Ok(Err(diesel::NotFound)) => HttpResponse::NotFound().json(serde_json::json!({
+            "error": "User not found"
+        })),
+        Ok(Err(_)) => HttpResponse::BadRequest().json(serde_json::json!({
+            "error": "Failed to update user"
+        })),
+        Err(_) => HttpResponse::InternalServerError().json(serde_json::json!({
+            "error": "Blocking error"
+        })),
+    }
+}
+
 pub fn configure(cfg: &mut web::ServiceConfig) {
     cfg.service(list_users)
         .service(get_user)
-        .service(create_user);
+        .service(create_user)
+        .service(update_user);
 }
