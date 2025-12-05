@@ -1,4 +1,4 @@
-use actix_web::{get, post, put, web, HttpResponse, Responder};
+use actix_web::{delete, get, post, put, web, HttpResponse, Responder};
 use diesel::prelude::*;
 
 use crate::models::{NewPost, Post, UpdatePost};
@@ -136,9 +136,43 @@ async fn update_post(
     }
 }
 
+#[delete("/posts/{id}")]
+async fn delete_post(pool: web::Data<DbPool>, post_id: web::Path<i32>) -> impl Responder {
+    let mut conn = match pool.get() {
+        Ok(conn) => conn,
+        Err(_) => {
+            return HttpResponse::InternalServerError().json(serde_json::json!({
+                "error": "Failed to get database connection"
+            }))
+        }
+    };
+
+    let post_id = post_id.into_inner();
+
+    let result =
+        web::block(move || diesel::delete(posts::table.find(post_id)).execute(&mut conn)).await;
+
+    match result {
+        Ok(Ok(1)) => HttpResponse::NoContent().finish(),
+        Ok(Ok(0)) => HttpResponse::NotFound().json(serde_json::json!({
+            "error": "Post not found"
+        })),
+        Ok(Ok(_)) => HttpResponse::InternalServerError().json(serde_json::json!({
+            "error": "Multiple posts deleted"
+        })),
+        Ok(Err(_)) => HttpResponse::BadRequest().json(serde_json::json!({
+            "error": "Failed to delete post"
+        })),
+        Err(_) => HttpResponse::InternalServerError().json(serde_json::json!({
+            "error": "Blocking error"
+        })),
+    }
+}
+
 pub fn configure(cfg: &mut web::ServiceConfig) {
     cfg.service(list_posts)
         .service(list_topic_posts)
         .service(create_post)
-        .service(update_post);
+        .service(update_post)
+        .service(delete_post);
 }

@@ -1,4 +1,4 @@
-use actix_web::{get, post, put, web, HttpResponse, Responder};
+use actix_web::{delete, get, post, put, web, HttpResponse, Responder};
 use diesel::prelude::*;
 
 use crate::models::{NewUser, UpdateUser, User};
@@ -137,9 +137,43 @@ async fn update_user(
     }
 }
 
+#[delete("/users/{id}")]
+async fn delete_user(pool: web::Data<DbPool>, user_id: web::Path<i32>) -> impl Responder {
+    let mut conn = match pool.get() {
+        Ok(conn) => conn,
+        Err(_) => {
+            return HttpResponse::InternalServerError().json(serde_json::json!({
+                "error": "Failed to get database connection"
+            }))
+        }
+    };
+
+    let user_id = user_id.into_inner();
+
+    let result = web::block(move || diesel::delete(users::table.find(user_id)).execute(&mut conn))
+        .await;
+
+    match result {
+        Ok(Ok(1)) => HttpResponse::NoContent().finish(),
+        Ok(Ok(0)) => HttpResponse::NotFound().json(serde_json::json!({
+            "error": "User not found"
+        })),
+        Ok(Ok(_)) => HttpResponse::InternalServerError().json(serde_json::json!({
+            "error": "Multiple users deleted"
+        })),
+        Ok(Err(_)) => HttpResponse::BadRequest().json(serde_json::json!({
+            "error": "Failed to delete user"
+        })),
+        Err(_) => HttpResponse::InternalServerError().json(serde_json::json!({
+            "error": "Blocking error"
+        })),
+    }
+}
+
 pub fn configure(cfg: &mut web::ServiceConfig) {
     cfg.service(list_users)
         .service(get_user)
         .service(create_user)
-        .service(update_user);
+        .service(update_user)
+        .service(delete_user);
 }
