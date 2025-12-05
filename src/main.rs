@@ -3,7 +3,11 @@ use diesel::prelude::*;
 use diesel::r2d2::{self, ConnectionManager};
 use std::env;
 
+mod auth;
+mod config;
+mod middleware;
 mod models;
+mod route_helpers;
 mod routes;
 mod schema;
 

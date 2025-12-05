@@ -1,4 +1,5 @@
 use actix_web::{delete, get, post, put, web, HttpResponse, Responder};
+use crate::{readable, writable};
 use diesel::prelude::*;
 
 use crate::models::{NewUser, UpdateUser, User};
@@ -171,9 +172,6 @@ async fn delete_user(pool: web::Data<DbPool>, user_id: web::Path<i32>) -> impl R
 }
 
 pub fn configure(cfg: &mut web::ServiceConfig) {
-    cfg.service(list_users)
-        .service(get_user)
-        .service(create_user)
-        .service(update_user)
-        .service(delete_user);
+    cfg.service(readable!(list_users, get_user));
+    cfg.service(writable!(create_user, update_user, delete_user));
 }
