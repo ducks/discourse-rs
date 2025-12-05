@@ -2,11 +2,15 @@ use actix_web::{delete, get, post, put, web, HttpResponse, Responder};
 use diesel::prelude::*;
 
 use crate::models::{NewPost, Post, UpdatePost};
+use crate::pagination::PaginationParams;
 use crate::schema::posts;
 use crate::{readable, writable, DbPool};
 
 #[get("/posts")]
-async fn list_posts(pool: web::Data<DbPool>) -> impl Responder {
+async fn list_posts(
+    pool: web::Data<DbPool>,
+    pagination: web::Query<PaginationParams>,
+) -> impl Responder {
     let mut conn = match pool.get() {
         Ok(conn) => conn,
         Err(_) => return HttpResponse::InternalServerError().json(serde_json::json!({
@@ -14,11 +18,15 @@ async fn list_posts(pool: web::Data<DbPool>) -> impl Responder {
         })),
     };
 
+    let per_page = pagination.per_page();
+    let offset = pagination.offset();
+
     let results = web::block(move || {
         posts::table
             .select(Post::as_select())
             .order(posts::created_at.desc())
-            .limit(50)
+            .limit(per_page)
+            .offset(offset)
             .load(&mut conn)
     })
     .await;
@@ -38,6 +46,7 @@ async fn list_posts(pool: web::Data<DbPool>) -> impl Responder {
 async fn list_topic_posts(
     pool: web::Data<DbPool>,
     topic_id: web::Path<i32>,
+    pagination: web::Query<PaginationParams>,
 ) -> impl Responder {
     let mut conn = match pool.get() {
         Ok(conn) => conn,
@@ -47,12 +56,16 @@ async fn list_topic_posts(
     };
 
     let topic_id = topic_id.into_inner();
+    let per_page = pagination.per_page();
+    let offset = pagination.offset();
 
     let results = web::block(move || {
         posts::table
             .filter(posts::topic_id.eq(topic_id))
             .select(Post::as_select())
             .order(posts::post_number.asc())
+            .limit(per_page)
+            .offset(offset)
             .load(&mut conn)
     })
     .await;
