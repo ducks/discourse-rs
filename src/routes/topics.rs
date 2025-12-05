@@ -1,4 +1,5 @@
 use actix_web::{delete, get, post, put, web, HttpResponse, Responder};
+use crate::{readable, writable};
 use diesel::prelude::*;
 
 use crate::models::{NewTopic, Topic, UpdateTopic};
@@ -172,9 +173,6 @@ async fn delete_topic(pool: web::Data<DbPool>, topic_id: web::Path<i32>) -> impl
 }
 
 pub fn configure(cfg: &mut web::ServiceConfig) {
-    cfg.service(list_topics)
-        .service(get_topic)
-        .service(create_topic)
-        .service(update_topic)
-        .service(delete_topic);
+    cfg.service(readable!(list_topics, get_topic));
+    cfg.service(writable!(create_topic, update_topic, delete_topic));
 }

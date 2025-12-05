@@ -32,6 +32,15 @@ diesel::table! {
 }
 
 diesel::table! {
+    site_settings (key) {
+        key -> Varchar,
+        value -> Varchar,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
+    }
+}
+
+diesel::table! {
     topics (id) {
         id -> Int4,
         #[max_length = 255]
@@ -74,6 +83,7 @@ diesel::joinable!(topics -> users (user_id));
 diesel::allow_tables_to_appear_in_same_query!(
     categories,
     posts,
+    site_settings,
     topics,
     users,
 );

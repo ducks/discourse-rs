@@ -3,7 +3,7 @@ use diesel::prelude::*;
 
 use crate::models::{NewPost, Post, UpdatePost};
 use crate::schema::posts;
-use crate::DbPool;
+use crate::{readable, writable, DbPool};
 
 #[get("/posts")]
 async fn list_posts(pool: web::Data<DbPool>) -> impl Responder {
@@ -170,9 +170,17 @@ async fn delete_post(pool: web::Data<DbPool>, post_id: web::Path<i32>) -> impl R
 }
 
 pub fn configure(cfg: &mut web::ServiceConfig) {
-    cfg.service(list_posts)
-        .service(list_topic_posts)
-        .service(create_post)
-        .service(update_post)
-        .service(delete_post);
+    // Note: By default, GET endpoints are public and POST/PUT/DELETE require auth.
+    // To require auth for all endpoints (private forum), set site_setting
+    // 'require_auth_for_reads' to 'true' in the database:
+    //
+    // UPDATE site_settings SET value = 'true' WHERE key = 'require_auth_for_reads';
+    //
+    // When that setting is enabled, GET endpoints will also require authentication.
+
+    // GET endpoints - public by default, can be protected via site_setting
+    cfg.service(readable!(list_posts, list_topic_posts));
+
+    // POST/PUT/DELETE endpoints - always require authentication
+    cfg.service(writable!(create_post, update_post, delete_post));
 }
