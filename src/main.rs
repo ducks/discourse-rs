@@ -5,6 +5,7 @@ use std::env;
 
 mod auth;
 mod config;
+mod jobs;
 mod middleware;
 mod models;
 mod pagination;
@@ -35,16 +36,29 @@ async fn main() -> std::io::Result<()> {
     env_logger::init();
 
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    let manager = ConnectionManager::<PgConnection>::new(database_url);
+    let manager = ConnectionManager::<PgConnection>::new(&database_url);
     let pool = r2d2::Pool::builder()
         .build(manager)
         .expect("Failed to create pool");
 
+    // Set up background job queue and worker pool
+    let pool_arc = std::sync::Arc::new(pool.clone());
+    let job_queue = jobs::JobQueue::new(pool_arc.clone());
+    let worker_pool = jobs::WorkerPool::new(pool_arc, 4);
+
+    // Start worker pool in background
+    tokio::spawn(async move {
+        worker_pool.run().await;
+    });
+
     log::info!("Starting server at http://127.0.0.1:8080");
+
+    let job_queue_data = web::Data::new(job_queue);
 
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(pool.clone()))
+            .app_data(job_queue_data.clone())
             .service(index)
             .service(health)
             .service(web::scope("/api").configure(routes::config))

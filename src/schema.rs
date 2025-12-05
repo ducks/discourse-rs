@@ -1,6 +1,23 @@
 // @generated automatically by Diesel CLI.
 
 diesel::table! {
+    backie_tasks (id) {
+        id -> Uuid,
+        task_name -> Text,
+        task_hash -> Text,
+        payload -> Jsonb,
+        timeout_msecs -> Int8,
+        max_retries -> Int4,
+        retries -> Int4,
+        created_at -> Timestamptz,
+        scheduled_at -> Timestamptz,
+        running_at -> Nullable<Timestamptz>,
+        done_at -> Nullable<Timestamptz>,
+        error -> Nullable<Text>,
+    }
+}
+
+diesel::table! {
     categories (id) {
         id -> Int4,
         #[max_length = 100]
@@ -81,6 +98,7 @@ diesel::joinable!(topics -> categories (category_id));
 diesel::joinable!(topics -> users (user_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
+    backie_tasks,
     categories,
     posts,
     site_settings,
