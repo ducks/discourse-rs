@@ -45,22 +45,22 @@ The server will be available at http://127.0.0.1:8080
 - `POST /api/auth/login` - Login existing user (returns JWT token)
 
 ### Users
-- `GET /api/users` - List all users (public)
+- `GET /api/users` - List all users (public, paginated)
 - `GET /api/users/:id` - Get user by ID (public)
 - `POST /api/users` - Create new user (requires auth)
 - `PUT /api/users/:id` - Update user (requires auth)
 - `DELETE /api/users/:id` - Delete user (requires auth)
 
 ### Topics
-- `GET /api/topics` - List all topics (public, sorted by created_at desc)
+- `GET /api/topics` - List all topics (public, paginated, sorted by created_at desc)
 - `GET /api/topics/:id` - Get topic by ID (public)
 - `POST /api/topics` - Create new topic (requires auth)
 - `PUT /api/topics/:id` - Update topic (requires auth)
 - `DELETE /api/topics/:id` - Delete topic (requires auth)
 
 ### Posts
-- `GET /api/posts` - List recent posts (public)
-- `GET /api/topics/:id/posts` - List posts in a topic (public)
+- `GET /api/posts` - List recent posts (public, paginated)
+- `GET /api/topics/:id/posts` - List posts in a topic (public, paginated)
 - `POST /api/posts` - Create new post (requires auth)
 - `PUT /api/posts/:id` - Update post (requires auth)
 - `DELETE /api/posts/:id` - Delete post (requires auth)
@@ -75,6 +75,32 @@ The server will be available at http://127.0.0.1:8080
 - Run tests: `cargo test`
 - Format code: `cargo fmt`
 - Lint: `cargo clippy`
+
+## Pagination
+
+List endpoints support pagination via query parameters:
+
+- `page` - Page number (default: 1, minimum: 1)
+- `per_page` - Items per page (default: 30, minimum: 1, maximum: 100)
+
+Example:
+
+```bash
+# Get first 10 users
+curl http://127.0.0.1:8080/api/users?per_page=10
+
+# Get page 2 with 20 users per page
+curl http://127.0.0.1:8080/api/users?page=2&per_page=20
+
+# Get first 5 topics
+curl http://127.0.0.1:8080/api/topics?per_page=5
+```
+
+Paginated endpoints:
+- `GET /api/users`
+- `GET /api/topics`
+- `GET /api/posts`
+- `GET /api/topics/:id/posts`
 
 ## Authentication
 
@@ -135,10 +161,10 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
 - [x] Configurable privacy settings
 - [x] Plugin-friendly auth helpers
 
-### Phase 3: Polish (Next)
+### Phase 3: Polish (In Progress)
+- [x] Pagination (limit/offset)
 - [ ] Background jobs (backie with PostgreSQL queue)
 - [ ] Username change propagation (update @mentions in posts)
-- [ ] Pagination (limit/offset or cursor-based)
 - [ ] Search (PostgreSQL full-text or Tantivy)
 - [ ] Notifications
 - [ ] Moderation tools (flags, hidden posts)

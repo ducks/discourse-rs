@@ -3,11 +3,15 @@ use crate::{readable, writable};
 use diesel::prelude::*;
 
 use crate::models::{NewUser, UpdateUser, User};
+use crate::pagination::PaginationParams;
 use crate::schema::users;
 use crate::DbPool;
 
 #[get("/users")]
-async fn list_users(pool: web::Data<DbPool>) -> impl Responder {
+async fn list_users(
+    pool: web::Data<DbPool>,
+    pagination: web::Query<PaginationParams>,
+) -> impl Responder {
     let mut conn = match pool.get() {
         Ok(conn) => conn,
         Err(_) => return HttpResponse::InternalServerError().json(serde_json::json!({
@@ -15,10 +19,15 @@ async fn list_users(pool: web::Data<DbPool>) -> impl Responder {
         })),
     };
 
+    let page = pagination.page();
+    let per_page = pagination.per_page();
+    let offset = pagination.offset();
+
     let results = web::block(move || {
         users::table
             .select(User::as_select())
-            .limit(50)
+            .limit(per_page)
+            .offset(offset)
             .load(&mut conn)
     })
     .await;
