@@ -7,6 +7,7 @@ mod auth;
 mod config;
 mod jobs;
 mod middleware;
+mod moderation;
 mod models;
 mod pagination;
 mod route_helpers;
