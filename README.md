@@ -181,6 +181,8 @@ Interactive API documentation is available via Swagger UI:
 - Swagger UI: http://127.0.0.1:8080/swagger-ui/
 - OpenAPI JSON: http://127.0.0.1:8080/api-docs/openapi.json
 
+Static documentation is also published to GitHub Pages on every push to main.
+
 The documentation is auto-generated from Rust types using utoipa.
 
 ## Guardian Permissions
