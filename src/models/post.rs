@@ -1,10 +1,11 @@
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
 use crate::schema::posts;
 
-#[derive(Debug, Clone, Queryable, Selectable, Identifiable, Associations, Serialize)]
+#[derive(Debug, Clone, Queryable, Selectable, Identifiable, Associations, Serialize, ToSchema)]
 #[diesel(table_name = posts)]
 #[diesel(belongs_to(super::topic::Topic))]
 #[diesel(belongs_to(super::user::User))]
@@ -22,7 +23,7 @@ pub struct Post {
     pub updated_at: NaiveDateTime,
 }
 
-#[derive(Debug, Insertable, Deserialize)]
+#[derive(Debug, Insertable, Deserialize, ToSchema)]
 #[diesel(table_name = posts)]
 pub struct NewPost {
     pub topic_id: i32,
@@ -33,7 +34,7 @@ pub struct NewPost {
     pub reply_to_post_number: Option<i32>,
 }
 
-#[derive(Debug, AsChangeset, Deserialize)]
+#[derive(Debug, AsChangeset, Deserialize, ToSchema)]
 #[diesel(table_name = posts)]
 pub struct UpdatePost {
     pub raw: Option<String>,
@@ -41,7 +42,7 @@ pub struct UpdatePost {
 }
 
 /// API input for creating a post (client only provides raw markdown)
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ToSchema)]
 pub struct CreatePostInput {
     pub topic_id: i32,
     pub user_id: i32,
@@ -65,7 +66,7 @@ impl CreatePostInput {
 }
 
 /// API input for updating a post (client only provides raw markdown)
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ToSchema)]
 pub struct UpdatePostInput {
     pub raw: Option<String>,
 }

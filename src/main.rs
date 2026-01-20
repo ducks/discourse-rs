@@ -3,6 +3,8 @@ use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
 use diesel::prelude::*;
 use diesel::r2d2::{self, ConnectionManager};
 use std::env;
+use utoipa::OpenApi;
+use utoipa_swagger_ui::SwaggerUi;
 
 mod auth;
 mod config;
@@ -12,6 +14,7 @@ pub mod markdown;
 mod middleware;
 mod moderation;
 mod models;
+mod openapi;
 mod pagination;
 mod route_helpers;
 mod routes;
@@ -74,6 +77,10 @@ async fn main() -> std::io::Result<()> {
             .service(index)
             .service(health)
             .service(web::scope("/api").configure(routes::config))
+            .service(
+                SwaggerUi::new("/swagger-ui/{_:.*}")
+                    .url("/api-docs/openapi.json", openapi::ApiDoc::openapi()),
+            )
     })
     .bind(("127.0.0.1", 8080))?
     .run()
