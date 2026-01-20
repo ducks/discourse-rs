@@ -5,6 +5,7 @@ pub mod categories;
 pub mod jobs;
 pub mod moderation;
 pub mod posts;
+pub mod search;
 pub mod settings;
 pub mod topics;
 pub mod users;
@@ -17,5 +18,6 @@ pub fn config(cfg: &mut web::ServiceConfig) {
         .configure(topics::configure)
         .configure(posts::configure)
         .configure(jobs::configure)
-        .configure(moderation::configure);
+        .configure(moderation::configure)
+        .configure(search::configure);
 }
