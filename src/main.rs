@@ -14,7 +14,7 @@ pub mod markdown;
 mod middleware;
 mod moderation;
 mod models;
-mod openapi;
+pub mod openapi;
 mod pagination;
 mod route_helpers;
 mod routes;
