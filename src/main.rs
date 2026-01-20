@@ -6,6 +6,7 @@ use std::env;
 
 mod auth;
 mod config;
+mod guardian;
 mod jobs;
 mod middleware;
 mod moderation;

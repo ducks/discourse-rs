@@ -2,11 +2,9 @@ use actix_web::{post, web, HttpResponse, Responder};
 use diesel::prelude::*;
 use serde::Deserialize;
 
-use crate::middleware::AuthUser;
-use crate::moderation::{
-    is_moderator, log_moderation_action, NewModerationAction, NewUserSuspension,
-};
-use crate::schema::{posts, topics, user_suspensions, users};
+use crate::guardian::ModeratorGuard;
+use crate::moderation::{log_moderation_action, NewModerationAction, NewUserSuspension};
+use crate::schema::{posts, topics, user_suspensions};
 use crate::DbPool;
 
 // Topic moderation
@@ -19,10 +17,9 @@ struct TopicModerationRequest {
 #[post("/moderation/topics/lock")]
 async fn lock_topic(
     pool: web::Data<DbPool>,
-    auth: AuthUser,
+    guard: ModeratorGuard,
     req: web::Json<TopicModerationRequest>,
 ) -> impl Responder {
-    // Check if user is moderator
     let mut conn = match pool.get() {
         Ok(c) => c,
         Err(e) => {
@@ -32,38 +29,17 @@ async fn lock_topic(
         }
     };
 
-    let user_trust_level: i32 = match users::table
-        .find(auth.0.user_id)
-        .select(users::trust_level)
-        .first(&mut conn)
-    {
-        Ok(level) => level,
-        Err(_) => {
-            return HttpResponse::Forbidden().json(serde_json::json!({
-                "error": "User not found"
-            }))
-        }
-    };
-
-    if !is_moderator(user_trust_level) {
-        return HttpResponse::Forbidden().json(serde_json::json!({
-            "error": "Only moderators can lock topics"
-        }));
-    }
-
-    // Lock the topic
     match diesel::update(topics::table)
         .filter(topics::id.eq(req.topic_id))
         .set(topics::locked.eq(true))
         .execute(&mut conn)
     {
         Ok(_) => {
-            // Log moderation action
             let _ = log_moderation_action(
                 &pool,
                 NewModerationAction {
                     action_type: "lock_topic".to_string(),
-                    moderator_id: auth.0.user_id,
+                    moderator_id: guard.0.user_id,
                     target_user_id: None,
                     target_topic_id: Some(req.topic_id),
                     target_post_id: None,
@@ -84,7 +60,7 @@ async fn lock_topic(
 #[post("/moderation/topics/unlock")]
 async fn unlock_topic(
     pool: web::Data<DbPool>,
-    auth: AuthUser,
+    guard: ModeratorGuard,
     req: web::Json<TopicModerationRequest>,
 ) -> impl Responder {
     let mut conn = match pool.get() {
@@ -96,25 +72,6 @@ async fn unlock_topic(
         }
     };
 
-    let user_trust_level: i32 = match users::table
-        .find(auth.0.user_id)
-        .select(users::trust_level)
-        .first(&mut conn)
-    {
-        Ok(level) => level,
-        Err(_) => {
-            return HttpResponse::Forbidden().json(serde_json::json!({
-                "error": "User not found"
-            }))
-        }
-    };
-
-    if !is_moderator(user_trust_level) {
-        return HttpResponse::Forbidden().json(serde_json::json!({
-            "error": "Only moderators can unlock topics"
-        }));
-    }
-
     match diesel::update(topics::table)
         .filter(topics::id.eq(req.topic_id))
         .set(topics::locked.eq(false))
@@ -125,7 +82,7 @@ async fn unlock_topic(
                 &pool,
                 NewModerationAction {
                     action_type: "unlock_topic".to_string(),
-                    moderator_id: auth.0.user_id,
+                    moderator_id: guard.0.user_id,
                     target_user_id: None,
                     target_topic_id: Some(req.topic_id),
                     target_post_id: None,
@@ -146,7 +103,7 @@ async fn unlock_topic(
 #[post("/moderation/topics/pin")]
 async fn pin_topic(
     pool: web::Data<DbPool>,
-    auth: AuthUser,
+    guard: ModeratorGuard,
     req: web::Json<TopicModerationRequest>,
 ) -> impl Responder {
     let mut conn = match pool.get() {
@@ -157,25 +114,6 @@ async fn pin_topic(
             }))
         }
     };
-
-    let user_trust_level: i32 = match users::table
-        .find(auth.0.user_id)
-        .select(users::trust_level)
-        .first(&mut conn)
-    {
-        Ok(level) => level,
-        Err(_) => {
-            return HttpResponse::Forbidden().json(serde_json::json!({
-                "error": "User not found"
-            }))
-        }
-    };
-
-    if !is_moderator(user_trust_level) {
-        return HttpResponse::Forbidden().json(serde_json::json!({
-            "error": "Only moderators can pin topics"
-        }));
-    }
 
     let now = chrono::Utc::now().naive_utc();
 
@@ -189,7 +127,7 @@ async fn pin_topic(
                 &pool,
                 NewModerationAction {
                     action_type: "pin_topic".to_string(),
-                    moderator_id: auth.0.user_id,
+                    moderator_id: guard.0.user_id,
                     target_user_id: None,
                     target_topic_id: Some(req.topic_id),
                     target_post_id: None,
@@ -210,7 +148,7 @@ async fn pin_topic(
 #[post("/moderation/topics/unpin")]
 async fn unpin_topic(
     pool: web::Data<DbPool>,
-    auth: AuthUser,
+    guard: ModeratorGuard,
     req: web::Json<TopicModerationRequest>,
 ) -> impl Responder {
     let mut conn = match pool.get() {
@@ -222,28 +160,12 @@ async fn unpin_topic(
         }
     };
 
-    let user_trust_level: i32 = match users::table
-        .find(auth.0.user_id)
-        .select(users::trust_level)
-        .first(&mut conn)
-    {
-        Ok(level) => level,
-        Err(_) => {
-            return HttpResponse::Forbidden().json(serde_json::json!({
-                "error": "User not found"
-            }))
-        }
-    };
-
-    if !is_moderator(user_trust_level) {
-        return HttpResponse::Forbidden().json(serde_json::json!({
-            "error": "Only moderators can unpin topics"
-        }));
-    }
-
     match diesel::update(topics::table)
         .filter(topics::id.eq(req.topic_id))
-        .set((topics::pinned.eq(false), topics::pinned_at.eq(None::<chrono::NaiveDateTime>)))
+        .set((
+            topics::pinned.eq(false),
+            topics::pinned_at.eq(None::<chrono::NaiveDateTime>),
+        ))
         .execute(&mut conn)
     {
         Ok(_) => {
@@ -251,7 +173,7 @@ async fn unpin_topic(
                 &pool,
                 NewModerationAction {
                     action_type: "unpin_topic".to_string(),
-                    moderator_id: auth.0.user_id,
+                    moderator_id: guard.0.user_id,
                     target_user_id: None,
                     target_topic_id: Some(req.topic_id),
                     target_post_id: None,
@@ -272,7 +194,7 @@ async fn unpin_topic(
 #[post("/moderation/topics/close")]
 async fn close_topic(
     pool: web::Data<DbPool>,
-    auth: AuthUser,
+    guard: ModeratorGuard,
     req: web::Json<TopicModerationRequest>,
 ) -> impl Responder {
     let mut conn = match pool.get() {
@@ -283,25 +205,6 @@ async fn close_topic(
             }))
         }
     };
-
-    let user_trust_level: i32 = match users::table
-        .find(auth.0.user_id)
-        .select(users::trust_level)
-        .first(&mut conn)
-    {
-        Ok(level) => level,
-        Err(_) => {
-            return HttpResponse::Forbidden().json(serde_json::json!({
-                "error": "User not found"
-            }))
-        }
-    };
-
-    if !is_moderator(user_trust_level) {
-        return HttpResponse::Forbidden().json(serde_json::json!({
-            "error": "Only moderators can close topics"
-        }));
-    }
 
     let now = chrono::Utc::now().naive_utc();
 
@@ -315,7 +218,7 @@ async fn close_topic(
                 &pool,
                 NewModerationAction {
                     action_type: "close_topic".to_string(),
-                    moderator_id: auth.0.user_id,
+                    moderator_id: guard.0.user_id,
                     target_user_id: None,
                     target_topic_id: Some(req.topic_id),
                     target_post_id: None,
@@ -336,7 +239,7 @@ async fn close_topic(
 #[post("/moderation/topics/open")]
 async fn open_topic(
     pool: web::Data<DbPool>,
-    auth: AuthUser,
+    guard: ModeratorGuard,
     req: web::Json<TopicModerationRequest>,
 ) -> impl Responder {
     let mut conn = match pool.get() {
@@ -348,28 +251,12 @@ async fn open_topic(
         }
     };
 
-    let user_trust_level: i32 = match users::table
-        .find(auth.0.user_id)
-        .select(users::trust_level)
-        .first(&mut conn)
-    {
-        Ok(level) => level,
-        Err(_) => {
-            return HttpResponse::Forbidden().json(serde_json::json!({
-                "error": "User not found"
-            }))
-        }
-    };
-
-    if !is_moderator(user_trust_level) {
-        return HttpResponse::Forbidden().json(serde_json::json!({
-            "error": "Only moderators can open topics"
-        }));
-    }
-
     match diesel::update(topics::table)
         .filter(topics::id.eq(req.topic_id))
-        .set((topics::closed.eq(false), topics::closed_at.eq(None::<chrono::NaiveDateTime>)))
+        .set((
+            topics::closed.eq(false),
+            topics::closed_at.eq(None::<chrono::NaiveDateTime>),
+        ))
         .execute(&mut conn)
     {
         Ok(_) => {
@@ -377,7 +264,7 @@ async fn open_topic(
                 &pool,
                 NewModerationAction {
                     action_type: "open_topic".to_string(),
-                    moderator_id: auth.0.user_id,
+                    moderator_id: guard.0.user_id,
                     target_user_id: None,
                     target_topic_id: Some(req.topic_id),
                     target_post_id: None,
@@ -405,7 +292,7 @@ struct PostModerationRequest {
 #[post("/moderation/posts/hide")]
 async fn hide_post(
     pool: web::Data<DbPool>,
-    auth: AuthUser,
+    guard: ModeratorGuard,
     req: web::Json<PostModerationRequest>,
 ) -> impl Responder {
     let mut conn = match pool.get() {
@@ -417,25 +304,6 @@ async fn hide_post(
         }
     };
 
-    let user_trust_level: i32 = match users::table
-        .find(auth.0.user_id)
-        .select(users::trust_level)
-        .first(&mut conn)
-    {
-        Ok(level) => level,
-        Err(_) => {
-            return HttpResponse::Forbidden().json(serde_json::json!({
-                "error": "User not found"
-            }))
-        }
-    };
-
-    if !is_moderator(user_trust_level) {
-        return HttpResponse::Forbidden().json(serde_json::json!({
-            "error": "Only moderators can hide posts"
-        }));
-    }
-
     let now = chrono::Utc::now().naive_utc();
 
     match diesel::update(posts::table)
@@ -443,7 +311,7 @@ async fn hide_post(
         .set((
             posts::hidden.eq(true),
             posts::hidden_at.eq(Some(now)),
-            posts::hidden_by_user_id.eq(Some(auth.0.user_id)),
+            posts::hidden_by_user_id.eq(Some(guard.0.user_id)),
         ))
         .execute(&mut conn)
     {
@@ -452,7 +320,7 @@ async fn hide_post(
                 &pool,
                 NewModerationAction {
                     action_type: "hide_post".to_string(),
-                    moderator_id: auth.0.user_id,
+                    moderator_id: guard.0.user_id,
                     target_user_id: None,
                     target_topic_id: None,
                     target_post_id: Some(req.post_id),
@@ -473,7 +341,7 @@ async fn hide_post(
 #[post("/moderation/posts/unhide")]
 async fn unhide_post(
     pool: web::Data<DbPool>,
-    auth: AuthUser,
+    guard: ModeratorGuard,
     req: web::Json<PostModerationRequest>,
 ) -> impl Responder {
     let mut conn = match pool.get() {
@@ -484,25 +352,6 @@ async fn unhide_post(
             }))
         }
     };
-
-    let user_trust_level: i32 = match users::table
-        .find(auth.0.user_id)
-        .select(users::trust_level)
-        .first(&mut conn)
-    {
-        Ok(level) => level,
-        Err(_) => {
-            return HttpResponse::Forbidden().json(serde_json::json!({
-                "error": "User not found"
-            }))
-        }
-    };
-
-    if !is_moderator(user_trust_level) {
-        return HttpResponse::Forbidden().json(serde_json::json!({
-            "error": "Only moderators can unhide posts"
-        }));
-    }
 
     match diesel::update(posts::table)
         .filter(posts::id.eq(req.post_id))
@@ -518,7 +367,7 @@ async fn unhide_post(
                 &pool,
                 NewModerationAction {
                     action_type: "unhide_post".to_string(),
-                    moderator_id: auth.0.user_id,
+                    moderator_id: guard.0.user_id,
                     target_user_id: None,
                     target_topic_id: None,
                     target_post_id: Some(req.post_id),
@@ -539,7 +388,7 @@ async fn unhide_post(
 #[post("/moderation/posts/delete")]
 async fn delete_post(
     pool: web::Data<DbPool>,
-    auth: AuthUser,
+    guard: ModeratorGuard,
     req: web::Json<PostModerationRequest>,
 ) -> impl Responder {
     let mut conn = match pool.get() {
@@ -551,32 +400,13 @@ async fn delete_post(
         }
     };
 
-    let user_trust_level: i32 = match users::table
-        .find(auth.0.user_id)
-        .select(users::trust_level)
-        .first(&mut conn)
-    {
-        Ok(level) => level,
-        Err(_) => {
-            return HttpResponse::Forbidden().json(serde_json::json!({
-                "error": "User not found"
-            }))
-        }
-    };
-
-    if !is_moderator(user_trust_level) {
-        return HttpResponse::Forbidden().json(serde_json::json!({
-            "error": "Only moderators can delete posts"
-        }));
-    }
-
     let now = chrono::Utc::now().naive_utc();
 
     match diesel::update(posts::table)
         .filter(posts::id.eq(req.post_id))
         .set((
             posts::deleted_at.eq(Some(now)),
-            posts::deleted_by_user_id.eq(Some(auth.0.user_id)),
+            posts::deleted_by_user_id.eq(Some(guard.0.user_id)),
         ))
         .execute(&mut conn)
     {
@@ -585,7 +415,7 @@ async fn delete_post(
                 &pool,
                 NewModerationAction {
                     action_type: "delete_post".to_string(),
-                    moderator_id: auth.0.user_id,
+                    moderator_id: guard.0.user_id,
                     target_user_id: None,
                     target_topic_id: None,
                     target_post_id: Some(req.post_id),
@@ -615,7 +445,7 @@ struct SuspendUserRequest {
 #[post("/moderation/users/suspend")]
 async fn suspend_user(
     pool: web::Data<DbPool>,
-    auth: AuthUser,
+    guard: ModeratorGuard,
     req: web::Json<SuspendUserRequest>,
 ) -> impl Responder {
     let mut conn = match pool.get() {
@@ -627,31 +457,12 @@ async fn suspend_user(
         }
     };
 
-    let user_trust_level: i32 = match users::table
-        .find(auth.0.user_id)
-        .select(users::trust_level)
-        .first(&mut conn)
-    {
-        Ok(level) => level,
-        Err(_) => {
-            return HttpResponse::Forbidden().json(serde_json::json!({
-                "error": "User not found"
-            }))
-        }
-    };
-
-    if !is_moderator(user_trust_level) {
-        return HttpResponse::Forbidden().json(serde_json::json!({
-            "error": "Only moderators can suspend users"
-        }));
-    }
-
     let suspended_until =
         chrono::Utc::now().naive_utc() + chrono::Duration::days(req.duration_days);
 
     let new_suspension = NewUserSuspension {
         user_id: req.user_id,
-        suspended_by_user_id: auth.0.user_id,
+        suspended_by_user_id: guard.0.user_id,
         reason: req.reason.clone(),
         suspended_until,
     };
@@ -665,7 +476,7 @@ async fn suspend_user(
                 &pool,
                 NewModerationAction {
                     action_type: "suspend_user".to_string(),
-                    moderator_id: auth.0.user_id,
+                    moderator_id: guard.0.user_id,
                     target_user_id: Some(req.user_id),
                     target_topic_id: None,
                     target_post_id: None,
@@ -688,18 +499,14 @@ async fn suspend_user(
 }
 
 pub fn configure(cfg: &mut web::ServiceConfig) {
-    cfg.service(
-        crate::writable!(
-            lock_topic,
-            unlock_topic,
-            pin_topic,
-            unpin_topic,
-            close_topic,
-            open_topic,
-            hide_post,
-            unhide_post,
-            delete_post,
-            suspend_user
-        ),
-    );
+    cfg.service(lock_topic)
+        .service(unlock_topic)
+        .service(pin_topic)
+        .service(unpin_topic)
+        .service(close_topic)
+        .service(open_topic)
+        .service(hide_post)
+        .service(unhide_post)
+        .service(delete_post)
+        .service(suspend_user);
 }
