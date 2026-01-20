@@ -4,7 +4,7 @@ use std::sync::Arc;
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::schema::{backie_tasks, posts};
+use crate::schema::backie_tasks;
 use crate::DbPool;
 
 // Job trait - implement this for each job type

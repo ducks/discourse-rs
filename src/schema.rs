@@ -34,6 +34,21 @@ diesel::table! {
 }
 
 diesel::table! {
+    notifications (id) {
+        id -> Int8,
+        user_id -> Int4,
+        #[max_length = 50]
+        notification_type -> Varchar,
+        data -> Jsonb,
+        read -> Bool,
+        topic_id -> Nullable<Int4>,
+        post_id -> Nullable<Int4>,
+        acting_user_id -> Nullable<Int4>,
+        created_at -> Timestamptz,
+    }
+}
+
+diesel::table! {
     moderation_actions (id) {
         id -> Int8,
         #[max_length = 50]
