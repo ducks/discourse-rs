@@ -1,3 +1,4 @@
+use actix_governor::{Governor, GovernorConfigBuilder};
 use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
 use diesel::prelude::*;
 use diesel::r2d2::{self, ConnectionManager};
@@ -56,8 +57,16 @@ async fn main() -> std::io::Result<()> {
 
     let job_queue_data = web::Data::new(job_queue);
 
+    // Rate limiting: 60 requests per minute per IP
+    let governor_conf = GovernorConfigBuilder::default()
+        .per_second(1)
+        .burst_size(60)
+        .finish()
+        .unwrap();
+
     HttpServer::new(move || {
         App::new()
+            .wrap(Governor::new(&governor_conf))
             .app_data(web::Data::new(pool.clone()))
             .app_data(job_queue_data.clone())
             .service(index)
