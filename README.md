@@ -203,7 +203,7 @@ Guards automatically return 403 Forbidden if the user lacks permission.
 - [x] Moderation tools (lock/pin/close topics, hide/delete posts, suspend users)
 - [x] Rate limiting (60 requests/min per IP)
 - [x] Guardian-style permissions (admin/moderator/trust level guards)
-- [ ] Username change propagation (update @mentions in posts)
+- [x] Username change propagation (background job updates @mentions)
 - [ ] Notifications
 - [ ] Markdown rendering (raw -> cooked)
 - [ ] API documentation (OpenAPI/Swagger)

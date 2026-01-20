@@ -4,13 +4,13 @@ use std::sync::Arc;
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::schema::backie_tasks;
+use crate::schema::{backie_tasks, posts};
 use crate::DbPool;
 
 // Job trait - implement this for each job type
 pub trait Job: Send + Sync + 'static {
     fn job_name(&self) -> &'static str;
-    fn execute(&self) -> Result<(), String>;
+    fn execute(&self, pool: &DbPool) -> Result<(), String>;
     fn to_json(&self) -> Result<serde_json::Value, String>;
 }
 
@@ -27,7 +27,7 @@ impl Job for WelcomeEmailJob {
         "welcome_email"
     }
 
-    fn execute(&self) -> Result<(), String> {
+    fn execute(&self, _pool: &DbPool) -> Result<(), String> {
         log::info!(
             "Sending welcome email to user {} ({}) at {}",
             self.user_id,
@@ -59,7 +59,7 @@ impl Job for ProcessTopicJob {
         "process_topic"
     }
 
-    fn execute(&self) -> Result<(), String> {
+    fn execute(&self, _pool: &DbPool) -> Result<(), String> {
         log::info!(
             "Processing topic {} with action: {}",
             self.topic_id,
@@ -70,6 +70,58 @@ impl Job for ProcessTopicJob {
         std::thread::sleep(Duration::from_secs(1));
 
         log::info!("Topic {} processed successfully", self.topic_id);
+        Ok(())
+    }
+
+    fn to_json(&self) -> Result<serde_json::Value, String> {
+        serde_json::to_value(self).map_err(|e| e.to_string())
+    }
+}
+
+// Username propagation job - updates @mentions in posts when username changes
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PropagateUsernameJob {
+    pub user_id: i32,
+    pub old_username: String,
+    pub new_username: String,
+}
+
+impl Job for PropagateUsernameJob {
+    fn job_name(&self) -> &'static str {
+        "propagate_username"
+    }
+
+    fn execute(&self, pool: &DbPool) -> Result<(), String> {
+        log::info!(
+            "Propagating username change: @{} -> @{} for user {}",
+            self.old_username,
+            self.new_username,
+            self.user_id
+        );
+
+        let mut conn = pool.get().map_err(|e| e.to_string())?;
+
+        // Update @mentions in posts.raw
+        // Match @username at word boundaries
+        let old_mention = format!("@{}", self.old_username);
+        let new_mention = format!("@{}", self.new_username);
+
+        let updated = diesel::sql_query(
+            "UPDATE posts SET raw = REPLACE(raw, $1, $2), updated_at = NOW() WHERE raw LIKE $3"
+        )
+        .bind::<diesel::sql_types::Text, _>(&old_mention)
+        .bind::<diesel::sql_types::Text, _>(&new_mention)
+        .bind::<diesel::sql_types::Text, _>(format!("%{}%", old_mention))
+        .execute(&mut conn)
+        .map_err(|e| e.to_string())?;
+
+        log::info!(
+            "Updated {} posts with username change @{} -> @{}",
+            updated,
+            self.old_username,
+            self.new_username
+        );
+
         Ok(())
     }
 
@@ -194,7 +246,7 @@ impl WorkerPool {
         }
     }
 
-    async fn claim_and_execute_job(worker_id: usize, pool: &DbPool) -> Result<bool, String> {
+    async fn claim_and_execute_job(worker_id: usize, pool: &Arc<DbPool>) -> Result<bool, String> {
         use crate::schema::backie_tasks::dsl::*;
 
         let mut conn = pool.get().map_err(|e| e.to_string())?;
@@ -225,7 +277,7 @@ impl WorkerPool {
                 .map_err(|e| e.to_string())?;
 
             // Execute the job based on task_name
-            let result = Self::execute_job_by_name(&job_record.task_name, &job_record.payload);
+            let result = Self::execute_job_by_name(&job_record.task_name, &job_record.payload, pool);
 
             // Update job status
             match result {
@@ -256,17 +308,22 @@ impl WorkerPool {
         }
     }
 
-    fn execute_job_by_name(task_name: &str, payload: &serde_json::Value) -> Result<(), String> {
+    fn execute_job_by_name(task_name: &str, payload: &serde_json::Value, pool: &DbPool) -> Result<(), String> {
         match task_name {
             "welcome_email" => {
                 let job: WelcomeEmailJob = serde_json::from_value(payload.clone())
                     .map_err(|e| format!("Failed to deserialize job: {}", e))?;
-                job.execute()
+                job.execute(pool)
             }
             "process_topic" => {
                 let job: ProcessTopicJob = serde_json::from_value(payload.clone())
                     .map_err(|e| format!("Failed to deserialize job: {}", e))?;
-                job.execute()
+                job.execute(pool)
+            }
+            "propagate_username" => {
+                let job: PropagateUsernameJob = serde_json::from_value(payload.clone())
+                    .map_err(|e| format!("Failed to deserialize job: {}", e))?;
+                job.execute(pool)
             }
             _ => Err(format!("Unknown job type: {}", task_name)),
         }
