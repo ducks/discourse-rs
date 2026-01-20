@@ -1,7 +1,7 @@
 use actix_web::{delete, get, post, put, web, HttpResponse, Responder};
 use diesel::prelude::*;
 
-use crate::models::{NewPost, Post, UpdatePost};
+use crate::models::{CreatePostInput, Post, UpdatePostInput};
 use crate::pagination::PaginationParams;
 use crate::schema::posts;
 use crate::{readable, writable, DbPool};
@@ -82,7 +82,7 @@ async fn list_topic_posts(
 }
 
 #[post("/posts")]
-async fn create_post(pool: web::Data<DbPool>, new_post: web::Json<NewPost>) -> impl Responder {
+async fn create_post(pool: web::Data<DbPool>, input: web::Json<CreatePostInput>) -> impl Responder {
     let mut conn = match pool.get() {
         Ok(conn) => conn,
         Err(_) => return HttpResponse::InternalServerError().json(serde_json::json!({
@@ -90,7 +90,8 @@ async fn create_post(pool: web::Data<DbPool>, new_post: web::Json<NewPost>) -> i
         })),
     };
 
-    let new_post = new_post.into_inner();
+    // Convert input to NewPost, rendering markdown in the process
+    let new_post = input.into_inner().into_new_post();
 
     let result = web::block(move || {
         diesel::insert_into(posts::table)
@@ -115,7 +116,7 @@ async fn create_post(pool: web::Data<DbPool>, new_post: web::Json<NewPost>) -> i
 async fn update_post(
     pool: web::Data<DbPool>,
     post_id: web::Path<i32>,
-    update_post: web::Json<UpdatePost>,
+    input: web::Json<UpdatePostInput>,
 ) -> impl Responder {
     let mut conn = match pool.get() {
         Ok(conn) => conn,
@@ -125,7 +126,8 @@ async fn update_post(
     };
 
     let post_id = post_id.into_inner();
-    let update_post = update_post.into_inner();
+    // Convert input to UpdatePost, rendering markdown if raw was provided
+    let update_post = input.into_inner().into_update_post();
 
     let result = web::block(move || {
         diesel::update(posts::table.find(post_id))
