@@ -1,0 +1,564 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Discourse-rs API",
+    "description": "A Discourse-inspired forum platform built in Rust",
+    "license": {
+      "name": "MIT"
+    },
+    "version": "0.1.0"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "Category": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "color",
+          "position",
+          "created_at",
+          "updated_at"
+        ],
+        "properties": {
+          "color": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          },
+          "position": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CreatePostInput": {
+        "type": "object",
+        "description": "API input for creating a post (client only provides raw markdown)",
+        "required": [
+          "topic_id",
+          "user_id",
+          "post_number",
+          "raw"
+        ],
+        "properties": {
+          "post_number": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "raw": {
+            "type": "string"
+          },
+          "reply_to_post_number": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "topic_id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "user_id": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "NewCategory": {
+        "type": "object",
+        "required": [
+          "name",
+          "slug"
+        ],
+        "properties": {
+          "color": {
+            "type": "string"
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "position": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "slug": {
+            "type": "string"
+          }
+        }
+      },
+      "NewTopic": {
+        "type": "object",
+        "required": [
+          "title",
+          "slug",
+          "user_id"
+        ],
+        "properties": {
+          "category_id": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "closed": {
+            "type": "boolean"
+          },
+          "pinned": {
+            "type": "boolean"
+          },
+          "posts_count": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "user_id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "views": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "NewUser": {
+        "type": "object",
+        "required": [
+          "username",
+          "email",
+          "password_hash"
+        ],
+        "properties": {
+          "admin": {
+            "type": "boolean"
+          },
+          "email": {
+            "type": "string"
+          },
+          "moderator": {
+            "type": "boolean"
+          },
+          "password_hash": {
+            "type": "string"
+          },
+          "trust_level": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "username": {
+            "type": "string"
+          }
+        }
+      },
+      "Notification": {
+        "type": "object",
+        "required": [
+          "id",
+          "user_id",
+          "notification_type",
+          "data",
+          "read",
+          "created_at"
+        ],
+        "properties": {
+          "acting_user_id": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "data": {
+            "type": "object"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "notification_type": {
+            "type": "string"
+          },
+          "post_id": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "read": {
+            "type": "boolean"
+          },
+          "topic_id": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "user_id": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "Post": {
+        "type": "object",
+        "required": [
+          "id",
+          "topic_id",
+          "user_id",
+          "post_number",
+          "raw",
+          "cooked",
+          "created_at",
+          "updated_at"
+        ],
+        "properties": {
+          "cooked": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deleted_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "post_number": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "raw": {
+            "type": "string"
+          },
+          "reply_to_post_number": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "topic_id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "user_id": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "Topic": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "slug",
+          "user_id",
+          "views",
+          "posts_count",
+          "pinned",
+          "closed",
+          "created_at",
+          "updated_at"
+        ],
+        "properties": {
+          "category_id": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "closed": {
+            "type": "boolean"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pinned": {
+            "type": "boolean"
+          },
+          "posts_count": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "user_id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "views": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "UpdateCategory": {
+        "type": "object",
+        "properties": {
+          "color": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "position": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "slug": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "UpdatePostInput": {
+        "type": "object",
+        "description": "API input for updating a post (client only provides raw markdown)",
+        "properties": {
+          "raw": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "UpdateTopic": {
+        "type": "object",
+        "properties": {
+          "category_id": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "closed": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "pinned": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "slug": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "UpdateUser": {
+        "type": "object",
+        "properties": {
+          "admin": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "email": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "moderator": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "trust_level": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "username": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "required": [
+          "id",
+          "username",
+          "email",
+          "admin",
+          "moderator",
+          "trust_level",
+          "created_at",
+          "updated_at"
+        ],
+        "properties": {
+          "admin": {
+            "type": "boolean"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "email": {
+            "type": "string"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "moderator": {
+            "type": "boolean"
+          },
+          "trust_level": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "username": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "users",
+      "description": "User management endpoints"
+    },
+    {
+      "name": "topics",
+      "description": "Topic management endpoints"
+    },
+    {
+      "name": "posts",
+      "description": "Post management endpoints"
+    },
+    {
+      "name": "categories",
+      "description": "Category management endpoints"
+    },
+    {
+      "name": "notifications",
+      "description": "Notification endpoints"
+    },
+    {
+      "name": "search",
+      "description": "Search endpoints"
+    },
+    {
+      "name": "moderation",
+      "description": "Moderation endpoints"
+    },
+    {
+      "name": "auth",
+      "description": "Authentication endpoints"
+    }
+  ]
+}
