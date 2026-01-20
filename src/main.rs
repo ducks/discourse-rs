@@ -8,6 +8,7 @@ mod auth;
 mod config;
 mod guardian;
 mod jobs;
+pub mod markdown;
 mod middleware;
 mod moderation;
 mod models;

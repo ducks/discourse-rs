@@ -7,7 +7,7 @@ pub mod user;
 
 pub use category::{Category, NewCategory, UpdateCategory};
 pub use notification::{NewNotification, Notification};
-pub use post::{NewPost, Post, UpdatePost};
+pub use post::{CreatePostInput, NewPost, Post, UpdatePost, UpdatePostInput};
 pub use site_setting::{SiteSetting, UpdateSiteSetting};
 pub use topic::{NewTopic, Topic, UpdateTopic};
 pub use user::{NewUser, UpdateUser, User};

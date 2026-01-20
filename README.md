@@ -158,6 +158,23 @@ curl -X PUT http://127.0.0.1:8080/api/settings/require_auth_for_reads \
 The API is rate limited to 60 requests per minute per IP address. When the
 limit is exceeded, the server returns a 429 Too Many Requests response.
 
+## Markdown Rendering
+
+Posts are automatically rendered from raw markdown to HTML when created or
+updated. The API accepts a `raw` field containing markdown and returns both
+`raw` and `cooked` (rendered HTML) fields.
+
+Supported markdown features (GitHub Flavored Markdown):
+- **Bold**, *italic*, ~~strikethrough~~
+- Code blocks with syntax highlighting
+- Tables
+- Task lists (checkboxes)
+- Autolinks (URLs are automatically linked)
+- Superscript
+- Smart punctuation
+
+XSS prevention: HTML tags in markdown are escaped to prevent injection attacks.
+
 ## Guardian Permissions
 
 The API uses Guardian-style permission extractors for role-based access control.
@@ -212,5 +229,5 @@ Guards automatically return 403 Forbidden if the user lacks permission.
 - [x] Guardian-style permissions (admin/moderator/trust level guards)
 - [x] Username change propagation (background job updates @mentions)
 - [x] Notifications
-- [ ] Markdown rendering (raw -> cooked)
+- [x] Markdown rendering (raw -> cooked)
 - [ ] API documentation (OpenAPI/Swagger)
