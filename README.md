@@ -92,6 +92,13 @@ The server will be available at http://127.0.0.1:8080
 - `POST /api/moderation/posts/delete` - Delete a post (moderator only)
 - `POST /api/moderation/users/suspend` - Suspend a user (moderator only)
 
+### Notifications
+- `GET /api/notifications` - List user notifications (requires auth, paginated)
+- `GET /api/notifications?unread_only=true` - List unread notifications only
+- `GET /api/notifications/unread-count` - Get unread notification count
+- `PUT /api/notifications/:id/read` - Mark notification as read
+- `POST /api/notifications/mark-all-read` - Mark all notifications as read
+
 ## Development
 
 - Run tests: `cargo test`
@@ -204,6 +211,6 @@ Guards automatically return 403 Forbidden if the user lacks permission.
 - [x] Rate limiting (60 requests/min per IP)
 - [x] Guardian-style permissions (admin/moderator/trust level guards)
 - [x] Username change propagation (background job updates @mentions)
-- [ ] Notifications
+- [x] Notifications
 - [ ] Markdown rendering (raw -> cooked)
 - [ ] API documentation (OpenAPI/Swagger)
