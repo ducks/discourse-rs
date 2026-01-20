@@ -1,6 +1,7 @@
 use actix_web::web;
 
 pub mod auth;
+pub mod categories;
 pub mod jobs;
 pub mod moderation;
 pub mod posts;
@@ -12,6 +13,7 @@ pub fn config(cfg: &mut web::ServiceConfig) {
     cfg.configure(auth::configure)
         .configure(settings::configure)
         .configure(users::configure)
+        .configure(categories::configure)
         .configure(topics::configure)
         .configure(posts::configure)
         .configure(jobs::configure)
