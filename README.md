@@ -65,10 +65,32 @@ The server will be available at http://127.0.0.1:8080
 - `PUT /api/posts/:id` - Update post (requires auth)
 - `DELETE /api/posts/:id` - Delete post (requires auth)
 
+### Categories
+- `GET /api/categories` - List all categories (public, ordered by position)
+- `GET /api/categories/:id` - Get category by ID (public)
+- `POST /api/categories` - Create category (moderator only)
+- `PUT /api/categories/:id` - Update category (moderator only)
+- `DELETE /api/categories/:id` - Delete category (moderator only)
+
 ### Site Settings
 - `GET /api/settings` - List all settings (public by default)
 - `GET /api/settings/:key` - Get specific setting (public by default)
 - `PUT /api/settings/:key` - Update setting value (requires auth)
+
+### Search
+- `GET /api/search?q=term&limit=20` - Full-text search across topics and posts
+
+### Moderation
+- `POST /api/moderation/topics/lock` - Lock a topic (moderator only)
+- `POST /api/moderation/topics/unlock` - Unlock a topic (moderator only)
+- `POST /api/moderation/topics/pin` - Pin a topic (moderator only)
+- `POST /api/moderation/topics/unpin` - Unpin a topic (moderator only)
+- `POST /api/moderation/topics/close` - Close a topic (moderator only)
+- `POST /api/moderation/topics/open` - Open a topic (moderator only)
+- `POST /api/moderation/posts/hide` - Hide a post (moderator only)
+- `POST /api/moderation/posts/unhide` - Unhide a post (moderator only)
+- `POST /api/moderation/posts/delete` - Delete a post (moderator only)
+- `POST /api/moderation/users/suspend` - Suspend a user (moderator only)
 
 ## Development
 
@@ -124,6 +146,11 @@ curl -X PUT http://127.0.0.1:8080/api/settings/require_auth_for_reads \
   -d '{"value":"true"}'
 ```
 
+## Rate Limiting
+
+The API is rate limited to 60 requests per minute per IP address. When the
+limit is exceeded, the server returns a 429 Too Many Requests response.
+
 ## Plugin Development
 
 Routes can easily apply authentication using the provided macros:
@@ -163,12 +190,12 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
 
 ### Phase 3: Polish (In Progress)
 - [x] Pagination (limit/offset)
-- [ ] Background jobs (backie with PostgreSQL queue)
+- [x] Background jobs (PostgreSQL-backed queue with worker pool)
+- [x] Search (PostgreSQL full-text search)
+- [x] Moderation tools (lock/pin/close topics, hide/delete posts, suspend users)
+- [x] Rate limiting (60 requests/min per IP)
 - [ ] Username change propagation (update @mentions in posts)
-- [ ] Search (PostgreSQL full-text or Tantivy)
 - [ ] Notifications
-- [ ] Moderation tools (flags, hidden posts)
 - [ ] Markdown rendering (raw -> cooked)
-- [ ] Rate limiting
 - [ ] API documentation (OpenAPI/Swagger)
 - [ ] Guardian-style permissions (admin/moderator roles)
