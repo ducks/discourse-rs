@@ -22,3 +22,5 @@ md5 = "0.7"
 uuid = { version = "1", features = ["serde", "v4"] }
 actix-governor = "0.8"
 comrak = { version = "0.31", default-features = false, features = ["syntect"] }
+utoipa = { version = "5", features = ["actix_extras", "chrono", "uuid"] }
+utoipa-swagger-ui = { version = "9", features = ["actix-web"] }

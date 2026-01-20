@@ -1,10 +1,11 @@
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
 use crate::schema::users;
 
-#[derive(Debug, Clone, Queryable, Selectable, Identifiable, Serialize)]
+#[derive(Debug, Clone, Queryable, Selectable, Identifiable, Serialize, ToSchema)]
 #[diesel(table_name = users)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct User {
@@ -12,6 +13,7 @@ pub struct User {
     pub username: String,
     pub email: String,
     #[serde(skip_serializing)]
+    #[schema(value_type = Option<String>)]
     pub password_hash: String,
     pub admin: bool,
     pub moderator: bool,
@@ -20,7 +22,7 @@ pub struct User {
     pub updated_at: NaiveDateTime,
 }
 
-#[derive(Debug, Insertable, Deserialize)]
+#[derive(Debug, Insertable, Deserialize, ToSchema)]
 #[diesel(table_name = users)]
 pub struct NewUser {
     pub username: String,
@@ -34,7 +36,7 @@ pub struct NewUser {
     pub trust_level: i32,
 }
 
-#[derive(Debug, AsChangeset, Deserialize)]
+#[derive(Debug, AsChangeset, Deserialize, ToSchema)]
 #[diesel(table_name = users)]
 pub struct UpdateUser {
     pub username: Option<String>,

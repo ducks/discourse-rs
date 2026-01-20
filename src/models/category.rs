@@ -1,10 +1,11 @@
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
 use crate::schema::categories;
 
-#[derive(Debug, Clone, Queryable, Selectable, Identifiable, Serialize)]
+#[derive(Debug, Clone, Queryable, Selectable, Identifiable, Serialize, ToSchema)]
 #[diesel(table_name = categories)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Category {
@@ -18,7 +19,7 @@ pub struct Category {
     pub updated_at: NaiveDateTime,
 }
 
-#[derive(Debug, Insertable, Deserialize)]
+#[derive(Debug, Insertable, Deserialize, ToSchema)]
 #[diesel(table_name = categories)]
 pub struct NewCategory {
     pub name: String,
@@ -30,7 +31,7 @@ pub struct NewCategory {
     pub position: i32,
 }
 
-#[derive(Debug, AsChangeset, Deserialize)]
+#[derive(Debug, AsChangeset, Deserialize, ToSchema)]
 #[diesel(table_name = categories)]
 pub struct UpdateCategory {
     pub name: Option<String>,

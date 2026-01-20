@@ -175,6 +175,14 @@ Supported markdown features (GitHub Flavored Markdown):
 
 XSS prevention: HTML tags in markdown are escaped to prevent injection attacks.
 
+## API Documentation
+
+Interactive API documentation is available via Swagger UI:
+- Swagger UI: http://127.0.0.1:8080/swagger-ui/
+- OpenAPI JSON: http://127.0.0.1:8080/api-docs/openapi.json
+
+The documentation is auto-generated from Rust types using utoipa.
+
 ## Guardian Permissions
 
 The API uses Guardian-style permission extractors for role-based access control.
@@ -230,4 +238,4 @@ Guards automatically return 403 Forbidden if the user lacks permission.
 - [x] Username change propagation (background job updates @mentions)
 - [x] Notifications
 - [x] Markdown rendering (raw -> cooked)
-- [ ] API documentation (OpenAPI/Swagger)
+- [x] API documentation (OpenAPI/Swagger)

@@ -1,10 +1,11 @@
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
 use crate::schema::topics;
 
-#[derive(Debug, Clone, Queryable, Selectable, Identifiable, Associations, Serialize)]
+#[derive(Debug, Clone, Queryable, Selectable, Identifiable, Associations, Serialize, ToSchema)]
 #[diesel(table_name = topics)]
 #[diesel(belongs_to(super::user::User))]
 #[diesel(belongs_to(super::category::Category))]
@@ -23,7 +24,7 @@ pub struct Topic {
     pub updated_at: NaiveDateTime,
 }
 
-#[derive(Debug, Insertable, Deserialize)]
+#[derive(Debug, Insertable, Deserialize, ToSchema)]
 #[diesel(table_name = topics)]
 pub struct NewTopic {
     pub title: String,
@@ -40,7 +41,7 @@ pub struct NewTopic {
     pub closed: bool,
 }
 
-#[derive(Debug, AsChangeset, Deserialize)]
+#[derive(Debug, AsChangeset, Deserialize, ToSchema)]
 #[diesel(table_name = topics)]
 pub struct UpdateTopic {
     pub title: Option<String>,
