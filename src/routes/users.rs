@@ -2,6 +2,7 @@ use actix_web::{delete, get, post, put, web, HttpResponse, Responder};
 use crate::{readable, writable};
 use diesel::prelude::*;
 
+use crate::jobs::{JobQueue, PropagateUsernameJob};
 use crate::models::{NewUser, UpdateUser, User};
 use crate::pagination::PaginationParams;
 use crate::schema::users;
@@ -19,7 +20,6 @@ async fn list_users(
         })),
     };
 
-    let page = pagination.page();
     let per_page = pagination.per_page();
     let offset = pagination.offset();
 
@@ -112,6 +112,7 @@ async fn create_user(
 #[put("/users/{id}")]
 async fn update_user(
     pool: web::Data<DbPool>,
+    job_queue: web::Data<JobQueue>,
     user_id: web::Path<i32>,
     update_user: web::Json<UpdateUser>,
 ) -> impl Responder {
@@ -122,19 +123,47 @@ async fn update_user(
         })),
     };
 
-    let user_id = user_id.into_inner();
-    let update_user = update_user.into_inner();
+    let user_id_val = user_id.into_inner();
+    let update_data = update_user.into_inner();
+
+    // Get the current username before updating (for propagation job)
+    let old_username: Option<String> = if update_data.username.is_some() {
+        users::table
+            .find(user_id_val)
+            .select(users::username)
+            .first(&mut conn)
+            .ok()
+    } else {
+        None
+    };
+
+    let new_username = update_data.username.clone();
 
     let result = web::block(move || {
-        diesel::update(users::table.find(user_id))
-            .set(&update_user)
+        diesel::update(users::table.find(user_id_val))
+            .set(&update_data)
             .returning(User::as_returning())
             .get_result(&mut conn)
     })
     .await;
 
     match result {
-        Ok(Ok(user)) => HttpResponse::Ok().json(user),
+        Ok(Ok(user)) => {
+            // If username changed, enqueue propagation job
+            if let (Some(old), Some(new)) = (old_username, new_username) {
+                if old != new {
+                    let job = PropagateUsernameJob {
+                        user_id: user_id_val,
+                        old_username: old,
+                        new_username: new,
+                    };
+                    if let Err(e) = job_queue.enqueue(job) {
+                        log::error!("Failed to enqueue username propagation job: {}", e);
+                    }
+                }
+            }
+            HttpResponse::Ok().json(user)
+        }
         Ok(Err(diesel::NotFound)) => HttpResponse::NotFound().json(serde_json::json!({
             "error": "User not found"
         })),
