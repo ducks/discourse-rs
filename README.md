@@ -151,24 +151,32 @@ curl -X PUT http://127.0.0.1:8080/api/settings/require_auth_for_reads \
 The API is rate limited to 60 requests per minute per IP address. When the
 limit is exceeded, the server returns a 429 Too Many Requests response.
 
-## Plugin Development
+## Guardian Permissions
 
-Routes can easily apply authentication using the provided macros:
+The API uses Guardian-style permission extractors for role-based access control.
+Simply add a guard to your route handler and permission checks are automatic:
 
 ```rust
-use discourse_rs::{readable, writable, protected};
+use crate::guardian::{ModeratorGuard, AdminGuard, StaffGuard};
 
-pub fn configure(cfg: &mut web::ServiceConfig) {
-    // GET endpoints that respect require_auth_for_reads setting
-    cfg.service(readable!(get_data, list_items));
+// Only moderators can access
+async fn lock_topic(pool: web::Data<DbPool>, guard: ModeratorGuard, ...) { }
 
-    // POST/PUT/DELETE endpoints that always require auth
-    cfg.service(writable!(create_item, delete_item));
+// Only admins can access
+async fn delete_user(pool: web::Data<DbPool>, guard: AdminGuard, ...) { }
 
-    // Endpoints that always require auth (reads + writes)
-    cfg.service(protected!(admin_endpoint));
-}
+// Staff (admin or moderator) can access
+async fn view_logs(pool: web::Data<DbPool>, guard: StaffGuard, ...) { }
 ```
+
+Available guards:
+- `AuthenticatedUser` - Any logged-in user
+- `ModeratorGuard` - Trust level 4, moderator flag, or admin
+- `AdminGuard` - Admin flag only
+- `StaffGuard` - Admin or moderator
+- `TrustLevel1Guard` through `TrustLevel3Guard` - Minimum trust level
+
+Guards automatically return 403 Forbidden if the user lacks permission.
 
 ## Roadmap
 
@@ -194,8 +202,8 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
 - [x] Search (PostgreSQL full-text search)
 - [x] Moderation tools (lock/pin/close topics, hide/delete posts, suspend users)
 - [x] Rate limiting (60 requests/min per IP)
+- [x] Guardian-style permissions (admin/moderator/trust level guards)
 - [ ] Username change propagation (update @mentions in posts)
 - [ ] Notifications
 - [ ] Markdown rendering (raw -> cooked)
 - [ ] API documentation (OpenAPI/Swagger)
-- [ ] Guardian-style permissions (admin/moderator roles)
