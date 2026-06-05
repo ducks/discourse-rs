@@ -43,10 +43,23 @@
       pg_ctl status
     }
 
+    db_test_setup() {
+      # Create + migrate the test database. Safe to re-run; existing DB is
+      # left alone and `diesel migration run` is idempotent.
+      createdb discourse_rs_test 2>/dev/null || echo "Database discourse_rs_test already exists"
+      TEST_DATABASE_URL="postgresql://localhost:${toString port}/discourse_rs_test?host=$PGDATA" \
+        diesel migration run --database-url "postgresql://localhost:${toString port}/discourse_rs_test?host=$PGDATA"
+    }
+
     echo ""
     echo "PostgreSQL commands available:"
-    echo "  db_start  - Start PostgreSQL on port ${toString port}"
-    echo "  db_stop   - Stop PostgreSQL"
-    echo "  db_status - Check PostgreSQL status"
+    echo "  db_start       - Start PostgreSQL on port ${toString port}"
+    echo "  db_stop        - Stop PostgreSQL"
+    echo "  db_status      - Check PostgreSQL status"
+    echo "  db_test_setup  - Create + migrate the test database (discourse_rs_test)"
+
+    # The integration test harness reads this. Tests run with their own
+    # connection pool against the test DB; the dev DB is never touched.
+    export TEST_DATABASE_URL="postgresql://localhost:${toString port}/discourse_rs_test?host=$PGDATA"
   '';
 }
