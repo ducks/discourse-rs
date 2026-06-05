@@ -101,9 +101,35 @@ The server will be available at http://127.0.0.1:8080
 
 ## Development
 
-- Run tests: `cargo test`
 - Format code: `cargo fmt`
 - Lint: `cargo clippy`
+
+## Testing
+
+Integration tests live in `tests/` and run against a dedicated
+`discourse_rs_test` database (the dev database is never touched).
+
+First time only, from inside `nix-shell`:
+
+```bash
+db_start        # if postgres isn't already running
+db_test_setup   # creates discourse_rs_test and runs migrations
+```
+
+Then run tests. They share one DB, so always pass `--test-threads=1`:
+
+```bash
+cargo test -- --test-threads=1
+```
+
+`tests/common/mod.rs` provides the shared harness: a process-wide r2d2 pool,
+a `setup()` function that truncates all tables and returns a `TestCtx`, and
+fixture helpers (`create_user`, `create_category`, `create_topic`,
+`create_post`). `TestCtx` truncates again on `Drop` so a panicking test
+still leaves the DB clean for the next one.
+
+CI runs the same suite via `.github/workflows/test.yml` against a postgres
+service container.
 
 ## Pagination
 

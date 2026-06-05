@@ -34,6 +34,20 @@ diesel::table! {
 }
 
 diesel::table! {
+    moderation_actions (id) {
+        id -> Int8,
+        #[max_length = 50]
+        action_type -> Varchar,
+        moderator_id -> Int4,
+        target_user_id -> Nullable<Int4>,
+        target_topic_id -> Nullable<Int4>,
+        target_post_id -> Nullable<Int4>,
+        details -> Nullable<Jsonb>,
+        created_at -> Timestamptz,
+    }
+}
+
+diesel::table! {
     notifications (id) {
         id -> Int8,
         user_id -> Int4,
@@ -44,20 +58,6 @@ diesel::table! {
         topic_id -> Nullable<Int4>,
         post_id -> Nullable<Int4>,
         acting_user_id -> Nullable<Int4>,
-        created_at -> Timestamptz,
-    }
-}
-
-diesel::table! {
-    moderation_actions (id) {
-        id -> Int8,
-        #[max_length = 50]
-        action_type -> Varchar,
-        moderator_id -> Int4,
-        target_user_id -> Nullable<Int4>,
-        target_topic_id -> Nullable<Int4>,
-        target_post_id -> Nullable<Int4>,
-        details -> Nullable<Jsonb>,
         created_at -> Timestamptz,
     }
 }
@@ -142,6 +142,8 @@ diesel::table! {
 
 diesel::joinable!(moderation_actions -> posts (target_post_id));
 diesel::joinable!(moderation_actions -> topics (target_topic_id));
+diesel::joinable!(notifications -> posts (post_id));
+diesel::joinable!(notifications -> topics (topic_id));
 diesel::joinable!(posts -> topics (topic_id));
 diesel::joinable!(topics -> categories (category_id));
 diesel::joinable!(topics -> users (user_id));
@@ -150,6 +152,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     backie_tasks,
     categories,
     moderation_actions,
+    notifications,
     posts,
     site_settings,
     topics,
