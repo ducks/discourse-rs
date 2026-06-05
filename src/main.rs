@@ -1,26 +1,11 @@
 use actix_governor::{Governor, GovernorConfigBuilder};
 use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
-use diesel::prelude::*;
 use diesel::r2d2::{self, ConnectionManager};
 use std::env;
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
-mod auth;
-mod config;
-mod guardian;
-mod jobs;
-pub mod markdown;
-mod middleware;
-mod moderation;
-mod models;
-pub mod openapi;
-mod pagination;
-mod route_helpers;
-mod routes;
-mod schema;
-
-pub type DbPool = r2d2::Pool<ConnectionManager<PgConnection>>;
+use discourse_rs::{jobs, openapi, routes, DbPool};
 
 #[get("/")]
 async fn index() -> impl Responder {
@@ -43,8 +28,8 @@ async fn main() -> std::io::Result<()> {
     env_logger::init();
 
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    let manager = ConnectionManager::<PgConnection>::new(&database_url);
-    let pool = r2d2::Pool::builder()
+    let manager = ConnectionManager::<diesel::pg::PgConnection>::new(&database_url);
+    let pool: DbPool = r2d2::Pool::builder()
         .build(manager)
         .expect("Failed to create pool");
 
