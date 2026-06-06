@@ -101,6 +101,16 @@ diesel::table! {
 }
 
 diesel::table! {
+    topic_views (id) {
+        id -> Int4,
+        user_id -> Int4,
+        topic_id -> Int4,
+        first_viewed_at -> Timestamp,
+        last_viewed_at -> Timestamp,
+    }
+}
+
+diesel::table! {
     topics (id) {
         id -> Int4,
         #[max_length = 255]
@@ -173,6 +183,8 @@ diesel::joinable!(notifications -> topics (topic_id));
 diesel::joinable!(post_likes -> posts (post_id));
 diesel::joinable!(post_likes -> users (user_id));
 diesel::joinable!(posts -> topics (topic_id));
+diesel::joinable!(topic_views -> topics (topic_id));
+diesel::joinable!(topic_views -> users (user_id));
 diesel::joinable!(topics -> categories (category_id));
 diesel::joinable!(topics -> users (user_id));
 diesel::joinable!(user_stats -> users (user_id));
@@ -185,6 +197,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     post_likes,
     posts,
     site_settings,
+    topic_views,
     topics,
     user_stats,
     user_suspensions,

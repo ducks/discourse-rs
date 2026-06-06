@@ -60,6 +60,7 @@ const TRUNCATE_SQL: &str = "TRUNCATE TABLE \
     moderation_actions, \
     post_likes, \
     posts, \
+    topic_views, \
     topics, \
     categories, \
     site_settings, \

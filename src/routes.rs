@@ -7,6 +7,7 @@ pub mod likes;
 pub mod moderation;
 pub mod notifications;
 pub mod posts;
+pub mod reads;
 pub mod search;
 pub mod settings;
 pub mod topics;
@@ -20,6 +21,7 @@ pub fn config(cfg: &mut web::ServiceConfig) {
         .configure(topics::configure)
         .configure(posts::configure)
         .configure(likes::configure)
+        .configure(reads::configure)
         .configure(jobs::configure)
         .configure(moderation::configure)
         .configure(notifications::configure)

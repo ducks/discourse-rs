@@ -70,6 +70,38 @@ pub fn incr_topic_count(conn: &mut PgConnection, user_id: i32) -> Result<(), Die
     Ok(())
 }
 
+/// Increment topics_entered by one. Used when a user enters a topic
+/// for the first time (the reads service decides "first time").
+pub fn incr_topics_entered(conn: &mut PgConnection, user_id: i32) -> Result<(), DieselError> {
+    diesel::update(user_stats::table.find(user_id))
+        .set((
+            user_stats::topics_entered.eq(user_stats::topics_entered + 1),
+            user_stats::updated_at.eq(Utc::now().naive_utc()),
+        ))
+        .execute(conn)?;
+    Ok(())
+}
+
+/// Add `seconds` to time_read. The caller is responsible for capping;
+/// this function just writes whatever it's given. (Callers cap to avoid
+/// inflation from misbehaving clients — see services::reads.)
+pub fn add_time_read(
+    conn: &mut PgConnection,
+    user_id: i32,
+    seconds: i32,
+) -> Result<(), DieselError> {
+    if seconds <= 0 {
+        return Ok(());
+    }
+    diesel::update(user_stats::table.find(user_id))
+        .set((
+            user_stats::time_read.eq(user_stats::time_read + seconds),
+            user_stats::updated_at.eq(Utc::now().naive_utc()),
+        ))
+        .execute(conn)?;
+    Ok(())
+}
+
 /// Decrement post_count by one, floored at zero. Used when a post is
 /// hard-deleted (soft-deletes don't touch the counter — the trust-level
 /// criteria intentionally count soft-deleted posts the user wrote).
