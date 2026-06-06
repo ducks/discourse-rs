@@ -78,6 +78,39 @@ impl Job for ProcessTopicJob {
     }
 }
 
+// Trust-level promotion check. Enqueued after activity that could move a
+// user up a level (post create, etc). Idempotent — runs evaluate() which
+// no-ops if no level change is warranted.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CheckTrustLevelPromotionJob {
+    pub user_id: i32,
+}
+
+impl Job for CheckTrustLevelPromotionJob {
+    fn job_name(&self) -> &'static str {
+        "check_trust_level_promotion"
+    }
+
+    fn execute(&self, pool: &DbPool) -> Result<(), String> {
+        let mut conn = pool.get().map_err(|e| e.to_string())?;
+        let outcome = crate::services::trust_levels::evaluate(&mut conn, self.user_id)
+            .map_err(|e| format!("trust-level evaluation failed: {e}"))?;
+        if outcome.changed() {
+            log::info!(
+                "Promoted user {} from TL{} to TL{}",
+                self.user_id,
+                outcome.previous,
+                outcome.current
+            );
+        }
+        Ok(())
+    }
+
+    fn to_json(&self) -> Result<serde_json::Value, String> {
+        serde_json::to_value(self).map_err(|e| e.to_string())
+    }
+}
+
 // Username propagation job - updates @mentions in posts when username changes
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PropagateUsernameJob {
@@ -322,6 +355,11 @@ impl WorkerPool {
             }
             "propagate_username" => {
                 let job: PropagateUsernameJob = serde_json::from_value(payload.clone())
+                    .map_err(|e| format!("Failed to deserialize job: {}", e))?;
+                job.execute(pool)
+            }
+            "check_trust_level_promotion" => {
+                let job: CheckTrustLevelPromotionJob = serde_json::from_value(payload.clone())
                     .map_err(|e| format!("Failed to deserialize job: {}", e))?;
                 job.execute(pool)
             }
