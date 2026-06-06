@@ -1,198 +1,88 @@
-use actix_web::{
-    body::EitherBody,
-    dev::{forward_ready, Service, ServiceRequest, ServiceResponse, Transform},
-    Error, HttpMessage, HttpResponse,
-};
-use futures::future::LocalBoxFuture;
-use std::future::{ready, Ready};
+//! Authentication extractors.
+//!
+//! Auth is enforced per-handler via FromRequest extractors, not via a
+//! global middleware. The middleware approach was rejected because actix
+//! scope-level `.wrap(...)` requires the middleware to live in a `scope`,
+//! and stacking multiple `scope("")` siblings makes only the first one
+//! reachable — see commit history for the bug this replaces.
+//!
+//! Three extractors are provided:
+//!
+//! - `AuthUser`: required auth. Returns 401 if no valid Bearer token.
+//! - `MaybeAuthUser`: optional auth. Always succeeds; returns `Some(Claims)`
+//!   if a valid token is present, `None` otherwise. Use for endpoints that
+//!   want to *know* the user when available without requiring it.
+//! - `ReadAuthUser`: respects the `require_auth_for_reads` site setting.
+//!   Behaves like `MaybeAuthUser` when the setting is false; behaves like
+//!   `AuthUser` when it's true.
 
-use crate::auth::{verify_token, Claims};
+use actix_web::{FromRequest, HttpRequest, dev::Payload, error::ErrorUnauthorized, web};
+use std::future::{Ready, ready};
 
-pub struct AuthMiddleware;
+use crate::DbPool;
+use crate::auth::{Claims, verify_token};
+use crate::config::require_auth_for_reads;
 
-impl<S, B> Transform<S, ServiceRequest> for AuthMiddleware
-where
-    S: Service<ServiceRequest, Response = ServiceResponse<B>, Error = Error>,
-    S::Future: 'static,
-    B: 'static,
-{
-    type Response = ServiceResponse<EitherBody<B>>;
-    type Error = Error;
-    type InitError = ();
-    type Transform = AuthMiddlewareService<S>;
-    type Future = Ready<Result<Self::Transform, Self::InitError>>;
-
-    fn new_transform(&self, service: S) -> Self::Future {
-        ready(Ok(AuthMiddlewareService { service }))
-    }
+/// Parse and verify a Bearer token from the request's Authorization header.
+fn claims_from_request(req: &HttpRequest) -> Option<Claims> {
+    let header = req
+        .headers()
+        .get("Authorization")
+        .and_then(|h| h.to_str().ok())?;
+    let token = header.strip_prefix("Bearer ")?;
+    verify_token(token).ok()
 }
 
-pub struct AuthMiddlewareService<S> {
-    service: S,
-}
-
-impl<S, B> Service<ServiceRequest> for AuthMiddlewareService<S>
-where
-    S: Service<ServiceRequest, Response = ServiceResponse<B>, Error = Error>,
-    S::Future: 'static,
-    B: 'static,
-{
-    type Response = ServiceResponse<EitherBody<B>>;
-    type Error = Error;
-    type Future = LocalBoxFuture<'static, Result<Self::Response, Self::Error>>;
-
-    forward_ready!(service);
-
-    fn call(&self, req: ServiceRequest) -> Self::Future {
-        let auth_header = req
-            .headers()
-            .get("Authorization")
-            .and_then(|h| h.to_str().ok())
-            .and_then(|h| h.strip_prefix("Bearer "));
-
-        match auth_header {
-            Some(token) => match verify_token(token) {
-                Ok(claims) => {
-                    req.extensions_mut().insert(claims);
-                    let fut = self.service.call(req);
-                    Box::pin(async move {
-                        let res = fut.await?;
-                        Ok(res.map_into_left_body())
-                    })
-                }
-                Err(_) => {
-                    let (req, _pl) = req.into_parts();
-                    let response = HttpResponse::Unauthorized()
-                        .json(serde_json::json!({
-                            "error": "Invalid or expired token"
-                        }))
-                        .map_into_right_body();
-                    Box::pin(async move { Ok(ServiceResponse::new(req, response)) })
-                }
-            },
-            None => {
-                let (req, _pl) = req.into_parts();
-                let response = HttpResponse::Unauthorized()
-                    .json(serde_json::json!({
-                        "error": "Missing authorization token"
-                    }))
-                    .map_into_right_body();
-                Box::pin(async move { Ok(ServiceResponse::new(req, response)) })
-            }
-        }
-    }
-}
-
-// Middleware that only enforces auth if require_auth_for_reads setting is true
-pub struct ReadAuthMiddleware;
-
-impl<S, B> Transform<S, ServiceRequest> for ReadAuthMiddleware
-where
-    S: Service<ServiceRequest, Response = ServiceResponse<B>, Error = Error>,
-    S::Future: 'static,
-    B: 'static,
-{
-    type Response = ServiceResponse<EitherBody<B>>;
-    type Error = Error;
-    type InitError = ();
-    type Transform = ReadAuthMiddlewareService<S>;
-    type Future = Ready<Result<Self::Transform, Self::InitError>>;
-
-    fn new_transform(&self, service: S) -> Self::Future {
-        ready(Ok(ReadAuthMiddlewareService { service }))
-    }
-}
-
-pub struct ReadAuthMiddlewareService<S> {
-    service: S,
-}
-
-impl<S, B> Service<ServiceRequest> for ReadAuthMiddlewareService<S>
-where
-    S: Service<ServiceRequest, Response = ServiceResponse<B>, Error = Error>,
-    S::Future: 'static,
-    B: 'static,
-{
-    type Response = ServiceResponse<EitherBody<B>>;
-    type Error = Error;
-    type Future = LocalBoxFuture<'static, Result<Self::Response, Self::Error>>;
-
-    forward_ready!(service);
-
-    fn call(&self, req: ServiceRequest) -> Self::Future {
-        // Check if the site_setting requires auth for reads
-        let pool = req.app_data::<actix_web::web::Data<crate::DbPool>>().cloned();
-
-        let require_auth = pool
-            .as_ref()
-            .map(|p| crate::config::require_auth_for_reads(p))
-            .unwrap_or(false);
-
-        if !require_auth {
-            // Setting is false, allow the request through without auth
-            let fut = self.service.call(req);
-            return Box::pin(async move {
-                let res = fut.await?;
-                Ok(res.map_into_left_body())
-            });
-        }
-
-        // Setting is true, enforce authentication
-        let auth_header = req
-            .headers()
-            .get("Authorization")
-            .and_then(|h| h.to_str().ok())
-            .and_then(|h| h.strip_prefix("Bearer "));
-
-        match auth_header {
-            Some(token) => match verify_token(token) {
-                Ok(claims) => {
-                    req.extensions_mut().insert(claims);
-                    let fut = self.service.call(req);
-                    Box::pin(async move {
-                        let res = fut.await?;
-                        Ok(res.map_into_left_body())
-                    })
-                }
-                Err(_) => {
-                    let (req, _pl) = req.into_parts();
-                    let response = HttpResponse::Unauthorized()
-                        .json(serde_json::json!({
-                            "error": "Invalid or expired token"
-                        }))
-                        .map_into_right_body();
-                    Box::pin(async move { Ok(ServiceResponse::new(req, response)) })
-                }
-            },
-            None => {
-                let (req, _pl) = req.into_parts();
-                let response = HttpResponse::Unauthorized()
-                    .json(serde_json::json!({
-                        "error": "Missing authorization token"
-                    }))
-                    .map_into_right_body();
-                Box::pin(async move { Ok(ServiceResponse::new(req, response)) })
-            }
-        }
-    }
-}
-
-// Extractor to get the current user's claims from the request
+/// Required-auth extractor. Errors 401 if no valid Bearer token is present.
 pub struct AuthUser(pub Claims);
 
-impl actix_web::FromRequest for AuthUser {
+impl FromRequest for AuthUser {
     type Error = actix_web::Error;
     type Future = Ready<Result<Self, Self::Error>>;
 
-    fn from_request(
-        req: &actix_web::HttpRequest,
-        _payload: &mut actix_web::dev::Payload,
-    ) -> Self::Future {
-        match req.extensions().get::<Claims>() {
-            Some(claims) => ready(Ok(AuthUser(claims.clone()))),
-            None => ready(Err(actix_web::error::ErrorUnauthorized(
-                "User not authenticated",
-            ))),
+    fn from_request(req: &HttpRequest, _payload: &mut Payload) -> Self::Future {
+        match claims_from_request(req) {
+            Some(claims) => ready(Ok(AuthUser(claims))),
+            None => ready(Err(ErrorUnauthorized(serde_json::json!({
+                "error": "Missing or invalid authorization token"
+            })))),
         }
+    }
+}
+
+/// Optional-auth extractor. Always succeeds; populated only if a valid
+/// token is present. Useful for endpoints that personalize for the caller
+/// when known but otherwise work anonymously.
+pub struct MaybeAuthUser(pub Option<Claims>);
+
+impl FromRequest for MaybeAuthUser {
+    type Error = actix_web::Error;
+    type Future = Ready<Result<Self, Self::Error>>;
+
+    fn from_request(req: &HttpRequest, _payload: &mut Payload) -> Self::Future {
+        ready(Ok(MaybeAuthUser(claims_from_request(req))))
+    }
+}
+
+/// Site-setting-aware auth extractor for read endpoints. Falls back to
+/// `MaybeAuthUser` behavior when `require_auth_for_reads` is false, and
+/// upgrades to required-auth behavior when it's true.
+pub struct ReadAuthUser(pub Option<Claims>);
+
+impl FromRequest for ReadAuthUser {
+    type Error = actix_web::Error;
+    type Future = Ready<Result<Self, Self::Error>>;
+
+    fn from_request(req: &HttpRequest, _payload: &mut Payload) -> Self::Future {
+        let pool = req.app_data::<web::Data<DbPool>>();
+        let require_auth = pool.map(|p| require_auth_for_reads(p)).unwrap_or(false);
+        let claims = claims_from_request(req);
+
+        if require_auth && claims.is_none() {
+            return ready(Err(ErrorUnauthorized(serde_json::json!({
+                "error": "Authentication required"
+            }))));
+        }
+        ready(Ok(ReadAuthUser(claims)))
     }
 }

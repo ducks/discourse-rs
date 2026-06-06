@@ -1,11 +1,11 @@
-use actix_web::{get, put, web, HttpResponse, Responder};
-use crate::{readable, writable};
+use actix_web::{HttpResponse, Responder, get, put, web};
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 
+use crate::DbPool;
+use crate::middleware::{AuthUser, ReadAuthUser};
 use crate::models::{SiteSetting, UpdateSiteSetting};
 use crate::schema::site_settings;
-use crate::DbPool;
 
 #[derive(Deserialize)]
 struct UpdateSettingRequest {
@@ -18,7 +18,7 @@ struct SettingsResponse {
 }
 
 #[get("/settings")]
-async fn list_settings(pool: web::Data<DbPool>) -> impl Responder {
+async fn list_settings(pool: web::Data<DbPool>, _auth: ReadAuthUser) -> impl Responder {
     let mut conn = match pool.get() {
         Ok(conn) => conn,
         Err(_) => {
@@ -47,7 +47,11 @@ async fn list_settings(pool: web::Data<DbPool>) -> impl Responder {
 }
 
 #[get("/settings/{key}")]
-async fn get_setting(pool: web::Data<DbPool>, key: web::Path<String>) -> impl Responder {
+async fn get_setting(
+    pool: web::Data<DbPool>,
+    key: web::Path<String>,
+    _auth: ReadAuthUser,
+) -> impl Responder {
     let mut conn = match pool.get() {
         Ok(conn) => conn,
         Err(_) => {
@@ -84,6 +88,7 @@ async fn get_setting(pool: web::Data<DbPool>, key: web::Path<String>) -> impl Re
 #[put("/settings/{key}")]
 async fn update_setting(
     pool: web::Data<DbPool>,
+    _auth: AuthUser,
     key: web::Path<String>,
     update_request: web::Json<UpdateSettingRequest>,
 ) -> impl Responder {
@@ -124,7 +129,7 @@ async fn update_setting(
 }
 
 pub fn configure(cfg: &mut web::ServiceConfig) {
-    cfg.service(readable!(list_settings, get_setting));
-    // PUT endpoint - always require authentication (admin only ideally, but we'll use basic auth for now)
-    cfg.service(writable!(update_setting));
+    cfg.service(list_settings)
+        .service(get_setting)
+        .service(update_setting);
 }

@@ -1,15 +1,17 @@
-use actix_web::{delete, get, post, put, web, HttpResponse, Responder};
+use actix_web::{HttpResponse, Responder, delete, get, post, put, web};
 use diesel::prelude::*;
 
+use crate::DbPool;
+use crate::middleware::{AuthUser, ReadAuthUser};
 use crate::models::{CreatePostInput, Post, UpdatePostInput};
 use crate::pagination::PaginationParams;
 use crate::schema::posts;
-use crate::{readable, writable, DbPool};
 
 #[get("/posts")]
 async fn list_posts(
     pool: web::Data<DbPool>,
     pagination: web::Query<PaginationParams>,
+    _auth: ReadAuthUser,
 ) -> impl Responder {
     let mut conn = match pool.get() {
         Ok(conn) => conn,
@@ -47,6 +49,7 @@ async fn list_topic_posts(
     pool: web::Data<DbPool>,
     topic_id: web::Path<i32>,
     pagination: web::Query<PaginationParams>,
+    _auth: ReadAuthUser,
 ) -> impl Responder {
     let mut conn = match pool.get() {
         Ok(conn) => conn,
@@ -82,7 +85,11 @@ async fn list_topic_posts(
 }
 
 #[post("/posts")]
-async fn create_post(pool: web::Data<DbPool>, input: web::Json<CreatePostInput>) -> impl Responder {
+async fn create_post(
+    pool: web::Data<DbPool>,
+    _auth: AuthUser,
+    input: web::Json<CreatePostInput>,
+) -> impl Responder {
     let mut conn = match pool.get() {
         Ok(conn) => conn,
         Err(_) => return HttpResponse::InternalServerError().json(serde_json::json!({
@@ -115,6 +122,7 @@ async fn create_post(pool: web::Data<DbPool>, input: web::Json<CreatePostInput>)
 #[put("/posts/{id}")]
 async fn update_post(
     pool: web::Data<DbPool>,
+    _auth: AuthUser,
     post_id: web::Path<i32>,
     input: web::Json<UpdatePostInput>,
 ) -> impl Responder {
@@ -152,7 +160,11 @@ async fn update_post(
 }
 
 #[delete("/posts/{id}")]
-async fn delete_post(pool: web::Data<DbPool>, post_id: web::Path<i32>) -> impl Responder {
+async fn delete_post(
+    pool: web::Data<DbPool>,
+    post_id: web::Path<i32>,
+    _auth: AuthUser,
+) -> impl Responder {
     let mut conn = match pool.get() {
         Ok(conn) => conn,
         Err(_) => {
@@ -193,9 +205,9 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
     //
     // When that setting is enabled, GET endpoints will also require authentication.
 
-    // GET endpoints - public by default, can be protected via site_setting
-    cfg.service(readable!(list_posts, list_topic_posts));
-
-    // POST/PUT/DELETE endpoints - always require authentication
-    cfg.service(writable!(create_post, update_post, delete_post));
+    cfg.service(list_posts)
+        .service(list_topic_posts)
+        .service(create_post)
+        .service(update_post)
+        .service(delete_post);
 }

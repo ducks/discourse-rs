@@ -1,16 +1,17 @@
-use actix_web::{delete, get, post, put, web, HttpResponse, Responder};
-use crate::{readable, writable};
+use actix_web::{HttpResponse, Responder, delete, get, post, put, web};
 use diesel::prelude::*;
 
+use crate::DbPool;
+use crate::middleware::{AuthUser, ReadAuthUser};
 use crate::models::{NewTopic, Topic, UpdateTopic};
 use crate::pagination::PaginationParams;
 use crate::schema::topics;
-use crate::DbPool;
 
 #[get("/topics")]
 async fn list_topics(
     pool: web::Data<DbPool>,
     pagination: web::Query<PaginationParams>,
+    _auth: ReadAuthUser,
 ) -> impl Responder {
     let mut conn = match pool.get() {
         Ok(conn) => conn,
@@ -44,7 +45,11 @@ async fn list_topics(
 }
 
 #[get("/topics/{id}")]
-async fn get_topic(pool: web::Data<DbPool>, topic_id: web::Path<i32>) -> impl Responder {
+async fn get_topic(
+    pool: web::Data<DbPool>,
+    topic_id: web::Path<i32>,
+    _auth: ReadAuthUser,
+) -> impl Responder {
     let mut conn = match pool.get() {
         Ok(conn) => conn,
         Err(_) => return HttpResponse::InternalServerError().json(serde_json::json!({
@@ -79,6 +84,7 @@ async fn get_topic(pool: web::Data<DbPool>, topic_id: web::Path<i32>) -> impl Re
 #[post("/topics")]
 async fn create_topic(
     pool: web::Data<DbPool>,
+    _auth: AuthUser,
     new_topic: web::Json<NewTopic>,
 ) -> impl Responder {
     let mut conn = match pool.get() {
@@ -112,6 +118,7 @@ async fn create_topic(
 #[put("/topics/{id}")]
 async fn update_topic(
     pool: web::Data<DbPool>,
+    _auth: AuthUser,
     topic_id: web::Path<i32>,
     update_topic: web::Json<UpdateTopic>,
 ) -> impl Responder {
@@ -148,7 +155,11 @@ async fn update_topic(
 }
 
 #[delete("/topics/{id}")]
-async fn delete_topic(pool: web::Data<DbPool>, topic_id: web::Path<i32>) -> impl Responder {
+async fn delete_topic(
+    pool: web::Data<DbPool>,
+    topic_id: web::Path<i32>,
+    _auth: AuthUser,
+) -> impl Responder {
     let mut conn = match pool.get() {
         Ok(conn) => conn,
         Err(_) => {
@@ -181,6 +192,9 @@ async fn delete_topic(pool: web::Data<DbPool>, topic_id: web::Path<i32>) -> impl
 }
 
 pub fn configure(cfg: &mut web::ServiceConfig) {
-    cfg.service(readable!(list_topics, get_topic));
-    cfg.service(writable!(create_topic, update_topic, delete_topic));
+    cfg.service(list_topics)
+        .service(get_topic)
+        .service(create_topic)
+        .service(update_topic)
+        .service(delete_topic);
 }

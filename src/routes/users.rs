@@ -1,6 +1,7 @@
-use actix_web::{delete, get, post, put, web, HttpResponse, Responder};
-use crate::{readable, writable};
+use actix_web::{HttpResponse, Responder, delete, get, post, put, web};
 use diesel::prelude::*;
+
+use crate::middleware::{AuthUser, ReadAuthUser};
 
 use crate::jobs::{JobQueue, PropagateUsernameJob};
 use crate::models::{NewUser, UpdateUser, User};
@@ -12,6 +13,7 @@ use crate::DbPool;
 async fn list_users(
     pool: web::Data<DbPool>,
     pagination: web::Query<PaginationParams>,
+    _auth: ReadAuthUser,
 ) -> impl Responder {
     let mut conn = match pool.get() {
         Ok(conn) => conn,
@@ -44,7 +46,11 @@ async fn list_users(
 }
 
 #[get("/users/{id}")]
-async fn get_user(pool: web::Data<DbPool>, user_id: web::Path<i32>) -> impl Responder {
+async fn get_user(
+    pool: web::Data<DbPool>,
+    user_id: web::Path<i32>,
+    _auth: ReadAuthUser,
+) -> impl Responder {
     let mut conn = match pool.get() {
         Ok(conn) => conn,
         Err(_) => return HttpResponse::InternalServerError().json(serde_json::json!({
@@ -79,6 +85,7 @@ async fn get_user(pool: web::Data<DbPool>, user_id: web::Path<i32>) -> impl Resp
 #[post("/users")]
 async fn create_user(
     pool: web::Data<DbPool>,
+    _auth: AuthUser,
     new_user: web::Json<NewUser>,
 ) -> impl Responder {
     let mut conn = match pool.get() {
@@ -113,6 +120,7 @@ async fn create_user(
 async fn update_user(
     pool: web::Data<DbPool>,
     job_queue: web::Data<JobQueue>,
+    _auth: AuthUser,
     user_id: web::Path<i32>,
     update_user: web::Json<UpdateUser>,
 ) -> impl Responder {
@@ -177,7 +185,11 @@ async fn update_user(
 }
 
 #[delete("/users/{id}")]
-async fn delete_user(pool: web::Data<DbPool>, user_id: web::Path<i32>) -> impl Responder {
+async fn delete_user(
+    pool: web::Data<DbPool>,
+    user_id: web::Path<i32>,
+    _auth: AuthUser,
+) -> impl Responder {
     let mut conn = match pool.get() {
         Ok(conn) => conn,
         Err(_) => {
@@ -210,6 +222,9 @@ async fn delete_user(pool: web::Data<DbPool>, user_id: web::Path<i32>) -> impl R
 }
 
 pub fn configure(cfg: &mut web::ServiceConfig) {
-    cfg.service(readable!(list_users, get_user));
-    cfg.service(writable!(create_user, update_user, delete_user));
+    cfg.service(list_users)
+        .service(get_user)
+        .service(create_user)
+        .service(update_user)
+        .service(delete_user);
 }
