@@ -253,7 +253,9 @@
           "raw",
           "cooked",
           "created_at",
-          "updated_at"
+          "updated_at",
+          "hidden",
+          "like_count"
         ],
         "properties": {
           "cooked": {
@@ -270,7 +272,35 @@
             ],
             "format": "date-time"
           },
+          "deleted_by_user_id": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "hidden": {
+            "type": "boolean"
+          },
+          "hidden_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "hidden_by_user_id": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
           "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "like_count": {
             "type": "integer",
             "format": "int32"
           },
@@ -492,7 +522,9 @@
           "moderator",
           "trust_level",
           "created_at",
-          "updated_at"
+          "updated_at",
+          "likes_given",
+          "likes_received"
         ],
         "properties": {
           "admin": {
@@ -506,6 +538,14 @@
             "type": "string"
           },
           "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "likes_given": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "likes_received": {
             "type": "integer",
             "format": "int32"
           },
