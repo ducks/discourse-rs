@@ -20,6 +20,8 @@ pub struct User {
     pub trust_level: i32,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
+    pub likes_given: i32,
+    pub likes_received: i32,
 }
 
 #[derive(Debug, Insertable, Deserialize, ToSchema)]

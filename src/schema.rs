@@ -63,6 +63,15 @@ diesel::table! {
 }
 
 diesel::table! {
+    post_likes (id) {
+        id -> Int4,
+        user_id -> Int4,
+        post_id -> Int4,
+        created_at -> Timestamp,
+    }
+}
+
+diesel::table! {
     posts (id) {
         id -> Int4,
         topic_id -> Int4,
@@ -78,6 +87,7 @@ diesel::table! {
         hidden_at -> Nullable<Timestamptz>,
         hidden_by_user_id -> Nullable<Int4>,
         deleted_by_user_id -> Nullable<Int4>,
+        like_count -> Int4,
     }
 }
 
@@ -137,6 +147,8 @@ diesel::table! {
         trust_level -> Int4,
         created_at -> Timestamp,
         updated_at -> Timestamp,
+        likes_given -> Int4,
+        likes_received -> Int4,
     }
 }
 
@@ -144,6 +156,8 @@ diesel::joinable!(moderation_actions -> posts (target_post_id));
 diesel::joinable!(moderation_actions -> topics (target_topic_id));
 diesel::joinable!(notifications -> posts (post_id));
 diesel::joinable!(notifications -> topics (topic_id));
+diesel::joinable!(post_likes -> posts (post_id));
+diesel::joinable!(post_likes -> users (user_id));
 diesel::joinable!(posts -> topics (topic_id));
 diesel::joinable!(topics -> categories (category_id));
 diesel::joinable!(topics -> users (user_id));
@@ -153,6 +167,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     categories,
     moderation_actions,
     notifications,
+    post_likes,
     posts,
     site_settings,
     topics,
