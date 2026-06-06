@@ -87,6 +87,7 @@ async fn list_topic_posts(
 #[post("/posts")]
 async fn create_post(
     pool: web::Data<DbPool>,
+    job_queue: Option<web::Data<crate::jobs::JobQueue>>,
     _auth: AuthUser,
     input: web::Json<CreatePostInput>,
 ) -> impl Responder {
@@ -113,7 +114,19 @@ async fn create_post(
     .await;
 
     match result {
-        Ok(Ok(post)) => HttpResponse::Created().json(post),
+        Ok(Ok(post)) => {
+            // Enqueue after the tx commits so the worker sees the bumped
+            // counter. Best effort — a failed enqueue logs but doesn't fail
+            // the request, since the user's post did succeed.
+            if let Some(jq) = job_queue {
+                if let Err(e) = jq.enqueue(crate::jobs::CheckTrustLevelPromotionJob {
+                    user_id: post.user_id,
+                }) {
+                    log::error!("Failed to enqueue trust-level check: {e}");
+                }
+            }
+            HttpResponse::Created().json(post)
+        }
         Ok(Err(_)) => HttpResponse::BadRequest().json(serde_json::json!({
             "error": "Failed to create post"
         })),
