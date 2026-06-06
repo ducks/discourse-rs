@@ -65,6 +65,13 @@ The server will be available at http://127.0.0.1:8080
 - `PUT /api/posts/:id` - Update post (requires auth)
 - `DELETE /api/posts/:id` - Delete post (requires auth)
 
+### Likes
+- `POST /api/posts/:id/like` - Like a post (requires auth). 201 on first
+  like, 200 if already liked, 404 if the post is missing/hidden/deleted,
+  422 if liking your own post.
+- `DELETE /api/posts/:id/like` - Unlike a post (requires auth). 204
+  whether the like existed or not.
+
 ### Categories
 - `GET /api/categories` - List all categories (public, ordered by position)
 - `GET /api/categories/:id` - Get category by ID (public)
@@ -101,8 +108,17 @@ The server will be available at http://127.0.0.1:8080
 
 ## Development
 
-- Format code: `cargo fmt`
-- Lint: `cargo clippy`
+Common tasks are wrapped in the Makefile:
+
+- `make build` - release build
+- `make test` - run tests (serially against the test DB)
+- `make fmt` / `make fmt-check` - format / check formatting
+- `make clippy` - lint with warnings as errors
+- `make lint` - the full CI check locally (fmt-check + clippy + tests)
+- `make install-hooks` - install a pre-push hook running `make lint`
+- `make release` - bump the date-based version, tag, and push
+
+Run `make help` to see the full list.
 
 ## Testing
 
@@ -267,3 +283,5 @@ Guards automatically return 403 Forbidden if the user lacks permission.
 - [x] Notifications
 - [x] Markdown rendering (raw -> cooked)
 - [x] API documentation (OpenAPI/Swagger)
+- [x] Post likes (with denormalized counters, notifications, idempotent like/unlike)
+- [x] Integration test foundation (TestCtx with truncate-on-Drop, fixture helpers, CI)
