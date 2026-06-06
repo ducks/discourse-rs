@@ -14,7 +14,6 @@ pub mod models;
 pub mod moderation;
 pub mod openapi;
 pub mod pagination;
-pub mod route_helpers;
 pub mod routes;
 pub mod schema;
 
