@@ -64,6 +64,7 @@ const TRUNCATE_SQL: &str = "TRUNCATE TABLE \
     categories, \
     site_settings, \
     backie_tasks, \
+    user_stats, \
     user_suspensions, \
     users \
     RESTART IDENTITY CASCADE";
@@ -121,11 +122,16 @@ pub fn create_user(conn: &mut PgConnection, opts: UserOpts) -> User {
         moderator: opts.moderator,
         trust_level: opts.trust_level,
     };
-    diesel::insert_into(users::table)
+    let user: User = diesel::insert_into(users::table)
         .values(&new)
         .returning(User::as_returning())
         .get_result(conn)
-        .expect("create_user failed")
+        .expect("create_user failed");
+    // Mirror the route: every user gets a stats row. Tests that exercise
+    // post/topic creation rely on this row already existing.
+    discourse_rs::services::user_stats::ensure_for(conn, user.id)
+        .expect("ensure_for failed");
+    user
 }
 
 /// Defaults for [`create_category`].

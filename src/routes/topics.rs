@@ -97,10 +97,14 @@ async fn create_topic(
     let new_topic = new_topic.into_inner();
 
     let result = web::block(move || {
-        diesel::insert_into(topics::table)
-            .values(&new_topic)
-            .returning(Topic::as_returning())
-            .get_result(&mut conn)
+        conn.transaction::<Topic, diesel::result::Error, _>(|conn| {
+            let topic: Topic = diesel::insert_into(topics::table)
+                .values(&new_topic)
+                .returning(Topic::as_returning())
+                .get_result(conn)?;
+            crate::services::user_stats::incr_topic_count(conn, topic.user_id)?;
+            Ok(topic)
+        })
     })
     .await;
 

@@ -3,3 +3,4 @@
 *.db
 *.db-*
 .nix-postgres/
+migrations/.diesel_lock
