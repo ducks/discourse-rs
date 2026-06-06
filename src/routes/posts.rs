@@ -101,10 +101,14 @@ async fn create_post(
     let new_post = input.into_inner().into_new_post();
 
     let result = web::block(move || {
-        diesel::insert_into(posts::table)
-            .values(&new_post)
-            .returning(Post::as_returning())
-            .get_result(&mut conn)
+        conn.transaction::<Post, diesel::result::Error, _>(|conn| {
+            let post: Post = diesel::insert_into(posts::table)
+                .values(&new_post)
+                .returning(Post::as_returning())
+                .get_result(conn)?;
+            crate::services::user_stats::incr_post_count(conn, post.user_id)?;
+            Ok(post)
+        })
     })
     .await;
 

@@ -139,10 +139,14 @@ async fn register(
     };
 
     let result = web::block(move || {
-        diesel::insert_into(users::table)
-            .values(&new_user_data)
-            .returning(User::as_returning())
-            .get_result(&mut conn)
+        conn.transaction::<User, diesel::result::Error, _>(|conn| {
+            let user: User = diesel::insert_into(users::table)
+                .values(&new_user_data)
+                .returning(User::as_returning())
+                .get_result(conn)?;
+            crate::services::user_stats::ensure_for(conn, user.id)?;
+            Ok(user)
+        })
     })
     .await;
 

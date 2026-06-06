@@ -122,6 +122,20 @@ diesel::table! {
 }
 
 diesel::table! {
+    user_stats (user_id) {
+        user_id -> Int4,
+        post_count -> Int4,
+        topic_count -> Int4,
+        time_read -> Int4,
+        posts_read_count -> Int4,
+        topics_entered -> Int4,
+        days_visited -> Int4,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
+    }
+}
+
+diesel::table! {
     user_suspensions (id) {
         id -> Int8,
         user_id -> Int4,
@@ -161,6 +175,7 @@ diesel::joinable!(post_likes -> users (user_id));
 diesel::joinable!(posts -> topics (topic_id));
 diesel::joinable!(topics -> categories (category_id));
 diesel::joinable!(topics -> users (user_id));
+diesel::joinable!(user_stats -> users (user_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     backie_tasks,
@@ -171,6 +186,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     posts,
     site_settings,
     topics,
+    user_stats,
     user_suspensions,
     users,
 );
