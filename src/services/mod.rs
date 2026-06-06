@@ -7,5 +7,6 @@
 //! spinning up actix, and the same logic is reusable from background jobs.
 
 pub mod likes;
+pub mod reads;
 pub mod trust_levels;
 pub mod user_stats;
