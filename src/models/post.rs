@@ -21,6 +21,11 @@ pub struct Post {
     pub deleted_at: Option<NaiveDateTime>,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
+    pub hidden: bool,
+    pub hidden_at: Option<chrono::DateTime<chrono::Utc>>,
+    pub hidden_by_user_id: Option<i32>,
+    pub deleted_by_user_id: Option<i32>,
+    pub like_count: i32,
 }
 
 #[derive(Debug, Insertable, Deserialize, ToSchema)]

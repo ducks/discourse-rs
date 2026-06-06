@@ -52,27 +52,25 @@ impl TestCtx {
     }
 }
 
+// Listed explicitly (rather than relying on CASCADE alone) so adding a new
+// table requires touching this list — easier than discovering leftover rows
+// in a flaky test.
+const TRUNCATE_SQL: &str = "TRUNCATE TABLE \
+    notifications, \
+    moderation_actions, \
+    post_likes, \
+    posts, \
+    topics, \
+    categories, \
+    site_settings, \
+    backie_tasks, \
+    user_suspensions, \
+    users \
+    RESTART IDENTITY CASCADE";
+
 impl Drop for TestCtx {
     fn drop(&mut self) {
-        // Wipe all data so the next test starts clean. RESTART IDENTITY
-        // keeps IDs predictable across tests. CASCADE handles FKs.
-        // Order doesn't matter with CASCADE, but listing them explicitly
-        // means we'll get a clean error if a new table is added without
-        // being added here.
-        let _ = diesel::sql_query(
-            "TRUNCATE TABLE \
-             notifications, \
-             moderation_actions, \
-             posts, \
-             topics, \
-             categories, \
-             site_settings, \
-             backie_tasks, \
-             user_suspensions, \
-             users \
-             RESTART IDENTITY CASCADE",
-        )
-        .execute(&mut self.conn);
+        let _ = diesel::sql_query(TRUNCATE_SQL).execute(&mut self.conn);
     }
 }
 
@@ -80,21 +78,9 @@ impl Drop for TestCtx {
 /// without running Drop) and returns a connection ready for use.
 pub fn setup() -> TestCtx {
     let mut conn = pool().get().expect("Failed to check out test connection");
-    diesel::sql_query(
-        "TRUNCATE TABLE \
-         notifications, \
-         moderation_actions, \
-         posts, \
-         topics, \
-         categories, \
-         site_settings, \
-         backie_tasks, \
-         user_suspensions, \
-         users \
-         RESTART IDENTITY CASCADE",
-    )
-    .execute(&mut conn)
-    .expect("Failed to truncate test database");
+    diesel::sql_query(TRUNCATE_SQL)
+        .execute(&mut conn)
+        .expect("Failed to truncate test database");
     TestCtx { conn }
 }
 
@@ -247,6 +233,49 @@ pub fn create_post(conn: &mut PgConnection, opts: PostOpts) -> Post {
         .returning(Post::as_returning())
         .get_result(conn)
         .expect("create_post failed")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Route-level harness
+//
+// For tests that want to exercise the HTTP contract (status codes, JSON
+// bodies, header handling), build an actix `App` via `test_app()` and use
+// `auth_header_for(&user)` to mint a Bearer token. The app shares the same
+// test pool, so fixture data inserted via TestCtx is visible to handlers.
+
+#[allow(dead_code)]
+pub fn auth_header_for(user: &User) -> (&'static str, String) {
+    let token = discourse_rs::auth::generate_token(user.id, user.username.clone())
+        .expect("generate_token failed");
+    ("Authorization", format!("Bearer {token}"))
+}
+
+/// Build an actix `App` configured with the test pool and the same
+/// `/api` route tree as production. Tests call this inline:
+///
+/// ```ignore
+/// let app = actix_web::test::init_service(common::test_app_factory()).await;
+/// ```
+///
+/// We return the `App` rather than the initialized `Service` so the test
+/// owns the `init_service().await` step; this keeps the helper's return
+/// type expressible without naming actix-http types.
+#[allow(dead_code)]
+pub fn test_app_factory()
+-> actix_web::App<
+    impl actix_web::dev::ServiceFactory<
+        actix_web::dev::ServiceRequest,
+        Config = (),
+        Response = actix_web::dev::ServiceResponse,
+        Error = actix_web::Error,
+        InitError = (),
+    >,
+> {
+    use actix_web::{App, web};
+    let pool = pool().clone();
+    App::new()
+        .app_data(web::Data::new(pool))
+        .service(web::scope("/api").configure(discourse_rs::routes::config))
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

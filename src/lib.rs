@@ -16,6 +16,7 @@ pub mod openapi;
 pub mod pagination;
 pub mod routes;
 pub mod schema;
+pub mod services;
 
 use diesel::pg::PgConnection;
 use diesel::r2d2::{self, ConnectionManager};

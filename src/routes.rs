@@ -3,6 +3,7 @@ use actix_web::web;
 pub mod auth;
 pub mod categories;
 pub mod jobs;
+pub mod likes;
 pub mod moderation;
 pub mod notifications;
 pub mod posts;
@@ -18,6 +19,7 @@ pub fn config(cfg: &mut web::ServiceConfig) {
         .configure(categories::configure)
         .configure(topics::configure)
         .configure(posts::configure)
+        .configure(likes::configure)
         .configure(jobs::configure)
         .configure(moderation::configure)
         .configure(notifications::configure)
