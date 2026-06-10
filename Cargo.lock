@@ -726,7 +726,7 @@ dependencies = [
 
 [[package]]
 name = "discourse-rs"
-version = "20260610.0.0"
+version = "20260610.0.1"
 dependencies = [
  "actix-governor",
  "actix-rt",
