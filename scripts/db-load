@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# Create a database from the vendored Discourse schema (schema/structure.sql).
+# Create a database from the vendored Discourse schema
+# (vendor/discourse/db/structure.sql), then apply seed/*.sql in order: the
+# rows Discourse's db/fixtures create on a fresh install.
 #
 # Refuses to touch an existing database unless --force is given, in which
 # case it is dropped and recreated. Connection settings come from the usual
@@ -21,7 +23,7 @@ fi
 
 db="$1"
 root="$(cd "$(dirname "$0")/.." && pwd)"
-schema="$root/schema/structure.sql"
+schema="$root/vendor/discourse/db/structure.sql"
 
 exists="$(psql -X -d postgres -Atc "SELECT 1 FROM pg_database WHERE datname = '$db'")"
 if [ "$exists" = "1" ]; then
@@ -34,7 +36,10 @@ fi
 
 createdb "$db"
 psql -X -q -v ON_ERROR_STOP=1 -d "$db" -f "$schema" -o /dev/null
+for seed in "$root"/seed/*.sql; do
+  psql -X -q -v ON_ERROR_STOP=1 -d "$db" -f "$seed" -o /dev/null
+done
 
 tables="$(psql -X -d "$db" -Atc "SELECT count(*) FROM pg_tables WHERE schemaname = 'public'")"
 versions="$(psql -X -d "$db" -Atc "SELECT count(*) FROM schema_migrations")"
-echo "loaded $db: $tables tables, $versions schema versions ($(sed -n 's/^commit=//p' "$root/schema/DISCOURSE_REF" | cut -c1-11))"
+echo "loaded $db: $tables tables, $versions schema versions ($(sed -n 's/^commit=//p' "$root/vendor/discourse/DISCOURSE_REF" | cut -c1-11))"

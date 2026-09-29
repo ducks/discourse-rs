@@ -16,7 +16,7 @@ pub struct StatusParams {
 /// any present `cluster` param triggers the check.
 pub async fn status(State(state): State<AppState>, Query(params): Query<StatusParams>) -> Response {
     if let Some(cluster) = params.cluster {
-        match state.config.cluster_name.as_deref() {
+        match state.config.globals.cluster_name() {
             None => {
                 return (
                     StatusCode::INTERNAL_SERVER_ERROR,

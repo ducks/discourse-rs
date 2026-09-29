@@ -1,5 +1,5 @@
 .PHONY: help version-bump release build test clean clippy fmt fmt-check lint install-hooks \
-	db-load db-test parity parity-check parity-record vendor-schema
+	db-load db-test parity parity-check parity-record vendor-discourse
 
 # Auto-generate version from today's date with auto-incrementing patch
 # Format: YYYYMMDD.0.X where X increments if releasing multiple times per day
@@ -38,9 +38,9 @@ help:
 	@echo "  make clean                         - Clean build artifacts"
 	@echo ""
 	@echo "Schema:"
-	@echo "  make vendor-schema [DISCOURSE=path] [REF=sha] - Vendor structure.sql from Discourse"
-	@echo "  make db-load [FORCE=1]             - Load structure.sql into $(DEV_DB)"
-	@echo "  make db-test                       - (Re)load structure.sql into $(TEST_DB)"
+	@echo "  make vendor-discourse [DISCOURSE=path] [REF=sha] - Vendor schema + settings from Discourse"
+	@echo "  make db-load [FORCE=1]             - Load schema + seeds into $(DEV_DB)"
+	@echo "  make db-test                       - (Re)load schema + seeds into $(TEST_DB)"
 	@echo ""
 	@echo "Parity (both servers must read the same database):"
 	@echo "  make parity RAILS_URL=...          - Diff discourse-rs against running Discourse"
@@ -118,8 +118,8 @@ install-hooks:
 	@chmod +x .git/hooks/pre-push
 	@echo "Installed pre-push hook -> make lint"
 
-vendor-schema:
-	scripts/vendor-schema $(DISCOURSE) $(REF)
+vendor-discourse:
+	scripts/vendor-discourse $(DISCOURSE) $(REF)
 
 db-load:
 	scripts/db-load $(if $(FORCE),--force) $(DEV_DB)

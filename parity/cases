@@ -5,3 +5,6 @@
 # forums#status
 GET /srv/status
 GET /srv/status?cluster=parity
+
+# site#basic_info
+GET /site/basic-info.json

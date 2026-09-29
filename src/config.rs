@@ -1,15 +1,98 @@
+use std::collections::BTreeMap;
 use std::fmt;
 use std::net::SocketAddr;
 
-/// Process-level configuration, the equivalent of Discourse's GlobalSetting.
-/// Discourse reads these from DISCOURSE_* env vars (config/discourse_defaults.conf);
-/// where a setting has a Discourse counterpart, the same env var name is used.
+use crate::ruby;
+
 #[derive(Clone, Debug)]
 pub struct Config {
     pub database_url: String,
     pub bind: SocketAddr,
-    /// GlobalSetting.cluster_name, checked by /srv/status?cluster=.
-    pub cluster_name: Option<String>,
+    pub rails_env: RailsEnv,
+    /// `ENV["UNICORN_PORT"]`, appended to the base URL in development.
+    pub unicorn_port: String,
+    pub globals: GlobalSettings,
+}
+
+/// `Rails.env`. Changes URL generation the same way it does in Discourse, so
+/// discourse-rs can be diffed against a development Rails (e.g. dv).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum RailsEnv {
+    Development,
+    Test,
+    Production,
+}
+
+/// Port of app/models/global_setting.rb with its EnvProvider: every
+/// `DISCOURSE_<KEY>` env var becomes `key`, falling back to the defaults in
+/// config/discourse_defaults.conf. Any key that names a site setting shadows
+/// that setting (see site_settings).
+#[derive(Clone, Debug, Default)]
+pub struct GlobalSettings {
+    vars: BTreeMap<String, String>,
+}
+
+impl GlobalSettings {
+    pub fn from_vars<I, K, V>(vars: I) -> Self
+    where
+        I: IntoIterator<Item = (K, V)>,
+        K: Into<String>,
+        V: Into<String>,
+    {
+        GlobalSettings {
+            vars: vars
+                .into_iter()
+                .map(|(k, v)| (k.into(), v.into()))
+                .collect(),
+        }
+    }
+
+    fn from_env() -> Self {
+        Self::from_vars(std::env::vars().filter_map(|(k, v)| {
+            k.strip_prefix("DISCOURSE_")
+                .map(|key| (key.to_ascii_lowercase(), v))
+        }))
+    }
+
+    /// `GlobalSetting.<key>` for keys whose discourse_defaults.conf default
+    /// is blank: the env value if present, else nil.
+    pub fn get(&self, key: &str) -> Option<&str> {
+        self.vars
+            .get(key)
+            .map(String::as_str)
+            .filter(|v| !ruby::is_blank(v))
+    }
+
+    /// Every provided key, for site setting shadowing.
+    pub fn keys(&self) -> impl Iterator<Item = &str> {
+        self.vars.keys().map(String::as_str)
+    }
+
+    pub fn cluster_name(&self) -> Option<&str> {
+        self.get("cluster_name")
+    }
+
+    pub fn cdn_url(&self) -> Option<&str> {
+        self.get("cdn_url")
+    }
+
+    pub fn s3_cdn_url(&self) -> Option<&str> {
+        self.get("s3_cdn_url")
+    }
+
+    pub fn relative_url_root(&self) -> &str {
+        self.get("relative_url_root").unwrap_or("")
+    }
+
+    /// The single-site hostname RailsMultisite reports, per environment
+    /// (config/database.yml, global_setting.rb#database_config).
+    pub fn hostname(&self, env: RailsEnv) -> &str {
+        match env {
+            RailsEnv::Production => self.get("hostname").unwrap_or("www.example.com"),
+            RailsEnv::Development => self.get("hostname").unwrap_or("localhost"),
+            RailsEnv::Test => "test.localhost",
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -42,14 +125,25 @@ impl Config {
             value: bind_raw.clone(),
         })?;
 
-        let cluster_name = std::env::var("DISCOURSE_CLUSTER_NAME")
-            .ok()
-            .filter(|s| !s.is_empty());
+        // Rails defaults to development when RAILS_ENV is unset.
+        let rails_env = match std::env::var("RAILS_ENV").as_deref() {
+            Err(_) | Ok("") | Ok("development") => RailsEnv::Development,
+            Ok("production") => RailsEnv::Production,
+            Ok("test") => RailsEnv::Test,
+            Ok(other) => {
+                return Err(ConfigError::Invalid {
+                    var: "RAILS_ENV",
+                    value: other.to_string(),
+                });
+            }
+        };
 
         Ok(Config {
             database_url,
             bind,
-            cluster_name,
+            rails_env,
+            unicorn_port: std::env::var("UNICORN_PORT").unwrap_or_else(|_| "3000".into()),
+            globals: GlobalSettings::from_env(),
         })
     }
 }
