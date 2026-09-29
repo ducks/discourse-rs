@@ -1,73 +1,58 @@
-use actix_governor::{Governor, GovernorConfigBuilder};
-use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
-use diesel::r2d2::{self, ConnectionManager};
-use std::env;
-use utoipa::OpenApi;
-use utoipa_swagger_ui::SwaggerUi;
+use std::error::Error;
+use std::process::ExitCode;
 
-use discourse_rs::{jobs, openapi, routes, DbPool};
+use discourse_rs::config::Config;
+use discourse_rs::{AppState, app, schema};
+use sqlx::postgres::PgPoolOptions;
+use tracing_subscriber::EnvFilter;
 
-#[get("/")]
-async fn index() -> impl Responder {
-    HttpResponse::Ok().json(serde_json::json!({
-        "message": "Welcome to Discourse-rs!",
-        "version": "0.1.0"
-    }))
+#[tokio::main]
+async fn main() -> ExitCode {
+    match run().await {
+        Ok(()) => ExitCode::SUCCESS,
+        Err(e) => {
+            eprintln!("discourse-rs: {e}");
+            ExitCode::FAILURE
+        }
+    }
 }
 
-#[get("/health")]
-async fn health() -> impl Responder {
-    HttpResponse::Ok().json(serde_json::json!({
-        "status": "ok"
-    }))
-}
+async fn run() -> Result<(), Box<dyn Error>> {
+    tracing_subscriber::fmt()
+        .with_env_filter(
+            EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info")),
+        )
+        .init();
 
-#[actix_web::main]
-async fn main() -> std::io::Result<()> {
-    dotenvy::dotenv().ok();
-    env_logger::init();
+    let config = Config::from_env()?;
+    let pool = PgPoolOptions::new()
+        .max_connections(10)
+        .connect(&config.database_url)
+        .await?;
 
-    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    let manager = ConnectionManager::<diesel::pg::PgConnection>::new(&database_url);
-    let pool: DbPool = r2d2::Pool::builder()
-        .build(manager)
-        .expect("Failed to create pool");
+    let report = schema::verify(&mut *pool.acquire().await?).await?;
+    tracing::info!(
+        discourse = schema::discourse_commit(),
+        versions = report.expected,
+        "schema verified"
+    );
+    if !report.extra.is_empty() {
+        tracing::warn!(
+            count = report.extra.len(),
+            latest = report.extra.last().map(String::as_str),
+            "database has schema versions newer than the vendored structure.sql"
+        );
+    }
 
-    // Set up background job queue and worker pool
-    let pool_arc = std::sync::Arc::new(pool.clone());
-    let job_queue = jobs::JobQueue::new(pool_arc.clone());
-    let worker_pool = jobs::WorkerPool::new(pool_arc, 4);
+    let listener = tokio::net::TcpListener::bind(config.bind).await?;
+    tracing::info!(addr = %config.bind, "listening");
+    axum::serve(listener, app(AppState { pool, config }))
+        .with_graceful_shutdown(async {
+            if let Err(e) = tokio::signal::ctrl_c().await {
+                tracing::error!("installing ctrl-c handler: {e}");
+            }
+        })
+        .await?;
 
-    // Start worker pool in background
-    tokio::spawn(async move {
-        worker_pool.run().await;
-    });
-
-    log::info!("Starting server at http://127.0.0.1:8080");
-
-    let job_queue_data = web::Data::new(job_queue);
-
-    // Rate limiting: 60 requests per minute per IP
-    let governor_conf = GovernorConfigBuilder::default()
-        .per_second(1)
-        .burst_size(60)
-        .finish()
-        .unwrap();
-
-    HttpServer::new(move || {
-        App::new()
-            .wrap(Governor::new(&governor_conf))
-            .app_data(web::Data::new(pool.clone()))
-            .app_data(job_queue_data.clone())
-            .service(index)
-            .service(health)
-            .service(web::scope("/api").configure(routes::config))
-            .service(
-                SwaggerUi::new("/swagger-ui/{_:.*}")
-                    .url("/api-docs/openapi.json", openapi::ApiDoc::openapi()),
-            )
-    })
-    .bind(("127.0.0.1", 8080))?
-    .run()
-    .await
+    Ok(())
 }

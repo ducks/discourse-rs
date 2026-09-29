@@ -1,0 +1,7 @@
+# Requests compared against real Discourse. One per line:
+#   METHOD /path [ignore=/json/pointer,/list/*/field]
+# Golden responses live in parity/golden/, written by `make parity-record`.
+
+# forums#status
+GET /srv/status
+GET /srv/status?cluster=parity

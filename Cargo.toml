@@ -5,23 +5,18 @@ edition = "2024"
 default-run = "discourse-rs"
 
 [dependencies]
-actix-web = "4"
-actix-rt = "2"
-futures = "0.3"
-diesel = { version = "2", features = ["postgres", "r2d2", "chrono", "uuid", "serde_json"] }
-dotenvy = "0.15"
+axum = "0.8"
+clap = { version = "4", features = ["derive", "env"] }
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-validator = { version = "0.19", features = ["derive"] }
-chrono = { version = "0.4", features = ["serde"] }
-bcrypt = "0.17"
-jsonwebtoken = "9"
-env_logger = "0.11"
-log = "0.4"
-tokio = { version = "1", features = ["full"] }
-md5 = "0.7"
-uuid = { version = "1", features = ["serde", "v4"] }
-actix-governor = "0.8"
-comrak = { version = "0.31", default-features = false, features = ["syntect"] }
-utoipa = { version = "5", features = ["actix_extras", "chrono", "uuid"] }
-utoipa-swagger-ui = { version = "9", features = ["actix-web"] }
+similar = "2"
+sqlx = { version = "0.8", default-features = false, features = ["runtime-tokio", "postgres", "macros"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "net", "signal"] }
+tower-http = { version = "0.6", features = ["trace"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[dev-dependencies]
+http-body-util = "0.1"
+tower = { version = "0.5", features = ["util"] }

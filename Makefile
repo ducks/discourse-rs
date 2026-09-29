@@ -1,4 +1,5 @@
-.PHONY: help version-bump release build test clean clippy fmt fmt-check lint install-hooks
+.PHONY: help version-bump release build test clean clippy fmt fmt-check lint install-hooks \
+	db-load db-test parity parity-check parity-record vendor-schema
 
 # Auto-generate version from today's date with auto-incrementing patch
 # Format: YYYYMMDD.0.X where X increments if releasing multiple times per day
@@ -17,6 +18,11 @@ endef
 
 VERSION := $(get_next_version)
 
+DEV_DB ?= discourse_rs_development
+TEST_DB ?= discourse_rs_test
+DISCOURSE ?= $(HOME)/discourse/discourse
+RS_URL ?= http://127.0.0.1:8080
+
 help:
 	@echo "discourse-rs Makefile"
 	@echo ""
@@ -24,12 +30,22 @@ help:
 	@echo "  make release                       - Auto-version and release (recommended)"
 	@echo "  make release VERSION=20260125.0.0  - Release with specific version"
 	@echo "  make build                         - Build release binary"
-	@echo "  make test                          - Run tests (requires db_test_setup in nix-shell)"
+	@echo "  make test                          - Run tests (needs make db-test once)"
 	@echo "  make clippy                        - Run clippy"
 	@echo "  make fmt / fmt-check               - Format / check formatting"
 	@echo "  make lint                          - All CI checks (fmt-check, clippy, tests)"
 	@echo "  make install-hooks                 - Install a pre-push hook running 'make lint'"
 	@echo "  make clean                         - Clean build artifacts"
+	@echo ""
+	@echo "Schema:"
+	@echo "  make vendor-schema [DISCOURSE=path] [REF=sha] - Vendor structure.sql from Discourse"
+	@echo "  make db-load [FORCE=1]             - Load structure.sql into $(DEV_DB)"
+	@echo "  make db-test                       - (Re)load structure.sql into $(TEST_DB)"
+	@echo ""
+	@echo "Parity (both servers must read the same database):"
+	@echo "  make parity RAILS_URL=...          - Diff discourse-rs against running Discourse"
+	@echo "  make parity-record RAILS_URL=...   - Save Rails responses to parity/golden"
+	@echo "  make parity-check                  - Diff discourse-rs against parity/golden"
 	@echo ""
 	@echo "Next version will be: $(VERSION)"
 
@@ -49,7 +65,7 @@ version-bump:
 	@echo "Version bumped to $(VERSION)"
 	@echo "Commit created"
 
-# Merge to main, tag, push. No cargo publish — discourse-rs isn't on
+# Merge to main, tag, push. No cargo publish; discourse-rs isn't on
 # crates.io yet; add it back here when it is.
 release: version-bump
 	@echo "Merging into main..."
@@ -70,14 +86,14 @@ release: version-bump
 build:
 	cargo build --release
 
-# Run tests. Integration tests share a single test DB so they must run
-# serially; first time only, run `db_test_setup` inside `nix-shell`.
+# Integration tests read TEST_DATABASE_URL (set by shell.nix); run
+# `make db-test` once, and again after vendoring a new schema.
 test:
-	cargo test -- --test-threads=1
+	cargo test
 
 # Run clippy with warnings-as-errors (mirrors CI)
 clippy:
-	cargo clippy -- -D warnings
+	cargo clippy --all-targets -- -D warnings
 
 # Clean build artifacts
 clean:
@@ -92,9 +108,7 @@ fmt-check:
 	cargo fmt -- --check
 
 # Run all the checks CI runs, in order. Cheap to run locally before pushing.
-lint: fmt-check
-	cargo clippy -- -D warnings
-	cargo test -- --test-threads=1
+lint: fmt-check clippy test
 
 # Install a pre-push hook that runs `make lint` before any push, so CI
 # failures from formatting / clippy / tests are caught locally.
@@ -103,3 +117,23 @@ install-hooks:
 	@printf '#!/usr/bin/env bash\nset -e\nexec make lint\n' > .git/hooks/pre-push
 	@chmod +x .git/hooks/pre-push
 	@echo "Installed pre-push hook -> make lint"
+
+vendor-schema:
+	scripts/vendor-schema $(DISCOURSE) $(REF)
+
+db-load:
+	scripts/db-load $(if $(FORCE),--force) $(DEV_DB)
+
+db-test:
+	scripts/db-load --force $(TEST_DB)
+
+parity:
+	@test -n "$(RAILS_URL)" || { echo "set RAILS_URL, e.g. make parity RAILS_URL=http://127.0.0.1:3000"; exit 2; }
+	cargo run --quiet --bin parity -- live --rails $(RAILS_URL) --rs $(RS_URL)
+
+parity-record:
+	@test -n "$(RAILS_URL)" || { echo "set RAILS_URL, e.g. make parity-record RAILS_URL=http://127.0.0.1:3000"; exit 2; }
+	cargo run --quiet --bin parity -- record --rails $(RAILS_URL)
+
+parity-check:
+	cargo run --quiet --bin parity -- check --rs $(RS_URL)
