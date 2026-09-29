@@ -1,287 +1,74 @@
-# Discourse-rs
+# discourse-rs
 
-A Discourse-inspired forum platform built in Rust.
+A Rust port of the [Discourse](https://github.com/discourse/discourse) backend,
+aiming for feature parity: same database, same JSON API, so the real Ember
+frontend can run against it.
+
+The pre-rewrite Actix/Diesel version is tagged `v20260610.0.1`.
+
+## Principles
+
+- **Discourse owns the schema.** `schema/structure.sql` is vendored verbatim
+  from a pinned Discourse commit (`schema/DISCOURSE_REF`). discourse-rs has
+  no migrations and refuses to start against a database missing any of them.
+- **Parity is measured, not claimed.** Every ported endpoint gets a case in
+  `parity/cases`, diffed against real Discourse responses.
+- **Port behavior from the Rails source**, citing the file it came from.
 
 ## Stack
 
-- **Web Framework**: Actix-web (async HTTP server)
-- **ORM**: Diesel (type-safe query builder)
-- **Database**: PostgreSQL
-- **Validation**: validator crate
-- **Serialization**: serde
+axum, tokio, sqlx (Postgres 16 + pgvector), clap, serde.
 
 ## Setup
 
-1. Enter the Nix shell:
 ```bash
-nix-shell
-```
-
-2. Start PostgreSQL:
-```bash
+nix-shell          # toolchain, Postgres on port 5442, DATABASE_URL/TEST_DATABASE_URL
 db_start
+make db-load       # structure.sql -> discourse_rs_development (FORCE=1 to replace)
+make db-test       # structure.sql -> discourse_rs_test
+cargo run          # http://127.0.0.1:8080  (BIND_ADDR to change)
+make test
 ```
 
-3. Run migrations:
-```bash
-diesel migration run
-```
+To run against a real Discourse database, point `DATABASE_URL` at it. Extra
+migrations (newer Discourse, third-party plugins) are logged and tolerated.
 
-4. Start the server:
-```bash
-RUST_LOG=info cargo run
-```
-
-The server will be available at http://127.0.0.1:8080
-
-## API Endpoints
-
-### Core
-- `GET /` - Welcome message
-- `GET /health` - Health check
-
-### Authentication
-- `POST /api/auth/register` - Register new user (returns JWT token)
-- `POST /api/auth/login` - Login existing user (returns JWT token)
-
-### Users
-- `GET /api/users` - List all users (public, paginated)
-- `GET /api/users/:id` - Get user by ID (public)
-- `POST /api/users` - Create new user (requires auth)
-- `PUT /api/users/:id` - Update user (requires auth)
-- `DELETE /api/users/:id` - Delete user (requires auth)
-
-### Topics
-- `GET /api/topics` - List all topics (public, paginated, sorted by created_at desc)
-- `GET /api/topics/:id` - Get topic by ID (public)
-- `POST /api/topics` - Create new topic (requires auth)
-- `PUT /api/topics/:id` - Update topic (requires auth)
-- `DELETE /api/topics/:id` - Delete topic (requires auth)
-
-### Posts
-- `GET /api/posts` - List recent posts (public, paginated)
-- `GET /api/topics/:id/posts` - List posts in a topic (public, paginated)
-- `POST /api/posts` - Create new post (requires auth)
-- `PUT /api/posts/:id` - Update post (requires auth)
-- `DELETE /api/posts/:id` - Delete post (requires auth)
-
-### Likes
-- `POST /api/posts/:id/like` - Like a post (requires auth). 201 on first
-  like, 200 if already liked, 404 if the post is missing/hidden/deleted,
-  422 if liking your own post.
-- `DELETE /api/posts/:id/like` - Unlike a post (requires auth). 204
-  whether the like existed or not.
-
-### Categories
-- `GET /api/categories` - List all categories (public, ordered by position)
-- `GET /api/categories/:id` - Get category by ID (public)
-- `POST /api/categories` - Create category (moderator only)
-- `PUT /api/categories/:id` - Update category (moderator only)
-- `DELETE /api/categories/:id` - Delete category (moderator only)
-
-### Site Settings
-- `GET /api/settings` - List all settings (public by default)
-- `GET /api/settings/:key` - Get specific setting (public by default)
-- `PUT /api/settings/:key` - Update setting value (requires auth)
-
-### Search
-- `GET /api/search?q=term&limit=20` - Full-text search across topics and posts
-
-### Moderation
-- `POST /api/moderation/topics/lock` - Lock a topic (moderator only)
-- `POST /api/moderation/topics/unlock` - Unlock a topic (moderator only)
-- `POST /api/moderation/topics/pin` - Pin a topic (moderator only)
-- `POST /api/moderation/topics/unpin` - Unpin a topic (moderator only)
-- `POST /api/moderation/topics/close` - Close a topic (moderator only)
-- `POST /api/moderation/topics/open` - Open a topic (moderator only)
-- `POST /api/moderation/posts/hide` - Hide a post (moderator only)
-- `POST /api/moderation/posts/unhide` - Unhide a post (moderator only)
-- `POST /api/moderation/posts/delete` - Delete a post (moderator only)
-- `POST /api/moderation/users/suspend` - Suspend a user (moderator only)
-
-### Notifications
-- `GET /api/notifications` - List user notifications (requires auth, paginated)
-- `GET /api/notifications?unread_only=true` - List unread notifications only
-- `GET /api/notifications/unread-count` - Get unread notification count
-- `PUT /api/notifications/:id/read` - Mark notification as read
-- `POST /api/notifications/mark-all-read` - Mark all notifications as read
-
-## Development
-
-Common tasks are wrapped in the Makefile:
-
-- `make build` - release build
-- `make test` - run tests (serially against the test DB)
-- `make fmt` / `make fmt-check` - format / check formatting
-- `make clippy` - lint with warnings as errors
-- `make lint` - the full CI check locally (fmt-check + clippy + tests)
-- `make install-hooks` - install a pre-push hook running `make lint`
-- `make release` - bump the date-based version, tag, and push
-
-Run `make help` to see the full list.
-
-## Testing
-
-Integration tests live in `tests/` and run against a dedicated
-`discourse_rs_test` database (the dev database is never touched).
-
-First time only, from inside `nix-shell`:
+## Schema
 
 ```bash
-db_start        # if postgres isn't already running
-db_test_setup   # creates discourse_rs_test and runs migrations
+make vendor-schema DISCOURSE=~/discourse/discourse [REF=<sha>]
 ```
 
-Then run tests. They share one DB, so always pass `--test-threads=1`:
+Copies `db/structure.sql` as committed at REF (default HEAD), so uncommitted
+local plugin migrations never leak in. Reload the databases afterwards.
+
+## Parity
+
+`parity/cases` lists requests, one per line:
+
+```
+GET /latest.json ignore=/topic_list/topics/*/bumped_at
+```
+
+`ignore` takes JSON pointers (`*` matches any element or key) for fields that
+legitimately differ between runs. JSON is compared structurally; status and
+media type must match.
 
 ```bash
-cargo test -- --test-threads=1
+make parity RAILS_URL=http://127.0.0.1:3000   # live: Rails vs discourse-rs
+make parity-record RAILS_URL=...              # save Rails responses to parity/golden/
+make parity-check                             # running discourse-rs vs golden
 ```
 
-`tests/common/mod.rs` provides the shared harness: a process-wide r2d2 pool,
-a `setup()` function that truncates all tables and returns a `TestCtx`, and
-fixture helpers (`create_user`, `create_category`, `create_topic`,
-`create_post`). `TestCtx` truncates again on `Drop` so a panicking test
-still leaves the DB clean for the next one.
+`cargo test` also replays every golden file against the in-process router
+(`tests/parity.rs`), so regressions fail without Rails or a server running.
 
-CI runs the same suite via `.github/workflows/test.yml` against a postgres
-service container.
+Parity only means something when Rails and discourse-rs read the same
+database: point discourse-rs at the Rails database, or restore a dump of it
+into the local one.
 
-## Pagination
+## Ported
 
-List endpoints support pagination via query parameters:
-
-- `page` - Page number (default: 1, minimum: 1)
-- `per_page` - Items per page (default: 30, minimum: 1, maximum: 100)
-
-Example:
-
-```bash
-# Get first 10 users
-curl http://127.0.0.1:8080/api/users?per_page=10
-
-# Get page 2 with 20 users per page
-curl http://127.0.0.1:8080/api/users?page=2&per_page=20
-
-# Get first 5 topics
-curl http://127.0.0.1:8080/api/topics?per_page=5
-```
-
-Paginated endpoints:
-- `GET /api/users`
-- `GET /api/topics`
-- `GET /api/posts`
-- `GET /api/topics/:id/posts`
-
-## Authentication
-
-The API uses JWT (JSON Web Tokens) for authentication. After registering or
-logging in, include the token in the Authorization header:
-
-```bash
-curl -H "Authorization: Bearer YOUR_TOKEN_HERE" http://127.0.0.1:8080/api/posts
-```
-
-### Privacy Settings
-
-By default, GET endpoints are public and write operations require
-authentication. To make all endpoints require authentication (private forum),
-update the `require_auth_for_reads` setting:
-
-```bash
-curl -X PUT http://127.0.0.1:8080/api/settings/require_auth_for_reads \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"value":"true"}'
-```
-
-## Rate Limiting
-
-The API is rate limited to 60 requests per minute per IP address. When the
-limit is exceeded, the server returns a 429 Too Many Requests response.
-
-## Markdown Rendering
-
-Posts are automatically rendered from raw markdown to HTML when created or
-updated. The API accepts a `raw` field containing markdown and returns both
-`raw` and `cooked` (rendered HTML) fields.
-
-Supported markdown features (GitHub Flavored Markdown):
-- **Bold**, *italic*, ~~strikethrough~~
-- Code blocks with syntax highlighting
-- Tables
-- Task lists (checkboxes)
-- Autolinks (URLs are automatically linked)
-- Superscript
-- Smart punctuation
-
-XSS prevention: HTML tags in markdown are escaped to prevent injection attacks.
-
-## API Documentation
-
-Interactive API documentation is available via Swagger UI:
-- Swagger UI: http://127.0.0.1:8080/swagger-ui/
-- OpenAPI JSON: http://127.0.0.1:8080/api-docs/openapi.json
-
-Static documentation is also published to GitHub Pages on every push to main.
-
-The documentation is auto-generated from Rust types using utoipa.
-
-## Guardian Permissions
-
-The API uses Guardian-style permission extractors for role-based access control.
-Simply add a guard to your route handler and permission checks are automatic:
-
-```rust
-use crate::guardian::{ModeratorGuard, AdminGuard, StaffGuard};
-
-// Only moderators can access
-async fn lock_topic(pool: web::Data<DbPool>, guard: ModeratorGuard, ...) { }
-
-// Only admins can access
-async fn delete_user(pool: web::Data<DbPool>, guard: AdminGuard, ...) { }
-
-// Staff (admin or moderator) can access
-async fn view_logs(pool: web::Data<DbPool>, guard: StaffGuard, ...) { }
-```
-
-Available guards:
-- `AuthenticatedUser` - Any logged-in user
-- `ModeratorGuard` - Trust level 4, moderator flag, or admin
-- `AdminGuard` - Admin flag only
-- `StaffGuard` - Admin or moderator
-- `TrustLevel1Guard` through `TrustLevel3Guard` - Minimum trust level
-
-Guards automatically return 403 Forbidden if the user lacks permission.
-
-## Roadmap
-
-### Phase 1: Core Models ✅
-- [x] Users
-- [x] Topics
-- [x] Posts
-- [x] Categories
-
-### Phase 2: Basic Features ✅
-- [x] Create/read users
-- [x] Create/read topics
-- [x] Create/read posts
-- [x] Update operations (PUT endpoints)
-- [x] Delete operations (DELETE endpoints)
-- [x] User authentication (JWT/sessions)
-- [x] Configurable privacy settings
-- [x] Plugin-friendly auth helpers
-
-### Phase 3: Polish (In Progress)
-- [x] Pagination (limit/offset)
-- [x] Background jobs (PostgreSQL-backed queue with worker pool)
-- [x] Search (PostgreSQL full-text search)
-- [x] Moderation tools (lock/pin/close topics, hide/delete posts, suspend users)
-- [x] Rate limiting (60 requests/min per IP)
-- [x] Guardian-style permissions (admin/moderator/trust level guards)
-- [x] Username change propagation (background job updates @mentions)
-- [x] Notifications
-- [x] Markdown rendering (raw -> cooked)
-- [x] API documentation (OpenAPI/Swagger)
-- [x] Post likes (with denormalized counters, notifications, idempotent like/unlike)
-- [x] Integration test foundation (TestCtx with truncate-on-Drop, fixture helpers, CI)
+| Route | Discourse source |
+|---|---|
+| `GET /srv/status` | `app/controllers/forums_controller.rb` |

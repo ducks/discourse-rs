@@ -1,0 +1,7 @@
+{
+  "request": "GET /srv/status?cluster=parity",
+  "source": "hand-written from app/controllers/forums_controller.rb, cluster_name unset; replace with make parity-record",
+  "status": 500,
+  "content_type": "text/plain; charset=utf-8",
+  "body": "cluster name not configured"
+}

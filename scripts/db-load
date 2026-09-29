@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# Create a database from the vendored Discourse schema (schema/structure.sql).
+#
+# Refuses to touch an existing database unless --force is given, in which
+# case it is dropped and recreated. Connection settings come from the usual
+# libpq env vars (PGHOST, PGPORT, PGUSER), which shell.nix sets.
+#
+# Usage: scripts/db-load [--force] <dbname>
+set -euo pipefail
+
+force=0
+if [ "${1:-}" = "--force" ]; then
+  force=1
+  shift
+fi
+
+if [ $# -ne 1 ]; then
+  echo "usage: $0 [--force] <dbname>" >&2
+  exit 64
+fi
+
+db="$1"
+root="$(cd "$(dirname "$0")/.." && pwd)"
+schema="$root/schema/structure.sql"
+
+exists="$(psql -X -d postgres -Atc "SELECT 1 FROM pg_database WHERE datname = '$db'")"
+if [ "$exists" = "1" ]; then
+  if [ "$force" -ne 1 ]; then
+    echo "database $db already exists; pass --force to drop and reload it" >&2
+    exit 1
+  fi
+  dropdb "$db"
+fi
+
+createdb "$db"
+psql -X -q -v ON_ERROR_STOP=1 -d "$db" -f "$schema" -o /dev/null
+
+tables="$(psql -X -d "$db" -Atc "SELECT count(*) FROM pg_tables WHERE schemaname = 'public'")"
+versions="$(psql -X -d "$db" -Atc "SELECT count(*) FROM schema_migrations")"
+echo "loaded $db: $tables tables, $versions schema versions ($(sed -n 's/^commit=//p' "$root/schema/DISCOURSE_REF" | cut -c1-11))"

@@ -11,12 +11,12 @@ jobs:
     runs-on: ubuntu-latest
 
     services:
+      # structure.sql needs pgvector for the bundled discourse-ai tables.
       postgres:
-        image: postgres:16
+        image: pgvector/pgvector:pg16
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: discourse_rs_test
         ports:
           - 5432:5432
         options: >-
@@ -26,14 +26,18 @@ jobs:
           --health-retries 5
 
     env:
+      PGHOST: localhost
+      PGUSER: postgres
+      PGPASSWORD: postgres
       TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/discourse_rs_test
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/discourse_rs_test
 
     steps:
       - uses: actions/checkout@v4
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
 
       - name: Cache cargo
         uses: actions/cache@v4
@@ -46,12 +50,8 @@ jobs:
             target/
           key: ${{ runner.os }}-cargo-test-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Install diesel_cli
-        run: cargo install diesel_cli --no-default-features --features postgres
+      - name: Load vendored Discourse schema
+        run: scripts/db-load --force discourse_rs_test
 
-      - name: Run migrations on test DB
-        run: diesel migration run
-
-      # Integration tests share one DB, so they must run serially.
-      - name: Run tests
-        run: cargo test -- --test-threads=1
+      - name: Lint and test
+        run: make lint
