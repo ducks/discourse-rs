@@ -47,13 +47,16 @@ pub async fn gate(
     if exempt(&path) {
         return Ok(next.run(request).await);
     }
-    let mut conn = state.pool.acquire().await?;
-    let settings =
-        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    // The connection goes back to the pool before the handler runs: a
+    // request must never hold two, or concurrent requests starve each
+    // other on the pool.
+    let settings = {
+        let mut conn = state.pool.acquire().await?;
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?
+    };
     if !settings.get("login_required")?.truthy() {
         return Ok(next.run(request).await);
     }
-    drop(conn);
 
     let json = path.ends_with(".json");
     if json || request.method() != axum::http::Method::GET {
