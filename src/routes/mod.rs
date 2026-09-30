@@ -5,6 +5,7 @@ mod site;
 mod srv;
 mod tags;
 mod topics;
+mod users;
 
 use axum::Router;
 use axum::http::header;
@@ -47,6 +48,11 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/t/{id}", get(topics::show_by_id))
         .route("/t/{slug}/{id}", get(topics::show_with_slug))
         .route("/t/{slug}/{id}/{post_number}", get(topics::show_post))
+        .route("/u/{username}", get(users::show))
+        .route("/u/{username}/{*rest}", get(users::show_with_tail))
+        .route("/users/{username}", get(users::show))
+        .route("/users/{username}/{*rest}", get(users::show_with_tail))
+        .route("/user_actions.json", get(users::actions))
         .route("/c/{*path}", get(list::category))
         .route("/search", get(search::show))
         .route("/search.json", get(search::show_json))

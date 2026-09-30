@@ -21,7 +21,7 @@
       </a>
       {% endif %}
       <div class="blurb">{{ r.blurb|safe }}</div>
-      <div class="search-meta">{% if let Some(u) = r.username %}<span class="username">{{ u }}</span> {% endif %}<time datetime="{{ r.created_at }}">{{ r.created_at }}</time></div>
+      <div class="search-meta">{% if let Some(u) = r.username %}<a class="username" rel="nofollow" href="{{ base_path }}/u/{{ u }}">{{ u }}</a> {% endif %}<time datetime="{{ r.created_at }}">{{ r.created_at }}</time></div>
     </div>
     {% endfor %}
   </div>

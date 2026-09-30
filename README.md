@@ -104,6 +104,7 @@ What comes next, and in what order, is in [ROADMAP.md](ROADMAP.md).
 | `GET /tags` | `tags_controller.rb#index` | anonymous only; `tags_listed_by_group` off |
 | any route, `login_required` on | `application_controller.rb#redirect_to_login_if_required` | JSON 403 `not_logged_in` (topics add extras), HTML 302 to `/login` with `destination_url` cookie, `/` and `/login` render a login page; `/srv/status`, `/site/basic-info` and static files stay open; `auth_immediately` with DiscourseConnect or a single external login not ported |
 | `GET /search(.json)?q=&page=`, `GET /search/query(.json)?term=&type_filter=` | `search_controller.rb#show`, `#query`, `lib/search.rb`, `GroupedSearchResults`, `SearchLog` | anonymous only; plain words and quoted phrases, relevance ranking with category priority and closed/archived penalties, per-topic aggregation, blurbs, user/category/tag/group facets, search log with the 5 s per-IP fold; advanced syntax (`in:`, `status:`, `category:`, `#`, `@`, `order:`, ...), search contexts, `search_for_id`, rate limits and pg headlines not ported |
+| `GET /u/:username(.json)` (+ `/summary`, `/activity`, `/badges`...), `GET /user_actions.json` | `users_controller.rb#show`, `#summary`, `UserSerializer`, `HiddenProfileSerializer`, `UserSummary`, `UserAction.stream` | anonymous only; badges side-loads, profile view tracking, hidden-profile rules; suspended/silenced users, bios, featured topics, user status, `include_post_count_for`, `/activity.json` feeds and `/card.json` not ported |
 
 Supporting ports: SiteSetting (YAML defaults, `locale_default`, typed DB
 rows, GlobalSetting shadowing, upcoming-change promotion), server-side I18n
@@ -131,7 +132,7 @@ headers, any authenticated user.
 Anonymous readers get server-rendered HTML (askama templates in
 `templates/`, one stylesheet in `static/`) built from the same documents the
 JSON endpoints return: `/` and `/latest` (the topic list, paged), `/c/...`
-(a category's list with its subcategories), `/tag/...` (a tag's list), `/search?q=` (results),
+(a category's list with its subcategories), `/tag/...` (a tag's list), `/search?q=` (results), `/u/:username` (a profile),
 `/tags` (the tag index), `/categories` (the index with featured topics), and `/t/:slug/:id` (the topic with its posts). Requests ending in `.json` get the
 API document instead. The structure follows Discourse's crawler views.
 

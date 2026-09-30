@@ -49,7 +49,7 @@
           </div>
           {% if let Some(e) = t.excerpt %}<p class="excerpt">{{ e|safe }}</p>{% endif %}
         </td>
-        <td class="posters">{% for p in t.posters %}<span class="poster" title="{{ p.description }}">{{ p.username }}</span> {% endfor %}</td>
+        <td class="posters">{% for p in t.posters %}<a class="poster" rel="nofollow" href="{{ base_path }}/u/{{ p.username }}" title="{{ p.description }}">{{ p.username }}</a> {% endfor %}</td>
         <td class="num replies">{{ t.replies }}</td>
         <td class="num views">{{ t.views }}</td>
         <td class="activity"><time datetime="{{ t.bumped_at_iso }}" title="{{ t.bumped_at_iso }}">{{ t.bumped_at }}</time></td>
