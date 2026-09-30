@@ -8,6 +8,9 @@ use crate::Unsupported;
 use crate::guardian::Guardian;
 use crate::site_settings::{SettingError, SiteSettings};
 
+/// `TopTopic.periods`
+pub const PERIODS: [&str; 6] = ["all", "yearly", "quarterly", "monthly", "weekly", "daily"];
+
 /// `TopicQuery::DEFAULT_PER_PAGE_COUNT`
 pub const DEFAULT_PER_PAGE: i64 = 30;
 
@@ -112,12 +115,25 @@ pub struct TopicQuery<'a> {
     pub settings: &'a SiteSettings,
     pub guardian: &'a Guardian,
     pub options: Options,
+    /// Set by the list_* methods.
+    pub filter: Filter,
     /// Set by list_latest from `options.category_id`.
     pub category: CategoryScope,
 }
 
 /// The result of `create_list`: the page of topics plus what TopicList
 /// carries for the serializer.
+/// Which list is being built: changes joins, order and pinning.
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub enum Filter {
+    #[default]
+    Latest,
+    /// `list_top_for(period)`
+    Top(String),
+    /// `list_hot`
+    Hot,
+}
+
 pub struct TopicList {
     pub filter: &'static str,
     pub topics: Vec<TopicRow>,
@@ -127,6 +143,43 @@ pub struct TopicList {
 impl TopicQuery<'_> {
     fn per_page(&self) -> i64 {
         self.options.per_page.unwrap_or(DEFAULT_PER_PAGE)
+    }
+
+    /// `list_top_for(period)`: create_list(:top, unordered: true), joined to
+    /// top_topics with a positive period score, ordered by that score then
+    /// bumped_at; no pinned prioritization.
+    pub async fn list_top_for(&mut self, period: &str) -> Result<TopicList, TopicQueryError> {
+        // The period names a column; only TopTopic.periods may reach the SQL.
+        if !PERIODS.contains(&period) {
+            return Err(Unsupported("unknown top period").into());
+        }
+        self.check_unported_filters()?;
+        self.filter = Filter::Top(period.to_string());
+        self.category = self.category_scope().await?;
+        let per_page = self.per_page();
+        let order = self.order_clause()?;
+        let topics = self
+            .fetch("TRUE", &order, per_page, self.options.page * per_page)
+            .await?;
+        Ok(TopicList {
+            filter: "top",
+            topics,
+            per_page,
+        })
+    }
+
+    /// `list_hot`: create_list(:hot, unordered: true, prioritize_pinned: true),
+    /// joined to topic_hot_scores, by score, pinned topics first.
+    pub async fn list_hot(&mut self) -> Result<TopicList, TopicQueryError> {
+        self.check_unported_filters()?;
+        self.filter = Filter::Hot;
+        self.category = self.category_scope().await?;
+        let topics = self.prioritize_pinned_topics().await?;
+        Ok(TopicList {
+            filter: "hot",
+            topics,
+            per_page: self.per_page(),
+        })
     }
 
     /// `list_latest` -> `create_list(:latest, {}, latest_results)`.
@@ -208,9 +261,10 @@ impl TopicQuery<'_> {
                 "(categories.topic_id IS DISTINCT FROM topics.id OR topics.category_id = {category_id})"
             ));
         }
-        // The category's default sort applies when no order was given.
+        // The category's default sort applies to latest (default/unseen
+        // filters) when no order was given; top and hot keep their own.
         let mut order = None;
-        if self.options.order.is_none() {
+        if self.options.order.is_none() && self.filter == Filter::Latest {
             let sort: Option<(Option<String>, Option<bool>)> =
                 sqlx::query_as("SELECT sort_order, sort_ascending FROM categories WHERE id = $1")
                     .bind(category_id)
@@ -247,7 +301,22 @@ impl TopicQuery<'_> {
 
     /// `apply_ordering`: `SORTABLE_MAPPING` with `order`, default bumped_at
     /// DESC, no tiebreaker.
+    /// The list's ORDER BY: `apply_ordering`'s column (the request's order,
+    /// or the category default for latest), then for top/hot the block's
+    /// own order, which is the whole order when nothing was requested.
     fn order_clause(&self) -> Result<String, TopicQueryError> {
+        let block = match &self.filter {
+            Filter::Latest => None,
+            Filter::Top(period) => Some(format!(
+                "COALESCE(top_topics.{period}_score, 0) DESC, topics.bumped_at DESC"
+            )),
+            Filter::Hot => Some("topic_hot_scores.score DESC".to_string()),
+        };
+        if let Some(block) = &block {
+            if self.options.order.is_none() {
+                return Ok(block.clone());
+            }
+        }
         let (order, ascending) = match &self.category.order {
             Some((o, a)) => (Some(o.as_str()), *a),
             None => (self.options.order.as_deref(), self.options.ascending),
@@ -267,7 +336,10 @@ impl TopicQuery<'_> {
             Some(_) => return Err(Unsupported("unknown topic list order").into()),
         };
         let dir = if ascending { "ASC" } else { "DESC" };
-        Ok(format!("{column} {dir}"))
+        Ok(match block {
+            Some(block) => format!("{column} {dir}, {block}"),
+            None => format!("{column} {dir}"),
+        })
     }
 
     async fn fetch(
@@ -277,10 +349,21 @@ impl TopicQuery<'_> {
         limit: i64,
         offset: i64,
     ) -> Result<Vec<TopicRow>, TopicQueryError> {
+        let (join, filter_where) = match &self.filter {
+            Filter::Latest => (String::new(), "TRUE".to_string()),
+            Filter::Top(period) => (
+                "INNER JOIN top_topics ON top_topics.topic_id = topics.id".to_string(),
+                format!("top_topics.{period}_score > 0"),
+            ),
+            Filter::Hot => (
+                "JOIN topic_hot_scores ON topics.id = topic_hot_scores.topic_id".to_string(),
+                "TRUE".to_string(),
+            ),
+        };
         let sql = format!(
             "SELECT {TOPIC_COLUMNS} FROM topics \
-             LEFT OUTER JOIN categories ON categories.id = topics.category_id \
-             WHERE {} AND ({extra_where}) ORDER BY {order} LIMIT $1 OFFSET $2",
+             LEFT OUTER JOIN categories ON categories.id = topics.category_id {join} \
+             WHERE {} AND ({filter_where}) AND ({extra_where}) ORDER BY {order} LIMIT $1 OFFSET $2",
             self.where_clause()
         );
         Ok(sqlx::query_as(&sql)

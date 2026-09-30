@@ -47,3 +47,13 @@ GET /c/staff/3.json ignore=/extras/html
 GET /categories.json ignore=/category_list/categories/*/custom_fields,/category_list/categories/*/topics/*/has_accepted_answer
 GET /c/general/4/none.json ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
 GET /c/general/4/none/l/latest.json?per_page=1 ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
+
+# list#top / list#hot (anonymous), front page and category
+GET /top.json ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
+GET /top.json?period=all ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
+GET /top.json?period=weekly ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
+# /hot.json unpaged would tie every zero-score topic; Discourse has no tiebreaker.
+GET /hot.json?per_page=3 ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
+GET /c/general/4/l/top.json ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
+GET /c/general/4/l/hot.json ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
+GET /c/general/4/none/l/hot.json ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
