@@ -5,6 +5,7 @@ pub mod category_list;
 pub mod color_scheme;
 pub mod config;
 pub mod emoji;
+pub mod excerpt;
 pub mod groups;
 pub mod guardian;
 pub mod html;

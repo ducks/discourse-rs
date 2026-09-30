@@ -434,35 +434,6 @@ impl Categories<'_> {
     }
 }
 
-/// The text of a description made of plain paragraphs: `<p>` tags stripped,
-/// entities decoded. Anything else needs Nokogiri/ExcerptParser semantics.
-fn paragraph_text(html: &str) -> Result<String, Unsupported> {
-    let mut text = String::with_capacity(html.len());
-    let mut rest = html;
-    while let Some(start) = rest.find('<') {
-        text.push_str(&rest[..start]);
-        let after = &rest[start..];
-        let end = after
-            .find('>')
-            .ok_or(Unsupported("category description markup"))?;
-        let tag = after[1..end].trim().to_ascii_lowercase();
-        if tag != "p" && tag != "/p" {
-            return Err(Unsupported("category description markup (ExcerptParser)"));
-        }
-        rest = &after[end + 1..];
-    }
-    text.push_str(rest);
-    Ok(decode_entities(&text))
-}
-
-fn decode_entities(s: &str) -> String {
-    s.replace("&lt;", "<")
-        .replace("&gt;", ">")
-        .replace("&quot;", "\"")
-        .replace("&#39;", "'")
-        .replace("&amp;", "&")
-}
-
 /// `ERB::Util.html_escape`
 fn html_escape(s: &str) -> String {
     let mut out = String::with_capacity(s.len());
@@ -485,31 +456,16 @@ pub fn description_plain_text(description: Option<&str>) -> Result<Option<String
     let Some(html) = description else {
         return Ok(None);
     };
-    let text = paragraph_text(html)?;
-    let text = text.trim();
-    Ok(Some(html_escape(if text.is_empty() { "" } else { text })))
+    let text = crate::excerpt::fragment_text(html);
+    Ok(Some(html_escape(text.trim())))
 }
 
-/// `PrettyText.excerpt(description, 300)` for plain paragraphs: escaped
-/// text, cut at 300 characters with an ellipsis.
+/// `PrettyText.excerpt(description, 300)`
 pub(crate) fn description_excerpt(
     description: Option<&str>,
 ) -> Result<Option<String>, Unsupported> {
-    let Some(html) = description else {
-        return Ok(None);
-    };
-    if html.is_empty() {
-        return Ok(Some(String::new()));
-    }
-    let text = paragraph_text(html)?;
-    let chars: Vec<char> = text.chars().collect();
-    let excerpt = if chars.len() > 300 {
-        let head: String = chars[..300].iter().collect();
-        format!("{}&hellip;", html_escape(&head))
-    } else {
-        html_escape(&text)
-    };
-    Ok(Some(excerpt.trim().to_string()))
+    Ok(description
+        .map(|html| crate::excerpt::excerpt(html, 300, &crate::excerpt::Options::default())))
 }
 
 pub(crate) const CATEGORY_SQL: &str = "SELECT categories.id, categories.name, categories.color, categories.text_color, \
@@ -558,9 +514,15 @@ mod tests {
     }
 
     #[test]
-    fn markup_beyond_paragraphs_is_refused() {
-        assert!(description_plain_text(Some("<p>Hi <b>there</b></p>")).is_err());
-        assert!(description_excerpt(Some("<a href='x'>y</a>")).is_err());
+    fn markup_is_reduced_like_pretty_text() {
+        assert_eq!(
+            description_plain_text(Some("<p>Hi <b>there</b> &amp; you</p>")).unwrap(),
+            Some("Hi there &amp; you".into())
+        );
+        assert_eq!(
+            description_excerpt(Some("<p><a href=\"x\">y</a> <b>z</b></p>")).unwrap(),
+            Some("<a href=\"x\">y</a> z".into())
+        );
     }
 
     #[test]
