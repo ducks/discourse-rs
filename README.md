@@ -88,7 +88,9 @@ run discourse-rs against a `make db-load` of the snapshot with
 
 ## Ported
 
-| Route | Discourse source | Notes |
+What comes next, and in what order, is in [ROADMAP.md](ROADMAP.md).
+
+| Route| Route | Discourse source | Notes |
 |---|---|---|
 | `GET /srv/status` | `forums_controller.rb` | |
 | `GET /site/basic-info` | `site_controller.rb#basic_info` | S3 upload CDN not supported (explicit 500) |
