@@ -1,8 +1,11 @@
+pub mod avatar;
 pub mod categories;
 pub mod color_scheme;
 pub mod config;
+pub mod emoji;
 pub mod guardian;
 pub mod i18n;
+pub mod letter_avatar;
 pub mod parity;
 pub mod routes;
 pub mod ruby;
@@ -10,6 +13,8 @@ pub mod schema;
 pub mod site;
 pub mod site_icons;
 pub mod site_settings;
+pub mod topic_list;
+pub mod topic_query;
 pub mod url;
 
 use std::sync::Arc;

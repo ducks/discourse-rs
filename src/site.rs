@@ -301,7 +301,7 @@ impl Site<'_> {
         if tagging {
             out.insert("tags_filter_regexp".into(), json!(TAGS_FILTER_REGEXP));
             let top_tags = self.top_tags().await?;
-            let nav_tags = self.navigation_menu_site_top_tags(&top_tags)?;
+            let nav_tags = self.navigation_menu_site_top_tags(&top_tags).await?;
             out.insert("top_tags".into(), Value::Array(top_tags));
             out.insert("navigation_menu_site_top_tags".into(), nav_tags);
         }
@@ -681,12 +681,59 @@ impl Site<'_> {
             .collect())
     }
 
-    /// The first five top tags as sidebar tags; empty when there are none.
-    fn navigation_menu_site_top_tags(&self, top_tags: &[Value]) -> Result<Value, SiteError> {
-        if top_tags.is_empty() {
+    /// The first five top tags through SidebarTagSerializer, in top-tag
+    /// order. `pm_only` uses public_topic_count for non-staff.
+    async fn navigation_menu_site_top_tags(
+        &mut self,
+        top_tags: &[Value],
+    ) -> Result<Value, SiteError> {
+        const SIDEBAR_TOP_TAGS_TO_SHOW: usize = 5;
+        let ids: Vec<i32> = top_tags
+            .iter()
+            .take(SIDEBAR_TOP_TAGS_TO_SHOW)
+            .filter_map(|t| t["id"].as_i64().and_then(|i| i32::try_from(i).ok()))
+            .collect();
+        if ids.is_empty() {
             return Ok(json!([]));
         }
-        Err(Unsupported("navigation_menu_site_top_tags (SidebarTagSerializer)").into())
+        #[derive(sqlx::FromRow)]
+        struct Tag {
+            id: i32,
+            name: String,
+            slug: Option<String>,
+            description: Option<String>,
+            public_topic_count: i32,
+            pm_topic_count: i32,
+        }
+        let tags: Vec<Tag> = sqlx::query_as(
+            "SELECT id, name, slug, description, public_topic_count, pm_topic_count \
+             FROM tags WHERE id = ANY($1)",
+        )
+        .bind(&ids)
+        .fetch_all(&mut *self.conn)
+        .await?;
+        let mut out: Vec<(usize, Value)> = tags
+            .into_iter()
+            .map(|t| {
+                let slug = t
+                    .slug
+                    .filter(|s| !s.is_empty())
+                    .unwrap_or_else(|| format!("{}-tag", t.id));
+                let pos = ids.iter().position(|id| *id == t.id).unwrap_or(usize::MAX);
+                (
+                    pos,
+                    json!({
+                        "id": t.id,
+                        "name": t.name,
+                        "slug": slug,
+                        "description": t.description,
+                        "pm_only": t.public_topic_count == 0 && t.pm_topic_count > 0,
+                    }),
+                )
+            })
+            .collect();
+        out.sort_by_key(|(pos, _)| *pos);
+        Ok(Value::Array(out.into_iter().map(|(_, v)| v).collect()))
     }
 
     async fn topic_featured_link_allowed_category_ids(&mut self) -> Result<Value, SiteError> {

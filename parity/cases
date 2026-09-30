@@ -16,3 +16,10 @@ GET /site/basic-info.json
 #   access_control: boards plugin ACLs
 #   categories/*/custom_fields: plugin-registered category custom fields
 GET /site.json ignore=/filters,/anonymous_list_filters,/homepage_choices,/top_menu_items,/anonymous_top_menu_items,/markdown_additional_options,/hashtag_configurations,/hashtag_icons,/access_control,/categories/*/custom_fields
+
+# list#latest (anonymous). Ignored: has_accepted_answer (solved plugin),
+# can_vote (topic-voting plugin)
+GET /latest.json ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
+GET /latest.json?page=1&per_page=2 ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
+# order=views would tie (all 0) and Discourse has no tiebreaker.
+GET /latest.json?order=created&ascending=true ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
