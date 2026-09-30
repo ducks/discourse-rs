@@ -86,6 +86,9 @@ fn next_url(list_path: &str, params: &ListParams, options: &Options) -> String {
     if options.no_definitions {
         pairs.push(("no_definitions", "true".into()));
     }
+    if options.no_subcategories {
+        pairs.push(("no_subcategories", "true".into()));
+    }
     if let Some(o) = &options.order {
         pairs.push(("order", o.clone()));
     }
@@ -103,6 +106,7 @@ async fn latest_document(
     state: &AppState,
     params: &ListParams,
     category: Option<&Category>,
+    no_subcategories: bool,
     list_path: &str,
 ) -> Result<Result<(serde_json::Value, SiteSettings), (StatusCode, String)>, AppError> {
     let mut conn = state.pool.acquire().await?;
@@ -117,6 +121,7 @@ async fn latest_document(
         // no_definitions is never set for category lists.
         options.category_id = Some(c.id);
         options.no_definitions = false;
+        options.no_subcategories = no_subcategories;
     }
     let guardian = Guardian::anonymous();
     let urls = Urls {
@@ -155,7 +160,7 @@ pub async fn latest_json(
     Query(params): Query<ListParams>,
 ) -> Result<Response, AppError> {
     let list_path = format!("{}/latest", state.config.globals.relative_url_root());
-    match latest_document(&state, &params, None, &list_path).await? {
+    match latest_document(&state, &params, None, false, &list_path).await? {
         Ok((json, _)) => Ok(Json(json).into_response()),
         Err((status, message)) => Ok((status, message).into_response()),
     }
@@ -168,7 +173,7 @@ pub async fn latest(
     Query(params): Query<ListParams>,
 ) -> Result<Response, AppError> {
     let list_path = format!("{}/latest", state.config.globals.relative_url_root());
-    let (json, settings) = match latest_document(&state, &params, None, &list_path).await? {
+    let (json, settings) = match latest_document(&state, &params, None, false, &list_path).await? {
         Ok(doc) => doc,
         Err((status, message)) => return Ok((status, message).into_response()),
     };
@@ -230,14 +235,19 @@ pub async fn category(
         Some(p) => (p.to_string(), true),
         None => (path.clone(), false),
     };
-    let (slug_path, action) = match path.strip_suffix("/l/latest") {
-        Some(p) => (p.to_string(), "/l/latest"),
-        None => (path.clone(), ""),
+    // `.../none` (no_subcategories) and `.../none/l/latest`, else `.../l/latest`.
+    let (slug_path, action, none) = if let Some(p) = path.strip_suffix("/none/l/latest") {
+        (p.to_string(), "/none/l/latest", true)
+    } else if let Some(p) = path.strip_suffix("/none") {
+        (p.to_string(), "/none", true)
+    } else if let Some(p) = path.strip_suffix("/l/latest") {
+        (p.to_string(), "/l/latest", false)
+    } else {
+        (path.clone(), "", false)
     };
-    if slug_path.contains("/l/") || slug_path.ends_with("/none") || slug_path.ends_with("/all") {
-        return Err(crate::Unsupported("category list filters other than latest").into());
+    if slug_path.contains("/l/") || slug_path.ends_with("/all") {
+        return Err(crate::Unsupported("category list filters top and hot").into());
     }
-
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
@@ -286,7 +296,7 @@ pub async fn category(
 
     let list_path = format!("{base_path}/c/{real_slug}{action}");
     let (doc, settings) =
-        match latest_document(&state, &params, Some(&category), &list_path).await? {
+        match latest_document(&state, &params, Some(&category), none, &list_path).await? {
             Ok(doc) => doc,
             Err((status, message)) => return Ok((status, message).into_response()),
         };

@@ -95,7 +95,7 @@ run discourse-rs against a `make db-load` of the snapshot with
 | `GET /site` | `site_controller.rb#site`, `Site.json_for`, `SiteSerializer`, `SiteCategorySerializer` | anonymous only; plugin-added keys not yet (see `parity/cases`) |
 | `GET /latest` | `list_controller.rb#latest`, `TopicQuery#list_latest`, `TopicListSerializer`, `TopicListItemSerializer` | anonymous only; `page`, `per_page`, `order`, `ascending`; plugin keys not yet |
 | `GET /t/:slug/:id(/:post_number)` | `topics_controller.rb#show`, `TopicView`, `TopicViewSerializer`, `PostSerializer` | anonymous only; slug and page redirects, 404 JSON; suggested topics deterministic (Rails randomizes); plugin keys not yet |
-| `GET /c/:slug_path/:id(/l/latest)` | `list_controller.rb#category_default`, `#category_latest` | anonymous only; subcategory scoping, category pins and sort, slug redirects; other filters and `/none` not yet |
+| `GET /c/:slug_path/:id(/l/latest)` | `list_controller.rb#category_default`, `#category_latest` | anonymous only; subcategory scoping, `/none`, category pins and sort, slug redirects; `top` and `hot` not yet |
 | `GET /categories` | `categories_controller.rb#index`, `CategoryList`, `CategoryDetailedSerializer` | anonymous only; featured topics; no pagination, parent, tag filter or `subcategory_list` yet |
 
 Supporting ports: SiteSetting (YAML defaults, `locale_default`, typed DB
