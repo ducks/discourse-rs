@@ -25,6 +25,8 @@ pub struct ListParams {
     per_page: Option<String>,
     order: Option<String>,
     ascending: Option<String>,
+    /// top lists only; not a TopicQuery option, so never echoed unless given
+    period: Option<String>,
 }
 
 /// `build_topic_list_options` + `TopicQuery.validate?`: a bad value is
@@ -78,7 +80,7 @@ fn build_options(
 
 /// `construct_url_with(:next, opts)`: `latest_path(opts + page+1)`, params
 /// sorted by name, `.json` dropped.
-fn next_url(list_path: &str, params: &ListParams, options: &Options) -> String {
+fn next_url(list_path: &str, params: &ListParams, options: &Options, top: bool) -> String {
     let mut pairs: Vec<(&str, String)> = Vec::new();
     if let Some(a) = params.ascending.as_deref().filter(|a| !a.is_empty()) {
         pairs.push(("ascending", a.to_string()));
@@ -93,8 +95,13 @@ fn next_url(list_path: &str, params: &ListParams, options: &Options) -> String {
         pairs.push(("order", o.clone()));
     }
     pairs.push(("page", (options.page + 1).to_string()));
-    if let Some(p) = options.per_page {
+    if let Some(p) = options.per_page.filter(|_| true) {
         pairs.push(("per_page", p.to_string()));
+    }
+    if top {
+        if let Some(period) = params.period.as_deref().filter(|p| !p.is_empty()) {
+            pairs.push(("period", period.to_string()));
+        }
     }
     pairs.sort_by(|a, b| a.0.cmp(b.0));
     let query: Vec<String> = pairs.into_iter().map(|(k, v)| format!("{k}={v}")).collect();
@@ -102,11 +109,12 @@ fn next_url(list_path: &str, params: &ListParams, options: &Options) -> String {
 }
 
 /// The /latest document, shared by the JSON and HTML responses.
-async fn latest_document(
+async fn list_document(
     state: &AppState,
     params: &ListParams,
     category: Option<&Category>,
     no_subcategories: bool,
+    kind: ListKind,
     list_path: &str,
 ) -> Result<Result<(serde_json::Value, SiteSettings), (StatusCode, String)>, AppError> {
     let mut conn = state.pool.acquire().await?;
@@ -116,6 +124,30 @@ async fn latest_document(
         Ok(o) => o,
         Err(e) => return Ok(Err(e)),
     };
+    let mut for_period: Option<String> = None;
+    if let ListKind::Top = kind {
+        // top_#{period}: per_page defaults to topics_per_period_in_top_page and
+        // is always carried in the next-page URL.
+        if options.per_page.is_none() {
+            options.per_page = Some(settings.get("topics_per_period_in_top_page")?.to_i());
+        }
+        let period = match params.period.as_deref().filter(|p| !p.is_empty()) {
+            Some(p) => p.to_string(),
+            None => best_period_for(&mut conn, &settings, category.map(|c| c.id)).await?,
+        };
+        if !crate::topic_query::PERIODS.contains(&period.as_str()) {
+            return Ok(Err((
+                StatusCode::BAD_REQUEST,
+                "Invalid period. Valid periods are all, yearly, quarterly, monthly, weekly, daily"
+                    .into(),
+            )));
+        }
+        for_period = Some(period);
+    }
+    // no_definitions only when `params[:category].blank? && filter == :latest`.
+    if kind != ListKind::Latest {
+        options.no_definitions = false;
+    }
     if let Some(c) = category {
         // set_category puts the id in params[:category], which is why
         // no_definitions is never set for category lists.
@@ -129,18 +161,23 @@ async fn latest_document(
         settings: &settings,
     };
 
-    let list = TopicQuery {
+    let mut query = TopicQuery {
         conn: &mut conn,
         settings: &settings,
         guardian: &guardian,
         options: options.clone(),
         category: Default::default(),
-    }
-    .list_latest()
-    .await?;
+        filter: Default::default(),
+    };
+    let list = match (&kind, &for_period) {
+        (ListKind::Latest, _) => query.list_latest().await?,
+        (ListKind::Top, Some(period)) => query.list_top_for(period).await?,
+        (ListKind::Top, None) => unreachable!("top lists always resolve a period"),
+        (ListKind::Hot, _) => query.list_hot().await?,
+    };
 
-    let more = next_url(list_path, params, &options);
-    let json = TopicListSerializer {
+    let more = next_url(list_path, params, &options, kind == ListKind::Top);
+    let mut json = TopicListSerializer {
         conn: &mut conn,
         settings: &settings,
         i18n: &state.i18n,
@@ -151,6 +188,21 @@ async fn latest_document(
     }
     .serialize(&list)
     .await?;
+    if let Some(period) = &for_period {
+        // TopicList#for_period, emitted after more_topics_url.
+        if let Some(list) = json["topic_list"].as_object_mut() {
+            let entries: Vec<(String, serde_json::Value)> =
+                list.iter().map(|(k, v)| (k.clone(), v.clone())).collect();
+            list.clear();
+            for (k, v) in entries {
+                list.insert(k.clone(), v);
+                let has_more = list.contains_key("more_topics_url");
+                if (k == "filter" && !has_more) || k == "more_topics_url" {
+                    list.insert("for_period".into(), serde_json::json!(period));
+                }
+            }
+        }
+    }
     Ok(Ok((json, settings)))
 }
 
@@ -160,7 +212,7 @@ pub async fn latest_json(
     Query(params): Query<ListParams>,
 ) -> Result<Response, AppError> {
     let list_path = format!("{}/latest", state.config.globals.relative_url_root());
-    match latest_document(&state, &params, None, false, &list_path).await? {
+    match list_document(&state, &params, None, false, ListKind::Latest, &list_path).await? {
         Ok((json, _)) => Ok(Json(json).into_response()),
         Err((status, message)) => Ok((status, message).into_response()),
     }
@@ -173,10 +225,11 @@ pub async fn latest(
     Query(params): Query<ListParams>,
 ) -> Result<Response, AppError> {
     let list_path = format!("{}/latest", state.config.globals.relative_url_root());
-    let (json, settings) = match latest_document(&state, &params, None, false, &list_path).await? {
-        Ok(doc) => doc,
-        Err((status, message)) => return Ok((status, message).into_response()),
-    };
+    let (json, settings) =
+        match list_document(&state, &params, None, false, ListKind::Latest, &list_path).await? {
+            Ok(doc) => doc,
+            Err((status, message)) => return Ok((status, message).into_response()),
+        };
     let mut conn = state.pool.acquire().await?;
     let base_path = state.config.globals.relative_url_root();
     let site = crate::html::Site::from_settings(&settings, base_path)?;
@@ -207,7 +260,7 @@ mod tests {
             ..Options::default()
         };
         assert_eq!(
-            next_url("/latest", &p, &o),
+            next_url("/latest", &p, &o, false),
             "/latest?no_definitions=true&page=3&per_page=10"
         );
         let o = Options {
@@ -215,7 +268,7 @@ mod tests {
             ..Options::default()
         };
         assert_eq!(
-            next_url("/forum/latest", &ListParams::default(), &o),
+            next_url("/forum/latest", &ListParams::default(), &o, false),
             "/forum/latest?no_definitions=true&page=1"
         );
     }
@@ -236,17 +289,35 @@ pub async fn category(
         None => (path.clone(), false),
     };
     // `.../none` (no_subcategories) and `.../none/l/latest`, else `.../l/latest`.
-    let (slug_path, action, none) = if let Some(p) = path.strip_suffix("/none/l/latest") {
-        (p.to_string(), "/none/l/latest", true)
-    } else if let Some(p) = path.strip_suffix("/none") {
-        (p.to_string(), "/none", true)
-    } else if let Some(p) = path.strip_suffix("/l/latest") {
-        (p.to_string(), "/l/latest", false)
-    } else {
-        (path.clone(), "", false)
+    // `.../none` (no_subcategories), `.../l/{latest,top,hot}`, or both.
+    let mut rest = path.as_str();
+    let mut kind = ListKind::Latest;
+    let mut action = String::new();
+    for (suffix, k) in [
+        ("/l/latest", ListKind::Latest),
+        ("/l/top", ListKind::Top),
+        ("/l/hot", ListKind::Hot),
+    ] {
+        if let Some(p) = rest.strip_suffix(suffix) {
+            rest = p;
+            kind = k;
+            action = suffix.to_string();
+            break;
+        }
+    }
+    let none = match rest.strip_suffix("/none") {
+        Some(p) => {
+            rest = p;
+            action = format!("/none{action}");
+            true
+        }
+        None => false,
     };
+    let slug_path = rest.to_string();
     if slug_path.contains("/l/") || slug_path.ends_with("/all") {
-        return Err(crate::Unsupported("category list filters top and hot").into());
+        return Err(
+            crate::Unsupported("category list filters other than latest, top and hot").into(),
+        );
     }
     let mut conn = state.pool.acquire().await?;
     let settings =
@@ -280,23 +351,20 @@ pub async fn category(
     }
     drop(conn);
 
-    // category_default_view: the category's default_view if anonymous users
-    // may list it, else latest. Only latest is ported.
+    // category_default_view: the category's default_view when anonymous users
+    // may list it (latest, top, hot), else latest. The URL stays the
+    // category_default one.
     if action.is_empty() {
-        if let Some(view) = category
-            .default_view
-            .as_deref()
-            .filter(|v| !v.is_empty() && *v != "latest")
-        {
-            if ["top", "hot"].contains(&view) {
-                return Err(crate::Unsupported("category default_view top/hot").into());
-            }
-        }
+        kind = match category.default_view.as_deref() {
+            Some("top") => ListKind::Top,
+            Some("hot") => ListKind::Hot,
+            _ => ListKind::Latest,
+        };
     }
 
     let list_path = format!("{base_path}/c/{real_slug}{action}");
     let (doc, settings) =
-        match latest_document(&state, &params, Some(&category), none, &list_path).await? {
+        match list_document(&state, &params, Some(&category), none, kind, &list_path).await? {
             Ok(doc) => doc,
             Err((status, message)) => return Ok((status, message).into_response()),
         };
@@ -370,4 +438,145 @@ async fn categories_response(
 pub struct CategoriesParams {
     include_topics: Option<String>,
     page: Option<String>,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum ListKind {
+    Latest,
+    Top,
+    Hot,
+}
+
+/// `ListController.best_period_for(nil, category_id)`: the category's
+/// default_top_period (else top_page_default_timeframe), unless a period
+/// among [default, all] has a full page of scored topics.
+async fn best_period_for(
+    conn: &mut sqlx::PgConnection,
+    settings: &SiteSettings,
+    category_id: Option<i32>,
+) -> Result<String, AppError> {
+    let site_default = settings.get("top_page_default_timeframe")?.to_s();
+    let mut default = site_default.clone();
+    if let Some(id) = category_id {
+        let period: Option<Option<String>> =
+            sqlx::query_scalar("SELECT default_top_period FROM categories WHERE id = $1")
+                .bind(id)
+                .fetch_optional(&mut *conn)
+                .await?;
+        if let Some(Some(p)) = period {
+            default = p;
+        }
+    }
+    if !crate::topic_query::PERIODS.contains(&default.as_str()) {
+        default = site_default;
+    }
+    let per_page = settings.get("topics_per_period_in_top_page")?.to_i();
+    let mut candidates = vec![default.clone()];
+    if default != "all" {
+        candidates.push("all".to_string());
+    }
+    for period in candidates {
+        if !crate::topic_query::PERIODS.contains(&period.as_str()) {
+            continue;
+        }
+        let sql = match category_id {
+            Some(_) => format!(
+                "SELECT count(*) FROM (SELECT 1 FROM top_topics JOIN topics ON topics.id = top_topics.topic_id \
+                 WHERE top_topics.{period}_score > 0 AND topics.category_id = $1 LIMIT $2) t"
+            ),
+            None => format!(
+                "SELECT count(*) FROM (SELECT 1 FROM top_topics WHERE {period}_score > 0 AND $1::int IS NULL LIMIT $2) t"
+            ),
+        };
+        let count: i64 = sqlx::query_scalar(&sql)
+            .bind(category_id)
+            .bind(per_page)
+            .fetch_one(&mut *conn)
+            .await?;
+        if count == per_page {
+            return Ok(period);
+        }
+    }
+    Ok(default)
+}
+
+/// GET /top(.json) and /hot(.json).
+pub async fn top(
+    State(state): State<AppState>,
+    Query(params): Query<ListParams>,
+) -> Result<Response, AppError> {
+    front_list(state, params, ListKind::Top, false).await
+}
+
+pub async fn top_json(
+    State(state): State<AppState>,
+    Query(params): Query<ListParams>,
+) -> Result<Response, AppError> {
+    front_list(state, params, ListKind::Top, true).await
+}
+
+pub async fn hot(
+    State(state): State<AppState>,
+    Query(params): Query<ListParams>,
+) -> Result<Response, AppError> {
+    front_list(state, params, ListKind::Hot, false).await
+}
+
+pub async fn hot_json(
+    State(state): State<AppState>,
+    Query(params): Query<ListParams>,
+) -> Result<Response, AppError> {
+    front_list(state, params, ListKind::Hot, true).await
+}
+
+/// `/top/:period(.json)` -> 301 to `/top?period=`.
+pub async fn top_period_redirect(
+    State(state): State<AppState>,
+    Path(period): Path<String>,
+    headers: HeaderMap,
+) -> Response {
+    let (period, format) = match period.strip_suffix(".json") {
+        Some(p) => (p.to_string(), ".json"),
+        None => (period, ""),
+    };
+    let host = headers
+        .get(header::HOST)
+        .and_then(|h| h.to_str().ok())
+        .unwrap_or("localhost");
+    let location = format!(
+        "http://{host}{}/top{format}?period={period}",
+        state.config.globals.relative_url_root()
+    );
+    (
+        StatusCode::MOVED_PERMANENTLY,
+        [(header::LOCATION, location)],
+    )
+        .into_response()
+}
+
+async fn front_list(
+    state: AppState,
+    params: ListParams,
+    kind: ListKind,
+    json: bool,
+) -> Result<Response, AppError> {
+    let name = match kind {
+        ListKind::Latest => "latest",
+        ListKind::Top => "top",
+        ListKind::Hot => "hot",
+    };
+    let list_path = format!("{}/{name}", state.config.globals.relative_url_root());
+    let (doc, settings) =
+        match list_document(&state, &params, None, false, kind, &list_path).await? {
+            Ok(doc) => doc,
+            Err((status, message)) => return Ok((status, message).into_response()),
+        };
+    if json {
+        return Ok(Json(doc).into_response());
+    }
+    let mut conn = state.pool.acquire().await?;
+    let site =
+        crate::html::Site::from_settings(&settings, state.config.globals.relative_url_root())?;
+    let page = crate::html::latest_page(&mut conn, site, &doc).await?;
+    Ok(Html(page.render().map_err(crate::html::HtmlError::from)?).into_response())
 }
