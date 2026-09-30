@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+# Restore a Discourse backup (the .tar.gz Discourse itself produces) into a
+# local database and directory discourse-rs can serve.
+#
+# A backup holds dump.sql.gz (schema + data), uploads/ and meta.json
+# ({"version": <latest migration>}). The dump is loaded as-is into a fresh
+# database; the uploads land under <dest>/uploads so <dest> works as
+# PUBLIC_DIR. Extensions the dump expects (hstore, pg_trgm, unaccent,
+# vector) must be installable, which shell.nix's Postgres provides.
+#
+# discourse-rs refuses to start if the database is behind the vendored
+# schema. If that happens, vendor Discourse at the backup's version:
+#   scripts/vendor-discourse <checkout> $(scripts/discourse-commit-for-migration <checkout> <version>)
+#
+# Usage: scripts/restore-backup [--force] <backup.tar.gz> <dbname> [dest-dir]
+set -euo pipefail
+
+force=0
+if [ "${1:-}" = "--force" ]; then
+  force=1
+  shift
+fi
+if [ $# -lt 2 ]; then
+  echo "usage: $0 [--force] <backup.tar.gz> <dbname> [dest-dir]" >&2
+  exit 64
+fi
+
+archive="$1"
+db="$2"
+dest="${3:-backups/$db}"
+
+if [ ! -f "$archive" ]; then
+  echo "no such file: $archive" >&2
+  exit 1
+fi
+
+exists="$(psql -X -d postgres -Atc "SELECT 1 FROM pg_database WHERE datname = '$db'")"
+if [ "$exists" = "1" ]; then
+  if [ "$force" -ne 1 ]; then
+    echo "database $db already exists; pass --force to drop and reload it" >&2
+    exit 1
+  fi
+  dropdb "$db"
+fi
+
+mkdir -p "$dest"
+tar -xzf "$archive" -C "$dest"
+if [ ! -f "$dest/dump.sql.gz" ]; then
+  echo "$archive has no dump.sql.gz" >&2
+  exit 1
+fi
+
+version="$(sed -n 's/.*"version" *: *\([0-9]*\).*/\1/p' "$dest/meta.json" 2>/dev/null || true)"
+createdb "$db"
+# Like BackupRestore::DatabaseRestorer: the public schema and the extensions
+# exist already (created here, since the dump owner may not be superuser),
+# and the discourse_functions read-only-column triggers are dropped since
+# their functions are not in a public-schema dump.
+psql -X -q -v ON_ERROR_STOP=1 -d "$db" -c "CREATE EXTENSION IF NOT EXISTS hstore; CREATE EXTENSION IF NOT EXISTS pg_trgm; CREATE EXTENSION IF NOT EXISTS unaccent; CREATE EXTENSION IF NOT EXISTS vector;"
+gunzip -c "$dest/dump.sql.gz" \
+  | sed -E '/^(CREATE SCHEMA public;|COMMENT ON SCHEMA public|CREATE EXTENSION|COMMENT ON EXTENSION|SET transaction_timeout|\\restrict|\\unrestrict)/d; /EXECUTE FUNCTION discourse_functions\./d' \
+  | psql -X -q -v ON_ERROR_STOP=1 -d "$db" -o /dev/null
+
+tables="$(psql -X -d "$db" -Atc "SELECT count(*) FROM pg_tables WHERE schemaname = 'public'")"
+topics="$(psql -X -d "$db" -Atc "SELECT count(*) FROM topics")"
+uploads="$(find "$dest/uploads" -type f 2>/dev/null | wc -l)"
+echo "restored $db from $archive: $tables tables, $topics topics, $uploads upload files, backup version ${version:-unknown}"
+echo "run with: PUBLIC_DIR=$dest DATABASE_URL=<url to $db>"

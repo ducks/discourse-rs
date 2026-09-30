@@ -14,6 +14,10 @@ pub struct Config {
     /// Directory served at /images and /uploads: a Discourse `public/` (or a
     /// restored backup's), from PUBLIC_DIR.
     pub public_dir: std::path::PathBuf,
+    /// A Discourse checkout (DISCOURSE_SRC), whose public/images and bundled
+    /// discourse-emojis gem serve the stock images and emoji a backup
+    /// doesn't carry. Optional.
+    pub discourse_src: Option<std::path::PathBuf>,
     pub globals: GlobalSettings,
 }
 
@@ -156,7 +160,32 @@ impl Config {
             rails_env,
             unicorn_port: var("UNICORN_PORT").unwrap_or("3000").to_string(),
             public_dir: var("PUBLIC_DIR").unwrap_or("public").into(),
+            discourse_src: var("DISCOURSE_SRC")
+                .filter(|s| !s.is_empty())
+                .map(Into::into),
             globals,
         })
+    }
+}
+
+impl Config {
+    /// The discourse-emojis gem's `dist/emoji` inside the checkout's bundle,
+    /// where `/images/emoji/<set>/<name>.png` files live.
+    pub fn emoji_dir(&self) -> Option<std::path::PathBuf> {
+        let src = self.discourse_src.as_ref()?;
+        let rubies = std::fs::read_dir(src.join(".bundle/ruby")).ok()?;
+        for ruby in rubies.flatten() {
+            let gems = std::fs::read_dir(ruby.path().join("gems")).ok()?;
+            for gem in gems.flatten() {
+                let name = gem.file_name();
+                if name.to_string_lossy().starts_with("discourse-emojis-") {
+                    let dir = gem.path().join("dist/emoji");
+                    if dir.is_dir() {
+                        return Some(dir);
+                    }
+                }
+            }
+        }
+        None
     }
 }

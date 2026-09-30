@@ -174,6 +174,7 @@ mod tests {
             rails_env: env,
             unicorn_port: "3000".into(),
             public_dir: "public".into(),
+            discourse_src: None,
             globals: GlobalSettings::from_vars(globals.iter().copied()),
         }
     }

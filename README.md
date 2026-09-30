@@ -127,3 +127,25 @@ API document instead. The structure follows Discourse's crawler views.
 
 `PUBLIC_DIR` (default `public`) is served at `/images` and `/uploads`: point
 it at a Discourse `public/` directory or a restored backup's.
+
+## Serving a backup
+
+```bash
+scripts/restore-backup site-backup.tar.gz mysite            # -> backups/mysite/
+PUBLIC_DIR=backups/mysite DISCOURSE_SRC=~/discourse/discourse \
+  DATABASE_URL=postgresql://localhost:5442/mysite?host=$PGDATA cargo run
+```
+
+`restore-backup` loads the backup's `dump.sql.gz` into a fresh database and
+unpacks its `uploads/` where `PUBLIC_DIR` serves them. `DISCOURSE_SRC` (a
+Discourse checkout with its bundle installed) supplies the stock images and
+the emoji set a backup doesn't carry.
+
+discourse-rs refuses a database behind the vendored schema. For an older
+backup, vendor Discourse at the commit that matches the backup's migration
+version (`meta.json`):
+
+```bash
+scripts/vendor-discourse ~/discourse/discourse \
+  $(scripts/discourse-commit-for-migration ~/discourse/discourse <version>)
+```

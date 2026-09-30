@@ -10,6 +10,7 @@ use axum::routing::get;
 use tower_http::services::ServeDir;
 
 use crate::AppState;
+use crate::config::Config;
 
 const SITE_CSS: &str = include_str!("../../static/site.css");
 
@@ -20,8 +21,17 @@ async fn site_css() -> impl IntoResponse {
     )
 }
 
-pub fn router(public_dir: &std::path::Path) -> Router<AppState> {
-    Router::new()
+pub fn router(config: &Config) -> Router<AppState> {
+    let public = &config.public_dir;
+    // Site images first (a backup's or an install's public/), then the
+    // stock ones from a Discourse checkout.
+    let images = match &config.discourse_src {
+        Some(src) => {
+            ServeDir::new(public.join("images")).fallback(ServeDir::new(src.join("public/images")))
+        }
+        None => ServeDir::new(public.join("images")).fallback(ServeDir::new(public.join("images"))),
+    };
+    let mut router = Router::new()
         .route("/srv/status", get(srv::status))
         .route("/", get(list::latest))
         .route("/latest", get(list::latest))
@@ -34,6 +44,9 @@ pub fn router(public_dir: &std::path::Path) -> Router<AppState> {
         .route("/site/basic-info", get(site::basic_info))
         .route("/site/basic-info.json", get(site::basic_info))
         .route("/assets/site.css", get(site_css))
-        .nest_service("/images", ServeDir::new(public_dir.join("images")))
-        .nest_service("/uploads", ServeDir::new(public_dir.join("uploads")))
+        .nest_service("/uploads", ServeDir::new(public.join("uploads")));
+    if let Some(emoji) = config.emoji_dir() {
+        router = router.nest_service("/images/emoji", ServeDir::new(emoji));
+    }
+    router.nest_service("/images", images)
 }
