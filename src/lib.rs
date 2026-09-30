@@ -44,7 +44,7 @@ pub struct AppState {
 }
 
 pub fn app(state: AppState) -> Router {
-    routes::router(&state.config.clone())
+    routes::router(&state)
         .with_state(state)
         .layer(TraceLayer::new_for_http())
 }

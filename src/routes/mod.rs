@@ -1,4 +1,5 @@
 mod list;
+mod login_required;
 mod site;
 mod srv;
 mod tags;
@@ -11,7 +12,6 @@ use axum::routing::get;
 use tower_http::services::ServeDir;
 
 use crate::AppState;
-use crate::config::Config;
 
 const SITE_CSS: &str = include_str!("../../static/site.css");
 
@@ -22,7 +22,8 @@ async fn site_css() -> impl IntoResponse {
     )
 }
 
-pub fn router(config: &Config) -> Router<AppState> {
+pub fn router(state: &AppState) -> Router<AppState> {
+    let config = &state.config;
     let public = &config.public_dir;
     // Site images first (a backup's or an install's public/), then the
     // stock ones from a Discourse checkout.
@@ -61,5 +62,10 @@ pub fn router(config: &Config) -> Router<AppState> {
     if let Some(emoji) = config.emoji_dir() {
         router = router.nest_service("/images/emoji", ServeDir::new(emoji));
     }
-    router.nest_service("/images", images)
+    router
+        .nest_service("/images", images)
+        .layer(axum::middleware::from_fn_with_state(
+            state.clone(),
+            login_required::gate,
+        ))
 }

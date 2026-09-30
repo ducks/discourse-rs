@@ -102,6 +102,7 @@ What comes next, and in what order, is in [ROADMAP.md](ROADMAP.md).
 | `GET /categories` | `categories_controller.rb#index`, `CategoryList`, `CategoryDetailedSerializer` | anonymous only; featured topics; no pagination, parent, tag filter or `subcategory_list` yet |
 | `GET /tag/:name`, `GET /tag/:slug/:id(/l/:filter)`, `GET /tags/c/:slug_path/:id(/none)/:tag` | `tags_controller.rb#show_*`, `TopicQuery#filter_by_tags`, `TagSerializer`, `DiscourseTagging.visible_tags` | anonymous only; `tags[]` intersections, synonyms, tag-group and category visibility, canonical redirects; login-only filters and `tags_listed_by_group` not ported |
 | `GET /tags` | `tags_controller.rb#index` | anonymous only; `tags_listed_by_group` off |
+| any route, `login_required` on | `application_controller.rb#redirect_to_login_if_required` | JSON 403 `not_logged_in` (topics add extras), HTML 302 to `/login` with `destination_url` cookie, `/` and `/login` render a login page; `/srv/status`, `/site/basic-info` and static files stay open; `auth_immediately` with DiscourseConnect or a single external login not ported |
 
 Supporting ports: SiteSetting (YAML defaults, `locale_default`, typed DB
 rows, GlobalSetting shadowing, upcoming-change promotion), server-side I18n
