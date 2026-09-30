@@ -46,7 +46,7 @@ pub struct TopicRow {
     pub visibility_reason_id: Option<i32>,
 }
 
-const TOPIC_COLUMNS: &str = "topics.id, topics.title, topics.fancy_title, topics.slug, topics.posts_count, \
+pub const TOPIC_COLUMNS: &str = "topics.id, topics.title, topics.fancy_title, topics.slug, topics.posts_count, \
     topics.reply_count, topics.highest_post_number, topics.image_upload_id, topics.created_at, \
     topics.last_posted_at, topics.bumped_at, topics.archetype, topics.pinned_at, \
     topics.pinned_globally, topics.excerpt, topics.visible, topics.closed, topics.archived, \
@@ -254,5 +254,81 @@ mod tests {
         let o = Options::default();
         assert_eq!(o.per_page.unwrap_or(DEFAULT_PER_PAGE), 30);
         assert!(!o.ascending);
+    }
+}
+
+/// `Topic#fancy_title`: the stored column, else `Topic.fancy_title(title)`
+/// computed on read. Only the trivial case is ported: a title with nothing
+/// for HtmlPrettify (quotes, dashes, ellipses, backticks, entities) or the
+/// emoji unescape to rewrite comes back HTML-escaped, which for such titles
+/// is the title itself.
+pub fn fancy_title(t: &TopicRow) -> Result<String, Unsupported> {
+    if let Some(f) = &t.fancy_title {
+        return Ok(f.clone());
+    }
+    let plain = t.title.chars().all(|c| {
+        c.is_alphanumeric() && c.is_ascii()
+            || " ,.:;!?()/_[]{}%#@+=*$^|~".contains(c)
+            || c.is_alphabetic()
+    });
+    if !plain || crate::emoji::has_emoji_code(&t.title) {
+        return Err(Unsupported(
+            "computing fancy_title (HtmlPrettify + emoji unescape)",
+        ));
+    }
+    Ok(t.title.clone())
+}
+
+#[cfg(test)]
+mod fancy_title_tests {
+    use super::*;
+    use chrono::NaiveDateTime;
+
+    fn row(title: &str, fancy: Option<&str>) -> TopicRow {
+        let t = NaiveDateTime::parse_from_str("2026-01-01 00:00:00", "%Y-%m-%d %H:%M:%S").unwrap();
+        TopicRow {
+            id: 1,
+            title: title.into(),
+            fancy_title: fancy.map(str::to_string),
+            slug: None,
+            posts_count: 0,
+            reply_count: 0,
+            highest_post_number: 0,
+            image_upload_id: None,
+            created_at: t,
+            last_posted_at: None,
+            bumped_at: t,
+            archetype: "regular".into(),
+            pinned_at: None,
+            pinned_globally: false,
+            excerpt: None,
+            visible: true,
+            closed: false,
+            archived: false,
+            views: 0,
+            like_count: 0,
+            has_summary: false,
+            user_id: None,
+            last_post_user_id: 1,
+            featured_user1_id: None,
+            featured_user2_id: None,
+            featured_user3_id: None,
+            featured_user4_id: None,
+            category_id: None,
+            featured_link: None,
+            visibility_reason_id: None,
+        }
+    }
+
+    #[test]
+    fn stored_or_trivially_computed() {
+        assert_eq!(fancy_title(&row("x", Some("stored"))).unwrap(), "stored");
+        assert_eq!(
+            fancy_title(&row("Parity fixture: unlisted topic", None)).unwrap(),
+            "Parity fixture: unlisted topic"
+        );
+        assert!(fancy_title(&row("it's \"quoted\"", None)).is_err());
+        assert!(fancy_title(&row("dash -- dash", None)).is_err());
+        assert!(fancy_title(&row("Hi :wave:", None)).is_err());
     }
 }
