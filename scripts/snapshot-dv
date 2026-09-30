@@ -8,7 +8,8 @@
 #
 # Excluded: schema_migrations and ar_internal_metadata (structure.sql fills
 # them), the compiled asset caches (5 MB of CSS/JS nothing reads yet), and
-# the scheduler bookkeeping tables that change every minute. pg_dump 15+
+# the scheduler bookkeeping tables that change every minute, and search_logs
+# (every probe of the reference leaves rows there). pg_dump 15+
 # emits a random \restrict token per run; it is stripped so re-snapshots
 # diff cleanly.
 #
@@ -45,6 +46,7 @@ fi
     --exclude-table=javascript_caches \
     --exclude-table=scheduler_stats \
     --exclude-table=problem_check_trackers \
+    --exclude-table=search_logs \
     discourse_development | grep -vE '^\\(un)?restrict '
 } > "$out"
 

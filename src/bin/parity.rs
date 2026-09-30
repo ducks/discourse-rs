@@ -24,6 +24,9 @@ struct Cli {
     /// Only run cases whose request contains this string.
     #[arg(long, global = true)]
     only: Option<String>,
+    /// Pause between requests to Rails, which rate-limits anonymous search.
+    #[arg(long, global = true, default_value_t = 0)]
+    delay_ms: u64,
     #[command(subcommand)]
     command: Command,
 }
@@ -76,6 +79,9 @@ async fn run(cli: Cli) -> Result<bool, String> {
     let mut skipped = 0;
 
     for case in &cases {
+        if cli.delay_ms > 0 {
+            tokio::time::sleep(std::time::Duration::from_millis(cli.delay_ms)).await;
+        }
         let outcome = match &cli.command {
             Command::Record { rails } => {
                 let response = fetch(&client, rails, case).await?;

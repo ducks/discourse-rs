@@ -1,0 +1,7 @@
+{
+  "request": "GET /search/query.json?term=fixture&type_filter=private_messages",
+  "source": "http://127.0.0.1:3042",
+  "status": 403,
+  "content_type": "application/json; charset=utf-8",
+  "body": "{\"errors\":[\"You are not permitted to view the requested resource.\"],\"error_type\":\"invalid_access\"}"
+}

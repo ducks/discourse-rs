@@ -72,3 +72,26 @@ GET /tag/99.json
 
 # tags#index
 GET /tags.json
+
+# search#show (full page) and search#query (header facets), plain terms
+GET /search.json?q=fixture ignore=/grouped_search_result/search_log_id,/topics/*/has_accepted_answer
+GET /search.json?q=fixture%20tagged ignore=/grouped_search_result/search_log_id,/topics/*/has_accepted_answer
+GET /search.json?q=%22tagged%20in%20a%22 ignore=/grouped_search_result/search_log_id,/topics/*/has_accepted_answer
+GET /search.json?q=Parity&page=1 ignore=/grouped_search_result/search_log_id,/topics/*/has_accepted_answer
+GET /search.json?q=ab%20cd ignore=/grouped_search_result/search_log_id,/topics/*/has_accepted_answer
+GET /search.json?q=nothingmatchesatall ignore=/grouped_search_result/search_log_id,/topics/*/has_accepted_answer
+GET /search.json?q=it%27s ignore=/grouped_search_result/search_log_id,/topics/*/has_accepted_answer
+GET /search.json
+GET /search.json?q=ba
+GET /search.json?q=fixture&page=11
+GET /search.json?q=fixture&page=%203
+GET /search/query.json?term=fixture ignore=/grouped_search_result/search_log_id,/topics/*/has_accepted_answer
+GET /search/query.json?term=general ignore=/grouped_search_result/search_log_id,/topics/*/has_accepted_answer
+GET /search/query.json?term=user ignore=/grouped_search_result/search_log_id,/topics/*/has_accepted_answer
+GET /search/query.json?term=howto ignore=/grouped_search_result/search_log_id,/topics/*/has_accepted_answer
+GET /search/query.json?term=user&type_filter=user ignore=/grouped_search_result/search_log_id,/topics/*/has_accepted_answer
+GET /search/query.json?term=fixture&type_filter=topic ignore=/grouped_search_result/search_log_id,/topics/*/has_accepted_answer
+GET /search/query.json?term=fixture&type_filter=exclude_topics ignore=/grouped_search_result/search_log_id,/topics/*/has_accepted_answer
+GET /search/query.json?term=fixture&type_filter=private_messages
+GET /search/query.json?term=fixture&type_filter=bogus
+GET /search/query.json

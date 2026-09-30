@@ -57,14 +57,18 @@ async fn run() -> Result<(), Box<dyn Error>> {
         config,
         site_setting_defs: Arc::new(site_setting_defs),
         i18n: Arc::new(i18n),
+        search_log_cache: Default::default(),
     };
-    axum::serve(listener, app(state))
-        .with_graceful_shutdown(async {
-            if let Err(e) = tokio::signal::ctrl_c().await {
-                tracing::error!("installing ctrl-c handler: {e}");
-            }
-        })
-        .await?;
+    axum::serve(
+        listener,
+        app(state).into_make_service_with_connect_info::<std::net::SocketAddr>(),
+    )
+    .with_graceful_shutdown(async {
+        if let Err(e) = tokio::signal::ctrl_c().await {
+            tracing::error!("installing ctrl-c handler: {e}");
+        }
+    })
+    .await?;
 
     Ok(())
 }

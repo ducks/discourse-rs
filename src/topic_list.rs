@@ -29,6 +29,9 @@ pub enum Mode {
     /// ListableTopicSerializer with an embedded last_poster (featured topics
     /// in /categories.json)
     Listable,
+    /// SearchTopicListItemSerializer: Listable without image_url, plus tags
+    /// and category_id
+    SearchItem,
 }
 
 /// `Topic.share_thumbnail_size`
@@ -232,6 +235,15 @@ impl TopicListSerializer<'_> {
                 .flatten(),
             );
         }
+        self.user_lookup_for(&ids).await
+    }
+
+    /// UserLookup for an explicit id list.
+    pub(crate) async fn user_lookup_for(
+        &mut self,
+        ids: &[i32],
+    ) -> Result<HashMap<i32, LookupUser>, TopicListError> {
+        let mut ids = ids.to_vec();
         ids.sort_unstable();
         ids.dedup();
         let users: Vec<LookupUser> = sqlx::query_as(
@@ -315,7 +327,9 @@ impl TopicListSerializer<'_> {
         out.insert("posts_count".into(), json!(t.posts_count));
         out.insert("reply_count".into(), json!(t.reply_count));
         out.insert("highest_post_number".into(), json!(t.highest_post_number));
-        out.insert("image_url".into(), self.image_url(t).await?);
+        if mode != Mode::SearchItem {
+            out.insert("image_url".into(), self.image_url(t).await?);
+        }
         out.insert("created_at".into(), json!(time_json(t.created_at)));
         out.insert(
             "last_posted_at".into(),
@@ -354,6 +368,10 @@ impl TopicListSerializer<'_> {
         }
         if mode == Mode::Listable {
             return self.finish_listable(out, t, posters).await;
+        }
+        if mode == Mode::SearchItem {
+            out.insert("category_id".into(), json!(t.category_id));
+            return Ok(Value::Object(out));
         }
         if mode == Mode::Suggested {
             return self.finish_suggested(out, t, posters).await;
