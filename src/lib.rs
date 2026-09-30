@@ -14,6 +14,7 @@ pub mod parity;
 pub mod routes;
 pub mod ruby;
 pub mod schema;
+pub mod search;
 pub mod site;
 pub mod site_icons;
 pub mod site_settings;
@@ -41,6 +42,8 @@ pub struct AppState {
     pub config: Config,
     pub site_setting_defs: Arc<Definitions>,
     pub i18n: Arc<I18n>,
+    /// `SearchLog.log`'s per-IP dedupe window.
+    pub search_log_cache: Arc<search::SearchLogCache>,
 }
 
 pub fn app(state: AppState) -> Router {

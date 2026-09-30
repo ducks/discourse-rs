@@ -26,12 +26,15 @@ could put behind Caddy and leave running.
 - [x] Server-rendered HTML for all of the above (askama)
 - [x] `login_required` gate: a private forum's backup serves nothing
       anonymously (JSON 403, HTML 302 to `/login`)
-- [ ] Search: `/search?q=` over `post_search_data` (Postgres FTS, same
-      ranking inputs as `Search`)
+- [x] Search: `/search?q=` and `/search/query` over `post_search_data`
+      (plain terms and phrases; advanced filters are milestone 2)
 - [ ] User pages: `/u/:username`, summary, activity (posts link there)
 - [ ] Crawler hygiene: `robots.txt`, sitemap, canonical and meta tags
 - [ ] Deploy: systemd unit, Caddy snippet, `make install`, first
       date-versioned release with a binary
+- [ ] Bench harness: `make bench` (oha/wrk p50/p99, RSS, cold start,
+      binary size) against a production-mode Discourse on the same backup;
+      Rails' anonymous cache must be accounted for
 
 ## Milestone 2: parity depth
 
@@ -53,6 +56,9 @@ how often a backup trips them.
 - [ ] Muted defaults (`default_categories_muted`, `default_tags_muted`,
       `mute_all_categories_by_default`), shared drafts category
 - [ ] `tags_listed_by_group`, login-only list filters
+- [ ] Search: advanced filters (`in:`, `status:`, `category:`, `#`, `@`,
+      `tags:`, `before:`/`after:`, `order:`), search contexts, `search_for_id`,
+      rate limits, pg headlines
 - [ ] Plugin-added keys (solved, voting, reactions, ...) behind an
       installed-plugins model instead of parity ignore lists
 - [ ] Topics without a stored slug (`Slug.for`)

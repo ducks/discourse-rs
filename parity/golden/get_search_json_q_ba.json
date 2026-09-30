@@ -1,0 +1,7 @@
+{
+  "request": "GET /search.json?q=ba",
+  "source": "http://127.0.0.1:3042",
+  "status": 400,
+  "content_type": "application/json; charset=utf-8",
+  "body": "{\"errors\":[\"You supplied invalid parameters to the request: q\"],\"error_type\":\"invalid_parameters\"}"
+}

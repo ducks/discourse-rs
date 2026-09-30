@@ -144,6 +144,16 @@ impl Value {
         }
     }
 
+    /// `value.to_f`, as used on the search ranking weights.
+    pub fn to_f(&self) -> f64 {
+        match self {
+            Value::Float(f) => *f,
+            Value::Int(i) => *i as f64,
+            Value::Str(s) => ruby::to_f(s),
+            Value::Null | Value::Bool(_) => 0.0,
+        }
+    }
+
     /// `value.presence` for string-ish settings: None when nil or blank.
     pub fn presence(&self) -> Option<String> {
         match self {

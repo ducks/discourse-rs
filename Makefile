@@ -130,11 +130,11 @@ db-test:
 
 parity:
 	@test -n "$(RAILS_URL)" || { echo "set RAILS_URL, e.g. make parity RAILS_URL=http://127.0.0.1:3000"; exit 2; }
-	cargo run --quiet --bin parity -- live --rails $(RAILS_URL) --rs $(RS_URL)
+	cargo run --quiet --bin parity -- live --rails $(RAILS_URL) --rs $(RS_URL) --delay-ms 600
 
 parity-record:
 	@test -n "$(RAILS_URL)" || { echo "set RAILS_URL, e.g. make parity-record RAILS_URL=http://127.0.0.1:3000"; exit 2; }
-	cargo run --quiet --bin parity -- record --rails $(RAILS_URL)
+	cargo run --quiet --bin parity -- record --rails $(RAILS_URL) --delay-ms 600
 
 parity-check:
 	cargo run --quiet --bin parity -- check --rs $(RS_URL)

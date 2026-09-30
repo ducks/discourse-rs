@@ -1,5 +1,6 @@
 mod list;
 mod login_required;
+mod search;
 mod site;
 mod srv;
 mod tags;
@@ -47,6 +48,10 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/t/{slug}/{id}", get(topics::show_with_slug))
         .route("/t/{slug}/{id}/{post_number}", get(topics::show_post))
         .route("/c/{*path}", get(list::category))
+        .route("/search", get(search::show))
+        .route("/search.json", get(search::show_json))
+        .route("/search/query", get(search::query))
+        .route("/search/query.json", get(search::query))
         .route("/tag/{*path}", get(tags::show))
         .route("/tags", get(tags::index))
         .route("/tags.json", get(tags::index_json))

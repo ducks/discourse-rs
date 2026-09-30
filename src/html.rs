@@ -152,7 +152,7 @@ pub struct TopicPage {
 
 /// `categories` rows the pages link to.
 #[derive(sqlx::FromRow)]
-struct CategoryRow {
+pub(crate) struct CategoryRow {
     id: i32,
     name: String,
     color: String,
@@ -160,7 +160,7 @@ struct CategoryRow {
     parent_category_id: Option<i32>,
 }
 
-async fn categories(conn: &mut PgConnection) -> Result<Vec<CategoryRow>, sqlx::Error> {
+pub(crate) async fn categories(conn: &mut PgConnection) -> Result<Vec<CategoryRow>, sqlx::Error> {
     sqlx::query_as("SELECT id, name, color, slug, parent_category_id FROM categories")
         .fetch_all(conn)
         .await
@@ -177,7 +177,11 @@ fn category_url(base_path: &str, cats: &[CategoryRow], c: &CategoryRow) -> Strin
     }
 }
 
-fn badge(base_path: &str, cats: &[CategoryRow], id: Option<i64>) -> Option<CategoryBadge> {
+pub(crate) fn badge(
+    base_path: &str,
+    cats: &[CategoryRow],
+    id: Option<i64>,
+) -> Option<CategoryBadge> {
     let c = cats.iter().find(|c| Some(i64::from(c.id)) == id)?;
     Some(CategoryBadge {
         name: c.name.clone(),
