@@ -1,7 +1,7 @@
 # Run inside the reference dv agent (dv copy + bin/rails runner) before
 # scripts/snapshot-dv, to give topic lists something to compare.
 # Fixture topics for parity testing; idempotent-ish (skips if marker topic exists).
-raise "already seeded" if Topic.exists?(title: "Parity fixture: replies and posters")
+unless Topic.exists?(title: "Parity fixture: replies and posters")
 
 admin = User.find_by!(username: "admin")
 u0, u1, u2 = %w[user0 user1 user2].map { |n| User.find_by!(username: n) }
@@ -37,3 +37,14 @@ PostActionCreator.like(u1, t6.first_post)
 t6.update_status("archived", true, admin)
 
 puts "created topics #{[t1, t2, t3, t4, t5, t6].map(&:id).inspect}, category #{sub.id}, tag #{tag.id}"
+end
+admin = User.find_by!(username: "admin")
+
+# Second pass (2026-09-30): more tag coverage. Idempotent.
+guide = Tag.find_or_create_by!(name: "guide")
+{ 35 => %w[guide], 41 => %w[howto guide] }.each do |topic_id, names|
+  topic = Topic.find(topic_id)
+  DiscourseTagging.tag_topic_by_names(topic, Guardian.new(admin), (topic.tags.pluck(:name) + names).uniq)
+  topic.save!
+end
+puts "tags: #{Tag.pluck(:name, :public_topic_count).inspect}"

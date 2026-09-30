@@ -71,6 +71,11 @@ pub struct Options {
     /// its subcategories.
     pub category_id: Option<i32>,
     pub no_subcategories: bool,
+    /// `options[:tags]`: tag names the topics must all carry
+    /// (`match_all_tags`, which TagsController always sets).
+    pub tags: Vec<String>,
+    /// `options[:no_tags]`: only untagged topics (`/tag/none`).
+    pub no_tags: bool,
 }
 
 #[derive(Debug)]
@@ -119,6 +124,16 @@ pub struct TopicQuery<'a> {
     pub filter: Filter,
     /// Set by list_latest from `options.category_id`.
     pub category: CategoryScope,
+    /// Set by the list_* methods from `options.tags` (filter_by_tags).
+    pub tags: TagScope,
+}
+
+/// `filter_by_tags`: the WHERE clause and the resolved ids that become
+/// `options[:tag_ids]` (TopicList#tags).
+#[derive(Debug, Clone, Default)]
+pub struct TagScope {
+    clause: Option<String>,
+    pub tag_ids: Vec<i32>,
 }
 
 /// The result of `create_list`: the page of topics plus what TopicList
@@ -138,6 +153,8 @@ pub struct TopicList {
     pub filter: &'static str,
     pub topics: Vec<TopicRow>,
     pub per_page: i64,
+    /// `options[:tag_ids]` after filter_by_tags.
+    pub tag_ids: Vec<i32>,
 }
 
 impl TopicQuery<'_> {
@@ -156,6 +173,7 @@ impl TopicQuery<'_> {
         self.check_unported_filters()?;
         self.filter = Filter::Top(period.to_string());
         self.category = self.category_scope().await?;
+        self.tags = self.tag_scope().await?;
         let per_page = self.per_page();
         let order = self.order_clause()?;
         let topics = self
@@ -165,6 +183,7 @@ impl TopicQuery<'_> {
             filter: "top",
             topics,
             per_page,
+            tag_ids: self.tags.tag_ids.clone(),
         })
     }
 
@@ -174,11 +193,13 @@ impl TopicQuery<'_> {
         self.check_unported_filters()?;
         self.filter = Filter::Hot;
         self.category = self.category_scope().await?;
+        self.tags = self.tag_scope().await?;
         let topics = self.prioritize_pinned_topics().await?;
         Ok(TopicList {
             filter: "hot",
             topics,
             per_page: self.per_page(),
+            tag_ids: self.tags.tag_ids.clone(),
         })
     }
 
@@ -186,11 +207,13 @@ impl TopicQuery<'_> {
     pub async fn list_latest(&mut self) -> Result<TopicList, TopicQueryError> {
         self.check_unported_filters()?;
         self.category = self.category_scope().await?;
+        self.tags = self.tag_scope().await?;
         let topics = self.prioritize_pinned_topics().await?;
         Ok(TopicList {
             filter: "latest",
             topics,
             per_page: self.per_page(),
+            tag_ids: self.tags.tag_ids.clone(),
         })
     }
 
@@ -285,6 +308,45 @@ impl TopicQuery<'_> {
         })
     }
 
+    /// `filter_by_tags` with `match_all_tags`: every named tag must exist
+    /// and be visible (synonyms resolve to their target), else the list is
+    /// empty (`result.none`); `no_tags` keeps untagged topics only.
+    async fn tag_scope(&mut self) -> Result<TagScope, TopicQueryError> {
+        if self.options.tags.is_empty() {
+            if self.options.no_tags {
+                return Ok(TagScope {
+                    clause: Some(
+                        "topics.id NOT IN (SELECT DISTINCT topic_id FROM topic_tags)".to_string(),
+                    ),
+                    tag_ids: Vec::new(),
+                });
+            }
+            return Ok(TagScope::default());
+        }
+        let tag_ids = crate::tags::resolve_tag_ids(&mut *self.conn, &self.options.tags).await?;
+        let clause = if tag_ids.len() == self.options.tags.len() {
+            let mut joined = String::new();
+            for (index, id) in tag_ids.iter().enumerate() {
+                let subquery =
+                    format!("(SELECT topic_id FROM topic_tags WHERE tag_id = {id}) t{index}");
+                if index == 0 {
+                    joined = subquery;
+                } else {
+                    joined = format!(
+                        "{joined} INNER JOIN {subquery} ON t{index}.topic_id = t0.topic_id"
+                    );
+                }
+            }
+            format!("topics.id IN (SELECT t0.topic_id FROM {joined})")
+        } else {
+            "FALSE".to_string()
+        };
+        Ok(TagScope {
+            clause: Some(clause),
+            tag_ids,
+        })
+    }
+
     fn where_clause(&self) -> String {
         let mut clauses = vec![
             "topics.deleted_at IS NULL".to_string(),
@@ -295,6 +357,7 @@ impl TopicQuery<'_> {
             clauses.push("COALESCE(categories.topic_id, 0) <> topics.id".to_string());
         }
         clauses.extend(self.category.clauses.iter().cloned());
+        clauses.extend(self.tags.clause.iter().cloned());
         clauses.push("topics.visible = TRUE".to_string());
         clauses.join(" AND ")
     }

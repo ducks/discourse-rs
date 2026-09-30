@@ -17,6 +17,7 @@ use crate::config::Config;
 use crate::guardian::Guardian;
 use crate::i18n::I18n;
 use crate::site_settings::{Definitions, SettingError, SiteSettings};
+use crate::tags::visible_tag_ids_subquery;
 use crate::url::UrlError;
 
 /// `Archetype.default`
@@ -639,34 +640,26 @@ impl Site<'_> {
         })
     }
 
-    /// `Tag.top_tags(guardian:)` without tag-group visibility rules, which
-    /// are refused rather than approximated.
+    /// `Tag.top_tags(guardian:)`: visible tags with topics in allowed
+    /// categories.
     async fn top_tags(&mut self) -> Result<Vec<Value>, SiteError> {
         let category_ids = self.guardian.allowed_category_ids(self.conn).await?;
         if category_ids.is_empty() {
             return Ok(Vec::new());
         }
-        let restricted: i64 = sqlx::query_scalar(
-            "SELECT (SELECT count(*) FROM tag_group_permissions) \
-                  + (SELECT count(*) FROM category_tags) \
-                  + (SELECT count(*) FROM category_tag_groups)",
-        )
-        .fetch_one(&mut *self.conn)
-        .await?;
-        if restricted > 0 {
-            return Err(Unsupported("tag visibility rules (DiscourseTagging.visible_tags)").into());
-        }
 
         let limit = self.setting("max_tags_in_filter_list")?.to_i() + 1;
-        let rows: Vec<(i32, String, Option<String>)> = sqlx::query_as(
+        let rows: Vec<(i32, String, Option<String>)> = sqlx::query_as(&format!(
             "SELECT tags.id, tags.name, tags.slug \
              FROM category_tag_stats stats \
              JOIN tags ON stats.tag_id = tags.id AND stats.topic_count > 0 \
              WHERE stats.category_id = ANY($1) AND tags.target_tag_id IS NULL \
+             AND tags.id IN {visible} \
              GROUP BY tags.id \
              ORDER BY SUM(stats.topic_count) DESC, tags.name ASC \
              LIMIT $2",
-        )
+            visible = visible_tag_ids_subquery(),
+        ))
         .bind(&category_ids)
         .bind(limit)
         .fetch_all(&mut *self.conn)

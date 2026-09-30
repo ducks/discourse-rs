@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+{% block title %}Tags - {{ site_title }}{% endblock %}
+{% block content %}
+<div class="tag-crawler">
+  {% for group in groups %}
+  <div class="tag-list">
+    {% if let Some(n) = group.name %}<h3>{{ n }}</h3>{% endif %}
+    {% for tag in group.tags %}
+    <div class="tag-box">
+      <a href="{{ tag.url }}" class="discourse-tag simple">{{ tag.name }}</a>
+      {% if tag.count > 0 %}<span class="tag-count">x {{ tag.count }}</span>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

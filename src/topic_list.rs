@@ -15,6 +15,7 @@ use crate::avatar::{self, AvatarError};
 use crate::guardian::Guardian;
 use crate::i18n::I18n;
 use crate::site_settings::{SettingError, SiteSettings};
+use crate::tags::visible_tag_ids_subquery;
 use crate::topic_query::{TopicList, TopicRow};
 use crate::url::{UrlError, Urls};
 
@@ -196,6 +197,14 @@ impl TopicListSerializer<'_> {
         topic_list.insert("per_page".into(), json!(list.per_page));
         if tagging {
             topic_list.insert("top_tags".into(), self.top_tags().await?);
+            // `TopicList#tags`: Tag.where(id: tag_ids), included when present.
+            if !list.tag_ids.is_empty() {
+                let mut tags = Vec::new();
+                for tag in crate::tags::Tag::find_all(&mut *self.conn, &list.tag_ids).await? {
+                    tags.push(tag.serialize(&mut *self.conn).await?);
+                }
+                topic_list.insert("tags".into(), Value::Array(tags));
+            }
         }
         topic_list.insert("topics".into(), Value::Array(topics));
         out.insert("topic_list".into(), Value::Object(topic_list));
@@ -508,12 +517,6 @@ impl TopicListSerializer<'_> {
     /// `topic.visible_tags(guardian)` sorted by public_topic_count desc,
     /// as `[{id, name, slug}]` plus `tags_descriptions`.
     pub(crate) async fn tags(&mut self, topic_id: i32) -> Result<(Value, Value), TopicListError> {
-        let restricted: i64 = sqlx::query_scalar("SELECT count(*) FROM tag_group_permissions")
-            .fetch_one(&mut *self.conn)
-            .await?;
-        if restricted > 0 {
-            return Err(Unsupported("tag visibility rules (DiscourseTagging.visible_tags)").into());
-        }
         let alphabetical = self.settings.get("tags_sort_alphabetically")?.truthy();
         let order = if alphabetical {
             "t.name ASC"
@@ -522,7 +525,8 @@ impl TopicListSerializer<'_> {
         };
         let sql = format!(
             "SELECT t.id, t.name, t.slug, t.description FROM topic_tags tt JOIN tags t ON t.id = tt.tag_id \
-             WHERE tt.topic_id = $1 ORDER BY {order}"
+             WHERE tt.topic_id = $1 AND t.id IN {visible} ORDER BY {order}",
+            visible = visible_tag_ids_subquery(),
         );
         let rows: Vec<(i32, String, Option<String>, Option<String>)> = sqlx::query_as(&sql)
             .bind(topic_id)
@@ -571,23 +575,15 @@ impl TopicListSerializer<'_> {
         if category_ids.is_empty() {
             return Ok(json!([]));
         }
-        let restricted: i64 = sqlx::query_scalar(
-            "SELECT (SELECT count(*) FROM tag_group_permissions) \
-                  + (SELECT count(*) FROM category_tags) \
-                  + (SELECT count(*) FROM category_tag_groups)",
-        )
-        .fetch_one(&mut *self.conn)
-        .await?;
-        if restricted > 0 {
-            return Err(Unsupported("tag visibility rules (DiscourseTagging.visible_tags)").into());
-        }
         let limit = self.settings.get("max_tags_in_filter_list")?.to_i() + 1;
-        let rows: Vec<(i32, String, Option<String>)> = sqlx::query_as(
+        let rows: Vec<(i32, String, Option<String>)> = sqlx::query_as(&format!(
             "SELECT tags.id, tags.name, tags.slug FROM category_tag_stats stats \
              JOIN tags ON stats.tag_id = tags.id AND stats.topic_count > 0 \
              WHERE stats.category_id = ANY($1) AND tags.target_tag_id IS NULL \
+             AND tags.id IN {visible} \
              GROUP BY tags.id ORDER BY SUM(stats.topic_count) DESC, tags.name ASC LIMIT $2",
-        )
+            visible = visible_tag_ids_subquery(),
+        ))
         .bind(&category_ids)
         .bind(limit)
         .fetch_all(&mut *self.conn)

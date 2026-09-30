@@ -1,0 +1,7 @@
+{
+  "request": "GET /tags.json",
+  "source": "http://127.0.0.1:3042",
+  "status": 200,
+  "content_type": "application/json; charset=utf-8",
+  "body": "{\"tags\":[{\"id\":1,\"text\":\"howto\",\"name\":\"howto\",\"slug\":\"howto\",\"description\":null,\"count\":2,\"pm_only\":false,\"target_tag\":null},{\"id\":2,\"text\":\"guide\",\"name\":\"guide\",\"slug\":\"guide\",\"description\":null,\"count\":2,\"pm_only\":false,\"target_tag\":null}],\"extras\":{\"categories\":[]}}"
+}

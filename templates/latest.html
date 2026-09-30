@@ -1,5 +1,5 @@
 {% extends "layout.html" %}
-{% block title %}{% if let Some(h) = heading %}{{ h.name }}{% else %}Latest topics{% endif %} - {{ site_title }}{% endblock %}
+{% block title %}{% if let Some(h) = heading %}{{ h.name }}{% else if let Some(t) = tag %}Topics tagged {{ t.name }}{% else %}Latest topics{% endif %} - {{ site_title }}{% endblock %}
 {% block content %}
 {% if let Some(h) = heading %}
 <h1 class="category-heading">
@@ -10,6 +10,9 @@
   {% for s in h.subcategories %}<div class="subcategory"><a href="{{ s.url }}">{{ s.name }}</a>{% if let Some(d) = s.description %} <span class="description">{{ d|safe }}</span>{% endif %}</div>{% endfor %}
 </div>
 {% endif %}
+{% endif %}
+{% if let Some(t) = tag %}
+<h1 class="tag-heading"><a href="{{ t.url }}" class="discourse-tag">{{ t.name }}</a></h1>
 {% endif %}
 <div class="topic-list-container">
   <table class="topic-list">
