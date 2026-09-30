@@ -24,8 +24,8 @@ could put behind Caddy and leave running.
 - [x] Topics with posts, post-number pages, redirects, 404s
 - [x] Tag lists (`/tag/...`, `/tags/c/...`), tags index, tag visibility
 - [x] Server-rendered HTML for all of the above (askama)
-- [ ] `login_required` gate: a private forum's backup must serve nothing
-      anonymously
+- [x] `login_required` gate: a private forum's backup serves nothing
+      anonymously (JSON 403, HTML 302 to `/login`)
 - [ ] Search: `/search?q=` over `post_search_data` (Postgres FTS, same
       ranking inputs as `Search`)
 - [ ] User pages: `/u/:username`, summary, activity (posts link there)

@@ -8,6 +8,9 @@ use axum::body::Body;
 use axum::http::{Request, StatusCode};
 use common::{TestDb, config, set_setting, state};
 use discourse_rs::config::RailsEnv;
+use discourse_rs::guardian::Guardian;
+use discourse_rs::site::Site;
+use discourse_rs::site_settings::SiteSettings;
 use http_body_util::BodyExt;
 use serde_json::{Value, json};
 use sqlx::PgPool;
@@ -26,6 +29,25 @@ async fn get_site(pool: &PgPool) -> Value {
     assert_eq!(response.status(), StatusCode::OK);
     let bytes = response.into_body().collect().await.unwrap().to_bytes();
     serde_json::from_slice(&bytes).unwrap()
+}
+
+/// `Site.json_for(Guardian.new)` itself, for states the route refuses
+/// anonymously (login_required 403s before the action).
+async fn json_for(pool: &PgPool) -> Value {
+    let state = state(pool.clone(), config(RailsEnv::Test, &[]));
+    let mut conn = pool.acquire().await.unwrap();
+    let settings = SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals)
+        .await
+        .unwrap();
+    let mut site = Site {
+        conn: &mut conn,
+        config: &state.config,
+        settings: &settings,
+        defs: &state.site_setting_defs,
+        i18n: &state.i18n,
+        guardian: Guardian::anonymous(),
+    };
+    site.json_for().await.unwrap()
 }
 
 async fn create_theme(pool: &PgPool, name: &str, user_selectable: bool) -> i32 {
@@ -132,7 +154,7 @@ async fn includes_anonymous_list_filters_for_anon_when_login_required() {
     let db = TestDb::new().await;
     set_setting(&db.pool, "login_required", BOOL, "t").await;
 
-    let json = get_site(&db.pool).await;
+    let json = json_for(&db.pool).await;
     let filters = json["anonymous_list_filters"].as_array().unwrap();
     assert!(filters.contains(&json!("latest")));
     assert!(!filters.contains(&json!("unread")));
@@ -156,7 +178,7 @@ async fn includes_tos_url_and_privacy_policy_url_when_login_required() {
     )
     .await;
 
-    let json = get_site(&db.pool).await;
+    let json = json_for(&db.pool).await;
     assert_eq!(json["tos_url"], "https://discourse.org");
     assert_eq!(json["privacy_policy_url"], "https://discourse.org/privacy");
 }
