@@ -1193,7 +1193,14 @@ impl Users<'_> {
         for r in &rows {
             let mut j = Map::new();
             let cooked = r.cooked.as_deref().unwrap_or("");
-            let excerpt = crate::categories::description_excerpt(Some(cooked))?.unwrap_or_default();
+            let excerpt = crate::excerpt::excerpt(
+                cooked,
+                300,
+                &crate::excerpt::Options {
+                    keep_emoji_images: true,
+                    ..Default::default()
+                },
+            );
             j.insert("excerpt".into(), json!(excerpt));
             if cooked.chars().count() > 300 {
                 j.insert("truncated".into(), json!(true));

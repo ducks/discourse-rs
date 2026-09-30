@@ -49,8 +49,7 @@ how often a backup trips them.
 - [ ] Watched words (`WordWatcher` regexps and actions)
 - [ ] Topic timers, topic links with clicks (`TopicLink.topic_map`)
 - [ ] Featured links (`featured_link_root_domain`)
-- [ ] Category description markup (`ExcerptParser`), `subcategory_list`
-      styles, paginated category lists
+- [ ] `subcategory_list` styles, paginated category lists
 - [ ] Group flair uploads, user fields, badges granted, auth providers,
       user color schemes on `/site.json`
 - [ ] Muted defaults (`default_categories_muted`, `default_tags_muted`,
