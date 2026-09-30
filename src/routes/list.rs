@@ -5,7 +5,6 @@ use askama::Template;
 use axum::Json;
 use axum::extract::{Path, Query, RawQuery, State};
 use axum::http::{HeaderMap, StatusCode, header};
-use axum::response::Html;
 use axum::response::{IntoResponse, Response};
 use serde::Deserialize;
 
@@ -270,6 +269,7 @@ pub async fn latest_json(
 pub async fn latest(
     State(state): State<AppState>,
     Query(params): Query<ListParams>,
+    uri: axum::http::Uri,
 ) -> Result<Response, AppError> {
     let list_path = format!("{}/latest", state.config.globals.relative_url_root());
     let (json, settings) =
@@ -287,7 +287,13 @@ pub async fn latest(
         u.replace("no_definitions=true&", "")
             .replace("?no_definitions=true", "")
     });
-    Ok(Html(page.render().map_err(crate::html::HtmlError::from)?).into_response())
+    page.crawler = list_crawler(&mut conn, &state, &settings, &uri, None, None).await?;
+    let body = page.render().map_err(crate::html::HtmlError::from)?;
+    Ok(crate::html::crawler_response(
+        body,
+        &page.crawler,
+        &settings,
+    )?)
 }
 
 #[cfg(test)]
@@ -330,6 +336,7 @@ pub async fn category(
     Query(params): Query<ListParams>,
     RawQuery(raw_query): RawQuery,
     headers: HeaderMap,
+    uri: axum::http::Uri,
 ) -> Result<Response, AppError> {
     let (path, json) = match path.strip_suffix(".json") {
         Some(p) => (p.to_string(), true),
@@ -425,28 +432,50 @@ pub async fn category(
         crate::html::category_heading(&mut conn, &base_path, &category, params.page.is_none())
             .await?,
     );
-    Ok(Html(page.render().map_err(crate::html::HtmlError::from)?).into_response())
+    // canonical_url "#{Discourse.base_url_no_prefix}#{.url}"
+    let urls = Urls {
+        config: &state.config,
+        settings: &settings,
+    };
+    let canonical = format!(
+        "{}{}",
+        urls.base_url_no_prefix()?,
+        category.url(&mut conn, &base_path).await?
+    );
+    let description = crate::categories::description_plain_text(category.description.as_deref())?
+        .map(|d| html_escape::decode_html_entities(&d).into_owned())
+        .filter(|d| !d.is_empty());
+    let meta = Some((category.name.clone(), description.unwrap_or_default()));
+    page.crawler = list_crawler(&mut conn, &state, &settings, &uri, Some(canonical), meta).await?;
+    let body = page.render().map_err(crate::html::HtmlError::from)?;
+    Ok(crate::html::crawler_response(
+        body,
+        &page.crawler,
+        &settings,
+    )?)
 }
 
 /// GET /categories(.json) -> categories#index for anonymous users.
 pub async fn categories(
     State(state): State<AppState>,
     Query(params): Query<CategoriesParams>,
+    uri: axum::http::Uri,
 ) -> Result<Response, AppError> {
-    categories_response(state, params, false).await
+    categories_response(state, params, false, Some(uri)).await
 }
 
 pub async fn categories_json(
     State(state): State<AppState>,
     Query(params): Query<CategoriesParams>,
 ) -> Result<Response, AppError> {
-    categories_response(state, params, true).await
+    categories_response(state, params, true, None).await
 }
 
 async fn categories_response(
     state: AppState,
     params: CategoriesParams,
     json: bool,
+    uri: Option<axum::http::Uri>,
 ) -> Result<Response, AppError> {
     let mut conn = state.pool.acquire().await?;
     let settings =
@@ -477,8 +506,15 @@ async fn categories_response(
     }
     let site =
         crate::html::Site::from_settings(&settings, state.config.globals.relative_url_root())?;
-    let page = crate::html::categories_page(&mut conn, &state.i18n, site, &doc).await?;
-    Ok(Html(page.render().map_err(crate::html::HtmlError::from)?).into_response())
+    let mut page = crate::html::categories_page(&mut conn, &state.i18n, site, &doc).await?;
+    let uri = uri.unwrap_or_default();
+    page.crawler = list_crawler(&mut conn, &state, &settings, &uri, None, None).await?;
+    let body = page.render().map_err(crate::html::HtmlError::from)?;
+    Ok(crate::html::crawler_response(
+        body,
+        &page.crawler,
+        &settings,
+    )?)
 }
 
 #[derive(Deserialize, Default)]
@@ -551,29 +587,31 @@ async fn best_period_for(
 pub async fn top(
     State(state): State<AppState>,
     Query(params): Query<ListParams>,
+    uri: axum::http::Uri,
 ) -> Result<Response, AppError> {
-    front_list(state, params, ListKind::Top, false).await
+    front_list(state, params, ListKind::Top, false, Some(uri)).await
 }
 
 pub async fn top_json(
     State(state): State<AppState>,
     Query(params): Query<ListParams>,
 ) -> Result<Response, AppError> {
-    front_list(state, params, ListKind::Top, true).await
+    front_list(state, params, ListKind::Top, true, None).await
 }
 
 pub async fn hot(
     State(state): State<AppState>,
     Query(params): Query<ListParams>,
+    uri: axum::http::Uri,
 ) -> Result<Response, AppError> {
-    front_list(state, params, ListKind::Hot, false).await
+    front_list(state, params, ListKind::Hot, false, Some(uri)).await
 }
 
 pub async fn hot_json(
     State(state): State<AppState>,
     Query(params): Query<ListParams>,
 ) -> Result<Response, AppError> {
-    front_list(state, params, ListKind::Hot, true).await
+    front_list(state, params, ListKind::Hot, true, None).await
 }
 
 /// `/top/:period(.json)` -> 301 to `/top?period=`.
@@ -606,6 +644,7 @@ async fn front_list(
     params: ListParams,
     kind: ListKind,
     json: bool,
+    uri: Option<axum::http::Uri>,
 ) -> Result<Response, AppError> {
     let name = match kind {
         ListKind::Latest => "latest",
@@ -624,6 +663,48 @@ async fn front_list(
     let mut conn = state.pool.acquire().await?;
     let site =
         crate::html::Site::from_settings(&settings, state.config.globals.relative_url_root())?;
-    let page = crate::html::latest_page(&mut conn, site, &doc).await?;
-    Ok(Html(page.render().map_err(crate::html::HtmlError::from)?).into_response())
+    let mut page = crate::html::latest_page(&mut conn, site, &doc).await?;
+    let uri = uri.unwrap_or_default();
+    page.crawler = list_crawler(&mut conn, &state, &settings, &uri, None, None).await?;
+    let body = page.render().map_err(crate::html::HtmlError::from)?;
+    Ok(crate::html::crawler_response(
+        body,
+        &page.crawler,
+        &settings,
+    )?)
+}
+
+/// The crawler block for a list page: the site's title, description and
+/// OpenGraph image unless the page supplies its own.
+async fn list_crawler(
+    conn: &mut sqlx::PgConnection,
+    state: &AppState,
+    settings: &SiteSettings,
+    uri: &axum::http::Uri,
+    canonical: Option<String>,
+    meta: Option<(String, String)>,
+) -> Result<crate::html::Crawler, AppError> {
+    let urls = Urls {
+        config: &state.config,
+        settings,
+    };
+    let site_description = settings.get("site_description")?.to_s();
+    let (title, description) = meta.unwrap_or_else(|| {
+        (
+            settings.get("title").map(|t| t.to_s()).unwrap_or_default(),
+            site_description.clone(),
+        )
+    });
+    let image = crate::html::site_opengraph_image(conn, &urls).await?;
+    let mut crawler = crate::html::Crawler::for_request(&urls, uri, canonical)?.with_meta(
+        &title,
+        &description,
+        image,
+    );
+    crawler.description = if description.is_empty() {
+        site_description
+    } else {
+        description
+    };
+    Ok(crawler)
 }

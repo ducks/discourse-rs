@@ -51,7 +51,11 @@ async fn renders_the_post_stream_in_order() {
         .collect();
     assert_eq!(numbers, vec![1, 2, 3, 4]);
     assert_eq!(json["post_stream"]["stream"].as_array().unwrap().len(), 4);
-    assert_eq!(json["timeline_lookup"], serde_json::json!([[1, 0]]));
+    // [post_number, days ago]: the fixture ages, so only the shape is fixed.
+    let lookup = json["timeline_lookup"].as_array().unwrap();
+    assert_eq!(lookup.len(), 1);
+    assert_eq!(lookup[0][0], 1);
+    assert!(lookup[0][1].as_i64().unwrap() >= 0);
     assert_eq!(
         posts[0]["post_url"],
         "/t/parity-fixture-replies-and-posters/35/1"

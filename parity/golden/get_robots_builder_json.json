@@ -1,0 +1,7 @@
+{
+  "request": "GET /robots-builder.json",
+  "source": "http://127.0.0.1:3042",
+  "status": 200,
+  "content_type": "application/json; charset=utf-8",
+  "body": "{\"header\":\"# See https://datatracker.ietf.org/doc/rfc9309 for documentation on how to use the robots.txt file\\n# Google uses the same format as the standard above. More info at https://developers.google.com/search/docs/crawling-indexing/robots/robots_txt\\n\",\"agents\":[{\"name\":\"mauibot\",\"disallow\":[\"/\"]},{\"name\":\"semrushbot\",\"disallow\":[\"/\"]},{\"name\":\"ahrefsbot\",\"disallow\":[\"/\"]},{\"name\":\"blexbot\",\"disallow\":[\"/\"]},{\"name\":\"seo spider\",\"disallow\":[\"/\"]},{\"name\":\"*\",\"disallow\":[\"/admin/\",\"/auth/\",\"/assets/js/browser-update*.js\",\"/email/\",\"/session\",\"/user-api-key\",\"/*?api_key*\",\"/*?*api_key*\",\"/badges\",\"/my\",\"/search\",\"/tag/*/l\",\"/g\",\"/t/*/*.rss\",\"/c/*.rss\"]},{\"name\":\"Googlebot\",\"disallow\":[\"/admin/\",\"/auth/\",\"/assets/js/browser-update*.js\",\"/email/\",\"/session\",\"/user-api-key\",\"/*?api_key*\",\"/*?*api_key*\"]}]}"
+}

@@ -29,7 +29,7 @@ could put behind Caddy and leave running.
 - [x] Search: `/search?q=` and `/search/query` over `post_search_data`
       (plain terms and phrases; advanced filters are milestone 2)
 - [x] User pages: `/u/:username`, summary, activity (posts link there)
-- [ ] Crawler hygiene: `robots.txt`, sitemap, canonical and meta tags
+- [x] Crawler hygiene: `robots.txt`, sitemaps, canonical and meta tags
 - [ ] Deploy: systemd unit, Caddy snippet, `make install`, first
       date-versioned release with a binary
 - [ ] Bench harness: `make bench` (oha/wrk p50/p99, RSS, cold start,
