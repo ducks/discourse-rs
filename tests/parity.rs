@@ -37,6 +37,10 @@ async fn golden_responses_match() {
         for (name, value) in parity::REQUEST_HEADERS {
             request = request.header(*name, *value);
         }
+        // The host Rails saw when the golden was recorded.
+        if let Some(host) = golden.source.split("://").nth(1) {
+            request = request.header(header::HOST, host.trim_end_matches('/'));
+        }
         let response = app
             .clone()
             .oneshot(request.body(Body::empty()).unwrap())

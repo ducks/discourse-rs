@@ -12,6 +12,7 @@ use axum::response::{Html, IntoResponse, Response};
 use axum::{Json, RequestExt};
 use serde_json::json;
 
+use crate::html::Crawler;
 use crate::site_settings::SiteSettings;
 use crate::{AppError, AppState, Unsupported};
 
@@ -21,7 +22,12 @@ use crate::{AppError, AppState, Unsupported};
 fn exempt(path: &str) -> bool {
     matches!(
         path,
-        "/srv/status" | "/site/basic-info" | "/site/basic-info.json" | "/assets/site.css"
+        "/srv/status"
+            | "/site/basic-info"
+            | "/site/basic-info.json"
+            | "/assets/site.css"
+            | "/robots.txt"
+            | "/robots-builder.json"
     ) || path.starts_with("/images/")
         || path.starts_with("/uploads/")
 }
@@ -75,7 +81,14 @@ pub async fn gate(
                 &[("title", &site.site_title)],
             )
             .unwrap_or_else(|| format!("Welcome to {}", site.site_title));
+        let urls = crate::url::Urls {
+            config: &state.config,
+            settings: &settings,
+        };
+        let mut crawler = crate::html::Crawler::for_request(&urls, &uri, None)?;
+        crawler.description = site.site_description.clone();
         let page = LoginRequiredPage {
+            crawler,
             site_title: site.site_title,
             site_description: site.site_description,
             lang: site.lang,
@@ -154,5 +167,6 @@ pub struct LoginRequiredPage {
     pub site_description: String,
     pub lang: String,
     pub base_path: String,
+    pub crawler: Crawler,
     pub welcome: String,
 }

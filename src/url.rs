@@ -78,6 +78,15 @@ impl Urls<'_> {
         Ok(result)
     }
 
+    /// `Discourse.base_url`: base_url_no_prefix plus the base path.
+    pub fn base_url(&self) -> Result<String, UrlError> {
+        Ok(format!(
+            "{}{}",
+            self.base_url_no_prefix()?,
+            self.config.globals.relative_url_root()
+        ))
+    }
+
     /// `Discourse.base_url_no_prefix`
     pub fn base_url_no_prefix(&self) -> Result<String, UrlError> {
         Ok(format!(

@@ -5,7 +5,7 @@ use askama::Template;
 use axum::Json;
 use axum::extract::{Path, Query, RawQuery, State};
 use axum::http::{HeaderMap, StatusCode, header};
-use axum::response::{Html, IntoResponse, Response};
+use axum::response::{IntoResponse, Response};
 use serde_json::{Value, json};
 
 use super::list::{ListKind, ListParams, TagListRequest, list_document_for};
@@ -14,6 +14,7 @@ use crate::guardian::Guardian;
 use crate::site_settings::SiteSettings;
 use crate::tags::{Tag, VISIBLE_TAGS_WHERE};
 use crate::topic_query::Options;
+use crate::url::Urls;
 use crate::{AppError, AppState, Unsupported};
 
 /// How the tag was named in the path, which `page_params` echoes back in
@@ -168,9 +169,10 @@ pub async fn show(
     Query(params): Query<ListParams>,
     RawQuery(raw_query): RawQuery,
     headers: HeaderMap,
+    uri: axum::http::Uri,
 ) -> Result<Response, AppError> {
     let parsed = parse_path(&path, false)?;
-    show_list(state, parsed, params, raw_query, headers).await
+    show_list(state, parsed, params, raw_query, headers, uri).await
 }
 
 /// GET /tags/c/{*path}
@@ -180,9 +182,10 @@ pub async fn show_in_category(
     Query(params): Query<ListParams>,
     RawQuery(raw_query): RawQuery,
     headers: HeaderMap,
+    uri: axum::http::Uri,
 ) -> Result<Response, AppError> {
     let parsed = parse_path(&path, true)?;
-    show_list(state, parsed, params, raw_query, headers).await
+    show_list(state, parsed, params, raw_query, headers, uri).await
 }
 
 fn redirect(headers: &HeaderMap, location: String) -> Response {
@@ -204,6 +207,7 @@ async fn show_list(
     params: ListParams,
     raw_query: Option<String>,
     headers: HeaderMap,
+    uri: axum::http::Uri,
 ) -> Result<Response, AppError> {
     let mut conn = state.pool.acquire().await?;
     let settings =
@@ -388,16 +392,48 @@ async fn show_list(
             None => format!("{base_path}/tag/{tag_name}"),
         },
     });
-    Ok(Html(page.render().map_err(crate::html::HtmlError::from)?).into_response())
+    // canonical_url: the canonical tag route for this action; the title
+    // and description meta from rss_by_tag and the tag's description.
+    let urls = Urls {
+        config: &state.config,
+        settings: &settings,
+    };
+    let canonical = format!("{}{list_path}", urls.base_url_no_prefix()?);
+    let title = state
+        .i18n
+        .t_with("rss_by_tag", &[("tag", &request.tags.join(" & "))])
+        .unwrap_or_else(|| format!("Topics tagged {}", request.tags.join(" & ")));
+    let description = tag
+        .as_ref()
+        .and_then(|t| t.description.clone())
+        .filter(|d| !d.is_empty())
+        .unwrap_or_else(|| title.clone());
+    let image = crate::html::site_opengraph_image(&mut conn, &urls).await?;
+    let mut crawler = crate::html::Crawler::for_request(&urls, &uri, Some(canonical))?.with_meta(
+        &title,
+        &description,
+        image,
+    );
+    crawler.description = description;
+    page.crawler = crawler;
+    let body = page.render().map_err(crate::html::HtmlError::from)?;
+    Ok(crate::html::crawler_response(
+        body,
+        &page.crawler,
+        &settings,
+    )?)
 }
 
 /// GET /tags(.json) -> tags#index with tags_listed_by_group off.
-pub async fn index(State(state): State<AppState>) -> Result<Response, AppError> {
-    index_response(state, false).await
+pub async fn index(
+    State(state): State<AppState>,
+    uri: axum::http::Uri,
+) -> Result<Response, AppError> {
+    index_response(state, false, Some(uri)).await
 }
 
 pub async fn index_json(State(state): State<AppState>) -> Result<Response, AppError> {
-    index_response(state, true).await
+    index_response(state, true, None).await
 }
 
 #[derive(sqlx::FromRow)]
@@ -435,7 +471,11 @@ impl CountRow {
 const COUNT_COLUMNS: &str = "tags.id, tags.name, tags.slug, tags.description, \
     tags.public_topic_count, tags.staff_topic_count, tags.pm_topic_count";
 
-async fn index_response(state: AppState, json: bool) -> Result<Response, AppError> {
+async fn index_response(
+    state: AppState,
+    json: bool,
+    uri: Option<axum::http::Uri>,
+) -> Result<Response, AppError> {
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
@@ -503,8 +543,23 @@ async fn index_response(state: AppState, json: bool) -> Result<Response, AppErro
     }
     let site =
         crate::html::Site::from_settings(&settings, state.config.globals.relative_url_root())?;
-    let page = crate::html::tags_page(&state.i18n, site, &doc, &category_names);
-    Ok(Html(page.render().map_err(crate::html::HtmlError::from)?).into_response())
+    let mut page = crate::html::tags_page(&state.i18n, site, &doc, &category_names);
+    let urls = Urls {
+        config: &state.config,
+        settings: &settings,
+    };
+    let title = state.i18n.t("tags.title").unwrap_or("Tags").to_string();
+    let image = crate::html::site_opengraph_image(&mut conn, &urls).await?;
+    let mut crawler = crate::html::Crawler::for_request(&urls, &uri.unwrap_or_default(), None)?
+        .with_meta(&title, &title, image);
+    crawler.description = title;
+    page.crawler = crawler;
+    let body = page.render().map_err(crate::html::HtmlError::from)?;
+    Ok(crate::html::crawler_response(
+        body,
+        &page.crawler,
+        &settings,
+    )?)
 }
 
 #[cfg(test)]

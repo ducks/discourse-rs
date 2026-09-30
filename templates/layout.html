@@ -4,6 +4,25 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}{{ site_title }}{% endblock %}</title>
+    <meta name="description" content="{{ crawler.description }}">
+    {% if !crawler.canonical.is_empty() %}<link rel="canonical" href="{{ crawler.canonical }}">{% endif %}
+    {% if !crawler.title.is_empty() %}
+    <meta property="og:site_name" content="{{ site_title }}">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary">
+    {% if let Some(image) = crawler.image %}
+    <meta name="twitter:image" content="{{ image }}">
+    <meta property="og:image" content="{{ image }}">
+    {% endif %}
+    <meta property="og:url" content="{{ crawler.url }}">
+    <meta name="twitter:url" content="{{ crawler.url }}">
+    <meta property="og:title" content="{{ crawler.title }}">
+    <meta name="twitter:title" content="{{ crawler.title }}">
+    {% if !crawler.og_description.is_empty() %}
+    <meta property="og:description" content="{{ crawler.og_description }}">
+    <meta name="twitter:description" content="{{ crawler.og_description }}">
+    {% endif %}
+    {% endif %}
     {% block head %}{% endblock %}
     <link rel="stylesheet" href="{{ base_path }}/assets/site.css">
   </head>

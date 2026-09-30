@@ -82,7 +82,7 @@ async fn topic_page_renders_posts_and_small_actions() {
     assert!(content_type.starts_with("text/html"));
     assert!(html.contains("<title>Parity fixture: pinned and closed - Discourse</title>"));
     assert!(
-        html.contains(r#"<link rel="canonical" href="/t/parity-fixture-pinned-and-closed/37">"#)
+        html.contains(r#"<link rel="canonical" href="http://test.localhost/t/parity-fixture-pinned-and-closed/37">"#)
     );
     assert!(html.contains(r#"<span class="category-name">Site Feedback</span>"#));
     assert!(html.contains(r#"id="post_1""#));

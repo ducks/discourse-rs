@@ -5,7 +5,6 @@ use askama::Template;
 use axum::Json;
 use axum::extract::{Path, Query, State};
 use axum::http::{HeaderMap, StatusCode, header};
-use axum::response::Html;
 use axum::response::{IntoResponse, Response};
 use serde::Deserialize;
 use serde_json::json;
@@ -27,9 +26,22 @@ pub async fn show_by_id(
     Path(id): Path<String>,
     Query(params): Query<ShowParams>,
     headers: HeaderMap,
+    uri: axum::http::Uri,
 ) -> Result<Response, AppError> {
     let (id, json) = split_format(&id);
-    show(&headers, &state, None, &id, None, &params, json).await
+    show(
+        Incoming {
+            headers: &headers,
+            uri: &uri,
+        },
+        &state,
+        None,
+        &id,
+        None,
+        &params,
+        json,
+    )
+    .await
 }
 
 /// `/t/:slug/:topic_id`
@@ -38,9 +50,22 @@ pub async fn show_with_slug(
     Path((slug, id)): Path<(String, String)>,
     Query(params): Query<ShowParams>,
     headers: HeaderMap,
+    uri: axum::http::Uri,
 ) -> Result<Response, AppError> {
     let (id, json) = split_format(&id);
-    show(&headers, &state, Some(&slug), &id, None, &params, json).await
+    show(
+        Incoming {
+            headers: &headers,
+            uri: &uri,
+        },
+        &state,
+        Some(&slug),
+        &id,
+        None,
+        &params,
+        json,
+    )
+    .await
 }
 
 /// `/t/:slug/:topic_id/:post_number`
@@ -49,10 +74,14 @@ pub async fn show_post(
     Path((slug, id, post_number)): Path<(String, String, String)>,
     Query(params): Query<ShowParams>,
     headers: HeaderMap,
+    uri: axum::http::Uri,
 ) -> Result<Response, AppError> {
     let (post_number, json) = split_format(&post_number);
     show(
-        &headers,
+        Incoming {
+            headers: &headers,
+            uri: &uri,
+        },
         &state,
         Some(&slug),
         &id,
@@ -111,8 +140,14 @@ fn redirect(headers: &HeaderMap, location: String) -> Response {
         .into_response()
 }
 
+/// The parts of the request the topic page reads.
+struct Incoming<'a> {
+    headers: &'a HeaderMap,
+    uri: &'a axum::http::Uri,
+}
+
 async fn show(
-    headers: &HeaderMap,
+    incoming: Incoming<'_>,
     state: &AppState,
     slug: Option<&str>,
     id: &str,
@@ -120,6 +155,7 @@ async fn show(
     params: &ShowParams,
     json: bool,
 ) -> Result<Response, AppError> {
+    let Incoming { headers, uri } = incoming;
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
@@ -215,8 +251,95 @@ async fn show(
         return Ok(Json(rendered.json).into_response());
     }
     let site = crate::html::Site::from_settings(&settings, &base_path)?;
-    let page = crate::html::topic_page(&mut conn, &state.i18n, site, &rendered.json, page).await?;
-    Ok(Html(page.render().map_err(crate::html::HtmlError::from)?).into_response())
+    let mut page =
+        crate::html::topic_page(&mut conn, &state.i18n, site, &rendered.json, page).await?;
+    page.crawler = topic_crawler(
+        &mut conn,
+        state,
+        &settings,
+        uri,
+        &page.canonical_url,
+        &rendered.json,
+    )
+    .await?;
+    let body = page.render().map_err(crate::html::HtmlError::from)?;
+    Ok(crate::html::crawler_response(
+        body,
+        &page.crawler,
+        &settings,
+    )?)
+}
+
+/// The crawler block of topics/show: canonical_url from the topic view,
+/// the description from the topic's stored excerpt else the first shown
+/// post's summary, the topic image else the site's.
+async fn topic_crawler(
+    conn: &mut sqlx::PgConnection,
+    state: &AppState,
+    settings: &SiteSettings,
+    uri: &axum::http::Uri,
+    canonical_path: &str,
+    view: &serde_json::Value,
+) -> Result<crate::html::Crawler, AppError> {
+    let urls = crate::url::Urls {
+        config: &state.config,
+        settings,
+    };
+    let canonical = format!("{}{canonical_path}", urls.base_url_no_prefix()?);
+    let title = view["title"].as_str().unwrap_or("").to_string();
+    // TopicView#summary: 500 characters of the first post, links stripped,
+    // entities as text, newlines as spaces.
+    let first_cooked = view["post_stream"]["posts"][0]["cooked"]
+        .as_str()
+        .unwrap_or("");
+    let summary = crate::excerpt::excerpt(
+        first_cooked,
+        500,
+        &crate::excerpt::Options {
+            strip_links: true,
+            text_entities: true,
+            image_mode: crate::excerpt::ImageMode::Strip,
+            ..Default::default()
+        },
+    )
+    .replace('\n', " ")
+    .trim()
+    .to_string();
+    let topic_id = view["id"].as_i64().unwrap_or(0) as i32;
+    let stored: Option<Option<String>> =
+        sqlx::query_scalar("SELECT excerpt FROM topics WHERE id = $1")
+            .bind(topic_id)
+            .fetch_optional(&mut *conn)
+            .await?;
+    // plain_text_excerpt: the stored excerpt without tags, entities decoded.
+    let plain = stored
+        .flatten()
+        .map(|e| html_escape::decode_html_entities(&strip_tags(&e)).into_owned())
+        .filter(|e| !e.is_empty());
+    let description = plain.unwrap_or_else(|| summary.clone());
+    let image = match view["image_url"].as_str().filter(|u| !u.is_empty()) {
+        Some(u) => Some(urls.absolute(u)?),
+        None => crate::html::site_opengraph_image(&mut *conn, &urls).await?,
+    };
+    let mut crawler = crate::html::Crawler::for_request(&urls, uri, Some(canonical))?
+        .with_meta(&title, &summary, image);
+    crawler.description = description;
+    Ok(crawler)
+}
+
+/// `gsub(/<[^>]*>/, "")`
+fn strip_tags(s: &str) -> String {
+    let mut out = String::with_capacity(s.len());
+    let mut in_tag = false;
+    for c in s.chars() {
+        match c {
+            '<' => in_tag = true,
+            '>' if in_tag => in_tag = false,
+            c if !in_tag => out.push(c),
+            _ => {}
+        }
+    }
+    out
 }
 
 /// `redirect_to_correct_topic`'s target.

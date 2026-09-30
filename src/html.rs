@@ -106,6 +106,7 @@ pub struct LatestPage {
     pub site_description: String,
     pub lang: String,
     pub base_path: String,
+    pub crawler: Crawler,
     pub topics: Vec<TopicItem>,
     pub more_url: Option<String>,
     /// Set on category pages.
@@ -140,6 +141,7 @@ pub struct TopicPage {
     pub site_description: String,
     pub lang: String,
     pub base_path: String,
+    pub crawler: Crawler,
     pub title: String,
     pub title_unicode: String,
     pub canonical_url: String,
@@ -270,6 +272,7 @@ pub async fn latest_page(
         site_description: site.site_description,
         lang: site.lang,
         base_path: site.base_path,
+        crawler: Crawler::default(),
         topics,
         heading: None,
         tag: None,
@@ -381,6 +384,7 @@ pub async fn topic_page(
         site_description: site.site_description,
         lang: site.lang,
         base_path: site.base_path,
+        crawler: Crawler::default(),
         title: s(&view["title"]),
         title_unicode: crate::emoji::gsub_emoji_to_unicode(&s(&view["title"])),
         canonical_url: page_url(page),
@@ -504,6 +508,7 @@ pub struct CategoriesPage {
     pub site_description: String,
     pub lang: String,
     pub base_path: String,
+    pub crawler: Crawler,
     pub categories: Vec<CategoryIndexItem>,
 }
 
@@ -565,6 +570,7 @@ pub async fn categories_page(
         site_description: site.site_description,
         lang: site.lang,
         base_path: site.base_path,
+        crawler: Crawler::default(),
         categories: items,
     })
 }
@@ -576,6 +582,7 @@ pub struct TagsPage {
     pub site_description: String,
     pub lang: String,
     pub base_path: String,
+    pub crawler: Crawler,
     pub groups: Vec<TagGroupItem>,
 }
 
@@ -642,6 +649,112 @@ pub fn tags_page(
         site_description: site.site_description,
         lang: site.lang,
         base_path: site.base_path,
+        crawler: Crawler::default(),
         groups,
     }
+}
+
+/// What the layout's `<head>` says to crawlers: the canonical link, the
+/// description meta and `crawlable_meta_data`'s OpenGraph/Twitter tags.
+#[derive(Debug, Clone, Default)]
+pub struct Crawler {
+    /// Absolute; empty when the page sets none.
+    pub canonical: String,
+    /// `<meta name="description">` (`description_content`)
+    pub description: String,
+    /// og:title; empty when the page emits no crawlable_meta_data.
+    pub title: String,
+    /// og:description
+    pub og_description: String,
+    /// og:image, absolute
+    pub image: Option<String>,
+    /// og:url: the request's own URL
+    pub url: String,
+    /// `add_noindex_header_to_non_canonical`: the canonical differs from
+    /// the request URL.
+    pub noindex: bool,
+}
+
+impl Crawler {
+    /// `default_canonical`: the request path plus its `page` param.
+    pub fn default_canonical(base_url_no_prefix: &str, path: &str, query: Option<&str>) -> String {
+        let mut canonical = format!("{base_url_no_prefix}{path}");
+        if let Some(q) = query {
+            let page: Vec<&str> = q.split('&').filter(|p| p.starts_with("page=")).collect();
+            if !page.is_empty() {
+                canonical.push('?');
+                canonical.push_str(&page.join("&"));
+            }
+        }
+        canonical
+    }
+
+    pub fn new(
+        base_url_no_prefix: &str,
+        path: &str,
+        query: Option<&str>,
+        canonical: String,
+    ) -> Crawler {
+        let mut url = format!("{base_url_no_prefix}{path}");
+        if let Some(q) = query.filter(|q| !q.is_empty()) {
+            url.push('?');
+            url.push_str(q);
+        }
+        Crawler {
+            noindex: !canonical.is_empty() && canonical != url,
+            canonical,
+            url,
+            ..Crawler::default()
+        }
+    }
+
+    /// The crawler block for a request: the given canonical, else the
+    /// default one.
+    pub fn for_request(
+        urls: &crate::url::Urls<'_>,
+        uri: &axum::http::Uri,
+        canonical: Option<String>,
+    ) -> Result<Crawler, crate::url::UrlError> {
+        let base = urls.base_url_no_prefix()?;
+        let canonical =
+            canonical.unwrap_or_else(|| Crawler::default_canonical(&base, uri.path(), uri.query()));
+        Ok(Crawler::new(&base, uri.path(), uri.query(), canonical))
+    }
+
+    /// `crawlable_meta_data(title:, description:, image:)`: the site's
+    /// OpenGraph image when the page has none.
+    pub fn with_meta(mut self, title: &str, description: &str, image: Option<String>) -> Crawler {
+        self.title = crate::emoji::gsub_emoji_to_unicode(title);
+        self.og_description = crate::emoji::gsub_emoji_to_unicode(description);
+        self.image = image.filter(|i| !i.is_empty());
+        self
+    }
+}
+
+/// The site's OpenGraph image (`SiteSetting.site_opengraph_image_url`),
+/// None when nothing resolves.
+pub async fn site_opengraph_image(
+    conn: &mut PgConnection,
+    urls: &crate::url::Urls<'_>,
+) -> Result<Option<String>, crate::site_icons::IconError> {
+    let url = crate::site_icons::site_url(conn, urls, "opengraph_image").await?;
+    Ok((!url.is_empty()).then_some(url))
+}
+
+/// An HTML response with the non-canonical noindex header when the
+/// setting asks for it.
+pub fn crawler_response(
+    body: String,
+    crawler: &Crawler,
+    settings: &SiteSettings,
+) -> Result<axum::response::Response, SettingError> {
+    use axum::response::IntoResponse;
+    let mut response = axum::response::Html(body).into_response();
+    if crawler.noindex && !settings.get("allow_indexing_non_canonical_urls")?.truthy() {
+        response.headers_mut().insert(
+            "x-robots-tag",
+            axum::http::HeaderValue::from_static("noindex"),
+        );
+    }
+    Ok(response)
 }

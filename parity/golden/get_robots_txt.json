@@ -1,0 +1,7 @@
+{
+  "request": "GET /robots.txt",
+  "source": "http://127.0.0.1:3042",
+  "status": 200,
+  "content_type": "text/plain; charset=utf-8",
+  "body": "# See https://datatracker.ietf.org/doc/rfc9309 for documentation on how to use the robots.txt file\n# Google uses the same format as the standard above. More info at https://developers.google.com/search/docs/crawling-indexing/robots/robots_txt\n\n#\nUser-agent: mauibot\nDisallow: /\n\n\nUser-agent: semrushbot\nDisallow: /\n\n\nUser-agent: ahrefsbot\nDisallow: /\n\n\nUser-agent: blexbot\nDisallow: /\n\n\nUser-agent: seo spider\nDisallow: /\n\n\nUser-agent: *\nDisallow: /admin/\nDisallow: /auth/\nDisallow: /assets/js/browser-update*.js\nDisallow: /email/\nDisallow: /session\nDisallow: /user-api-key\nDisallow: /*?api_key*\nDisallow: /*?*api_key*\nDisallow: /badges\nDisallow: /my\nDisallow: /search\nDisallow: /tag/*/l\nDisallow: /g\nDisallow: /t/*/*.rss\nDisallow: /c/*.rss\n\n\nUser-agent: Googlebot\nDisallow: /admin/\nDisallow: /auth/\nDisallow: /assets/js/browser-update*.js\nDisallow: /email/\nDisallow: /session\nDisallow: /user-api-key\nDisallow: /*?api_key*\nDisallow: /*?*api_key*\n\n\n\nSitemap: http://127.0.0.1:3042/sitemap.xml\n\n\n"
+}

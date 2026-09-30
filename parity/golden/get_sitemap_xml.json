@@ -1,0 +1,7 @@
+{
+  "request": "GET /sitemap.xml",
+  "source": "http://127.0.0.1:3042",
+  "status": 200,
+  "content_type": "application/xml; charset=utf-8",
+  "body": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<sitemapindex xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n      <sitemap>\n         <loc>http://localhost:3042/sitemap_recent.xml</loc>\n         <lastmod>2026-09-30T10:46:34Z</lastmod>\n      </sitemap>\n      <sitemap>\n         <loc>http://localhost:3042/sitemap_1.xml</loc>\n         <lastmod>2026-09-30T10:46:34Z</lastmod>\n      </sitemap>\n</sitemapindex>\n"
+}

@@ -13,6 +13,7 @@ use serde::Deserialize;
 use serde_json::{Value, json};
 
 use crate::guardian::Guardian;
+use crate::html::Crawler;
 use crate::search::{BLURB_LENGTH, Search, SearchArgs, TypeFilter};
 use crate::site_settings::SiteSettings;
 use crate::url::Urls;
@@ -171,8 +172,9 @@ pub async fn show(
     Query(params): Query<ShowParams>,
     headers: HeaderMap,
     Peer(peer): Peer,
+    uri: axum::http::Uri,
 ) -> Result<Response, AppError> {
-    show_response(state, params, headers, peer, false).await
+    show_response(state, params, headers, peer, false, Some(uri)).await
 }
 
 pub async fn show_json(
@@ -181,7 +183,7 @@ pub async fn show_json(
     headers: HeaderMap,
     Peer(peer): Peer,
 ) -> Result<Response, AppError> {
-    show_response(state, params, headers, peer, true).await
+    show_response(state, params, headers, peer, true, None).await
 }
 
 async fn show_response(
@@ -190,6 +192,7 @@ async fn show_response(
     headers: HeaderMap,
     peer: Option<SocketAddr>,
     json: bool,
+    uri: Option<axum::http::Uri>,
 ) -> Result<Response, AppError> {
     if params.search_context.is_some() || params.context.is_some() || params.context_id.is_some() {
         return Err(Unsupported("search contexts (user, topic, category, tag)").into());
@@ -242,7 +245,15 @@ async fn show_response(
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
     let base_path = state.config.globals.relative_url_root();
     let site = crate::html::Site::from_settings(&settings, base_path)?;
-    let page = search_page(&state, site, &term, &doc, page, &mut conn).await?;
+    let mut page = search_page(&state, site, &term, &doc, page, &mut conn).await?;
+    // No crawlable_meta_data on search; the description meta and the
+    // default canonical (only the page param survives) remain.
+    let urls = Urls {
+        config: &state.config,
+        settings: &settings,
+    };
+    page.crawler = crate::html::Crawler::for_request(&urls, &uri.unwrap_or_default(), None)?;
+    page.crawler.description = settings.get("site_description")?.to_s();
     Ok((
         noindex,
         Html(page.render().map_err(crate::html::HtmlError::from)?),
@@ -317,6 +328,7 @@ pub struct SearchPage {
     pub site_description: String,
     pub lang: String,
     pub base_path: String,
+    pub crawler: Crawler,
     pub term: String,
     pub results: Vec<SearchResult>,
     pub searched: bool,
@@ -380,6 +392,7 @@ async fn search_page(
         site_description: site.site_description,
         lang: site.lang,
         base_path: site.base_path,
+        crawler: Crawler::default(),
         term: term.to_string(),
         results,
         searched: !term.is_empty(),

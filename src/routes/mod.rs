@@ -1,7 +1,9 @@
 mod list;
 mod login_required;
+mod robots;
 mod search;
 mod site;
+mod sitemap;
 mod srv;
 mod tags;
 mod topics;
@@ -54,6 +56,11 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/users/{username}/{*rest}", get(users::show_with_tail))
         .route("/user_actions.json", get(users::actions))
         .route("/c/{*path}", get(list::category))
+        .route("/robots.txt", get(robots::index))
+        .route("/robots-builder.json", get(robots::builder))
+        .route("/sitemap.xml", get(sitemap::index))
+        .route("/sitemap_{page}", get(sitemap::page))
+        .route("/news.xml", get(sitemap::news))
         .route("/search", get(search::show))
         .route("/search.json", get(search::show_json))
         .route("/search/query", get(search::query))

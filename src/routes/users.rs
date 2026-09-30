@@ -11,6 +11,7 @@ use serde_json::{Value, json};
 
 use super::search::Peer;
 use crate::guardian::Guardian;
+use crate::html::Crawler;
 use crate::site_settings::SiteSettings;
 use crate::url::Urls;
 use crate::users::{PRIVATE_TYPES, PUBLIC_TYPES, User, Users};
@@ -90,9 +91,22 @@ pub async fn show(
     Query(params): Query<ShowParams>,
     headers: HeaderMap,
     Peer(peer): Peer,
+    uri: axum::http::Uri,
 ) -> Result<Response, AppError> {
     let (username, action, json) = route(&username, None)?;
-    respond(state, username, action, json, params, headers, peer).await
+    respond(
+        state,
+        Target {
+            username,
+            action,
+            json,
+        },
+        params,
+        headers,
+        peer,
+        uri,
+    )
+    .await
 }
 
 /// GET /u/{username}/{*rest}
@@ -102,20 +116,44 @@ pub async fn show_with_tail(
     Query(params): Query<ShowParams>,
     headers: HeaderMap,
     Peer(peer): Peer,
+    uri: axum::http::Uri,
 ) -> Result<Response, AppError> {
     let (username, action, json) = route(&username, Some(&rest))?;
-    respond(state, username, action, json, params, headers, peer).await
+    respond(
+        state,
+        Target {
+            username,
+            action,
+            json,
+        },
+        params,
+        headers,
+        peer,
+        uri,
+    )
+    .await
+}
+
+/// Which user, action and format the path selected.
+struct Target {
+    username: String,
+    action: Action,
+    json: bool,
 }
 
 async fn respond(
     state: AppState,
-    username: String,
-    action: Action,
-    json: bool,
+    target: Target,
     params: ShowParams,
     headers: HeaderMap,
     peer: Option<std::net::SocketAddr>,
+    uri: axum::http::Uri,
 ) -> Result<Response, AppError> {
+    let Target {
+        username,
+        action,
+        json,
+    } = target;
     if params.include_post_count_for.is_some() {
         return Err(Unsupported("include_post_count_for").into());
     }
@@ -182,7 +220,7 @@ async fn respond(
         Vec::new()
     };
     let site = crate::html::Site::from_settings(&settings, base_path)?;
-    let page = profile_page(
+    let mut page = profile_page(
         site,
         &user,
         &show_doc,
@@ -190,6 +228,15 @@ async fn respond(
         &actions,
         &settings,
     )?;
+    // crawlable_meta_data(title: username, image: the 45px avatar)
+    let avatar = show_doc["user"]["avatar_template"]
+        .as_str()
+        .map(|t| urls.absolute(&t.replace("{size}", "45")))
+        .transpose()?;
+    let mut crawler =
+        crate::html::Crawler::for_request(&urls, &uri, None)?.with_meta(&user.username, "", avatar);
+    crawler.description = settings.get("site_description")?.to_s();
+    page.crawler = crawler;
     Ok((
         noindex,
         Html(page.render().map_err(crate::html::HtmlError::from)?),
@@ -282,6 +329,7 @@ pub struct ProfilePage {
     pub site_description: String,
     pub lang: String,
     pub base_path: String,
+    pub crawler: Crawler,
     pub username: String,
     pub name: Option<String>,
     pub title: Option<String>,
@@ -386,6 +434,7 @@ fn profile_page(
         site_description: site.site_description,
         lang: site.lang,
         base_path: site.base_path,
+        crawler: Crawler::default(),
         username: user.username.clone(),
         name: u["name"].as_str().map(str::to_string),
         title: user.title.clone(),
