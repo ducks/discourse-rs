@@ -98,6 +98,8 @@ run discourse-rs against a `make db-load` of the snapshot with
 | `GET /c/:slug_path/:id(/l/latest)` | `list_controller.rb#category_default`, `#category_latest` | anonymous only; subcategory scoping, `/none`, `/l/top`, `/l/hot`, category pins and sort, slug redirects |
 | `GET /top`, `GET /hot` | `list_controller.rb#top`, `#hot`, `TopicQuery#list_top_for`, `#list_hot` | anonymous only; period selection (`best_period_for`), `/top/:period` redirects |
 | `GET /categories` | `categories_controller.rb#index`, `CategoryList`, `CategoryDetailedSerializer` | anonymous only; featured topics; no pagination, parent, tag filter or `subcategory_list` yet |
+| `GET /tag/:name`, `GET /tag/:slug/:id(/l/:filter)`, `GET /tags/c/:slug_path/:id(/none)/:tag` | `tags_controller.rb#show_*`, `TopicQuery#filter_by_tags`, `TagSerializer`, `DiscourseTagging.visible_tags` | anonymous only; `tags[]` intersections, synonyms, tag-group and category visibility, canonical redirects; login-only filters and `tags_listed_by_group` not ported |
+| `GET /tags` | `tags_controller.rb#index` | anonymous only; `tags_listed_by_group` off |
 
 Supporting ports: SiteSetting (YAML defaults, `locale_default`, typed DB
 rows, GlobalSetting shadowing, upcoming-change promotion), server-side I18n
@@ -125,8 +127,8 @@ headers, any authenticated user.
 Anonymous readers get server-rendered HTML (askama templates in
 `templates/`, one stylesheet in `static/`) built from the same documents the
 JSON endpoints return: `/` and `/latest` (the topic list, paged), `/c/...`
-(a category's list with its subcategories), `/categories` (the index with
-featured topics), and `/t/:slug/:id` (the topic with its posts). Requests ending in `.json` get the
+(a category's list with its subcategories), `/tag/...` (a tag's list),
+`/tags` (the tag index), `/categories` (the index with featured topics), and `/t/:slug/:id` (the topic with its posts). Requests ending in `.json` get the
 API document instead. The structure follows Discourse's crawler views.
 
 `PUBLIC_DIR` (default `public`) is served at `/images` and `/uploads`: point

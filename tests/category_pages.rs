@@ -57,7 +57,9 @@ async fn category_lists_include_the_definition_topic_and_subcategories() {
     // bump: About General (3) shows, the subcategory's About (34) doesn't.
     assert_eq!(ids(&body), vec![5, 3, 41, 38, 35]);
     let json: Value = serde_json::from_str(&body).unwrap();
-    assert_eq!(json["topic_list"]["top_tags"][0]["name"], "howto");
+    // guide and howto tie on count; name breaks the tie.
+    assert_eq!(json["topic_list"]["top_tags"][0]["name"], "guide");
+    assert_eq!(json["topic_list"]["top_tags"][1]["name"], "howto");
 
     let (_, _, body) = get(&db.pool, "/c/general/sub-general/34.json").await;
     assert_eq!(ids(&body), vec![34, 38]);

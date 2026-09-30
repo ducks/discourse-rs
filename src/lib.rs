@@ -17,6 +17,7 @@ pub mod schema;
 pub mod site;
 pub mod site_icons;
 pub mod site_settings;
+pub mod tags;
 pub mod topic_list;
 pub mod topic_query;
 pub mod topic_view;

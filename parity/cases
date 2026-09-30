@@ -57,3 +57,18 @@ GET /hot.json?per_page=3 ignore=/topic_list/topics/*/has_accepted_answer,/topic_
 GET /c/general/4/l/top.json ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
 GET /c/general/4/l/hot.json ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
 GET /c/general/4/none/l/hot.json ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
+
+# tags#show (anonymous): legacy name, canonical slug/id, id-only, in a category, filters, none, 404
+GET /tag/howto.json ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
+GET /tag/guide.json?per_page=1 ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
+GET /tag/howto/1.json ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
+GET /tag/1.json ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
+GET /tag/howto/1/l/top.json ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
+GET /tags/c/general/4/none/howto/1.json?per_page=1 ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
+GET /tags/c/general/4/howto.json ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
+GET /tag/none.json?per_page=2 ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
+GET /tag/nope.json
+GET /tag/99.json
+
+# tags#index
+GET /tags.json

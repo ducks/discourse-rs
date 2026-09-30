@@ -1124,6 +1124,8 @@ ALTER TABLE public.category_tag_stats DISABLE TRIGGER ALL;
 
 COPY public.category_tag_stats (id, category_id, tag_id, topic_count) FROM stdin;
 1	34	1	1
+3	4	1	1
+2	4	2	2
 \.
 
 
@@ -2127,12 +2129,12 @@ COPY public.topics (id, title, last_posted_at, created_at, updated_at, views, po
 38	Parity fixture: tagged in a subcategory	2026-09-30 07:28:29.580198	2026-09-30 07:28:29.543058	2026-09-30 07:28:29.60142	0	1	3	3	0	\N	\N	\N	\N	1	0	0	34	t	0	f	f	2026-09-30 07:28:29.580198	f	regular	\N	0	0	\N	0.2	1	\N	parity-fixture-tagged-in-a-subcategory	\N	1	15	A topic in a subcategory carrying a tag, so tags and category ids show up.	f	\N	Parity fixture: tagged in a subcategory	1	\N	0	\N	0	\N	\N	\N	\N	\N
 6	Admin Guide: Getting Started	2026-07-25 05:58:28.636524	2026-07-25 05:58:28.537993	2026-07-25 05:58:28.757941	0	1	-1	-1	0	\N	\N	\N	\N	1	0	0	3	t	0	f	f	2026-07-25 05:58:28.636524	f	regular	\N	0	0	\N	0.2	1	\N	admin-guide-getting-started	\N	1	272	Welcome to your new community, and thank you for choosing Discourse! \n:closed_mailbox_with_raised_flag: Test your email configuration\nEmail is required for new account signups and notifications. \n→ Send a test email. \n→ &hellip;	f	\N	Admin Guide: Getting Started	1	\N	0	\N	0	\N	\N	\N	\N	\N
 39	Parity fixture: unlisted topic	2026-09-30 07:28:29.674309	2026-09-30 07:28:29.645201	2026-09-30 07:28:29.793003	0	1	1	1	0	\N	\N	\N	\N	1	0	0	4	f	1	f	f	2026-09-30 07:28:29.674309	f	regular	\N	0	0	\N	0.2	1	\N	parity-fixture-unlisted-topic	\N	1	13	This topic is unlisted and must not appear in latest for anonymous users.	f	\N	Parity fixture: unlisted topic	1	\N	0	\N	0	\N	\N	99	\N	\N
+35	Parity fixture: replies and posters	2026-09-30 07:28:29.25168	2026-09-30 07:28:28.864868	2026-09-30 10:46:34.784768	0	4	2	1	0	3	\N	4	\N	4	0	0	4	t	0	f	f	2026-09-30 07:28:29.25168	f	regular	\N	0	0	\N	0.2	1	\N	parity-fixture-replies-and-posters	\N	4	58	First post of a topic with several repliers, long enough to be a real post body for the excerpt.	f	\N	\N	4	\N	0	\N	0	\N	\N	\N	\N	\N
+41	Parity fixture: liked and archived	2026-09-30 07:28:30.163794	2026-09-30 07:28:30.067335	2026-09-30 10:46:34.843989	0	1	2	2	0	\N	\N	1	\N	1	1	0	4	t	1	f	t	2026-09-30 07:28:30.163794	f	regular	\N	0	0	\N	7.699999999999999	1	\N	parity-fixture-liked-and-archived	\N	2	13	An archived topic whose first post got a like, for like_count and op_like_count.	f	\N	\N	1	\N	0	\N	0	\N	\N	\N	\N	\N
 40	Parity fixture: deleted topic	\N	2026-09-30 07:28:29.827702	2026-09-30 07:28:29.920267	0	0	4	4	0	\N	\N	\N	2026-09-30 07:28:29.936769	0	0	0	4	t	0	f	f	2026-09-30 07:28:29.858545	f	regular	\N	0	0	\N	0.2	1	\N	parity-fixture-deleted-topic	1	1	\N	This topic is deleted and must not appear anywhere.	f	\N	Parity fixture: deleted topic	0	\N	0	\N	0	\N	\N	\N	\N	\N
 37	Parity fixture: pinned and closed	2026-09-30 07:28:29.358281	2026-09-30 07:28:29.32536	2026-09-30 07:28:29.440782	0	1	1	1	0	\N	\N	\N	\N	1	0	0	2	t	1	t	f	2026-09-30 07:28:29.358281	f	regular	\N	0	0	2026-09-30 07:28:29.406348	0.2	1	\N	parity-fixture-pinned-and-closed	\N	1	17	A pinned, closed topic in Site Feedback with an excerpt that should be shown in the list.	f	\N	Parity fixture: pinned and closed	1	\N	0	\N	0	\N	\N	\N	\N	\N
 34	About the Sub General category	\N	2026-09-30 07:28:28.633614	2026-09-30 07:28:28.633614	0	1	1	1	0	\N	\N	\N	\N	1	0	0	34	t	0	f	f	2026-09-30 07:28:28.633715	f	regular	\N	0	0	2026-09-30 07:28:26.810256	0	1	\N	about-the-sub-general-category	\N	1	\N	\N	f	\N	About the Sub General category	1	\N	0	\N	0	\N	\N	\N	\N	\N
-35	Parity fixture: replies and posters	2026-09-30 07:28:29.25168	2026-09-30 07:28:28.864868	2026-09-30 07:28:29.285938	0	4	2	1	0	3	\N	4	\N	4	0	0	4	t	0	f	f	2026-09-30 07:28:29.25168	f	regular	\N	0	0	\N	0.2	1	\N	parity-fixture-replies-and-posters	\N	4	58	First post of a topic with several repliers, long enough to be a real post body for the excerpt.	f	\N	Parity fixture: replies and posters	4	\N	0	\N	0	\N	\N	\N	\N	\N
 36	Downloading remote images disabled	2026-09-30 07:28:29.321644	2026-09-30 07:28:29.234006	2026-09-30 07:28:29.413451	0	1	-1	-1	0	\N	\N	\N	\N	1	0	0	\N	t	0	f	f	2026-09-30 07:28:29.321644	f	private_message	\N	0	0	\N	0.2	1	system_message	downloading-remote-images-disabled	\N	1	14	The download_remote_images_to_local setting was disabled because the disk space limit at download_remote_images_threshold was reached.	f	\N	Downloading remote images disabled	1	\N	0	\N	0	\N	\N	\N	\N	\N
-41	Parity fixture: liked and archived	2026-09-30 07:28:30.163794	2026-09-30 07:28:30.067335	2026-09-30 07:28:30.457759	0	1	2	2	0	\N	\N	1	\N	1	1	0	4	t	1	f	t	2026-09-30 07:28:30.163794	f	regular	\N	0	0	\N	7.699999999999999	1	\N	parity-fixture-liked-and-archived	\N	2	13	An archived topic whose first post got a like, for like_count and op_like_count.	f	\N	Parity fixture: liked and archived	1	\N	0	\N	0	\N	\N	\N	\N	\N
 \.
 
 
@@ -3764,17 +3766,17 @@ COPY public.post_search_data (post_id, search_data, raw_data, locale, version, p
 5	'chang':11 'content':13 'edit':3 'first':5 'guidelin':1A,16 'page':17 'post':6 'staff':2B 'topic':9	Edit the first post in this topic to change the contents of the Guidelines page.	en	5	f
 6	'/about':135 '/c/site-feedback/2':128 '/faq':112 '/latest':61 '/my/preferences/account':39 'ad':28 'admin':138 'alreadi':66 'appreci':84 'ask':51,95,126 'book':54 'brows':62 'comment':90 'communiti':59,113 'contact':136 'contribut':88 'd':47 'discours':3A 'discuss':63,102 'entertain':77 'feedback':99,133 'feel':123 'find':71 'free':124 'full':131 'general':5B 'get':21,55 'glad':9 'guidelin':114 'handshak':87 'happen':67 'head':24 'heart':80 'help':118 'inform':32,75 'interest':37,74 'introduc':25 'join':11 'know':57 'like':48 'need':117 'new':107 'offer':98 'one':44 'open':53 'perspect':94 'pictur':30 'pleas':109 'post':73 'profil':41 'question':96 'repli':104 'review':110 'share':91 'show':82 'site':132 'speak':23 'squar':130 'square-ful':129 'start':22,106 'suggest':122 'support':86 'thing':16,45 'topic':108 'us':12 'use':78 'wave':4A 'welcom':1A	We are so glad you joined us. Here are some things you can do to get started: :speaking_head: Introduce yourself by adding your picture and information about yourself and your interests to /my/preferences/account your profile . What is one thing you'd like to be asked about? :open_book: Get to know the community by /latest browsing discussions that are already happening here. When you find a post interesting, informative, or entertaining, use the :heart: to show your appreciation or support! :handshake: Contribute by commenting, sharing your own perspective, asking questions, or offering feedback in the discussion. Before replying or starting new topics, please review the /faq Community Guidelines . If you need help or have a suggestion, feel free to ask in /c/site-feedback/2 #square-full Site Feedback or /about contact the admins .	en	5	f
 7	'/5':126 '/c/documentation/10':203 '/discourse/discourse/blob/main/docs/install-email.md':51 '3000/about':134 '3000/admin/config/login-and-authentication':147 '3000/admin/config/logo':140 '3000/admin/email/server-settings':38 '3000/new-invite':62,171 '3000/t':125 'account':31 'add':83 'admin':1A 'ai':192 'ai-pow':191 'anyth':195 'appear':142 'arriv':44,121 'artist':105 'ask':90,188,190 'ask.discourse.com':190 'assist':194 'balloon':70 'blog':222,224 'blog.discourse.org':222 'book':181 'brows':198 'choos':15 'close':17 'collabor':58 'com':50,190,216 'communiti':10,101,180,206,212,219 'complet':200 'configur':25 'content':94 'convers':73,87 'custom':137 'didn':42 'differ':145 'discours':16,185,190,197,202,204,210,211,216,218,222 'discourse.com':190,216 'discourse.org':202,210,222 'discov':216 'discover.discourse.com':216 'discuss':95 'document':205 'earli':76 'email':24,26,40,41,52 'feel':114 'fill':130 'first':120,157 'flag':21 'frequent':89 'get':3A 'github':50 'github.com':50 'github.com/discourse/discourse/blob/main/docs/install-email.md':49 'give':74 'guid':2A,47 'hand':154 'handshak':54 'help':110 'home':117 'idea':96 'inspir':214 'interact':82 'invit':55,64,155,172 'join':208 'learn':182 'link':177 'localhost':37,61,124,133,139,146 'login':148 'mailbox':18 'make':106 'member':68,77,113,152,158 'merrier':167 'meta':202,210 'meta.discourse.org':202,210 'meta.discourse.org/c/documentation/10':201 'method':149 'new':9,30,112 'notif':34 'org':202,210,222 'other':60 'page':136 'peopl':162,175 'person':122 'place':79 'plan':98 'power':193 'provid':53 'question':91 'rais':20 'read':45,220 'requir':28 'resourc':187,207 'right':115 'send':35,63,168,174 'set':143 'signup':32 'site':141 'speech':69 'staff':5B 'start':4A,71,81 'starter':88 'support':186 'take':213 'team':57,67,104 'test':22,39 'thank':12 'topic':85,128 'wave':153 'welcom':6,127,159	Welcome to your new community, and thank you for choosing Discourse! :closed_mailbox_with_raised_flag: Test your email configuration Email is required for new account signups and notifications. → Send a http://localhost:3000/admin/email/server-settings test email . → Email didn't arrive? Read our guide on https://github.com/discourse/discourse/blob/main/docs/INSTALL-email.md email providers . :handshake: Invite your team Collaborating with others? → http://localhost:3000/new-invite Send invites to your team members. :speech_balloon: Start some conversations Give your early members a place to start interacting. → Add some topics with conversation starters, frequently asked questions, and other content. → Discuss ideas and plans for your community with your team. :artist: Make it your own Help your new members feel right at home when they first arrive. → Personalize your http://localhost:3000/t/-/5/ welcome topic and fill out your http://localhost:3000/about about page . → Customize your http://localhost:3000/admin/config/logo site appearance . → Set up different http://localhost:3000/admin/config/login-and-authentication login methods for your members. :waving_hand: Invite your first members Welcome a few people in - the more, the merrier! → Send out http://localhost:3000/new-invite invites or send people the link to your community. :books: Learn more about Discourse Support resources: Ask our http://ask.discourse.com AI-powered assistant anything about Discourse. Browse the complete https://meta.discourse.org/c/documentation/10 Discourse documentation . Community resources: Join the https://meta.discourse.org/ Discourse community . Take inspiration from https://discover.discourse.com/ other Discourse communities . Read the https://blog.discourse.org/ Discourse blog .	en	5	f
-35	'bodi':22 'enough':16 'excerpt':25 'first':7 'fixtur':2A 'general':6B 'long':15 'pariti':1A 'post':8,21 'poster':5A 'real':20 'repli':3A 'replier':14 'sever':13 'topic':11	First post of a topic with several repliers, long enough to be a real post body for the excerpt.	en	5	f
-36	'also':11 'check':19 'enough':13 'fixtur':2A 'general':6B 'length':18 'long':12 'minimum':17 'one':8 'pariti':1A 'pass':15 'poster':5A 'repli':3A,7 'user1':10	Reply one from user1, also long enough to pass the minimum length check.	en	5	f
-37	'also':11 'check':19 'enough':13 'fixtur':2A 'general':6B 'length':18 'long':12 'minimum':17 'pariti':1A 'pass':15 'poster':5A 'repli':3A,7 'two':8 'user2':10	Reply two from user2, also long enough to pass the minimum length check.	en	5	f
-38	'admin':10 'also':11 'check':19 'enough':13 'fixtur':2A 'general':6B 'length':18 'long':12 'minimum':17 'pariti':1A 'pass':15 'poster':5A 'repli':3A,7 'three':8	Reply three from admin, also long enough to pass the minimum length check.	en	5	f
 40	'close':5A,10 'excerpt':17 'feedback':7B,14 'fixtur':2A 'list':24 'pariti':1A 'pin':3A,9 'shown':21 'site':6B,13 'topic':11	A pinned, closed topic in Site Feedback with an excerpt that should be shown in the list.	en	5	f
 39	'disabl':4A,13 'disk':16 'download':1A,6,20 'imag':3A,8,22 'limit':18 'local':10 'reach':25 'remot':2A,7,21 'set':11 'space':17 'threshold':23	The download_remote_images_to_local setting was disabled because the disk space limit at download_remote_images_threshold was reached.	en	5	t
 42	'carri':15 'categori':21 'fixtur':2A 'general':8B 'howto':9C 'id':22 'pariti':1A 'show':23 'sub':7B 'subcategori':6A,14 'tag':3A,17,19 'topic':11	A topic in a subcategory carrying a tag, so tags and category ids show up.	en	5	f
 43	'anonym':17 'appear':13 'fixtur':2A 'general':5B 'latest':15 'must':11 'pariti':1A 'topic':4A,7 'unlist':3A,9 'user':18	This topic is unlisted and must not appear in latest for anonymous users.	en	5	f
 45	'anywher':14 'appear':13 'delet':3A,9 'fixtur':2A 'general':5B 'must':11 'pariti':1A 'topic':4A,7	This topic is deleted and must not appear anywhere.	en	5	f
-46	'archiv':5A,8 'count':18,22 'first':11 'fixtur':2A 'general':6B 'got':13 'like':3A,15,17,21 'op':20 'pariti':1A 'post':12 'topic':9 'whose':10	An archived topic whose first post got a like, for like_count and op_like_count.	en	5	f
 34	'200':35 'alreadi':72 'anoth':91 'appear':23 'area':28 'brief':14 'categori':5A,19,26,48,57,70,79 'charact':36 'contain':81 'descript':15,44 'differ':66 'establish':47 'exact':63 'first':10 'follow':39 'general':4A,7B,80 'guidanc':21 'guidelin':49 'keep':32 'longer':43 'merg':89 'need':84 'new':18 'paragraph':11,40 'peopl':54 'replac':8 'rule':51 'select':27 'sub':3A,6B 'subcategori':94 'topic':76 'tri':30 'use':37,55	(Replace this first paragraph with a brief description of your new category. This guidance will appear in the category selection area, so try to keep it below 200 characters.) Use the following paragraphs for a longer description, or to establish category guidelines or rules: Why should people use this category? What is it for? How exactly is this different than the other categories we already have? What should topics in this category generally contain? Do we need this category? Can we merge with another category, or subcategory?	en	5	f
+35	'bodi':22 'enough':16 'excerpt':25 'first':7 'fixtur':2A 'general':6B 'long':15 'pariti':1A 'post':8,21 'poster':5A 'real':20 'repli':3A 'replier':14 'sever':13 'topic':11	First post of a topic with several repliers, long enough to be a real post body for the excerpt.	en	0	f
+36	'also':11 'check':19 'enough':13 'fixtur':2A 'general':6B 'length':18 'long':12 'minimum':17 'one':8 'pariti':1A 'pass':15 'poster':5A 'repli':3A,7 'user1':10	Reply one from user1, also long enough to pass the minimum length check.	en	0	f
+37	'also':11 'check':19 'enough':13 'fixtur':2A 'general':6B 'length':18 'long':12 'minimum':17 'pariti':1A 'pass':15 'poster':5A 'repli':3A,7 'two':8 'user2':10	Reply two from user2, also long enough to pass the minimum length check.	en	0	f
+38	'admin':10 'also':11 'check':19 'enough':13 'fixtur':2A 'general':6B 'length':18 'long':12 'minimum':17 'pariti':1A 'pass':15 'poster':5A 'repli':3A,7 'three':8	Reply three from admin, also long enough to pass the minimum length check.	en	0	f
+46	'archiv':5A,8 'count':18,22 'first':11 'fixtur':2A 'general':6B 'got':13 'like':3A,15,17,21 'op':20 'pariti':1A 'post':12 'topic':9 'whose':10	An archived topic whose first post got a like, for like_count and op_like_count.	en	0	f
 \.
 
 
@@ -6939,6 +6941,7 @@ ALTER TABLE public.tag_search_data DISABLE TRIGGER ALL;
 
 COPY public.tag_search_data (tag_id, search_data, raw_data, locale, version) FROM stdin;
 1	'howto':1A	howto	en	3
+2	'guid':1A	guide	en	3
 \.
 
 
@@ -6963,7 +6966,8 @@ ALTER TABLE public.tag_users ENABLE TRIGGER ALL;
 ALTER TABLE public.tags DISABLE TRIGGER ALL;
 
 COPY public.tags (id, name, created_at, updated_at, pm_topic_count, target_tag_id, description, public_topic_count, staff_topic_count, locale, slug, description_cooked, description_cooked_version) FROM stdin;
-1	howto	2026-09-30 07:28:29.481344	2026-09-30 07:28:29.481344	0	\N	\N	1	1	\N	howto	\N	1
+1	howto	2026-09-30 07:28:29.481344	2026-09-30 07:28:29.481344	0	\N	\N	2	2	\N	howto	\N	1
+2	guide	2026-09-30 10:46:34.670451	2026-09-30 10:46:34.670451	0	\N	\N	2	2	\N	guide	\N	\N
 \.
 
 
@@ -7344,17 +7348,17 @@ ALTER TABLE public.topic_groups ENABLE TRIGGER ALL;
 ALTER TABLE public.topic_hot_scores DISABLE TRIGGER ALL;
 
 COPY public.topic_hot_scores (id, topic_id, score, recent_likes, recent_posters, recent_first_bumped_at, created_at, updated_at) FROM stdin;
-4	1	0	0	0	\N	2026-09-30 06:20:46.862926	2026-09-30 10:14:00.083624
-3	2	0	0	0	\N	2026-09-30 06:20:46.862926	2026-09-30 10:14:00.083624
-2	3	0	0	0	\N	2026-09-30 06:20:46.862926	2026-09-30 10:14:00.083624
-6	4	0	0	0	\N	2026-09-30 06:20:46.862926	2026-09-30 10:14:00.083624
-1	5	0	0	0	\N	2026-09-30 06:20:46.862926	2026-09-30 10:14:00.083624
-10	38	0	0	1	2026-09-30 07:28:29.580198	2026-09-30 07:35:34.283056	2026-09-30 10:14:00.083624
-5	6	0	0	0	\N	2026-09-30 06:20:46.862926	2026-09-30 10:14:00.083624
-7	37	0	0	1	2026-09-30 07:28:29.358281	2026-09-30 07:35:34.283056	2026-09-30 10:14:00.083624
-8	34	0	0	1	2026-09-30 07:28:28.693594	2026-09-30 07:35:34.283056	2026-09-30 10:14:00.083624
-11	35	0.46146574618336333	0	4	2026-09-30 07:28:28.901913	2026-09-30 07:35:34.283056	2026-09-30 10:14:00.083624
-9	41	0.30766998671073953	1	1	2026-09-30 07:28:30.163794	2026-09-30 07:35:34.283056	2026-09-30 10:14:00.083624
+4	1	0	0	0	\N	2026-09-30 06:20:46.862926	2026-09-30 10:43:02.376462
+3	2	0	0	0	\N	2026-09-30 06:20:46.862926	2026-09-30 10:43:02.376462
+2	3	0	0	0	\N	2026-09-30 06:20:46.862926	2026-09-30 10:43:02.376462
+6	4	0	0	0	\N	2026-09-30 06:20:46.862926	2026-09-30 10:43:02.376462
+1	5	0	0	0	\N	2026-09-30 06:20:46.862926	2026-09-30 10:43:02.376462
+10	38	0	0	1	2026-09-30 07:28:29.580198	2026-09-30 07:35:34.283056	2026-09-30 10:43:02.376462
+5	6	0	0	0	\N	2026-09-30 06:20:46.862926	2026-09-30 10:43:02.376462
+7	37	0	0	1	2026-09-30 07:28:29.358281	2026-09-30 07:35:34.283056	2026-09-30 10:43:02.376462
+8	34	0	0	1	2026-09-30 07:28:28.693594	2026-09-30 07:35:34.283056	2026-09-30 10:43:02.376462
+11	35	0.4108298811269695	0	4	2026-09-30 07:28:28.901913	2026-09-30 07:35:34.283056	2026-09-30 10:43:02.376462
+9	41	0.27390772352101656	1	1	2026-09-30 07:28:30.163794	2026-09-30 07:35:34.283056	2026-09-30 10:43:02.376462
 \.
 
 
@@ -7461,6 +7465,9 @@ ALTER TABLE public.topic_tags DISABLE TRIGGER ALL;
 
 COPY public.topic_tags (id, topic_id, tag_id, created_at, updated_at) FROM stdin;
 1	38	1	2026-09-30 07:28:29.544832	2026-09-30 07:28:29.544832
+2	35	2	2026-09-30 10:46:34.772309	2026-09-30 10:46:34.772309
+3	41	1	2026-09-30 10:46:34.830383	2026-09-30 10:46:34.830383
+4	41	2	2026-09-30 10:46:34.835811	2026-09-30 10:46:34.835811
 \.
 
 
@@ -9038,7 +9045,7 @@ SELECT pg_catalog.setval('public.category_tag_groups_id_seq', 1, false);
 -- Name: category_tag_stats_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.category_tag_stats_id_seq', 1, true);
+SELECT pg_catalog.setval('public.category_tag_stats_id_seq', 3, true);
 
 
 --
@@ -10305,7 +10312,7 @@ SELECT pg_catalog.setval('public.reviewables_id_seq', 1, false);
 -- Name: scheduler_stats_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.scheduler_stats_id_seq', 2638, true);
+SELECT pg_catalog.setval('public.scheduler_stats_id_seq', 2948, true);
 
 
 --
@@ -10508,7 +10515,7 @@ SELECT pg_catalog.setval('public.tag_users_id_seq', 1, false);
 -- Name: tags_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.tags_id_seq', 1, true);
+SELECT pg_catalog.setval('public.tags_id_seq', 2, true);
 
 
 --
@@ -10662,7 +10669,7 @@ SELECT pg_catalog.setval('public.topic_search_data_topic_id_seq', 1, false);
 -- Name: topic_tags_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.topic_tags_id_seq', 1, true);
+SELECT pg_catalog.setval('public.topic_tags_id_seq', 4, true);
 
 
 --

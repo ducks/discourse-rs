@@ -21,17 +21,17 @@ use crate::{AppError, AppState};
 /// rejected until they are.
 #[derive(Deserialize, Default)]
 pub struct ListParams {
-    page: Option<String>,
-    per_page: Option<String>,
-    order: Option<String>,
-    ascending: Option<String>,
+    pub(super) page: Option<String>,
+    pub(super) per_page: Option<String>,
+    pub(super) order: Option<String>,
+    pub(super) ascending: Option<String>,
     /// top lists only; not a TopicQuery option, so never echoed unless given
-    period: Option<String>,
+    pub(super) period: Option<String>,
 }
 
 /// `build_topic_list_options` + `TopicQuery.validate?`: a bad value is
 /// Discourse::InvalidParameters, a 400.
-fn build_options(
+pub(super) fn build_options(
     params: &ListParams,
     settings: &SiteSettings,
 ) -> Result<Options, (StatusCode, String)> {
@@ -80,7 +80,12 @@ fn build_options(
 
 /// `construct_url_with(:next, opts)`: `latest_path(opts + page+1)`, params
 /// sorted by name, `.json` dropped.
-fn next_url(list_path: &str, params: &ListParams, options: &Options, top: bool) -> String {
+pub(super) fn next_url(
+    list_path: &str,
+    params: &ListParams,
+    options: &Options,
+    top: bool,
+) -> String {
     let mut pairs: Vec<(&str, String)> = Vec::new();
     if let Some(a) = params.ascending.as_deref().filter(|a| !a.is_empty()) {
         pairs.push(("ascending", a.to_string()));
@@ -108,6 +113,15 @@ fn next_url(list_path: &str, params: &ListParams, options: &Options, top: bool) 
     format!("{list_path}?{}", query.join("&"))
 }
 
+/// What TagsController does differently from ListController when it
+/// builds a list: `tags`/`no_tags`, per_page clamped to 30, the top period
+/// straight from the param or top_page_default_timeframe, and the
+/// next-page URL carrying `match_all_tags` and `tags[]`.
+pub(super) struct TagListRequest {
+    pub(super) tags: Vec<String>,
+    pub(super) no_tags: bool,
+}
+
 /// The /latest document, shared by the JSON and HTML responses.
 async fn list_document(
     state: &AppState,
@@ -116,6 +130,27 @@ async fn list_document(
     no_subcategories: bool,
     kind: ListKind,
     list_path: &str,
+) -> Result<Result<(serde_json::Value, SiteSettings), (StatusCode, String)>, AppError> {
+    list_document_for(
+        state,
+        params,
+        category,
+        no_subcategories,
+        kind,
+        list_path,
+        None,
+    )
+    .await
+}
+
+pub(super) async fn list_document_for(
+    state: &AppState,
+    params: &ListParams,
+    category: Option<&Category>,
+    no_subcategories: bool,
+    kind: ListKind,
+    list_path: &str,
+    tag_request: Option<&TagListRequest>,
 ) -> Result<Result<(serde_json::Value, SiteSettings), (StatusCode, String)>, AppError> {
     let mut conn = state.pool.acquire().await?;
     let settings =
@@ -126,13 +161,9 @@ async fn list_document(
     };
     let mut for_period: Option<String> = None;
     if let ListKind::Top = kind {
-        // top_#{period}: per_page defaults to topics_per_period_in_top_page and
-        // is always carried in the next-page URL.
-        if options.per_page.is_none() {
-            options.per_page = Some(settings.get("topics_per_period_in_top_page")?.to_i());
-        }
         let period = match params.period.as_deref().filter(|p| !p.is_empty()) {
             Some(p) => p.to_string(),
+            None if tag_request.is_some() => settings.get("top_page_default_timeframe")?.to_s(),
             None => best_period_for(&mut conn, &settings, category.map(|c| c.id)).await?,
         };
         if !crate::topic_query::PERIODS.contains(&period.as_str()) {
@@ -141,6 +172,11 @@ async fn list_document(
                 "Invalid period. Valid periods are all, yearly, quarterly, monthly, weekly, daily"
                     .into(),
             )));
+        }
+        // top_#{period}: per_page defaults to topics_per_period_in_top_page and
+        // is always carried in the next-page URL. Tag lists keep the default.
+        if options.per_page.is_none() && tag_request.is_none() {
+            options.per_page = Some(settings.get("topics_per_period_in_top_page")?.to_i());
         }
         for_period = Some(period);
     }
@@ -155,6 +191,13 @@ async fn list_document(
         options.no_definitions = false;
         options.no_subcategories = no_subcategories;
     }
+    if let Some(t) = tag_request {
+        options.no_definitions = false;
+        options.no_subcategories = no_subcategories;
+        options.per_page = options.per_page.map(|p| p.clamp(1, 30));
+        options.tags = t.tags.clone();
+        options.no_tags = t.no_tags;
+    }
     let guardian = Guardian::anonymous();
     let urls = Urls {
         config: &state.config,
@@ -167,6 +210,7 @@ async fn list_document(
         guardian: &guardian,
         options: options.clone(),
         category: Default::default(),
+        tags: Default::default(),
         filter: Default::default(),
     };
     let list = match (&kind, &for_period) {
@@ -176,7 +220,10 @@ async fn list_document(
         (ListKind::Hot, _) => query.list_hot().await?,
     };
 
-    let more = next_url(list_path, params, &options, kind == ListKind::Top);
+    let more = match tag_request {
+        Some(t) => super::tags::next_url(list_path, params, &options, t),
+        None => next_url(list_path, params, &options, kind == ListKind::Top),
+    };
     let mut json = TopicListSerializer {
         conn: &mut conn,
         settings: &settings,

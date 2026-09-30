@@ -110,6 +110,13 @@ pub struct LatestPage {
     pub more_url: Option<String>,
     /// Set on category pages.
     pub heading: Option<CategoryHeading>,
+    /// Set on tag pages (list.erb's tag breadcrumb).
+    pub tag: Option<TagHeading>,
+}
+
+pub struct TagHeading {
+    pub name: String,
+    pub url: String,
 }
 
 pub struct PostItem {
@@ -261,6 +268,7 @@ pub async fn latest_page(
         base_path: site.base_path,
         topics,
         heading: None,
+        tag: None,
         more_url: list["topic_list"]["more_topics_url"]
             .as_str()
             .map(str::to_string),
@@ -555,4 +563,81 @@ pub async fn categories_page(
         base_path: site.base_path,
         categories: items,
     })
+}
+
+#[derive(Template)]
+#[template(path = "tags.html")]
+pub struct TagsPage {
+    pub site_title: String,
+    pub site_description: String,
+    pub lang: String,
+    pub base_path: String,
+    pub groups: Vec<TagGroupItem>,
+}
+
+pub struct TagGroupItem {
+    pub name: Option<String>,
+    pub tags: Vec<TagBoxItem>,
+}
+
+pub struct TagBoxItem {
+    pub name: String,
+    pub url: String,
+    pub count: i64,
+}
+
+/// The tags index from the /tags.json document (tags/index.html.erb):
+/// each category's tags, then the rest under "Other Tags".
+pub fn tags_page(
+    i18n: &I18n,
+    site: Site,
+    doc: &Value,
+    category_names: &[(i64, String)],
+) -> TagsPage {
+    let base = site.base_path.clone();
+    let boxes = |tags: &Value| -> Vec<TagBoxItem> {
+        tags.as_array()
+            .map(|list| {
+                list.iter()
+                    .map(|t| TagBoxItem {
+                        name: s(&t["text"]),
+                        url: format!("{base}/tag/{}", t["id"]),
+                        count: t["count"].as_i64().unwrap_or(0),
+                    })
+                    .collect()
+            })
+            .unwrap_or_default()
+    };
+    let mut groups: Vec<TagGroupItem> = doc["extras"]["categories"]
+        .as_array()
+        .map(|cats| {
+            cats.iter()
+                .map(|c| TagGroupItem {
+                    name: category_names
+                        .iter()
+                        .find(|(id, _)| Some(*id) == c["id"].as_i64())
+                        .map(|(_, name)| name.clone()),
+                    tags: boxes(&c["tags"]),
+                })
+                .collect()
+        })
+        .unwrap_or_default();
+    let other = boxes(&doc["tags"]);
+    if !other.is_empty() {
+        groups.push(TagGroupItem {
+            name: Some(
+                i18n.t("js.tagging.other_tags")
+                    .unwrap_or("Other Tags")
+                    .to_string(),
+            ),
+            tags: other,
+        });
+    }
+    TagsPage {
+        site_title: site.site_title,
+        site_description: site.site_description,
+        lang: site.lang,
+        base_path: site.base_path,
+        groups,
+    }
 }

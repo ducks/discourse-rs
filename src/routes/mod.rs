@@ -1,6 +1,7 @@
 mod list;
 mod site;
 mod srv;
+mod tags;
 mod topics;
 
 use axum::Router;
@@ -45,6 +46,10 @@ pub fn router(config: &Config) -> Router<AppState> {
         .route("/t/{slug}/{id}", get(topics::show_with_slug))
         .route("/t/{slug}/{id}/{post_number}", get(topics::show_post))
         .route("/c/{*path}", get(list::category))
+        .route("/tag/{*path}", get(tags::show))
+        .route("/tags", get(tags::index))
+        .route("/tags.json", get(tags::index_json))
+        .route("/tags/c/{*path}", get(tags::show_in_category))
         .route("/categories", get(list::categories))
         .route("/categories.json", get(list::categories_json))
         .route("/site", get(site::site))
