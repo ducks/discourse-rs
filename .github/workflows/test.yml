@@ -34,8 +34,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Same rustc as nixpkgs gives shell.nix, so clippy agrees locally and here.
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@1.86.0
         with:
           components: rustfmt, clippy
 
