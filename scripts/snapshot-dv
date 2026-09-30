@@ -7,7 +7,10 @@
 # so the same agent must be used to record them (see parity/environment).
 #
 # Excluded: schema_migrations and ar_internal_metadata (structure.sql fills
-# them), and the compiled asset caches (5 MB of CSS/JS nothing reads yet).
+# them), the compiled asset caches (5 MB of CSS/JS nothing reads yet), and
+# the scheduler bookkeeping tables that change every minute. pg_dump 15+
+# emits a random \restrict token per run; it is stripped so re-snapshots
+# diff cleanly.
 #
 # Usage: scripts/snapshot-dv <agent-name>
 set -euo pipefail
@@ -37,7 +40,9 @@ fi
     --exclude-table=ar_internal_metadata \
     --exclude-table=stylesheet_cache \
     --exclude-table=javascript_caches \
-    discourse_development
+    --exclude-table=scheduler_stats \
+    --exclude-table=problem_check_trackers \
+    discourse_development | grep -vE '^\\(un)?restrict '
 } > "$out"
 
 echo "wrote $out ($(wc -c < "$out") bytes, $(grep -c '^COPY ' "$out") tables)"

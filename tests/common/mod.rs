@@ -7,6 +7,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 
 use discourse_rs::AppState;
 use discourse_rs::config::{Config, GlobalSettings, RailsEnv};
+use discourse_rs::i18n::I18n;
 use discourse_rs::site_settings::Definitions;
 use sqlx::postgres::{PgConnectOptions, PgPoolOptions};
 use sqlx::{Connection, Executor, PgConnection, PgPool};
@@ -106,6 +107,7 @@ pub fn state(pool: PgPool, config: Config) -> AppState {
         pool,
         config,
         site_setting_defs: Arc::new(Definitions::vendored().expect("vendored site_settings.yml")),
+        i18n: Arc::new(I18n::vendored().expect("vendored server.en.yml")),
     }
 }
 

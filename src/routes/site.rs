@@ -4,6 +4,8 @@ use axum::Json;
 use axum::extract::State;
 use serde::Serialize;
 
+use crate::guardian::Guardian;
+use crate::site::Site;
 use crate::site_settings::{SiteSettings, Value};
 use crate::url::Urls;
 use crate::{AppError, AppState, color_scheme, site_icons};
@@ -72,4 +74,21 @@ pub async fn basic_info(State(state): State<AppState>) -> Result<Json<BasicInfo>
         include_in_discourse_discover: settings.get("include_in_discourse_discover")?.clone(),
         mobile_logo_url: (!mobile_logo_url.is_empty()).then_some(mobile_logo_url),
     }))
+}
+
+/// GET /site.json: `Site.json_for(guardian)`, anonymous only until sessions
+/// are ported.
+pub async fn site(State(state): State<AppState>) -> Result<Json<serde_json::Value>, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let mut site = Site {
+        conn: &mut conn,
+        config: &state.config,
+        settings: &settings,
+        defs: &state.site_setting_defs,
+        i18n: &state.i18n,
+        guardian: Guardian::anonymous(),
+    };
+    Ok(Json(site.json_for().await?))
 }
