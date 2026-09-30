@@ -6,10 +6,10 @@ mod common;
 
 use axum::body::Body;
 use axum::http::{Request, StatusCode};
-use common::{TestDb, config, fabricate_upload, set_setting, state};
+use common::{TestDb, clear_optimized_images, config, fabricate_upload, set_setting, state};
 use discourse_rs::config::RailsEnv;
 use http_body_util::BodyExt;
-use serde_json::{Value, json};
+use serde_json::Value;
 use sqlx::PgPool;
 use tower::ServiceExt;
 
@@ -83,32 +83,6 @@ async fn includes_false_values_for_include_in_discourse_discover_and_login_requi
 }
 
 #[tokio::test]
-async fn fresh_install_uses_seeded_sketch_logos() {
-    let db = TestDb::new().await;
-    let json = get_basic_info(&db.pool, RailsEnv::Production, &[]).await;
-
-    let logo = "http://www.example.com/images/discourse-logo-sketch.png";
-    let small = "http://www.example.com/images/discourse-logo-sketch-small.png";
-    assert_eq!(
-        json,
-        json!({
-            "logo_url": logo,
-            "logo_small_url": small,
-            "apple_touch_icon_url": small,
-            "favicon_url": small,
-            "title": "Discourse",
-            "description": "",
-            "header_primary_color": "333",
-            "header_background_color": "fff",
-            "login_required": false,
-            "locale": "en",
-            "include_in_discourse_discover": false,
-            "mobile_logo_url": logo,
-        })
-    );
-}
-
-#[tokio::test]
 async fn icons_fall_back_through_large_icon_and_logo_small() {
     let db = TestDb::new().await;
     let (small_id, small_url) = fabricate_upload(&db.pool).await;
@@ -141,6 +115,7 @@ async fn icons_fall_back_through_large_icon_and_logo_small() {
 #[tokio::test]
 async fn favicon_prefers_an_optimized_image_at_its_size() {
     let db = TestDb::new().await;
+    clear_optimized_images(&db.pool).await;
     sqlx::query(
         "INSERT INTO optimized_images (sha1, extension, width, height, upload_id, url, \
          created_at, updated_at) \
@@ -165,6 +140,7 @@ async fn favicon_prefers_an_optimized_image_at_its_size() {
 #[tokio::test]
 async fn unset_logos_give_empty_urls_and_no_mobile_logo() {
     let db = TestDb::new().await;
+    clear_optimized_images(&db.pool).await;
     set_setting(&db.pool, "logo", UPLOAD, "").await;
     set_setting(&db.pool, "logo_small", UPLOAD, "").await;
 

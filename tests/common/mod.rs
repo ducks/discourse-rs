@@ -145,3 +145,21 @@ pub async fn fabricate_upload(pool: &PgPool) -> (i32, String) {
     .unwrap();
     (id, url)
 }
+
+/// The Config of the Discourse the golden files were recorded from
+/// (parity/environment), pointed at the test database.
+pub fn recorded_config() -> Config {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("parity/environment");
+    let mut vars = discourse_rs::parity::load_environment(&path).unwrap();
+    vars.push(("DATABASE_URL".into(), test_database_url()));
+    Config::from_vars(vars).unwrap()
+}
+
+/// Removes the resized icon copies SiteIconManager.ensure_optimized! made in
+/// the snapshot, so icon URLs resolve to the original uploads.
+pub async fn clear_optimized_images(pool: &PgPool) {
+    sqlx::query("DELETE FROM optimized_images")
+        .execute(pool)
+        .await
+        .unwrap();
+}

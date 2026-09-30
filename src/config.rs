@@ -47,13 +47,6 @@ impl GlobalSettings {
         }
     }
 
-    fn from_env() -> Self {
-        Self::from_vars(std::env::vars().filter_map(|(k, v)| {
-            k.strip_prefix("DISCOURSE_")
-                .map(|key| (key.to_ascii_lowercase(), v))
-        }))
-    }
-
     /// `GlobalSetting.<key>` for keys whose discourse_defaults.conf default
     /// is blank: the env value if present, else nil.
     pub fn get(&self, key: &str) -> Option<&str> {
@@ -114,23 +107,34 @@ impl std::error::Error for ConfigError {}
 
 impl Config {
     pub fn from_env() -> Result<Self, ConfigError> {
-        let database_url = std::env::var("DATABASE_URL")
-            .ok()
-            .filter(|s| !s.is_empty())
-            .ok_or(ConfigError::Missing("DATABASE_URL"))?;
+        Self::from_vars(std::env::vars())
+    }
 
-        let bind_raw = std::env::var("BIND_ADDR").unwrap_or_else(|_| "127.0.0.1:8080".into());
+    /// Builds a Config from process-style `(KEY, VALUE)` pairs.
+    pub fn from_vars<I>(vars: I) -> Result<Self, ConfigError>
+    where
+        I: IntoIterator<Item = (String, String)>,
+    {
+        let vars: BTreeMap<String, String> = vars.into_iter().collect();
+        let var = |k: &str| vars.get(k).map(String::as_str);
+
+        let database_url = var("DATABASE_URL")
+            .filter(|s| !s.is_empty())
+            .ok_or(ConfigError::Missing("DATABASE_URL"))?
+            .to_string();
+
+        let bind_raw = var("BIND_ADDR").unwrap_or("127.0.0.1:8080");
         let bind = bind_raw.parse().map_err(|_| ConfigError::Invalid {
             var: "BIND_ADDR",
-            value: bind_raw.clone(),
+            value: bind_raw.to_string(),
         })?;
 
         // Rails defaults to development when RAILS_ENV is unset.
-        let rails_env = match std::env::var("RAILS_ENV").as_deref() {
-            Err(_) | Ok("") | Ok("development") => RailsEnv::Development,
-            Ok("production") => RailsEnv::Production,
-            Ok("test") => RailsEnv::Test,
-            Ok(other) => {
+        let rails_env = match var("RAILS_ENV") {
+            None | Some("") | Some("development") => RailsEnv::Development,
+            Some("production") => RailsEnv::Production,
+            Some("test") => RailsEnv::Test,
+            Some(other) => {
                 return Err(ConfigError::Invalid {
                     var: "RAILS_ENV",
                     value: other.to_string(),
@@ -138,12 +142,17 @@ impl Config {
             }
         };
 
+        let globals = GlobalSettings::from_vars(vars.iter().filter_map(|(k, v)| {
+            k.strip_prefix("DISCOURSE_")
+                .map(|key| (key.to_ascii_lowercase(), v.clone()))
+        }));
+
         Ok(Config {
             database_url,
             bind,
             rails_env,
-            unicorn_port: std::env::var("UNICORN_PORT").unwrap_or_else(|_| "3000".into()),
-            globals: GlobalSettings::from_env(),
+            unicorn_port: var("UNICORN_PORT").unwrap_or("3000").to_string(),
+            globals,
         })
     }
 }

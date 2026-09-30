@@ -113,6 +113,26 @@ pub fn parse_cases(src: &str) -> Result<Vec<Case>, String> {
     Ok(cases)
 }
 
+/// Parses parity/environment: `KEY=VALUE` lines describing the process env
+/// of the Discourse the golden files came from.
+pub fn parse_environment(src: &str) -> Result<Vec<(String, String)>, String> {
+    src.lines()
+        .enumerate()
+        .map(|(i, l)| (i + 1, l.trim()))
+        .filter(|(_, l)| !l.is_empty() && !l.starts_with('#'))
+        .map(|(lineno, l)| {
+            l.split_once('=')
+                .map(|(k, v)| (k.trim().to_string(), v.trim().to_string()))
+                .ok_or(format!("line {lineno}: expected KEY=VALUE"))
+        })
+        .collect()
+}
+
+pub fn load_environment(path: &Path) -> Result<Vec<(String, String)>, String> {
+    let src = fs::read_to_string(path).map_err(|e| format!("reading {}: {e}", path.display()))?;
+    parse_environment(&src).map_err(|e| format!("{}: {e}", path.display()))
+}
+
 pub fn load_cases(path: &Path) -> Result<Vec<Case>, String> {
     let src = fs::read_to_string(path).map_err(|e| format!("reading {}: {e}", path.display()))?;
     parse_cases(&src).map_err(|e| format!("{}: {e}", path.display()))
