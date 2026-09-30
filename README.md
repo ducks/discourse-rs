@@ -92,16 +92,18 @@ run discourse-rs against a `make db-load` of the snapshot with
 |---|---|---|
 | `GET /srv/status` | `forums_controller.rb` | |
 | `GET /site/basic-info` | `site_controller.rb#basic_info` | S3 upload CDN not supported (explicit 500) |
-| `GET /site` | `site_controller.rb#site`, `Site.json_for`, `SiteSerializer` | anonymous only; `categories` and plugin-added keys not yet (see `parity/cases`) |
+| `GET /site` | `site_controller.rb#site`, `Site.json_for`, `SiteSerializer`, `SiteCategorySerializer` | anonymous only; plugin-added keys not yet (see `parity/cases`) |
 
 Supporting ports: SiteSetting (YAML defaults, `locale_default`, typed DB
 rows, GlobalSetting shadowing, upcoming-change promotion), server-side I18n
 (en), UrlHelper/GlobalPath URL generation, SiteIconManager,
 ColorScheme (hex_for_name, ColorSchemeSerializer with ColorMath), the
-anonymous Guardian, FlagSerializer, sidebar sections, user themes.
+anonymous Guardian, FlagSerializer, sidebar sections, user themes,
+Site#categories (plain-paragraph descriptions only).
 
 Behaviors the port hits but hasn't implemented return an explicit 500
 (`Unsupported`) rather than a guess: watched words, tag visibility rules,
+category descriptions with markup (ExcerptParser),
 user fields, enabled auth providers, user-selectable color schemes, group
 flair uploads, S3 CDN.
 

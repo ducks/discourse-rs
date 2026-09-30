@@ -11,6 +11,7 @@ use serde_json::{Map, Value, json};
 use sqlx::PgConnection;
 
 use crate::Unsupported;
+use crate::categories::{Categories, CategoriesError};
 use crate::color_scheme::ColorScheme;
 use crate::config::Config;
 use crate::guardian::Guardian;
@@ -340,7 +341,18 @@ impl Site<'_> {
             "watched_words_link".into(),
             self.watched_words("link").await?.unwrap_or(Value::Null),
         );
-        // categories: own slice.
+        let categories = Categories {
+            conn: self.conn,
+            settings: self.settings,
+            i18n: self.i18n,
+            guardian: &self.guardian,
+            base_path: self.config.globals.relative_url_root(),
+        }
+        .for_site()
+        .await?;
+        if !categories.is_empty() {
+            out.insert("categories".into(), Value::Array(categories));
+        }
         // Site.markdown_additional_options: plugins only.
         out.insert("markdown_additional_options".into(), json!({}));
         out.insert(
@@ -991,6 +1003,15 @@ struct Flag {
     auto_action_type: bool,
 }
 
+impl From<CategoriesError> for SiteError {
+    fn from(e: CategoriesError) -> Self {
+        match e {
+            CategoriesError::Db(e) => SiteError::Db(e),
+            CategoriesError::Setting(e) => SiteError::Setting(e),
+            CategoriesError::Unsupported(e) => SiteError::Unsupported(e),
+        }
+    }
+}
 #[cfg(test)]
 mod tests {
     use super::*;
