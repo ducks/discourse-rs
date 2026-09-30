@@ -18,6 +18,15 @@ use crate::site_settings::{SettingError, SiteSettings};
 use crate::topic_query::{TopicList, TopicRow};
 use crate::url::{UrlError, Urls};
 
+/// Which serializer a topic is rendered with.
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum Mode {
+    /// TopicListItemSerializer
+    ListItem,
+    /// SuggestedTopicSerializer (ListableTopicSerializer + tags, posters with users)
+    Suggested,
+}
+
 /// `Topic.share_thumbnail_size`
 const SHARE_THUMBNAIL_SIZE: (i32, i32) = (1024, 1024);
 
@@ -78,16 +87,16 @@ impl From<AvatarError> for TopicListError {
 
 /// `UserLookup`'s user columns.
 #[derive(Debug, Clone, sqlx::FromRow)]
-struct LookupUser {
-    id: i32,
-    username: String,
-    name: Option<String>,
-    uploaded_avatar_id: Option<i32>,
-    primary_group_id: Option<i32>,
-    flair_group_id: Option<i32>,
-    admin: bool,
-    moderator: bool,
-    trust_level: i32,
+pub(crate) struct LookupUser {
+    pub(crate) id: i32,
+    pub(crate) username: String,
+    pub(crate) name: Option<String>,
+    pub(crate) uploaded_avatar_id: Option<i32>,
+    pub(crate) primary_group_id: Option<i32>,
+    pub(crate) flair_group_id: Option<i32>,
+    pub(crate) admin: bool,
+    pub(crate) moderator: bool,
+    pub(crate) trust_level: i32,
 }
 
 /// Rails `TimeWithZone#as_json` in UTC: ISO 8601, milliseconds truncated.
@@ -130,7 +139,10 @@ impl TopicListSerializer<'_> {
                     return Err(Unsupported("poster primary/flair groups").into());
                 }
             }
-            topics.push(self.serialize_topic(topic, &posters, tagging).await?);
+            topics.push(
+                self.serialize_topic(topic, &posters, tagging, Mode::ListItem)
+                    .await?,
+            );
         }
 
         let mut out = Map::new();
@@ -162,7 +174,7 @@ impl TopicListSerializer<'_> {
 
     /// `TopicList#load_topics`: every author, last poster and featured
     /// poster across the page, through UserLookup.
-    async fn user_lookup(
+    pub(crate) async fn user_lookup(
         &mut self,
         topics: &[TopicRow],
     ) -> Result<HashMap<i32, LookupUser>, TopicListError> {
@@ -193,7 +205,7 @@ impl TopicListSerializer<'_> {
         Ok(users.into_iter().map(|u| (u.id, u)).collect())
     }
 
-    async fn logo_small_url(&mut self) -> Result<Option<String>, TopicListError> {
+    pub(crate) async fn logo_small_url(&mut self) -> Result<Option<String>, TopicListError> {
         let id = self.settings.get("logo_small")?.to_i();
         if id == 0 {
             return Ok(None);
@@ -205,7 +217,7 @@ impl TopicListSerializer<'_> {
     }
 
     /// PosterSerializer (BasicUserSerializer + flair/primary group mixins).
-    fn serialize_user(
+    pub(crate) fn serialize_user(
         &self,
         user: &LookupUser,
         logo_small_url: Option<&str>,
@@ -237,22 +249,16 @@ impl TopicListSerializer<'_> {
     }
 
     /// TopicListItemSerializer in attribute order.
-    async fn serialize_topic(
+    pub(crate) async fn serialize_topic(
         &mut self,
         t: &TopicRow,
         posters: &[Poster],
         tagging: bool,
+        mode: Mode,
     ) -> Result<Value, TopicListError> {
         let pinned = t.pinned_at.is_some();
         let mut out = Map::new();
-        let fancy_title = match &t.fancy_title {
-            Some(f) => f.clone(),
-            None => {
-                return Err(
-                    Unsupported("topics without a stored fancy_title (Topic.fancy_title)").into(),
-                );
-            }
-        };
+        let fancy_title = crate::topic_query::fancy_title(t)?;
         out.insert("fancy_title".into(), json!(fancy_title));
         out.insert("id".into(), json!(t.id));
         out.insert("title".into(), json!(t.title));
@@ -275,7 +281,10 @@ impl TopicListSerializer<'_> {
         out.insert("unseen".into(), json!(false));
         out.insert("pinned".into(), json!(pinned));
         out.insert("unpinned".into(), Value::Null);
-        if pinned || self.settings.get("always_include_topic_excerpts")?.truthy() {
+        if mode == Mode::Suggested
+            || pinned
+            || self.settings.get("always_include_topic_excerpts")?.truthy()
+        {
             out.insert("excerpt".into(), json!(t.excerpt));
         }
         out.insert("visible".into(), json!(t.visible));
@@ -296,6 +305,9 @@ impl TopicListSerializer<'_> {
             let (tags, descriptions) = self.tags(t.id).await?;
             out.insert("tags".into(), tags);
             out.insert("tags_descriptions".into(), descriptions);
+        }
+        if mode == Mode::Suggested {
+            return self.finish_suggested(out, t, posters).await;
         }
         out.insert("views".into(), json!(t.views));
         out.insert("like_count".into(), json!(t.like_count));
@@ -337,7 +349,39 @@ impl TopicListSerializer<'_> {
     /// `Topic#image_url` through `UrlHelper.cook_url` for the local store:
     /// the 1024x1024 thumbnail, else the image upload, made absolute and
     /// schemeless.
-    async fn image_url(&mut self, t: &TopicRow) -> Result<Value, TopicListError> {
+    /// SuggestedTopicSerializer's tail after the Listable attributes:
+    /// like_count, views, category_id, featured_link, op_like_count and
+    /// posters with embedded users.
+    async fn finish_suggested(
+        &mut self,
+        mut out: Map<String, Value>,
+        t: &TopicRow,
+        posters: &[Poster],
+    ) -> Result<Value, TopicListError> {
+        out.insert("like_count".into(), json!(t.like_count));
+        out.insert("views".into(), json!(t.views));
+        out.insert("category_id".into(), json!(t.category_id));
+        if self.settings.get("topic_featured_link_enabled")?.truthy() {
+            out.insert("featured_link".into(), json!(t.featured_link));
+            if t.featured_link.as_deref().is_some_and(|l| !l.is_empty()) {
+                return Err(Unsupported("featured_link_root_domain").into());
+            }
+        }
+        out.insert("op_like_count".into(), self.op_like_count(t.id).await?);
+        let logo_small_url = self.logo_small_url().await?;
+        let mut list = Vec::with_capacity(posters.len());
+        for p in posters {
+            list.push(json!({
+                "extras": p.extras,
+                "description": p.description,
+                "user": self.serialize_user(&p.user, logo_small_url.as_deref())?,
+            }));
+        }
+        out.insert("posters".into(), Value::Array(list));
+        Ok(Value::Object(out))
+    }
+
+    pub(crate) async fn image_url(&mut self, t: &TopicRow) -> Result<Value, TopicListError> {
         let thumbnail: Option<String> = sqlx::query_scalar(
             "SELECT oi.url FROM topic_thumbnails tt JOIN optimized_images oi ON oi.id = tt.optimized_image_id \
              WHERE tt.upload_id = $1 AND tt.max_width = $2 AND tt.max_height = $3 ORDER BY tt.id LIMIT 1",
@@ -382,7 +426,7 @@ impl TopicListSerializer<'_> {
 
     /// `topic.visible_tags(guardian)` sorted by public_topic_count desc,
     /// as `[{id, name, slug}]` plus `tags_descriptions`.
-    async fn tags(&mut self, topic_id: i32) -> Result<(Value, Value), TopicListError> {
+    pub(crate) async fn tags(&mut self, topic_id: i32) -> Result<(Value, Value), TopicListError> {
         let restricted: i64 = sqlx::query_scalar("SELECT count(*) FROM tag_group_permissions")
             .fetch_one(&mut *self.conn)
             .await?;
@@ -480,15 +524,19 @@ fn truncate(s: &str, n: usize) -> String {
     format!("{head}...")
 }
 
-struct Poster {
-    user: LookupUser,
-    extras: Option<&'static str>,
-    description: String,
+pub(crate) struct Poster {
+    pub(crate) user: LookupUser,
+    pub(crate) extras: Option<&'static str>,
+    pub(crate) description: String,
 }
 
 /// `TopicPostersSummary#summary`: up to five posters from author, last
 /// poster and featured users, the last poster shuffled to the back.
-fn posters_summary(t: &TopicRow, lookup: &HashMap<i32, LookupUser>, i18n: &I18n) -> Vec<Poster> {
+pub(crate) fn posters_summary(
+    t: &TopicRow,
+    lookup: &HashMap<i32, LookupUser>,
+    i18n: &I18n,
+) -> Vec<Poster> {
     let mut user_ids: Vec<Option<i32>> = vec![t.user_id, Some(t.last_post_user_id)];
     user_ids.extend(featured_user_ids(t).into_iter().map(Some));
 

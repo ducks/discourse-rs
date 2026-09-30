@@ -94,6 +94,7 @@ run discourse-rs against a `make db-load` of the snapshot with
 | `GET /site/basic-info` | `site_controller.rb#basic_info` | S3 upload CDN not supported (explicit 500) |
 | `GET /site` | `site_controller.rb#site`, `Site.json_for`, `SiteSerializer`, `SiteCategorySerializer` | anonymous only; plugin-added keys not yet (see `parity/cases`) |
 | `GET /latest` | `list_controller.rb#latest`, `TopicQuery#list_latest`, `TopicListSerializer`, `TopicListItemSerializer` | anonymous only; `page`, `per_page`, `order`, `ascending`; plugin keys not yet |
+| `GET /t/:slug/:id(/:post_number)` | `topics_controller.rb#show`, `TopicView`, `TopicViewSerializer`, `PostSerializer` | anonymous only; slug and page redirects, 404 JSON; suggested topics deterministic (Rails randomizes); plugin keys not yet |
 
 Supporting ports: SiteSetting (YAML defaults, `locale_default`, typed DB
 rows, GlobalSetting shadowing, upcoming-change promotion), server-side I18n
@@ -102,11 +103,13 @@ ColorScheme (hex_for_name, ColorSchemeSerializer with ColorMath), the
 anonymous Guardian, FlagSerializer, sidebar sections, user themes,
 Site#categories (plain-paragraph descriptions only), TopicQuery (latest),
 TopicPostersSummary, avatar templates (letter avatar colors, uploaded,
-system), Emoji unicode lookup from the discourse-emojis gem.
+system), Emoji unicode lookup from the discourse-emojis gem, TopicView
+(paged and near-post chunks, timeline lookup, participants, flags summary).
 
 Behaviors the port hits but hasn't implemented return an explicit 500
 (`Unsupported`) rather than a guess: watched words, tag visibility rules,
-category descriptions with markup (ExcerptParser),
+category descriptions with markup (ExcerptParser), computed fancy titles
+(HtmlPrettify), post link counts, hidden posts, topic timers, thumbnails,
 user fields, enabled auth providers, user-selectable color schemes, group
 flair uploads, S3 CDN.
 
