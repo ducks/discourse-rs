@@ -1,0 +1,50 @@
+{% extends "layout.html" %}
+{% block title %}{{ title }} - {{ site_title }}{% endblock %}
+{% block head %}<link rel="canonical" href="{{ canonical_url }}">{% endblock %}
+{% block content %}
+<div id="topic-title">
+  <h1><a href="{{ canonical_url }}">{{ title_unicode }}</a></h1>
+  {% if !breadcrumbs.is_empty() %}
+  <div class="topic-category">
+    {% for c in breadcrumbs %}
+    <a href="{{ c.url }}" class="badge-wrapper bullet">
+      <span class="badge-category-bg" style="background-color: #{{ c.color }}"></span>
+      <span class="badge-category clear-badge"><span class="category-name">{{ c.name }}</span></span>
+    </a>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% if !tags.is_empty() %}
+  <div class="topic-category">
+    <div class="discourse-tags list-tags">
+      {% for tag in tags %}<a href="{{ tag.url }}" class="discourse-tag" rel="tag">{{ tag.name }}</a> {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+<div class="topic-body-container">
+  {% for post in posts %}
+  <div id="post_{{ post.number }}" class="topic-body crawler-post{% if post.small_action %} small-action{% endif %}">
+    <div class="crawler-post-meta">
+      <span class="creator">
+        <a rel="nofollow" href="{{ post.user_url }}">{{ post.username }}</a>
+        {% if let Some(n) = post.name %}<span class="full-name">({{ n }})</span>{% endif %}
+        {% if let Some(a) = post.action_text %}<span class="action">{{ a }}</span>{% endif %}
+      </span>
+      <span class="crawler-post-infos">
+        <time datetime="{{ post.created_at_iso }}">{{ post.created_at }}</time>
+        <a class="post-link" href="{{ post.url }}">#{{ post.number }}</a>
+      </span>
+    </div>
+    <div class="post" itemprop="text">{{ post.cooked|safe }}</div>
+    {% if post.likes > 0 %}<div class="post-likes">&#x2764; {{ post.likes }}</div>{% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% if prev_url.is_some() || next_url.is_some() %}
+<div class="topic-pagination">
+  {% if let Some(url) = prev_url %}<a href="{{ url }}" rel="prev">Previous page</a>{% endif %}
+  {% if let Some(url) = next_url %}<a href="{{ url }}" rel="next">Next page</a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

@@ -116,3 +116,14 @@ flair uploads, S3 CDN.
 Not yet: plugin settings files and plugin registries, upcoming-change
 default overrides, `mandatory_values`, themeable settings, response
 headers, any authenticated user.
+
+## Pages
+
+Anonymous readers get server-rendered HTML (askama templates in
+`templates/`, one stylesheet in `static/`) built from the same documents the
+JSON endpoints return: `/` and `/latest` (the topic list, paged), and
+`/t/:slug/:id` (the topic with its posts). Requests ending in `.json` get the
+API document instead. The structure follows Discourse's crawler views.
+
+`PUBLIC_DIR` (default `public`) is served at `/images` and `/uploads`: point
+it at a Discourse `public/` directory or a restored backup's.

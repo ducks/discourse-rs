@@ -173,6 +173,7 @@ mod tests {
             bind: "127.0.0.1:0".parse().unwrap(),
             rails_env: env,
             unicorn_port: "3000".into(),
+            public_dir: "public".into(),
             globals: GlobalSettings::from_vars(globals.iter().copied()),
         }
     }

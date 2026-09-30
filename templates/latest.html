@@ -1,0 +1,51 @@
+{% extends "layout.html" %}
+{% block title %}Latest topics - {{ site_title }}{% endblock %}
+{% block content %}
+<div class="topic-list-container">
+  <table class="topic-list">
+    <thead>
+      <tr>
+        <th>Topic</th>
+        <th class="posters"></th>
+        <th class="replies">Replies</th>
+        <th class="views">Views</th>
+        <th class="activity">Activity</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for t in topics %}
+      <tr class="topic-list-item{% if t.pinned %} pinned{% endif %}{% if t.closed %} closed{% endif %}">
+        <td class="main-link">
+          <span class="link-top-line">
+            {% if t.pinned %}<span class="topic-status" title="pinned">&#x1F4CC;</span>{% endif %}
+            {% if t.closed %}<span class="topic-status" title="closed">&#x1F512;</span>{% endif %}
+            <a href="{{ t.url }}" class="title raw-link raw-topic-link">{{ t.title_unicode }}</a>
+          </span>
+          <div class="link-bottom-line">
+            {% if let Some(c) = t.category %}
+            <a href="{{ c.url }}" class="badge-wrapper bullet">
+              <span class="badge-category-bg" style="background-color: #{{ c.color }}"></span>
+              <span class="badge-category clear-badge"><span class="category-name">{{ c.name }}</span></span>
+            </a>
+            {% endif %}
+            {% if !t.tags.is_empty() %}
+            <span class="discourse-tags">
+              {% for tag in t.tags %}<a href="{{ tag.url }}" class="discourse-tag">{{ tag.name }}</a> {% endfor %}
+            </span>
+            {% endif %}
+          </div>
+          {% if let Some(e) = t.excerpt %}<p class="excerpt">{{ e|safe }}</p>{% endif %}
+        </td>
+        <td class="posters">{% for p in t.posters %}<span class="poster" title="{{ p.description }}">{{ p.username }}</span> {% endfor %}</td>
+        <td class="num replies">{{ t.replies }}</td>
+        <td class="num views">{{ t.views }}</td>
+        <td class="activity"><time datetime="{{ t.bumped_at_iso }}" title="{{ t.bumped_at_iso }}">{{ t.bumped_at }}</time></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if let Some(url) = more_url %}
+  <div class="more-topics"><a href="{{ url }}" rel="next">Next page</a></div>
+  {% endif %}
+</div>
+{% endblock %}

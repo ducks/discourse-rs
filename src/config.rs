@@ -11,6 +11,9 @@ pub struct Config {
     pub rails_env: RailsEnv,
     /// `ENV["UNICORN_PORT"]`, appended to the base URL in development.
     pub unicorn_port: String,
+    /// Directory served at /images and /uploads: a Discourse `public/` (or a
+    /// restored backup's), from PUBLIC_DIR.
+    pub public_dir: std::path::PathBuf,
     pub globals: GlobalSettings,
 }
 
@@ -152,6 +155,7 @@ impl Config {
             bind,
             rails_env,
             unicorn_port: var("UNICORN_PORT").unwrap_or("3000").to_string(),
+            public_dir: var("PUBLIC_DIR").unwrap_or("public").into(),
             globals,
         })
     }

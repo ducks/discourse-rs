@@ -599,9 +599,14 @@ impl TopicView<'_> {
                 if enable_names {
                     p.insert("name".into(), json!(user.name));
                 }
+                // Hash-wrapped users take the class-level template.
                 p.insert(
                     "avatar_template".into(),
-                    json!(self.avatar(user, logo_small_url.as_deref())?),
+                    json!(avatar::class_avatar_template(
+                        self.urls,
+                        &user.username,
+                        user.uploaded_avatar_id
+                    )?),
                 );
                 p.insert("post_count".into(), json!(post_count));
                 p.insert("primary_group_name".into(), Value::Null);
@@ -703,7 +708,6 @@ impl TopicView<'_> {
             .truthy();
         let suppress_reply_when_quoting =
             self.settings.get("suppress_reply_when_quoting")?.truthy();
-        let hidden_text = self.i18n.t("flagging.user_must_edit").map(str::to_string);
 
         let user_ids: Vec<i32> = posts
             .iter()
@@ -728,23 +732,20 @@ impl TopicView<'_> {
             if post.hidden {
                 return Err(Unsupported("hidden posts").into());
             }
-            let links: i64 =
-                sqlx::query_scalar("SELECT count(*) FROM topic_links WHERE post_id = $1")
-                    .bind(post.id)
-                    .fetch_one(&mut *self.conn)
-                    .await?;
-            if links > 0 {
-                return Err(Unsupported("post link_counts (TopicLink.counts_for)").into());
-            }
-            let badges: i64 =
-                sqlx::query_scalar("SELECT count(*) FROM user_badges WHERE post_id = $1")
-                    .bind(post.id)
-                    .fetch_one(&mut *self.conn)
-                    .await?;
+            // UserBadge.for_post_header_badges: badges granted to the author
+            // for this post; serializing one isn't ported.
+            let badges: i64 = sqlx::query_scalar(
+                "SELECT count(*) FROM user_badges ub \
+                 WHERE ub.post_id = $1 AND ub.user_id = $2 AND ub.badge_id IN \
+                   (SELECT id FROM badges WHERE show_posts AND enabled AND listable AND show_in_post_header)",
+            )
+            .bind(post.id)
+            .bind(post.user_id)
+            .fetch_one(&mut *self.conn)
+            .await?;
             if show_badges && badges > 0 {
                 return Err(Unsupported("badges_granted (BasicUserBadgeSerializer)").into());
             }
-            let _ = &hidden_text;
 
             let mut p = Map::new();
             p.insert("id".into(), json!(post.id));
@@ -804,6 +805,10 @@ impl TopicView<'_> {
             p.insert("can_recover".into(), json!(false));
             p.insert("can_see_hidden_post".into(), json!(false));
             p.insert("can_wiki".into(), json!(false));
+            let link_counts = self.link_counts(post.id).await?;
+            if !link_counts.is_empty() {
+                p.insert("link_counts".into(), Value::Array(link_counts));
+            }
             p.insert("read".into(), json!(true));
             p.insert("user_title".into(), json!(u.and_then(|u| u.title.clone())));
             if u.and_then(|u| u.title.as_deref())
@@ -952,6 +957,55 @@ pub fn timeline_lookup(stream: &[(i32, i32)], max_values: usize) -> Vec<[i64; 2]
         }
     }
     out
+}
+
+impl TopicView<'_> {
+    /// `TopicLink.counts_for` for one visible (non-hidden) source post, as
+    /// PostSerializer#link_counts shapes it: links whose target topic is
+    /// visible and readable, external links always, `ORDER BY reflection,
+    /// clicks DESC`.
+    async fn link_counts(&mut self, post_id: i32) -> Result<Vec<Value>, TopicViewError> {
+        #[derive(sqlx::FromRow)]
+        struct Link {
+            url: String,
+            clicks: i32,
+            title: Option<String>,
+            internal: bool,
+            reflection: Option<bool>,
+        }
+        let links: Vec<Link> = sqlx::query_as(
+            "SELECT l.url, l.clicks, COALESCE(t.title, l.title) AS title, l.internal, l.reflection \
+             FROM topic_links l \
+             LEFT JOIN topics t ON t.id = l.link_topic_id \
+             LEFT JOIN categories c ON c.id = t.category_id \
+             LEFT JOIN posts target_posts ON l.link_post_id = target_posts.id \
+             WHERE l.post_id = $1 \
+               AND t.deleted_at IS NULL \
+               AND (t.id IS NULL OR t.visible = true) \
+               AND (l.internal = false OR t.id IS NOT NULL) \
+               AND (l.link_post_id IS NULL OR (target_posts.id IS NOT NULL AND target_posts.deleted_at IS NULL)) \
+               AND COALESCE(t.archetype, 'regular') <> 'private_message' \
+               AND (c.id IS NULL OR NOT c.read_restricted) \
+             ORDER BY l.reflection ASC, l.clicks DESC",
+        )
+        .bind(post_id)
+        .fetch_all(&mut *self.conn)
+        .await?;
+        Ok(links
+            .into_iter()
+            .map(|l| {
+                let mut out = Map::new();
+                out.insert("url".into(), json!(l.url));
+                out.insert("internal".into(), json!(l.internal));
+                out.insert("reflection".into(), json!(l.reflection));
+                if let Some(title) = l.title.filter(|t| !t.is_empty()) {
+                    out.insert("title".into(), json!(title));
+                }
+                out.insert("clicks".into(), json!(l.clicks));
+                Value::Object(out)
+            })
+            .collect())
+    }
 }
 
 #[cfg(test)]

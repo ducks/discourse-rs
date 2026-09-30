@@ -1,0 +1,36 @@
+:root { --primary: #222; --secondary: #fff; --tertiary: #08c; --muted: #777; --line: #e9e9e9; }
+* { box-sizing: border-box; }
+body { margin: 0; font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--primary); background: var(--secondary); }
+a { color: var(--tertiary); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.site-header { display: flex; align-items: center; gap: 1.5rem; padding: .75rem 1.5rem; border-bottom: 1px solid var(--line); }
+.site-title { font-weight: 700; font-size: 1.15rem; color: var(--primary); }
+.site-header nav a { color: var(--muted); }
+.wrap { max-width: 1110px; margin: 0 auto; padding: 1rem 1.5rem; }
+.site-footer { color: var(--muted); font-size: .85rem; padding: 1rem 1.5rem; border-top: 1px solid var(--line); }
+table.topic-list { width: 100%; border-collapse: collapse; }
+.topic-list th { text-align: left; color: var(--muted); font-weight: 400; font-size: .85rem; padding: .5rem .5rem; border-bottom: 3px solid var(--line); }
+.topic-list td { padding: .75rem .5rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+.topic-list .num, .topic-list th.replies, .topic-list th.views { text-align: right; width: 5rem; }
+.topic-list .activity, .topic-list th.activity { text-align: right; width: 7rem; white-space: nowrap; }
+.topic-list .posters { width: 14rem; color: var(--muted); font-size: .85rem; }
+.topic-list .title { color: var(--primary); font-size: 1.05rem; }
+.topic-list .closed .title, .topic-list-item.closed .title { color: var(--muted); }
+.topic-status { margin-right: .25rem; }
+.link-bottom-line { margin-top: .2rem; font-size: .85rem; }
+.badge-wrapper { display: inline-flex; align-items: center; gap: .35rem; color: var(--primary); }
+.badge-category-bg { display: inline-block; width: .6rem; height: .6rem; }
+.discourse-tag { color: var(--muted); }
+.excerpt { margin: .35rem 0 0; color: #555; font-size: .9rem; }
+.more-topics, .topic-pagination { margin: 1rem 0; display: flex; gap: 1rem; }
+#topic-title h1 { font-size: 1.6rem; margin: 0 0 .25rem; }
+.topic-body { border-bottom: 1px solid var(--line); padding: 1rem 0; }
+.topic-body.small-action { color: var(--muted); font-size: .9rem; }
+.crawler-post-meta { display: flex; justify-content: space-between; color: var(--muted); font-size: .9rem; margin-bottom: .5rem; }
+.crawler-post-meta .creator a { font-weight: 600; color: var(--primary); }
+.crawler-post-meta .full-name { margin-left: .35rem; }
+.post img { max-width: 100%; height: auto; }
+.post pre { background: #f6f6f6; padding: .75rem; overflow: auto; }
+.post blockquote, .post aside.quote { border-left: 4px solid var(--line); margin: .5rem 0; padding: .25rem .75rem; background: #fafafa; }
+.post .emoji { width: 20px; height: 20px; vertical-align: middle; }
+.post-likes { color: var(--muted); font-size: .85rem; }
