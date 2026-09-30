@@ -23,7 +23,7 @@ pkgs.mkShell {
 
     echo "discourse-rs: $(rustc --version), $(postgres --version)"
     echo "  db_start / db_stop / db_status   local PostgreSQL"
-    echo "  make db-load / make db-test      load vendored structure.sql"
+    echo "  make db-load / make db-test      load vendored schema + seeds"
     echo "  make parity RAILS_URL=...        diff against a running Discourse"
   '';
 }

@@ -1,5 +1,5 @@
-//! The vendored Discourse schema (schema/structure.sql, written by
-//! scripts/vendor-schema) and a check that a database matches it.
+//! The vendored Discourse schema (vendor/discourse/db/structure.sql, written by
+//! scripts/vendor-discourse) and a check that a database matches it.
 //!
 //! discourse-rs owns no migrations. It runs against a database built from
 //! structure.sql, or against a real Discourse database, and refuses to start
@@ -10,8 +10,8 @@ use std::fmt;
 
 use sqlx::PgConnection;
 
-const STRUCTURE_SQL: &str = include_str!("../schema/structure.sql");
-const DISCOURSE_REF: &str = include_str!("../schema/DISCOURSE_REF");
+const STRUCTURE_SQL: &str = include_str!("../vendor/discourse/db/structure.sql");
+const DISCOURSE_REF: &str = include_str!("../vendor/discourse/DISCOURSE_REF");
 
 /// The Discourse commit structure.sql was vendored from.
 pub fn discourse_commit() -> &'static str {
@@ -60,7 +60,7 @@ impl fmt::Display for SchemaError {
             SchemaError::Missing(v) => write!(
                 f,
                 "database is missing {} schema versions from Discourse {} (first: {}); \
-                 load schema/structure.sql or migrate the Discourse database",
+                 load vendor/discourse/db/structure.sql or migrate the Discourse database",
                 v.len(),
                 discourse_commit(),
                 v.first().map(String::as_str).unwrap_or("-"),

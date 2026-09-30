@@ -10,6 +10,7 @@ clap = { version = "4", features = ["derive", "env"] }
 reqwest = { version = "0.12", default-features = false, features = ["rustls-tls"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+serde_yaml_ng = "0.10"
 similar = "2"
 sqlx = { version = "0.8", default-features = false, features = ["runtime-tokio", "postgres", "macros"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "net", "signal"] }
