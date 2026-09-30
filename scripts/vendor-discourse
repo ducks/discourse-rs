@@ -41,3 +41,18 @@ EOF
 
 versions="$(grep -cE "^\('[0-9]+'\)[,;]$" "$dest/db/structure.sql")"
 echo "vendored ${#FILES[@]} files from $commit ($committed_at), $versions schema versions"
+
+# Emoji names/codes come from the discourse-emojis gem at the version in
+# Gemfile.lock, read from the checkout's bundle (not committed to Discourse).
+gem_version="$(git -C "$src" show "$commit:Gemfile.lock" | sed -n 's/^    discourse-emojis (\(.*\))$/\1/p' | head -1)"
+gem_dist="$(ls -d "$src"/.bundle/ruby/*/gems/discourse-emojis-"$gem_version"/dist 2>/dev/null | head -1)"
+if [ -z "$gem_dist" ]; then
+  echo "discourse-emojis $gem_version is not installed in $src/.bundle; run bundle install there" >&2
+  exit 1
+fi
+mkdir -p "$dest/../discourse-emojis/dist"
+for f in emojis.json aliases.json tonable_emojis.json; do
+  cp "$gem_dist/$f" "$dest/../discourse-emojis/dist/$f"
+done
+echo "discourse_emojis=$gem_version" >> "$dest/DISCOURSE_REF"
+echo "vendored discourse-emojis $gem_version"

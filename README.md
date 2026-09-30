@@ -93,13 +93,16 @@ run discourse-rs against a `make db-load` of the snapshot with
 | `GET /srv/status` | `forums_controller.rb` | |
 | `GET /site/basic-info` | `site_controller.rb#basic_info` | S3 upload CDN not supported (explicit 500) |
 | `GET /site` | `site_controller.rb#site`, `Site.json_for`, `SiteSerializer`, `SiteCategorySerializer` | anonymous only; plugin-added keys not yet (see `parity/cases`) |
+| `GET /latest` | `list_controller.rb#latest`, `TopicQuery#list_latest`, `TopicListSerializer`, `TopicListItemSerializer` | anonymous only; `page`, `per_page`, `order`, `ascending`; plugin keys not yet |
 
 Supporting ports: SiteSetting (YAML defaults, `locale_default`, typed DB
 rows, GlobalSetting shadowing, upcoming-change promotion), server-side I18n
 (en), UrlHelper/GlobalPath URL generation, SiteIconManager,
 ColorScheme (hex_for_name, ColorSchemeSerializer with ColorMath), the
 anonymous Guardian, FlagSerializer, sidebar sections, user themes,
-Site#categories (plain-paragraph descriptions only).
+Site#categories (plain-paragraph descriptions only), TopicQuery (latest),
+TopicPostersSummary, avatar templates (letter avatar colors, uploaded,
+system), Emoji unicode lookup from the discourse-emojis gem.
 
 Behaviors the port hits but hasn't implemented return an explicit 500
 (`Unsupported`) rather than a guess: watched words, tag visibility rules,
