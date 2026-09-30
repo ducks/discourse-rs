@@ -71,18 +71,29 @@ fn split_format(segment: &str) -> (String, bool) {
     }
 }
 
-fn not_found(state: &AppState) -> Response {
+/// `render_json_error I18n.t(:not_found)`; `extras` only for topics#show.
+pub(super) fn not_found_response(state: &AppState, with_extras: bool) -> Response {
     let i18n = &state.i18n;
-    let body = json!({
-        "errors": [i18n.t("not_found").unwrap_or("The requested URL or resource could not be found.")],
-        "error_type": "not_found",
+    let mut body = serde_json::Map::new();
+    body.insert(
+        "errors".into(),
+        json!([i18n
+            .t("not_found")
+            .unwrap_or("The requested URL or resource could not be found.")]),
+    );
+    body.insert("error_type".into(), json!("not_found"));
+    if with_extras {
         // build_not_found_page's HTML isn't ported.
-        "extras": {
-            "title": i18n.t("page_not_found.page_title").unwrap_or("Page Not Found"),
-            "html": "",
-            "group": null,
-        },
-    });
+        body.insert(
+            "extras".into(),
+            json!({
+                "title": i18n.t("page_not_found.page_title").unwrap_or("Page Not Found"),
+                "html": "",
+                "group": null,
+            }),
+        );
+    }
+    let body = serde_json::Value::Object(body);
     (StatusCode::NOT_FOUND, Json(body)).into_response()
 }
 
@@ -118,7 +129,7 @@ async fn show(
     // Discourse::InvalidParameters for non-scalar ids can't happen here.
     let page = crate::ruby::to_i(params.page.as_deref().unwrap_or(""));
     if page < 0 {
-        return Ok(not_found(state));
+        return Ok(not_found_response(state, true));
     }
 
     // A slug in the id position (`/t/my-topic`, or `123abc`) redirects to
@@ -137,7 +148,7 @@ async fn show(
                     headers,
                     canonical(&base_path, &slug, id, None, page, format),
                 ),
-                None => not_found(state),
+                None => not_found_response(state, true),
             });
         }
     };
@@ -164,7 +175,7 @@ async fn show(
     };
     let rendered = match view.render(topic_id).await {
         Ok(r) => r,
-        Err(TopicViewError::NotFound) => return Ok(not_found(state)),
+        Err(TopicViewError::NotFound) => return Ok(not_found_response(state, true)),
         Err(e) => return Err(e.into()),
     };
 

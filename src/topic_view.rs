@@ -334,6 +334,7 @@ impl TopicView<'_> {
             guardian: self.guardian,
             urls: self.urls,
             more_topics_url: None,
+            category_id: None,
         }
     }
 

@@ -1,5 +1,7 @@
 pub mod avatar;
 pub mod categories;
+pub mod category;
+pub mod category_list;
 pub mod color_scheme;
 pub mod config;
 pub mod emoji;

@@ -34,3 +34,16 @@ GET /t/parity-fixture-replies-and-posters/35/3.json ignore=/suggested_topics,/me
 GET /t/welcome-to-discourse/5.json ignore=/suggested_topics,/message_bus_last_id,/valid_reactions,/has_accepted_answer,/can_create_shared_issue,/shared_issue_visible,/can_vote,/vote_count,/user_voted,/discourse_zendesk_plugin_zendesk_id,/discourse_zendesk_plugin_zendesk_url,/post_stream/posts/*/reactions,/post_stream/posts/*/current_user_reaction,/post_stream/posts/*/reaction_users_count,/post_stream/posts/*/current_user_used_main_reaction,/post_stream/posts/*/can_accept_answer,/post_stream/posts/*/can_unaccept_answer,/post_stream/posts/*/accepted_answer,/post_stream/posts/*/topic_accepted_answer,/post_stream/posts/*/can_vote
 # 404 body: the rendered not-found page HTML isn't ported
 GET /t/999999.json ignore=/extras/html
+
+# list#category_default / category_latest (anonymous)
+GET /c/general/4.json ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
+GET /c/general/sub-general/34.json ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
+GET /c/general/4/l/latest.json?per_page=2 ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
+GET /c/site-feedback/2.json?page=1&per_page=1 ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
+GET /c/staff/3.json ignore=/extras/html
+
+# categories#index (anonymous). Ignored: custom_fields (plugins),
+# has_accepted_answer (solved plugin) on featured topics
+GET /categories.json ignore=/category_list/categories/*/custom_fields,/category_list/categories/*/topics/*/has_accepted_answer
+GET /c/general/4/none.json ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
+GET /c/general/4/none/l/latest.json?per_page=1 ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote

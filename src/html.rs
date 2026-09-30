@@ -108,6 +108,8 @@ pub struct LatestPage {
     pub base_path: String,
     pub topics: Vec<TopicItem>,
     pub more_url: Option<String>,
+    /// Set on category pages.
+    pub heading: Option<CategoryHeading>,
 }
 
 pub struct PostItem {
@@ -258,6 +260,7 @@ pub async fn latest_page(
         lang: site.lang,
         base_path: site.base_path,
         topics,
+        heading: None,
         more_url: list["topic_list"]["more_topics_url"]
             .as_str()
             .map(str::to_string),
@@ -405,4 +408,151 @@ mod tests {
         assert_eq!(category_url("/f", &cats, &cats[1]), "/f/c/general/sub/2");
         assert!(badge("", &cats, Some(9)).is_none());
     }
+}
+
+/// A subcategory entry on a category page's first page.
+pub struct SubcategoryItem {
+    pub name: String,
+    pub url: String,
+    pub description: Option<String>,
+}
+
+/// The category page header: the category (and its parent) as links,
+/// plus its visible subcategories on the first page (list.erb 13-37).
+pub struct CategoryHeading {
+    pub name: String,
+    pub url: String,
+    pub parent: Option<CategoryBadge>,
+    pub subcategories: Vec<SubcategoryItem>,
+}
+
+pub async fn category_heading(
+    conn: &mut PgConnection,
+    base_path: &str,
+    category: &crate::category::Category,
+    first_page: bool,
+) -> Result<CategoryHeading, HtmlError> {
+    let parent = match category.parent_category_id {
+        Some(id) => match crate::category::Category::find(conn, id).await? {
+            Some(p) => Some(CategoryBadge {
+                name: p.name.clone(),
+                color: p.color.clone(),
+                url: p.url(conn, base_path).await?,
+            }),
+            None => None,
+        },
+        None => None,
+    };
+    let mut subcategories = Vec::new();
+    if first_page {
+        for sub in category.visible_subcategories(conn).await? {
+            subcategories.push(SubcategoryItem {
+                name: sub.name.clone(),
+                url: sub.url(conn, base_path).await?,
+                description: sub
+                    .description
+                    .as_deref()
+                    .map(|d| crate::categories::description_plain_text(Some(d)))
+                    .transpose()
+                    .ok()
+                    .flatten()
+                    .flatten(),
+            });
+        }
+    }
+    Ok(CategoryHeading {
+        name: category.name.clone(),
+        url: category.url(conn, base_path).await?,
+        parent,
+        subcategories,
+    })
+}
+
+pub struct CategoryIndexItem {
+    pub name: String,
+    pub url: String,
+    pub color: String,
+    pub description: Option<String>,
+    pub topic_count: i64,
+    pub subcategories: Vec<CategoryBadge>,
+    pub topics: Vec<FeaturedTopic>,
+}
+
+pub struct FeaturedTopic {
+    pub title: String,
+    pub url: String,
+    pub bumped_at: String,
+    pub bumped_at_iso: String,
+}
+
+#[derive(Template)]
+#[template(path = "categories.html")]
+pub struct CategoriesPage {
+    pub site_title: String,
+    pub site_description: String,
+    pub lang: String,
+    pub base_path: String,
+    pub categories: Vec<CategoryIndexItem>,
+}
+
+/// The categories index from the /categories.json document
+/// (categories/index.html.erb's table, plus featured topics).
+pub async fn categories_page(
+    conn: &mut PgConnection,
+    _i18n: &I18n,
+    site: Site,
+    doc: &Value,
+) -> Result<CategoriesPage, HtmlError> {
+    let cats = categories(conn).await?;
+    let base = site.base_path.clone();
+    let items = doc["category_list"]["categories"]
+        .as_array()
+        .map(|list| {
+            list.iter()
+                .map(|c| {
+                    let subcategories = c["subcategory_ids"]
+                        .as_array()
+                        .map(|ids| {
+                            ids.iter()
+                                .filter_map(|id| badge(&base, &cats, id.as_i64()))
+                                .collect()
+                        })
+                        .unwrap_or_default();
+                    let row = cats
+                        .iter()
+                        .find(|x| Some(i64::from(x.id)) == c["id"].as_i64());
+                    CategoryIndexItem {
+                        name: s(&c["name"]),
+                        url: row
+                            .map(|r| category_url(&base, &cats, r))
+                            .unwrap_or_default(),
+                        color: s(&c["color"]),
+                        description: c["description"].as_str().map(str::to_string),
+                        topic_count: c["topic_count"].as_i64().unwrap_or(0),
+                        subcategories,
+                        topics: c["topics"]
+                            .as_array()
+                            .map(|ts| {
+                                ts.iter()
+                                    .map(|t| FeaturedTopic {
+                                        title: crate::emoji::gsub_emoji_to_unicode(&s(&t["title"])),
+                                        url: format!("{base}/t/{}/{}", s(&t["slug"]), t["id"]),
+                                        bumped_at: date(&s(&t["bumped_at"])),
+                                        bumped_at_iso: s(&t["bumped_at"]),
+                                    })
+                                    .collect()
+                            })
+                            .unwrap_or_default(),
+                    }
+                })
+                .collect()
+        })
+        .unwrap_or_default();
+    Ok(CategoriesPage {
+        site_title: site.site_title,
+        site_description: site.site_description,
+        lang: site.lang,
+        base_path: site.base_path,
+        categories: items,
+    })
 }

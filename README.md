@@ -95,6 +95,8 @@ run discourse-rs against a `make db-load` of the snapshot with
 | `GET /site` | `site_controller.rb#site`, `Site.json_for`, `SiteSerializer`, `SiteCategorySerializer` | anonymous only; plugin-added keys not yet (see `parity/cases`) |
 | `GET /latest` | `list_controller.rb#latest`, `TopicQuery#list_latest`, `TopicListSerializer`, `TopicListItemSerializer` | anonymous only; `page`, `per_page`, `order`, `ascending`; plugin keys not yet |
 | `GET /t/:slug/:id(/:post_number)` | `topics_controller.rb#show`, `TopicView`, `TopicViewSerializer`, `PostSerializer` | anonymous only; slug and page redirects, 404 JSON; suggested topics deterministic (Rails randomizes); plugin keys not yet |
+| `GET /c/:slug_path/:id(/l/latest)` | `list_controller.rb#category_default`, `#category_latest` | anonymous only; subcategory scoping, `/none`, category pins and sort, slug redirects; `top` and `hot` not yet |
+| `GET /categories` | `categories_controller.rb#index`, `CategoryList`, `CategoryDetailedSerializer` | anonymous only; featured topics; no pagination, parent, tag filter or `subcategory_list` yet |
 
 Supporting ports: SiteSetting (YAML defaults, `locale_default`, typed DB
 rows, GlobalSetting shadowing, upcoming-change promotion), server-side I18n
@@ -121,8 +123,9 @@ headers, any authenticated user.
 
 Anonymous readers get server-rendered HTML (askama templates in
 `templates/`, one stylesheet in `static/`) built from the same documents the
-JSON endpoints return: `/` and `/latest` (the topic list, paged), and
-`/t/:slug/:id` (the topic with its posts). Requests ending in `.json` get the
+JSON endpoints return: `/` and `/latest` (the topic list, paged), `/c/...`
+(a category's list with its subcategories), `/categories` (the index with
+featured topics), and `/t/:slug/:id` (the topic with its posts). Requests ending in `.json` get the
 API document instead. The structure follows Discourse's crawler views.
 
 `PUBLIC_DIR` (default `public`) is served at `/images` and `/uploads`: point

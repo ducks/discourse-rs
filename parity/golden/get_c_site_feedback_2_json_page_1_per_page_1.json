@@ -1,0 +1,7 @@
+{
+  "request": "GET /c/site-feedback/2.json?page=1&per_page=1",
+  "source": "http://127.0.0.1:3042",
+  "status": 200,
+  "content_type": "application/json; charset=utf-8",
+  "body": "{\"topic_list\":{\"can_create_topic\":false,\"filter\":\"latest\",\"per_page\":1,\"top_tags\":[],\"topics\":[]}}"
+}
