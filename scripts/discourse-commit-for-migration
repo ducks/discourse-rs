@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Print the Discourse commit that added the migration with the given
+# version (the "version" in a backup's meta.json), i.e. the oldest commit
+# whose schema matches that backup. Vendor at that commit to serve it.
+#
+# Usage: scripts/discourse-commit-for-migration <discourse-checkout> <version>
+set -euo pipefail
+
+if [ $# -ne 2 ]; then
+  echo "usage: $0 <discourse-checkout> <version>" >&2
+  exit 64
+fi
+
+src="$1"
+version="$2"
+file="$(git -C "$src" ls-files "db/migrate/${version}_*.rb" "db/post_migrate/${version}_*.rb" | head -1)"
+if [ -z "$file" ]; then
+  echo "no migration ${version} in $src (plugin migrations live in plugins/*/db)" >&2
+  exit 1
+fi
+git -C "$src" log --diff-filter=A --format=%H -- "$file" | tail -1

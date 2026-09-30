@@ -121,10 +121,20 @@ impl TopicListSerializer<'_> {
     pub async fn serialize(&mut self, list: &TopicList) -> Result<Value, TopicListError> {
         let lookup = self.user_lookup(&list.topics).await?;
         let logo_small_url = self.logo_small_url().await?;
+        let group_ids: Vec<i32> = lookup
+            .values()
+            .flat_map(|u| [u.primary_group_id, u.flair_group_id])
+            .flatten()
+            .collect();
+        let groups = crate::groups::load(&mut *self.conn, &group_ids).await?;
         let tagging = self.settings.get("tagging_enabled")?.truthy();
 
         let mut users: Vec<Value> = Vec::new();
         let mut seen_users: Vec<i32> = Vec::new();
+        let mut primary_groups: Vec<Value> = Vec::new();
+        let mut flair_groups: Vec<Value> = Vec::new();
+        let mut seen_primary: Vec<i32> = Vec::new();
+        let mut seen_flair: Vec<i32> = Vec::new();
         let mut topics: Vec<Value> = Vec::with_capacity(list.topics.len());
         let mut any_poster = false;
         for topic in &list.topics {
@@ -133,10 +143,24 @@ impl TopicListSerializer<'_> {
                 any_poster = true;
                 if !seen_users.contains(&poster.user.id) {
                     seen_users.push(poster.user.id);
-                    users.push(self.serialize_user(&poster.user, logo_small_url.as_deref())?);
+                    users.push(self.serialize_user(
+                        &poster.user,
+                        logo_small_url.as_deref(),
+                        &groups,
+                    )?);
                 }
-                if poster.user.primary_group_id.is_some() || poster.user.flair_group_id.is_some() {
-                    return Err(Unsupported("poster primary/flair groups").into());
+                // Side-loaded once each, in first-seen order, like AMS's embed :ids.
+                if let Some(g) = poster.user.primary_group_id.and_then(|id| groups.get(&id)) {
+                    if !seen_primary.contains(&g.id) {
+                        seen_primary.push(g.id);
+                        primary_groups.push(g.primary_json());
+                    }
+                }
+                if let Some(g) = poster.user.flair_group_id.and_then(|id| groups.get(&id)) {
+                    if !seen_flair.contains(&g.id) {
+                        seen_flair.push(g.id);
+                        flair_groups.push(g.flair_json()?);
+                    }
                 }
             }
             topics.push(
@@ -148,8 +172,8 @@ impl TopicListSerializer<'_> {
         let mut out = Map::new();
         if any_poster {
             out.insert("users".into(), Value::Array(users));
-            out.insert("primary_groups".into(), json!([]));
-            out.insert("flair_groups".into(), json!([]));
+            out.insert("primary_groups".into(), Value::Array(primary_groups));
+            out.insert("flair_groups".into(), Value::Array(flair_groups));
         }
 
         let mut topic_list = Map::new();
@@ -221,6 +245,7 @@ impl TopicListSerializer<'_> {
         &self,
         user: &LookupUser,
         logo_small_url: Option<&str>,
+        groups: &std::collections::HashMap<i32, crate::groups::Group>,
     ) -> Result<Value, TopicListError> {
         let mut out = Map::new();
         out.insert("id".into(), json!(user.id));
@@ -238,6 +263,12 @@ impl TopicListSerializer<'_> {
                 logo_small_url
             )?),
         );
+        crate::groups::user_group_fields(
+            &mut out,
+            groups,
+            user.primary_group_id,
+            user.flair_group_id,
+        )?;
         if user.admin {
             out.insert("admin".into(), json!(true));
         }
@@ -369,12 +400,18 @@ impl TopicListSerializer<'_> {
         }
         out.insert("op_like_count".into(), self.op_like_count(t.id).await?);
         let logo_small_url = self.logo_small_url().await?;
+        let group_ids: Vec<i32> = posters
+            .iter()
+            .flat_map(|p| [p.user.primary_group_id, p.user.flair_group_id])
+            .flatten()
+            .collect();
+        let groups = crate::groups::load(&mut *self.conn, &group_ids).await?;
         let mut list = Vec::with_capacity(posters.len());
         for p in posters {
             list.push(json!({
                 "extras": p.extras,
                 "description": p.description,
-                "user": self.serialize_user(&p.user, logo_small_url.as_deref())?,
+                "user": self.serialize_user(&p.user, logo_small_url.as_deref(), &groups)?,
             }));
         }
         out.insert("posters".into(), Value::Array(list));

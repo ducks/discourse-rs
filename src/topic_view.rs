@@ -551,7 +551,7 @@ impl TopicView<'_> {
             "SELECT user_id, count(*) AS count_all FROM posts \
              WHERE topic_id = $1 AND post_type = ANY($2) AND user_id IS NOT NULL \
                AND deleted_at IS NULL AND action_code IS NULL \
-             GROUP BY user_id ORDER BY count_all DESC, user_id LIMIT 24",
+             GROUP BY user_id ORDER BY count_all DESC LIMIT 24",
         )
         .bind(topic_id)
         .bind(&VISIBLE_POST_TYPES[..])
@@ -569,10 +569,31 @@ impl TopicView<'_> {
             .iter()
             .filter_map(|(id, n)| users.iter().find(|u| u.id == *id).map(|u| (u.clone(), *n)))
             .collect();
-        if participants.len() == 24 {
-            return Err(Unsupported("topics with 24+ participants (participant_count)").into());
-        }
-        let count = participants.len() as i64;
+        // participant_count: with a full page of 24, count distinct posters
+        // (the topic's cached participant_count only for huge topics).
+        let count = if participants.len() == 24 {
+            let posts_count: i32 =
+                sqlx::query_scalar("SELECT posts_count FROM topics WHERE id = $1")
+                    .bind(topic_id)
+                    .fetch_one(&mut *self.conn)
+                    .await?;
+            if posts_count > 500 {
+                sqlx::query_scalar::<_, i32>("SELECT participant_count FROM topics WHERE id = $1")
+                    .bind(topic_id)
+                    .fetch_one(&mut *self.conn)
+                    .await? as i64
+            } else {
+                sqlx::query_scalar::<_, i64>(
+                    "SELECT count(DISTINCT user_id) FROM posts WHERE topic_id = $1 AND deleted_at IS NULL AND post_type = ANY($2)",
+                )
+                .bind(topic_id)
+                .bind(&VISIBLE_POST_TYPES[..])
+                .fetch_one(&mut *self.conn)
+                .await?
+            }
+        } else {
+            participants.len() as i64
+        };
         Ok((participants, count))
     }
 
@@ -583,6 +604,12 @@ impl TopicView<'_> {
         participants: Vec<(PostUser, i64)>,
     ) -> Result<Value, TopicViewError> {
         let logo_small_url = self.list_serializer().logo_small_url().await?;
+        let group_ids: Vec<i32> = participants
+            .iter()
+            .flat_map(|(u, _)| [u.primary_group_id, u.flair_group_id])
+            .flatten()
+            .collect();
+        let groups = crate::groups::load(&mut *self.conn, &group_ids).await?;
         let enable_names = self.settings.get("enable_names")?.truthy();
         let mut out = Map::new();
         out.insert("can_edit".into(), json!(false));
@@ -590,9 +617,6 @@ impl TopicView<'_> {
         if !participants.is_empty() {
             let mut list = Vec::with_capacity(participants.len());
             for (user, post_count) in &participants {
-                if user.primary_group_id.is_some() || user.flair_group_id.is_some() {
-                    return Err(Unsupported("participant primary/flair groups").into());
-                }
                 let mut p = Map::new();
                 p.insert("id".into(), json!(user.id));
                 p.insert("username".into(), json!(user.username));
@@ -609,12 +633,26 @@ impl TopicView<'_> {
                     )?),
                 );
                 p.insert("post_count".into(), json!(post_count));
-                p.insert("primary_group_name".into(), Value::Null);
-                p.insert("flair_name".into(), Value::Null);
-                p.insert("flair_url".into(), Value::Null);
-                p.insert("flair_color".into(), Value::Null);
-                p.insert("flair_bg_color".into(), Value::Null);
-                p.insert("flair_group_id".into(), Value::Null);
+                let primary = user.primary_group_id.and_then(|id| groups.get(&id));
+                let flair = user.flair_group_id.and_then(|id| groups.get(&id));
+                p.insert(
+                    "primary_group_name".into(),
+                    json!(primary.map(|g| g.name.clone())),
+                );
+                p.insert("flair_name".into(), json!(flair.map(|g| g.name.clone())));
+                p.insert(
+                    "flair_url".into(),
+                    json!(flair.map(|g| g.flair_url()).transpose()?.flatten()),
+                );
+                p.insert(
+                    "flair_color".into(),
+                    json!(flair.and_then(|g| g.flair_color.clone())),
+                );
+                p.insert(
+                    "flair_bg_color".into(),
+                    json!(flair.and_then(|g| g.flair_bg_color.clone())),
+                );
+                p.insert("flair_group_id".into(), json!(user.flair_group_id));
                 if user.admin {
                     p.insert("admin".into(), json!(true));
                 }
@@ -721,14 +759,17 @@ impl TopicView<'_> {
         .bind(&user_ids)
         .fetch_all(&mut *self.conn)
         .await?;
+        let group_ids: Vec<i32> = users
+            .iter()
+            .flat_map(|u| [u.primary_group_id, u.flair_group_id])
+            .flatten()
+            .collect();
+        let groups = crate::groups::load(&mut *self.conn, &group_ids).await?;
         let user = |id: Option<i32>| id.and_then(|id| users.iter().find(|u| u.id == id));
 
         let mut out = Vec::with_capacity(posts.len());
         for post in posts {
             let u = user(post.user_id);
-            if u.is_some_and(|u| u.primary_group_id.is_some() || u.flair_group_id.is_some()) {
-                return Err(Unsupported("post author primary/flair groups").into());
-            }
             if post.hidden {
                 return Err(Unsupported("hidden posts").into());
             }
@@ -792,12 +833,33 @@ impl TopicView<'_> {
                     json!(u.and_then(|u| u.name.clone())),
                 );
             }
-            p.insert("primary_group_name".into(), Value::Null);
-            p.insert("flair_name".into(), Value::Null);
-            p.insert("flair_url".into(), Value::Null);
-            p.insert("flair_bg_color".into(), Value::Null);
-            p.insert("flair_color".into(), Value::Null);
-            p.insert("flair_group_id".into(), Value::Null);
+            let primary = u
+                .and_then(|u| u.primary_group_id)
+                .and_then(|id| groups.get(&id));
+            let flair = u
+                .and_then(|u| u.flair_group_id)
+                .and_then(|id| groups.get(&id));
+            p.insert(
+                "primary_group_name".into(),
+                json!(primary.map(|g| g.name.clone())),
+            );
+            p.insert("flair_name".into(), json!(flair.map(|g| g.name.clone())));
+            p.insert(
+                "flair_url".into(),
+                json!(flair.map(|g| g.flair_url()).transpose()?.flatten()),
+            );
+            p.insert(
+                "flair_bg_color".into(),
+                json!(flair.and_then(|g| g.flair_bg_color.clone())),
+            );
+            p.insert(
+                "flair_color".into(),
+                json!(flair.and_then(|g| g.flair_color.clone())),
+            );
+            p.insert(
+                "flair_group_id".into(),
+                json!(u.and_then(|u| u.flair_group_id)),
+            );
             p.insert("badges_granted".into(), json!([]));
             p.insert("version".into(), json!(post.public_version));
             p.insert("can_edit".into(), json!(false));
