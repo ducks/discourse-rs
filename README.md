@@ -85,6 +85,12 @@ database, write its env to `parity/environment`, then `make parity-record`.
 Live comparison needs both sides on the same database and configuration:
 run discourse-rs against a `make db-load` of the snapshot with
 `env $(grep -v ^# parity/environment) cargo run`.
+## Bench
+
+`make bench TARGETS="rs=URL rails=URL"` and `make bench-startup` compare the
+port with a Discourse serving the same backup; BENCH.md keeps the runs and the
+caveats (production-mode reference, Rails' anonymous cache, search rate limits).
+
 
 ## Ported
 

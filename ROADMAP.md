@@ -32,9 +32,9 @@ could put behind Caddy and leave running.
 - [x] Crawler hygiene: `robots.txt`, sitemaps, canonical and meta tags
 - [ ] Deploy: systemd unit, Caddy snippet, `make install`, first
       date-versioned release with a binary
-- [ ] Bench harness: `make bench` (oha/wrk p50/p99, RSS, cold start,
-      binary size) against a production-mode Discourse on the same backup;
-      Rails' anonymous cache must be accounted for
+- [x] Bench harness: `make bench` and `make bench-startup` (BENCH.md has
+      the runs and the caveats); a production-mode Discourse reference is
+      still needed for numbers that mean something
 
 ## Milestone 2: parity depth
 
@@ -50,6 +50,9 @@ how often a backup trips them.
 - [ ] Topic timers, topic links with clicks (`TopicLink.topic_map`)
 - [ ] Featured links (`featured_link_root_domain`)
 - [ ] `subcategory_list` styles, paginated category lists
+- [ ] Performance: the list and topic serializers issue per-topic queries
+      and every request reloads site settings (BENCH.md: /latest.json at
+      ~90 req/s vs /srv/status at 10k); profile before optimizing
 - [ ] Group flair uploads, user fields, badges granted, auth providers,
       user color schemes on `/site.json`
 - [ ] Muted defaults (`default_categories_muted`, `default_tags_muted`,

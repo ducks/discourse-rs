@@ -1,0 +1,108 @@
+#!/usr/bin/env bash
+#
+# Benchmark discourse-rs against a Discourse serving the same data.
+#
+# For each target, hits the same set of endpoints with oha at a fixed
+# concurrency for a fixed duration and prints one Markdown table:
+# requests/s, p50, p99 and the non-2xx count per endpoint. The endpoints
+# are discovered from the first target's /latest.json (a topic, its
+# category, a poster) so both sides serve the same documents.
+#
+# Rails caches anonymous responses in redis (AnonymousCache, 60 s); a
+# `_bypass_cache=1` cookie disables it. Both runs are taken for Rails and
+# labelled `cached` / `uncached`; discourse-rs has no such cache. Rails
+# also rate-limits anonymous search (2/s per IP), which shows up as 429s
+# in the non-2xx column: that row measures the limiter, not the search.
+#
+# The reference must be a production-mode Discourse: a `dv` development
+# agent runs with code reloading and without precompiled assets and is
+# several times slower than production on the same box.
+#
+# Usage: scripts/bench [-d 10s] [-c 16] [-o dir] name=url [name=url...]
+#   e.g. scripts/bench rs=http://127.0.0.1:8080 rails=http://127.0.0.1:3043
+#
+# Writes oha's JSON per run under the output dir (default bench/<date>).
+
+set -euo pipefail
+
+duration=10s
+concurrency=16
+outdir=""
+while getopts "d:c:o:" opt; do
+  case "$opt" in
+    d) duration="$OPTARG" ;;
+    c) concurrency="$OPTARG" ;;
+    o) outdir="$OPTARG" ;;
+    *) echo "usage: scripts/bench [-d duration] [-c concurrency] [-o dir] name=url..." >&2; exit 2 ;;
+  esac
+done
+shift $((OPTIND - 1))
+if [ "$#" -lt 1 ]; then
+  echo "usage: scripts/bench [-d duration] [-c concurrency] [-o dir] name=url..." >&2
+  exit 2
+fi
+for tool in oha jq curl; do
+  command -v "$tool" >/dev/null || { echo "bench: $tool not found (nix-shell provides it)" >&2; exit 2; }
+done
+outdir="${outdir:-bench/$(date +%Y%m%d-%H%M%S)}"
+mkdir -p "$outdir"
+
+first_url="${1#*=}"
+latest="$(curl -sf "$first_url/latest.json")" || { echo "bench: $first_url/latest.json failed" >&2; exit 1; }
+topic_id="$(jq -r '.topic_list.topics[0].id' <<<"$latest")"
+topic_slug="$(jq -r '.topic_list.topics[0].slug' <<<"$latest")"
+category_id="$(jq -r '[.topic_list.topics[].category_id] | map(select(. != null)) | .[0]' <<<"$latest")"
+category_slug="$(curl -sf "$first_url/site.json" | jq -r --argjson id "$category_id" '.categories[] | select(.id == $id) | .slug')"
+username="$(jq -r '.users[0].username' <<<"$latest")"
+tag="$(jq -r '.topic_list.top_tags[0].name // empty' <<<"$latest")"
+word="$(jq -r '.topic_list.topics[0].title | split(" ") | map(select(length > 3)) | .[0] // "topic"' <<<"$latest")"
+
+endpoints=(
+  "/srv/status"
+  "/site.json"
+  "/latest.json"
+  "/latest"
+  "/c/$category_slug/$category_id.json"
+  "/categories.json"
+  "/t/$topic_slug/$topic_id.json"
+  "/t/$topic_slug/$topic_id"
+  "/u/$username.json"
+  "/search.json?q=$word"
+)
+[ -n "$tag" ] && endpoints+=("/tag/$tag.json")
+
+run() { # name url path cookie
+  local name="$1" url="$2" path="$3" cookie="$4"
+  local file="$outdir/$name$(echo "$path" | tr -c 'A-Za-z0-9' '_').json"
+  local args=(-z "$duration" -c "$concurrency" --no-tui -j --disable-keepalive)
+  [ -n "$cookie" ] && args+=(-H "Cookie: $cookie")
+  oha "${args[@]}" "$url$path" >"$file" 2>/dev/null
+  # non-2xx = other status codes plus connection errors and timeouts; the
+  # requests in flight when the deadline hits are not errors.
+  jq -r --arg name "$name" --arg path "$path" '
+    def ms($s): if $s == null then "-" else (($s * 1000 * 10 | round) / 10 | tostring) end;
+    ((.statusCodeDistribution // {}) | to_entries | map(select((.key | tonumber) < 200 or (.key | tonumber) >= 300) | .value) | add // 0) as $bad_status
+    | ((.errorDistribution // {}) | to_entries | map(select(.key != "aborted due to deadline") | .value) | add // 0) as $errors
+    | "| \($path) | \($name) | \(.summary.requestsPerSec // 0 | floor) | \(ms(.latencyPercentiles.p50)) | \(ms(.latencyPercentiles.p99)) | \($bad_status + $errors) |"
+  ' "$file"
+}
+
+echo "Duration $duration, concurrency $concurrency, keepalive off, $(date -u +%Y-%m-%dT%H:%MZ)"
+echo
+echo "| endpoint | target | req/s | p50 ms | p99 ms | non-2xx |"
+echo "|---|---|---:|---:|---:|---:|"
+for path in "${endpoints[@]}"; do
+  for target in "$@"; do
+    name="${target%%=*}"
+    url="${target#*=}"
+    # Rails tags its responses with X-Discourse-Route; discourse-rs does not.
+    if curl -sf "$url/latest.json" -o /dev/null -D - | grep -qi '^x-discourse-route'; then
+      run "$name (cached)" "$url" "$path" ""
+      run "$name (uncached)" "$url" "$path" "_bypass_cache=1"
+    else
+      run "$name" "$url" "$path" ""
+    fi
+  done
+done
+echo
+echo "Raw oha output: $outdir/"
