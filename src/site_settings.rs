@@ -7,10 +7,14 @@
 //!   2. a `site_settings` row
 //!   3. a `DISCOURSE_<NAME>` global setting, which shadows the setting
 //!
-//! Not yet ported: plugin settings files, upcoming-change default overrides,
-//! `mandatory_values`, themeable settings.
+//! Upcoming-change settings (`upcoming_change:` in the YAML) resolve through a
+//! port of UpcomingChanges.enabled?: promoted by status unless an admin stored
+//! a choice, gated on `depends_on`.
+//!
+//! Not yet ported: plugin settings files, upcoming-change default overrides
+//! (`upcoming_change_default_override`), `mandatory_values`, themeable settings.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fmt;
 
 use serde::Serialize;
@@ -152,6 +156,18 @@ impl Value {
         }
     }
 
+    /// Ruby `to_s`.
+    pub fn to_s(&self) -> String {
+        match self {
+            Value::Null => String::new(),
+            Value::Bool(b) => b.to_string(),
+            Value::Int(i) => i.to_string(),
+            Value::Float(f) if f.fract() == 0.0 && f.is_finite() => format!("{f:.1}"),
+            Value::Float(f) => f.to_string(),
+            Value::Str(s) => s.clone(),
+        }
+    }
+
     pub fn is_blank(&self) -> bool {
         match self {
             Value::Null | Value::Bool(false) => true,
@@ -212,6 +228,42 @@ pub struct Definition {
     pub data_type: DataType,
     pub client: bool,
     locale_defaults: HashMap<String, Value>,
+    /// `upcoming_change: {status: ...}`; the setting's value is then decided
+    /// by UpcomingChanges.enabled? rather than read directly.
+    upcoming_change: Option<ChangeStatus>,
+    /// `upcoming_change.body_class`: the change adds a body CSS class, so the
+    /// client is told about it (upcoming_changes_with_css).
+    change_body_class: bool,
+    depends_on: Vec<String>,
+    /// `depends_on_values`: per dependency, the values that count as met.
+    depends_on_values: HashMap<String, Vec<String>>,
+}
+
+/// `UpcomingChanges.statuses`, ordered by their numeric rank.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub enum ChangeStatus {
+    Conceptual = -100,
+    Experimental = 0,
+    Alpha = 100,
+    Beta = 200,
+    Stable = 300,
+    Permanent = 500,
+    Never = 9999,
+}
+
+impl ChangeStatus {
+    fn parse(s: &str) -> Option<ChangeStatus> {
+        Some(match s {
+            "conceptual" => ChangeStatus::Conceptual,
+            "experimental" => ChangeStatus::Experimental,
+            "alpha" => ChangeStatus::Alpha,
+            "beta" => ChangeStatus::Beta,
+            "stable" => ChangeStatus::Stable,
+            "permanent" => ChangeStatus::Permanent,
+            "never" => ChangeStatus::Never,
+            _ => return None,
+        })
+    }
 }
 
 /// Every setting declared in site_settings.yml, in file order.
@@ -260,6 +312,19 @@ impl Definitions {
 
     pub fn get(&self, name: &str) -> Option<&Definition> {
         self.index.get(name).map(|&i| &self.list[i])
+    }
+
+    /// `UpcomingChanges.including_css`: upcoming changes whose metadata has
+    /// `body_class: true`, enabled or not, sorted by name.
+    pub fn upcoming_changes_with_css(&self) -> Vec<&str> {
+        let mut names: Vec<&str> = self
+            .list
+            .iter()
+            .filter(|d| d.upcoming_change.is_some() && d.change_body_class)
+            .map(|d| d.name.as_str())
+            .collect();
+        names.sort_unstable();
+        names
     }
 
     pub fn iter(&self) -> impl Iterator<Item = &Definition> {
@@ -318,6 +383,10 @@ fn parse_definition(category: &str, name: &str, entry: &Yaml) -> Result<Definiti
             default,
             client: false,
             locale_defaults: HashMap::new(),
+            upcoming_change: None,
+            change_body_class: false,
+            depends_on: Vec::new(),
+            depends_on_values: HashMap::new(),
         });
     };
 
@@ -348,6 +417,46 @@ fn parse_definition(category: &str, name: &str, entry: &Yaml) -> Result<Definiti
         }
     }
 
+    let change_body_class = matches!(
+        opt("upcoming_change").and_then(|c| c.get(Yaml::String("body_class".into()))),
+        Some(Yaml::Bool(true))
+    );
+    let upcoming_change = match opt("upcoming_change") {
+        None => None,
+        Some(Yaml::Mapping(m)) => {
+            let status = m
+                .get(Yaml::String("status".into()))
+                .and_then(Yaml::as_str)
+                .ok_or("upcoming_change needs a status")?;
+            Some(
+                ChangeStatus::parse(status)
+                    .ok_or(format!("unknown upcoming_change status {status}"))?,
+            )
+        }
+        Some(other) => return Err(format!("upcoming_change must be a mapping, got {other:?}")),
+    };
+
+    let depends_on = match opt("depends_on") {
+        None => Vec::new(),
+        Some(Yaml::Sequence(deps)) => deps.iter().map(yaml_key).collect::<Result<_, _>>()?,
+        Some(Yaml::String(dep)) => vec![dep.clone()],
+        Some(other) => return Err(format!("depends_on must be a list, got {other:?}")),
+    };
+
+    let mut depends_on_values = HashMap::new();
+    if let Some(Yaml::Mapping(m)) = opt("depends_on_values") {
+        for (dep, allowed) in m {
+            let allowed = match allowed {
+                Yaml::Sequence(vals) => vals
+                    .iter()
+                    .map(|v| yaml_scalar(v).map(|v| v.to_s()))
+                    .collect::<Result<_, _>>()?,
+                other => return Err(format!("depends_on_values must be lists, got {other:?}")),
+            };
+            depends_on_values.insert(yaml_key(dep)?, allowed);
+        }
+    }
+
     Ok(Definition {
         name: name.into(),
         category: category.into(),
@@ -355,6 +464,10 @@ fn parse_definition(category: &str, name: &str, entry: &Yaml) -> Result<Definiti
         data_type,
         client,
         locale_defaults,
+        upcoming_change,
+        change_body_class,
+        depends_on,
+        depends_on_values,
     })
 }
 
@@ -367,6 +480,13 @@ pub enum SettingError {
         name: String,
         data_type: i32,
     },
+    /// A value that Discourse itself would choke on, e.g. an unknown
+    /// promote_upcoming_changes_on_status.
+    Invalid {
+        name: String,
+        value: String,
+    },
+    DependencyCycle(String),
 }
 
 impl fmt::Display for SettingError {
@@ -379,6 +499,12 @@ impl fmt::Display for SettingError {
                     f,
                     "site_settings row {name} has unknown data_type {data_type}"
                 )
+            }
+            SettingError::Invalid { name, value } => {
+                write!(f, "site setting {name} has invalid value {value:?}")
+            }
+            SettingError::DependencyCycle(name) => {
+                write!(f, "upcoming change {name} has a dependency cycle")
             }
         }
     }
@@ -430,7 +556,19 @@ impl SiteSettings {
                 (d.name.clone(), default.unwrap_or(&d.default).clone())
             })
             .collect();
+        let modified: HashSet<String> = db.keys().cloned().collect();
         values.extend(db);
+
+        // Upcoming-change settings resolve through UpcomingChanges.enabled?
+        // rather than their stored value.
+        let changes: Vec<&Definition> = defs
+            .iter()
+            .filter(|d| d.upcoming_change.is_some())
+            .collect();
+        for def in &changes {
+            let enabled = upcoming_change_enabled(defs, &values, &modified, &def.name, 0)?;
+            values.insert(def.name.clone(), Value::Bool(enabled));
+        }
 
         // site_setting_extension.rb `setting()`: a setting is shadowed when
         // GlobalSetting responds to its name with a present value.
@@ -462,11 +600,86 @@ impl SiteSettings {
         Self::resolve(defs, rows, globals)
     }
 
+    /// `SiteSetting.<name>_map` for group_list settings: `split("|")` then
+    /// `to_i`, so a malformed entry becomes 0 (everyone). Empty when blank.
+    /// `mandatory_values` aren't merged in yet.
+    pub fn group_ids(&self, name: &str) -> Result<Vec<i64>, SettingError> {
+        let raw = self.get(name)?.to_s();
+        Ok(raw
+            .split('|')
+            .filter(|s| !s.is_empty())
+            .map(ruby::to_i)
+            .collect())
+    }
+
     pub fn get(&self, name: &str) -> Result<&Value, SettingError> {
         self.values
             .get(name)
             .ok_or_else(|| SettingError::Unknown(name.into()))
     }
+}
+
+/// `UpcomingChanges.enabled?` (lib/upcoming_changes.rb). Plugin-owned
+/// changes aren't ported (no plugin settings yet), so the plugin guards
+/// don't apply.
+fn upcoming_change_enabled(
+    defs: &Definitions,
+    values: &HashMap<String, Value>,
+    modified: &HashSet<String>,
+    name: &str,
+    depth: usize,
+) -> Result<bool, SettingError> {
+    let def = defs
+        .get(name)
+        .ok_or_else(|| SettingError::Unknown(name.into()))?;
+    let status = def
+        .upcoming_change
+        .ok_or_else(|| SettingError::Unknown(name.into()))?;
+    if depth > 16 {
+        return Err(SettingError::DependencyCycle(name.into()));
+    }
+
+    // change_dependencies_met?: each dependency, itself possibly an upcoming
+    // change, must be true (or one of the depends_on_values).
+    for dep in &def.depends_on {
+        let value = match defs.get(dep).and_then(|d| d.upcoming_change) {
+            Some(_) => Value::Bool(upcoming_change_enabled(
+                defs,
+                values,
+                modified,
+                dep,
+                depth + 1,
+            )?),
+            None => values.get(dep).cloned().unwrap_or(Value::Null),
+        };
+        let met = match def.depends_on_values.get(dep) {
+            Some(allowed) => allowed.contains(&value.to_s()),
+            None => value == Value::Bool(true),
+        };
+        if !met {
+            return Ok(false);
+        }
+    }
+
+    let promote_on = values
+        .get("promote_upcoming_changes_on_status")
+        .map(Value::to_s)
+        .unwrap_or_default();
+    let promote_on = ChangeStatus::parse(&promote_on).ok_or_else(|| SettingError::Invalid {
+        name: "promote_upcoming_changes_on_status".into(),
+        value: promote_on.clone(),
+    })?;
+
+    Ok(
+        if modified.contains(name) && status != ChangeStatus::Permanent {
+            // An admin's stored choice wins, unless the change is permanent.
+            values.get(name).is_some_and(Value::truthy)
+        } else if status >= promote_on || status == ChangeStatus::Permanent {
+            true
+        } else {
+            def.default.truthy()
+        },
+    )
 }
 
 /// TypeSupervisor#to_rb_value with the row's data_type as override.
@@ -541,6 +754,42 @@ basic:
     type: not_a_real_type
   port:
     default: ""
+  promote_upcoming_changes_on_status:
+    default: "beta"
+    enum: "X"
+  change_beta:
+    default: false
+    upcoming_change:
+      status: "beta"
+  change_alpha:
+    default: false
+    upcoming_change:
+      status: "alpha"
+  change_permanent:
+    default: false
+    upcoming_change:
+      status: "permanent"
+  change_gated:
+    default: false
+    depends_on:
+      - login_required
+    upcoming_change:
+      status: "stable"
+  change_enum_gated:
+    default: false
+    depends_on:
+      - mode
+    depends_on_values:
+      mode:
+        - b
+    upcoming_change:
+      status: "stable"
+  change_chained:
+    default: false
+    depends_on:
+      - change_beta
+    upcoming_change:
+      status: "stable"
 "#;
 
     fn defs() -> Definitions {
@@ -690,6 +939,82 @@ basic:
         ])
         .unwrap();
         assert_eq!(json, r#"[null,true,-5,"x"]"#);
+    }
+
+    #[test]
+    fn upcoming_changes_promote_by_status() {
+        let s = resolve(&[], &[]);
+        assert_eq!(s.get("change_beta").unwrap(), &Value::Bool(true));
+        assert_eq!(s.get("change_alpha").unwrap(), &Value::Bool(false));
+        assert_eq!(s.get("change_permanent").unwrap(), &Value::Bool(true));
+
+        // Raising the promotion bar demotes beta changes.
+        let s = resolve(
+            &[("promote_upcoming_changes_on_status", 7, Some("stable"))],
+            &[],
+        );
+        assert_eq!(s.get("change_beta").unwrap(), &Value::Bool(false));
+        assert_eq!(s.get("change_permanent").unwrap(), &Value::Bool(true));
+    }
+
+    #[test]
+    fn admins_stored_choice_wins_unless_permanent() {
+        let s = resolve(
+            &[
+                ("change_beta", 5, Some("f")),
+                ("change_alpha", 5, Some("t")),
+                ("change_permanent", 5, Some("f")),
+            ],
+            &[],
+        );
+        assert_eq!(s.get("change_beta").unwrap(), &Value::Bool(false));
+        assert_eq!(s.get("change_alpha").unwrap(), &Value::Bool(true));
+        assert_eq!(s.get("change_permanent").unwrap(), &Value::Bool(true));
+    }
+
+    #[test]
+    fn upcoming_changes_are_gated_on_dependencies() {
+        let s = resolve(&[], &[]);
+        assert_eq!(s.get("change_gated").unwrap(), &Value::Bool(false));
+        assert_eq!(s.get("change_enum_gated").unwrap(), &Value::Bool(false));
+        assert_eq!(s.get("change_chained").unwrap(), &Value::Bool(true));
+
+        let s = resolve(
+            &[
+                ("login_required", 5, Some("t")),
+                ("mode", 7, Some("b")),
+                ("change_beta", 5, Some("f")),
+            ],
+            &[],
+        );
+        assert_eq!(s.get("change_gated").unwrap(), &Value::Bool(true));
+        assert_eq!(s.get("change_enum_gated").unwrap(), &Value::Bool(true));
+        // The dependency is itself an upcoming change, resolved the same way.
+        assert_eq!(s.get("change_chained").unwrap(), &Value::Bool(false));
+    }
+
+    #[test]
+    fn unknown_promotion_status_is_an_error() {
+        let rows = vec![(
+            "promote_upcoming_changes_on_status".to_string(),
+            7,
+            Some("bogus".to_string()),
+        )];
+        let err = SiteSettings::resolve(&defs(), rows, &GlobalSettings::default()).unwrap_err();
+        assert!(matches!(err, SettingError::Invalid { .. }), "{err}");
+    }
+
+    #[test]
+    fn vendored_upcoming_changes_resolve_as_discourse_does() {
+        let defs = Definitions::vendored().unwrap();
+        let s = SiteSettings::resolve(&defs, vec![], &GlobalSettings::default()).unwrap();
+        // beta status, promoted by the default "beta" bar
+        assert_eq!(
+            s.get("granular_anonymous_and_logged_in_groups_permissions")
+                .unwrap(),
+            &Value::Bool(true)
+        );
+        assert_eq!(s.get("enable_unified_new").unwrap(), &Value::Bool(true));
     }
 
     #[test]

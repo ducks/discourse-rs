@@ -8,3 +8,11 @@ GET /srv/status?cluster=parity
 
 # site#basic_info
 GET /site/basic-info.json
+
+# site#site (anonymous). Ignored until ported:
+#   filters, anonymous_list_filters, homepage_choices, top_menu_items,
+#   anonymous_top_menu_items: topic-voting plugin adds "votes"
+#   markdown_additional_options, hashtag_configurations, hashtag_icons: chat plugin
+#   access_control: boards plugin ACLs
+#   categories: own slice (SiteCategorySerializer)
+GET /site.json ignore=/filters,/anonymous_list_filters,/homepage_choices,/top_menu_items,/anonymous_top_menu_items,/markdown_additional_options,/hashtag_configurations,/hashtag_icons,/access_control,/categories

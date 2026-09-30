@@ -13,6 +13,7 @@ FILES=(
   db/structure.sql
   config/site_settings.yml
   app/assets/stylesheets/common/foundation/colors.scss
+  config/locales/server.en.yml
 )
 
 if [ $# -lt 1 ]; then

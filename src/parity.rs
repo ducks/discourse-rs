@@ -301,12 +301,29 @@ fn remove_path(value: &mut Value, segments: &[String]) {
     }
 }
 
-/// serde_json's default Map is a BTreeMap, so keys print sorted and the diff
-/// only shows real differences.
+/// Keys are sorted before printing (serde_json keeps insertion order for the
+/// server's sake) so the diff only shows real differences.
 fn pretty(v: &Value) -> String {
-    let mut s = serde_json::to_string_pretty(v).unwrap_or_default();
+    let mut s = serde_json::to_string_pretty(&sorted(v)).unwrap_or_default();
     s.push('\n');
     s
+}
+
+fn sorted(v: &Value) -> Value {
+    match v {
+        Value::Object(map) => {
+            let mut entries: Vec<(&String, &Value)> = map.iter().collect();
+            entries.sort_by(|a, b| a.0.cmp(b.0));
+            Value::Object(
+                entries
+                    .into_iter()
+                    .map(|(k, v)| (k.clone(), sorted(v)))
+                    .collect(),
+            )
+        }
+        Value::Array(items) => Value::Array(items.iter().map(sorted).collect()),
+        other => other.clone(),
+    }
 }
 
 fn diff(expected: &str, actual: &str, names: (&str, &str)) -> String {
@@ -402,6 +419,20 @@ mod tests {
         let err = compare(&case(&[]), &json(r#"{"a":1}"#), &json(r#"{"a":2}"#), NAMES).unwrap_err();
         assert!(err.contains("-  \"a\": 1"), "{err}");
         assert!(err.contains("+  \"a\": 2"), "{err}");
+    }
+
+    #[test]
+    fn diff_output_sorts_keys() {
+        let err = compare(
+            &case(&[]),
+            &json(r#"{"b":1,"a":1}"#),
+            &json(r#"{"a":2,"b":1}"#),
+            NAMES,
+        )
+        .unwrap_err();
+        let a_pos = err.find("\"a\"").unwrap();
+        let b_pos = err.find("\"b\"").unwrap();
+        assert!(a_pos < b_pos, "{err}");
     }
 
     #[test]

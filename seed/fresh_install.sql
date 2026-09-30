@@ -4,7 +4,6 @@
 -- PostgreSQL database dump
 --
 
-\restrict Kfqu9Tqf4feGOD5U4xhZ9ewuWaTeMXjffyd8F8TildQZPxaQFetixifdE34ZTnT
 
 -- Dumped from database version 15.18 (Debian 15.18-1.pgdg12+1)
 -- Dumped by pg_dump version 15.18 (Debian 15.18-1.pgdg12+1)
@@ -3789,87 +3788,6 @@ COPY public.post_voting_votes (id, user_id, created_at, direction, votable_type,
 ALTER TABLE public.post_voting_votes ENABLE TRIGGER ALL;
 
 --
--- Data for Name: problem_check_trackers; Type: TABLE DATA; Schema: public; Owner: -
---
-
-ALTER TABLE public.problem_check_trackers DISABLE TRIGGER ALL;
-
-COPY public.problem_check_trackers (id, identifier, blips, last_run_at, next_run_at, last_success_at, last_problem_at, details, target, ignored_at) FROM stdin;
-1	email_sending_failures	0	2026-09-30 06:19:24.056969	2026-09-30 07:19:24.020181	2026-09-30 06:19:24.056969	\N	{}	__NULL__	\N
-4	upcoming_change_stable_opted_out	0	2026-09-30 06:19:24.116113	2026-09-30 07:19:23.908504	2026-09-30 06:19:24.116113	\N	{}	ai_bot_enable_docked_composer	\N
-6	upcoming_change_stable_opted_out	0	2026-09-30 06:19:24.29503	2026-09-30 07:19:24.23609	2026-09-30 06:19:24.29503	\N	{}	chat_pinned_messages	\N
-7	upcoming_change_stable_opted_out	0	2026-09-30 06:19:24.318197	2026-09-30 07:19:24.25425	2026-09-30 06:19:24.318197	\N	{}	composer_media_optimization_image_convert_enabled	\N
-3	twitter_login	0	2026-09-30 06:19:24.079015	2026-10-01 06:19:23.885218	2026-09-30 06:19:24.079015	\N	{}	__NULL__	\N
-8	upcoming_change_stable_opted_out	0	2026-09-30 06:19:24.332698	2026-09-30 07:19:24.280888	2026-09-30 06:19:24.332698	\N	{}	dashboard_improvements	\N
-9	upcoming_change_stable_opted_out	0	2026-09-30 06:19:24.388437	2026-09-30 07:19:24.302244	2026-09-30 06:19:24.388437	\N	{}	enable_ai_bot_starred_conversations	\N
-10	upcoming_change_stable_opted_out	0	2026-09-30 06:19:24.457364	2026-09-30 07:19:24.375504	2026-09-30 06:19:24.457364	\N	{}	enable_category_hashtag_cards	\N
-11	upcoming_change_stable_opted_out	0	2026-09-30 06:19:24.775491	2026-09-30 07:19:24.667964	2026-09-30 06:19:24.775491	\N	{}	enable_composer_redesign	\N
-12	upcoming_change_stable_opted_out	0	2026-09-30 06:19:24.837127	2026-09-30 07:19:24.685075	2026-09-30 06:19:24.837127	\N	{}	enable_composer_toolbar_customization	\N
-14	upcoming_change_stable_opted_out	0	2026-09-30 06:19:25.005981	2026-09-30 07:19:24.928823	2026-09-30 06:19:25.005981	\N	{}	enable_discourse_workflows	\N
-15	upcoming_change_stable_opted_out	0	2026-09-30 06:19:25.033222	2026-09-30 07:19:24.953786	2026-09-30 06:19:25.033222	\N	{}	enable_events_category_type_setup	\N
-16	upcoming_change_stable_opted_out	0	2026-09-30 06:19:25.19038	2026-09-30 07:19:25.125313	2026-09-30 06:19:25.19038	\N	{}	enable_generated_llms_txt	\N
-18	upcoming_change_stable_opted_out	0	2026-09-30 06:19:25.257956	2026-09-30 07:19:25.199004	2026-09-30 06:19:25.257956	\N	{}	enable_ideas_category_type_setup	\N
-19	upcoming_change_stable_opted_out	0	2026-09-30 06:19:25.263756	2026-09-30 07:19:25.227652	2026-09-30 06:19:25.263756	\N	{}	enable_improved_event_reminders	\N
-20	upcoming_change_stable_opted_out	0	2026-09-30 06:19:25.29786	2026-09-30 07:19:25.240508	2026-09-30 06:19:25.29786	\N	{}	enable_invite_modal_with_roles	\N
-21	upcoming_change_stable_opted_out	0	2026-09-30 06:19:25.437036	2026-09-30 07:19:25.387304	2026-09-30 06:19:25.437036	\N	{}	enable_local_logins_via_code	\N
-17	upcoming_change_stable_opted_out	0	2026-09-30 06:19:25.34144	2026-09-30 07:19:25.286276	2026-09-30 06:19:25.34144	\N	{}	enable_horizon_high_context_topic_cards	\N
-22	upcoming_change_stable_opted_out	0	2026-09-30 06:19:25.520994	2026-09-30 07:19:25.458275	2026-09-30 06:19:25.520994	\N	{}	enable_markdown_endpoints	\N
-23	upcoming_change_stable_opted_out	0	2026-09-30 06:19:25.537426	2026-09-30 07:19:25.480972	2026-09-30 06:19:25.537426	\N	{}	enable_new_chat_reactions_popup	\N
-24	upcoming_change_stable_opted_out	0	2026-09-30 06:19:25.568722	2026-09-30 07:19:25.511806	2026-09-30 06:19:25.568722	\N	{}	enable_new_checkbox_style	\N
-25	upcoming_change_stable_opted_out	0	2026-09-30 06:19:25.599839	2026-09-30 07:19:25.563849	2026-09-30 06:19:25.599839	\N	{}	enable_new_defaults_for_trust_level_3_requirements	\N
-26	upcoming_change_stable_opted_out	0	2026-09-30 06:19:25.68702	2026-09-30 07:19:25.642676	2026-09-30 06:19:25.68702	\N	{}	enable_new_post_reactions_menu	\N
-43	content_security_policy_disabled	0	2026-09-30 06:19:25.713033	\N	2026-09-30 06:19:25.713033	\N	{}	__NULL__	\N
-27	upcoming_change_stable_opted_out	0	2026-09-30 06:19:25.755367	2026-09-30 07:19:25.706129	2026-09-30 06:19:25.755367	\N	{}	enable_new_post_reply_count_position	\N
-28	upcoming_change_stable_opted_out	0	2026-09-30 06:19:25.761188	2026-09-30 07:19:25.734057	2026-09-30 06:19:25.761188	\N	{}	enable_simplified_category_creation	\N
-30	upcoming_change_stable_opted_out	0	2026-09-30 06:19:25.872374	2026-09-30 07:19:25.816631	2026-09-30 06:19:25.872374	\N	{}	enable_support_category_type_setup	\N
-44	email_polling_errored_recently	0	2026-09-30 06:19:25.890124	\N	2026-09-30 06:19:25.890124	\N	{}	__NULL__	\N
-31	upcoming_change_stable_opted_out	0	2026-09-30 06:19:25.902856	2026-09-30 07:19:25.853801	2026-09-30 06:19:25.902856	\N	{}	enable_unified_new	\N
-32	upcoming_change_stable_opted_out	0	2026-09-30 06:19:25.97403	2026-09-30 07:19:25.927827	2026-09-30 06:19:25.97403	\N	{}	floating_dismiss_topics_on_mobile	\N
-33	upcoming_change_stable_opted_out	0	2026-09-30 06:19:25.979846	2026-09-30 07:19:25.949107	2026-09-30 06:19:25.979846	\N	{}	granular_anonymous_and_logged_in_groups_permissions	\N
-34	upcoming_change_stable_opted_out	0	2026-09-30 06:19:26.01097	2026-09-30 07:19:25.959398	2026-09-30 06:19:26.01097	\N	{}	improved_crawler_detection	\N
-45	facebook_config	0	2026-09-30 06:19:26.071924	\N	2026-09-30 06:19:26.071924	\N	{}	__NULL__	\N
-35	upcoming_change_stable_opted_out	0	2026-09-30 06:19:26.125201	2026-09-30 07:19:26.08007	2026-09-30 06:19:26.125201	\N	{}	modernize_foundation_theme	\N
-36	upcoming_change_stable_opted_out	0	2026-09-30 06:19:26.208907	2026-09-30 07:19:26.127546	2026-09-30 06:19:26.208907	\N	{}	prioritize_recently_used_tags	\N
-37	upcoming_change_stable_opted_out	0	2026-09-30 06:19:26.27154	2026-09-30 07:19:26.200343	2026-09-30 06:19:26.27154	\N	{}	remove_and_replace_uncategorized	\N
-39	upcoming_change_stable_opted_out	0	2026-09-30 06:19:26.304851	2026-09-30 07:19:26.237282	2026-09-30 06:19:26.304851	\N	{}	reporting_improvements	\N
-46	failing_emails	0	2026-09-30 06:19:26.312061	\N	2026-09-30 06:19:26.312061	\N	{}	__NULL__	\N
-40	upcoming_change_stable_opted_out	0	2026-09-30 06:19:26.388177	2026-09-30 07:19:26.354432	2026-09-30 06:19:26.388177	\N	{}	sidebar_user_navigation	\N
-41	upcoming_change_stable_opted_out	0	2026-09-30 06:19:26.454084	2026-09-30 07:19:26.415966	2026-09-30 06:19:26.454084	\N	{}	update_pending_users_reminder_default	\N
-48	github_config	0	2026-09-30 06:19:26.631237	\N	2026-09-30 06:19:26.631237	\N	{}	__NULL__	\N
-49	google_analytics_version	0	2026-09-30 06:19:26.666864	\N	2026-09-30 06:19:26.666864	\N	{}	__NULL__	\N
-29	upcoming_change_stable_opted_out	0	2026-09-30 06:19:25.775714	2026-09-30 07:19:25.742057	2026-09-30 06:19:25.775714	\N	{}	enable_solved_shared_issues	\N
-38	upcoming_change_stable_opted_out	0	2026-09-30 06:19:26.265057	2026-09-30 07:19:26.177905	2026-09-30 06:19:26.265057	\N	{}	rename_faq_to_guidelines	\N
-42	upcoming_change_stable_opted_out	0	2026-09-30 06:19:26.475738	2026-09-30 07:19:26.4335	2026-09-30 06:19:26.475738	\N	{}	voice_enabled	\N
-47	force_https	2	2026-09-30 06:19:26.483263	\N	\N	2026-09-30 06:19:26.483263	{"base_path":""}	__NULL__	\N
-50	google_oauth2_config	0	2026-09-30 06:19:26.70104	\N	2026-09-30 06:19:26.70104	\N	{}	__NULL__	\N
-51	host_names	2	2026-09-30 06:19:26.742688	\N	\N	2026-09-30 06:19:26.742688	{"base_path":""}	__NULL__	\N
-52	image_magick	0	2026-09-30 06:19:27.057546	\N	2026-09-30 06:19:27.057546	\N	{}	__NULL__	\N
-53	landlock	0	2026-09-30 06:19:27.255699	\N	2026-09-30 06:19:27.255699	\N	{}	__NULL__	\N
-54	missing_aws_sns_topic_arn	0	2026-09-30 06:19:27.367769	\N	2026-09-30 06:19:27.367769	\N	{}	__NULL__	\N
-55	missing_mailgun_api_key	0	2026-09-30 06:19:27.619756	\N	2026-09-30 06:19:27.619756	\N	{}	__NULL__	\N
-56	out_of_date_themes	0	2026-09-30 06:19:27.837947	\N	2026-09-30 06:19:27.837947	\N	{}	__NULL__	\N
-57	qq_mail_smtp	0	2026-09-30 06:19:27.948139	\N	2026-09-30 06:19:27.948139	\N	{}	__NULL__	\N
-2	github_onebox_backoff	0	2026-09-30 06:19:24.027133	2026-09-30 06:29:23.858475	2026-09-30 06:19:24.027133	\N	{}	__NULL__	\N
-5	upcoming_change_stable_opted_out	0	2026-09-30 06:19:24.045645	2026-09-30 07:19:23.9349	2026-09-30 06:19:24.045645	\N	{}	boards_enabled	\N
-13	upcoming_change_stable_opted_out	0	2026-09-30 06:19:24.945844	2026-09-30 07:19:24.773129	2026-09-30 06:19:24.945844	\N	{}	enable_discourse_reactions_by_default	\N
-58	rails_env	2	2026-09-30 06:19:28.090345	\N	\N	2026-09-30 06:19:28.090345	{"env":"development","base_path":""}	__NULL__	\N
-59	ram	0	2026-09-30 06:19:28.631127	\N	2026-09-30 06:19:28.631127	\N	{}	__NULL__	\N
-60	s3_backup_config	0	2026-09-30 06:19:28.96973	\N	2026-09-30 06:19:28.96973	\N	{}	__NULL__	\N
-61	s3_cdn	0	2026-09-30 06:19:29.331266	\N	2026-09-30 06:19:29.331266	\N	{}	__NULL__	\N
-62	s3_upload_config	0	2026-09-30 06:19:29.853049	\N	2026-09-30 06:19:29.853049	\N	{}	__NULL__	\N
-63	sidekiq_check	0	2026-09-30 06:19:30.125478	\N	2026-09-30 06:19:30.125478	\N	{}	__NULL__	\N
-64	subfolder_ends_in_slash	0	2026-09-30 06:19:30.461931	\N	2026-09-30 06:19:30.461931	\N	{}	__NULL__	\N
-65	starttls_disabled	0	2026-09-30 06:19:30.725353	\N	2026-09-30 06:19:30.725353	\N	{}	__NULL__	\N
-66	translation_overrides	0	2026-09-30 06:19:31.917446	\N	2026-09-30 06:19:31.917446	\N	{}	__NULL__	\N
-67	twitter_config	0	2026-09-30 06:19:32.444534	\N	2026-09-30 06:19:32.444534	\N	{}	__NULL__	\N
-68	unreachable_themes	0	2026-09-30 06:19:32.716027	\N	2026-09-30 06:19:32.716027	\N	{}	__NULL__	\N
-69	watched_words	0	2026-09-30 06:19:33.40046	\N	2026-09-30 06:19:33.40046	\N	{}	__NULL__	\N
-\.
-
-
-ALTER TABLE public.problem_check_trackers ENABLE TRIGGER ALL;
-
---
 -- Data for Name: published_pages; Type: TABLE DATA; Schema: public; Owner: -
 --
 
@@ -4016,174 +3934,6 @@ COPY public.reviewable_scores (id, reviewable_id, user_id, reviewable_score_type
 
 
 ALTER TABLE public.reviewable_scores ENABLE TRIGGER ALL;
-
---
--- Data for Name: scheduler_stats; Type: TABLE DATA; Schema: public; Owner: -
---
-
-ALTER TABLE public.scheduler_stats DISABLE TRIGGER ALL;
-
-COPY public.scheduler_stats (id, name, hostname, pid, duration_ms, live_slots_start, live_slots_finish, started_at, success, error) FROM stdin;
-1	Jobs::DiscourseWorkflows::PurgeOldExecutions	buildkitsandbox	967	147	1072243	1155924	2026-09-27 21:00:30.973776	t	\N
-2	Jobs::DiscourseWorkflows::CheckSchedules	buildkitsandbox	967	118	1300527	1312645	2026-09-27 21:00:32.9817	t	\N
-3	Jobs::CleanDismissedTopicUsers	buildkitsandbox	967	53	1323307	1327112	2026-09-27 21:00:37.996466	t	\N
-4	Jobs::PurgeUnactivated	buildkitsandbox	967	463	1336334	1351020	2026-09-27 21:00:45.019317	t	\N
-5	Jobs::DirectoryRefresh	buildkitsandbox	967	700	1272802	1320292	2026-09-27 21:00:50.061775	t	\N
-6	Jobs::PatreonUpdateTokens	buildkitsandbox	967	27	1347261	1348854	2026-09-27 21:00:52.068581	t	\N
-7	Jobs::BackfillNestedReplyStats	buildkitsandbox	967	27	1359246	1361128	2026-09-27 21:00:53.071566	t	\N
-8	Jobs::DiscourseCalendar::UpdateHolidayUsernames	buildkitsandbox	967	12	1366883	1368314	2026-09-27 21:00:59.166067	t	\N
-9	Jobs::CleanUpUnsubscribeKeys	buildkitsandbox	967	20	1374637	1376840	2026-09-27 21:01:01.28789	t	\N
-10	Jobs::DiscourseWorkflows::ExpireWaitingExecutions	buildkitsandbox	967	31	1380533	1383903	2026-09-27 21:01:02.292329	t	\N
-11	Jobs::ActivationReminderEmails	buildkitsandbox	967	44	1387187	1390876	2026-09-27 21:01:03.298372	t	\N
-13	Jobs::Heartbeat	buildkitsandbox	967	69	1221444	1227982	2026-09-27 21:01:07.482239	t	\N
-14	Jobs::UpdateScoresForToday	buildkitsandbox	967	90	1315922	1321268	2026-09-27 21:01:08.51765	t	\N
-12	Jobs::RunProblemChecks	buildkitsandbox	967	4567	1394494	1372681	2026-09-27 21:01:06.307972	t	\N
-15	Jobs::PeriodicalUpdates	buildkitsandbox	967	386	1344444	1301581	2026-09-27 21:01:11.535682	t	\N
-16	Jobs::CleanUpUnusedUserApiKeys	buildkitsandbox	967	55	1289893	1296070	2026-09-27 21:01:12.538341	t	\N
-17	Jobs::OldKeysReminder	buildkitsandbox	967	16	1306346	1307991	2026-09-27 21:01:13.583397	t	\N
-18	Jobs::CategoryStats	buildkitsandbox	967	\N	1311781	\N	2026-09-27 21:01:16.593565	\N	\N
-34	Jobs::PurgeUnactivated	12fc6b9ce746	890	529	1070302	1151317	2026-09-30 06:19:16.159074	t	\N
-35	Jobs::DirectoryRefresh	12fc6b9ce746	890	175	1297312	1324428	2026-09-30 06:19:16.704099	t	\N
-36	Jobs::PatreonUpdateTokens	12fc6b9ce746	890	17	1327308	1328816	2026-09-30 06:19:17.710715	t	\N
-37	Jobs::BackfillNestedReplyStats	12fc6b9ce746	890	20	1332392	1334161	2026-09-30 06:19:18.71561	t	\N
-38	Jobs::DiscourseCalendar::UpdateHolidayUsernames	12fc6b9ce746	890	14	1337369	1338821	2026-09-30 06:19:19.720439	t	\N
-39	Jobs::CleanUpUnsubscribeKeys	12fc6b9ce746	890	31	1342453	1345284	2026-09-30 06:19:20.724981	t	\N
-40	Jobs::DiscourseWorkflows::ExpireWaitingExecutions	12fc6b9ce746	890	79	1342248	1338339	2026-09-30 06:19:21.729713	t	\N
-41	Jobs::ActivationReminderEmails	12fc6b9ce746	890	58	1103775	1107119	2026-09-30 06:19:22.734307	t	\N
-43	Jobs::Heartbeat	12fc6b9ce746	890	296	1198306	1216246	2026-09-30 06:19:24.955832	t	\N
-44	Jobs::UpdateScoresForToday	12fc6b9ce746	890	165	1286650	1298277	2026-09-30 06:19:25.955645	t	\N
-46	Jobs::CleanUpUnusedUserApiKeys	12fc6b9ce746	890	217	1296399	1292006	2026-09-30 06:19:28.047655	t	\N
-45	Jobs::PeriodicalUpdates	12fc6b9ce746	890	2372	1322024	1267994	2026-09-30 06:19:27.028621	t	\N
-47	Jobs::OldKeysReminder	12fc6b9ce746	890	372	1262936	1279430	2026-09-30 06:19:29.258989	t	\N
-49	Jobs::RecalculateNestedHotScores	12fc6b9ce746	890	366	1355397	1370676	2026-09-30 06:19:31.643698	t	\N
-50	Jobs::CheckOutOfDateThemes	12fc6b9ce746	890	414	1420175	1416425	2026-09-30 06:19:32.844359	t	\N
-42	Jobs::RunProblemChecks	12fc6b9ce746	890	9848	1110145	1388452	2026-09-30 06:19:23.744186	t	\N
-48	Jobs::CategoryStats	12fc6b9ce746	890	3555	1294376	1376031	2026-09-30 06:19:30.246204	t	\N
-51	Jobs::CleanUpBookmarks	12fc6b9ce746	890	241	1368165	1356653	2026-09-30 06:19:33.880736	t	\N
-52	Jobs::DiscourseReactions::ScheduledLikeSynchronizer	12fc6b9ce746	890	405	1235837	1269338	2026-09-30 06:19:34.872163	t	\N
-53	Jobs::CleanUpSearchLogs	12fc6b9ce746	890	70	1278751	1283947	2026-09-30 06:19:35.876782	t	\N
-54	Jobs::EnsureS3UploadsExistence	12fc6b9ce746	890	19	1288518	1290113	2026-09-30 06:19:36.884887	t	\N
-55	Jobs::DeleteHiddenQueries	12fc6b9ce746	890	14	1293453	1294902	2026-09-30 06:19:37.891195	t	\N
-56	Jobs::WarmDashboardReports	12fc6b9ce746	890	17	1298456	1300477	2026-09-30 06:19:38.896453	t	\N
-57	Jobs::DiscourseWorkflows::CheckSchedules	12fc6b9ce746	890	253	1304257	1320865	2026-09-30 06:19:39.901705	t	\N
-58	Jobs::CleanUpAssociatedGroups	12fc6b9ce746	890	87	1141459	1147642	2026-09-30 06:19:41.442612	t	\N
-59	Jobs::InvalidateInactiveAdmins	12fc6b9ce746	890	39	1150789	1153625	2026-09-30 06:19:42.448062	t	\N
-60	Jobs::CleanUpBrowserPageviewEvents	12fc6b9ce746	890	89	1156767	1161352	2026-09-30 06:19:43.45473	t	\N
-62	Jobs::Chat::AutoJoinUsers	12fc6b9ce746	890	63	1247219	1250611	2026-09-30 06:19:45.468915	t	\N
-61	Jobs::EnsureDbConsistency	12fc6b9ce746	890	1448	1164351	1256536	2026-09-30 06:19:44.462184	t	\N
-63	Jobs::CleanUpUserAuthTokens	12fc6b9ce746	890	114	1259942	1264757	2026-09-30 06:19:46.476221	t	\N
-64	Jobs::EnqueueOnceoffs	12fc6b9ce746	890	65	1269243	1273640	2026-09-30 06:19:47.630264	t	\N
-65	Jobs::PatreonSyncPatronsToGroups	12fc6b9ce746	890	28	1302077	1303761	2026-09-30 06:19:48.638628	t	\N
-66	Jobs::CleanUpPostReplyKeys	12fc6b9ce746	890	49	1306989	1310451	2026-09-30 06:19:49.644358	t	\N
-67	Jobs::CleanUpEmailTokens	12fc6b9ce746	890	46	1313628	1317164	2026-09-30 06:19:50.649391	t	\N
-68	Jobs::EnqueueDigestEmails	12fc6b9ce746	890	38	1320277	1323994	2026-09-30 06:19:51.653358	t	\N
-69	DiscourseGithubPlugin::UpdateJob	12fc6b9ce746	890	18	1327170	1328658	2026-09-30 06:19:52.658196	t	\N
-70	Jobs::DestroyOldHiddenPosts	12fc6b9ce746	890	55	1333489	1337683	2026-09-30 06:19:53.776851	t	\N
-71	Jobs::CleanUpUserApiKeysMaxLife	12fc6b9ce746	890	14	1340918	1342551	2026-09-30 06:19:54.781374	t	\N
-72	Jobs::CreateMissingAvatars	12fc6b9ce746	890	70	1345976	1354835	2026-09-30 06:19:55.78461	t	\N
-73	Jobs::TopRefreshOlder	12fc6b9ce746	890	131	1359488	1364784	2026-09-30 06:19:56.790196	t	\N
-74	Jobs::ProcessUserNotificationSchedules	12fc6b9ce746	890	40	1367444	1370957	2026-09-30 06:19:57.793808	t	\N
-75	Jobs::DestroyOldDeletionStubs	12fc6b9ce746	890	33	1366073	1362030	2026-09-30 06:19:58.79844	t	\N
-77	Jobs::PurgeOldNotifications	12fc6b9ce746	890	20	1242525	1244232	2026-09-30 06:20:00.959161	t	\N
-78	Jobs::BadgeGrant	12fc6b9ce746	890	246	1247632	1275275	2026-09-30 06:20:01.966799	t	\N
-79	Jobs::DiscourseCalendar::MonitorEventDates	12fc6b9ce746	890	69	1334513	1339938	2026-09-30 06:20:02.972232	t	\N
-80	Jobs::UnsilenceUsers	12fc6b9ce746	890	28	1342965	1345345	2026-09-30 06:20:03.979465	t	\N
-139	Jobs::CleanUpCrawlerStats	12fc6b9ce746	890	10	1264964	1268625	2026-09-30 06:21:03.914664	t	\N
-76	Jobs::CheckNewFeatures	12fc6b9ce746	890	4196	1221719	1349108	2026-09-30 06:19:59.953502	f	Jobs::HandledExceptionWrapper: Wrapped Excon::Error::NotFound: Expected([200]) <=> Actual(404 Not Found)\n /var/www/discourse/app/jobs/base.rb:339:in 'Jobs::Base#perform'\n/var/www/discourse/app/jobs/base.rb:375:in 'Jobs::Scheduled#perform'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/mini_scheduler-0.20.0/lib/mini_scheduler/manager.rb:137:in 'MiniScheduler::Manager::Runner#process_queue'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/mini_scheduler-0.20.0/lib/mini_scheduler/manager.rb:77:in 'MiniScheduler::Manager::Runner#worker_loop'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/mini_scheduler-0.20.0/lib/mini_scheduler/manager.rb:63:in 'block (2 levels) in MiniScheduler::Manager::Runner#ensure_worker_threads'
-81	Jobs::MigrateUploadScheme	12fc6b9ce746	890	15	1352343	1353774	2026-09-30 06:20:04.98337	t	\N
-82	Jobs::PendingQueuedPostsReminder	12fc6b9ce746	890	66	1358673	1362347	2026-09-30 06:20:06.106427	t	\N
-83	Jobs::CleanUpUnusedApiKeys	12fc6b9ce746	890	38	1366668	1370733	2026-09-30 06:20:07.111285	t	\N
-84	Jobs::CallDiscourseHub	12fc6b9ce746	890	350	1374491	1409118	2026-09-30 06:20:08.115051	t	\N
-85	Jobs::RegenerateSitemaps	12fc6b9ce746	890	121	1411928	1426634	2026-09-30 06:20:09.120661	t	\N
-86	Jobs::AboutStats	12fc6b9ce746	890	200	1423732	1401571	2026-09-30 06:20:10.124572	t	\N
-87	Jobs::GrantNewUserOfTheMonthBadges	12fc6b9ce746	890	39	1388319	1381456	2026-09-30 06:20:11.128675	t	\N
-88	Jobs::ProcessBadgeBacklog	12fc6b9ce746	890	343	1222425	1259034	2026-09-30 06:20:12.233223	t	\N
-89	Jobs::DiscourseWorkflows::PurgeExpiredWebhookTestListeners	12fc6b9ce746	890	157	1262561	1273051	2026-09-30 06:20:13.237684	t	\N
-90	Jobs::AggregateWebHooksEvents	12fc6b9ce746	890	35	1276078	1279525	2026-09-30 06:20:14.24251	t	\N
-91	Jobs::IgnoredUsersSummary	12fc6b9ce746	890	40	1345955	1349071	2026-09-30 06:20:15.258299	t	\N
-92	Jobs::DiscourseAutomation::StalledWikiTracker	12fc6b9ce746	890	34	1359715	1363790	2026-09-30 06:20:16.260017	t	\N
-93	Jobs::FixUserUsernamesAndGroupsNamesClash	12fc6b9ce746	890	22	1366966	1369379	2026-09-30 06:20:17.264094	t	\N
-94	Jobs::DiscourseCalendar::CreateHolidayEvents	12fc6b9ce746	890	17	1374408	1376000	2026-09-30 06:20:18.379124	t	\N
-95	Jobs::CleanUpInactiveUsers	12fc6b9ce746	890	15	1379424	1381057	2026-09-30 06:20:19.382538	t	\N
-96	Jobs::ReviewablePriorities	12fc6b9ce746	890	21	1384337	1386775	2026-09-30 06:20:20.386781	t	\N
-97	Jobs::EnqueueSuspectUsers	12fc6b9ce746	890	53	1390441	1394571	2026-09-30 06:20:21.390906	t	\N
-98	Jobs::AutoQueueHandler	12fc6b9ce746	890	22	1397597	1400198	2026-09-30 06:20:22.39572	t	\N
-99	Jobs::CleanUpAssociatedAccounts	12fc6b9ce746	890	30	1403785	1406987	2026-09-30 06:20:23.40068	t	\N
-100	Jobs::CleanUpUploads	12fc6b9ce746	890	62	1411449	1417748	2026-09-30 06:20:24.507368	t	\N
-101	Jobs::DiscourseCalendar::DeleteExpiredEventPosts	12fc6b9ce746	890	85	1424840	1420633	2026-09-30 06:20:25.552652	t	\N
-102	Jobs::PurgeOldMiniSchedulerStat	12fc6b9ce746	890	15	1385748	1388105	2026-09-30 06:20:26.543145	t	\N
-103	Jobs::FlushBrowserPageviewEvents	12fc6b9ce746	890	14	1379888	1381569	2026-09-30 06:20:27.548131	t	\N
-104	Jobs::TopRefreshToday	12fc6b9ce746	890	57	1373391	1365696	2026-09-30 06:20:28.551805	t	\N
-105	Jobs::CleanUpMcpRecords	12fc6b9ce746	890	68	1368543	1352610	2026-09-30 06:20:29.55678	t	\N
-106	Jobs::MaintainBrowserPageviewRollups	12fc6b9ce746	890	95	1260241	1271378	2026-09-30 06:20:30.608978	t	\N
-107	Jobs::GrantAnniversaryBadges	12fc6b9ce746	890	29	1274258	1277350	2026-09-30 06:20:31.614478	t	\N
-108	Jobs::MaintainCategoryActivityDailyRollups	12fc6b9ce746	890	73	1280612	1289533	2026-09-30 06:20:32.616782	t	\N
-109	Jobs::CreateRecentPostSearchIndexes	12fc6b9ce746	890	30	1292787	1296027	2026-09-30 06:20:33.622654	t	\N
-110	Jobs::Chat::EmailNotifications	12fc6b9ce746	890	92	1299410	1302321	2026-09-30 06:20:34.629126	t	\N
-112	Jobs::DiscourseRssPolling::PollAllFeeds	12fc6b9ce746	890	61	1189878	1197047	2026-09-30 06:20:36.824155	t	\N
-113	Jobs::PurgeOldWebHookEvents	12fc6b9ce746	890	66	1363871	1372158	2026-09-30 06:20:37.836968	t	\N
-114	Jobs::NotifyAdminsOfAvailableUpcomingChanges	12fc6b9ce746	890	210	1371753	1372108	2026-09-30 06:20:38.844518	t	\N
-111	Jobs::CheckUpcomingChanges	12fc6b9ce746	890	3748	1305040	1452118	2026-09-30 06:20:35.634497	t	\N
-115	Jobs::CleanUpApiKeysMaxLife	12fc6b9ce746	890	11	1454346	1456223	2026-09-30 06:20:39.845678	t	\N
-116	Jobs::ClearExpiredImpersonations	12fc6b9ce746	890	12	1328790	1331118	2026-09-30 06:20:40.846707	t	\N
-117	Jobs::PendingUsersReminder	12fc6b9ce746	890	4	1326873	1328505	2026-09-30 06:20:41.84813	t	\N
-118	Jobs::MaintainUserVisitDailyRollups	12fc6b9ce746	890	13	1304934	1309178	2026-09-30 06:20:42.851075	t	\N
-119	Jobs::CleanUpExports	12fc6b9ce746	890	10	1312208	1316490	2026-09-30 06:20:43.853094	t	\N
-120	Jobs::CleanupRedeliveringWebHookEvents	12fc6b9ce746	890	24	1319517	1329223	2026-09-30 06:20:44.855103	t	\N
-121	Jobs::UpdateHeatSettings	12fc6b9ce746	890	8	1332539	1335070	2026-09-30 06:20:45.857195	t	\N
-122	Jobs::UpdateTopicHotScores	12fc6b9ce746	890	16	1338852	1343670	2026-09-30 06:20:46.858638	t	\N
-123	Jobs::NotifyAdminsOfProblems	12fc6b9ce746	890	6	1346608	1349860	2026-09-30 06:20:47.860409	t	\N
-124	Jobs::BackfillDominantColors	12fc6b9ce746	890	505	1354545	1367326	2026-09-30 06:20:48.862357	t	\N
-125	Jobs::DiscourseAutomation::Tracker	12fc6b9ce746	890	4	1370376	1372007	2026-09-30 06:20:49.863772	t	\N
-126	Jobs::PurgeDeletedUploads	12fc6b9ce746	890	3	1375279	1376959	2026-09-30 06:20:50.865681	t	\N
-127	Jobs::ReindexSearch	12fc6b9ce746	890	98	1380329	1464462	2026-09-30 06:20:51.867797	t	\N
-128	Jobs::DropBackupSchema	12fc6b9ce746	890	7	1467119	1470742	2026-09-30 06:20:52.86936	t	\N
-129	Jobs::PresenceChannelAutoLeave	12fc6b9ce746	890	4	1531516	1533037	2026-09-30 06:20:53.872077	t	\N
-130	Jobs::UpdateScoresForTenDays	12fc6b9ce746	890	3	1537928	1539552	2026-09-30 06:20:54.873072	t	\N
-131	Jobs::CheckTranslationOverrides	12fc6b9ce746	890	6	1543009	1547018	2026-09-30 06:20:55.873984	t	\N
-132	Jobs::RedeliverWebHookEvents	12fc6b9ce746	890	6	1551884	1555452	2026-09-30 06:20:56.875146	t	\N
-133	Jobs::PollMailbox	12fc6b9ce746	890	4	1558794	1560487	2026-09-30 06:20:57.876964	t	\N
-134	Jobs::CleanUpUnmatchedEmails	12fc6b9ce746	890	12	1553518	1544729	2026-09-30 06:20:58.878712	t	\N
-135	Jobs::CleanupProblemCheckTrackers	12fc6b9ce746	890	30	1536589	1517524	2026-09-30 06:20:59.880699	t	\N
-136	Jobs::CleanUpDrafts	12fc6b9ce746	890	14	1243483	1248507	2026-09-30 06:21:00.910779	t	\N
-137	Jobs::CleanUpEmailLogs	12fc6b9ce746	890	16	1251684	1256059	2026-09-30 06:21:01.912689	t	\N
-138	Jobs::PurgeOldWebHookEventsDailyAggregate	12fc6b9ce746	890	5	1259086	1261384	2026-09-30 06:21:02.913825	t	\N
-140	Jobs::DiscourseAutomation::StalledTopicTracker	12fc6b9ce746	890	5	1323732	1325856	2026-09-30 06:21:04.917622	t	\N
-141	Jobs::PurgeExpiredIgnoredUsers	12fc6b9ce746	890	9	1329508	1332231	2026-09-30 06:21:05.919048	t	\N
-142	Jobs::Chat::PeriodicalUpdates	12fc6b9ce746	890	13	1338536	1343514	2026-09-30 06:21:06.936472	t	\N
-143	Jobs::BookmarkReminderNotifications	12fc6b9ce746	890	6	1346175	1349111	2026-09-30 06:21:07.938997	t	\N
-144	Jobs::CleanUpTags	12fc6b9ce746	890	3	1352521	1354144	2026-09-30 06:21:08.939913	t	\N
-145	Jobs::CalculateScores	12fc6b9ce746	890	6	1357474	1360040	2026-09-30 06:21:09.942386	t	\N
-146	Jobs::TopicTimerEnqueuer	12fc6b9ce746	890	13	1362846	1366117	2026-09-30 06:21:10.944937	t	\N
-147	Jobs::CleanUpUnmatchedIPs	12fc6b9ce746	890	12	1369139	1373432	2026-09-30 06:21:11.947282	t	\N
-148	Jobs::CleanUpStylesheetCache	12fc6b9ce746	890	8	1378174	1380712	2026-09-30 06:21:12.960543	t	\N
-149	Jobs::CleanUpEmailChangeRequests	12fc6b9ce746	890	13	1384137	1387990	2026-09-30 06:21:13.962283	t	\N
-150	Jobs::EnsureBadgesConsistency	12fc6b9ce746	890	7	1391194	1393467	2026-09-30 06:21:14.964535	t	\N
-151	Jobs::PendingReviewablesReminder	12fc6b9ce746	890	24	1399941	1409974	2026-09-30 06:21:15.966855	t	\N
-152	Jobs::CleanUpEmailLoginCodes	12fc6b9ce746	890	19	1463952	1467404	2026-09-30 06:21:16.968103	t	\N
-153	Jobs::ProcessShelvedNotifications	12fc6b9ce746	890	13	1470431	1473444	2026-09-30 06:21:17.971365	t	\N
-154	Jobs::CleanUpUnusedStagedUsers	12fc6b9ce746	890	5	1207716	1210708	2026-09-30 06:21:19.07579	t	\N
-155	Jobs::DeleteRejectedEmails	12fc6b9ce746	890	21	1213734	1217588	2026-09-30 06:21:20.077082	t	\N
-156	Jobs::UpdateAnimatedUploads	12fc6b9ce746	890	4	1220765	1223163	2026-09-30 06:21:21.078815	t	\N
-157	Jobs::DetectCrawlerPageviews	12fc6b9ce746	890	4	1226481	1227779	2026-09-30 06:21:22.081094	t	\N
-158	Jobs::DiscoursePolicy::CheckPolicy	12fc6b9ce746	890	11	1231545	1235382	2026-09-30 06:21:23.082531	t	\N
-159	Jobs::CleanUpUnusedRegisteredUserApiKeyClients	12fc6b9ce746	890	9	1238042	1241905	2026-09-30 06:21:24.084601	t	\N
-160	Jobs::DiscourseWorkflows::CheckStaleTopics	12fc6b9ce746	890	7	1246663	1249587	2026-09-30 06:21:25.09847	t	\N
-161	Jobs::Chat::DeleteOldMessages	12fc6b9ce746	890	15	1252831	1257303	2026-09-30 06:21:26.100892	t	\N
-162	Jobs::ScheduleBackup	12fc6b9ce746	890	152	1261513	1295579	2026-09-30 06:21:27.10271	t	\N
-163	Jobs::Tl3Promotions	12fc6b9ce746	890	45	1342845	1372098	2026-09-30 06:21:28.104071	t	\N
-164	Jobs::RebuildCategoryActivityDailyRollups	12fc6b9ce746	890	13	1375533	1382648	2026-09-30 06:21:29.105582	t	\N
-165	Jobs::DiscourseWorkflows::PurgeOldExecutions	12fc6b9ce746	890	5	1386051	1388282	2026-09-30 06:21:30.107296	t	\N
-166	Jobs::CleanDismissedTopicUsers	12fc6b9ce746	890	13	1221869	1225435	2026-09-30 06:21:31.131981	t	\N
-167	Jobs::DiscourseWorkflows::ExpireWaitingExecutions	12fc6b9ce746	890	8	1228551	1230932	2026-09-30 06:21:32.134405	t	\N
-168	Jobs::RecalculateNestedHotScores	12fc6b9ce746	890	5	1234545	1236272	2026-09-30 06:21:33.136269	t	\N
-169	Jobs::DiscourseWorkflows::CheckSchedules	12fc6b9ce746	890	6	1239630	1242353	2026-09-30 06:21:34.137353	t	\N
-170	Jobs::DiscourseCalendar::MonitorEventDates	12fc6b9ce746	890	7	1245585	1249523	2026-09-30 06:21:35.139495	t	\N
-171	Jobs::ProcessBadgeBacklog	12fc6b9ce746	890	22	1252758	1271535	2026-09-30 06:21:36.141632	t	\N
-\.
-
-
-ALTER TABLE public.scheduler_stats ENABLE TRIGGER ALL;
 
 --
 -- Data for Name: schema_migration_details; Type: TABLE DATA; Schema: public; Owner: -
@@ -7500,12 +7250,12 @@ ALTER TABLE public.topic_groups ENABLE TRIGGER ALL;
 ALTER TABLE public.topic_hot_scores DISABLE TRIGGER ALL;
 
 COPY public.topic_hot_scores (id, topic_id, score, recent_likes, recent_posters, recent_first_bumped_at, created_at, updated_at) FROM stdin;
-4	1	0	0	0	\N	2026-09-30 06:20:46.862926	2026-09-30 06:20:46.862926
-3	2	0	0	0	\N	2026-09-30 06:20:46.862926	2026-09-30 06:20:46.862926
-2	3	0	0	0	\N	2026-09-30 06:20:46.862926	2026-09-30 06:20:46.862926
-6	4	0	0	0	\N	2026-09-30 06:20:46.862926	2026-09-30 06:20:46.862926
-1	5	0	0	0	\N	2026-09-30 06:20:46.862926	2026-09-30 06:20:46.862926
-5	6	0	0	0	\N	2026-09-30 06:20:46.862926	2026-09-30 06:20:46.862926
+4	1	0	0	0	\N	2026-09-30 06:20:46.862926	2026-09-30 06:30:20.209743
+3	2	0	0	0	\N	2026-09-30 06:20:46.862926	2026-09-30 06:30:20.209743
+2	3	0	0	0	\N	2026-09-30 06:20:46.862926	2026-09-30 06:30:20.209743
+6	4	0	0	0	\N	2026-09-30 06:20:46.862926	2026-09-30 06:30:20.209743
+1	5	0	0	0	\N	2026-09-30 06:20:46.862926	2026-09-30 06:30:20.209743
+5	6	0	0	0	\N	2026-09-30 06:20:46.862926	2026-09-30 06:30:20.209743
 \.
 
 
@@ -10380,7 +10130,7 @@ SELECT pg_catalog.setval('public.reviewables_id_seq', 1, false);
 -- Name: scheduler_stats_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.scheduler_stats_id_seq', 171, true);
+SELECT pg_catalog.setval('public.scheduler_stats_id_seq', 383, true);
 
 
 --
@@ -11157,5 +10907,4 @@ SELECT pg_catalog.setval('public.web_hooks_id_seq', 1, false);
 -- PostgreSQL database dump complete
 --
 
-\unrestrict Kfqu9Tqf4feGOD5U4xhZ9ewuWaTeMXjffyd8F8TildQZPxaQFetixifdE34ZTnT
 

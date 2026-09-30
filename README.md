@@ -10,7 +10,7 @@ The pre-rewrite Actix/Diesel version is tagged `v20260610.0.1`.
 
 - **Discourse owns the schema.** `vendor/discourse/` holds files copied
   verbatim from a pinned Discourse commit (`vendor/discourse/DISCOURSE_REF`):
-  `db/structure.sql`, `config/site_settings.yml`, and the base colors.
+  `db/structure.sql`, `config/site_settings.yml`, `server.en.yml` and the base colors.
   discourse-rs has no migrations and refuses to start against a database
   missing any of them.
 - **Parity is measured, not claimed.** Every ported endpoint gets a case in
@@ -92,9 +92,19 @@ run discourse-rs against a `make db-load` of the snapshot with
 |---|---|---|
 | `GET /srv/status` | `forums_controller.rb` | |
 | `GET /site/basic-info` | `site_controller.rb#basic_info` | S3 upload CDN not supported (explicit 500) |
+| `GET /site` | `site_controller.rb#site`, `Site.json_for`, `SiteSerializer` | anonymous only; `categories` and plugin-added keys not yet (see `parity/cases`) |
 
 Supporting ports: SiteSetting (YAML defaults, `locale_default`, typed DB
-rows, GlobalSetting shadowing), UrlHelper/GlobalPath URL generation,
-SiteIconManager, ColorScheme.hex_for_name. Not yet: plugin settings files,
-upcoming-change default overrides, `mandatory_values`, themeable settings,
-response headers.
+rows, GlobalSetting shadowing, upcoming-change promotion), server-side I18n
+(en), UrlHelper/GlobalPath URL generation, SiteIconManager,
+ColorScheme (hex_for_name, ColorSchemeSerializer with ColorMath), the
+anonymous Guardian, FlagSerializer, sidebar sections, user themes.
+
+Behaviors the port hits but hasn't implemented return an explicit 500
+(`Unsupported`) rather than a guess: watched words, tag visibility rules,
+user fields, enabled auth providers, user-selectable color schemes, group
+flair uploads, S3 CDN.
+
+Not yet: plugin settings files and plugin registries, upcoming-change
+default overrides, `mandatory_values`, themeable settings, response
+headers, any authenticated user.
