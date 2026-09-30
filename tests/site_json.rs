@@ -230,3 +230,139 @@ async fn flags_are_translated_with_the_serializer_quirks() {
         "Requires staff attention for another reason"
     );
 }
+
+async fn create_category(
+    pool: &PgPool,
+    name: &str,
+    parent: Option<i32>,
+    read_restricted: bool,
+) -> i32 {
+    let slug = name.to_ascii_lowercase().replace(' ', "-");
+    sqlx::query_scalar(
+        "INSERT INTO categories (name, name_lower, slug, color, text_color, user_id, parent_category_id, \
+         read_restricted, position, created_at, updated_at) \
+         VALUES ($1, lower($1), $2, '0088CC', 'FFFFFF', -1, $3, $4, \
+                 (SELECT coalesce(max(position), 0) + 1 FROM categories), now(), now()) RETURNING id",
+    )
+    .bind(name)
+    .bind(slug)
+    .bind(parent)
+    .bind(read_restricted)
+    .fetch_one(pool)
+    .await
+    .unwrap()
+}
+
+fn category_ids(json: &Value) -> Vec<i64> {
+    json["categories"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|c| c["id"].as_i64().unwrap())
+        .collect()
+}
+
+// it "returns correct notification level for categories"
+#[tokio::test]
+async fn returns_correct_notification_level_for_categories() {
+    let db = TestDb::new().await;
+    let category = create_category(&db.pool, "Tracked", None, false).await;
+
+    let last = |json: &Value| {
+        json["categories"]
+            .as_array()
+            .unwrap()
+            .last()
+            .unwrap()
+            .clone()
+    };
+    let json = get_site(&db.pool).await;
+    assert_eq!(last(&json)["id"], category);
+    assert_eq!(last(&json)["notification_level"], 1);
+
+    set_setting(&db.pool, "mute_all_categories_by_default", BOOL, "t").await;
+    let json = get_site(&db.pool).await;
+    assert_eq!(last(&json)["notification_level"], 0);
+
+    set_setting(
+        &db.pool,
+        "default_categories_tracking",
+        STRING,
+        &category.to_string(),
+    )
+    .await;
+    let json = get_site(&db.pool).await;
+    assert_eq!(last(&json)["notification_level"], 1);
+}
+
+// describe "#categories" it "omits read restricted categories" (anonymous)
+#[tokio::test]
+async fn omits_read_restricted_categories() {
+    let db = TestDb::new().await;
+    let category = create_category(&db.pool, "Members", None, false).await;
+    let json = get_site(&db.pool).await;
+    assert!(category_ids(&json).contains(&i64::from(category)));
+    // The snapshot's Staff category (id 3) is read restricted.
+    assert!(!category_ids(&json).contains(&3));
+
+    sqlx::query("UPDATE categories SET read_restricted = true WHERE id = $1")
+        .bind(category)
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let json = get_site(&db.pool).await;
+    assert!(!category_ids(&json).contains(&i64::from(category)));
+}
+
+#[tokio::test]
+async fn subcategories_set_has_children_and_follow_their_parent() {
+    let db = TestDb::new().await;
+    let parent = create_category(&db.pool, "Parent", None, false).await;
+    let child = create_category(&db.pool, "Child", Some(parent), false).await;
+    let hidden_parent = create_category(&db.pool, "Hidden", None, true).await;
+    let orphan = create_category(&db.pool, "Orphan", Some(hidden_parent), false).await;
+
+    let json = get_site(&db.pool).await;
+    let ids = category_ids(&json);
+    assert!(ids.contains(&i64::from(parent)) && ids.contains(&i64::from(child)));
+    assert!(
+        !ids.contains(&i64::from(orphan)),
+        "child of a hidden parent is dropped"
+    );
+
+    let by_id = |id: i32| {
+        json["categories"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|c| c["id"] == id)
+            .unwrap()
+            .clone()
+    };
+    assert_eq!(by_id(parent)["has_children"], true);
+    assert_eq!(by_id(child)["has_children"], false);
+    assert_eq!(by_id(child)["parent_category_id"], parent);
+    assert!(by_id(parent).get("parent_category_id").is_none());
+    assert_eq!(by_id(child)["can_edit"], false);
+    assert_eq!(by_id(child)["permission"], Value::Null);
+}
+
+#[tokio::test]
+async fn uncategorized_category_uses_translated_texts() {
+    let db = TestDb::new().await;
+    // The snapshot has uncategorized_category_id = -1; point it at category 1.
+    set_setting(&db.pool, "uncategorized_category_id", INTEGER, "1").await;
+
+    let json = get_site(&db.pool).await;
+    let uncategorized = &json["categories"][0];
+    assert_eq!(uncategorized["id"], 1);
+    assert_eq!(uncategorized["name"], "Uncategorized");
+    assert_eq!(
+        uncategorized["description_text"],
+        "Topics that don't need a category, or don't fit into any other existing category."
+    );
+    assert_eq!(
+        uncategorized["description_excerpt"],
+        uncategorized["description_text"]
+    );
+}
