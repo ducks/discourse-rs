@@ -16,6 +16,11 @@ pkgs.mkShell {
 
     pkg-config
     openssl
+
+    # scripts/bench
+    oha
+    jq
+    curl
   ] ++ postgres.buildInputs;
 
   shellHook = ''

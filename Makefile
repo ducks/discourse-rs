@@ -1,5 +1,6 @@
 .PHONY: help version-bump release build test clean clippy fmt fmt-check lint install-hooks \
-	db-load db-test parity parity-check parity-record vendor-discourse snapshot-dv
+	db-load db-test parity parity-check parity-record vendor-discourse snapshot-dv \
+	bench bench-startup release-build
 
 # Auto-generate version from today's date with auto-incrementing patch
 # Format: YYYYMMDD.0.X where X increments if releasing multiple times per day
@@ -47,6 +48,11 @@ help:
 	@echo "  make parity RAILS_URL=...          - Diff discourse-rs against running Discourse"
 	@echo "  make parity-record RAILS_URL=...   - Save Rails responses to parity/golden"
 	@echo "  make parity-check                  - Diff discourse-rs against parity/golden"
+	@echo ""
+	@echo "Bench (see scripts/bench for the caveats):"
+	@echo "  make release-build                 - Optimized binary in target/release"
+	@echo "  make bench TARGETS=\"rs=URL rails=URL\" - Compare request rates and latencies"
+	@echo "  make bench-startup                 - Binary size, cold start, RSS (server env from the shell)"
 	@echo ""
 	@echo "Next version will be: $(VERSION)"
 
@@ -142,3 +148,14 @@ parity-check:
 snapshot-dv:
 	@test -n "$(AGENT)" || { echo "set AGENT, e.g. make snapshot-dv AGENT=rs-parity"; exit 2; }
 	scripts/snapshot-dv $(AGENT)
+
+release-build:
+	cargo build --release
+
+# e.g. make bench TARGETS="rs=http://127.0.0.1:8090 rails=http://127.0.0.1:3043" BENCH_ARGS="-d 10s -c 16"
+bench:
+	@test -n "$(TARGETS)" || { echo 'set TARGETS, e.g. make bench TARGETS="rs=http://127.0.0.1:8090 rails=http://127.0.0.1:3043"'; exit 2; }
+	scripts/bench $(BENCH_ARGS) $(TARGETS)
+
+bench-startup: release-build
+	scripts/bench-startup
