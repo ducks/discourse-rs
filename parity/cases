@@ -95,3 +95,27 @@ GET /search/query.json?term=fixture&type_filter=exclude_topics ignore=/grouped_s
 GET /search/query.json?term=fixture&type_filter=private_messages
 GET /search/query.json?term=fixture&type_filter=bogus
 GET /search/query.json
+
+# users#show (anonymous). profile_view_count: Rails bumps it per IP and 8 h window
+GET /u/user1.json ignore=/user/can_chat_user,/user/accepted_answers,/user/profile_view_count
+GET /u/User1.json?case=upper ignore=/user/can_chat_user,/user/accepted_answers,/user/profile_view_count
+GET /u/admin.json ignore=/user/can_chat_user,/user/accepted_answers,/user/profile_view_count
+GET /u/system.json ignore=/user/can_chat_user,/user/accepted_answers,/user/profile_view_count
+GET /u/user0.json ignore=/user/can_chat_user
+GET /u/nobody.json
+GET /u/user1/badges.json ignore=/user/can_chat_user,/user/accepted_answers,/user/profile_view_count
+GET /u/user1/activity/topics.json ignore=/user/can_chat_user,/user/accepted_answers,/user/profile_view_count
+# users#summary
+GET /u/user1/summary.json ignore=/user_summary/solved_count,/topics/*/has_accepted_answer,/topics/*/can_have_answer
+# admin's top categories tie on totals; Rails orders ties by heap order, unreproducible.
+GET /u/admin/summary.json ignore=/user_summary/solved_count,/topics/*/has_accepted_answer,/topics/*/can_have_answer,/user_summary/top_categories
+GET /u/user0/summary.json
+# user_actions#index
+GET /user_actions.json?username=user1
+GET /user_actions.json?username=admin
+GET /user_actions.json?username=user1&filter=4,5&limit=1
+GET /user_actions.json?username=user1&offset=1
+GET /user_actions.json?username=USER1&acting_username=user1
+GET /user_actions.json?username=user1&filter=2
+GET /user_actions.json?username=user0
+GET /user_actions.json

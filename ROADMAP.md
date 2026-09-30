@@ -28,7 +28,7 @@ could put behind Caddy and leave running.
       anonymously (JSON 403, HTML 302 to `/login`)
 - [x] Search: `/search?q=` and `/search/query` over `post_search_data`
       (plain terms and phrases; advanced filters are milestone 2)
-- [ ] User pages: `/u/:username`, summary, activity (posts link there)
+- [x] User pages: `/u/:username`, summary, activity (posts link there)
 - [ ] Crawler hygiene: `robots.txt`, sitemap, canonical and meta tags
 - [ ] Deploy: systemd unit, Caddy snippet, `make install`, first
       date-versioned release with a binary
@@ -56,6 +56,9 @@ how often a backup trips them.
 - [ ] Muted defaults (`default_categories_muted`, `default_tags_muted`,
       `mute_all_categories_by_default`), shared drafts category
 - [ ] `tags_listed_by_group`, login-only list filters
+- [ ] Profiles: bios (PrettyText.excerpt), suspended/silenced users, user
+      status, featured topics, letter avatars (`/letter_avatar_proxy` is a
+      proxy to avatars.discourse.org; serve or generate them)
 - [ ] Search: advanced filters (`in:`, `status:`, `category:`, `#`, `@`,
       `tags:`, `before:`/`after:`, `order:`), search contexts, `search_for_id`,
       rate limits, pg headlines

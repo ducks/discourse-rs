@@ -389,32 +389,7 @@ struct UserHit {
     uploaded_avatar_id: Option<i32>,
 }
 
-#[derive(sqlx::FromRow)]
-struct GroupHit {
-    id: i32,
-    automatic: bool,
-    name: String,
-    mentionable_level: i32,
-    messageable_level: i32,
-    visibility_level: i32,
-    primary_group: bool,
-    title: Option<String>,
-    grant_trust_level: Option<i32>,
-    flair_icon: Option<String>,
-    flair_upload_id: Option<i32>,
-    flair_upload_url: Option<String>,
-    flair_bg_color: Option<String>,
-    flair_color: Option<String>,
-    bio_cooked: Option<String>,
-    public_admission: bool,
-    public_exit: bool,
-    allow_membership_requests: bool,
-    full_name: Option<String>,
-    default_notification_level: i32,
-    membership_request_template: Option<String>,
-    members_visibility_level: i32,
-    publish_read_state: bool,
-}
+use crate::groups::BasicGroup;
 
 /// `Search::GroupedSearchResults` before serialization.
 #[derive(Default)]
@@ -423,7 +398,7 @@ struct Results {
     users: Vec<UserHit>,
     category_ids: Vec<i32>,
     tags: Vec<Tag>,
-    groups: Vec<GroupHit>,
+    groups: Vec<BasicGroup>,
     more_posts: bool,
     more_users: bool,
     more_categories: bool,
@@ -774,17 +749,12 @@ impl Search<'_> {
         term: &str,
         results: &mut Results,
     ) -> Result<(), SearchError> {
-        results.groups = sqlx::query_as(
-            "SELECT g.id, g.automatic, g.name, g.mentionable_level, g.messageable_level, \
-                    g.visibility_level, g.primary_group, g.title, g.grant_trust_level, \
-                    g.flair_icon, g.flair_upload_id, u.url AS flair_upload_url, g.flair_bg_color, \
-                    g.flair_color, g.bio_cooked, g.public_admission, g.public_exit, \
-                    g.allow_membership_requests, g.full_name, g.default_notification_level, \
-                    g.membership_request_template, g.members_visibility_level, g.publish_read_state \
-             FROM groups g LEFT JOIN uploads u ON u.id = g.flair_upload_id \
+        results.groups = sqlx::query_as(&format!(
+            "SELECT {} FROM groups g LEFT JOIN uploads u ON u.id = g.flair_upload_id \
              WHERE (g.id > 0) AND (g.id NOT IN (4, 5)) AND (g.visibility_level = 0) \
              AND (g.name ILIKE $1 OR g.full_name ILIKE $1) ORDER BY g.name ASC LIMIT $2",
-        )
+            crate::groups::BASIC_GROUP_COLUMNS
+        ))
         .bind(format!("%{term}%"))
         .bind(PER_FACET as i64 + 1)
         .fetch_all(&mut *self.conn)
@@ -1072,7 +1042,7 @@ impl Search<'_> {
 
         let mut groups = Vec::new();
         for g in &results.groups {
-            groups.push(self.basic_group(g)?);
+            groups.push(g.json(self.i18n)?);
         }
         out.insert("groups".into(), Value::Array(groups));
 
@@ -1123,69 +1093,6 @@ impl Search<'_> {
             json!(results.groups.iter().map(|g| g.id).collect::<Vec<_>>()),
         );
         out.insert("grouped_search_result".into(), Value::Object(grouped));
-        Ok(Value::Object(out))
-    }
-
-    /// BasicGroupSerializer for an anonymous reader.
-    fn basic_group(&self, g: &GroupHit) -> Result<Value, SearchError> {
-        let mut out = Map::new();
-        out.insert("id".into(), json!(g.id));
-        out.insert("automatic".into(), json!(g.automatic));
-        out.insert("name".into(), json!(g.name));
-        if g.automatic {
-            out.insert(
-                "display_name".into(),
-                json!(self.i18n.t(&format!("groups.default_names.{}", g.name))),
-            );
-        }
-        let can_see_members = g.members_visibility_level == 0;
-        if can_see_members {
-            return Err(Unsupported("group user_count").into());
-        }
-        out.insert("mentionable_level".into(), json!(g.mentionable_level));
-        out.insert("messageable_level".into(), json!(g.messageable_level));
-        out.insert("visibility_level".into(), json!(g.visibility_level));
-        out.insert("primary_group".into(), json!(g.primary_group));
-        out.insert("title".into(), json!(g.title));
-        out.insert("grant_trust_level".into(), json!(g.grant_trust_level));
-        let flair = crate::groups::Group {
-            id: g.id,
-            name: g.name.clone(),
-            flair_icon: g.flair_icon.clone(),
-            flair_upload_id: g.flair_upload_id,
-            flair_bg_color: g.flair_bg_color.clone(),
-            flair_color: g.flair_color.clone(),
-            flair_upload_url: g.flair_upload_url.clone(),
-        };
-        out.insert("flair_url".into(), json!(flair.flair_url()?));
-        out.insert("flair_bg_color".into(), json!(g.flair_bg_color));
-        out.insert("flair_color".into(), json!(g.flair_color));
-        out.insert("bio_cooked".into(), json!(g.bio_cooked));
-        if g.bio_cooked.as_deref().is_some_and(|b| !b.is_empty()) {
-            return Err(Unsupported("group bio_excerpt (PrettyText.excerpt)").into());
-        }
-        out.insert("bio_excerpt".into(), Value::Null);
-        out.insert("public_admission".into(), json!(g.public_admission));
-        out.insert("public_exit".into(), json!(g.public_exit));
-        out.insert(
-            "allow_membership_requests".into(),
-            json!(g.allow_membership_requests),
-        );
-        out.insert("full_name".into(), json!(g.full_name));
-        out.insert(
-            "default_notification_level".into(),
-            json!(g.default_notification_level),
-        );
-        out.insert(
-            "membership_request_template".into(),
-            json!(g.membership_request_template),
-        );
-        out.insert(
-            "members_visibility_level".into(),
-            json!(g.members_visibility_level),
-        );
-        out.insert("can_see_members".into(), json!(can_see_members));
-        out.insert("publish_read_state".into(), json!(g.publish_read_state));
         Ok(Value::Object(out))
     }
 }

@@ -94,16 +94,16 @@ impl From<AvatarError> for TopicListError {
 
 /// `UserLookup`'s user columns.
 #[derive(Debug, Clone, sqlx::FromRow)]
-pub(crate) struct LookupUser {
-    pub(crate) id: i32,
-    pub(crate) username: String,
-    pub(crate) name: Option<String>,
-    pub(crate) uploaded_avatar_id: Option<i32>,
-    pub(crate) primary_group_id: Option<i32>,
-    pub(crate) flair_group_id: Option<i32>,
-    pub(crate) admin: bool,
-    pub(crate) moderator: bool,
-    pub(crate) trust_level: i32,
+pub struct LookupUser {
+    pub id: i32,
+    pub username: String,
+    pub name: Option<String>,
+    pub uploaded_avatar_id: Option<i32>,
+    pub primary_group_id: Option<i32>,
+    pub flair_group_id: Option<i32>,
+    pub admin: bool,
+    pub moderator: bool,
+    pub trust_level: i32,
 }
 
 /// Rails `TimeWithZone#as_json` in UTC: ISO 8601, milliseconds truncated.

@@ -20,7 +20,7 @@ const MUTED: i64 = 0;
 const REGULAR: i64 = 1;
 
 /// `Category.style_types`
-fn style_type(id: i32) -> &'static str {
+pub(crate) fn style_type(id: i32) -> &'static str {
     match id {
         1 => "icon",
         2 => "emoji",
@@ -492,7 +492,9 @@ pub fn description_plain_text(description: Option<&str>) -> Result<Option<String
 
 /// `PrettyText.excerpt(description, 300)` for plain paragraphs: escaped
 /// text, cut at 300 characters with an ellipsis.
-fn description_excerpt(description: Option<&str>) -> Result<Option<String>, Unsupported> {
+pub(crate) fn description_excerpt(
+    description: Option<&str>,
+) -> Result<Option<String>, Unsupported> {
     let Some(html) = description else {
         return Ok(None);
     };

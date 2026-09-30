@@ -70,7 +70,7 @@ fn invalid_access(state: &AppState) -> Response {
 }
 
 /// The peer address when the server was started with connect info.
-pub struct Peer(Option<SocketAddr>);
+pub struct Peer(pub Option<SocketAddr>);
 
 impl<S: Send + Sync> FromRequestParts<S> for Peer {
     type Rejection = std::convert::Infallible;
@@ -86,7 +86,7 @@ impl<S: Send + Sync> FromRequestParts<S> for Peer {
 }
 
 /// `request.remote_ip`: the first forwarded address, else the peer.
-fn remote_ip(headers: &HeaderMap, peer: Option<SocketAddr>) -> String {
+pub(super) fn remote_ip(headers: &HeaderMap, peer: Option<SocketAddr>) -> String {
     headers
         .get("x-forwarded-for")
         .and_then(|v| v.to_str().ok())

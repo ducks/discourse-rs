@@ -1,0 +1,7 @@
+{
+  "request": "GET /user_actions.json?username=user1&filter=4,5&limit=1",
+  "source": "http://127.0.0.1:3042",
+  "status": 200,
+  "content_type": "application/json; charset=utf-8",
+  "body": "{\"user_actions\":[{\"excerpt\":\"A topic in a subcategory carrying a tag, so tags and category ids show up.\",\"action_type\":4,\"created_at\":\"2026-09-30T07:28:29.543Z\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png\",\"acting_avatar_template\":\"/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png\",\"slug\":\"parity-fixture-tagged-in-a-subcategory\",\"topic_id\":38,\"target_user_id\":3,\"target_name\":\"User1\",\"target_username\":\"user1\",\"post_number\":1,\"post_id\":null,\"username\":\"user1\",\"name\":\"User1\",\"user_id\":3,\"acting_username\":\"user1\",\"acting_name\":\"User1\",\"acting_user_id\":3,\"title\":\"Parity fixture: tagged in a subcategory\",\"deleted\":false,\"hidden\":null,\"post_type\":null,\"action_code\":null,\"category_id\":34,\"closed\":false,\"archived\":false}]}"
+}

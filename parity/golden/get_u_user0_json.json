@@ -1,0 +1,7 @@
+{
+  "request": "GET /u/user0.json",
+  "source": "http://127.0.0.1:3042",
+  "status": 200,
+  "content_type": "application/json; charset=utf-8",
+  "body": "{\"user\":{\"id\":2,\"username\":\"user0\",\"name\":\"User0\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png\",\"profile_hidden\":true,\"title\":null,\"primary_group_name\":null,\"can_send_private_message_to_user\":false,\"can_chat_user\":false}}"
+}
