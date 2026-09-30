@@ -1,7 +1,7 @@
 {
   "request": "GET /site/basic-info.json",
-  "source": "hand-derived for a fresh production install (hostname www.example.com) from site_controller.rb#basic_info, site_icon_manager.rb, db/fixtures/010_uploads.rb and colors.scss; header colors confirmed by spec/requests/site_controller_spec.rb; replace with make parity-record",
+  "source": "http://127.0.0.1:3042",
   "status": 200,
   "content_type": "application/json; charset=utf-8",
-  "body": "{\"logo_url\":\"http://www.example.com/images/discourse-logo-sketch.png\",\"logo_small_url\":\"http://www.example.com/images/discourse-logo-sketch-small.png\",\"apple_touch_icon_url\":\"http://www.example.com/images/discourse-logo-sketch-small.png\",\"favicon_url\":\"http://www.example.com/images/discourse-logo-sketch-small.png\",\"title\":\"Discourse\",\"description\":\"\",\"header_primary_color\":\"333\",\"header_background_color\":\"fff\",\"login_required\":false,\"locale\":\"en\",\"include_in_discourse_discover\":false,\"mobile_logo_url\":\"http://www.example.com/images/discourse-logo-sketch.png\"}"
+  "body": "{\"logo_url\":\"http://localhost:3042/images/discourse-logo-sketch.png\",\"logo_small_url\":\"http://localhost:3042/images/discourse-logo-sketch-small.png\",\"apple_touch_icon_url\":\"http://localhost:3042/uploads/default/optimized/1X/_129430568242d1b7f853bb13ebea28b3f6af4e7_2_180x180.png\",\"favicon_url\":\"http://localhost:3042/uploads/default/optimized/1X/_129430568242d1b7f853bb13ebea28b3f6af4e7_2_32x32.png\",\"title\":\"Discourse\",\"description\":\"\",\"header_primary_color\":\"333\",\"header_background_color\":\"fff\",\"login_required\":false,\"locale\":\"en\",\"include_in_discourse_discover\":false,\"mobile_logo_url\":\"http://localhost:3042/images/discourse-logo-sketch.png\"}"
 }

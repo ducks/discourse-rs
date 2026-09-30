@@ -1,5 +1,5 @@
 .PHONY: help version-bump release build test clean clippy fmt fmt-check lint install-hooks \
-	db-load db-test parity parity-check parity-record vendor-discourse
+	db-load db-test parity parity-check parity-record vendor-discourse snapshot-dv
 
 # Auto-generate version from today's date with auto-incrementing patch
 # Format: YYYYMMDD.0.X where X increments if releasing multiple times per day
@@ -41,8 +41,9 @@ help:
 	@echo "  make vendor-discourse [DISCOURSE=path] [REF=sha] - Vendor schema + settings from Discourse"
 	@echo "  make db-load [FORCE=1]             - Load schema + seeds into $(DEV_DB)"
 	@echo "  make db-test                       - (Re)load schema + seeds into $(TEST_DB)"
+	@echo "  make snapshot-dv AGENT=name        - Regenerate seed/fresh_install.sql from a dv agent"
 	@echo ""
-	@echo "Parity (both servers must read the same database):"
+	@echo "Parity (run discourse-rs with: env \$$(grep -v ^\# parity/environment) cargo run):"
 	@echo "  make parity RAILS_URL=...          - Diff discourse-rs against running Discourse"
 	@echo "  make parity-record RAILS_URL=...   - Save Rails responses to parity/golden"
 	@echo "  make parity-check                  - Diff discourse-rs against parity/golden"
@@ -137,3 +138,7 @@ parity-record:
 
 parity-check:
 	cargo run --quiet --bin parity -- check --rs $(RS_URL)
+
+snapshot-dv:
+	@test -n "$(AGENT)" || { echo "set AGENT, e.g. make snapshot-dv AGENT=rs-parity"; exit 2; }
+	scripts/snapshot-dv $(AGENT)

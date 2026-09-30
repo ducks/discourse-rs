@@ -1,4 +1,4 @@
-# Requests compared against real Discourse. One per line:
+# Requests compared against real Discourse (see parity/environment). One per line:
 #   METHOD /path [ignore=/json/pointer,/list/*/field]
 # Golden responses live in parity/golden/, written by `make parity-record`.
 

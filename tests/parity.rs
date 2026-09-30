@@ -8,7 +8,6 @@ use std::path::Path;
 
 use axum::body::Body;
 use axum::http::{Request, header};
-use discourse_rs::config::RailsEnv;
 use discourse_rs::parity::{self, Recorded};
 use http_body_util::BodyExt;
 use tower::ServiceExt;
@@ -18,10 +17,10 @@ async fn golden_responses_match() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"));
     let cases = parity::load_cases(&root.join("parity/cases")).unwrap();
     let golden_dir = root.join("parity/golden");
-    // Golden files describe a fresh production install: seeded database,
-    // no DISCOURSE_* overrides.
     let db = common::TestDb::new().await;
-    let config = common::config(RailsEnv::Production, &[]);
+    // The golden files came from the Discourse whose database is the test
+    // template (seed/fresh_install.sql) and whose env is parity/environment.
+    let config = common::recorded_config();
     let app = discourse_rs::app(common::state(db.pool.clone(), config));
 
     let mut failures = Vec::new();

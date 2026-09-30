@@ -33,8 +33,10 @@ cargo run          # http://127.0.0.1:8080  (BIND_ADDR to change)
 make test
 ```
 
-`seed/*.sql` holds the rows Discourse's `db/fixtures` create on a fresh
-install, added as slices need them.
+`seed/fresh_install.sql` is a data snapshot of a freshly provisioned Discourse (a
+dv agent at the vendored commit), taken with `make snapshot-dv AGENT=<name>`.
+It is the database the parity golden files were recorded from, so tests and
+recordings see the same data.
 
 Configuration mirrors Discourse: `RAILS_ENV` (default development, as in
 Rails) changes URL generation the same way, and every `DISCOURSE_*` env var is
@@ -54,8 +56,8 @@ make vendor-discourse DISCOURSE=~/discourse/discourse [REF=<sha>]
 ```
 
 Copies the files as committed at REF (default HEAD), so uncommitted local
-changes never leak in, and regenerates `seed/010_uploads.sql`. Reload the
-databases afterwards.
+changes never leak in. Re-snapshot the seed from an agent at the same commit
+and reload the databases afterwards.
 
 ## Parity
 
@@ -76,11 +78,13 @@ make parity-check                             # running discourse-rs vs golden
 ```
 
 `cargo test` also replays every golden file against the in-process router
-(`tests/parity.rs`) on a fresh seeded database with production defaults.
+(`tests/parity.rs`) on the snapshot database with the recorded environment.
 
-Parity only means something when both sides read the same database and
-configuration: point discourse-rs at the Rails database with the same
-`RAILS_ENV` and `DISCOURSE_*` settings.
+Recording workflow: create a fresh dv agent, vendor its commit, snapshot its
+database, write its env to `parity/environment`, then `make parity-record`.
+Live comparison needs both sides on the same database and configuration:
+run discourse-rs against a `make db-load` of the snapshot with
+`env $(grep -v ^# parity/environment) cargo run`.
 
 ## Ported
 
