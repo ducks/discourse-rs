@@ -5,3 +5,5 @@
 .nix-postgres/
 migrations/.diesel_lock
 backups/
+# The discourse-emojis gem data lives under dist/, which the global gitignore excludes.
+!vendor/discourse-emojis/dist/
