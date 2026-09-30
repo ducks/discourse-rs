@@ -86,3 +86,35 @@ server's floor (10k req/s), while /latest.json at ~90 req/s and 85 ms p50
 under 8 connections is the serializer's per-topic queries and the
 per-request site settings load, not the framework. Those are the first
 things to profile.
+
+## 2026-09-30, investigating the /latest.json curve
+
+The first run's 92 req/s at 85 ms p50 was measured with 8 connections;
+measuring the scaling curve gave 137 req/s at 7 ms with one connection,
+231 at two, and then a fall: 94 at eight and nothing completing at
+sixteen.
+
+Two causes, one ours and one the machine's:
+
+- The `login_required` gate acquired a pool connection to read the
+  setting and held it while the handler ran, so every request occupied
+  two of the pool's ten connections; at sixteen clients they starved each
+  other until sqlx's 30 s acquire timeout. Fixed: the gate returns its
+  connection before calling the handler. Also removed one of the two
+  site-settings loads per request.
+- The laptop clamps its clocks under multi-core load: 4.8 GHz with one
+  busy core, ~920 MHz on every core with eight (amd-pstate `powersave`,
+  platform profile `balanced`), with a third of the time in the kernel at
+  that clock. Postgres alone shows the same curve (`pgbench` on
+  `SELECT 1`: 53k tps at one client, 102k at two, 46k at eight). CPU per
+  request grew tenfold on both sides between c=1 and c=8 for the same
+  work. Numbers above two connections on this machine measure the power
+  manager, not the port; run the harness with the `performance` governor
+  or on a machine that holds its clocks.
+
+What is ours to fix, measured at one connection where the clocks hold:
+a /latest.json request is 99 queries (30 topics times tags, thumbnail
+and first-post like count, plus the page query, users, groups, tags and
+settings) in about 5 ms, 4.7 ms of it in the serializer's per-topic
+round-trips. Batching those three per-topic lookups into one query each
+would take most of that out; it is the roadmap's performance item.

@@ -50,9 +50,10 @@ how often a backup trips them.
 - [ ] Topic timers, topic links with clicks (`TopicLink.topic_map`)
 - [ ] Featured links (`featured_link_root_domain`)
 - [ ] `subcategory_list` styles, paginated category lists
-- [ ] Performance: the list and topic serializers issue per-topic queries
-      and every request reloads site settings (BENCH.md: /latest.json at
-      ~90 req/s vs /srv/status at 10k); profile before optimizing
+- [ ] Performance: the list serializer issues three queries per topic (99
+      per /latest.json, 4.7 of its 5 ms at one connection); batch them.
+      Bench above two connections needs a machine that holds its clocks
+      (BENCH.md, 2026-09-30 investigation)
 - [ ] Group flair uploads, user fields, badges granted, auth providers,
       user color schemes on `/site.json`
 - [ ] Muted defaults (`default_categories_muted`, `default_tags_muted`,

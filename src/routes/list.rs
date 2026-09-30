@@ -151,9 +151,12 @@ pub(super) async fn list_document_for(
     list_path: &str,
     tag_request: Option<&TagListRequest>,
 ) -> Result<Result<(serde_json::Value, SiteSettings), (StatusCode, String)>, AppError> {
+    let t0 = std::time::Instant::now();
     let mut conn = state.pool.acquire().await?;
+    let t_acquire = t0.elapsed();
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let t_settings = t0.elapsed();
     let mut options = match build_options(params, &settings) {
         Ok(o) => o,
         Err(e) => return Ok(Err(e)),
@@ -212,6 +215,7 @@ pub(super) async fn list_document_for(
         tags: Default::default(),
         filter: Default::default(),
     };
+    let t_query0 = t0.elapsed();
     let list = match (&kind, &for_period) {
         (ListKind::Latest, _) => query.list_latest().await?,
         (ListKind::Top, Some(period)) => query.list_top_for(period).await?,
@@ -219,6 +223,7 @@ pub(super) async fn list_document_for(
         (ListKind::Hot, _) => query.list_hot().await?,
     };
 
+    let t_query = t0.elapsed();
     let more = match tag_request {
         Some(t) => super::tags::next_url(list_path, params, &options, t),
         None => next_url(list_path, params, &options, kind == ListKind::Top),
@@ -249,6 +254,15 @@ pub(super) async fn list_document_for(
             }
         }
     }
+    // RUST_LOG=discourse_rs=debug shows where a list request spends its time.
+    tracing::debug!(
+        acquire = ?t_acquire,
+        settings = ?(t_settings - t_acquire),
+        query = ?(t_query - t_query0),
+        serialize = ?(t0.elapsed() - t_query),
+        total = ?t0.elapsed(),
+        "list phases"
+    );
     Ok(Ok((json, settings)))
 }
 
