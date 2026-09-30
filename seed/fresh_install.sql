@@ -53,9 +53,10 @@ ALTER TABLE public.categories DISABLE TRIGGER ALL;
 
 COPY public.categories (id, name, color, topic_id, topic_count, created_at, updated_at, user_id, topics_year, topics_month, topics_week, slug, description, text_color, read_restricted, auto_close_hours, post_count, latest_post_id, latest_topic_id, "position", parent_category_id, posts_year, posts_month, posts_week, email_in, email_in_allow_strangers, topics_day, posts_day, allow_badges, name_lower, auto_close_based_on_last_post, topic_template, contains_messages, sort_order, sort_ascending, uploaded_logo_id, uploaded_background_id, topic_featured_link_allowed, all_topics_wiki, show_subcategory_list, num_featured_topics, default_view, subcategory_list_style, default_top_period, mailinglist_mirror, minimum_required_tags, navigate_to_first_post_after_read, search_priority, allow_global_tags, reviewable_by_group_id, read_only_banner, default_list_filter, allow_unlimited_owner_edits_on_first_post, default_slow_mode_seconds, uploaded_logo_dark_id, uploaded_background_dark_id, style_type, emoji, icon, locale, topic_title_placeholder) FROM stdin;
 1	Uncategorized	0088CC	\N	0	2026-07-25 05:58:08.410826	2026-07-25 05:58:08.410826	-1	0	0	0	uncategorized	\N	FFFFFF	f	\N	0	\N	\N	0	\N	0	0	0	\N	f	0	0	t	uncategorized	f	\N	\N	\N	\N	\N	\N	t	f	f	3	\N	rows_with_featured_topics	all	f	0	f	0	f	\N	\N	all	f	\N	\N	\N	2	card_file_box	\N	\N	\N
-2	Site Feedback	808281	1	0	2026-07-25 05:58:08.494443	2026-07-25 05:58:08.494443	-1	0	0	0	site-feedback	<p>Discussion about this site, its organization, how it works, and how we can improve it.</p>	FFFFFF	f	\N	0	\N	\N	1	\N	0	0	0	\N	f	0	0	t	site feedback	f	\N	\N	\N	\N	\N	\N	t	f	f	3	\N	rows_with_featured_topics	all	f	0	f	0	f	\N	\N	all	f	\N	\N	\N	2	thought_balloon	\N	\N	\N
+4	General	25AAE2	3	3	2026-07-25 05:58:16.309528	2026-09-30 07:28:29.960808	-1	1	0	0	general	<p>Create topics here that don’t fit into any other existing category.</p>	FFFFFF	f	\N	1	47	41	3	\N	1	0	0	\N	f	0	0	t	general	f	\N	\N	\N	\N	\N	\N	t	f	f	3	\N	rows_with_featured_topics	all	f	0	f	0	f	\N	\N	all	f	\N	\N	\N	2	blue_book	\N	\N	\N
+2	Site Feedback	808281	1	1	2026-07-25 05:58:08.494443	2026-07-25 05:58:08.494443	-1	0	0	0	site-feedback	<p>Discussion about this site, its organization, how it works, and how we can improve it.</p>	FFFFFF	f	\N	0	41	37	1	\N	0	0	0	\N	f	0	0	t	site feedback	f	\N	\N	\N	\N	\N	\N	t	f	f	3	\N	rows_with_featured_topics	all	f	0	f	0	f	\N	\N	all	f	\N	\N	\N	2	thought_balloon	\N	\N	\N
+34	Sub General	AB9364	34	1	2026-09-30 07:28:26.803698	2026-09-30 07:28:26.803698	1	0	0	0	sub-general	\N	FFFFFF	f	\N	0	42	38	4	4	0	0	0	\N	f	0	0	t	sub general	f	\N	\N	\N	\N	\N	\N	t	f	f	3	\N	rows_with_featured_topics	all	f	0	f	0	f	\N	\N	all	f	\N	\N	\N	0	\N	\N	\N	\N
 3	Staff	E45735	2	2	2026-07-25 05:58:16.208772	2026-09-27 21:01:16.908706	-1	2	0	0	staff	<p>Private category for staff discussions. Topics are only visible to admins and moderators.</p>	FFFFFF	t	\N	3	7	6	2	\N	3	0	0	\N	f	0	0	t	staff	f	\N	\N	\N	\N	\N	\N	t	f	f	3	\N	rows_with_featured_topics	all	f	0	f	0	f	\N	\N	all	f	\N	\N	\N	2	shield	\N	\N	\N
-4	General	25AAE2	3	1	2026-07-25 05:58:16.309528	2026-09-30 06:19:31.96799	-1	1	0	0	general	<p>Create topics here that don’t fit into any other existing category.</p>	FFFFFF	f	\N	1	6	5	3	\N	1	0	0	\N	f	0	0	t	general	f	\N	\N	\N	\N	\N	\N	t	f	f	3	\N	rows_with_featured_topics	all	f	0	f	0	f	\N	\N	all	f	\N	\N	\N	2	blue_book	\N	\N	\N
 \.
 
 
@@ -127,13 +128,13 @@ ALTER TABLE public.ad_plugin_house_ads_routes ENABLE TRIGGER ALL;
 ALTER TABLE public.users DISABLE TRIGGER ALL;
 
 COPY public.users (id, username, created_at, updated_at, name, last_posted_at, active, username_lower, last_seen_at, admin, last_emailed_at, trust_level, approved, approved_by_id, approved_at, previous_visit_at, suspended_at, suspended_till, date_of_birth, views, flag_level, ip_address, moderator, title, uploaded_avatar_id, locale, primary_group_id, registration_ip_address, staged, first_seen_at, silenced_till, group_locked_trust_level, manual_locked_trust_level, secure_identifier, flair_group_id, last_seen_reviewable_id, required_fields_version, seen_notification_id) FROM stdin;
-1	admin	2026-07-25 05:59:14.988794	2026-07-25 05:59:15.580888	Admin	\N	t	admin	\N	t	\N	4	t	-1	2026-07-25 05:59:15.471236	\N	\N	\N	\N	0	0	\N	f	\N	\N	\N	\N	\N	f	\N	\N	\N	\N	\N	\N	\N	\N	0
-2	user0	2026-07-25 05:59:15.831079	2026-07-25 05:59:16.114135	User0	\N	t	user0	\N	f	\N	1	f	\N	\N	\N	\N	\N	\N	0	0	\N	f	\N	\N	\N	\N	\N	f	\N	\N	\N	\N	\N	\N	\N	\N	0
-3	user1	2026-07-25 05:59:16.250829	2026-07-25 05:59:16.537535	User1	\N	t	user1	\N	f	\N	2	f	\N	\N	\N	\N	\N	\N	0	0	\N	f	\N	\N	\N	\N	\N	f	\N	\N	\N	\N	\N	\N	\N	\N	0
 5	user3	2026-07-25 05:59:17.199294	2026-07-25 05:59:17.511834	User3	\N	t	user3	\N	f	\N	4	f	\N	\N	\N	\N	\N	\N	0	0	\N	f	\N	\N	\N	\N	\N	f	\N	\N	\N	\N	\N	\N	\N	\N	0
 -1	system	2026-07-25 05:58:07.835795	2026-07-25 05:58:28.767687	system	2026-07-25 05:58:28.636524	t	system	\N	t	\N	4	t	\N	\N	\N	\N	\N	\N	0	0	\N	t	\N	34	\N	\N	\N	f	\N	\N	\N	\N	\N	\N	\N	\N	0
 -2	discobot	2026-07-25 05:58:29.385492	2026-07-25 05:58:29.661862	discobot	\N	t	discobot	\N	t	\N	4	t	\N	\N	\N	\N	\N	\N	0	0	\N	f	\N	35	\N	\N	\N	f	\N	\N	\N	\N	\N	\N	\N	\N	0
-4	user2	2026-07-25 05:59:16.733827	2026-09-30 06:21:28.127625	User2	\N	t	user2	\N	f	\N	2	f	\N	\N	\N	\N	\N	\N	0	0	\N	f	\N	\N	\N	\N	\N	f	\N	\N	\N	\N	\N	\N	\N	\N	0
+3	user1	2026-07-25 05:59:16.250829	2026-09-30 07:28:29.606229	User1	2026-09-30 07:28:29.580198	t	user1	\N	f	\N	2	f	\N	\N	\N	\N	\N	\N	0	0	\N	f	\N	\N	\N	\N	\N	f	\N	\N	\N	\N	\N	\N	\N	\N	0
+1	admin	2026-07-25 05:59:14.988794	2026-09-30 07:28:29.705893	Admin	2026-09-30 07:28:29.674309	t	admin	\N	t	\N	4	t	-1	2026-07-25 05:59:15.471236	\N	\N	\N	\N	0	0	\N	f	\N	\N	\N	\N	\N	f	\N	\N	\N	\N	\N	\N	\N	\N	0
+4	user2	2026-07-25 05:59:16.733827	2026-09-30 07:28:29.889848	User2	2026-09-30 07:28:29.179534	t	user2	\N	f	\N	2	f	\N	\N	\N	\N	\N	\N	0	0	\N	f	\N	\N	\N	\N	\N	f	\N	\N	\N	\N	\N	\N	\N	\N	0
+2	user0	2026-07-25 05:59:15.831079	2026-09-30 07:28:30.22895	User0	2026-09-30 07:28:30.163794	t	user0	\N	f	\N	1	f	\N	\N	\N	\N	\N	\N	0	0	\N	f	\N	\N	\N	\N	\N	f	\N	\N	\N	\N	\N	\N	\N	\N	0
 \.
 
 
@@ -693,7 +694,6 @@ COPY public.badges (id, name, description, badge_type_id, grant_count, created_a
 16	Read Guidelines	\N	3	0	2026-07-25 05:58:07.30527	2026-07-25 05:58:07.30527	f	f	file-lines	t	f	SELECT user_id, read_faq granted_at\nFROM user_stats\nWHERE read_faq IS NOT NULL AND (user_id IN (:user_ids) OR :backfill)\n	t	t	1	8	f	t	\N	\N	f
 14	First Link	\N	3	0	2026-07-25 05:58:07.308571	2026-07-25 05:58:07.308571	f	f	link	t	t	SELECT l.user_id, l.post_id, l.created_at granted_at\nFROM\n(\n  SELECT MIN(l1.id) id\n  FROM topic_links l1\n  JOIN badge_posts p1 ON p1.id = l1.post_id\n  JOIN badge_posts p2 ON p2.id = l1.link_post_id\n  WHERE NOT reflection AND p1.topic_id <> p2.topic_id AND not quote AND\n    (:backfill OR ( p1.id in (:post_ids) ))\n  GROUP BY l1.user_id\n) ids\nJOIN topic_links l ON l.id = ids.id\n	t	t	1	2	t	t	\N	\N	f
 15	First Quote	\N	3	0	2026-07-25 05:58:07.311738	2026-07-25 05:58:07.311738	f	f	quote-right	t	t	SELECT ids.user_id, q.post_id, p3.created_at granted_at\nFROM\n(\n  SELECT p1.user_id, MIN(q1.id) id\n  FROM quoted_posts q1\n  JOIN badge_posts p1 ON p1.id = q1.post_id\n  JOIN badge_posts p2 ON p2.id = q1.quoted_post_id\n  WHERE (:backfill OR ( p1.id IN (:post_ids) ))\n  GROUP BY p1.user_id\n) ids\nJOIN quoted_posts q ON q.id = ids.id\nJOIN badge_posts p3 ON q.post_id = p3.id\n	t	t	1	2	t	t	\N	\N	f
-11	First Like	\N	3	0	2026-07-25 05:58:07.314717	2026-07-25 05:58:07.314717	f	f	heart	t	t	SELECT pa1.user_id, pa1.created_at granted_at, pa1.post_id\nFROM (\n  SELECT pa.user_id, min(pa.id) id\n  FROM post_actions pa\n  JOIN badge_posts p on p.id = pa.post_id\n  WHERE post_action_type_id = 2 AND\n    (:backfill OR pa.post_id IN (:post_ids) )\n  GROUP BY pa.user_id\n) x\nJOIN post_actions pa1 on pa1.id = x.id\n	t	t	1	1	t	t	\N	\N	f
 13	First Flag	\N	3	0	2026-07-25 05:58:07.318441	2026-07-25 05:58:07.318441	f	f	flag	t	t	SELECT pa1.user_id, pa1.created_at granted_at, pa1.post_id\nFROM (\n  SELECT pa.user_id, min(pa.id) id\n  FROM post_actions pa\n  JOIN badge_posts p on p.id = pa.post_id\n  WHERE post_action_type_id IN (\n    SELECT f.id\n    FROM flags f\n    WHERE name != 'like'\n    AND score_type IS FALSE\n    AND require_message IS FALSE\n  )\n  AND (:backfill OR pa.post_id IN (:post_ids))\n  GROUP BY pa.user_id\n) x\nJOIN post_actions pa1 on pa1.id = x.id\n	t	f	1	1	f	t	\N	\N	f
 25	Promoter	\N	3	0	2026-07-25 05:58:07.321398	2026-07-25 05:58:07.321398	f	f	user-plus	t	f	SELECT u.id user_id, current_timestamp granted_at\nFROM users u\nWHERE u.id IN (\n  SELECT invited_by_id\n  FROM invites i\n  JOIN invited_users iu ON iu.invite_id = i.id\n  JOIN users u2 ON u2.id = iu.user_id\n  WHERE i.deleted_at IS NULL\n  AND i.invited_by_id <> u2.id\n  AND u2.active\n  AND u2.trust_level >= 0\n  AND u2.silenced_till IS NULL\n  GROUP BY invited_by_id\n  HAVING COUNT(*) >= 1\n) AND u.active AND u.silenced_till IS NULL AND u.id > 0 AND\n(:backfill OR u.id IN (:user_ids) )\n	t	t	2	0	f	t	\N	\N	f
 26	Campaigner	\N	2	0	2026-07-25 05:58:07.328146	2026-07-25 05:58:07.328146	f	f	user-plus	t	f	SELECT u.id user_id, current_timestamp granted_at\nFROM users u\nWHERE u.id IN (\n  SELECT invited_by_id\n  FROM invites i\n  JOIN invited_users iu ON iu.invite_id = i.id\n  JOIN users u2 ON u2.id = iu.user_id\n  WHERE i.deleted_at IS NULL\n  AND i.invited_by_id <> u2.id\n  AND u2.active\n  AND u2.trust_level >= 1\n  AND u2.silenced_till IS NULL\n  GROUP BY invited_by_id\n  HAVING COUNT(*) >= 3\n) AND u.active AND u.silenced_till IS NULL AND u.id > 0 AND\n(:backfill OR u.id IN (:user_ids) )\n	t	t	2	0	f	t	\N	\N	f
@@ -702,12 +702,13 @@ COPY public.badges (id, name, description, badge_type_id, grant_count, created_a
 21	Nice Share	\N	3	0	2026-07-25 05:58:07.343097	2026-07-25 05:58:07.343097	f	t	share-nodes	t	t	SELECT i.user_id, i.post_id, CURRENT_TIMESTAMP granted_at\nFROM incoming_links i\nJOIN badge_posts p on p.id = i.post_id\nJOIN users u on u.id = i.user_id\nGROUP BY i.user_id,i.post_id\nHAVING COUNT(DISTINCT(i.ip_address, i.current_user_id)) >= 25\n	t	t	2	0	t	t	\N	\N	f
 22	Good Share	\N	2	0	2026-07-25 05:58:07.34616	2026-07-25 05:58:07.34616	f	t	share-nodes	t	t	SELECT i.user_id, i.post_id, CURRENT_TIMESTAMP granted_at\nFROM incoming_links i\nJOIN badge_posts p on p.id = i.post_id\nJOIN users u on u.id = i.user_id\nGROUP BY i.user_id,i.post_id\nHAVING COUNT(DISTINCT(i.ip_address, i.current_user_id)) >= 300\n	t	t	2	0	t	t	\N	\N	f
 23	Great Share	\N	1	0	2026-07-25 05:58:07.349769	2026-07-25 05:58:07.349769	f	t	share-nodes	t	t	SELECT i.user_id, i.post_id, CURRENT_TIMESTAMP granted_at\nFROM incoming_links i\nJOIN badge_posts p on p.id = i.post_id\nJOIN users u on u.id = i.user_id\nGROUP BY i.user_id,i.post_id\nHAVING COUNT(DISTINCT(i.ip_address, i.current_user_id)) >= 1000\n	t	t	2	0	t	t	\N	\N	f
-5	Welcome	\N	3	0	2026-07-25 05:58:07.352752	2026-07-25 05:58:07.352752	f	f	heart	t	t	SELECT p.user_id, min(post_id) post_id, min(pa.created_at) granted_at\nFROM post_actions pa\nJOIN badge_posts p on p.id = pa.post_id\nWHERE post_action_type_id = 2 AND\n    (:backfill OR pa.post_id IN (:post_ids) )\nGROUP BY p.user_id\n	t	t	2	1	t	t	\N	\N	f
 9	Autobiographer	\N	3	0	2026-07-25 05:58:07.355652	2026-07-25 05:58:07.355652	f	f	user-pen	t	f	SELECT u.id user_id, current_timestamp granted_at\nFROM users u\nJOIN user_profiles up on u.id = up.user_id\nWHERE bio_raw IS NOT NULL AND LENGTH(TRIM(bio_raw)) > 10 AND\n      uploaded_avatar_id IS NOT NULL AND\n      (:backfill OR u.id IN (:user_ids) )\n	t	t	1	8	f	t	\N	\N	f
 10	Editor	\N	3	0	2026-07-25 05:58:07.358738	2026-07-25 05:58:07.358738	f	f	pen	t	f	SELECT p.user_id, min(p.id) post_id, min(p.created_at) granted_at\nFROM badge_posts p\nWHERE p.self_edits > 0 AND\n    (:backfill OR p.id IN (:post_ids) )\nGROUP BY p.user_id\n	t	t	1	2	f	t	\N	\N	f
 1	Basic User	\N	3	5	2026-07-25 05:58:07.276666	2026-09-30 06:20:02.759062	f	f	user	t	f	SELECT u.id user_id, current_timestamp granted_at FROM users u\nWHERE trust_level >= 1 AND (\n  :backfill OR u.id IN (:user_ids)\n)\n	t	t	4	4	f	t	\N	\N	f
 3	Regular	\N	2	3	2026-07-25 05:58:07.288303	2026-09-30 06:20:15.059747	t	f	user	t	f	SELECT u.id user_id, current_timestamp granted_at FROM users u\nWHERE trust_level >= 3 AND (\n  :backfill OR u.id IN (:user_ids)\n)\n	t	t	4	4	f	t	\N	\N	f
 4	Leader	\N	1	2	2026-07-25 05:58:07.294026	2026-09-30 06:20:53.781407	t	f	user	t	f	SELECT u.id user_id, current_timestamp granted_at FROM users u\nWHERE trust_level >= 4 AND (\n  :backfill OR u.id IN (:user_ids)\n)\n	t	t	4	4	f	t	\N	\N	f
+11	First Like	\N	3	1	2026-07-25 05:58:07.314717	2026-09-30 07:28:37.797752	f	f	heart	t	t	SELECT pa1.user_id, pa1.created_at granted_at, pa1.post_id\nFROM (\n  SELECT pa.user_id, min(pa.id) id\n  FROM post_actions pa\n  JOIN badge_posts p on p.id = pa.post_id\n  WHERE post_action_type_id = 2 AND\n    (:backfill OR pa.post_id IN (:post_ids) )\n  GROUP BY pa.user_id\n) x\nJOIN post_actions pa1 on pa1.id = x.id\n	t	t	1	1	t	t	\N	\N	f
+5	Welcome	\N	3	1	2026-07-25 05:58:07.352752	2026-09-30 07:28:37.810421	f	f	heart	t	t	SELECT p.user_id, min(post_id) post_id, min(pa.created_at) granted_at\nFROM post_actions pa\nJOIN badge_posts p on p.id = pa.post_id\nWHERE post_action_type_id = 2 AND\n    (:backfill OR pa.post_id IN (:post_ids) )\nGROUP BY p.user_id\n	t	t	2	1	t	t	\N	\N	f
 48	Wiki Editor	\N	3	0	2026-07-25 05:58:07.36439	2026-07-25 05:58:07.36439	f	f	far-pen-to-square	t	t	SELECT pr2.user_id, pr2.post_id, pr2.created_at granted_at\nFROM\n(\n  SELECT min(pr.id) id\n  FROM post_revisions pr\n  JOIN badge_posts p on p.id = pr.post_id\n  WHERE p.wiki\n      AND NOT pr.hidden\n      AND (:backfill OR p.id IN (:post_ids))\n  GROUP BY pr.user_id\n) as X\nJOIN post_revisions pr2 ON pr2.id = X.id\n	t	t	1	2	f	t	\N	\N	f
 6	Nice Post	\N	3	0	2026-07-25 05:58:07.36984	2026-07-25 05:58:07.36984	f	t	reply	t	t	SELECT p.user_id, p.id post_id, current_timestamp granted_at\nFROM badge_posts p\nWHERE p.post_number > 1 AND p.like_count >= 10 AND\n  (:backfill OR p.id IN (:post_ids) )\n	t	t	3	1	t	t	\N	\N	f
 7	Good Post	\N	2	0	2026-07-25 05:58:07.374159	2026-07-25 05:58:07.374159	f	t	reply	t	t	SELECT p.user_id, p.id post_id, current_timestamp granted_at\nFROM badge_posts p\nWHERE p.post_number > 1 AND p.like_count >= 25 AND\n  (:backfill OR p.id IN (:post_ids) )\n	t	t	3	1	t	t	\N	\N	f
@@ -973,9 +974,12 @@ ALTER TABLE public.category_custom_fields ENABLE TRIGGER ALL;
 ALTER TABLE public.category_featured_topics DISABLE TRIGGER ALL;
 
 COPY public.category_featured_topics (category_id, topic_id, created_at, updated_at, rank, id) FROM stdin;
-4	5	2026-07-25 05:58:28.340449	2026-07-25 05:58:28.340449	0	2
 3	6	2026-07-25 05:58:28.564578	2026-07-25 05:58:28.564578	0	3
 3	4	2026-07-25 05:58:28.566252	2026-07-25 05:58:28.566252	1	4
+34	38	2026-09-30 07:28:29.564049	2026-09-30 07:28:29.564049	0	37
+4	5	2026-09-30 07:28:30.114059	2026-09-30 07:28:30.114059	0	46
+4	38	2026-09-30 07:28:30.11887	2026-09-30 07:28:30.11887	2	48
+4	35	2026-09-30 07:28:30.121246	2026-09-30 07:28:30.121246	3	49
 \.
 
 
@@ -1065,6 +1069,7 @@ COPY public.category_search_data (category_id, search_data, raw_data, locale, ve
 3	'staff':1A	Staff	en	3
 2	'feedback':2A 'site':1A	Site Feedback	en	3
 4	'general':1A	General	en	3
+34	'general':2A 'sub':1A	Sub General	en	3
 \.
 
 
@@ -1081,6 +1086,7 @@ COPY public.category_settings (id, category_id, require_topic_approval, require_
 2	2	\N	\N	0	2026-07-25 05:58:08.49639	2026-07-25 05:58:08.49639	1	0	0	f
 3	3	\N	\N	0	2026-07-25 05:58:16.211788	2026-07-25 05:58:16.211788	1	0	0	f
 4	4	\N	\N	0	2026-07-25 05:58:16.311568	2026-07-25 05:58:16.311568	1	0	0	f
+34	34	\N	\N	0	2026-09-30 07:28:26.805931	2026-09-30 07:28:26.805931	1	0	0	f
 \.
 
 
@@ -1105,6 +1111,7 @@ ALTER TABLE public.category_tag_groups ENABLE TRIGGER ALL;
 ALTER TABLE public.category_tag_stats DISABLE TRIGGER ALL;
 
 COPY public.category_tag_stats (id, category_id, tag_id, topic_count) FROM stdin;
+1	34	1	1
 \.
 
 
@@ -2106,6 +2113,14 @@ COPY public.topics (id, title, last_posted_at, created_at, updated_at, views, po
 4	Guidelines	2026-07-25 05:58:28.203945	2026-07-25 05:58:27.775869	2026-07-25 05:58:28.251513	0	2	-1	-1	0	\N	\N	\N	\N	2	0	0	3	t	0	f	f	2026-07-25 05:58:28.203945	f	regular	\N	0	0	\N	0.2	1	\N	guidelines	\N	1	869	This is a Civilized Place for Public Discussion\nPlease treat this discussion forum with the same respect you would a public park. We, too, are a shared community resource — a place to share skills, knowledge and intere&hellip;	f	\N	Guidelines	2	\N	0	\N	0	\N	\N	\N	\N	\N
 5	Welcome to Discourse! :wave:	2026-07-25 05:58:28.405469	2026-07-25 05:58:28.320452	2026-07-25 05:58:28.468713	0	1	-1	-1	0	\N	\N	\N	\N	1	0	0	4	t	0	f	f	2026-07-25 05:58:28.405469	f	regular	\N	0	0	2026-07-25 05:58:28.497598	0.2	1	\N	welcome-to-discourse	\N	1	129	We are so glad you joined us. \nHere are some things you can do to get started: \n:speaking_head: Introduce yourself by adding your picture and information about yourself and your interests to your profile. What is one thi&hellip;	t	\N	Welcome to Discourse! :wave:	1	\N	0	\N	0	\N	\N	\N	\N	\N
 6	Admin Guide: Getting Started	2026-07-25 05:58:28.636524	2026-07-25 05:58:28.537993	2026-07-25 05:58:28.757941	0	1	-1	-1	0	\N	\N	\N	\N	1	0	0	3	t	0	f	f	2026-07-25 05:58:28.636524	f	regular	\N	0	0	\N	0.2	1	\N	admin-guide-getting-started	\N	1	272	Welcome to your new community, and thank you for choosing Discourse! \n:closed_mailbox_with_raised_flag: Test your email configuration\nEmail is required for new account signups and notifications. \n→ Send a test email. \n→ &hellip;	f	\N	Admin Guide: Getting Started	1	\N	0	\N	0	\N	\N	\N	\N	\N
+34	About the Sub General category	\N	2026-09-30 07:28:28.633614	2026-09-30 07:28:28.633614	0	1	1	1	0	\N	\N	\N	\N	1	0	0	34	t	0	f	f	2026-09-30 07:28:28.633715	f	regular	\N	0	0	2026-09-30 07:28:26.810256	\N	1	\N	about-the-sub-general-category	\N	1	\N	\N	f	\N	About the Sub General category	1	\N	0	\N	0	\N	\N	\N	\N	\N
+38	Parity fixture: tagged in a subcategory	2026-09-30 07:28:29.580198	2026-09-30 07:28:29.543058	2026-09-30 07:28:29.60142	0	1	3	3	0	\N	\N	\N	\N	1	0	0	34	t	0	f	f	2026-09-30 07:28:29.580198	f	regular	\N	0	0	\N	\N	1	\N	parity-fixture-tagged-in-a-subcategory	\N	1	15	A topic in a subcategory carrying a tag, so tags and category ids show up.	f	\N	Parity fixture: tagged in a subcategory	1	\N	0	\N	0	\N	\N	\N	\N	\N
+35	Parity fixture: replies and posters	2026-09-30 07:28:29.25168	2026-09-30 07:28:28.864868	2026-09-30 07:28:29.285938	0	4	2	1	0	3	\N	4	\N	4	0	0	4	t	0	f	f	2026-09-30 07:28:29.25168	f	regular	\N	0	0	\N	\N	1	\N	parity-fixture-replies-and-posters	\N	4	58	First post of a topic with several repliers, long enough to be a real post body for the excerpt.	f	\N	Parity fixture: replies and posters	4	\N	0	\N	0	\N	\N	\N	\N	\N
+40	Parity fixture: deleted topic	\N	2026-09-30 07:28:29.827702	2026-09-30 07:28:29.920267	0	0	4	4	0	\N	\N	\N	2026-09-30 07:28:29.936769	0	0	0	4	t	0	f	f	2026-09-30 07:28:29.858545	f	regular	\N	0	0	\N	\N	1	\N	parity-fixture-deleted-topic	1	1	\N	This topic is deleted and must not appear anywhere.	f	\N	Parity fixture: deleted topic	0	\N	0	\N	0	\N	\N	\N	\N	\N
+37	Parity fixture: pinned and closed	2026-09-30 07:28:29.358281	2026-09-30 07:28:29.32536	2026-09-30 07:28:29.440782	0	1	1	1	0	\N	\N	\N	\N	1	0	0	2	t	1	t	f	2026-09-30 07:28:29.358281	f	regular	\N	0	0	2026-09-30 07:28:29.406348	\N	1	\N	parity-fixture-pinned-and-closed	\N	1	17	A pinned, closed topic in Site Feedback with an excerpt that should be shown in the list.	f	\N	Parity fixture: pinned and closed	1	\N	0	\N	0	\N	\N	\N	\N	\N
+36	Downloading remote images disabled	2026-09-30 07:28:29.321644	2026-09-30 07:28:29.234006	2026-09-30 07:28:29.413451	0	1	-1	-1	0	\N	\N	\N	\N	1	0	0	\N	t	0	f	f	2026-09-30 07:28:29.321644	f	private_message	\N	0	0	\N	\N	1	system_message	downloading-remote-images-disabled	\N	1	14	The download_remote_images_to_local setting was disabled because the disk space limit at download_remote_images_threshold was reached.	f	\N	Downloading remote images disabled	1	\N	0	\N	0	\N	\N	\N	\N	\N
+39	Parity fixture: unlisted topic	2026-09-30 07:28:29.674309	2026-09-30 07:28:29.645201	2026-09-30 07:28:29.793003	0	1	1	1	0	\N	\N	\N	\N	1	0	0	4	f	1	f	f	2026-09-30 07:28:29.674309	f	regular	\N	0	0	\N	\N	1	\N	parity-fixture-unlisted-topic	\N	1	13	This topic is unlisted and must not appear in latest for anonymous users.	f	\N	\N	1	\N	0	\N	0	\N	\N	99	\N	\N
+41	Parity fixture: liked and archived	2026-09-30 07:28:30.163794	2026-09-30 07:28:30.067335	2026-09-30 07:28:30.457759	0	1	2	2	0	\N	\N	1	\N	1	1	0	4	t	1	f	t	2026-09-30 07:28:30.163794	f	regular	\N	0	0	\N	\N	1	\N	parity-fixture-liked-and-archived	\N	2	13	An archived topic whose first post got a like, for like_count and op_like_count.	f	\N	Parity fixture: liked and archived	1	\N	0	\N	0	\N	\N	\N	\N	\N
 \.
 
 
@@ -2738,6 +2753,7 @@ ALTER TABLE public.github_repos ENABLE TRIGGER ALL;
 ALTER TABLE public.given_daily_likes DISABLE TRIGGER ALL;
 
 COPY public.given_daily_likes (user_id, likes_given, given_date, limit_reached) FROM stdin;
+3	1	2026-09-30	f
 \.
 
 
@@ -3361,6 +3377,10 @@ COPY public.notifications (notification_type, user_id, data, read, created_at, u
 41	1	{"upcoming_change_names":["boards_enabled","composer_media_optimization_image_convert_enabled","enable_composer_redesign","floating_dismiss_topics_on_mobile","granular_anonymous_and_logged_in_groups_permissions"],"upcoming_change_humanized_names":["Boards enabled","Composer media optimization image convert enabled","Enable composer redesign","Floating dismiss topics on mobile","Granular anonymous and logged in groups permissions"],"count":6}	f	2026-09-30 06:20:38.90759	2026-09-30 06:20:38.90759	\N	\N	\N	f	30
 42	1	{"upcoming_change_names":["chat_pinned_messages","dashboard_improvements","enable_discourse_reactions_by_default","enable_discourse_workflows","enable_events_category_type_setup"],"upcoming_change_humanized_names":["Chat pinned messages","Dashboard improvements","Enable Discourse reactions by default","Enable Discourse workflows","Enable events category type setup"],"count":6}	f	2026-09-30 06:20:39.337919	2026-09-30 06:20:39.337919	\N	\N	\N	f	35
 12	5	{"badge_id":4,"badge_name":"Leader","badge_slug":"leader","badge_title":true,"username":"user3"}	f	2026-09-30 06:20:53.74462	2026-09-30 06:20:53.74462	\N	\N	\N	f	36
+2	2	{"topic_title":"Parity fixture: replies and posters","original_post_id":38,"original_post_type":1,"original_username":"admin","revision_number":null,"display_username":"3 replies","display_name":"User1"}	f	2026-09-30 07:28:29.832304	2026-09-30 07:28:29.832304	35	2	\N	f	39
+5	2	{"topic_title":"Parity fixture: liked and archived","original_post_id":46,"original_post_type":1,"original_username":"user1","revision_number":null,"display_username":"user1","display_name":"User0"}	f	2026-09-30 07:28:30.411953	2026-09-30 07:28:30.411953	41	1	1	f	40
+12	3	{"badge_id":11,"badge_name":"First Like","badge_slug":"first-like","badge_title":false,"username":"user1"}	f	2026-09-30 07:28:37.787622	2026-09-30 07:28:37.787622	\N	\N	\N	f	41
+12	2	{"badge_id":5,"badge_name":"Welcome","badge_slug":"welcome","badge_title":false,"username":"user0"}	f	2026-09-30 07:28:37.804914	2026-09-30 07:28:37.804914	\N	\N	\N	f	42
 \.
 
 
@@ -3509,6 +3529,20 @@ COPY public.posts (id, user_id, topic_id, post_number, raw, cooked, created_at, 
 5	-1	4	2	Edit the first post in this topic to change the contents of the Guidelines page.	<p>Edit the first post in this topic to change the contents of the Guidelines page.</p>	2026-07-25 05:58:28.203945	2026-07-25 05:58:28.203945	\N	0	0	\N	0	0	0	0	0.2	1	1	2	-1	f	\N	0	0	0	0	2026-07-25 05:58:28.228334	f	\N	0	0	0	\N	\N	15	1	1	f	2026-07-25 05:58:28.203858	2	\N	0	f	f	\N	1	\N	\N	\N	0	\N	\N
 6	-1	5	1	We are so glad you joined us.\n\n\n\nHere are some things you can do to get started:\n\n:speaking_head: **Introduce yourself** by adding your picture and information about yourself and your interests to [your profile](/my/preferences/account). What is one thing you’d like to be asked about?\n\n:open_book: **Get to know the community** by [browsing discussions](/latest) that are already happening here. When you find a post interesting, informative, or entertaining, use the :heart: to show your appreciation or support!\n\n:handshake: **Contribute** by commenting, sharing your own perspective, asking questions, or offering feedback in the discussion. Before replying or starting new topics, please review the [Community Guidelines](/faq).\n\n> If you need help or have a suggestion, feel free to ask in #site-feedback or [contact the admins](/about).	<p>We are so glad you joined us.</p>\n<p>Here are some things you can do to get started:</p>\n<p><img src="/images/emoji/twitter/speaking_head.png?v=15" title=":speaking_head:" class="emoji" alt=":speaking_head:" loading="lazy" width="20" height="20"> <strong>Introduce yourself</strong> by adding your picture and information about yourself and your interests to <a href="/my/preferences/account">your profile</a>. What is one thing you’d like to be asked about?</p>\n<p><img src="/images/emoji/twitter/open_book.png?v=15" title=":open_book:" class="emoji" alt=":open_book:" loading="lazy" width="20" height="20"> <strong>Get to know the community</strong> by <a href="/latest">browsing discussions</a> that are already happening here. When you find a post interesting, informative, or entertaining, use the <img src="/images/emoji/twitter/heart.png?v=15" title=":heart:" class="emoji" alt=":heart:" loading="lazy" width="20" height="20"> to show your appreciation or support!</p>\n<p><img src="/images/emoji/twitter/handshake.png?v=15" title=":handshake:" class="emoji" alt=":handshake:" loading="lazy" width="20" height="20"> <strong>Contribute</strong> by commenting, sharing your own perspective, asking questions, or offering feedback in the discussion. Before replying or starting new topics, please review the <a href="/faq">Community Guidelines</a>.</p>\n<blockquote>\n<p>If you need help or have a suggestion, feel free to ask in <a class="hashtag-cooked" href="/c/site-feedback/2" data-type="category" data-slug="site-feedback" data-id="2" data-style-type="emoji" data-emoji="thought_balloon"><span class="hashtag-icon-placeholder"><svg class="fa d-icon d-icon-square-full svg-icon svg-node"><use href="#square-full"></use></svg></span><span>Site Feedback</span></a> or <a href="/about">contact the admins</a>.</p>\n</blockquote>	2026-07-25 05:58:28.405469	2026-07-25 05:58:28.405469	\N	0	0	\N	0	0	0	0	0.2	1	1	1	-1	f	\N	0	0	0	0	2026-07-25 05:58:28.4437	f	\N	0	0	0	\N	\N	129	1	1	f	2026-07-25 05:58:28.405399	2	\N	0	f	f	\N	1	\N	\N	\N	0	\N	\N
 7	-1	6	1	*Welcome to your new community, and thank you for choosing Discourse!*\n\n## 📫 Test your email configuration\n\nEmail is required for new account signups and notifications.\n\n→ Send a **[<kbd>test email</kbd>](http://localhost:3000/admin/email/server-settings)**.\n\n→ Email didn’t arrive? Read our guide on [email providers](https://github.com/discourse/discourse/blob/main/docs/INSTALL-email.md).\n\n## 🤝 Invite your team\n\nCollaborating with others?\n\n→ **[<kbd>Send invites</kbd>](http://localhost:3000/new-invite)** to your team members.\n\n## :speech_balloon: Start some conversations\n\nGive your early members a place to start interacting.\n\n→ Add some topics with conversation starters, frequently asked questions, and other content.\n\n→ Discuss ideas and plans for your community with your team.\n\n## 🧑‍🎨 Make it your own\n\nHelp your new members feel right at home when they first arrive.\n\n→ Personalize your **[<kbd>welcome topic</kbd>](http://localhost:3000/t/-/5/)** and fill out your **[<kbd>about page</kbd>](http://localhost:3000/about)**.\n\n→ Customize your **[<kbd>site appearance</kbd>](http://localhost:3000/admin/config/logo)**.\n\n→ Set up different **[<kbd>login methods</kbd>](http://localhost:3000/admin/config/login-and-authentication)** for your members.\n\n## 👋  Invite your first members\n\nWelcome a few people in - the more, the merrier!\n\n→ Send out **[<kbd>invites</kbd>](http://localhost:3000/new-invite)** or send people the link to your community.\n\n## :books: Learn more about Discourse\n\n**Support resources:**\n\n* Ask our [AI-powered assistant](http://ask.discourse.com) anything about Discourse.\n* Browse the complete [Discourse documentation](https://meta.discourse.org/c/documentation/10).\n\n**Community resources:**\n\n* Join the [Discourse community](https://meta.discourse.org/).\n* Take inspiration from [other Discourse communities](https://discover.discourse.com/).\n* Read the [Discourse blog](https://blog.discourse.org/).	<p><em>Welcome to your new community, and thank you for choosing Discourse!</em></p>\n<h2><a name="test-your-email-configuration-1" class="anchor" href="#test-your-email-configuration-1" aria-label="Heading link"></a><img src="/images/emoji/twitter/closed_mailbox_with_raised_flag.png?v=15" title=":closed_mailbox_with_raised_flag:" class="emoji" alt=":closed_mailbox_with_raised_flag:" loading="lazy" width="20" height="20"> Test your email configuration</h2>\n<p>Email is required for new account signups and notifications.</p>\n<p>→ Send a <strong><a href="http://localhost:3000/admin/email/server-settings"><kbd>test email</kbd></a></strong>.</p>\n<p>→ Email didn’t arrive? Read our guide on <a href="https://github.com/discourse/discourse/blob/main/docs/INSTALL-email.md">email providers</a>.</p>\n<h2><a name="invite-your-team-2" class="anchor" href="#invite-your-team-2" aria-label="Heading link"></a><img src="/images/emoji/twitter/handshake.png?v=15" title=":handshake:" class="emoji" alt=":handshake:" loading="lazy" width="20" height="20"> Invite your team</h2>\n<p>Collaborating with others?</p>\n<p>→ <strong><a href="http://localhost:3000/new-invite"><kbd>Send invites</kbd></a></strong> to your team members.</p>\n<h2><a name="speech_balloon-start-some-conversations-3" class="anchor" href="#speech_balloon-start-some-conversations-3" aria-label="Heading link"></a><img src="/images/emoji/twitter/speech_balloon.png?v=15" title=":speech_balloon:" class="emoji" alt=":speech_balloon:" loading="lazy" width="20" height="20"> Start some conversations</h2>\n<p>Give your early members a place to start interacting.</p>\n<p>→ Add some topics with conversation starters, frequently asked questions, and other content.</p>\n<p>→ Discuss ideas and plans for your community with your team.</p>\n<h2><a name="make-it-your-own-4" class="anchor" href="#make-it-your-own-4" aria-label="Heading link"></a><img src="/images/emoji/twitter/artist.png?v=15" title=":artist:" class="emoji" alt=":artist:" loading="lazy" width="20" height="20"> Make it your own</h2>\n<p>Help your new members feel right at home when they first arrive.</p>\n<p>→ Personalize your <strong><a href="http://localhost:3000/t/-/5/"><kbd>welcome topic</kbd></a></strong> and fill out your <strong><a href="http://localhost:3000/about"><kbd>about page</kbd></a></strong>.</p>\n<p>→ Customize your <strong><a href="http://localhost:3000/admin/config/logo"><kbd>site appearance</kbd></a></strong>.</p>\n<p>→ Set up different <strong><a href="http://localhost:3000/admin/config/login-and-authentication"><kbd>login methods</kbd></a></strong> for your members.</p>\n<h2><a name="invite-your-first-members-5" class="anchor" href="#invite-your-first-members-5" aria-label="Heading link"></a><img src="/images/emoji/twitter/waving_hand.png?v=15" title=":waving_hand:" class="emoji" alt=":waving_hand:" loading="lazy" width="20" height="20">  Invite your first members</h2>\n<p>Welcome a few people in - the more, the merrier!</p>\n<p>→ Send out <strong><a href="http://localhost:3000/new-invite"><kbd>invites</kbd></a></strong> or send people the link to your community.</p>\n<h2><a name="books-learn-more-about-discourse-6" class="anchor" href="#books-learn-more-about-discourse-6" aria-label="Heading link"></a><img src="/images/emoji/twitter/books.png?v=15" title=":books:" class="emoji" alt=":books:" loading="lazy" width="20" height="20"> Learn more about Discourse</h2>\n<p><strong>Support resources:</strong></p>\n<ul>\n<li>Ask our <a href="http://ask.discourse.com">AI-powered assistant</a> anything about Discourse.</li>\n<li>Browse the complete <a href="https://meta.discourse.org/c/documentation/10">Discourse documentation</a>.</li>\n</ul>\n<p><strong>Community resources:</strong></p>\n<ul>\n<li>Join the <a href="https://meta.discourse.org/">Discourse community</a>.</li>\n<li>Take inspiration from <a href="https://discover.discourse.com/">other Discourse communities</a>.</li>\n<li>Read the <a href="https://blog.discourse.org/">Discourse blog</a>.</li>\n</ul>	2026-07-25 05:58:28.636524	2026-07-25 05:58:28.636524	\N	0	0	\N	0	0	0	0	0.2	1	1	1	-1	f	\N	0	0	0	0	2026-07-25 05:58:28.677667	f	\N	0	0	0	\N	\N	272	1	1	f	2026-07-25 05:58:28.636433	2	\N	0	f	f	\N	1	\N	\N	\N	0	\N	\N
+34	1	34	1	(Replace this first paragraph with a brief description of your new category. This guidance will appear in the category selection area, so try to keep it below 200 characters.)\n\nUse the following paragraphs for a longer description, or to establish category guidelines or rules:\n\n- Why should people use this category? What is it for?\n\n- How exactly is this different than the other categories we already have?\n\n- What should topics in this category generally contain?\n\n- Do we need this category? Can we merge with another category, or subcategory?\n	<p>(Replace this first paragraph with a brief description of your new category. This guidance will appear in the category selection area, so try to keep it below 200 characters.)</p>\n<p>Use the following paragraphs for a longer description, or to establish category guidelines or rules:</p>\n<ul>\n<li>\n<p>Why should people use this category? What is it for?</p>\n</li>\n<li>\n<p>How exactly is this different than the other categories we already have?</p>\n</li>\n<li>\n<p>What should topics in this category generally contain?</p>\n</li>\n<li>\n<p>Do we need this category? Can we merge with another category, or subcategory?</p>\n</li>\n</ul>	2026-09-30 07:28:28.693594	2026-09-30 07:28:28.693594	\N	0	0	\N	0	0	0	0	\N	0	1	1	1	f	\N	0	0	0	0	2026-09-30 07:28:28.788778	f	\N	1	0	0	\N	\N	87	1	1	f	2026-09-30 07:28:28.693511	2	\N	0	f	f	\N	1	\N	\N	\N	0	\N	\N
+35	2	35	1	First post of a topic with several repliers, long enough to be a real post body for the excerpt.	<p>First post of a topic with several repliers, long enough to be a real post body for the excerpt.</p>	2026-09-30 07:28:28.901913	2026-09-30 07:28:28.901913	\N	0	0	\N	0	0	0	0	\N	1	1	1	2	f	\N	0	0	0	0	2026-09-30 07:28:28.917598	f	\N	1	0	0	\N	\N	19	1	1	f	2026-09-30 07:28:28.901878	2	\N	0	f	f	\N	1	\N	\N	\N	0	\N	\N
+36	3	35	2	Reply one from user1, also long enough to pass the minimum length check.	<p>Reply one from user1, also long enough to pass the minimum length check.</p>	2026-09-30 07:28:29.079439	2026-09-30 07:28:29.079439	\N	0	0	\N	0	0	0	0	\N	1	1	2	3	f	\N	0	0	0	0	2026-09-30 07:28:29.094067	f	\N	1	0	0	\N	\N	13	1	1	f	2026-09-30 07:28:29.079363	2	\N	0	f	f	\N	1	\N	\N	\N	0	\N	\N
+37	4	35	3	Reply two from user2, also long enough to pass the minimum length check.	<p>Reply two from user2, also long enough to pass the minimum length check.</p>	2026-09-30 07:28:29.179534	2026-09-30 07:28:29.179534	\N	0	0	\N	0	0	0	0	\N	1	1	3	4	f	\N	0	0	0	0	2026-09-30 07:28:29.196789	f	\N	1	0	0	\N	\N	13	1	1	f	2026-09-30 07:28:29.179482	2	\N	0	f	f	\N	1	\N	\N	\N	0	\N	\N
+38	1	35	4	Reply three from admin, also long enough to pass the minimum length check.	<p>Reply three from admin, also long enough to pass the minimum length check.</p>	2026-09-30 07:28:29.25168	2026-09-30 07:28:29.25168	\N	0	0	\N	0	0	0	0	\N	1	1	4	1	f	\N	0	0	0	0	2026-09-30 07:28:29.265223	f	\N	1	0	0	\N	\N	13	1	1	f	2026-09-30 07:28:29.251646	2	\N	0	f	f	\N	1	\N	\N	\N	0	\N	\N
+40	1	37	1	A pinned, closed topic in Site Feedback with an excerpt that should be shown in the list.	<p>A pinned, closed topic in Site Feedback with an excerpt that should be shown in the list.</p>	2026-09-30 07:28:29.358281	2026-09-30 07:28:29.358281	\N	0	0	\N	0	0	0	0	\N	1	1	1	1	f	\N	0	0	0	0	2026-09-30 07:28:29.374301	f	\N	1	0	0	\N	\N	17	1	1	f	2026-09-30 07:28:29.358236	2	\N	0	f	f	\N	1	\N	\N	\N	0	\N	\N
+39	-1	36	1	The `download_remote_images_to_local` setting was disabled because the disk space limit at `download_remote_images_threshold` was reached.	<p>The <code>download_remote_images_to_local</code> setting was disabled because the disk space limit at <code>download_remote_images_threshold</code> was reached.</p>	2026-09-30 07:28:29.321644	2026-09-30 07:28:29.321644	\N	0	0	\N	0	0	0	0	\N	1	1	1	-1	f	\N	0	0	0	0	2026-09-30 07:28:29.359232	f	\N	1	0	0	\N	\N	14	1	1	f	2026-09-30 07:28:29.321546	2	\N	0	f	f	\N	1	\N	\N	\N	0	\N	\N
+41	1	37	2			2026-09-30 07:28:29.415071	2026-09-30 07:28:29.415071	\N	0	0	\N	0	0	0	0	\N	1	3	2	1	f	\N	0	0	0	0	2026-09-30 07:28:29.427671	f	\N	1	0	0	\N	\N	0	1	1	f	2026-09-30 07:28:29.415034	2	\N	0	f	f	\N	1	closed.enabled	\N	\N	0	\N	\N
+42	3	38	1	A topic in a subcategory carrying a tag, so tags and category ids show up.	<p>A topic in a subcategory carrying a tag, so tags and category ids show up.</p>	2026-09-30 07:28:29.580198	2026-09-30 07:28:29.580198	\N	0	0	\N	0	0	0	0	\N	1	1	1	3	f	\N	0	0	0	0	2026-09-30 07:28:29.595088	f	\N	1	0	0	\N	\N	15	1	1	f	2026-09-30 07:28:29.580157	2	\N	0	f	f	\N	1	\N	\N	\N	0	\N	\N
+43	1	39	1	This topic is unlisted and must not appear in latest for anonymous users.	<p>This topic is unlisted and must not appear in latest for anonymous users.</p>	2026-09-30 07:28:29.674309	2026-09-30 07:28:29.674309	\N	0	0	\N	0	0	0	0	\N	1	1	1	1	f	\N	0	0	0	0	2026-09-30 07:28:29.692625	f	\N	1	0	0	\N	\N	13	1	1	f	2026-09-30 07:28:29.674275	2	\N	0	f	f	\N	1	\N	\N	\N	0	\N	\N
+44	1	39	2			2026-09-30 07:28:29.762464	2026-09-30 07:28:29.762464	\N	0	0	\N	0	0	0	0	\N	1	3	2	1	f	\N	0	0	0	0	2026-09-30 07:28:29.77607	f	\N	1	0	0	\N	\N	0	1	1	f	2026-09-30 07:28:29.762407	2	\N	0	f	f	\N	1	visible.disabled	\N	\N	0	\N	\N
+45	4	40	1	This topic is deleted and must not appear anywhere.	<p>This topic is deleted and must not appear anywhere.</p>	2026-09-30 07:28:29.858545	2026-09-30 07:28:29.858545	\N	0	0	2026-09-30 07:28:29.918231	0	0	0	0	\N	1	1	1	4	f	\N	0	0	0	0	2026-09-30 07:28:29.877601	f	\N	1	0	0	1	\N	9	1	1	f	2026-09-30 07:28:29.858505	2	\N	0	f	f	\N	1	\N	\N	\N	0	\N	\N
+46	2	41	1	An archived topic whose first post got a like, for like_count and op_like_count.	<p>An archived topic whose first post got a like, for like_count and op_like_count.</p>	2026-09-30 07:28:30.163794	2026-09-30 07:28:30.163794	\N	0	0	\N	0	1	0	0	\N	1	1	1	2	f	\N	0	0	0	0	2026-09-30 07:28:30.18697	f	\N	1	0	1	\N	\N	13	1	1	f	2026-09-30 07:28:30.163751	2	\N	0	f	f	\N	1	\N	\N	\N	0	\N	\N
+47	1	41	2			2026-09-30 07:28:30.429946	2026-09-30 07:28:30.429946	\N	0	0	\N	0	0	0	0	\N	1	3	2	1	f	\N	0	0	0	0	2026-09-30 07:28:30.440011	f	\N	1	0	0	\N	\N	0	1	1	f	2026-09-30 07:28:30.429914	2	\N	0	f	f	\N	1	archived.enabled	\N	\N	0	\N	\N
 \.
 
 
@@ -3575,6 +3609,7 @@ ALTER TABLE public.post_action_types ENABLE TRIGGER ALL;
 ALTER TABLE public.post_actions DISABLE TRIGGER ALL;
 
 COPY public.post_actions (id, post_id, user_id, post_action_type_id, deleted_at, created_at, updated_at, deleted_by_id, related_post_id, staff_took_action, deferred_by_id, targets_topic, agreed_at, agreed_by_id, deferred_at, disagreed_at, disagreed_by_id) FROM stdin;
+1	46	3	2	\N	2026-09-30 07:28:30.313407	2026-09-30 07:28:30.338469	\N	\N	f	\N	f	\N	\N	\N	\N	\N
 \.
 
 
@@ -3587,6 +3622,9 @@ ALTER TABLE public.post_actions ENABLE TRIGGER ALL;
 ALTER TABLE public.post_custom_fields DISABLE TRIGGER ALL;
 
 COPY public.post_custom_fields (id, post_id, name, value, created_at, updated_at) FROM stdin;
+1	35	notice	{"type":"new_user"}	2026-09-30 07:28:28.930579	2026-09-30 07:28:28.930579
+2	36	notice	{"type":"new_user"}	2026-09-30 07:28:29.098389	2026-09-30 07:28:29.098389
+3	37	notice	{"type":"new_user"}	2026-09-30 07:28:29.200018	2026-09-30 07:28:29.200018
 \.
 
 
@@ -3714,6 +3752,17 @@ COPY public.post_search_data (post_id, search_data, raw_data, locale, version, p
 5	'chang':11 'content':13 'edit':3 'first':5 'guidelin':1A,16 'page':17 'post':6 'staff':2B 'topic':9	Edit the first post in this topic to change the contents of the Guidelines page.	en	5	f
 6	'/about':135 '/c/site-feedback/2':128 '/faq':112 '/latest':61 '/my/preferences/account':39 'ad':28 'admin':138 'alreadi':66 'appreci':84 'ask':51,95,126 'book':54 'brows':62 'comment':90 'communiti':59,113 'contact':136 'contribut':88 'd':47 'discours':3A 'discuss':63,102 'entertain':77 'feedback':99,133 'feel':123 'find':71 'free':124 'full':131 'general':5B 'get':21,55 'glad':9 'guidelin':114 'handshak':87 'happen':67 'head':24 'heart':80 'help':118 'inform':32,75 'interest':37,74 'introduc':25 'join':11 'know':57 'like':48 'need':117 'new':107 'offer':98 'one':44 'open':53 'perspect':94 'pictur':30 'pleas':109 'post':73 'profil':41 'question':96 'repli':104 'review':110 'share':91 'show':82 'site':132 'speak':23 'squar':130 'square-ful':129 'start':22,106 'suggest':122 'support':86 'thing':16,45 'topic':108 'us':12 'use':78 'wave':4A 'welcom':1A	We are so glad you joined us. Here are some things you can do to get started: :speaking_head: Introduce yourself by adding your picture and information about yourself and your interests to /my/preferences/account your profile . What is one thing you'd like to be asked about? :open_book: Get to know the community by /latest browsing discussions that are already happening here. When you find a post interesting, informative, or entertaining, use the :heart: to show your appreciation or support! :handshake: Contribute by commenting, sharing your own perspective, asking questions, or offering feedback in the discussion. Before replying or starting new topics, please review the /faq Community Guidelines . If you need help or have a suggestion, feel free to ask in /c/site-feedback/2 #square-full Site Feedback or /about contact the admins .	en	5	f
 7	'/5':126 '/c/documentation/10':203 '/discourse/discourse/blob/main/docs/install-email.md':51 '3000/about':134 '3000/admin/config/login-and-authentication':147 '3000/admin/config/logo':140 '3000/admin/email/server-settings':38 '3000/new-invite':62,171 '3000/t':125 'account':31 'add':83 'admin':1A 'ai':192 'ai-pow':191 'anyth':195 'appear':142 'arriv':44,121 'artist':105 'ask':90,188,190 'ask.discourse.com':190 'assist':194 'balloon':70 'blog':222,224 'blog.discourse.org':222 'book':181 'brows':198 'choos':15 'close':17 'collabor':58 'com':50,190,216 'communiti':10,101,180,206,212,219 'complet':200 'configur':25 'content':94 'convers':73,87 'custom':137 'didn':42 'differ':145 'discours':16,185,190,197,202,204,210,211,216,218,222 'discourse.com':190,216 'discourse.org':202,210,222 'discov':216 'discover.discourse.com':216 'discuss':95 'document':205 'earli':76 'email':24,26,40,41,52 'feel':114 'fill':130 'first':120,157 'flag':21 'frequent':89 'get':3A 'github':50 'github.com':50 'github.com/discourse/discourse/blob/main/docs/install-email.md':49 'give':74 'guid':2A,47 'hand':154 'handshak':54 'help':110 'home':117 'idea':96 'inspir':214 'interact':82 'invit':55,64,155,172 'join':208 'learn':182 'link':177 'localhost':37,61,124,133,139,146 'login':148 'mailbox':18 'make':106 'member':68,77,113,152,158 'merrier':167 'meta':202,210 'meta.discourse.org':202,210 'meta.discourse.org/c/documentation/10':201 'method':149 'new':9,30,112 'notif':34 'org':202,210,222 'other':60 'page':136 'peopl':162,175 'person':122 'place':79 'plan':98 'power':193 'provid':53 'question':91 'rais':20 'read':45,220 'requir':28 'resourc':187,207 'right':115 'send':35,63,168,174 'set':143 'signup':32 'site':141 'speech':69 'staff':5B 'start':4A,71,81 'starter':88 'support':186 'take':213 'team':57,67,104 'test':22,39 'thank':12 'topic':85,128 'wave':153 'welcom':6,127,159	Welcome to your new community, and thank you for choosing Discourse! :closed_mailbox_with_raised_flag: Test your email configuration Email is required for new account signups and notifications. → Send a http://localhost:3000/admin/email/server-settings test email . → Email didn't arrive? Read our guide on https://github.com/discourse/discourse/blob/main/docs/INSTALL-email.md email providers . :handshake: Invite your team Collaborating with others? → http://localhost:3000/new-invite Send invites to your team members. :speech_balloon: Start some conversations Give your early members a place to start interacting. → Add some topics with conversation starters, frequently asked questions, and other content. → Discuss ideas and plans for your community with your team. :artist: Make it your own Help your new members feel right at home when they first arrive. → Personalize your http://localhost:3000/t/-/5/ welcome topic and fill out your http://localhost:3000/about about page . → Customize your http://localhost:3000/admin/config/logo site appearance . → Set up different http://localhost:3000/admin/config/login-and-authentication login methods for your members. :waving_hand: Invite your first members Welcome a few people in - the more, the merrier! → Send out http://localhost:3000/new-invite invites or send people the link to your community. :books: Learn more about Discourse Support resources: Ask our http://ask.discourse.com AI-powered assistant anything about Discourse. Browse the complete https://meta.discourse.org/c/documentation/10 Discourse documentation . Community resources: Join the https://meta.discourse.org/ Discourse community . Take inspiration from https://discover.discourse.com/ other Discourse communities . Read the https://blog.discourse.org/ Discourse blog .	en	5	f
+34	'200':35 'alreadi':72 'anoth':91 'appear':23 'area':28 'brief':14 'categori':5A,19,26,48,57,70,79 'charact':36 'contain':81 'descript':15,44 'differ':66 'establish':47 'exact':63 'first':10 'follow':39 'general':4A,7B,80 'guidanc':21 'guidelin':49 'keep':32 'longer':43 'merg':89 'need':84 'new':18 'paragraph':11,40 'peopl':54 'replac':8 'rule':51 'select':27 'sub':3A,6B 'subcategori':94 'topic':76 'tri':30 'use':37,55	(Replace this first paragraph with a brief description of your new category. This guidance will appear in the category selection area, so try to keep it below 200 characters.) Use the following paragraphs for a longer description, or to establish category guidelines or rules: Why should people use this category? What is it for? How exactly is this different than the other categories we already have? What should topics in this category generally contain? Do we need this category? Can we merge with another category, or subcategory?	en	0	f
+35	'bodi':22 'enough':16 'excerpt':25 'first':7 'fixtur':2A 'general':6B 'long':15 'pariti':1A 'post':8,21 'poster':5A 'real':20 'repli':3A 'replier':14 'sever':13 'topic':11	First post of a topic with several repliers, long enough to be a real post body for the excerpt.	en	5	f
+36	'also':11 'check':19 'enough':13 'fixtur':2A 'general':6B 'length':18 'long':12 'minimum':17 'one':8 'pariti':1A 'pass':15 'poster':5A 'repli':3A,7 'user1':10	Reply one from user1, also long enough to pass the minimum length check.	en	5	f
+37	'also':11 'check':19 'enough':13 'fixtur':2A 'general':6B 'length':18 'long':12 'minimum':17 'pariti':1A 'pass':15 'poster':5A 'repli':3A,7 'two':8 'user2':10	Reply two from user2, also long enough to pass the minimum length check.	en	5	f
+38	'admin':10 'also':11 'check':19 'enough':13 'fixtur':2A 'general':6B 'length':18 'long':12 'minimum':17 'pariti':1A 'pass':15 'poster':5A 'repli':3A,7 'three':8	Reply three from admin, also long enough to pass the minimum length check.	en	5	f
+40	'close':5A,10 'excerpt':17 'feedback':7B,14 'fixtur':2A 'list':24 'pariti':1A 'pin':3A,9 'shown':21 'site':6B,13 'topic':11	A pinned, closed topic in Site Feedback with an excerpt that should be shown in the list.	en	5	f
+39	'disabl':4A,13 'disk':16 'download':1A,6,20 'imag':3A,8,22 'limit':18 'local':10 'reach':25 'remot':2A,7,21 'set':11 'space':17 'threshold':23	The download_remote_images_to_local setting was disabled because the disk space limit at download_remote_images_threshold was reached.	en	5	t
+42	'carri':15 'categori':21 'fixtur':2A 'general':8B 'howto':9C 'id':22 'pariti':1A 'show':23 'sub':7B 'subcategori':6A,14 'tag':3A,17,19 'topic':11	A topic in a subcategory carrying a tag, so tags and category ids show up.	en	5	f
+43	'anonym':17 'appear':13 'fixtur':2A 'general':5B 'latest':15 'must':11 'pariti':1A 'topic':4A,7 'unlist':3A,9 'user':18	This topic is unlisted and must not appear in latest for anonymous users.	en	5	f
+45	'anywher':14 'appear':13 'delet':3A,9 'fixtur':2A 'general':5B 'must':11 'pariti':1A 'topic':4A,7	This topic is deleted and must not appear anywhere.	en	5	f
+46	'archiv':5A,8 'count':18,22 'first':11 'fixtur':2A 'general':6B 'got':13 'like':3A,15,17,21 'op':20 'pariti':1A 'post':12 'topic':9 'whose':10	An archived topic whose first post got a like, for like_count and op_like_count.	en	5	f
 \.
 
 
@@ -3730,6 +3779,19 @@ COPY public.post_stats (id, post_id, drafts_saved, typing_duration_msecs, compos
 2	5	0	0	0	2026-07-25 05:58:28.230833	2026-07-25 05:58:28.230833	\N	\N	\N
 3	6	0	0	0	2026-07-25 05:58:28.446339	2026-07-25 05:58:28.446339	\N	\N	\N
 4	7	0	0	0	2026-07-25 05:58:28.680627	2026-07-25 05:58:28.680627	\N	\N	\N
+34	35	0	0	0	2026-09-30 07:28:28.919445	2026-09-30 07:28:28.919445	\N	\N	\N
+35	36	0	0	0	2026-09-30 07:28:29.095958	2026-09-30 07:28:29.095958	\N	\N	\N
+36	37	0	0	0	2026-09-30 07:28:29.198339	2026-09-30 07:28:29.198339	\N	\N	\N
+37	38	0	0	0	2026-09-30 07:28:29.267348	2026-09-30 07:28:29.267348	\N	\N	\N
+38	39	0	0	0	2026-09-30 07:28:29.370384	2026-09-30 07:28:29.370384	\N	\N	\N
+39	40	0	0	0	2026-09-30 07:28:29.375635	2026-09-30 07:28:29.375635	\N	\N	\N
+40	41	0	0	0	2026-09-30 07:28:29.429315	2026-09-30 07:28:29.429315	\N	\N	\N
+41	42	0	0	0	2026-09-30 07:28:29.596476	2026-09-30 07:28:29.596476	\N	\N	\N
+42	43	0	0	0	2026-09-30 07:28:29.694306	2026-09-30 07:28:29.694306	\N	\N	\N
+43	44	0	0	0	2026-09-30 07:28:29.777936	2026-09-30 07:28:29.777936	\N	\N	\N
+44	45	0	0	0	2026-09-30 07:28:29.879678	2026-09-30 07:28:29.879678	\N	\N	\N
+45	46	0	0	0	2026-09-30 07:28:30.191087	2026-09-30 07:28:30.191087	\N	\N	\N
+46	47	0	0	0	2026-09-30 07:28:30.441859	2026-09-30 07:28:30.441859	\N	\N	\N
 \.
 
 
@@ -3746,6 +3808,19 @@ COPY public.post_timings (topic_id, post_number, user_id, msecs) FROM stdin;
 4	2	-1	5000
 5	1	-1	5000
 6	1	-1	5000
+35	1	2	5000
+35	2	3	5000
+35	3	4	5000
+35	4	1	5000
+37	1	1	5000
+36	1	-1	5000
+37	2	1	5000
+38	1	3	5000
+39	1	1	5000
+39	2	1	5000
+40	1	4	5000
+41	1	2	5000
+41	2	1	5000
 \.
 
 
@@ -6751,6 +6826,7 @@ COPY public.site_settings (id, name, data_type, value, created_at, updated_at) F
 21	has_login_hint	5	f	2026-07-25 05:58:28.889816	2026-07-25 05:59:15.406436
 20	global_notice	1		2026-07-25 05:58:28.885981	2026-07-25 05:59:15.413291
 2	uncategorized_category_id	3	-1	2026-07-25 05:58:08.480753	2026-09-30 06:20:39.207692
+34	download_remote_images_to_local	5	f	2026-09-30 07:28:29.131277	2026-09-30 07:28:29.131277
 \.
 
 
@@ -6763,9 +6839,9 @@ ALTER TABLE public.site_settings ENABLE TRIGGER ALL;
 ALTER TABLE public.sitemaps DISABLE TRIGGER ALL;
 
 COPY public.sitemaps (id, name, last_posted_at, enabled) FROM stdin;
-1	recent	2026-09-27 06:20:09.161391	t
-2	news	2026-09-27 06:20:09.193171	t
 3	1	2026-07-25 05:58:28.468713	t
+1	recent	2026-09-27 07:20:43.891947	t
+2	news	2026-09-27 07:20:43.895457	t
 \.
 
 
@@ -6850,6 +6926,7 @@ ALTER TABLE public.tag_localizations ENABLE TRIGGER ALL;
 ALTER TABLE public.tag_search_data DISABLE TRIGGER ALL;
 
 COPY public.tag_search_data (tag_id, search_data, raw_data, locale, version) FROM stdin;
+1	'howto':1A	howto	en	3
 \.
 
 
@@ -6874,6 +6951,7 @@ ALTER TABLE public.tag_users ENABLE TRIGGER ALL;
 ALTER TABLE public.tags DISABLE TRIGGER ALL;
 
 COPY public.tags (id, name, created_at, updated_at, pm_topic_count, target_tag_id, description, public_topic_count, staff_topic_count, locale, slug, description_cooked, description_cooked_version) FROM stdin;
+1	howto	2026-09-30 07:28:29.481344	2026-09-30 07:28:29.481344	0	\N	\N	1	1	\N	howto	\N	\N
 \.
 
 
@@ -7190,6 +7268,7 @@ ALTER TABLE public.topic_allowed_groups ENABLE TRIGGER ALL;
 ALTER TABLE public.topic_allowed_users DISABLE TRIGGER ALL;
 
 COPY public.topic_allowed_users (id, user_id, topic_id, created_at, updated_at) FROM stdin;
+1	-1	36	2026-09-30 07:28:29.24126	2026-09-30 07:28:29.24126
 \.
 
 
@@ -7250,12 +7329,12 @@ ALTER TABLE public.topic_groups ENABLE TRIGGER ALL;
 ALTER TABLE public.topic_hot_scores DISABLE TRIGGER ALL;
 
 COPY public.topic_hot_scores (id, topic_id, score, recent_likes, recent_posters, recent_first_bumped_at, created_at, updated_at) FROM stdin;
-4	1	0	0	0	\N	2026-09-30 06:20:46.862926	2026-09-30 06:30:20.209743
-3	2	0	0	0	\N	2026-09-30 06:20:46.862926	2026-09-30 06:30:20.209743
-2	3	0	0	0	\N	2026-09-30 06:20:46.862926	2026-09-30 06:30:20.209743
-6	4	0	0	0	\N	2026-09-30 06:20:46.862926	2026-09-30 06:30:20.209743
-1	5	0	0	0	\N	2026-09-30 06:20:46.862926	2026-09-30 06:30:20.209743
-5	6	0	0	0	\N	2026-09-30 06:20:46.862926	2026-09-30 06:30:20.209743
+4	1	0	0	0	\N	2026-09-30 06:20:46.862926	2026-09-30 07:25:14.885483
+3	2	0	0	0	\N	2026-09-30 06:20:46.862926	2026-09-30 07:25:14.885483
+2	3	0	0	0	\N	2026-09-30 06:20:46.862926	2026-09-30 07:25:14.885483
+6	4	0	0	0	\N	2026-09-30 06:20:46.862926	2026-09-30 07:25:14.885483
+1	5	0	0	0	\N	2026-09-30 06:20:46.862926	2026-09-30 07:25:14.885483
+5	6	0	0	0	\N	2026-09-30 06:20:46.862926	2026-09-30 07:25:14.885483
 \.
 
 
@@ -7341,6 +7420,14 @@ COPY public.topic_search_data (topic_id, raw_data, locale, search_data, version)
 4	Guidelines #civilized This is a Civilized Place for Public Discussion Please treat this discussion forum with the same respect you would a public park. We, too, are a shared community resource — a place to share	en	'civil':2B,6B 'communiti':30B 'discuss':10B,14B 'forum':15B 'guidelin':1A 'park':24B 'place':7B,33B 'pleas':11B 'public':9B,23B 'resourc':31B 'respect':19B 'share':29B,35B 'treat':12B 'would':21B	4
 5	Welcome to Discourse! :wave: We are so glad you joined us. Here are some things you can do to get started: :speaking_head: Introduce yourself by adding your picture and information about yourself and your interests to /my/prefere	en	'/my/prefere':38B 'ad':27B 'discours':3A 'get':20B 'glad':8B 'head':23B 'inform':31B 'interest':36B 'introduc':24B 'join':10B 'pictur':29B 'speak':22B 'start':21B 'thing':15B 'us':11B 'wave':4A 'welcom':1A	4
 6	Admin Guide: Getting Started Welcome to your new community, and thank you for choosing Discourse! :closed_mailbox_with_raised_flag: Test your email configuration Email is required for new account signups and notifications. → Send	en	'account':30B 'admin':1A 'choos':14B 'close':16B 'communiti':9B 'configur':24B 'discours':15B 'email':23B,25B 'flag':20B 'get':3A 'guid':2A 'mailbox':17B 'new':8B,29B 'notif':33B 'rais':19B 'requir':27B 'send':34B 'signup':31B 'start':4A 'test':21B 'thank':11B 'welcom':5B	4
+34	About the Sub General category (Replace this first paragraph with a brief description of your new category. This guidance will appear in the category selection area, so try to keep it below 200 characters.) Use the following paragr	en	'200':33B 'appear':21B 'area':26B 'brief':12B 'categori':5A,17B,24B 'charact':34B 'descript':13B 'first':8B 'follow':37B 'general':4A 'guidanc':19B 'keep':30B 'new':16B 'paragr':38B 'paragraph':9B 'replac':6B 'select':25B 'sub':3A 'tri':28B 'use':35B	4
+35	Parity fixture: replies and posters First post of a topic with several repliers, long enough to be a real post body for the excerpt.	en	'bodi':21B 'enough':15B 'excerpt':24B 'first':6B 'fixtur':2A 'long':14B 'pariti':1A 'post':7B,20B 'poster':5A 'real':19B 'repli':3A 'replier':13B 'sever':12B 'topic':10B	4
+37	Parity fixture: pinned and closed A pinned, closed topic in Site Feedback with an excerpt that should be shown in the list.	en	'close':5A,8B 'excerpt':15B 'feedback':12B 'fixtur':2A 'list':22B 'pariti':1A 'pin':3A,7B 'shown':19B 'site':11B 'topic':9B	4
+38	Parity fixture: tagged in a subcategory A topic in a subcategory carrying a tag, so tags and category ids show up.	en	'carri':12B 'categori':18B 'fixtur':2A 'id':19B 'pariti':1A 'show':20B 'subcategori':6A,11B 'tag':3A,14B,16B 'topic':8B	4
+36	Downloading remote images disabled The download_remote_images_to_local setting was disabled because the disk space limit at download_remote_images_threshold was reached.	en	'disabl':4A,13B 'disk':16B 'download':1A,6B,20B 'imag':3A,8B,22B 'limit':18B 'local':10B 'reach':25B 'remot':2A,7B,21B 'set':11B 'space':17B 'threshold':23B	4
+39	Parity fixture: unlisted topic This topic is unlisted and must not appear in latest for anonymous users.	en	'anonym':16B 'appear':12B 'fixtur':2A 'latest':14B 'must':10B 'pariti':1A 'topic':4A,6B 'unlist':3A,8B 'user':17B	4
+40	Parity fixture: deleted topic This topic is deleted and must not appear anywhere.	en	'anywher':13B 'appear':12B 'delet':3A,8B 'fixtur':2A 'must':10B 'pariti':1A 'topic':4A,6B	4
+41	Parity fixture: liked and archived An archived topic whose first post got a like, for like_count and op_like_count.	en	'archiv':5A,7B 'count':17B,21B 'first':10B 'fixtur':2A 'got':12B 'like':3A,14B,16B,20B 'op':19B 'pariti':1A 'post':11B 'topic':8B 'whose':9B	4
 \.
 
 
@@ -7353,6 +7440,7 @@ ALTER TABLE public.topic_search_data ENABLE TRIGGER ALL;
 ALTER TABLE public.topic_tags DISABLE TRIGGER ALL;
 
 COPY public.topic_tags (id, topic_id, tag_id, created_at, updated_at) FROM stdin;
+1	38	1	2026-09-30 07:28:29.544832	2026-09-30 07:28:29.544832
 \.
 
 
@@ -7392,6 +7480,17 @@ COPY public.topic_users (user_id, topic_id, posted, last_read_post_number, last_
 -1	4	t	2	2026-07-25 05:58:27.812075	2026-07-25 05:58:27.812075	3	2026-07-25 05:58:27.810902	1	0	\N	1	\N	f	f	2026-07-25 05:58:28.245524
 -1	5	t	1	2026-07-25 05:58:28.346573	2026-07-25 05:58:28.346573	3	2026-07-25 05:58:28.345631	1	0	\N	2	\N	f	f	2026-07-25 05:58:28.462953
 -1	6	t	1	2026-07-25 05:58:28.575632	2026-07-25 05:58:28.575632	3	2026-07-25 05:58:28.572416	1	0	\N	3	\N	f	f	2026-07-25 05:58:28.752251
+2	35	t	1	2026-09-30 07:28:28.88399	2026-09-30 07:28:28.88399	3	2026-09-30 07:28:28.883194	1	0	\N	34	\N	f	f	2026-09-30 07:28:28.936754
+3	35	t	2	2026-09-30 07:28:29.108382	2026-09-30 07:28:29.108382	2	2026-09-30 07:28:29.122811	4	0	\N	35	\N	f	f	2026-09-30 07:28:29.10764
+4	35	t	3	2026-09-30 07:28:29.208209	2026-09-30 07:28:29.208209	2	2026-09-30 07:28:29.215851	4	0	\N	36	\N	f	f	2026-09-30 07:28:29.207662
+1	35	t	4	2026-09-30 07:28:29.276347	2026-09-30 07:28:29.276347	2	2026-09-30 07:28:29.284363	4	0	\N	38	\N	f	f	2026-09-30 07:28:29.275782
+1	37	t	2	2026-09-30 07:28:29.345831	2026-09-30 07:28:29.345831	3	2026-09-30 07:28:29.345221	1	0	\N	39	\N	f	f	2026-09-30 07:28:29.437272
+-1	36	t	1	2026-09-30 07:28:29.256943	2026-09-30 07:28:29.256943	3	2026-09-30 07:28:29.253808	1	0	\N	37	\N	f	f	2026-09-30 07:28:29.384774
+3	38	t	1	2026-09-30 07:28:29.569932	2026-09-30 07:28:29.569932	3	2026-09-30 07:28:29.569429	1	0	\N	40	\N	f	f	2026-09-30 07:28:29.598896
+1	39	t	2	2026-09-30 07:28:29.664927	2026-09-30 07:28:29.664927	3	2026-09-30 07:28:29.664429	1	0	\N	41	\N	f	f	2026-09-30 07:28:29.78909
+4	40	f	0	2026-09-30 07:28:29.846453	2026-09-30 07:28:29.846453	3	2026-09-30 07:28:29.84579	1	0	\N	42	\N	f	f	2026-09-30 07:28:29.881642
+2	41	t	1	2026-09-30 07:28:30.133527	2026-09-30 07:28:30.133527	3	2026-09-30 07:28:30.13173	1	0	\N	43	\N	f	f	2026-09-30 07:28:30.198392
+1	41	t	2	2026-09-30 07:28:30.449422	2026-09-30 07:28:30.449422	2	2026-09-30 07:28:30.455959	4	0	\N	44	\N	f	f	2026-09-30 07:28:30.448811
 \.
 
 
@@ -7440,6 +7539,9 @@ ALTER TABLE public.topic_voting_category_settings ENABLE TRIGGER ALL;
 ALTER TABLE public.topic_voting_topic_vote_count DISABLE TRIGGER ALL;
 
 COPY public.topic_voting_topic_vote_count (id, topic_id, votes_count, created_at, updated_at) FROM stdin;
+1	37	0	2026-09-30 07:28:29.908745	2026-09-30 07:28:29.908745
+2	40	0	2026-09-30 07:28:30.156904	2026-09-30 07:28:30.156904
+3	41	0	2026-09-30 07:28:30.50035	2026-09-30 07:28:30.50035
 \.
 
 
@@ -7659,6 +7761,23 @@ COPY public.user_actions (id, action_type, user_id, target_topic_id, target_post
 2	5	-1	4	5	\N	-1	2026-07-25 05:58:28.203945	2026-07-25 05:58:28.236474
 3	4	-1	5	-1	\N	-1	2026-07-25 05:58:28.320452	2026-07-25 05:58:28.35364
 4	4	-1	6	-1	\N	-1	2026-07-25 05:58:28.537993	2026-07-25 05:58:28.582706
+34	4	2	35	-1	\N	2	2026-09-30 07:28:28.864868	2026-09-30 07:28:28.895957
+35	5	3	35	36	\N	3	2026-09-30 07:28:29.079439	2026-09-30 07:28:29.102269
+36	5	4	35	37	\N	4	2026-09-30 07:28:29.179534	2026-09-30 07:28:29.202846
+37	5	1	35	38	\N	1	2026-09-30 07:28:29.25168	2026-09-30 07:28:29.270597
+38	12	-1	36	-1	\N	-1	2026-09-30 07:28:29.234006	2026-09-30 07:28:29.303211
+39	6	2	35	36	\N	3	2026-09-30 07:28:29.332634	2026-09-30 07:28:29.332634
+40	4	1	37	-1	\N	1	2026-09-30 07:28:29.32536	2026-09-30 07:28:29.351838
+41	6	2	35	37	\N	4	2026-09-30 07:28:29.388691	2026-09-30 07:28:29.388691
+42	5	1	37	41	\N	1	2026-09-30 07:28:29.415071	2026-09-30 07:28:29.432615
+43	4	3	38	-1	\N	3	2026-09-30 07:28:29.543058	2026-09-30 07:28:29.574598
+44	4	1	39	-1	\N	1	2026-09-30 07:28:29.645201	2026-09-30 07:28:29.669443
+45	5	1	39	44	\N	1	2026-09-30 07:28:29.762464	2026-09-30 07:28:29.782636
+46	6	2	35	38	\N	1	2026-09-30 07:28:29.799287	2026-09-30 07:28:29.799287
+48	4	2	41	-1	\N	2	2026-09-30 07:28:30.067335	2026-09-30 07:28:30.148605
+49	1	3	41	46	\N	3	2026-09-30 07:28:30.313407	2026-09-30 07:28:30.383568
+50	2	2	41	46	\N	3	2026-09-30 07:28:30.313407	2026-09-30 07:28:30.389343
+51	5	1	41	47	\N	1	2026-09-30 07:28:30.429946	2026-09-30 07:28:30.444596
 \.
 
 
@@ -7812,6 +7931,8 @@ COPY public.user_badges (id, badge_id, user_id, granted_at, granted_by_id, post_
 12	2	5	2026-09-30 06:20:36.833119	-1	\N	0	3	2026-09-30 06:20:36.833119	\N	9
 13	4	1	2026-09-30 06:20:53.73764	-1	\N	0	1	2026-09-30 06:20:53.73764	\N	\N
 14	4	5	2026-09-30 06:20:53.73764	-1	\N	0	1	2026-09-30 06:20:53.73764	\N	36
+15	11	3	2026-09-30 07:28:30.313407	-1	46	0	\N	2026-09-30 07:28:37.785684	\N	41
+16	5	2	2026-09-30 07:28:30.313407	-1	46	0	\N	2026-09-30 07:28:37.803087	\N	42
 \.
 
 
@@ -7957,6 +8078,10 @@ COPY public.user_histories (id, action, acting_user_id, target_user_id, details,
 66	122	-1	\N	\N	2026-09-30 06:20:39.250506	2026-09-30 06:20:39.250506	This upcoming change reached 'Stable' status, so it was automatically enabled on your site. See the <a href="/admin/config/upcoming-changes">upcoming changes page</a> for more detail.\n	\N	\N	rename_faq_to_guidelines	false	true	\N	t	\N	\N	\N	\N
 67	122	-1	\N	\N	2026-09-30 06:20:39.322419	2026-09-30 06:20:39.322419	This upcoming change reached 'Permanent' status, so it was automatically enabled on your site. See the <a href="/admin/config/upcoming-changes">upcoming changes page</a> for more detail.\n	\N	\N	reporting_improvements	false	true	\N	t	\N	\N	\N	\N
 68	15	\N	4	\N	2026-09-30 06:21:28.122433	2026-09-30 06:21:28.122433	\N	\N	\N	\N	3	2	\N	f	\N	\N	\N	\N
+69	3	-1	\N	Remote images download was disabled because there wasn't enough disk space available.	2026-09-30 07:28:29.148726	2026-09-30 07:28:29.148726	\N	\N	\N	download_remote_images_to_local	true	false	\N	t	\N	\N	\N	\N
+70	91	1	\N	\N	2026-09-30 07:28:29.474366	2026-09-30 07:28:29.474366	\N	\N	\N	\N	\N	\N	37	f	\N	\N	\N	\N
+71	18	1	\N	id: 40\ncreated_at: 2026-09-30 07:28:29 UTC\nuser: user2 (User2)\ntitle: Parity fixture: deleted topic\nraw: This topic is deleted and must not appear anywhere.	2026-09-30 07:28:29.934149	2026-09-30 07:28:29.934149	\N	\N	\N	\N	\N	\N	40	f	\N	\N	\N	\N
+72	93	1	\N	\N	2026-09-30 07:28:30.481302	2026-09-30 07:28:30.481302	\N	\N	\N	\N	\N	\N	41	f	\N	\N	\N	\N
 \.
 
 
@@ -8086,13 +8211,13 @@ ALTER TABLE public.user_required_fields_versions ENABLE TRIGGER ALL;
 ALTER TABLE public.user_search_data DISABLE TRIGGER ALL;
 
 COPY public.user_search_data (user_id, search_data, raw_data, locale, version) FROM stdin;
-1	'admin':1A,2B	admin admin	en	3
-2	'user0':1A,2B	user0 user0	en	3
-3	'user1':1A,2B	user1 user1	en	3
 5	'user3':1A,2B	user3 user3	en	3
 -1	'system':1A,2B	system system	en	3
 -2	'discobot':1A,2B	discobot discobot	en	3
+3	'user1':1A,2B	user1 user1	en	3
+1	'admin':1A,2B	admin admin	en	3
 4	'user2':1A,2B	user2 user2	en	3
+2	'user0':1A,2B	user0 user0	en	3
 \.
 
 
@@ -8129,12 +8254,12 @@ ALTER TABLE public.user_security_keys ENABLE TRIGGER ALL;
 ALTER TABLE public.user_stats DISABLE TRIGGER ALL;
 
 COPY public.user_stats (user_id, topics_entered, time_read, days_visited, posts_read_count, likes_given, likes_received, new_since, read_faq, first_post_created_at, post_count, topic_count, bounce_score, reset_bounce_score_after, flags_agreed, flags_disagreed, flags_ignored, first_unread_at, distinct_badge_count, first_unread_pm_at, digest_attempted_at, post_edits_count, draft_count, pending_posts_count) FROM stdin;
+4	0	0	0	2	0	0	2026-07-25 05:59:16.927292	\N	2026-09-30 07:28:29.179534	1	0	0	\N	0	0	0	2026-07-25 05:59:16.731949	3	2026-07-25 05:59:16.731949	\N	\N	0	0
+3	0	0	0	2	1	0	2026-07-25 05:59:16.445924	\N	2026-09-30 07:28:29.079439	1	1	0	\N	0	0	0	2026-07-25 05:59:16.248723	2	2026-07-25 05:59:16.248723	\N	\N	0	0
+2	0	0	0	2	0	1	2026-07-25 05:59:16.023001	\N	2026-09-30 07:28:28.901913	0	2	0	\N	0	0	0	2026-07-25 05:59:15.828758	1	2026-07-25 05:59:15.828758	\N	\N	0	0
+1	0	0	0	6	0	0	2026-07-25 05:59:15.188025	\N	2026-09-30 07:28:29.25168	1	1	0	\N	0	0	0	2026-07-25 05:59:14.990046	4	2026-07-25 05:59:14.990046	\N	\N	0	0
 -1	0	0	0	4	0	0	2026-07-25 05:58:08.03156	\N	2026-07-25 05:58:27.915472	1	3	0	\N	0	0	0	2026-07-25 05:58:07.777918	0	2026-07-25 05:58:07.777918	\N	\N	0	0
 -2	0	0	0	0	0	0	2026-07-25 05:58:29.567978	\N	\N	0	0	0	\N	0	0	0	2026-07-25 05:58:29.370351	0	2026-07-25 05:58:29.370351	\N	\N	0	0
-2	0	0	0	0	0	0	2026-07-25 05:59:16.023001	\N	\N	0	0	0	\N	0	0	0	2026-07-25 05:59:15.828758	1	2026-07-25 05:59:15.828758	\N	\N	0	0
-3	0	0	0	0	0	0	2026-07-25 05:59:16.445924	\N	\N	0	0	0	\N	0	0	0	2026-07-25 05:59:16.248723	2	2026-07-25 05:59:16.248723	\N	\N	0	0
-4	0	0	0	0	0	0	2026-07-25 05:59:16.927292	\N	\N	0	0	0	\N	0	0	0	2026-07-25 05:59:16.731949	3	2026-07-25 05:59:16.731949	\N	\N	0	0
-1	0	0	0	0	0	0	2026-07-25 05:59:15.188025	\N	\N	0	0	0	\N	0	0	0	2026-07-25 05:59:14.990046	4	2026-07-25 05:59:14.990046	\N	\N	0	0
 5	0	0	0	0	0	0	2026-07-25 05:59:17.387931	\N	\N	0	0	0	\N	0	0	0	2026-07-25 05:59:17.197224	4	2026-07-25 05:59:17.197224	\N	\N	0	0
 \.
 
@@ -8779,7 +8904,7 @@ SELECT pg_catalog.setval('public.calendar_events_id_seq', 1, false);
 -- Name: categories_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.categories_id_seq', 33, true);
+SELECT pg_catalog.setval('public.categories_id_seq', 34, true);
 
 
 --
@@ -8800,7 +8925,7 @@ SELECT pg_catalog.setval('public.category_custom_fields_id_seq', 34, true);
 -- Name: category_featured_topics_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.category_featured_topics_id_seq', 33, true);
+SELECT pg_catalog.setval('public.category_featured_topics_id_seq', 49, true);
 
 
 --
@@ -8849,7 +8974,7 @@ SELECT pg_catalog.setval('public.category_required_tag_groups_id_seq', 1, false)
 -- Name: category_settings_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.category_settings_id_seq', 33, true);
+SELECT pg_catalog.setval('public.category_settings_id_seq', 34, true);
 
 
 --
@@ -8863,7 +8988,7 @@ SELECT pg_catalog.setval('public.category_tag_groups_id_seq', 1, false);
 -- Name: category_tag_stats_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.category_tag_stats_id_seq', 1, false);
+SELECT pg_catalog.setval('public.category_tag_stats_id_seq', 1, true);
 
 
 --
@@ -9857,7 +9982,7 @@ SELECT pg_catalog.setval('public.nested_view_post_stats_id_seq', 1, false);
 -- Name: notifications_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.notifications_id_seq', 36, true);
+SELECT pg_catalog.setval('public.notifications_id_seq', 42, true);
 
 
 --
@@ -9934,14 +10059,14 @@ SELECT pg_catalog.setval('public.post_action_types_id_seq', 8, true);
 -- Name: post_actions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.post_actions_id_seq', 1, false);
+SELECT pg_catalog.setval('public.post_actions_id_seq', 1, true);
 
 
 --
 -- Name: post_custom_fields_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.post_custom_fields_id_seq', 1, false);
+SELECT pg_catalog.setval('public.post_custom_fields_id_seq', 3, true);
 
 
 --
@@ -10004,7 +10129,7 @@ SELECT pg_catalog.setval('public.post_revisions_id_seq', 1, false);
 -- Name: post_stats_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.post_stats_id_seq', 33, true);
+SELECT pg_catalog.setval('public.post_stats_id_seq', 46, true);
 
 
 --
@@ -10032,7 +10157,7 @@ SELECT pg_catalog.setval('public.post_voting_votes_id_seq', 1, false);
 -- Name: posts_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.posts_id_seq', 33, true);
+SELECT pg_catalog.setval('public.posts_id_seq', 47, true);
 
 
 --
@@ -10130,7 +10255,7 @@ SELECT pg_catalog.setval('public.reviewables_id_seq', 1, false);
 -- Name: scheduler_stats_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.scheduler_stats_id_seq', 383, true);
+SELECT pg_catalog.setval('public.scheduler_stats_id_seq', 961, true);
 
 
 --
@@ -10256,7 +10381,7 @@ SELECT pg_catalog.setval('public.site_setting_localizations_id_seq', 1, false);
 -- Name: site_settings_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.site_settings_id_seq', 33, true);
+SELECT pg_catalog.setval('public.site_settings_id_seq', 34, true);
 
 
 --
@@ -10333,7 +10458,7 @@ SELECT pg_catalog.setval('public.tag_users_id_seq', 1, false);
 -- Name: tags_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.tags_id_seq', 1, false);
+SELECT pg_catalog.setval('public.tags_id_seq', 1, true);
 
 
 --
@@ -10410,7 +10535,7 @@ SELECT pg_catalog.setval('public.topic_allowed_groups_id_seq', 1, false);
 -- Name: topic_allowed_users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.topic_allowed_users_id_seq', 1, false);
+SELECT pg_catalog.setval('public.topic_allowed_users_id_seq', 1, true);
 
 
 --
@@ -10487,7 +10612,7 @@ SELECT pg_catalog.setval('public.topic_search_data_topic_id_seq', 1, false);
 -- Name: topic_tags_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.topic_tags_id_seq', 1, false);
+SELECT pg_catalog.setval('public.topic_tags_id_seq', 1, true);
 
 
 --
@@ -10508,7 +10633,7 @@ SELECT pg_catalog.setval('public.topic_timers_id_seq', 1, false);
 -- Name: topic_users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.topic_users_id_seq', 33, true);
+SELECT pg_catalog.setval('public.topic_users_id_seq', 44, true);
 
 
 --
@@ -10529,7 +10654,7 @@ SELECT pg_catalog.setval('public.topic_voting_category_settings_id_seq', 1, fals
 -- Name: topic_voting_topic_vote_count_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.topic_voting_topic_vote_count_id_seq', 1, false);
+SELECT pg_catalog.setval('public.topic_voting_topic_vote_count_id_seq', 3, true);
 
 
 --
@@ -10543,7 +10668,7 @@ SELECT pg_catalog.setval('public.topic_voting_votes_id_seq', 1, false);
 -- Name: topics_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.topics_id_seq', 33, true);
+SELECT pg_catalog.setval('public.topics_id_seq', 41, true);
 
 
 --
@@ -10578,7 +10703,7 @@ SELECT pg_catalog.setval('public.uploads_id_seq', 66, true);
 -- Name: user_actions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.user_actions_id_seq', 33, true);
+SELECT pg_catalog.setval('public.user_actions_id_seq', 51, true);
 
 
 --
@@ -10655,7 +10780,7 @@ SELECT pg_catalog.setval('public.user_avatars_id_seq', 33, true);
 -- Name: user_badges_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.user_badges_id_seq', 14, true);
+SELECT pg_catalog.setval('public.user_badges_id_seq', 16, true);
 
 
 --
@@ -10711,7 +10836,7 @@ SELECT pg_catalog.setval('public.user_fields_id_seq', 1, false);
 -- Name: user_histories_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.user_histories_id_seq', 68, true);
+SELECT pg_catalog.setval('public.user_histories_id_seq', 72, true);
 
 
 --

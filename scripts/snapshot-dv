@@ -12,6 +12,9 @@
 # emits a random \restrict token per run; it is stripped so re-snapshots
 # diff cleanly.
 #
+# Fixture data for the agent comes from scripts/fixtures/*.rb, applied with
+# `dv copy <file> <agent>:/tmp/f.rb && dv run -- bin/rails runner /tmp/f.rb`.
+#
 # Usage: scripts/snapshot-dv <agent-name>
 set -euo pipefail
 
