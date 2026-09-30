@@ -117,8 +117,7 @@ system), Emoji unicode lookup from the discourse-emojis gem, TopicView
 (paged and near-post chunks, timeline lookup, participants, flags summary).
 
 Behaviors the port hits but hasn't implemented return an explicit 500
-(`Unsupported`) rather than a guess: watched words, tag visibility rules,
-category descriptions with markup (ExcerptParser), computed fancy titles
+(`Unsupported`) rather than a guess: watched words, computed fancy titles
 (HtmlPrettify), post link counts, hidden posts, topic timers, thumbnails,
 user fields, enabled auth providers, user-selectable color schemes, group
 flair uploads, S3 CDN.
