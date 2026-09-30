@@ -14,6 +14,7 @@ FILES=(
   config/site_settings.yml
   app/assets/stylesheets/common/foundation/colors.scss
   config/locales/server.en.yml
+  config/locales/client.en.yml
 )
 
 if [ $# -lt 1 ]; then

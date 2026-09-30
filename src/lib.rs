@@ -4,6 +4,7 @@ pub mod color_scheme;
 pub mod config;
 pub mod emoji;
 pub mod guardian;
+pub mod html;
 pub mod i18n;
 pub mod letter_avatar;
 pub mod parity;
@@ -39,7 +40,7 @@ pub struct AppState {
 }
 
 pub fn app(state: AppState) -> Router {
-    routes::router()
+    routes::router(&state.config.public_dir.clone())
         .with_state(state)
         .layer(TraceLayer::new_for_http())
 }

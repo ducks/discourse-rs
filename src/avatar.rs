@@ -70,9 +70,20 @@ pub fn avatar_template(
             return Ok(url.to_string());
         }
     }
+    class_avatar_template(urls, username, uploaded_avatar_id)
+}
+
+/// `User.avatar_template(username, upload_id)`, the class method: the
+/// uploaded avatar or the default template, with no system-user special
+/// case. BasicUserSerializer uses it for hash-wrapped users (participants).
+pub fn class_avatar_template(
+    urls: &Urls<'_>,
+    username: &str,
+    uploaded_avatar_id: Option<i32>,
+) -> Result<String, AvatarError> {
     match uploaded_avatar_id {
         Some(upload_id) => Ok(uploaded_avatar_template(urls, username, upload_id)?),
-        None => default_template(settings, urls, username),
+        None => default_template(urls.settings, urls, username),
     }
 }
 

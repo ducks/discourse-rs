@@ -1,4 +1,5 @@
-//! Server-side translations from the vendored config/locales/server.en.yml.
+//! Translations from the vendored config/locales/server.en.yml and
+//! client.en.yml.
 //!
 //! Only the default locale is loaded, and only string leaves are indexed.
 //! Discourse's I18n.t has one quirk that matters for parity: interpolation
@@ -12,6 +13,7 @@ use std::collections::HashMap;
 use serde_yaml_ng::Value as Yaml;
 
 const SERVER_EN_YML: &str = include_str!("../vendor/discourse/config/locales/server.en.yml");
+const CLIENT_EN_YML: &str = include_str!("../vendor/discourse/config/locales/client.en.yml");
 
 #[derive(Debug)]
 pub struct I18n {
@@ -19,8 +21,14 @@ pub struct I18n {
 }
 
 impl I18n {
+    /// server.en.yml plus client.en.yml (whose keys sit under `js.`), the
+    /// latter for texts the HTML pages need, e.g. `js.action_codes.*`.
     pub fn vendored() -> Result<Self, String> {
-        Self::parse(SERVER_EN_YML)
+        let mut i18n = Self::parse(SERVER_EN_YML)?;
+        let client =
+            Self::parse(CLIENT_EN_YML).map_err(|e| e.replace("server.en.yml", "client.en.yml"))?;
+        i18n.strings.extend(client.strings);
+        Ok(i18n)
     }
 
     pub fn parse(src: &str) -> Result<Self, String> {
@@ -127,5 +135,9 @@ mod tests {
         );
         // `<<: *datetime_formats` merged into the time formats
         assert!(i.t("time.formats.short").is_some());
+        assert_eq!(
+            i.t("js.action_codes.closed.enabled"),
+            Some("Closed %{when}")
+        );
     }
 }

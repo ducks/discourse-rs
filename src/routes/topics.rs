@@ -1,9 +1,11 @@
 //! Port of app/controllers/topics_controller.rb#show for anonymous users,
 //! JSON only for now.
 
+use askama::Template;
 use axum::Json;
 use axum::extract::{Path, Query, State};
 use axum::http::{HeaderMap, StatusCode, header};
+use axum::response::Html;
 use axum::response::{IntoResponse, Response};
 use serde::Deserialize;
 use serde_json::json;
@@ -198,7 +200,12 @@ async fn show(
         ));
     }
 
-    Ok(Json(rendered.json).into_response())
+    if json {
+        return Ok(Json(rendered.json).into_response());
+    }
+    let site = crate::html::Site::from_settings(&settings, &base_path)?;
+    let page = crate::html::topic_page(&mut conn, &state.i18n, site, &rendered.json, page).await?;
+    Ok(Html(page.render().map_err(crate::html::HtmlError::from)?).into_response())
 }
 
 /// `redirect_to_correct_topic`'s target.

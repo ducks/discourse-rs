@@ -1,9 +1,11 @@
 //! Port of app/controllers/list_controller.rb (latest) with
 //! lib/topic_query_params.rb.
 
+use askama::Template;
 use axum::Json;
 use axum::extract::{Query, State};
 use axum::http::StatusCode;
+use axum::response::Html;
 use axum::response::{IntoResponse, Response};
 use serde::Deserialize;
 
@@ -95,17 +97,17 @@ fn next_url(base_path: &str, params: &ListParams, options: &Options) -> String {
     format!("{base_path}/latest?{}", query.join("&"))
 }
 
-/// GET /latest(.json) for anonymous users.
-pub async fn latest(
-    State(state): State<AppState>,
-    Query(params): Query<ListParams>,
-) -> Result<Response, AppError> {
+/// The /latest document, shared by the JSON and HTML responses.
+async fn latest_document(
+    state: &AppState,
+    params: &ListParams,
+) -> Result<Result<(serde_json::Value, SiteSettings), (StatusCode, String)>, AppError> {
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
-    let options = match build_options(&params, &settings) {
+    let options = match build_options(params, &settings) {
         Ok(o) => o,
-        Err((status, message)) => return Ok((status, message).into_response()),
+        Err(e) => return Ok(Err(e)),
     };
     let guardian = Guardian::anonymous();
     let urls = Urls {
@@ -122,7 +124,7 @@ pub async fn latest(
     .list_latest()
     .await?;
 
-    let more = next_url(state.config.globals.relative_url_root(), &params, &options);
+    let more = next_url(state.config.globals.relative_url_root(), params, &options);
     let json = TopicListSerializer {
         conn: &mut conn,
         settings: &settings,
@@ -133,7 +135,41 @@ pub async fn latest(
     }
     .serialize(&list)
     .await?;
-    Ok(Json(json).into_response())
+    Ok(Ok((json, settings)))
+}
+
+/// GET /latest.json
+pub async fn latest_json(
+    State(state): State<AppState>,
+    Query(params): Query<ListParams>,
+) -> Result<Response, AppError> {
+    match latest_document(&state, &params).await? {
+        Ok((json, _)) => Ok(Json(json).into_response()),
+        Err((status, message)) => Ok((status, message).into_response()),
+    }
+}
+
+/// GET / and GET /latest: the server-rendered list. The "more" link
+/// points at the HTML page.
+pub async fn latest(
+    State(state): State<AppState>,
+    Query(params): Query<ListParams>,
+) -> Result<Response, AppError> {
+    let (json, settings) = match latest_document(&state, &params).await? {
+        Ok(doc) => doc,
+        Err((status, message)) => return Ok((status, message).into_response()),
+    };
+    let mut conn = state.pool.acquire().await?;
+    let base_path = state.config.globals.relative_url_root();
+    let site = crate::html::Site::from_settings(&settings, base_path)?;
+    let mut page = crate::html::latest_page(&mut conn, site, &json).await?;
+    // Strip `no_definitions`, which is what the JSON list carries around
+    // but the HTML list applies on its own.
+    page.more_url = page.more_url.map(|u| {
+        u.replace("no_definitions=true&", "")
+            .replace("?no_definitions=true", "")
+    });
+    Ok(Html(page.render().map_err(crate::html::HtmlError::from)?).into_response())
 }
 
 #[cfg(test)]
