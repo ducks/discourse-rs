@@ -25,6 +25,9 @@ pub enum Mode {
     ListItem,
     /// SuggestedTopicSerializer (ListableTopicSerializer + tags, posters with users)
     Suggested,
+    /// ListableTopicSerializer with an embedded last_poster (featured topics
+    /// in /categories.json)
+    Listable,
 }
 
 /// `Topic.share_thumbnail_size`
@@ -112,6 +115,9 @@ pub struct TopicListSerializer<'a> {
     pub urls: &'a Urls<'a>,
     /// `more_topics_url` as ListController computed it (with base path).
     pub more_topics_url: Option<String>,
+    /// `TopicList#category`: scopes top_tags to the category and its
+    /// direct subcategories.
+    pub category_id: Option<i32>,
 }
 
 impl TopicListSerializer<'_> {
@@ -332,10 +338,13 @@ impl TopicListSerializer<'_> {
         if let Some(reason) = t.visibility_reason_id {
             out.insert("visibility_reason_id".into(), json!(reason));
         }
-        if tagging && t.archetype != "private_message" {
+        if mode != Mode::Listable && tagging && t.archetype != "private_message" {
             let (tags, descriptions) = self.tags(t.id).await?;
             out.insert("tags".into(), tags);
             out.insert("tags_descriptions".into(), descriptions);
+        }
+        if mode == Mode::Listable {
+            return self.finish_listable(out, t, posters).await;
         }
         if mode == Mode::Suggested {
             return self.finish_suggested(out, t, posters).await;
@@ -380,6 +389,41 @@ impl TopicListSerializer<'_> {
     /// `Topic#image_url` through `UrlHelper.cook_url` for the local store:
     /// the 1024x1024 thumbnail, else the image upload, made absolute and
     /// schemeless.
+    /// ListableTopicSerializer's tail: `last_poster` embedded as a BasicUser.
+    async fn finish_listable(
+        &mut self,
+        mut out: Map<String, Value>,
+        t: &TopicRow,
+        posters: &[Poster],
+    ) -> Result<Value, TopicListError> {
+        let logo_small_url = self.logo_small_url().await?;
+        let last = posters.iter().find(|p| p.user.id == t.last_post_user_id);
+        let last_poster = match last {
+            Some(p) => {
+                let mut u = Map::new();
+                u.insert("id".into(), json!(p.user.id));
+                u.insert("username".into(), json!(p.user.username));
+                if self.settings.get("enable_names")?.truthy() {
+                    u.insert("name".into(), json!(p.user.name));
+                }
+                u.insert(
+                    "avatar_template".into(),
+                    json!(avatar::avatar_template(
+                        self.urls,
+                        p.user.id,
+                        &p.user.username,
+                        p.user.uploaded_avatar_id,
+                        logo_small_url.as_deref()
+                    )?),
+                );
+                Value::Object(u)
+            }
+            None => Value::Null,
+        };
+        out.insert("last_poster".into(), last_poster);
+        Ok(Value::Object(out))
+    }
+
     /// SuggestedTopicSerializer's tail after the Listable attributes:
     /// like_count, views, category_id, featured_link, op_like_count and
     /// posters with embedded users.
@@ -513,7 +557,17 @@ impl TopicListSerializer<'_> {
 
     /// `Tag.top_tags` as in site.json's top_tags.
     async fn top_tags(&mut self) -> Result<Value, TopicListError> {
-        let category_ids = self.guardian.allowed_category_ids(&mut *self.conn).await?;
+        let mut category_ids = self.guardian.allowed_category_ids(&mut *self.conn).await?;
+        if let Some(category_id) = self.category_id {
+            // `allowed & ([category.id] + category.subcategories.pluck(:id))`
+            let mut scope: Vec<i32> =
+                sqlx::query_scalar("SELECT id FROM categories WHERE parent_category_id = $1")
+                    .bind(category_id)
+                    .fetch_all(&mut *self.conn)
+                    .await?;
+            scope.insert(0, category_id);
+            category_ids.retain(|id| scope.contains(id));
+        }
         if category_ids.is_empty() {
             return Ok(json!([]));
         }

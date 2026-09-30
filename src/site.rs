@@ -347,6 +347,7 @@ impl Site<'_> {
             i18n: self.i18n,
             guardian: &self.guardian,
             base_path: self.config.globals.relative_url_root(),
+            topic_url_via_slug: true,
         }
         .for_site()
         .await?;
@@ -1055,6 +1056,7 @@ impl From<CategoriesError> for SiteError {
         match e {
             CategoriesError::Db(e) => SiteError::Db(e),
             CategoriesError::Setting(e) => SiteError::Setting(e),
+            CategoriesError::Url(e) => SiteError::Url(e),
             CategoriesError::Unsupported(e) => SiteError::Unsupported(e),
         }
     }

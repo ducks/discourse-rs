@@ -32,6 +32,7 @@ fn style_type(id: i32) -> &'static str {
 pub enum CategoriesError {
     Db(sqlx::Error),
     Setting(SettingError),
+    Url(crate::url::UrlError),
     Unsupported(Unsupported),
 }
 
@@ -40,6 +41,7 @@ impl std::fmt::Display for CategoriesError {
         match self {
             CategoriesError::Db(e) => write!(f, "loading categories: {e}"),
             CategoriesError::Setting(e) => e.fmt(f),
+            CategoriesError::Url(e) => e.fmt(f),
             CategoriesError::Unsupported(e) => e.fmt(f),
         }
     }
@@ -66,42 +68,46 @@ impl From<Unsupported> for CategoriesError {
 }
 
 /// `categories.*, t.slug topic_slug`, the columns the serializer reads.
-#[derive(sqlx::FromRow)]
-struct CategoryRow {
-    id: i32,
-    name: String,
-    color: String,
-    text_color: String,
-    style_type: i32,
-    icon: Option<String>,
-    emoji: Option<String>,
-    slug: String,
-    topic_count: i32,
-    post_count: i32,
-    position: Option<i32>,
-    description: Option<String>,
-    topic_id: Option<i32>,
-    topic_slug: Option<String>,
-    read_restricted: bool,
-    parent_category_id: Option<i32>,
-    topic_template: Option<String>,
-    topic_title_placeholder: Option<String>,
-    sort_order: Option<String>,
-    sort_ascending: Option<bool>,
-    show_subcategory_list: bool,
-    num_featured_topics: i32,
-    default_view: Option<String>,
-    subcategory_list_style: String,
-    default_top_period: String,
-    default_list_filter: String,
-    minimum_required_tags: i32,
-    navigate_to_first_post_after_read: bool,
-    allow_global_tags: bool,
-    read_only_banner: Option<String>,
-    uploaded_logo_id: Option<i32>,
-    uploaded_logo_dark_id: Option<i32>,
-    uploaded_background_id: Option<i32>,
-    uploaded_background_dark_id: Option<i32>,
+#[derive(Debug, Clone, sqlx::FromRow)]
+pub(crate) struct CategoryRow {
+    pub(crate) id: i32,
+    pub(crate) name: String,
+    pub(crate) color: String,
+    pub(crate) text_color: String,
+    pub(crate) style_type: i32,
+    pub(crate) icon: Option<String>,
+    pub(crate) emoji: Option<String>,
+    pub(crate) slug: String,
+    pub(crate) topic_count: i32,
+    pub(crate) post_count: i32,
+    pub(crate) position: Option<i32>,
+    pub(crate) description: Option<String>,
+    pub(crate) topic_id: Option<i32>,
+    pub(crate) topic_slug: Option<String>,
+    pub(crate) read_restricted: bool,
+    pub(crate) parent_category_id: Option<i32>,
+    pub(crate) topic_template: Option<String>,
+    pub(crate) topic_title_placeholder: Option<String>,
+    pub(crate) sort_order: Option<String>,
+    pub(crate) sort_ascending: Option<bool>,
+    pub(crate) show_subcategory_list: bool,
+    pub(crate) num_featured_topics: i32,
+    pub(crate) default_view: Option<String>,
+    pub(crate) subcategory_list_style: String,
+    pub(crate) default_top_period: String,
+    pub(crate) default_list_filter: String,
+    pub(crate) minimum_required_tags: i32,
+    pub(crate) navigate_to_first_post_after_read: bool,
+    pub(crate) allow_global_tags: bool,
+    pub(crate) read_only_banner: Option<String>,
+    pub(crate) uploaded_logo_id: Option<i32>,
+    pub(crate) uploaded_logo_dark_id: Option<i32>,
+    pub(crate) uploaded_background_id: Option<i32>,
+    pub(crate) uploaded_background_dark_id: Option<i32>,
+    pub(crate) topics_day: i32,
+    pub(crate) topics_week: i32,
+    pub(crate) topics_month: i32,
+    pub(crate) topics_year: i32,
 }
 
 pub struct Categories<'a> {
@@ -111,32 +117,21 @@ pub struct Categories<'a> {
     pub guardian: &'a Guardian,
     /// `Discourse.base_path`
     pub base_path: &'a str,
+    /// Whether topic_url is built from the selected topic_slug (Site cache)
+    /// rather than the association (CategoryList).
+    pub topic_url_via_slug: bool,
 }
 
 impl Categories<'_> {
     /// `Site#categories`: every category the guardian can see, serialized,
     /// with the per-user fields filled in. Ordered by position.
+    /// `categories.*, t.slug topic_slug`: every category by position.
+    pub(crate) async fn load_all(conn: &mut PgConnection) -> Result<Vec<CategoryRow>, sqlx::Error> {
+        sqlx::query_as(CATEGORY_SQL).fetch_all(conn).await
+    }
+
     pub async fn for_site(&mut self) -> Result<Vec<Value>, CategoriesError> {
-        let rows: Vec<CategoryRow> = sqlx::query_as(
-            "SELECT categories.id, categories.name, categories.color, categories.text_color, \
-                    categories.style_type, categories.icon, categories.emoji, categories.slug, \
-                    categories.topic_count, categories.post_count, categories.position, \
-                    categories.description, categories.topic_id, t.slug AS topic_slug, \
-                    categories.read_restricted, categories.parent_category_id, \
-                    categories.topic_template, categories.topic_title_placeholder, \
-                    categories.sort_order, categories.sort_ascending, \
-                    categories.show_subcategory_list, categories.num_featured_topics, \
-                    categories.default_view, categories.subcategory_list_style, \
-                    categories.default_top_period, categories.default_list_filter, \
-                    categories.minimum_required_tags, categories.navigate_to_first_post_after_read, \
-                    categories.allow_global_tags, categories.read_only_banner, \
-                    categories.uploaded_logo_id, categories.uploaded_logo_dark_id, \
-                    categories.uploaded_background_id, categories.uploaded_background_dark_id \
-             FROM categories LEFT JOIN topics t ON t.id = categories.topic_id \
-             ORDER BY categories.position",
-        )
-        .fetch_all(&mut *self.conn)
-        .await?;
+        let rows = Self::load_all(&mut *self.conn).await?;
 
         // can_see_serialized_category?: public, or in the guardian's secure ids.
         let secure = self.guardian.secure_category_ids();
@@ -190,7 +185,7 @@ impl Categories<'_> {
 
     /// `CategoryUser.notification_levels_for(nil)`: default categories from
     /// settings are regular, default muted ones muted.
-    fn notification_levels(&self) -> Result<Vec<(i64, i64)>, CategoriesError> {
+    pub(crate) fn notification_levels(&self) -> Result<Vec<(i64, i64)>, CategoriesError> {
         let mut levels = Vec::new();
         for name in [
             "default_categories_watching",
@@ -222,9 +217,54 @@ impl Categories<'_> {
     /// scope), in attribute order. notification_level, has_children and
     /// can_edit are filled in by for_site.
     async fn serialize(&mut self, c: &CategoryRow) -> Result<Map<String, Value>, CategoriesError> {
+        let tagging = self.settings.get("tagging_enabled")?.truthy();
+        let mut out = self.basic_fields(c).await?;
+        // custom_fields: only present when plugins register category fields.
+        if tagging {
+            out.insert("allow_global_tags".into(), json!(c.allow_global_tags));
+        }
+        out.insert("read_only_banner".into(), json!(c.read_only_banner));
+        out.insert(
+            "form_template_ids".into(),
+            self.form_template_ids(c.id).await?,
+        );
+        if tagging {
+            out.insert(
+                "required_tag_groups".into(),
+                self.required_tag_groups(c.id).await?,
+            );
+        }
+        out.insert("category_types".into(), self.category_types()?);
+        self.uploads(&mut out, c).await?;
+        Ok(out)
+    }
+
+    /// CategoryUploadSerializer for the four category images.
+    pub(crate) async fn uploads(
+        &mut self,
+        out: &mut Map<String, Value>,
+        c: &CategoryRow,
+    ) -> Result<(), CategoriesError> {
+        for (key, upload_id) in [
+            ("uploaded_logo", c.uploaded_logo_id),
+            ("uploaded_logo_dark", c.uploaded_logo_dark_id),
+            ("uploaded_background", c.uploaded_background_id),
+            ("uploaded_background_dark", c.uploaded_background_dark_id),
+        ] {
+            out.insert(key.into(), self.upload(upload_id).await?);
+        }
+        Ok(())
+    }
+
+    /// BasicCategorySerializer's attributes through
+    /// navigate_to_first_post_after_read, with notification_level and
+    /// has_children left null for the caller to fill.
+    pub(crate) async fn basic_fields(
+        &mut self,
+        c: &CategoryRow,
+    ) -> Result<Map<String, Value>, CategoriesError> {
         let uncategorized =
             i64::from(c.id) == self.settings.get("uncategorized_category_id")?.to_i();
-        let tagging = self.settings.get("tagging_enabled")?.truthy();
 
         let (description, description_text, description_excerpt) = if uncategorized {
             let text = self
@@ -246,14 +286,22 @@ impl Categories<'_> {
             c.name.clone()
         };
 
-        let mut topic_url = format!("{}/t/", self.base_path);
-        if let Some(slug) = c.topic_slug.as_deref().filter(|s| !s.is_empty()) {
-            topic_url.push_str(slug);
-            topic_url.push('/');
-        }
-        if let Some(id) = c.topic_id {
-            topic_url.push_str(&id.to_string());
-        }
+        // Topic.relative_url(topic_id, topic_slug) when the row carries
+        // `topic_slug` (the site cache query), even with no topic ("/t/");
+        // the plain association path gives nil without a topic.
+        let topic_url: Option<String> = if c.topic_id.is_none() && !self.topic_url_via_slug {
+            None
+        } else {
+            let mut url = format!("{}/t/", self.base_path);
+            if let Some(slug) = c.topic_slug.as_deref().filter(|s| !s.is_empty()) {
+                url.push_str(slug);
+                url.push('/');
+            }
+            if let Some(id) = c.topic_id {
+                url.push_str(&id.to_string());
+            }
+            Some(url)
+        };
 
         let mut out = Map::new();
         out.insert("id".into(), json!(c.id));
@@ -307,30 +355,6 @@ impl Categories<'_> {
             "navigate_to_first_post_after_read".into(),
             json!(c.navigate_to_first_post_after_read),
         );
-        // custom_fields: only present when plugins register category fields.
-        if tagging {
-            out.insert("allow_global_tags".into(), json!(c.allow_global_tags));
-        }
-        out.insert("read_only_banner".into(), json!(c.read_only_banner));
-        out.insert(
-            "form_template_ids".into(),
-            self.form_template_ids(c.id).await?,
-        );
-        if tagging {
-            out.insert(
-                "required_tag_groups".into(),
-                self.required_tag_groups(c.id).await?,
-            );
-        }
-        out.insert("category_types".into(), self.category_types()?);
-        for (key, upload_id) in [
-            ("uploaded_logo", c.uploaded_logo_id),
-            ("uploaded_logo_dark", c.uploaded_logo_dark_id),
-            ("uploaded_background", c.uploaded_background_id),
-            ("uploaded_background_dark", c.uploaded_background_dark_id),
-        ] {
-            out.insert(key.into(), self.upload(upload_id).await?);
-        }
         Ok(out)
     }
 
@@ -457,7 +481,7 @@ fn html_escape(s: &str) -> String {
 
 /// `Category#description_text`: escaped plain text, nil without a
 /// description (or when it has no text).
-fn description_plain_text(description: Option<&str>) -> Result<Option<String>, Unsupported> {
+pub fn description_plain_text(description: Option<&str>) -> Result<Option<String>, Unsupported> {
     let Some(html) = description else {
         return Ok(None);
     };
@@ -485,6 +509,24 @@ fn description_excerpt(description: Option<&str>) -> Result<Option<String>, Unsu
     };
     Ok(Some(excerpt.trim().to_string()))
 }
+
+pub(crate) const CATEGORY_SQL: &str = "SELECT categories.id, categories.name, categories.color, categories.text_color, \
+    categories.style_type, categories.icon, categories.emoji, categories.slug, \
+    categories.topic_count, categories.post_count, categories.position, \
+    categories.description, categories.topic_id, t.slug AS topic_slug, \
+    categories.read_restricted, categories.parent_category_id, \
+    categories.topic_template, categories.topic_title_placeholder, \
+    categories.sort_order, categories.sort_ascending, \
+    categories.show_subcategory_list, categories.num_featured_topics, \
+    categories.default_view, categories.subcategory_list_style, \
+    categories.default_top_period, categories.default_list_filter, \
+    categories.minimum_required_tags, categories.navigate_to_first_post_after_read, \
+    categories.allow_global_tags, categories.read_only_banner, \
+    categories.uploaded_logo_id, categories.uploaded_logo_dark_id, \
+    categories.uploaded_background_id, categories.uploaded_background_dark_id, \
+    categories.topics_day, categories.topics_week, categories.topics_month, categories.topics_year \
+    FROM categories LEFT JOIN topics t ON t.id = categories.topic_id \
+    ORDER BY categories.position";
 
 #[cfg(test)]
 mod tests {

@@ -34,3 +34,17 @@ table.topic-list { width: 100%; border-collapse: collapse; }
 .post blockquote, .post aside.quote { border-left: 4px solid var(--line); margin: .5rem 0; padding: .25rem .75rem; background: #fafafa; }
 .post .emoji { width: 20px; height: 20px; vertical-align: middle; }
 .post-likes { color: var(--muted); font-size: .85rem; }
+.category-heading { font-size: 1.4rem; margin: 0 0 .75rem; }
+.category-heading a { color: var(--primary); }
+.subcategories { margin: 0 0 1rem; font-size: .9rem; }
+.subcategory .description { color: var(--muted); }
+table.category-list { width: 100%; border-collapse: collapse; }
+.category-list th { text-align: left; color: var(--muted); font-weight: 400; font-size: .85rem; padding: .5rem; border-bottom: 3px solid var(--line); }
+.category-list td { padding: .75rem .5rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+.category-list td.category { border-left: 6px solid; padding-left: .75rem; }
+.category-list h3 { margin: 0 0 .25rem; font-size: 1.05rem; }
+.category-list h3 a { color: var(--primary); }
+.category-description { color: #555; font-size: .9rem; }
+.category-list td.topics { width: 5rem; text-align: right; }
+.category-list td.latest { width: 40%; font-size: .9rem; }
+.featured-topic time { color: var(--muted); font-size: .8rem; margin-left: .35rem; }

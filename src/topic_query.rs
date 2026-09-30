@@ -64,6 +64,10 @@ pub struct Options {
     pub ascending: bool,
     /// ListController sets this for /latest without a category.
     pub no_definitions: bool,
+    /// `options[:category]` resolved to an id: the list is scoped to it and
+    /// its subcategories.
+    pub category_id: Option<i32>,
+    pub no_subcategories: bool,
 }
 
 #[derive(Debug)]
@@ -108,6 +112,8 @@ pub struct TopicQuery<'a> {
     pub settings: &'a SiteSettings,
     pub guardian: &'a Guardian,
     pub options: Options,
+    /// Set by list_latest from `options.category_id`.
+    pub category: CategoryScope,
 }
 
 /// The result of `create_list`: the page of topics plus what TopicList
@@ -126,6 +132,7 @@ impl TopicQuery<'_> {
     /// `list_latest` -> `create_list(:latest, {}, latest_results)`.
     pub async fn list_latest(&mut self) -> Result<TopicList, TopicQueryError> {
         self.check_unported_filters()?;
+        self.category = self.category_scope().await?;
         let topics = self.prioritize_pinned_topics().await?;
         Ok(TopicList {
             filter: "latest",
@@ -158,6 +165,72 @@ impl TopicQuery<'_> {
     /// The WHERE clause of `default_results` for an anonymous user:
     /// not deleted, category readable (or none), not a PM, not a category
     /// definition topic (no_definitions), visible.
+    /// The category clauses of `default_results`, computed up front since
+    /// they need the subcategory ids and the category's default sort.
+    async fn category_scope(&mut self) -> Result<CategoryScope, TopicQueryError> {
+        let Some(category_id) = self.options.category_id else {
+            return Ok(CategoryScope::default());
+        };
+        let ids: Vec<i32> = if self.options.no_subcategories {
+            vec![category_id]
+        } else {
+            // Category.subcategory_ids: descendants up to max_category_nesting.
+            let nesting = self.settings.get("max_category_nesting")?.to_i();
+            sqlx::query_scalar(
+                "WITH RECURSIVE subcategories AS ( \
+                     SELECT $1::int AS id, 1 AS depth \
+                     UNION \
+                     SELECT categories.id, subcategories.depth + 1 \
+                     FROM categories JOIN subcategories ON subcategories.id = categories.parent_category_id \
+                     WHERE subcategories.depth < $2) \
+                 SELECT id FROM subcategories",
+            )
+            .bind(category_id)
+            .bind(nesting as i32)
+            .fetch_all(&mut *self.conn)
+            .await?
+        };
+        let mut clauses = vec![format!(
+            "topics.category_id IN ({})",
+            ids.iter()
+                .map(|id| id.to_string())
+                .collect::<Vec<_>>()
+                .join(",")
+        )];
+        // Subcategory definition topics are hidden, the category's own shown.
+        if !self.options.no_subcategories
+            && !self
+                .settings
+                .get("show_category_definitions_in_topic_lists")?
+                .truthy()
+        {
+            clauses.push(format!(
+                "(categories.topic_id IS DISTINCT FROM topics.id OR topics.category_id = {category_id})"
+            ));
+        }
+        // The category's default sort applies when no order was given.
+        let mut order = None;
+        if self.options.order.is_none() {
+            let sort: Option<(Option<String>, Option<bool>)> =
+                sqlx::query_as("SELECT sort_order, sort_ascending FROM categories WHERE id = $1")
+                    .bind(category_id)
+                    .fetch_optional(&mut *self.conn)
+                    .await?;
+            if let Some((Some(sort_order), ascending)) = sort {
+                if !sort_order.is_empty() {
+                    order = Some((sort_order, ascending.unwrap_or(false)));
+                }
+            }
+        }
+        Ok(CategoryScope {
+            clauses,
+            order,
+            pinned_clause: Some(format!(
+                "topics.category_id = {category_id} AND pinned_at IS NOT NULL"
+            )),
+        })
+    }
+
     fn where_clause(&self) -> String {
         let mut clauses = vec![
             "topics.deleted_at IS NULL".to_string(),
@@ -167,6 +240,7 @@ impl TopicQuery<'_> {
         if self.options.no_definitions {
             clauses.push("COALESCE(categories.topic_id, 0) <> topics.id".to_string());
         }
+        clauses.extend(self.category.clauses.iter().cloned());
         clauses.push("topics.visible = TRUE".to_string());
         clauses.join(" AND ")
     }
@@ -174,7 +248,11 @@ impl TopicQuery<'_> {
     /// `apply_ordering`: `SORTABLE_MAPPING` with `order`, default bumped_at
     /// DESC, no tiebreaker.
     fn order_clause(&self) -> Result<String, TopicQueryError> {
-        let column = match self.options.order.as_deref() {
+        let (order, ascending) = match &self.category.order {
+            Some((o, a)) => (Some(o.as_str()), *a),
+            None => (self.options.order.as_deref(), self.options.ascending),
+        };
+        let column = match order {
             None | Some("default") | Some("activity") => "topics.bumped_at".to_string(),
             Some("likes") => "topics.like_count".to_string(),
             Some("op_likes") => "(SELECT like_count FROM posts p3 WHERE p3.topic_id = topics.id AND p3.post_number = 1)".to_string(),
@@ -188,11 +266,7 @@ impl TopicQuery<'_> {
             }
             Some(_) => return Err(Unsupported("unknown topic list order").into()),
         };
-        let dir = if self.options.ascending {
-            "ASC"
-        } else {
-            "DESC"
-        };
+        let dir = if ascending { "ASC" } else { "DESC" };
         Ok(format!("{column} {dir}"))
     }
 
@@ -222,7 +296,21 @@ impl TopicQuery<'_> {
         let per_page = self.per_page();
         let page = self.options.page;
         let order = self.order_clause()?;
-        let pinned_clause = "pinned_globally AND pinned_at IS NOT NULL";
+        // apply_pinning: only with the default/activity order (the request's,
+        // not the category's default sort).
+        let apply_pinning = matches!(
+            self.options.order.as_deref(),
+            None | Some("activity") | Some("default")
+        );
+        if !apply_pinning {
+            return self.fetch("TRUE", &order, per_page, page * per_page).await;
+        }
+        let pinned_clause = self
+            .category
+            .pinned_clause
+            .clone()
+            .unwrap_or_else(|| "pinned_globally AND pinned_at IS NOT NULL".to_string());
+        let pinned_clause = pinned_clause.as_str();
         let unpinned_clause = format!("NOT ({pinned_clause})");
 
         if page == 0 {
@@ -331,4 +419,14 @@ mod fancy_title_tests {
         assert!(fancy_title(&row("dash -- dash", None)).is_err());
         assert!(fancy_title(&row("Hi :wave:", None)).is_err());
     }
+}
+
+/// What a category adds to the query.
+#[derive(Debug, Clone, Default)]
+pub struct CategoryScope {
+    clauses: Vec<String>,
+    /// The category's `sort_order`/`sort_ascending`, when it has one and
+    /// the request gave no order.
+    order: Option<(String, bool)>,
+    pinned_clause: Option<String>,
 }

@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+{% block title %}Categories - {{ site_title }}{% endblock %}
+{% block content %}
+<table class="category-list">
+  <thead>
+    <tr>
+      <th class="category">Category</th>
+      <th class="topics">Topics</th>
+      <th class="latest">Latest</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for c in categories %}
+    <tr>
+      <td class="category" style="border-color: #{{ c.color }};">
+        <h3><a href="{{ c.url }}">{{ c.name }}</a></h3>
+        {% if let Some(d) = c.description %}<div class="category-description">{{ d|safe }}</div>{% endif %}
+        {% if !c.subcategories.is_empty() %}
+        <div class="subcategories">{% for s in c.subcategories %}<a href="{{ s.url }}">{{ s.name }}</a> {% endfor %}</div>
+        {% endif %}
+      </td>
+      <td class="topics"><div title="{{ c.topic_count }} topics">{{ c.topic_count }}</div></td>
+      <td class="latest">
+        {% for t in c.topics %}
+        <div class="featured-topic"><a href="{{ t.url }}">{{ t.title }}</a> <time datetime="{{ t.bumped_at_iso }}">{{ t.bumped_at }}</time></div>
+        {% endfor %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

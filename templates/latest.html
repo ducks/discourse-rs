@@ -1,6 +1,16 @@
 {% extends "layout.html" %}
-{% block title %}Latest topics - {{ site_title }}{% endblock %}
+{% block title %}{% if let Some(h) = heading %}{{ h.name }}{% else %}Latest topics{% endif %} - {{ site_title }}{% endblock %}
 {% block content %}
+{% if let Some(h) = heading %}
+<h1 class="category-heading">
+  {% if let Some(p) = h.parent %}<a href="{{ p.url }}">{{ p.name }}</a> &rsaquo; {% endif %}<a href="{{ h.url }}">{{ h.name }}</a>
+</h1>
+{% if !h.subcategories.is_empty() %}
+<div class="subcategories">
+  {% for s in h.subcategories %}<div class="subcategory"><a href="{{ s.url }}">{{ s.name }}</a>{% if let Some(d) = s.description %} <span class="description">{{ d|safe }}</span>{% endif %}</div>{% endfor %}
+</div>
+{% endif %}
+{% endif %}
 <div class="topic-list-container">
   <table class="topic-list">
     <thead>
