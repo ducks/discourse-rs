@@ -67,8 +67,8 @@ how often a backup trips them.
 - [ ] Search: advanced filters (`in:`, `status:`, `category:`, `#`, `@`,
       `tags:`, `before:`/`after:`, `order:`), search contexts, `search_for_id`,
       rate limits, pg headlines
-- [ ] Plugin-added keys (solved, voting, reactions, ...) behind an
-      installed-plugins model instead of parity ignore lists
+- [ ] Plugin-added keys (solved, voting, reactions, ...) through the plugin
+      protocol (PLUGINS.md) instead of parity ignore lists
 - [ ] Topics without a stored slug (`Slug.for`)
 
 ## Milestone 3: sessions
@@ -95,6 +95,23 @@ Logged-in readers, no writes yet.
 - [ ] Notifications list, bookmarks list, user preferences (read-only)
 - [ ] Live updates: a MessageBus-compatible long-poll endpoint (`/message-bus/:client_id/poll`); nothing in the Rust ecosystem provides it, so it is ours to write
 
+
+## Milestone 3.5: plugins
+
+The protocol in PLUGINS.md, built on the read side first so the parity
+harness can judge it.
+
+- [ ] Tier 0: `plugin.toml` with settings, preloaded custom fields,
+      assets, i18n, SQL migrations; `discourse-rs plugins`
+- [ ] Tier 1: subprocess over JSON-RPC (stdio or socket), supervised;
+      `serialize`, `html`, `modify` batched per response, `route` with
+      core's session and CSRF, `event` and `job`; the failure policy
+- [ ] discourse-solved's read side as the first plugin (Ruby), its parity
+      ignores deleted; the voting plugin second, in another language
+- [ ] Write-side hooks designed with milestone 4 (NewPostManager
+      modifiers, post events)
+- [ ] Tier 2: the same hooks as WASI components in-process
+
 ## Milestone 4: writes
 
 - [ ] Cooking pipeline: markdown-it with Discourse's rules (the hard part;
@@ -111,5 +128,6 @@ Logged-in readers, no writes yet.
 
 - Running Discourse migrations: Discourse owns the schema; re-vendor
   `structure.sql` and re-snapshot instead
-- A plugin system before writes exist
+- Plugins as code loaded into the process (see PLUGINS.md: they are
+  programs behind a JSON-RPC protocol, in any language)
 - Feature parity with admin (`/admin/...`)
