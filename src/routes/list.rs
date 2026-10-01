@@ -249,6 +249,7 @@ pub(super) async fn list_document_for(
         urls: &urls,
         more_topics_url: Some(more),
         category_id: options.category_id,
+        group_id: None,
         prefetched: Default::default(),
     }
     .serialize(&list)

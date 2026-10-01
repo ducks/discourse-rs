@@ -70,6 +70,18 @@ pub const SESSION_USER_COLUMNS: &str = "users.id, users.username, users.trust_le
     users.suspended_till, users.last_seen_at, host(users.ip_address) AS ip_address";
 
 impl SessionUser {
+    /// The session user columns for a user id.
+    pub async fn load(
+        conn: &mut sqlx::PgConnection,
+        id: i32,
+    ) -> Result<Option<SessionUser>, sqlx::Error> {
+        sqlx::query_as(&format!(
+            "SELECT {SESSION_USER_COLUMNS} FROM users WHERE id = $1"
+        ))
+        .bind(id)
+        .fetch_optional(conn)
+        .await
+    }
     pub fn suspended(&self) -> bool {
         self.suspended_till
             .is_some_and(|t| t > chrono::Utc::now().naive_utc())

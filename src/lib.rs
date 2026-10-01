@@ -14,6 +14,7 @@ pub mod i18n;
 pub mod letter_avatar;
 pub mod notifications;
 pub mod parity;
+pub mod pm_lists;
 pub mod post_actions;
 pub mod routes;
 pub mod ruby;

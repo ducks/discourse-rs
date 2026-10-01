@@ -49,6 +49,7 @@ pub struct TopicRow {
     pub category_id: Option<i32>,
     pub featured_link: Option<String>,
     pub visibility_reason_id: Option<i32>,
+    pub subtype: Option<String>,
 }
 
 pub const TOPIC_COLUMNS: &str = "topics.id, topics.title, topics.fancy_title, topics.slug, topics.posts_count, \
@@ -57,7 +58,8 @@ pub const TOPIC_COLUMNS: &str = "topics.id, topics.title, topics.fancy_title, to
     topics.pinned_globally, topics.excerpt, topics.visible, topics.closed, topics.archived, \
     topics.views, topics.like_count, topics.has_summary, topics.user_id, topics.last_post_user_id, \
     topics.featured_user1_id, topics.featured_user2_id, topics.featured_user3_id, \
-    topics.featured_user4_id, topics.category_id, topics.featured_link, topics.visibility_reason_id";
+    topics.featured_user4_id, topics.category_id, topics.featured_link, topics.visibility_reason_id, \
+    topics.subtype";
 
 /// The list options a request can set (TopicQuery.public_valid_options
 /// subset ported so far), already validated.
@@ -724,24 +726,10 @@ impl TopicQuery<'_> {
             Some((o, a)) => (Some(o.as_str()), *a),
             None => (self.options.order.as_deref(), self.options.ascending),
         };
-        let column = match order {
-            None | Some("default") | Some("activity") => "topics.bumped_at".to_string(),
-            Some("likes") => "topics.like_count".to_string(),
-            Some("op_likes") => "(SELECT like_count FROM posts p3 WHERE p3.topic_id = topics.id AND p3.post_number = 1)".to_string(),
-            Some("views") => "topics.views".to_string(),
-            Some("posts") => "topics.posts_count".to_string(),
-            Some("posters") => "topics.participant_count".to_string(),
-            Some("created") => "topics.created_at".to_string(),
-            Some("category") => {
-                let uncategorized = self.settings.get("uncategorized_category_id")?.to_i();
-                format!("CASE WHEN categories.id = {uncategorized} THEN '' ELSE categories.name END")
-            }
-            Some(_) => return Err(Unsupported("unknown topic list order").into()),
-        };
-        let dir = if ascending { "ASC" } else { "DESC" };
+        let ordered = sortable_order(order, ascending, self.settings)?;
         Ok(match block {
-            Some(block) => format!("{column} {dir}, {block}"),
-            None => format!("{column} {dir}"),
+            Some(block) => format!("{ordered}, {block}"),
+            None => ordered,
         })
     }
 
@@ -814,6 +802,33 @@ impl TopicQuery<'_> {
     }
 }
 
+/// `apply_ordering`'s SORTABLE_MAPPING for a requested order: the column
+/// and direction, bumped_at DESC by default.
+pub fn sortable_order(
+    order: Option<&str>,
+    ascending: bool,
+    settings: &SiteSettings,
+) -> Result<String, TopicQueryError> {
+    let column = match order {
+        None | Some("default") | Some("activity") => "topics.bumped_at".to_string(),
+        Some("likes") => "topics.like_count".to_string(),
+        Some("op_likes") => {
+            "(SELECT like_count FROM posts p3 WHERE p3.topic_id = topics.id AND p3.post_number = 1)"
+                .to_string()
+        }
+        Some("views") => "topics.views".to_string(),
+        Some("posts") => "topics.posts_count".to_string(),
+        Some("posters") => "topics.participant_count".to_string(),
+        Some("created") => "topics.created_at".to_string(),
+        Some("category") => {
+            let uncategorized = settings.get("uncategorized_category_id")?.to_i();
+            format!("CASE WHEN categories.id = {uncategorized} THEN '' ELSE categories.name END")
+        }
+        Some(_) => return Err(Unsupported("unknown topic list order").into()),
+    };
+    let dir = if ascending { "ASC" } else { "DESC" };
+    Ok(format!("{column} {dir}"))
+}
 /// A timestamp as a Postgres literal (UTC, microseconds).
 fn sql_time(t: NaiveDateTime) -> String {
     t.format("%Y-%m-%d %H:%M:%S%.6f").to_string()
@@ -893,6 +908,7 @@ mod fancy_title_tests {
             category_id: None,
             featured_link: None,
             visibility_reason_id: None,
+            subtype: None,
         }
     }
 

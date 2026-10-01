@@ -248,3 +248,28 @@ GET /notifications.json?recent=true&silent=true as=admin
 GET /notifications.json as=user0
 GET /notifications.json as=admin
 GET /notifications.json
+
+# list#private_messages* for a logged-in user: the viewer vs the mailbox
+# owner (admin reading user1's inbox), unread/new self-only, groups.
+GET /topics/private-messages/user1.json as=user1 ignore=/topic_list/topics/*/has_accepted_answer
+GET /topics/private-messages/user1.json as=admin ignore=/topic_list/topics/*/has_accepted_answer
+GET /topics/private-messages/user1.json as=user0
+GET /topics/private-messages/user0.json as=user0 ignore=/topic_list/topics/*/has_accepted_answer
+GET /topics/private-messages/user1.json?page=1 as=user1
+GET /topics/private-messages-sent/user1.json as=user1 ignore=/topic_list/topics/*/has_accepted_answer
+GET /topics/private-messages-sent/admin.json as=admin ignore=/topic_list/topics/*/has_accepted_answer
+GET /topics/private-messages-archive/user1.json as=user1 ignore=/topic_list/topics/*/has_accepted_answer
+GET /topics/private-messages-archive/user1.json as=admin ignore=/topic_list/topics/*/has_accepted_answer
+GET /topics/private-messages-unread/user1.json as=user1 ignore=/topic_list/topics/*/has_accepted_answer
+GET /topics/private-messages-unread/user1.json as=admin
+GET /topics/private-messages-new/user1.json as=user1 ignore=/topic_list/topics/*/has_accepted_answer
+GET /topics/private-messages-warnings/user1.json as=user1
+GET /topics/private-messages-group/user1/trust_level_2.json as=user1
+GET /topics/private-messages-group/user1/trust_level_2/archive.json as=user1
+GET /topics/private-messages-group/user1/trust_level_2/new.json as=user1
+GET /topics/private-messages-group/user1/trust_level_2/unread.json as=user1
+GET /topics/private-messages-group/user1/staff.json as=user1
+GET /topics/private-messages-group/admin/staff.json as=admin
+GET /topics/private-messages-group/user1/nope.json as=user1
+GET /topics/private-messages/nobody.json as=user1
+GET /topics/private-messages/user1.json
