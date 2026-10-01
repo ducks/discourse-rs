@@ -52,12 +52,25 @@ async fn run() -> Result<(), Box<dyn Error>> {
 
     let listener = tokio::net::TcpListener::bind(config.bind).await?;
     tracing::info!(addr = %config.bind, "listening");
+    // Rails keeps secret_key_base in redis when it is not configured; a
+    // process without one gets a random secret, so sessions work but do
+    // not survive a restart and Rails cookies are unreadable.
+    let keys = match config.globals.get("secret_key_base") {
+        Some(secret) => discourse_rs::session::current::Keys::new(secret.to_string()),
+        None => {
+            tracing::warn!(
+                "DISCOURSE_SECRET_KEY_BASE not set: sessions will not survive a restart"
+            );
+            discourse_rs::session::current::Keys::ephemeral()
+        }
+    };
     let state = AppState {
         pool,
         config,
         site_setting_defs: Arc::new(site_setting_defs),
         i18n: Arc::new(i18n),
         search_log_cache: Default::default(),
+        keys: Arc::new(keys),
     };
     axum::serve(
         listener,

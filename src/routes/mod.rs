@@ -2,6 +2,7 @@ mod list;
 mod login_required;
 mod robots;
 mod search;
+mod session;
 mod site;
 mod sitemap;
 mod srv;
@@ -12,7 +13,7 @@ mod users;
 use axum::Router;
 use axum::http::header;
 use axum::response::IntoResponse;
-use axum::routing::get;
+use axum::routing::{delete, get, post};
 use tower_http::services::ServeDir;
 
 use crate::AppState;
@@ -61,6 +62,17 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/sitemap.xml", get(sitemap::index))
         .route("/sitemap_{page}", get(sitemap::page))
         .route("/news.xml", get(sitemap::news))
+        .route("/session", post(session::create))
+        .route("/session.json", post(session::create))
+        .route("/session/csrf", get(session::csrf))
+        .route("/session/csrf.json", get(session::csrf))
+        .route("/session/current", get(session::current))
+        .route("/session/current.json", get(session::current))
+        .route("/session/{username}", delete(session::destroy))
+        .route(
+            "/login",
+            get(login_required::show_login).post(session::enter),
+        )
         .route("/search", get(search::show))
         .route("/search.json", get(search::show_json))
         .route("/search/query", get(search::query))
@@ -85,5 +97,10 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .layer(axum::middleware::from_fn_with_state(
             state.clone(),
             login_required::gate,
+        ))
+        // Outermost: the session is resolved before the login gate runs.
+        .layer(axum::middleware::from_fn_with_state(
+            state.clone(),
+            crate::session::current::layer,
         ))
 }

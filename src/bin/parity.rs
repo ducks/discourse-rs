@@ -133,31 +133,49 @@ async fn run(cli: Cli) -> Result<bool, String> {
 }
 
 async fn fetch(client: &reqwest::Client, base: &str, case: &Case) -> Result<Recorded, String> {
-    let url = format!("{}{}", base.trim_end_matches('/'), case.path);
-    let method = reqwest::Method::from_bytes(case.method.as_bytes()).map_err(|e| e.to_string())?;
-    let mut request = client.request(method, &url);
-    for (name, value) in parity::REQUEST_HEADERS {
-        request = request.header(*name, *value);
-    }
-    let response = request
-        .send()
-        .await
-        .map_err(|e| format!("{} {url}: {e}", case.method))?;
-
-    let status = response.status().as_u16();
-    let content_type = response
-        .headers()
-        .get(reqwest::header::CONTENT_TYPE)
-        .and_then(|v| v.to_str().ok())
-        .map(str::to_string);
-    let body = response
-        .text()
-        .await
-        .map_err(|e| format!("reading body of {url}: {e}"))?;
-
-    Ok(Recorded {
-        status,
-        content_type,
-        body,
+    let base = base.trim_end_matches('/').to_string();
+    parity::run_case(case, |exchange: parity::Exchange| {
+        let client = client.clone();
+        let base = base.clone();
+        async move {
+            let url = format!("{base}{}", exchange.path);
+            let method = reqwest::Method::from_bytes(exchange.method.as_bytes())
+                .map_err(|e| e.to_string())?;
+            let mut request = client.request(method, &url);
+            for (name, value) in &exchange.headers {
+                request = request.header(name.as_str(), value.as_str());
+            }
+            if let Some(body) = exchange.body {
+                request = request.body(body);
+            }
+            let response = request
+                .send()
+                .await
+                .map_err(|e| format!("{} {url}: {e}", exchange.method))?;
+            let status = response.status().as_u16();
+            let content_type = response
+                .headers()
+                .get(reqwest::header::CONTENT_TYPE)
+                .and_then(|v| v.to_str().ok())
+                .map(str::to_string);
+            let set_cookies = response
+                .headers()
+                .get_all(reqwest::header::SET_COOKIE)
+                .iter()
+                .filter_map(|v| v.to_str().ok())
+                .map(str::to_string)
+                .collect();
+            let body = response
+                .text()
+                .await
+                .map_err(|e| format!("reading body of {url}: {e}"))?;
+            Ok(parity::Reply {
+                status,
+                content_type,
+                body,
+                set_cookies,
+            })
+        }
     })
+    .await
 }

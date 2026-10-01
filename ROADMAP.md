@@ -31,7 +31,9 @@ could put behind Caddy and leave running.
 - [x] User pages: `/u/:username`, summary, activity (posts link there)
 - [x] Crawler hygiene: `robots.txt`, sitemaps, canonical and meta tags
 - [ ] Deploy: systemd unit, Caddy snippet, `make install`, first
-      date-versioned release with a binary
+      date-versioned release with a binary (parked 2026-09-30); the unit
+      needs DISCOURSE_SECRET_KEY_BASE (Rails keeps it in redis when not
+      configured: `rails runner 'puts GlobalSetting.safe_secret_key_base'`)
 - [x] Bench harness: `make bench` and `make bench-startup` (BENCH.md has
       the runs and the caveats); a production-mode Discourse reference is
       still needed for numbers that mean something
@@ -73,8 +75,11 @@ how often a backup trips them.
 
 Logged-in readers, no writes yet.
 
-- [ ] Login: local (bcrypt `user_passwords`), then OIDC; CSRF; cookies
-      compatible with Rails' session so a cutover keeps sessions
+- [x] Login: local (PBKDF2 `user_passwords`), CSRF, the `_t` and
+      `_forum_session` cookies in Rails' own encrypted format so a cutover
+      keeps sessions; `/session/current.json` byte-equal for members and
+      admins
+- [ ] OIDC / external logins, 2FA
 - [ ] Logged-in `Guardian`: secure categories, group permissions, tag
       group permissions by group, staff visibility
 - [ ] Read state: `topic_users`, unread/new lists, tracking levels

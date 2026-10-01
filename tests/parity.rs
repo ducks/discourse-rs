@@ -8,7 +8,7 @@ use std::path::Path;
 
 use axum::body::Body;
 use axum::http::{Request, header};
-use discourse_rs::parity::{self, Recorded};
+use discourse_rs::parity;
 use http_body_util::BodyExt;
 use tower::ServiceExt;
 
@@ -31,34 +31,50 @@ async fn golden_responses_match() {
             continue;
         };
 
-        let mut request = Request::builder()
-            .method(case.method.as_str())
-            .uri(&case.path);
-        for (name, value) in parity::REQUEST_HEADERS {
-            request = request.header(*name, *value);
-        }
         // The host Rails saw when the golden was recorded.
-        if let Some(host) = golden.source.split("://").nth(1) {
-            request = request.header(header::HOST, host.trim_end_matches('/'));
-        }
-        let response = app
-            .clone()
-            .oneshot(request.body(Body::empty()).unwrap())
-            .await
-            .unwrap();
-
-        let status = response.status().as_u16();
-        let content_type = response
-            .headers()
-            .get(header::CONTENT_TYPE)
-            .and_then(|v| v.to_str().ok())
-            .map(str::to_string);
-        let bytes = response.into_body().collect().await.unwrap().to_bytes();
-        let actual = Recorded {
-            status,
-            content_type,
-            body: String::from_utf8_lossy(&bytes).into_owned(),
-        };
+        let host = golden
+            .source
+            .split("://")
+            .nth(1)
+            .map(|h| h.trim_end_matches('/').to_string())
+            .unwrap_or_else(|| "localhost".into());
+        let actual = parity::run_case(case, |exchange: parity::Exchange| {
+            let app = app.clone();
+            let host = host.clone();
+            async move {
+                let mut request = Request::builder()
+                    .method(exchange.method.as_str())
+                    .uri(&exchange.path)
+                    .header(header::HOST, host);
+                for (name, value) in &exchange.headers {
+                    request = request.header(name.as_str(), value.as_str());
+                }
+                let body = exchange.body.map(Body::from).unwrap_or_else(Body::empty);
+                let response = app.oneshot(request.body(body).unwrap()).await.unwrap();
+                let status = response.status().as_u16();
+                let content_type = response
+                    .headers()
+                    .get(header::CONTENT_TYPE)
+                    .and_then(|v| v.to_str().ok())
+                    .map(str::to_string);
+                let set_cookies = response
+                    .headers()
+                    .get_all(header::SET_COOKIE)
+                    .iter()
+                    .filter_map(|v| v.to_str().ok())
+                    .map(str::to_string)
+                    .collect();
+                let bytes = response.into_body().collect().await.unwrap().to_bytes();
+                Ok(parity::Reply {
+                    status,
+                    content_type,
+                    body: String::from_utf8_lossy(&bytes).into_owned(),
+                    set_cookies,
+                })
+            }
+        })
+        .await
+        .unwrap();
 
         checked += 1;
         if let Err(report) = parity::compare(case, &golden.response, &actual, ("golden", "rs")) {

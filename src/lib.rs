@@ -4,6 +4,7 @@ pub mod category;
 pub mod category_list;
 pub mod color_scheme;
 pub mod config;
+pub mod current_user;
 pub mod emoji;
 pub mod excerpt;
 pub mod groups;
@@ -16,6 +17,7 @@ pub mod routes;
 pub mod ruby;
 pub mod schema;
 pub mod search;
+pub mod session;
 pub mod site;
 pub mod site_icons;
 pub mod site_settings;
@@ -46,6 +48,8 @@ pub struct AppState {
     pub i18n: Arc<I18n>,
     /// `SearchLog.log`'s per-IP dedupe window.
     pub search_log_cache: Arc<search::SearchLogCache>,
+    /// secret_key_base and the cookie codec derived from it.
+    pub keys: Arc<session::current::Keys>,
 }
 
 pub fn app(state: AppState) -> Router {
