@@ -337,6 +337,19 @@ impl Definitions {
         names
     }
 
+    /// `UpcomingChanges.permanent_upcoming_change_names`: the settings
+    /// whose upcoming change is permanent, by name.
+    pub fn permanent_upcoming_change_names(&self) -> Vec<&str> {
+        let mut names: Vec<&str> = self
+            .list
+            .iter()
+            .filter(|d| d.upcoming_change == Some(ChangeStatus::Permanent))
+            .map(|d| d.name.as_str())
+            .collect();
+        names.sort_unstable();
+        names
+    }
+
     pub fn iter(&self) -> impl Iterator<Item = &Definition> {
         self.list.iter()
     }

@@ -8,11 +8,12 @@ use axum::http::{HeaderMap, StatusCode, header};
 use axum::response::{IntoResponse, Response};
 use serde_json::{Value, json};
 
-use super::list::{ListKind, ListParams, TagListRequest, list_document_for};
+use super::list::{ListKind, ListParams, ListScope, TagListRequest, list_document_for};
 use crate::category::Category;
 use crate::guardian::Guardian;
+use crate::session::current::AuthGuardian;
 use crate::site_settings::SiteSettings;
-use crate::tags::{Tag, VISIBLE_TAGS_WHERE};
+use crate::tags::{Tag, visible_tags_where};
 use crate::topic_query::Options;
 use crate::url::Urls;
 use crate::{AppError, AppState, Unsupported};
@@ -165,6 +166,7 @@ pub(super) fn next_url(
 /// GET /tag/{*path}
 pub async fn show(
     State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
     Path(path): Path<String>,
     Query(params): Query<ListParams>,
     RawQuery(raw_query): RawQuery,
@@ -172,12 +174,13 @@ pub async fn show(
     uri: axum::http::Uri,
 ) -> Result<Response, AppError> {
     let parsed = parse_path(&path, false)?;
-    show_list(state, parsed, params, raw_query, headers, uri).await
+    show_list(state, guardian, parsed, params, raw_query, headers, uri).await
 }
 
 /// GET /tags/c/{*path}
 pub async fn show_in_category(
     State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
     Path(path): Path<String>,
     Query(params): Query<ListParams>,
     RawQuery(raw_query): RawQuery,
@@ -185,7 +188,7 @@ pub async fn show_in_category(
     uri: axum::http::Uri,
 ) -> Result<Response, AppError> {
     let parsed = parse_path(&path, true)?;
-    show_list(state, parsed, params, raw_query, headers, uri).await
+    show_list(state, guardian, parsed, params, raw_query, headers, uri).await
 }
 
 fn redirect(headers: &HeaderMap, location: String) -> Response {
@@ -203,6 +206,7 @@ fn redirect(headers: &HeaderMap, location: String) -> Response {
 /// `show_#{filter}`.
 async fn show_list(
     state: AppState,
+    guardian: Guardian,
     path: TagPath,
     params: ListParams,
     raw_query: Option<String>,
@@ -349,12 +353,15 @@ async fn show_list(
 
     let (doc, settings) = match list_document_for(
         &state,
+        &guardian,
         &params,
-        category.as_ref(),
-        path.no_subcategories,
-        kind,
-        &list_path,
-        Some(&request),
+        ListScope {
+            category: category.as_ref(),
+            no_subcategories: path.no_subcategories,
+            kind,
+            list_path: &list_path,
+            tag_request: Some(&request),
+        },
     )
     .await?
     {
@@ -378,7 +385,9 @@ async fn show_list(
     if path.json {
         return Ok(Json(doc).into_response());
     }
-    let site = crate::html::Site::from_settings(&settings, &base_path)?;
+    let vs = super::session::viewer_state(&state, &headers, &settings, &guardian)?;
+    let mut site = crate::html::Site::from_settings(&settings, &base_path)?;
+    site.viewer = vs.viewer.clone();
     let mut page = crate::html::latest_page(&mut conn, site, &doc).await?;
     if let Some(c) = &category {
         page.heading = Some(
@@ -421,19 +430,26 @@ async fn show_list(
         body,
         &page.crawler,
         &settings,
+        &vs,
     )?)
 }
 
 /// GET /tags(.json) -> tags#index with tags_listed_by_group off.
 pub async fn index(
     State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
     uri: axum::http::Uri,
 ) -> Result<Response, AppError> {
-    index_response(state, false, Some(uri)).await
+    index_response(state, guardian, false, headers, Some(uri)).await
 }
 
-pub async fn index_json(State(state): State<AppState>) -> Result<Response, AppError> {
-    index_response(state, true, None).await
+pub async fn index_json(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+) -> Result<Response, AppError> {
+    index_response(state, guardian, true, headers, None).await
 }
 
 #[derive(sqlx::FromRow)]
@@ -449,13 +465,13 @@ struct CountRow {
 
 impl CountRow {
     /// `tag_counts_json` entry; browsable tags have no target_tag.
-    fn json(&self, secure_counts: bool) -> Value {
-        let count = if secure_counts {
+    fn json(&self, staff_counts: bool, pm_count: bool) -> Value {
+        let count = if staff_counts {
             self.staff_topic_count
         } else {
             self.public_topic_count
         };
-        json!({
+        let mut out = json!({
             "id": self.id,
             "text": self.name,
             "name": self.name,
@@ -464,7 +480,11 @@ impl CountRow {
             "count": count,
             "pm_only": count == 0 && self.pm_topic_count > 0,
             "target_tag": null,
-        })
+        });
+        if pm_count {
+            out["pm_count"] = json!(self.pm_topic_count);
+        }
+        out
     }
 }
 
@@ -473,7 +493,9 @@ const COUNT_COLUMNS: &str = "tags.id, tags.name, tags.slug, tags.description, \
 
 async fn index_response(
     state: AppState,
+    guardian: Guardian,
     json: bool,
+    headers: HeaderMap,
     uri: Option<axum::http::Uri>,
 ) -> Result<Response, AppError> {
     let mut conn = state.pool.acquire().await?;
@@ -485,23 +507,28 @@ async fn index_response(
     if settings.get("tags_listed_by_group")?.truthy() {
         return Err(Unsupported("tags_listed_by_group").into());
     }
-    let secure_counts = settings
-        .get("include_secure_categories_in_tag_counts")?
-        .truthy();
-    let count_column = if secure_counts {
-        "staff_topic_count"
+    let count_column = guardian.tag_count_column(&settings)?;
+    let staff_counts = count_column == "staff_topic_count";
+    // show_pm_tags && display_personal_messages_tag_counts
+    let pm_count = guardian.can_tag_pms(&settings)?
+        && settings
+            .get("display_personal_messages_tag_counts")?
+            .truthy();
+    // show_all_tags?: admins also get unused and PM-only tags.
+    let used = if guardian.is_admin() {
+        String::new()
     } else {
-        "public_topic_count"
+        format!(" AND tags.{count_column} > 0")
     };
+    let visible = visible_tags_where(&guardian, &settings)?;
     // Tag.browsable(guardian).used_tags_in_regular_topics(guardian).order(:id)
     let tags: Vec<CountRow> = sqlx::query_as(&format!(
-        "SELECT {COUNT_COLUMNS} FROM tags WHERE tags.target_tag_id IS NULL AND {VISIBLE_TAGS_WHERE} \
-         AND tags.{count_column} > 0 ORDER BY tags.id"
+        "SELECT {COUNT_COLUMNS} FROM tags WHERE tags.target_tag_id IS NULL AND {visible} \
+         {used} ORDER BY tags.id"
     ))
     .fetch_all(&mut *conn)
     .await?;
-    let guardian = Guardian::anonymous();
-    let allowed = guardian.allowed_category_ids(&mut conn).await?;
+    let allowed = guardian.allowed_category_ids(&mut conn, &settings).await?;
     // Categories with category_tags among the allowed ones, by id; each
     // with its visible base tags minus the PM-only ones.
     let category_ids: Vec<i32> = sqlx::query_scalar(
@@ -510,13 +537,19 @@ async fn index_response(
     .bind(&allowed)
     .fetch_all(&mut *conn)
     .await?;
+    // without_pm_only_tags, skipped for admins.
+    let pm_only = if guardian.is_admin() {
+        String::new()
+    } else {
+        format!(" AND NOT (tags.pm_topic_count > 0 AND tags.{count_column} = 0)")
+    };
     let mut category_names = Vec::new();
     let mut categories = Vec::new();
     for category_id in category_ids {
         let rows: Vec<CountRow> = sqlx::query_as(&format!(
             "SELECT {COUNT_COLUMNS} FROM tags JOIN category_tags ct ON ct.tag_id = tags.id \
-             WHERE ct.category_id = $1 AND tags.target_tag_id IS NULL AND {VISIBLE_TAGS_WHERE} \
-             AND NOT (tags.pm_topic_count > 0 AND tags.{count_column} = 0) ORDER BY ct.id"
+             WHERE ct.category_id = $1 AND tags.target_tag_id IS NULL AND {visible} \
+             {pm_only} ORDER BY ct.id"
         ))
         .bind(category_id)
         .fetch_all(&mut *conn)
@@ -531,18 +564,20 @@ async fn index_response(
         category_names.push((i64::from(category_id), name));
         categories.push(json!({
             "id": category_id,
-            "tags": rows.iter().map(|r| r.json(secure_counts)).collect::<Vec<_>>(),
+            "tags": rows.iter().map(|r| r.json(staff_counts, pm_count)).collect::<Vec<_>>(),
         }));
     }
     let doc = json!({
-        "tags": tags.iter().map(|r| r.json(secure_counts)).collect::<Vec<_>>(),
+        "tags": tags.iter().map(|r| r.json(staff_counts, pm_count)).collect::<Vec<_>>(),
         "extras": { "categories": categories },
     });
     if json {
         return Ok(Json(doc).into_response());
     }
-    let site =
+    let vs = super::session::viewer_state(&state, &headers, &settings, &guardian)?;
+    let mut site =
         crate::html::Site::from_settings(&settings, state.config.globals.relative_url_root())?;
+    site.viewer = vs.viewer.clone();
     let mut page = crate::html::tags_page(&state.i18n, site, &doc, &category_names);
     let urls = Urls {
         config: &state.config,
@@ -559,6 +594,7 @@ async fn index_response(
         body,
         &page.crawler,
         &settings,
+        &vs,
     )?)
 }
 

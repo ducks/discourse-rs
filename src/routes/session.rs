@@ -12,6 +12,7 @@ use serde::Deserialize;
 use serde_json::json;
 
 use super::search::Peer;
+use crate::guardian::Guardian;
 use crate::session::cookie::{Map, Scalar};
 use crate::session::current::{self, Incoming, SESSION_COOKIE, SESSION_USER_COLUMNS, SessionUser};
 use crate::session::{csrf, token};
@@ -180,6 +181,29 @@ pub async fn csrf(State(state): State<AppState>, headers: HeaderMap) -> Result<R
     Ok(response)
 }
 
+/// The page shell's viewer block for a logged-in guardian: the username
+/// and a masked CSRF token from the `_forum_session` (created when
+/// absent, which sets the cookie).
+pub(super) fn viewer_state(
+    state: &AppState,
+    headers: &HeaderMap,
+    settings: &SiteSettings,
+    guardian: &Guardian,
+) -> Result<crate::html::ViewerState, AppError> {
+    let Some(user) = guardian.user() else {
+        return Ok(crate::html::ViewerState::default());
+    };
+    let mut session = load_forum_session(state, headers);
+    let stored = session.csrf_token();
+    let masked = csrf::mask(&stored).ok_or(Unsupported("session csrf token not decodable"))?;
+    Ok(crate::html::ViewerState {
+        viewer: Some(crate::html::Viewer {
+            username: user.username.clone(),
+            csrf_token: masked,
+        }),
+        set_cookie: session.set_cookie(state, settings)?,
+    })
+}
 /// `invalid_credentials`
 fn invalid_credentials(state: &AppState) -> Response {
     json_response(json!({

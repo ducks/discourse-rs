@@ -13,6 +13,7 @@ pub mod html;
 pub mod i18n;
 pub mod letter_avatar;
 pub mod parity;
+pub mod post_actions;
 pub mod routes;
 pub mod ruby;
 pub mod schema;
@@ -22,6 +23,7 @@ pub mod site;
 pub mod site_icons;
 pub mod site_settings;
 pub mod tags;
+pub mod topic_guardian;
 pub mod topic_list;
 pub mod topic_query;
 pub mod topic_view;
@@ -53,8 +55,17 @@ pub struct AppState {
 }
 
 pub fn app(state: AppState) -> Router {
-    routes::router(&state)
-        .with_state(state)
+    // The method override must run before routing (a POST becomes a
+    // DELETE), and the session is resolved before anything else, so both
+    // wrap the routed app from the outside.
+    let routed = routes::router(&state).with_state(state.clone());
+    Router::new()
+        .fallback_service(routed)
+        .layer(axum::middleware::from_fn(routes::method_override))
+        .layer(axum::middleware::from_fn_with_state(
+            state,
+            session::current::layer,
+        ))
         .layer(TraceLayer::new_for_http())
 }
 

@@ -4,7 +4,7 @@ use axum::Json;
 use axum::extract::State;
 use serde::Serialize;
 
-use crate::guardian::Guardian;
+use crate::session::current::AuthGuardian;
 use crate::site::Site;
 use crate::site_settings::{SiteSettings, Value};
 use crate::url::Urls;
@@ -76,9 +76,11 @@ pub async fn basic_info(State(state): State<AppState>) -> Result<Json<BasicInfo>
     }))
 }
 
-/// GET /site.json: `Site.json_for(guardian)`, anonymous only until sessions
-/// are ported.
-pub async fn site(State(state): State<AppState>) -> Result<Json<serde_json::Value>, AppError> {
+/// GET /site.json: `Site.json_for(guardian)`.
+pub async fn site(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+) -> Result<Json<serde_json::Value>, AppError> {
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
@@ -88,7 +90,7 @@ pub async fn site(State(state): State<AppState>) -> Result<Json<serde_json::Valu
         settings: &settings,
         defs: &state.site_setting_defs,
         i18n: &state.i18n,
-        guardian: Guardian::anonymous(),
+        guardian,
     };
     Ok(Json(site.json_for().await?))
 }

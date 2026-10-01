@@ -20,7 +20,7 @@ use crate::categories::{Categories, CategoriesError};
 use crate::guardian::Guardian;
 use crate::i18n::I18n;
 use crate::site_settings::{SettingError, SiteSettings};
-use crate::tags::{Tag, VISIBLE_TAGS_WHERE};
+use crate::tags::{Tag, visible_tags_where};
 use crate::topic_list::{Mode, TopicListError, TopicListSerializer, time_json};
 use crate::topic_query::{TOPIC_COLUMNS, TopicRow};
 use crate::url::Urls;
@@ -67,6 +67,16 @@ impl From<sqlx::Error> for SearchError {
 impl From<SettingError> for SearchError {
     fn from(e: SettingError) -> Self {
         SearchError::Setting(e)
+    }
+}
+
+impl From<crate::guardian::GuardianError> for SearchError {
+    fn from(e: crate::guardian::GuardianError) -> Self {
+        match e {
+            crate::guardian::GuardianError::Db(e) => SearchError::Db(e),
+            crate::guardian::GuardianError::Setting(e) => SearchError::Setting(e),
+            crate::guardian::GuardianError::Unsupported(e) => SearchError::Unsupported(e),
+        }
     }
 }
 
@@ -511,6 +521,7 @@ impl Search<'_> {
                 blurb_term.as_deref(),
                 args.blurb_length,
                 &original_term,
+                args.full_page,
             )
             .await?,
         ))
@@ -615,17 +626,42 @@ impl Search<'_> {
                 " AND (posts.raw ILIKE ${bind} OR topics.title ILIKE ${bind})"
             ));
         }
+        // Whisperers search whispers too; members see their secure
+        // categories.
+        let post_types = self
+            .guardian
+            .visible_post_types(self.settings)?
+            .iter()
+            .map(|t| t.to_string())
+            .collect::<Vec<_>>()
+            .join(", ");
+        let secure_ids = self
+            .guardian
+            .secure_category_ids(&mut *self.conn, self.settings)
+            .await?;
+        let secure = if secure_ids.is_empty() {
+            String::new()
+        } else {
+            format!(
+                " OR (categories.id IN ({}))",
+                secure_ids
+                    .iter()
+                    .map(|id| id.to_string())
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            )
+        };
         let inner = format!(
             "SELECT topics.id, min(posts.post_number) post_number FROM posts \
              INNER JOIN post_search_data ON post_search_data.post_id = posts.id \
              INNER JOIN topics ON topics.deleted_at IS NULL AND topics.id = posts.topic_id \
              LEFT JOIN categories ON categories.id = topics.category_id \
-             WHERE posts.deleted_at IS NULL AND posts.post_type IN (1, 2, 3) AND posts.hidden = FALSE \
+             WHERE posts.deleted_at IS NULL AND posts.post_type IN ({post_types}) AND posts.hidden = FALSE \
              AND (topics.visible) \
              AND (topics.archetype <> 'private_message' AND NOT post_search_data.private_message) \
              AND (post_search_data.search_data @@ {}){phrase_clauses} \
              AND ((categories.search_priority IS NULL OR categories.search_priority IS NOT NULL AND categories.search_priority <> 1)) \
-             AND ((categories.id IS NULL) OR (NOT categories.read_restricted)) \
+             AND ((categories.id IS NULL) OR (NOT categories.read_restricted){secure}) \
              GROUP BY topics.id ORDER BY {} LIMIT $3 OFFSET $4",
             ts_query_sql(config, 1),
             order.join(", ")
@@ -659,10 +695,11 @@ impl Search<'_> {
         original_term: &str,
         results: &mut Results,
     ) -> Result<(), SearchError> {
-        if self
-            .settings
-            .get("hide_user_profiles_from_public")?
-            .truthy()
+        if self.guardian.is_anonymous()
+            && self
+                .settings
+                .get("hide_user_profiles_from_public")?
+                .truthy()
         {
             return Ok(());
         }
@@ -678,10 +715,11 @@ impl Search<'_> {
              AND (user_search_data.search_data @@ {})",
             ts_query_sql("simple", 1)
         );
-        if !self
-            .settings
-            .get("enable_listing_suspended_users_on_search")?
-            .truthy()
+        if !self.guardian.is_admin()
+            && !self
+                .settings
+                .get("enable_listing_suspended_users_on_search")?
+                .truthy()
         {
             sql.push_str(" AND users.suspended_at IS NULL");
         }
@@ -697,6 +735,45 @@ impl Search<'_> {
         Ok(())
     }
 
+    /// `Category.secured(guardian)`: public categories, plus the secure
+    /// ones when the guardian has any.
+    async fn category_secured_clause(&mut self) -> Result<String, SearchError> {
+        let secure_ids = self
+            .guardian
+            .secure_category_ids(&mut *self.conn, self.settings)
+            .await?;
+        Ok(if secure_ids.is_empty() {
+            "NOT categories.read_restricted".to_string()
+        } else {
+            format!(
+                "NOT categories.read_restricted OR categories.id IN ({})",
+                secure_ids
+                    .iter()
+                    .map(|id| id.to_string())
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            )
+        })
+    }
+
+    /// The viewer's `(member, owner)` row for a group, if any.
+    async fn group_membership(
+        &mut self,
+        group_id: i32,
+    ) -> Result<Option<(bool, bool)>, SearchError> {
+        let Some(uid) = self.guardian.user_id() else {
+            return Ok(None);
+        };
+        let owner: Option<bool> = sqlx::query_scalar(
+            "SELECT owner FROM group_users WHERE group_id = $1 AND user_id = $2",
+        )
+        .bind(group_id)
+        .bind(uid)
+        .fetch_optional(&mut *self.conn)
+        .await?;
+        Ok(owner.map(|o| (true, o)))
+    }
+
     /// `category_search`: readable categories by their search data, busiest
     /// this month first.
     async fn category_search(
@@ -705,10 +782,11 @@ impl Search<'_> {
         results: &mut Results,
     ) -> Result<(), SearchError> {
         let config = self.config()?;
+        let secured = self.category_secured_clause().await?;
         let sql = format!(
             "SELECT categories.id FROM categories \
              LEFT OUTER JOIN category_search_data ON category_search_data.category_id = categories.id \
-             WHERE (category_search_data.search_data @@ {}) AND (NOT categories.read_restricted) \
+             WHERE (category_search_data.search_data @@ {}) AND ({secured}) \
              ORDER BY topics_month DESC LIMIT $2",
             ts_query_sql(config, 1)
         );
@@ -726,11 +804,12 @@ impl Search<'_> {
             return Ok(());
         }
         let config = self.config()?;
+        let visible = visible_tags_where(self.guardian, self.settings)?;
         let sql = format!(
             "SELECT tags.id, tags.name, tags.slug, tags.description, tags.description_cooked, \
-                    tags.public_topic_count, tags.pm_topic_count, tags.target_tag_id FROM tags \
+                    tags.public_topic_count, tags.staff_topic_count, tags.pm_topic_count, tags.target_tag_id FROM tags \
              LEFT OUTER JOIN tag_search_data ON tag_search_data.tag_id = tags.id \
-             WHERE tags.target_tag_id IS NULL AND {VISIBLE_TAGS_WHERE} \
+             WHERE tags.target_tag_id IS NULL AND {visible} \
              AND (tag_search_data.search_data @@ {}) ORDER BY name asc LIMIT $2",
             ts_query_sql(config, 1)
         );
@@ -749,9 +828,10 @@ impl Search<'_> {
         term: &str,
         results: &mut Results,
     ) -> Result<(), SearchError> {
+        let visible = crate::groups::visible_groups_where(self.guardian, "g");
         results.groups = sqlx::query_as(&format!(
             "SELECT {} FROM groups g LEFT JOIN uploads u ON u.id = g.flair_upload_id \
-             WHERE (g.id > 0) AND (g.id NOT IN (4, 5)) AND (g.visibility_level = 0) \
+             WHERE (g.id > 0) AND (g.id NOT IN (4, 5)) AND ({visible}) \
              AND (g.name ILIKE $1 OR g.full_name ILIKE $1) ORDER BY g.name ASC LIMIT $2",
             crate::groups::BASIC_GROUP_COLUMNS
         ))
@@ -763,11 +843,17 @@ impl Search<'_> {
     }
 
     /// `SearchLog.log`: a row per search, or the previous row from the same
-    /// IP within 5 s updated when the new term extends it.
+    /// IP or user within 5 s updated when the new term extends it.
     async fn log(&mut self, term: &str, args: &SearchArgs) -> Result<Option<i64>, SearchError> {
         if term.trim().is_empty() || args.ip_address.is_empty() {
             return Ok(None);
         }
+        // Logged-in rows carry the user, not the address, and dedupe by user.
+        let user_id = self.guardian.user_id();
+        let key = match user_id {
+            Some(id) => format!("user:{id}"),
+            None => args.ip_address.clone(),
+        };
         let search_type = if args.full_page {
             SEARCH_TYPE_FULL_PAGE
         } else {
@@ -780,7 +866,7 @@ impl Search<'_> {
                 .lock()
                 .unwrap_or_else(|e| e.into_inner());
             entries
-                .get(&args.ip_address)
+                .get(&key)
                 .filter(|(_, _, at)| at.elapsed() < SEARCH_LOG_TTL)
                 .map(|(id, old_term, _)| (*id, old_term.clone()))
         };
@@ -808,14 +894,15 @@ impl Search<'_> {
                 sqlx::query_scalar(
                     "INSERT INTO search_logs (term, search_type, ip_address, user_agent, user_id, session_id, \
                                               crawler, likely_crawler, created_at) \
-                     VALUES ($1, $2, $3::inet, $4, NULL, $5, $6, FALSE, now()) RETURNING id::bigint",
+                     VALUES ($1, $2, $3::inet, $4, $7, $5, $6, FALSE, now()) RETURNING id::bigint",
                 )
                 .bind(term)
                 .bind(search_type)
-                .bind(&args.ip_address)
+                .bind(user_id.map(|_| None::<String>).unwrap_or(Some(args.ip_address.clone())))
                 .bind(user_agent)
                 .bind(session_id)
                 .bind(crawler)
+                .bind(user_id)
                 .fetch_one(&mut *self.conn)
                 .await?
             }
@@ -825,10 +912,7 @@ impl Search<'_> {
             .entries
             .lock()
             .unwrap_or_else(|e| e.into_inner());
-        entries.insert(
-            args.ip_address.clone(),
-            (id, term.to_string(), Instant::now()),
-        );
+        entries.insert(key, (id, term.to_string(), Instant::now()));
         Ok(Some(id))
     }
 
@@ -876,6 +960,7 @@ impl Search<'_> {
         blurb_term: Option<&str>,
         blurb_length: usize,
         original_term: &str,
+        full_page: bool,
     ) -> Result<Value, SearchError> {
         let tagging = self.settings.get("tagging_enabled")?.truthy();
         let enable_names = self.settings.get("enable_names")?.truthy();
@@ -956,8 +1041,15 @@ impl Search<'_> {
                     continue;
                 };
                 topics.push(
-                    list.serialize_topic(t, &[], tagging, Mode::SearchItem)
-                        .await?,
+                    list.serialize_topic(
+                        t,
+                        &[],
+                        tagging,
+                        Mode::SearchItem {
+                            user_data: full_page,
+                        },
+                    )
+                    .await?,
                 );
             }
             out.insert("topics".into(), Value::Array(topics));
@@ -1025,6 +1117,13 @@ impl Search<'_> {
                 };
                 let mut c = cats.basic_fields(row).await?;
                 c.insert("notification_level".into(), Value::Null);
+                // can_edit?(category): admins, or moderators who manage categories.
+                if self.guardian.is_admin()
+                    || (self.settings.get("moderators_manage_categories")?.truthy()
+                        && self.guardian.is_moderator())
+                {
+                    c.insert("can_edit".into(), json!(true));
+                }
                 c.insert("has_children".into(), Value::Null);
                 c.insert("subcategory_count".into(), Value::Null);
                 cats.uploads(&mut c, row).await?;
@@ -1036,14 +1135,18 @@ impl Search<'_> {
         if tagging {
             let mut tags = Vec::new();
             for t in &results.tags {
-                tags.push(t.serialize(&mut *self.conn).await?);
+                tags.push(
+                    t.serialize(&mut *self.conn, self.guardian, self.settings)
+                        .await?,
+                );
             }
             out.insert("tags".into(), Value::Array(tags));
         }
 
         let mut groups = Vec::new();
         for g in &results.groups {
-            groups.push(g.json(self.i18n)?);
+            let membership = self.group_membership(g.id).await?;
+            groups.push(g.json(self.i18n, self.guardian, self.settings, membership)?);
         }
         out.insert("groups".into(), Value::Array(groups));
 
@@ -1070,7 +1173,11 @@ impl Search<'_> {
         );
         grouped.insert(
             "can_create_topic".into(),
-            json!(self.guardian.is_authenticated()),
+            json!(
+                self.guardian
+                    .can_create_topic(&mut *self.conn, self.settings)
+                    .await?
+            ),
         );
         grouped.insert("error".into(), Value::Null);
         grouped.insert("extra".into(), json!({}));

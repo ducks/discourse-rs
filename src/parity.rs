@@ -8,6 +8,7 @@
 //! structurally (key order ignored) after removing each case's `ignore`
 //! pointers, for fields that legitimately differ between runs.
 
+use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -549,7 +550,7 @@ pub struct Reply {
 }
 
 /// The cookies a case's requests share.
-#[derive(Default)]
+#[derive(Clone, Default)]
 struct Jar {
     cookies: Vec<(String, String)>,
 }
@@ -579,17 +580,37 @@ impl Jar {
     }
 }
 
+/// Logged-in sessions kept across the cases of one run, one per `as=`
+/// user, so a run logs in once per user (Rails caps logins per IP at
+/// 6 a minute and 30 an hour) and the rest of the cases ride the cookie.
+#[derive(Default)]
+pub struct Sessions {
+    by_user: HashMap<String, (Jar, String)>,
+}
+
 /// Runs a case through `send`: fetches a CSRF token and logs in when the
-/// case needs it, then performs the request itself with the session's
-/// cookies. The password for `as=` logins is PARITY_PASSWORD.
-pub async fn run_case<F, Fut>(case: &Case, mut send: F) -> Result<Recorded, String>
+/// case needs it (reusing the user's session from an earlier case), then
+/// performs the request itself with the session's cookies. The password
+/// for `as=` logins is PARITY_PASSWORD.
+pub async fn run_case<F, Fut>(
+    case: &Case,
+    sessions: &mut Sessions,
+    mut send: F,
+) -> Result<Recorded, String>
 where
     F: FnMut(Exchange) -> Fut,
     Fut: std::future::Future<Output = Result<Reply, String>>,
 {
-    let mut jar = Jar::default();
-    let mut csrf: Option<String> = None;
-    let needs_csrf = case.login.is_some() || case.method != "GET";
+    let cached = case
+        .login
+        .as_ref()
+        .and_then(|user| sessions.by_user.get(user).cloned());
+    let reused = cached.is_some();
+    let (mut jar, mut csrf) = match cached {
+        Some((jar, csrf)) => (jar, Some(csrf)),
+        None => (Jar::default(), None),
+    };
+    let needs_csrf = csrf.is_none() && (case.login.is_some() || case.method != "GET");
     if needs_csrf {
         let reply = send(Exchange {
             method: "GET".into(),
@@ -610,7 +631,7 @@ where
             ));
         }
     }
-    if let Some(user) = &case.login {
+    if let (Some(user), false) = (&case.login, reused) {
         let password = std::env::var("PARITY_PASSWORD").unwrap_or_else(|_| "password".into());
         let form = format!(
             "login={}&password={}",
@@ -637,6 +658,11 @@ where
                 reply.body
             ));
         }
+        if let Some(token) = &csrf {
+            sessions
+                .by_user
+                .insert(user.clone(), (jar.clone(), token.clone()));
+        }
     }
     let reply = send(Exchange {
         method: case.method.clone(),
@@ -645,6 +671,12 @@ where
         body: case.body.clone(),
     })
     .await?;
+    // A logout ends the cached session.
+    if let Some(user) = &case.login {
+        if case.method == "DELETE" && case.path.starts_with("/session/") {
+            sessions.by_user.remove(user);
+        }
+    }
     Ok(Recorded {
         status: reply.status,
         content_type: reply.content_type,

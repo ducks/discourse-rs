@@ -12,6 +12,7 @@ use serde_json::{Value, json};
 use super::search::Peer;
 use crate::guardian::Guardian;
 use crate::html::Crawler;
+use crate::session::current::AuthGuardian;
 use crate::site_settings::SiteSettings;
 use crate::url::Urls;
 use crate::users::{PRIVATE_TYPES, PUBLIC_TYPES, User, Users};
@@ -87,6 +88,7 @@ fn route(username: &str, rest: Option<&str>) -> Result<(String, Action, bool), U
 /// GET /u/{username}
 pub async fn show(
     State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
     Path(username): Path<String>,
     Query(params): Query<ShowParams>,
     headers: HeaderMap,
@@ -96,6 +98,7 @@ pub async fn show(
     let (username, action, json) = route(&username, None)?;
     respond(
         state,
+        guardian,
         Target {
             username,
             action,
@@ -112,6 +115,7 @@ pub async fn show(
 /// GET /u/{username}/{*rest}
 pub async fn show_with_tail(
     State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
     Path((username, rest)): Path<(String, String)>,
     Query(params): Query<ShowParams>,
     headers: HeaderMap,
@@ -121,6 +125,7 @@ pub async fn show_with_tail(
     let (username, action, json) = route(&username, Some(&rest))?;
     respond(
         state,
+        guardian,
         Target {
             username,
             action,
@@ -143,6 +148,7 @@ struct Target {
 
 async fn respond(
     state: AppState,
+    guardian: Guardian,
     target: Target,
     params: ShowParams,
     headers: HeaderMap,
@@ -169,7 +175,6 @@ async fn respond(
     let Some(user) = User::find_active(&mut conn, &username).await? else {
         return Ok(not_found());
     };
-    let guardian = Guardian::anonymous();
     let urls = Urls {
         config: &state.config,
         settings: &settings,
@@ -186,14 +191,15 @@ async fn respond(
     let doc = match action {
         Action::Show => {
             let doc = users.show(&user).await?;
-            if params.skip_track_visit.is_none() {
+            // Viewing one's own profile isn't tracked.
+            if params.skip_track_visit.is_none() && !guardian.is_me(user.id) {
                 let ip = super::search::remote_ip(&headers, peer);
                 users.track_view(&user, &ip).await?;
             }
             doc
         }
         Action::Summary => {
-            if !user.visible_to_anonymous(&settings)? {
+            if !user.visible_to(&settings, &guardian)? {
                 return Ok(not_found());
             }
             users.summary(&user).await?
@@ -208,7 +214,7 @@ async fn respond(
         Action::Show => doc,
         Action::Summary => users.show(&user).await?,
     };
-    let visible = user.visible_to_anonymous(&settings)?;
+    let visible = user.visible_to(&settings, &guardian)?;
     let summary_doc = if visible {
         Some(users.summary(&user).await?)
     } else {
@@ -219,7 +225,9 @@ async fn respond(
     } else {
         Vec::new()
     };
-    let site = crate::html::Site::from_settings(&settings, base_path)?;
+    let vs = super::session::viewer_state(&state, &headers, &settings, &guardian)?;
+    let mut site = crate::html::Site::from_settings(&settings, base_path)?;
+    site.viewer = vs.viewer.clone();
     let mut page = profile_page(
         site,
         &user,
@@ -237,16 +245,18 @@ async fn respond(
         crate::html::Crawler::for_request(&urls, &uri, None)?.with_meta(&user.username, "", avatar);
     crawler.description = settings.get("site_description")?.to_s();
     page.crawler = crawler;
-    Ok((
+    let response = (
         noindex,
         Html(page.render().map_err(crate::html::HtmlError::from)?),
     )
-        .into_response())
+        .into_response();
+    Ok(crate::html::with_viewer_headers(response, &vs))
 }
 
 /// GET /user_actions.json
 pub async fn actions(
     State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
     Query(params): Query<ActionsParams>,
 ) -> Result<Response, AppError> {
     let Some(username) = params.username.as_deref().filter(|u| !u.is_empty()) else {
@@ -288,7 +298,7 @@ pub async fn actions(
         return Err(Unsupported("negative user_actions limit").into());
     }
     // ensure_user_actions_visible!: hidden profiles and private types 404.
-    if !user.visible_to_anonymous(&settings)?
+    if !user.visible_to(&settings, &guardian)?
         || settings.get("hide_user_activity_tab")?.truthy()
         || action_types.iter().any(|t| PRIVATE_TYPES.contains(t))
     {
@@ -297,7 +307,6 @@ pub async fn actions(
     if action_types.is_empty() {
         action_types = PUBLIC_TYPES.to_vec();
     }
-    let guardian = Guardian::anonymous();
     let urls = Urls {
         config: &state.config,
         settings: &settings,
@@ -330,6 +339,7 @@ pub struct ProfilePage {
     pub lang: String,
     pub base_path: String,
     pub crawler: Crawler,
+    pub viewer: Option<crate::html::Viewer>,
     pub username: String,
     pub name: Option<String>,
     pub title: Option<String>,
@@ -431,6 +441,7 @@ fn profile_page(
     let _ = settings;
     Ok(ProfilePage {
         site_title: site.site_title,
+        viewer: site.viewer,
         site_description: site.site_description,
         lang: site.lang,
         base_path: site.base_path,

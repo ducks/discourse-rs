@@ -118,7 +118,7 @@ pub async fn gate(
 
 /// `rescue_discourse_actions(:not_logged_in, 403)`; topics#show adds the
 /// not-found extras.
-fn not_logged_in(state: &AppState, path: &str) -> Response {
+pub(super) fn not_logged_in(state: &AppState, path: &str) -> Response {
     let i18n = &state.i18n;
     let mut body = serde_json::Map::new();
     body.insert(
@@ -154,6 +154,7 @@ pub struct LoginRequiredPage {
     pub lang: String,
     pub base_path: String,
     pub crawler: Crawler,
+    pub viewer: Option<crate::html::Viewer>,
     pub welcome: String,
 }
 
@@ -182,6 +183,7 @@ pub fn login_page(
     let page = LoginRequiredPage {
         crawler,
         site_title: site.site_title,
+        viewer: site.viewer,
         site_description: site.site_description,
         lang: site.lang,
         base_path: site.base_path,

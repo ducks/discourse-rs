@@ -134,7 +134,10 @@ impl Categories<'_> {
         let rows = Self::load_all(&mut *self.conn).await?;
 
         // can_see_serialized_category?: public, or in the guardian's secure ids.
-        let secure = self.guardian.secure_category_ids();
+        let secure = self
+            .guardian
+            .secure_category_ids(&mut *self.conn, self.settings)
+            .await?;
         let visible: Vec<&CategoryRow> = rows
             .iter()
             .filter(|c| !c.read_restricted || secure.contains(&c.id))
@@ -145,7 +148,23 @@ impl Categories<'_> {
             .filter_map(|c| c.parent_category_id)
             .collect();
 
-        let notification_levels = self.notification_levels()?;
+        let notification_levels = self.notification_levels().await?;
+        // permission: full (1) where the viewer may create topics.
+        let allowed_topic_create = if self.guardian.is_admin() {
+            None
+        } else {
+            Some(
+                self.guardian
+                    .topic_create_allowed_category_ids(&mut *self.conn, self.settings)
+                    .await?,
+            )
+        };
+        let moderators_manage = self.settings.get("moderators_manage_categories")?.truthy();
+        if self.guardian.is_authenticated()
+            && self.guardian.can_lazy_load_categories(self.settings)?
+        {
+            return Err(Unsupported("lazy-loaded categories for a logged-in user").into());
+        }
         let default_level = if self
             .settings
             .get("mute_all_categories_by_default")?
@@ -171,21 +190,37 @@ impl Categories<'_> {
                 .map(|(_, l)| *l)
                 .unwrap_or(default_level);
             json.insert("notification_level".into(), json!(level));
-            // permission stays null: anonymous users can't create topics.
+            if allowed_topic_create
+                .as_ref()
+                .is_none_or(|ids| ids.contains(&category.id))
+            {
+                json.insert("permission".into(), json!(1));
+            }
             json.insert(
                 "has_children".into(),
                 json!(with_children.contains(&category.id)),
             );
-            // can_edit_serialized_category? is false for anonymous users.
-            json.insert("can_edit".into(), json!(false));
+            // can_edit_serialized_category?
+            let can_edit =
+                self.guardian.is_admin() || (moderators_manage && self.guardian.is_moderator());
+            json.insert("can_edit".into(), json!(can_edit));
             out.push(Value::Object(json));
         }
         Ok(out)
     }
 
-    /// `CategoryUser.notification_levels_for(nil)`: default categories from
+    /// `CategoryUser.notification_levels_for(user)`: the user's
+    /// category_users rows; for anonymous users default categories from
     /// settings are regular, default muted ones muted.
-    pub(crate) fn notification_levels(&self) -> Result<Vec<(i64, i64)>, CategoriesError> {
+    pub(crate) async fn notification_levels(&mut self) -> Result<Vec<(i64, i64)>, CategoriesError> {
+        if let Some(uid) = self.guardian.user_id() {
+            return Ok(sqlx::query_as(
+                "SELECT category_id::bigint, notification_level::bigint FROM category_users WHERE user_id = $1 ORDER BY id",
+            )
+            .bind(uid)
+            .fetch_all(&mut *self.conn)
+            .await?);
+        }
         let mut levels = Vec::new();
         for name in [
             "default_categories_watching",
@@ -485,6 +520,16 @@ pub(crate) const CATEGORY_SQL: &str = "SELECT categories.id, categories.name, ca
     categories.topics_day, categories.topics_week, categories.topics_month, categories.topics_year \
     FROM categories LEFT JOIN topics t ON t.id = categories.topic_id \
     ORDER BY categories.position";
+
+impl From<crate::guardian::GuardianError> for CategoriesError {
+    fn from(e: crate::guardian::GuardianError) -> Self {
+        match e {
+            crate::guardian::GuardianError::Db(e) => CategoriesError::Db(e),
+            crate::guardian::GuardianError::Setting(e) => CategoriesError::Setting(e),
+            crate::guardian::GuardianError::Unsupported(e) => CategoriesError::Unsupported(e),
+        }
+    }
+}
 
 #[cfg(test)]
 mod tests {

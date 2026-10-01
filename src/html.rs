@@ -48,12 +48,54 @@ impl From<askama::Error> for HtmlError {
     }
 }
 
+/// What the shell shows a logged-in viewer: their name, and the CSRF
+/// token the logout form and the client need (anonymous pages carry
+/// none, as they may be cached).
+#[derive(Clone, Default)]
+pub struct Viewer {
+    pub username: String,
+    pub csrf_token: String,
+}
+
+/// The viewer block for a page, plus the `_forum_session` cookie to set
+/// when minting the CSRF token created the session.
+#[derive(Clone, Default)]
+pub struct ViewerState {
+    pub viewer: Option<Viewer>,
+    pub set_cookie: Option<String>,
+}
+
+/// The headers a logged-in page carries: the session cookie when it was
+/// just created, `X-Discourse-Username`, and no caching (anonymous pages
+/// may be cached, these never are).
+pub fn with_viewer_headers(
+    mut response: axum::response::Response,
+    viewer: &ViewerState,
+) -> axum::response::Response {
+    use axum::http::{HeaderValue, header};
+    if let Some(cookie) = &viewer.set_cookie {
+        if let Ok(value) = HeaderValue::from_str(cookie) {
+            response.headers_mut().append(header::SET_COOKIE, value);
+        }
+    }
+    if let Some(v) = &viewer.viewer {
+        if let Ok(value) = HeaderValue::from_str(&v.username) {
+            response.headers_mut().insert("x-discourse-username", value);
+        }
+        response.headers_mut().insert(
+            header::CACHE_CONTROL,
+            HeaderValue::from_static("no-cache, no-store"),
+        );
+    }
+    response
+}
 /// What every page's layout needs.
 pub struct Site {
     pub site_title: String,
     pub site_description: String,
     pub lang: String,
     pub base_path: String,
+    pub viewer: Option<Viewer>,
 }
 
 impl Site {
@@ -63,6 +105,7 @@ impl Site {
             site_description: settings.get("site_description")?.to_s(),
             lang: settings.get("default_locale")?.to_s().replace('_', "-"),
             base_path: base_path.to_string(),
+            viewer: None,
         })
     }
 }
@@ -107,6 +150,7 @@ pub struct LatestPage {
     pub lang: String,
     pub base_path: String,
     pub crawler: Crawler,
+    pub viewer: Option<Viewer>,
     pub topics: Vec<TopicItem>,
     pub more_url: Option<String>,
     /// Set on category pages.
@@ -142,6 +186,7 @@ pub struct TopicPage {
     pub lang: String,
     pub base_path: String,
     pub crawler: Crawler,
+    pub viewer: Option<Viewer>,
     pub title: String,
     pub title_unicode: String,
     pub canonical_url: String,
@@ -269,6 +314,7 @@ pub async fn latest_page(
         .unwrap_or_default();
     Ok(LatestPage {
         site_title: site.site_title,
+        viewer: site.viewer,
         site_description: site.site_description,
         lang: site.lang,
         base_path: site.base_path,
@@ -381,6 +427,7 @@ pub async fn topic_page(
 
     Ok(TopicPage {
         site_title: site.site_title,
+        viewer: site.viewer,
         site_description: site.site_description,
         lang: site.lang,
         base_path: site.base_path,
@@ -509,6 +556,7 @@ pub struct CategoriesPage {
     pub lang: String,
     pub base_path: String,
     pub crawler: Crawler,
+    pub viewer: Option<Viewer>,
     pub categories: Vec<CategoryIndexItem>,
 }
 
@@ -567,6 +615,7 @@ pub async fn categories_page(
         .unwrap_or_default();
     Ok(CategoriesPage {
         site_title: site.site_title,
+        viewer: site.viewer,
         site_description: site.site_description,
         lang: site.lang,
         base_path: site.base_path,
@@ -583,6 +632,7 @@ pub struct TagsPage {
     pub lang: String,
     pub base_path: String,
     pub crawler: Crawler,
+    pub viewer: Option<Viewer>,
     pub groups: Vec<TagGroupItem>,
 }
 
@@ -646,6 +696,7 @@ pub fn tags_page(
     }
     TagsPage {
         site_title: site.site_title,
+        viewer: site.viewer,
         site_description: site.site_description,
         lang: site.lang,
         base_path: site.base_path,
@@ -747,6 +798,7 @@ pub fn crawler_response(
     body: String,
     crawler: &Crawler,
     settings: &SiteSettings,
+    viewer: &ViewerState,
 ) -> Result<axum::response::Response, SettingError> {
     use axum::response::IntoResponse;
     let mut response = axum::response::Html(body).into_response();
@@ -756,5 +808,5 @@ pub fn crawler_response(
             axum::http::HeaderValue::from_static("noindex"),
         );
     }
-    Ok(response)
+    Ok(with_viewer_headers(response, viewer))
 }
