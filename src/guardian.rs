@@ -340,6 +340,40 @@ impl Guardian {
         .await?)
     }
 
+    /// `Category.topic_create_allowed(guardian).pluck(:id)`: none for
+    /// anonymous users, every category for admins.
+    pub async fn topic_create_allowed_category_ids(
+        &self,
+        conn: &mut PgConnection,
+        settings: &SiteSettings,
+    ) -> Result<Vec<i32>, GuardianError> {
+        let Some(u) = &self.user else {
+            return Ok(Vec::new());
+        };
+        if u.user.admin {
+            return Ok(sqlx::query_scalar("SELECT id FROM categories ORDER BY id")
+                .fetch_all(conn)
+                .await?);
+        }
+        let uncategorized = settings.get("uncategorized_category_id")?.to_i() as i32;
+        let exclude_uncategorized =
+            !settings.get("allow_uncategorized_topics")?.truthy() && !self.is_staff();
+        Ok(sqlx::query_scalar(
+            "SELECT id FROM categories \
+             WHERE (($2 AND LENGTH(COALESCE(email_in, '')) > 0 AND email_in_allow_strangers) \
+                    OR categories.id NOT IN (SELECT category_id FROM category_groups) \
+                    OR categories.id IN (SELECT category_id FROM category_groups WHERE permission_type IN (1) \
+                        AND (group_id = 0 OR group_id IN (SELECT group_id FROM group_users WHERE user_id = $1)))) \
+             AND (NOT $3 OR categories.id <> $4) ORDER BY id",
+        )
+        .bind(u.user.id)
+        .bind(u.user.staged)
+        .bind(exclude_uncategorized)
+        .bind(uncategorized)
+        .fetch_all(conn)
+        .await?)
+    }
+
     /// `UserOption#treat_as_new_topic_start_date`; None for anonymous.
     pub async fn treat_as_new_topic_start_date(
         &self,

@@ -198,7 +198,8 @@ impl CategoryList<'_> {
             base_path: self.urls.config.globals.relative_url_root(),
             topic_url_via_slug: false,
         }
-        .notification_levels()?;
+        .notification_levels()
+        .await?;
         let default_level = if self
             .settings
             .get("mute_all_categories_by_default")?

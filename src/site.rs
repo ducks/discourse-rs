@@ -309,8 +309,14 @@ impl Site<'_> {
             out.insert("top_tags".into(), Value::Array(top_tags));
             out.insert("navigation_menu_site_top_tags".into(), nav_tags);
         }
-        // can_associate_groups (admin) and wizard_required (nil user) are
-        // never included anonymously.
+        if self.guardian.is_admin() {
+            // AssociatedGroup.has_provider?: an enabled authenticator that
+            // provides groups (plugin authenticators only).
+            out.insert("can_associate_groups".into(), json!(false));
+        }
+        if self.wizard_required().await? {
+            out.insert("wizard_required".into(), json!(true));
+        }
         if self.truthy("topic_featured_link_enabled")? {
             out.insert(
                 "topic_featured_link_allowed_category_ids".into(),
@@ -334,7 +340,14 @@ impl Site<'_> {
             "censored_regexp".into(),
             self.watched_words("censor").await?.unwrap_or(json!([])),
         );
-        // shared_drafts_category_id needs can_see_shared_draft?.
+        if let Some(id) = self.settings.get("shared_drafts_category")?.presence() {
+            if self.guardian.can_see_shared_draft(self.settings)? {
+                out.insert(
+                    "shared_drafts_category_id".into(),
+                    json!(crate::ruby::to_i(&id)),
+                );
+            }
+        }
         // Plugin::CustomEmoji.translations: plugins only.
         out.insert("custom_emoji_translation".into(), json!({}));
         out.insert(
@@ -374,7 +387,15 @@ impl Site<'_> {
                 self.anonymous_sidebar_sections().await?,
             );
         }
-        // whispers_allowed_groups_names needs can_see_whispers?.
+        if self.guardian.can_see_whispers(self.settings)? {
+            let ids = self.settings.group_ids("whispers_allowed_groups")?;
+            let names: Vec<String> =
+                sqlx::query_scalar("SELECT name FROM groups WHERE id = ANY($1::bigint[])")
+                    .bind(&ids)
+                    .fetch_all(&mut *self.conn)
+                    .await?;
+            out.insert("whispers_allowed_groups_names".into(), json!(names));
+        }
         if let Some(denied) = self.denied_emojis()? {
             out.insert("denied_emojis".into(), denied);
         }
@@ -390,7 +411,15 @@ impl Site<'_> {
         if self.guardian.can_lazy_load_categories(self.settings)? {
             out.insert("lazy_load_categories".into(), json!(true));
         }
-        // valid_flag_applies_to_types and admin_config_login_routes: admin only.
+        if self.guardian.is_admin() {
+            // Flag.valid_applies_to_types: core's, plus what plugins add.
+            out.insert(
+                "valid_flag_applies_to_types".into(),
+                json!(["Post", "Topic"]),
+            );
+            // DiscoursePluginRegistry.admin_config_login_routes: plugins only.
+            out.insert("admin_config_login_routes".into(), json!([]));
+        }
         out.insert(
             "full_name_required_for_signup".into(),
             json!(self.full_name_requirement()? == "required_at_signup"),
@@ -407,13 +436,20 @@ impl Site<'_> {
             "upcoming_changes_with_css".into(),
             json!(self.defs.upcoming_changes_with_css()),
         );
-        // permanent_upcoming_change_names: staff only.
+        if self.guardian.is_staff() {
+            out.insert(
+                "permanent_upcoming_change_names".into(),
+                json!(self.defs.permanent_upcoming_change_names()),
+            );
+        }
         // AclTarget registry: plugins only.
         out.insert(
             "access_control".into(),
             json!({"mandatory_acl": {}, "banned_acl": {}}),
         );
-        // category_types: staff only.
+        if self.guardian.is_staff() {
+            out.insert("category_types".into(), self.category_types());
+        }
         out.insert("archetypes".into(), self.archetypes());
         out.insert("user_fields".into(), self.user_fields().await?);
         out.insert("auth_providers".into(), self.auth_providers()?);
@@ -421,6 +457,67 @@ impl Site<'_> {
         Ok(Value::Object(out))
     }
 
+    /// `Wizard.user_requires_completion?(user)`: the wizard is on, the
+    /// site has at most 15 topics, and the viewer is the first admin to
+    /// have logged in and hasn't finished it. (Rails flips
+    /// bypass_wizard_check on when the topic count passes 15; the port
+    /// only reads.) A partly completed wizard isn't ported.
+    async fn wizard_required(&mut self) -> Result<bool, SiteError> {
+        let Some(user) = self.guardian.user() else {
+            return Ok(false);
+        };
+        if !self.truthy("wizard_enabled")? || self.truthy("bypass_wizard_check")? {
+            return Ok(false);
+        }
+        let topics: i64 = sqlx::query_scalar(
+            "SELECT COUNT(*) FROM (SELECT 1 FROM topics WHERE deleted_at IS NULL LIMIT 16) t",
+        )
+        .fetch_one(&mut *self.conn)
+        .await?;
+        if topics > 15 {
+            return Ok(false);
+        }
+        // User.first_login_admin_id
+        let first_admin: Option<i32> = sqlx::query_scalar(
+            "SELECT users.id FROM users JOIN user_auth_tokens ON user_auth_tokens.user_id = users.id \
+             WHERE users.admin AND users.id > 0 ORDER BY user_auth_tokens.created_at LIMIT 1",
+        )
+        .fetch_optional(&mut *self.conn)
+        .await?;
+        if first_admin != Some(user.id) {
+            return Ok(false);
+        }
+        // UserHistory.actions[:wizard_step] = 40
+        let started: bool =
+            sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM user_histories WHERE action = 40)")
+                .fetch_one(&mut *self.conn)
+                .await?;
+        if started {
+            return Err(Unsupported("wizard completion (Wizard::Builder steps)").into());
+        }
+        Ok(true)
+    }
+
+    /// `Categories::TypeRegistry.list(only_visible: true)`: core registers
+    /// the Discussion type; plugins add theirs.
+    fn category_types(&self) -> Value {
+        let t = |key: &str, default: &str| {
+            self.i18n
+                .t(&format!("category_types.discussion.{key}"))
+                .unwrap_or(default)
+                .to_string()
+        };
+        json!([{
+            "id": "discussion",
+            "name": t("name", "Discussion"),
+            "title": t("title", "discussion"),
+            "description": t("description", ""),
+            "icon": "memo",
+            "available": true,
+            "visible": true,
+            "configuration_schema": {},
+        }])
+    }
     /// Site.json_for's login_required branch (site.rb:245-268).
     async fn login_required_json(&mut self) -> Result<Value, SiteError> {
         let mut out = Map::new();
@@ -524,14 +621,35 @@ impl Site<'_> {
             flair_color: Option<String>,
             automatic: bool,
         }
-        let rows: Vec<Row> =
-            sqlx::query_as(
-                "SELECT id, name, full_name, flair_icon, flair_upload_id, flair_bg_color, flair_color, automatic \
-                 FROM groups WHERE ($1 OR id > 0) AND visibility_level = 0 ORDER BY name ASC",
-            )
-            .bind(include_everyone)
-            .fetch_all(&mut *self.conn)
-            .await?;
+        // Group.visible_groups(user): public groups for anonymous users,
+        // everything for admins, by visibility level and membership or
+        // ownership otherwise.
+        let visible = match self.guardian.user() {
+            None => "groups.visibility_level = 0".to_string(),
+            Some(u) if u.admin => "TRUE".to_string(),
+            Some(u) if u.moderator => format!(
+                "(groups.visibility_level IN (0, 1, 2, 3) OR groups.id IN (\
+                    SELECT g.id FROM groups g JOIN group_users gu ON gu.group_id = g.id \
+                    AND gu.user_id = {} AND gu.owner WHERE g.visibility_level = 4))",
+                u.id
+            ),
+            Some(u) => format!(
+                "groups.id IN (\
+                    SELECT id FROM groups WHERE visibility_level IN (0, 1) \
+                    UNION ALL SELECT g.id FROM groups g JOIN group_users gu ON gu.group_id = g.id \
+                    AND gu.user_id = {uid} WHERE g.visibility_level = 2 \
+                    UNION ALL SELECT g.id FROM groups g JOIN group_users gu ON gu.group_id = g.id \
+                    AND gu.user_id = {uid} AND gu.owner WHERE g.visibility_level IN (3, 4))",
+                uid = u.id
+            ),
+        };
+        let rows: Vec<Row> = sqlx::query_as(&format!(
+            "SELECT id, name, full_name, flair_icon, flair_upload_id, flair_bg_color, flair_color, automatic \
+             FROM groups WHERE ($1 OR id > 0) AND {visible} ORDER BY name ASC"
+        ))
+        .bind(include_everyone)
+        .fetch_all(&mut *self.conn)
+        .await?;
 
         let mut groups = Vec::with_capacity(rows.len());
         for Row {
