@@ -555,6 +555,7 @@ async fn categories_response(
         settings: &settings,
     };
     let doc = crate::category_list::CategoryList {
+        secure_ids: Vec::new(),
         conn: &mut conn,
         settings: &settings,
         i18n: &state.i18n,

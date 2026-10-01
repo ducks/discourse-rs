@@ -212,3 +212,8 @@ GET /search/query.json?term=general as=user1 ignore=/grouped_search_result/searc
 # tags for a logged-in user: counts and the admin's unused tags.
 GET /tags.json as=user1
 GET /tags.json as=admin
+
+# categories#index for a logged-in user: permission, can_edit, muted
+# topics, secure categories.
+GET /categories.json as=user1 ignore=/category_list/categories/*/custom_fields,/category_list/categories/*/topics/*/has_accepted_answer
+GET /categories.json as=admin ignore=/category_list/categories/*/custom_fields,/category_list/categories/*/topics/*/has_accepted_answer
