@@ -11,8 +11,10 @@
 //! port of UpcomingChanges.enabled?: promoted by status unless an admin stored
 //! a choice, gated on `depends_on`.
 //!
-//! Not yet ported: plugin settings files, upcoming-change default overrides
-//! (`upcoming_change_default_override`), `mandatory_values`, themeable settings.
+//! The bundled plugins' settings (vendored config/plugin_settings.yml) are
+//! declared after core's, as Rails loads them, each owned by its plugin.
+//!
+//! Not yet ported: themeable settings.
 
 use std::collections::{HashMap, HashSet};
 use std::fmt;
@@ -27,6 +29,8 @@ use crate::config::GlobalSettings;
 use crate::ruby;
 
 const SITE_SETTINGS_YML: &str = include_str!("../vendor/discourse/config/site_settings.yml");
+/// One YAML document per bundled plugin (scripts/vendor-discourse).
+const PLUGIN_SETTINGS_YML: &str = include_str!("../vendor/discourse/config/plugin_settings.yml");
 
 /// `DefaultsProvider::DEFAULT_LOCALE`.
 const DEFAULT_LOCALE: &str = "en";
@@ -127,6 +131,8 @@ pub enum Value {
     Int(i64),
     Float(f64),
     Str(String),
+    /// A YAML sequence default (`default: []` on an objects setting).
+    List(Vec<Value>),
 }
 
 impl Value {
@@ -141,7 +147,7 @@ impl Value {
             Value::Int(i) => *i,
             Value::Str(s) => ruby::to_i(s),
             Value::Float(f) => *f as i64,
-            Value::Null | Value::Bool(_) => 0,
+            Value::Null | Value::Bool(_) | Value::List(_) => 0,
         }
     }
 
@@ -151,7 +157,7 @@ impl Value {
             Value::Float(f) => *f,
             Value::Int(i) => *i as f64,
             Value::Str(s) => ruby::to_f(s),
-            Value::Null | Value::Bool(_) => 0.0,
+            Value::Null | Value::Bool(_) | Value::List(_) => 0.0,
         }
     }
 
@@ -164,6 +170,8 @@ impl Value {
             Value::Bool(b) => Some(b.to_string()),
             Value::Int(i) => Some(i.to_string()),
             Value::Float(f) => Some(f.to_string()),
+            Value::List(l) if l.is_empty() => None,
+            Value::List(_) => Some(self.to_s()),
         }
     }
 
@@ -176,6 +184,12 @@ impl Value {
             Value::Float(f) if f.fract() == 0.0 && f.is_finite() => format!("{f:.1}"),
             Value::Float(f) => f.to_string(),
             Value::Str(s) => s.clone(),
+            // Array#to_s (inspect) of the elements' own to_s; only ever
+            // empty in the vendored files.
+            Value::List(l) => format!(
+                "[{}]",
+                l.iter().map(Value::to_s).collect::<Vec<_>>().join(", ")
+            ),
         }
     }
 
@@ -183,6 +197,7 @@ impl Value {
         match self {
             Value::Null | Value::Bool(false) => true,
             Value::Str(s) => ruby::is_blank(s),
+            Value::List(l) => l.is_empty(),
             _ => false,
         }
     }
@@ -194,6 +209,7 @@ impl Value {
             Value::Int(_) => DataType::Integer,
             Value::Float(_) => DataType::Float,
             Value::Str(_) => DataType::String,
+            Value::List(_) => DataType::List,
         }
     }
 
@@ -227,6 +243,7 @@ impl Serialize for Value {
             Value::Int(i) => s.serialize_i64(*i),
             Value::Float(f) => s.serialize_f64(*f),
             Value::Str(v) => s.serialize_str(v),
+            Value::List(l) => s.collect_seq(l),
         }
     }
 }
@@ -238,6 +255,11 @@ pub struct Definition {
     pub default: Value,
     pub data_type: DataType,
     pub client: bool,
+    /// `themeable: true`: themes override it, so it is served per theme
+    /// and left out of the client settings.
+    pub themeable: bool,
+    /// The plugin whose settings.yml declares it; None for core's.
+    pub plugin: Option<String>,
     locale_defaults: HashMap<String, Value>,
     /// `upcoming_change: {status: ...}`; the setting's value is then decided
     /// by UpcomingChanges.enabled? rather than read directly.
@@ -248,6 +270,14 @@ pub struct Definition {
     depends_on: Vec<String>,
     /// `depends_on_values`: per dependency, the values that count as met.
     depends_on_values: HashMap<String, Vec<String>>,
+    /// `mandatory_values`: entries a list setting always carries.
+    mandatory_values: Option<String>,
+    /// `upcoming_change_default_override`: the upcoming change and the
+    /// default this setting takes while that change is enabled.
+    default_override: Option<(String, Value)>,
+    /// An upcoming change of a plugin only takes effect while the plugin
+    /// is enabled, unless it opts out (`requires_plugin_enabled: false`).
+    change_requires_plugin: bool,
 }
 
 /// `UpcomingChanges.statuses`, ordered by their numeric rank.
@@ -282,6 +312,9 @@ impl ChangeStatus {
 pub struct Definitions {
     list: Vec<Definition>,
     index: HashMap<String, usize>,
+    /// Per plugin, the setting its plugin.rb names with
+    /// `enabled_site_setting` (None: always enabled).
+    plugin_enabled_settings: HashMap<String, Option<String>>,
     /// The last resolved settings with the table fingerprint they came
     /// from (`max(updated_at)`, row count): what Rails keeps in its
     /// process cache and invalidates over MessageBus.
@@ -289,19 +322,54 @@ pub struct Definitions {
 }
 
 impl Definitions {
+    /// Core's settings, then each bundled plugin's.
     pub fn vendored() -> Result<Self, String> {
-        Self::parse(SITE_SETTINGS_YML)
+        let mut defs = Self::parse(SITE_SETTINGS_YML)?;
+        defs.add_plugins(PLUGIN_SETTINGS_YML)?;
+        Ok(defs)
     }
 
     pub fn parse(src: &str) -> Result<Self, String> {
         let root: Yaml =
             serde_yaml_ng::from_str(src).map_err(|e| format!("site_settings.yml: {e}"))?;
+        let mut defs = Definitions {
+            list: Vec::new(),
+            index: HashMap::new(),
+            plugin_enabled_settings: HashMap::new(),
+            cache: Mutex::new(None),
+        };
+        defs.add_categories(&root, None)?;
+        Ok(defs)
+    }
+
+    /// `load_settings(file, plugin:)` for every document of the vendored
+    /// plugin settings: `{plugin, enabled_site_setting, settings}`.
+    pub fn add_plugins(&mut self, src: &str) -> Result<(), String> {
+        for document in serde_yaml_ng::Deserializer::from_str(src) {
+            let doc: Yaml = serde::Deserialize::deserialize(document)
+                .map_err(|e| format!("plugin_settings.yml: {e}"))?;
+            let field = |key: &str| doc.get(Yaml::String(key.into()));
+            let plugin = field("plugin")
+                .and_then(Yaml::as_str)
+                .ok_or("plugin_settings.yml: a document without a plugin name")?
+                .to_string();
+            let enabled = field("enabled_site_setting")
+                .and_then(Yaml::as_str)
+                .map(str::to_string);
+            // A plugin's settings.yml may be empty.
+            if let Some(settings) = field("settings").filter(|s| !s.is_null()) {
+                self.add_categories(settings, Some(&plugin))
+                    .map_err(|e| format!("plugin {plugin}: {e}"))?;
+            }
+            self.plugin_enabled_settings.insert(plugin, enabled);
+        }
+        Ok(())
+    }
+
+    fn add_categories(&mut self, root: &Yaml, plugin: Option<&str>) -> Result<(), String> {
         let categories = root
             .as_mapping()
-            .ok_or("site_settings.yml: top level must be a mapping of categories")?;
-
-        let mut list = Vec::new();
-        let mut index = HashMap::new();
+            .ok_or("top level must be a mapping of categories")?;
         for (category, settings) in categories {
             let category = yaml_key(category)?;
             let Some(settings) = settings.as_mapping() else {
@@ -314,19 +382,34 @@ impl Definitions {
                 if name == "default_locale" {
                     return Err("default_locale cannot be declared in YAML".into());
                 }
-                let def = parse_definition(&category, &name, entry)
+                let mut def = parse_definition(&category, &name, entry)
                     .map_err(|e| format!("setting {name}: {e}"))?;
-                if index.insert(name.clone(), list.len()).is_some() {
-                    return Err(format!("setting {name} declared twice"));
+                def.plugin = plugin.map(str::to_string);
+                match self.index.get(&name) {
+                    // `setting()` called again redefines: a plugin may
+                    // take over a core setting (narrative-bot does).
+                    Some(&i) if plugin.is_some() => self.list[i] = def,
+                    Some(_) => return Err(format!("setting {name} declared twice")),
+                    None => {
+                        self.index.insert(name, self.list.len());
+                        self.list.push(def);
+                    }
                 }
-                list.push(def);
             }
         }
-        Ok(Definitions {
-            list,
-            index,
-            cache: Mutex::new(None),
-        })
+        Ok(())
+    }
+
+    /// `owning_plugin_enabled?`: true for core's settings and for plugins
+    /// without an `enabled_site_setting`.
+    fn owning_plugin_enabled(&self, def: &Definition, values: &HashMap<String, Value>) -> bool {
+        let Some(plugin) = &def.plugin else {
+            return true;
+        };
+        match self.plugin_enabled_settings.get(plugin) {
+            Some(Some(setting)) => values.get(setting).is_some_and(Value::truthy),
+            _ => true,
+        }
     }
 
     pub fn get(&self, name: &str) -> Option<&Definition> {
@@ -392,6 +475,9 @@ fn yaml_scalar(v: &Yaml) -> Result<Value, String> {
         },
         Yaml::String(s) if is_underscored_integer(s) => Value::Int(ruby::to_i(s)),
         Yaml::String(s) => Value::Str(s.clone()),
+        Yaml::Sequence(items) => {
+            Value::List(items.iter().map(yaml_scalar).collect::<Result<_, _>>()?)
+        }
         other => return Err(format!("expected a scalar, got {other:?}")),
     })
 }
@@ -414,11 +500,16 @@ fn parse_definition(category: &str, name: &str, entry: &Yaml) -> Result<Definiti
             data_type: default.type_of(),
             default,
             client: false,
+            themeable: false,
+            plugin: None,
             locale_defaults: HashMap::new(),
             upcoming_change: None,
             change_body_class: false,
             depends_on: Vec::new(),
             depends_on_values: HashMap::new(),
+            mandatory_values: None,
+            default_override: None,
+            change_requires_plugin: true,
         });
     };
 
@@ -475,6 +566,19 @@ fn parse_definition(category: &str, name: &str, entry: &Yaml) -> Result<Definiti
         Some(other) => return Err(format!("depends_on must be a list, got {other:?}")),
     };
 
+    let default_override = match opt("upcoming_change_default_override") {
+        None => None,
+        Some(o) => {
+            let field = |key: &str| o.get(Yaml::String(key.into()));
+            let change = field("upcoming_change")
+                .and_then(Yaml::as_str)
+                .ok_or("upcoming_change_default_override needs an upcoming_change")?;
+            let new_default = field("new_default")
+                .ok_or("upcoming_change_default_override needs a new_default")?;
+            Some((change.to_string(), yaml_scalar(new_default)?))
+        }
+    };
+
     let mut depends_on_values = HashMap::new();
     if let Some(Yaml::Mapping(m)) = opt("depends_on_values") {
         for (dep, allowed) in m {
@@ -495,11 +599,22 @@ fn parse_definition(category: &str, name: &str, entry: &Yaml) -> Result<Definiti
         default,
         data_type,
         client,
+        themeable: matches!(opt("themeable"), Some(Yaml::Bool(true))),
+        plugin: None,
         locale_defaults,
         upcoming_change,
         change_body_class,
         depends_on,
         depends_on_values,
+        mandatory_values: opt("mandatory_values")
+            .and_then(Yaml::as_str)
+            .map(str::to_string),
+        default_override,
+        change_requires_plugin: !matches!(
+            opt("upcoming_change")
+                .and_then(|c| c.get(Yaml::String("requires_plugin_enabled".into()))),
+            Some(Yaml::Bool(false))
+        ),
     })
 }
 
@@ -519,6 +634,11 @@ pub enum SettingError {
         value: String,
     },
     DependencyCycle(String),
+    /// A setting whose client form isn't ported.
+    Unsupported {
+        name: String,
+        what: &'static str,
+    },
 }
 
 impl fmt::Display for SettingError {
@@ -537,6 +657,9 @@ impl fmt::Display for SettingError {
             }
             SettingError::DependencyCycle(name) => {
                 write!(f, "upcoming change {name} has a dependency cycle")
+            }
+            SettingError::Unsupported { name, what } => {
+                write!(f, "not ported yet: {what} (site setting {name})")
             }
         }
     }
@@ -602,6 +725,17 @@ impl SiteSettings {
             values.insert(def.name.clone(), Value::Bool(enabled));
         }
 
+        // upcoming_change_default_override: while the change is enabled
+        // and nothing is stored for the setting, its default is the
+        // override's.
+        for def in defs.iter() {
+            if let Some((change, new_default)) = &def.default_override {
+                if !modified.contains(&def.name) && values.get(change).is_some_and(Value::truthy) {
+                    values.insert(def.name.clone(), new_default.clone());
+                }
+            }
+        }
+
         // site_setting_extension.rb `setting()`: a setting is shadowed when
         // GlobalSetting responds to its name with a present value.
         for key in globals.keys() {
@@ -610,6 +744,20 @@ impl SiteSettings {
             }
             if let Some(raw) = globals.get(key) {
                 values.insert(key.to_string(), Value::from_global(raw));
+            }
+        }
+
+        // The getter merges `mandatory_values` in front of a list value.
+        for def in defs.iter() {
+            if let Some(mandatory) = &def.mandatory_values {
+                let current = values.get(&def.name).map(Value::to_s).unwrap_or_default();
+                let mut merged: Vec<&str> = mandatory.split('|').collect();
+                for item in current.split('|').filter(|s| !s.is_empty()) {
+                    if !merged.contains(&item) {
+                        merged.push(item);
+                    }
+                }
+                values.insert(def.name.clone(), Value::Str(merged.join("|")));
             }
         }
 
@@ -654,7 +802,7 @@ impl SiteSettings {
 
     /// `SiteSetting.<name>_map` for group_list settings: `split("|")` then
     /// `to_i`, so a malformed entry becomes 0 (everyone). Empty when blank.
-    /// `mandatory_values` aren't merged in yet.
+    /// with its `mandatory_values` already merged in.
     pub fn group_ids(&self, name: &str) -> Result<Vec<i64>, SettingError> {
         let raw = self.get(name)?.to_s();
         Ok(raw
@@ -662,6 +810,52 @@ impl SiteSettings {
             .filter(|s| !s.is_empty())
             .map(ruby::to_i)
             .collect())
+    }
+
+    /// `SiteSetting.client_settings_hash`: `default_locale` and every
+    /// setting declared `client: true` (themeable ones aside), by name.
+    /// Upload settings become the upload's URL.
+    pub async fn client_settings_hash(
+        &self,
+        conn: &mut PgConnection,
+        defs: &Definitions,
+    ) -> Result<serde_json::Map<String, serde_json::Value>, SettingError> {
+        let mut out = serde_json::Map::new();
+        out.insert(
+            "default_locale".into(),
+            serde_json::json!(self.get("default_locale")?),
+        );
+        for def in defs.iter().filter(|d| d.client && !d.themeable) {
+            let value = self.get(&def.name)?;
+            let json = match def.data_type {
+                // Upload#to_s is its url; nil.to_s the empty string.
+                DataType::Upload => {
+                    let url: Option<String> =
+                        sqlx::query_scalar("SELECT url FROM uploads WHERE id = $1")
+                            .bind(value.to_i() as i32)
+                            .fetch_optional(&mut *conn)
+                            .await?;
+                    serde_json::json!(url.unwrap_or_default())
+                }
+                // A blank list is served as the empty array it is in Ruby.
+                DataType::UploadedImageList if value.is_blank() => serde_json::json!([]),
+                DataType::UploadedImageList => {
+                    return Err(SettingError::Unsupported {
+                        name: def.name.clone(),
+                        what: "uploaded_image_list settings on the client",
+                    });
+                }
+                DataType::Objects if !value.is_blank() => {
+                    return Err(SettingError::Unsupported {
+                        name: def.name.clone(),
+                        what: "objects settings on the client",
+                    });
+                }
+                _ => serde_json::json!(value),
+            };
+            out.insert(def.name.clone(), json);
+        }
+        Ok(out)
     }
 
     pub fn get(&self, name: &str) -> Result<&Value, SettingError> {
@@ -689,6 +883,11 @@ fn upcoming_change_enabled(
         .ok_or_else(|| SettingError::Unknown(name.into()))?;
     if depth > 16 {
         return Err(SettingError::DependencyCycle(name.into()));
+    }
+    // A change of a disabled plugin does not take effect, whatever its
+    // status or the stored choice.
+    if def.change_requires_plugin && !defs.owning_plugin_enabled(def, values) {
+        return Ok(false);
     }
 
     // change_dependencies_met?: each dependency, itself possibly an upcoming

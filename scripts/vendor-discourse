@@ -35,6 +35,30 @@ for f in "${FILES[@]}"; do
   git -C "$src" show "$commit:$f" > "$dest/$f"
 done
 
+# The bundled plugins' settings, one YAML document per plugin in the order
+# Rails loads them (by directory name): the plugin, the setting its
+# plugin.rb names with `enabled_site_setting`, and its config/settings.yml
+# verbatim under `settings`.
+plugin_settings="$dest/config/plugin_settings.yml"
+: > "$plugin_settings"
+plugins=0
+while read -r f; do
+  name="$(echo "$f" | cut -d/ -f2)"
+  enabled="$(git -C "$src" show "$commit:plugins/$name/plugin.rb" 2>/dev/null \
+    | sed -n 's/^ *enabled_site_setting :\([a-z0-9_]*\).*/\1/p' | head -1)"
+  {
+    echo "---"
+    echo "plugin: $name"
+    echo "enabled_site_setting: ${enabled:-~}"
+    echo "settings:"
+    # The echo ends a file that has no trailing newline.
+    { git -C "$src" show "$commit:$f"; echo; } | sed -e '/^---[[:space:]]*$/d' -e 's/^/  /'
+  } >> "$plugin_settings"
+  plugins=$((plugins + 1))
+done < <(git -C "$src" ls-tree -r --name-only "$commit" plugins \
+  | grep -E '^plugins/[^/]+/config/settings.yml$' | LC_ALL=C sort)
+echo "vendored the settings of $plugins plugins"
+
 cat > "$dest/DISCOURSE_REF" <<EOF
 commit=$commit
 committed_at=$committed_at
