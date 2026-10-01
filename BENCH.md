@@ -344,3 +344,26 @@ Duration 5s, concurrency 2, keepalive off, 2026-10-01T21:44Z
 | /tag/design.json | rs | 756 | 2.5 | 4.4 | 0 |
 | /tag/design.json | rails-dev (cached) | 28 | 70.7 | 88.1 | 0 |
 | /tag/design.json | rails-dev (uncached) | 28 | 71.2 | 85.9 | 0 |
+
+## 2026-10-01, the session layer skips requests without a cookie
+
+The fix for the floor found above (perf/cookieless-session): the layer
+only checks out a connection and loads the settings when the request
+carries `_t`, and the response side reuses those settings instead of
+loading them again, taking a second connection only for a live session
+(rotation, last-seen). discourse-rs alone, same box and data, c=2, 5 s.
+
+| endpoint | before | after |
+|---|---:|---:|
+| /srv/status, anonymous | 5255 | 19447 |
+| /u/system.json, anonymous | 1490 | 1960 |
+| /categories.json, anonymous | 729 | 838 |
+| /c/general/4.json, anonymous | 616 | 752 |
+| /latest.json, anonymous | 660 | 715 |
+| /srv/status, logged in | 3277 | 4817 |
+
+The anonymous floor is back where it was before sessions (19778). The
+other logged-in rows and the topic page did not move beyond the noise:
+their cost is the handler's own queries. The login gate still loads the
+settings once per non-exempt request, which is what is left of the
+per-request overhead for anonymous content.
