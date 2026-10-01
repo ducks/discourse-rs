@@ -268,15 +268,28 @@ pub async fn layer(
         .extensions()
         .get::<axum::extract::ConnectInfo<std::net::SocketAddr>>()
         .map(|c| c.0);
-    let incoming = {
+    // A request without the cookie has no session to resolve, rotate or
+    // clear, so it never touches the pool here.
+    let (incoming, settings) = if cookie(&headers, TOKEN_COOKIE).is_some() {
         let mut conn = state.pool.acquire().await?;
         let settings =
             SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
-        resolve(&mut conn, &state.keys, &settings, &headers).await?
+        let incoming = resolve(&mut conn, &state.keys, &settings, &headers).await?;
+        (incoming, Some(settings))
+    } else {
+        let anonymous = Incoming {
+            had_token_cookie: false,
+            session: None,
+            guardian: crate::guardian::Guardian::anonymous(),
+        };
+        (anonymous, None)
     };
     request.extensions_mut().insert(incoming.clone());
     let mut response = next.run(request).await;
 
+    let Some(settings) = settings else {
+        return Ok(response);
+    };
     // A handler that logged in or out owns the cookie for this response.
     if response.headers().contains_key(header::SET_COOKIE)
         && response
@@ -287,11 +300,9 @@ pub async fn layer(
     {
         return Ok(response);
     }
-    let mut conn = state.pool.acquire().await?;
-    let settings =
-        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
     match &incoming.session {
         Some(session) => {
+            let mut conn = state.pool.acquire().await?;
             if token::needs_rotation(&session.token) {
                 let ip = remote_ip(&headers, peer);
                 if let Some(unhashed) = token::rotate(
