@@ -401,3 +401,25 @@ async fn update_last_seen(
 pub fn empty() -> Body {
     Body::empty()
 }
+
+/// The guardian for a request: the session's user, else anonymous.
+/// Built from the `Incoming` the session layer stored.
+pub struct AuthGuardian(pub crate::guardian::Guardian);
+
+impl axum::extract::FromRequestParts<AppState> for AuthGuardian {
+    type Rejection = AppError;
+
+    async fn from_request_parts(
+        parts: &mut axum::http::request::Parts,
+        state: &AppState,
+    ) -> Result<Self, Self::Rejection> {
+        let incoming = parts.extensions.get::<Incoming>().cloned();
+        let Some(session) = incoming.and_then(|i| i.session) else {
+            return Ok(AuthGuardian(crate::guardian::Guardian::anonymous()));
+        };
+        let mut conn = state.pool.acquire().await?;
+        Ok(AuthGuardian(
+            crate::guardian::Guardian::for_user(&mut conn, &session.user).await?,
+        ))
+    }
+}

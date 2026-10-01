@@ -134,7 +134,10 @@ impl Categories<'_> {
         let rows = Self::load_all(&mut *self.conn).await?;
 
         // can_see_serialized_category?: public, or in the guardian's secure ids.
-        let secure = self.guardian.secure_category_ids();
+        let secure = self
+            .guardian
+            .secure_category_ids(&mut *self.conn, self.settings)
+            .await?;
         let visible: Vec<&CategoryRow> = rows
             .iter()
             .filter(|c| !c.read_restricted || secure.contains(&c.id))
@@ -485,6 +488,15 @@ pub(crate) const CATEGORY_SQL: &str = "SELECT categories.id, categories.name, ca
     categories.topics_day, categories.topics_week, categories.topics_month, categories.topics_year \
     FROM categories LEFT JOIN topics t ON t.id = categories.topic_id \
     ORDER BY categories.position";
+
+impl From<crate::guardian::GuardianError> for CategoriesError {
+    fn from(e: crate::guardian::GuardianError) -> Self {
+        match e {
+            crate::guardian::GuardianError::Db(e) => CategoriesError::Db(e),
+            crate::guardian::GuardianError::Setting(e) => CategoriesError::Setting(e),
+        }
+    }
+}
 
 #[cfg(test)]
 mod tests {

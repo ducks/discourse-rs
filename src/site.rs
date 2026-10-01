@@ -297,7 +297,10 @@ impl Site<'_> {
             "can_tag_topics".into(),
             json!(self.guardian.can_tag_topics(self.settings)?),
         );
-        out.insert("can_tag_pms".into(), json!(self.guardian.can_tag_pms()));
+        out.insert(
+            "can_tag_pms".into(),
+            json!(self.guardian.can_tag_pms(self.settings)?),
+        );
         let tagging = self.truthy("tagging_enabled")?;
         if tagging {
             out.insert("tags_filter_regexp".into(), json!(TAGS_FILTER_REGEXP));
@@ -643,7 +646,10 @@ impl Site<'_> {
     /// `Tag.top_tags(guardian:)`: visible tags with topics in allowed
     /// categories.
     async fn top_tags(&mut self) -> Result<Vec<Value>, SiteError> {
-        let category_ids = self.guardian.allowed_category_ids(self.conn).await?;
+        let category_ids = self
+            .guardian
+            .allowed_category_ids(self.conn, self.settings)
+            .await?;
         if category_ids.is_empty() {
             return Ok(Vec::new());
         }
@@ -1054,6 +1060,16 @@ impl From<CategoriesError> for SiteError {
         }
     }
 }
+
+impl From<crate::guardian::GuardianError> for SiteError {
+    fn from(e: crate::guardian::GuardianError) -> Self {
+        match e {
+            crate::guardian::GuardianError::Db(e) => SiteError::Db(e),
+            crate::guardian::GuardianError::Setting(e) => SiteError::Setting(e),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

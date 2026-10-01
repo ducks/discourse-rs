@@ -10,6 +10,7 @@ use serde::Deserialize;
 use serde_json::json;
 
 use crate::guardian::Guardian;
+use crate::session::current::AuthGuardian;
 use crate::site_settings::SiteSettings;
 use crate::topic_view::{CHUNK_SIZE, Options, TopicView, TopicViewError};
 use crate::url::Urls;
@@ -23,6 +24,7 @@ pub struct ShowParams {
 /// `/t/:id` and `/t/:slug` (the id route also catches a bare slug).
 pub async fn show_by_id(
     State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
     Path(id): Path<String>,
     Query(params): Query<ShowParams>,
     headers: HeaderMap,
@@ -33,6 +35,7 @@ pub async fn show_by_id(
         Incoming {
             headers: &headers,
             uri: &uri,
+            guardian: &guardian,
         },
         &state,
         None,
@@ -47,6 +50,7 @@ pub async fn show_by_id(
 /// `/t/:slug/:topic_id`
 pub async fn show_with_slug(
     State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
     Path((slug, id)): Path<(String, String)>,
     Query(params): Query<ShowParams>,
     headers: HeaderMap,
@@ -57,6 +61,7 @@ pub async fn show_with_slug(
         Incoming {
             headers: &headers,
             uri: &uri,
+            guardian: &guardian,
         },
         &state,
         Some(&slug),
@@ -71,6 +76,7 @@ pub async fn show_with_slug(
 /// `/t/:slug/:topic_id/:post_number`
 pub async fn show_post(
     State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
     Path((slug, id, post_number)): Path<(String, String, String)>,
     Query(params): Query<ShowParams>,
     headers: HeaderMap,
@@ -81,6 +87,7 @@ pub async fn show_post(
         Incoming {
             headers: &headers,
             uri: &uri,
+            guardian: &guardian,
         },
         &state,
         Some(&slug),
@@ -144,6 +151,7 @@ fn redirect(headers: &HeaderMap, location: String) -> Response {
 struct Incoming<'a> {
     headers: &'a HeaderMap,
     uri: &'a axum::http::Uri,
+    guardian: &'a Guardian,
 }
 
 async fn show(
@@ -155,7 +163,11 @@ async fn show(
     params: &ShowParams,
     json: bool,
 ) -> Result<Response, AppError> {
-    let Incoming { headers, uri } = incoming;
+    let Incoming {
+        headers,
+        uri,
+        guardian,
+    } = incoming;
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
@@ -196,7 +208,6 @@ async fn show(
         None => None,
     };
 
-    let guardian = Guardian::anonymous();
     let urls = Urls {
         config: &state.config,
         settings: &settings,
@@ -205,7 +216,7 @@ async fn show(
         conn: &mut conn,
         settings: &settings,
         i18n: &state.i18n,
-        guardian: &guardian,
+        guardian,
         urls: &urls,
         options: Options { page, post_number },
     };

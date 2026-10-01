@@ -15,6 +15,7 @@ use serde_json::{Value, json};
 use crate::guardian::Guardian;
 use crate::html::Crawler;
 use crate::search::{BLURB_LENGTH, Search, SearchArgs, TypeFilter};
+use crate::session::current::AuthGuardian;
 use crate::site_settings::SiteSettings;
 use crate::url::Urls;
 use crate::{AppError, AppState, Unsupported};
@@ -113,11 +114,10 @@ fn request_context(
     (remote_ip(headers, peer), user_agent, session_id)
 }
 
-async fn run(state: &AppState, args: &SearchArgs) -> Result<Value, AppError> {
+async fn run(state: &AppState, guardian: &Guardian, args: &SearchArgs) -> Result<Value, AppError> {
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
-    let guardian = Guardian::anonymous();
     let urls = Urls {
         config: &state.config,
         settings: &settings,
@@ -127,7 +127,7 @@ async fn run(state: &AppState, args: &SearchArgs) -> Result<Value, AppError> {
         conn: &mut conn,
         settings: &settings,
         i18n: &state.i18n,
-        guardian: &guardian,
+        guardian,
         urls: &urls,
         base_path,
         log_cache: &state.search_log_cache,
@@ -169,25 +169,28 @@ fn min_length_bypass(term: &str) -> bool {
 /// GET /search(.json)?q=&page=
 pub async fn show(
     State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
     Query(params): Query<ShowParams>,
     headers: HeaderMap,
     Peer(peer): Peer,
     uri: axum::http::Uri,
 ) -> Result<Response, AppError> {
-    show_response(state, params, headers, peer, false, Some(uri)).await
+    show_response(state, guardian, params, headers, peer, false, Some(uri)).await
 }
 
 pub async fn show_json(
     State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
     Query(params): Query<ShowParams>,
     headers: HeaderMap,
     Peer(peer): Peer,
 ) -> Result<Response, AppError> {
-    show_response(state, params, headers, peer, true, None).await
+    show_response(state, guardian, params, headers, peer, true, None).await
 }
 
 async fn show_response(
     state: AppState,
+    guardian: Guardian,
     params: ShowParams,
     headers: HeaderMap,
     peer: Option<SocketAddr>,
@@ -235,7 +238,7 @@ async fn show_response(
         user_agent,
         session_id,
     };
-    let doc = run(&state, &args).await?;
+    let doc = run(&state, &guardian, &args).await?;
     let noindex = [("x-robots-tag", "noindex")];
     if json {
         return Ok((noindex, Json(doc)).into_response());
@@ -264,6 +267,7 @@ async fn show_response(
 /// GET /search/query(.json)?term=
 pub async fn query(
     State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
     Query(params): Query<QueryParams>,
     headers: HeaderMap,
     Peer(peer): Peer,
@@ -317,7 +321,7 @@ pub async fn query(
         user_agent,
         session_id,
     };
-    let doc = run(&state, &args).await?;
+    let doc = run(&state, &guardian, &args).await?;
     Ok(([("x-robots-tag", "noindex")], Json(doc)).into_response())
 }
 

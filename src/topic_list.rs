@@ -696,7 +696,10 @@ impl TopicListSerializer<'_> {
 
     /// `Tag.top_tags` as in site.json's top_tags.
     async fn top_tags(&mut self) -> Result<Value, TopicListError> {
-        let mut category_ids = self.guardian.allowed_category_ids(&mut *self.conn).await?;
+        let mut category_ids = self
+            .guardian
+            .allowed_category_ids(&mut *self.conn, self.settings)
+            .await?;
         if let Some(category_id) = self.category_id {
             // `allowed & ([category.id] + category.subcategories.pluck(:id))`
             let mut scope: Vec<i32> =
@@ -858,6 +861,15 @@ fn descriptions_by_id(t: &TopicRow, user_ids: &[Option<i32>], i18n: &I18n) -> Ha
         .into_iter()
         .map(|(id, p)| (id, p.join(joiner)))
         .collect()
+}
+
+impl From<crate::guardian::GuardianError> for TopicListError {
+    fn from(e: crate::guardian::GuardianError) -> Self {
+        match e {
+            crate::guardian::GuardianError::Db(e) => TopicListError::Db(e),
+            crate::guardian::GuardianError::Setting(e) => TopicListError::Setting(e),
+        }
+    }
 }
 
 #[cfg(test)]

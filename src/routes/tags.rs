@@ -8,9 +8,10 @@ use axum::http::{HeaderMap, StatusCode, header};
 use axum::response::{IntoResponse, Response};
 use serde_json::{Value, json};
 
-use super::list::{ListKind, ListParams, TagListRequest, list_document_for};
+use super::list::{ListKind, ListParams, ListScope, TagListRequest, list_document_for};
 use crate::category::Category;
 use crate::guardian::Guardian;
+use crate::session::current::AuthGuardian;
 use crate::site_settings::SiteSettings;
 use crate::tags::{Tag, VISIBLE_TAGS_WHERE};
 use crate::topic_query::Options;
@@ -165,6 +166,7 @@ pub(super) fn next_url(
 /// GET /tag/{*path}
 pub async fn show(
     State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
     Path(path): Path<String>,
     Query(params): Query<ListParams>,
     RawQuery(raw_query): RawQuery,
@@ -172,12 +174,13 @@ pub async fn show(
     uri: axum::http::Uri,
 ) -> Result<Response, AppError> {
     let parsed = parse_path(&path, false)?;
-    show_list(state, parsed, params, raw_query, headers, uri).await
+    show_list(state, guardian, parsed, params, raw_query, headers, uri).await
 }
 
 /// GET /tags/c/{*path}
 pub async fn show_in_category(
     State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
     Path(path): Path<String>,
     Query(params): Query<ListParams>,
     RawQuery(raw_query): RawQuery,
@@ -185,7 +188,7 @@ pub async fn show_in_category(
     uri: axum::http::Uri,
 ) -> Result<Response, AppError> {
     let parsed = parse_path(&path, true)?;
-    show_list(state, parsed, params, raw_query, headers, uri).await
+    show_list(state, guardian, parsed, params, raw_query, headers, uri).await
 }
 
 fn redirect(headers: &HeaderMap, location: String) -> Response {
@@ -203,6 +206,7 @@ fn redirect(headers: &HeaderMap, location: String) -> Response {
 /// `show_#{filter}`.
 async fn show_list(
     state: AppState,
+    guardian: Guardian,
     path: TagPath,
     params: ListParams,
     raw_query: Option<String>,
@@ -349,12 +353,15 @@ async fn show_list(
 
     let (doc, settings) = match list_document_for(
         &state,
+        &guardian,
         &params,
-        category.as_ref(),
-        path.no_subcategories,
-        kind,
-        &list_path,
-        Some(&request),
+        ListScope {
+            category: category.as_ref(),
+            no_subcategories: path.no_subcategories,
+            kind,
+            list_path: &list_path,
+            tag_request: Some(&request),
+        },
     )
     .await?
     {
@@ -427,13 +434,17 @@ async fn show_list(
 /// GET /tags(.json) -> tags#index with tags_listed_by_group off.
 pub async fn index(
     State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
     uri: axum::http::Uri,
 ) -> Result<Response, AppError> {
-    index_response(state, false, Some(uri)).await
+    index_response(state, guardian, false, Some(uri)).await
 }
 
-pub async fn index_json(State(state): State<AppState>) -> Result<Response, AppError> {
-    index_response(state, true, None).await
+pub async fn index_json(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+) -> Result<Response, AppError> {
+    index_response(state, guardian, true, None).await
 }
 
 #[derive(sqlx::FromRow)]
@@ -473,6 +484,7 @@ const COUNT_COLUMNS: &str = "tags.id, tags.name, tags.slug, tags.description, \
 
 async fn index_response(
     state: AppState,
+    guardian: Guardian,
     json: bool,
     uri: Option<axum::http::Uri>,
 ) -> Result<Response, AppError> {
@@ -500,8 +512,7 @@ async fn index_response(
     ))
     .fetch_all(&mut *conn)
     .await?;
-    let guardian = Guardian::anonymous();
-    let allowed = guardian.allowed_category_ids(&mut conn).await?;
+    let allowed = guardian.allowed_category_ids(&mut conn, &settings).await?;
     // Categories with category_tags among the allowed ones, by id; each
     // with its visible base tags minus the PM-only ones.
     let category_ids: Vec<i32> = sqlx::query_scalar(

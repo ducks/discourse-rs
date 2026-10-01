@@ -12,6 +12,7 @@ use serde_json::{Value, json};
 use super::search::Peer;
 use crate::guardian::Guardian;
 use crate::html::Crawler;
+use crate::session::current::AuthGuardian;
 use crate::site_settings::SiteSettings;
 use crate::url::Urls;
 use crate::users::{PRIVATE_TYPES, PUBLIC_TYPES, User, Users};
@@ -87,6 +88,7 @@ fn route(username: &str, rest: Option<&str>) -> Result<(String, Action, bool), U
 /// GET /u/{username}
 pub async fn show(
     State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
     Path(username): Path<String>,
     Query(params): Query<ShowParams>,
     headers: HeaderMap,
@@ -96,6 +98,7 @@ pub async fn show(
     let (username, action, json) = route(&username, None)?;
     respond(
         state,
+        guardian,
         Target {
             username,
             action,
@@ -112,6 +115,7 @@ pub async fn show(
 /// GET /u/{username}/{*rest}
 pub async fn show_with_tail(
     State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
     Path((username, rest)): Path<(String, String)>,
     Query(params): Query<ShowParams>,
     headers: HeaderMap,
@@ -121,6 +125,7 @@ pub async fn show_with_tail(
     let (username, action, json) = route(&username, Some(&rest))?;
     respond(
         state,
+        guardian,
         Target {
             username,
             action,
@@ -143,6 +148,7 @@ struct Target {
 
 async fn respond(
     state: AppState,
+    guardian: Guardian,
     target: Target,
     params: ShowParams,
     headers: HeaderMap,
@@ -169,7 +175,6 @@ async fn respond(
     let Some(user) = User::find_active(&mut conn, &username).await? else {
         return Ok(not_found());
     };
-    let guardian = Guardian::anonymous();
     let urls = Urls {
         config: &state.config,
         settings: &settings,
@@ -247,6 +252,7 @@ async fn respond(
 /// GET /user_actions.json
 pub async fn actions(
     State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
     Query(params): Query<ActionsParams>,
 ) -> Result<Response, AppError> {
     let Some(username) = params.username.as_deref().filter(|u| !u.is_empty()) else {
@@ -297,7 +303,6 @@ pub async fn actions(
     if action_types.is_empty() {
         action_types = PUBLIC_TYPES.to_vec();
     }
-    let guardian = Guardian::anonymous();
     let urls = Urls {
         config: &state.config,
         settings: &settings,
