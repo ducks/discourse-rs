@@ -244,3 +244,103 @@ The test time is dominated by the integration tests cloning the template
 database once per test (`CREATE DATABASE ... TEMPLATE`), about 1s each,
 and the parity replay (146 cases in-process, ~12s). `make lint` runs
 fmt-check, clippy with `-D warnings` and the tests.
+
+## 2026-10-01, after sessions slice 3
+
+Release binary at ebb0d37 (the merge of feat/notifications-messages plus
+docs), the rs-backup dev agent on the same data, c=2, after a reboot with
+nothing else running. Slice 3 brought two changes that touch every
+request: the guardian is built in the session layer with the connection
+it already holds (one checkout and two fewer queries per logged-in
+request), and resolved site settings are cached behind a table
+fingerprint (one small query instead of the table and the resolve, two
+or three times per request).
+
+Logged in, against the slice 2 run above: every row but /site.json moved
+up, by 2% to 41%. /srv/status 2709 -> 3277 req/s, /u/system.json 800 ->
+1129, /unread.json 519 -> 667, /tag/design.json 474 -> 597,
+/search.json 403 -> 500, /t/...json 314 -> 367, /latest.json 428 -> 438.
+The Rails column stayed where it was (/srv/status 1121 -> 1072), so the
+box is comparable between the two runs.
+
+Duration 5s, concurrency 2, keepalive off, logged in as user1, 2026-10-01T21:47Z
+
+| endpoint | target | req/s | p50 ms | p99 ms | non-2xx |
+|---|---|---:|---:|---:|---:|
+| /srv/status | rs (user) | 3277 | 0.6 | 1.6 | 0 |
+| /srv/status | rails-dev (user) | 1072 | 1.6 | 4.3 | 0 |
+| /site.json | rs (user) | 364 | 5.4 | 8 | 0 |
+| /site.json | rails-dev (user) | 37 | 49.9 | 115.2 | 0 |
+| /latest.json | rs (user) | 438 | 4.4 | 9.3 | 0 |
+| /latest.json | rails-dev (user) | 12 | 150.8 | 332.2 | 0 |
+| /latest | rs (user) | 437 | 4.5 | 6.9 | 0 |
+| /latest | rails-dev (user) | 8 | 217.2 | 460.7 | 0 |
+| /c/general/4.json | rs (user) | 542 | 3.5 | 7.1 | 0 |
+| /c/general/4.json | rails-dev (user) | 16 | 115.7 | 303.9 | 0 |
+| /categories.json | rs (user) | 569 | 3.4 | 5.6 | 0 |
+| /categories.json | rails-dev (user) | 18 | 103 | 163.3 | 0 |
+| /t/welcome-to-discourse/5.json | rs (user) | 367 | 5.3 | 8.6 | 0 |
+| /t/welcome-to-discourse/5.json | rails-dev (user) | 10 | 181 | 327.8 | 0 |
+| /t/welcome-to-discourse/5 | rs (user) | 348 | 5.6 | 8.3 | 0 |
+| /t/welcome-to-discourse/5 | rails-dev (user) | 7 | 254 | 404.3 | 0 |
+| /u/system.json | rs (user) | 1129 | 1.7 | 3.3 | 0 |
+| /u/system.json | rails-dev (user) | 24 | 82.3 | 166.2 | 0 |
+| /search.json?q=Welcome | rs (user) | 500 | 3.9 | 6.2 | 0 |
+| /search.json?q=Welcome | rails-dev (user) | 123 | 13.3 | 70.2 | 588 |
+| /tag/design.json | rs (user) | 597 | 3.2 | 7 | 0 |
+| /tag/design.json | rails-dev (user) | 21 | 92.1 | 115.4 | 0 |
+| /unread.json | rs (user) | 667 | 2.9 | 4.6 | 0 |
+| /unread.json | rails-dev (user) | 22 | 87.7 | 106.2 | 0 |
+| /new.json | rs (user) | 282 | 7 | 9.8 | 0 |
+| /new.json | rails-dev (user) | 16 | 119.8 | 202.8 | 0 |
+
+Anonymous, the first such run since the session layer exists (the last
+one was the batching run above, before sessions slice 1). The content
+endpoints are within the noise of 5 s runs either way, but the floor
+moved: /srv/status fell from 19778 to 5255 req/s. That is the session
+layer on a request with no cookie: `session::current::layer` checks out
+a connection and loads the settings before the handler and again after
+it, so two checkouts, two fingerprint queries and two clones of the
+resolved settings for a request that has no session to resolve or
+rotate. Before the fingerprint cache those were two full table loads.
+A request without a `_t` cookie needs neither; skipping both is the next
+cheap win, and the logged-in floor (3277) would gain the second one too
+if the response side reused the settings the request side loaded.
+
+Duration 5s, concurrency 2, keepalive off, 2026-10-01T21:44Z
+
+| endpoint | target | req/s | p50 ms | p99 ms | non-2xx |
+|---|---|---:|---:|---:|---:|
+| /srv/status | rs | 5255 | 0.4 | 0.7 | 0 |
+| /srv/status | rails-dev (cached) | 1261 | 1.4 | 2.9 | 0 |
+| /srv/status | rails-dev (uncached) | 1298 | 1.4 | 2.9 | 0 |
+| /site.json | rs | 429 | 4.6 | 6.8 | 0 |
+| /site.json | rails-dev (cached) | 223 | 6.1 | 21.3 | 0 |
+| /site.json | rails-dev (uncached) | 253 | 5.4 | 17.5 | 0 |
+| /latest.json | rs | 660 | 2.9 | 4.9 | 0 |
+| /latest.json | rails-dev (cached) | 18 | 104.6 | 248.6 | 0 |
+| /latest.json | rails-dev (uncached) | 18 | 108.6 | 259.8 | 0 |
+| /latest | rs | 570 | 3.4 | 5.6 | 0 |
+| /latest | rails-dev (cached) | 10 | 183.6 | 470.9 | 0 |
+| /latest | rails-dev (uncached) | 10 | 184.6 | 402.8 | 0 |
+| /c/general/4.json | rs | 616 | 3.2 | 5.2 | 0 |
+| /c/general/4.json | rails-dev (cached) | 29 | 67.2 | 124.6 | 0 |
+| /c/general/4.json | rails-dev (uncached) | 26 | 74.6 | 111 | 0 |
+| /categories.json | rs | 729 | 2.7 | 4.3 | 0 |
+| /categories.json | rails-dev (cached) | 23 | 81.6 | 228.1 | 0 |
+| /categories.json | rails-dev (uncached) | 24 | 80.8 | 136.7 | 0 |
+| /t/welcome-to-discourse/5.json | rs | 430 | 4.5 | 7.4 | 0 |
+| /t/welcome-to-discourse/5.json | rails-dev (cached) | 13 | 143.1 | 215.1 | 0 |
+| /t/welcome-to-discourse/5.json | rails-dev (uncached) | 13 | 145.4 | 197.4 | 0 |
+| /t/welcome-to-discourse/5 | rs | 430 | 4.6 | 6.3 | 0 |
+| /t/welcome-to-discourse/5 | rails-dev (cached) | 9 | 212.8 | 307.6 | 0 |
+| /t/welcome-to-discourse/5 | rails-dev (uncached) | 10 | 194.8 | 377.7 | 0 |
+| /u/system.json | rs | 1490 | 1.3 | 2.5 | 0 |
+| /u/system.json | rails-dev (cached) | 48 | 41.2 | 60.1 | 0 |
+| /u/system.json | rails-dev (uncached) | 49 | 40.8 | 54.1 | 0 |
+| /search.json?q=Welcome | rs | 640 | 3 | 4.7 | 0 |
+| /search.json?q=Welcome | rails-dev (cached) | 280 | 6.4 | 21.5 | 1390 |
+| /search.json?q=Welcome | rails-dev (uncached) | 303 | 6.3 | 10.8 | 1512 |
+| /tag/design.json | rs | 756 | 2.5 | 4.4 | 0 |
+| /tag/design.json | rails-dev (cached) | 28 | 70.7 | 88.1 | 0 |
+| /tag/design.json | rails-dev (uncached) | 28 | 71.2 | 85.9 | 0 |
