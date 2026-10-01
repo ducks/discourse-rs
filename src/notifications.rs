@@ -323,6 +323,39 @@ impl Notifications<'_> {
         }))
     }
 
+    /// `Notification.for_user_menu(user_id, limit:).unread.where(notification_type:)`,
+    /// serialized. The user-menu endpoints filter these by what `data`
+    /// points at before returning them, so each comes back on its own.
+    pub async fn unread_for_user_menu(
+        &mut self,
+        user_id: i32,
+        notification_type: i32,
+        limit: i64,
+    ) -> Result<Vec<Value>, NotificationsError> {
+        // populate_acting_user, as in post_filter.
+        if self.settings.get("show_user_menu_avatars")?.truthy()
+            || self.settings.get("prioritize_full_name_in_ux")?.truthy()
+        {
+            return Err(Unsupported("populate_acting_user on notifications").into());
+        }
+        let rows: Vec<Row> = sqlx::query_as(&format!(
+            "SELECT {COLUMNS} FROM notifications LEFT JOIN topics ON notifications.topic_id = topics.id \
+             WHERE notifications.user_id = $1 AND (topics.id IS NULL OR topics.deleted_at IS NULL) \
+             AND notifications.read = FALSE AND notifications.notification_type = $2 \
+             ORDER BY notifications.high_priority AND NOT notifications.read DESC, NOT notifications.read DESC, \
+                      notifications.created_at DESC, notifications.id DESC LIMIT $3"
+        ))
+        .bind(user_id)
+        .bind(notification_type)
+        .bind(limit)
+        .fetch_all(&mut *self.conn)
+        .await?;
+        match self.serialize(&rows)? {
+            Value::Array(items) => Ok(items),
+            _ => Ok(Vec::new()),
+        }
+    }
+
     /// `filter_inaccessible_topic_notifications` then
     /// `filter_disabled_badge_notifications`; `populate_acting_user` only
     /// acts under settings this slice refuses.

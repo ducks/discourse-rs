@@ -630,19 +630,20 @@ async fn recent_notifications_bump_the_seen_id_unless_silent() {
         .iter()
         .map(|n| n["id"].as_i64().unwrap())
         .collect();
-    // Unread high priority first, then unread non-likes, the like, the read one.
-    assert_eq!(ids, vec![50, 48, 44, 51, 47, 41, 7, 45, 2]);
+    // Unread high priority first (the bookmark reminder is the newest),
+    // then unread non-likes, the like, the read one.
+    assert_eq!(ids, vec![52, 50, 48, 44, 51, 47, 41, 7, 45, 2]);
 
     // Without `silent` the newest visible id is recorded on the user.
     let reply = client.get("/notifications.json?recent=true&limit=3").await;
     let json = reply.json();
-    assert_eq!(json["seen_notification_id"], 51);
+    assert_eq!(json["seen_notification_id"], 52);
     assert_eq!(json["notifications"].as_array().unwrap().len(), 3);
     let seen: i64 = sqlx::query_scalar("SELECT seen_notification_id FROM users WHERE id = 3")
         .fetch_one(&db.pool)
         .await
         .unwrap();
-    assert_eq!(seen, 51);
+    assert_eq!(seen, 52);
     // And the counters current.json derives from it follow.
     let reply = client
         .send(
@@ -656,9 +657,9 @@ async fn recent_notifications_bump_the_seen_id_unless_silent() {
     assert_eq!(current["current_user"]["unread_notifications"], 0);
     assert_eq!(
         current["current_user"]["unread_high_priority_notifications"],
-        3
+        4
     );
-    assert_eq!(current["current_user"]["seen_notification_id"], 51);
+    assert_eq!(current["current_user"]["seen_notification_id"], 52);
 
     // Anonymous: 403 not_logged_in, like Rails' requires_login.
     let mut anon = Client::new(app_state);
@@ -801,4 +802,205 @@ async fn requests_without_a_token_cookie_do_not_touch_the_pool() {
     client.cookies.push(("_t".into(), "0".repeat(32)));
     let reply = client.get("/srv/status").await;
     assert_eq!(reply.status, StatusCode::INTERNAL_SERVER_ERROR);
+}
+
+/// The ids of a bookmark list document, in order (empty for the bare
+/// `{"bookmarks": []}` an empty list renders).
+fn bookmark_ids(json: &Value) -> Vec<i64> {
+    let list = if json["user_bookmark_list"].is_object() {
+        &json["user_bookmark_list"]["bookmarks"]
+    } else {
+        &json["bookmarks"]
+    };
+    list.as_array()
+        .unwrap()
+        .iter()
+        .map(|b| b["id"].as_i64().unwrap())
+        .collect()
+}
+
+/// lib/bookmark_query_spec.rb: what drops out of a list as the viewer
+/// loses sight of the bookmarked thing. user1's seeded bookmarks: 4
+/// (pinned, a post in the PM 42), 3 (reminder, post 36), 5 (post 52),
+/// 2 (topic 35) and 1 (post 40 in topic 37).
+#[tokio::test]
+async fn bookmark_lists_follow_what_the_viewer_can_see() {
+    let db = TestDb::new().await;
+    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[]));
+    let mut client = Client::new(app_state.clone());
+    client.login("user1", "password").await;
+    let mut admin = Client::new(app_state.clone());
+    admin.login("admin", "password").await;
+    let path = "/u/user1/bookmarks.json";
+
+    // Pinned first, then by reminder, then most recently updated.
+    let reply = client.get(path).await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    assert_eq!(bookmark_ids(&reply.json()), vec![4, 3, 5, 2, 1]);
+
+    // Search matches the bookmark's name, the post's text or its topic's
+    // title ("pinned" is in bookmark 4's name and topic 37's title).
+    let reply = client.get(&format!("{path}?q=pinned")).await;
+    assert_eq!(bookmark_ids(&reply.json()), vec![4, 1]);
+    let reply = client.get(&format!("{path}?q=repliers")).await;
+    assert_eq!(bookmark_ids(&reply.json()), vec![2]);
+
+    // A hidden post of someone else stays listed, without its excerpt.
+    sqlx::query("UPDATE posts SET hidden = TRUE WHERE id = 52")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let json = client.get(path).await.json();
+    let hidden = json["user_bookmark_list"]["bookmarks"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|b| b["id"] == 5)
+        .unwrap()
+        .clone();
+    assert_eq!(hidden["hidden"], true);
+    assert!(hidden.get("excerpt").is_none());
+
+    // A whisper is not for a regular user.
+    sqlx::query("UPDATE posts SET post_type = 4 WHERE id = 52")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    assert_eq!(
+        bookmark_ids(&client.get(path).await.json()),
+        vec![4, 3, 2, 1]
+    );
+
+    // A deleted post takes its bookmark out of the list.
+    sqlx::query("UPDATE posts SET deleted_at = now() WHERE id = 36")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    assert_eq!(bookmark_ids(&client.get(path).await.json()), vec![4, 2, 1]);
+
+    // So does a topic moved into a category the viewer can't read; an
+    // admin reading user1's list still sees it.
+    sqlx::query("UPDATE topics SET category_id = 3 WHERE id = 37")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    assert_eq!(bookmark_ids(&client.get(path).await.json()), vec![4, 2]);
+    assert_eq!(bookmark_ids(&admin.get(path).await.json()), vec![4, 2, 1]);
+
+    // And a private message the owner is no longer in, for the admin too:
+    // the messages are the owner's, not the viewer's.
+    sqlx::query("DELETE FROM topic_allowed_users WHERE topic_id = 42 AND user_id = 3")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    assert_eq!(bookmark_ids(&client.get(path).await.json()), vec![2]);
+    assert_eq!(bookmark_ids(&admin.get(path).await.json()), vec![2, 1]);
+
+    // A topic bookmark goes with its topic's first post.
+    sqlx::query("UPDATE posts SET deleted_at = now() WHERE topic_id = 35 AND post_number = 1")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let reply = client.get(path).await;
+    assert_eq!(reply.status, StatusCode::OK);
+    assert_eq!(reply.json(), serde_json::json!({"bookmarks": []}));
+
+    // A bookmark type only a plugin serializes is refused, not skipped.
+    sqlx::query(
+        "INSERT INTO bookmarks (user_id, bookmarkable_id, bookmarkable_type, created_at, updated_at) \
+         VALUES (3, 1, 'Chat::Message', now(), now())",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        client.get(path).await.status,
+        StatusCode::INTERNAL_SERVER_ERROR
+    );
+}
+
+/// users_controller_spec.rb #user_menu_bookmarks: unread reminders first,
+/// then the bookmarks they are not about.
+#[tokio::test]
+async fn the_user_menu_pairs_unread_reminders_with_the_other_bookmarks() {
+    let db = TestDb::new().await;
+    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[]));
+    let mut client = Client::new(app_state.clone());
+    client.login("user1", "password").await;
+    let path = "/u/user1/user-menu-bookmarks.json";
+    let ids = |json: &Value, key: &str| -> Vec<i64> {
+        json[key]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|v| v["id"].as_i64().unwrap())
+            .collect()
+    };
+
+    // Notification 52 is the fired reminder of bookmark 5.
+    let reply = client.get(path).await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    let json = reply.json();
+    assert_eq!(ids(&json, "notifications"), vec![52]);
+    assert_eq!(ids(&json, "bookmarks"), vec![4, 3, 2, 1]);
+    // The topic bookmark links to the first unread post (2 read, so 3).
+    let topic = json["bookmarks"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|b| b["id"] == 2)
+        .unwrap();
+    assert!(
+        topic["bookmarkable_url"]
+            .as_str()
+            .unwrap()
+            .ends_with("/t/parity-fixture-replies-and-posters/35/3")
+    );
+
+    // Only one's own menu.
+    assert_eq!(
+        client.get("/u/user0/user-menu-bookmarks.json").await.status,
+        StatusCode::FORBIDDEN
+    );
+
+    // The reminder outlives its bookmark while the post is visible.
+    sqlx::query("DELETE FROM bookmarks WHERE id = 5")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let json = client.get(path).await.json();
+    assert_eq!(ids(&json, "notifications"), vec![52]);
+    assert_eq!(ids(&json, "bookmarks"), vec![4, 3, 2, 1]);
+
+    // And goes once the viewer can't see the post any more.
+    sqlx::query("UPDATE posts SET post_type = 4 WHERE id = 52")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let json = client.get(path).await.json();
+    assert_eq!(ids(&json, "notifications"), Vec::<i64>::new());
+    assert_eq!(ids(&json, "bookmarks"), vec![4, 3, 2, 1]);
+
+    // A read reminder is no longer listed, and frees its bookmark.
+    sqlx::query("UPDATE posts SET post_type = 1 WHERE id = 52")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    sqlx::query(
+        "INSERT INTO bookmarks (id, user_id, name, bookmarkable_id, bookmarkable_type, created_at, updated_at) \
+         VALUES (5, 3, 'back', 52, 'Post', now(), now())",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let json = client.get(path).await.json();
+    assert_eq!(ids(&json, "notifications"), vec![52]);
+    assert_eq!(ids(&json, "bookmarks"), vec![4, 3, 2, 1]);
+    sqlx::query("UPDATE notifications SET read = TRUE WHERE id = 52")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let json = client.get(path).await.json();
+    assert_eq!(ids(&json, "notifications"), Vec::<i64>::new());
+    assert_eq!(ids(&json, "bookmarks"), vec![4, 3, 5, 2, 1]);
 }

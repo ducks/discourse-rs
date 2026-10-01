@@ -1,0 +1,7 @@
+{
+  "request": "GET /u/user1/bookmarks.json as=user0",
+  "source": "http://127.0.0.1:3042",
+  "status": 403,
+  "content_type": "application/json; charset=utf-8",
+  "body": "{\"errors\":[\"You are not permitted to view the requested resource.\"],\"error_type\":\"invalid_access\"}"
+}

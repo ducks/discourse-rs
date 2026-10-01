@@ -92,7 +92,11 @@ Logged-in readers, no writes yet.
       `show_deleted`), ignored users, category group moderators, shared
       drafts, group PMs' related messages, the login-required 2FA and
       required-fields redirects, pending reviewables
-- [ ] Bookmarks list, user-menu endpoints, `/u/:username/user-menu-private-messages`
+- [x] Bookmarks: `/u/:username/bookmarks.json` and
+      `/u/:username/user-menu-bookmarks` (core's post and topic bookmarks;
+      the `.ics` feed and plugin bookmarkables are refused)
+- [ ] The other user-menu endpoints (`/u/:username/user-menu-private-messages`,
+      `/review/user-menu-list`)
 - [ ] Live updates: a MessageBus-compatible long-poll endpoint (`/message-bus/:client_id/poll`); nothing in the Rust ecosystem provides it, so it is ours to write
 
 ## Milestone 4: writes

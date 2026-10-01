@@ -120,12 +120,13 @@ async fn posters_and_users_follow_topic_posters_summary() {
     let replies = topics.iter().find(|t| t["id"] == 35).unwrap();
     let posters = replies["posters"].as_array().unwrap();
     // user0 is both OP and, since the mention fixture, the last poster, so
-    // it stays first with both descriptions; then featured user1/user2.
+    // it stays first with both descriptions; then the featured users in
+    // slot order (user1, admin, user2).
     let user_ids: Vec<i64> = posters
         .iter()
         .map(|p| p["user_id"].as_i64().unwrap())
         .collect();
-    assert_eq!(user_ids, vec![2, 3, 4]);
+    assert_eq!(user_ids, vec![2, 3, 1, 4]);
     assert_eq!(
         posters[0]["description"],
         "Original Poster, Most Recent Poster"
@@ -148,7 +149,7 @@ async fn posters_and_users_follow_topic_posters_summary() {
         .iter()
         .map(|u| u["username"].as_str().unwrap())
         .collect();
-    assert_eq!(names, vec!["system", "user0", "user1", "user2", "admin"]);
+    assert_eq!(names, vec!["system", "user0", "user1", "admin", "user2"]);
     let user0 = &users[1];
     assert!(
         user0["avatar_template"]

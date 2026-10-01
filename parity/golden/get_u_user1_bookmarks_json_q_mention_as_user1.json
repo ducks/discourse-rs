@@ -1,0 +1,7 @@
+{
+  "request": "GET /u/user1/bookmarks.json?q=mention as=user1",
+  "source": "http://127.0.0.1:3042",
+  "status": 200,
+  "content_type": "application/json; charset=utf-8",
+  "body": "{\"user_bookmark_list\":{\"bookmarks\":[{\"id\":5,\"created_at\":\"2026-10-01T22:32:02.441Z\",\"updated_at\":\"2026-10-01T22:32:02.468Z\",\"name\":\"Parity fixture: reminder sent\",\"reminder_at\":null,\"pinned\":null,\"title\":\"Parity fixture: replies and posters\",\"fancy_title\":\"Parity fixture: replies and posters\",\"excerpt\":\"Reply from user0 mentioning \\u003ca class=\\\"mention\\\" href=\\\"/u/user1\\\"\\u003e@user1\\u003c/a\\u003e so a mention notification exists.\",\"bookmarkable_id\":52,\"bookmarkable_type\":\"Post\",\"bookmarkable_url\":\"http://localhost:3042/t/parity-fixture-replies-and-posters/35/5\",\"tags\":[{\"id\":2,\"name\":\"guide\",\"slug\":\"guide\"}],\"tags_descriptions\":{},\"topic_id\":35,\"linked_post_number\":5,\"deleted\":false,\"hidden\":false,\"category_id\":4,\"closed\":false,\"archived\":false,\"archetype\":\"regular\",\"highest_post_number\":5,\"bumped_at\":\"2026-10-01T15:39:51.834Z\",\"slug\":\"parity-fixture-replies-and-posters\",\"user\":{\"id\":2,\"username\":\"user0\",\"name\":\"User0\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png\"}}]}}"
+}
