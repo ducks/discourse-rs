@@ -1,0 +1,2 @@
+# systemd-sysusers: the account discourse-rs.service runs as.
+u discourse-rs - "discourse-rs" /var/lib/discourse-rs

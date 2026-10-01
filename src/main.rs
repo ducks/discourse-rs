@@ -76,12 +76,29 @@ async fn run() -> Result<(), Box<dyn Error>> {
         listener,
         app(state).into_make_service_with_connect_info::<std::net::SocketAddr>(),
     )
-    .with_graceful_shutdown(async {
-        if let Err(e) = tokio::signal::ctrl_c().await {
-            tracing::error!("installing ctrl-c handler: {e}");
-        }
-    })
+    .with_graceful_shutdown(shutdown_signal())
     .await?;
 
     Ok(())
+}
+
+/// Resolves on SIGINT (ctrl-c) or SIGTERM (what `systemctl stop` sends),
+/// so in-flight requests finish before the process exits.
+async fn shutdown_signal() {
+    use tokio::signal::unix::{SignalKind, signal};
+    let mut term = match signal(SignalKind::terminate()) {
+        Ok(term) => term,
+        Err(e) => {
+            tracing::error!("installing SIGTERM handler: {e}");
+            return std::future::pending().await;
+        }
+    };
+    tokio::select! {
+        result = tokio::signal::ctrl_c() => {
+            if let Err(e) = result {
+                tracing::error!("installing ctrl-c handler: {e}");
+            }
+        }
+        _ = term.recv() => {}
+    }
 }

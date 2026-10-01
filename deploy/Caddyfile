@@ -1,0 +1,6 @@
+# Caddy sets X-Forwarded-For from the connection and drops a client's own
+# value, which is what discourse-rs reads as the request's IP.
+forum.example.com {
+	encode zstd gzip
+	reverse_proxy 127.0.0.1:8080
+}

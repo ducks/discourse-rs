@@ -1,0 +1,26 @@
+[Unit]
+Description=discourse-rs
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=discourse-rs
+Group=discourse-rs
+EnvironmentFile=/etc/discourse-rs/env
+ExecStart=/usr/local/bin/discourse-rs
+Restart=on-failure
+RestartSec=2
+
+# The server only reads PUBLIC_DIR and talks to Postgres; it writes no files.
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectHome=true
+ProtectSystem=strict
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+
+[Install]
+WantedBy=multi-user.target

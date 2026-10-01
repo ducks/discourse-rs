@@ -171,3 +171,39 @@ version (`meta.json`):
 scripts/vendor-discourse ~/discourse/discourse \
   $(scripts/discourse-commit-for-migration ~/discourse/discourse <version>)
 ```
+
+## Deploying
+
+One host, systemd, Postgres 16 with pgvector, Caddy in front. Every
+release has a static x86_64 Linux binary attached, and its tarball carries
+`deploy/`, so the host needs no toolchain:
+
+```bash
+tar xzf discourse-rs-v<version>-x86_64-linux.tar.gz
+cd discourse-rs-v<version>-x86_64-linux
+sudo deploy/install        # from a checkout: make build && sudo make install
+```
+
+That installs `/usr/local/bin/discourse-rs`, `discourse-rs.service`, the
+`discourse-rs` account (systemd-sysusers) and `/etc/discourse-rs/env` from
+`deploy/env.example`. Running it again upgrades the binary and keeps the
+env file. Then:
+
+1. Restore the backup (`scripts/restore-backup`, above) and put its
+   `uploads/` under `/var/lib/discourse-rs/public`.
+2. Give the service a database role. It reads everything and writes
+   sessions, visits, search logs and sitemaps:
+   `createuser discourse-rs`, then
+   `GRANT pg_read_all_data, pg_write_all_data TO "discourse-rs"`.
+3. Fill in `/etc/discourse-rs/env`: `DATABASE_URL`, `DISCOURSE_HOSTNAME`
+   and `DISCOURSE_SECRET_KEY_BASE`. The secret must be the Rails site's
+   for its sessions to survive a cutover; Rails keeps it in redis when it
+   is not configured (`rails runner 'puts GlobalSetting.safe_secret_key_base'`).
+4. `systemctl enable --now discourse-rs`, and add `deploy/Caddyfile` to
+   Caddy's config with the real hostname.
+
+The server binds to loopback and trusts `X-Forwarded-For`, so only the
+proxy may reach it. `systemctl stop` (SIGTERM) lets in-flight requests
+finish. A release binary embeds the schema vendored at its tag; a backup
+older than that needs a build from a checkout vendored at the backup's
+commit.
