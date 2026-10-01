@@ -666,3 +666,58 @@ async fn recent_notifications_bump_the_seen_id_unless_silent() {
     assert_eq!(reply.status, StatusCode::FORBIDDEN);
     assert_eq!(reply.json()["error_type"], "not_logged_in");
 }
+
+#[tokio::test]
+async fn private_messages_open_for_participants_only() {
+    let db = TestDb::new().await;
+    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[]));
+
+    let mut user1 = Client::new(app_state.clone());
+    user1.login("user1", "password").await;
+    let reply = user1
+        .get("/t/parity-fixture-pm-admin-to-user1-and-user2/43.json")
+        .await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    let json = reply.json();
+    // details.allowed_users: the direct members, order left to Postgres.
+    let mut allowed: Vec<i64> = json["details"]["allowed_users"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|u| u["id"].as_i64().unwrap())
+        .collect();
+    allowed.sort_unstable();
+    assert_eq!(allowed, vec![1, 3, 4]);
+    assert_eq!(json["details"]["allowed_groups"], serde_json::json!([]));
+    assert_eq!(json["details"]["can_remove_self_id"], 3);
+    assert_eq!(json["message_archived"], false);
+    assert_eq!(json["suggested_group_name"], Value::Null);
+    // The archived one is flagged as such for its archiver only.
+    let reply = user1
+        .get("/t/parity-fixture-pm-user2-to-user1-archived/44.json")
+        .await;
+    assert_eq!(reply.json()["message_archived"], true);
+
+    // user0 is not in 43: a 404 with the not-found extras, nothing deleted.
+    let mut user0 = Client::new(app_state.clone());
+    user0.login("user0", "password").await;
+    let reply = user0.get("/t/43.json").await;
+    assert_eq!(reply.status, StatusCode::NOT_FOUND);
+    assert_eq!(reply.json()["error_type"], "not_found");
+    let notifications: i64 =
+        sqlx::query_scalar("SELECT count(*) FROM notifications WHERE user_id = 2")
+            .fetch_one(&db.pool)
+            .await
+            .unwrap();
+    assert_eq!(
+        notifications, 6,
+        "Rails' InvalidAccess rescue deletes notifications; the port must not"
+    );
+
+    // Anonymous: the same 404.
+    let mut anon = Client::new(app_state);
+    let reply = anon
+        .get("/t/parity-fixture-pm-user1-to-user0/42.json")
+        .await;
+    assert_eq!(reply.status, StatusCode::NOT_FOUND);
+}

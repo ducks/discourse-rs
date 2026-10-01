@@ -237,11 +237,11 @@ impl TopicView<'_> {
         let (topic, extra) = self.find_topic(topic_id).await?;
         // check_and_raise_exceptions: PMs need a login (not ported), and
         // what can_see_topic? refuses is a 404 (detailed_404 off).
-        if topic.archetype == "private_message" {
-            if self.guardian.is_anonymous() {
-                return Err(TopicViewError::NotFound);
-            }
-            return Err(Unsupported("private message topics").into());
+        // check_and_raise_exceptions: a PM for a visitor is NotLoggedIn,
+        // which topics#show turns into a 404 while detailed_404 is off.
+        let pm = topic.archetype == "private_message";
+        if pm && self.guardian.is_anonymous() {
+            return Err(TopicViewError::NotFound);
         }
         let mut viewer = self.load_viewer(topic.id).await?;
         if !viewer.can_see {
@@ -292,14 +292,40 @@ impl TopicView<'_> {
             "timeline_lookup".into(),
             json!(timeline_lookup(&stream, 300)),
         );
-        if next_page.is_none() {
+        // related_messages and suggested messages for PM participants in
+        // personal_message_enabled_groups; suggested topics otherwise.
+        let pm_eligible = pm
+            && self.guardian.is_authenticated()
+            && self
+                .guardian
+                .in_setting_groups(self.settings, "personal_message_enabled_groups")?;
+        if pm_eligible {
             out.insert(
-                "suggested_topics".into(),
-                self.suggested_topics(&topic).await?,
+                "related_messages".into(),
+                self.related_messages(&topic).await?,
             );
         }
+        if next_page.is_none() {
+            if pm {
+                if pm_eligible {
+                    out.insert(
+                        "suggested_topics".into(),
+                        self.suggested_messages(&topic).await?,
+                    );
+                    out.insert(
+                        "suggested_group_name".into(),
+                        self.suggested_group_name(&topic).await?,
+                    );
+                }
+            } else {
+                out.insert(
+                    "suggested_topics".into(),
+                    self.suggested_topics(&topic).await?,
+                );
+            }
+        }
         let tagging = self.settings.get("tagging_enabled")?.truthy();
-        if tagging {
+        if tagging && (!pm || self.guardian.can_tag_pms(self.settings)?) {
             let (tags, descriptions) = self.list_serializer().tags(topic.id).await?;
             out.insert("tags".into(), tags);
             out.insert("tags_descriptions".into(), descriptions);
@@ -416,6 +442,12 @@ impl TopicView<'_> {
         out.insert("actions_summary".into(), topic_actions.clone());
         out.insert("chunk_size".into(), json!(CHUNK_SIZE));
         out.insert("bookmarked".into(), json!(!viewer.bookmarks.is_empty()));
+        if pm {
+            out.insert(
+                "message_archived".into(),
+                json!(self.message_archived(topic.id).await?),
+            );
+        }
         out.insert("topic_timer".into(), self.topic_timer(topic.id).await?);
         if crate::emoji::has_emoji_code(&topic.title) {
             out.insert(
@@ -427,6 +459,12 @@ impl TopicView<'_> {
         out.insert("message_bus_last_id".into(), json!(0));
         let (participants, participant_count) = self.participants(topic.id, &post_ids).await?;
         out.insert("participant_count".into(), json!(participant_count));
+        if pm {
+            out.insert(
+                "pm_with_non_human_user".into(),
+                json!(self.pm_with_non_human_user(topic.id).await?),
+            );
+        }
         if self.guardian.is_staff() && viewer.queue_enabled {
             if !self.guardian.is_admin() {
                 return Err(Unsupported("queued_posts_count for moderators").into());
@@ -1040,13 +1078,15 @@ impl TopicView<'_> {
             let flags: [(&str, bool); 20] = [
                 (
                     "can_move_posts",
-                    !g.is_silenced() && group_mod_action && !ctx.private_message(),
+                    !g.is_silenced()
+                        && group_mod_action
+                        && !(ctx.private_message() && !g.is_staff()),
                 ),
                 ("can_delete", g.can_delete_topic(s, ctx)?),
                 ("can_permanently_delete", false),
                 ("can_recover", g.can_recover_topic(ctx)),
                 ("can_remove_allowed_users", g.can_remove_allowed_users(ctx)),
-                ("can_invite_to", g.can_invite_to(ctx, can_see)?),
+                ("can_invite_to", g.can_invite_to(s, ctx, can_see)?),
                 (
                     "can_invite_via_email",
                     g.can_invite_via_email(s, ctx, can_see)?,
@@ -1085,7 +1125,14 @@ impl TopicView<'_> {
             if group_mod_action {
                 out.insert("can_moderate_category".into(), json!(true));
             }
-            if g.can_remove_allowed_users(ctx) {
+            // can_remove_allowed_users?(topic, scope.user): staff, TL2
+            // creators, or any non-creator participant of a 2+ user PM.
+            let can_remove_self = g.can_remove_allowed_users(ctx)
+                || (ctx.private_message()
+                    && ctx.pm_member
+                    && ctx.recipients > 1
+                    && ctx.user_id != g.user_id());
+            if can_remove_self {
                 out.insert("can_remove_self_id".into(), json!(g.user_id()));
             }
         }
@@ -1138,6 +1185,17 @@ impl TopicView<'_> {
                 list.push(Value::Object(p));
             }
             out.insert("participants".into(), Value::Array(list));
+        }
+        if ctx.private_message() {
+            out.insert(
+                "allowed_users".into(),
+                self.allowed_users(topic.id, logo_small_url.as_deref())
+                    .await?,
+            );
+            out.insert(
+                "allowed_groups".into(),
+                self.allowed_groups(topic.id).await?,
+            );
         }
         let created_by = match topic.user_id {
             Some(id) => self.basic_user(id, logo_small_url.as_deref()).await?,
@@ -1562,6 +1620,281 @@ impl TopicView<'_> {
         Ok(out)
     }
 
+    /// `details.allowed_users`: the PM's direct members (those only
+    /// present through an allowed group are left out, the viewer kept),
+    /// in the order Rails' unordered join came back with on the reference
+    /// (by user id, descending).
+    async fn allowed_users(
+        &mut self,
+        topic_id: i32,
+        logo_small_url: Option<&str>,
+    ) -> Result<Value, TopicViewError> {
+        let ids: Vec<i32> = sqlx::query_scalar(
+            "SELECT tau.user_id FROM topic_allowed_users tau \
+             WHERE tau.topic_id = $1 AND (tau.user_id = $2 OR tau.user_id NOT IN ( \
+                 SELECT gu.user_id FROM group_users gu \
+                 WHERE gu.group_id IN (SELECT group_id FROM topic_allowed_groups WHERE topic_id = $1))) \
+             ORDER BY tau.user_id DESC",
+        )
+        .bind(topic_id)
+        .bind(self.guardian.user_id().unwrap_or(0))
+        .fetch_all(&mut *self.conn)
+        .await?;
+        let mut out = Vec::with_capacity(ids.len());
+        for id in ids {
+            out.push(self.basic_user(id, logo_small_url).await?);
+        }
+        Ok(Value::Array(out))
+    }
+
+    /// `details.allowed_groups`: BasicGroupSerializer for the viewer.
+    async fn allowed_groups(&mut self, topic_id: i32) -> Result<Value, TopicViewError> {
+        let groups: Vec<crate::groups::BasicGroup> = sqlx::query_as(&format!(
+            "SELECT {} FROM topic_allowed_groups tag JOIN groups g ON g.id = tag.group_id \
+             LEFT JOIN uploads u ON u.id = g.flair_upload_id WHERE tag.topic_id = $1 ORDER BY tag.id",
+            crate::groups::BASIC_GROUP_COLUMNS
+        ))
+        .bind(topic_id)
+        .fetch_all(&mut *self.conn)
+        .await?;
+        let mut out = Vec::new();
+        for g in &groups {
+            let membership: Option<bool> = match self.guardian.user_id() {
+                Some(uid) => {
+                    sqlx::query_scalar(
+                        "SELECT owner FROM group_users WHERE group_id = $1 AND user_id = $2",
+                    )
+                    .bind(g.id)
+                    .bind(uid)
+                    .fetch_optional(&mut *self.conn)
+                    .await?
+                }
+                None => None,
+            };
+            out.push(g.json(
+                self.i18n,
+                self.guardian,
+                self.settings,
+                membership.map(|o| (true, o)),
+            )?);
+        }
+        Ok(Value::Array(out))
+    }
+
+    /// `Topic#message_archived?(user)`: archived by every group of the
+    /// viewer's the PM is addressed to, or by the viewer.
+    async fn message_archived(&mut self, topic_id: i32) -> Result<bool, TopicViewError> {
+        let Some(uid) = self.guardian.user_id() else {
+            return Ok(false);
+        };
+        let rows: Vec<i32> = sqlx::query_scalar(
+            "SELECT 1 WHERE (SELECT count(*) FROM topic_allowed_groups tg \
+                 JOIN group_archived_messages gm ON gm.topic_id = tg.topic_id AND gm.group_id = tg.group_id \
+                 WHERE tg.group_id IN (SELECT g.group_id FROM group_users g WHERE g.user_id = $1) AND tg.topic_id = $2) \
+             = (SELECT CASE WHEN count(*) = 0 THEN -1 ELSE count(*) END FROM topic_allowed_groups tg \
+                 WHERE tg.group_id IN (SELECT g.group_id FROM group_users g WHERE g.user_id = $1) AND tg.topic_id = $2) \
+             UNION ALL \
+             SELECT 1 FROM topic_allowed_users tu JOIN user_archived_messages um \
+                 ON um.user_id = tu.user_id AND um.topic_id = tu.topic_id \
+             WHERE tu.user_id = $1 AND tu.topic_id = $2",
+        )
+        .bind(uid)
+        .bind(topic_id)
+        .fetch_all(&mut *self.conn)
+        .await?;
+        Ok(!rows.is_empty())
+    }
+
+    /// `Topic#pm_with_non_human_user?`: a group-less PM with exactly one
+    /// human allowed user.
+    async fn pm_with_non_human_user(&mut self, topic_id: i32) -> Result<bool, TopicViewError> {
+        Ok(sqlx::query_scalar(
+            "SELECT EXISTS (SELECT 1 FROM topics LEFT JOIN topic_allowed_groups ON topics.id = topic_allowed_groups.topic_id \
+             WHERE topic_allowed_groups.topic_id IS NULL AND topics.archetype = 'private_message' AND topics.id = $1 \
+             AND (SELECT COUNT(*) FROM topic_allowed_users WHERE topic_allowed_users.topic_id = $1 AND topic_allowed_users.user_id > 0) = 1)",
+        )
+        .bind(topic_id)
+        .fetch_one(&mut *self.conn)
+        .await?)
+    }
+
+    /// `suggested_group_name`: null for direct members, else the name of
+    /// one of the viewer's groups the PM is addressed to.
+    async fn suggested_group_name(&mut self, topic: &TopicRow) -> Result<Value, TopicViewError> {
+        let uid = self.guardian.user_id().unwrap_or(0);
+        let direct: bool = sqlx::query_scalar(
+            "SELECT EXISTS (SELECT 1 FROM topic_allowed_users WHERE topic_id = $1 AND user_id = $2)",
+        )
+        .bind(topic.id)
+        .bind(uid)
+        .fetch_one(&mut *self.conn)
+        .await?;
+        if direct {
+            return Ok(Value::Null);
+        }
+        let name: Option<String> = sqlx::query_scalar(
+            "SELECT groups.name FROM groups JOIN group_users ON group_users.group_id = groups.id \
+             WHERE group_users.group_id IN (SELECT group_id FROM topic_allowed_groups WHERE topic_id = $1) \
+             AND group_users.user_id = $2 LIMIT 1",
+        )
+        .bind(topic.id)
+        .bind(uid)
+        .fetch_optional(&mut *self.conn)
+        .await?;
+        Ok(json!(name))
+    }
+
+    /// `TopicQuery#get_pm_params`: the viewer's groups among the PM's,
+    /// every addressed group, and the other addressed users.
+    async fn pm_params(
+        &mut self,
+        topic_id: i32,
+    ) -> Result<(Vec<i32>, Vec<i32>, Vec<i32>), TopicViewError> {
+        let uid = self.guardian.user_id().unwrap_or(0);
+        let my_groups: Vec<i32> = sqlx::query_scalar(
+            "SELECT tag.group_id FROM topic_allowed_groups tag \
+             LEFT JOIN group_users gu ON tag.group_id = gu.group_id AND gu.user_id = $2 \
+             WHERE tag.topic_id = $1 AND gu.group_id IS NOT NULL",
+        )
+        .bind(topic_id)
+        .bind(uid)
+        .fetch_all(&mut *self.conn)
+        .await?;
+        let target_groups: Vec<i32> =
+            sqlx::query_scalar("SELECT group_id FROM topic_allowed_groups WHERE topic_id = $1")
+                .bind(topic_id)
+                .fetch_all(&mut *self.conn)
+                .await?;
+        if !my_groups.is_empty() {
+            return Err(Unsupported("group private messages (messages_for_groups_or_user)").into());
+        }
+        let target_users: Vec<i32> = sqlx::query_scalar(
+            "SELECT user_id FROM topic_allowed_users WHERE topic_id = $1 AND NOT user_id = $2",
+        )
+        .bind(topic_id)
+        .bind(uid)
+        .fetch_all(&mut *self.conn)
+        .await?;
+        Ok((my_groups, target_groups, target_users))
+    }
+
+    /// `list_related_for`: the viewer's other PMs with the same people,
+    /// newest first, as suggested topics.
+    async fn related_messages(&mut self, topic: &TopicRow) -> Result<Value, TopicViewError> {
+        let (_, target_groups, target_users) = self.pm_params(topic.id).await?;
+        let uid = self.guardian.user_id().unwrap_or(0);
+        if !target_groups.is_empty() {
+            return Err(Unsupported("related messages through allowed groups").into());
+        }
+        let count = self.settings.get("suggested_topics")?.to_i().max(6);
+        let sql = format!(
+            "SELECT {TOPIC_COLUMNS} FROM topics \
+             LEFT JOIN topic_users tu ON topics.id = tu.topic_id AND tu.user_id = $1 \
+             LEFT JOIN topic_allowed_users ta ON topics.id = ta.topic_id AND ta.user_id = $1 \
+             LEFT JOIN topic_allowed_users ta2 ON topics.id = ta2.topic_id AND ta2.user_id = ANY($2) \
+             WHERE topics.deleted_at IS NULL AND topics.archetype = 'private_message' \
+             AND ta.topic_id IS NOT NULL AND ta2.topic_id IS NOT NULL AND topics.id <> $3 AND topics.visible = TRUE \
+             AND topics.id NOT IN (SELECT topic_id FROM categories WHERE topic_id IS NOT NULL) \
+             ORDER BY topics.bumped_at DESC LIMIT $4"
+        );
+        let rows: Vec<TopicRow> = sqlx::query_as(&sql)
+            .bind(uid)
+            .bind(&target_users)
+            .bind(topic.id)
+            .bind(count)
+            .fetch_all(&mut *self.conn)
+            .await?;
+        // Each row once, in order (the ta2 join repeats per shared member).
+        let mut seen = Vec::new();
+        let rows: Vec<TopicRow> = rows
+            .into_iter()
+            .filter(|t| {
+                if seen.contains(&t.id) {
+                    false
+                } else {
+                    seen.push(t.id);
+                    true
+                }
+            })
+            .collect();
+        self.suggested_items(&rows).await
+    }
+
+    /// `list_suggested_for` on a PM: new messages, then unread ones, up
+    /// to suggested_topics; no random fill.
+    async fn suggested_messages(&mut self, topic: &TopicRow) -> Result<Value, TopicViewError> {
+        let (_, _, _) = self.pm_params(topic.id).await?;
+        let uid = self.guardian.user_id().unwrap_or(0);
+        let limit = self.settings.get("suggested_topics")?.to_i();
+        let min_new =
+            chrono::DateTime::from_timestamp(self.settings.get("min_new_topics_time")?.to_i(), 0)
+                .map(|t| t.naive_utc())
+                .unwrap_or_default();
+        let base = format!(
+            "SELECT {TOPIC_COLUMNS} FROM topics \
+             LEFT JOIN topic_users tu ON topics.id = tu.topic_id AND tu.user_id = $1 \
+             LEFT JOIN topic_allowed_users ta ON topics.id = ta.topic_id AND ta.user_id = $1 \
+             WHERE topics.deleted_at IS NULL AND topics.archetype = 'private_message' AND ta.topic_id IS NOT NULL"
+        );
+        let mut rows: Vec<TopicRow> = sqlx::query_as(&format!(
+            "{base} AND topics.created_at >= $2 AND tu.last_read_post_number IS NULL \
+             AND COALESCE(tu.notification_level, 2) >= 2 AND topics.id <> $3 AND topics.visible = TRUE \
+             ORDER BY topics.bumped_at DESC LIMIT $4"
+        ))
+        .bind(uid)
+        .bind(min_new)
+        .bind(topic.id)
+        .bind(limit)
+        .fetch_all(&mut *self.conn)
+        .await?;
+        let left = limit - rows.len() as i64;
+        if left > 0 {
+            let first_unread: Option<Option<NaiveDateTime>> =
+                sqlx::query_scalar("SELECT first_unread_pm_at FROM user_stats WHERE user_id = $1")
+                    .bind(uid)
+                    .fetch_optional(&mut *self.conn)
+                    .await?;
+            let mut excluded: Vec<i32> = rows.iter().map(|t| t.id).collect();
+            excluded.push(topic.id);
+            let age = match first_unread.flatten() {
+                Some(at) => format!(
+                    " AND topics.updated_at >= '{}'",
+                    at.format("%Y-%m-%d %H:%M:%S%.6f")
+                ),
+                None => String::new(),
+            };
+            let unread: Vec<TopicRow> = sqlx::query_as(&format!(
+                "{base} AND tu.last_read_post_number < topics.highest_post_number \
+                 AND COALESCE(tu.notification_level, 1) >= 2{age} AND NOT (topics.id = ANY($2)) \
+                 AND topics.visible = TRUE ORDER BY topics.bumped_at DESC LIMIT $3"
+            ))
+            .bind(uid)
+            .bind(&excluded)
+            .bind(left)
+            .fetch_all(&mut *self.conn)
+            .await?;
+            rows.extend(unread);
+        }
+        self.suggested_items(&rows).await
+    }
+
+    /// SuggestedTopicSerializer for a set of rows.
+    async fn suggested_items(&mut self, rows: &[TopicRow]) -> Result<Value, TopicViewError> {
+        let tagging = self.settings.get("tagging_enabled")?.truthy();
+        let mut serializer = self.list_serializer();
+        serializer.prefetch(rows).await?;
+        let lookup = serializer.user_lookup(rows).await?;
+        let mut out = Vec::with_capacity(rows.len());
+        for row in rows {
+            let posters = topic_list::posters_summary(row, &lookup, serializer.i18n);
+            out.push(
+                serializer
+                    .serialize_topic(row, &posters, tagging, Mode::Suggested)
+                    .await?,
+            );
+        }
+        Ok(Value::Array(out))
+    }
     /// A deterministic stand-in for `random_suggested`: the same filters
     /// (open, unarchived, visible, readable, not a definition, not this
     /// topic), same-category first, then by bumped_at; capped at

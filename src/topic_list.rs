@@ -474,10 +474,9 @@ impl TopicListSerializer<'_> {
         }
         out.insert("pinned".into(), json!(pinned));
         out.insert("unpinned".into(), json!(unpinned));
-        if mode == Mode::Suggested
-            || pinned
-            || self.settings.get("always_include_topic_excerpts")?.truthy()
-        {
+        // ListableTopicSerializer#include_excerpt?, inherited by the
+        // suggested serializer too.
+        if pinned || self.settings.get("always_include_topic_excerpts")?.truthy() {
             out.insert("excerpt".into(), json!(t.excerpt));
         }
         out.insert("visible".into(), json!(t.visible));
