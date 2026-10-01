@@ -46,14 +46,11 @@ impl Guardian {
         conn: &mut PgConnection,
         user: &SessionUser,
     ) -> Result<Guardian, sqlx::Error> {
-        let group_ids: Vec<i64> = sqlx::query_scalar(
-            "SELECT group_id::bigint FROM group_users WHERE user_id = $1 ORDER BY group_id",
-        )
-        .bind(user.id)
-        .fetch_all(&mut *conn)
-        .await?;
-        let silenced: bool = sqlx::query_scalar(
-            "SELECT silenced_till IS NOT NULL AND silenced_till > now() FROM users WHERE id = $1",
+        // One round-trip: the memberships and the silence in a row.
+        let (group_ids, silenced): (Vec<i64>, bool) = sqlx::query_as(
+            "SELECT COALESCE((SELECT array_agg(group_id::bigint ORDER BY group_id) FROM group_users WHERE user_id = $1), '{}'), \
+                    silenced_till IS NOT NULL AND silenced_till > now() \
+             FROM users WHERE id = $1",
         )
         .bind(user.id)
         .fetch_one(&mut *conn)

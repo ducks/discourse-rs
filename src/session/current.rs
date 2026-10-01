@@ -90,6 +90,8 @@ pub struct Session {
 pub struct Incoming {
     pub had_token_cookie: bool,
     pub session: Option<Session>,
+    /// The session's guardian, built once per request.
+    pub guardian: crate::guardian::Guardian,
 }
 
 /// `request.cookies[name]`
@@ -148,6 +150,7 @@ pub async fn resolve(
         return Ok(Incoming {
             had_token_cookie: false,
             session: None,
+            guardian: crate::guardian::Guardian::anonymous(),
         });
     };
     let max_age = settings.get("maximum_session_age")?.to_i();
@@ -155,12 +158,14 @@ pub async fn resolve(
         return Ok(Incoming {
             had_token_cookie: true,
             session: None,
+            guardian: crate::guardian::Guardian::anonymous(),
         });
     };
     let Some(token) = token::lookup(conn, &unhashed, &keys.secret_key_base, max_age).await? else {
         return Ok(Incoming {
             had_token_cookie: true,
             session: None,
+            guardian: crate::guardian::Guardian::anonymous(),
         });
     };
     let user: Option<SessionUser> = sqlx::query_as(&format!(
@@ -169,16 +174,20 @@ pub async fn resolve(
     .bind(token.user_id)
     .fetch_optional(&mut *conn)
     .await?;
-    let session = user
-        .filter(|u| u.active && !u.suspended())
-        .map(|user| Session {
-            user,
-            token,
-            unhashed_token: unhashed,
-        });
+    let user = user.filter(|u| u.active && !u.suspended());
+    let guardian = match &user {
+        Some(u) => crate::guardian::Guardian::for_user(&mut *conn, u).await?,
+        None => crate::guardian::Guardian::anonymous(),
+    };
+    let session = user.map(|user| Session {
+        user,
+        token,
+        unhashed_token: unhashed,
+    });
     Ok(Incoming {
         had_token_cookie: true,
         session,
+        guardian,
     })
 }
 
@@ -413,13 +422,12 @@ impl axum::extract::FromRequestParts<AppState> for AuthGuardian {
         parts: &mut axum::http::request::Parts,
         state: &AppState,
     ) -> Result<Self, Self::Rejection> {
-        let incoming = parts.extensions.get::<Incoming>().cloned();
-        let Some(session) = incoming.and_then(|i| i.session) else {
-            return Ok(AuthGuardian(crate::guardian::Guardian::anonymous()));
-        };
-        let mut conn = state.pool.acquire().await?;
         Ok(AuthGuardian(
-            crate::guardian::Guardian::for_user(&mut conn, &session.user).await?,
+            parts
+                .extensions
+                .get::<Incoming>()
+                .map(|i| i.guardian.clone())
+                .unwrap_or_else(crate::guardian::Guardian::anonymous),
         ))
     }
 }
