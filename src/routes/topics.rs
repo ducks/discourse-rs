@@ -219,6 +219,7 @@ async fn show(
         guardian,
         urls: &urls,
         options: Options { page, post_number },
+        post_types: Vec::new(),
     };
     let rendered = match view.render(topic_id).await {
         Ok(r) => r,

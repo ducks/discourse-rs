@@ -6,27 +6,25 @@
 //! deterministic order because Discourse's RandomTopicSelector consumes a
 //! Redis list, so their content can never match a recording.
 
+use std::collections::HashMap;
+
 use chrono::NaiveDateTime;
 use serde_json::{Map, Value, json};
 use sqlx::PgConnection;
 
 use crate::Unsupported;
 use crate::avatar::{self, AvatarError};
-use crate::guardian::Guardian;
+use crate::guardian::{Guardian, GuardianError};
 use crate::i18n::I18n;
+use crate::post_actions::{self, ActOpts, ActionTypes, TakenAction};
 use crate::site_settings::{SettingError, SiteSettings};
+use crate::topic_guardian::{PostCtx, TopicCtx};
 use crate::topic_list::{self, Mode, TopicListError, TopicListSerializer, time_json};
 use crate::topic_query::{TOPIC_COLUMNS, TopicRow};
 use crate::url::{UrlError, Urls};
 
 /// `TopicView::CHUNK_SIZE`
 pub const CHUNK_SIZE: i64 = 20;
-
-/// `Topic.visible_post_types(nil)`: regular, moderator_action, small_action.
-const VISIBLE_POST_TYPES: [i32; 3] = [1, 2, 3];
-
-/// `PostActionType::LIKE_POST_ACTION_ID`
-const LIKE: i64 = 2;
 
 #[derive(Debug)]
 pub enum TopicViewError {
@@ -97,6 +95,16 @@ impl From<AvatarError> for TopicViewError {
     }
 }
 
+impl From<GuardianError> for TopicViewError {
+    fn from(e: GuardianError) -> Self {
+        match e {
+            GuardianError::Db(e) => TopicViewError::Db(e),
+            GuardianError::Setting(e) => TopicViewError::Setting(e),
+            GuardianError::Unsupported(e) => TopicViewError::Unsupported(e),
+        }
+    }
+}
+
 /// The extra `topics` columns the view reads beyond TopicRow.
 #[derive(sqlx::FromRow)]
 struct TopicExtra {
@@ -105,7 +113,6 @@ struct TopicExtra {
     pinned_until: Option<NaiveDateTime>,
     slow_mode_seconds: i32,
     external_id: Option<String>,
-    read_restricted: Option<bool>,
 }
 
 #[derive(Debug, Clone, sqlx::FromRow)]
@@ -133,6 +140,16 @@ struct PostRow {
     public_version: i32,
     action_code: Option<String>,
     like_count: i32,
+    hidden_at: Option<NaiveDateTime>,
+    locked_by_id: Option<i32>,
+    deleted_at: Option<NaiveDateTime>,
+    version: i32,
+    notify_user_count: i32,
+    off_topic_count: i32,
+    inappropriate_count: i32,
+    spam_count: i32,
+    illegal_count: i32,
+    notify_moderators_count: i32,
 }
 
 #[derive(Debug, Clone, sqlx::FromRow)]
@@ -150,6 +167,46 @@ struct PostUser {
     suspended_till: Option<NaiveDateTime>,
 }
 
+/// What a logged-in viewer adds to a TopicView: the guardian's answers
+/// about the topic and the per-user rows (`topic_user`, `read_posts_set`,
+/// `bookmarks`, `all_post_actions`, the draft sequence).
+pub struct Viewer {
+    pub ctx: TopicCtx,
+    pub can_see: bool,
+    pub secure_category_ids: Vec<i32>,
+    pub topic_user: Option<TopicUserRow>,
+    pub read_post_numbers: Vec<i32>,
+    pub bookmarks: Vec<BookmarkRow>,
+    pub taken: HashMap<i32, HashMap<i64, TakenAction>>,
+    pub can_post_anywhere: bool,
+    pub can_create_post: bool,
+    pub action_types: ActionTypes,
+    pub draft_sequence: Option<i64>,
+    pub queue_enabled: bool,
+    pub has_deleted: Option<bool>,
+}
+
+#[derive(Debug, Clone, sqlx::FromRow)]
+pub struct TopicUserRow {
+    pub posted: bool,
+    pub last_read_post_number: Option<i32>,
+    pub notification_level: i32,
+    pub notifications_reason_id: Option<i32>,
+    pub cleared_pinned_at: Option<NaiveDateTime>,
+    pub last_posted_at: Option<NaiveDateTime>,
+}
+
+#[derive(Debug, Clone, sqlx::FromRow)]
+pub struct BookmarkRow {
+    pub id: i64,
+    pub bookmarkable_id: i64,
+    pub bookmarkable_type: String,
+    pub reminder_at: Option<NaiveDateTime>,
+    pub name: Option<String>,
+    pub auto_delete_preference: i32,
+    pub post_number: Option<i32>,
+}
+
 pub struct Options {
     /// `params[:page]`, 0 when absent.
     pub page: i64,
@@ -163,6 +220,8 @@ pub struct TopicView<'a> {
     pub guardian: &'a Guardian,
     pub urls: &'a Urls<'a>,
     pub options: Options,
+    /// `Topic.visible_post_types(user)`, set by render.
+    pub post_types: Vec<i32>,
 }
 
 /// What the controller needs from the view besides the JSON.
@@ -176,13 +235,23 @@ impl TopicView<'_> {
     /// NotFound. `Redirect` when `page` is past the end.
     pub async fn render(&mut self, topic_id: i32) -> Result<Rendered, TopicViewError> {
         let (topic, extra) = self.find_topic(topic_id).await?;
-        // can_see_topic? for anonymous users: not deleted, not a PM,
-        // category readable.
-        if extra.deleted_at.is_some()
-            || topic.archetype == "private_message"
-            || extra.read_restricted == Some(true)
-        {
+        // check_and_raise_exceptions: PMs need a login (not ported), and
+        // what can_see_topic? refuses is a 404 (detailed_404 off).
+        if topic.archetype == "private_message" {
+            if self.guardian.is_anonymous() {
+                return Err(TopicViewError::NotFound);
+            }
+            return Err(Unsupported("private message topics").into());
+        }
+        let mut viewer = self.load_viewer(topic.id).await?;
+        if !viewer.can_see {
+            if self.settings.get("detailed_404")?.truthy() {
+                return Err(Unsupported("detailed_404").into());
+            }
             return Err(TopicViewError::NotFound);
+        }
+        if extra.deleted_at.is_some() {
+            return Err(Unsupported("viewing deleted topics as staff").into());
         }
         let Some(slug) = topic.slug.clone() else {
             return Err(Unsupported("topics without a stored slug (Slug.for)").into());
@@ -200,6 +269,13 @@ impl TopicView<'_> {
             Some(_) => self.filter_posts_near(topic.id, post_number).await?,
             None => self.filter_posts_paged(topic.id, page).await?,
         };
+        // all_post_actions: the viewer's rows on the page's posts.
+        viewer.taken = post_actions::taken_actions(
+            &mut *self.conn,
+            &posts.iter().map(|p| p.id).collect::<Vec<_>>(),
+            self.guardian.user_id(),
+        )
+        .await?;
         let next_page = match (posts.last(), highest_post_number) {
             (Some(last), Some(highest)) if highest > last.post_number => Some(page + 1),
             _ => None,
@@ -207,7 +283,7 @@ impl TopicView<'_> {
 
         let mut out = Map::new();
         let post_ids: Vec<i32> = posts.iter().map(|p| p.id).collect();
-        let serialized_posts = self.serialize_posts(&topic, &slug, &posts).await?;
+        let serialized_posts = self.serialize_posts(&topic, &slug, &posts, &viewer).await?;
         out.insert(
             "post_stream".into(),
             json!({"posts": serialized_posts, "stream": stream.iter().map(|(id, _)| *id).collect::<Vec<_>>()}),
@@ -278,11 +354,30 @@ impl TopicView<'_> {
         if let Some(reason) = topic.visibility_reason_id {
             out.insert("visibility_reason_id".into(), json!(reason));
         }
+        // `draft` is only loaded when the visit is tracked (HTML), which
+        // the JSON document never does.
         out.insert("draft".into(), Value::Null);
         out.insert("draft_key".into(), json!(format!("topic_{}", topic.id)));
-        out.insert("draft_sequence".into(), Value::Null);
-        out.insert("unpinned".into(), Value::Null);
-        out.insert("pinned".into(), json!(topic.pinned_at.is_some()));
+        out.insert("draft_sequence".into(), json!(viewer.draft_sequence));
+        if let Some(tu) = &viewer.topic_user {
+            out.insert("posted".into(), json!(tu.posted));
+        }
+        // PinnedCheck with the viewer's topic_user.
+        let unpinned = match (
+            topic.pinned_at,
+            viewer
+                .topic_user
+                .as_ref()
+                .and_then(|tu| tu.cleared_pinned_at),
+        ) {
+            (Some(pinned_at), Some(cleared)) => Some(cleared > pinned_at),
+            _ => None,
+        };
+        out.insert("unpinned".into(), json!(unpinned));
+        out.insert(
+            "pinned".into(),
+            json!(topic.pinned_at.is_some() && unpinned != Some(true)),
+        );
         if let Some(highest) = highest_post_number {
             out.insert(
                 "current_post_number".into(),
@@ -290,13 +385,37 @@ impl TopicView<'_> {
             );
         }
         out.insert("highest_post_number".into(), json!(highest_post_number));
+        if let Some(tu) = &viewer.topic_user {
+            out.insert(
+                "last_read_post_number".into(),
+                json!(tu.last_read_post_number),
+            );
+            let last_read_post_id: Option<i32> = match tu.last_read_post_number {
+                Some(n) => {
+                    sqlx::query_scalar(
+                        "SELECT id FROM posts WHERE topic_id = $1 AND deleted_at IS NULL AND post_type = ANY($2) \
+                         AND post_number = $3 LIMIT 1",
+                    )
+                    .bind(topic.id)
+                    .bind(&self.post_types)
+                    .bind(n)
+                    .fetch_optional(&mut *self.conn)
+                    .await?
+                }
+                None => None,
+            };
+            out.insert("last_read_post_id".into(), json!(last_read_post_id));
+        }
         out.insert("deleted_by".into(), Value::Null);
-        out.insert(
-            "actions_summary".into(),
-            self.actions_summary(posts.is_empty()).await?,
-        );
+        if let Some(has_deleted) = viewer.has_deleted {
+            out.insert("has_deleted".into(), json!(has_deleted));
+        }
+        let topic_actions = self
+            .actions_summary(posts.is_empty(), &viewer, posts.first())
+            .await?;
+        out.insert("actions_summary".into(), topic_actions.clone());
         out.insert("chunk_size".into(), json!(CHUNK_SIZE));
-        out.insert("bookmarked".into(), json!(false));
+        out.insert("bookmarked".into(), json!(!viewer.bookmarks.is_empty()));
         out.insert("topic_timer".into(), self.topic_timer(topic.id).await?);
         if crate::emoji::has_emoji_code(&topic.title) {
             out.insert(
@@ -308,6 +427,18 @@ impl TopicView<'_> {
         out.insert("message_bus_last_id".into(), json!(0));
         let (participants, participant_count) = self.participants(topic.id, &post_ids).await?;
         out.insert("participant_count".into(), json!(participant_count));
+        if self.guardian.is_staff() && viewer.queue_enabled {
+            if !self.guardian.is_admin() {
+                return Err(Unsupported("queued_posts_count for moderators").into());
+            }
+            let count: i64 = sqlx::query_scalar(
+                "SELECT COUNT(*) FROM reviewables WHERE type = 'ReviewableQueuedPost' AND topic_id = $1 AND status = 0",
+            )
+            .bind(topic.id)
+            .fetch_one(&mut *self.conn)
+            .await?;
+            out.insert("queued_posts_count".into(), json!(count));
+        }
         out.insert("show_read_indicator".into(), json!(false));
         if topic.image_upload_id.is_some() {
             return Err(Unsupported("topic thumbnails").into());
@@ -317,13 +448,191 @@ impl TopicView<'_> {
             "slow_mode_enabled_until".into(),
             self.slow_mode_enabled_until(topic.id).await?,
         );
-        out.insert("details".into(), self.details(&topic, participants).await?);
-        out.insert("bookmarks".into(), json!([]));
+        out.insert(
+            "details".into(),
+            self.details(&topic, participants, &viewer, &topic_actions)
+                .await?,
+        );
+        if self.guardian.is_authenticated() && viewer.queue_enabled {
+            let pending: Vec<(i64, NaiveDateTime)> = sqlx::query_as(
+                "SELECT id, created_at FROM reviewables WHERE type = 'ReviewableQueuedPost' AND status = 0 \
+                 AND target_created_by_id = $1 AND topic_id = $2 ORDER BY created_at ASC",
+            )
+            .bind(self.guardian.user_id())
+            .bind(topic.id)
+            .fetch_all(&mut *self.conn)
+            .await?;
+            if !pending.is_empty() {
+                return Err(Unsupported("pending queued posts (raw from payload)").into());
+            }
+            out.insert("pending_posts".into(), json!([]));
+        }
+        out.insert(
+            "bookmarks".into(),
+            json!(viewer
+                .bookmarks
+                .iter()
+                .map(|b| json!({
+                    "id": b.id, "bookmarkable_id": b.bookmarkable_id, "bookmarkable_type": b.bookmarkable_type,
+                    "reminder_at": b.reminder_at.map(time_json), "name": b.name,
+                    "auto_delete_preference": b.auto_delete_preference, "post_number": b.post_number,
+                }))
+                .collect::<Vec<_>>()),
+        );
 
         Ok(Rendered {
             json: Value::Object(out),
             slug,
         })
+    }
+
+    /// The guardian's view of the topic and the viewer's rows, loaded
+    /// before anything is serialized. Sets `post_types`.
+    async fn load_viewer(&mut self, topic_id: i32) -> Result<Viewer, TopicViewError> {
+        self.post_types = self.guardian.visible_post_types(self.settings)?;
+        let ctx = TopicCtx::load(&mut *self.conn, self.settings, self.guardian, topic_id)
+            .await?
+            .ok_or(TopicViewError::NotFound)?;
+        let secure_category_ids = self
+            .guardian
+            .secure_category_ids(&mut *self.conn, self.settings)
+            .await?;
+        let can_see =
+            self.guardian
+                .can_see_topic(self.settings, &ctx, true, &secure_category_ids)?;
+        let action_types = ActionTypes::load(&mut *self.conn).await?;
+        let mut viewer = Viewer {
+            can_see,
+            secure_category_ids,
+            topic_user: None,
+            read_post_numbers: Vec::new(),
+            bookmarks: Vec::new(),
+            taken: HashMap::new(),
+            can_post_anywhere: false,
+            can_create_post: false,
+            action_types,
+            draft_sequence: None,
+            queue_enabled: false,
+            has_deleted: None,
+            ctx,
+        };
+        let Some(uid) = self.guardian.user_id() else {
+            return Ok(viewer);
+        };
+        if !can_see {
+            return Ok(viewer);
+        }
+        // Ignored users remove their replies from the stream (with gaps).
+        let ignoring: bool = sqlx::query_scalar(
+            "SELECT EXISTS (SELECT 1 FROM ignored_users ig JOIN users u ON u.id = ig.ignored_user_id \
+             WHERE ig.user_id = $1 AND ig.ignored_user_id <> $1 AND NOT u.admin AND NOT u.moderator)",
+        )
+        .bind(uid)
+        .fetch_one(&mut *self.conn)
+        .await?;
+        if ignoring {
+            return Err(Unsupported("ignored users in topic views").into());
+        }
+        if self.guardian.can_see_deleted(self.settings)? {
+            // Deleted replies would be served with gaps (or inline with
+            // show_deleted); neither is ported.
+            let has_deleted: bool = sqlx::query_scalar(
+                "SELECT EXISTS (SELECT 1 FROM posts WHERE topic_id = $1 AND deleted_at IS NOT NULL AND post_number > 1)",
+            )
+            .bind(topic_id)
+            .fetch_one(&mut *self.conn)
+            .await?;
+            if has_deleted {
+                return Err(Unsupported("deleted replies for staff (post_stream.gaps)").into());
+            }
+            viewer.has_deleted = Some(false);
+        }
+        viewer.topic_user = sqlx::query_as(
+            "SELECT posted, last_read_post_number, notification_level, notifications_reason_id, \
+                    cleared_pinned_at, last_posted_at \
+             FROM topic_users WHERE topic_id = $1 AND user_id = $2 LIMIT 1",
+        )
+        .bind(topic_id)
+        .bind(uid)
+        .fetch_optional(&mut *self.conn)
+        .await?;
+        if viewer.topic_user.is_some() {
+            viewer.read_post_numbers = sqlx::query_scalar(
+                "SELECT post_number FROM post_timings WHERE topic_id = $1 AND user_id = $2",
+            )
+            .bind(topic_id)
+            .bind(uid)
+            .fetch_all(&mut *self.conn)
+            .await?;
+        }
+        viewer.bookmarks = sqlx::query_as(
+            "SELECT bookmarks.id, bookmarks.bookmarkable_id, bookmarks.bookmarkable_type, bookmarks.reminder_at, \
+                    bookmarks.name, bookmarks.auto_delete_preference, posts.post_number \
+             FROM bookmarks \
+             LEFT JOIN posts ON posts.id = bookmarks.bookmarkable_id AND bookmarks.bookmarkable_type = 'Post' \
+             LEFT JOIN topics ON (topics.id = bookmarks.bookmarkable_id AND bookmarks.bookmarkable_type = 'Topic') \
+                              OR (topics.id = posts.topic_id) \
+             WHERE bookmarks.user_id = $1 AND (topics.id = $2 OR posts.topic_id = $2) \
+               AND posts.deleted_at IS NULL AND topics.deleted_at IS NULL ORDER BY bookmarks.id",
+        )
+        .bind(i64::from(uid))
+        .bind(topic_id)
+        .fetch_all(&mut *self.conn)
+        .await?;
+        viewer.can_post_anywhere = self
+            .guardian
+            .can_create_post_anywhere(&mut *self.conn, self.settings)
+            .await?;
+        viewer.can_create_post =
+            self.guardian
+                .can_create_post(self.settings, &viewer.ctx, viewer.can_post_anywhere)?;
+        let sequence: Option<i64> = sqlx::query_scalar(
+            "SELECT sequence FROM draft_sequences WHERE user_id = $1 AND draft_key = $2",
+        )
+        .bind(uid)
+        .bind(format!("topic_{topic_id}"))
+        .fetch_optional(&mut *self.conn)
+        .await?;
+        viewer.draft_sequence = Some(sequence.unwrap_or(0));
+        viewer.queue_enabled = self.queue_enabled(&viewer.ctx).await?;
+        Ok(viewer)
+    }
+
+    /// `NewPostManager.queue_enabled? || reply_posting_review_required?`:
+    /// the settings and watched words that send posts to review. Plugin
+    /// handlers (which also enable it) aren't ported.
+    async fn queue_enabled(&mut self, ctx: &TopicCtx) -> Result<bool, TopicViewError> {
+        let s = self.settings;
+        let tl0 = crate::guardian::auto_groups::TRUST_LEVEL_0;
+        if s.get("approve_post_count")?.to_i() > 0
+            || !s.group_ids("approve_unless_allowed_groups")?.contains(&tl0)
+            || !s
+                .group_ids("approve_new_topics_unless_allowed_groups")?
+                .contains(&tl0)
+            || s.get("approve_unless_staged")?.truthy()
+        {
+            return Ok(true);
+        }
+        // WatchedWord.actions[:require_approval] = 4
+        let watched: bool =
+            sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM watched_words WHERE action = 4)")
+                .fetch_one(&mut *self.conn)
+                .await?;
+        if watched {
+            return Ok(true);
+        }
+        if let Some(category_id) = ctx.category_id {
+            let review: Option<bool> = sqlx::query_scalar(
+                "SELECT reply_posting_review_mode <> 0 FROM category_settings WHERE category_id = $1",
+            )
+            .bind(category_id)
+            .fetch_optional(&mut *self.conn)
+            .await?;
+            if review == Some(true) {
+                return Err(Unsupported("category reply posting review modes").into());
+            }
+        }
+        Ok(false)
     }
 
     fn list_serializer(&mut self) -> TopicListSerializer<'_> {
@@ -339,7 +648,7 @@ impl TopicView<'_> {
         }
     }
 
-    /// `Topic.with_deleted.find_by(id:)` plus the category's restriction.
+    /// `Topic.with_deleted.find_by(id:)`.
     async fn find_topic(&mut self, id: i32) -> Result<(TopicRow, TopicExtra), TopicViewError> {
         let sql = format!("SELECT {TOPIC_COLUMNS} FROM topics WHERE topics.id = $1");
         let topic: Option<TopicRow> = sqlx::query_as(&sql)
@@ -350,9 +659,8 @@ impl TopicView<'_> {
             return Err(TopicViewError::NotFound);
         };
         let extra: TopicExtra = sqlx::query_as(
-            "SELECT t.word_count, t.deleted_at, t.pinned_until, t.slow_mode_seconds, t.external_id, \
-                    c.read_restricted \
-             FROM topics t LEFT JOIN categories c ON c.id = t.category_id WHERE t.id = $1",
+            "SELECT word_count, deleted_at, pinned_until, slow_mode_seconds, external_id \
+             FROM topics WHERE id = $1",
         )
         .bind(id)
         .fetch_one(&mut *self.conn)
@@ -371,7 +679,7 @@ impl TopicView<'_> {
              ORDER BY sort_order",
         )
         .bind(topic_id)
-        .bind(&VISIBLE_POST_TYPES[..])
+        .bind(&self.post_types)
         .fetch_all(&mut *self.conn)
         .await?)
     }
@@ -381,7 +689,7 @@ impl TopicView<'_> {
             "SELECT MAX(post_number) FROM posts WHERE topic_id = $1 AND deleted_at IS NULL AND post_type = ANY($2)",
         )
         .bind(topic_id)
-        .bind(&VISIBLE_POST_TYPES[..])
+        .bind(&self.post_types)
         .fetch_one(&mut *self.conn)
         .await?)
     }
@@ -397,7 +705,7 @@ impl TopicView<'_> {
              AND post_number <= $3",
         )
         .bind(topic_id)
-        .bind(&VISIBLE_POST_TYPES[..])
+        .bind(&self.post_types)
         .bind(post_number)
         .fetch_one(&mut *self.conn)
         .await?;
@@ -407,7 +715,9 @@ impl TopicView<'_> {
     const POST_SQL: &'static str = "SELECT id, user_id, post_number, cooked, created_at, updated_at, \
         reply_to_post_number, reply_count, quote_count, incoming_link_count, reads, score, post_type, \
         hidden, hidden_reason_id, user_deleted, reply_to_user_id, edit_reason, wiki, reply_quoted, \
-        public_version, action_code, like_count FROM posts";
+        public_version, action_code, like_count, hidden_at, locked_by_id, deleted_at, version, \
+        notify_user_count, off_topic_count, inappropriate_count, spam_count, illegal_count, \
+        notify_moderators_count FROM posts";
 
     /// `filter_posts_paged`: chunk `page` of the visible posts.
     async fn filter_posts_paged(
@@ -422,7 +732,7 @@ impl TopicView<'_> {
         );
         Ok(sqlx::query_as(&sql)
             .bind(topic_id)
-            .bind(&VISIBLE_POST_TYPES[..])
+            .bind(&self.post_types)
             .bind(CHUNK_SIZE * (page - 1).max(0))
             .bind(CHUNK_SIZE)
             .fetch_all(&mut *self.conn)
@@ -442,7 +752,7 @@ impl TopicView<'_> {
              ORDER BY abs(post_number - $3) LIMIT 1",
         )
         .bind(topic_id)
-        .bind(&VISIBLE_POST_TYPES[..])
+        .bind(&self.post_types)
         .bind(post_number as i32)
         .fetch_optional(&mut *self.conn)
         .await?;
@@ -458,7 +768,7 @@ impl TopicView<'_> {
         };
         let mut ids: Vec<i32> = sqlx::query_scalar(&ids_where("<", "DESC"))
             .bind(topic_id)
-            .bind(&VISIBLE_POST_TYPES[..])
+            .bind(&self.post_types)
             .bind(sort_order)
             .bind(0i64)
             .bind(before)
@@ -467,7 +777,7 @@ impl TopicView<'_> {
         let before_len = ids.len() as i64;
         let after: Vec<i32> = sqlx::query_scalar(&ids_where(">=", "ASC"))
             .bind(topic_id)
-            .bind(&VISIBLE_POST_TYPES[..])
+            .bind(&self.post_types)
             .bind(sort_order)
             .bind(0i64)
             .bind(CHUNK_SIZE - before_len)
@@ -477,7 +787,7 @@ impl TopicView<'_> {
         if (ids.len() as i64) < CHUNK_SIZE {
             let more: Vec<i32> = sqlx::query_scalar(&ids_where("<", "DESC"))
                 .bind(topic_id)
-                .bind(&VISIBLE_POST_TYPES[..])
+                .bind(&self.post_types)
                 .bind(sort_order)
                 .bind(before_len)
                 .bind(CHUNK_SIZE - ids.len() as i64)
@@ -498,21 +808,102 @@ impl TopicView<'_> {
             .await?)
     }
 
-    /// TopicView#actions_summary: every topic flag type with a zero count.
-    async fn actions_summary(&mut self, no_posts: bool) -> Result<Value, TopicViewError> {
+    /// TopicView#actions_summary: every topic flag type with a zero count
+    /// and whether the viewer may flag the first post with it.
+    async fn actions_summary(
+        &mut self,
+        no_posts: bool,
+        viewer: &Viewer,
+        first_loaded: Option<&PostRow>,
+    ) -> Result<Value, TopicViewError> {
         if no_posts {
             return Ok(json!([]));
         }
-        let ids: Vec<i64> = sqlx::query_scalar(
-            "SELECT id FROM flags WHERE 'Topic' = ANY(applies_to) AND NOT score_type ORDER BY position",
+        // topic.first_post: the loaded page may start later.
+        let first: Option<PostRow> = match first_loaded {
+            Some(p) if p.post_number == 1 => Some(p.clone()),
+            _ => {
+                let sql = format!(
+                    "{} WHERE topic_id = $1 AND post_number = 1 AND deleted_at IS NULL",
+                    Self::POST_SQL
+                );
+                sqlx::query_as(&sql)
+                    .bind(viewer.ctx.id)
+                    .fetch_optional(&mut *self.conn)
+                    .await?
+            }
+        };
+        let mut out = Vec::new();
+        for id in &viewer.action_types.topic_flag_ids {
+            let key = viewer
+                .action_types
+                .types
+                .iter()
+                .find(|(_, i)| i == id)
+                .map(|(k, _)| k.as_str())
+                .unwrap_or_default();
+            let can_act = match (&first, self.guardian.is_authenticated()) {
+                (Some(post), true) => {
+                    let ctx = self.post_ctx(post).await?;
+                    let can_see_post =
+                        self.guardian
+                            .can_see_post(self.settings, &ctx, viewer.can_see)?;
+                    self.guardian.post_can_act(
+                        self.settings,
+                        &viewer.action_types,
+                        (key, *id),
+                        &ActOpts {
+                            topic: &viewer.ctx,
+                            post: &ctx,
+                            taken: None,
+                            can_see_post,
+                            author_missing: post.user_id.is_none(),
+                        },
+                    )?
+                }
+                _ => false,
+            };
+            out.push(json!({"id": id, "count": 0, "hidden": false, "can_act": can_act}));
+        }
+        Ok(Value::Array(out))
+    }
+
+    /// The post's `notice` custom field, parsed.
+    async fn notice(&mut self, post_id: i32) -> Result<Option<Value>, TopicViewError> {
+        let raw: Option<Option<String>> = sqlx::query_scalar(
+            "SELECT value FROM post_custom_fields WHERE post_id = $1 AND name = 'notice' ORDER BY id LIMIT 1",
         )
-        .fetch_all(&mut *self.conn)
+        .bind(post_id)
+        .fetch_optional(&mut *self.conn)
         .await?;
-        Ok(json!(
-            ids.into_iter()
-                .map(|id| json!({"id": id, "count": 0, "hidden": false, "can_act": false}))
-                .collect::<Vec<_>>()
-        ))
+        Ok(raw
+            .flatten()
+            .and_then(|v| serde_json::from_str::<Value>(&v).ok()))
+    }
+    /// The guardian's view of a post row.
+    async fn post_ctx(&mut self, post: &PostRow) -> Result<PostCtx, TopicViewError> {
+        let author_staff: bool = match post.user_id {
+            Some(id) => sqlx::query_scalar("SELECT admin OR moderator FROM users WHERE id = $1")
+                .bind(id)
+                .fetch_optional(&mut *self.conn)
+                .await?
+                .unwrap_or(false),
+            None => false,
+        };
+        Ok(PostCtx {
+            id: post.id,
+            user_id: post.user_id,
+            post_number: post.post_number,
+            post_type: post.post_type,
+            hidden: post.hidden,
+            hidden_at: post.hidden_at,
+            locked_by_id: post.locked_by_id,
+            deleted_at: post.deleted_at,
+            user_deleted: post.user_deleted,
+            wiki: post.wiki,
+            created_at: post.created_at,
+            author_staff,
+        })
     }
 
     /// `topic.topic_timers.find_by(public_type: true)`; serializing one
@@ -556,7 +947,7 @@ impl TopicView<'_> {
              GROUP BY user_id ORDER BY count_all DESC LIMIT 24",
         )
         .bind(topic_id)
-        .bind(&VISIBLE_POST_TYPES[..])
+        .bind(&self.post_types)
         .fetch_all(&mut *self.conn)
         .await?;
         let ids: Vec<i32> = counts.iter().map(|(id, _)| *id).collect();
@@ -589,7 +980,7 @@ impl TopicView<'_> {
                     "SELECT count(DISTINCT user_id) FROM posts WHERE topic_id = $1 AND deleted_at IS NULL AND post_type = ANY($2)",
                 )
                 .bind(topic_id)
-                .bind(&VISIBLE_POST_TYPES[..])
+                .bind(&self.post_types)
                 .fetch_one(&mut *self.conn)
                 .await?
             }
@@ -599,11 +990,15 @@ impl TopicView<'_> {
         Ok((participants, count))
     }
 
-    /// TopicViewDetailsSerializer for anonymous users.
+    /// TopicViewDetailsSerializer: `can_edit` and `notification_level`,
+    /// then every `can_*` the guardian grants (`true` only), participants,
+    /// created_by and last_poster.
     async fn details(
         &mut self,
         topic: &TopicRow,
         participants: Vec<(PostUser, i64)>,
+        viewer: &Viewer,
+        topic_actions: &Value,
     ) -> Result<Value, TopicViewError> {
         let logo_small_url = self.list_serializer().logo_small_url().await?;
         let group_ids: Vec<i32> = participants
@@ -613,9 +1008,86 @@ impl TopicView<'_> {
             .collect();
         let groups = crate::groups::load(&mut *self.conn, &group_ids).await?;
         let enable_names = self.settings.get("enable_names")?.truthy();
+        let g = self.guardian;
+        let s = self.settings;
+        let ctx = &viewer.ctx;
+        let can_see = viewer.can_see;
         let mut out = Map::new();
-        out.insert("can_edit".into(), json!(false));
-        out.insert("notification_level".into(), json!(1));
+        let can_edit =
+            g.is_authenticated() && g.can_edit_topic(s, ctx, can_see, viewer.can_post_anywhere)?;
+        out.insert("can_edit".into(), json!(can_edit));
+        let tu = viewer.topic_user.as_ref();
+        out.insert(
+            "notification_level".into(),
+            json!(tu.map(|tu| tu.notification_level).unwrap_or(1)),
+        );
+        if let Some(tu) = tu {
+            out.insert(
+                "notifications_reason_id".into(),
+                json!(tu.notifications_reason_id),
+            );
+        }
+        if g.is_authenticated() {
+            let group_mod_action =
+                g.can_perform_action_available_to_group_moderators(s, can_see)?;
+            let can_create_post_on_topic =
+                g.can_create_post_on_topic(s, ctx, viewer.can_post_anywhere)?;
+            // can_flag_topic: any topic-level action the viewer may take.
+            let can_flag_topic = topic_actions
+                .as_array()
+                .is_some_and(|a| a.iter().any(|x| x["can_act"] == json!(true)));
+            let flags: [(&str, bool); 20] = [
+                (
+                    "can_move_posts",
+                    !g.is_silenced() && group_mod_action && !ctx.private_message(),
+                ),
+                ("can_delete", g.can_delete_topic(s, ctx)?),
+                ("can_permanently_delete", false),
+                ("can_recover", g.can_recover_topic(ctx)),
+                ("can_remove_allowed_users", g.can_remove_allowed_users(ctx)),
+                ("can_invite_to", g.can_invite_to(s, ctx, can_see)?),
+                (
+                    "can_invite_via_email",
+                    g.can_invite_via_email(s, ctx, can_see)?,
+                ),
+                ("can_create_post", can_see && can_create_post_on_topic),
+                ("can_reply_as_new_topic", g.can_reply_as_new_topic()),
+                ("can_flag_topic", can_flag_topic),
+                (
+                    "can_convert_topic",
+                    g.can_convert_topic(s, ctx, viewer.can_create_post)?,
+                ),
+                ("can_review_topic", g.can_review_topic(s, can_see)?),
+                (
+                    "can_edit_tags",
+                    !can_edit && g.can_edit_tags(s, ctx, can_edit, viewer.can_create_post)?,
+                ),
+                ("can_publish_page", g.can_publish_page(s, ctx, can_see)?),
+                ("can_close_topic", group_mod_action),
+                ("can_archive_topic", group_mod_action),
+                ("can_split_merge_topic", group_mod_action),
+                ("can_edit_staff_notes", group_mod_action),
+                (
+                    "can_toggle_topic_visibility",
+                    g.can_moderate(can_see) || group_mod_action,
+                ),
+                ("can_pin_unpin_topic", group_mod_action),
+            ];
+            for (key, granted) in flags {
+                if granted {
+                    out.insert(key.into(), json!(true));
+                }
+            }
+            if g.can_banner_topic(ctx) {
+                out.insert("can_banner_topic".into(), json!(true));
+            }
+            if group_mod_action {
+                out.insert("can_moderate_category".into(), json!(true));
+            }
+            if g.can_remove_allowed_users(ctx) {
+                out.insert("can_remove_self_id".into(), json!(g.user_id()));
+            }
+        }
         if !participants.is_empty() {
             let mut list = Vec::with_capacity(participants.len());
             for (user, post_count) in &participants {
@@ -737,15 +1209,12 @@ impl TopicView<'_> {
         topic: &TopicRow,
         slug: &str,
         posts: &[PostRow],
+        viewer: &Viewer,
     ) -> Result<Vec<Value>, TopicViewError> {
         let logo_small_url = self.list_serializer().logo_small_url().await?;
         let enable_names = self.settings.get("enable_names")?.truthy();
         let show_badges = self.settings.get("enable_badges")?.truthy()
             && self.settings.get("show_badges_in_post_header")?.truthy();
-        let edit_history_public = self
-            .settings
-            .get("edit_history_visible_to_public")?
-            .truthy();
         let suppress_reply_when_quoting =
             self.settings.get("suppress_reply_when_quoting")?.truthy();
 
@@ -775,6 +1244,15 @@ impl TopicView<'_> {
             if post.hidden {
                 return Err(Unsupported("hidden posts").into());
             }
+            let g = self.guardian;
+            let s = self.settings;
+            let ctx = self.post_ctx(post).await?;
+            let yours = match g.user_id() {
+                Some(uid) => post.user_id == Some(uid),
+                None => post.user_id.is_none(),
+            };
+            let can_see_post = g.can_see_post(s, &ctx, viewer.can_see)?;
+            let taken = viewer.taken.get(&post.id);
             // UserBadge.for_post_header_badges: badges granted to the author
             // for this post; serializing one isn't ported.
             let badges: i64 = sqlx::query_scalar(
@@ -826,7 +1304,7 @@ impl TopicView<'_> {
                     None => json!(0),
                 },
             );
-            p.insert("yours".into(), json!(post.user_id.is_none()));
+            p.insert("yours".into(), json!(yours));
             p.insert("topic_id".into(), json!(topic.id));
             p.insert("topic_slug".into(), json!(slug));
             if enable_names {
@@ -863,17 +1341,54 @@ impl TopicView<'_> {
                 json!(u.and_then(|u| u.flair_group_id)),
             );
             p.insert("badges_granted".into(), json!([]));
-            p.insert("version".into(), json!(post.public_version));
-            p.insert("can_edit".into(), json!(false));
-            p.insert("can_delete".into(), json!(false));
-            p.insert("can_recover".into(), json!(false));
-            p.insert("can_see_hidden_post".into(), json!(false));
-            p.insert("can_wiki".into(), json!(false));
+            p.insert(
+                "version".into(),
+                json!(if g.is_staff() {
+                    post.version
+                } else {
+                    post.public_version
+                }),
+            );
+            p.insert(
+                "can_edit".into(),
+                json!(
+                    g.is_authenticated()
+                        && g.can_edit_post(
+                            s,
+                            &viewer.ctx,
+                            &ctx,
+                            viewer.can_see,
+                            viewer.can_create_post
+                        )?
+                ),
+            );
+            p.insert(
+                "can_delete".into(),
+                json!(
+                    g.is_authenticated()
+                        && g.can_delete_post(s, &viewer.ctx, &ctx, can_see_post)?
+                ),
+            );
+            p.insert(
+                "can_recover".into(),
+                json!(g.can_recover_post(s, &ctx, viewer.can_see)?),
+            );
+            p.insert(
+                "can_see_hidden_post".into(),
+                json!(g.can_see_hidden_post(s, &ctx)?),
+            );
+            p.insert("can_wiki".into(), json!(g.can_wiki(s, &ctx)?));
             let link_counts = self.link_counts(post.id).await?;
             if !link_counts.is_empty() {
                 p.insert("link_counts".into(), Value::Array(link_counts));
             }
-            p.insert("read".into(), json!(true));
+            // read?(post_number): anonymous reads everything; a user only
+            // what post_timings recorded, and nothing without a topic_users row.
+            let read = match g.user_id() {
+                None => true,
+                Some(_) => viewer.read_post_numbers.contains(&post.post_number),
+            };
+            p.insert("read".into(), json!(read));
             p.insert("user_title".into(), json!(u.and_then(|u| u.title.clone())));
             if u.and_then(|u| u.title.as_deref())
                 .is_some_and(|t| !t.is_empty())
@@ -897,12 +1412,54 @@ impl TopicView<'_> {
                     }
                 }
             }
-            p.insert("bookmarked".into(), json!(false));
-            let actions = if post.like_count > 0 {
-                json!([{"id": LIKE, "count": post.like_count}])
-            } else {
-                json!([])
-            };
+            let bookmark = viewer
+                .bookmarks
+                .iter()
+                .find(|b| b.bookmarkable_type == "Post" && b.bookmarkable_id == i64::from(post.id));
+            p.insert("bookmarked".into(), json!(bookmark.is_some()));
+            if let Some(b) = bookmark {
+                p.insert(
+                    "bookmark_reminder_at".into(),
+                    json!(b.reminder_at.map(time_json)),
+                );
+                p.insert("bookmark_id".into(), json!(b.id));
+                p.insert("bookmark_name".into(), json!(b.name));
+                p.insert(
+                    "bookmark_auto_delete_preference".into(),
+                    json!(b.auto_delete_preference),
+                );
+            }
+            let counts: HashMap<i64, i32> = viewer
+                .action_types
+                .types
+                .iter()
+                .map(|(key, id)| {
+                    let count = match key.as_str() {
+                        "like" => post.like_count,
+                        "notify_user" => post.notify_user_count,
+                        "off_topic" => post.off_topic_count,
+                        "inappropriate" => post.inappropriate_count,
+                        "spam" => post.spam_count,
+                        "illegal" => post.illegal_count,
+                        "notify_moderators" => post.notify_moderators_count,
+                        _ => 0,
+                    };
+                    (*id, count)
+                })
+                .collect();
+            let actions = g.actions_summary(
+                s,
+                &viewer.action_types,
+                &counts,
+                &ActOpts {
+                    topic: &viewer.ctx,
+                    post: &ctx,
+                    taken,
+                    can_see_post,
+                    author_missing: u.is_none(),
+                },
+                post.user_id.is_some_and(|id| id < 0),
+            )?;
             p.insert("actions_summary".into(), actions);
             p.insert("moderator".into(), json!(u.is_some_and(|u| u.moderator)));
             p.insert("admin".into(), json!(u.is_some_and(|u| u.admin)));
@@ -921,7 +1478,7 @@ impl TopicView<'_> {
             p.insert("edit_reason".into(), json!(post.edit_reason));
             p.insert(
                 "can_view_edit_history".into(),
-                json!(post.wiki || edit_history_public),
+                json!(g.can_view_edit_history(s, &ctx, can_see_post)?),
             );
             p.insert("wiki".into(), json!(post.wiki));
             if let Some(code) = &post.action_code {
@@ -945,8 +1502,47 @@ impl TopicView<'_> {
                     }
                 }
             }
-            if post.user_id.is_none() {
-                p.insert("locked".into(), json!(false));
+            // notice: a new/returning-user notice shows to viewers past the
+            // notice trust level; custom notices to everyone.
+            if let Some(notice) = self.notice(post.id).await? {
+                let show = match notice["type"].as_str() {
+                    Some("custom") => {
+                        return Err(Unsupported("custom post notices").into());
+                    }
+                    Some("new_user") => {
+                        g.is_authenticated()
+                            && !yours
+                            && g.has_trust_level(s.get("new_user_notice_tl")?.to_i() as i32)
+                    }
+                    Some("returning_user") => {
+                        g.is_authenticated()
+                            && !yours
+                            && g.has_trust_level(s.get("returning_user_notice_tl")?.to_i() as i32)
+                    }
+                    _ => false,
+                };
+                if show {
+                    p.insert("notice".into(), notice);
+                }
+            }
+            if post.locked_by_id.is_some() && (yours || g.is_staff()) {
+                p.insert("locked".into(), json!(true));
+            }
+            if g.can_review_topic(s, viewer.can_see)? {
+                let counts: Option<(i64, i64, i64)> = sqlx::query_as(
+                    "SELECT MAX(r.id), COUNT(*), SUM(CASE WHEN s.status = 0 THEN 1 ELSE 0 END) \
+                     FROM reviewables r JOIN reviewable_scores s ON s.reviewable_id = r.id \
+                     WHERE r.target_id = $1 AND r.target_type = 'Post' \
+                       AND r.type IN ('ReviewableFlaggedPost', 'ReviewableQueuedPost', 'ReviewableUser', 'ReviewablePost') \
+                       AND COALESCE(s.reason, '') <> 'category' GROUP BY r.target_id",
+                )
+                .bind(post.id)
+                .fetch_optional(&mut *self.conn)
+                .await?;
+                let (id, total, pending) = counts.unwrap_or((0, 0, 0));
+                p.insert("reviewable_id".into(), json!(id));
+                p.insert("reviewable_score_count".into(), json!(total));
+                p.insert("reviewable_score_pending_count".into(), json!(pending));
             }
             if u.is_some_and(|u| u.suspended_till.is_some()) {
                 return Err(Unsupported("user_suspended").into());
