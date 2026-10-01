@@ -638,13 +638,24 @@ where
             form_urlencoded::byte_serialize(user.as_bytes()).collect::<String>(),
             form_urlencoded::byte_serialize(password.as_bytes()).collect::<String>()
         );
-        let reply = send(Exchange {
+        let login = || Exchange {
             method: "POST".into(),
             path: "/session".into(),
             headers: base_headers(&jar, csrf.as_deref(), true),
-            body: Some(form),
-        })
-        .await?;
+            body: Some(form.clone()),
+        };
+        let mut reply = send(login()).await?;
+        // A full run logs in more than 6 times a minute (the POST /session
+        // cases count too): wait the limiter out once instead of failing.
+        if reply.status == 429 {
+            let wait = serde_json::from_str::<Value>(&reply.body)
+                .ok()
+                .and_then(|j| j["extras"]["wait_seconds"].as_u64())
+                .unwrap_or(60);
+            eprintln!("login as {user} rate limited, waiting {wait}s");
+            tokio::time::sleep(std::time::Duration::from_secs(wait + 1)).await;
+            reply = send(login()).await?;
+        }
         jar.absorb(&reply.set_cookies);
         let ok = reply.status == 200
             && serde_json::from_str::<Value>(&reply.body)
