@@ -30,10 +30,9 @@ could put behind Caddy and leave running.
       (plain terms and phrases; advanced filters are milestone 2)
 - [x] User pages: `/u/:username`, summary, activity (posts link there)
 - [x] Crawler hygiene: `robots.txt`, sitemaps, canonical and meta tags
-- [ ] Deploy: systemd unit, Caddy snippet, `make install`, first
-      date-versioned release with a binary (parked 2026-09-30); the unit
-      needs DISCOURSE_SECRET_KEY_BASE (Rails keeps it in redis when not
-      configured: `rails runner 'puts GlobalSetting.safe_secret_key_base'`)
+- [x] Deploy: systemd unit, Caddy snippet and `make install` (`deploy/`),
+      a static binary attached to each date-versioned release; the env
+      file needs DISCOURSE_SECRET_KEY_BASE (README: Deploying)
 - [x] Bench harness: `make bench` and `make bench-startup` (BENCH.md has
       the runs and the caveats); a production-mode Discourse reference is
       still needed for numbers that mean something

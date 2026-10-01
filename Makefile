@@ -1,6 +1,6 @@
 .PHONY: help version-bump release build test clean clippy fmt fmt-check lint install-hooks \
 	db-load db-test parity parity-check parity-record vendor-discourse snapshot-dv \
-	bench bench-startup release-build
+	bench bench-startup release-build install
 
 # Auto-generate version from today's date with auto-incrementing patch
 # Format: YYYYMMDD.0.X where X increments if releasing multiple times per day
@@ -36,6 +36,7 @@ help:
 	@echo "  make fmt / fmt-check               - Format / check formatting"
 	@echo "  make lint                          - All CI checks (fmt-check, clippy, tests)"
 	@echo "  make install-hooks                 - Install a pre-push hook running 'make lint'"
+	@echo "  sudo make install                  - Install the built binary as a systemd service (deploy/)"
 	@echo "  make clean                         - Clean build artifacts"
 	@echo ""
 	@echo "Schema:"
@@ -124,6 +125,11 @@ install-hooks:
 	@printf '#!/usr/bin/env bash\nset -e\nexec make lint\n' > .git/hooks/pre-push
 	@chmod +x .git/hooks/pre-push
 	@echo "Installed pre-push hook -> make lint"
+
+# The binary, unit, service account and /etc/discourse-rs/env (kept if it
+# exists). Does not build: run `make build` first, as yourself.
+install:
+	deploy/install target/release/discourse-rs
 
 vendor-discourse:
 	scripts/vendor-discourse $(DISCOURSE) $(REF)

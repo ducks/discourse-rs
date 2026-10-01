@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+# Install discourse-rs as a systemd service: the binary, the unit, the
+# service account and a config file to fill in. Run as root, from a
+# checkout (`make install` after `make build`) or from an unpacked
+# release tarball, which carries this directory next to the binary.
+#
+# An existing /etc/discourse-rs/env is never overwritten, so this is also
+# how to upgrade: install the new binary, then restart the service.
+#
+# DESTDIR stages the files under another root without touching the
+# running system (no account, no daemon-reload).
+#
+# Usage: deploy/install [path-to-binary]
+set -euo pipefail
+
+here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+bin="${1:-}"
+if [ -z "$bin" ]; then
+  for candidate in "$here/../discourse-rs" "$here/../target/release/discourse-rs"; do
+    if [ -f "$candidate" ] && [ -x "$candidate" ]; then
+      bin="$candidate"
+      break
+    fi
+  done
+fi
+if [ -z "$bin" ] || [ ! -f "$bin" ]; then
+  echo "install: no discourse-rs binary found; run 'make build' or pass its path" >&2
+  exit 1
+fi
+
+dest="${DESTDIR:-}"
+if [ -z "$dest" ] && [ "$(id -u)" -ne 0 ]; then
+  echo "install: must run as root (or set DESTDIR to stage)" >&2
+  exit 1
+fi
+
+install -Dm755 "$bin" "$dest/usr/local/bin/discourse-rs"
+install -Dm644 "$here/discourse-rs.service" "$dest/etc/systemd/system/discourse-rs.service"
+install -Dm644 "$here/discourse-rs.sysusers" "$dest/etc/sysusers.d/discourse-rs.conf"
+install -dm755 "$dest/var/lib/discourse-rs/public"
+
+if [ -z "$dest" ]; then
+  systemd-sysusers /etc/sysusers.d/discourse-rs.conf
+fi
+
+env_file="$dest/etc/discourse-rs/env"
+if [ -e "$env_file" ]; then
+  echo "kept $env_file"
+else
+  install -Dm640 "$here/env.example" "$env_file"
+  if [ -z "$dest" ]; then
+    chown root:discourse-rs "$env_file"
+  fi
+  echo "wrote $env_file: set DATABASE_URL, DISCOURSE_HOSTNAME and DISCOURSE_SECRET_KEY_BASE"
+fi
+
+if [ -z "$dest" ]; then
+  systemctl daemon-reload
+  if systemctl is-active --quiet discourse-rs; then
+    echo "installed; restart to run the new binary: systemctl restart discourse-rs"
+  else
+    echo "installed; once the env file is filled in: systemctl enable --now discourse-rs"
+  fi
+fi

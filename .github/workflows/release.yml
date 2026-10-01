@@ -56,6 +56,8 @@ jobs:
           name="discourse-rs-$TAG-x86_64-linux"
           mkdir "$name"
           cp "target/$TARGET/release/discourse-rs" README.md "$name/"
+          # deploy/install finds the binary next to its directory.
+          cp -r deploy "$name/"
           tar -czf "$name.tar.gz" "$name"
           sha256sum "$name.tar.gz" > "$name.tar.gz.sha256"
 
