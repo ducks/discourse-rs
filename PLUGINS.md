@@ -1,7 +1,12 @@
 # Plugins
 
 How discourse-rs will be extended without writing Rust. Design, not yet
-built; the open decisions are at the end.
+built, and deferred until after writes (ROADMAP.md, milestone 5).
+
+Status, 2026-10-01: the hook shapes below (`serialize`, `modify`, `html`,
+`route`, `event`, `job`) and tier 0 stand. The subprocess transport and
+the plugin's own database connection do not; decisions 3 and 5 at the end
+replace them, and decision 6 is what is still open.
 
 ## The constraint
 
@@ -92,6 +97,10 @@ compatibility floor: a plugin that only wants a setting and a stylesheet
 never starts a process.
 
 ### Tier 1: a process speaking JSON-RPC
+
+Rejected (decision 3): kept for the hook payloads, which carry over.
+Read "core spawns the command" and "the plugin gets `DATABASE_URL`" as
+superseded by decision 5.
 
 ```toml
 [process]
@@ -205,15 +214,18 @@ plugin (`can_vote`, `vote_count`) the same way, in a different language.
 
 ## Where it sits in the roadmap
 
-Reads are done (milestones 1-3 minus notifications); writes are next.
-The plugin protocol is designed now and built before writes, for two
-reasons: the `serialize`/`html`/`route` hooks are read-side and testable
-today against the parity harness, and the write-side hooks (`modify` on
-NewPostManager, `event` on post_created) should be designed into the
-write path rather than bolted on after. The roadmap's "no plugin system
-before writes" line goes; the ordering becomes: protocol and tier 0/1
-read hooks with discourse-solved as the test, then writes with their
-hooks, then tier 2.
+After writes (decided 2026-10-01, reversing the earlier "protocol before
+writes" ordering). Most of what a plugin calls does not exist until
+milestone 4: `route`, `event` and `job` want the write endpoints, and
+under decision 5 those endpoints are the plugin API. Building the
+protocol first would mean guessing at the write path. The cost is that
+the write path is built without its hooks in place, so the places a
+plugin would attach (NewPostManager modifiers, post events) should be
+named as milestone 4 goes, even though nothing calls them yet.
+
+The read-side `serialize` hook with discourse-solved stays the first
+thing to build when plugins start, because the parity harness can judge
+it.
 
 ## Decisions
 
@@ -231,8 +243,45 @@ hooks, then tier 2.
    plugin against it, in-process as a WASI component for installable
    plugins (drop a directory in, no host access) or as a hosted service
    over signed HTTP for plugins that are services anyway. Tier 1 as
-   written is to be replaced by that split; parked while sessions slice
-   3 is built.
+   written is replaced by that split. This also rules out native FFI
+   (a `.so` behind the C ABI): it shares the server's address space,
+   which is more host access than a subprocess, not less.
 4. **Admin UI.** Plugins that register admin pages do it through `route`
    with their own HTML. No admin framework from core until there is an
    admin.
+5. **What a plugin can call (2026-10-01).** The host is discourse-rs. A
+   sandboxed plugin can do nothing but call the functions the host
+   hands it, and there are two:
+   - Its own tables, by keyed batch lookup (`rows(table, key, ids)`),
+     not SQL. The manifest lists the tables and columns it owns. These
+     are usually tables Rails already created: the vendored
+     `structure.sql` carries `discourse_solved_solved_topics` and
+     `discourse_solved_topic_answers`, and a backup carries their rows,
+     so a port plugin adopts them and tier 0 migrations are only for
+     plugins with no Rails ancestor.
+   - Discourse's own JSON API, dispatched in-process into the router
+     under scopes the manifest asks for (the `api_keys` and
+     `api_key_scopes` vocabulary). A hosted plugin calls the same API
+     over HTTP with a key: one API, two transports.
+
+   Core tables are never read directly. On the read path (`serialize`,
+   `html`, `modify`) core data arrives in the hook payload and the
+   plugin only reads its own tables; calling the API from there would
+   re-enter the serializers. `route`, `event` and `job` use the API.
+   Hosted plugins get `route`, `event` and `job` only: a network
+   round-trip does not fit a serializer's budget. A per-invocation call
+   cap and a wall-clock budget replace the 50 ms pipe timeout.
+
+   Considered and dropped: pure functions with their input declared in
+   the manifest (Shopify Functions). It makes N+1 impossible, but the
+   manifest grows into a query language and cannot express a lookup
+   that depends on an earlier one.
+6. **Open: the runtime.** The goal is that anyone can write a plugin.
+   WASI components keep "any language" in principle, but Ruby and
+   Python each ship an interpreter per plugin and the author needs a
+   component toolchain. An embedded scripting language (Lua) is a text
+   file a self-hoster edits and reloads, with the same sandbox and the
+   same host functions, at the cost of one language. Decision 5 is the
+   same either way, which is why this can wait. Also open: whether an
+   API call runs as the user whose request triggered the hook or as a
+   system identity limited by the plugin's scopes.
