@@ -48,3 +48,16 @@ guide = Tag.find_or_create_by!(name: "guide")
   topic.save!
 end
 puts "tags: #{Tag.pluck(:name, :public_topic_count).inspect}"
+
+# Third pass (2026-10-01): per-user state for the logged-in list goldens.
+# Idempotent. Every parity user's new-topic window is pinned to "always" so
+# /new and `unseen` don't drift as the fixture topics age past the 2-day default.
+u1 = User.find_by!(username: "user1")
+User.where(username: %w[admin user0 user1]).each { |u| u.user_option.update!(new_topic_duration_minutes: User::NewTopicDuration::ALWAYS) }
+BookmarkManager.new(u1).create_for(bookmarkable_id: Topic.find(37).first_post.id, bookmarkable_type: "Post") if Bookmark.where(user_id: u1.id).none?
+TopicUser.change(u1.id, 37, cleared_pinned_at: Time.zone.parse("2026-10-01 00:00:00"))
+TopicUser.change(u1.id, 41, notification_level: TopicUser.notification_levels[:muted])
+CategoryUser.set_notification_level_for_category(u1, CategoryUser.notification_levels[:muted], 2)
+DismissedTopicUser.find_or_create_by!(user_id: u1.id, topic_id: 36)
+puts "user1 topic_users: #{TopicUser.where(user_id: u1.id).pluck(:topic_id, :notification_level, :bookmarked, :cleared_pinned_at).inspect}"
+puts "user1 first_unread_at: #{u1.user_stat.first_unread_at.inspect}"

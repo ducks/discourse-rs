@@ -147,3 +147,33 @@ GET /session/current.json as=user1 ignore=/current_user/can_chat,/current_user/c
 GET /session/current.json as=user0 ignore=/current_user/can_chat,/current_user/can_direct_message,/current_user/has_chat_enabled,/current_user/needs_channel_retention_reminder,/current_user/has_joinable_public_channels,/current_user/chat_drafts,/current_user/can_use_templates,/current_user/votes_exceeded,/current_user/votes_count,/current_user/votes_left,/current_user/vote_limit,/current_user/can_create_poll,/current_user/custom_fields,/current_user/user_option/show_thread_title_prompts,/current_user/user_option/chat_channel_list_filter,/current_user/user_option/chat_channel_list_sort,/current_user/user_option/chat_channel_list_sort_starred,/current_user/user_option/chat_channel_list_sort_dms,/current_user/user_option/chat_channel_list_filter_starred,/current_user/user_option/chat_channel_list_filter_dms,/current_user/user_option/chat_announce_new_messages,/current_user/user_option/chat_new_message_sound,/current_user/user_option/chat_header_indicator_preference,/current_user/user_option/chat_separate_sidebar_mode,/current_user/user_option/chat_send_shortcut,/current_user/user_option/chat_quick_reaction_type,/current_user/user_option/chat_quick_reactions_custom,/current_user/user_option/treat_as_new_topic_start_date,/current_user/previous_visit_at
 # has_unseen_features is redis state (the new-features feed fetched after a staff login).
 GET /session/current.json as=admin ignore=/current_user/can_chat,/current_user/can_direct_message,/current_user/has_chat_enabled,/current_user/needs_channel_retention_reminder,/current_user/has_joinable_public_channels,/current_user/chat_drafts,/current_user/can_use_templates,/current_user/votes_exceeded,/current_user/votes_count,/current_user/votes_left,/current_user/vote_limit,/current_user/can_create_poll,/current_user/custom_fields,/current_user/user_option/show_thread_title_prompts,/current_user/user_option/chat_channel_list_filter,/current_user/user_option/chat_channel_list_sort,/current_user/user_option/chat_channel_list_sort_starred,/current_user/user_option/chat_channel_list_sort_dms,/current_user/user_option/chat_channel_list_filter_starred,/current_user/user_option/chat_channel_list_filter_dms,/current_user/user_option/chat_announce_new_messages,/current_user/user_option/chat_new_message_sound,/current_user/user_option/chat_header_indicator_preference,/current_user/user_option/chat_separate_sidebar_mode,/current_user/user_option/chat_send_shortcut,/current_user/user_option/chat_quick_reaction_type,/current_user/user_option/chat_quick_reactions_custom,/current_user/user_option/treat_as_new_topic_start_date,/current_user/previous_visit_at,/current_user/has_unseen_features
+
+# Topic lists for a logged-in user. user1 (TL2) tracks 35 with unread
+# posts, watches 38, cleared the pin on and bookmarked 37, muted topic
+# 41 and the Site Feedback category, dismissed 36; admin sees the
+# unlisted topic 39 and the Staff category. See scripts/fixtures/topics.rb.
+GET /latest.json as=user1 ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
+GET /latest.json as=user0 ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
+GET /latest.json as=admin ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
+GET /c/general/4.json as=user1 ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
+GET /c/site-feedback/2.json as=user1 ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
+GET /c/staff/3.json as=admin ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
+GET /c/staff/3.json as=user1 ignore=/extras/html
+GET /top.json as=user1 ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
+GET /hot.json?per_page=3 as=user1 ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
+GET /tag/howto.json as=user1 ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
+GET /tag/guide.json as=admin ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
+GET /unread.json as=user1 ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
+GET /unread.json as=user0 ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
+GET /new.json as=user1 ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
+GET /new.json as=admin ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
+GET /unseen.json as=user1 ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
+GET /read.json as=user1 ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
+GET /posted.json as=user1 ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
+GET /bookmarks.json as=user1 ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
+GET /c/general/4/l/unread.json as=user1 ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
+GET /c/general/4/l/new.json as=user1 ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
+GET /unread.json
+GET /new.json
+GET /read
+GET /bookmarks

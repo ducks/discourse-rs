@@ -77,6 +77,9 @@ async fn run(cli: Cli) -> Result<bool, String> {
     let mut passed = 0;
     let mut failed = 0;
     let mut skipped = 0;
+    // One session per user and server; the live mode talks to two.
+    let mut rails_sessions = parity::Sessions::default();
+    let mut rs_sessions = parity::Sessions::default();
 
     for case in &cases {
         if cli.delay_ms > 0 {
@@ -84,7 +87,7 @@ async fn run(cli: Cli) -> Result<bool, String> {
         }
         let outcome = match &cli.command {
             Command::Record { rails } => {
-                let response = fetch(&client, rails, case).await?;
+                let response = fetch(&client, rails, &mut rails_sessions, case).await?;
                 let golden = Golden {
                     request: case.label(),
                     source: rails.trim_end_matches('/').to_string(),
@@ -102,13 +105,13 @@ async fn run(cli: Cli) -> Result<bool, String> {
                     continue;
                 }
                 Some(golden) => {
-                    let actual = fetch(&client, rs, case).await?;
+                    let actual = fetch(&client, rs, &mut rs_sessions, case).await?;
                     parity::compare(case, &golden.response, &actual, ("golden", "rs"))
                 }
             },
             Command::Live { rails, rs } => {
-                let expected = fetch(&client, rails, case).await?;
-                let actual = fetch(&client, rs, case).await?;
+                let expected = fetch(&client, rails, &mut rails_sessions, case).await?;
+                let actual = fetch(&client, rs, &mut rs_sessions, case).await?;
                 parity::compare(case, &expected, &actual, ("rails", "rs"))
             }
         };
@@ -132,9 +135,14 @@ async fn run(cli: Cli) -> Result<bool, String> {
     Ok(failed == 0)
 }
 
-async fn fetch(client: &reqwest::Client, base: &str, case: &Case) -> Result<Recorded, String> {
+async fn fetch(
+    client: &reqwest::Client,
+    base: &str,
+    sessions: &mut parity::Sessions,
+    case: &Case,
+) -> Result<Recorded, String> {
     let base = base.trim_end_matches('/').to_string();
-    parity::run_case(case, |exchange: parity::Exchange| {
+    parity::run_case(case, sessions, |exchange: parity::Exchange| {
         let client = client.clone();
         let base = base.clone();
         async move {

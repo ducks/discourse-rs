@@ -25,6 +25,7 @@ async fn golden_responses_match() {
 
     let mut failures = Vec::new();
     let mut checked = 0;
+    let mut sessions = parity::Sessions::default();
     for case in &cases {
         let Some(golden) = parity::read_golden(&golden_dir, case).unwrap() else {
             eprintln!("skip {} (no golden file)", case.label());
@@ -38,7 +39,7 @@ async fn golden_responses_match() {
             .nth(1)
             .map(|h| h.trim_end_matches('/').to_string())
             .unwrap_or_else(|| "localhost".into());
-        let actual = parity::run_case(case, |exchange: parity::Exchange| {
+        let actual = parity::run_case(case, &mut sessions, |exchange: parity::Exchange| {
             let app = app.clone();
             let host = host.clone();
             async move {
