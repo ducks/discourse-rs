@@ -50,6 +50,16 @@ impl From<SettingError> for UsersError {
     }
 }
 
+impl From<crate::guardian::GuardianError> for UsersError {
+    fn from(e: crate::guardian::GuardianError) -> Self {
+        match e {
+            crate::guardian::GuardianError::Db(e) => UsersError::Db(e),
+            crate::guardian::GuardianError::Setting(e) => UsersError::Setting(e),
+            crate::guardian::GuardianError::Unsupported(e) => UsersError::Unsupported(e),
+        }
+    }
+}
+
 impl From<Unsupported> for UsersError {
     fn from(e: Unsupported) -> Self {
         UsersError::Unsupported(e)
@@ -125,6 +135,7 @@ pub struct User {
     pub profile_background_upload_id: Option<i32>,
     pub featured_topic_id: Option<i32>,
     pub hide_profile: Option<bool>,
+    pub allow_private_messages: Option<bool>,
 }
 
 const USER_COLUMNS: &str = "users.id, users.username, users.name, users.uploaded_avatar_id, \
@@ -135,7 +146,7 @@ const USER_COLUMNS: &str = "users.id, users.username, users.name, users.uploaded
     us.likes_received, us.topics_entered, us.posts_read_count, us.days_visited, \
     up.user_id AS profile_id, up.views, up.bio_raw, up.bio_cooked, up.website, up.location, \
     up.card_background_upload_id, up.profile_background_upload_id, up.featured_topic_id, \
-    uo.hide_profile";
+    uo.hide_profile, uo.allow_private_messages";
 
 const USER_FROM: &str = "FROM users \
     LEFT JOIN user_stats us ON us.user_id = users.id \
@@ -192,6 +203,53 @@ impl User {
             return Ok(self.has_trust_level(1) && !profile_hidden);
         }
         Ok(!profile_hidden)
+    }
+
+    /// `guardian.can_see_profile?(user)` for a viewer: self and staff
+    /// always; otherwise the anonymous rules, with the new-profile gate
+    /// relaxed for TL1/TL2 viewers.
+    pub fn visible_to(
+        &self,
+        settings: &SiteSettings,
+        guardian: &Guardian,
+    ) -> Result<bool, SettingError> {
+        if settings.get("hide_user_profiles_from_public")?.truthy() && guardian.is_anonymous() {
+            return Ok(false);
+        }
+        if guardian.is_me(self.id) || guardian.is_staff() {
+            return Ok(true);
+        }
+        let profile_hidden = settings.get("allow_users_to_hide_profile")?.truthy()
+            && self.hide_profile.unwrap_or(false);
+        if (self.admin || self.moderator) && !profile_hidden {
+            return Ok(true);
+        }
+        if settings.get("hide_new_user_profiles")?.truthy()
+            && !settings.get("invite_only")?.truthy()
+            && !settings.get("must_approve_users")?.truthy()
+        {
+            if self.post_count.unwrap_or(0) == 0
+                && !self.has_trust_level(2)
+                && (guardian.is_anonymous() || !guardian.has_trust_level(2))
+            {
+                return Ok(false);
+            }
+            if guardian.is_anonymous() || !guardian.has_trust_level(1) {
+                return Ok(self.has_trust_level(1) && !profile_hidden);
+            }
+        }
+        Ok(!profile_hidden)
+    }
+
+    /// `guardian.restrict_user_fields?(user)`: TL0 targets hide their
+    /// details from anonymous viewers.
+    pub fn restrict_fields_for(
+        &self,
+        settings: &SiteSettings,
+        guardian: &Guardian,
+    ) -> Result<bool, SettingError> {
+        Ok((self.trust_level == 0 && guardian.is_anonymous())
+            || !self.visible_to(settings, guardian)?)
     }
 
     /// `guardian.restrict_user_fields?(user)`
@@ -297,7 +355,12 @@ impl Users<'_> {
     pub async fn show(&mut self, user: &User) -> Result<Value, UsersError> {
         let enable_names = self.settings.get("enable_names")?.truthy();
         let mut out = Map::new();
-        if !user.visible_to_anonymous(self.settings)? {
+        let g = self.guardian;
+        if g.is_me(user.id) || g.is_staff() {
+            return Err(Unsupported("own or staff view of a profile (private attributes)").into());
+        }
+        let can_pm_user = self.can_send_private_message_to(user)?;
+        if !user.visible_to(self.settings, g)? {
             // HiddenProfileSerializer
             let mut u = Map::new();
             u.insert("id".into(), json!(user.id));
@@ -315,7 +378,10 @@ impl Users<'_> {
                 "primary_group_name".into(),
                 json!(self.group_name(user.primary_group_id).await?),
             );
-            u.insert("can_send_private_message_to_user".into(), json!(false));
+            u.insert(
+                "can_send_private_message_to_user".into(),
+                json!(can_pm_user),
+            );
             out.insert("user".into(), Value::Object(u));
             return Ok(Value::Object(out));
         }
@@ -364,12 +430,26 @@ impl Users<'_> {
             json!(user.last_seen_at.map(time_json)),
         );
         u.insert("created_at".into(), json!(time_json(user.created_at)));
-        u.insert("ignored".into(), json!(false));
-        u.insert("muted".into(), json!(false));
-        u.insert("can_ignore_user".into(), json!(false));
-        u.insert("can_mute_user".into(), json!(false));
-        u.insert("can_send_private_messages".into(), json!(false));
-        u.insert("can_send_private_message_to_user".into(), json!(false));
+        let (ignored, muted) = self.ignored_and_muted(user.id).await?;
+        u.insert("ignored".into(), json!(ignored));
+        u.insert("muted".into(), json!(muted));
+        let target_staff = user.admin || user.moderator;
+        u.insert(
+            "can_ignore_user".into(),
+            json!(g.can_ignore_users(self.settings)? && !g.is_me(user.id) && !target_staff),
+        );
+        u.insert(
+            "can_mute_user".into(),
+            json!(g.can_mute_users() && !g.is_me(user.id) && !target_staff),
+        );
+        u.insert(
+            "can_send_private_messages".into(),
+            json!(g.can_send_private_messages(self.settings)?),
+        );
+        u.insert(
+            "can_send_private_message_to_user".into(),
+            json!(can_pm_user),
+        );
         u.insert("trust_level".into(), json!(user.trust_level));
         u.insert("moderator".into(), json!(user.moderator));
         u.insert("admin".into(), json!(user.admin));
@@ -383,7 +463,7 @@ impl Users<'_> {
             "badge_count".into(),
             json!(user.distinct_badge_count.unwrap_or(0)),
         );
-        let profile_details = !user.restrict_fields(self.settings)?;
+        let profile_details = !user.restrict_fields_for(self.settings, g)?;
         if profile_details {
             let fields = self.user_fields(user.id).await?;
             if !fields.is_empty() {
@@ -507,24 +587,77 @@ impl Users<'_> {
             json!(featured.iter().map(|b| b["id"].clone()).collect::<Vec<_>>()),
         );
         u.insert("invited_by".into(), self.invited_by(user).await?);
+        // groups: the target's groups the viewer may see, and whose
+        // members they may see unless viewing themselves.
+        let visible = crate::groups::visible_groups_where(self.guardian, "g");
+        let members_visible = if self.guardian.is_me(user.id) {
+            String::new()
+        } else {
+            format!(
+                " AND (g.id > 0) AND (g.id NOT IN (4, 5)) AND ({})",
+                crate::groups::visible_groups_where(self.guardian, "g")
+                    .replace("g.visibility_level", "g.members_visibility_level")
+            )
+        };
         let groups: Vec<crate::groups::BasicGroup> = sqlx::query_as(&format!(
             "SELECT {} FROM groups g LEFT JOIN uploads u ON u.id = g.flair_upload_id \
              JOIN group_users gu ON gu.group_id = g.id \
-             WHERE gu.user_id = $1 AND g.id > 0 AND g.id NOT IN (4, 5) \
-             AND g.visibility_level = 0 AND g.members_visibility_level = 0 \
+             WHERE gu.user_id = $1 AND g.id > 0 AND g.id NOT IN (4, 5) AND ({visible}){members_visible} \
              ORDER BY g.id ASC, g.name ASC",
             crate::groups::BASIC_GROUP_COLUMNS
         ))
         .bind(user.id)
         .fetch_all(&mut *self.conn)
         .await?;
+        let memberships: Vec<(i32, bool)> = match self.guardian.user_id() {
+            Some(uid) => {
+                sqlx::query_as("SELECT group_id, owner FROM group_users WHERE user_id = $1")
+                    .bind(uid)
+                    .fetch_all(&mut *self.conn)
+                    .await?
+            }
+            None => Vec::new(),
+        };
         let mut group_json = Vec::new();
         for g in &groups {
-            group_json.push(g.json(self.i18n)?);
+            let membership = memberships
+                .iter()
+                .find(|(id, _)| *id == g.id)
+                .map(|(_, owner)| (true, *owner));
+            group_json.push(g.json(self.i18n, self.guardian, self.settings, membership)?);
         }
         u.insert("groups".into(), Value::Array(group_json));
         out.insert("user".into(), Value::Object(u));
         Ok(Value::Object(out))
+    }
+
+    /// `can_send_private_message?(target)` for a user target.
+    fn can_send_private_message_to(&self, target: &User) -> Result<bool, UsersError> {
+        let g = self.guardian;
+        if !g.can_send_private_messages(self.settings)? {
+            return Ok(false);
+        }
+        let target_staff = target.admin || target.moderator;
+        Ok(
+            (g.is_staff() || target.allow_private_messages.unwrap_or(true))
+                && (g.is_staff() || !target.suspended())
+                && (!g.is_silenced() || target_staff),
+        )
+    }
+
+    /// Whether the viewer ignores or muted the target.
+    async fn ignored_and_muted(&mut self, target_id: i32) -> Result<(bool, bool), UsersError> {
+        let Some(uid) = self.guardian.user_id() else {
+            return Ok((false, false));
+        };
+        Ok(sqlx::query_as(
+            "SELECT EXISTS (SELECT 1 FROM ignored_users WHERE user_id = $1 AND ignored_user_id = $2), \
+                    EXISTS (SELECT 1 FROM muted_users WHERE user_id = $1 AND muted_user_id = $2)",
+        )
+        .bind(uid)
+        .bind(target_id)
+        .fetch_one(&mut *self.conn)
+        .await?)
     }
 
     async fn group_name(&mut self, id: Option<i32>) -> Result<Option<String>, UsersError> {
@@ -1273,9 +1406,9 @@ impl Users<'_> {
         Ok(out)
     }
 
-    /// `UserProfileView.add(profile_id, ip, nil)`: one view per profile, IP
-    /// and day (Rails keeps that window in redis for
-    /// user_profile_view_duration_hours); bumps `user_profiles.views`.
+    /// `UserProfileView.add(profile_id, ip, viewer_id)`: one view per
+    /// profile per day per viewer (logged in) or address (anonymous), as
+    /// Rails' redis key gates it; bumps `user_profiles.views`.
     pub async fn track_view(&mut self, user: &User, ip: &str) -> Result<(), UsersError> {
         let Some(profile_id) = user.profile_id else {
             return Ok(());
@@ -1285,14 +1418,17 @@ impl Users<'_> {
             .get("user_profile_view_duration_hours")?
             .to_i()
             .max(1);
+        let viewer = self.guardian.user_id();
         let seen: bool = sqlx::query_scalar(
             "SELECT EXISTS (SELECT 1 FROM user_profile_views \
-             WHERE user_profile_id = $1 AND ip_address = $2::inet AND user_id IS NULL \
+             WHERE user_profile_id = $1 \
+             AND (($4::int IS NULL AND ip_address = $2::inet AND user_id IS NULL) OR ($4::int IS NOT NULL AND user_id = $4)) \
              AND viewed_at::date = now()::date AND viewed_at >= now() - ($3 * interval '1 hour'))",
         )
         .bind(profile_id)
         .bind(ip)
         .bind(hours as f64)
+        .bind(viewer)
         .fetch_one(&mut *self.conn)
         .await?;
         if seen {
@@ -1300,10 +1436,11 @@ impl Users<'_> {
         }
         let inserted = sqlx::query(
             "INSERT INTO user_profile_views (user_profile_id, ip_address, viewed_at, user_id) \
-             VALUES ($1, $2::inet, now(), NULL)",
+             VALUES ($1, CASE WHEN $3::int IS NULL THEN $2::inet END, now(), $3)",
         )
         .bind(profile_id)
         .bind(ip)
+        .bind(viewer)
         .execute(&mut *self.conn)
         .await?;
         if inserted.rows_affected() == 1 {

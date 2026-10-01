@@ -191,14 +191,15 @@ async fn respond(
     let doc = match action {
         Action::Show => {
             let doc = users.show(&user).await?;
-            if params.skip_track_visit.is_none() {
+            // Viewing one's own profile isn't tracked.
+            if params.skip_track_visit.is_none() && !guardian.is_me(user.id) {
                 let ip = super::search::remote_ip(&headers, peer);
                 users.track_view(&user, &ip).await?;
             }
             doc
         }
         Action::Summary => {
-            if !user.visible_to_anonymous(&settings)? {
+            if !user.visible_to(&settings, &guardian)? {
                 return Ok(not_found());
             }
             users.summary(&user).await?
@@ -213,7 +214,7 @@ async fn respond(
         Action::Show => doc,
         Action::Summary => users.show(&user).await?,
     };
-    let visible = user.visible_to_anonymous(&settings)?;
+    let visible = user.visible_to(&settings, &guardian)?;
     let summary_doc = if visible {
         Some(users.summary(&user).await?)
     } else {
@@ -294,7 +295,7 @@ pub async fn actions(
         return Err(Unsupported("negative user_actions limit").into());
     }
     // ensure_user_actions_visible!: hidden profiles and private types 404.
-    if !user.visible_to_anonymous(&settings)?
+    if !user.visible_to(&settings, &guardian)?
         || settings.get("hide_user_activity_tab")?.truthy()
         || action_types.iter().any(|t| PRIVATE_TYPES.contains(t))
     {

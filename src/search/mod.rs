@@ -756,6 +756,24 @@ impl Search<'_> {
         })
     }
 
+    /// The viewer's `(member, owner)` row for a group, if any.
+    async fn group_membership(
+        &mut self,
+        group_id: i32,
+    ) -> Result<Option<(bool, bool)>, SearchError> {
+        let Some(uid) = self.guardian.user_id() else {
+            return Ok(None);
+        };
+        let owner: Option<bool> = sqlx::query_scalar(
+            "SELECT owner FROM group_users WHERE group_id = $1 AND user_id = $2",
+        )
+        .bind(group_id)
+        .bind(uid)
+        .fetch_optional(&mut *self.conn)
+        .await?;
+        Ok(owner.map(|o| (true, o)))
+    }
+
     /// `category_search`: readable categories by their search data, busiest
     /// this month first.
     async fn category_search(
@@ -1127,7 +1145,8 @@ impl Search<'_> {
 
         let mut groups = Vec::new();
         for g in &results.groups {
-            groups.push(g.json(self.i18n)?);
+            let membership = self.group_membership(g.id).await?;
+            groups.push(g.json(self.i18n, self.guardian, self.settings, membership)?);
         }
         out.insert("groups".into(), Value::Array(groups));
 

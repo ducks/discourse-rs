@@ -217,3 +217,11 @@ GET /tags.json as=admin
 # topics, secure categories.
 GET /categories.json as=user1 ignore=/category_list/categories/*/custom_fields,/category_list/categories/*/topics/*/has_accepted_answer
 GET /categories.json as=admin ignore=/category_list/categories/*/custom_fields,/category_list/categories/*/topics/*/has_accepted_answer
+
+# users#show for another logged-in user: mute/ignore/PM flags, visible
+# groups, the new-profile gate relaxed for TL2 viewers.
+GET /u/user1.json as=user0 ignore=/user/can_chat_user,/user/accepted_answers,/user/profile_view_count
+GET /u/admin.json as=user0 ignore=/user/can_chat_user,/user/accepted_answers,/user/profile_view_count
+GET /u/user0.json as=user1 ignore=/user/can_chat_user,/user/accepted_answers,/user/profile_view_count
+GET /u/user0/summary.json as=user1 ignore=/user_summary/solved_count,/topics/*/has_accepted_answer,/topics/*/can_have_answer
+GET /user_actions.json?username=user0 as=user1

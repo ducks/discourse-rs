@@ -458,6 +458,32 @@ impl Guardian {
         )
     }
 
+    /// `can_mute_users?`: staff or TL1+.
+    pub fn can_mute_users(&self) -> bool {
+        self.user()
+            .is_some_and(|u| u.admin || u.moderator || u.trust_level >= 1)
+    }
+
+    /// `can_ignore_users?`: staff or ignore_allowed_groups.
+    pub fn can_ignore_users(&self, settings: &SiteSettings) -> Result<bool, SettingError> {
+        if self.is_anonymous() {
+            return Ok(false);
+        }
+        Ok(self.is_staff() || self.in_setting_groups(settings, "ignore_allowed_groups")?)
+    }
+
+    /// `can_send_private_messages?`: bots and system aside, members of
+    /// personal_message_enabled_groups.
+    pub fn can_send_private_messages(&self, settings: &SiteSettings) -> Result<bool, SettingError> {
+        let Some(u) = self.user() else {
+            return Ok(false);
+        };
+        if u.id < 0 {
+            return Ok(true);
+        }
+        self.in_setting_groups(settings, "personal_message_enabled_groups")
+    }
+
     /// TagGuardian#can_create_tag?
     pub fn can_create_tag(&self, settings: &SiteSettings) -> Result<bool, SettingError> {
         Ok(settings.get("tagging_enabled")?.truthy()
