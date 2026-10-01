@@ -1,0 +1,68 @@
+name: Release
+
+# `make release` pushes a v<date-ver> tag; this builds the binary for it
+# and attaches it to a GitHub release. Run by hand with a tag to build one
+# that predates this workflow.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag to build and release
+        required: true
+
+permissions:
+  contents: write
+
+env:
+  TAG: ${{ inputs.tag || github.ref_name }}
+  TARGET: x86_64-unknown-linux-musl
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+
+      # Same rustc as the Test workflow and shell.nix.
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@1.86.0
+        with:
+          targets: ${{ env.TARGET }}
+
+      # Static musl binary: nothing to match on the host's libc.
+      - name: Install musl toolchain
+        run: sudo apt-get update && sudo apt-get install -y musl-tools
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-release-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Build
+        run: cargo build --release --locked --target "$TARGET" --bin discourse-rs
+
+      - name: Package
+        run: |
+          name="discourse-rs-$TAG-x86_64-linux"
+          mkdir "$name"
+          cp "target/$TARGET/release/discourse-rs" README.md "$name/"
+          tar -czf "$name.tar.gz" "$name"
+          sha256sum "$name.tar.gz" > "$name.tar.gz.sha256"
+
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$TAG" --verify-tag --title "$TAG" --generate-notes \
+            discourse-rs-"$TAG"-x86_64-linux.tar.gz \
+            discourse-rs-"$TAG"-x86_64-linux.tar.gz.sha256
