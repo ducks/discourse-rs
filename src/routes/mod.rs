@@ -1,5 +1,6 @@
 mod list;
 mod login_required;
+mod notifications;
 mod robots;
 mod search;
 mod session;
@@ -60,6 +61,8 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/posted.json", get(list::user_list))
         .route("/bookmarks", get(list::user_list))
         .route("/bookmarks.json", get(list::user_list))
+        .route("/notifications", get(notifications::index))
+        .route("/notifications.json", get(notifications::index))
         .route("/t/{id}", get(topics::show_by_id))
         .route("/t/{slug}/{id}", get(topics::show_with_slug))
         .route("/t/{slug}/{id}/{post_number}", get(topics::show_post))

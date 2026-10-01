@@ -88,8 +88,13 @@ async fn profile_views_are_tracked_once_per_ip_and_day() {
 #[tokio::test]
 async fn hidden_profiles_follow_the_anonymous_rules() {
     let db = TestDb::new().await;
-    // user0: trust level 1 with no replies -> hidden while
+    // user0: trust level 1 with no replies (the mention fixture gave
+    // them one; take it back here) -> hidden while
     // hide_new_user_profiles is on; visible once it is off.
+    sqlx::query("UPDATE user_stats SET post_count = 0 WHERE user_id = 2")
+        .execute(&db.pool)
+        .await
+        .unwrap();
     let (status, _, body) = get(&db.pool, "/u/user0.json").await;
     assert_eq!(status, StatusCode::OK);
     let json: Value = serde_json::from_str(&body).unwrap();

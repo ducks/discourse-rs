@@ -1,0 +1,7 @@
+{
+  "request": "GET /notifications.json?limit=61 as=user1",
+  "source": "http://127.0.0.1:3042",
+  "status": 400,
+  "content_type": "application/json; charset=utf-8",
+  "body": "{\"errors\":[\"You supplied invalid parameters to the request: limit\"],\"error_type\":\"invalid_parameters\"}"
+}

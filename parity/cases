@@ -102,15 +102,17 @@ GET /u/user1.json ignore=/user/can_chat_user,/user/accepted_answers,/user/profil
 GET /u/User1.json?case=upper ignore=/user/can_chat_user,/user/accepted_answers,/user/profile_view_count
 GET /u/admin.json ignore=/user/can_chat_user,/user/accepted_answers,/user/profile_view_count
 GET /u/system.json ignore=/user/can_chat_user,/user/accepted_answers,/user/profile_view_count
-GET /u/user0.json ignore=/user/can_chat_user
+GET /u/user0.json ignore=/user/can_chat_user,/user/accepted_answers,/user/profile_view_count
 GET /u/nobody.json
 GET /u/user1/badges.json ignore=/user/can_chat_user,/user/accepted_answers,/user/profile_view_count
 GET /u/user1/activity/topics.json ignore=/user/can_chat_user,/user/accepted_answers,/user/profile_view_count
 # users#summary
-GET /u/user1/summary.json ignore=/user_summary/solved_count,/topics/*/has_accepted_answer,/topics/*/can_have_answer
+GET /u/user1/summary.json ignore=/user_summary/solved_count,/topics/*/has_accepted_answer,/topics/*/can_have_answer,/user_summary/top_categories
+# user1's top categories tie (one post each in General and Sub General);
+# Rails has no tiebreak, so the order is ignored above.
 # admin's top categories tie on totals; Rails orders ties by heap order, unreproducible.
 GET /u/admin/summary.json ignore=/user_summary/solved_count,/topics/*/has_accepted_answer,/topics/*/can_have_answer,/user_summary/top_categories
-GET /u/user0/summary.json
+GET /u/user0/summary.json ignore=/user_summary/solved_count,/topics/*/has_accepted_answer,/topics/*/can_have_answer
 # user_actions#index
 GET /user_actions.json?username=user1
 GET /user_actions.json?username=admin
@@ -225,3 +227,24 @@ GET /u/admin.json as=user0 ignore=/user/can_chat_user,/user/accepted_answers,/us
 GET /u/user0.json as=user1 ignore=/user/can_chat_user,/user/accepted_answers,/user/profile_view_count
 GET /u/user0/summary.json as=user1 ignore=/user_summary/solved_count,/topics/*/has_accepted_answer,/topics/*/can_have_answer
 GET /user_actions.json?username=user0 as=user1
+
+# notifications#index. `recent` without `silent` bumps seen_notification_id
+# on the reference, so only silent recents are recorded; the bump has
+# its own test.
+GET /notifications.json as=user1
+GET /notifications.json?filter=read as=user1
+GET /notifications.json?filter=unread as=user1
+GET /notifications.json?limit=2&offset=1 as=user1
+GET /notifications.json?limit=0 as=user1
+GET /notifications.json?limit=61 as=user1
+GET /notifications.json?username=user1 as=admin
+GET /notifications.json?username=USER1&case=upper as=admin
+GET /notifications.json?username=user1 as=user0
+GET /notifications.json?recent=true&silent=true as=user1
+GET /notifications.json?recent=true&limit=3&silent=true as=user1
+GET /notifications.json?recent=true&filter_by_types=liked,mentioned&silent=true as=user1
+GET /notifications.json?recent=true&filter_by_types=bogus&silent=true as=user1
+GET /notifications.json?recent=true&silent=true as=admin
+GET /notifications.json as=user0
+GET /notifications.json as=admin
+GET /notifications.json

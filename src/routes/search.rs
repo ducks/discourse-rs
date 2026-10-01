@@ -44,7 +44,7 @@ pub struct QueryParams {
 }
 
 /// `Discourse::InvalidParameters` as JSON.
-fn invalid_parameters(state: &AppState, message: &str) -> Response {
+pub(super) fn invalid_parameters(state: &AppState, message: &str) -> Response {
     let text = state
         .i18n
         .t_with("invalid_params", &[("message", message)])
@@ -58,7 +58,7 @@ fn invalid_parameters(state: &AppState, message: &str) -> Response {
 }
 
 /// `Discourse::InvalidAccess` as JSON.
-fn invalid_access(state: &AppState) -> Response {
+pub(super) fn invalid_access(state: &AppState) -> Response {
     let text = state
         .i18n
         .t("invalid_access")

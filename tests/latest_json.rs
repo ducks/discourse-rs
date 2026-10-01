@@ -42,8 +42,9 @@ async fn lists_visible_topics_with_globally_pinned_first() {
     let (status, json) = get(&db.pool, "/latest.json").await;
     assert_eq!(status, StatusCode::OK);
 
-    // 5 = Welcome (pinned globally), 41/38/37/35 by bumped_at desc.
-    assert_eq!(ids(&json), vec![5, 41, 38, 37, 35]);
+    // 5 = Welcome (pinned globally), 35/41/38/37 by bumped_at desc (35 was
+    // bumped by the mention fixture).
+    assert_eq!(ids(&json), vec![5, 35, 41, 38, 37]);
     // Unlisted (39), deleted (40), staff (2, 4, 6) and category definition
     // topics (1, 3) never appear.
     for hidden in [39, 40, 2, 4, 6, 1, 3] {
@@ -74,7 +75,7 @@ async fn category_pinned_topics_keep_their_bump_position() {
 async fn paging_offsets_after_the_pinned_topics_and_links_more() {
     let db = TestDb::new().await;
     let (_, page0) = get(&db.pool, "/latest.json?per_page=2").await;
-    assert_eq!(ids(&page0), vec![5, 41]);
+    assert_eq!(ids(&page0), vec![5, 35]);
     assert_eq!(
         page0["topic_list"]["more_topics_url"],
         "/latest?no_definitions=true&page=1&per_page=2"
@@ -82,14 +83,14 @@ async fn paging_offsets_after_the_pinned_topics_and_links_more() {
 
     let (_, page1) = get(&db.pool, "/latest.json?page=1&per_page=2").await;
     // offset = page * per_page - pinned = 1
-    assert_eq!(ids(&page1), vec![38, 37]);
+    assert_eq!(ids(&page1), vec![41, 38]);
     assert_eq!(
         page1["topic_list"]["more_topics_url"],
         "/latest?no_definitions=true&page=2&per_page=2"
     );
 
     let (_, page2) = get(&db.pool, "/latest.json?page=2&per_page=2").await;
-    assert_eq!(ids(&page2), vec![35]);
+    assert_eq!(ids(&page2), vec![37]);
     assert!(
         page2["topic_list"].get("more_topics_url").is_none(),
         "partial page has no more url"
@@ -118,17 +119,21 @@ async fn posters_and_users_follow_topic_posters_summary() {
     let topics = json["topic_list"]["topics"].as_array().unwrap();
     let replies = topics.iter().find(|t| t["id"] == 35).unwrap();
     let posters = replies["posters"].as_array().unwrap();
-    // user0 (OP), then featured user1/user2, admin (last poster) shuffled to the back.
+    // user0 is both OP and, since the mention fixture, the last poster, so
+    // it stays first with both descriptions; then featured user1/user2.
     let user_ids: Vec<i64> = posters
         .iter()
         .map(|p| p["user_id"].as_i64().unwrap())
         .collect();
-    assert_eq!(user_ids, vec![2, 3, 4, 1]);
-    assert_eq!(posters[0]["description"], "Original Poster");
-    assert_eq!(posters[3]["description"], "Most Recent Poster");
-    assert_eq!(posters[3]["extras"], "latest");
-    assert_eq!(posters[0]["extras"], Value::Null);
-    assert_eq!(replies["last_poster_username"], "admin");
+    assert_eq!(user_ids, vec![2, 3, 4]);
+    assert_eq!(
+        posters[0]["description"],
+        "Original Poster, Most Recent Poster"
+    );
+    assert_eq!(posters[1]["description"], "Frequent Poster");
+    assert_eq!(posters[0]["extras"], "latest");
+    assert_eq!(posters[1]["extras"], Value::Null);
+    assert_eq!(replies["last_poster_username"], "user0");
 
     let single = topics.iter().find(|t| t["id"] == 38).unwrap();
     assert_eq!(single["posters"][0]["extras"], "latest single");
@@ -143,7 +148,7 @@ async fn posters_and_users_follow_topic_posters_summary() {
         .iter()
         .map(|u| u["username"].as_str().unwrap())
         .collect();
-    assert_eq!(names, vec!["system", "user0", "admin", "user1", "user2"]);
+    assert_eq!(names, vec!["system", "user0", "user1", "user2", "admin"]);
     let user0 = &users[1];
     assert!(
         user0["avatar_template"]

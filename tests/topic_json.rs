@@ -40,8 +40,8 @@ async fn renders_the_post_stream_in_order() {
     let (status, _, json) = get(&db.pool, "/t/parity-fixture-replies-and-posters/35.json").await;
     assert_eq!(status, StatusCode::OK);
     assert_eq!(json["id"], 35);
-    assert_eq!(json["posts_count"], 4);
-    assert_eq!(json["highest_post_number"], 4);
+    assert_eq!(json["posts_count"], 5);
+    assert_eq!(json["highest_post_number"], 5);
     assert_eq!(json["current_post_number"], 1);
     assert_eq!(json["chunk_size"], 20);
     let posts = json["post_stream"]["posts"].as_array().unwrap();
@@ -49,11 +49,12 @@ async fn renders_the_post_stream_in_order() {
         .iter()
         .map(|p| p["post_number"].as_i64().unwrap())
         .collect();
-    assert_eq!(numbers, vec![1, 2, 3, 4]);
-    assert_eq!(json["post_stream"]["stream"].as_array().unwrap().len(), 4);
+    assert_eq!(numbers, vec![1, 2, 3, 4, 5]);
+    assert_eq!(json["post_stream"]["stream"].as_array().unwrap().len(), 5);
     // [post_number, days ago]: the fixture ages, so only the shape is fixed.
     let lookup = json["timeline_lookup"].as_array().unwrap();
-    assert_eq!(lookup.len(), 1);
+    // Two days of posts since the mention fixture: one entry per day.
+    assert_eq!(lookup.len(), 2);
     assert_eq!(lookup[0][0], 1);
     assert!(lookup[0][1].as_i64().unwrap() >= 0);
     assert_eq!(
@@ -77,9 +78,14 @@ async fn details_list_participants_creator_and_last_poster() {
     assert_eq!(details["notification_level"], 1);
     let participants = details["participants"].as_array().unwrap();
     assert_eq!(participants.len(), 4);
-    assert!(participants.iter().all(|p| p["post_count"] == 1));
+    // user0 has the opener and the mention-fixture reply.
+    assert!(
+        participants
+            .iter()
+            .all(|p| p["post_count"] == 1 || p["id"] == 2)
+    );
     assert_eq!(details["created_by"]["username"], "user0");
-    assert_eq!(details["last_poster"]["username"], "admin");
+    assert_eq!(details["last_poster"]["username"], "user0");
     assert_eq!(json["participant_count"], 4);
     assert_eq!(json["actions_summary"].as_array().unwrap().len(), 4);
     assert_eq!(json["bookmarks"], serde_json::json!([]));
@@ -106,7 +112,7 @@ async fn post_number_selects_the_current_post() {
     assert_eq!(json["current_post_number"], 3);
     // Past the end clamps to the highest post.
     let (_, _, json) = get(&db.pool, "/t/parity-fixture-replies-and-posters/35/99.json").await;
-    assert_eq!(json["current_post_number"], 4);
+    assert_eq!(json["current_post_number"], 5);
 }
 
 #[tokio::test]
