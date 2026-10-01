@@ -55,7 +55,7 @@ async fn category_lists_include_the_definition_topic_and_subcategories() {
     assert_eq!(status, StatusCode::OK);
     // Welcome (pinned globally, but only category pins float here), then by
     // bump: About General (3) shows, the subcategory's About (34) doesn't.
-    assert_eq!(ids(&body), vec![5, 3, 41, 38, 35]);
+    assert_eq!(ids(&body), vec![5, 3, 35, 41, 38]);
     let json: Value = serde_json::from_str(&body).unwrap();
     // guide and howto tie on count; name breaks the tie.
     assert_eq!(json["topic_list"]["top_tags"][0]["name"], "guide");

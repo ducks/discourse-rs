@@ -32,6 +32,8 @@ pub struct TopicCtx {
     pub post_create_allowed: bool,
     /// `Category.topic_create_allowed(guardian).where(id: category_id)`
     pub topic_create_allowed: bool,
+    /// `can_create_topic?(nil)` for the guardian.
+    pub can_create_topic: bool,
     /// `Discourse.static_doc_topic_ids.include?(id)`
     pub static_doc: bool,
     pub first_post_locked: bool,
@@ -42,6 +44,12 @@ pub struct TopicCtx {
     pub unlimited_owner_edits: bool,
     /// The category has non-automatic groups (whose owners may invite).
     pub manual_groups: bool,
+    /// The viewer is in `topic.all_allowed_users` (directly or by group).
+    pub pm_member: bool,
+    /// A pending flag on a post of this PM (opens it to moderators).
+    pub pm_flagged: bool,
+    /// `topic_allowed_users.count + topic_allowed_groups.count`
+    pub recipients: i64,
 }
 
 /// What the post predicates read about a post.
@@ -104,7 +112,8 @@ impl TopicCtx {
                     EXISTS (SELECT 1 FROM categories WHERE topic_id = t.id) AS is_category_topic, \
                     EXISTS (SELECT 1 FROM shared_drafts WHERE topic_id = t.id) AS shared_draft, \
                     (c.id IS NULL OR {post_create}) AS post_create_allowed, \
-                    (c.id IS NOT NULL AND {topic_create} AND (NOT $4 OR c.id <> $5)) AS topic_create_allowed, \
+                    (c.id IS NULL OR ({topic_create} AND (NOT $4 OR c.id <> $5))) AS topic_create_allowed, \
+                    $7 AS can_create_topic, \
                     t.id = ANY($6) AS static_doc, \
                     COALESCE(fp.locked_by_id IS NOT NULL, FALSE) AS first_post_locked, \
                     COALESCE(fp.hidden, FALSE) AS first_post_hidden, \
@@ -112,7 +121,13 @@ impl TopicCtx {
                     COALESCE(fp.wiki, FALSE) AS first_post_wiki, \
                     COALESCE(c.allow_unlimited_owner_edits_on_first_post, FALSE) AS unlimited_owner_edits, \
                     EXISTS (SELECT 1 FROM category_groups cg JOIN groups g ON g.id = cg.group_id \
-                            WHERE cg.category_id = c.id AND NOT g.automatic) AS manual_groups \
+                            WHERE cg.category_id = c.id AND NOT g.automatic) AS manual_groups, \
+                    (EXISTS (SELECT 1 FROM topic_allowed_users tau WHERE tau.topic_id = t.id AND tau.user_id = $3) \
+                     OR EXISTS (SELECT 1 FROM topic_allowed_groups tag JOIN group_users gu ON gu.group_id = tag.group_id \
+                                WHERE tag.topic_id = t.id AND gu.user_id = $3)) AS pm_member, \
+                    EXISTS (SELECT 1 FROM reviewables r WHERE r.topic_id = t.id AND r.type = 'ReviewableFlaggedPost' AND r.status = 0) AS pm_flagged, \
+                    ((SELECT count(*) FROM topic_allowed_users tau WHERE tau.topic_id = t.id) \
+                     + (SELECT count(*) FROM topic_allowed_groups tag WHERE tag.topic_id = t.id)) AS recipients \
              FROM topics t LEFT JOIN categories c ON c.id = t.category_id \
              LEFT JOIN posts fp ON fp.topic_id = t.id AND fp.post_number = 1 AND fp.deleted_at IS NULL \
              WHERE t.id = $1",
@@ -120,6 +135,7 @@ impl TopicCtx {
             topic_create = scoped("1"),
         );
         let static_docs: Vec<i32> = static_docs.into_iter().map(|id| id as i32).collect();
+        let can_create_topic = guardian.can_create_topic(&mut *conn, settings).await?;
         Ok(sqlx::query_as(&sql)
             .bind(topic_id)
             .bind(staged)
@@ -127,6 +143,7 @@ impl TopicCtx {
             .bind(exclude_uncategorized)
             .bind(uncategorized)
             .bind(&static_docs)
+            .bind(can_create_topic)
             .fetch_optional(conn)
             .await?)
     }
@@ -197,7 +214,18 @@ impl Guardian {
             return Ok(false);
         }
         if topic.private_message() {
-            return Err(Unsupported("private message topics").into());
+            // all_allowed_users: direct members, group members, and
+            // moderators when flagged or a warning.
+            if self.is_anonymous() {
+                return Ok(false);
+            }
+            if topic.pm_member {
+                return Ok(true);
+            }
+            if self.is_moderator() && topic.pm_flagged {
+                return Err(Unsupported("moderators' view of flagged private messages").into());
+            }
+            return Ok(self.is_moderator() && topic.subtype.as_deref() == Some("moderator_warning"));
         }
         if topic.shared_draft && !self.can_see_shared_draft(settings)? {
             return Ok(false);
@@ -254,8 +282,16 @@ impl Guardian {
         {
             return Ok(false);
         }
+        // can_create_post_in_topic?: a PM you can see and may reply to
+        // (no category to check); the spam rule only guards regular topics.
         if topic.private_message() {
-            return Err(Unsupported("private message topics").into());
+            if topic.subtype.as_deref() != Some("system_message")
+                && !topic.pm_member
+                && !self.is_admin()
+            {
+                return Ok(false);
+            }
+            return Ok(true);
         }
         if !can_post_anywhere {
             return Ok(false);
@@ -311,10 +347,9 @@ impl Guardian {
         if settings.get("allow_uncategorized_topics")?.truthy()
             || topic.category_id != Some(uncategorized)
         {
-            // can_create_topic_on_category?: can_create_topic?(nil) first,
-            // which the caller folded into topic_create_allowed for users
-            // who may create topics at all.
-            if !topic.topic_create_allowed {
+            // can_create_topic_on_category?: can_create_topic?(nil), then
+            // the category must allow topics (none to check for a PM).
+            if !topic.can_create_topic || !topic.topic_create_allowed {
                 return Ok(false);
             }
         }
@@ -423,12 +458,28 @@ impl Guardian {
     }
 
     /// `can_invite_to?(topic)`
-    pub fn can_invite_to(&self, topic: &TopicCtx, can_see: bool) -> Result<bool, GuardianError> {
+    pub fn can_invite_to(
+        &self,
+        settings: &SiteSettings,
+        topic: &TopicCtx,
+        can_see: bool,
+    ) -> Result<bool, GuardianError> {
         if self.is_anonymous() || !can_see {
             return Ok(false);
         }
         if topic.private_message() {
-            return Err(Unsupported("private message topics").into());
+            if self.is_admin() {
+                return Ok(true);
+            }
+            if !self.in_setting_groups(settings, "personal_message_enabled_groups")? {
+                return Ok(false);
+            }
+            // reached_recipients_limit?
+            let limit = settings.get("max_allowed_message_recipients")?.to_i();
+            if topic.recipients >= limit && !self.is_staff() {
+                return Ok(false);
+            }
+            return Ok(true);
         }
         if topic.read_restricted == Some(true) {
             // category.groups.where(automatic: false).any? { can_edit_group? }:
@@ -462,7 +513,7 @@ impl Guardian {
         topic: &TopicCtx,
         can_see: bool,
     ) -> Result<bool, GuardianError> {
-        if !self.can_invite_to_forum(settings)? || !self.can_invite_to(topic, can_see)? {
+        if !self.can_invite_to_forum(settings)? || !self.can_invite_to(settings, topic, can_see)? {
             return Ok(false);
         }
         Ok((settings.get("enable_local_logins")?.truthy()

@@ -1,0 +1,7 @@
+{
+  "request": "GET /notifications.json?filter=read as=user1",
+  "source": "http://127.0.0.1:3042",
+  "status": 200,
+  "content_type": "application/json; charset=utf-8",
+  "body": "{\"notifications\":[{\"id\":2,\"user_id\":3,\"notification_type\":12,\"read\":true,\"high_priority\":false,\"created_at\":\"2026-09-30T06:20:02.086Z\",\"post_number\":null,\"topic_id\":null,\"slug\":null,\"data\":{\"badge_id\":1,\"badge_name\":\"Basic\",\"badge_slug\":\"basic\",\"badge_title\":false,\"username\":\"user1\"}}],\"total_rows_notifications\":1,\"seen_notification_id\":0,\"load_more_notifications\":\"/notifications?filter=read&limit=60&offset=60&username=user1\"}"
+}

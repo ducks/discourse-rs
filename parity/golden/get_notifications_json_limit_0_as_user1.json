@@ -1,0 +1,7 @@
+{
+  "request": "GET /notifications.json?limit=0 as=user1",
+  "source": "http://127.0.0.1:3042",
+  "status": 200,
+  "content_type": "application/json; charset=utf-8",
+  "body": "{\"notifications\":[],\"total_rows_notifications\":9,\"seen_notification_id\":0,\"load_more_notifications\":\"/notifications?limit=0&offset=0&username=user1\"}"
+}

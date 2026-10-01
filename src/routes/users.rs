@@ -10,7 +10,6 @@ use serde::Deserialize;
 use serde_json::{Value, json};
 
 use super::search::Peer;
-use crate::guardian::Guardian;
 use crate::html::Crawler;
 use crate::session::current::AuthGuardian;
 use crate::site_settings::SiteSettings;
@@ -88,7 +87,7 @@ fn route(username: &str, rest: Option<&str>) -> Result<(String, Action, bool), U
 /// GET /u/{username}
 pub async fn show(
     State(state): State<AppState>,
-    AuthGuardian(guardian): AuthGuardian,
+    axum::Extension(incoming): axum::Extension<crate::session::current::Incoming>,
     Path(username): Path<String>,
     Query(params): Query<ShowParams>,
     headers: HeaderMap,
@@ -98,7 +97,7 @@ pub async fn show(
     let (username, action, json) = route(&username, None)?;
     respond(
         state,
-        guardian,
+        incoming,
         Target {
             username,
             action,
@@ -115,7 +114,7 @@ pub async fn show(
 /// GET /u/{username}/{*rest}
 pub async fn show_with_tail(
     State(state): State<AppState>,
-    AuthGuardian(guardian): AuthGuardian,
+    axum::Extension(incoming): axum::Extension<crate::session::current::Incoming>,
     Path((username, rest)): Path<(String, String)>,
     Query(params): Query<ShowParams>,
     headers: HeaderMap,
@@ -125,7 +124,7 @@ pub async fn show_with_tail(
     let (username, action, json) = route(&username, Some(&rest))?;
     respond(
         state,
-        guardian,
+        incoming,
         Target {
             username,
             action,
@@ -148,13 +147,18 @@ struct Target {
 
 async fn respond(
     state: AppState,
-    guardian: Guardian,
+    incoming: crate::session::current::Incoming,
     target: Target,
     params: ShowParams,
     headers: HeaderMap,
     peer: Option<std::net::SocketAddr>,
     uri: axum::http::Uri,
 ) -> Result<Response, AppError> {
+    let guardian = incoming.guardian.clone();
+    let auth_token: Option<String> = incoming
+        .session
+        .as_ref()
+        .map(|s| s.token.auth_token.clone());
     let Target {
         username,
         action,
@@ -187,6 +191,7 @@ async fn respond(
         guardian: &guardian,
         urls: &urls,
         base_path,
+        auth_token: auth_token.as_deref(),
     };
     let doc = match action {
         Action::Show => {
@@ -318,6 +323,7 @@ pub async fn actions(
         guardian: &guardian,
         urls: &urls,
         base_path: state.config.globals.relative_url_root(),
+        auth_token: None,
     };
     let list = users
         .actions(

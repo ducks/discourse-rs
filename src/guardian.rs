@@ -46,14 +46,11 @@ impl Guardian {
         conn: &mut PgConnection,
         user: &SessionUser,
     ) -> Result<Guardian, sqlx::Error> {
-        let group_ids: Vec<i64> = sqlx::query_scalar(
-            "SELECT group_id::bigint FROM group_users WHERE user_id = $1 ORDER BY group_id",
-        )
-        .bind(user.id)
-        .fetch_all(&mut *conn)
-        .await?;
-        let silenced: bool = sqlx::query_scalar(
-            "SELECT silenced_till IS NOT NULL AND silenced_till > now() FROM users WHERE id = $1",
+        // One round-trip: the memberships and the silence in a row.
+        let (group_ids, silenced): (Vec<i64>, bool) = sqlx::query_as(
+            "SELECT COALESCE((SELECT array_agg(group_id::bigint ORDER BY group_id) FROM group_users WHERE user_id = $1), '{}'), \
+                    silenced_till IS NOT NULL AND silenced_till > now() \
+             FROM users WHERE id = $1",
         )
         .bind(user.id)
         .fetch_one(&mut *conn)
@@ -232,6 +229,88 @@ impl Guardian {
         } else {
             format!("({column} IS NULL OR {column} IN ({list}))")
         }
+    }
+
+    /// `private_message_topic_scope`'s clause: PMs the user is allowed
+    /// into directly or through a group. Moderators also see warnings and
+    /// flagged PMs, which this slice refuses when any pending flag exists.
+    pub fn private_message_clause(&self) -> Option<String> {
+        let uid = self.user_id()?;
+        Some(format!(
+            "(topics.id IN (SELECT topic_id FROM topic_allowed_users WHERE user_id = {uid}) \
+             OR topics.id IN (SELECT tg.topic_id FROM topic_allowed_groups tg \
+                JOIN group_users gu ON gu.user_id = {uid} AND gu.group_id = tg.group_id))"
+        ))
+    }
+
+    /// `can_see_topic_ids(topic_ids:)`: the given ids the guardian may
+    /// see (`visible_topic_scope`), in the order given. Admins see all.
+    pub async fn can_see_topic_ids(
+        &self,
+        conn: &mut PgConnection,
+        settings: &SiteSettings,
+        topic_ids: &[i32],
+    ) -> Result<Vec<i32>, GuardianError> {
+        if topic_ids.is_empty() {
+            return Ok(Vec::new());
+        }
+        let suppress = settings
+            .get("suppress_secured_categories_from_admin")?
+            .truthy();
+        if self.is_admin() && !suppress {
+            return Ok(topic_ids.to_vec());
+        }
+        if self.is_moderator() {
+            let pending: bool = sqlx::query_scalar(
+                "SELECT EXISTS (SELECT 1 FROM reviewables WHERE type = 'ReviewableFlaggedPost' AND status = 0)",
+            )
+            .fetch_one(&mut *conn)
+            .await?;
+            if pending {
+                return Err(Unsupported("moderators' view of flagged private messages").into());
+            }
+        }
+        let mut clauses = vec![
+            "topics.id = ANY($1)".to_string(),
+            "topics.deleted_at IS NULL".to_string(),
+        ];
+        if self.is_staff() {
+            // Staff keep deleted topics in the scope; the serializers
+            // that follow refuse them anyway.
+            clauses.pop();
+        }
+        if !self.can_see_shared_draft(settings)? {
+            clauses.push("shared_drafts.id IS NULL".to_string());
+        }
+        let regular = format!(
+            "(topics.archetype <> 'private_message' AND (topics.category_id IS NULL OR topics.category_id IN ({})))",
+            self.allowed_category_ids_sql(settings)?
+        );
+        let visible = match self.private_message_clause() {
+            Some(pm) => {
+                let warning = if self.is_moderator() {
+                    " OR topics.subtype = 'moderator_warning'"
+                } else {
+                    ""
+                };
+                format!("({regular} OR (topics.archetype = 'private_message' AND {pm}){warning})")
+            }
+            None => regular,
+        };
+        clauses.push(visible);
+        let ids: Vec<i32> = sqlx::query_scalar(&format!(
+            "SELECT topics.id FROM topics LEFT OUTER JOIN shared_drafts ON shared_drafts.topic_id = topics.id \
+             WHERE {}",
+            clauses.join(" AND ")
+        ))
+        .bind(topic_ids)
+        .fetch_all(conn)
+        .await?;
+        Ok(topic_ids
+            .iter()
+            .copied()
+            .filter(|id| ids.contains(id))
+            .collect())
     }
 
     /// `can_see_shared_draft?`

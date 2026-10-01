@@ -454,6 +454,7 @@ pub async fn create(
         guardian: &guardian,
         urls: &urls,
         base_path: state.config.globals.relative_url_root(),
+        auth_token: None,
     }
     .show(&profile)
     .await?;

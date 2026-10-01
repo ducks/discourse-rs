@@ -455,6 +455,12 @@ async fn sessions_rotate_expire_and_drop_suspended_users() {
 #[tokio::test]
 async fn logged_in_users_pass_the_login_gate_and_update_last_seen() {
     let db = TestDb::new().await;
+    // The seed may already hold a visit for today (the reference was
+    // browsed the day it was snapshotted); the test wants a first visit.
+    sqlx::query("DELETE FROM user_visits WHERE user_id = 3 AND visited_at = now()::date")
+        .execute(&db.pool)
+        .await
+        .unwrap();
     let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[]));
     let mut client = Client::new(app_state.clone());
     client.login("user1", "password").await;
@@ -603,4 +609,173 @@ async fn pages_carry_the_viewer_and_the_logout_form_works() {
         .await
         .unwrap();
     assert_eq!(tokens, 0);
+}
+
+#[tokio::test]
+async fn recent_notifications_bump_the_seen_id_unless_silent() {
+    let db = TestDb::new().await;
+    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[]));
+    let mut client = Client::new(app_state.clone());
+    client.login("user1", "password").await;
+
+    let reply = client
+        .get("/notifications.json?recent=true&silent=true")
+        .await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    let json = reply.json();
+    assert_eq!(json["seen_notification_id"], 0);
+    let ids: Vec<i64> = json["notifications"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|n| n["id"].as_i64().unwrap())
+        .collect();
+    // Unread high priority first, then unread non-likes, the like, the read one.
+    assert_eq!(ids, vec![50, 48, 44, 51, 47, 41, 7, 45, 2]);
+
+    // Without `silent` the newest visible id is recorded on the user.
+    let reply = client.get("/notifications.json?recent=true&limit=3").await;
+    let json = reply.json();
+    assert_eq!(json["seen_notification_id"], 51);
+    assert_eq!(json["notifications"].as_array().unwrap().len(), 3);
+    let seen: i64 = sqlx::query_scalar("SELECT seen_notification_id FROM users WHERE id = 3")
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+    assert_eq!(seen, 51);
+    // And the counters current.json derives from it follow.
+    let reply = client
+        .send(
+            Method::GET,
+            "/session/current.json",
+            &[("x-requested-with", "XMLHttpRequest")],
+            "",
+        )
+        .await;
+    let current = reply.json();
+    assert_eq!(current["current_user"]["unread_notifications"], 0);
+    assert_eq!(
+        current["current_user"]["unread_high_priority_notifications"],
+        3
+    );
+    assert_eq!(current["current_user"]["seen_notification_id"], 51);
+
+    // Anonymous: 403 not_logged_in, like Rails' requires_login.
+    let mut anon = Client::new(app_state);
+    let reply = anon.get("/notifications.json").await;
+    assert_eq!(reply.status, StatusCode::FORBIDDEN);
+    assert_eq!(reply.json()["error_type"], "not_logged_in");
+}
+
+#[tokio::test]
+async fn private_messages_open_for_participants_only() {
+    let db = TestDb::new().await;
+    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[]));
+
+    let mut user1 = Client::new(app_state.clone());
+    user1.login("user1", "password").await;
+    let reply = user1
+        .get("/t/parity-fixture-pm-admin-to-user1-and-user2/43.json")
+        .await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    let json = reply.json();
+    // details.allowed_users: the direct members, order left to Postgres.
+    let mut allowed: Vec<i64> = json["details"]["allowed_users"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|u| u["id"].as_i64().unwrap())
+        .collect();
+    allowed.sort_unstable();
+    assert_eq!(allowed, vec![1, 3, 4]);
+    assert_eq!(json["details"]["allowed_groups"], serde_json::json!([]));
+    assert_eq!(json["details"]["can_remove_self_id"], 3);
+    assert_eq!(json["message_archived"], false);
+    assert_eq!(json["suggested_group_name"], Value::Null);
+    // The archived one is flagged as such for its archiver only.
+    let reply = user1
+        .get("/t/parity-fixture-pm-user2-to-user1-archived/44.json")
+        .await;
+    assert_eq!(reply.json()["message_archived"], true);
+
+    // user0 is not in 43: a 404 with the not-found extras, nothing deleted.
+    let mut user0 = Client::new(app_state.clone());
+    user0.login("user0", "password").await;
+    let reply = user0.get("/t/43.json").await;
+    assert_eq!(reply.status, StatusCode::NOT_FOUND);
+    assert_eq!(reply.json()["error_type"], "not_found");
+    let notifications: i64 =
+        sqlx::query_scalar("SELECT count(*) FROM notifications WHERE user_id = 2")
+            .fetch_one(&db.pool)
+            .await
+            .unwrap();
+    assert_eq!(
+        notifications, 6,
+        "Rails' InvalidAccess rescue deletes notifications; the port must not"
+    );
+
+    // Anonymous: the same 404.
+    let mut anon = Client::new(app_state);
+    let reply = anon
+        .get("/t/parity-fixture-pm-user1-to-user0/42.json")
+        .await;
+    assert_eq!(reply.status, StatusCode::NOT_FOUND);
+}
+
+#[tokio::test]
+async fn own_profile_lists_auth_tokens_with_the_current_one_active() {
+    let db = TestDb::new().await;
+    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[]));
+    let mut client = Client::new(app_state.clone());
+    client.login("user1", "password").await;
+    let reply = client
+        .send(
+            Method::GET,
+            "/u/user1.json",
+            &[(
+                "user-agent",
+                "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120.0 Safari/537.36",
+            )],
+            "",
+        )
+        .await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    let user = &reply.json()["user"];
+    let tokens = user["user_auth_tokens"].as_array().unwrap();
+    assert_eq!(tokens.len(), 1);
+    let t = &tokens[0];
+    assert_eq!(
+        t.as_object().unwrap().keys().collect::<Vec<_>>(),
+        [
+            "id",
+            "client_ip",
+            "location",
+            "browser",
+            "device",
+            "os",
+            "icon",
+            "created_at",
+            "seen_at",
+            "is_active"
+        ]
+    );
+    assert_eq!(t["is_active"], true);
+    assert_eq!(t["location"], "unknown");
+    // The token records the login's user agent, which the test client
+    // doesn't send; Rails' strings for that case.
+    assert_eq!(t["browser"], "Unknown browser");
+    assert_eq!(t["device"], "unknown device");
+    assert_eq!(t["os"], "unknown operating system");
+    assert_eq!(t["icon"], "question");
+    assert_eq!(user["email"], "user1@example.com");
+    assert_eq!(user["can_edit"], true);
+    assert_eq!(user["group_users"][0]["owner"], false);
+
+    // Another user's view carries none of the private block.
+    let mut other = Client::new(app_state);
+    other.login("user0", "password").await;
+    let user = &other.get("/u/user1.json").await.json()["user"];
+    assert!(user.get("email").is_none());
+    assert!(user.get("user_auth_tokens").is_none());
+    assert!(user.get("user_option").is_none());
 }

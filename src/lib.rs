@@ -12,7 +12,9 @@ pub mod guardian;
 pub mod html;
 pub mod i18n;
 pub mod letter_avatar;
+pub mod notifications;
 pub mod parity;
+pub mod pm_lists;
 pub mod post_actions;
 pub mod routes;
 pub mod ruby;
@@ -28,6 +30,7 @@ pub mod topic_list;
 pub mod topic_query;
 pub mod topic_view;
 pub mod url;
+pub mod user_private;
 pub mod users;
 
 use std::sync::Arc;

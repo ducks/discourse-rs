@@ -55,8 +55,8 @@ COPY public.categories (id, name, color, topic_id, topic_count, created_at, upda
 1	Uncategorized	0088CC	\N	0	2026-07-25 05:58:08.410826	2026-07-25 05:58:08.410826	-1	0	0	0	uncategorized	\N	FFFFFF	f	\N	0	\N	\N	0	\N	0	0	0	\N	f	0	0	t	uncategorized	f	\N	\N	\N	\N	\N	\N	t	f	f	3	\N	rows_with_featured_topics	all	f	0	f	0	f	\N	\N	all	f	\N	\N	\N	2	card_file_box	\N	\N	\N
 3	Staff	E45735	2	2	2026-07-25 05:58:16.208772	2026-09-27 21:01:16.908706	-1	2	0	0	staff	<p>Private category for staff discussions. Topics are only visible to admins and moderators.</p>	FFFFFF	t	\N	3	7	6	2	\N	3	0	0	\N	f	0	0	t	staff	f	\N	\N	\N	\N	\N	\N	t	f	f	3	\N	rows_with_featured_topics	all	f	0	f	0	f	\N	\N	all	f	\N	\N	\N	2	shield	\N	\N	\N
 2	Site Feedback	808281	1	1	2026-07-25 05:58:08.494443	2026-10-01 07:04:33.490822	-1	1	1	1	site-feedback	<p>Discussion about this site, its organization, how it works, and how we can improve it.</p>	FFFFFF	f	\N	1	41	37	1	\N	1	1	1	\N	f	1	1	t	site feedback	f	\N	\N	\N	\N	\N	\N	t	f	f	3	\N	rows_with_featured_topics	all	f	0	f	0	f	\N	\N	all	f	\N	\N	\N	2	thought_balloon	\N	\N	\N
-4	General	25AAE2	3	3	2026-07-25 05:58:16.309528	2026-10-01 07:04:33.522762	-1	3	2	2	general	<p>Create topics here that don’t fit into any other existing category.</p>	FFFFFF	f	\N	6	47	41	3	\N	6	5	5	\N	f	2	5	t	general	f	\N	\N	\N	\N	\N	\N	t	f	f	3	\N	rows_with_featured_topics	all	f	0	f	0	f	\N	\N	all	f	\N	\N	\N	2	blue_book	\N	\N	\N
 34	Sub General	AB9364	34	1	2026-09-30 07:28:26.803698	2026-10-01 07:04:33.547417	1	1	1	1	sub-general	\N	FFFFFF	f	\N	1	42	38	4	4	1	1	1	\N	f	1	1	t	sub general	f	\N	\N	\N	\N	\N	\N	t	f	f	3	\N	rows_with_featured_topics	all	f	0	f	0	f	\N	\N	all	f	\N	\N	\N	0	\N	\N	\N	\N
+4	General	25AAE2	3	3	2026-07-25 05:58:16.309528	2026-10-01 07:04:33.522762	-1	3	2	2	general	<p>Create topics here that don’t fit into any other existing category.</p>	FFFFFF	f	\N	6	52	41	3	\N	6	5	5	\N	f	2	5	t	general	f	\N	\N	\N	\N	\N	\N	t	f	f	3	\N	rows_with_featured_topics	all	f	0	f	0	f	\N	\N	all	f	\N	\N	\N	2	blue_book	\N	\N	\N
 \.
 
 
@@ -128,13 +128,13 @@ ALTER TABLE public.ad_plugin_house_ads_routes ENABLE TRIGGER ALL;
 ALTER TABLE public.users DISABLE TRIGGER ALL;
 
 COPY public.users (id, username, created_at, updated_at, name, last_posted_at, active, username_lower, last_seen_at, admin, last_emailed_at, trust_level, approved, approved_by_id, approved_at, previous_visit_at, suspended_at, suspended_till, date_of_birth, views, flag_level, ip_address, moderator, title, uploaded_avatar_id, locale, primary_group_id, registration_ip_address, staged, first_seen_at, silenced_till, group_locked_trust_level, manual_locked_trust_level, secure_identifier, flair_group_id, last_seen_reviewable_id, required_fields_version, seen_notification_id) FROM stdin;
+1	admin	2026-07-25 05:59:14.988794	2026-10-01 15:45:01.064998	Admin	2026-09-30 07:28:29.674309	t	admin	2026-10-01 15:44:57.175128	t	\N	4	t	-1	2026-07-25 05:59:15.471236	\N	\N	\N	\N	0	0	172.17.0.1	t	\N	\N	\N	\N	\N	f	2026-10-01 15:42:53.401171	\N	\N	\N	\N	\N	\N	\N	0
+3	user1	2026-07-25 05:59:16.250829	2026-10-01 15:45:00.822146	User1	2026-09-30 07:28:29.580198	t	user1	2026-10-01 15:50:01.377372	f	\N	2	f	\N	\N	\N	\N	\N	\N	0	0	172.17.0.1	f	\N	\N	\N	\N	\N	f	2026-10-01 15:42:53.259339	\N	\N	\N	\N	\N	\N	\N	0
 5	user3	2026-07-25 05:59:17.199294	2026-07-25 05:59:17.511834	User3	\N	t	user3	\N	f	\N	4	f	\N	\N	\N	\N	\N	\N	0	0	\N	f	\N	\N	\N	\N	\N	f	\N	\N	\N	\N	\N	\N	\N	\N	0
 -1	system	2026-07-25 05:58:07.835795	2026-07-25 05:58:28.767687	system	2026-07-25 05:58:28.636524	t	system	\N	t	\N	4	t	\N	\N	\N	\N	\N	\N	0	0	\N	t	\N	34	\N	\N	\N	f	\N	\N	\N	\N	\N	\N	\N	\N	0
 -2	discobot	2026-07-25 05:58:29.385492	2026-07-25 05:58:29.661862	discobot	\N	t	discobot	\N	t	\N	4	t	\N	\N	\N	\N	\N	\N	0	0	\N	f	\N	35	\N	\N	\N	f	\N	\N	\N	\N	\N	\N	\N	\N	0
-3	user1	2026-07-25 05:59:16.250829	2026-09-30 07:28:29.606229	User1	2026-09-30 07:28:29.580198	t	user1	\N	f	\N	2	f	\N	\N	\N	\N	\N	\N	0	0	\N	f	\N	\N	\N	\N	\N	f	\N	\N	\N	\N	\N	\N	\N	\N	0
 4	user2	2026-07-25 05:59:16.733827	2026-09-30 07:28:29.889848	User2	2026-09-30 07:28:29.179534	t	user2	\N	f	\N	2	f	\N	\N	\N	\N	\N	\N	0	0	\N	f	\N	\N	\N	\N	\N	f	\N	\N	\N	\N	\N	\N	\N	\N	0
-2	user0	2026-07-25 05:59:15.831079	2026-09-30 07:28:30.22895	User0	2026-09-30 07:28:30.163794	t	user0	2026-10-01 06:40:59.592885	f	\N	1	f	\N	\N	\N	\N	\N	\N	0	0	172.17.0.1	f	\N	\N	\N	\N	\N	f	2026-10-01 06:40:59.592885	\N	\N	\N	\N	\N	\N	\N	0
-1	admin	2026-07-25 05:59:14.988794	2026-10-01 10:58:56.094159	Admin	2026-09-30 07:28:29.674309	t	admin	\N	t	\N	4	t	-1	2026-07-25 05:59:15.471236	\N	\N	\N	\N	0	0	\N	t	\N	\N	\N	\N	\N	f	\N	\N	\N	\N	\N	\N	\N	\N	0
+2	user0	2026-07-25 05:59:15.831079	2026-10-01 15:39:52.016889	User0	2026-10-01 15:39:51.834549	t	user0	2026-10-01 15:44:57.254251	f	\N	1	f	\N	\N	2026-10-01 06:40:59.592885	\N	\N	\N	0	0	172.17.0.1	f	\N	\N	\N	\N	\N	f	2026-10-01 06:40:59.592885	\N	\N	\N	\N	\N	\N	\N	0
 \.
 
 
@@ -191,7 +191,7 @@ ALTER TABLE public.admin_dashboard_sections ENABLE TRIGGER ALL;
 ALTER TABLE public.admin_notices DISABLE TRIGGER ALL;
 
 COPY public.admin_notices (id, subject, priority, identifier, details, created_at, updated_at) FROM stdin;
-34	0	0	failing_emails	{"num_failed_jobs":3,"base_path":"","target":"__NULL__"}	2026-09-30 07:45:43.089991	2026-09-30 07:45:43.089991
+34	0	0	failing_emails	{"num_failed_jobs":6,"base_path":"","target":"__NULL__"}	2026-09-30 07:45:43.089991	2026-09-30 07:45:43.089991
 1	0	0	force_https	{"base_path":"","target":"__NULL__"}	2026-09-27 21:01:09.802675	2026-09-27 21:01:09.802675
 2	0	0	host_names	{"base_path":"","target":"__NULL__"}	2026-09-27 21:01:09.970224	2026-09-27 21:01:09.970224
 3	0	0	rails_env	{"env":"development","base_path":"","target":"__NULL__"}	2026-09-27 21:01:10.348891	2026-09-27 21:01:10.348891
@@ -712,9 +712,9 @@ COPY public.badges (id, name, description, badge_type_id, grant_count, created_a
 9	Autobiographer	\N	3	0	2026-07-25 05:58:07.355652	2026-07-25 05:58:07.355652	f	f	user-pen	t	f	SELECT u.id user_id, current_timestamp granted_at\nFROM users u\nJOIN user_profiles up on u.id = up.user_id\nWHERE bio_raw IS NOT NULL AND LENGTH(TRIM(bio_raw)) > 10 AND\n      uploaded_avatar_id IS NOT NULL AND\n      (:backfill OR u.id IN (:user_ids) )\n	t	t	1	8	f	t	\N	\N	f
 10	Editor	\N	3	0	2026-07-25 05:58:07.358738	2026-07-25 05:58:07.358738	f	f	pen	t	f	SELECT p.user_id, min(p.id) post_id, min(p.created_at) granted_at\nFROM badge_posts p\nWHERE p.self_edits > 0 AND\n    (:backfill OR p.id IN (:post_ids) )\nGROUP BY p.user_id\n	t	t	1	2	f	t	\N	\N	f
 1	Basic User	\N	3	5	2026-07-25 05:58:07.276666	2026-09-30 06:20:02.759062	f	f	user	t	f	SELECT u.id user_id, current_timestamp granted_at FROM users u\nWHERE trust_level >= 1 AND (\n  :backfill OR u.id IN (:user_ids)\n)\n	t	t	4	4	f	t	\N	\N	f
+11	First Like	\N	3	2	2026-07-25 05:58:07.314717	2026-10-01 15:40:15.230073	f	f	heart	t	t	SELECT pa1.user_id, pa1.created_at granted_at, pa1.post_id\nFROM (\n  SELECT pa.user_id, min(pa.id) id\n  FROM post_actions pa\n  JOIN badge_posts p on p.id = pa.post_id\n  WHERE post_action_type_id = 2 AND\n    (:backfill OR pa.post_id IN (:post_ids) )\n  GROUP BY pa.user_id\n) x\nJOIN post_actions pa1 on pa1.id = x.id\n	t	t	1	1	t	t	\N	\N	f
 4	Leader	\N	1	2	2026-07-25 05:58:07.294026	2026-09-30 06:20:53.781407	t	f	user	t	f	SELECT u.id user_id, current_timestamp granted_at FROM users u\nWHERE trust_level >= 4 AND (\n  :backfill OR u.id IN (:user_ids)\n)\n	t	t	4	4	f	t	\N	\N	f
-11	First Like	\N	3	1	2026-07-25 05:58:07.314717	2026-09-30 07:28:37.797752	f	f	heart	t	t	SELECT pa1.user_id, pa1.created_at granted_at, pa1.post_id\nFROM (\n  SELECT pa.user_id, min(pa.id) id\n  FROM post_actions pa\n  JOIN badge_posts p on p.id = pa.post_id\n  WHERE post_action_type_id = 2 AND\n    (:backfill OR pa.post_id IN (:post_ids) )\n  GROUP BY pa.user_id\n) x\nJOIN post_actions pa1 on pa1.id = x.id\n	t	t	1	1	t	t	\N	\N	f
-5	Welcome	\N	3	1	2026-07-25 05:58:07.352752	2026-09-30 07:28:37.810421	f	f	heart	t	t	SELECT p.user_id, min(post_id) post_id, min(pa.created_at) granted_at\nFROM post_actions pa\nJOIN badge_posts p on p.id = pa.post_id\nWHERE post_action_type_id = 2 AND\n    (:backfill OR pa.post_id IN (:post_ids) )\nGROUP BY p.user_id\n	t	t	2	1	t	t	\N	\N	f
+5	Welcome	\N	3	2	2026-07-25 05:58:07.352752	2026-10-01 15:40:15.241197	f	f	heart	t	t	SELECT p.user_id, min(post_id) post_id, min(pa.created_at) granted_at\nFROM post_actions pa\nJOIN badge_posts p on p.id = pa.post_id\nWHERE post_action_type_id = 2 AND\n    (:backfill OR pa.post_id IN (:post_ids) )\nGROUP BY p.user_id\n	t	t	2	1	t	t	\N	\N	f
 3	Regular	\N	2	2	2026-07-25 05:58:07.288303	2026-10-01 06:13:15.823478	t	f	user	t	f	SELECT u.id user_id, current_timestamp granted_at FROM users u\nWHERE trust_level >= 3 AND (\n  :backfill OR u.id IN (:user_ids)\n)\n	t	t	4	4	f	t	\N	\N	f
 48	Wiki Editor	\N	3	0	2026-07-25 05:58:07.36439	2026-07-25 05:58:07.36439	f	f	far-pen-to-square	t	t	SELECT pr2.user_id, pr2.post_id, pr2.created_at granted_at\nFROM\n(\n  SELECT min(pr.id) id\n  FROM post_revisions pr\n  JOIN badge_posts p on p.id = pr.post_id\n  WHERE p.wiki\n      AND NOT pr.hidden\n      AND (:backfill OR p.id IN (:post_ids))\n  GROUP BY pr.user_id\n) as X\nJOIN post_revisions pr2 ON pr2.id = X.id\n	t	t	1	2	f	t	\N	\N	f
 6	Nice Post	\N	3	0	2026-07-25 05:58:07.36984	2026-07-25 05:58:07.36984	f	t	reply	t	t	SELECT p.user_id, p.id post_id, current_timestamp granted_at\nFROM badge_posts p\nWHERE p.post_number > 1 AND p.like_count >= 10 AND\n  (:backfill OR p.id IN (:post_ids) )\n	t	t	3	1	t	t	\N	\N	f
@@ -989,10 +989,10 @@ COPY public.category_featured_topics (category_id, topic_id, created_at, updated
 3	4	2026-07-25 05:58:28.566252	2026-07-25 05:58:28.566252	1	4
 34	38	2026-09-30 07:28:29.564049	2026-09-30 07:28:29.564049	0	37
 2	37	2026-09-30 07:33:15.799334	2026-09-30 07:33:15.799334	0	50
-4	5	2026-09-30 07:33:15.89334	2026-09-30 07:33:15.89334	0	51
-4	41	2026-09-30 07:33:15.895954	2026-09-30 07:33:15.895954	1	52
-4	38	2026-09-30 07:33:15.900072	2026-09-30 07:33:15.900072	2	53
-4	35	2026-09-30 07:33:15.902845	2026-09-30 07:33:15.902845	3	54
+4	5	2026-10-01 15:44:18.466364	2026-10-01 15:44:18.466364	0	55
+4	35	2026-10-01 15:44:18.467717	2026-10-01 15:44:18.467717	1	56
+4	41	2026-10-01 15:44:18.468742	2026-10-01 15:44:18.468742	2	57
+4	38	2026-10-01 15:44:18.46946	2026-10-01 15:44:18.46946	3	58
 \.
 
 
@@ -1188,8 +1188,8 @@ ALTER TABLE public.chat_channel_custom_fields ENABLE TRIGGER ALL;
 ALTER TABLE public.chat_channels DISABLE TRIGGER ALL;
 
 COPY public.chat_channels (id, chatable_id, deleted_at, deleted_by_id, featured_in_category_id, delete_after_seconds, chatable_type, created_at, updated_at, name, description, status, user_count, auto_join_users, user_count_stale, type, slug, allow_channel_wide_mentions, messages_count, threading_enabled, last_message_id, emoji) FROM stdin;
-1	3	\N	\N	\N	\N	Category	2026-07-25 05:58:28.920161	2026-07-25 05:58:28.920161	Staff	\N	0	0	t	f	CategoryChannel	staff	t	0	f	\N	\N
-2	4	\N	\N	\N	\N	Category	2026-07-25 05:58:28.954734	2026-10-01 06:41:04.512577	General	\N	0	1	t	f	CategoryChannel	general	t	0	f	\N	\N
+2	4	\N	\N	\N	\N	Category	2026-07-25 05:58:28.954734	2026-10-01 15:43:03.1786	General	\N	0	3	t	f	CategoryChannel	general	t	0	f	\N	\N
+1	3	\N	\N	\N	\N	Category	2026-07-25 05:58:28.920161	2026-10-01 15:43:03.180141	Staff	\N	0	1	t	f	CategoryChannel	staff	t	0	f	\N	\N
 \.
 
 
@@ -1925,36 +1925,36 @@ ALTER TABLE public.directory_columns ENABLE TRIGGER ALL;
 ALTER TABLE public.directory_items DISABLE TRIGGER ALL;
 
 COPY public.directory_items (id, period_type, user_id, likes_received, likes_given, topics_entered, topic_count, post_count, created_at, updated_at, days_visited, posts_read, solutions, gamification_score) FROM stdin;
-2	5	2	0	0	0	0	0	\N	\N	1	0	0	0
+2	5	2	0	1	0	0	1	\N	\N	1	0	0	0
+1	5	1	0	0	0	0	0	\N	\N	1	0	0	0
+3	5	3	1	0	0	0	0	\N	\N	1	0	0	0
 4	5	4	0	0	0	0	0	\N	\N	0	0	0	0
-1	5	1	0	0	0	0	0	\N	\N	0	0	0	0
-3	5	3	0	0	0	0	0	\N	\N	0	0	0	0
 5	5	5	0	0	0	0	0	\N	\N	0	0	0	0
+7	1	2	1	1	0	2	1	\N	\N	1	0	0	0
+6	1	1	0	0	0	1	1	\N	\N	1	0	0	0
+8	1	3	1	1	0	1	1	\N	\N	1	0	0	0
 10	1	5	0	0	0	0	0	\N	\N	0	0	0	0
 9	1	4	0	0	0	0	1	\N	\N	0	0	0	0
-6	1	1	0	0	0	1	1	\N	\N	0	0	0	0
-8	1	3	0	1	0	1	1	\N	\N	0	0	0	0
-7	1	2	1	0	0	2	0	\N	\N	1	0	0	0
+12	2	2	1	1	0	2	1	\N	\N	1	0	0	0
+11	2	1	0	0	0	1	1	\N	\N	1	0	0	0
+13	2	3	1	1	0	1	1	\N	\N	1	0	0	0
 15	2	5	0	0	0	0	0	\N	\N	0	0	0	0
 14	2	4	0	0	0	0	1	\N	\N	0	0	0	0
-11	2	1	0	0	0	1	1	\N	\N	0	0	0	0
-13	2	3	0	1	0	1	1	\N	\N	0	0	0	0
-12	2	2	1	0	0	2	0	\N	\N	1	0	0	0
 19	3	4	0	0	0	0	1	\N	\N	0	0	0	0
-16	3	1	0	0	0	1	1	\N	\N	0	0	0	0
-18	3	3	0	1	0	1	1	\N	\N	0	0	0	0
 20	3	5	0	0	0	0	0	\N	\N	0	0	0	0
-17	3	2	1	0	0	2	0	\N	\N	1	0	0	0
-22	4	2	1	0	0	2	0	\N	\N	1	0	0	0
+17	3	2	1	1	0	2	1	\N	\N	1	0	0	0
+16	3	1	0	0	0	1	1	\N	\N	1	0	0	0
+18	3	3	1	1	0	1	1	\N	\N	1	0	0	0
 25	4	5	0	0	0	0	0	\N	\N	0	0	0	0
 24	4	4	0	0	0	0	1	\N	\N	0	0	0	0
-21	4	1	0	0	0	1	1	\N	\N	0	0	0	0
-23	4	3	0	1	0	1	1	\N	\N	0	0	0	0
-27	6	2	1	0	0	2	0	\N	\N	1	0	0	0
+22	4	2	1	1	0	2	1	\N	\N	1	0	0	0
+21	4	1	0	0	0	1	1	\N	\N	1	0	0	0
+23	4	3	1	1	0	1	1	\N	\N	1	0	0	0
 30	6	5	0	0	0	0	0	\N	\N	0	0	0	0
 29	6	4	0	0	0	0	1	\N	\N	0	0	0	0
-26	6	1	0	0	0	1	1	\N	\N	0	0	0	0
-28	6	3	0	1	0	1	1	\N	\N	0	0	0	0
+27	6	2	1	1	0	2	1	\N	\N	1	0	0	0
+26	6	1	0	0	0	1	1	\N	\N	1	0	0	0
+28	6	3	1	1	0	1	1	\N	\N	1	0	0	0
 \.
 
 
@@ -2130,9 +2130,12 @@ COPY public.topics (id, title, last_posted_at, created_at, updated_at, views, po
 5	Welcome to Discourse! :wave:	2026-07-25 05:58:28.405469	2026-07-25 05:58:28.320452	2026-07-25 05:58:28.468713	0	1	-1	-1	0	\N	\N	\N	\N	1	0	0	4	t	0	f	f	2026-07-25 05:58:28.405469	f	regular	\N	0	0	2026-07-25 05:58:28.497598	0.2	1	\N	welcome-to-discourse	\N	1	129	We are so glad you joined us. \nHere are some things you can do to get started: \n:speaking_head: Introduce yourself by adding your picture and information about yourself and your interests to your profile. What is one thi&hellip;	t	\N	Welcome to Discourse! :wave:	1	\N	0	\N	0	\N	\N	\N	\N	\N
 38	Parity fixture: tagged in a subcategory	2026-09-30 07:28:29.580198	2026-09-30 07:28:29.543058	2026-09-30 07:28:29.60142	0	1	3	3	0	\N	\N	\N	\N	1	0	0	34	t	0	f	f	2026-09-30 07:28:29.580198	f	regular	\N	0	0	\N	0.2	1	\N	parity-fixture-tagged-in-a-subcategory	\N	1	15	A topic in a subcategory carrying a tag, so tags and category ids show up.	f	\N	Parity fixture: tagged in a subcategory	1	\N	0	\N	0	\N	\N	\N	\N	\N
 6	Admin Guide: Getting Started	2026-07-25 05:58:28.636524	2026-07-25 05:58:28.537993	2026-07-25 05:58:28.757941	0	1	-1	-1	0	\N	\N	\N	\N	1	0	0	3	t	0	f	f	2026-07-25 05:58:28.636524	f	regular	\N	0	0	\N	0.2	1	\N	admin-guide-getting-started	\N	1	272	Welcome to your new community, and thank you for choosing Discourse! \n:closed_mailbox_with_raised_flag: Test your email configuration\nEmail is required for new account signups and notifications. \n→ Send a test email. \n→ &hellip;	f	\N	Admin Guide: Getting Started	1	\N	0	\N	0	\N	\N	\N	\N	\N
+42	Parity fixture: PM user1 to user0	2026-10-01 15:39:51.295091	2026-10-01 15:39:51.071813	2026-10-01 15:39:51.342717	0	2	3	2	0	\N	\N	\N	\N	2	0	0	\N	t	0	f	f	2026-10-01 15:39:51.295091	f	private_message	\N	0	0	\N	0.2	1	user_to_user	parity-fixture-pm-user1-to-user0	\N	2	26	A private message from user1 to user0, long enough to be a real post body.	f	\N	Parity fixture: PM user1 to user0	2	\N	0	\N	0	\N	\N	\N	\N	\N
+43	Parity fixture: PM admin to user1 and user2	2026-10-01 15:39:51.514895	2026-10-01 15:39:51.429671	2026-10-01 15:39:51.545798	0	1	1	1	0	\N	\N	\N	\N	1	0	0	\N	t	0	f	f	2026-10-01 15:39:51.514895	f	private_message	\N	0	0	\N	0.2	1	user_to_user	parity-fixture-pm-admin-to-user1-and-user2	\N	1	14	A private message from admin to two users, so the list shows three participants.	f	\N	Parity fixture: PM admin to user1 and user2	1	\N	0	\N	0	\N	\N	\N	\N	\N
+35	Parity fixture: replies and posters	2026-10-01 15:39:51.834549	2026-09-30 07:28:28.864868	2026-10-01 15:39:52.00791	0	5	2	2	0	3	\N	4	\N	5	1	0	4	t	0	f	f	2026-10-01 15:39:51.834549	f	regular	\N	0	0	\N	3.2	1	\N	parity-fixture-replies-and-posters	\N	4	68	First post of a topic with several repliers, long enough to be a real post body for the excerpt.	f	\N	Parity fixture: replies and posters	5	\N	0	\N	0	\N	\N	\N	\N	\N
+44	Parity fixture: PM user2 to user1, archived	2026-10-01 15:39:51.640887	2026-10-01 15:39:51.604386	2026-10-01 15:39:51.672869	0	1	4	4	0	\N	\N	\N	\N	1	0	0	\N	t	0	f	f	2026-10-01 15:39:51.640887	f	private_message	\N	0	0	\N	0.2	1	user_to_user	parity-fixture-pm-user2-to-user1-archived	\N	1	10	A private message from user2 to user1 that user1 archives.	f	\N	Parity fixture: PM user2 to user1, archived	1	\N	0	\N	0	\N	\N	\N	\N	\N
 39	Parity fixture: unlisted topic	2026-09-30 07:28:29.674309	2026-09-30 07:28:29.645201	2026-09-30 07:28:29.793003	0	1	1	1	0	\N	\N	\N	\N	1	0	0	4	f	1	f	f	2026-09-30 07:28:29.674309	f	regular	\N	0	0	\N	0.2	1	\N	parity-fixture-unlisted-topic	\N	1	13	This topic is unlisted and must not appear in latest for anonymous users.	f	\N	Parity fixture: unlisted topic	1	\N	0	\N	0	\N	\N	99	\N	\N
 41	Parity fixture: liked and archived	2026-09-30 07:28:30.163794	2026-09-30 07:28:30.067335	2026-09-30 10:46:34.843989	0	1	2	2	0	\N	\N	1	\N	1	1	0	4	t	1	f	t	2026-09-30 07:28:30.163794	f	regular	\N	0	0	\N	7.699999999999999	1	\N	parity-fixture-liked-and-archived	\N	2	13	An archived topic whose first post got a like, for like_count and op_like_count.	f	\N	Parity fixture: liked and archived	1	\N	0	\N	0	\N	\N	\N	\N	\N
-35	Parity fixture: replies and posters	2026-09-30 07:28:29.25168	2026-09-30 07:28:28.864868	2026-09-30 10:46:34.784768	0	4	2	1	0	3	\N	4	\N	4	0	0	4	t	0	f	f	2026-09-30 07:28:29.25168	f	regular	\N	0	0	\N	0.2	1	\N	parity-fixture-replies-and-posters	\N	4	58	First post of a topic with several repliers, long enough to be a real post body for the excerpt.	f	\N	Parity fixture: replies and posters	4	\N	0	\N	0	\N	\N	\N	\N	\N
 40	Parity fixture: deleted topic	\N	2026-09-30 07:28:29.827702	2026-09-30 07:28:29.920267	0	0	4	4	0	\N	\N	\N	2026-09-30 07:28:29.936769	0	0	0	4	t	0	f	f	2026-09-30 07:28:29.858545	f	regular	\N	0	0	\N	0.2	1	\N	parity-fixture-deleted-topic	1	1	\N	This topic is deleted and must not appear anywhere.	f	\N	Parity fixture: deleted topic	0	\N	0	\N	0	\N	\N	\N	\N	\N
 37	Parity fixture: pinned and closed	2026-09-30 07:28:29.358281	2026-09-30 07:28:29.32536	2026-09-30 07:28:29.440782	0	1	1	1	0	\N	\N	\N	\N	1	0	0	2	t	1	t	f	2026-09-30 07:28:29.358281	f	regular	\N	0	0	2026-09-30 07:28:29.406348	0.2	1	\N	parity-fixture-pinned-and-closed	\N	1	17	A pinned, closed topic in Site Feedback with an excerpt that should be shown in the list.	f	\N	Parity fixture: pinned and closed	1	\N	0	\N	0	\N	\N	\N	\N	\N
 34	About the Sub General category	\N	2026-09-30 07:28:28.633614	2026-09-30 07:28:28.633614	0	1	1	1	0	\N	\N	\N	\N	1	0	0	34	t	0	f	f	2026-09-30 07:28:28.633715	f	regular	\N	0	0	2026-09-30 07:28:26.810256	0	1	\N	about-the-sub-general-category	\N	1	\N	\N	f	\N	About the Sub General category	1	\N	0	\N	0	\N	\N	\N	\N	\N
@@ -2771,6 +2774,7 @@ ALTER TABLE public.given_daily_likes DISABLE TRIGGER ALL;
 
 COPY public.given_daily_likes (user_id, likes_given, given_date, limit_reached) FROM stdin;
 3	1	2026-09-30	f
+2	1	2026-10-01	f
 \.
 
 
@@ -3383,13 +3387,10 @@ ALTER TABLE public.nested_view_post_stats ENABLE TRIGGER ALL;
 ALTER TABLE public.notifications DISABLE TRIGGER ALL;
 
 COPY public.notifications (notification_type, user_id, data, read, created_at, updated_at, topic_id, post_number, post_action_id, high_priority, id) FROM stdin;
-12	2	{"badge_id":1,"badge_name":"Basic","badge_slug":"basic","badge_title":false,"username":"user0"}	f	2026-09-30 06:20:02.148221	2026-09-30 06:20:02.148221	\N	\N	\N	f	1
-12	3	{"badge_id":1,"badge_name":"Basic","badge_slug":"basic","badge_title":false,"username":"user1"}	f	2026-09-30 06:20:02.480367	2026-09-30 06:20:02.480367	\N	\N	\N	f	2
 12	4	{"badge_id":1,"badge_name":"Basic","badge_slug":"basic","badge_title":false,"username":"user2"}	f	2026-09-30 06:20:02.553479	2026-09-30 06:20:02.553479	\N	\N	\N	f	3
 12	5	{"badge_id":1,"badge_name":"Basic","badge_slug":"basic","badge_title":false,"username":"user3"}	f	2026-09-30 06:20:02.626838	2026-09-30 06:20:02.626838	\N	\N	\N	f	4
 12	4	{"badge_id":3,"badge_name":"Regular","badge_slug":"regular","badge_title":true,"username":"user2"}	f	2026-09-30 06:20:14.709937	2026-09-30 06:20:14.709937	\N	\N	\N	f	5
 12	5	{"badge_id":3,"badge_name":"Regular","badge_slug":"regular","badge_title":true,"username":"user3"}	f	2026-09-30 06:20:14.861402	2026-09-30 06:20:14.861402	\N	\N	\N	f	6
-12	3	{"badge_id":2,"badge_name":"Member","badge_slug":"member","badge_title":false,"username":"user1"}	f	2026-09-30 06:20:36.858713	2026-09-30 06:20:36.858713	\N	\N	\N	f	7
 12	4	{"badge_id":2,"badge_name":"Member","badge_slug":"member","badge_title":false,"username":"user2"}	f	2026-09-30 06:20:36.999691	2026-09-30 06:20:36.999691	\N	\N	\N	f	8
 12	5	{"badge_id":2,"badge_name":"Member","badge_slug":"member","badge_title":false,"username":"user3"}	f	2026-09-30 06:20:37.132998	2026-09-30 06:20:37.132998	\N	\N	\N	f	9
 41	1	{"upcoming_change_names":["boards_enabled","composer_media_optimization_image_convert_enabled","enable_composer_redesign","floating_dismiss_topics_on_mobile","granular_anonymous_and_logged_in_groups_permissions"],"upcoming_change_humanized_names":["Boards enabled","Composer media optimization image convert enabled","Enable composer redesign","Floating dismiss topics on mobile","Granular anonymous and logged in groups permissions"],"count":6}	f	2026-09-30 06:20:38.90759	2026-09-30 06:20:38.90759	\N	\N	\N	f	30
@@ -3397,8 +3398,20 @@ COPY public.notifications (notification_type, user_id, data, read, created_at, u
 12	5	{"badge_id":4,"badge_name":"Leader","badge_slug":"leader","badge_title":true,"username":"user3"}	f	2026-09-30 06:20:53.74462	2026-09-30 06:20:53.74462	\N	\N	\N	f	36
 2	2	{"topic_title":"Parity fixture: replies and posters","original_post_id":38,"original_post_type":1,"original_username":"admin","revision_number":null,"display_username":"3 replies","display_name":"User1"}	f	2026-09-30 07:28:29.832304	2026-09-30 07:28:29.832304	35	2	\N	f	39
 5	2	{"topic_title":"Parity fixture: liked and archived","original_post_id":46,"original_post_type":1,"original_username":"user1","revision_number":null,"display_username":"user1","display_name":"User0"}	f	2026-09-30 07:28:30.411953	2026-09-30 07:28:30.411953	41	1	1	f	40
-12	3	{"badge_id":11,"badge_name":"First Like","badge_slug":"first-like","badge_title":false,"username":"user1"}	f	2026-09-30 07:28:37.787622	2026-09-30 07:28:37.787622	\N	\N	\N	f	41
-12	2	{"badge_id":5,"badge_name":"Welcome","badge_slug":"welcome","badge_title":false,"username":"user0"}	f	2026-09-30 07:28:37.804914	2026-09-30 07:28:37.804914	\N	\N	\N	f	42
+6	2	{"topic_title":"Parity fixture: PM user1 to user0","original_post_id":48,"original_post_type":1,"original_username":"user1","revision_number":null,"display_username":"user1","display_name":"User1"}	f	2026-10-01 15:39:51.481597	2026-10-01 15:39:51.481597	42	1	\N	t	43
+6	3	{"topic_title":"Parity fixture: PM user1 to user0","original_post_id":49,"original_post_type":1,"original_username":"user0","revision_number":null,"display_username":"user0","display_name":"User0"}	f	2026-10-01 15:39:51.818843	2026-10-01 15:39:51.818843	42	2	\N	t	44
+5	3	{"topic_title":"Parity fixture: replies and posters","original_post_id":36,"original_post_type":1,"original_username":"user0","revision_number":null,"display_username":"user0","display_name":"User1"}	f	2026-10-01 15:39:52.161389	2026-10-01 15:39:52.161389	35	2	2	f	45
+6	3	{"topic_title":"Parity fixture: PM admin to user1 and user2","original_post_id":50,"original_post_type":1,"original_username":"admin","revision_number":null,"display_username":"admin","display_name":"Admin"}	f	2026-10-01 15:41:12.501345	2026-10-01 15:41:12.501345	43	1	\N	t	48
+6	4	{"topic_title":"Parity fixture: PM admin to user1 and user2","original_post_id":50,"original_post_type":1,"original_username":"admin","revision_number":null,"display_username":"admin","display_name":"Admin"}	f	2026-10-01 15:41:12.559451	2026-10-01 15:41:12.559451	43	1	\N	t	49
+6	3	{"topic_title":"Parity fixture: PM user2 to user1, archived","original_post_id":51,"original_post_type":1,"original_username":"user2","revision_number":null,"display_username":"user2","display_name":"User2"}	f	2026-10-01 15:41:12.656321	2026-10-01 15:41:12.656321	44	1	\N	t	50
+1	3	{"topic_title":"Parity fixture: replies and posters","original_post_id":52,"original_post_type":1,"original_username":"user0","revision_number":null,"display_username":"user0","display_name":"User0"}	f	2026-10-01 15:41:12.744517	2026-10-01 15:41:12.744517	35	5	\N	f	51
+12	2	{"badge_id":1,"badge_name":"Basic","badge_slug":"basic","badge_title":false,"username":"user0"}	f	2026-09-30 06:20:02.086618	2026-09-30 06:20:02.086618	\N	\N	\N	f	1
+12	3	{"badge_id":1,"badge_name":"Basic","badge_slug":"basic","badge_title":false,"username":"user1"}	t	2026-09-30 06:20:02.086618	2026-09-30 06:20:02.086618	\N	\N	\N	f	2
+12	3	{"badge_id":2,"badge_name":"Member","badge_slug":"member","badge_title":false,"username":"user1"}	f	2026-09-30 06:20:36.833119	2026-09-30 06:20:36.833119	\N	\N	\N	f	7
+12	3	{"badge_id":11,"badge_name":"First Like","badge_slug":"first-like","badge_title":false,"username":"user1"}	f	2026-09-30 07:28:30.313407	2026-09-30 07:28:30.313407	\N	\N	\N	f	41
+12	2	{"badge_id":5,"badge_name":"Welcome","badge_slug":"welcome","badge_title":false,"username":"user0"}	f	2026-09-30 07:28:30.313407	2026-09-30 07:28:30.313407	\N	\N	\N	f	42
+12	2	{"badge_id":11,"badge_name":"First Like","badge_slug":"first-like","badge_title":false,"username":"user0"}	f	2026-10-01 15:39:52.050551	2026-10-01 15:39:52.050551	\N	\N	\N	f	46
+12	3	{"badge_id":5,"badge_name":"Welcome","badge_slug":"welcome","badge_title":false,"username":"user1"}	f	2026-10-01 15:39:52.050551	2026-10-01 15:39:52.050551	\N	\N	\N	f	47
 \.
 
 
@@ -3544,7 +3557,7 @@ COPY public.posts (id, user_id, topic_id, post_number, raw, cooked, created_at, 
 2	-1	2	1	Private category for staff discussions. Topics are only visible to admins and moderators.	<p>Private category for staff discussions. Topics are only visible to admins and moderators.</p>	2026-07-25 05:58:16.233299	2026-07-25 05:58:16.233299	\N	0	0	\N	0	0	0	0	0	0	1	1	-1	f	\N	0	0	0	0	2026-07-25 05:58:16.265311	f	\N	0	0	0	\N	\N	13	1	1	f	2026-07-25 05:58:16.233263	2	\N	0	f	f	\N	1	\N	\N	\N	0	\N	\N
 3	-1	3	1	Create topics here that don’t fit into any other existing category.	<p>Create topics here that don’t fit into any other existing category.</p>	2026-07-25 05:58:16.335067	2026-07-25 05:58:16.335067	\N	0	0	\N	0	0	0	0	0	0	1	1	-1	f	\N	0	0	0	0	2026-07-25 05:58:16.36811	f	\N	0	0	0	\N	\N	12	1	1	f	2026-07-25 05:58:16.334998	2	\N	0	f	f	\N	1	\N	\N	\N	0	\N	\N
 4	-1	4	1	<a name="civilized"></a>\n\n## [This is a Civilized Place for Public Discussion](#civilized)\n\nPlease treat this discussion forum with the same respect you would a public park. We, too, are a shared community resource &mdash; a place to share skills, knowledge and interests through ongoing conversation.\n\nThese are not hard and fast rules. They are guidelines to aid the human judgment of our community and keep this a kind, friendly place for civilized public discourse.\n\n<a name="improve"></a>\n\n## [Improve the Discussion](#improve)\n\nHelp us make this a great place for discussion by always adding something positive to the discussion, however small. If you are not sure your post adds to the conversation, think over what you want to say and try again later.\n\nOne way to improve the discussion is by discovering ones that are already happening. Spend time browsing the topics here before replying or starting your own, and you’ll have a better chance of meeting others who share your interests.\n\nThe topics discussed here matter to us, and we want you to act as if they matter to you, too. Be respectful of the topics and the people discussing them, even if you disagree with some of what is being said.\n\n<a name="agreeable"></a>\n\n## [Be Agreeable, Even When You Disagree](#agreeable)\n\nYou may wish to respond by disagreeing. That’s fine. But remember to _criticize ideas, not people_. Please avoid:\n\n* Name-calling\n* Ad hominem attacks\n* Responding to a post’s tone instead of its actual content\n* Knee-jerk contradiction\n\nInstead, provide thoughtful insights that improve the conversation.\n\n<a name="participate"></a>\n\n## [Your Participation Counts](#participate)\n\nThe conversations we have here set the tone for every new arrival. Help us influence the future of this community by choosing to engage in discussions that make this forum an interesting place to be &mdash; and avoiding those that do not.\n\nDiscourse provides tools that enable the community to collectively identify the best (and worst) contributions: bookmarks, likes, flags, replies, edits, watching, muting and so forth. Use these tools to improve your own experience, and everyone else’s, too.\n\nLet’s leave our community better than we found it.\n\n<a name="flag-problems"></a>\n\n## [If You See a Problem, Flag It](#flag-problems)\n\nModerators have special authority; they are responsible for this forum. But so are you. With your help, moderators can be community facilitators, not just janitors or police.\n\nWhen you see bad behavior, don’t reply. Replying encourages bad behavior by acknowledging it, consumes your energy, and wastes everyone’s time. _Just flag it_. If enough flags accrue, action will be taken, either automatically or by moderator intervention.\n\nIn order to maintain our community, moderators reserve the right to remove any content and any user account for any reason at any time. Moderators do not preview new posts; the moderators and site operators take no responsibility for any content posted by the community.\n\n<a name="be-civil"></a>\n\n## [Always Be Civil](#be-civil)\n\nNothing sabotages a healthy conversation like rudeness:\n\n* Be civil. Don’t post anything that a reasonable person would consider offensive, abusive, or hate speech.\n* Keep it clean. Don’t post anything obscene or sexually explicit.\n* Respect each other. Don’t harass or grief anyone, impersonate people, or expose their private information.\n* Respect our forum. Don’t post spam or otherwise vandalize the forum.\n\nThese are not concrete terms with precise definitions &mdash; avoid even the _appearance_ of any of these things. If you’re unsure, ask yourself how you would feel if your post was featured on the front page of a major news site.\n\nThis is a public forum, and search engines index these discussions. Keep the language, links, and images safe for family and friends.\n\n<a name="keep-tidy"></a>\n\n## [Keep It Tidy](#keep-tidy)\n\nMake the effort to put things in the right place, so that we can spend more time discussing and less cleaning up. So:\n\n* Don’t start a topic in the wrong category; please read the category definitions.\n* Don’t cross-post the same thing in multiple topics.\n* Don’t post no-content replies.\n* Don’t divert a topic by changing it midstream.\n* Don’t sign your posts &mdash; every post has your profile information attached to it.\n\nRather than posting “+1” or “Agreed”, use the Like button. Rather than taking an existing topic in a radically different direction, use Reply as a Linked Topic.\n\n<a name="stealing"></a>\n\n## [Post Only Your Own Stuff](#stealing)\n\nYou may not post anything digital that belongs to someone else without permission. You may not post descriptions of, links to, or methods for stealing someone’s intellectual property (software, video, audio, images), or for breaking any other law.\n\n<a name="power"></a>\n\n## [Powered by You](#power)\n\nThis site is operated by your [friendly moderator team](/about) and *you*, the community. If you have any further questions about how things should work here, open a new topic in #site-feedback and let’s discuss! If there’s a critical or urgent issue that can’t be handled by a meta topic or flag, [contact the moderators](/about).	<p><a name="civilized"></a></p>\n<h2><a name="this-is-a-civilized-place-for-public-discussioncivilized-1" class="anchor" href="#this-is-a-civilized-place-for-public-discussioncivilized-1" aria-label="Heading link"></a><a href="#civilized">This is a Civilized Place for Public Discussion</a></h2>\n<p>Please treat this discussion forum with the same respect you would a public park. We, too, are a shared community resource — a place to share skills, knowledge and interests through ongoing conversation.</p>\n<p>These are not hard and fast rules. They are guidelines to aid the human judgment of our community and keep this a kind, friendly place for civilized public discourse.</p>\n<p><a name="improve"></a></p>\n<h2><a name="improve-the-discussionimprove-2" class="anchor" href="#improve-the-discussionimprove-2" aria-label="Heading link"></a><a href="#improve">Improve the Discussion</a></h2>\n<p>Help us make this a great place for discussion by always adding something positive to the discussion, however small. If you are not sure your post adds to the conversation, think over what you want to say and try again later.</p>\n<p>One way to improve the discussion is by discovering ones that are already happening. Spend time browsing the topics here before replying or starting your own, and you’ll have a better chance of meeting others who share your interests.</p>\n<p>The topics discussed here matter to us, and we want you to act as if they matter to you, too. Be respectful of the topics and the people discussing them, even if you disagree with some of what is being said.</p>\n<p><a name="agreeable"></a></p>\n<h2><a name="be-agreeable-even-when-you-disagreeagreeable-3" class="anchor" href="#be-agreeable-even-when-you-disagreeagreeable-3" aria-label="Heading link"></a><a href="#agreeable">Be Agreeable, Even When You Disagree</a></h2>\n<p>You may wish to respond by disagreeing. That’s fine. But remember to <em>criticize ideas, not people</em>. Please avoid:</p>\n<ul>\n<li>Name-calling</li>\n<li>Ad hominem attacks</li>\n<li>Responding to a post’s tone instead of its actual content</li>\n<li>Knee-jerk contradiction</li>\n</ul>\n<p>Instead, provide thoughtful insights that improve the conversation.</p>\n<p><a name="participate"></a></p>\n<h2><a name="your-participation-countsparticipate-4" class="anchor" href="#your-participation-countsparticipate-4" aria-label="Heading link"></a><a href="#participate">Your Participation Counts</a></h2>\n<p>The conversations we have here set the tone for every new arrival. Help us influence the future of this community by choosing to engage in discussions that make this forum an interesting place to be — and avoiding those that do not.</p>\n<p>Discourse provides tools that enable the community to collectively identify the best (and worst) contributions: bookmarks, likes, flags, replies, edits, watching, muting and so forth. Use these tools to improve your own experience, and everyone else’s, too.</p>\n<p>Let’s leave our community better than we found it.</p>\n<p><a name="flag-problems"></a></p>\n<h2><a name="if-you-see-a-problem-flag-itflag-problems-5" class="anchor" href="#if-you-see-a-problem-flag-itflag-problems-5" aria-label="Heading link"></a><a href="#flag-problems">If You See a Problem, Flag It</a></h2>\n<p>Moderators have special authority; they are responsible for this forum. But so are you. With your help, moderators can be community facilitators, not just janitors or police.</p>\n<p>When you see bad behavior, don’t reply. Replying encourages bad behavior by acknowledging it, consumes your energy, and wastes everyone’s time. <em>Just flag it</em>. If enough flags accrue, action will be taken, either automatically or by moderator intervention.</p>\n<p>In order to maintain our community, moderators reserve the right to remove any content and any user account for any reason at any time. Moderators do not preview new posts; the moderators and site operators take no responsibility for any content posted by the community.</p>\n<p><a name="be-civil"></a></p>\n<h2><a name="always-be-civilbe-civil-6" class="anchor" href="#always-be-civilbe-civil-6" aria-label="Heading link"></a><a href="#be-civil">Always Be Civil</a></h2>\n<p>Nothing sabotages a healthy conversation like rudeness:</p>\n<ul>\n<li>Be civil. Don’t post anything that a reasonable person would consider offensive, abusive, or hate speech.</li>\n<li>Keep it clean. Don’t post anything obscene or sexually explicit.</li>\n<li>Respect each other. Don’t harass or grief anyone, impersonate people, or expose their private information.</li>\n<li>Respect our forum. Don’t post spam or otherwise vandalize the forum.</li>\n</ul>\n<p>These are not concrete terms with precise definitions — avoid even the <em>appearance</em> of any of these things. If you’re unsure, ask yourself how you would feel if your post was featured on the front page of a major news site.</p>\n<p>This is a public forum, and search engines index these discussions. Keep the language, links, and images safe for family and friends.</p>\n<p><a name="keep-tidy"></a></p>\n<h2><a name="keep-it-tidykeep-tidy-7" class="anchor" href="#keep-it-tidykeep-tidy-7" aria-label="Heading link"></a><a href="#keep-tidy">Keep It Tidy</a></h2>\n<p>Make the effort to put things in the right place, so that we can spend more time discussing and less cleaning up. So:</p>\n<ul>\n<li>Don’t start a topic in the wrong category; please read the category definitions.</li>\n<li>Don’t cross-post the same thing in multiple topics.</li>\n<li>Don’t post no-content replies.</li>\n<li>Don’t divert a topic by changing it midstream.</li>\n<li>Don’t sign your posts — every post has your profile information attached to it.</li>\n</ul>\n<p>Rather than posting “+1” or “Agreed”, use the Like button. Rather than taking an existing topic in a radically different direction, use Reply as a Linked Topic.</p>\n<p><a name="stealing"></a></p>\n<h2><a name="post-only-your-own-stuffstealing-8" class="anchor" href="#post-only-your-own-stuffstealing-8" aria-label="Heading link"></a><a href="#stealing">Post Only Your Own Stuff</a></h2>\n<p>You may not post anything digital that belongs to someone else without permission. You may not post descriptions of, links to, or methods for stealing someone’s intellectual property (software, video, audio, images), or for breaking any other law.</p>\n<p><a name="power"></a></p>\n<h2><a name="powered-by-youpower-9" class="anchor" href="#powered-by-youpower-9" aria-label="Heading link"></a><a href="#power">Powered by You</a></h2>\n<p>This site is operated by your <a href="/about">friendly moderator team</a> and <em>you</em>, the community. If you have any further questions about how things should work here, open a new topic in <a class="hashtag-cooked" href="/c/site-feedback/2" data-type="category" data-slug="site-feedback" data-id="2" data-style-type="emoji" data-emoji="thought_balloon"><span class="hashtag-icon-placeholder"><svg class="fa d-icon d-icon-square-full svg-icon svg-node"><use href="#square-full"></use></svg></span><span>Site Feedback</span></a> and let’s discuss! If there’s a critical or urgent issue that can’t be handled by a meta topic or flag, <a href="/about">contact the moderators</a>.</p>	2026-07-25 05:58:27.915472	2026-07-25 05:58:27.915472	\N	0	0	\N	0	0	0	0	0.2	1	1	1	-1	f	\N	0	0	0	0	2026-07-25 05:58:27.990431	f	\N	0	0	0	\N	\N	854	1	1	f	2026-07-25 05:58:27.915401	2	\N	0	f	f	\N	1	\N	\N	\N	0	\N	\N
-38	1	35	4	Reply three from admin, also long enough to pass the minimum length check.	<p>Reply three from admin, also long enough to pass the minimum length check.</p>	2026-09-30 07:28:29.25168	2026-09-30 07:28:29.25168	\N	0	0	\N	0	0	0	0	0.2	1	1	4	1	f	\N	0	0	0	0	2026-09-30 07:28:29.265223	f	\N	0	0	0	\N	\N	13	1	1	f	2026-09-30 07:28:29.251646	2	\N	0	f	f	\N	1	\N	\N	\N	0	discourse/post/38@localhost	\N
+38	1	35	4	Reply three from admin, also long enough to pass the minimum length check.	<p>Reply three from admin, also long enough to pass the minimum length check.</p>	2026-09-30 07:28:29.25168	2026-09-30 07:28:29.25168	\N	0	0	\N	0	0	0	0	0.2	1	1	4	1	f	\N	0	0	0	0	2026-09-30 07:28:29.265223	f	\N	0.25	0	0	\N	\N	13	1	1	f	2026-09-30 07:28:29.251646	2	\N	0	f	f	\N	1	\N	\N	\N	0	discourse/post/38@localhost	\N
 5	-1	4	2	Edit the first post in this topic to change the contents of the Guidelines page.	<p>Edit the first post in this topic to change the contents of the Guidelines page.</p>	2026-07-25 05:58:28.203945	2026-07-25 05:58:28.203945	\N	0	0	\N	0	0	0	0	0.2	1	1	2	-1	f	\N	0	0	0	0	2026-07-25 05:58:28.228334	f	\N	0	0	0	\N	\N	15	1	1	f	2026-07-25 05:58:28.203858	2	\N	0	f	f	\N	1	\N	\N	\N	0	\N	\N
 6	-1	5	1	We are so glad you joined us.\n\n\n\nHere are some things you can do to get started:\n\n:speaking_head: **Introduce yourself** by adding your picture and information about yourself and your interests to [your profile](/my/preferences/account). What is one thing you’d like to be asked about?\n\n:open_book: **Get to know the community** by [browsing discussions](/latest) that are already happening here. When you find a post interesting, informative, or entertaining, use the :heart: to show your appreciation or support!\n\n:handshake: **Contribute** by commenting, sharing your own perspective, asking questions, or offering feedback in the discussion. Before replying or starting new topics, please review the [Community Guidelines](/faq).\n\n> If you need help or have a suggestion, feel free to ask in #site-feedback or [contact the admins](/about).	<p>We are so glad you joined us.</p>\n<p>Here are some things you can do to get started:</p>\n<p><img src="/images/emoji/twitter/speaking_head.png?v=15" title=":speaking_head:" class="emoji" alt=":speaking_head:" loading="lazy" width="20" height="20"> <strong>Introduce yourself</strong> by adding your picture and information about yourself and your interests to <a href="/my/preferences/account">your profile</a>. What is one thing you’d like to be asked about?</p>\n<p><img src="/images/emoji/twitter/open_book.png?v=15" title=":open_book:" class="emoji" alt=":open_book:" loading="lazy" width="20" height="20"> <strong>Get to know the community</strong> by <a href="/latest">browsing discussions</a> that are already happening here. When you find a post interesting, informative, or entertaining, use the <img src="/images/emoji/twitter/heart.png?v=15" title=":heart:" class="emoji" alt=":heart:" loading="lazy" width="20" height="20"> to show your appreciation or support!</p>\n<p><img src="/images/emoji/twitter/handshake.png?v=15" title=":handshake:" class="emoji" alt=":handshake:" loading="lazy" width="20" height="20"> <strong>Contribute</strong> by commenting, sharing your own perspective, asking questions, or offering feedback in the discussion. Before replying or starting new topics, please review the <a href="/faq">Community Guidelines</a>.</p>\n<blockquote>\n<p>If you need help or have a suggestion, feel free to ask in <a class="hashtag-cooked" href="/c/site-feedback/2" data-type="category" data-slug="site-feedback" data-id="2" data-style-type="emoji" data-emoji="thought_balloon"><span class="hashtag-icon-placeholder"><svg class="fa d-icon d-icon-square-full svg-icon svg-node"><use href="#square-full"></use></svg></span><span>Site Feedback</span></a> or <a href="/about">contact the admins</a>.</p>\n</blockquote>	2026-07-25 05:58:28.405469	2026-07-25 05:58:28.405469	\N	0	0	\N	0	0	0	0	0.2	1	1	1	-1	f	\N	0	0	0	0	2026-07-25 05:58:28.4437	f	\N	0	0	0	\N	\N	129	1	1	f	2026-07-25 05:58:28.405399	2	\N	0	f	f	\N	1	\N	\N	\N	0	\N	\N
 40	1	37	1	A pinned, closed topic in Site Feedback with an excerpt that should be shown in the list.	<p>A pinned, closed topic in Site Feedback with an excerpt that should be shown in the list.</p>	2026-09-30 07:28:29.358281	2026-09-30 07:28:29.358281	\N	0	0	\N	0	0	0	0	0.2	1	1	1	1	f	\N	0	0	0	0	2026-09-30 07:28:29.374301	f	\N	0	0	0	\N	\N	17	1	1	f	2026-09-30 07:28:29.358236	2	\N	0	f	f	\N	1	\N	\N	\N	0	\N	\N
@@ -3555,12 +3568,17 @@ COPY public.posts (id, user_id, topic_id, post_number, raw, cooked, created_at, 
 44	1	39	2			2026-09-30 07:28:29.762464	2026-09-30 07:28:29.762464	\N	0	0	\N	0	0	0	0	0.2	1	3	2	1	f	\N	0	0	0	0	2026-09-30 07:28:29.77607	f	\N	0	0	0	\N	\N	0	1	1	f	2026-09-30 07:28:29.762407	2	\N	0	f	f	\N	1	visible.disabled	\N	\N	0	\N	\N
 45	4	40	1	This topic is deleted and must not appear anywhere.	<p>This topic is deleted and must not appear anywhere.</p>	2026-09-30 07:28:29.858545	2026-09-30 07:28:29.858545	\N	0	0	2026-09-30 07:28:29.918231	0	0	0	0	0.2	1	1	1	4	f	\N	0	0	0	0	2026-09-30 07:28:29.877601	f	\N	0	0	0	1	\N	9	1	1	f	2026-09-30 07:28:29.858505	2	\N	0	f	f	\N	1	\N	\N	\N	0	\N	\N
 46	2	41	1	An archived topic whose first post got a like, for like_count and op_like_count.	<p>An archived topic whose first post got a like, for like_count and op_like_count.</p>	2026-09-30 07:28:30.163794	2026-09-30 07:28:30.163794	\N	0	0	\N	0	1	0	0	15.2	1	1	1	2	f	\N	0	0	0	0	2026-09-30 07:28:30.18697	f	\N	0	0	1	\N	\N	13	1	1	f	2026-09-30 07:28:30.163751	2	\N	0	f	f	\N	1	\N	\N	\N	0	\N	\N
-35	2	35	1	First post of a topic with several repliers, long enough to be a real post body for the excerpt.	<p>First post of a topic with several repliers, long enough to be a real post body for the excerpt.</p>	2026-09-30 07:28:28.901913	2026-09-30 07:28:28.901913	\N	0	0	\N	0	0	0	0	0.2	1	1	1	2	f	\N	0	0	0	0	2026-09-30 07:28:28.917598	f	\N	0	0	0	\N	\N	19	1	1	f	2026-09-30 07:28:28.901878	2	\N	0	f	f	\N	1	\N	\N	\N	0	discourse/post/35@localhost	\N
+35	2	35	1	First post of a topic with several repliers, long enough to be a real post body for the excerpt.	<p>First post of a topic with several repliers, long enough to be a real post body for the excerpt.</p>	2026-09-30 07:28:28.901913	2026-09-30 07:28:28.901913	\N	0	0	\N	0	0	0	0	0.2	1	1	1	2	f	\N	0	0	0	0	2026-09-30 07:28:28.917598	f	\N	0.25	0	0	\N	\N	19	1	1	f	2026-09-30 07:28:28.901878	2	\N	0	f	f	\N	1	\N	\N	\N	0	discourse/post/35@localhost	\N
 47	1	41	2			2026-09-30 07:28:30.429946	2026-09-30 07:28:30.429946	\N	0	0	\N	0	0	0	0	0.2	1	3	2	1	f	\N	0	0	0	0	2026-09-30 07:28:30.440011	f	\N	1	0	0	\N	\N	0	1	1	f	2026-09-30 07:28:30.429914	2	\N	0	f	f	\N	1	archived.enabled	\N	\N	0	\N	\N
 34	1	34	1	(Replace this first paragraph with a brief description of your new category. This guidance will appear in the category selection area, so try to keep it below 200 characters.)\n\nUse the following paragraphs for a longer description, or to establish category guidelines or rules:\n\n- Why should people use this category? What is it for?\n\n- How exactly is this different than the other categories we already have?\n\n- What should topics in this category generally contain?\n\n- Do we need this category? Can we merge with another category, or subcategory?\n	<p>(Replace this first paragraph with a brief description of your new category. This guidance will appear in the category selection area, so try to keep it below 200 characters.)</p>\n<p>Use the following paragraphs for a longer description, or to establish category guidelines or rules:</p>\n<ul>\n<li>\n<p>Why should people use this category? What is it for?</p>\n</li>\n<li>\n<p>How exactly is this different than the other categories we already have?</p>\n</li>\n<li>\n<p>What should topics in this category generally contain?</p>\n</li>\n<li>\n<p>Do we need this category? Can we merge with another category, or subcategory?</p>\n</li>\n</ul>	2026-09-30 07:28:28.693594	2026-09-30 07:28:28.693594	\N	0	0	\N	0	0	0	0	0	0	1	1	1	f	\N	0	0	0	0	2026-09-30 07:28:28.788778	f	\N	0	0	0	\N	\N	87	1	1	f	2026-09-30 07:28:28.693511	2	\N	0	f	f	\N	1	\N	\N	\N	0	\N	\N
 41	1	37	2			2026-09-30 07:28:29.415071	2026-09-30 07:28:29.415071	\N	0	0	\N	0	0	0	0	0.2	1	3	2	1	f	\N	0	0	0	0	2026-09-30 07:28:29.427671	f	\N	0	0	0	\N	\N	0	1	1	f	2026-09-30 07:28:29.415034	2	\N	0	f	f	\N	1	closed.enabled	\N	\N	0	\N	\N
-37	4	35	3	Reply two from user2, also long enough to pass the minimum length check.	<p>Reply two from user2, also long enough to pass the minimum length check.</p>	2026-09-30 07:28:29.179534	2026-09-30 07:28:29.179534	\N	0	0	\N	0	0	0	0	0.2	1	1	3	4	f	\N	0	0	0	0	2026-09-30 07:28:29.196789	f	\N	0	0	0	\N	\N	13	1	1	f	2026-09-30 07:28:29.179482	2	\N	0	f	f	\N	1	\N	\N	\N	0	discourse/post/37@localhost	\N
-36	3	35	2	Reply one from user1, also long enough to pass the minimum length check.	<p>Reply one from user1, also long enough to pass the minimum length check.</p>	2026-09-30 07:28:29.079439	2026-09-30 07:28:29.079439	\N	0	0	\N	0	0	0	0	0.2	1	1	2	3	f	\N	0	0	0	0	2026-09-30 07:28:29.094067	f	\N	0	0	0	\N	\N	13	1	1	f	2026-09-30 07:28:29.079363	2	\N	0	f	f	\N	1	\N	\N	\N	0	discourse/post/36@localhost	\N
+37	4	35	3	Reply two from user2, also long enough to pass the minimum length check.	<p>Reply two from user2, also long enough to pass the minimum length check.</p>	2026-09-30 07:28:29.179534	2026-09-30 07:28:29.179534	\N	0	0	\N	0	0	0	0	0.2	1	1	3	4	f	\N	0	0	0	0	2026-09-30 07:28:29.196789	f	\N	0.25	0	0	\N	\N	13	1	1	f	2026-09-30 07:28:29.179482	2	\N	0	f	f	\N	1	\N	\N	\N	0	discourse/post/37@localhost	\N
+48	3	42	1	A private message from user1 to user0, long enough to be a real post body.	<p>A private message from user1 to user0, long enough to be a real post body.</p>	2026-10-01 15:39:51.142516	2026-10-01 15:39:51.142516	\N	0	0	\N	0	0	0	0	0.2	1	1	1	3	f	\N	0	0	0	0	2026-10-01 15:39:51.186463	f	\N	0	0	0	\N	\N	15	1	1	f	2026-10-01 15:39:51.142476	2	\N	0	f	f	\N	1	\N	\N	\N	0	\N	\N
+49	2	42	2	A reply from user0 inside the private message, long enough too.	<p>A reply from user0 inside the private message, long enough too.</p>	2026-10-01 15:39:51.295091	2026-10-01 15:39:51.295091	\N	0	0	\N	0	0	0	0	0.2	1	1	2	2	f	\N	0	0	0	0	2026-10-01 15:39:51.318046	f	\N	0	0	0	\N	\N	11	1	1	f	2026-10-01 15:39:51.295059	2	\N	0	f	f	\N	1	\N	\N	\N	0	\N	\N
+52	2	35	5	Reply from user0 mentioning @user1 so a mention notification exists.	<p>Reply from user0 mentioning <a class="mention" href="/u/user1">@user1</a> so a mention notification exists.</p>	2026-10-01 15:39:51.834549	2026-10-01 15:39:51.834549	\N	0	0	\N	0	0	0	0	0.2	1	1	5	2	f	\N	0	0	0	0	2026-10-01 15:39:51.872879	f	\N	0.25	0	0	\N	\N	10	1	1	f	2026-10-01 15:39:51.83451	2	\N	0	f	f	\N	1	\N	\N	\N	0	\N	\N
+50	1	43	1	A private message from admin to two users, so the list shows three participants.	<p>A private message from admin to two users, so the list shows three participants.</p>	2026-10-01 15:39:51.514895	2026-10-01 15:39:51.514895	\N	0	0	\N	0	0	0	0	0.2	1	1	1	1	f	\N	0	0	0	0	2026-10-01 15:39:51.536824	f	\N	0	0	0	\N	\N	14	1	1	f	2026-10-01 15:39:51.514852	2	\N	0	f	f	\N	1	\N	\N	\N	0	discourse/post/50@localhost	\N
+51	4	44	1	A private message from user2 to user1 that user1 archives.	<p>A private message from user2 to user1 that user1 archives.</p>	2026-10-01 15:39:51.640887	2026-10-01 15:39:51.640887	\N	0	0	\N	0	0	0	0	0.2	1	1	1	4	f	\N	0	0	0	0	2026-10-01 15:39:51.658836	f	\N	0	0	0	\N	\N	10	1	1	f	2026-10-01 15:39:51.640853	2	\N	0	f	f	\N	1	\N	\N	\N	0	discourse/post/51@localhost	\N
+36	3	35	2	Reply one from user1, also long enough to pass the minimum length check.	<p>Reply one from user1, also long enough to pass the minimum length check.</p>	2026-09-30 07:28:29.079439	2026-09-30 07:28:29.079439	\N	0	0	\N	0	1	0	0	15.2	1	1	2	3	f	\N	0	0	0	0	2026-09-30 07:28:29.094067	f	\N	0	0	1	\N	\N	13	1	1	f	2026-09-30 07:28:29.079363	2	\N	0	f	f	\N	1	\N	\N	\N	0	discourse/post/36@localhost	\N
 \.
 
 
@@ -3628,6 +3646,7 @@ ALTER TABLE public.post_actions DISABLE TRIGGER ALL;
 
 COPY public.post_actions (id, post_id, user_id, post_action_type_id, deleted_at, created_at, updated_at, deleted_by_id, related_post_id, staff_took_action, deferred_by_id, targets_topic, agreed_at, agreed_by_id, deferred_at, disagreed_at, disagreed_by_id) FROM stdin;
 1	46	3	2	\N	2026-09-30 07:28:30.313407	2026-09-30 07:28:30.338469	\N	\N	f	\N	f	\N	\N	\N	\N	\N
+2	36	2	2	\N	2026-10-01 15:39:52.050551	2026-10-01 15:39:52.079332	\N	\N	f	\N	f	\N	\N	\N	\N	\N
 \.
 
 
@@ -3780,6 +3799,8 @@ COPY public.post_search_data (post_id, search_data, raw_data, locale, version, p
 37	'also':12 'check':20 'enough':14 'fixtur':2A 'general':6B 'guid':7C 'length':19 'long':13 'minimum':18 'pariti':1A 'pass':16 'poster':5A 'repli':3A,8 'two':9 'user2':11	Reply two from user2, also long enough to pass the minimum length check.	en	5	f
 38	'admin':11 'also':12 'check':20 'enough':14 'fixtur':2A 'general':6B 'guid':7C 'length':19 'long':13 'minimum':18 'pariti':1A 'pass':16 'poster':5A 'repli':3A,8 'three':9	Reply three from admin, also long enough to pass the minimum length check.	en	5	f
 46	'archiv':5A,10 'count':20,24 'first':13 'fixtur':2A 'general':6B 'got':15 'guid':8C 'howto':7C 'like':3A,17,19,23 'op':22 'pariti':1A 'post':14 'topic':11 'whose':12	An archived topic whose first post got a like, for like_count and op_like_count.	en	5	f
+48	'bodi':21 'enough':15 'fixtur':2A 'long':14 'messag':9 'pariti':1A 'pm':3A 'post':20 'privat':8 'real':19 'user0':6A,13 'user1':4A,11	A private message from user1 to user0, long enough to be a real post body.	en	5	t
+49	'enough':16 'fixtur':2A 'insid':11 'long':15 'messag':14 'pariti':1A 'pm':3A 'privat':13 'repli':8 'user0':6A,10 'user1':4A	A reply from user0 inside the private message, long enough too.	en	5	t
 \.
 
 
@@ -3809,6 +3830,11 @@ COPY public.post_stats (id, post_id, drafts_saved, typing_duration_msecs, compos
 44	45	0	0	0	2026-09-30 07:28:29.879678	2026-09-30 07:28:29.879678	\N	\N	\N
 45	46	0	0	0	2026-09-30 07:28:30.191087	2026-09-30 07:28:30.191087	\N	\N	\N
 46	47	0	0	0	2026-09-30 07:28:30.441859	2026-09-30 07:28:30.441859	\N	\N	\N
+47	48	0	0	0	2026-10-01 15:39:51.188182	2026-10-01 15:39:51.188182	\N	\N	\N
+48	49	0	0	0	2026-10-01 15:39:51.32017	2026-10-01 15:39:51.32017	\N	\N	\N
+49	50	0	0	0	2026-10-01 15:39:51.538634	2026-10-01 15:39:51.538634	\N	\N	\N
+50	51	0	0	0	2026-10-01 15:39:51.660518	2026-10-01 15:39:51.660518	\N	\N	\N
+51	52	0	0	0	2026-10-01 15:39:51.877699	2026-10-01 15:39:51.877699	\N	\N	\N
 \.
 
 
@@ -3838,6 +3864,11 @@ COPY public.post_timings (topic_id, post_number, user_id, msecs) FROM stdin;
 40	1	4	5000
 41	1	2	5000
 41	2	1	5000
+42	1	3	5000
+42	2	2	5000
+43	1	1	5000
+44	1	4	5000
+35	5	2	5000
 \.
 
 
@@ -6845,9 +6876,9 @@ ALTER TABLE public.site_settings ENABLE TRIGGER ALL;
 ALTER TABLE public.sitemaps DISABLE TRIGGER ALL;
 
 COPY public.sitemaps (id, name, last_posted_at, enabled) FROM stdin;
-1	recent	2026-09-30 10:46:34.843989	t
-2	news	2026-09-30 10:46:34.843989	t
-3	1	2026-09-30 10:46:34.843989	t
+1	recent	2026-10-01 15:39:52.00791	t
+2	news	2026-10-01 15:39:52.00791	t
+3	1	2026-10-01 15:39:52.00791	t
 \.
 
 
@@ -6860,6 +6891,7 @@ ALTER TABLE public.sitemaps ENABLE TRIGGER ALL;
 ALTER TABLE public.skipped_email_logs DISABLE TRIGGER ALL;
 
 COPY public.skipped_email_logs (id, email_type, to_address, user_id, post_id, reason_type, custom_reason, created_at, updated_at) FROM stdin;
+1	user_mentioned	user1@example.com	3	52	9	\N	2026-10-01 15:51:15.946741	2026-10-01 15:51:15.946741
 \.
 
 
@@ -7254,7 +7286,7 @@ COPY public.top_topics (id, topic_id, yearly_posts_count, yearly_views_count, ye
 4	38	1	0	0	1	0	0	1	0	0	1	0	0	0	0	0	0	0	0	0	0	0	1	0	0	0	0
 5	37	1	0	0	1	0	0	1	0	0	1	0	0	0	0	0	0	0	0	0	0	0	1	0	0	0	0
 1	4	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0.3010299956639812	0	0	0	0	0	0	0	0	0
-6	35	4	0	0	4	0	0	4	0	0	4	0	0	0	0.6020599913279624	0.6020599913279624	0.6020599913279624	0.6020599913279624	0	0	0	0	4	0	0	0.6020599913279624	0
+6	35	4	0	0	4	0	0	4	0	0	1	0	0	0	0.6020599913279624	0.6020599913279624	0.6020599913279624	0.6020599913279624	0	0	0	0	4	0	0	0.6020599913279624	0
 \.
 
 
@@ -7280,6 +7312,13 @@ ALTER TABLE public.topic_allowed_users DISABLE TRIGGER ALL;
 
 COPY public.topic_allowed_users (id, user_id, topic_id, created_at, updated_at) FROM stdin;
 1	-1	36	2026-09-30 07:28:29.24126	2026-09-30 07:28:29.24126
+2	2	42	2026-10-01 15:39:51.076419	2026-10-01 15:39:51.076419
+3	3	42	2026-10-01 15:39:51.078287	2026-10-01 15:39:51.078287
+4	3	43	2026-10-01 15:39:51.434842	2026-10-01 15:39:51.434842
+5	4	43	2026-10-01 15:39:51.437825	2026-10-01 15:39:51.437825
+6	1	43	2026-10-01 15:39:51.440885	2026-10-01 15:39:51.440885
+7	3	44	2026-10-01 15:39:51.608225	2026-10-01 15:39:51.608225
+8	4	44	2026-10-01 15:39:51.611021	2026-10-01 15:39:51.611021
 \.
 
 
@@ -7340,17 +7379,17 @@ ALTER TABLE public.topic_groups ENABLE TRIGGER ALL;
 ALTER TABLE public.topic_hot_scores DISABLE TRIGGER ALL;
 
 COPY public.topic_hot_scores (id, topic_id, score, recent_likes, recent_posters, recent_first_bumped_at, created_at, updated_at) FROM stdin;
-4	1	0	0	0	\N	2026-09-30 06:20:46.862926	2026-10-01 14:47:22.297011
-3	2	0	0	0	\N	2026-09-30 06:20:46.862926	2026-10-01 14:47:22.297011
-2	3	0	0	0	\N	2026-09-30 06:20:46.862926	2026-10-01 14:47:22.297011
-6	4	0	0	0	\N	2026-09-30 06:20:46.862926	2026-10-01 14:47:22.297011
-1	5	0	0	0	\N	2026-09-30 06:20:46.862926	2026-10-01 14:47:22.297011
-10	38	0	0	1	2026-09-30 07:28:29.580198	2026-09-30 07:35:34.283056	2026-10-01 14:47:22.297011
-5	6	0	0	0	\N	2026-09-30 06:20:46.862926	2026-10-01 14:47:22.297011
-9	41	0.02977625786441791	1	1	2026-09-30 07:28:30.163794	2026-09-30 07:35:34.283056	2026-10-01 14:47:22.297011
-11	35	0.04466384442612777	0	4	2026-09-30 07:28:28.901913	2026-09-30 07:35:34.283056	2026-10-01 14:47:22.297011
-7	37	0	0	1	2026-09-30 07:28:29.358281	2026-09-30 07:35:34.283056	2026-10-01 14:47:22.297011
-8	34	0	0	1	2026-09-30 07:28:28.693594	2026-09-30 07:35:34.283056	2026-10-01 14:47:22.297011
+4	1	0	0	0	\N	2026-09-30 06:20:46.862926	2026-10-01 16:08:39.202001
+3	2	0	0	0	\N	2026-09-30 06:20:46.862926	2026-10-01 16:08:39.202001
+2	3	0	0	0	\N	2026-09-30 06:20:46.862926	2026-10-01 16:08:39.202001
+6	4	0	0	0	\N	2026-09-30 06:20:46.862926	2026-10-01 16:08:39.202001
+1	5	0	0	0	\N	2026-09-30 06:20:46.862926	2026-10-01 16:08:39.202001
+10	38	0	0	1	2026-09-30 07:28:29.580198	2026-09-30 07:35:34.283056	2026-10-01 16:08:39.202001
+5	6	0	0	0	\N	2026-09-30 06:20:46.862926	2026-10-01 16:08:39.202001
+11	35	0.0709630807521012	1	4	2026-09-30 07:28:28.901913	2026-09-30 07:35:34.283056	2026-10-01 16:08:39.202001
+9	41	0.02838556554696579	1	1	2026-09-30 07:28:30.163794	2026-09-30 07:35:34.283056	2026-10-01 16:08:39.202001
+7	37	0	0	1	2026-09-30 07:28:29.358281	2026-09-30 07:35:34.283056	2026-10-01 16:08:39.202001
+8	34	0	0	1	2026-09-30 07:28:28.693594	2026-09-30 07:35:34.283056	2026-10-01 16:08:39.202001
 \.
 
 
@@ -7443,6 +7482,7 @@ COPY public.topic_search_data (topic_id, raw_data, locale, search_data, version)
 34	About the Sub General category (Replace this first paragraph with a brief description of your new category. This guidance will appear in the category selection area, so try to keep it below 200 characters.) Use the following paragr	en	'200':33B 'appear':21B 'area':26B 'brief':12B 'categori':5A,17B,24B 'charact':34B 'descript':13B 'first':8B 'follow':37B 'general':4A 'guidanc':19B 'keep':30B 'new':16B 'paragr':38B 'paragraph':9B 'replac':6B 'select':25B 'sub':3A 'tri':28B 'use':35B	4
 35	Parity fixture: replies and posters First post of a topic with several repliers, long enough to be a real post body for the excerpt.	en	'bodi':21B 'enough':15B 'excerpt':24B 'first':6B 'fixtur':2A 'long':14B 'pariti':1A 'post':7B,20B 'poster':5A 'real':19B 'repli':3A 'replier':13B 'sever':12B 'topic':10B	4
 41	Parity fixture: liked and archived An archived topic whose first post got a like, for like_count and op_like_count.	en	'archiv':5A,7B 'count':17B,21B 'first':10B 'fixtur':2A 'got':12B 'like':3A,14B,16B,20B 'op':19B 'pariti':1A 'post':11B 'topic':8B 'whose':9B	4
+42	Parity fixture: PM user1 to user0 A private message from user1 to user0, long enough to be a real post body.	en	'bodi':21B 'enough':15B 'fixtur':2A 'long':14B 'messag':9B 'pariti':1A 'pm':3A 'post':20B 'privat':8B 'real':19B 'user0':6A,13B 'user1':4A,11B	4
 \.
 
 
@@ -7504,13 +7544,20 @@ COPY public.topic_users (user_id, topic_id, posted, last_read_post_number, last_
 1	37	t	2	2026-09-30 07:28:29.345831	2026-09-30 07:28:29.345831	3	2026-09-30 07:28:29.345221	1	0	\N	39	\N	f	f	2026-09-30 07:28:29.437272
 -1	36	t	1	2026-09-30 07:28:29.256943	2026-09-30 07:28:29.256943	3	2026-09-30 07:28:29.253808	1	0	\N	37	\N	f	f	2026-09-30 07:28:29.384774
 3	38	t	1	2026-09-30 07:28:29.569932	2026-09-30 07:28:29.569932	3	2026-09-30 07:28:29.569429	1	0	\N	40	\N	f	f	2026-09-30 07:28:29.598896
+4	43	f	\N	2026-10-01 15:39:51.459749	2026-10-01 15:39:51.459749	3	2026-10-01 15:39:51.458749	2	0	\N	51	1	f	f	\N
 1	39	t	2	2026-09-30 07:28:29.664927	2026-09-30 07:28:29.664927	3	2026-09-30 07:28:29.664429	1	0	\N	41	\N	f	f	2026-09-30 07:28:29.78909
+3	44	f	\N	2026-10-01 15:39:51.625932	2026-10-01 15:39:51.625932	3	2026-10-01 15:39:51.624862	2	0	\N	53	1	f	f	\N
+3	43	f	\N	2026-10-01 15:39:51.455635	2026-10-01 15:39:51.455635	3	2026-10-01 15:39:51.454791	2	0	\N	50	1	f	f	\N
 4	40	f	0	2026-09-30 07:28:29.846453	2026-09-30 07:28:29.846453	3	2026-09-30 07:28:29.84579	1	0	\N	42	\N	f	f	2026-09-30 07:28:29.881642
 2	41	t	1	2026-09-30 07:28:30.133527	2026-09-30 07:28:30.133527	3	2026-09-30 07:28:30.13173	1	0	\N	43	\N	f	f	2026-09-30 07:28:30.198392
 1	41	t	2	2026-09-30 07:28:30.449422	2026-09-30 07:28:30.449422	2	2026-09-30 07:28:30.455959	4	0	\N	44	\N	f	f	2026-09-30 07:28:30.448811
-2	35	t	1	2026-09-30 07:28:28.88399	2026-09-30 07:28:28.88399	3	2026-09-30 07:28:28.883194	1	0	\N	34	4	f	f	2026-09-30 07:28:28.936754
 3	37	f	\N	2026-10-01 13:42:34.789218	2026-10-01 13:42:34.789218	1	\N	\N	0	2026-10-01 00:00:00	45	\N	f	t	\N
 3	41	f	\N	2026-10-01 13:42:34.814468	2026-10-01 13:42:34.814468	0	2026-10-01 13:48:11.542274	2	0	\N	46	\N	f	f	\N
+3	42	t	1	2026-10-01 15:39:51.09154	2026-10-01 15:39:51.09154	3	2026-10-01 15:39:51.090446	1	0	\N	47	\N	f	f	2026-10-01 15:39:51.195119
+1	43	t	1	2026-10-01 15:39:51.448236	2026-10-01 15:39:51.448236	3	2026-10-01 15:39:51.447312	1	0	\N	49	\N	f	f	2026-10-01 15:39:51.542448
+4	44	t	1	2026-10-01 15:39:51.619175	2026-10-01 15:39:51.619175	3	2026-10-01 15:39:51.618337	1	0	\N	52	\N	f	f	2026-10-01 15:39:51.663152
+2	35	t	5	2026-09-30 07:28:28.88399	2026-09-30 07:28:28.88399	3	2026-09-30 07:28:28.883194	1	0	\N	34	4	t	f	2026-10-01 15:39:51.997065
+2	42	t	2	2026-10-01 15:39:51.103089	2026-10-01 15:39:51.103089	3	2026-10-01 15:39:51.102139	2	0	\N	48	1	f	f	2026-10-01 15:39:51.336918
 \.
 
 
@@ -7643,6 +7690,28 @@ b16aa0505bf5fbbda5ab8ae6928d8f4aa0b8d5fd264f1258585fccbd4d41fc12	2	2026-10-01 04
 1f8b12a7332e4d9b0ad799d67d388ff98738eecb64533efc172e4325cb071f9a	2	2026-10-01 12:54:15.783862	2026-10-01 12:54:15.783862	topic	35	37
 73bea78aea748260a4bc1df92fa16f96efe1d8ea3b85938c27b8bb5b4f1b19cf	2	2026-10-01 12:55:10.695741	2026-10-01 12:55:10.695741	topic	35	36
 af5015f5025b39337c5ce2353996efd1727f0aa9cc322a414299e517666837fe	2	2026-10-01 12:56:57.546117	2026-10-01 12:56:57.546117	topic	35	38
+aad3bfef2c16be698007154812254556f6c17beb0eef36dea303b6725e5f189d	2	2026-10-01 15:39:52.10255	2026-10-01 15:39:52.10255	topic	42	48
+0413b79e77ad6f25d9aabb9060aacc1a591ca8b35d1432c98529173aaac3576b	3	2026-10-01 15:41:35.206943	2026-10-01 15:41:35.206943	topic	44	51
+d10e10f9626ce43b8613f5d63b57af6290c20a286a6e76594ccfec575a8cafbc	3	2026-10-01 15:41:35.48901	2026-10-01 15:41:35.48901	topic	43	50
+3a71244d1cb8ef75f2f946837b234a6b218cfd8a61e7c1d3d83930be813131dc	4	2026-10-01 15:41:35.570374	2026-10-01 15:41:35.570374	topic	43	50
+fbf2051fdc2eba075b1e2a063c1551437f3f174514b2e3c01794a34f3ed5838a	3	2026-10-01 15:41:55.287735	2026-10-01 15:41:55.287735	topic	44	51
+6a18e4143a66b986213ad9ae30333139050388596b5c45cba1c332f3316e38d3	4	2026-10-01 15:41:55.350028	2026-10-01 15:41:55.350028	topic	43	50
+7e460348ec29b78a8bfb527cb4c42b5e71ed6a0ea02c3a2003276db8d420069a	3	2026-10-01 15:41:58.684892	2026-10-01 15:41:58.684892	topic	43	50
+9f3298a203b06f0f5b6ae7f82326e825f69c144addc3af926de19ec78c3411dd	3	2026-10-01 15:42:21.224094	2026-10-01 15:42:21.224094	topic	43	50
+29326bf7b4d8d1e81a784456e9072695422d192dde75909bb2b9af06b5a977a9	4	2026-10-01 15:42:21.226991	2026-10-01 15:42:21.226991	topic	43	50
+43f2a7d37775ba756cfa9dbf07fff1d53fcd24582800c9159d87d4c944c96ed6	3	2026-10-01 15:42:28.497353	2026-10-01 15:42:28.497353	topic	44	51
+3bd700f82d016f54d3dacf51a701b668aa91fa3db87c558717a6b2d9f73f70c7	4	2026-10-01 15:42:56.142719	2026-10-01 15:42:56.142719	topic	43	50
+2b4236f0f89b64cc4b9fa9a27b05d0a8056f9ce2f00e16393850e08e75e58002	3	2026-10-01 15:43:11.292996	2026-10-01 15:43:11.292996	topic	43	50
+955414f1b7ff13ed269d7b8f364623e4174c97e1e417f1fa7e86ea9e4f091100	3	2026-10-01 15:43:21.336895	2026-10-01 15:43:21.336895	topic	44	51
+f5222fd240dc8890cc709f42740daeba4d77ad7258d0174ef929c1c62e45c379	4	2026-10-01 15:44:38.438931	2026-10-01 15:44:38.438931	topic	43	50
+fdb4a97fc18013a3db7dbbd4f1fb326e53349cb03d3dde7f7c65d34ace426622	3	2026-10-01 15:45:14.950471	2026-10-01 15:45:14.950471	topic	43	50
+10f21996bf34d11e05271f239edfb4c5289620abda0be724608be46e1c9b29cf	3	2026-10-01 15:45:35.245496	2026-10-01 15:45:35.245496	topic	44	51
+1ea0cefc158fa9467d9f71082ec3fcb0b04df02661c4499e805acb19f968f7e5	4	2026-10-01 15:49:42.991521	2026-10-01 15:49:42.991521	topic	43	50
+6e6f7c017d323d8137191f84a51dd27a3841da6a5d021309262499322514e448	3	2026-10-01 15:50:25.80461	2026-10-01 15:50:25.80461	topic	43	50
+c476d78f3357705a6d69d31e0c3f2b65d7342184a3a8b3c005b1f07f7cba0eeb	3	2026-10-01 15:50:53.519216	2026-10-01 15:50:53.519216	topic	44	51
+c7a4d38d1fdb85c259b1a33384b3b2ddf4d85a9ec2f77783564a91fbbaf03c40	4	2026-10-01 16:01:10.272808	2026-10-01 16:01:10.272808	topic	43	50
+b5ee7d18d538e342088fe5fcf328d762a5461e75b7cfa58977058b09a306a539	3	2026-10-01 16:01:39.384407	2026-10-01 16:01:39.384407	topic	44	51
+0155e7b4da9624688370aab03529081fa6a3906ae5e6c849bfac9787ae6c8ebe	3	2026-10-01 16:01:57.052787	2026-10-01 16:01:57.052787	topic	43	50
 \.
 
 
@@ -7843,6 +7912,19 @@ COPY public.user_actions (id, action_type, user_id, target_topic_id, target_post
 49	1	3	41	46	\N	3	2026-09-30 07:28:30.313407	2026-09-30 07:28:30.383568
 50	2	2	41	46	\N	3	2026-09-30 07:28:30.313407	2026-09-30 07:28:30.389343
 51	5	1	41	47	\N	1	2026-09-30 07:28:30.429946	2026-09-30 07:28:30.444596
+52	12	3	42	-1	\N	3	2026-10-01 15:39:51.071813	2026-10-01 15:39:51.11904
+53	13	2	42	-1	\N	3	2026-10-01 15:39:51.071813	2026-10-01 15:39:51.130617
+54	12	2	42	49	\N	2	2026-10-01 15:39:51.295091	2026-10-01 15:39:51.325978
+55	13	3	42	49	\N	2	2026-10-01 15:39:51.295091	2026-10-01 15:39:51.330821
+56	12	1	43	-1	\N	1	2026-10-01 15:39:51.429671	2026-10-01 15:39:51.479283
+57	13	3	43	-1	\N	1	2026-10-01 15:39:51.429671	2026-10-01 15:39:51.487798
+58	13	4	43	-1	\N	1	2026-10-01 15:39:51.429671	2026-10-01 15:39:51.496903
+59	12	4	44	-1	\N	4	2026-10-01 15:39:51.604386	2026-10-01 15:39:51.631605
+60	13	3	44	-1	\N	4	2026-10-01 15:39:51.604386	2026-10-01 15:39:51.635564
+61	5	2	35	52	\N	2	2026-10-01 15:39:51.834549	2026-10-01 15:39:51.897276
+62	1	2	35	36	\N	2	2026-10-01 15:39:52.050551	2026-10-01 15:39:52.140265
+63	2	3	35	36	\N	2	2026-10-01 15:39:52.050551	2026-10-01 15:39:52.14514
+64	7	3	35	52	\N	2	2026-10-01 15:41:12.73706	2026-10-01 15:41:12.73706
 \.
 
 
@@ -7903,6 +7985,7 @@ ALTER TABLE public.user_api_keys ENABLE TRIGGER ALL;
 ALTER TABLE public.user_archived_messages DISABLE TRIGGER ALL;
 
 COPY public.user_archived_messages (id, user_id, topic_id, created_at, updated_at) FROM stdin;
+1	3	44	2026-10-01 15:39:51.750743	2026-10-01 15:39:51.750743
 \.
 
 
@@ -7973,6 +8056,8 @@ COPY public.user_badges (id, badge_id, user_id, granted_at, granted_by_id, post_
 3	1	3	2026-09-30 06:20:02.086618	-1	\N	0	3	2026-09-30 06:20:02.086618	\N	2
 15	11	3	2026-09-30 07:28:30.313407	-1	46	0	2	2026-09-30 07:28:37.785684	\N	41
 16	5	2	2026-09-30 07:28:30.313407	-1	46	0	2	2026-09-30 07:28:37.803087	\N	42
+17	11	2	2026-10-01 15:39:52.050551	-1	36	0	\N	2026-10-01 15:40:15.189338	\N	46
+18	5	3	2026-10-01 15:39:52.050551	-1	36	0	\N	2026-10-01 15:40:15.2316	\N	47
 \.
 
 
@@ -7986,6 +8071,9 @@ ALTER TABLE public.user_chat_channel_memberships DISABLE TRIGGER ALL;
 
 COPY public.user_chat_channel_memberships (id, user_id, chat_channel_id, last_read_message_id, following, muted, desktop_notification_level, mobile_notification_level, created_at, updated_at, last_unread_mention_when_emailed_id, join_mode, last_viewed_at, notification_level, starred, last_viewed_pins_at) FROM stdin;
 1	2	2	\N	t	f	1	1	2026-10-01 06:40:59.858594	2026-10-01 06:40:59.858594	\N	1	2026-10-01 06:40:59.858925	1	f	\N
+2	3	2	\N	t	f	1	1	2026-10-01 15:42:53.286883	2026-10-01 15:42:53.286883	\N	1	2026-10-01 15:42:53.287295	1	f	\N
+3	1	2	\N	t	f	1	1	2026-10-01 15:42:53.424176	2026-10-01 15:42:53.424176	\N	1	2026-10-01 15:42:53.42449	1	f	\N
+4	1	1	\N	t	f	1	1	2026-10-01 15:42:53.424176	2026-10-01 15:42:53.424176	\N	1	2026-10-01 15:42:53.42449	1	f	\N
 \.
 
 
@@ -8267,9 +8355,9 @@ COPY public.user_search_data (user_id, search_data, raw_data, locale, version) F
 5	'user3':1A,2B	user3 user3	en	3
 -1	'system':1A,2B	system system	en	3
 -2	'discobot':1A,2B	discobot discobot	en	3
-3	'user1':1A,2B	user1 user1	en	3
 4	'user2':1A,2B	user2 user2	en	3
 2	'user0':1A,2B	user0 user0	en	3
+3	'user1':1A,2B	user1 user1	en	3
 1	'admin':1A,2B	admin admin	en	3
 \.
 
@@ -8307,12 +8395,12 @@ ALTER TABLE public.user_security_keys ENABLE TRIGGER ALL;
 ALTER TABLE public.user_stats DISABLE TRIGGER ALL;
 
 COPY public.user_stats (user_id, topics_entered, time_read, days_visited, posts_read_count, likes_given, likes_received, new_since, read_faq, first_post_created_at, post_count, topic_count, bounce_score, reset_bounce_score_after, flags_agreed, flags_disagreed, flags_ignored, first_unread_at, distinct_badge_count, first_unread_pm_at, digest_attempted_at, post_edits_count, draft_count, pending_posts_count) FROM stdin;
-1	0	0	0	6	0	0	2026-07-25 05:59:15.188025	\N	2026-09-30 07:28:29.25168	1	1	0	\N	0	0	0	2026-07-25 05:59:14.990046	4	2026-07-25 05:59:14.990046	\N	\N	0	0
-3	0	0	0	2	1	0	2026-07-25 05:59:16.445924	\N	2026-09-30 07:28:29.079439	1	1	0	\N	0	0	0	2026-07-25 05:59:16.248723	3	2026-07-25 05:59:16.248723	\N	\N	0	0
 -1	0	0	0	4	0	0	2026-07-25 05:58:08.03156	\N	2026-07-25 05:58:27.915472	1	3	0	\N	0	0	0	2026-07-25 05:58:07.777918	0	2026-07-25 05:58:07.777918	\N	\N	0	0
 -2	0	0	0	0	0	0	2026-07-25 05:58:29.567978	\N	\N	0	0	0	\N	0	0	0	2026-07-25 05:58:29.370351	0	2026-07-25 05:58:29.370351	\N	\N	0	0
 4	0	0	0	2	0	0	2026-07-25 05:59:16.927292	\N	2026-09-30 07:28:29.179534	1	0	0	\N	0	0	0	2026-07-25 05:59:16.731949	2	2026-07-25 05:59:16.731949	\N	\N	0	0
-2	0	0	1	2	0	1	2026-07-25 05:59:16.023001	\N	2026-09-30 07:28:28.901913	0	2	0	\N	0	0	0	2026-09-30 10:46:34.784768	2	2026-10-01 06:44:30.570032	\N	\N	0	0
+2	0	0	1	3	1	1	2026-07-25 05:59:16.023001	\N	2026-09-30 07:28:28.901913	1	2	0	\N	0	0	0	2026-09-30 10:46:34.784768	2	2026-10-01 06:44:30.570032	\N	\N	0	0
+3	0	0	1	2	1	1	2026-07-25 05:59:16.445924	\N	2026-09-30 07:28:29.079439	1	1	0	\N	0	0	0	2026-07-25 05:59:16.248723	3	2026-07-25 05:59:16.248723	\N	\N	0	0
+1	0	0	1	6	0	0	2026-07-25 05:59:15.188025	\N	2026-09-30 07:28:29.25168	1	1	0	\N	0	0	0	2026-07-25 05:59:14.990046	4	2026-07-25 05:59:14.990046	\N	\N	0	0
 5	0	0	0	0	0	0	2026-07-25 05:59:17.387931	\N	\N	0	0	0	\N	0	0	0	2026-07-25 05:59:17.197224	4	2026-07-25 05:59:17.197224	\N	\N	0	0
 \.
 
@@ -8370,6 +8458,8 @@ ALTER TABLE public.user_visits DISABLE TRIGGER ALL;
 
 COPY public.user_visits (id, user_id, visited_at, posts_read, mobile, time_read) FROM stdin;
 1	2	2026-10-01	0	f	0
+2	3	2026-10-01	0	f	0
+3	1	2026-10-01	0	f	0
 \.
 
 
@@ -8980,7 +9070,7 @@ SELECT pg_catalog.setval('public.category_custom_fields_id_seq', 34, true);
 -- Name: category_featured_topics_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.category_featured_topics_id_seq', 54, true);
+SELECT pg_catalog.setval('public.category_featured_topics_id_seq', 58, true);
 
 
 --
@@ -10037,7 +10127,7 @@ SELECT pg_catalog.setval('public.nested_view_post_stats_id_seq', 1, false);
 -- Name: notifications_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.notifications_id_seq', 42, true);
+SELECT pg_catalog.setval('public.notifications_id_seq', 51, true);
 
 
 --
@@ -10114,7 +10204,7 @@ SELECT pg_catalog.setval('public.post_action_types_id_seq', 8, true);
 -- Name: post_actions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.post_actions_id_seq', 1, true);
+SELECT pg_catalog.setval('public.post_actions_id_seq', 2, true);
 
 
 --
@@ -10184,7 +10274,7 @@ SELECT pg_catalog.setval('public.post_revisions_id_seq', 1, false);
 -- Name: post_stats_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.post_stats_id_seq', 46, true);
+SELECT pg_catalog.setval('public.post_stats_id_seq', 51, true);
 
 
 --
@@ -10212,7 +10302,7 @@ SELECT pg_catalog.setval('public.post_voting_votes_id_seq', 1, false);
 -- Name: posts_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.posts_id_seq', 47, true);
+SELECT pg_catalog.setval('public.posts_id_seq', 52, true);
 
 
 --
@@ -10310,7 +10400,7 @@ SELECT pg_catalog.setval('public.reviewables_id_seq', 1, false);
 -- Name: scheduler_stats_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.scheduler_stats_id_seq', 16773, true);
+SELECT pg_catalog.setval('public.scheduler_stats_id_seq', 17822, true);
 
 
 --
@@ -10450,7 +10540,7 @@ SELECT pg_catalog.setval('public.sitemaps_id_seq', 3, true);
 -- Name: skipped_email_logs_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.skipped_email_logs_id_seq', 1, false);
+SELECT pg_catalog.setval('public.skipped_email_logs_id_seq', 1, true);
 
 
 --
@@ -10590,7 +10680,7 @@ SELECT pg_catalog.setval('public.topic_allowed_groups_id_seq', 1, false);
 -- Name: topic_allowed_users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.topic_allowed_users_id_seq', 1, true);
+SELECT pg_catalog.setval('public.topic_allowed_users_id_seq', 8, true);
 
 
 --
@@ -10688,7 +10778,7 @@ SELECT pg_catalog.setval('public.topic_timers_id_seq', 1, false);
 -- Name: topic_users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.topic_users_id_seq', 46, true);
+SELECT pg_catalog.setval('public.topic_users_id_seq', 53, true);
 
 
 --
@@ -10723,7 +10813,7 @@ SELECT pg_catalog.setval('public.topic_voting_votes_id_seq', 1, false);
 -- Name: topics_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.topics_id_seq', 41, true);
+SELECT pg_catalog.setval('public.topics_id_seq', 44, true);
 
 
 --
@@ -10758,7 +10848,7 @@ SELECT pg_catalog.setval('public.uploads_id_seq', 66, true);
 -- Name: user_actions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.user_actions_id_seq', 51, true);
+SELECT pg_catalog.setval('public.user_actions_id_seq', 64, true);
 
 
 --
@@ -10793,7 +10883,7 @@ SELECT pg_catalog.setval('public.user_api_keys_id_seq', 1, false);
 -- Name: user_archived_messages_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.user_archived_messages_id_seq', 1, false);
+SELECT pg_catalog.setval('public.user_archived_messages_id_seq', 1, true);
 
 
 --
@@ -10814,14 +10904,14 @@ SELECT pg_catalog.setval('public.user_associated_groups_id_seq', 1, false);
 -- Name: user_auth_token_logs_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.user_auth_token_logs_id_seq', 39, true);
+SELECT pg_catalog.setval('public.user_auth_token_logs_id_seq', 42, true);
 
 
 --
 -- Name: user_auth_tokens_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.user_auth_tokens_id_seq', 39, true);
+SELECT pg_catalog.setval('public.user_auth_tokens_id_seq', 42, true);
 
 
 --
@@ -10835,14 +10925,14 @@ SELECT pg_catalog.setval('public.user_avatars_id_seq', 33, true);
 -- Name: user_badges_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.user_badges_id_seq', 16, true);
+SELECT pg_catalog.setval('public.user_badges_id_seq', 18, true);
 
 
 --
 -- Name: user_chat_channel_memberships_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.user_chat_channel_memberships_id_seq', 1, true);
+SELECT pg_catalog.setval('public.user_chat_channel_memberships_id_seq', 4, true);
 
 
 --
@@ -10975,7 +11065,7 @@ SELECT pg_catalog.setval('public.user_visit_daily_rollups_id_seq', 3, true);
 -- Name: user_visits_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.user_visits_id_seq', 1, true);
+SELECT pg_catalog.setval('public.user_visits_id_seq', 3, true);
 
 
 --

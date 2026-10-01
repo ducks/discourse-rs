@@ -123,6 +123,8 @@ pub struct TopicListSerializer<'a> {
     /// `TopicList#category`: scopes top_tags to the category and its
     /// direct subcategories.
     pub category_id: Option<i32>,
+    /// `@opts[:group]` of a group message list: left out of participant_groups.
+    pub group_id: Option<i32>,
     /// Per-topic lookups fetched for the whole page at once (see
     /// `prefetch`); the per-topic methods fall back to their own query
     /// for topics not in it.
@@ -145,6 +147,12 @@ pub struct Prefetched {
     /// `DismissedTopicUser` topic ids for the user
     dismissed: Vec<i32>,
     treat_as_new_topic_start_date: Option<NaiveDateTime>,
+    /// `allowed_user_ids` per private message, in topic_allowed_users order.
+    allowed_users: HashMap<i32, Vec<i32>>,
+    /// `allowed_group_ids` with names per private message.
+    allowed_groups: HashMap<i32, Vec<(i32, String)>>,
+    /// `participants_summary` per private message, set by `serialize`.
+    participants: HashMap<i32, Vec<Poster>>,
 }
 
 /// The topic_users columns the list item reads (`user_data`).
@@ -169,6 +177,7 @@ impl TopicListSerializer<'_> {
     pub async fn serialize(&mut self, list: &TopicList) -> Result<Value, TopicListError> {
         self.prefetch(&list.topics).await?;
         let lookup = self.user_lookup(&list.topics).await?;
+        let viewer = self.guardian.user_id();
         let logo_small_url = self.logo_small_url().await?;
         let group_ids: Vec<i32> = lookup
             .values()
@@ -211,6 +220,44 @@ impl TopicListSerializer<'_> {
                         flair_groups.push(g.flair_json()?);
                     }
                 }
+            }
+            // participants_summary: the author and allowed users minus the
+            // viewer, at most five, side-loaded like posters.
+            if topic.archetype == "private_message" {
+                let mut ids: Vec<i32> = Vec::new();
+                ids.extend(topic.user_id);
+                ids.extend(
+                    self.prefetched
+                        .allowed_users
+                        .get(&topic.id)
+                        .cloned()
+                        .unwrap_or_default(),
+                );
+                let mut participants: Vec<Poster> = Vec::new();
+                for id in ids {
+                    if Some(id) == viewer || participants.iter().any(|p| p.user.id == id) {
+                        continue;
+                    }
+                    if let Some(u) = lookup.get(&id) {
+                        participants.push(Poster {
+                            user: u.clone(),
+                            extras: (topic.last_post_user_id == id).then_some("latest"),
+                            description: None,
+                        });
+                    }
+                }
+                participants.truncate(5);
+                for p in &participants {
+                    if !seen_users.contains(&p.user.id) {
+                        seen_users.push(p.user.id);
+                        users.push(self.serialize_user(
+                            &p.user,
+                            logo_small_url.as_deref(),
+                            &groups,
+                        )?);
+                    }
+                }
+                self.prefetched.participants.insert(topic.id, participants);
             }
             topics.push(
                 self.serialize_topic(topic, &posters, tagging, Mode::ListItem)
@@ -280,6 +327,11 @@ impl TopicListSerializer<'_> {
                 .into_iter()
                 .flatten(),
             );
+        }
+        for t in topics {
+            if let Some(allowed) = self.prefetched.allowed_users.get(&t.id) {
+                ids.extend(allowed.iter().copied());
+            }
         }
         self.user_lookup_for(&ids).await
     }
@@ -422,15 +474,17 @@ impl TopicListSerializer<'_> {
         }
         out.insert("pinned".into(), json!(pinned));
         out.insert("unpinned".into(), json!(unpinned));
-        if mode == Mode::Suggested
-            || pinned
-            || self.settings.get("always_include_topic_excerpts")?.truthy()
-        {
+        // ListableTopicSerializer#include_excerpt?, inherited by the
+        // suggested serializer too.
+        if pinned || self.settings.get("always_include_topic_excerpts")?.truthy() {
             out.insert("excerpt".into(), json!(t.excerpt));
         }
         out.insert("visible".into(), json!(t.visible));
         out.insert("closed".into(), json!(t.closed));
         out.insert("archived".into(), json!(t.archived));
+        if t.subtype.as_deref() == Some("moderator_warning") {
+            out.insert("is_warning".into(), json!(true));
+        }
         if let Some(u) = &user_data {
             out.insert("notification_level".into(), json!(u.notification_level));
         }
@@ -451,7 +505,11 @@ impl TopicListSerializer<'_> {
         if let Some(reason) = t.visibility_reason_id {
             out.insert("visibility_reason_id".into(), json!(reason));
         }
-        if mode != Mode::Listable && tagging && t.archetype != "private_message" {
+        // can_see_tags?: tagging on, and PMs only for PM taggers.
+        if mode != Mode::Listable
+            && tagging
+            && (t.archetype != "private_message" || self.guardian.can_tag_pms(self.settings)?)
+        {
             let (tags, descriptions) = self.tags(t.id).await?;
             out.insert("tags".into(), tags);
             out.insert("tags_descriptions".into(), descriptions);
@@ -483,23 +541,53 @@ impl TopicListSerializer<'_> {
                 return Err(Unsupported("featured_link_root_domain").into());
             }
         }
+        let pm = t.archetype == "private_message";
+        if pm {
+            out.insert(
+                "allowed_user_count".into(),
+                json!(
+                    self.prefetched
+                        .allowed_users
+                        .get(&t.id)
+                        .map(|u| u.len())
+                        .unwrap_or(0)
+                ),
+            );
+            let groups: Vec<&str> = self
+                .prefetched
+                .allowed_groups
+                .get(&t.id)
+                .map(|g| {
+                    g.iter()
+                        .filter(|(id, _)| Some(*id) != self.group_id)
+                        .map(|(_, name)| name.as_str())
+                        .collect()
+                })
+                .unwrap_or_default();
+            out.insert("participant_groups".into(), json!(groups));
+        }
+        let poster_json = |p: &Poster| {
+            json!({
+                "extras": p.extras,
+                "description": p.description,
+                "user_id": p.user.id,
+                "primary_group_id": p.user.primary_group_id,
+                "flair_group_id": p.user.flair_group_id,
+            })
+        };
         out.insert(
             "posters".into(),
-            Value::Array(
-                posters
-                    .iter()
-                    .map(|p| {
-                        json!({
-                            "extras": p.extras,
-                            "description": p.description,
-                            "user_id": p.user.id,
-                            "primary_group_id": p.user.primary_group_id,
-                            "flair_group_id": p.user.flair_group_id,
-                        })
-                    })
-                    .collect(),
-            ),
+            Value::Array(posters.iter().map(poster_json).collect()),
         );
+        if pm {
+            let participants = self
+                .prefetched
+                .participants
+                .get(&t.id)
+                .map(|p| p.iter().map(poster_json).collect::<Vec<_>>())
+                .unwrap_or_default();
+            out.insert("participants".into(), Value::Array(participants));
+        }
         Ok(Value::Object(out))
     }
 
@@ -643,6 +731,36 @@ impl TopicListSerializer<'_> {
         .await?;
         p.op_like_counts = counts.into_iter().collect();
 
+        // Private messages: their allowed users and groups.
+        let pm_ids: Vec<i32> = topics
+            .iter()
+            .filter(|t| t.archetype == "private_message")
+            .map(|t| t.id)
+            .collect();
+        if !pm_ids.is_empty() {
+            let allowed: Vec<(i32, i32)> = sqlx::query_as(
+                "SELECT topic_id, user_id FROM topic_allowed_users WHERE topic_id = ANY($1) ORDER BY id",
+            )
+            .bind(&pm_ids)
+            .fetch_all(&mut *self.conn)
+            .await?;
+            for (topic_id, user_id) in allowed {
+                p.allowed_users.entry(topic_id).or_default().push(user_id);
+            }
+            let groups: Vec<(i32, i32, String)> = sqlx::query_as(
+                "SELECT tag.topic_id, g.id, g.name FROM topic_allowed_groups tag JOIN groups g ON g.id = tag.group_id \
+                 WHERE tag.topic_id = ANY($1) ORDER BY tag.id",
+            )
+            .bind(&pm_ids)
+            .fetch_all(&mut *self.conn)
+            .await?;
+            for (topic_id, id, name) in groups {
+                p.allowed_groups
+                    .entry(topic_id)
+                    .or_default()
+                    .push((id, name));
+            }
+        }
         // TopicList#load_topics' per-user lookups.
         if let Some(uid) = self.guardian.user_id() {
             let rows: Vec<TopicUserRow> = sqlx::query_as(
@@ -899,10 +1017,11 @@ fn truncate(s: &str, n: usize) -> String {
     format!("{head}...")
 }
 
+#[derive(Debug, Clone)]
 pub(crate) struct Poster {
     pub(crate) user: LookupUser,
     pub(crate) extras: Option<&'static str>,
-    pub(crate) description: String,
+    pub(crate) description: Option<String>,
 }
 
 /// `TopicPostersSummary#summary`: up to five posters from author, last
@@ -952,7 +1071,7 @@ pub(crate) fn posters_summary(
             Poster {
                 user: u.clone(),
                 extras,
-                description: descriptions.get(&u.id).cloned().unwrap_or_default(),
+                description: Some(descriptions.get(&u.id).cloned().unwrap_or_default()),
             }
         })
         .collect()
