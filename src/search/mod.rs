@@ -891,6 +891,7 @@ impl Search<'_> {
             urls: self.urls,
             more_topics_url: None,
             category_id: None,
+            prefetched: Default::default(),
         };
         let users = list.user_lookup_for(&user_ids).await?;
         let logo_small_url = list.logo_small_url().await?;
