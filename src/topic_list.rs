@@ -30,8 +30,9 @@ pub enum Mode {
     /// in /categories.json)
     Listable,
     /// SearchTopicListItemSerializer: Listable without image_url, plus tags
-    /// and category_id
-    SearchItem,
+    /// and category_id; `user_data` only when the controller ran
+    /// `find_user_data` (/search.json, not /search/query.json)
+    SearchItem { user_data: bool },
 }
 
 /// `Topic.share_thumbnail_size`
@@ -246,7 +247,10 @@ impl TopicListSerializer<'_> {
             if !list.tag_ids.is_empty() {
                 let mut tags = Vec::new();
                 for tag in crate::tags::Tag::find_all(&mut *self.conn, &list.tag_ids).await? {
-                    tags.push(tag.serialize(&mut *self.conn).await?);
+                    tags.push(
+                        tag.serialize(&mut *self.conn, self.guardian, self.settings)
+                            .await?,
+                    );
                 }
                 topic_list.insert("tags".into(), Value::Array(tags));
             }
@@ -356,7 +360,10 @@ impl TopicListSerializer<'_> {
         tagging: bool,
         mode: Mode,
     ) -> Result<Value, TopicListError> {
-        let user_data = self.user_data(t.id).await?;
+        let user_data = match mode {
+            Mode::SearchItem { user_data: false } => None,
+            _ => self.user_data(t.id).await?,
+        };
         // PinnedCheck: a pin the user cleared after it was set is unpinned.
         let unpinned = match (
             t.pinned_at,
@@ -384,7 +391,7 @@ impl TopicListSerializer<'_> {
         out.insert("posts_count".into(), json!(t.posts_count));
         out.insert("reply_count".into(), json!(t.reply_count));
         out.insert("highest_post_number".into(), json!(highest));
-        if mode != Mode::SearchItem {
+        if !matches!(mode, Mode::SearchItem { .. }) {
             out.insert("image_url".into(), self.image_url(t).await?);
         }
         out.insert("created_at".into(), json!(time_json(t.created_at)));
@@ -452,7 +459,7 @@ impl TopicListSerializer<'_> {
         if mode == Mode::Listable {
             return self.finish_listable(out, t, posters).await;
         }
-        if mode == Mode::SearchItem {
+        if matches!(mode, Mode::SearchItem { .. }) {
             out.insert("category_id".into(), json!(t.category_id));
             return Ok(Value::Object(out));
         }
@@ -731,16 +738,7 @@ impl TopicListSerializer<'_> {
         if self.settings.get("tags_sort_alphabetically")?.truthy() {
             return Ok("t.name ASC".to_string());
         }
-        let column = if self.guardian.is_staff()
-            || self
-                .settings
-                .get("include_secure_categories_in_tag_counts")?
-                .truthy()
-        {
-            "staff_topic_count"
-        } else {
-            "public_topic_count"
-        };
+        let column = self.guardian.tag_count_column(self.settings)?;
         Ok(format!("t.{column} DESC, t.id DESC"))
     }
 

@@ -621,28 +621,7 @@ impl Site<'_> {
             flair_color: Option<String>,
             automatic: bool,
         }
-        // Group.visible_groups(user): public groups for anonymous users,
-        // everything for admins, by visibility level and membership or
-        // ownership otherwise.
-        let visible = match self.guardian.user() {
-            None => "groups.visibility_level = 0".to_string(),
-            Some(u) if u.admin => "TRUE".to_string(),
-            Some(u) if u.moderator => format!(
-                "(groups.visibility_level IN (0, 1, 2, 3) OR groups.id IN (\
-                    SELECT g.id FROM groups g JOIN group_users gu ON gu.group_id = g.id \
-                    AND gu.user_id = {} AND gu.owner WHERE g.visibility_level = 4))",
-                u.id
-            ),
-            Some(u) => format!(
-                "groups.id IN (\
-                    SELECT id FROM groups WHERE visibility_level IN (0, 1) \
-                    UNION ALL SELECT g.id FROM groups g JOIN group_users gu ON gu.group_id = g.id \
-                    AND gu.user_id = {uid} WHERE g.visibility_level = 2 \
-                    UNION ALL SELECT g.id FROM groups g JOIN group_users gu ON gu.group_id = g.id \
-                    AND gu.user_id = {uid} AND gu.owner WHERE g.visibility_level IN (3, 4))",
-                uid = u.id
-            ),
-        };
+        let visible = crate::groups::visible_groups_where(&self.guardian, "groups");
         let rows: Vec<Row> = sqlx::query_as(&format!(
             "SELECT id, name, full_name, flair_icon, flair_upload_id, flair_bg_color, flair_color, automatic \
              FROM groups WHERE ($1 OR id > 0) AND {visible} ORDER BY name ASC"

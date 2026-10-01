@@ -460,13 +460,13 @@ struct CountRow {
 
 impl CountRow {
     /// `tag_counts_json` entry; browsable tags have no target_tag.
-    fn json(&self, secure_counts: bool) -> Value {
-        let count = if secure_counts {
+    fn json(&self, staff_counts: bool, pm_count: bool) -> Value {
+        let count = if staff_counts {
             self.staff_topic_count
         } else {
             self.public_topic_count
         };
-        json!({
+        let mut out = json!({
             "id": self.id,
             "text": self.name,
             "name": self.name,
@@ -475,7 +475,11 @@ impl CountRow {
             "count": count,
             "pm_only": count == 0 && self.pm_topic_count > 0,
             "target_tag": null,
-        })
+        });
+        if pm_count {
+            out["pm_count"] = json!(self.pm_topic_count);
+        }
+        out
     }
 }
 
@@ -497,19 +501,24 @@ async fn index_response(
     if settings.get("tags_listed_by_group")?.truthy() {
         return Err(Unsupported("tags_listed_by_group").into());
     }
-    let secure_counts = settings
-        .get("include_secure_categories_in_tag_counts")?
-        .truthy();
-    let count_column = if secure_counts {
-        "staff_topic_count"
+    let count_column = guardian.tag_count_column(&settings)?;
+    let staff_counts = count_column == "staff_topic_count";
+    // show_pm_tags && display_personal_messages_tag_counts
+    let pm_count = guardian.can_tag_pms(&settings)?
+        && settings
+            .get("display_personal_messages_tag_counts")?
+            .truthy();
+    // show_all_tags?: admins also get unused and PM-only tags.
+    let used = if guardian.is_admin() {
+        String::new()
     } else {
-        "public_topic_count"
+        format!(" AND tags.{count_column} > 0")
     };
     let visible = visible_tags_where(&guardian, &settings)?;
     // Tag.browsable(guardian).used_tags_in_regular_topics(guardian).order(:id)
     let tags: Vec<CountRow> = sqlx::query_as(&format!(
         "SELECT {COUNT_COLUMNS} FROM tags WHERE tags.target_tag_id IS NULL AND {visible} \
-         AND tags.{count_column} > 0 ORDER BY tags.id"
+         {used} ORDER BY tags.id"
     ))
     .fetch_all(&mut *conn)
     .await?;
@@ -522,13 +531,19 @@ async fn index_response(
     .bind(&allowed)
     .fetch_all(&mut *conn)
     .await?;
+    // without_pm_only_tags, skipped for admins.
+    let pm_only = if guardian.is_admin() {
+        String::new()
+    } else {
+        format!(" AND NOT (tags.pm_topic_count > 0 AND tags.{count_column} = 0)")
+    };
     let mut category_names = Vec::new();
     let mut categories = Vec::new();
     for category_id in category_ids {
         let rows: Vec<CountRow> = sqlx::query_as(&format!(
             "SELECT {COUNT_COLUMNS} FROM tags JOIN category_tags ct ON ct.tag_id = tags.id \
              WHERE ct.category_id = $1 AND tags.target_tag_id IS NULL AND {visible} \
-             AND NOT (tags.pm_topic_count > 0 AND tags.{count_column} = 0) ORDER BY ct.id"
+             {pm_only} ORDER BY ct.id"
         ))
         .bind(category_id)
         .fetch_all(&mut *conn)
@@ -543,11 +558,11 @@ async fn index_response(
         category_names.push((i64::from(category_id), name));
         categories.push(json!({
             "id": category_id,
-            "tags": rows.iter().map(|r| r.json(secure_counts)).collect::<Vec<_>>(),
+            "tags": rows.iter().map(|r| r.json(staff_counts, pm_count)).collect::<Vec<_>>(),
         }));
     }
     let doc = json!({
-        "tags": tags.iter().map(|r| r.json(secure_counts)).collect::<Vec<_>>(),
+        "tags": tags.iter().map(|r| r.json(staff_counts, pm_count)).collect::<Vec<_>>(),
         "extras": { "categories": categories },
     });
     if json {

@@ -1,6 +1,7 @@
 //! The group columns user serializers need (UserLookup's group select,
 //! Group#flair_url), with PrimaryGroupSerializer and FlairGroupSerializer.
 
+use crate::guardian::Guardian;
 use std::collections::HashMap;
 
 use serde_json::{Value, json};
@@ -202,5 +203,30 @@ impl BasicGroup {
         out.insert("can_see_members".into(), json!(can_see_members));
         out.insert("publish_read_state".into(), json!(self.publish_read_state));
         Ok(Value::Object(out))
+    }
+}
+
+/// `Group.visible_groups(user)`'s visibility clause over the `groups`
+/// table aliased `alias`: public groups for anonymous users, everything
+/// for admins, by visibility level and membership or ownership otherwise.
+pub fn visible_groups_where(guardian: &Guardian, alias: &str) -> String {
+    match guardian.user() {
+        None => format!("{alias}.visibility_level = 0"),
+        Some(u) if u.admin => "TRUE".to_string(),
+        Some(u) if u.moderator => format!(
+            "({alias}.visibility_level IN (0, 1, 2, 3) OR {alias}.id IN (\
+                SELECT g.id FROM groups g JOIN group_users gu ON gu.group_id = g.id \
+                AND gu.user_id = {} AND gu.owner WHERE g.visibility_level = 4))",
+            u.id
+        ),
+        Some(u) => format!(
+            "{alias}.id IN (\
+                SELECT id FROM groups WHERE visibility_level IN (0, 1) \
+                UNION ALL SELECT g.id FROM groups g JOIN group_users gu ON gu.group_id = g.id \
+                AND gu.user_id = {uid} WHERE g.visibility_level = 2 \
+                UNION ALL SELECT g.id FROM groups g JOIN group_users gu ON gu.group_id = g.id \
+                AND gu.user_id = {uid} AND gu.owner WHERE g.visibility_level IN (3, 4))",
+            uid = u.id
+        ),
     }
 }

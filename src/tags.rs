@@ -65,11 +65,12 @@ pub struct Tag {
     pub description: Option<String>,
     pub description_cooked: Option<String>,
     pub public_topic_count: i32,
+    pub staff_topic_count: i32,
     pub pm_topic_count: i32,
     pub target_tag_id: Option<i32>,
 }
 
-const COLUMNS: &str = "id, name, slug, description, description_cooked, public_topic_count, pm_topic_count, target_tag_id";
+const COLUMNS: &str = "id, name, slug, description, description_cooked, public_topic_count, staff_topic_count, pm_topic_count, target_tag_id";
 
 impl Tag {
     /// `Tag.find_by_name`: case-insensitive.
@@ -146,12 +147,23 @@ impl Tag {
     }
 
     /// TagSerializer for anonymous users (public_topic_count).
-    pub async fn serialize(&self, conn: &mut PgConnection) -> Result<Value, sqlx::Error> {
+    /// TagSerializer: `topic_count` is the staff count for staff.
+    pub async fn serialize(
+        &self,
+        conn: &mut PgConnection,
+        guardian: &Guardian,
+        settings: &SiteSettings,
+    ) -> Result<Value, GuardianError> {
+        let topic_count = if guardian.tag_count_column(settings)? == "staff_topic_count" {
+            self.staff_topic_count
+        } else {
+            self.public_topic_count
+        };
         Ok(json!({
             "id": self.id,
             "name": self.name,
             "slug": self.slug_for_url(),
-            "topic_count": self.public_topic_count,
+            "topic_count": topic_count,
             "staff": self.is_staff(conn).await?,
             "description": self.description,
             "description_cooked": self.description_cooked,

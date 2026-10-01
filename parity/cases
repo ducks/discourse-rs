@@ -198,3 +198,17 @@ GET /t/parity-fixture-deleted-topic/40.json as=user1 ignore=/timeline_lookup,/ex
 GET /site.json as=user1 ignore=/filters,/anonymous_list_filters,/homepage_choices,/top_menu_items,/anonymous_top_menu_items,/markdown_additional_options,/hashtag_configurations,/hashtag_icons,/access_control,/categories/*/custom_fields,/valid_flag_applies_to_types,/admin_config_login_routes,/permanent_upcoming_change_names,/category_types,/topic_admin_button_workflows,/post_button_workflows,/users_on_holiday
 GET /site.json as=user0 ignore=/filters,/anonymous_list_filters,/homepage_choices,/top_menu_items,/anonymous_top_menu_items,/markdown_additional_options,/hashtag_configurations,/hashtag_icons,/access_control,/categories/*/custom_fields,/valid_flag_applies_to_types,/admin_config_login_routes,/permanent_upcoming_change_names,/category_types,/topic_admin_button_workflows,/post_button_workflows,/users_on_holiday
 GET /site.json as=admin ignore=/filters,/anonymous_list_filters,/homepage_choices,/top_menu_items,/anonymous_top_menu_items,/markdown_additional_options,/hashtag_configurations,/hashtag_icons,/access_control,/categories/*/custom_fields,/valid_flag_applies_to_types,/admin_config_login_routes,/permanent_upcoming_change_names,/category_types,/topic_admin_button_workflows,/post_button_workflows,/users_on_holiday
+
+# search for a logged-in user: user data on /search.json topics only,
+# secure categories and staff group visibility, the log keyed by user.
+GET /search.json?q=fixture as=user1 ignore=/grouped_search_result/search_log_id,/topics/*/has_accepted_answer
+GET /search.json?q=fixture as=admin ignore=/grouped_search_result/search_log_id,/topics/*/has_accepted_answer
+GET /search.json?q=Parity&page=1 as=user0 ignore=/grouped_search_result/search_log_id,/topics/*/has_accepted_answer
+GET /search/query.json?term=fixture as=user1 ignore=/grouped_search_result/search_log_id,/topics/*/has_accepted_answer
+GET /search/query.json?term=staff as=admin ignore=/grouped_search_result/search_log_id,/topics/*/has_accepted_answer
+GET /search/query.json?term=staff as=user1 ignore=/grouped_search_result/search_log_id,/topics/*/has_accepted_answer
+GET /search/query.json?term=general as=user1 ignore=/grouped_search_result/search_log_id,/topics/*/has_accepted_answer
+
+# tags for a logged-in user: counts and the admin's unused tags.
+GET /tags.json as=user1
+GET /tags.json as=admin

@@ -442,6 +442,22 @@ impl Guardian {
         }
     }
 
+    /// `Tag.topic_count_column(guardian)`: the staff count for staff or
+    /// when secure categories count for everyone.
+    pub fn tag_count_column(&self, settings: &SiteSettings) -> Result<&'static str, SettingError> {
+        Ok(
+            if self.is_staff()
+                || settings
+                    .get("include_secure_categories_in_tag_counts")?
+                    .truthy()
+            {
+                "staff_topic_count"
+            } else {
+                "public_topic_count"
+            },
+        )
+    }
+
     /// TagGuardian#can_create_tag?
     pub fn can_create_tag(&self, settings: &SiteSettings) -> Result<bool, SettingError> {
         Ok(settings.get("tagging_enabled")?.truthy()
