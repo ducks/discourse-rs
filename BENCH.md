@@ -177,3 +177,70 @@ The Rails column also moved up from the first run (its /latest.json 8
 to 17 req/s): that is the clock clamp lifting at two connections, not a
 change on the Rails side. The topic page (/t/...) is the next per-post
 candidate, at 489 req/s against the lists' 600-770.
+
+## 2026-10-01, logged in
+
+The first logged-in run, with sessions slice 2 on `feat/logged-in-reads`
+(topic_users joins, muting, the guardian's secure categories and can_*
+predicates, the viewer block in the HTML shell). `scripts/bench -u
+user1:password` logs in once per target and sends the `_t` cookie, so
+Rails' anonymous cache is out of the picture and both sides resolve the
+session on every request; `/unread.json` and `/new.json` join the set.
+Same box and data as above, release binary at c6845d3, c=2.
+
+Session resolution is the new fixed cost: `/srv/status` fell from
+19778 req/s anonymous to 2709 logged in, which is the token lookup, the
+user row, the group memberships and the silenced check (three or four
+queries) per request. Rails pays the same shape (1040 -> 1121, it was
+already paying it). Caching the token-to-user step for a few seconds is
+the obvious next win; nothing else in the table moved by more than the
+per-user work itself (the `tu` join and the per-topic read-state keys
+cost `/latest.json` 595 -> 428 req/s).
+
+Duration 5s, concurrency 2, keepalive off, logged in as user1, 2026-10-01T15:04Z
+
+| endpoint | target | req/s | p50 ms | p99 ms | non-2xx |
+|---|---|---:|---:|---:|---:|
+| /srv/status | rs (user) | 2709 | 0.7 | 1.5 | 0 |
+| /srv/status | rails-dev (user) | 1121 | 1.6 | 4 | 0 |
+| /site.json | rs (user) | 366 | 5.3 | 8 | 0 |
+| /site.json | rails-dev (user) | 37 | 51.8 | 132.1 | 0 |
+| /latest.json | rs (user) | 428 | 4.5 | 8 | 0 |
+| /latest.json | rails-dev (user) | 13 | 143 | 204 | 0 |
+| /latest | rs (user) | 399 | 4.9 | 7.7 | 0 |
+| /latest | rails-dev (user) | 8 | 221.4 | 430 | 0 |
+| /c/general/4.json | rs (user) | 480 | 4 | 9.2 | 0 |
+| /c/general/4.json | rails-dev (user) | 18 | 107.5 | 189.7 | 0 |
+| /categories.json | rs (user) | 510 | 3.8 | 6.4 | 0 |
+| /categories.json | rails-dev (user) | 17 | 115.3 | 142.4 | 0 |
+| /t/welcome-to-discourse/5.json | rs (user) | 314 | 6.1 | 9.7 | 0 |
+| /t/welcome-to-discourse/5.json | rails-dev (user) | 10 | 194.9 | 389.9 | 0 |
+| /t/welcome-to-discourse/5 | rs (user) | 318 | 6.1 | 9.5 | 0 |
+| /t/welcome-to-discourse/5 | rails-dev (user) | 7 | 269.9 | 347.9 | 0 |
+| /u/system.json | rs (user) | 800 | 2.4 | 4.5 | 0 |
+| /u/system.json | rails-dev (user) | 21 | 92.6 | 123.7 | 0 |
+| /search.json?q=Welcome | rs (user) | 403 | 4.8 | 7.9 | 0 |
+| /search.json?q=Welcome | rails-dev (user) | 113 | 14.5 | 77.5 | 535 |
+| /tag/design.json | rs (user) | 474 | 4 | 9.7 | 0 |
+| /tag/design.json | rails-dev (user) | 19 | 102.2 | 133.4 | 0 |
+| /unread.json | rs (user) | 519 | 3.7 | 6.2 | 0 |
+| /unread.json | rails-dev (user) | 20 | 96.4 | 121.1 | 0 |
+| /new.json | rs (user) | 246 | 7.9 | 11.2 | 0 |
+| /new.json | rails-dev (user) | 14 | 135.1 | 211.7 | 0 |
+
+## 2026-10-01, build and test times
+
+Measured on the same laptop (powersave governor, see the first
+investigation), rustc 1.86, sqlx 0.8, 170 tests at the time.
+
+| measure | value |
+|---|---:|
+| `cargo build --release`, clean | 4m 53s |
+| `cargo build --release`, one-file change | 1m 15s |
+| `cargo build` (dev), one-file change | 4s |
+| `cargo test`, warm cache | 90s |
+
+The test time is dominated by the integration tests cloning the template
+database once per test (`CREATE DATABASE ... TEMPLATE`), about 1s each,
+and the parity replay (146 cases in-process, ~12s). `make lint` runs
+fmt-check, clippy with `-D warnings` and the tests.

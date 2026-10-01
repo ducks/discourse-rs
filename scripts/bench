@@ -18,7 +18,13 @@
 # agent runs with code reloading and without precompiled assets and is
 # several times slower than production on the same box.
 #
-# Usage: scripts/bench [-d 10s] [-c 16] [-o dir] name=url [name=url...]
+# With `-u user:password` every request carries that user's session: the
+# script logs in once per target (CSRF token, then POST /session) and
+# sends the `_t` cookie. Logged-in responses bypass Rails' anonymous cache,
+# so each target gets one run, labelled `(user)`. The lists then carry
+# per-user keys and /unread and /new are measured too.
+#
+# Usage: scripts/bench [-d 10s] [-c 16] [-o dir] [-u user:password] name=url [name=url...]
 #   e.g. scripts/bench rs=http://127.0.0.1:8080 rails=http://127.0.0.1:3043
 #
 # Writes oha's JSON per run under the output dir (default bench/<date>).
@@ -26,13 +32,15 @@
 set -euo pipefail
 
 duration=10s
+login=""
 concurrency=16
 outdir=""
-while getopts "d:c:o:" opt; do
+while getopts "d:c:o:u:" opt; do
   case "$opt" in
     d) duration="$OPTARG" ;;
     c) concurrency="$OPTARG" ;;
     o) outdir="$OPTARG" ;;
+    u) login="$OPTARG" ;;
     *) echo "usage: scripts/bench [-d duration] [-c concurrency] [-o dir] name=url..." >&2; exit 2 ;;
   esac
 done
@@ -70,6 +78,21 @@ endpoints=(
   "/search.json?q=$word"
 )
 [ -n "$tag" ] && endpoints+=("/tag/$tag.json")
+[ -n "$login" ] && endpoints+=("/unread.json" "/new.json")
+
+# session: url -> the Cookie header of a fresh session for -u, via the
+# same requests a browser makes.
+session() {
+  local url="$1" jar csrf code
+  jar="$(mktemp)"
+  csrf="$(curl -sf -c "$jar" -b "$jar" -H "X-Requested-With: XMLHttpRequest" "$url/session/csrf.json" | jq -r .csrf)"
+  code="$(curl -s -o /dev/null -w "%{http_code}" -c "$jar" -b "$jar" -H "X-CSRF-Token: $csrf" -H "X-Requested-With: XMLHttpRequest" \
+    --data-urlencode "login=${login%%:*}" --data-urlencode "password=${login#*:}" "$url/session")"
+  [ "$code" = 200 ] || { echo "bench: login as ${login%%:*} at $url failed ($code)" >&2; rm -f "$jar"; exit 1; }
+  # curl prefixes HttpOnly cookies (the _t token) with #HttpOnly_.
+  awk '{ sub(/^#HttpOnly_/, "") } !/^#/ && NF >= 7 { printf "%s=%s; ", $6, $7 }' "$jar"
+  rm -f "$jar"
+}
 
 run() { # name url path cookie
   local name="$1" url="$2" path="$3" cookie="$4"
@@ -87,7 +110,14 @@ run() { # name url path cookie
   ' "$file"
 }
 
-echo "Duration $duration, concurrency $concurrency, keepalive off, $(date -u +%Y-%m-%dT%H:%MZ)"
+declare -A sessions
+if [ -n "$login" ]; then
+  for target in "$@"; do
+    sessions["${target%%=*}"]="$(session "${target#*=}")"
+  done
+fi
+
+echo "Duration $duration, concurrency $concurrency, keepalive off${login:+, logged in as ${login%%:*}}, $(date -u +%Y-%m-%dT%H:%MZ)"
 echo
 echo "| endpoint | target | req/s | p50 ms | p99 ms | non-2xx |"
 echo "|---|---|---:|---:|---:|---:|"
@@ -95,8 +125,10 @@ for path in "${endpoints[@]}"; do
   for target in "$@"; do
     name="${target%%=*}"
     url="${target#*=}"
+    if [ -n "$login" ]; then
+      run "$name (user)" "$url" "$path" "${sessions[$name]}"
     # Rails tags its responses with X-Discourse-Route; discourse-rs does not.
-    if curl -sf "$url/latest.json" -o /dev/null -D - | grep -qi '^x-discourse-route'; then
+    elif curl -sf "$url/latest.json" -o /dev/null -D - | grep -qi '^x-discourse-route'; then
       run "$name (cached)" "$url" "$path" ""
       run "$name (uncached)" "$url" "$path" "_bypass_cache=1"
     else

@@ -60,7 +60,7 @@ how often a backup trips them.
       user color schemes on `/site.json`
 - [ ] Muted defaults (`default_categories_muted`, `default_tags_muted`,
       `mute_all_categories_by_default`), shared drafts category
-- [ ] `tags_listed_by_group`, login-only list filters
+- [ ] `tags_listed_by_group`
 - [ ] Profiles: bios (PrettyText.excerpt), suspended/silenced users, user
       status, featured topics, letter avatars (`/letter_avatar_proxy` is a
       proxy to avatars.discourse.org; serve or generate them)
@@ -80,9 +80,18 @@ Logged-in readers, no writes yet.
       keeps sessions; `/session/current.json` byte-equal for members and
       admins
 - [ ] OIDC / external logins, 2FA
-- [ ] Logged-in `Guardian`: secure categories, group permissions, tag
-      group permissions by group, staff visibility
-- [ ] Read state: `topic_users`, unread/new lists, tracking levels
+- [x] Logged-in `Guardian`: secure categories, group permissions, tag
+      group permissions by group, staff visibility (unlisted topics, all
+      tags, every group), can_* on topics and posts, flags (`post_can_act?`)
+- [x] Read state: `topic_users` on lists, topics and search, muted
+      topics/categories/tags, cleared pins, dismissals, `/unread`, `/new`,
+      `/unseen`, `/read`, `/posted`, `/bookmarks` (and `/c/.../l/<filter>`)
+- [x] The page shell for a member: csrf meta, logout form, no caching
+- [ ] Own profile and staff views of profiles (the private attribute
+      block: emails, 2FA, auth tokens, preferences), deleted topics and
+      posts for staff (`post_stream.gaps`, `show_deleted`), ignored users,
+      category group moderators, shared drafts, the login-required 2FA and
+      required-fields redirects
 - [ ] Notifications list, bookmarks list, user preferences (read-only)
 - [ ] Live updates: a MessageBus-compatible long-poll endpoint (`/message-bus/:client_id/poll`); nothing in the Rust ecosystem provides it, so it is ours to write
 
