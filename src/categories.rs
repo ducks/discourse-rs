@@ -494,6 +494,7 @@ impl From<crate::guardian::GuardianError> for CategoriesError {
         match e {
             crate::guardian::GuardianError::Db(e) => CategoriesError::Db(e),
             crate::guardian::GuardianError::Setting(e) => CategoriesError::Setting(e),
+            crate::guardian::GuardianError::Unsupported(e) => CategoriesError::Unsupported(e),
         }
     }
 }

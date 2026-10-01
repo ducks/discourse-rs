@@ -139,6 +139,22 @@ pub struct Prefetched {
     thumbnails: HashMap<i64, String>,
     uploads: HashMap<i64, (String, bool)>,
     op_like_counts: HashMap<i32, i32>,
+    /// `TopicUser.lookup_for(user, topics)`
+    topic_users: HashMap<i32, TopicUserRow>,
+    /// `DismissedTopicUser` topic ids for the user
+    dismissed: Vec<i32>,
+    treat_as_new_topic_start_date: Option<NaiveDateTime>,
+}
+
+/// The topic_users columns the list item reads (`user_data`).
+#[derive(Debug, Clone, sqlx::FromRow)]
+pub struct TopicUserRow {
+    pub topic_id: i32,
+    pub last_read_post_number: Option<i32>,
+    pub notification_level: i32,
+    pub cleared_pinned_at: Option<NaiveDateTime>,
+    pub liked: Option<bool>,
+    pub bookmarked: Option<bool>,
 }
 
 type TagRow = (i32, String, Option<String>, Option<String>);
@@ -211,7 +227,11 @@ impl TopicListSerializer<'_> {
         let mut topic_list = Map::new();
         topic_list.insert(
             "can_create_topic".into(),
-            json!(self.guardian.is_authenticated()),
+            json!(
+                self.guardian
+                    .can_create_topic(&mut *self.conn, self.settings)
+                    .await?
+            ),
         );
         topic_list.insert("filter".into(), json!(list.filter));
         if let Some(url) = &self.more_topics_url {
@@ -336,7 +356,22 @@ impl TopicListSerializer<'_> {
         tagging: bool,
         mode: Mode,
     ) -> Result<Value, TopicListError> {
-        let pinned = t.pinned_at.is_some();
+        let user_data = self.user_data(t.id).await?;
+        // PinnedCheck: a pin the user cleared after it was set is unpinned.
+        let unpinned = match (
+            t.pinned_at,
+            user_data.as_ref().and_then(|u| u.cleared_pinned_at),
+        ) {
+            (Some(pinned_at), Some(cleared)) => Some(cleared > pinned_at),
+            _ => None,
+        };
+        let pinned = t.pinned_at.is_some() && unpinned != Some(true);
+        let whisperer = self.guardian.is_whisperer(self.settings)?;
+        let highest = if whisperer && t.highest_staff_post_number != 0 {
+            t.highest_staff_post_number
+        } else {
+            t.highest_post_number
+        };
         let mut out = Map::new();
         let fancy_title = crate::topic_query::fancy_title(t)?;
         out.insert("fancy_title".into(), json!(fancy_title));
@@ -348,7 +383,7 @@ impl TopicListSerializer<'_> {
         out.insert("slug".into(), json!(slug));
         out.insert("posts_count".into(), json!(t.posts_count));
         out.insert("reply_count".into(), json!(t.reply_count));
-        out.insert("highest_post_number".into(), json!(t.highest_post_number));
+        out.insert("highest_post_number".into(), json!(highest));
         if mode != Mode::SearchItem {
             out.insert("image_url".into(), self.image_url(t).await?);
         }
@@ -360,9 +395,26 @@ impl TopicListSerializer<'_> {
         out.insert("bumped".into(), json!(t.created_at < t.bumped_at));
         out.insert("bumped_at".into(), json!(time_json(t.bumped_at)));
         out.insert("archetype".into(), json!(t.archetype));
-        out.insert("unseen".into(), json!(false));
+        out.insert(
+            "unseen".into(),
+            json!(!self.seen(t, user_data.as_ref()).await?),
+        );
+        if let Some(u) = &user_data {
+            out.insert(
+                "last_read_post_number".into(),
+                json!(u.last_read_post_number),
+            );
+            out.insert("unread".into(), json!(0));
+            // Unread#unread_posts
+            let unread_posts = match u.last_read_post_number {
+                Some(read) if u.notification_level > 1 && read <= highest => highest - read,
+                _ => 0,
+            };
+            out.insert("new_posts".into(), json!(unread_posts));
+            out.insert("unread_posts".into(), json!(unread_posts));
+        }
         out.insert("pinned".into(), json!(pinned));
-        out.insert("unpinned".into(), Value::Null);
+        out.insert("unpinned".into(), json!(unpinned));
         if mode == Mode::Suggested
             || pinned
             || self.settings.get("always_include_topic_excerpts")?.truthy()
@@ -372,8 +424,17 @@ impl TopicListSerializer<'_> {
         out.insert("visible".into(), json!(t.visible));
         out.insert("closed".into(), json!(t.closed));
         out.insert("archived".into(), json!(t.archived));
-        out.insert("bookmarked".into(), Value::Null);
-        out.insert("liked".into(), Value::Null);
+        if let Some(u) = &user_data {
+            out.insert("notification_level".into(), json!(u.notification_level));
+        }
+        out.insert(
+            "bookmarked".into(),
+            json!(user_data.as_ref().and_then(|u| u.bookmarked)),
+        );
+        out.insert(
+            "liked".into(),
+            json!(user_data.as_ref().and_then(|u| u.liked)),
+        );
         if crate::emoji::has_emoji_code(&t.title) {
             out.insert(
                 "unicode_title".into(),
@@ -524,17 +585,12 @@ impl TopicListSerializer<'_> {
             return Ok(());
         }
 
-        let alphabetical = self.settings.get("tags_sort_alphabetically")?.truthy();
-        let order = if alphabetical {
-            "t.name ASC"
-        } else {
-            "t.public_topic_count DESC, t.id DESC"
-        };
+        let order = self.tag_order()?;
         let rows: Vec<TopicTagRow> = sqlx::query_as(&format!(
             "SELECT tt.topic_id, t.id, t.name, t.slug, t.description FROM topic_tags tt \
              JOIN tags t ON t.id = tt.tag_id \
              WHERE tt.topic_id = ANY($1) AND t.id IN {visible} ORDER BY tt.topic_id, {order}",
-            visible = visible_tag_ids_subquery(),
+            visible = visible_tag_ids_subquery(self.guardian, self.settings)?,
         ))
         .bind(&topic_ids)
         .fetch_all(&mut *self.conn)
@@ -579,12 +635,113 @@ impl TopicListSerializer<'_> {
         .fetch_all(&mut *self.conn)
         .await?;
         p.op_like_counts = counts.into_iter().collect();
+
+        // TopicList#load_topics' per-user lookups.
+        if let Some(uid) = self.guardian.user_id() {
+            let rows: Vec<TopicUserRow> = sqlx::query_as(
+                "SELECT topic_id, last_read_post_number, notification_level, cleared_pinned_at, liked, bookmarked \
+                 FROM topic_users WHERE topic_id = ANY($1) AND user_id = $2",
+            )
+            .bind(&topic_ids)
+            .bind(uid)
+            .fetch_all(&mut *self.conn)
+            .await?;
+            p.topic_users = rows.into_iter().map(|r| (r.topic_id, r)).collect();
+            p.dismissed = sqlx::query_scalar(
+                "SELECT topic_id FROM dismissed_topic_users WHERE topic_id = ANY($1) AND user_id = $2",
+            )
+            .bind(&topic_ids)
+            .bind(uid)
+            .fetch_all(&mut *self.conn)
+            .await?;
+            p.treat_as_new_topic_start_date = self
+                .guardian
+                .treat_as_new_topic_start_date(&mut *self.conn, self.settings)
+                .await?;
+        }
         self.prefetched = p;
         Ok(())
     }
 
+    /// `user_data` for a topic: its topic_users row for the current user.
+    /// Topics outside the prefetched page (suggested, search) look it up.
+    async fn user_data(&mut self, topic_id: i32) -> Result<Option<TopicUserRow>, TopicListError> {
+        let Some(uid) = self.guardian.user_id() else {
+            return Ok(None);
+        };
+        if self.prefetched_for(topic_id) {
+            return Ok(self.prefetched.topic_users.get(&topic_id).cloned());
+        }
+        Ok(sqlx::query_as(
+            "SELECT topic_id, last_read_post_number, notification_level, cleared_pinned_at, liked, bookmarked \
+             FROM topic_users WHERE topic_id = $1 AND user_id = $2",
+        )
+        .bind(topic_id)
+        .bind(uid)
+        .fetch_optional(&mut *self.conn)
+        .await?)
+    }
+
+    /// `ListableTopicSerializer#seen`: true for anonymous, for a read
+    /// topic, a dismissed one, or one older than the user's new-topic
+    /// start date.
+    async fn seen(
+        &mut self,
+        t: &TopicRow,
+        user_data: Option<&TopicUserRow>,
+    ) -> Result<bool, TopicListError> {
+        let Some(uid) = self.guardian.user_id() else {
+            return Ok(true);
+        };
+        if user_data.is_some_and(|u| u.last_read_post_number.is_some()) {
+            return Ok(true);
+        }
+        let dismissed = if self.prefetched_for(t.id) {
+            self.prefetched.dismissed.contains(&t.id)
+        } else {
+            sqlx::query_scalar(
+                "SELECT EXISTS (SELECT 1 FROM dismissed_topic_users WHERE topic_id = $1 AND user_id = $2)",
+            )
+            .bind(t.id)
+            .bind(uid)
+            .fetch_one(&mut *self.conn)
+            .await?
+        };
+        if dismissed {
+            return Ok(true);
+        }
+        let start = if self.prefetched_for(t.id) {
+            self.prefetched.treat_as_new_topic_start_date
+        } else {
+            self.guardian
+                .treat_as_new_topic_start_date(&mut *self.conn, self.settings)
+                .await?
+        };
+        Ok(start.is_some_and(|s| t.created_at < s))
+    }
+
     fn prefetched_for(&self, topic_id: i32) -> bool {
         self.prefetched.topic_ids.contains(&topic_id)
+    }
+
+    /// The per-topic tag order: by name, or by `Tag.topic_count_column`
+    /// (the staff count for staff or when secure categories count), with
+    /// the original (id) order reversed among ties like Ruby's sort.reverse.
+    fn tag_order(&self) -> Result<String, TopicListError> {
+        if self.settings.get("tags_sort_alphabetically")?.truthy() {
+            return Ok("t.name ASC".to_string());
+        }
+        let column = if self.guardian.is_staff()
+            || self
+                .settings
+                .get("include_secure_categories_in_tag_counts")?
+                .truthy()
+        {
+            "staff_topic_count"
+        } else {
+            "public_topic_count"
+        };
+        Ok(format!("t.{column} DESC, t.id DESC"))
     }
 
     pub(crate) async fn image_url(&mut self, t: &TopicRow) -> Result<Value, TopicListError> {
@@ -648,16 +805,11 @@ impl TopicListSerializer<'_> {
                 .cloned()
                 .unwrap_or_default()
         } else {
-            let alphabetical = self.settings.get("tags_sort_alphabetically")?.truthy();
-            let order = if alphabetical {
-                "t.name ASC"
-            } else {
-                "t.public_topic_count DESC, t.id DESC"
-            };
+            let order = self.tag_order()?;
             let sql = format!(
                 "SELECT t.id, t.name, t.slug, t.description FROM topic_tags tt JOIN tags t ON t.id = tt.tag_id \
                  WHERE tt.topic_id = $1 AND t.id IN {visible} ORDER BY {order}",
-                visible = visible_tag_ids_subquery(),
+                visible = visible_tag_ids_subquery(self.guardian, self.settings)?,
             );
             sqlx::query_as(&sql)
                 .bind(topic_id)
@@ -720,7 +872,7 @@ impl TopicListSerializer<'_> {
              WHERE stats.category_id = ANY($1) AND tags.target_tag_id IS NULL \
              AND tags.id IN {visible} \
              GROUP BY tags.id ORDER BY SUM(stats.topic_count) DESC, tags.name ASC LIMIT $2",
-            visible = visible_tag_ids_subquery(),
+            visible = visible_tag_ids_subquery(self.guardian, self.settings)?,
         ))
         .bind(&category_ids)
         .bind(limit)
@@ -868,6 +1020,7 @@ impl From<crate::guardian::GuardianError> for TopicListError {
         match e {
             crate::guardian::GuardianError::Db(e) => TopicListError::Db(e),
             crate::guardian::GuardianError::Setting(e) => TopicListError::Setting(e),
+            crate::guardian::GuardianError::Unsupported(e) => TopicListError::Unsupported(e),
         }
     }
 }

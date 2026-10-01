@@ -13,7 +13,7 @@ use crate::category::Category;
 use crate::guardian::Guardian;
 use crate::session::current::AuthGuardian;
 use crate::site_settings::SiteSettings;
-use crate::tags::{Tag, VISIBLE_TAGS_WHERE};
+use crate::tags::{Tag, visible_tags_where};
 use crate::topic_query::Options;
 use crate::url::Urls;
 use crate::{AppError, AppState, Unsupported};
@@ -505,9 +505,10 @@ async fn index_response(
     } else {
         "public_topic_count"
     };
+    let visible = visible_tags_where(&guardian, &settings)?;
     // Tag.browsable(guardian).used_tags_in_regular_topics(guardian).order(:id)
     let tags: Vec<CountRow> = sqlx::query_as(&format!(
-        "SELECT {COUNT_COLUMNS} FROM tags WHERE tags.target_tag_id IS NULL AND {VISIBLE_TAGS_WHERE} \
+        "SELECT {COUNT_COLUMNS} FROM tags WHERE tags.target_tag_id IS NULL AND {visible} \
          AND tags.{count_column} > 0 ORDER BY tags.id"
     ))
     .fetch_all(&mut *conn)
@@ -526,7 +527,7 @@ async fn index_response(
     for category_id in category_ids {
         let rows: Vec<CountRow> = sqlx::query_as(&format!(
             "SELECT {COUNT_COLUMNS} FROM tags JOIN category_tags ct ON ct.tag_id = tags.id \
-             WHERE ct.category_id = $1 AND tags.target_tag_id IS NULL AND {VISIBLE_TAGS_WHERE} \
+             WHERE ct.category_id = $1 AND tags.target_tag_id IS NULL AND {visible} \
              AND NOT (tags.pm_topic_count > 0 AND tags.{count_column} = 0) ORDER BY ct.id"
         ))
         .bind(category_id)

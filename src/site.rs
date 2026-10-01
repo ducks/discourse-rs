@@ -664,7 +664,7 @@ impl Site<'_> {
              GROUP BY tags.id \
              ORDER BY SUM(stats.topic_count) DESC, tags.name ASC \
              LIMIT $2",
-            visible = visible_tag_ids_subquery(),
+            visible = visible_tag_ids_subquery(&self.guardian, self.settings)?,
         ))
         .bind(&category_ids)
         .bind(limit)
@@ -1066,6 +1066,7 @@ impl From<crate::guardian::GuardianError> for SiteError {
         match e {
             crate::guardian::GuardianError::Db(e) => SiteError::Db(e),
             crate::guardian::GuardianError::Setting(e) => SiteError::Setting(e),
+            crate::guardian::GuardianError::Unsupported(e) => SiteError::Unsupported(e),
         }
     }
 }

@@ -20,7 +20,7 @@ use crate::categories::{Categories, CategoriesError};
 use crate::guardian::Guardian;
 use crate::i18n::I18n;
 use crate::site_settings::{SettingError, SiteSettings};
-use crate::tags::{Tag, VISIBLE_TAGS_WHERE};
+use crate::tags::{Tag, visible_tags_where};
 use crate::topic_list::{Mode, TopicListError, TopicListSerializer, time_json};
 use crate::topic_query::{TOPIC_COLUMNS, TopicRow};
 use crate::url::Urls;
@@ -726,11 +726,12 @@ impl Search<'_> {
             return Ok(());
         }
         let config = self.config()?;
+        let visible = visible_tags_where(self.guardian, self.settings)?;
         let sql = format!(
             "SELECT tags.id, tags.name, tags.slug, tags.description, tags.description_cooked, \
                     tags.public_topic_count, tags.pm_topic_count, tags.target_tag_id FROM tags \
              LEFT OUTER JOIN tag_search_data ON tag_search_data.tag_id = tags.id \
-             WHERE tags.target_tag_id IS NULL AND {VISIBLE_TAGS_WHERE} \
+             WHERE tags.target_tag_id IS NULL AND {visible} \
              AND (tag_search_data.search_data @@ {}) ORDER BY name asc LIMIT $2",
             ts_query_sql(config, 1)
         );

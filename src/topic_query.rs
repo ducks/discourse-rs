@@ -1,5 +1,6 @@
-//! Port of lib/topic_query.rb for anonymous users: `list_latest`, its
-//! `default_results` filters, ordering, paging and pinned prioritization.
+//! Port of lib/topic_query.rb: the `list_*` methods, `default_results`
+//! and `remove_muted` for anonymous and logged-in users, ordering, paging
+//! and pinned prioritization.
 
 use chrono::NaiveDateTime;
 use sqlx::PgConnection;
@@ -24,6 +25,7 @@ pub struct TopicRow {
     pub posts_count: i32,
     pub reply_count: i32,
     pub highest_post_number: i32,
+    pub highest_staff_post_number: i32,
     pub image_upload_id: Option<i64>,
     pub created_at: NaiveDateTime,
     pub last_posted_at: Option<NaiveDateTime>,
@@ -50,7 +52,7 @@ pub struct TopicRow {
 }
 
 pub const TOPIC_COLUMNS: &str = "topics.id, topics.title, topics.fancy_title, topics.slug, topics.posts_count, \
-    topics.reply_count, topics.highest_post_number, topics.image_upload_id, topics.created_at, \
+    topics.reply_count, topics.highest_post_number, topics.highest_staff_post_number, topics.image_upload_id, topics.created_at, \
     topics.last_posted_at, topics.bumped_at, topics.archetype, topics.pinned_at, \
     topics.pinned_globally, topics.excerpt, topics.visible, topics.closed, topics.archived, \
     topics.views, topics.like_count, topics.has_summary, topics.user_id, topics.last_post_user_id, \
@@ -115,17 +117,29 @@ impl From<Unsupported> for TopicQueryError {
     }
 }
 
+impl From<crate::guardian::GuardianError> for TopicQueryError {
+    fn from(e: crate::guardian::GuardianError) -> Self {
+        match e {
+            crate::guardian::GuardianError::Db(e) => TopicQueryError::Db(e),
+            crate::guardian::GuardianError::Setting(e) => TopicQueryError::Setting(e),
+            crate::guardian::GuardianError::Unsupported(e) => TopicQueryError::Unsupported(e),
+        }
+    }
+}
+
 pub struct TopicQuery<'a> {
     pub conn: &'a mut PgConnection,
     pub settings: &'a SiteSettings,
     pub guardian: &'a Guardian,
     pub options: Options,
-    /// Set by the list_* methods.
+    /// Set by `list`.
     pub filter: Filter,
-    /// Set by list_latest from `options.category_id`.
+    /// Set by `list` from `options.category_id`.
     pub category: CategoryScope,
-    /// Set by the list_* methods from `options.tags` (filter_by_tags).
+    /// Set by `list` from `options.tags` (filter_by_tags).
     pub tags: TagScope,
+    /// Set by `list` for a logged-in user.
+    pub user: UserScope,
 }
 
 /// `filter_by_tags`: the WHERE clause and the resolved ids that become
@@ -136,9 +150,22 @@ pub struct TagScope {
     pub tag_ids: Vec<i32>,
 }
 
-/// The result of `create_list`: the page of topics plus what TopicList
-/// carries for the serializer.
-/// Which list is being built: changes joins, order and pinning.
+/// The per-user inputs `default_results`, `remove_muted` and the
+/// login-only filters read, fetched once per list.
+#[derive(Debug, Clone, Default)]
+pub struct UserScope {
+    /// `TopicUser.notification_levels[:muted]` tag_users rows.
+    muted_tag_ids: Vec<i32>,
+    watched_precedence_over_muted: bool,
+    treat_as_new_topic_start_date: Option<NaiveDateTime>,
+    /// `user_stats.first_unread_at`
+    first_unread_at: Option<NaiveDateTime>,
+    first_seen_at: Option<NaiveDateTime>,
+    whisperer: bool,
+    unified_new: bool,
+}
+
+/// Which list is being built: changes joins, filters, order and pinning.
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub enum Filter {
     #[default]
@@ -147,8 +174,67 @@ pub enum Filter {
     Top(String),
     /// `list_hot`
     Hot,
+    /// `list_unread`, logged in only
+    Unread,
+    /// `list_new`, logged in only
+    New,
+    /// `list_unseen`, logged in only
+    Unseen,
+    /// `list_read`, logged in only
+    Read,
+    /// `list_posted`, logged in only
+    Posted,
+    /// `list_bookmarks`, logged in only
+    Bookmarks,
 }
 
+impl Filter {
+    /// `TopicList#filter`
+    pub fn name(&self) -> &'static str {
+        match self {
+            Filter::Latest => "latest",
+            Filter::Top(_) => "top",
+            Filter::Hot => "hot",
+            Filter::Unread => "unread",
+            Filter::New => "new",
+            Filter::Unseen => "unseen",
+            Filter::Read => "read",
+            Filter::Posted => "posted",
+            Filter::Bookmarks => "bookmarks",
+        }
+    }
+
+    /// `Discourse.filters - Discourse.anonymous_filters`: ListController's
+    /// `ensure_logged_in` lists.
+    pub fn requires_login(&self) -> bool {
+        !matches!(self, Filter::Latest | Filter::Top(_) | Filter::Hot)
+    }
+
+    /// `create_list(..., unordered: true)`: the list brings its own order
+    /// and skips `apply_ordering` and pinning.
+    fn unordered(&self) -> bool {
+        matches!(
+            self,
+            Filter::Top(_)
+                | Filter::Hot
+                | Filter::Unread
+                | Filter::New
+                | Filter::Unseen
+                | Filter::Read
+        )
+    }
+
+    /// Lists that go through `remove_muted`.
+    fn removes_muted(&self) -> bool {
+        matches!(
+            self,
+            Filter::Latest | Filter::Top(_) | Filter::Hot | Filter::New | Filter::Unseen
+        )
+    }
+}
+
+/// The result of `create_list`: the page of topics plus what TopicList
+/// carries for the serializer.
 pub struct TopicList {
     pub filter: &'static str,
     pub topics: Vec<TopicRow>,
@@ -162,57 +248,78 @@ impl TopicQuery<'_> {
         self.options.per_page.unwrap_or(DEFAULT_PER_PAGE)
     }
 
-    /// `list_top_for(period)`: create_list(:top, unordered: true), joined to
-    /// top_topics with a positive period score, ordered by that score then
-    /// bumped_at; no pinned prioritization.
-    pub async fn list_top_for(&mut self, period: &str) -> Result<TopicList, TopicQueryError> {
-        // The period names a column; only TopTopic.periods may reach the SQL.
-        if !PERIODS.contains(&period) {
-            return Err(Unsupported("unknown top period").into());
+    fn user_id(&self) -> Option<i32> {
+        self.guardian.user_id()
+    }
+
+    /// `list_<filter>` -> `create_list`: resolve the scopes, run the
+    /// filter's query, page it.
+    pub async fn list(&mut self, filter: Filter) -> Result<TopicList, TopicQueryError> {
+        if let Filter::Top(period) = &filter {
+            // The period names a column; only TopTopic.periods may reach the SQL.
+            if !PERIODS.contains(&period.as_str()) {
+                return Err(Unsupported("unknown top period").into());
+            }
+        }
+        if filter.requires_login() && self.guardian.is_anonymous() {
+            return Err(Unsupported("login-only list for anonymous").into());
         }
         self.check_unported_filters()?;
-        self.filter = Filter::Top(period.to_string());
+        self.filter = filter;
         self.category = self.category_scope().await?;
         self.tags = self.tag_scope().await?;
+        self.user = self.user_scope().await?;
         let per_page = self.per_page();
-        let order = self.order_clause()?;
-        let topics = self
-            .fetch("TRUE", &order, per_page, self.options.page * per_page)
-            .await?;
+        let topics = match &self.filter {
+            Filter::Top(_) | Filter::Unseen => {
+                let order = self.order_clause()?;
+                self.fetch("TRUE", &order, per_page, self.options.page * per_page)
+                    .await?
+            }
+            Filter::Unread => {
+                let clause = format!("{} AND {}", self.unread_filter(), self.max_age_clause());
+                let order = "CASE WHEN topics.user_id = tu.user_id THEN 1 ELSE 2 END, topics.bumped_at DESC";
+                self.fetch(&clause, order, per_page, self.options.page * per_page)
+                    .await?
+            }
+            Filter::New => {
+                let new = format!(
+                    "{} AND {} AND dismissed_topic_users.id IS NULL",
+                    self.new_filter(),
+                    self.remove_muted_clause()?
+                );
+                let (clause, order) = if self.user.unified_new {
+                    (
+                        format!(
+                            "(({new}) OR ({} AND {}))",
+                            self.unread_filter(),
+                            self.max_age_clause()
+                        ),
+                        "CASE WHEN topics.user_id = tu.user_id THEN 1 ELSE 2 END, topics.bumped_at DESC",
+                    )
+                } else {
+                    (new, "topics.bumped_at DESC")
+                };
+                self.fetch(&clause, order, per_page, self.options.page * per_page)
+                    .await?
+            }
+            Filter::Read => {
+                self.fetch(
+                    "tu.last_visited_at IS NOT NULL",
+                    "tu.last_visited_at DESC",
+                    per_page,
+                    self.options.page * per_page,
+                )
+                .await?
+            }
+            Filter::Latest | Filter::Hot | Filter::Posted | Filter::Bookmarks => {
+                self.prioritize_pinned_topics().await?
+            }
+        };
         Ok(TopicList {
-            filter: "top",
+            filter: self.filter.name(),
             topics,
             per_page,
-            tag_ids: self.tags.tag_ids.clone(),
-        })
-    }
-
-    /// `list_hot`: create_list(:hot, unordered: true, prioritize_pinned: true),
-    /// joined to topic_hot_scores, by score, pinned topics first.
-    pub async fn list_hot(&mut self) -> Result<TopicList, TopicQueryError> {
-        self.check_unported_filters()?;
-        self.filter = Filter::Hot;
-        self.category = self.category_scope().await?;
-        self.tags = self.tag_scope().await?;
-        let topics = self.prioritize_pinned_topics().await?;
-        Ok(TopicList {
-            filter: "hot",
-            topics,
-            per_page: self.per_page(),
-            tag_ids: self.tags.tag_ids.clone(),
-        })
-    }
-
-    /// `list_latest` -> `create_list(:latest, {}, latest_results)`.
-    pub async fn list_latest(&mut self) -> Result<TopicList, TopicQueryError> {
-        self.check_unported_filters()?;
-        self.category = self.category_scope().await?;
-        self.tags = self.tag_scope().await?;
-        let topics = self.prioritize_pinned_topics().await?;
-        Ok(TopicList {
-            filter: "latest",
-            topics,
-            per_page: self.per_page(),
             tag_ids: self.tags.tag_ids.clone(),
         })
     }
@@ -226,7 +333,8 @@ impl TopicQuery<'_> {
         if s.get("default_categories_muted")?.presence().is_some() {
             return Err(Unsupported("default_categories_muted in topic lists").into());
         }
-        if s.get("tagging_enabled")?.truthy()
+        if self.guardian.is_anonymous()
+            && s.get("tagging_enabled")?.truthy()
             && s.get("remove_muted_tags_from_latest")?.to_s() != "never"
             && s.get("default_tags_muted")?.presence().is_some()
         {
@@ -235,12 +343,14 @@ impl TopicQuery<'_> {
         if s.get("shared_drafts_category")?.presence().is_some() {
             return Err(Unsupported("shared_drafts_category in topic lists").into());
         }
+        if s.get("max_category_nesting")?.to_i() > 2 && self.guardian.is_authenticated() {
+            return Err(
+                Unsupported("three-level category nesting in muted category checks").into(),
+            );
+        }
         Ok(())
     }
 
-    /// The WHERE clause of `default_results` for an anonymous user:
-    /// not deleted, category readable (or none), not a PM, not a category
-    /// definition topic (no_definitions), visible.
     /// The category clauses of `default_results`, computed up front since
     /// they need the subcategory ids and the category's default sort.
     async fn category_scope(&mut self) -> Result<CategoryScope, TopicQueryError> {
@@ -284,10 +394,10 @@ impl TopicQuery<'_> {
                 "(categories.topic_id IS DISTINCT FROM topics.id OR topics.category_id = {category_id})"
             ));
         }
-        // The category's default sort applies to latest (default/unseen
-        // filters) when no order was given; top and hot keep their own.
+        // The category's default sort applies to ordered lists (latest,
+        // posted, bookmarks) when no order was given; the rest keep their own.
         let mut order = None;
-        if self.options.order.is_none() && self.filter == Filter::Latest {
+        if self.options.order.is_none() && !self.filter.unordered() {
             let sort: Option<(Option<String>, Option<bool>)> =
                 sqlx::query_as("SELECT sort_order, sort_ascending FROM categories WHERE id = $1")
                     .bind(category_id)
@@ -323,7 +433,13 @@ impl TopicQuery<'_> {
             }
             return Ok(TagScope::default());
         }
-        let tag_ids = crate::tags::resolve_tag_ids(&mut *self.conn, &self.options.tags).await?;
+        let tag_ids = crate::tags::resolve_tag_ids(
+            &mut *self.conn,
+            self.guardian,
+            self.settings,
+            &self.options.tags,
+        )
+        .await?;
         let clause = if tag_ids.len() == self.options.tags.len() {
             let mut joined = String::new();
             for (index, id) in tag_ids.iter().enumerate() {
@@ -347,33 +463,257 @@ impl TopicQuery<'_> {
         })
     }
 
-    fn where_clause(&self) -> String {
-        let mut clauses = vec![
-            "topics.deleted_at IS NULL".to_string(),
-            "(categories.id IS NULL OR categories.id IN (SELECT id FROM categories WHERE NOT read_restricted))".to_string(),
-            "topics.archetype <> 'private_message'".to_string(),
-        ];
+    /// The user's muting, new-topic and tracking inputs, in two queries.
+    async fn user_scope(&mut self) -> Result<UserScope, TopicQueryError> {
+        let Some(uid) = self.user_id() else {
+            return Ok(UserScope::default());
+        };
+        let row: (Option<bool>, Option<NaiveDateTime>, Option<NaiveDateTime>) = sqlx::query_as(
+            "SELECT uo.watched_precedence_over_muted, us.first_unread_at, u.first_seen_at \
+             FROM users u LEFT JOIN user_options uo ON uo.user_id = u.id \
+             LEFT JOIN user_stats us ON us.user_id = u.id WHERE u.id = $1",
+        )
+        .bind(uid)
+        .fetch_one(&mut *self.conn)
+        .await?;
+        let muted_tag_ids = if self.settings.get("tagging_enabled")?.truthy()
+            && self.settings.get("remove_muted_tags_from_latest")?.to_s() != "never"
+        {
+            sqlx::query_scalar(
+                "SELECT tag_id FROM tag_users WHERE user_id = $1 AND notification_level = 0 ORDER BY tag_id",
+            )
+            .bind(uid)
+            .fetch_all(&mut *self.conn)
+            .await?
+        } else {
+            Vec::new()
+        };
+        Ok(UserScope {
+            muted_tag_ids,
+            watched_precedence_over_muted: row.0.unwrap_or(false),
+            treat_as_new_topic_start_date: self
+                .guardian
+                .treat_as_new_topic_start_date(&mut *self.conn, self.settings)
+                .await?,
+            first_unread_at: row.1,
+            first_seen_at: row.2,
+            whisperer: self.guardian.is_whisperer(self.settings)?,
+            unified_new: self
+                .guardian
+                .upcoming_change_enabled(&mut *self.conn, self.settings, "enable_unified_new")
+                .await?,
+        })
+    }
+
+    /// The joins after `categories`: `tu` for a user, `category_users`
+    /// when muting applies, `dismissed_topic_users` for new, then the
+    /// filter's own table.
+    fn joins(&self) -> String {
+        let mut joins = String::new();
+        if let Some(uid) = self.user_id() {
+            joins.push_str(&format!(
+                " LEFT OUTER JOIN topic_users AS tu ON (topics.id = tu.topic_id AND tu.user_id = {uid})"
+            ));
+            if self.filter.removes_muted() {
+                joins.push_str(&format!(
+                    " LEFT JOIN category_users ON category_users.category_id = topics.category_id AND category_users.user_id = {uid}"
+                ));
+            }
+            if self.filter == Filter::New {
+                joins.push_str(&format!(
+                    " LEFT JOIN dismissed_topic_users ON dismissed_topic_users.topic_id = topics.id AND dismissed_topic_users.user_id = {uid}"
+                ));
+            }
+        }
+        match &self.filter {
+            Filter::Top(_) => {
+                joins.push_str(" INNER JOIN top_topics ON top_topics.topic_id = topics.id")
+            }
+            Filter::Hot => {
+                joins.push_str(" JOIN topic_hot_scores ON topics.id = topic_hot_scores.topic_id")
+            }
+            _ => {}
+        }
+        joins
+    }
+
+    /// The WHERE clause of `default_results`: not deleted, category
+    /// readable (or none; admins skip this), not a PM, not a category
+    /// definition topic (no_definitions), the category and tag scopes,
+    /// visible unless the user may see unlisted topics; then the filter's
+    /// own clause and `remove_muted` where the list applies it.
+    fn where_clause(&self) -> Result<String, TopicQueryError> {
+        let mut clauses = vec!["topics.deleted_at IS NULL".to_string()];
+        let admin_sees_all = self.guardian.is_admin()
+            && !self
+                .settings
+                .get("suppress_secured_categories_from_admin")?
+                .truthy();
+        if !admin_sees_all {
+            clauses.push(format!(
+                "(categories.id IS NULL OR categories.id IN ({}))",
+                self.guardian.allowed_category_ids_sql(self.settings)?
+            ));
+        }
+        clauses.push("topics.archetype <> 'private_message'".to_string());
         if self.options.no_definitions {
             clauses.push("COALESCE(categories.topic_id, 0) <> topics.id".to_string());
         }
         clauses.extend(self.category.clauses.iter().cloned());
         clauses.extend(self.tags.clause.iter().cloned());
-        clauses.push("topics.visible = TRUE".to_string());
-        clauses.join(" AND ")
+        if !self.guardian.can_see_unlisted_topics() {
+            clauses.push("topics.visible = TRUE".to_string());
+        }
+        match &self.filter {
+            Filter::Top(period) => clauses.push(format!("top_topics.{period}_score > 0")),
+            Filter::Unseen => {
+                let col = self.highest_column();
+                clauses.push(match self.user.first_seen_at {
+                    Some(t) => format!("topics.bumped_at >= '{}'", sql_time(t)),
+                    None => "FALSE".to_string(),
+                });
+                clauses.push(format!(
+                    "(tu.last_read_post_number IS NULL OR tu.last_read_post_number < topics.{col})"
+                ));
+            }
+            Filter::Posted => clauses.push("tu.posted".to_string()),
+            Filter::Bookmarks => clauses.push("tu.bookmarked".to_string()),
+            _ => {}
+        }
+        // New applies remove_muted inside its own (possibly OR'd) clause.
+        if self.filter.removes_muted() && self.filter != Filter::New {
+            clauses.push(self.remove_muted_clause()?);
+        }
+        Ok(clauses.join(" AND "))
     }
 
-    /// `apply_ordering`: `SORTABLE_MAPPING` with `order`, default bumped_at
-    /// DESC, no tiebreaker.
+    fn highest_column(&self) -> &'static str {
+        if self.user.whisperer {
+            "highest_staff_post_number"
+        } else {
+            "highest_post_number"
+        }
+    }
+
+    /// `TopicQuery.unread_filter`
+    fn unread_filter(&self) -> String {
+        format!(
+            "(tu.last_read_post_number < topics.{}) AND (COALESCE(tu.notification_level, 1) >= 2)",
+            self.highest_column()
+        )
+    }
+
+    /// `TopicQuery.new_filter`
+    fn new_filter(&self) -> String {
+        let start = match self.user.treat_as_new_topic_start_date {
+            Some(t) => format!("topics.created_at >= '{}'", sql_time(t)),
+            None => "FALSE".to_string(),
+        };
+        format!(
+            "({start}) AND (tu.last_read_post_number IS NULL) AND (COALESCE(tu.notification_level, 2) >= 2)"
+        )
+    }
+
+    /// `apply_max_age_limit` without `max_age`: `topics.updated_at >=
+    /// user_stats.first_unread_at`, which with no stat compares against
+    /// NULL and matches nothing.
+    fn max_age_clause(&self) -> String {
+        match self.user.first_unread_at {
+            Some(t) => format!("(topics.updated_at >= '{}')", sql_time(t)),
+            None => "FALSE".to_string(),
+        }
+    }
+
+    /// `remove_muted` for a user: muted topics, muted categories (unless
+    /// the list is scoped to one, watched tags take precedence, or the
+    /// topic is tracked/watched) and muted tags. Anonymous lists have
+    /// nothing to remove (the default_* settings are refused up front).
+    fn remove_muted_clause(&self) -> Result<String, TopicQueryError> {
+        let Some(uid) = self.user_id() else {
+            return Ok("TRUE".to_string());
+        };
+        let mut clauses = vec!["(COALESCE(tu.notification_level,1) > 0)".to_string()];
+        let category_id = self.options.category_id.unwrap_or(-1);
+        let watched = if self.user.watched_precedence_over_muted {
+            format!(
+                " OR EXISTS (SELECT 1 FROM topic_tags watched_topic_tags \
+                 WHERE watched_topic_tags.topic_id = topics.id AND watched_topic_tags.tag_id IN \
+                 (SELECT tag_id FROM tag_users WHERE user_id = {uid} AND notification_level >= 3))"
+            )
+        } else {
+            String::new()
+        };
+        // indirectly_muted_category_ids: subcategories with no row of their
+        // own whose parent the user muted (two nesting levels).
+        let indirectly_muted = format!(
+            "SELECT categories.id FROM categories \
+             LEFT JOIN categories categories2 ON categories2.id = categories.parent_category_id \
+             LEFT JOIN category_users ON category_users.category_id = categories.id AND category_users.user_id = {uid} \
+             LEFT JOIN category_users category_users2 ON category_users2.category_id = categories2.id AND category_users2.user_id = {uid} \
+             WHERE categories.parent_category_id IS NOT NULL \
+             AND (category_users.id IS NULL AND COALESCE(category_users2.notification_level, 1) = 0)"
+        );
+        clauses.push(format!(
+            "(topics.category_id = {category_id} \
+             OR (COALESCE(category_users.notification_level, 1) <> 0 \
+             AND (topics.category_id IS NULL OR topics.category_id NOT IN ({indirectly_muted}))){watched} \
+             OR tu.notification_level > 1)"
+        ));
+        if let Some(muted_tags) = self.muted_tags_clause()? {
+            clauses.push(muted_tags);
+        }
+        Ok(clauses.join(" AND "))
+    }
+
+    /// `TopicQuery.remove_muted_tags` for a user.
+    fn muted_tags_clause(&self) -> Result<Option<String>, TopicQueryError> {
+        if self.user.muted_tag_ids.is_empty() {
+            return Ok(None);
+        }
+        // A list filtered by a tag the user muted shows it anyway.
+        if let Some(first) = self.tags.tag_ids.first() {
+            if !self.options.no_tags && self.user.muted_tag_ids.contains(first) {
+                return Ok(None);
+            }
+        }
+        let ids = self
+            .user
+            .muted_tag_ids
+            .iter()
+            .map(|id| id.to_string())
+            .collect::<Vec<_>>()
+            .join(",");
+        let watching_or_infinite = if self.user.watched_precedence_over_muted {
+            3
+        } else {
+            99
+        };
+        let mode = self.settings.get("remove_muted_tags_from_latest")?.to_s();
+        Ok(Some(match mode.as_str() {
+            "always" => format!(
+                "(NOT EXISTS (SELECT 1 FROM topic_tags tt WHERE tt.tag_id IN ({ids}) AND tt.topic_id = topics.id \
+                 AND COALESCE(category_users.notification_level, 1) < {watching_or_infinite}))"
+            ),
+            "only_muted" => format!(
+                "(EXISTS (SELECT 1 FROM topic_tags tt WHERE (tt.tag_id NOT IN ({ids}) AND tt.topic_id = topics.id) \
+                 OR COALESCE(category_users.notification_level, 1) >= {watching_or_infinite}) \
+                 OR NOT EXISTS (SELECT 1 FROM topic_tags tt WHERE tt.topic_id = topics.id))"
+            ),
+            _ => return Ok(None),
+        }))
+    }
+
     /// The list's ORDER BY: `apply_ordering`'s column (the request's order,
-    /// or the category default for latest), then for top/hot the block's
-    /// own order, which is the whole order when nothing was requested.
+    /// or the category default for ordered lists), then for top/hot the
+    /// block's own order, which is the whole order when nothing was
+    /// requested.
     fn order_clause(&self) -> Result<String, TopicQueryError> {
         let block = match &self.filter {
-            Filter::Latest => None,
             Filter::Top(period) => Some(format!(
                 "COALESCE(top_topics.{period}_score, 0) DESC, topics.bumped_at DESC"
             )),
             Filter::Hot => Some("topic_hot_scores.score DESC".to_string()),
+            _ => None,
         };
         if let Some(block) = &block {
             if self.options.order.is_none() {
@@ -412,22 +752,12 @@ impl TopicQuery<'_> {
         limit: i64,
         offset: i64,
     ) -> Result<Vec<TopicRow>, TopicQueryError> {
-        let (join, filter_where) = match &self.filter {
-            Filter::Latest => (String::new(), "TRUE".to_string()),
-            Filter::Top(period) => (
-                "INNER JOIN top_topics ON top_topics.topic_id = topics.id".to_string(),
-                format!("top_topics.{period}_score > 0"),
-            ),
-            Filter::Hot => (
-                "JOIN topic_hot_scores ON topics.id = topic_hot_scores.topic_id".to_string(),
-                "TRUE".to_string(),
-            ),
-        };
         let sql = format!(
             "SELECT {TOPIC_COLUMNS} FROM topics \
-             LEFT OUTER JOIN categories ON categories.id = topics.category_id {join} \
-             WHERE {} AND ({filter_where}) AND ({extra_where}) ORDER BY {order} LIMIT $1 OFFSET $2",
-            self.where_clause()
+             LEFT OUTER JOIN categories ON categories.id = topics.category_id{joins} \
+             WHERE {} AND ({extra_where}) ORDER BY {order} LIMIT $1 OFFSET $2",
+            self.where_clause()?,
+            joins = self.joins(),
         );
         Ok(sqlx::query_as(&sql)
             .bind(limit)
@@ -436,8 +766,9 @@ impl TopicQuery<'_> {
             .await?)
     }
 
-    /// `prioritize_pinned_topics` without a category: globally pinned
-    /// topics first (newest pin first), then the rest in list order.
+    /// `prioritize_pinned_topics`: pinned topics (globally, or in the
+    /// category; not ones the user cleared) first, newest pin first, then
+    /// the rest in list order.
     async fn prioritize_pinned_topics(&mut self) -> Result<Vec<TopicRow>, TopicQueryError> {
         let per_page = self.per_page();
         let page = self.options.page;
@@ -451,11 +782,16 @@ impl TopicQuery<'_> {
         if !apply_pinning {
             return self.fetch("TRUE", &order, per_page, page * per_page).await;
         }
-        let pinned_clause = self
+        let mut pinned_clause = self
             .category
             .pinned_clause
             .clone()
             .unwrap_or_else(|| "pinned_globally AND pinned_at IS NOT NULL".to_string());
+        if self.user_id().is_some() {
+            pinned_clause.push_str(
+                " AND (topics.pinned_at > tu.cleared_pinned_at OR tu.cleared_pinned_at IS NULL)",
+            );
+        }
         let pinned_clause = pinned_clause.as_str();
         let unpinned_clause = format!("NOT ({pinned_clause})");
 
@@ -476,6 +812,11 @@ impl TopicQuery<'_> {
             self.fetch(&unpinned_clause, &order, per_page, offset).await
         }
     }
+}
+
+/// A timestamp as a Postgres literal (UTC, microseconds).
+fn sql_time(t: NaiveDateTime) -> String {
+    t.format("%Y-%m-%d %H:%M:%S%.6f").to_string()
 }
 
 #[cfg(test)]
@@ -528,6 +869,7 @@ mod fancy_title_tests {
             posts_count: 0,
             reply_count: 0,
             highest_post_number: 0,
+            highest_staff_post_number: 0,
             image_upload_id: None,
             created_at: t,
             last_posted_at: None,

@@ -13,7 +13,7 @@ use crate::guardian::Guardian;
 use crate::session::current::AuthGuardian;
 use crate::site_settings::SiteSettings;
 use crate::topic_list::TopicListSerializer;
-use crate::topic_query::{Options, TopicQuery};
+use crate::topic_query::{Filter, Options, TopicQuery};
 use crate::url::Urls;
 use crate::{AppError, AppState};
 
@@ -231,14 +231,10 @@ pub(super) async fn list_document_for(
         category: Default::default(),
         tags: Default::default(),
         filter: Default::default(),
+        user: Default::default(),
     };
     let t_query0 = t0.elapsed();
-    let list = match (&kind, &for_period) {
-        (ListKind::Latest, _) => query.list_latest().await?,
-        (ListKind::Top, Some(period)) => query.list_top_for(period).await?,
-        (ListKind::Top, None) => unreachable!("top lists always resolve a period"),
-        (ListKind::Hot, _) => query.list_hot().await?,
-    };
+    let list = query.list(kind.filter(for_period.as_deref())).await?;
 
     let t_query = t0.elapsed();
     let more = match tag_request {
@@ -401,15 +397,12 @@ pub async fn category(
     let mut rest = path.as_str();
     let mut kind = ListKind::Latest;
     let mut action = String::new();
-    for (suffix, k) in [
-        ("/l/latest", ListKind::Latest),
-        ("/l/top", ListKind::Top),
-        ("/l/hot", ListKind::Hot),
-    ] {
-        if let Some(p) = rest.strip_suffix(suffix) {
+    for (name, k) in ListKind::ALL {
+        let suffix = format!("/l/{name}");
+        if let Some(p) = rest.strip_suffix(suffix.as_str()) {
             rest = p;
             kind = k;
-            action = suffix.to_string();
+            action = suffix;
             break;
         }
     }
@@ -423,9 +416,10 @@ pub async fn category(
     };
     let slug_path = rest.to_string();
     if slug_path.contains("/l/") || slug_path.ends_with("/all") {
-        return Err(
-            crate::Unsupported("category list filters other than latest, top and hot").into(),
-        );
+        return Err(crate::Unsupported("unknown category list filter").into());
+    }
+    if let Some(response) = ensure_logged_in(&state, &guardian, kind, json) {
+        return Ok(response);
     }
     let mut conn = state.pool.acquire().await?;
     let settings =
@@ -438,7 +432,12 @@ pub async fn category(
     let Some(category) = category else {
         return Ok(super::topics::not_found_response(&state, false));
     };
-    if category.read_restricted {
+    if category.read_restricted
+        && !guardian
+            .secure_category_ids(&mut conn, &settings)
+            .await?
+            .contains(&category.id)
+    {
         return Ok(super::topics::not_found_response(&state, false));
     }
     // slugs_do_not_match: a wrong slug path redirects, query string kept.
@@ -463,9 +462,14 @@ pub async fn category(
     // may list it (latest, top, hot), else latest. The URL stays the
     // category_default one.
     if action.is_empty() {
-        kind = match category.default_view.as_deref() {
-            Some("top") => ListKind::Top,
-            Some("hot") => ListKind::Hot,
+        // Only a filter the user may list; anonymous users get latest,
+        // top, hot (and categories, which isn't a topic list).
+        kind = match category
+            .default_view
+            .as_deref()
+            .and_then(ListKind::from_name)
+        {
+            Some(k) if guardian.is_authenticated() || !k.requires_login() => k,
             _ => ListKind::Latest,
         };
     }
@@ -593,6 +597,62 @@ pub enum ListKind {
     Latest,
     Top,
     Hot,
+    Unread,
+    New,
+    Unseen,
+    Read,
+    Posted,
+    Bookmarks,
+}
+
+impl ListKind {
+    /// `Discourse.filters` (`anonymous_filters` first), as route segments.
+    pub const ALL: [(&'static str, ListKind); 9] = [
+        ("latest", ListKind::Latest),
+        ("top", ListKind::Top),
+        ("hot", ListKind::Hot),
+        ("unread", ListKind::Unread),
+        ("new", ListKind::New),
+        ("unseen", ListKind::Unseen),
+        ("read", ListKind::Read),
+        ("posted", ListKind::Posted),
+        ("bookmarks", ListKind::Bookmarks),
+    ];
+
+    pub fn name(self) -> &'static str {
+        ListKind::ALL
+            .iter()
+            .find(|(_, k)| *k == self)
+            .map(|(n, _)| *n)
+            .expect("every kind is listed")
+    }
+
+    pub fn from_name(name: &str) -> Option<ListKind> {
+        ListKind::ALL
+            .iter()
+            .find(|(n, _)| *n == name)
+            .map(|(_, k)| *k)
+    }
+
+    /// The TopicQuery filter; top needs its resolved period.
+    fn filter(self, period: Option<&str>) -> Filter {
+        match self {
+            ListKind::Latest => Filter::Latest,
+            ListKind::Top => Filter::Top(period.unwrap_or("all").to_string()),
+            ListKind::Hot => Filter::Hot,
+            ListKind::Unread => Filter::Unread,
+            ListKind::New => Filter::New,
+            ListKind::Unseen => Filter::Unseen,
+            ListKind::Read => Filter::Read,
+            ListKind::Posted => Filter::Posted,
+            ListKind::Bookmarks => Filter::Bookmarks,
+        }
+    }
+
+    /// ListController's `ensure_logged_in` filters.
+    pub fn requires_login(self) -> bool {
+        self.filter(None).requires_login()
+    }
 }
 
 /// `ListController.best_period_for(nil, category_id)`: the category's
@@ -716,12 +776,14 @@ async fn front_list(
     json: bool,
     uri: Option<axum::http::Uri>,
 ) -> Result<Response, AppError> {
-    let name = match kind {
-        ListKind::Latest => "latest",
-        ListKind::Top => "top",
-        ListKind::Hot => "hot",
-    };
-    let list_path = format!("{}/{name}", state.config.globals.relative_url_root());
+    if let Some(response) = ensure_logged_in(&state, &guardian, kind, json) {
+        return Ok(response);
+    }
+    let list_path = format!(
+        "{}/{}",
+        state.config.globals.relative_url_root(),
+        kind.name()
+    );
     let (doc, settings) =
         match list_document(&state, &guardian, &params, None, false, kind, &list_path).await? {
             Ok(doc) => doc,
@@ -777,4 +839,40 @@ async fn list_crawler(
         description
     };
     Ok(crawler)
+}
+
+/// ListController's `ensure_logged_in` for the login-only filters: an
+/// HTML GET renders the not-found page, JSON gets the 403 `not_logged_in`
+/// body.
+fn ensure_logged_in(
+    state: &AppState,
+    guardian: &Guardian,
+    kind: ListKind,
+    json: bool,
+) -> Option<Response> {
+    if !kind.requires_login() || guardian.is_authenticated() {
+        return None;
+    }
+    Some(if json {
+        super::login_required::not_logged_in(state, "/")
+    } else {
+        super::topics::not_found_response(state, false)
+    })
+}
+
+/// GET /unread, /new, /unseen, /read, /posted, /bookmarks (.json): the
+/// login-only front lists, one handler keyed by the path.
+pub async fn user_list(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Query(params): Query<ListParams>,
+    uri: axum::http::Uri,
+) -> Result<Response, AppError> {
+    let path = uri.path().trim_start_matches('/');
+    let (name, json) = match path.strip_suffix(".json") {
+        Some(n) => (n, true),
+        None => (path, false),
+    };
+    let kind = ListKind::from_name(name).ok_or(crate::Unsupported("unknown list filter"))?;
+    front_list(state, guardian, params, kind, json, (!json).then_some(uri)).await
 }

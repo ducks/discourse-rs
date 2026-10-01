@@ -3,8 +3,10 @@
 //! group memberships; the per-object predicates live with the models that
 //! need them.
 
+use chrono::NaiveDateTime;
 use sqlx::PgConnection;
 
+use crate::Unsupported;
 use crate::session::current::SessionUser;
 use crate::site_settings::{SettingError, SiteSettings};
 
@@ -178,6 +180,31 @@ impl Guardian {
         .await?)
     }
 
+    /// `allowed_category_ids` as a subquery, for composing into other SQL.
+    pub fn allowed_category_ids_sql(
+        &self,
+        settings: &SiteSettings,
+    ) -> Result<String, SettingError> {
+        let public = "SELECT id FROM categories WHERE NOT read_restricted";
+        let Some(u) = &self.user else {
+            return Ok(public.to_string());
+        };
+        if u.user.admin
+            && !settings
+                .get("suppress_secured_categories_from_admin")?
+                .truthy()
+        {
+            return Ok("SELECT id FROM categories".to_string());
+        }
+        Ok(format!(
+            "{public} UNION SELECT categories.id FROM categories \
+             INNER JOIN category_groups ON categories.id = category_groups.category_id \
+             INNER JOIN group_users ON category_groups.group_id = group_users.group_id \
+             WHERE group_users.user_id = {}",
+            u.user.id
+        ))
+    }
+
     /// `allowed_category_ids`: public categories plus the secure ones.
     pub async fn allowed_category_ids(
         &self,
@@ -237,6 +264,150 @@ impl Guardian {
         self.is_staff()
     }
 
+    /// `can_see_unlisted_topics?`: staff or TL4.
+    pub fn can_see_unlisted_topics(&self) -> bool {
+        self.is_staff() || self.has_trust_level(4)
+    }
+
+    /// `!SpamRule::AutoSilence.prevent_posting?`: silenced users and new
+    /// users the flag score would auto-silence cannot post anywhere.
+    pub async fn can_create_post_anywhere(
+        &self,
+        conn: &mut PgConnection,
+        settings: &SiteSettings,
+    ) -> Result<bool, GuardianError> {
+        let Some(u) = &self.user else {
+            return Ok(false);
+        };
+        if u.silenced {
+            return Ok(false);
+        }
+        if self.has_trust_level(1) || u.user.staged {
+            return Ok(true);
+        }
+        let needed = settings.get("num_users_to_silence_new_user")?.to_i();
+        if needed <= 0 {
+            return Ok(true);
+        }
+        let (total, count): (Option<f64>, i64) = sqlx::query_as(
+            "SELECT SUM(rs.score)::float8, COUNT(DISTINCT rs.user_id) FROM reviewables r \
+             INNER JOIN reviewable_scores rs ON rs.reviewable_id = r.id \
+             WHERE r.target_created_by_id = $1 AND rs.reviewable_score_type = 8 AND rs.status IN (0, 1)",
+        )
+        .bind(u.user.id)
+        .fetch_one(&mut *conn)
+        .await?;
+        if total.unwrap_or(0.0) > 0.0 && count >= needed {
+            return Err(Unsupported("spam auto-silence scoring").into());
+        }
+        Ok(true)
+    }
+
+    /// `can_create_topic?(nil)`: staff, or a member of
+    /// create_topic_allowed_groups who may post and has some category
+    /// (`Category.topic_create_allowed`) to post in.
+    pub async fn can_create_topic(
+        &self,
+        conn: &mut PgConnection,
+        settings: &SiteSettings,
+    ) -> Result<bool, GuardianError> {
+        let Some(u) = &self.user else {
+            return Ok(false);
+        };
+        if self.is_staff() {
+            return Ok(true);
+        }
+        if !self.in_setting_groups(settings, "create_topic_allowed_groups")?
+            || !self.can_create_post_anywhere(&mut *conn, settings).await?
+        {
+            return Ok(false);
+        }
+        let uncategorized = settings.get("uncategorized_category_id")?.to_i() as i32;
+        let exclude_uncategorized = !settings.get("allow_uncategorized_topics")?.truthy();
+        Ok(sqlx::query_scalar(
+            "SELECT EXISTS (SELECT 1 FROM categories \
+             WHERE (($2 AND LENGTH(COALESCE(email_in, '')) > 0 AND email_in_allow_strangers) \
+                    OR categories.id NOT IN (SELECT category_id FROM category_groups) \
+                    OR categories.id IN (SELECT category_id FROM category_groups WHERE permission_type IN (1) \
+                        AND (group_id = 0 OR group_id IN (SELECT group_id FROM group_users WHERE user_id = $1)))) \
+             AND (NOT $3 OR categories.id <> $4))",
+        )
+        .bind(u.user.id)
+        .bind(u.user.staged)
+        .bind(exclude_uncategorized)
+        .bind(uncategorized)
+        .fetch_one(conn)
+        .await?)
+    }
+
+    /// `UserOption#treat_as_new_topic_start_date`; None for anonymous.
+    pub async fn treat_as_new_topic_start_date(
+        &self,
+        conn: &mut PgConnection,
+        settings: &SiteSettings,
+    ) -> Result<Option<NaiveDateTime>, GuardianError> {
+        let Some(u) = &self.user else {
+            return Ok(None);
+        };
+        let row: Option<NewTopicRow> = sqlx::query_as(
+            "SELECT u.created_at, u.previous_visit_at, us.new_since, uo.new_topic_duration_minutes \
+             FROM users u LEFT JOIN user_stats us ON us.user_id = u.id \
+             LEFT JOIN user_options uo ON uo.user_id = u.id WHERE u.id = $1",
+        )
+        .bind(u.user.id)
+        .fetch_optional(&mut *conn)
+        .await?;
+        let Some((created_at, previous_visit_at, new_since, minutes)) = row else {
+            return Ok(None);
+        };
+        let duration = minutes.map(i64::from).unwrap_or(
+            settings
+                .get("default_other_new_topic_duration_minutes")?
+                .to_i(),
+        );
+        let now = chrono::Utc::now().naive_utc();
+        let base = match duration {
+            -1 => created_at,
+            -2 => previous_visit_at.or(new_since).unwrap_or(created_at),
+            minutes => now - chrono::Duration::minutes(minutes),
+        };
+        let min_new =
+            chrono::DateTime::from_timestamp(settings.get("min_new_topics_time")?.to_i(), 0)
+                .map(|t| t.naive_utc())
+                .unwrap_or(created_at);
+        Ok(Some(base.max(created_at).max(min_new)))
+    }
+
+    /// `UpcomingChanges.enabled_for_user?(name, user)`: the setting is on
+    /// and, when it has a group list in site_setting_groups, the user is
+    /// in one of them.
+    pub async fn upcoming_change_enabled(
+        &self,
+        conn: &mut PgConnection,
+        settings: &SiteSettings,
+        name: &str,
+    ) -> Result<bool, GuardianError> {
+        if !settings.get(name)?.truthy() {
+            return Ok(false);
+        }
+        let groups: Option<Option<String>> =
+            sqlx::query_scalar("SELECT group_ids FROM site_setting_groups WHERE name = $1")
+                .bind(name)
+                .fetch_optional(&mut *conn)
+                .await?;
+        match groups.flatten() {
+            Some(list) => {
+                let ids: Vec<i64> = list
+                    .split('|')
+                    .filter(|s| !s.is_empty())
+                    .map(crate::ruby::to_i)
+                    .collect();
+                Ok(self.in_any_groups(settings, &ids)?)
+            }
+            None => Ok(true),
+        }
+    }
+
     /// TagGuardian#can_create_tag?
     pub fn can_create_tag(&self, settings: &SiteSettings) -> Result<bool, SettingError> {
         Ok(settings.get("tagging_enabled")?.truthy()
@@ -273,10 +444,18 @@ impl Guardian {
     }
 }
 
+type NewTopicRow = (
+    NaiveDateTime,
+    Option<NaiveDateTime>,
+    Option<NaiveDateTime>,
+    Option<i32>,
+);
+
 #[derive(Debug)]
 pub enum GuardianError {
     Db(sqlx::Error),
     Setting(SettingError),
+    Unsupported(Unsupported),
 }
 
 impl std::fmt::Display for GuardianError {
@@ -284,7 +463,14 @@ impl std::fmt::Display for GuardianError {
         match self {
             GuardianError::Db(e) => write!(f, "database: {e}"),
             GuardianError::Setting(e) => e.fmt(f),
+            GuardianError::Unsupported(e) => e.fmt(f),
         }
+    }
+}
+
+impl From<Unsupported> for GuardianError {
+    fn from(e: Unsupported) -> Self {
+        GuardianError::Unsupported(e)
     }
 }
 

@@ -118,7 +118,7 @@ pub async fn gate(
 
 /// `rescue_discourse_actions(:not_logged_in, 403)`; topics#show adds the
 /// not-found extras.
-fn not_logged_in(state: &AppState, path: &str) -> Response {
+pub(super) fn not_logged_in(state: &AppState, path: &str) -> Response {
     let i18n = &state.i18n;
     let mut body = serde_json::Map::new();
     body.insert(

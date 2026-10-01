@@ -1,39 +1,62 @@
-//! Tags for anonymous users: lookup (app/models/tag.rb), visibility
+//! Tags: lookup (app/models/tag.rb), visibility
 //! (lib/discourse_tagging.rb visible_tags / hidden_tags / staff_tag_names)
 //! and TagSerializer.
 
 use serde_json::{Value, json};
 use sqlx::PgConnection;
 
-/// `DiscourseTagging.visible_tags(guardian)` for an anonymous user as a
-/// WHERE fragment over `tags`: not in a permissioned tag group unless one
-/// grants `everyone` (group 0), and not restricted to categories the user
-/// can't read.
-pub const VISIBLE_TAGS_WHERE: &str = "(tags.id NOT IN ( \
-        SELECT tgm.tag_id FROM tag_group_memberships tgm \
-        JOIN tag_groups tg ON tg.id = tgm.tag_group_id \
-        JOIN tag_group_permissions tgp ON tgp.tag_group_id = tg.id) \
-     OR tags.id IN ( \
-        SELECT tgm.tag_id FROM tag_group_permissions tgp \
-        JOIN tag_groups tg ON tg.id = tgp.tag_group_id \
-        JOIN tag_group_memberships tgm ON tgm.tag_group_id = tg.id \
-        WHERE tgp.group_id = 0)) \
-    AND (tags.id NOT IN ( \
-        SELECT tag_id FROM category_tags \
-        UNION SELECT tgm.tag_id FROM tag_group_memberships tgm \
-        JOIN category_tag_groups ctg ON ctg.tag_group_id = tgm.tag_group_id) \
-     OR tags.id IN ( \
-        SELECT tag_id FROM category_tags \
-        WHERE category_id IN (SELECT id FROM categories WHERE NOT read_restricted) \
-        UNION SELECT tgm.tag_id FROM tag_group_memberships tgm \
-        JOIN category_tag_groups ctg ON ctg.tag_group_id = tgm.tag_group_id \
-        AND ctg.category_id IN (SELECT id FROM categories WHERE NOT read_restricted)))";
+use crate::guardian::{Guardian, GuardianError};
+use crate::site_settings::{SettingError, SiteSettings};
 
-/// `tags.id IN (visible tag ids)`, for joins from topic_tags.
-pub fn visible_tag_ids_subquery() -> String {
-    format!("(SELECT tags.id FROM tags WHERE {VISIBLE_TAGS_WHERE})")
+/// `DiscourseTagging.visible_tags(guardian)` as a WHERE fragment over
+/// `tags`: everything for admins; otherwise not in a permissioned tag
+/// group unless one grants a permitted group (everyone, or one of the
+/// user's), and not restricted to categories outside the allowed ones.
+pub fn visible_tags_where(
+    guardian: &Guardian,
+    settings: &SiteSettings,
+) -> Result<String, SettingError> {
+    if guardian.is_admin() {
+        return Ok("TRUE".to_string());
+    }
+    let permitted_groups = match guardian.user_id() {
+        Some(id) => format!("SELECT 0 UNION SELECT group_id FROM group_users WHERE user_id = {id}"),
+        None => "SELECT 0".to_string(),
+    };
+    let allowed = guardian.allowed_category_ids_sql(settings)?;
+    Ok(format!(
+        "(tags.id NOT IN ( \
+            SELECT tgm.tag_id FROM tag_group_memberships tgm \
+            JOIN tag_groups tg ON tg.id = tgm.tag_group_id \
+            JOIN tag_group_permissions tgp ON tgp.tag_group_id = tg.id) \
+         OR tags.id IN ( \
+            SELECT tgm.tag_id FROM tag_group_permissions tgp \
+            JOIN tag_groups tg ON tg.id = tgp.tag_group_id \
+            JOIN tag_group_memberships tgm ON tgm.tag_group_id = tg.id \
+            WHERE tgp.group_id IN ({permitted_groups}))) \
+        AND (tags.id NOT IN ( \
+            SELECT tag_id FROM category_tags \
+            UNION SELECT tgm.tag_id FROM tag_group_memberships tgm \
+            JOIN category_tag_groups ctg ON ctg.tag_group_id = tgm.tag_group_id) \
+         OR tags.id IN ( \
+            SELECT tag_id FROM category_tags \
+            WHERE category_id IN ({allowed}) \
+            UNION SELECT tgm.tag_id FROM tag_group_memberships tgm \
+            JOIN category_tag_groups ctg ON ctg.tag_group_id = tgm.tag_group_id \
+            AND ctg.category_id IN ({allowed})))"
+    ))
 }
 
+/// `tags.id IN (visible tag ids)`, for joins from topic_tags.
+pub fn visible_tag_ids_subquery(
+    guardian: &Guardian,
+    settings: &SiteSettings,
+) -> Result<String, SettingError> {
+    Ok(format!(
+        "(SELECT tags.id FROM tags WHERE {})",
+        visible_tags_where(guardian, settings)?
+    ))
+}
 #[derive(Debug, Clone, sqlx::FromRow)]
 pub struct Tag {
     pub id: i32,
@@ -155,11 +178,14 @@ impl Tag {
 /// deduplicated.
 pub async fn resolve_tag_ids(
     conn: &mut PgConnection,
+    guardian: &Guardian,
+    settings: &SiteSettings,
     names: &[String],
-) -> Result<Vec<i32>, sqlx::Error> {
+) -> Result<Vec<i32>, GuardianError> {
     let lowered: Vec<String> = names.iter().map(|n| n.to_lowercase()).collect();
     let rows: Vec<(i32, Option<i32>)> = sqlx::query_as(&format!(
-        "SELECT id, target_tag_id FROM tags WHERE {VISIBLE_TAGS_WHERE} AND lower(name) = ANY($1)"
+        "SELECT id, target_tag_id FROM tags WHERE {} AND lower(name) = ANY($1)",
+        visible_tags_where(guardian, settings)?
     ))
     .bind(&lowered)
     .fetch_all(conn)
