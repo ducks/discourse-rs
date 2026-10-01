@@ -128,13 +128,13 @@ ALTER TABLE public.ad_plugin_house_ads_routes ENABLE TRIGGER ALL;
 ALTER TABLE public.users DISABLE TRIGGER ALL;
 
 COPY public.users (id, username, created_at, updated_at, name, last_posted_at, active, username_lower, last_seen_at, admin, last_emailed_at, trust_level, approved, approved_by_id, approved_at, previous_visit_at, suspended_at, suspended_till, date_of_birth, views, flag_level, ip_address, moderator, title, uploaded_avatar_id, locale, primary_group_id, registration_ip_address, staged, first_seen_at, silenced_till, group_locked_trust_level, manual_locked_trust_level, secure_identifier, flair_group_id, last_seen_reviewable_id, required_fields_version, seen_notification_id) FROM stdin;
-1	admin	2026-07-25 05:59:14.988794	2026-10-01 15:45:01.064998	Admin	2026-09-30 07:28:29.674309	t	admin	2026-10-01 15:44:57.175128	t	\N	4	t	-1	2026-07-25 05:59:15.471236	\N	\N	\N	\N	0	0	172.17.0.1	t	\N	\N	\N	\N	\N	f	2026-10-01 15:42:53.401171	\N	\N	\N	\N	\N	\N	\N	0
-3	user1	2026-07-25 05:59:16.250829	2026-10-01 15:45:00.822146	User1	2026-09-30 07:28:29.580198	t	user1	2026-10-01 15:50:01.377372	f	\N	2	f	\N	\N	\N	\N	\N	\N	0	0	172.17.0.1	f	\N	\N	\N	\N	\N	f	2026-10-01 15:42:53.259339	\N	\N	\N	\N	\N	\N	\N	0
 5	user3	2026-07-25 05:59:17.199294	2026-07-25 05:59:17.511834	User3	\N	t	user3	\N	f	\N	4	f	\N	\N	\N	\N	\N	\N	0	0	\N	f	\N	\N	\N	\N	\N	f	\N	\N	\N	\N	\N	\N	\N	\N	0
 -1	system	2026-07-25 05:58:07.835795	2026-07-25 05:58:28.767687	system	2026-07-25 05:58:28.636524	t	system	\N	t	\N	4	t	\N	\N	\N	\N	\N	\N	0	0	\N	t	\N	34	\N	\N	\N	f	\N	\N	\N	\N	\N	\N	\N	\N	0
 -2	discobot	2026-07-25 05:58:29.385492	2026-07-25 05:58:29.661862	discobot	\N	t	discobot	\N	t	\N	4	t	\N	\N	\N	\N	\N	\N	0	0	\N	f	\N	35	\N	\N	\N	f	\N	\N	\N	\N	\N	\N	\N	\N	0
+3	user1	2026-07-25 05:59:16.250829	2026-10-01 15:45:00.822146	User1	2026-09-30 07:28:29.580198	t	user1	2026-10-01 22:32:51.040203	f	\N	2	f	\N	\N	2026-10-01 15:50:01.377372	\N	\N	\N	0	0	172.17.0.1	f	\N	\N	\N	\N	\N	f	2026-10-01 15:42:53.259339	\N	\N	\N	\N	\N	\N	\N	0
 4	user2	2026-07-25 05:59:16.733827	2026-09-30 07:28:29.889848	User2	2026-09-30 07:28:29.179534	t	user2	\N	f	\N	2	f	\N	\N	\N	\N	\N	\N	0	0	\N	f	\N	\N	\N	\N	\N	f	\N	\N	\N	\N	\N	\N	\N	\N	0
-2	user0	2026-07-25 05:59:15.831079	2026-10-01 15:39:52.016889	User0	2026-10-01 15:39:51.834549	t	user0	2026-10-01 15:44:57.254251	f	\N	1	f	\N	\N	2026-10-01 06:40:59.592885	\N	\N	\N	0	0	172.17.0.1	f	\N	\N	\N	\N	\N	f	2026-10-01 06:40:59.592885	\N	\N	\N	\N	\N	\N	\N	0
+1	admin	2026-07-25 05:59:14.988794	2026-10-01 15:45:01.064998	Admin	2026-09-30 07:28:29.674309	t	admin	2026-10-01 22:32:51.276926	t	\N	4	t	-1	2026-07-25 05:59:15.471236	2026-10-01 15:44:57.175128	\N	\N	\N	0	0	172.17.0.1	t	\N	\N	\N	\N	\N	f	2026-10-01 15:42:53.401171	\N	\N	\N	\N	\N	\N	\N	0
+2	user0	2026-07-25 05:59:15.831079	2026-10-01 15:39:52.016889	User0	2026-10-01 15:39:51.834549	t	user0	2026-10-01 22:32:51.475256	f	\N	1	f	\N	\N	2026-10-01 15:44:57.254251	\N	\N	\N	0	0	172.17.0.1	f	\N	\N	\N	\N	\N	f	2026-10-01 06:40:59.592885	\N	\N	\N	\N	\N	\N	\N	0
 \.
 
 
@@ -796,6 +796,12 @@ ALTER TABLE public.bookmarks DISABLE TRIGGER ALL;
 
 COPY public.bookmarks (id, user_id, name, reminder_at, created_at, updated_at, reminder_last_sent_at, reminder_set_at, auto_delete_preference, pinned, bookmarkable_id, bookmarkable_type) FROM stdin;
 1	3	\N	\N	2026-10-01 13:42:34.774059	2026-10-01 13:42:34.774059	\N	2026-10-01 13:42:34.762409	3	\N	40	Post
+2	3	Parity fixture: topic bookmark	\N	2026-10-01 22:32:02.369021	2026-10-01 22:32:02.369021	\N	2026-10-01 22:32:02.299789	3	\N	35	Topic
+3	3	Parity fixture: with a reminder	2031-01-15 09:30:00	2026-10-01 22:32:02.391051	2026-10-01 22:32:02.391051	\N	2026-10-01 22:32:02.387067	3	\N	36	Post
+4	3	Parity fixture: pinned, in a PM	\N	2026-10-01 22:32:02.41927	2026-10-01 22:32:02.429958	\N	2026-10-01 22:32:02.414669	3	t	49	Post
+5	3	Parity fixture: reminder sent	\N	2026-10-01 22:32:02.441836	2026-10-01 22:32:02.468854	2026-10-01 22:32:02.467119	\N	3	\N	52	Post
+6	1	\N	\N	2026-10-01 22:32:02.498862	2026-10-01 22:32:02.498862	\N	2026-10-01 22:32:02.493616	3	\N	2	Post
+7	1	Parity fixture: admin's PM bookmark	\N	2026-10-01 22:32:02.581973	2026-10-01 22:32:02.581973	\N	2026-10-01 22:32:02.566326	3	\N	43	Topic
 \.
 
 
@@ -955,9 +961,10 @@ COPY public.category_activity_daily_rollups (id, date, category_id, topics, post
 27	2026-07-25	3	3	4	0	0
 28	2026-07-25	4	2	2	0	0
 30	2026-07-25	2	1	1	0	0
-37	2026-09-30	34	2	2	0	0
-38	2026-09-30	4	3	6	0	0
-39	2026-09-30	2	1	1	0	0
+44	2026-09-30	34	2	2	0	0
+45	2026-09-30	4	3	6	0	0
+46	2026-10-01	4	0	1	0	0
+47	2026-09-30	2	1	1	0	0
 \.
 
 
@@ -1124,8 +1131,8 @@ ALTER TABLE public.category_tag_groups ENABLE TRIGGER ALL;
 ALTER TABLE public.category_tag_stats DISABLE TRIGGER ALL;
 
 COPY public.category_tag_stats (id, category_id, tag_id, topic_count) FROM stdin;
-3	4	1	1
 1	34	1	1
+3	4	1	1
 2	4	2	2
 \.
 
@@ -2132,8 +2139,8 @@ COPY public.topics (id, title, last_posted_at, created_at, updated_at, views, po
 6	Admin Guide: Getting Started	2026-07-25 05:58:28.636524	2026-07-25 05:58:28.537993	2026-07-25 05:58:28.757941	0	1	-1	-1	0	\N	\N	\N	\N	1	0	0	3	t	0	f	f	2026-07-25 05:58:28.636524	f	regular	\N	0	0	\N	0.2	1	\N	admin-guide-getting-started	\N	1	272	Welcome to your new community, and thank you for choosing Discourse! \n:closed_mailbox_with_raised_flag: Test your email configuration\nEmail is required for new account signups and notifications. \n→ Send a test email. \n→ &hellip;	f	\N	Admin Guide: Getting Started	1	\N	0	\N	0	\N	\N	\N	\N	\N
 42	Parity fixture: PM user1 to user0	2026-10-01 15:39:51.295091	2026-10-01 15:39:51.071813	2026-10-01 15:39:51.342717	0	2	3	2	0	\N	\N	\N	\N	2	0	0	\N	t	0	f	f	2026-10-01 15:39:51.295091	f	private_message	\N	0	0	\N	0.2	1	user_to_user	parity-fixture-pm-user1-to-user0	\N	2	26	A private message from user1 to user0, long enough to be a real post body.	f	\N	Parity fixture: PM user1 to user0	2	\N	0	\N	0	\N	\N	\N	\N	\N
 43	Parity fixture: PM admin to user1 and user2	2026-10-01 15:39:51.514895	2026-10-01 15:39:51.429671	2026-10-01 15:39:51.545798	0	1	1	1	0	\N	\N	\N	\N	1	0	0	\N	t	0	f	f	2026-10-01 15:39:51.514895	f	private_message	\N	0	0	\N	0.2	1	user_to_user	parity-fixture-pm-admin-to-user1-and-user2	\N	1	14	A private message from admin to two users, so the list shows three participants.	f	\N	Parity fixture: PM admin to user1 and user2	1	\N	0	\N	0	\N	\N	\N	\N	\N
-35	Parity fixture: replies and posters	2026-10-01 15:39:51.834549	2026-09-30 07:28:28.864868	2026-10-01 15:39:52.00791	0	5	2	2	0	3	\N	4	\N	5	1	0	4	t	0	f	f	2026-10-01 15:39:51.834549	f	regular	\N	0	0	\N	3.2	1	\N	parity-fixture-replies-and-posters	\N	4	68	First post of a topic with several repliers, long enough to be a real post body for the excerpt.	f	\N	Parity fixture: replies and posters	5	\N	0	\N	0	\N	\N	\N	\N	\N
 44	Parity fixture: PM user2 to user1, archived	2026-10-01 15:39:51.640887	2026-10-01 15:39:51.604386	2026-10-01 15:39:51.672869	0	1	4	4	0	\N	\N	\N	\N	1	0	0	\N	t	0	f	f	2026-10-01 15:39:51.640887	f	private_message	\N	0	0	\N	0.2	1	user_to_user	parity-fixture-pm-user2-to-user1-archived	\N	1	10	A private message from user2 to user1 that user1 archives.	f	\N	Parity fixture: PM user2 to user1, archived	1	\N	0	\N	0	\N	\N	\N	\N	\N
+35	Parity fixture: replies and posters	2026-10-01 15:39:51.834549	2026-09-30 07:28:28.864868	2026-10-01 15:39:52.00791	0	5	2	2	0	3	\N	1	\N	5	1	0	4	t	0	f	f	2026-10-01 15:39:51.834549	f	regular	4	0	0	\N	3.2	1	\N	parity-fixture-replies-and-posters	\N	4	68	First post of a topic with several repliers, long enough to be a real post body for the excerpt.	f	\N	Parity fixture: replies and posters	5	\N	0	\N	0	\N	\N	\N	\N	\N
 39	Parity fixture: unlisted topic	2026-09-30 07:28:29.674309	2026-09-30 07:28:29.645201	2026-09-30 07:28:29.793003	0	1	1	1	0	\N	\N	\N	\N	1	0	0	4	f	1	f	f	2026-09-30 07:28:29.674309	f	regular	\N	0	0	\N	0.2	1	\N	parity-fixture-unlisted-topic	\N	1	13	This topic is unlisted and must not appear in latest for anonymous users.	f	\N	Parity fixture: unlisted topic	1	\N	0	\N	0	\N	\N	99	\N	\N
 41	Parity fixture: liked and archived	2026-09-30 07:28:30.163794	2026-09-30 07:28:30.067335	2026-09-30 10:46:34.843989	0	1	2	2	0	\N	\N	1	\N	1	1	0	4	t	1	f	t	2026-09-30 07:28:30.163794	f	regular	\N	0	0	\N	7.699999999999999	1	\N	parity-fixture-liked-and-archived	\N	2	13	An archived topic whose first post got a like, for like_count and op_like_count.	f	\N	Parity fixture: liked and archived	1	\N	0	\N	0	\N	\N	\N	\N	\N
 40	Parity fixture: deleted topic	\N	2026-09-30 07:28:29.827702	2026-09-30 07:28:29.920267	0	0	4	4	0	\N	\N	\N	2026-09-30 07:28:29.936769	0	0	0	4	t	0	f	f	2026-09-30 07:28:29.858545	f	regular	\N	0	0	\N	0.2	1	\N	parity-fixture-deleted-topic	1	1	\N	This topic is deleted and must not appear anywhere.	f	\N	Parity fixture: deleted topic	0	\N	0	\N	0	\N	\N	\N	\N	\N
@@ -2893,21 +2900,11 @@ COPY public.group_users (id, group_id, user_id, created_at, updated_at, owner, n
 8	12	-2	2026-07-25 05:58:29.606837	2026-07-25 05:58:29.606837	f	3	2026-07-25 05:58:29.370351
 9	13	-2	2026-07-25 05:58:29.620769	2026-07-25 05:58:29.620769	f	3	2026-07-25 05:58:29.370351
 10	14	-2	2026-07-25 05:58:29.633881	2026-07-25 05:58:29.633881	f	3	2026-07-25 05:58:29.370351
-11	10	1	2026-07-25 05:59:15.280212	2026-07-25 05:59:15.280212	f	3	2026-07-25 05:59:14.990046
 12	1	-1	2026-07-25 05:59:15.38935	2026-07-25 05:59:15.38935	f	2	2026-07-25 05:59:15.38935
 13	1	-2	2026-07-25 05:59:15.38935	2026-07-25 05:59:15.38935	f	2	2026-07-25 05:59:15.38935
-14	1	1	2026-07-25 05:59:15.38935	2026-07-25 05:59:15.38935	f	2	2026-07-25 05:59:15.38935
 15	2	-1	2026-07-25 05:59:15.38935	2026-07-25 05:59:15.38935	f	2	2026-07-25 05:59:15.38935
 16	3	-1	2026-07-25 05:59:15.38935	2026-07-25 05:59:15.38935	f	2	2026-07-25 05:59:15.38935
 17	3	-2	2026-07-25 05:59:15.38935	2026-07-25 05:59:15.38935	f	2	2026-07-25 05:59:15.38935
-18	3	1	2026-07-25 05:59:15.38935	2026-07-25 05:59:15.38935	f	2	2026-07-25 05:59:15.38935
-19	11	1	2026-07-25 05:59:15.622499	2026-07-25 05:59:15.622499	f	3	2026-07-25 05:59:15.512611
-20	12	1	2026-07-25 05:59:15.646333	2026-07-25 05:59:15.646333	f	3	2026-07-25 05:59:15.512611
-21	13	1	2026-07-25 05:59:15.667623	2026-07-25 05:59:15.667623	f	3	2026-07-25 05:59:15.512611
-22	14	1	2026-07-25 05:59:15.687384	2026-07-25 05:59:15.687384	f	3	2026-07-25 05:59:15.512611
-25	10	3	2026-07-25 05:59:16.474878	2026-07-25 05:59:16.474878	f	3	2026-07-25 05:59:16.248723
-26	11	3	2026-07-25 05:59:16.572158	2026-07-25 05:59:16.572158	f	3	2026-07-25 05:59:16.529572
-27	12	3	2026-07-25 05:59:16.591992	2026-07-25 05:59:16.591992	f	3	2026-07-25 05:59:16.529572
 28	10	4	2026-07-25 05:59:16.953455	2026-07-25 05:59:16.953455	f	3	2026-07-25 05:59:16.731949
 29	11	4	2026-07-25 05:59:17.051978	2026-07-25 05:59:17.051978	f	3	2026-07-25 05:59:17.007778
 30	12	4	2026-07-25 05:59:17.071772	2026-07-25 05:59:17.071772	f	3	2026-07-25 05:59:17.007778
@@ -2916,9 +2913,19 @@ COPY public.group_users (id, group_id, user_id, created_at, updated_at, owner, n
 34	12	5	2026-07-25 05:59:17.60626	2026-07-25 05:59:17.60626	f	3	2026-07-25 05:59:17.496711
 35	13	5	2026-07-25 05:59:17.629427	2026-07-25 05:59:17.629427	f	3	2026-07-25 05:59:17.496711
 36	14	5	2026-07-25 05:59:17.662386	2026-07-25 05:59:17.662386	f	3	2026-07-25 05:59:17.496711
-23	10	2	2026-07-25 05:59:16.049955	2026-07-25 05:59:16.049955	f	3	2026-10-01 06:44:30.57148
-24	11	2	2026-07-25 05:59:16.15176	2026-07-25 05:59:16.15176	f	3	2026-10-01 06:44:30.57148
-67	2	1	2026-10-01 10:58:56.090573	2026-10-01 10:58:56.090573	f	2	2026-10-01 10:58:56.090573
+11	10	1	2026-07-25 05:59:15.280212	2026-07-25 05:59:15.280212	f	3	2026-10-01 18:21:56.286623
+14	1	1	2026-07-25 05:59:15.38935	2026-07-25 05:59:15.38935	f	2	2026-10-01 18:21:56.286623
+18	3	1	2026-07-25 05:59:15.38935	2026-07-25 05:59:15.38935	f	2	2026-10-01 18:21:56.286623
+19	11	1	2026-07-25 05:59:15.622499	2026-07-25 05:59:15.622499	f	3	2026-10-01 18:21:56.286623
+20	12	1	2026-07-25 05:59:15.646333	2026-07-25 05:59:15.646333	f	3	2026-10-01 18:21:56.286623
+21	13	1	2026-07-25 05:59:15.667623	2026-07-25 05:59:15.667623	f	3	2026-10-01 18:21:56.286623
+22	14	1	2026-07-25 05:59:15.687384	2026-07-25 05:59:15.687384	f	3	2026-10-01 18:21:56.286623
+25	10	3	2026-07-25 05:59:16.474878	2026-07-25 05:59:16.474878	f	3	2026-10-01 18:21:56.286623
+26	11	3	2026-07-25 05:59:16.572158	2026-07-25 05:59:16.572158	f	3	2026-10-01 18:21:56.286623
+27	12	3	2026-07-25 05:59:16.591992	2026-07-25 05:59:16.591992	f	3	2026-10-01 18:21:56.286623
+23	10	2	2026-07-25 05:59:16.049955	2026-07-25 05:59:16.049955	f	3	2026-10-01 18:21:56.286623
+24	11	2	2026-07-25 05:59:16.15176	2026-07-25 05:59:16.15176	f	3	2026-10-01 18:21:56.286623
+67	2	1	2026-10-01 10:58:56.090573	2026-10-01 10:58:56.090573	f	2	2026-10-01 18:21:56.286623
 \.
 
 
@@ -3412,6 +3419,7 @@ COPY public.notifications (notification_type, user_id, data, read, created_at, u
 12	2	{"badge_id":5,"badge_name":"Welcome","badge_slug":"welcome","badge_title":false,"username":"user0"}	f	2026-09-30 07:28:30.313407	2026-09-30 07:28:30.313407	\N	\N	\N	f	42
 12	2	{"badge_id":11,"badge_name":"First Like","badge_slug":"first-like","badge_title":false,"username":"user0"}	f	2026-10-01 15:39:52.050551	2026-10-01 15:39:52.050551	\N	\N	\N	f	46
 12	3	{"badge_id":5,"badge_name":"Welcome","badge_slug":"welcome","badge_title":false,"username":"user1"}	f	2026-10-01 15:39:52.050551	2026-10-01 15:39:52.050551	\N	\N	\N	f	47
+24	3	{"title":"Parity fixture: replies and posters","bookmarkable_url":"/t/parity-fixture-replies-and-posters/35/5","display_username":"user1","bookmark_name":"Parity fixture: reminder sent","bookmark_id":5,"bookmarkable_type":"Post","bookmarkable_id":52}	f	2026-10-01 22:32:02.464812	2026-10-01 22:32:02.464812	35	5	\N	t	52
 \.
 
 
@@ -3801,6 +3809,9 @@ COPY public.post_search_data (post_id, search_data, raw_data, locale, version, p
 46	'archiv':5A,10 'count':20,24 'first':13 'fixtur':2A 'general':6B 'got':15 'guid':8C 'howto':7C 'like':3A,17,19,23 'op':22 'pariti':1A 'post':14 'topic':11 'whose':12	An archived topic whose first post got a like, for like_count and op_like_count.	en	5	f
 48	'bodi':21 'enough':15 'fixtur':2A 'long':14 'messag':9 'pariti':1A 'pm':3A 'post':20 'privat':8 'real':19 'user0':6A,13 'user1':4A,11	A private message from user1 to user0, long enough to be a real post body.	en	5	t
 49	'enough':16 'fixtur':2A 'insid':11 'long':15 'messag':14 'pariti':1A 'pm':3A 'privat':13 'repli':8 'user0':6A,10 'user1':4A	A reply from user0 inside the private message, long enough too.	en	5	t
+50	'admin':4A,13 'fixtur':2A 'list':19 'messag':11 'pariti':1A 'particip':22 'pm':3A 'privat':10 'show':20 'three':21 'two':15 'user':16 'user1':6A 'user2':8A	A private message from admin to two users, so the list shows three participants.	en	5	t
+51	'archiv':7A,17 'fixtur':2A 'messag':10 'pariti':1A 'pm':3A 'privat':9 'user1':6A,14,16 'user2':4A,12	A private message from user2 to user1 that user1 archives.	en	5	t
+52	'exist':17 'fixtur':2A 'general':6B 'guid':7C 'mention':11,15 'notif':16 'pariti':1A 'poster':5A 'repli':3A,8 'user0':10 'user1':12	Reply from user0 mentioning @user1 so a mention notification exists.	en	5	f
 \.
 
 
@@ -6864,6 +6875,7 @@ COPY public.site_settings (id, name, data_type, value, created_at, updated_at) F
 2	uncategorized_category_id	3	-1	2026-07-25 05:58:08.480753	2026-09-30 06:20:39.207692
 34	download_remote_images_to_local	5	f	2026-09-30 07:28:29.131277	2026-09-30 07:28:29.131277
 35	login_required	5	f	2026-09-30 12:31:59.956477	2026-09-30 12:32:54.054844
+36	bypass_wizard_check	5	t	2026-10-01 16:20:49.568485	2026-10-01 16:20:49.568485
 \.
 
 
@@ -7379,17 +7391,17 @@ ALTER TABLE public.topic_groups ENABLE TRIGGER ALL;
 ALTER TABLE public.topic_hot_scores DISABLE TRIGGER ALL;
 
 COPY public.topic_hot_scores (id, topic_id, score, recent_likes, recent_posters, recent_first_bumped_at, created_at, updated_at) FROM stdin;
-4	1	0	0	0	\N	2026-09-30 06:20:46.862926	2026-10-01 16:08:39.202001
-3	2	0	0	0	\N	2026-09-30 06:20:46.862926	2026-10-01 16:08:39.202001
-2	3	0	0	0	\N	2026-09-30 06:20:46.862926	2026-10-01 16:08:39.202001
-6	4	0	0	0	\N	2026-09-30 06:20:46.862926	2026-10-01 16:08:39.202001
-1	5	0	0	0	\N	2026-09-30 06:20:46.862926	2026-10-01 16:08:39.202001
-10	38	0	0	1	2026-09-30 07:28:29.580198	2026-09-30 07:35:34.283056	2026-10-01 16:08:39.202001
-5	6	0	0	0	\N	2026-09-30 06:20:46.862926	2026-10-01 16:08:39.202001
-11	35	0.0709630807521012	1	4	2026-09-30 07:28:28.901913	2026-09-30 07:35:34.283056	2026-10-01 16:08:39.202001
-9	41	0.02838556554696579	1	1	2026-09-30 07:28:30.163794	2026-09-30 07:35:34.283056	2026-10-01 16:08:39.202001
-7	37	0	0	1	2026-09-30 07:28:29.358281	2026-09-30 07:35:34.283056	2026-10-01 16:08:39.202001
-8	34	0	0	1	2026-09-30 07:28:28.693594	2026-09-30 07:35:34.283056	2026-10-01 16:08:39.202001
+4	1	0	0	0	\N	2026-09-30 06:20:46.862926	2026-10-01 22:31:38.458913
+3	2	0	0	0	\N	2026-09-30 06:20:46.862926	2026-10-01 22:31:38.458913
+2	3	0	0	0	\N	2026-09-30 06:20:46.862926	2026-10-01 22:31:38.458913
+6	4	0	0	0	\N	2026-09-30 06:20:46.862926	2026-10-01 22:31:38.458913
+1	5	0	0	0	\N	2026-09-30 06:20:46.862926	2026-10-01 22:31:38.458913
+10	38	0	0	1	2026-09-30 07:28:29.580198	2026-09-30 07:35:34.283056	2026-10-01 22:31:38.458913
+5	6	0	0	0	\N	2026-09-30 06:20:46.862926	2026-10-01 22:31:38.458913
+11	35	0.057937597498204665	1	4	2026-09-30 07:28:28.901913	2026-09-30 07:35:34.283056	2026-10-01 22:31:38.458913
+9	41	0.023175268772330084	1	1	2026-09-30 07:28:30.163794	2026-09-30 07:35:34.283056	2026-10-01 22:31:38.458913
+7	37	0	0	1	2026-09-30 07:28:29.358281	2026-09-30 07:35:34.283056	2026-10-01 22:31:38.458913
+8	34	0	0	1	2026-09-30 07:28:28.693594	2026-09-30 07:35:34.283056	2026-10-01 22:31:38.458913
 \.
 
 
@@ -7483,6 +7495,8 @@ COPY public.topic_search_data (topic_id, raw_data, locale, search_data, version)
 35	Parity fixture: replies and posters First post of a topic with several repliers, long enough to be a real post body for the excerpt.	en	'bodi':21B 'enough':15B 'excerpt':24B 'first':6B 'fixtur':2A 'long':14B 'pariti':1A 'post':7B,20B 'poster':5A 'real':19B 'repli':3A 'replier':13B 'sever':12B 'topic':10B	4
 41	Parity fixture: liked and archived An archived topic whose first post got a like, for like_count and op_like_count.	en	'archiv':5A,7B 'count':17B,21B 'first':10B 'fixtur':2A 'got':12B 'like':3A,14B,16B,20B 'op':19B 'pariti':1A 'post':11B 'topic':8B 'whose':9B	4
 42	Parity fixture: PM user1 to user0 A private message from user1 to user0, long enough to be a real post body.	en	'bodi':21B 'enough':15B 'fixtur':2A 'long':14B 'messag':9B 'pariti':1A 'pm':3A 'post':20B 'privat':8B 'real':19B 'user0':6A,13B 'user1':4A,11B	4
+43	Parity fixture: PM admin to user1 and user2 A private message from admin to two users, so the list shows three participants.	en	'admin':4A,13B 'fixtur':2A 'list':19B 'messag':11B 'pariti':1A 'particip':22B 'pm':3A 'privat':10B 'show':20B 'three':21B 'two':15B 'user':16B 'user1':6A 'user2':8A	4
+44	Parity fixture: PM user2 to user1, archived A private message from user2 to user1 that user1 archives.	en	'archiv':7A,17B 'fixtur':2A 'messag':10B 'pariti':1A 'pm':3A 'privat':9B 'user1':6A,14B,16B 'user2':4A,12B	4
 \.
 
 
@@ -7538,26 +7552,27 @@ COPY public.topic_users (user_id, topic_id, posted, last_read_post_number, last_
 -1	4	t	2	2026-07-25 05:58:27.812075	2026-07-25 05:58:27.812075	3	2026-07-25 05:58:27.810902	1	0	\N	1	\N	f	f	2026-07-25 05:58:28.245524
 -1	5	t	1	2026-07-25 05:58:28.346573	2026-07-25 05:58:28.346573	3	2026-07-25 05:58:28.345631	1	0	\N	2	\N	f	f	2026-07-25 05:58:28.462953
 -1	6	t	1	2026-07-25 05:58:28.575632	2026-07-25 05:58:28.575632	3	2026-07-25 05:58:28.572416	1	0	\N	3	\N	f	f	2026-07-25 05:58:28.752251
-3	35	t	2	2026-09-30 07:28:29.108382	2026-09-30 07:28:29.108382	2	2026-09-30 07:28:29.122811	4	0	\N	35	\N	f	f	2026-09-30 07:28:29.10764
 4	35	t	3	2026-09-30 07:28:29.208209	2026-09-30 07:28:29.208209	2	2026-09-30 07:28:29.215851	4	0	\N	36	\N	f	f	2026-09-30 07:28:29.207662
 1	35	t	4	2026-09-30 07:28:29.276347	2026-09-30 07:28:29.276347	2	2026-09-30 07:28:29.284363	4	0	\N	38	\N	f	f	2026-09-30 07:28:29.275782
 1	37	t	2	2026-09-30 07:28:29.345831	2026-09-30 07:28:29.345831	3	2026-09-30 07:28:29.345221	1	0	\N	39	\N	f	f	2026-09-30 07:28:29.437272
 -1	36	t	1	2026-09-30 07:28:29.256943	2026-09-30 07:28:29.256943	3	2026-09-30 07:28:29.253808	1	0	\N	37	\N	f	f	2026-09-30 07:28:29.384774
 3	38	t	1	2026-09-30 07:28:29.569932	2026-09-30 07:28:29.569932	3	2026-09-30 07:28:29.569429	1	0	\N	40	\N	f	f	2026-09-30 07:28:29.598896
-4	43	f	\N	2026-10-01 15:39:51.459749	2026-10-01 15:39:51.459749	3	2026-10-01 15:39:51.458749	2	0	\N	51	1	f	f	\N
 1	39	t	2	2026-09-30 07:28:29.664927	2026-09-30 07:28:29.664927	3	2026-09-30 07:28:29.664429	1	0	\N	41	\N	f	f	2026-09-30 07:28:29.78909
-3	44	f	\N	2026-10-01 15:39:51.625932	2026-10-01 15:39:51.625932	3	2026-10-01 15:39:51.624862	2	0	\N	53	1	f	f	\N
-3	43	f	\N	2026-10-01 15:39:51.455635	2026-10-01 15:39:51.455635	3	2026-10-01 15:39:51.454791	2	0	\N	50	1	f	f	\N
 4	40	f	0	2026-09-30 07:28:29.846453	2026-09-30 07:28:29.846453	3	2026-09-30 07:28:29.84579	1	0	\N	42	\N	f	f	2026-09-30 07:28:29.881642
 2	41	t	1	2026-09-30 07:28:30.133527	2026-09-30 07:28:30.133527	3	2026-09-30 07:28:30.13173	1	0	\N	43	\N	f	f	2026-09-30 07:28:30.198392
 1	41	t	2	2026-09-30 07:28:30.449422	2026-09-30 07:28:30.449422	2	2026-09-30 07:28:30.455959	4	0	\N	44	\N	f	f	2026-09-30 07:28:30.448811
 3	37	f	\N	2026-10-01 13:42:34.789218	2026-10-01 13:42:34.789218	1	\N	\N	0	2026-10-01 00:00:00	45	\N	f	t	\N
 3	41	f	\N	2026-10-01 13:42:34.814468	2026-10-01 13:42:34.814468	0	2026-10-01 13:48:11.542274	2	0	\N	46	\N	f	f	\N
-3	42	t	1	2026-10-01 15:39:51.09154	2026-10-01 15:39:51.09154	3	2026-10-01 15:39:51.090446	1	0	\N	47	\N	f	f	2026-10-01 15:39:51.195119
-1	43	t	1	2026-10-01 15:39:51.448236	2026-10-01 15:39:51.448236	3	2026-10-01 15:39:51.447312	1	0	\N	49	\N	f	f	2026-10-01 15:39:51.542448
+4	43	f	\N	2026-10-01 15:39:51.459749	2026-10-01 15:39:51.459749	3	2026-10-01 15:39:51.458749	2	0	\N	51	1	f	f	\N
+3	44	f	\N	2026-10-01 15:39:51.625932	2026-10-01 15:39:51.625932	3	2026-10-01 15:39:51.624862	2	0	\N	53	1	f	f	\N
+3	43	f	\N	2026-10-01 15:39:51.455635	2026-10-01 15:39:51.455635	3	2026-10-01 15:39:51.454791	2	0	\N	50	1	f	f	\N
+3	42	t	1	2026-10-01 15:39:51.09154	2026-10-01 15:39:51.09154	3	2026-10-01 15:39:51.090446	1	0	\N	47	\N	f	t	2026-10-01 15:39:51.195119
 4	44	t	1	2026-10-01 15:39:51.619175	2026-10-01 15:39:51.619175	3	2026-10-01 15:39:51.618337	1	0	\N	52	\N	f	f	2026-10-01 15:39:51.663152
+3	35	t	2	2026-09-30 07:28:29.108382	2026-09-30 07:28:29.108382	2	2026-09-30 07:28:29.122811	4	0	\N	35	\N	f	t	2026-09-30 07:28:29.10764
+1	2	f	\N	2026-10-01 22:32:02.508184	2026-10-01 22:32:02.508184	1	\N	\N	0	\N	54	\N	f	t	\N
 2	35	t	5	2026-09-30 07:28:28.88399	2026-09-30 07:28:28.88399	3	2026-09-30 07:28:28.883194	1	0	\N	34	4	t	f	2026-10-01 15:39:51.997065
 2	42	t	2	2026-10-01 15:39:51.103089	2026-10-01 15:39:51.103089	3	2026-10-01 15:39:51.102139	2	0	\N	48	1	f	f	2026-10-01 15:39:51.336918
+1	43	t	1	2026-10-01 15:39:51.448236	2026-10-01 15:39:51.448236	3	2026-10-01 15:39:51.447312	1	0	\N	49	\N	f	t	2026-10-01 15:39:51.542448
 \.
 
 
@@ -7712,6 +7727,18 @@ c476d78f3357705a6d69d31e0c3f2b65d7342184a3a8b3c005b1f07f7cba0eeb	3	2026-10-01 15
 c7a4d38d1fdb85c259b1a33384b3b2ddf4d85a9ec2f77783564a91fbbaf03c40	4	2026-10-01 16:01:10.272808	2026-10-01 16:01:10.272808	topic	43	50
 b5ee7d18d538e342088fe5fcf328d762a5461e75b7cfa58977058b09a306a539	3	2026-10-01 16:01:39.384407	2026-10-01 16:01:39.384407	topic	44	51
 0155e7b4da9624688370aab03529081fa6a3906ae5e6c849bfac9787ae6c8ebe	3	2026-10-01 16:01:57.052787	2026-10-01 16:01:57.052787	topic	43	50
+4d90ccac1309224b2a925a8fad18c4ae8a2902922e38f70e5c6f1657b4baafa7	4	2026-10-01 16:23:05.160396	2026-10-01 16:23:05.160396	topic	43	50
+813343cc22921cdb92b440ac1e678e45634da980dd41cc4a1747263b1f85bec2	3	2026-10-01 16:24:06.611744	2026-10-01 16:24:06.611744	topic	44	51
+f5867aa311753e28cf3de29f81531e842cca69d84ca807369bff312725f9c7ea	3	2026-10-01 16:24:32.597476	2026-10-01 16:24:32.597476	topic	43	50
+4cf2309b2f0ac2674363227c823beb2eaef1eb7d9f37de7aa4601b584b9f7ddd	4	2026-10-01 17:04:19.271033	2026-10-01 17:04:19.271033	topic	43	50
+abb79d8aa8446676c47641914aa2447985e4663e617e900bdf7d59374894e43a	3	2026-10-01 17:05:17.934236	2026-10-01 17:05:17.934236	topic	44	51
+dd60710989acc649e81f46a47ea6c68ec051d0e0af9db6262aa630979961c2bc	3	2026-10-01 17:05:45.897891	2026-10-01 17:05:45.897891	topic	43	50
+39ab89ba359ef839347ce3a5757b1ecaedd59adc525ca5c8a4635dc081935ec2	4	2026-10-01 18:12:50.746302	2026-10-01 18:12:50.746302	topic	43	50
+e23863875fd54640ad68b8a6950342469db750ee2929d505e080d55c0a32ef4b	3	2026-10-01 18:13:52.92622	2026-10-01 18:13:52.92622	topic	44	51
+8be8b0faef1d460a1d657da6f75fbcb9d18f7f8aff71bf8ba71cc3e8dfce45d3	3	2026-10-01 18:15:00.124133	2026-10-01 18:15:00.124133	topic	43	50
+bc317d3ce8670b3f3e8c92d653a0c2c35ad2cd8a3e39ecfbf1c29f21109db3c2	4	2026-10-01 22:31:34.344389	2026-10-01 22:31:34.344389	topic	43	50
+62e8a5a6ed6f6f706c813966b7fe5b45e7737c67ccdb1e6134e54ccfe147d05b	3	2026-10-01 22:31:34.348233	2026-10-01 22:31:34.348233	topic	44	51
+133ca1c763b3beb3bbdca9b87f3b0724b585618f3222598dd87418a07ab5e7df	3	2026-10-01 22:31:34.351402	2026-10-01 22:31:34.351402	topic	43	50
 \.
 
 
@@ -8398,10 +8425,10 @@ COPY public.user_stats (user_id, topics_entered, time_read, days_visited, posts_
 -1	0	0	0	4	0	0	2026-07-25 05:58:08.03156	\N	2026-07-25 05:58:27.915472	1	3	0	\N	0	0	0	2026-07-25 05:58:07.777918	0	2026-07-25 05:58:07.777918	\N	\N	0	0
 -2	0	0	0	0	0	0	2026-07-25 05:58:29.567978	\N	\N	0	0	0	\N	0	0	0	2026-07-25 05:58:29.370351	0	2026-07-25 05:58:29.370351	\N	\N	0	0
 4	0	0	0	2	0	0	2026-07-25 05:59:16.927292	\N	2026-09-30 07:28:29.179534	1	0	0	\N	0	0	0	2026-07-25 05:59:16.731949	2	2026-07-25 05:59:16.731949	\N	\N	0	0
-2	0	0	1	3	1	1	2026-07-25 05:59:16.023001	\N	2026-09-30 07:28:28.901913	1	2	0	\N	0	0	0	2026-09-30 10:46:34.784768	2	2026-10-01 06:44:30.570032	\N	\N	0	0
-3	0	0	1	2	1	1	2026-07-25 05:59:16.445924	\N	2026-09-30 07:28:29.079439	1	1	0	\N	0	0	0	2026-07-25 05:59:16.248723	3	2026-07-25 05:59:16.248723	\N	\N	0	0
-1	0	0	1	6	0	0	2026-07-25 05:59:15.188025	\N	2026-09-30 07:28:29.25168	1	1	0	\N	0	0	0	2026-07-25 05:59:14.990046	4	2026-07-25 05:59:14.990046	\N	\N	0	0
 5	0	0	0	0	0	0	2026-07-25 05:59:17.387931	\N	\N	0	0	0	\N	0	0	0	2026-07-25 05:59:17.197224	4	2026-07-25 05:59:17.197224	\N	\N	0	0
+1	0	0	1	6	0	0	2026-07-25 05:59:15.188025	\N	2026-09-30 07:28:29.25168	1	1	0	\N	0	0	0	2026-10-01 15:39:52.00791	4	2026-10-01 18:21:56.284939	\N	\N	0	0
+2	0	0	1	3	1	1	2026-07-25 05:59:16.023001	\N	2026-09-30 07:28:28.901913	1	2	0	\N	0	0	0	2026-10-01 18:21:56.278874	3	2026-10-01 18:21:56.284939	\N	\N	0	0
+3	0	0	1	2	1	1	2026-07-25 05:59:16.445924	\N	2026-09-30 07:28:29.079439	1	1	0	\N	0	0	0	2026-10-01 15:39:52.00791	4	2026-10-01 15:39:51.342717	\N	\N	0	0
 \.
 
 
@@ -8444,7 +8471,7 @@ ALTER TABLE public.user_uploads ENABLE TRIGGER ALL;
 ALTER TABLE public.user_visit_daily_rollups DISABLE TRIGGER ALL;
 
 COPY public.user_visit_daily_rollups (id, date, dau, mau) FROM stdin;
-3	2026-10-01	1	1
+5	2026-10-01	3	3
 \.
 
 
@@ -8979,7 +9006,7 @@ SELECT pg_catalog.setval('public.badges_id_seq', 48, true);
 -- Name: bookmarks_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.bookmarks_id_seq', 1, true);
+SELECT pg_catalog.setval('public.bookmarks_id_seq', 7, true);
 
 
 --
@@ -9056,7 +9083,7 @@ SELECT pg_catalog.setval('public.categories_id_seq', 34, true);
 -- Name: category_activity_daily_rollups_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.category_activity_daily_rollups_id_seq', 39, true);
+SELECT pg_catalog.setval('public.category_activity_daily_rollups_id_seq', 47, true);
 
 
 --
@@ -9133,7 +9160,7 @@ SELECT pg_catalog.setval('public.category_tag_groups_id_seq', 1, false);
 -- Name: category_tag_stats_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.category_tag_stats_id_seq', 9, true);
+SELECT pg_catalog.setval('public.category_tag_stats_id_seq', 12, true);
 
 
 --
@@ -10127,7 +10154,7 @@ SELECT pg_catalog.setval('public.nested_view_post_stats_id_seq', 1, false);
 -- Name: notifications_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.notifications_id_seq', 51, true);
+SELECT pg_catalog.setval('public.notifications_id_seq', 52, true);
 
 
 --
@@ -10400,7 +10427,7 @@ SELECT pg_catalog.setval('public.reviewables_id_seq', 1, false);
 -- Name: scheduler_stats_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.scheduler_stats_id_seq', 17822, true);
+SELECT pg_catalog.setval('public.scheduler_stats_id_seq', 20049, true);
 
 
 --
@@ -10435,7 +10462,7 @@ SELECT pg_catalog.setval('public.screened_urls_id_seq', 1, false);
 -- Name: search_logs_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.search_logs_id_seq', 66, true);
+SELECT pg_catalog.setval('public.search_logs_id_seq', 85, true);
 
 
 --
@@ -10526,7 +10553,7 @@ SELECT pg_catalog.setval('public.site_setting_localizations_id_seq', 1, false);
 -- Name: site_settings_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.site_settings_id_seq', 35, true);
+SELECT pg_catalog.setval('public.site_settings_id_seq', 36, true);
 
 
 --
@@ -10778,7 +10805,7 @@ SELECT pg_catalog.setval('public.topic_timers_id_seq', 1, false);
 -- Name: topic_users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.topic_users_id_seq', 53, true);
+SELECT pg_catalog.setval('public.topic_users_id_seq', 54, true);
 
 
 --
@@ -10904,14 +10931,14 @@ SELECT pg_catalog.setval('public.user_associated_groups_id_seq', 1, false);
 -- Name: user_auth_token_logs_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.user_auth_token_logs_id_seq', 42, true);
+SELECT pg_catalog.setval('public.user_auth_token_logs_id_seq', 67, true);
 
 
 --
 -- Name: user_auth_tokens_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.user_auth_tokens_id_seq', 42, true);
+SELECT pg_catalog.setval('public.user_auth_tokens_id_seq', 67, true);
 
 
 --
@@ -11058,7 +11085,7 @@ SELECT pg_catalog.setval('public.user_uploads_id_seq', 66, true);
 -- Name: user_visit_daily_rollups_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.user_visit_daily_rollups_id_seq', 3, true);
+SELECT pg_catalog.setval('public.user_visit_daily_rollups_id_seq', 5, true);
 
 
 --

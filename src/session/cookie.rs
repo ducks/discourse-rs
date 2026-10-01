@@ -501,7 +501,9 @@ mod tests {
         ));
         // Tampering with the ciphertext fails authentication.
         let mut chars: Vec<char> = form_unescape(&value).chars().collect();
-        chars.swap(2, 3);
+        // Replaced, not swapped with its neighbour: two equal base64
+        // characters (1 in 64) would leave the value unchanged.
+        chars[2] = if chars[2] == 'A' { 'B' } else { 'A' };
         let tampered: String = chars.into_iter().collect();
         assert!(codec.decrypt("_t", &form_escape(&tampered)).is_err());
     }

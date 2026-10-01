@@ -330,7 +330,7 @@ fn escape_string(s: &str) -> String {
 
 /// The literal handed to TO_TSQUERY after Rails' two rounds of escaping
 /// and the SQL quoting collapse: `'<term>':*<weights>`.
-fn ts_query_value(term: &str, weights: &str, prefix: bool) -> String {
+pub(crate) fn ts_query_value(term: &str, weights: &str, prefix: bool) -> String {
     let inner = format!(
         "'{}':{}{weights}",
         escape_string(term),
@@ -342,7 +342,7 @@ fn ts_query_value(term: &str, weights: &str, prefix: bool) -> String {
 }
 
 /// `Search.ts_query`'s SQL around a bound value.
-fn ts_query_sql(config: &str, bind: usize) -> String {
+pub(crate) fn ts_query_sql(config: &str, bind: usize) -> String {
     format!(
         "REGEXP_REPLACE(TO_TSQUERY('{config}', ${bind})::text, '<->|<\\d+>', '&', 'g')::tsquery"
     )
