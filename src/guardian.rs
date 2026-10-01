@@ -496,14 +496,16 @@ impl Guardian {
             && self.in_any_groups(settings, &settings.group_ids("tag_topic_allowed_groups")?)?)
     }
 
-    /// TagGuardian#can_tag_pms?
+    /// TagGuardian#can_tag_pms?: the system user, else pm_tags_allowed_for_groups.
     pub fn can_tag_pms(&self, settings: &SiteSettings) -> Result<bool, SettingError> {
         if self.is_anonymous() {
             return Ok(false);
         }
+        if self.user_id() == Some(-1) {
+            return Ok(settings.get("tagging_enabled")?.truthy());
+        }
         Ok(settings.get("tagging_enabled")?.truthy()
-            && (self.is_staff()
-                || self.in_setting_groups(settings, "pm_tags_allowed_for_groups")?))
+            && self.in_setting_groups(settings, "pm_tags_allowed_for_groups")?)
     }
 
     /// `can_search?`: `authenticated? || allow_anonymous_search`

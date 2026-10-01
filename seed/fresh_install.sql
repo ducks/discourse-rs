@@ -955,9 +955,9 @@ COPY public.category_activity_daily_rollups (id, date, category_id, topics, post
 27	2026-07-25	3	3	4	0	0
 28	2026-07-25	4	2	2	0	0
 30	2026-07-25	2	1	1	0	0
-34	2026-09-30	34	2	2	0	0
-35	2026-09-30	4	3	6	0	0
-36	2026-09-30	2	1	1	0	0
+37	2026-09-30	34	2	2	0	0
+38	2026-09-30	4	3	6	0	0
+39	2026-09-30	2	1	1	0	0
 \.
 
 
@@ -7340,17 +7340,17 @@ ALTER TABLE public.topic_groups ENABLE TRIGGER ALL;
 ALTER TABLE public.topic_hot_scores DISABLE TRIGGER ALL;
 
 COPY public.topic_hot_scores (id, topic_id, score, recent_likes, recent_posters, recent_first_bumped_at, created_at, updated_at) FROM stdin;
-4	1	0	0	0	\N	2026-09-30 06:20:46.862926	2026-10-01 13:38:17.401124
-3	2	0	0	0	\N	2026-09-30 06:20:46.862926	2026-10-01 13:38:17.401124
-2	3	0	0	0	\N	2026-09-30 06:20:46.862926	2026-10-01 13:38:17.401124
-6	4	0	0	0	\N	2026-09-30 06:20:46.862926	2026-10-01 13:38:17.401124
-1	5	0	0	0	\N	2026-09-30 06:20:46.862926	2026-10-01 13:38:17.401124
-10	38	0	0	1	2026-09-30 07:28:29.580198	2026-09-30 07:35:34.283056	2026-10-01 13:38:17.401124
-5	6	0	0	0	\N	2026-09-30 06:20:46.862926	2026-10-01 13:38:17.401124
-9	41	0.031059892573068647	1	1	2026-09-30 07:28:30.163794	2026-09-30 07:35:34.283056	2026-10-01 13:38:17.401124
-11	35	0.04658925285560467	0	4	2026-09-30 07:28:28.901913	2026-09-30 07:35:34.283056	2026-10-01 13:38:17.401124
-7	37	0	0	1	2026-09-30 07:28:29.358281	2026-09-30 07:35:34.283056	2026-10-01 13:38:17.401124
-8	34	0	0	1	2026-09-30 07:28:28.693594	2026-09-30 07:35:34.283056	2026-10-01 13:38:17.401124
+4	1	0	0	0	\N	2026-09-30 06:20:46.862926	2026-10-01 14:47:22.297011
+3	2	0	0	0	\N	2026-09-30 06:20:46.862926	2026-10-01 14:47:22.297011
+2	3	0	0	0	\N	2026-09-30 06:20:46.862926	2026-10-01 14:47:22.297011
+6	4	0	0	0	\N	2026-09-30 06:20:46.862926	2026-10-01 14:47:22.297011
+1	5	0	0	0	\N	2026-09-30 06:20:46.862926	2026-10-01 14:47:22.297011
+10	38	0	0	1	2026-09-30 07:28:29.580198	2026-09-30 07:35:34.283056	2026-10-01 14:47:22.297011
+5	6	0	0	0	\N	2026-09-30 06:20:46.862926	2026-10-01 14:47:22.297011
+9	41	0.02977625786441791	1	1	2026-09-30 07:28:30.163794	2026-09-30 07:35:34.283056	2026-10-01 14:47:22.297011
+11	35	0.04466384442612777	0	4	2026-09-30 07:28:28.901913	2026-09-30 07:35:34.283056	2026-10-01 14:47:22.297011
+7	37	0	0	1	2026-09-30 07:28:29.358281	2026-09-30 07:35:34.283056	2026-10-01 14:47:22.297011
+8	34	0	0	1	2026-09-30 07:28:28.693594	2026-09-30 07:35:34.283056	2026-10-01 14:47:22.297011
 \.
 
 
@@ -7510,7 +7510,7 @@ COPY public.topic_users (user_id, topic_id, posted, last_read_post_number, last_
 1	41	t	2	2026-09-30 07:28:30.449422	2026-09-30 07:28:30.449422	2	2026-09-30 07:28:30.455959	4	0	\N	44	\N	f	f	2026-09-30 07:28:30.448811
 2	35	t	1	2026-09-30 07:28:28.88399	2026-09-30 07:28:28.88399	3	2026-09-30 07:28:28.883194	1	0	\N	34	4	f	f	2026-09-30 07:28:28.936754
 3	37	f	\N	2026-10-01 13:42:34.789218	2026-10-01 13:42:34.789218	1	\N	\N	0	2026-10-01 00:00:00	45	\N	f	t	\N
-3	41	f	\N	2026-10-01 13:42:34.814468	2026-10-01 13:42:34.814468	0	2026-10-01 13:42:34.812518	2	0	\N	46	\N	f	f	\N
+3	41	f	\N	2026-10-01 13:42:34.814468	2026-10-01 13:42:34.814468	0	2026-10-01 13:48:11.542274	2	0	\N	46	\N	f	f	\N
 \.
 
 
@@ -8173,12 +8173,12 @@ ALTER TABLE public.user_options DISABLE TRIGGER ALL;
 
 COPY public.user_options (user_id, mailing_list_mode, email_digests, external_links_in_new_tab, enable_quoting, dynamic_favicon, automatically_unpin_topics, digest_after_minutes, auto_track_topics_after_msecs, new_topic_duration_minutes, last_redirected_to_top_at, email_previous_replies, email_in_reply_to, like_notification_frequency, mailing_list_mode_frequency, include_tl0_in_digests, notification_level_when_replying, theme_key_seq, allow_private_messages, homepage_id, theme_ids, hide_profile_and_presence, text_size_key, text_size_seq, email_level, email_messages_level, title_count_mode_key, enable_defer, timezone, enable_allowed_pm_users, dark_scheme_id, skip_new_user_tips, color_scheme_id, default_calendar, chat_enabled, only_chat_push_notifications, oldest_search_log_date, chat_sound, dismissed_channel_retention_reminder, dismissed_dm_retention_reminder, bookmark_auto_delete_preference, ignore_channel_wide_mention, chat_email_frequency, seen_popups, policy_email_frequency, chat_header_indicator_preference, sidebar_link_to_filtered_list, sidebar_show_count_of_new_items, watched_precedence_over_muted, chat_separate_sidebar_mode, show_thread_title_prompts, auto_image_caption, enable_smart_lists, hide_profile, hide_presence, chat_send_shortcut, notification_level_when_assigned, chat_quick_reaction_type, chat_quick_reactions_custom, ai_search_discoveries, composition_mode, interface_color_mode, enable_markdown_monospace_font, notify_on_linked_posts, discourse_rewind_share_publicly, discourse_rewind_dismissed_at, discourse_rewind_enabled, notify_on_solved, show_original_content, enable_upcoming_change_available_notifications, chat_announce_new_messages, chat_new_message_sound, push_notification_level, automatically_translate, understood_languages, send_shortcut, ai_ask_ai_default, chat_channel_list_filter, chat_channel_list_sort, chat_channel_list_sort_starred, chat_channel_list_sort_dms, chat_channel_list_filter_starred, chat_channel_list_filter_dms, event_reminder_preference, hidden_composer_toolbar_buttons) FROM stdin;
 -2	f	t	f	t	f	t	10080	300000	2880	\N	2	f	1	1	f	2	0	t	\N	{}	f	0	0	2	2	0	f	\N	f	\N	f	\N	0	t	\N	\N	\N	\N	\N	3	\N	1	\N	0	0	f	f	f	0	t	f	t	f	f	0	3	0	\N	t	1	1	t	t	f	\N	t	t	f	t	t	f	1	t	{}	0	t	0	0	0	2	0	0	0	{}
-1	f	t	f	t	f	t	10080	300000	2880	\N	2	f	1	1	f	2	0	t	\N	{}	f	0	0	1	0	0	f	\N	f	\N	f	\N	0	t	\N	\N	\N	\N	\N	3	\N	1	\N	0	0	f	f	f	0	t	f	t	f	f	0	3	0	\N	t	1	1	t	t	f	\N	t	t	f	t	t	f	1	t	{}	0	t	0	0	0	2	0	0	0	{}
 4	f	t	f	t	f	t	10080	300000	2880	\N	2	f	1	1	f	2	0	t	\N	{}	f	0	0	1	0	0	f	\N	f	\N	f	\N	0	t	\N	\N	\N	\N	\N	3	\N	1	\N	0	0	f	f	f	0	t	f	t	f	f	0	3	0	\N	t	1	1	t	t	f	\N	t	t	f	t	t	f	1	t	{}	0	t	0	0	0	2	0	0	0	{}
 5	f	t	f	t	f	t	10080	300000	2880	\N	2	f	1	1	f	2	0	t	\N	{}	f	0	0	1	0	0	f	\N	f	\N	f	\N	0	t	\N	\N	\N	\N	\N	3	\N	1	\N	0	0	f	f	f	0	t	f	t	f	f	0	3	0	\N	t	1	1	t	t	f	\N	t	t	f	t	t	f	1	t	{}	0	t	0	0	0	2	0	0	0	{}
 -1	f	t	f	t	f	t	10080	300000	2880	\N	2	f	1	1	f	2	0	t	\N	{}	f	0	0	2	2	0	f	\N	f	\N	f	\N	0	t	\N	\N	\N	\N	\N	3	\N	1	\N	0	0	f	f	f	0	t	f	t	f	f	0	3	0	\N	t	1	1	t	t	f	\N	t	t	f	t	t	f	1	t	{}	0	t	0	0	0	2	0	0	0	{}
-2	f	t	f	t	f	t	10080	300000	2880	\N	2	f	1	1	f	2	0	t	\N	{}	f	0	0	1	0	0	f	America/Denver	f	\N	f	\N	0	t	\N	\N	\N	\N	\N	3	\N	1	\N	0	0	f	f	f	0	t	f	t	f	f	0	3	0	\N	t	1	1	t	t	f	\N	t	t	f	t	t	f	1	t	{}	0	t	0	0	0	2	0	0	0	{}
 3	f	t	f	t	f	t	10080	300000	-1	\N	2	f	1	1	f	2	0	t	\N	{}	f	0	0	1	0	0	f	\N	f	\N	f	\N	0	t	\N	\N	\N	\N	\N	3	\N	1	\N	0	0	f	f	f	0	t	f	t	f	f	0	3	0	\N	t	1	1	t	t	f	\N	t	t	f	t	t	f	1	t	{}	0	t	0	0	0	2	0	0	0	{}
+2	f	t	f	t	f	t	10080	300000	-1	\N	2	f	1	1	f	2	0	t	\N	{}	f	0	0	1	0	0	f	America/Denver	f	\N	f	\N	0	t	\N	\N	\N	\N	\N	3	\N	1	\N	0	0	f	f	f	0	t	f	t	f	f	0	3	0	\N	t	1	1	t	t	f	\N	t	t	f	t	t	f	1	t	{}	0	t	0	0	0	2	0	0	0	{}
+1	f	t	f	t	f	t	10080	300000	-1	\N	2	f	1	1	f	2	0	t	\N	{}	f	0	0	1	0	0	f	\N	f	\N	f	\N	0	t	\N	\N	\N	\N	\N	3	\N	1	\N	0	0	f	f	f	0	t	f	t	f	f	0	3	0	\N	t	1	1	t	t	f	\N	t	t	f	t	t	f	1	t	{}	0	t	0	0	0	2	0	0	0	{}
 \.
 
 
@@ -8218,6 +8218,9 @@ COPY public.user_profile_views (id, user_profile_id, viewed_at, ip_address, user
 6	1	2026-10-01 11:01:22.618076	172.17.0.1	\N
 7	-1	2026-10-01 11:01:23.074647	172.17.0.1	\N
 8	2	2026-10-01 11:01:23.522871	172.17.0.1	\N
+9	3	2026-10-01 14:45:46.107335	\N	2
+10	1	2026-10-01 14:45:47.671124	\N	2
+11	2	2026-10-01 14:45:49.242877	\N	3
 \.
 
 
@@ -8233,10 +8236,10 @@ COPY public.user_profiles (user_id, location, website, bio_raw, bio_cooked, dism
 -2	\N	\N	Hi, I’m not a real person. I’m a bot that can teach you about this site. To interact with me, send me a message or mention me by name.	<p>Hi, I’m not a real person. I’m a bot that can teach you about this site. To interact with me, send me a message or mention me by name.</p>	\N	1	0	\N	\N	\N	\N
 5	\N	\N	\N	\N	\N	1	0	\N	\N	\N	\N
 4	\N	\N	\N	\N	\N	1	0	\N	\N	\N	\N
-3	\N	\N	\N	\N	\N	1	2	\N	\N	\N	\N
-1	\N	\N	\N	\N	\N	1	2	\N	\N	\N	\N
 -1	\N	\N	\N	\N	\N	1	2	\N	\N	\N	\N
-2	\N	\N	\N	\N	\N	1	2	\N	\N	\N	\N
+3	\N	\N	\N	\N	\N	1	3	\N	\N	\N	\N
+1	\N	\N	\N	\N	\N	1	3	\N	\N	\N	\N
+2	\N	\N	\N	\N	\N	1	3	\N	\N	\N	\N
 \.
 
 
@@ -8353,7 +8356,7 @@ ALTER TABLE public.user_uploads ENABLE TRIGGER ALL;
 ALTER TABLE public.user_visit_daily_rollups DISABLE TRIGGER ALL;
 
 COPY public.user_visit_daily_rollups (id, date, dau, mau) FROM stdin;
-2	2026-10-01	1	1
+3	2026-10-01	1	1
 \.
 
 
@@ -8963,7 +8966,7 @@ SELECT pg_catalog.setval('public.categories_id_seq', 34, true);
 -- Name: category_activity_daily_rollups_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.category_activity_daily_rollups_id_seq', 36, true);
+SELECT pg_catalog.setval('public.category_activity_daily_rollups_id_seq', 39, true);
 
 
 --
@@ -10307,7 +10310,7 @@ SELECT pg_catalog.setval('public.reviewables_id_seq', 1, false);
 -- Name: scheduler_stats_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.scheduler_stats_id_seq', 15921, true);
+SELECT pg_catalog.setval('public.scheduler_stats_id_seq', 16773, true);
 
 
 --
@@ -10342,7 +10345,7 @@ SELECT pg_catalog.setval('public.screened_urls_id_seq', 1, false);
 -- Name: search_logs_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.search_logs_id_seq', 60, true);
+SELECT pg_catalog.setval('public.search_logs_id_seq', 66, true);
 
 
 --
@@ -10811,14 +10814,14 @@ SELECT pg_catalog.setval('public.user_associated_groups_id_seq', 1, false);
 -- Name: user_auth_token_logs_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.user_auth_token_logs_id_seq', 17, true);
+SELECT pg_catalog.setval('public.user_auth_token_logs_id_seq', 39, true);
 
 
 --
 -- Name: user_auth_tokens_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.user_auth_tokens_id_seq', 17, true);
+SELECT pg_catalog.setval('public.user_auth_tokens_id_seq', 39, true);
 
 
 --
@@ -10923,7 +10926,7 @@ SELECT pg_catalog.setval('public.user_passwords_id_seq', 33, true);
 -- Name: user_profile_views_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.user_profile_views_id_seq', 8, true);
+SELECT pg_catalog.setval('public.user_profile_views_id_seq', 11, true);
 
 
 --
@@ -10965,7 +10968,7 @@ SELECT pg_catalog.setval('public.user_uploads_id_seq', 66, true);
 -- Name: user_visit_daily_rollups_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.user_visit_daily_rollups_id_seq', 2, true);
+SELECT pg_catalog.setval('public.user_visit_daily_rollups_id_seq', 3, true);
 
 
 --

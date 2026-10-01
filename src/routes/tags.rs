@@ -385,7 +385,9 @@ async fn show_list(
     if path.json {
         return Ok(Json(doc).into_response());
     }
-    let site = crate::html::Site::from_settings(&settings, &base_path)?;
+    let vs = super::session::viewer_state(&state, &headers, &settings, &guardian)?;
+    let mut site = crate::html::Site::from_settings(&settings, &base_path)?;
+    site.viewer = vs.viewer.clone();
     let mut page = crate::html::latest_page(&mut conn, site, &doc).await?;
     if let Some(c) = &category {
         page.heading = Some(
@@ -428,6 +430,7 @@ async fn show_list(
         body,
         &page.crawler,
         &settings,
+        &vs,
     )?)
 }
 
@@ -435,16 +438,18 @@ async fn show_list(
 pub async fn index(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
     uri: axum::http::Uri,
 ) -> Result<Response, AppError> {
-    index_response(state, guardian, false, Some(uri)).await
+    index_response(state, guardian, false, headers, Some(uri)).await
 }
 
 pub async fn index_json(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
 ) -> Result<Response, AppError> {
-    index_response(state, guardian, true, None).await
+    index_response(state, guardian, true, headers, None).await
 }
 
 #[derive(sqlx::FromRow)]
@@ -490,6 +495,7 @@ async fn index_response(
     state: AppState,
     guardian: Guardian,
     json: bool,
+    headers: HeaderMap,
     uri: Option<axum::http::Uri>,
 ) -> Result<Response, AppError> {
     let mut conn = state.pool.acquire().await?;
@@ -568,8 +574,10 @@ async fn index_response(
     if json {
         return Ok(Json(doc).into_response());
     }
-    let site =
+    let vs = super::session::viewer_state(&state, &headers, &settings, &guardian)?;
+    let mut site =
         crate::html::Site::from_settings(&settings, state.config.globals.relative_url_root())?;
+    site.viewer = vs.viewer.clone();
     let mut page = crate::html::tags_page(&state.i18n, site, &doc, &category_names);
     let urls = Urls {
         config: &state.config,
@@ -586,6 +594,7 @@ async fn index_response(
         body,
         &page.crawler,
         &settings,
+        &vs,
     )?)
 }
 

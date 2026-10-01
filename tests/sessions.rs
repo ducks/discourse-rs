@@ -538,3 +538,69 @@ async fn logged_in_users_pass_the_login_gate_and_update_last_seen() {
             .any(|(k, v)| k == "location" && v == "http://test.localhost/")
     );
 }
+
+#[tokio::test]
+async fn pages_carry_the_viewer_and_the_logout_form_works() {
+    let db = TestDb::new().await;
+    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[]));
+
+    // Anonymous: the anon class, a login link, no CSRF meta, cacheable.
+    let mut anon = Client::new(app_state.clone());
+    let reply = anon.get("/latest").await;
+    assert_eq!(reply.status, StatusCode::OK);
+    assert!(
+        reply.body.contains(r#"<html lang="en" class="anon">"#),
+        "{}",
+        reply.body
+    );
+    assert!(reply.body.contains(r#"class="site-login""#));
+    assert!(!reply.body.contains("csrf-token"));
+    assert!(
+        !reply
+            .headers
+            .iter()
+            .any(|(k, _)| k == "x-discourse-username")
+    );
+
+    // Logged in: the viewer block with a masked CSRF token and no caching.
+    let mut client = Client::new(app_state.clone());
+    client.login("user1", "password").await;
+    let reply = client.get("/t/parity-fixture-replies-and-posters/35").await;
+    assert_eq!(reply.status, StatusCode::OK);
+    assert!(reply.body.contains(r#"<html lang="en">"#), "{}", reply.body);
+    assert!(reply.body.contains(r#"class="site-user" href="/u/user1""#));
+    let token = reply
+        .body
+        .split(r#"<meta name="csrf-token" content=""#)
+        .nth(1)
+        .and_then(|rest| rest.split('"').next())
+        .expect("csrf meta")
+        .to_string();
+    assert_eq!(token.len(), 86, "{token}");
+    assert!(
+        reply
+            .headers
+            .contains(&("x-discourse-username".into(), "user1".into()))
+    );
+    assert!(
+        reply
+            .headers
+            .contains(&("cache-control".into(), "no-cache, no-store".into()))
+    );
+
+    // The logout form posts _method=delete with the page's token.
+    let reply = client
+        .send(
+            Method::POST,
+            "/session/user1",
+            &[("content-type", "application/x-www-form-urlencoded")],
+            &format!("_method=delete&authenticity_token={token}"),
+        )
+        .await;
+    assert_eq!(reply.status, StatusCode::FOUND, "{}", reply.body);
+    let tokens: i64 = sqlx::query_scalar("SELECT count(*) FROM user_auth_tokens WHERE user_id = 3")
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+    assert_eq!(tokens, 0);
+}

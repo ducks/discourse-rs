@@ -225,7 +225,9 @@ async fn respond(
     } else {
         Vec::new()
     };
-    let site = crate::html::Site::from_settings(&settings, base_path)?;
+    let vs = super::session::viewer_state(&state, &headers, &settings, &guardian)?;
+    let mut site = crate::html::Site::from_settings(&settings, base_path)?;
+    site.viewer = vs.viewer.clone();
     let mut page = profile_page(
         site,
         &user,
@@ -243,11 +245,12 @@ async fn respond(
         crate::html::Crawler::for_request(&urls, &uri, None)?.with_meta(&user.username, "", avatar);
     crawler.description = settings.get("site_description")?.to_s();
     page.crawler = crawler;
-    Ok((
+    let response = (
         noindex,
         Html(page.render().map_err(crate::html::HtmlError::from)?),
     )
-        .into_response())
+        .into_response();
+    Ok(crate::html::with_viewer_headers(response, &vs))
 }
 
 /// GET /user_actions.json
@@ -336,6 +339,7 @@ pub struct ProfilePage {
     pub lang: String,
     pub base_path: String,
     pub crawler: Crawler,
+    pub viewer: Option<crate::html::Viewer>,
     pub username: String,
     pub name: Option<String>,
     pub title: Option<String>,
@@ -437,6 +441,7 @@ fn profile_page(
     let _ = settings;
     Ok(ProfilePage {
         site_title: site.site_title,
+        viewer: site.viewer,
         site_description: site.site_description,
         lang: site.lang,
         base_path: site.base_path,

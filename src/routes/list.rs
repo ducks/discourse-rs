@@ -309,6 +309,7 @@ pub async fn latest(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
     Query(params): Query<ListParams>,
+    headers: HeaderMap,
     uri: axum::http::Uri,
 ) -> Result<Response, AppError> {
     let list_path = format!("{}/latest", state.config.globals.relative_url_root());
@@ -328,7 +329,9 @@ pub async fn latest(
     };
     let mut conn = state.pool.acquire().await?;
     let base_path = state.config.globals.relative_url_root();
-    let site = crate::html::Site::from_settings(&settings, base_path)?;
+    let vs = super::session::viewer_state(&state, &headers, &settings, &guardian)?;
+    let mut site = crate::html::Site::from_settings(&settings, base_path)?;
+    site.viewer = vs.viewer.clone();
     let mut page = crate::html::latest_page(&mut conn, site, &json).await?;
     // Strip `no_definitions`, which is what the JSON list carries around
     // but the HTML list applies on its own.
@@ -342,6 +345,7 @@ pub async fn latest(
         body,
         &page.crawler,
         &settings,
+        &vs,
     )?)
 }
 
@@ -493,7 +497,9 @@ pub async fn category(
         return Ok(Json(doc).into_response());
     }
     let mut conn = state.pool.acquire().await?;
-    let site = crate::html::Site::from_settings(&settings, &base_path)?;
+    let vs = super::session::viewer_state(&state, &headers, &settings, &guardian)?;
+    let mut site = crate::html::Site::from_settings(&settings, &base_path)?;
+    site.viewer = vs.viewer.clone();
     let mut page = crate::html::latest_page(&mut conn, site, &doc).await?;
     page.heading = Some(
         crate::html::category_heading(&mut conn, &base_path, &category, params.page.is_none())
@@ -519,6 +525,7 @@ pub async fn category(
         body,
         &page.crawler,
         &settings,
+        &vs,
     )?)
 }
 
@@ -527,17 +534,19 @@ pub async fn categories(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
     Query(params): Query<CategoriesParams>,
+    headers: HeaderMap,
     uri: axum::http::Uri,
 ) -> Result<Response, AppError> {
-    categories_response(state, guardian, params, false, Some(uri)).await
+    categories_response(state, guardian, params, false, headers, Some(uri)).await
 }
 
 pub async fn categories_json(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
     Query(params): Query<CategoriesParams>,
+    headers: HeaderMap,
 ) -> Result<Response, AppError> {
-    categories_response(state, guardian, params, true, None).await
+    categories_response(state, guardian, params, true, headers, None).await
 }
 
 async fn categories_response(
@@ -545,6 +554,7 @@ async fn categories_response(
     guardian: Guardian,
     params: CategoriesParams,
     json: bool,
+    headers: HeaderMap,
     uri: Option<axum::http::Uri>,
 ) -> Result<Response, AppError> {
     let mut conn = state.pool.acquire().await?;
@@ -574,8 +584,10 @@ async fn categories_response(
     if json {
         return Ok(Json(doc).into_response());
     }
-    let site =
+    let vs = super::session::viewer_state(&state, &headers, &settings, &guardian)?;
+    let mut site =
         crate::html::Site::from_settings(&settings, state.config.globals.relative_url_root())?;
+    site.viewer = vs.viewer.clone();
     let mut page = crate::html::categories_page(&mut conn, &state.i18n, site, &doc).await?;
     let uri = uri.unwrap_or_default();
     page.crawler = list_crawler(&mut conn, &state, &settings, &uri, None, None).await?;
@@ -584,6 +596,7 @@ async fn categories_response(
         body,
         &page.crawler,
         &settings,
+        &vs,
     )?)
 }
 
@@ -714,34 +727,56 @@ pub async fn top(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
     Query(params): Query<ListParams>,
+    headers: HeaderMap,
     uri: axum::http::Uri,
 ) -> Result<Response, AppError> {
-    front_list(state, guardian, params, ListKind::Top, false, Some(uri)).await
+    front_list(
+        state,
+        guardian,
+        params,
+        ListKind::Top,
+        false,
+        headers,
+        Some(uri),
+    )
+    .await
 }
 
 pub async fn top_json(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
     Query(params): Query<ListParams>,
+    headers: HeaderMap,
 ) -> Result<Response, AppError> {
-    front_list(state, guardian, params, ListKind::Top, true, None).await
+    front_list(state, guardian, params, ListKind::Top, true, headers, None).await
 }
 
 pub async fn hot(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
     Query(params): Query<ListParams>,
+    headers: HeaderMap,
     uri: axum::http::Uri,
 ) -> Result<Response, AppError> {
-    front_list(state, guardian, params, ListKind::Hot, false, Some(uri)).await
+    front_list(
+        state,
+        guardian,
+        params,
+        ListKind::Hot,
+        false,
+        headers,
+        Some(uri),
+    )
+    .await
 }
 
 pub async fn hot_json(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
     Query(params): Query<ListParams>,
+    headers: HeaderMap,
 ) -> Result<Response, AppError> {
-    front_list(state, guardian, params, ListKind::Hot, true, None).await
+    front_list(state, guardian, params, ListKind::Hot, true, headers, None).await
 }
 
 /// `/top/:period(.json)` -> 301 to `/top?period=`.
@@ -775,6 +810,7 @@ async fn front_list(
     params: ListParams,
     kind: ListKind,
     json: bool,
+    headers: HeaderMap,
     uri: Option<axum::http::Uri>,
 ) -> Result<Response, AppError> {
     if let Some(response) = ensure_logged_in(&state, &guardian, kind, json) {
@@ -794,8 +830,10 @@ async fn front_list(
         return Ok(Json(doc).into_response());
     }
     let mut conn = state.pool.acquire().await?;
-    let site =
+    let vs = super::session::viewer_state(&state, &headers, &settings, &guardian)?;
+    let mut site =
         crate::html::Site::from_settings(&settings, state.config.globals.relative_url_root())?;
+    site.viewer = vs.viewer.clone();
     let mut page = crate::html::latest_page(&mut conn, site, &doc).await?;
     let uri = uri.unwrap_or_default();
     page.crawler = list_crawler(&mut conn, &state, &settings, &uri, None, None).await?;
@@ -804,6 +842,7 @@ async fn front_list(
         body,
         &page.crawler,
         &settings,
+        &vs,
     )?)
 }
 
@@ -867,6 +906,7 @@ pub async fn user_list(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
     Query(params): Query<ListParams>,
+    headers: HeaderMap,
     uri: axum::http::Uri,
 ) -> Result<Response, AppError> {
     let path = uri.path().trim_start_matches('/');
@@ -875,5 +915,14 @@ pub async fn user_list(
         None => (path, false),
     };
     let kind = ListKind::from_name(name).ok_or(crate::Unsupported("unknown list filter"))?;
-    front_list(state, guardian, params, kind, json, (!json).then_some(uri)).await
+    front_list(
+        state,
+        guardian,
+        params,
+        kind,
+        json,
+        headers,
+        (!json).then_some(uri),
+    )
+    .await
 }

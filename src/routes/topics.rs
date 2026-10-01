@@ -262,7 +262,9 @@ async fn show(
     if json {
         return Ok(Json(rendered.json).into_response());
     }
-    let site = crate::html::Site::from_settings(&settings, &base_path)?;
+    let vs = super::session::viewer_state(state, headers, &settings, guardian)?;
+    let mut site = crate::html::Site::from_settings(&settings, &base_path)?;
+    site.viewer = vs.viewer.clone();
     let mut page =
         crate::html::topic_page(&mut conn, &state.i18n, site, &rendered.json, page).await?;
     page.crawler = topic_crawler(
@@ -279,6 +281,7 @@ async fn show(
         body,
         &page.crawler,
         &settings,
+        &vs,
     )?)
 }
 

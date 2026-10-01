@@ -247,7 +247,9 @@ async fn show_response(
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
     let base_path = state.config.globals.relative_url_root();
-    let site = crate::html::Site::from_settings(&settings, base_path)?;
+    let vs = super::session::viewer_state(&state, &headers, &settings, &guardian)?;
+    let mut site = crate::html::Site::from_settings(&settings, base_path)?;
+    site.viewer = vs.viewer.clone();
     let mut page = search_page(&state, site, &term, &doc, page, &mut conn).await?;
     // No crawlable_meta_data on search; the description meta and the
     // default canonical (only the page param survives) remain.
@@ -257,11 +259,12 @@ async fn show_response(
     };
     page.crawler = crate::html::Crawler::for_request(&urls, &uri.unwrap_or_default(), None)?;
     page.crawler.description = settings.get("site_description")?.to_s();
-    Ok((
+    let response = (
         noindex,
         Html(page.render().map_err(crate::html::HtmlError::from)?),
     )
-        .into_response())
+        .into_response();
+    Ok(crate::html::with_viewer_headers(response, &vs))
 }
 
 /// GET /search/query(.json)?term=
@@ -333,6 +336,7 @@ pub struct SearchPage {
     pub lang: String,
     pub base_path: String,
     pub crawler: Crawler,
+    pub viewer: Option<crate::html::Viewer>,
     pub term: String,
     pub results: Vec<SearchResult>,
     pub searched: bool,
@@ -393,6 +397,7 @@ async fn search_page(
     let _ = state;
     Ok(SearchPage {
         site_title: site.site_title,
+        viewer: site.viewer,
         site_description: site.site_description,
         lang: site.lang,
         base_path: site.base_path,

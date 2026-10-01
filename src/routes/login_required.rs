@@ -154,6 +154,7 @@ pub struct LoginRequiredPage {
     pub lang: String,
     pub base_path: String,
     pub crawler: Crawler,
+    pub viewer: Option<crate::html::Viewer>,
     pub welcome: String,
 }
 
@@ -182,6 +183,7 @@ pub fn login_page(
     let page = LoginRequiredPage {
         crawler,
         site_title: site.site_title,
+        viewer: site.viewer,
         site_description: site.site_description,
         lang: site.lang,
         base_path: site.base_path,

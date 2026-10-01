@@ -110,9 +110,54 @@ pub fn router(state: &AppState) -> Router<AppState> {
             state.clone(),
             login_required::gate,
         ))
-        // Outermost: the session is resolved before the login gate runs.
-        .layer(axum::middleware::from_fn_with_state(
-            state.clone(),
-            crate::session::current::layer,
-        ))
+}
+
+/// `Rack::MethodOverride`: a POST with a form `_method` (or the
+/// `X-HTTP-Method-Override` header) of delete/put/patch is handled as
+/// that method, which is how HTML forms log out.
+pub async fn method_override(
+    request: axum::extract::Request,
+    next: axum::middleware::Next,
+) -> axum::response::Response {
+    use axum::body::Body;
+    use axum::http::{Method, header};
+    if request.method() != Method::POST {
+        return next.run(request).await;
+    }
+    let (mut parts, body) = request.into_parts();
+    let bytes = match axum::body::to_bytes(body, 1 << 20).await {
+        Ok(b) => b,
+        Err(_) => {
+            return axum::response::IntoResponse::into_response(
+                axum::http::StatusCode::PAYLOAD_TOO_LARGE,
+            );
+        }
+    };
+    let form = parts
+        .headers
+        .get(header::CONTENT_TYPE)
+        .and_then(|v| v.to_str().ok())
+        .is_some_and(|v| v.starts_with("application/x-www-form-urlencoded"));
+    let overridden = parts
+        .headers
+        .get("x-http-method-override")
+        .and_then(|v| v.to_str().ok())
+        .map(str::to_string)
+        .or_else(|| {
+            if !form {
+                return None;
+            }
+            form_urlencoded::parse(&bytes)
+                .find(|(k, _)| k == "_method")
+                .map(|(_, v)| v.into_owned())
+        });
+    if let Some(m) = overridden {
+        if let Ok(method) = Method::from_bytes(m.to_ascii_uppercase().as_bytes()) {
+            if matches!(method, Method::DELETE | Method::PUT | Method::PATCH) {
+                parts.method = method;
+            }
+        }
+    }
+    next.run(axum::extract::Request::from_parts(parts, Body::from(bytes)))
+        .await
 }

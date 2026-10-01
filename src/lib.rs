@@ -55,8 +55,17 @@ pub struct AppState {
 }
 
 pub fn app(state: AppState) -> Router {
-    routes::router(&state)
-        .with_state(state)
+    // The method override must run before routing (a POST becomes a
+    // DELETE), and the session is resolved before anything else, so both
+    // wrap the routed app from the outside.
+    let routed = routes::router(&state).with_state(state.clone());
+    Router::new()
+        .fallback_service(routed)
+        .layer(axum::middleware::from_fn(routes::method_override))
+        .layer(axum::middleware::from_fn_with_state(
+            state,
+            session::current::layer,
+        ))
         .layer(TraceLayer::new_for_http())
 }
 

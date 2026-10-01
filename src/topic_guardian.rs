@@ -38,6 +38,10 @@ pub struct TopicCtx {
     pub first_post_hidden: bool,
     pub first_post_hidden_at: Option<NaiveDateTime>,
     pub first_post_wiki: bool,
+    /// `category.allow_unlimited_owner_edits_on_first_post`
+    pub unlimited_owner_edits: bool,
+    /// The category has non-automatic groups (whose owners may invite).
+    pub manual_groups: bool,
 }
 
 /// What the post predicates read about a post.
@@ -105,7 +109,10 @@ impl TopicCtx {
                     COALESCE(fp.locked_by_id IS NOT NULL, FALSE) AS first_post_locked, \
                     COALESCE(fp.hidden, FALSE) AS first_post_hidden, \
                     fp.hidden_at AS first_post_hidden_at, \
-                    COALESCE(fp.wiki, FALSE) AS first_post_wiki \
+                    COALESCE(fp.wiki, FALSE) AS first_post_wiki, \
+                    COALESCE(c.allow_unlimited_owner_edits_on_first_post, FALSE) AS unlimited_owner_edits, \
+                    EXISTS (SELECT 1 FROM category_groups cg JOIN groups g ON g.id = cg.group_id \
+                            WHERE cg.category_id = c.id AND NOT g.automatic) AS manual_groups \
              FROM topics t LEFT JOIN categories c ON c.id = t.category_id \
              LEFT JOIN posts fp ON fp.topic_id = t.id AND fp.post_number = 1 AND fp.deleted_at IS NULL \
              WHERE t.id = $1",
@@ -430,11 +437,13 @@ impl Guardian {
         }
         if topic.read_restricted == Some(true) {
             // category.groups.where(automatic: false).any? { can_edit_group? }:
-            // admins or group owners.
+            // admins may; owners of a manual group may (not ported).
+            if !topic.manual_groups {
+                return Ok(false);
+            }
             if self.is_admin() {
                 return Ok(true);
             }
-            let _ = settings;
             return Err(Unsupported("inviting to restricted categories (group ownership)").into());
         }
         Ok(true)
@@ -675,12 +684,8 @@ impl Guardian {
             if post.hidden {
                 return self.can_edit_hidden_post(settings, post.hidden_at);
             }
-            if post.is_first_post() {
-                // category_allows_unlimited_owner_edits_on_first_post?
-                return Err(Unsupported(
-                    "allow_unlimited_owner_edits_on_first_post lookup for own first posts",
-                )
-                .into());
+            if post.is_first_post() && topic.unlimited_owner_edits {
+                return Ok(true);
             }
             return Ok(!self.edit_time_limit_expired(settings, post.created_at)?);
         }
