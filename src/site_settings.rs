@@ -16,6 +16,7 @@
 
 use std::collections::{HashMap, HashSet};
 use std::fmt;
+use std::sync::Mutex;
 
 use serde::Serialize;
 use serde::ser::Serializer;
@@ -281,6 +282,10 @@ impl ChangeStatus {
 pub struct Definitions {
     list: Vec<Definition>,
     index: HashMap<String, usize>,
+    /// The last resolved settings with the table fingerprint they came
+    /// from (`max(updated_at)`, row count): what Rails keeps in its
+    /// process cache and invalidates over MessageBus.
+    cache: Mutex<Option<(String, SiteSettings)>>,
 }
 
 impl Definitions {
@@ -317,7 +322,11 @@ impl Definitions {
                 list.push(def);
             }
         }
-        Ok(Definitions { list, index })
+        Ok(Definitions {
+            list,
+            index,
+            cache: Mutex::new(None),
+        })
     }
 
     pub fn get(&self, name: &str) -> Option<&Definition> {
@@ -611,16 +620,36 @@ impl SiteSettings {
         Ok(SiteSettings { values })
     }
 
+    /// The settings as of now: resolved again only when a row of
+    /// `site_settings` changed since the last load, else a clone of the
+    /// cached resolution (one fingerprint query instead of the table and
+    /// the resolve).
     pub async fn load(
         conn: &mut PgConnection,
         defs: &Definitions,
         globals: &GlobalSettings,
     ) -> Result<Self, SettingError> {
+        let fingerprint: String = sqlx::query_scalar(
+            "SELECT COALESCE(max(updated_at)::text, '') || '/' || count(*)::text FROM site_settings",
+        )
+        .fetch_one(&mut *conn)
+        .await?;
+        {
+            let cache = defs.cache.lock().unwrap_or_else(|e| e.into_inner());
+            if let Some((cached, settings)) = cache.as_ref() {
+                if *cached == fingerprint {
+                    return Ok(settings.clone());
+                }
+            }
+        }
         let rows: Vec<(String, i32, Option<String>)> =
             sqlx::query_as("SELECT name, data_type, value FROM site_settings")
                 .fetch_all(conn)
                 .await?;
-        Self::resolve(defs, rows, globals)
+        let settings = Self::resolve(defs, rows, globals)?;
+        let mut cache = defs.cache.lock().unwrap_or_else(|e| e.into_inner());
+        *cache = Some((fingerprint, settings.clone()));
+        Ok(settings)
     }
 
     /// `SiteSetting.<name>_map` for group_list settings: `split("|")` then
