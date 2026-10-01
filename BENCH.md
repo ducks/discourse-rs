@@ -118,3 +118,62 @@ and first-post like count, plus the page query, users, groups, tags and
 settings) in about 5 ms, 4.7 ms of it in the serializer's per-topic
 round-trips. Batching those three per-topic lookups into one query each
 would take most of that out; it is the roadmap's performance item.
+
+## 2026-10-01, after batching the list serializer's per-topic queries
+
+TopicListSerializer now prefetches the visible tags, the share thumbnail
+or image upload, and the first post's like count for the whole page in
+one query each (`prefetch`); the per-topic methods read from that and
+only query on their own for topics outside the page (topic view's
+suggested topics, search, profiles). /latest.json went from 99 queries
+to 11, and at one connection from 137 req/s (7 ms p50) to 332 req/s
+(2.8 ms).
+
+Harness run at two connections, the range where this laptop keeps its
+clocks (see the investigation above). Same setup as the first run:
+release binary at the merge of perf/batch-topic-queries, the rs-backup dev
+agent on the same data.
+
+Duration 5s, concurrency 2, keepalive off, 2026-10-01T06:25Z
+
+| endpoint | target | req/s | p50 ms | p99 ms | non-2xx |
+|---|---|---:|---:|---:|---:|
+| /srv/status | rs | 19778 | 0.1 | 0.2 | 0 |
+| /srv/status | rails-dev (cached) | 1025 | 1.8 | 3.8 | 0 |
+| /srv/status | rails-dev (uncached) | 1040 | 1.8 | 3.7 | 0 |
+| /site.json | rs | 442 | 4.4 | 6.8 | 0 |
+| /site.json | rails-dev (cached) | 186 | 7.7 | 23.6 | 0 |
+| /site.json | rails-dev (uncached) | 204 | 7.2 | 21.1 | 0 |
+| /latest.json | rs | 595 | 3.3 | 5.5 | 0 |
+| /latest.json | rails-dev (cached) | 17 | 112.7 | 247.3 | 0 |
+| /latest.json | rails-dev (uncached) | 16 | 115 | 286.1 | 0 |
+| /latest | rs | 575 | 3.3 | 6 | 0 |
+| /latest | rails-dev (cached) | 9 | 188.2 | 367.7 | 0 |
+| /latest | rails-dev (uncached) | 9 | 196.5 | 456.2 | 0 |
+| /c/general/4.json | rs | 659 | 3 | 4.8 | 0 |
+| /c/general/4.json | rails-dev (cached) | 23 | 85.6 | 117.2 | 0 |
+| /c/general/4.json | rails-dev (uncached) | 27 | 73.7 | 92.2 | 0 |
+| /categories.json | rs | 768 | 2.5 | 4.1 | 0 |
+| /categories.json | rails-dev (cached) | 22 | 85.2 | 165.3 | 0 |
+| /categories.json | rails-dev (uncached) | 24 | 80.7 | 108.1 | 0 |
+| /t/welcome-to-discourse/5.json | rs | 489 | 4 | 6.2 | 0 |
+| /t/welcome-to-discourse/5.json | rails-dev (cached) | 14 | 136.7 | 167 | 0 |
+| /t/welcome-to-discourse/5.json | rails-dev (uncached) | 13 | 147.9 | 269.3 | 0 |
+| /t/welcome-to-discourse/5 | rs | 392 | 5 | 7.3 | 0 |
+| /t/welcome-to-discourse/5 | rails-dev (cached) | 8 | 224.5 | 423.2 | 0 |
+| /t/welcome-to-discourse/5 | rails-dev (uncached) | 9 | 225.1 | 314.5 | 0 |
+| /u/system.json | rs | 1654 | 1.2 | 2 | 0 |
+| /u/system.json | rails-dev (cached) | 40 | 48.9 | 75.4 | 0 |
+| /u/system.json | rails-dev (uncached) | 43 | 46.6 | 61.7 | 0 |
+| /search.json?q=Welcome | rs | 568 | 3.4 | 6.1 | 0 |
+| /search.json?q=Welcome | rails-dev (cached) | 273 | 6.7 | 12.9 | 1358 |
+| /search.json?q=Welcome | rails-dev (uncached) | 283 | 6.8 | 11.2 | 1414 |
+| /tag/design.json | rs | 542 | 3.6 | 6.3 | 0 |
+| /tag/design.json | rails-dev (cached) | 26 | 75.4 | 94 | 0 |
+| /tag/design.json | rails-dev (uncached) | 27 | 71.8 | 101 | 0 |
+
+
+The Rails column also moved up from the first run (its /latest.json 8
+to 17 req/s): that is the clock clamp lifting at two connections, not a
+change on the Rails side. The topic page (/t/...) is the next per-post
+candidate, at 489 req/s against the lists' 600-770.

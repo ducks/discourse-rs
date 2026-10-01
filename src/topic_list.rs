@@ -122,13 +122,35 @@ pub struct TopicListSerializer<'a> {
     /// `TopicList#category`: scopes top_tags to the category and its
     /// direct subcategories.
     pub category_id: Option<i32>,
+    /// Per-topic lookups fetched for the whole page at once (see
+    /// `prefetch`); the per-topic methods fall back to their own query
+    /// for topics not in it.
+    pub prefetched: Prefetched,
 }
+
+/// What `prefetch` loads for a page of topics in one query each, where
+/// the per-topic serializer would otherwise issue three round-trips per
+/// topic: the visible tags, the share thumbnail or image upload, and the
+/// first post's like count.
+#[derive(Debug, Default)]
+pub struct Prefetched {
+    topic_ids: Vec<i32>,
+    tags: HashMap<i32, Vec<TagRow>>,
+    thumbnails: HashMap<i64, String>,
+    uploads: HashMap<i64, (String, bool)>,
+    op_like_counts: HashMap<i32, i32>,
+}
+
+type TagRow = (i32, String, Option<String>, Option<String>);
+/// topic_id plus a TagRow
+type TopicTagRow = (i32, i32, String, Option<String>, Option<String>);
 
 impl TopicListSerializer<'_> {
     /// The whole response: side-loaded `users`, `primary_groups`,
     /// `flair_groups` (present once any poster was serialized), then
     /// `topic_list`.
     pub async fn serialize(&mut self, list: &TopicList) -> Result<Value, TopicListError> {
+        self.prefetch(&list.topics).await?;
         let lookup = self.user_lookup(&list.topics).await?;
         let logo_small_url = self.logo_small_url().await?;
         let group_ids: Vec<i32> = lookup
@@ -489,24 +511,108 @@ impl TopicListSerializer<'_> {
         Ok(Value::Object(out))
     }
 
-    pub(crate) async fn image_url(&mut self, t: &TopicRow) -> Result<Value, TopicListError> {
-        let thumbnail: Option<String> = sqlx::query_scalar(
-            "SELECT oi.url FROM topic_thumbnails tt JOIN optimized_images oi ON oi.id = tt.optimized_image_id \
-             WHERE tt.upload_id = $1 AND tt.max_width = $2 AND tt.max_height = $3 ORDER BY tt.id LIMIT 1",
-        )
-        .bind(t.image_upload_id)
-        .bind(SHARE_THUMBNAIL_SIZE.0)
-        .bind(SHARE_THUMBNAIL_SIZE.1)
-        .fetch_optional(&mut *self.conn)
+    /// The per-topic lookups for a page, one query each.
+    pub async fn prefetch(&mut self, topics: &[TopicRow]) -> Result<(), TopicListError> {
+        let topic_ids: Vec<i32> = topics.iter().map(|t| t.id).collect();
+        let upload_ids: Vec<i64> = topics.iter().filter_map(|t| t.image_upload_id).collect();
+        let mut p = Prefetched {
+            topic_ids: topic_ids.clone(),
+            ..Prefetched::default()
+        };
+        if topic_ids.is_empty() {
+            self.prefetched = p;
+            return Ok(());
+        }
+
+        let alphabetical = self.settings.get("tags_sort_alphabetically")?.truthy();
+        let order = if alphabetical {
+            "t.name ASC"
+        } else {
+            "t.public_topic_count DESC, t.id DESC"
+        };
+        let rows: Vec<TopicTagRow> = sqlx::query_as(&format!(
+            "SELECT tt.topic_id, t.id, t.name, t.slug, t.description FROM topic_tags tt \
+             JOIN tags t ON t.id = tt.tag_id \
+             WHERE tt.topic_id = ANY($1) AND t.id IN {visible} ORDER BY tt.topic_id, {order}",
+            visible = visible_tag_ids_subquery(),
+        ))
+        .bind(&topic_ids)
+        .fetch_all(&mut *self.conn)
         .await?;
+        for (topic_id, id, name, slug, description) in rows {
+            p.tags
+                .entry(topic_id)
+                .or_default()
+                .push((id, name, slug, description));
+        }
+
+        if !upload_ids.is_empty() {
+            let thumbnails: Vec<(i64, String)> = sqlx::query_as(
+                "SELECT DISTINCT ON (tt.upload_id) tt.upload_id::bigint, oi.url \
+                 FROM topic_thumbnails tt JOIN optimized_images oi ON oi.id = tt.optimized_image_id \
+                 WHERE tt.upload_id = ANY($1::bigint[]) AND tt.max_width = $2 AND tt.max_height = $3 \
+                 ORDER BY tt.upload_id, tt.id",
+            )
+            .bind(&upload_ids)
+            .bind(SHARE_THUMBNAIL_SIZE.0)
+            .bind(SHARE_THUMBNAIL_SIZE.1)
+            .fetch_all(&mut *self.conn)
+            .await?;
+            p.thumbnails = thumbnails.into_iter().collect();
+            let uploads: Vec<(i64, String, bool)> = sqlx::query_as(
+                "SELECT id::bigint, url, secure FROM uploads WHERE id = ANY($1::bigint[])",
+            )
+            .bind(&upload_ids)
+            .fetch_all(&mut *self.conn)
+            .await?;
+            p.uploads = uploads
+                .into_iter()
+                .map(|(id, url, secure)| (id, (url, secure)))
+                .collect();
+        }
+
+        let counts: Vec<(i32, i32)> = sqlx::query_as(
+            "SELECT topic_id, like_count FROM posts \
+             WHERE topic_id = ANY($1) AND post_number = 1 AND deleted_at IS NULL",
+        )
+        .bind(&topic_ids)
+        .fetch_all(&mut *self.conn)
+        .await?;
+        p.op_like_counts = counts.into_iter().collect();
+        self.prefetched = p;
+        Ok(())
+    }
+
+    fn prefetched_for(&self, topic_id: i32) -> bool {
+        self.prefetched.topic_ids.contains(&topic_id)
+    }
+
+    pub(crate) async fn image_url(&mut self, t: &TopicRow) -> Result<Value, TopicListError> {
+        let thumbnail: Option<String> = if self.prefetched_for(t.id) {
+            t.image_upload_id
+                .and_then(|id| self.prefetched.thumbnails.get(&id).cloned())
+        } else {
+            sqlx::query_scalar(
+                "SELECT oi.url FROM topic_thumbnails tt JOIN optimized_images oi ON oi.id = tt.optimized_image_id \
+                 WHERE tt.upload_id = $1 AND tt.max_width = $2 AND tt.max_height = $3 ORDER BY tt.id LIMIT 1",
+            )
+            .bind(t.image_upload_id)
+            .bind(SHARE_THUMBNAIL_SIZE.0)
+            .bind(SHARE_THUMBNAIL_SIZE.1)
+            .fetch_optional(&mut *self.conn)
+            .await?
+        };
         let raw = match (thumbnail, t.image_upload_id) {
             (Some(url), _) => Some(url),
             (None, Some(upload_id)) => {
-                let row: Option<(String, bool)> =
+                let row: Option<(String, bool)> = if self.prefetched_for(t.id) {
+                    self.prefetched.uploads.get(&upload_id).cloned()
+                } else {
                     sqlx::query_as("SELECT url, secure FROM uploads WHERE id = $1")
                         .bind(upload_id)
                         .fetch_optional(&mut *self.conn)
-                        .await?;
+                        .await?
+                };
                 match row {
                     Some((_, true)) if self.settings.get("secure_uploads")?.truthy() => {
                         return Err(Unsupported("secure uploads").into());
@@ -535,21 +641,29 @@ impl TopicListSerializer<'_> {
     /// `topic.visible_tags(guardian)` sorted by public_topic_count desc,
     /// as `[{id, name, slug}]` plus `tags_descriptions`.
     pub(crate) async fn tags(&mut self, topic_id: i32) -> Result<(Value, Value), TopicListError> {
-        let alphabetical = self.settings.get("tags_sort_alphabetically")?.truthy();
-        let order = if alphabetical {
-            "t.name ASC"
+        let rows: Vec<TagRow> = if self.prefetched_for(topic_id) {
+            self.prefetched
+                .tags
+                .get(&topic_id)
+                .cloned()
+                .unwrap_or_default()
         } else {
-            "t.public_topic_count DESC, t.id DESC"
+            let alphabetical = self.settings.get("tags_sort_alphabetically")?.truthy();
+            let order = if alphabetical {
+                "t.name ASC"
+            } else {
+                "t.public_topic_count DESC, t.id DESC"
+            };
+            let sql = format!(
+                "SELECT t.id, t.name, t.slug, t.description FROM topic_tags tt JOIN tags t ON t.id = tt.tag_id \
+                 WHERE tt.topic_id = $1 AND t.id IN {visible} ORDER BY {order}",
+                visible = visible_tag_ids_subquery(),
+            );
+            sqlx::query_as(&sql)
+                .bind(topic_id)
+                .fetch_all(&mut *self.conn)
+                .await?
         };
-        let sql = format!(
-            "SELECT t.id, t.name, t.slug, t.description FROM topic_tags tt JOIN tags t ON t.id = tt.tag_id \
-             WHERE tt.topic_id = $1 AND t.id IN {visible} ORDER BY {order}",
-            visible = visible_tag_ids_subquery(),
-        );
-        let rows: Vec<(i32, String, Option<String>, Option<String>)> = sqlx::query_as(&sql)
-            .bind(topic_id)
-            .fetch_all(&mut *self.conn)
-            .await?;
         let mut descriptions = Map::new();
         let tags: Vec<Value> = rows
             .into_iter()
@@ -568,6 +682,9 @@ impl TopicListSerializer<'_> {
 
     /// `first_post&.like_count`: post_number 1, not deleted.
     async fn op_like_count(&mut self, topic_id: i32) -> Result<Value, TopicListError> {
+        if self.prefetched_for(topic_id) {
+            return Ok(json!(self.prefetched.op_like_counts.get(&topic_id)));
+        }
         let count: Option<i32> = sqlx::query_scalar(
             "SELECT like_count FROM posts WHERE topic_id = $1 AND post_number = 1 AND deleted_at IS NULL LIMIT 1",
         )

@@ -335,6 +335,7 @@ impl TopicView<'_> {
             urls: self.urls,
             more_topics_url: None,
             category_id: None,
+            prefetched: Default::default(),
         }
     }
 
