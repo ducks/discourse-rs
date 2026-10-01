@@ -423,12 +423,7 @@ impl Guardian {
     }
 
     /// `can_invite_to?(topic)`
-    pub fn can_invite_to(
-        &self,
-        settings: &SiteSettings,
-        topic: &TopicCtx,
-        can_see: bool,
-    ) -> Result<bool, GuardianError> {
+    pub fn can_invite_to(&self, topic: &TopicCtx, can_see: bool) -> Result<bool, GuardianError> {
         if self.is_anonymous() || !can_see {
             return Ok(false);
         }
@@ -467,7 +462,7 @@ impl Guardian {
         topic: &TopicCtx,
         can_see: bool,
     ) -> Result<bool, GuardianError> {
-        if !self.can_invite_to_forum(settings)? || !self.can_invite_to(settings, topic, can_see)? {
+        if !self.can_invite_to_forum(settings)? || !self.can_invite_to(topic, can_see)? {
             return Ok(false);
         }
         Ok((settings.get("enable_local_logins")?.truthy()

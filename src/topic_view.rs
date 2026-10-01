@@ -1045,7 +1045,7 @@ impl TopicView<'_> {
                 ("can_permanently_delete", false),
                 ("can_recover", g.can_recover_topic(ctx)),
                 ("can_remove_allowed_users", g.can_remove_allowed_users(ctx)),
-                ("can_invite_to", g.can_invite_to(s, ctx, can_see)?),
+                ("can_invite_to", g.can_invite_to(ctx, can_see)?),
                 (
                     "can_invite_via_email",
                     g.can_invite_via_email(s, ctx, can_see)?,
