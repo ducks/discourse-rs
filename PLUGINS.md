@@ -215,19 +215,19 @@ before writes" line goes; the ordering becomes: protocol and tier 0/1
 read hooks with discourse-solved as the test, then writes with their
 hooks, then tier 2.
 
-## Open decisions
+## Decisions
 
 1. **Where the frontend hooks go.** The server-rendered HTML takes
    outlets (`html` hook). When the Ember client runs against this port,
    plugin JS is the client's business (the plugin ships it as an asset);
-   core only serves the files. Fine for now; revisit if the port grows its
-   own client.
-2. **Settings ownership.** Plugin settings in the shared `site_settings`
-   table (Rails' way, so a backup carries them) or a `plugin_settings`
-   table. Rails' way, unless a reason appears.
-3. **Sandboxing tier 1.** Subprocesses have the host's permissions.
-   Documented, and systemd hardening for the service covers it; tier 2 is
-   the real answer.
+   core only serves the files. Revisit if the port grows its own client.
+2. **Settings ownership: shared.** Plugin settings live in the
+   `site_settings` table like Rails', so a backup carries them and the
+   admin API is one API. Decided 2026-10-01.
+3. **Sandboxing tier 1: not until tier 2.** Subprocesses run with the
+   host's permissions; the manifest says so and systemd hardening on the
+   service is the mitigation. Tier 2 (WASI) is the sandbox, and it is the
+   plan, not a maybe. Decided 2026-10-01.
 4. **Admin UI.** Plugins that register admin pages do it through `route`
    with their own HTML. No admin framework from core until there is an
    admin.
