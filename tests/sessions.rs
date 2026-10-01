@@ -721,3 +721,61 @@ async fn private_messages_open_for_participants_only() {
         .await;
     assert_eq!(reply.status, StatusCode::NOT_FOUND);
 }
+
+#[tokio::test]
+async fn own_profile_lists_auth_tokens_with_the_current_one_active() {
+    let db = TestDb::new().await;
+    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[]));
+    let mut client = Client::new(app_state.clone());
+    client.login("user1", "password").await;
+    let reply = client
+        .send(
+            Method::GET,
+            "/u/user1.json",
+            &[(
+                "user-agent",
+                "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120.0 Safari/537.36",
+            )],
+            "",
+        )
+        .await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    let user = &reply.json()["user"];
+    let tokens = user["user_auth_tokens"].as_array().unwrap();
+    assert_eq!(tokens.len(), 1);
+    let t = &tokens[0];
+    assert_eq!(
+        t.as_object().unwrap().keys().collect::<Vec<_>>(),
+        [
+            "id",
+            "client_ip",
+            "location",
+            "browser",
+            "device",
+            "os",
+            "icon",
+            "created_at",
+            "seen_at",
+            "is_active"
+        ]
+    );
+    assert_eq!(t["is_active"], true);
+    assert_eq!(t["location"], "unknown");
+    // The token records the login's user agent, which the test client
+    // doesn't send; Rails' strings for that case.
+    assert_eq!(t["browser"], "Unknown browser");
+    assert_eq!(t["device"], "unknown device");
+    assert_eq!(t["os"], "unknown operating system");
+    assert_eq!(t["icon"], "question");
+    assert_eq!(user["email"], "user1@example.com");
+    assert_eq!(user["can_edit"], true);
+    assert_eq!(user["group_users"][0]["owner"], false);
+
+    // Another user's view carries none of the private block.
+    let mut other = Client::new(app_state);
+    other.login("user0", "password").await;
+    let user = &other.get("/u/user1.json").await.json()["user"];
+    assert!(user.get("email").is_none());
+    assert!(user.get("user_auth_tokens").is_none());
+    assert!(user.get("user_option").is_none());
+}

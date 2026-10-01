@@ -282,6 +282,7 @@ struct UserBadgeRow {
     granted_by_id: i32,
     created_at: NaiveDateTime,
     count: i64,
+    post_id: Option<i32>,
 }
 
 #[derive(Debug, sqlx::FromRow)]
@@ -310,9 +311,12 @@ pub struct SideLoads {
     pub badges: Vec<Value>,
     pub badge_types: Vec<Value>,
     pub users: Vec<Value>,
+    /// BasicTopicSerializer rows for the badge posts' topics (admins).
+    pub topics: Vec<Value>,
     badge_ids: Vec<i32>,
     badge_type_ids: Vec<i32>,
     user_ids: Vec<i32>,
+    topic_ids: Vec<i32>,
 }
 
 pub struct Users<'a> {
@@ -322,6 +326,8 @@ pub struct Users<'a> {
     pub guardian: &'a Guardian,
     pub urls: &'a Urls<'a>,
     pub base_path: &'a str,
+    /// The request's hashed `_t` token, for `is_active` on auth tokens.
+    pub auth_token: Option<&'a str>,
 }
 
 impl Users<'_> {
@@ -357,9 +363,9 @@ impl Users<'_> {
         let enable_names = self.settings.get("enable_names")?.truthy();
         let mut out = Map::new();
         let g = self.guardian;
-        if g.is_me(user.id) || g.is_staff() {
-            return Err(Unsupported("own or staff view of a profile (private attributes)").into());
-        }
+        // can_edit_user?: the private attribute block and user_option.
+        let me = g.is_me(user.id);
+        let can_edit = me || g.is_staff();
         let can_pm_user = self.can_send_private_message_to(user)?;
         if !user.visible_to(self.settings, g)? {
             // HiddenProfileSerializer
@@ -398,6 +404,9 @@ impl Users<'_> {
             out.insert("badges".into(), Value::Array(side.badges.clone()));
             out.insert("badge_types".into(), Value::Array(side.badge_types.clone()));
             out.insert("users".into(), Value::Array(side.users.clone()));
+            if !side.topics.is_empty() {
+                out.insert("topics".into(), Value::Array(side.topics.clone()));
+            }
         }
 
         // UserSerializer
@@ -422,6 +431,9 @@ impl Users<'_> {
             "avatar_template".into(),
             json!(self.avatar_template(&user.lookup_user()).await?),
         );
+        if can_edit {
+            self.private().emails(user, &mut u).await?;
+        }
         u.insert(
             "last_posted_at".into(),
             json!(user.last_posted_at.map(time_json)),
@@ -505,6 +517,12 @@ impl Users<'_> {
             "flair_color".into(),
             json!(flair.as_ref().and_then(|g| g.flair_color.clone())),
         );
+        if can_edit {
+            u.insert(
+                "pending_posts_count".into(),
+                json!(self.private().pending_posts_count(user.id).await?),
+            );
+        }
         if user.featured_topic_id.is_some() {
             return Err(Unsupported("featured_topic on profiles").into());
         }
@@ -533,24 +551,78 @@ impl Users<'_> {
             if let Some(url) = self.upload_url(user.card_background_upload_id).await? {
                 u.insert("card_background_upload_url".into(), json!(url));
             }
+            if g.is_staff() {
+                u.insert("staged".into(), json!(user.staged));
+            }
             if let Some(raw) = user.bio_raw.as_deref().filter(|b| !b.is_empty()) {
                 u.insert("bio_raw".into(), json!(raw));
             }
         }
-        u.insert("can_edit".into(), json!(false));
-        u.insert("can_edit_username".into(), json!(false));
-        u.insert("can_edit_email".into(), json!(false));
-        u.insert("can_edit_name".into(), json!(false));
+        let s = self.settings;
+        u.insert("can_edit".into(), json!(can_edit));
+        // can_edit_username?
+        let username_period = s.get("username_change_period")?.to_i();
+        let can_edit_username = if s.get("auth_overrides_username")?.truthy() {
+            false
+        } else if g.is_staff() {
+            true
+        } else {
+            username_period > 0
+                && me
+                && user.created_at
+                    > chrono::Utc::now().naive_utc() - chrono::Duration::days(username_period)
+        };
+        u.insert("can_edit_username".into(), json!(can_edit_username));
+        // can_edit_email?
+        let can_edit_email = !s.get("auth_overrides_email")?.truthy()
+            && s.get("email_editable")?.truthy()
+            && (g.is_admin() || ((me || !g.is_moderator()) && can_edit));
+        u.insert("can_edit_email".into(), json!(can_edit_email));
+        // can_edit_name?
+        let can_edit_name = !s.get("auth_overrides_name")?.truthy()
+            && (g.is_admin() || (enable_names && (g.is_moderator() || can_edit)));
+        u.insert("can_edit_name".into(), json!(can_edit_name));
         u.insert("uploaded_avatar_id".into(), json!(user.uploaded_avatar_id));
+        if can_edit {
+            u.insert(
+                "has_title_badges".into(),
+                json!(self.private().has_title_badges(user.id).await?),
+            );
+        }
         u.insert("pending_count".into(), json!(0));
         u.insert("profile_view_count".into(), json!(user.views.unwrap_or(0)));
+        self.private().second_factor(user, &mut u).await?;
         if profile_details {
             if let Some(url) = self.upload_url(user.profile_background_upload_id).await? {
                 u.insert("profile_background_upload_url".into(), json!(url));
             }
         }
-        u.insert("can_upload_profile_header".into(), json!(false));
-        u.insert("can_upload_user_card_background".into(), json!(false));
+        // can_upload_profile_header? / can_upload_user_card_background?
+        for (key, setting) in [
+            (
+                "can_upload_profile_header",
+                "profile_background_allowed_groups",
+            ),
+            (
+                "can_upload_user_card_background",
+                "user_card_background_allowed_groups",
+            ),
+        ] {
+            u.insert(
+                key.into(),
+                json!(g.is_staff() || (me && g.in_setting_groups(s, setting)?)),
+            );
+        }
+        self.private().password_and_mcp(user, &mut u).await?;
+        if g.is_staff() {
+            self.private().staff_attributes(user, &mut u).await?;
+        }
+        if can_edit {
+            let system_avatar = avatar::class_avatar_template(self.urls, &user.username, None)?;
+            self.private()
+                .private_block(user, &system_avatar, &mut u)
+                .await?;
+        }
         // The gravatar/custom avatar ids leak to anonymous readers because
         // their include_ predicates are redefined after private_attributes.
         let avatars: Option<(Option<i32>, Option<i32>)> = sqlx::query_as(
@@ -559,7 +631,7 @@ impl Users<'_> {
         .bind(user.id)
         .fetch_optional(&mut *self.conn)
         .await?;
-        if let Some((gravatar, custom)) = avatars {
+        if let (Some((gravatar, custom)), false) = (avatars, can_edit) {
             if let Some(id) = gravatar {
                 u.insert("gravatar_avatar_upload_id".into(), json!(id));
                 u.insert(
@@ -628,8 +700,30 @@ impl Users<'_> {
             group_json.push(g.json(self.i18n, self.guardian, self.settings, membership)?);
         }
         u.insert("groups".into(), Value::Array(group_json));
+        if me || g.is_admin() {
+            u.insert(
+                "group_users".into(),
+                self.private().group_users(user.id).await?,
+            );
+        }
+        if can_edit {
+            u.insert(
+                "user_option".into(),
+                self.private().user_option(user.id).await?,
+            );
+        }
         out.insert("user".into(), Value::Object(u));
         Ok(Value::Object(out))
+    }
+
+    fn private(&mut self) -> crate::user_private::Private<'_> {
+        crate::user_private::Private {
+            conn: &mut *self.conn,
+            settings: self.settings,
+            guardian: self.guardian,
+            auth_token: self.auth_token,
+            i18n: self.i18n,
+        }
     }
 
     /// `can_send_private_message?(target)` for a user target.
@@ -789,7 +883,8 @@ impl Users<'_> {
             "SELECT MAX(user_badges.id) AS id, MAX(user_badges.badge_id) AS badge_id, \
                     MAX(user_badges.user_id) AS user_id, MAX(user_badges.granted_at) AS granted_at, \
                     MAX(user_badges.granted_by_id) AS granted_by_id, \
-                    MAX(user_badges.created_at) AS created_at, COUNT(*) AS count \
+                    MAX(user_badges.created_at) AS created_at, COUNT(*) AS count, \
+                    MAX(user_badges.post_id) AS post_id \
              FROM user_badges \
              WHERE user_badges.user_id = $1 \
              AND (user_badges.badge_id IN (SELECT id FROM badges WHERE enabled)) \
@@ -818,9 +913,48 @@ impl Users<'_> {
         ub.insert("granted_at".into(), json!(time_json(row.granted_at)));
         ub.insert("created_at".into(), json!(time_json(row.created_at)));
         ub.insert("count".into(), json!(row.count));
+        // UserBadgePostAndTopicAttributesMixin: admins see the post and
+        // topic of a grant (others would need allowed topic ids, never
+        // passed here).
+        let mut topic_id: Option<i32> = None;
+        if self.guardian.is_admin() {
+            if let Some(post_id) = row.post_id {
+                let post: Option<(i32, i32, bool)> = sqlx::query_as(
+                    "SELECT p.post_number, p.topic_id, b.show_posts FROM posts p JOIN badges b ON b.id = $2 \
+                     WHERE p.id = $1 AND p.deleted_at IS NULL",
+                )
+                .bind(post_id)
+                .bind(row.badge_id)
+                .fetch_optional(&mut *self.conn)
+                .await?;
+                if let Some((post_number, tid, true)) = post {
+                    ub.insert("post_id".into(), json!(post_id));
+                    ub.insert("post_number".into(), json!(post_number));
+                    topic_id = Some(tid);
+                }
+            }
+        }
         ub.insert("badge_id".into(), json!(row.badge_id));
         ub.insert("user_id".into(), json!(row.user_id));
         ub.insert("granted_by_id".into(), json!(row.granted_by_id));
+        if let Some(tid) = topic_id {
+            let topic: Option<(String, Option<String>, Option<String>, i32)> = sqlx::query_as(
+                "SELECT title, fancy_title, slug, posts_count FROM topics WHERE id = $1 AND deleted_at IS NULL",
+            )
+            .bind(tid)
+            .fetch_optional(&mut *self.conn)
+            .await?;
+            if let Some((title, fancy, slug, posts_count)) = topic {
+                ub.insert("topic_id".into(), json!(tid));
+                if !side.topic_ids.contains(&tid) {
+                    side.topic_ids.push(tid);
+                    side.topics.push(json!({
+                        "fancy_title": fancy.unwrap_or_else(|| title.clone()),
+                        "id": tid, "title": title, "slug": slug, "posts_count": posts_count,
+                    }));
+                }
+            }
+        }
 
         if !side.badge_ids.contains(&row.badge_id) {
             let badge: BadgeRow = sqlx::query_as(
@@ -1113,6 +1247,9 @@ impl Users<'_> {
             out.insert("badges".into(), Value::Array(side.badges.clone()));
             out.insert("badge_types".into(), Value::Array(side.badge_types.clone()));
             out.insert("users".into(), Value::Array(side.users.clone()));
+            if !side.topics.is_empty() {
+                out.insert("topics".into(), Value::Array(side.topics.clone()));
+            }
         }
         let mut s = Map::new();
         s.insert("likes_given".into(), json!(user.likes_given.unwrap_or(0)));

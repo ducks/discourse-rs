@@ -1080,7 +1080,7 @@ impl TopicView<'_> {
                     "can_move_posts",
                     !g.is_silenced()
                         && group_mod_action
-                        && !(ctx.private_message() && !g.is_staff()),
+                        && (g.is_staff() || !ctx.private_message()),
                 ),
                 ("can_delete", g.can_delete_topic(s, ctx)?),
                 ("can_permanently_delete", false),
