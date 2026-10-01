@@ -57,6 +57,18 @@ pub async fn gate(
     if !settings.get("login_required")?.truthy() {
         return Ok(next.run(request).await);
     }
+    // A logged-in user passes.
+    if request
+        .extensions()
+        .get::<crate::session::current::Incoming>()
+        .is_some_and(|i| i.session.is_some())
+    {
+        return Ok(next.run(request).await);
+    }
+    // /session is skip_before_action'd so people can log in.
+    if path == "/session" || path == "/session.json" || path.starts_with("/session/") {
+        return Ok(next.run(request).await);
+    }
 
     let json = path.ends_with(".json");
     if json || request.method() != axum::http::Method::GET {
@@ -76,36 +88,7 @@ pub async fn gate(
     let headers: HeaderMap = request.extract_parts().await?;
     let uri: Uri = request.uri().clone();
     if path == "/" || path == "/login" {
-        let site = crate::html::Site::from_settings(&settings, &base_path)?;
-        let welcome = state
-            .i18n
-            .t_with(
-                "login_required.welcome_message",
-                &[("title", &site.site_title)],
-            )
-            .unwrap_or_else(|| format!("Welcome to {}", site.site_title));
-        let urls = crate::url::Urls {
-            config: &state.config,
-            settings: &settings,
-        };
-        let mut crawler = crate::html::Crawler::for_request(&urls, &uri, None)?;
-        crawler.description = site.site_description.clone();
-        let page = LoginRequiredPage {
-            crawler,
-            site_title: site.site_title,
-            site_description: site.site_description,
-            lang: site.lang,
-            base_path: site.base_path,
-            welcome: welcome.trim_start_matches("# ").to_string(),
-        };
-        return Ok((
-            [(
-                header::CACHE_CONTROL,
-                HeaderValue::from_static("no-store, must-revalidate, private, max-age=0"),
-            )],
-            Html(page.render().map_err(crate::html::HtmlError::from)?),
-        )
-            .into_response());
+        return login_page(&state, &settings, &uri);
     }
     let host = headers
         .get(header::HOST)
@@ -172,4 +155,52 @@ pub struct LoginRequiredPage {
     pub base_path: String,
     pub crawler: Crawler,
     pub welcome: String,
+}
+
+/// The login page: what `/login` shows, and what the front page shows
+/// while login is required.
+pub fn login_page(
+    state: &AppState,
+    settings: &SiteSettings,
+    uri: &Uri,
+) -> Result<Response, AppError> {
+    let base_path = state.config.globals.relative_url_root().to_string();
+    let site = crate::html::Site::from_settings(settings, &base_path)?;
+    let welcome = state
+        .i18n
+        .t_with(
+            "login_required.welcome_message",
+            &[("title", &site.site_title)],
+        )
+        .unwrap_or_else(|| format!("Welcome to {}", site.site_title));
+    let urls = crate::url::Urls {
+        config: &state.config,
+        settings,
+    };
+    let mut crawler = crate::html::Crawler::for_request(&urls, uri, None)?;
+    crawler.description = site.site_description.clone();
+    let page = LoginRequiredPage {
+        crawler,
+        site_title: site.site_title,
+        site_description: site.site_description,
+        lang: site.lang,
+        base_path: site.base_path,
+        welcome: welcome.trim_start_matches("# ").to_string(),
+    };
+    Ok((
+        [(
+            header::CACHE_CONTROL,
+            HeaderValue::from_static("no-store, must-revalidate, private, max-age=0"),
+        )],
+        Html(page.render().map_err(crate::html::HtmlError::from)?),
+    )
+        .into_response())
+}
+
+/// GET /login
+pub async fn show_login(State(state): State<AppState>, uri: Uri) -> Result<Response, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    login_page(&state, &settings, &uri)
 }

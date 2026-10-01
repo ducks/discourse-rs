@@ -53,10 +53,10 @@ ALTER TABLE public.categories DISABLE TRIGGER ALL;
 
 COPY public.categories (id, name, color, topic_id, topic_count, created_at, updated_at, user_id, topics_year, topics_month, topics_week, slug, description, text_color, read_restricted, auto_close_hours, post_count, latest_post_id, latest_topic_id, "position", parent_category_id, posts_year, posts_month, posts_week, email_in, email_in_allow_strangers, topics_day, posts_day, allow_badges, name_lower, auto_close_based_on_last_post, topic_template, contains_messages, sort_order, sort_ascending, uploaded_logo_id, uploaded_background_id, topic_featured_link_allowed, all_topics_wiki, show_subcategory_list, num_featured_topics, default_view, subcategory_list_style, default_top_period, mailinglist_mirror, minimum_required_tags, navigate_to_first_post_after_read, search_priority, allow_global_tags, reviewable_by_group_id, read_only_banner, default_list_filter, allow_unlimited_owner_edits_on_first_post, default_slow_mode_seconds, uploaded_logo_dark_id, uploaded_background_dark_id, style_type, emoji, icon, locale, topic_title_placeholder) FROM stdin;
 1	Uncategorized	0088CC	\N	0	2026-07-25 05:58:08.410826	2026-07-25 05:58:08.410826	-1	0	0	0	uncategorized	\N	FFFFFF	f	\N	0	\N	\N	0	\N	0	0	0	\N	f	0	0	t	uncategorized	f	\N	\N	\N	\N	\N	\N	t	f	f	3	\N	rows_with_featured_topics	all	f	0	f	0	f	\N	\N	all	f	\N	\N	\N	2	card_file_box	\N	\N	\N
-4	General	25AAE2	3	3	2026-07-25 05:58:16.309528	2026-09-30 07:28:29.960808	-1	1	0	0	general	<p>Create topics here that don’t fit into any other existing category.</p>	FFFFFF	f	\N	1	47	41	3	\N	1	0	0	\N	f	0	0	t	general	f	\N	\N	\N	\N	\N	\N	t	f	f	3	\N	rows_with_featured_topics	all	f	0	f	0	f	\N	\N	all	f	\N	\N	\N	2	blue_book	\N	\N	\N
-2	Site Feedback	808281	1	1	2026-07-25 05:58:08.494443	2026-07-25 05:58:08.494443	-1	0	0	0	site-feedback	<p>Discussion about this site, its organization, how it works, and how we can improve it.</p>	FFFFFF	f	\N	0	41	37	1	\N	0	0	0	\N	f	0	0	t	site feedback	f	\N	\N	\N	\N	\N	\N	t	f	f	3	\N	rows_with_featured_topics	all	f	0	f	0	f	\N	\N	all	f	\N	\N	\N	2	thought_balloon	\N	\N	\N
-34	Sub General	AB9364	34	1	2026-09-30 07:28:26.803698	2026-09-30 07:28:26.803698	1	0	0	0	sub-general	\N	FFFFFF	f	\N	0	42	38	4	4	0	0	0	\N	f	0	0	t	sub general	f	\N	\N	\N	\N	\N	\N	t	f	f	3	\N	rows_with_featured_topics	all	f	0	f	0	f	\N	\N	all	f	\N	\N	\N	0	\N	\N	\N	\N
 3	Staff	E45735	2	2	2026-07-25 05:58:16.208772	2026-09-27 21:01:16.908706	-1	2	0	0	staff	<p>Private category for staff discussions. Topics are only visible to admins and moderators.</p>	FFFFFF	t	\N	3	7	6	2	\N	3	0	0	\N	f	0	0	t	staff	f	\N	\N	\N	\N	\N	\N	t	f	f	3	\N	rows_with_featured_topics	all	f	0	f	0	f	\N	\N	all	f	\N	\N	\N	2	shield	\N	\N	\N
+2	Site Feedback	808281	1	1	2026-07-25 05:58:08.494443	2026-10-01 07:04:33.490822	-1	1	1	1	site-feedback	<p>Discussion about this site, its organization, how it works, and how we can improve it.</p>	FFFFFF	f	\N	1	41	37	1	\N	1	1	1	\N	f	1	1	t	site feedback	f	\N	\N	\N	\N	\N	\N	t	f	f	3	\N	rows_with_featured_topics	all	f	0	f	0	f	\N	\N	all	f	\N	\N	\N	2	thought_balloon	\N	\N	\N
+4	General	25AAE2	3	3	2026-07-25 05:58:16.309528	2026-10-01 07:04:33.522762	-1	3	2	2	general	<p>Create topics here that don’t fit into any other existing category.</p>	FFFFFF	f	\N	6	47	41	3	\N	6	5	5	\N	f	2	5	t	general	f	\N	\N	\N	\N	\N	\N	t	f	f	3	\N	rows_with_featured_topics	all	f	0	f	0	f	\N	\N	all	f	\N	\N	\N	2	blue_book	\N	\N	\N
+34	Sub General	AB9364	34	1	2026-09-30 07:28:26.803698	2026-10-01 07:04:33.547417	1	1	1	1	sub-general	\N	FFFFFF	f	\N	1	42	38	4	4	1	1	1	\N	f	1	1	t	sub general	f	\N	\N	\N	\N	\N	\N	t	f	f	3	\N	rows_with_featured_topics	all	f	0	f	0	f	\N	\N	all	f	\N	\N	\N	0	\N	\N	\N	\N
 \.
 
 
@@ -81,15 +81,15 @@ ALTER TABLE public.ad_plugin_house_ads_categories ENABLE TRIGGER ALL;
 ALTER TABLE public.groups DISABLE TRIGGER ALL;
 
 COPY public.groups (id, name, created_at, updated_at, automatic, user_count, automatic_membership_email_domains, primary_group, title, grant_trust_level, incoming_email, has_messages, flair_bg_color, flair_color, bio_raw, bio_cooked, allow_membership_requests, full_name, default_notification_level, visibility_level, public_exit, public_admission, membership_request_template, messageable_level, mentionable_level, smtp_server, smtp_port, imap_server, imap_port, imap_ssl, imap_mailbox_name, imap_uid_validity, imap_last_uid, email_username, email_password, publish_read_state, members_visibility_level, imap_last_error, imap_old_emails, imap_new_emails, flair_icon, flair_upload_id, allow_unknown_sender_topic_replies, smtp_enabled, smtp_updated_at, smtp_updated_by_id, imap_enabled, imap_updated_at, imap_updated_by_id, assignable_level, email_from_alias, smtp_ssl_mode) FROM stdin;
-2	moderators	2026-07-25 05:58:06.795937	2026-07-25 05:58:06.80035	t	0	\N	f	\N	\N	\N	f	\N	\N	\N	\N	f	Moderators	2	1	f	f	\N	99	0	\N	\N	\N	\N	\N		0	0	\N	\N	f	0	\N	\N	\N	\N	\N	f	f	\N	\N	f	\N	\N	0	\N	0
 0	everyone	2026-07-25 05:58:06.776706	2026-07-25 05:58:06.78054	t	0	\N	f	\N	\N	\N	f	\N	\N	\N	\N	f	Everyone	3	1	f	f	\N	0	0	\N	\N	\N	\N	\N		0	0	\N	\N	f	0	\N	\N	\N	\N	\N	f	f	\N	\N	f	\N	\N	0	\N	0
 4	anonymous_users	2026-07-25 05:58:06.81588	2026-07-25 05:58:06.81837	t	0	\N	f	\N	\N	\N	f	\N	\N	\N	\N	f	Anonymous users	3	1	f	f	\N	0	0	\N	\N	\N	\N	\N		0	0	\N	\N	f	0	\N	\N	\N	\N	\N	f	f	\N	\N	f	\N	\N	0	\N	0
 5	logged_in_users	2026-07-25 05:58:06.823307	2026-07-25 05:58:06.825753	t	0	\N	f	\N	\N	\N	f	\N	\N	\N	\N	f	Logged in users	3	1	f	f	\N	0	0	\N	\N	\N	\N	\N		0	0	\N	\N	f	0	\N	\N	\N	\N	\N	f	f	\N	\N	f	\N	\N	0	\N	0
 10	trust_level_0	2026-07-25 05:58:06.829776	2026-07-25 05:58:06.832993	t	5	\N	f	\N	\N	\N	f	\N	\N	\N	\N	f	Trust level 0	3	1	f	f	\N	0	0	\N	\N	\N	\N	\N		0	0	\N	\N	f	0	\N	\N	\N	\N	\N	f	f	\N	\N	f	\N	\N	0	\N	0
 11	trust_level_1	2026-07-25 05:58:06.839136	2026-07-25 05:58:06.842219	t	5	\N	f	\N	\N	\N	f	\N	\N	\N	\N	f	Trust level 1	3	1	f	f	\N	0	0	\N	\N	\N	\N	\N		0	0	\N	\N	f	0	\N	\N	\N	\N	\N	f	f	\N	\N	f	\N	\N	0	\N	0
 12	trust_level_2	2026-07-25 05:58:06.848196	2026-07-25 05:58:06.851181	t	4	\N	f	\N	\N	\N	f	\N	\N	\N	\N	f	Trust level 2	3	1	f	f	\N	0	0	\N	\N	\N	\N	\N		0	0	\N	\N	f	0	\N	\N	\N	\N	\N	f	f	\N	\N	f	\N	\N	0	\N	0
-13	trust_level_3	2026-07-25 05:58:06.857182	2026-07-25 05:58:06.860497	t	3	\N	f	\N	\N	\N	f	\N	\N	\N	\N	f	Trust level 3	3	1	f	f	\N	0	0	\N	\N	\N	\N	\N		0	0	\N	\N	f	0	\N	\N	\N	\N	\N	f	f	\N	\N	f	\N	\N	0	\N	0
 14	trust_level_4	2026-07-25 05:58:06.866157	2026-07-25 05:58:06.86909	t	2	\N	f	\N	\N	\N	f	\N	\N	\N	\N	f	Trust level 4	3	1	f	f	\N	0	0	\N	\N	\N	\N	\N		0	0	\N	\N	f	0	\N	\N	\N	\N	\N	f	f	\N	\N	f	\N	\N	0	\N	0
+13	trust_level_3	2026-07-25 05:58:06.857182	2026-07-25 05:58:06.860497	t	2	\N	f	\N	\N	\N	f	\N	\N	\N	\N	f	Trust level 3	3	1	f	f	\N	0	0	\N	\N	\N	\N	\N		0	0	\N	\N	f	0	\N	\N	\N	\N	\N	f	f	\N	\N	f	\N	\N	0	\N	0
+2	moderators	2026-07-25 05:58:06.795937	2026-07-25 05:58:06.80035	t	1	\N	f	\N	\N	\N	f	\N	\N	\N	\N	f	Moderators	2	1	f	f	\N	99	0	\N	\N	\N	\N	\N		0	0	\N	\N	f	0	\N	\N	\N	\N	\N	f	f	\N	\N	f	\N	\N	0	\N	0
 1	admins	2026-07-25 05:58:06.786103	2026-07-25 05:58:06.788462	t	1	\N	f	\N	\N	\N	f	\N	\N	\N	\N	f	Admins	3	1	f	f	\N	0	0	\N	\N	\N	\N	\N		0	0	\N	\N	f	0	\N	\N	\N	\N	\N	f	f	\N	\N	f	\N	\N	0	\N	0
 3	staff	2026-07-25 05:58:06.806819	2026-07-25 05:58:06.809333	t	1	\N	f	\N	\N	\N	f	\N	\N	\N	\N	f	Staff	3	1	f	f	\N	0	0	\N	\N	\N	\N	\N		0	0	\N	\N	f	0	\N	\N	\N	\N	\N	f	f	\N	\N	f	\N	\N	0	\N	0
 \.
@@ -132,9 +132,9 @@ COPY public.users (id, username, created_at, updated_at, name, last_posted_at, a
 -1	system	2026-07-25 05:58:07.835795	2026-07-25 05:58:28.767687	system	2026-07-25 05:58:28.636524	t	system	\N	t	\N	4	t	\N	\N	\N	\N	\N	\N	0	0	\N	t	\N	34	\N	\N	\N	f	\N	\N	\N	\N	\N	\N	\N	\N	0
 -2	discobot	2026-07-25 05:58:29.385492	2026-07-25 05:58:29.661862	discobot	\N	t	discobot	\N	t	\N	4	t	\N	\N	\N	\N	\N	\N	0	0	\N	f	\N	35	\N	\N	\N	f	\N	\N	\N	\N	\N	\N	\N	\N	0
 3	user1	2026-07-25 05:59:16.250829	2026-09-30 07:28:29.606229	User1	2026-09-30 07:28:29.580198	t	user1	\N	f	\N	2	f	\N	\N	\N	\N	\N	\N	0	0	\N	f	\N	\N	\N	\N	\N	f	\N	\N	\N	\N	\N	\N	\N	\N	0
-1	admin	2026-07-25 05:59:14.988794	2026-09-30 07:28:29.705893	Admin	2026-09-30 07:28:29.674309	t	admin	\N	t	\N	4	t	-1	2026-07-25 05:59:15.471236	\N	\N	\N	\N	0	0	\N	f	\N	\N	\N	\N	\N	f	\N	\N	\N	\N	\N	\N	\N	\N	0
 4	user2	2026-07-25 05:59:16.733827	2026-09-30 07:28:29.889848	User2	2026-09-30 07:28:29.179534	t	user2	\N	f	\N	2	f	\N	\N	\N	\N	\N	\N	0	0	\N	f	\N	\N	\N	\N	\N	f	\N	\N	\N	\N	\N	\N	\N	\N	0
-2	user0	2026-07-25 05:59:15.831079	2026-09-30 07:28:30.22895	User0	2026-09-30 07:28:30.163794	t	user0	\N	f	\N	1	f	\N	\N	\N	\N	\N	\N	0	0	\N	f	\N	\N	\N	\N	\N	f	\N	\N	\N	\N	\N	\N	\N	\N	0
+2	user0	2026-07-25 05:59:15.831079	2026-09-30 07:28:30.22895	User0	2026-09-30 07:28:30.163794	t	user0	2026-10-01 06:40:59.592885	f	\N	1	f	\N	\N	\N	\N	\N	\N	0	0	172.17.0.1	f	\N	\N	\N	\N	\N	f	2026-10-01 06:40:59.592885	\N	\N	\N	\N	\N	\N	\N	0
+1	admin	2026-07-25 05:59:14.988794	2026-10-01 10:58:56.094159	Admin	2026-09-30 07:28:29.674309	t	admin	\N	t	\N	4	t	-1	2026-07-25 05:59:15.471236	\N	\N	\N	\N	0	0	\N	t	\N	\N	\N	\N	\N	f	\N	\N	\N	\N	\N	\N	\N	\N	0
 \.
 
 
@@ -712,10 +712,10 @@ COPY public.badges (id, name, description, badge_type_id, grant_count, created_a
 9	Autobiographer	\N	3	0	2026-07-25 05:58:07.355652	2026-07-25 05:58:07.355652	f	f	user-pen	t	f	SELECT u.id user_id, current_timestamp granted_at\nFROM users u\nJOIN user_profiles up on u.id = up.user_id\nWHERE bio_raw IS NOT NULL AND LENGTH(TRIM(bio_raw)) > 10 AND\n      uploaded_avatar_id IS NOT NULL AND\n      (:backfill OR u.id IN (:user_ids) )\n	t	t	1	8	f	t	\N	\N	f
 10	Editor	\N	3	0	2026-07-25 05:58:07.358738	2026-07-25 05:58:07.358738	f	f	pen	t	f	SELECT p.user_id, min(p.id) post_id, min(p.created_at) granted_at\nFROM badge_posts p\nWHERE p.self_edits > 0 AND\n    (:backfill OR p.id IN (:post_ids) )\nGROUP BY p.user_id\n	t	t	1	2	f	t	\N	\N	f
 1	Basic User	\N	3	5	2026-07-25 05:58:07.276666	2026-09-30 06:20:02.759062	f	f	user	t	f	SELECT u.id user_id, current_timestamp granted_at FROM users u\nWHERE trust_level >= 1 AND (\n  :backfill OR u.id IN (:user_ids)\n)\n	t	t	4	4	f	t	\N	\N	f
-3	Regular	\N	2	3	2026-07-25 05:58:07.288303	2026-09-30 06:20:15.059747	t	f	user	t	f	SELECT u.id user_id, current_timestamp granted_at FROM users u\nWHERE trust_level >= 3 AND (\n  :backfill OR u.id IN (:user_ids)\n)\n	t	t	4	4	f	t	\N	\N	f
 4	Leader	\N	1	2	2026-07-25 05:58:07.294026	2026-09-30 06:20:53.781407	t	f	user	t	f	SELECT u.id user_id, current_timestamp granted_at FROM users u\nWHERE trust_level >= 4 AND (\n  :backfill OR u.id IN (:user_ids)\n)\n	t	t	4	4	f	t	\N	\N	f
 11	First Like	\N	3	1	2026-07-25 05:58:07.314717	2026-09-30 07:28:37.797752	f	f	heart	t	t	SELECT pa1.user_id, pa1.created_at granted_at, pa1.post_id\nFROM (\n  SELECT pa.user_id, min(pa.id) id\n  FROM post_actions pa\n  JOIN badge_posts p on p.id = pa.post_id\n  WHERE post_action_type_id = 2 AND\n    (:backfill OR pa.post_id IN (:post_ids) )\n  GROUP BY pa.user_id\n) x\nJOIN post_actions pa1 on pa1.id = x.id\n	t	t	1	1	t	t	\N	\N	f
 5	Welcome	\N	3	1	2026-07-25 05:58:07.352752	2026-09-30 07:28:37.810421	f	f	heart	t	t	SELECT p.user_id, min(post_id) post_id, min(pa.created_at) granted_at\nFROM post_actions pa\nJOIN badge_posts p on p.id = pa.post_id\nWHERE post_action_type_id = 2 AND\n    (:backfill OR pa.post_id IN (:post_ids) )\nGROUP BY p.user_id\n	t	t	2	1	t	t	\N	\N	f
+3	Regular	\N	2	2	2026-07-25 05:58:07.288303	2026-10-01 06:13:15.823478	t	f	user	t	f	SELECT u.id user_id, current_timestamp granted_at FROM users u\nWHERE trust_level >= 3 AND (\n  :backfill OR u.id IN (:user_ids)\n)\n	t	t	4	4	f	t	\N	\N	f
 48	Wiki Editor	\N	3	0	2026-07-25 05:58:07.36439	2026-07-25 05:58:07.36439	f	f	far-pen-to-square	t	t	SELECT pr2.user_id, pr2.post_id, pr2.created_at granted_at\nFROM\n(\n  SELECT min(pr.id) id\n  FROM post_revisions pr\n  JOIN badge_posts p on p.id = pr.post_id\n  WHERE p.wiki\n      AND NOT pr.hidden\n      AND (:backfill OR p.id IN (:post_ids))\n  GROUP BY pr.user_id\n) as X\nJOIN post_revisions pr2 ON pr2.id = X.id\n	t	t	1	2	f	t	\N	\N	f
 6	Nice Post	\N	3	0	2026-07-25 05:58:07.36984	2026-07-25 05:58:07.36984	f	t	reply	t	t	SELECT p.user_id, p.id post_id, current_timestamp granted_at\nFROM badge_posts p\nWHERE p.post_number > 1 AND p.like_count >= 10 AND\n  (:backfill OR p.id IN (:post_ids) )\n	t	t	3	1	t	t	\N	\N	f
 7	Good Post	\N	2	0	2026-07-25 05:58:07.374159	2026-07-25 05:58:07.374159	f	t	reply	t	t	SELECT p.user_id, p.id post_id, current_timestamp granted_at\nFROM badge_posts p\nWHERE p.post_number > 1 AND p.like_count >= 25 AND\n  (:backfill OR p.id IN (:post_ids) )\n	t	t	3	1	t	t	\N	\N	f
@@ -951,12 +951,12 @@ ALTER TABLE public.categories_web_hooks ENABLE TRIGGER ALL;
 ALTER TABLE public.category_activity_daily_rollups DISABLE TRIGGER ALL;
 
 COPY public.category_activity_daily_rollups (id, date, category_id, topics, posts, page_views, likely_crawler_page_views) FROM stdin;
-4	2026-07-25	2	1	1	0	0
-5	2026-07-25	3	3	4	0	0
-6	2026-07-25	4	2	2	0	0
-10	2026-09-30	34	2	2	0	0
-11	2026-09-30	4	3	6	0	0
-12	2026-09-30	2	1	1	0	0
+27	2026-07-25	3	3	4	0	0
+28	2026-07-25	4	2	2	0	0
+30	2026-07-25	2	1	1	0	0
+34	2026-09-30	34	2	2	0	0
+35	2026-09-30	4	3	6	0	0
+36	2026-09-30	2	1	1	0	0
 \.
 
 
@@ -1123,8 +1123,8 @@ ALTER TABLE public.category_tag_groups ENABLE TRIGGER ALL;
 ALTER TABLE public.category_tag_stats DISABLE TRIGGER ALL;
 
 COPY public.category_tag_stats (id, category_id, tag_id, topic_count) FROM stdin;
-1	34	1	1
 3	4	1	1
+1	34	1	1
 2	4	2	2
 \.
 
@@ -1187,7 +1187,7 @@ ALTER TABLE public.chat_channels DISABLE TRIGGER ALL;
 
 COPY public.chat_channels (id, chatable_id, deleted_at, deleted_by_id, featured_in_category_id, delete_after_seconds, chatable_type, created_at, updated_at, name, description, status, user_count, auto_join_users, user_count_stale, type, slug, allow_channel_wide_mentions, messages_count, threading_enabled, last_message_id, emoji) FROM stdin;
 1	3	\N	\N	\N	\N	Category	2026-07-25 05:58:28.920161	2026-07-25 05:58:28.920161	Staff	\N	0	0	t	f	CategoryChannel	staff	t	0	f	\N	\N
-2	4	\N	\N	\N	\N	Category	2026-07-25 05:58:28.954734	2026-07-25 05:58:28.954734	General	\N	0	0	t	f	CategoryChannel	general	t	0	f	\N	\N
+2	4	\N	\N	\N	\N	Category	2026-07-25 05:58:28.954734	2026-10-01 06:41:04.512577	General	\N	0	1	t	f	CategoryChannel	general	t	0	f	\N	\N
 \.
 
 
@@ -1923,33 +1923,33 @@ ALTER TABLE public.directory_columns ENABLE TRIGGER ALL;
 ALTER TABLE public.directory_items DISABLE TRIGGER ALL;
 
 COPY public.directory_items (id, period_type, user_id, likes_received, likes_given, topics_entered, topic_count, post_count, created_at, updated_at, days_visited, posts_read, solutions, gamification_score) FROM stdin;
+2	5	2	0	0	0	0	0	\N	\N	1	0	0	0
+4	5	4	0	0	0	0	0	\N	\N	0	0	0	0
+1	5	1	0	0	0	0	0	\N	\N	0	0	0	0
+3	5	3	0	0	0	0	0	\N	\N	0	0	0	0
 5	5	5	0	0	0	0	0	\N	\N	0	0	0	0
-2	5	2	1	0	0	2	0	\N	\N	0	0	0	0
-4	5	4	0	0	0	0	1	\N	\N	0	0	0	0
-1	5	1	0	0	0	1	1	\N	\N	0	0	0	0
-3	5	3	0	1	0	1	1	\N	\N	0	0	0	0
 10	1	5	0	0	0	0	0	\N	\N	0	0	0	0
-7	1	2	1	0	0	2	0	\N	\N	0	0	0	0
 9	1	4	0	0	0	0	1	\N	\N	0	0	0	0
 6	1	1	0	0	0	1	1	\N	\N	0	0	0	0
 8	1	3	0	1	0	1	1	\N	\N	0	0	0	0
+7	1	2	1	0	0	2	0	\N	\N	1	0	0	0
 15	2	5	0	0	0	0	0	\N	\N	0	0	0	0
-12	2	2	1	0	0	2	0	\N	\N	0	0	0	0
 14	2	4	0	0	0	0	1	\N	\N	0	0	0	0
 11	2	1	0	0	0	1	1	\N	\N	0	0	0	0
 13	2	3	0	1	0	1	1	\N	\N	0	0	0	0
-17	3	2	1	0	0	2	0	\N	\N	0	0	0	0
+12	2	2	1	0	0	2	0	\N	\N	1	0	0	0
 19	3	4	0	0	0	0	1	\N	\N	0	0	0	0
 16	3	1	0	0	0	1	1	\N	\N	0	0	0	0
 18	3	3	0	1	0	1	1	\N	\N	0	0	0	0
 20	3	5	0	0	0	0	0	\N	\N	0	0	0	0
-22	4	2	1	0	0	2	0	\N	\N	0	0	0	0
+17	3	2	1	0	0	2	0	\N	\N	1	0	0	0
+22	4	2	1	0	0	2	0	\N	\N	1	0	0	0
 25	4	5	0	0	0	0	0	\N	\N	0	0	0	0
 24	4	4	0	0	0	0	1	\N	\N	0	0	0	0
 21	4	1	0	0	0	1	1	\N	\N	0	0	0	0
 23	4	3	0	1	0	1	1	\N	\N	0	0	0	0
+27	6	2	1	0	0	2	0	\N	\N	1	0	0	0
 30	6	5	0	0	0	0	0	\N	\N	0	0	0	0
-27	6	2	1	0	0	2	0	\N	\N	0	0	0	0
 29	6	4	0	0	0	0	1	\N	\N	0	0	0	0
 26	6	1	0	0	0	1	1	\N	\N	0	0	0	0
 28	6	3	0	1	0	1	1	\N	\N	0	0	0	0
@@ -2898,8 +2898,6 @@ COPY public.group_users (id, group_id, user_id, created_at, updated_at, owner, n
 20	12	1	2026-07-25 05:59:15.646333	2026-07-25 05:59:15.646333	f	3	2026-07-25 05:59:15.512611
 21	13	1	2026-07-25 05:59:15.667623	2026-07-25 05:59:15.667623	f	3	2026-07-25 05:59:15.512611
 22	14	1	2026-07-25 05:59:15.687384	2026-07-25 05:59:15.687384	f	3	2026-07-25 05:59:15.512611
-23	10	2	2026-07-25 05:59:16.049955	2026-07-25 05:59:16.049955	f	3	2026-07-25 05:59:15.828758
-24	11	2	2026-07-25 05:59:16.15176	2026-07-25 05:59:16.15176	f	3	2026-07-25 05:59:16.106804
 25	10	3	2026-07-25 05:59:16.474878	2026-07-25 05:59:16.474878	f	3	2026-07-25 05:59:16.248723
 26	11	3	2026-07-25 05:59:16.572158	2026-07-25 05:59:16.572158	f	3	2026-07-25 05:59:16.529572
 27	12	3	2026-07-25 05:59:16.591992	2026-07-25 05:59:16.591992	f	3	2026-07-25 05:59:16.529572
@@ -2911,6 +2909,9 @@ COPY public.group_users (id, group_id, user_id, created_at, updated_at, owner, n
 34	12	5	2026-07-25 05:59:17.60626	2026-07-25 05:59:17.60626	f	3	2026-07-25 05:59:17.496711
 35	13	5	2026-07-25 05:59:17.629427	2026-07-25 05:59:17.629427	f	3	2026-07-25 05:59:17.496711
 36	14	5	2026-07-25 05:59:17.662386	2026-07-25 05:59:17.662386	f	3	2026-07-25 05:59:17.496711
+23	10	2	2026-07-25 05:59:16.049955	2026-07-25 05:59:16.049955	f	3	2026-10-01 06:44:30.57148
+24	11	2	2026-07-25 05:59:16.15176	2026-07-25 05:59:16.15176	f	3	2026-10-01 06:44:30.57148
+67	2	1	2026-10-01 10:58:56.090573	2026-10-01 10:58:56.090573	f	2	2026-10-01 10:58:56.090573
 \.
 
 
@@ -3770,7 +3771,6 @@ COPY public.post_search_data (post_id, search_data, raw_data, locale, version, p
 39	'disabl':4A,13 'disk':16 'download':1A,6,20 'imag':3A,8,22 'limit':18 'local':10 'reach':25 'remot':2A,7,21 'set':11 'space':17 'threshold':23	The download_remote_images_to_local setting was disabled because the disk space limit at download_remote_images_threshold was reached.	en	5	t
 42	'carri':15 'categori':21 'fixtur':2A 'general':8B 'howto':9C 'id':22 'pariti':1A 'show':23 'sub':7B 'subcategori':6A,14 'tag':3A,17,19 'topic':11	A topic in a subcategory carrying a tag, so tags and category ids show up.	en	5	f
 43	'anonym':17 'appear':13 'fixtur':2A 'general':5B 'latest':15 'must':11 'pariti':1A 'topic':4A,7 'unlist':3A,9 'user':18	This topic is unlisted and must not appear in latest for anonymous users.	en	5	f
-45	'anywher':14 'appear':13 'delet':3A,9 'fixtur':2A 'general':5B 'must':11 'pariti':1A 'topic':4A,7	This topic is deleted and must not appear anywhere.	en	5	f
 34	'200':35 'alreadi':72 'anoth':91 'appear':23 'area':28 'brief':14 'categori':5A,19,26,48,57,70,79 'charact':36 'contain':81 'descript':15,44 'differ':66 'establish':47 'exact':63 'first':10 'follow':39 'general':4A,7B,80 'guidanc':21 'guidelin':49 'keep':32 'longer':43 'merg':89 'need':84 'new':18 'paragraph':11,40 'peopl':54 'replac':8 'rule':51 'select':27 'sub':3A,6B 'subcategori':94 'topic':76 'tri':30 'use':37,55	(Replace this first paragraph with a brief description of your new category. This guidance will appear in the category selection area, so try to keep it below 200 characters.) Use the following paragraphs for a longer description, or to establish category guidelines or rules: Why should people use this category? What is it for? How exactly is this different than the other categories we already have? What should topics in this category generally contain? Do we need this category? Can we merge with another category, or subcategory?	en	5	f
 35	'bodi':23 'enough':17 'excerpt':26 'first':8 'fixtur':2A 'general':6B 'guid':7C 'long':16 'pariti':1A 'post':9,22 'poster':5A 'real':21 'repli':3A 'replier':15 'sever':14 'topic':12	First post of a topic with several repliers, long enough to be a real post body for the excerpt.	en	5	f
 36	'also':12 'check':20 'enough':14 'fixtur':2A 'general':6B 'guid':7C 'length':19 'long':13 'minimum':18 'one':9 'pariti':1A 'pass':16 'poster':5A 'repli':3A,8 'user1':11	Reply one from user1, also long enough to pass the minimum length check.	en	5	f
@@ -7251,7 +7251,7 @@ COPY public.top_topics (id, topic_id, yearly_posts_count, yearly_views_count, ye
 4	38	1	0	0	1	0	0	1	0	0	1	0	0	0	0	0	0	0	0	0	0	0	1	0	0	0	0
 5	37	1	0	0	1	0	0	1	0	0	1	0	0	0	0	0	0	0	0	0	0	0	1	0	0	0	0
 1	4	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0.3010299956639812	0	0	0	0	0	0	0	0	0
-6	35	4	0	0	4	0	0	4	0	0	4	0	0	0.6020599913279624	0.6020599913279624	0.6020599913279624	0.6020599913279624	0.6020599913279624	0	0	0	0	4	0	0	0.6020599913279624	0
+6	35	4	0	0	4	0	0	4	0	0	4	0	0	0	0.6020599913279624	0.6020599913279624	0.6020599913279624	0.6020599913279624	0	0	0	0	4	0	0	0.6020599913279624	0
 \.
 
 
@@ -7337,17 +7337,17 @@ ALTER TABLE public.topic_groups ENABLE TRIGGER ALL;
 ALTER TABLE public.topic_hot_scores DISABLE TRIGGER ALL;
 
 COPY public.topic_hot_scores (id, topic_id, score, recent_likes, recent_posters, recent_first_bumped_at, created_at, updated_at) FROM stdin;
-4	1	0	0	0	\N	2026-09-30 06:20:46.862926	2026-09-30 13:12:21.242729
-3	2	0	0	0	\N	2026-09-30 06:20:46.862926	2026-09-30 13:12:21.242729
-2	3	0	0	0	\N	2026-09-30 06:20:46.862926	2026-09-30 13:12:21.242729
-6	4	0	0	0	\N	2026-09-30 06:20:46.862926	2026-09-30 13:12:21.242729
-1	5	0	0	0	\N	2026-09-30 06:20:46.862926	2026-09-30 13:12:21.242729
-10	38	0	0	1	2026-09-30 07:28:29.580198	2026-09-30 07:35:34.283056	2026-09-30 13:12:21.242729
-5	6	0	0	0	\N	2026-09-30 06:20:46.862926	2026-09-30 13:12:21.242729
-9	41	0.17185257416200053	1	1	2026-09-30 07:28:30.163794	2026-09-30 07:35:34.283056	2026-09-30 13:12:21.242729
-11	35	0.25776537251649473	0	4	2026-09-30 07:28:28.901913	2026-09-30 07:35:34.283056	2026-09-30 13:12:21.242729
-7	37	0	0	1	2026-09-30 07:28:29.358281	2026-09-30 07:35:34.283056	2026-09-30 13:12:21.242729
-8	34	0	0	1	2026-09-30 07:28:28.693594	2026-09-30 07:35:34.283056	2026-09-30 13:12:21.242729
+4	1	0	0	0	\N	2026-09-30 06:20:46.862926	2026-10-01 11:05:04.098975
+3	2	0	0	0	\N	2026-09-30 06:20:46.862926	2026-10-01 11:05:04.098975
+2	3	0	0	0	\N	2026-09-30 06:20:46.862926	2026-10-01 11:05:04.098975
+6	4	0	0	0	\N	2026-09-30 06:20:46.862926	2026-10-01 11:05:04.098975
+1	5	0	0	0	\N	2026-09-30 06:20:46.862926	2026-10-01 11:05:04.098975
+10	38	0	0	1	2026-09-30 07:28:29.580198	2026-09-30 07:35:34.283056	2026-10-01 11:05:04.098975
+5	6	0	0	0	\N	2026-09-30 06:20:46.862926	2026-10-01 11:05:04.098975
+9	41	0.03430155165461664	1	1	2026-09-30 07:28:30.163794	2026-09-30 07:35:34.283056	2026-10-01 11:05:04.098975
+11	35	0.05145162450325855	0	4	2026-09-30 07:28:28.901913	2026-09-30 07:35:34.283056	2026-10-01 11:05:04.098975
+7	37	0	0	1	2026-09-30 07:28:29.358281	2026-09-30 07:35:34.283056	2026-10-01 11:05:04.098975
+8	34	0	0	1	2026-09-30 07:28:28.693594	2026-09-30 07:35:34.283056	2026-10-01 11:05:04.098975
 \.
 
 
@@ -7437,7 +7437,6 @@ COPY public.topic_search_data (topic_id, raw_data, locale, search_data, version)
 38	Parity fixture: tagged in a subcategory A topic in a subcategory carrying a tag, so tags and category ids show up.	en	'carri':12B 'categori':18B 'fixtur':2A 'id':19B 'pariti':1A 'show':20B 'subcategori':6A,11B 'tag':3A,14B,16B 'topic':8B	4
 36	Downloading remote images disabled The download_remote_images_to_local setting was disabled because the disk space limit at download_remote_images_threshold was reached.	en	'disabl':4A,13B 'disk':16B 'download':1A,6B,20B 'imag':3A,8B,22B 'limit':18B 'local':10B 'reach':25B 'remot':2A,7B,21B 'set':11B 'space':17B 'threshold':23B	4
 39	Parity fixture: unlisted topic This topic is unlisted and must not appear in latest for anonymous users.	en	'anonym':16B 'appear':12B 'fixtur':2A 'latest':14B 'must':10B 'pariti':1A 'topic':4A,6B 'unlist':3A,8B 'user':17B	4
-40	Parity fixture: deleted topic This topic is deleted and must not appear anywhere.	en	'anywher':13B 'appear':12B 'delet':3A,8B 'fixtur':2A 'must':10B 'pariti':1A 'topic':4A,6B	4
 34	About the Sub General category (Replace this first paragraph with a brief description of your new category. This guidance will appear in the category selection area, so try to keep it below 200 characters.) Use the following paragr	en	'200':33B 'appear':21B 'area':26B 'brief':12B 'categori':5A,17B,24B 'charact':34B 'descript':13B 'first':8B 'follow':37B 'general':4A 'guidanc':19B 'keep':30B 'new':16B 'paragr':38B 'paragraph':9B 'replac':6B 'select':25B 'sub':3A 'tri':28B 'use':35B	4
 35	Parity fixture: replies and posters First post of a topic with several repliers, long enough to be a real post body for the excerpt.	en	'bodi':21B 'enough':15B 'excerpt':24B 'first':6B 'fixtur':2A 'long':14B 'pariti':1A 'post':7B,20B 'poster':5A 'real':19B 'repli':3A 'replier':13B 'sever':12B 'topic':10B	4
 41	Parity fixture: liked and archived An archived topic whose first post got a like, for like_count and op_like_count.	en	'archiv':5A,7B 'count':17B,21B 'first':10B 'fixtur':2A 'got':12B 'like':3A,14B,16B,20B 'op':19B 'pariti':1A 'post':11B 'topic':8B 'whose':9B	4
@@ -7502,11 +7501,11 @@ COPY public.topic_users (user_id, topic_id, posted, last_read_post_number, last_
 1	37	t	2	2026-09-30 07:28:29.345831	2026-09-30 07:28:29.345831	3	2026-09-30 07:28:29.345221	1	0	\N	39	\N	f	f	2026-09-30 07:28:29.437272
 -1	36	t	1	2026-09-30 07:28:29.256943	2026-09-30 07:28:29.256943	3	2026-09-30 07:28:29.253808	1	0	\N	37	\N	f	f	2026-09-30 07:28:29.384774
 3	38	t	1	2026-09-30 07:28:29.569932	2026-09-30 07:28:29.569932	3	2026-09-30 07:28:29.569429	1	0	\N	40	\N	f	f	2026-09-30 07:28:29.598896
-2	35	t	1	2026-09-30 07:28:28.88399	2026-09-30 07:28:28.88399	3	2026-09-30 07:28:28.883194	1	0	\N	34	4	f	f	2026-09-30 07:28:28.936754
 1	39	t	2	2026-09-30 07:28:29.664927	2026-09-30 07:28:29.664927	3	2026-09-30 07:28:29.664429	1	0	\N	41	\N	f	f	2026-09-30 07:28:29.78909
 4	40	f	0	2026-09-30 07:28:29.846453	2026-09-30 07:28:29.846453	3	2026-09-30 07:28:29.84579	1	0	\N	42	\N	f	f	2026-09-30 07:28:29.881642
 2	41	t	1	2026-09-30 07:28:30.133527	2026-09-30 07:28:30.133527	3	2026-09-30 07:28:30.13173	1	0	\N	43	\N	f	f	2026-09-30 07:28:30.198392
 1	41	t	2	2026-09-30 07:28:30.449422	2026-09-30 07:28:30.449422	2	2026-09-30 07:28:30.455959	4	0	\N	44	\N	f	f	2026-09-30 07:28:30.448811
+2	35	t	1	2026-09-30 07:28:28.88399	2026-09-30 07:28:28.88399	3	2026-09-30 07:28:28.883194	1	0	\N	34	4	f	f	2026-09-30 07:28:28.936754
 \.
 
 
@@ -7627,6 +7626,15 @@ cf69494dec9136409f399134d0e0ae75d5dd1d33c4d4f71649c09198d9ee421d	2	2026-09-30 10
 76ec78d6dcbca7acf3aff18ab7d9b96428a39b76c1d9406fde09283d93203b03	2	2026-09-30 12:10:13.945767	2026-09-30 12:10:13.945767	topic	35	37
 7ee94ce3a081ea3a92f0ff59b998be13596bed7d55993b60ba8e0765471ba39a	2	2026-09-30 12:10:14.000659	2026-09-30 12:10:14.000659	topic	35	36
 cf7541931155d3b3297f91a6052bc1a284a99afa4cefd960d5fac7b1e753b3ba	2	2026-09-30 12:10:14.005539	2026-09-30 12:10:14.005539	topic	35	38
+2cade799e18aa3a33767058297eed0ef00be234f9363bbe2c0c3108408a854f8	2	2026-09-30 19:05:58.158011	2026-09-30 19:05:58.158011	topic	35	36
+e0757c3ccb714262c5ba39f5f0f684c6e485d00c6f061d2f279f2ab586c86394	2	2026-09-30 19:05:58.171204	2026-09-30 19:05:58.171204	topic	35	38
+2b6081d915904406eb9e344ba94f94069670c462d6486f1fe423d5e57777114c	2	2026-09-30 19:05:58.175887	2026-09-30 19:05:58.175887	topic	35	37
+02da5a44d825c022bd429c133f36171697a1501786ca15c5fb170e4f2fef3d21	2	2026-09-30 23:10:40.40583	2026-09-30 23:10:40.40583	topic	35	36
+a522f5b88f0debac8e2b8bde8db0f1cf68659c21ced035672f912459d5beab9d	2	2026-09-30 23:10:54.82547	2026-09-30 23:10:54.82547	topic	35	37
+8eb478de4d55c3b5c338af358db0110db9e3d00c73bbf32fc80a2c94e9ec1b71	2	2026-09-30 23:11:51.387937	2026-09-30 23:11:51.387937	topic	35	38
+28ae4fb1db75c43d01a3413816776eb89d0a7da16ee21074948ed356115056cb	2	2026-10-01 04:57:13.094754	2026-10-01 04:57:13.094754	topic	35	36
+b16aa0505bf5fbbda5ab8ae6928d8f4aa0b8d5fd264f1258585fccbd4d41fc12	2	2026-10-01 04:57:43.085174	2026-10-01 04:57:43.085174	topic	35	37
+713de74c790ea59f998de7cd1c9bf9a872b1a692eb65ced9dc698b561ae2b908	2	2026-10-01 04:58:48.932795	2026-10-01 04:58:48.932795	topic	35	38
 \.
 
 
@@ -7917,30 +7925,6 @@ COPY public.user_associated_groups (id, user_id, associated_group_id, created_at
 ALTER TABLE public.user_associated_groups ENABLE TRIGGER ALL;
 
 --
--- Data for Name: user_auth_token_logs; Type: TABLE DATA; Schema: public; Owner: -
---
-
-ALTER TABLE public.user_auth_token_logs DISABLE TRIGGER ALL;
-
-COPY public.user_auth_token_logs (id, action, user_auth_token_id, user_id, client_ip, user_agent, auth_token, created_at, path) FROM stdin;
-\.
-
-
-ALTER TABLE public.user_auth_token_logs ENABLE TRIGGER ALL;
-
---
--- Data for Name: user_auth_tokens; Type: TABLE DATA; Schema: public; Owner: -
---
-
-ALTER TABLE public.user_auth_tokens DISABLE TRIGGER ALL;
-
-COPY public.user_auth_tokens (id, user_id, auth_token, prev_auth_token, user_agent, auth_token_seen, client_ip, rotated_at, created_at, updated_at, seen_at, authenticated_with_oauth, impersonated_user_id, impersonation_expires_at) FROM stdin;
-\.
-
-
-ALTER TABLE public.user_auth_tokens ENABLE TRIGGER ALL;
-
---
 -- Data for Name: user_avatars; Type: TABLE DATA; Schema: public; Owner: -
 --
 
@@ -7967,11 +7951,7 @@ ALTER TABLE public.user_badges DISABLE TRIGGER ALL;
 
 COPY public.user_badges (id, badge_id, user_id, granted_at, granted_by_id, post_id, seq, featured_rank, created_at, is_favorite, notification_id) FROM stdin;
 2	1	2	2026-09-30 06:20:02.086618	-1	\N	0	1	2026-09-30 06:20:02.086618	\N	1
-7	3	4	2026-09-30 06:20:14.685391	-1	\N	0	1	2026-09-30 06:20:14.685391	\N	5
-3	1	3	2026-09-30 06:20:02.086618	-1	\N	0	2	2026-09-30 06:20:02.086618	\N	2
-4	1	4	2026-09-30 06:20:02.086618	-1	\N	0	3	2026-09-30 06:20:02.086618	\N	3
 10	2	3	2026-09-30 06:20:36.833119	-1	\N	0	1	2026-09-30 06:20:36.833119	\N	7
-11	2	4	2026-09-30 06:20:36.833119	-1	\N	0	2	2026-09-30 06:20:36.833119	\N	8
 6	3	1	2026-09-30 06:20:14.685391	-1	\N	0	2	2026-09-30 06:20:14.685391	\N	\N
 8	3	5	2026-09-30 06:20:14.685391	-1	\N	0	2	2026-09-30 06:20:14.685391	\N	6
 1	1	1	2026-09-30 06:20:02.086618	-1	\N	0	4	2026-09-30 06:20:02.086618	\N	\N
@@ -7980,8 +7960,11 @@ COPY public.user_badges (id, badge_id, user_id, granted_at, granted_by_id, post_
 12	2	5	2026-09-30 06:20:36.833119	-1	\N	0	3	2026-09-30 06:20:36.833119	\N	9
 13	4	1	2026-09-30 06:20:53.73764	-1	\N	0	1	2026-09-30 06:20:53.73764	\N	\N
 14	4	5	2026-09-30 06:20:53.73764	-1	\N	0	1	2026-09-30 06:20:53.73764	\N	36
-15	11	3	2026-09-30 07:28:30.313407	-1	46	0	\N	2026-09-30 07:28:37.785684	\N	41
-16	5	2	2026-09-30 07:28:30.313407	-1	46	0	\N	2026-09-30 07:28:37.803087	\N	42
+4	1	4	2026-09-30 06:20:02.086618	-1	\N	0	2	2026-09-30 06:20:02.086618	\N	3
+11	2	4	2026-09-30 06:20:36.833119	-1	\N	0	1	2026-09-30 06:20:36.833119	\N	8
+3	1	3	2026-09-30 06:20:02.086618	-1	\N	0	3	2026-09-30 06:20:02.086618	\N	2
+15	11	3	2026-09-30 07:28:30.313407	-1	46	0	2	2026-09-30 07:28:37.785684	\N	41
+16	5	2	2026-09-30 07:28:30.313407	-1	46	0	2	2026-09-30 07:28:37.803087	\N	42
 \.
 
 
@@ -7994,6 +7977,7 @@ ALTER TABLE public.user_badges ENABLE TRIGGER ALL;
 ALTER TABLE public.user_chat_channel_memberships DISABLE TRIGGER ALL;
 
 COPY public.user_chat_channel_memberships (id, user_id, chat_channel_id, last_read_message_id, following, muted, desktop_notification_level, mobile_notification_level, created_at, updated_at, last_unread_mention_when_emailed_id, join_mode, last_viewed_at, notification_level, starred, last_viewed_pins_at) FROM stdin;
+1	2	2	\N	t	f	1	1	2026-10-01 06:40:59.858594	2026-10-01 06:40:59.858594	\N	1	2026-10-01 06:40:59.858925	1	f	\N
 \.
 
 
@@ -8131,6 +8115,7 @@ COPY public.user_histories (id, action, acting_user_id, target_user_id, details,
 70	91	1	\N	\N	2026-09-30 07:28:29.474366	2026-09-30 07:28:29.474366	\N	\N	\N	\N	\N	\N	37	f	\N	\N	\N	\N
 71	18	1	\N	id: 40\ncreated_at: 2026-09-30 07:28:29 UTC\nuser: user2 (User2)\ntitle: Parity fixture: deleted topic\nraw: This topic is deleted and must not appear anywhere.	2026-09-30 07:28:29.934149	2026-09-30 07:28:29.934149	\N	\N	\N	\N	\N	\N	40	f	\N	\N	\N	\N
 72	93	1	\N	\N	2026-09-30 07:28:30.481302	2026-09-30 07:28:30.481302	\N	\N	\N	\N	\N	\N	41	f	\N	\N	\N	\N
+73	34	-1	1	\N	2026-10-01 10:58:56.174694	2026-10-01 10:58:56.174694	\N	\N	\N	\N	\N	\N	\N	t	\N	\N	\N	\N
 \.
 
 
@@ -8181,11 +8166,11 @@ ALTER TABLE public.user_options DISABLE TRIGGER ALL;
 COPY public.user_options (user_id, mailing_list_mode, email_digests, external_links_in_new_tab, enable_quoting, dynamic_favicon, automatically_unpin_topics, digest_after_minutes, auto_track_topics_after_msecs, new_topic_duration_minutes, last_redirected_to_top_at, email_previous_replies, email_in_reply_to, like_notification_frequency, mailing_list_mode_frequency, include_tl0_in_digests, notification_level_when_replying, theme_key_seq, allow_private_messages, homepage_id, theme_ids, hide_profile_and_presence, text_size_key, text_size_seq, email_level, email_messages_level, title_count_mode_key, enable_defer, timezone, enable_allowed_pm_users, dark_scheme_id, skip_new_user_tips, color_scheme_id, default_calendar, chat_enabled, only_chat_push_notifications, oldest_search_log_date, chat_sound, dismissed_channel_retention_reminder, dismissed_dm_retention_reminder, bookmark_auto_delete_preference, ignore_channel_wide_mention, chat_email_frequency, seen_popups, policy_email_frequency, chat_header_indicator_preference, sidebar_link_to_filtered_list, sidebar_show_count_of_new_items, watched_precedence_over_muted, chat_separate_sidebar_mode, show_thread_title_prompts, auto_image_caption, enable_smart_lists, hide_profile, hide_presence, chat_send_shortcut, notification_level_when_assigned, chat_quick_reaction_type, chat_quick_reactions_custom, ai_search_discoveries, composition_mode, interface_color_mode, enable_markdown_monospace_font, notify_on_linked_posts, discourse_rewind_share_publicly, discourse_rewind_dismissed_at, discourse_rewind_enabled, notify_on_solved, show_original_content, enable_upcoming_change_available_notifications, chat_announce_new_messages, chat_new_message_sound, push_notification_level, automatically_translate, understood_languages, send_shortcut, ai_ask_ai_default, chat_channel_list_filter, chat_channel_list_sort, chat_channel_list_sort_starred, chat_channel_list_sort_dms, chat_channel_list_filter_starred, chat_channel_list_filter_dms, event_reminder_preference, hidden_composer_toolbar_buttons) FROM stdin;
 -2	f	t	f	t	f	t	10080	300000	2880	\N	2	f	1	1	f	2	0	t	\N	{}	f	0	0	2	2	0	f	\N	f	\N	f	\N	0	t	\N	\N	\N	\N	\N	3	\N	1	\N	0	0	f	f	f	0	t	f	t	f	f	0	3	0	\N	t	1	1	t	t	f	\N	t	t	f	t	t	f	1	t	{}	0	t	0	0	0	2	0	0	0	{}
 1	f	t	f	t	f	t	10080	300000	2880	\N	2	f	1	1	f	2	0	t	\N	{}	f	0	0	1	0	0	f	\N	f	\N	f	\N	0	t	\N	\N	\N	\N	\N	3	\N	1	\N	0	0	f	f	f	0	t	f	t	f	f	0	3	0	\N	t	1	1	t	t	f	\N	t	t	f	t	t	f	1	t	{}	0	t	0	0	0	2	0	0	0	{}
-2	f	t	f	t	f	t	10080	300000	2880	\N	2	f	1	1	f	2	0	t	\N	{}	f	0	0	1	0	0	f	\N	f	\N	f	\N	0	t	\N	\N	\N	\N	\N	3	\N	1	\N	0	0	f	f	f	0	t	f	t	f	f	0	3	0	\N	t	1	1	t	t	f	\N	t	t	f	t	t	f	1	t	{}	0	t	0	0	0	2	0	0	0	{}
 3	f	t	f	t	f	t	10080	300000	2880	\N	2	f	1	1	f	2	0	t	\N	{}	f	0	0	1	0	0	f	\N	f	\N	f	\N	0	t	\N	\N	\N	\N	\N	3	\N	1	\N	0	0	f	f	f	0	t	f	t	f	f	0	3	0	\N	t	1	1	t	t	f	\N	t	t	f	t	t	f	1	t	{}	0	t	0	0	0	2	0	0	0	{}
 4	f	t	f	t	f	t	10080	300000	2880	\N	2	f	1	1	f	2	0	t	\N	{}	f	0	0	1	0	0	f	\N	f	\N	f	\N	0	t	\N	\N	\N	\N	\N	3	\N	1	\N	0	0	f	f	f	0	t	f	t	f	f	0	3	0	\N	t	1	1	t	t	f	\N	t	t	f	t	t	f	1	t	{}	0	t	0	0	0	2	0	0	0	{}
 5	f	t	f	t	f	t	10080	300000	2880	\N	2	f	1	1	f	2	0	t	\N	{}	f	0	0	1	0	0	f	\N	f	\N	f	\N	0	t	\N	\N	\N	\N	\N	3	\N	1	\N	0	0	f	f	f	0	t	f	t	f	f	0	3	0	\N	t	1	1	t	t	f	\N	t	t	f	t	t	f	1	t	{}	0	t	0	0	0	2	0	0	0	{}
 -1	f	t	f	t	f	t	10080	300000	2880	\N	2	f	1	1	f	2	0	t	\N	{}	f	0	0	2	2	0	f	\N	f	\N	f	\N	0	t	\N	\N	\N	\N	\N	3	\N	1	\N	0	0	f	f	f	0	t	f	t	f	f	0	3	0	\N	t	1	1	t	t	f	\N	t	t	f	t	t	f	1	t	{}	0	t	0	0	0	2	0	0	0	{}
+2	f	t	f	t	f	t	10080	300000	2880	\N	2	f	1	1	f	2	0	t	\N	{}	f	0	0	1	0	0	f	America/Denver	f	\N	f	\N	0	t	\N	\N	\N	\N	\N	3	\N	1	\N	0	0	f	f	f	0	t	f	t	f	f	0	3	0	\N	t	1	1	t	t	f	\N	t	t	f	t	t	f	1	t	{}	0	t	0	0	0	2	0	0	0	{}
 \.
 
 
@@ -8217,6 +8202,14 @@ ALTER TABLE public.user_passwords ENABLE TRIGGER ALL;
 ALTER TABLE public.user_profile_views DISABLE TRIGGER ALL;
 
 COPY public.user_profile_views (id, user_profile_id, viewed_at, ip_address, user_id) FROM stdin;
+1	3	2026-09-30 13:27:03.926084	172.17.0.1	\N
+2	-1	2026-09-30 13:28:11.288314	172.17.0.1	\N
+3	1	2026-09-30 13:28:58.015723	172.17.0.1	\N
+4	2	2026-09-30 13:29:07.902893	172.17.0.1	\N
+5	3	2026-10-01 11:01:21.704198	172.17.0.1	\N
+6	1	2026-10-01 11:01:22.618076	172.17.0.1	\N
+7	-1	2026-10-01 11:01:23.074647	172.17.0.1	\N
+8	2	2026-10-01 11:01:23.522871	172.17.0.1	\N
 \.
 
 
@@ -8230,12 +8223,12 @@ ALTER TABLE public.user_profiles DISABLE TRIGGER ALL;
 
 COPY public.user_profiles (user_id, location, website, bio_raw, bio_cooked, dismissed_banner_key, bio_cooked_version, views, profile_background_upload_id, card_background_upload_id, granted_title_badge_id, featured_topic_id) FROM stdin;
 -2	\N	\N	Hi, I’m not a real person. I’m a bot that can teach you about this site. To interact with me, send me a message or mention me by name.	<p>Hi, I’m not a real person. I’m a bot that can teach you about this site. To interact with me, send me a message or mention me by name.</p>	\N	1	0	\N	\N	\N	\N
--1	\N	\N	\N	\N	\N	1	0	\N	\N	\N	\N
-1	\N	\N	\N	\N	\N	1	0	\N	\N	\N	\N
-2	\N	\N	\N	\N	\N	1	0	\N	\N	\N	\N
-3	\N	\N	\N	\N	\N	1	0	\N	\N	\N	\N
 5	\N	\N	\N	\N	\N	1	0	\N	\N	\N	\N
 4	\N	\N	\N	\N	\N	1	0	\N	\N	\N	\N
+3	\N	\N	\N	\N	\N	1	2	\N	\N	\N	\N
+1	\N	\N	\N	\N	\N	1	2	\N	\N	\N	\N
+-1	\N	\N	\N	\N	\N	1	2	\N	\N	\N	\N
+2	\N	\N	\N	\N	\N	1	2	\N	\N	\N	\N
 \.
 
 
@@ -8264,9 +8257,9 @@ COPY public.user_search_data (user_id, search_data, raw_data, locale, version) F
 -1	'system':1A,2B	system system	en	3
 -2	'discobot':1A,2B	discobot discobot	en	3
 3	'user1':1A,2B	user1 user1	en	3
-1	'admin':1A,2B	admin admin	en	3
 4	'user2':1A,2B	user2 user2	en	3
 2	'user0':1A,2B	user0 user0	en	3
+1	'admin':1A,2B	admin admin	en	3
 \.
 
 
@@ -8303,12 +8296,12 @@ ALTER TABLE public.user_security_keys ENABLE TRIGGER ALL;
 ALTER TABLE public.user_stats DISABLE TRIGGER ALL;
 
 COPY public.user_stats (user_id, topics_entered, time_read, days_visited, posts_read_count, likes_given, likes_received, new_since, read_faq, first_post_created_at, post_count, topic_count, bounce_score, reset_bounce_score_after, flags_agreed, flags_disagreed, flags_ignored, first_unread_at, distinct_badge_count, first_unread_pm_at, digest_attempted_at, post_edits_count, draft_count, pending_posts_count) FROM stdin;
-4	0	0	0	2	0	0	2026-07-25 05:59:16.927292	\N	2026-09-30 07:28:29.179534	1	0	0	\N	0	0	0	2026-07-25 05:59:16.731949	3	2026-07-25 05:59:16.731949	\N	\N	0	0
-3	0	0	0	2	1	0	2026-07-25 05:59:16.445924	\N	2026-09-30 07:28:29.079439	1	1	0	\N	0	0	0	2026-07-25 05:59:16.248723	2	2026-07-25 05:59:16.248723	\N	\N	0	0
-2	0	0	0	2	0	1	2026-07-25 05:59:16.023001	\N	2026-09-30 07:28:28.901913	0	2	0	\N	0	0	0	2026-07-25 05:59:15.828758	1	2026-07-25 05:59:15.828758	\N	\N	0	0
 1	0	0	0	6	0	0	2026-07-25 05:59:15.188025	\N	2026-09-30 07:28:29.25168	1	1	0	\N	0	0	0	2026-07-25 05:59:14.990046	4	2026-07-25 05:59:14.990046	\N	\N	0	0
+3	0	0	0	2	1	0	2026-07-25 05:59:16.445924	\N	2026-09-30 07:28:29.079439	1	1	0	\N	0	0	0	2026-07-25 05:59:16.248723	3	2026-07-25 05:59:16.248723	\N	\N	0	0
 -1	0	0	0	4	0	0	2026-07-25 05:58:08.03156	\N	2026-07-25 05:58:27.915472	1	3	0	\N	0	0	0	2026-07-25 05:58:07.777918	0	2026-07-25 05:58:07.777918	\N	\N	0	0
 -2	0	0	0	0	0	0	2026-07-25 05:58:29.567978	\N	\N	0	0	0	\N	0	0	0	2026-07-25 05:58:29.370351	0	2026-07-25 05:58:29.370351	\N	\N	0	0
+4	0	0	0	2	0	0	2026-07-25 05:59:16.927292	\N	2026-09-30 07:28:29.179534	1	0	0	\N	0	0	0	2026-07-25 05:59:16.731949	2	2026-07-25 05:59:16.731949	\N	\N	0	0
+2	0	0	1	2	0	1	2026-07-25 05:59:16.023001	\N	2026-09-30 07:28:28.901913	0	2	0	\N	0	0	0	2026-09-30 10:46:34.784768	2	2026-10-01 06:44:30.570032	\N	\N	0	0
 5	0	0	0	0	0	0	2026-07-25 05:59:17.387931	\N	\N	0	0	0	\N	0	0	0	2026-07-25 05:59:17.197224	4	2026-07-25 05:59:17.197224	\N	\N	0	0
 \.
 
@@ -8352,6 +8345,7 @@ ALTER TABLE public.user_uploads ENABLE TRIGGER ALL;
 ALTER TABLE public.user_visit_daily_rollups DISABLE TRIGGER ALL;
 
 COPY public.user_visit_daily_rollups (id, date, dau, mau) FROM stdin;
+2	2026-10-01	1	1
 \.
 
 
@@ -8364,6 +8358,7 @@ ALTER TABLE public.user_visit_daily_rollups ENABLE TRIGGER ALL;
 ALTER TABLE public.user_visits DISABLE TRIGGER ALL;
 
 COPY public.user_visits (id, user_id, visited_at, posts_read, mobile, time_read) FROM stdin;
+1	2	2026-10-01	0	f	0
 \.
 
 
@@ -8960,7 +8955,7 @@ SELECT pg_catalog.setval('public.categories_id_seq', 34, true);
 -- Name: category_activity_daily_rollups_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.category_activity_daily_rollups_id_seq', 12, true);
+SELECT pg_catalog.setval('public.category_activity_daily_rollups_id_seq', 36, true);
 
 
 --
@@ -9037,7 +9032,7 @@ SELECT pg_catalog.setval('public.category_tag_groups_id_seq', 1, false);
 -- Name: category_tag_stats_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.category_tag_stats_id_seq', 3, true);
+SELECT pg_catalog.setval('public.category_tag_stats_id_seq', 9, true);
 
 
 --
@@ -9779,7 +9774,7 @@ SELECT pg_catalog.setval('public.group_tag_notification_defaults_id_seq', 1, fal
 -- Name: group_users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.group_users_id_seq', 66, true);
+SELECT pg_catalog.setval('public.group_users_id_seq', 67, true);
 
 
 --
@@ -10304,7 +10299,7 @@ SELECT pg_catalog.setval('public.reviewables_id_seq', 1, false);
 -- Name: scheduler_stats_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.scheduler_stats_id_seq', 4118, true);
+SELECT pg_catalog.setval('public.scheduler_stats_id_seq', 14072, true);
 
 
 --
@@ -10339,7 +10334,7 @@ SELECT pg_catalog.setval('public.screened_urls_id_seq', 1, false);
 -- Name: search_logs_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.search_logs_id_seq', 42, true);
+SELECT pg_catalog.setval('public.search_logs_id_seq', 55, true);
 
 
 --
@@ -10808,14 +10803,14 @@ SELECT pg_catalog.setval('public.user_associated_groups_id_seq', 1, false);
 -- Name: user_auth_token_logs_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.user_auth_token_logs_id_seq', 1, false);
+SELECT pg_catalog.setval('public.user_auth_token_logs_id_seq', 11, true);
 
 
 --
 -- Name: user_auth_tokens_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.user_auth_tokens_id_seq', 1, false);
+SELECT pg_catalog.setval('public.user_auth_tokens_id_seq', 11, true);
 
 
 --
@@ -10836,7 +10831,7 @@ SELECT pg_catalog.setval('public.user_badges_id_seq', 16, true);
 -- Name: user_chat_channel_memberships_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.user_chat_channel_memberships_id_seq', 1, false);
+SELECT pg_catalog.setval('public.user_chat_channel_memberships_id_seq', 1, true);
 
 
 --
@@ -10885,7 +10880,7 @@ SELECT pg_catalog.setval('public.user_fields_id_seq', 1, false);
 -- Name: user_histories_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.user_histories_id_seq', 72, true);
+SELECT pg_catalog.setval('public.user_histories_id_seq', 73, true);
 
 
 --
@@ -10920,7 +10915,7 @@ SELECT pg_catalog.setval('public.user_passwords_id_seq', 33, true);
 -- Name: user_profile_views_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.user_profile_views_id_seq', 1, false);
+SELECT pg_catalog.setval('public.user_profile_views_id_seq', 8, true);
 
 
 --
@@ -10962,14 +10957,14 @@ SELECT pg_catalog.setval('public.user_uploads_id_seq', 66, true);
 -- Name: user_visit_daily_rollups_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.user_visit_daily_rollups_id_seq', 1, false);
+SELECT pg_catalog.setval('public.user_visit_daily_rollups_id_seq', 2, true);
 
 
 --
 -- Name: user_visits_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.user_visits_id_seq', 1, false);
+SELECT pg_catalog.setval('public.user_visits_id_seq', 1, true);
 
 
 --

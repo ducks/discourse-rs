@@ -111,6 +111,7 @@ pub fn state(pool: PgPool, config: Config) -> AppState {
         site_setting_defs: Arc::new(Definitions::vendored().expect("vendored site_settings.yml")),
         i18n: Arc::new(I18n::vendored().expect("vendored server.en.yml")),
         search_log_cache: Default::default(),
+        keys: Arc::new(discourse_rs::session::current::Keys::ephemeral()),
     }
 }
 

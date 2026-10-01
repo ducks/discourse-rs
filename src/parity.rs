@@ -29,17 +29,35 @@ pub struct Case {
     /// RFC 6901 JSON pointers to drop before comparing; `*` matches every
     /// array element or object key at that level.
     pub ignore: Vec<String>,
+    /// `as=username`: log in first (password from PARITY_PASSWORD, default
+    /// "password") and send the request with the session cookies.
+    pub login: Option<String>,
+    /// `body=k=v&k=v`: a form body for POST/DELETE.
+    pub body: Option<String>,
 }
 
 impl Case {
     pub fn label(&self) -> String {
-        format!("{} {}", self.method, self.path)
+        let mut label = format!("{} {}", self.method, self.path);
+        if let Some(user) = &self.login {
+            label.push_str(&format!(" as={user}"));
+        }
+        if let Some(body) = &self.body {
+            label.push_str(&format!(" body={body}"));
+        }
+        label
     }
 
     /// File name under the golden dir, e.g. `GET /srv/status?cluster=x`
-    /// becomes `get_srv_status_cluster_x.json`.
+    /// becomes `get_srv_status_cluster_x.json`; the login and body join in.
     pub fn golden_name(&self) -> String {
-        let raw = format!("{}_{}", self.method, self.path).to_ascii_lowercase();
+        let mut raw = format!("{}_{}", self.method, self.path).to_ascii_lowercase();
+        if let Some(user) = &self.login {
+            raw.push_str(&format!("_as_{user}"));
+        }
+        if let Some(body) = &self.body {
+            raw.push_str(&format!("_{body}"));
+        }
         let mut slug = String::with_capacity(raw.len());
         for c in raw.chars() {
             if c.is_ascii_alphanumeric() {
@@ -70,10 +88,9 @@ pub fn parse_cases(src: &str) -> Result<Vec<Case>, String> {
             .ok_or(format!("line {lineno}: expected `METHOD /path`"))?
             .to_string();
 
-        // Request bodies and auth arrive with the first write slice.
-        if method != "GET" {
+        if !["GET", "POST", "DELETE"].contains(&method.as_str()) {
             return Err(format!(
-                "line {lineno}: only GET is supported, got {method}"
+                "line {lineno}: only GET, POST and DELETE are supported, got {method}"
             ));
         }
         if !path.starts_with('/') {
@@ -81,7 +98,17 @@ pub fn parse_cases(src: &str) -> Result<Vec<Case>, String> {
         }
 
         let mut ignore = Vec::new();
+        let mut login = None;
+        let mut body = None;
         for opt in parts {
+            if let Some(user) = opt.strip_prefix("as=") {
+                login = Some(user.to_string());
+                continue;
+            }
+            if let Some(form) = opt.strip_prefix("body=") {
+                body = Some(form.to_string());
+                continue;
+            }
             let ptrs = opt
                 .strip_prefix("ignore=")
                 .ok_or(format!("line {lineno}: unknown option {opt:?}"))?;
@@ -99,6 +126,8 @@ pub fn parse_cases(src: &str) -> Result<Vec<Case>, String> {
             method,
             path,
             ignore,
+            login,
+            body,
         };
         if let Some(dup) = cases.iter().find(|c| c.golden_name() == case.golden_name()) {
             return Err(format!(
@@ -343,6 +372,8 @@ mod tests {
             method: "GET".into(),
             path: "/x".into(),
             ignore: ignore.iter().map(|s| s.to_string()).collect(),
+            login: None,
+            body: None,
         }
     }
 
@@ -373,7 +404,11 @@ mod tests {
 
     #[test]
     fn rejects_unsupported_methods_bad_paths_and_options() {
-        assert!(parse_cases("POST /posts").unwrap_err().contains("only GET"));
+        assert!(
+            parse_cases("PUT /posts")
+                .unwrap_err()
+                .contains("only GET, POST and DELETE")
+        );
         assert!(
             parse_cases("GET srv")
                 .unwrap_err()
@@ -403,8 +438,18 @@ mod tests {
             method: "GET".into(),
             path: "/srv/status?cluster=a.b".into(),
             ignore: vec![],
+            login: None,
+            body: None,
         };
         assert_eq!(c.golden_name(), "get_srv_status_cluster_a_b.json");
+        let c = parse_cases("POST /session as=user1 body=login=x&password=y")
+            .unwrap()
+            .remove(0);
+        assert_eq!(
+            c.golden_name(),
+            "post_session_as_user1_login_x_password_y.json"
+        );
+        assert_eq!(c.label(), "POST /session as=user1 body=login=x&password=y");
     }
 
     #[test]
@@ -485,4 +530,144 @@ mod tests {
         let err = compare(&case(&[]), &json("{}"), &json("<html>"), NAMES).unwrap_err();
         assert!(err.contains("rs body is not JSON"), "{err}");
     }
+}
+
+/// One HTTP exchange a runner performs on the harness's behalf.
+pub struct Exchange {
+    pub method: String,
+    pub path: String,
+    pub headers: Vec<(String, String)>,
+    pub body: Option<String>,
+}
+
+/// What came back, with the cookies to keep.
+pub struct Reply {
+    pub status: u16,
+    pub content_type: Option<String>,
+    pub body: String,
+    pub set_cookies: Vec<String>,
+}
+
+/// The cookies a case's requests share.
+#[derive(Default)]
+struct Jar {
+    cookies: Vec<(String, String)>,
+}
+
+impl Jar {
+    fn absorb(&mut self, set_cookies: &[String]) {
+        for raw in set_cookies {
+            let (pair, attrs) = raw.split_once(';').unwrap_or((raw, ""));
+            let Some((name, value)) = pair.split_once('=') else {
+                continue;
+            };
+            self.cookies.retain(|(n, _)| n != name);
+            if !attrs.contains("max-age=0") && !value.is_empty() {
+                self.cookies.push((name.to_string(), value.to_string()));
+            }
+        }
+    }
+
+    fn header(&self) -> Option<String> {
+        (!self.cookies.is_empty()).then(|| {
+            self.cookies
+                .iter()
+                .map(|(k, v)| format!("{k}={v}"))
+                .collect::<Vec<_>>()
+                .join("; ")
+        })
+    }
+}
+
+/// Runs a case through `send`: fetches a CSRF token and logs in when the
+/// case needs it, then performs the request itself with the session's
+/// cookies. The password for `as=` logins is PARITY_PASSWORD.
+pub async fn run_case<F, Fut>(case: &Case, mut send: F) -> Result<Recorded, String>
+where
+    F: FnMut(Exchange) -> Fut,
+    Fut: std::future::Future<Output = Result<Reply, String>>,
+{
+    let mut jar = Jar::default();
+    let mut csrf: Option<String> = None;
+    let needs_csrf = case.login.is_some() || case.method != "GET";
+    if needs_csrf {
+        let reply = send(Exchange {
+            method: "GET".into(),
+            path: "/session/csrf.json".into(),
+            headers: base_headers(&jar, None, false),
+            body: None,
+        })
+        .await?;
+        jar.absorb(&reply.set_cookies);
+        let json: Value = serde_json::from_str(&reply.body)
+            .map_err(|e| format!("csrf response for {}: {e}", case.label()))?;
+        csrf = json["csrf"].as_str().map(str::to_string);
+        if csrf.is_none() {
+            return Err(format!(
+                "no csrf token for {}: {}",
+                case.label(),
+                reply.body
+            ));
+        }
+    }
+    if let Some(user) = &case.login {
+        let password = std::env::var("PARITY_PASSWORD").unwrap_or_else(|_| "password".into());
+        let form = format!(
+            "login={}&password={}",
+            form_urlencoded::byte_serialize(user.as_bytes()).collect::<String>(),
+            form_urlencoded::byte_serialize(password.as_bytes()).collect::<String>()
+        );
+        let reply = send(Exchange {
+            method: "POST".into(),
+            path: "/session".into(),
+            headers: base_headers(&jar, csrf.as_deref(), true),
+            body: Some(form),
+        })
+        .await?;
+        jar.absorb(&reply.set_cookies);
+        let ok = reply.status == 200
+            && serde_json::from_str::<Value>(&reply.body)
+                .map(|j| j.get("error").is_none())
+                .unwrap_or(false);
+        if !ok {
+            return Err(format!(
+                "login as {user} failed for {}: {} {}",
+                case.label(),
+                reply.status,
+                reply.body
+            ));
+        }
+    }
+    let reply = send(Exchange {
+        method: case.method.clone(),
+        path: case.path.clone(),
+        headers: base_headers(&jar, csrf.as_deref(), case.body.is_some()),
+        body: case.body.clone(),
+    })
+    .await?;
+    Ok(Recorded {
+        status: reply.status,
+        content_type: reply.content_type,
+        body: reply.body,
+    })
+}
+
+fn base_headers(jar: &Jar, csrf: Option<&str>, form: bool) -> Vec<(String, String)> {
+    let mut headers: Vec<(String, String)> = REQUEST_HEADERS
+        .iter()
+        .map(|(k, v)| (k.to_string(), v.to_string()))
+        .collect();
+    if let Some(cookie) = jar.header() {
+        headers.push(("Cookie".into(), cookie));
+    }
+    if let Some(token) = csrf {
+        headers.push(("X-CSRF-Token".into(), token.to_string()));
+    }
+    if form {
+        headers.push((
+            "Content-Type".into(),
+            "application/x-www-form-urlencoded".into(),
+        ));
+    }
+    headers
 }

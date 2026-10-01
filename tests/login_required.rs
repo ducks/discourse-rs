@@ -147,6 +147,8 @@ async fn nothing_changes_when_the_setting_is_off() {
     let (status, headers, _) = get(&db.pool, "/latest").await;
     assert_eq!(status, StatusCode::OK);
     assert!(header(&headers, "set-cookie").is_none());
-    let (status, _, _) = get(&db.pool, "/login").await;
-    assert_eq!(status, StatusCode::NOT_FOUND);
+    // /login is the login page whether or not login is required.
+    let (status, _, html) = get(&db.pool, "/login").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(html.contains("Welcome to Discourse"));
 }

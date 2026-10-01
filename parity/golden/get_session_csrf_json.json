@@ -1,0 +1,7 @@
+{
+  "request": "GET /session/csrf.json",
+  "source": "http://127.0.0.1:3042",
+  "status": 200,
+  "content_type": "application/json; charset=utf-8",
+  "body": "{\"csrf\":\"R3UQTpnBfzg8duP7GDPek1lWbewQdnuLlL8McCU4mUu3UyT1T70WtcvQyKLfccNeuClw7hOPCRTKVpfD2xVyEQ\"}"
+}
