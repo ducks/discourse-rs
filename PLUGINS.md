@@ -224,10 +224,15 @@ hooks, then tier 2.
 2. **Settings ownership: shared.** Plugin settings live in the
    `site_settings` table like Rails', so a backup carries them and the
    admin API is one API. Decided 2026-10-01.
-3. **Sandboxing tier 1: not until tier 2.** Subprocesses run with the
-   host's permissions; the manifest says so and systemd hardening on the
-   service is the mitigation. Tier 2 (WASI) is the sandbox, and it is the
-   plan, not a maybe. Decided 2026-10-01.
+3. **No host permissions, ever (2026-10-01).** The subprocess tier above
+   is rejected: a plugin with the host's permissions is the Drupal model.
+   The direction instead is Shopify's: one scoped plugin API (API-key
+   scopes, `plugin_store_rows`, custom fields), and two ways to run a
+   plugin against it, in-process as a WASI component for installable
+   plugins (drop a directory in, no host access) or as a hosted service
+   over signed HTTP for plugins that are services anyway. Tier 1 as
+   written is to be replaced by that split; parked while sessions slice
+   3 is built.
 4. **Admin UI.** Plugins that register admin pages do it through `route`
    with their own HTML. No admin framework from core until there is an
    admin.
