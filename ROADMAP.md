@@ -87,12 +87,13 @@ Logged-in readers, no writes yet.
       topics/categories/tags, cleared pins, dismissals, `/unread`, `/new`,
       `/unseen`, `/read`, `/posted`, `/bookmarks` (and `/c/.../l/<filter>`)
 - [x] The page shell for a member: csrf meta, logout form, no caching
-- [ ] Own profile and staff views of profiles (the private attribute
-      block: emails, 2FA, auth tokens, preferences), deleted topics and
-      posts for staff (`post_stream.gaps`, `show_deleted`), ignored users,
-      category group moderators, shared drafts, the login-required 2FA and
-      required-fields redirects
-- [ ] Notifications list, bookmarks list, user preferences (read-only)
+- [x] Own profile and staff views of profiles (the private attribute
+      block), private messages (lists and the topic view), notifications
+- [ ] Deleted topics and posts for staff (`post_stream.gaps`,
+      `show_deleted`), ignored users, category group moderators, shared
+      drafts, group PMs' related messages, the login-required 2FA and
+      required-fields redirects, pending reviewables
+- [ ] Bookmarks list, user-menu endpoints, `/u/:username/user-menu-private-messages`
 - [ ] Live updates: a MessageBus-compatible long-poll endpoint (`/message-bus/:client_id/poll`); nothing in the Rust ecosystem provides it, so it is ours to write
 
 
