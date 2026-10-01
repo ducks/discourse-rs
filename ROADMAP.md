@@ -68,7 +68,7 @@ how often a backup trips them.
       `tags:`, `before:`/`after:`, `order:`), search contexts, `search_for_id`,
       rate limits, pg headlines
 - [ ] Plugin-added keys (solved, voting, reactions, ...) through the plugin
-      protocol (PLUGINS.md) instead of parity ignore lists
+      protocol (milestone 5) instead of parity ignore lists
 - [ ] Topics without a stored slug (`Slug.for`)
 
 ## Milestone 3: sessions
@@ -96,23 +96,6 @@ Logged-in readers, no writes yet.
 - [ ] Bookmarks list, user-menu endpoints, `/u/:username/user-menu-private-messages`
 - [ ] Live updates: a MessageBus-compatible long-poll endpoint (`/message-bus/:client_id/poll`); nothing in the Rust ecosystem provides it, so it is ours to write
 
-
-## Milestone 3.5: plugins
-
-The protocol in PLUGINS.md, built on the read side first so the parity
-harness can judge it.
-
-- [ ] Tier 0: `plugin.toml` with settings, preloaded custom fields,
-      assets, i18n, SQL migrations; `discourse-rs plugins`
-- [ ] Tier 1: subprocess over JSON-RPC (stdio or socket), supervised;
-      `serialize`, `html`, `modify` batched per response, `route` with
-      core's session and CSRF, `event` and `job`; the failure policy
-- [ ] discourse-solved's read side as the first plugin (Ruby), its parity
-      ignores deleted; the voting plugin second, in another language
-- [ ] Write-side hooks designed with milestone 4 (NewPostManager
-      modifiers, post events)
-- [ ] Tier 2: the same hooks as WASI components in-process
-
 ## Milestone 4: writes
 
 - [ ] Cooking pipeline: markdown-it with Discourse's rules (the hard part;
@@ -122,13 +105,35 @@ harness can judge it.
 - [ ] Uploads (local first, S3 later), optimized images
 - [ ] Background jobs (a Sidekiq replacement for cooking, notifications,
       digests), rate limits
+- [ ] Name the places a plugin would attach as they are built
+      (NewPostManager modifiers, post events); nothing calls them until
+      milestone 5
 - [ ] Ember frontend against the Rust API as a compatibility check, not a
       product goal
+
+## Milestone 5: plugins
+
+After writes (moved 2026-10-01, was 3.5): the plugin API is mostly the
+write endpoints. The design and its open decisions are in PLUGINS.md.
+
+- [ ] Decide the runtime: WASI components or an embedded scripting
+      language (PLUGINS.md decision 6)
+- [ ] Tier 0: `plugin.toml` with settings, preloaded custom fields,
+      assets, i18n, the tables the plugin owns; `discourse-rs plugins`
+- [ ] The host functions: keyed batch reads of the plugin's own tables,
+      and the Discourse JSON API in-process under manifest scopes
+- [ ] `serialize`, `html`, `modify` batched per response, with
+      discourse-solved's read side as the first plugin and its parity
+      ignores deleted; the voting plugin second
+- [ ] `route` with core's session and CSRF, `event`, `job`; the failure
+      policy
+- [ ] Hosted plugins: the same API over HTTP with a scoped key, events
+      as signed webhooks
 
 ## Not planned
 
 - Running Discourse migrations: Discourse owns the schema; re-vendor
   `structure.sql` and re-snapshot instead
-- Plugins as code loaded into the process (see PLUGINS.md: they are
-  programs behind a JSON-RPC protocol, in any language)
+- Plugins with the host's permissions: native code in the process, or a
+  subprocess with its own database connection (PLUGINS.md decision 3)
 - Feature parity with admin (`/admin/...`)
