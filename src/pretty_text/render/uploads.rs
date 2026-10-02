@@ -337,10 +337,9 @@ pub fn run(root: &mut Node, settings: &RenderSettings, ctx: &Context) {
             .cast::<HtmlInline>()
             .map(|h| &h.content)
             .or(node.cast::<HtmlBlock>().map(|h| &h.content))
+            && html.contains(UPLOAD)
         {
-            if html.contains(UPLOAD) {
-                ctx.refuse("upload:// urls inside raw html");
-            }
+            ctx.refuse("upload:// urls inside raw html");
         }
     }
     visit(root, settings, ctx);

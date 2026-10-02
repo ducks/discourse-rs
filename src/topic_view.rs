@@ -1501,22 +1501,21 @@ impl TopicView<'_> {
             {
                 return Err(Unsupported("title_is_group").into());
             }
-            if let Some(reply_to) = post.reply_to_user_id {
-                if !(suppress_reply_when_quoting && post.reply_quoted) {
-                    if let Some(ru) = user(Some(reply_to)) {
-                        let mut r = Map::new();
-                        r.insert("id".into(), json!(ru.id));
-                        r.insert("username".into(), json!(ru.username));
-                        if enable_names {
-                            r.insert("name".into(), json!(ru.name));
-                        }
-                        r.insert(
-                            "avatar_template".into(),
-                            json!(self.avatar(ru, logo_small_url.as_deref())?),
-                        );
-                        p.insert("reply_to_user".into(), Value::Object(r));
-                    }
+            if let Some(reply_to) = post.reply_to_user_id
+                && !(suppress_reply_when_quoting && post.reply_quoted)
+                && let Some(ru) = user(Some(reply_to))
+            {
+                let mut r = Map::new();
+                r.insert("id".into(), json!(ru.id));
+                r.insert("username".into(), json!(ru.username));
+                if enable_names {
+                    r.insert("name".into(), json!(ru.name));
                 }
+                r.insert(
+                    "avatar_template".into(),
+                    json!(self.avatar(ru, logo_small_url.as_deref())?),
+                );
+                p.insert("reply_to_user".into(), Value::Object(r));
             }
             let bookmark = viewer
                 .bookmarks
@@ -1601,10 +1600,9 @@ impl TopicView<'_> {
                         .iter()
                         .find(|(n, _)| n == key)
                         .and_then(|(_, v)| v.clone())
+                        && !value.is_empty()
                     {
-                        if !value.is_empty() {
-                            p.insert(key.into(), json!(value));
-                        }
+                        p.insert(key.into(), json!(value));
                     }
                 }
             }

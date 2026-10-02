@@ -219,10 +219,10 @@ pub fn is_auto_generated(
     from_email: Option<&str>,
 ) -> Result<bool, AppError> {
     let allowlist = s.get("auto_generated_allowlist")?.to_s();
-    if let Some(from) = from_email {
-        if allowlist.split('|').any(|a| a == from) {
-            return Ok(false);
-        }
+    if let Some(from) = from_email
+        && allowlist.split('|').any(|a| a == from)
+    {
+        return Ok(false);
     }
     let precedence = mail.root.field("Precedence").unwrap_or("");
     if Regex::new(r"(?i)list|junk|bulk|auto_reply")

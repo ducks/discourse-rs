@@ -143,21 +143,18 @@ pub async fn revise(
     // grace_period_edit?
     let elapsed = (revised_at - last_version_at).num_milliseconds() as f64 / 1000.0;
     let mut grace_period_edit = elapsed <= grace as f64;
-    if grace_period_edit {
-        if let Some(new_raw) = &raw {
-            let max_diff = if editor.is_staff() || editor_user.trust_level > 1 {
-                s.get("editing_grace_period_max_diff_high_trust")?.to_i()
-            } else {
-                s.get("editing_grace_period_max_diff")?.to_i()
-            };
-            let size_change =
-                (post.raw.chars().count() as i64 - new_raw.chars().count() as i64).abs();
-            let diff = diff_size(&post.raw, new_raw)
-                .map(|d| d as i64)
-                .unwrap_or(i64::MAX);
-            if size_change > max_diff || diff > max_diff {
-                grace_period_edit = false;
-            }
+    if grace_period_edit && let Some(new_raw) = &raw {
+        let max_diff = if editor.is_staff() || editor_user.trust_level > 1 {
+            s.get("editing_grace_period_max_diff_high_trust")?.to_i()
+        } else {
+            s.get("editing_grace_period_max_diff")?.to_i()
+        };
+        let size_change = (post.raw.chars().count() as i64 - new_raw.chars().count() as i64).abs();
+        let diff = diff_size(&post.raw, new_raw)
+            .map(|d| d as i64)
+            .unwrap_or(i64::MAX);
+        if size_change > max_diff || diff > max_diff {
+            grace_period_edit = false;
         }
     }
     let flagged: bool = sqlx::query_scalar(

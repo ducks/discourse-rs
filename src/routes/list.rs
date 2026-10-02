@@ -103,10 +103,8 @@ pub(super) fn next_url(
     if let Some(p) = options.per_page.filter(|_| true) {
         pairs.push(("per_page", p.to_string()));
     }
-    if top {
-        if let Some(period) = params.period.as_deref().filter(|p| !p.is_empty()) {
-            pairs.push(("period", period.to_string()));
-        }
+    if top && let Some(period) = params.period.as_deref().filter(|p| !p.is_empty()) {
+        pairs.push(("period", period.to_string()));
     }
     pairs.sort_by(|a, b| a.0.cmp(b.0));
     let query: Vec<String> = pairs.into_iter().map(|(k, v)| format!("{k}={v}")).collect();

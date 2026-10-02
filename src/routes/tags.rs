@@ -250,10 +250,10 @@ async fn show_list(
         },
         TagRef::Name(name) => (Tag::find_by_name(&mut conn, name).await?, false),
     };
-    if let Some(t) = &tag {
-        if !t.visible_to_anonymous(&mut conn).await? {
-            return Ok(not_found());
-        }
+    if let Some(t) = &tag
+        && !t.visible_to_anonymous(&mut conn).await?
+    {
+        return Ok(not_found());
     }
     let has_id = matches!(path.tag, TagRef::SlugId(..) | TagRef::Id(_));
     if has_id && tag.is_none() {

@@ -169,13 +169,14 @@ pub async fn build(
     // notification_email
     let data_str = |k: &str| req.data.get(k).and_then(Value::as_str).map(str::to_string);
     let mut user_name = data_str("original_username").unwrap_or_default();
-    if s.get("enable_names")?.truthy() && s.get("display_name_on_email_from")?.truthy() {
-        if let Some(name) = post.name.clone().filter(|n| !n.trim().is_empty()) {
-            if req.data.get("original_user_id").is_some() {
-                return Err(Unsupported("original_user_id in notification data").into());
-            }
-            user_name = name;
+    if s.get("enable_names")?.truthy()
+        && s.get("display_name_on_email_from")?.truthy()
+        && let Some(name) = post.name.clone().filter(|n| !n.trim().is_empty())
+    {
+        if req.data.get("original_user_id").is_some() {
+            return Err(Unsupported("original_user_id in notification data").into());
         }
+        user_name = name;
     }
     let allow_reply_by_email = !user.suspended;
     let original_username = data_str("original_username")

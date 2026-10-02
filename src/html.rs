@@ -73,10 +73,10 @@ pub fn with_viewer_headers(
     viewer: &ViewerState,
 ) -> axum::response::Response {
     use axum::http::{HeaderValue, header};
-    if let Some(cookie) = &viewer.set_cookie {
-        if let Ok(value) = HeaderValue::from_str(cookie) {
-            response.headers_mut().append(header::SET_COOKIE, value);
-        }
+    if let Some(cookie) = &viewer.set_cookie
+        && let Ok(value) = HeaderValue::from_str(cookie)
+    {
+        response.headers_mut().append(header::SET_COOKIE, value);
     }
     if let Some(v) = &viewer.viewer {
         if let Ok(value) = HeaderValue::from_str(&v.username) {

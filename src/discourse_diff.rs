@@ -532,10 +532,10 @@ fn tokenize_node(node: &Handle, tokens: &mut Vec<String>) {
             let mut open = Vec::new();
             for child in node.children.borrow().iter() {
                 tokenize_node(child, tokens);
-                if let NodeData::Element { name, .. } = &child.data {
-                    if matches!(&*name.local, "source" | "track") {
-                        open.push(name.local.to_string());
-                    }
+                if let NodeData::Element { name, .. } = &child.data
+                    && matches!(&*name.local, "source" | "track")
+                {
+                    open.push(name.local.to_string());
                 }
             }
             for unclosed in open.iter().rev() {
@@ -553,11 +553,11 @@ fn tokenize_node(node: &Handle, tokens: &mut Vec<String>) {
 /// `HtmlTokenizer#characters`: whitespace after a tag joins the tag;
 /// text is `scan(/\W|\w+[ \t]*/)`.
 fn characters(text: &str, tokens: &mut Vec<String>) {
-    if text.chars().all(char::is_whitespace) {
-        if let Some(last) = tokens.last_mut().filter(|t| t.starts_with('<')) {
-            last.push_str(text);
-            return;
-        }
+    if text.chars().all(char::is_whitespace)
+        && let Some(last) = tokens.last_mut().filter(|t| t.starts_with('<'))
+    {
+        last.push_str(text);
+        return;
     }
     let chars: Vec<char> = text.chars().collect();
     let mut i = 0;

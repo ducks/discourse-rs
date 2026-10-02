@@ -98,10 +98,10 @@ fn add_option_ids(content: &mut [Node]) {
     }
     let mut ids = ids.into_iter();
     fn assign(node: &mut Node, ids: &mut impl Iterator<Item = Option<String>>) {
-        if node.is::<ListItem>() {
-            if let Some(Some(id)) = ids.next() {
-                node.attrs.push(("data-poll-option-id", id));
-            }
+        if node.is::<ListItem>()
+            && let Some(Some(id)) = ids.next()
+        {
+            node.attrs.push(("data-poll-option-id", id));
         }
         for child in node.children.iter_mut() {
             assign(child, ids);

@@ -110,10 +110,10 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
         notified: Vec::new(),
     };
     alerter.notified.extend(post.user_id);
-    if let Some(editor) = post.last_editor_id {
-        if !alerter.notified.contains(&editor) {
-            alerter.notified.push(editor);
-        }
+    if let Some(editor) = post.last_editor_id
+        && !alerter.notified.contains(&editor)
+    {
+        alerter.notified.push(editor);
     }
 
     // mentions
@@ -173,14 +173,13 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
             .bind(post.user_id)
             .fetch_optional(&mut *conn)
             .await?;
-            if let Some(Some(target)) = target {
-                if !alerter.notified.contains(&target)
-                    && alerter
-                        .create_notification(conn, target, types::REPLIED, &Opts::default())
-                        .await?
-                {
-                    alerter.notified.push(target);
-                }
+            if let Some(Some(target)) = target
+                && !alerter.notified.contains(&target)
+                && alerter
+                    .create_notification(conn, target, types::REPLIED, &Opts::default())
+                    .await?
+            {
+                alerter.notified.push(target);
             }
         }
         if let Some(author) = post.topic_user_id {

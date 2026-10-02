@@ -122,10 +122,11 @@ fn match_code(s: &str) -> Option<(&str, usize)> {
     }
     let mut end = name_len;
     let tail = &s[end..];
-    if let Some(t) = tail.strip_prefix(":t") {
-        if t.chars().next().is_some_and(|c| c.is_ascii_digit()) && t[1..].starts_with(':') {
-            end += 3;
-        }
+    if let Some(t) = tail.strip_prefix(":t")
+        && t.chars().next().is_some_and(|c| c.is_ascii_digit())
+        && t[1..].starts_with(':')
+    {
+        end += 3;
     }
     if !s[end..].starts_with(':') {
         return None;

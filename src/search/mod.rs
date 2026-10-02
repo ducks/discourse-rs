@@ -174,12 +174,12 @@ fn words(term: &str) -> Vec<String> {
         while i < chars.len() && chars[i] != '"' && !is_ws(chars[i]) {
             i += 1;
         }
-        if i < chars.len() && chars[i] == '"' {
-            if let Some(close) = chars[i + 1..].iter().position(|&c| c == '"') {
-                if close > 0 {
-                    i += close + 2;
-                }
-            }
+        if i < chars.len()
+            && chars[i] == '"'
+            && let Some(close) = chars[i + 1..].iter().position(|&c| c == '"')
+            && close > 0
+        {
+            i += close + 2;
         }
         if i == start {
             i += 1;

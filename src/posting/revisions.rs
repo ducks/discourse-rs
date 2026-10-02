@@ -291,8 +291,7 @@ async fn serialize(
     let current_revision = object.number;
     let previous = revisions
         .iter()
-        .filter(|r| r.revision <= current_revision)
-        .next_back()
+        .rfind(|r| r.revision <= current_revision)
         .ok_or(Unsupported("a revision with nothing before it"))?;
     let current = revisions
         .iter()
@@ -301,14 +300,12 @@ async fn serialize(
     let first_revision = revisions[0].revision;
     let last_revision = revisions
         .iter()
-        .filter(|r| r.revision <= latest.version)
-        .next_back()
+        .rfind(|r| r.revision <= latest.version)
         .map(|r| r.revision)
         .ok_or(Unsupported("a revision past the post's version"))?;
     let previous_revision = revisions
         .iter()
-        .filter(|r| r.revision >= first_revision && r.revision < current_revision)
-        .next_back()
+        .rfind(|r| r.revision >= first_revision && r.revision < current_revision)
         .map(|r| r.revision);
     let next_revision = revisions
         .iter()

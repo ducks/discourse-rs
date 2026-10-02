@@ -133,7 +133,7 @@ impl BlockRule for DefinitionScanner {
         state.line_offsets[start_line].line_start = content_start;
         state.line_offsets[start_line].first_nonspace = pos;
         state.blk_indent += 4;
-        let indent = (indent as usize).max(0) as i32;
+        let indent = (indent as usize) as i32;
         state.line_offsets[start_line].indent_nonspace = if indent < state.blk_indent as i32 {
             indent + state.blk_indent as i32
         } else {

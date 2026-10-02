@@ -414,16 +414,16 @@ pub async fn create(
         json!({"type": "signup", "user_id": user_id, "email_token": token, "to_address": null}),
     )
     .await?;
-    if let Some(tz) = s.timezone.filter(|t| !t.is_empty()) {
-        if tz.contains('/') || tz == "UTC" {
-            sqlx::query(
-                "UPDATE user_options SET timezone = $2 WHERE user_id = $1 AND timezone IS NULL",
-            )
-            .bind(user_id)
-            .bind(tz)
-            .execute(&mut *conn)
-            .await?;
-        }
+    if let Some(tz) = s.timezone.filter(|t| !t.is_empty())
+        && (tz.contains('/') || tz == "UTC")
+    {
+        sqlx::query(
+            "UPDATE user_options SET timezone = $2 WHERE user_id = $1 AND timezone IS NULL",
+        )
+        .bind(user_id)
+        .bind(tz)
+        .execute(&mut *conn)
+        .await?;
     }
     let message = i18n
         .t_with(
@@ -768,10 +768,10 @@ pub async fn activate_user(
     .bind(user_id)
     .fetch_optional(&mut *conn)
     .await?;
-    if let Some((avatar_id, None)) = avatar {
-        if settings.get("automatically_download_gravatars")?.truthy() {
-            enqueue_gravatar(&mut *conn, user_id, avatar_id).await?;
-        }
+    if let Some((avatar_id, None)) = avatar
+        && settings.get("automatically_download_gravatars")?.truthy()
+    {
+        enqueue_gravatar(&mut *conn, user_id, avatar_id).await?;
     }
     if settings.get("send_welcome_message")?.truthy()
         && !settings.get("discourse_narrative_bot_enabled")?.truthy()

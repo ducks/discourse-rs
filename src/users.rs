@@ -592,10 +592,10 @@ impl Users<'_> {
         u.insert("pending_count".into(), json!(0));
         u.insert("profile_view_count".into(), json!(user.views.unwrap_or(0)));
         self.private().second_factor(user, &mut u).await?;
-        if profile_details {
-            if let Some(url) = self.upload_url(user.profile_background_upload_id).await? {
-                u.insert("profile_background_upload_url".into(), json!(url));
-            }
+        if profile_details
+            && let Some(url) = self.upload_url(user.profile_background_upload_id).await?
+        {
+            u.insert("profile_background_upload_url".into(), json!(url));
         }
         // can_upload_profile_header? / can_upload_user_card_background?
         for (key, setting) in [
@@ -917,9 +917,10 @@ impl Users<'_> {
         // topic of a grant (others would need allowed topic ids, never
         // passed here).
         let mut topic_id: Option<i32> = None;
-        if self.guardian.is_admin() {
-            if let Some(post_id) = row.post_id {
-                let post: Option<(i32, i32, bool)> = sqlx::query_as(
+        if self.guardian.is_admin()
+            && let Some(post_id) = row.post_id
+        {
+            let post: Option<(i32, i32, bool)> = sqlx::query_as(
                     "SELECT p.post_number, p.topic_id, b.show_posts FROM posts p JOIN badges b ON b.id = $2 \
                      WHERE p.id = $1 AND p.deleted_at IS NULL",
                 )
@@ -927,11 +928,10 @@ impl Users<'_> {
                 .bind(row.badge_id)
                 .fetch_optional(&mut *self.conn)
                 .await?;
-                if let Some((post_number, tid, true)) = post {
-                    ub.insert("post_id".into(), json!(post_id));
-                    ub.insert("post_number".into(), json!(post_number));
-                    topic_id = Some(tid);
-                }
+            if let Some((post_number, tid, true)) = post {
+                ub.insert("post_id".into(), json!(post_id));
+                ub.insert("post_number".into(), json!(post_number));
+                topic_id = Some(tid);
             }
         }
         ub.insert("badge_id".into(), json!(row.badge_id));

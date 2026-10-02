@@ -405,10 +405,10 @@ impl TopicQuery<'_> {
                     .bind(category_id)
                     .fetch_optional(&mut *self.conn)
                     .await?;
-            if let Some((Some(sort_order), ascending)) = sort {
-                if !sort_order.is_empty() {
-                    order = Some((sort_order, ascending.unwrap_or(false)));
-                }
+            if let Some((Some(sort_order), ascending)) = sort
+                && !sort_order.is_empty()
+            {
+                order = Some((sort_order, ascending.unwrap_or(false)));
             }
         }
         Ok(CategoryScope {
@@ -673,10 +673,11 @@ impl TopicQuery<'_> {
             return Ok(None);
         }
         // A list filtered by a tag the user muted shows it anyway.
-        if let Some(first) = self.tags.tag_ids.first() {
-            if !self.options.no_tags && self.user.muted_tag_ids.contains(first) {
-                return Ok(None);
-            }
+        if let Some(first) = self.tags.tag_ids.first()
+            && !self.options.no_tags
+            && self.user.muted_tag_ids.contains(first)
+        {
+            return Ok(None);
         }
         let ids = self
             .user
@@ -717,10 +718,10 @@ impl TopicQuery<'_> {
             Filter::Hot => Some("topic_hot_scores.score DESC".to_string()),
             _ => None,
         };
-        if let Some(block) = &block {
-            if self.options.order.is_none() {
-                return Ok(block.clone());
-            }
+        if let Some(block) = &block
+            && self.options.order.is_none()
+        {
+            return Ok(block.clone());
         }
         let (order, ascending) = match &self.category.order {
             Some((o, a)) => (Some(o.as_str()), *a),

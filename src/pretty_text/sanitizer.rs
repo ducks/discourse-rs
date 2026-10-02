@@ -422,20 +422,20 @@ fn parse_attrs(html: &str, mut on_attr: impl FnMut(&str, &str) -> Option<String>
             i += 1;
             continue;
         }
-        if let Some(attr_name) = &name {
-            if Some(i) == last_mark_pos {
-                match chars[i + 1..].iter().position(|x| *x == c) {
-                    None => break,
-                    Some(offset) => {
-                        let j = i + 1 + offset;
-                        let value = text(&chars, i + 1, j);
-                        add(attr_name, trim(&value));
-                        name = None;
-                        i = j;
-                        last_pos = i + 1;
-                        i += 1;
-                        continue;
-                    }
+        if let Some(attr_name) = &name
+            && Some(i) == last_mark_pos
+        {
+            match chars[i + 1..].iter().position(|x| *x == c) {
+                None => break,
+                Some(offset) => {
+                    let j = i + 1 + offset;
+                    let value = text(&chars, i + 1, j);
+                    add(attr_name, trim(&value));
+                    name = None;
+                    i = j;
+                    last_pos = i + 1;
+                    i += 1;
+                    continue;
                 }
             }
         }

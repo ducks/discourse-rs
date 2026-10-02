@@ -340,13 +340,13 @@ impl Site<'_> {
             "censored_regexp".into(),
             self.watched_words("censor").await?.unwrap_or(json!([])),
         );
-        if let Some(id) = self.settings.get("shared_drafts_category")?.presence() {
-            if self.guardian.can_see_shared_draft(self.settings)? {
-                out.insert(
-                    "shared_drafts_category_id".into(),
-                    json!(crate::ruby::to_i(&id)),
-                );
-            }
+        if let Some(id) = self.settings.get("shared_drafts_category")?.presence()
+            && self.guardian.can_see_shared_draft(self.settings)?
+        {
+            out.insert(
+                "shared_drafts_category_id".into(),
+                json!(crate::ruby::to_i(&id)),
+            );
         }
         // Plugin::CustomEmoji.translations: plugins only.
         out.insert("custom_emoji_translation".into(), json!({}));
