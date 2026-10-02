@@ -87,3 +87,32 @@ impl NodeValue for Holder {
         fmt.contents(&node.children);
     }
 }
+
+/// The text of inline code. markdown-it's `code_inline` token has its
+/// content and no children, so no pass over text (typographer, mentions,
+/// emoji, linkify) ever sees it; the crate keeps it as a text node, which
+/// they would.
+#[derive(Debug)]
+pub struct CodeText(pub String);
+
+impl NodeValue for CodeText {
+    fn render(&self, _: &Node, fmt: &mut dyn Renderer) {
+        fmt.text(&self.0);
+    }
+}
+
+/// Turns the text inside inline code into `CodeText`.
+pub fn seal_inline_code(root: &mut Node) {
+    use markdown_it::parser::inline::Text;
+    use markdown_it::plugins::cmark::inline::backticks::CodeInline;
+    root.walk_mut(|node, _| {
+        if node.is::<CodeInline>() {
+            for child in node.children.iter_mut() {
+                if let Some(text) = child.cast::<Text>() {
+                    let content = text.content.clone();
+                    child.replace(CodeText(content));
+                }
+            }
+        }
+    });
+}

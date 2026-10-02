@@ -7,7 +7,7 @@ mod common;
 use common::{TestDb, recorded_config, state};
 use discourse_rs::pretty_text::helpers::{Helpers, translate};
 
-use discourse_rs::pretty_text::{CookError, Host, MarkdownOptions, markdown, options};
+use discourse_rs::pretty_text::{CookError, Host, MarkdownOptions, cook, options};
 use discourse_rs::site_settings::SiteSettings;
 use serde_json::Value;
 
@@ -265,7 +265,36 @@ fn first_difference(rails: &str, ours: &str) -> String {
 /// that stops matching fails the test.
 const NOT_COOKED_YET: &[&str] = &["sample-30"];
 
-/// PrettyText.markdown over the recorded corpus (feature samples and every
+/// Cooks every entry of a recorded corpus and returns the ids that do
+/// not come out as Rails cooked them, with where each one differs.
+async fn cook_corpus(host: &Host, corpus: &[Value]) -> (Vec<String>, Vec<String>) {
+    let mut missed = Vec::new();
+    let mut details = Vec::new();
+    for entry in corpus {
+        let id = entry["id"].as_str().unwrap().to_string();
+        let rails = entry["cooked"].as_str().unwrap();
+        let opts = MarkdownOptions {
+            topic_id: entry["topic_id"].as_i64(),
+            user_id: entry["user_id"].as_i64(),
+            ..Default::default()
+        };
+        let ours = cook(host, entry["raw"].as_str().unwrap(), &opts)
+            .await
+            .unwrap_or_else(|e| format!("error: {e}"));
+        if ours != rails {
+            details.push(format!("{id}\n{}", first_difference(rails, &ours)));
+            missed.push(id);
+        }
+    }
+    eprintln!(
+        "{} of {} corpus entries cook byte-equal",
+        corpus.len() - missed.len(),
+        corpus.len()
+    );
+    (missed, details)
+}
+
+/// PrettyText.cook over the recorded corpus (feature samples and every
 /// seeded post), each byte-equal to what Rails cooked, apart from the
 /// entries listed above.
 #[tokio::test]
@@ -276,38 +305,74 @@ async fn cooking_matches_rails() {
     let corpus = corpus.as_array().unwrap();
     assert!(corpus.len() > 70, "{} entries", corpus.len());
 
-    let mut missed = Vec::new();
-    let mut details = Vec::new();
-    for entry in corpus {
-        let id = entry["id"].as_str().unwrap();
-        let rails = entry["markdown"].as_str().unwrap();
-        let opts = MarkdownOptions {
-            topic_id: entry["topic_id"].as_i64(),
-            user_id: entry["user_id"].as_i64(),
-            ..Default::default()
-        };
-        let ours = markdown(&host, entry["raw"].as_str().unwrap(), &opts)
-            .await
-            .unwrap_or_else(|e| format!("error: {e}"));
-        if ours != rails {
-            missed.push(id);
-            if !NOT_COOKED_YET.contains(&id) || std::env::var("COOK_DIFF").is_ok() {
-                details.push(format!("{id}\n{}", first_difference(rails, &ours)));
-            }
-        }
-    }
-    eprintln!(
-        "{} of {} corpus entries cook byte-equal",
-        corpus.len() - missed.len(),
-        corpus.len()
-    );
+    let (missed, details) = cook_corpus(&host, corpus).await;
     if std::env::var("COOK_DIFF").is_ok() {
         eprintln!("{}", details.join("\n"));
     }
+    let unexpected: Vec<&String> = details
+        .iter()
+        .filter(|d| {
+            !NOT_COOKED_YET
+                .iter()
+                .any(|id| d.starts_with(&format!("{id}\n")))
+        })
+        .collect();
     assert_eq!(
         missed,
         NOT_COOKED_YET,
         "the entries that do not match Rails changed:\n{}",
+        unexpected
+            .iter()
+            .map(|d| d.as_str())
+            .collect::<Vec<_>>()
+            .join("\n")
+    );
+}
+
+/// The same over another site's posts, recorded with
+/// `scripts/record-pretty-text <agent> <dir>` from a restored backup and
+/// cooked against that backup's database:
+///
+///     PRETTY_TEXT_CORPUS=backups/rs_backup/pretty_text \
+///     PRETTY_TEXT_DATABASE_URL=postgresql://localhost:5442/rs_backup?host=$PGDATA \
+///     PRETTY_TEXT_PORT=3043 cargo test --test pretty_text backup -- --ignored
+///
+/// `PRETTY_TEXT_PORT` is the agent's DISCOURSE_PORT, which links carry.
+/// Nothing here writes to the database.
+#[tokio::test]
+#[ignore]
+async fn backup_corpus_matches_rails() {
+    let dir = std::env::var("PRETTY_TEXT_CORPUS").expect("PRETTY_TEXT_CORPUS");
+    let database_url = std::env::var("PRETTY_TEXT_DATABASE_URL").expect("PRETTY_TEXT_DATABASE_URL");
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("parity/environment");
+    let mut vars = discourse_rs::parity::load_environment(&path).unwrap();
+    vars.retain(|(k, _)| k != "DISCOURSE_PORT");
+    if let Ok(port) = std::env::var("PRETTY_TEXT_PORT") {
+        vars.push(("DISCOURSE_PORT".into(), port));
+    }
+    vars.push(("DATABASE_URL".into(), database_url.clone()));
+    let config = discourse_rs::config::Config::from_vars(vars).unwrap();
+    let pool = sqlx::postgres::PgPoolOptions::new()
+        .max_connections(2)
+        .connect(&database_url)
+        .await
+        .unwrap();
+    let app_state = state(pool, config);
+    let host = Host {
+        pool: app_state.pool,
+        config: app_state.config,
+        site_setting_defs: app_state.site_setting_defs,
+        i18n: app_state.i18n,
+    };
+    let corpus: Value = serde_json::from_str(
+        &std::fs::read_to_string(std::path::Path::new(&dir).join("corpus.json")).unwrap(),
+    )
+    .unwrap();
+    let (missed, details) = cook_corpus(&host, corpus.as_array().unwrap()).await;
+    assert!(
+        missed.is_empty(),
+        "{} differ:\n{}",
+        missed.len(),
         details.join("\n")
     );
 }

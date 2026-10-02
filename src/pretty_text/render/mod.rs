@@ -248,6 +248,7 @@ pub fn render(
     let md = engine(settings, lookups);
     let ctx = md.ext.get::<Context>().expect("context");
     let mut root: Node = md.parse(raw);
+    element::seal_inline_code(&mut root);
     footnotes::tail(&mut root);
     bbcode::pair(&mut root, settings);
     if let Some(linkify) = &settings.linkify {

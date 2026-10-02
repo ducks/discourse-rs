@@ -8,6 +8,7 @@
 //! bundle, measured against what Rails recorded (parity/pretty_text,
 //! scripts/record-pretty-text).
 
+pub mod cleanup;
 pub mod helpers;
 pub mod render;
 pub mod sanitizer;
@@ -290,4 +291,23 @@ pub async fn markdown(host: &Host, raw: &str, opts: &MarkdownOptions) -> Result<
         }
     }
     Ok(render::render(raw, &render_settings, lookups)?.0)
+}
+
+/// `PrettyText.cook(raw, opts)`: the markdown, then `PrettyText.cleanup`.
+/// What the post processor adds after (oneboxes, image sizes) is not part
+/// of it.
+pub async fn cook(host: &Host, raw: &str, opts: &MarkdownOptions) -> Result<String, CookError> {
+    let html = markdown(host, raw, opts).await?;
+    let mut conn = host.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &host.site_setting_defs, &host.config.globals).await?;
+    cleanup::cleanup(
+        &mut conn,
+        &settings,
+        &host.config,
+        &host.i18n,
+        &html,
+        opts.user_id,
+    )
+    .await
 }

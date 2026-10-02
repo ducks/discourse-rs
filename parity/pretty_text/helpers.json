@@ -119,6 +119,34 @@
     "result": "nobody"
   },
   {
+    "method": "format_username",
+    "args": [
+      "@user1"
+    ],
+    "result": "@user1"
+  },
+  {
+    "method": "format_username",
+    "args": [
+      "@admin"
+    ],
+    "result": "@admin"
+  },
+  {
+    "method": "format_username",
+    "args": [
+      "@staff"
+    ],
+    "result": "@staff"
+  },
+  {
+    "method": "format_username",
+    "args": [
+      "@trust_level_2"
+    ],
+    "result": "@trust_level_2"
+  },
+  {
     "method": "hashtag_lookup",
     "args": [
       "general",
@@ -472,6 +500,48 @@
       }
     ],
     "result": "voters"
+  },
+  {
+    "method": "format_username",
+    "args": [
+      "@user0"
+    ],
+    "result": "@user0"
+  },
+  {
+    "method": "format_username",
+    "args": [
+      "@admins"
+    ],
+    "result": "@admins"
+  },
+  {
+    "method": "format_username",
+    "args": [
+      "@moderators"
+    ],
+    "result": "@moderators"
+  },
+  {
+    "method": "format_username",
+    "args": [
+      "@everyone"
+    ],
+    "result": "@everyone"
+  },
+  {
+    "method": "format_username",
+    "args": [
+      "@USER1"
+    ],
+    "result": "@USER1"
+  },
+  {
+    "method": "format_username",
+    "args": [
+      "@trust_level_0"
+    ],
+    "result": "@trust_level_0"
   },
   {
     "method": "lookup_upload_urls",

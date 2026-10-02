@@ -17,7 +17,7 @@ use markdown_it::plugins::html::html_inline::HtmlInline;
 
 use super::RenderSettings;
 use super::context::Context;
-use super::element::{Element, RawHtml};
+use super::element::{CodeText, Element, RawHtml};
 use crate::pretty_text::sanitizer::AllowList;
 
 const UPLOAD: &str = "upload://";
@@ -30,6 +30,8 @@ fn literal_label(nodes: &[Node]) -> String {
     for node in nodes {
         if let Some(text) = node.cast::<Text>() {
             out.push_str(&text.content);
+        } else if let Some(text) = node.cast::<CodeText>() {
+            out.push_str(&text.0);
         } else if let Some(text) = node.cast::<TextSpecial>() {
             out.push_str(&text.content);
         } else if let Some(code) = node.cast::<CodeInline>() {
@@ -141,7 +143,18 @@ fn image(node: &Node, image: &Image, settings: &RenderSettings, ctx: &Context) -
     let label = if from_upload {
         literal_label(&node.children)
     } else {
-        node.collect_text()
+        // renderInlineAsText: the text, inline code's included.
+        let mut text = String::new();
+        node.walk(|n, _| {
+            if let Some(t) = n.cast::<Text>() {
+                text.push_str(&t.content);
+            } else if let Some(t) = n.cast::<CodeText>() {
+                text.push_str(&t.0);
+            } else if n.is::<Softbreak>() {
+                text.push('\n');
+            }
+        });
+        text
     };
     let split: Vec<&str> = label.split('|').collect();
     let mut suffix_start = split.len();

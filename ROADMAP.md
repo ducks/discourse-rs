@@ -111,9 +111,11 @@ Logged-in readers, no writes yet.
 - [ ] Cooking, plugins left: local dates (needs a timezone database),
       math, chat transcripts, events, graphviz, policy; all refused
       explicitly today
-- [ ] Cooking, after the renderer: `PrettyText.cleanup` (mention links,
-      rel attributes, hotlinked media) and CookedPostProcessor (oneboxes,
-      image sizes, lightboxes)
+- [x] Cooking, `PrettyText.cleanup`: rel attributes, mention links,
+      hidden direction marks, video thumbnails, HTML5 re-serialization;
+      all 482 posts of the Faker backup cook byte-equal
+- [ ] CookedPostProcessor (oneboxes, image sizes, lightboxes), which is
+      what makes the `cooked` column out of `PrettyText.cook`
 - [ ] Posting, editing, revisions, likes, flags
 - [ ] Private messages
 - [ ] Uploads (local first, S3 later), optimized images

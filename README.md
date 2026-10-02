@@ -143,7 +143,8 @@ headers.
 
 Rails cooks a post by running Discourse's JavaScript markdown bundle in
 V8. discourse-rs does not vendor that bundle or embed a JavaScript engine:
-`pretty_text::markdown` is Discourse's markdown features ported as Rust
+`pretty_text::cook` (`PrettyText.cook`: `markdown`, then `cleanup`) is
+Discourse's markdown features ported as Rust
 rules on the markdown-it crate, measured against Rails.
 
 - `pretty_text::render`: the rules (anchors, code, tables, typographer,
@@ -159,8 +160,16 @@ rules on the markdown-it crate, measured against Rails.
 - `make record-pretty-text AGENT=rs-parity` records, from Rails on the
   reference: those options, every helper call with its result, and
   `PrettyText.markdown`'s HTML for a corpus of 51 feature samples and
-  the seeded posts. `tests/pretty_text.rs` requires the options, the
-  helpers and the cooked HTML to match; 76 of 77 entries do.
+  the seeded posts, each also through `PrettyText.cook`.
+  `tests/pretty_text.rs` requires the options, the
+  helpers and the cooked HTML to match; 79 of 80 entries do.
+- `pretty_text::cleanup`: `PrettyText.cleanup`, on html5ever: link `rel`
+  attributes, mention links for users and groups, hidden direction marks
+  in code, video thumbnails, and Nokogiri's HTML5 re-serialization.
+- A restored backup's posts can be recorded and cooked the same way
+  (`scripts/record-pretty-text <agent> <dir>`, then the ignored
+  `backup_corpus_matches_rails` test); the Faker backup's 482 posts all
+  cook byte-equal.
 
 Refused with an explicit error rather than answered differently from
 Rails: custom emoji, the emoji deny list, watched words, secure uploads,
