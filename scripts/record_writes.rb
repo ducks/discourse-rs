@@ -79,9 +79,12 @@ TABLES =
 BACKGROUND_TABLES = %w[scheduler_stats top_topics]
 
 # Redis is not rolled back: the duplicate post check keeps a key per user
-# and post body, which would refuse the same case recorded twice.
+# and post body, and Email::Processor one per address and rejection a day,
+# which would change the same case recorded twice.
 def clear_redis_state
-  Discourse.redis.keys("unique-post-*").each { |k| Discourse.redis.del(k) }
+  %w[unique-post-* rejection_email:*].each do |pattern|
+    Discourse.redis.keys(pattern).each { |k| Discourse.redis.del(k) }
+  end
 end
 
 def checksums

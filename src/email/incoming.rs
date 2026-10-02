@@ -364,6 +364,8 @@ pub struct Incoming {
     pub message_id: String,
     /// `parse_from_field`: the address (lowercased) and display name.
     pub from: Option<(String, String)>,
+    /// `mail.from`: the From addresses as written.
+    pub from_addresses: Vec<String>,
     pub to: Vec<String>,
     pub cc: Vec<String>,
     pub bcc: Vec<String>,
@@ -457,6 +459,7 @@ pub fn parse(raw: &str) -> Result<Incoming, Unsupported> {
         raw: raw.to_string(),
         message_id,
         from,
+        from_addresses: addresses(parsed.from()),
         to: addresses(parsed.to()),
         cc: addresses(parsed.cc()),
         bcc: addresses(parsed.bcc()),
