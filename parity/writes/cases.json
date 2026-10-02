@@ -435,5 +435,172 @@
       "post_alert",
       "user_email"
     ]
+  },
+  {
+    "name": "signup",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/session/hp.json"
+      },
+      {
+        "method": "POST",
+        "path": "/u.json",
+        "params": {
+          "name": "New Person",
+          "email": "new.person@example.com",
+          "password": "a-long-enough-pass-phrase",
+          "username": "newperson",
+          "password_confirmation": "{{responses.0.body.value}}",
+          "challenge": "{{responses.0.body.challenge|reverse}}"
+        }
+      }
+    ],
+    "run_jobs": [
+      "critical_user_email"
+    ]
+  },
+  {
+    "name": "signup_username_taken",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/session/hp.json"
+      },
+      {
+        "method": "POST",
+        "path": "/u.json",
+        "params": {
+          "name": "Another",
+          "email": "another@example.com",
+          "password": "a-long-enough-pass-phrase",
+          "username": "user1",
+          "password_confirmation": "{{responses.0.body.value}}",
+          "challenge": "{{responses.0.body.challenge|reverse}}"
+        }
+      }
+    ]
+  },
+  {
+    "name": "signup_failed_challenge",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/session/hp.json"
+      },
+      {
+        "method": "POST",
+        "path": "/u.json",
+        "params": {
+          "name": "Bot",
+          "email": "bot@example.com",
+          "password": "a-long-enough-pass-phrase",
+          "username": "botperson",
+          "password_confirmation": "wrong",
+          "challenge": "wrong"
+        }
+      }
+    ]
+  },
+  {
+    "name": "activate_account",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/session/hp.json"
+      },
+      {
+        "method": "POST",
+        "path": "/u.json",
+        "params": {
+          "name": "New Person",
+          "email": "new.person@example.com",
+          "password": "a-long-enough-pass-phrase",
+          "username": "newperson",
+          "password_confirmation": "{{responses.0.body.value}}",
+          "challenge": "{{responses.0.body.challenge|reverse}}"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/session/hp.json"
+      },
+      {
+        "method": "PUT",
+        "path": "/u/activate-account/{{jobs.critical_user_email.email_token}}.json",
+        "params": {
+          "password_confirmation": "{{responses.2.body.value}}",
+          "challenge": "{{responses.2.body.challenge|reverse}}"
+        }
+      }
+    ]
+  },
+  {
+    "name": "forgot_password",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/session/forgot_password.json",
+        "params": {
+          "login": "user1@example.com"
+        }
+      }
+    ],
+    "run_jobs": [
+      "send_email_login_code"
+    ]
+  },
+  {
+    "name": "forgot_password_unknown",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/session/forgot_password.json",
+        "params": {
+          "login": "nobody@example.com"
+        }
+      }
+    ]
+  },
+  {
+    "name": "password_reset",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/session/forgot_password.json",
+        "params": {
+          "login": "user1@example.com"
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/session/password-reset-code/verify.json",
+        "params": {
+          "code": "{{jobs.send_email_login_code.code}}"
+        }
+      },
+      {
+        "method": "PUT",
+        "path": "/u/password-reset/{{responses.1.body.redirect_url|last_segment}}.json",
+        "params": {
+          "password": "a-brand-new-pass-phrase"
+        }
+      }
+    ]
+  },
+  {
+    "name": "email_login",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/u/email-login.json",
+        "params": {
+          "login": "user1"
+        }
+      }
+    ],
+    "run_jobs": [
+      "critical_user_email"
+    ]
   }
 ]

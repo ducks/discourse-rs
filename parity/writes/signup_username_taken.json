@@ -1,0 +1,54 @@
+{
+  "name": "signup_username_taken",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/session/hp.json"
+    },
+    {
+      "method": "POST",
+      "path": "/u.json",
+      "params": {
+        "name": "Another",
+        "email": "another@example.com",
+        "password": "a-long-enough-pass-phrase",
+        "username": "user1",
+        "password_confirmation": "{{responses.0.body.value}}",
+        "challenge": "{{responses.0.body.challenge|reverse}}"
+      }
+    }
+  ],
+  "started_at": "2026-10-02T11:11:21.821737",
+  "transaction_started_at": "2026-10-02T11:11:21.096977",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "value": "10d7e74b41290771e2ddb799b678765c",
+        "challenge": "2b8d4b2a8ee2b0c97adf5cd043ab0470",
+        "expires_in": 3600
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": false,
+        "message": "Username must be unique",
+        "errors": {
+          "username": [
+            "must be unique"
+          ]
+        },
+        "values": {
+          "name": "Another",
+          "username": "user1",
+          "email": "another@example.com"
+        },
+        "is_developer": false
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": []
+}

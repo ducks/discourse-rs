@@ -45,7 +45,16 @@ const PLUGIN_KEYS: [&str; 9] = [
 const PLUGIN_JOBS: [&str; 1] = ["bot_input"];
 
 /// Cases the port does not do like Rails yet. The list only shrinks.
-const NOT_YET: &[&str] = &[];
+const NOT_YET: &[&str] = &[
+    "signup",
+    "signup_username_taken",
+    "signup_failed_challenge",
+    "activate_account",
+    "forgot_password",
+    "forgot_password_unknown",
+    "password_reset",
+    "email_login",
+];
 
 struct Client {
     state: AppState,
@@ -198,8 +207,63 @@ fn unrandom(s: &str) -> String {
         std::sync::LazyLock::new(|| regex::Regex::new(r"\b[0-9a-f]{64}\b").unwrap());
     static BOUNDARY: std::sync::LazyLock<regex::Regex> =
         std::sync::LazyLock::new(|| regex::Regex::new(r"boundary=\S+").unwrap());
+    static HEX32: std::sync::LazyLock<regex::Regex> =
+        std::sync::LazyLock::new(|| regex::Regex::new(r"^[0-9a-f]{32}$").unwrap());
+    static UUID: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
+        regex::Regex::new(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}").unwrap()
+    });
+    if HEX32.is_match(s) {
+        return "<hex>".into();
+    }
     let s = KEY.replace_all(s, "<key>");
+    let s = UUID.replace_all(&s, "<uuid>");
     BOUNDARY.replace_all(&s, "boundary=<boundary>").into_owned()
+}
+
+/// Per-run secrets a document carries in its own jobs and responses (email
+/// tokens, login codes, honeypots), replaced wherever they appear in it.
+fn hide_secrets(doc: &mut Value) {
+    let mut secrets: Vec<(String, &str)> = Vec::new();
+    for list in ["jobs", "jobs_from_jobs"] {
+        for job in doc[list].as_array().cloned().unwrap_or_default() {
+            for (key, label) in [("email_token", "<email_token>"), ("code", "<code>")] {
+                if let Some(v) = job[1][key].as_str() {
+                    secrets.push((v.to_string(), label));
+                }
+            }
+        }
+    }
+    for response in doc["responses"].as_array().cloned().unwrap_or_default() {
+        let body = &response["body"];
+        if let Some(v) = body["value"].as_str() {
+            secrets.push((v.to_string(), "<honeypot>"));
+        }
+        if let Some(v) = body["challenge"].as_str() {
+            secrets.push((v.to_string(), "<challenge>"));
+        }
+        if let Some(token) = body["redirect_url"]
+            .as_str()
+            .and_then(|u| u.rsplit('/').next())
+        {
+            secrets.push((token.to_string(), "<email_token>"));
+        }
+    }
+    secrets.retain(|(v, _)| v.len() >= 6);
+    fn walk(v: &mut Value, secrets: &[(String, &str)]) {
+        match v {
+            Value::String(s) => {
+                for (secret, label) in secrets {
+                    if s.contains(secret.as_str()) {
+                        *s = s.replace(secret.as_str(), label);
+                    }
+                }
+            }
+            Value::Array(a) => a.iter_mut().for_each(|x| walk(x, secrets)),
+            Value::Object(m) => m.values_mut().for_each(|x| walk(x, secrets)),
+            _ => {}
+        }
+    }
+    walk(doc, &secrets);
 }
 
 /// Timestamps at or after the case's start become `<now>`, plugin keys
@@ -400,6 +464,44 @@ async fn align_sequences(pool: &PgPool, case: &Value) {
     }
 }
 
+/// `{{path.to.value}}` with an optional `|reverse` or `|last_segment`.
+fn resolve(value: &Value, state: &Value) -> Value {
+    static REF: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
+        regex::Regex::new(r"\{\{([^}|]+)(\|reverse|\|last_segment)?\}\}").unwrap()
+    });
+    match value {
+        Value::Object(m) => Value::Object(
+            m.iter()
+                .map(|(k, v)| (k.clone(), resolve(v, state)))
+                .collect(),
+        ),
+        Value::Array(a) => Value::Array(a.iter().map(|v| resolve(v, state)).collect()),
+        Value::String(s) => Value::String(
+            REF.replace_all(s, |c: &regex::Captures| {
+                let mut found = state;
+                for key in c[1].split('.') {
+                    found = match key.parse::<usize>() {
+                        Ok(i) if found.is_array() => &found[i],
+                        _ => &found[key],
+                    };
+                }
+                let text = match found {
+                    Value::String(s) => s.clone(),
+                    Value::Null => format!("unresolved-{}", c[1].replace('.', "-")),
+                    other => other.to_string(),
+                };
+                match c.get(2).map(|m| m.as_str()) {
+                    Some("|reverse") => text.chars().rev().collect(),
+                    Some("|last_segment") => text.rsplit('/').next().unwrap_or("").to_string(),
+                    _ => text,
+                }
+            })
+            .into_owned(),
+        ),
+        other => other.clone(),
+    }
+}
+
 /// Jobs in the queue after `after_id`, as (id, name, `[name, args]` with
 /// " in Ns" for a delayed one, as the recorder writes them).
 async fn queued_jobs(pool: &PgPool, after_id: i64) -> Vec<(i64, String, Value)> {
@@ -455,10 +557,17 @@ async fn replay(case: &Value, run_jobs: &[String]) -> Vec<String> {
     let mut responses = Vec::new();
     for request in case["requests"].as_array().unwrap() {
         let method = Method::from_bytes(request["method"].as_str().unwrap().as_bytes()).unwrap();
-        let body = request.get("params").filter(|p| p.is_object());
-        let (status, body) = client
-            .send(method, request["path"].as_str().unwrap(), body)
-            .await;
+        // {{...}} references, as the recorder resolves them: earlier
+        // responses and the last queued job of a name.
+        let mut jobs = Map::new();
+        for (_, name, shown) in queued_jobs(&db.pool, 0).await {
+            jobs.insert(name, shown[1].clone());
+        }
+        let state = serde_json::json!({ "responses": responses, "jobs": jobs });
+        let params = request.get("params").map(|p| resolve(p, &state));
+        let body = params.as_ref().filter(|p| p.is_object());
+        let path = resolve(&request["path"], &state);
+        let (status, body) = client.send(method, path.as_str().unwrap(), body).await;
         responses.push(serde_json::json!({ "status": status, "body": body }));
     }
     // The jobs the requests enqueued, as the recorder writes them; then
@@ -559,8 +668,20 @@ async fn replay(case: &Value, run_jobs: &[String]) -> Vec<String> {
         .collect();
     differences(
         "",
-        &changed_columns(normalize(&rails, rails_started)),
-        &changed_columns(normalize(&ours, started)),
+        &changed_columns(normalize(
+            &{
+                hide_secrets(&mut rails);
+                rails
+            },
+            rails_started,
+        )),
+        &changed_columns(normalize(
+            &{
+                hide_secrets(&mut ours);
+                ours
+            },
+            started,
+        )),
         &mut out,
     );
     out

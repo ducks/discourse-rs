@@ -12,8 +12,8 @@
       }
     }
   ],
-  "started_at": "2026-10-02T10:52:26.710978",
-  "transaction_started_at": "2026-10-02T10:52:24.047166",
+  "started_at": "2026-10-02T11:11:17.216302",
+  "transaction_started_at": "2026-10-02T11:11:16.138036",
   "responses": [
     {
       "status": 200,
@@ -22,12 +22,12 @@
         "name": "User1",
         "username": "user1",
         "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
-        "created_at": "2026-10-02T10:52:26.947Z",
+        "created_at": "2026-10-02T11:11:17.280Z",
         "cooked": "<p>Replying to the first post directly, which records who it answers.</p>",
         "post_number": 6,
         "post_type": 1,
         "posts_count": 6,
-        "updated_at": "2026-10-02T10:52:26.947Z",
+        "updated_at": "2026-10-02T11:11:17.280Z",
         "reply_count": 0,
         "reply_to_post_number": 1,
         "quote_count": 0,
@@ -264,11 +264,11 @@
           "user_id": 2,
           "topic_id": 35,
           "bounce_key": null,
-          "created_at": "2026-10-02T10:52:29.054374",
+          "created_at": "2026-10-02T11:11:17.563002",
           "email_type": "user_replied",
           "message_id": "discourse/post/53@localhost",
           "to_address": "user0@example.com",
-          "updated_at": "2026-10-02T10:52:29.054374",
+          "updated_at": "2026-10-02T11:11:17.563002",
           "cc_user_ids": null,
           "cc_addresses": null,
           "bcc_addresses": null,
@@ -288,8 +288,8 @@
           "read": false,
           "user_id": 2,
           "topic_id": 35,
-          "created_at": "2026-10-02T10:52:28.141108",
-          "updated_at": "2026-10-02T10:52:28.141108",
+          "created_at": "2026-10-02T11:11:17.437714",
+          "updated_at": "2026-10-02T11:11:17.437714",
           "post_number": 6,
           "high_priority": false,
           "post_action_id": null,
@@ -317,8 +317,8 @@
       "inserted": [
         {
           "post_id": 35,
-          "created_at": "2026-10-02T10:52:27.231527",
-          "updated_at": "2026-10-02T10:52:27.231527",
+          "created_at": "2026-10-02T11:11:17.34925",
+          "updated_at": "2026-10-02T11:11:17.34925",
           "reply_post_id": 53
         }
       ],
@@ -344,8 +344,8 @@
         {
           "id": 52,
           "post_id": 53,
-          "created_at": "2026-10-02T10:52:26.999831",
-          "updated_at": "2026-10-02T10:52:26.999831",
+          "created_at": "2026-10-02T11:11:17.301044",
+          "updated_at": "2026-10-02T11:11:17.301044",
           "drafts_saved": 0,
           "writing_device": "unknown",
           "composer_version": null,
@@ -382,20 +382,20 @@
           "locale": null,
           "user_id": 3,
           "version": 1,
-          "baked_at": "2026-10-02T10:52:26.947242",
+          "baked_at": "2026-10-02T11:11:17.280514",
           "topic_id": 35,
           "hidden_at": null,
           "post_type": 1,
           "raw_email": null,
           "via_email": false,
-          "created_at": "2026-10-02T10:52:26.947383",
+          "created_at": "2026-10-02T11:11:17.280587",
           "deleted_at": null,
           "like_count": 0,
           "like_score": 0,
           "self_edits": 0,
           "sort_order": 6,
           "spam_count": 0,
-          "updated_at": "2026-10-02T10:52:26.947383",
+          "updated_at": "2026-10-02T11:11:17.280587",
           "word_count": 11,
           "action_code": null,
           "cook_method": 1,
@@ -415,7 +415,7 @@
           "last_editor_id": 3,
           "public_version": 1,
           "image_upload_id": null,
-          "last_version_at": "2026-10-02T10:52:26.991582",
+          "last_version_at": "2026-10-02T11:11:17.298426",
           "off_topic_count": 0,
           "hidden_reason_id": null,
           "reply_to_user_id": 2,
@@ -549,44 +549,6 @@
       "updated": [
         {
           "before": {
-            "id": 35,
-            "liked": false,
-            "posted": true,
-            "user_id": 3,
-            "topic_id": 35,
-            "bookmarked": true,
-            "last_posted_at": "2026-09-30T07:28:29.10764",
-            "last_visited_at": "2026-09-30T07:28:29.108382",
-            "first_visited_at": "2026-09-30T07:28:29.108382",
-            "cleared_pinned_at": null,
-            "notification_level": 2,
-            "total_msecs_viewed": 0,
-            "last_read_post_number": 2,
-            "notifications_reason_id": 4,
-            "last_emailed_post_number": null,
-            "notifications_changed_at": "2026-09-30T07:28:29.122811"
-          },
-          "after": {
-            "id": 35,
-            "liked": false,
-            "posted": true,
-            "user_id": 3,
-            "topic_id": 35,
-            "bookmarked": true,
-            "last_posted_at": "2026-10-02T10:52:27.048195",
-            "last_visited_at": "2026-09-30T07:28:29.108382",
-            "first_visited_at": "2026-09-30T07:28:29.108382",
-            "cleared_pinned_at": null,
-            "notification_level": 2,
-            "total_msecs_viewed": 0,
-            "last_read_post_number": 6,
-            "notifications_reason_id": 4,
-            "last_emailed_post_number": null,
-            "notifications_changed_at": "2026-09-30T07:28:29.122811"
-          }
-        },
-        {
-          "before": {
             "id": 34,
             "liked": true,
             "posted": true,
@@ -621,6 +583,44 @@
             "notifications_reason_id": 1,
             "last_emailed_post_number": 6,
             "notifications_changed_at": "2026-09-30T07:28:28.883194"
+          }
+        },
+        {
+          "before": {
+            "id": 35,
+            "liked": false,
+            "posted": true,
+            "user_id": 3,
+            "topic_id": 35,
+            "bookmarked": true,
+            "last_posted_at": "2026-09-30T07:28:29.10764",
+            "last_visited_at": "2026-09-30T07:28:29.108382",
+            "first_visited_at": "2026-09-30T07:28:29.108382",
+            "cleared_pinned_at": null,
+            "notification_level": 2,
+            "total_msecs_viewed": 0,
+            "last_read_post_number": 2,
+            "notifications_reason_id": 4,
+            "last_emailed_post_number": null,
+            "notifications_changed_at": "2026-09-30T07:28:29.122811"
+          },
+          "after": {
+            "id": 35,
+            "liked": false,
+            "posted": true,
+            "user_id": 3,
+            "topic_id": 35,
+            "bookmarked": true,
+            "last_posted_at": "2026-10-02T11:11:17.315917",
+            "last_visited_at": "2026-09-30T07:28:29.108382",
+            "first_visited_at": "2026-09-30T07:28:29.108382",
+            "cleared_pinned_at": null,
+            "notification_level": 2,
+            "total_msecs_viewed": 0,
+            "last_read_post_number": 6,
+            "notifications_reason_id": 4,
+            "last_emailed_post_number": null,
+            "notifications_changed_at": "2026-09-30T07:28:29.122811"
           }
         }
       ]
@@ -696,13 +696,13 @@
             "visible": true,
             "archived": false,
             "archetype": "regular",
-            "bumped_at": "2026-10-02T10:52:26.947383",
+            "bumped_at": "2026-10-02T11:11:17.280587",
             "pinned_at": null,
             "created_at": "2026-09-30T07:28:28.864868",
             "deleted_at": null,
             "like_count": 1,
             "spam_count": 0,
-            "updated_at": "2026-10-02T10:52:27.073202",
+            "updated_at": "2026-10-02T11:11:17.322708",
             "word_count": 79,
             "category_id": 4,
             "external_id": null,
@@ -715,7 +715,7 @@
             "deleted_by_id": null,
             "featured_link": null,
             "bannered_until": null,
-            "last_posted_at": "2026-10-02T10:52:26.947383",
+            "last_posted_at": "2026-10-02T11:11:17.280587",
             "image_upload_id": null,
             "pinned_globally": false,
             "reviewable_score": 0,
@@ -740,12 +740,12 @@
     "unsubscribe_keys": {
       "inserted": [
         {
-          "key": "07cfb6fd6aa691dec635cc69b21905e8e1eeed6ca2584dfe146e88ba6c4df3cc",
+          "key": "e466d98b27c50567882f649c88985bc28c95e3d9c805d15bdea1b5b977f3747d",
           "post_id": 53,
           "user_id": 2,
           "topic_id": 35,
-          "created_at": "2026-10-02T10:52:28.47807",
-          "updated_at": "2026-10-02T10:52:28.47807",
+          "created_at": "2026-10-02T11:11:17.494172",
+          "updated_at": "2026-10-02T11:11:17.494172",
           "unsubscribe_key_type": "topic"
         }
       ],
@@ -757,8 +757,8 @@
         {
           "id": 65,
           "user_id": 3,
-          "created_at": "2026-10-02T10:52:26.947383",
-          "updated_at": "2026-10-02T10:52:27.011514",
+          "created_at": "2026-10-02T11:11:17.280587",
+          "updated_at": "2026-10-02T11:11:17.304396",
           "action_type": 5,
           "acting_user_id": 3,
           "target_post_id": 53,
@@ -768,8 +768,8 @@
         {
           "id": 66,
           "user_id": 2,
-          "created_at": "2026-10-02T10:52:28.011515",
-          "updated_at": "2026-10-02T10:52:28.011515",
+          "created_at": "2026-10-02T11:11:17.433155",
+          "updated_at": "2026-10-02T11:11:17.433155",
           "action_type": 6,
           "acting_user_id": 3,
           "target_post_id": 53,
@@ -790,29 +790,29 @@
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "iqrgKANQiRio5qxGsWrxUfy4Wu0=",
-            "created_at": "2026-10-02T10:52:24.886082",
-            "rotated_at": "2026-10-02T10:52:24.885202",
-            "updated_at": "2026-10-02T10:52:24.886082",
+            "auth_token": "OvHGRpOmKvCiALOU+S7Z19tOGrY=",
+            "created_at": "2026-10-02T11:11:16.488617",
+            "rotated_at": "2026-10-02T11:11:16.488374",
+            "updated_at": "2026-10-02T11:11:16.488617",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "iqrgKANQiRio5qxGsWrxUfy4Wu0=",
+            "prev_auth_token": "OvHGRpOmKvCiALOU+S7Z19tOGrY=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
             "id": 78,
-            "seen_at": "2026-10-02T10:52:26.723583",
+            "seen_at": "2026-10-02T11:11:17.224856",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "iqrgKANQiRio5qxGsWrxUfy4Wu0=",
-            "created_at": "2026-10-02T10:52:24.886082",
-            "rotated_at": "2026-10-02T10:52:24.885202",
-            "updated_at": "2026-10-02T10:52:24.886082",
+            "auth_token": "OvHGRpOmKvCiALOU+S7Z19tOGrY=",
+            "created_at": "2026-10-02T11:11:16.488617",
+            "rotated_at": "2026-10-02T11:11:16.488374",
+            "updated_at": "2026-10-02T11:11:16.488617",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "iqrgKANQiRio5qxGsWrxUfy4Wu0=",
+            "prev_auth_token": "OvHGRpOmKvCiALOU+S7Z19tOGrY=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -940,7 +940,7 @@
             "created_at": "2026-07-25T05:59:16.250829",
             "flag_level": 0,
             "ip_address": "172.17.0.1",
-            "updated_at": "2026-10-02T10:52:27.097312",
+            "updated_at": "2026-10-02T11:11:17.32938",
             "approved_at": null,
             "trust_level": 2,
             "last_seen_at": "2026-10-01T22:32:51.040203",
@@ -950,7 +950,7 @@
             "silenced_till": null,
             "approved_by_id": null,
             "flair_group_id": null,
-            "last_posted_at": "2026-10-02T10:52:26.947383",
+            "last_posted_at": "2026-10-02T11:11:17.280587",
             "suspended_till": null,
             "username_lower": "user1",
             "last_emailed_at": null,
@@ -1035,7 +1035,7 @@
             "last_posted_at": "2026-10-01T15:39:51.834549",
             "suspended_till": null,
             "username_lower": "user0",
-            "last_emailed_at": "2026-10-02T10:52:24.047166",
+            "last_emailed_at": "2026-10-02T11:11:16.138036",
             "primary_group_id": null,
             "previous_visit_at": "2026-10-01T15:44:57.254251",
             "secure_identifier": null,
@@ -1155,7 +1155,7 @@
         ],
         [
           "Content-Type",
-          "multipart/alternative; boundary=--==_mimepart_6abf8cecb48e1_ab4f28300e5"
+          "multipart/alternative; boundary=--==_mimepart_6abf915585716_1378f2869473"
         ],
         [
           "Content-Transfer-Encoding",
@@ -1167,7 +1167,7 @@
         ],
         [
           "List-Unsubscribe",
-          "<http://localhost:3042/email/unsubscribe/07cfb6fd6aa691dec635cc69b21905e8e1eeed6ca2584dfe146e88ba6c4df3cc>"
+          "<http://localhost:3042/email/unsubscribe/e466d98b27c50567882f649c88985bc28c95e3d9c805d15bdea1b5b977f3747d>"
         ],
         [
           "List-Unsubscribe-Post",
@@ -1218,8 +1218,8 @@
           "http://localhost:3042/t/parity-fixture-replies-and-posters/35"
         ]
       ],
-      "text": "\n\nReplying to the first post directly, which records who it answers.\n\n\n\n\n\n---\n[Visit Topic](http://localhost:3042/t/parity-fixture-replies-and-posters/35/6) to respond.\n\nTo unsubscribe from these emails, [click here](http://localhost:3042/email/unsubscribe/07cfb6fd6aa691dec635cc69b21905e8e1eeed6ca2584dfe146e88ba6c4df3cc).\n",
-      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <div id=\"main\" class=\"\">\n\n  <div class=\"email-preview\" style=\"display:none\"><p>Someone replied to your post.</p></div>\n\n  <div class=\"header-instructions\"></div>\n\n    <div class=\"post-wrapper  \" style=\"margin-bottom:25px\">\n  <table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n    <tbody><tr>\n      <td class=\"user-avatar\" style=\"vertical-align:top;width:55px\">\n        <img src=\"http://localhost:3042/letter_avatar_proxy/v4/letter/u/5daacb/45.png\" title=\"user1\" width=\"45\" height=\"45\">\n      </td>\n      <td>\n          <a rel=\"nofollow\" class=\"username username-link\" href=\"http://localhost:3042/u/user1\" target=\"_blank\" style=\"color:#006699;font-size:13px;font-family:'lucida grande',tahoma,verdana,arial,sans-serif;text-decoration:none;font-weight:bold\">user1</a>\n        <br>\n        <span class=\"notification-date\" style=\"text-align:right;color:#999999;padding-right:5px;font-family:'lucida grande',tahoma,verdana,arial,sans-serif;font-size:11px\">October 2</span>\n      </td>\n    </tr>\n  </tbody></table>\n  <div class=\"body\" style=\"padding-top:5px\" dm=\"body\"><p style=\"margin-top:0;border:0\">Replying to the first post directly, which records who it answers.</p></div>\n</div>\n\n\n\n\n\n\n  <div class=\"footer undecorated-link-footer highlight\" style=\"color:#666\"><hr style=\"background-color:#ddd;height:1px;border:1px\">\n<p><a href=\"http://localhost:3042/t/parity-fixture-replies-and-posters/35/6\" style=\"font-weight:bold;text-decoration:none;color:#FFFFFF;background-color:#2F70AC;border-top:4px solid #2F70AC;border-right:6px solid #2F70AC;border-bottom:4px solid #2F70AC;border-left:6px solid #2F70AC;display:inline-block\">Visit Topic</a> to respond.</p></div>\n  <div class=\"footer\" style=\"color:#666\"><p>To unsubscribe from these emails, <a href=\"http://localhost:3042/email/unsubscribe/07cfb6fd6aa691dec635cc69b21905e8e1eeed6ca2584dfe146e88ba6c4df3cc\" style=\"text-decoration:none;font-weight:bold;color:#666\">click here</a>.</p></div>\n\n</div>\n\n<div itemscope=\"\" itemtype=\"http://schema.org/EmailMessage\" style=\"display:none\">\n  <div itemprop=\"action\" itemscope=\"\" itemtype=\"http://schema.org/ViewAction\">\n    <link itemprop=\"url\" href=\"http://localhost:3042/t/parity-fixture-replies-and-posters/35/6\">\n    <meta itemprop=\"name\" content=\"Read full topic\">\n  </div>\n</div>\n\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
+      "text": "\n\nReplying to the first post directly, which records who it answers.\n\n\n\n\n\n---\n[Visit Topic](http://localhost:3042/t/parity-fixture-replies-and-posters/35/6) to respond.\n\nTo unsubscribe from these emails, [click here](http://localhost:3042/email/unsubscribe/e466d98b27c50567882f649c88985bc28c95e3d9c805d15bdea1b5b977f3747d).\n",
+      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <div id=\"main\" class=\"\">\n\n  <div class=\"email-preview\" style=\"display:none\"><p>Someone replied to your post.</p></div>\n\n  <div class=\"header-instructions\"></div>\n\n    <div class=\"post-wrapper  \" style=\"margin-bottom:25px\">\n  <table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n    <tbody><tr>\n      <td class=\"user-avatar\" style=\"vertical-align:top;width:55px\">\n        <img src=\"http://localhost:3042/letter_avatar_proxy/v4/letter/u/5daacb/45.png\" title=\"user1\" width=\"45\" height=\"45\">\n      </td>\n      <td>\n          <a rel=\"nofollow\" class=\"username username-link\" href=\"http://localhost:3042/u/user1\" target=\"_blank\" style=\"color:#006699;font-size:13px;font-family:'lucida grande',tahoma,verdana,arial,sans-serif;text-decoration:none;font-weight:bold\">user1</a>\n        <br>\n        <span class=\"notification-date\" style=\"text-align:right;color:#999999;padding-right:5px;font-family:'lucida grande',tahoma,verdana,arial,sans-serif;font-size:11px\">October 2</span>\n      </td>\n    </tr>\n  </tbody></table>\n  <div class=\"body\" style=\"padding-top:5px\" dm=\"body\"><p style=\"margin-top:0;border:0\">Replying to the first post directly, which records who it answers.</p></div>\n</div>\n\n\n\n\n\n\n  <div class=\"footer undecorated-link-footer highlight\" style=\"color:#666\"><hr style=\"background-color:#ddd;height:1px;border:1px\">\n<p><a href=\"http://localhost:3042/t/parity-fixture-replies-and-posters/35/6\" style=\"font-weight:bold;text-decoration:none;color:#FFFFFF;background-color:#2F70AC;border-top:4px solid #2F70AC;border-right:6px solid #2F70AC;border-bottom:4px solid #2F70AC;border-left:6px solid #2F70AC;display:inline-block\">Visit Topic</a> to respond.</p></div>\n  <div class=\"footer\" style=\"color:#666\"><p>To unsubscribe from these emails, <a href=\"http://localhost:3042/email/unsubscribe/e466d98b27c50567882f649c88985bc28c95e3d9c805d15bdea1b5b977f3747d\" style=\"text-decoration:none;font-weight:bold;color:#666\">click here</a>.</p></div>\n\n</div>\n\n<div itemscope=\"\" itemtype=\"http://schema.org/EmailMessage\" style=\"display:none\">\n  <div itemprop=\"action\" itemscope=\"\" itemtype=\"http://schema.org/ViewAction\">\n    <link itemprop=\"url\" href=\"http://localhost:3042/t/parity-fixture-replies-and-posters/35/6\">\n    <meta itemprop=\"name\" content=\"Read full topic\">\n  </div>\n</div>\n\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
     }
   ]
 }

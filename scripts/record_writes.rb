@@ -32,6 +32,31 @@ RateLimiter.disable
 
 def db = ActiveRecord::Base.connection
 
+# `{{path.to.value}}` (optionally `|reverse`) in a case's path or params:
+# a value from the responses so far or the last job of a name enqueued so far,
+# for honeypots, challenges and emailed tokens.
+def resolve(value, state)
+  case value
+  when Hash
+    value.transform_values { |v| resolve(v, state) }
+  when Array
+    value.map { |v| resolve(v, state) }
+  when String
+    value.gsub(/\{\{([^}|]+)(\|reverse|\|last_segment)?\}\}/) do
+      path, filter = Regexp.last_match(1), Regexp.last_match(2)
+      found = path.split(".").reduce(state) { |acc, k| acc.is_a?(Array) ? acc[k.to_i] : acc&.[](k) }
+      raise "{{#{path}}} resolved to nothing" if found.nil?
+      case filter
+      when "|reverse" then found.to_s.reverse
+      when "|last_segment" then found.to_s.split("/").last
+      else found.to_s
+      end
+    end
+  else
+    value
+  end
+end
+
 # Tables with their primary key columns (none for a table without one).
 TABLES =
   db
@@ -122,11 +147,16 @@ cases.each do |c|
     before_rows = before_sums.keys.to_h { |t| [t, rows(t)] }
     started_at = db.select_value("SELECT to_jsonb(clock_timestamp()::timestamp)::text")
     transaction_started_at = db.select_value("SELECT to_jsonb(transaction_timestamp()::timestamp)::text")
-    responses =
-      c["requests"].map do |r|
-        session.public_send(r["method"].downcase, r["path"], params: r["params"] || {}, headers: headers, as: :json)
+    responses = []
+    c["requests"].each do |r|
+        state = { "responses" => responses.map { |x| JSON.parse(x.to_json) }, "jobs" => ENQUEUED.to_h { |n, a| [n.split(" ").first, JSON.parse(a.to_json)] } }
+        # A GET with `as: :json` goes out as a POST with X-Http-Method-Override,
+        # which the integration session writes into the headers it was given.
+        options = { params: resolve(r["params"] || {}, state), headers: headers.dup }
+        options[:as] = :json if r["method"] != "GET"
+        session.public_send(r["method"].downcase, resolve(r["path"], state), **options)
         body = session.response.body
-        { status: session.response.status, body: (JSON.parse(body) rescue body) }
+        responses << { status: session.response.status, body: (JSON.parse(body) rescue body) }
       end
     # run_jobs: the named jobs run in order (delayed ones too), as Sidekiq
     # would, including those the jobs themselves enqueue; what the jobs
