@@ -28,8 +28,19 @@ jobs:
       - name: Format and clippy
         run: make fmt-check clippy
 
+  # Three runners: the write suite (one test, the longest) alone, and the
+  # rest split in two by nextest. Each builds the tests itself; only one
+  # saves the cache, so they do not race to write the same entry.
   test:
+    name: test (${{ matrix.shard.name }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard:
+          - { name: writes, filter: "binary(writes)", partition: "" }
+          - { name: rest 1/2, filter: "not binary(writes)", partition: "--partition count:1/2" }
+          - { name: rest 2/2, filter: "not binary(writes)", partition: "--partition count:2/2" }
 
     services:
       # structure.sql needs pgvector for the bundled discourse-ai tables.
@@ -60,6 +71,8 @@ jobs:
 
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
+        with:
+          save-if: ${{ matrix.shard.name == 'writes' }}
 
       # The same nextest as shell.nix carries.
       - name: Install cargo-nextest
@@ -71,4 +84,4 @@ jobs:
         run: scripts/db-load --force discourse_rs_test
 
       - name: Test
-        run: make test
+        run: cargo nextest run --profile ci -E '${{ matrix.shard.filter }}' ${{ matrix.shard.partition }}
