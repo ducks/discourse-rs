@@ -45,13 +45,7 @@ const PLUGIN_KEYS: [&str; 9] = [
 const PLUGIN_JOBS: [&str; 1] = ["bot_input"];
 
 /// Cases the port does not do like Rails yet. The list only shrinks.
-const NOT_YET: &[&str] = &[
-    "reply_post_alert",
-    "reply_to_post_post_alert",
-    "mention_post_alert",
-    "new_topic_post_alert",
-    "edit_post_alert",
-];
+const NOT_YET: &[&str] = &[];
 
 struct Client {
     state: AppState,
@@ -357,6 +351,37 @@ fn short(v: &Value) -> String {
 }
 
 /// Replays one recorded case; the differences, empty when it matches.
+/// The reference keeps writing in the background (admin notices, badge
+/// grants), so a table can be ahead of the seed: each table Rails inserted
+/// into starts where Rails' first new row did.
+async fn align_sequences(pool: &PgPool, case: &Value) {
+    let Some(changes) = case["changes"].as_object() else {
+        return;
+    };
+    for (table, change) in changes {
+        let Some(first) = change["inserted"]
+            .as_array()
+            .and_then(|rows| rows.iter().filter_map(|r| r["id"].as_i64()).min())
+        else {
+            continue;
+        };
+        let sequence: Option<String> =
+            sqlx::query_scalar("SELECT pg_get_serial_sequence($1, 'id')")
+                .bind(format!("public.{table}"))
+                .fetch_one(pool)
+                .await
+                .unwrap_or(None);
+        if let Some(sequence) = sequence {
+            sqlx::query("SELECT setval($1, GREATEST($2, 1), $2 > 0)")
+                .bind(&sequence)
+                .bind(first - 1)
+                .execute(pool)
+                .await
+                .unwrap();
+        }
+    }
+}
+
 /// Jobs in the queue after `after_id`, as (id, name, `[name, args]` with
 /// " in Ns" for a delayed one, as the recorder writes them).
 async fn queued_jobs(pool: &PgPool, after_id: i64) -> Vec<(i64, String, Value)> {
@@ -384,6 +409,7 @@ async fn replay(case: &Value, run_jobs: &[String]) -> Vec<String> {
     let db = TestDb::new().await;
     let app_state = state(db.pool.clone(), recorded_config());
     reset_sequences(&db.pool).await;
+    align_sequences(&db.pool, case).await;
     let mut client = Client {
         state: app_state,
         cookies: Vec::new(),

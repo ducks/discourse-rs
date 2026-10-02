@@ -9,6 +9,7 @@
 //! ported fails at once with the reason kept on the row.
 
 mod handlers;
+mod post_alert;
 
 use std::time::Duration;
 
