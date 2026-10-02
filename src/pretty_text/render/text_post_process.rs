@@ -131,10 +131,10 @@ fn split(content: &str, matcher: &Regex, ctx: &Context) -> Option<Vec<Node>> {
         }
         pos = whole.end();
     }
-    if let Some(nodes) = result.as_mut() {
-        if pos < content.len() {
-            nodes.push(text(&content[pos..]));
-        }
+    if let Some(nodes) = result.as_mut()
+        && pos < content.len()
+    {
+        nodes.push(text(&content[pos..]));
     }
     result
 }

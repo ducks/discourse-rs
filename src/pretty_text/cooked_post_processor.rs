@@ -275,10 +275,10 @@ pub(crate) async fn post_process(
         if element_name(&a) != Some("a") {
             continue;
         }
-        if let Some(href) = attr(&a, "href") {
-            if let Some(cleaned) = without_user_id(&href, &hostname)? {
-                set_attr(&a, "href", &cleaned);
-            }
+        if let Some(href) = attr(&a, "href")
+            && let Some(cleaned) = without_user_id(&href, &hostname)?
+        {
+            set_attr(&a, "href", &cleaned);
         }
     }
     add_rel_attributes(&dom, add_nofollow, &site_host, &allowlist);

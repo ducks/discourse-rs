@@ -683,10 +683,11 @@ where
     })
     .await?;
     // A logout ends the cached session.
-    if let Some(user) = &case.login {
-        if case.method == "DELETE" && case.path.starts_with("/session/") {
-            sessions.by_user.remove(user);
-        }
+    if let Some(user) = &case.login
+        && case.method == "DELETE"
+        && case.path.starts_with("/session/")
+    {
+        sessions.by_user.remove(user);
     }
     Ok(Recorded {
         status: reply.status,

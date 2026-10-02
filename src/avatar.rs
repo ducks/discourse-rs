@@ -59,16 +59,15 @@ pub fn avatar_template(
             .get("use_site_small_logo_as_system_avatar")?
             .truthy()
         && settings.get("logo_small")?.to_i() != 0
+        && let Some(url) = logo_small_url
     {
-        if let Some(url) = logo_small_url {
-            // Discourse.store.cdn_url: unchanged without a CDN.
-            if urls.config.globals.cdn_url().is_some() {
-                return Err(AvatarError::Unsupported(Unsupported(
-                    "system avatar behind a CDN",
-                )));
-            }
-            return Ok(url.to_string());
+        // Discourse.store.cdn_url: unchanged without a CDN.
+        if urls.config.globals.cdn_url().is_some() {
+            return Err(AvatarError::Unsupported(Unsupported(
+                "system avatar behind a CDN",
+            )));
         }
+        return Ok(url.to_string());
     }
     class_avatar_template(urls, username, uploaded_avatar_id)
 }

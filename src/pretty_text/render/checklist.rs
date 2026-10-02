@@ -217,11 +217,11 @@ fn neutralize(root: &mut Node) {
                 let content = html.content.clone();
                 node.replace(Text { content });
             }
-        } else if let Some(html) = node.cast::<HtmlBlock>() {
-            if RAW_MARKUP.is_match(&html.content) {
-                let content = html.content.clone();
-                node.replace(BlockText(content));
-            }
+        } else if let Some(html) = node.cast::<HtmlBlock>()
+            && RAW_MARKUP.is_match(&html.content)
+        {
+            let content = html.content.clone();
+            node.replace(BlockText(content));
         }
     });
 }

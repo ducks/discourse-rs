@@ -367,10 +367,10 @@ impl Notifications<'_> {
         }
         let mut topic_ids: Vec<i32> = Vec::new();
         for r in &rows {
-            if let Some(id) = r.topic_id {
-                if !topic_ids.contains(&id) {
-                    topic_ids.push(id);
-                }
+            if let Some(id) = r.topic_id
+                && !topic_ids.contains(&id)
+            {
+                topic_ids.push(id);
             }
         }
         let accessible = self
@@ -447,10 +447,8 @@ impl Notifications<'_> {
             };
             n.insert("slug".into(), slug);
             let mut data: Value = serde_json::from_str(&r.data).unwrap_or(json!({}));
-            if !enable_names {
-                if let Some(obj) = data.as_object_mut() {
-                    obj.remove("display_name");
-                }
+            if !enable_names && let Some(obj) = data.as_object_mut() {
+                obj.remove("display_name");
             }
             n.insert("data".into(), data);
             if r.subtype.as_deref() == Some("moderator_warning") {

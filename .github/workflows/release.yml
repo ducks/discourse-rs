@@ -28,11 +28,12 @@ jobs:
         with:
           ref: ${{ env.TAG }}
 
-      # Same rustc as the Test workflow and shell.nix.
+      # The version in rust-toolchain.toml, as in the Test workflow and
+      # shell.nix.
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@1.86.0
-        with:
-          targets: ${{ env.TARGET }}
+        run: |
+          rustup show active-toolchain || rustup toolchain install
+          rustup target add ${{ env.TARGET }}
 
       # Static musl binary: nothing to match on the host's libc.
       - name: Install musl toolchain

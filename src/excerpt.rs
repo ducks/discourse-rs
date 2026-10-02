@@ -362,10 +362,8 @@ impl Parser {
                 }
                 self.in_svg = false;
             }
-            "use" => {
-                if self.options.keep_svg {
-                    self.characters("</use>", false, false, false)?;
-                }
+            "use" if self.options.keep_svg => {
+                self.characters("</use>", false, false, false)?;
             }
             _ => {}
         }

@@ -63,12 +63,11 @@ fn collect(node: &Handle, skip: bool, links: &mut Vec<String>) -> Result<(), Uns
                     .borrow()
                     .iter()
                     .any(|c| element_name(c) == Some("img"));
-            if !lightbox_image {
-                if let Some(href) =
+            if !lightbox_image
+                && let Some(href) =
                     attr(node, "href").filter(|h| !h.is_empty() && !h.starts_with('#'))
-                {
-                    links.push(href);
-                }
+            {
+                links.push(href);
             }
         }
     }

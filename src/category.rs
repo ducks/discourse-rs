@@ -36,15 +36,16 @@ impl Category {
         max_nesting: i64,
     ) -> Result<Option<Category>, sqlx::Error> {
         let mut segments: Vec<&str> = path.split('/').filter(|s| !s.is_empty()).collect();
-        if let Some(last) = segments.last() {
-            if !last.is_empty() && last.bytes().all(|b| b.is_ascii_digit()) {
-                let id: i32 = match last.parse() {
-                    Ok(id) => id,
-                    Err(_) => return Ok(None),
-                };
-                segments.pop();
-                return Self::find(conn, id).await;
-            }
+        if let Some(last) = segments.last()
+            && !last.is_empty()
+            && last.bytes().all(|b| b.is_ascii_digit())
+        {
+            let id: i32 = match last.parse() {
+                Ok(id) => id,
+                Err(_) => return Ok(None),
+            };
+            segments.pop();
+            return Self::find(conn, id).await;
         }
         Self::find_by_slug_path(conn, &segments, max_nesting).await
     }

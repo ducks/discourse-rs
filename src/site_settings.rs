@@ -729,10 +729,11 @@ impl SiteSettings {
         // and nothing is stored for the setting, its default is the
         // override's.
         for def in defs.iter() {
-            if let Some((change, new_default)) = &def.default_override {
-                if !modified.contains(&def.name) && values.get(change).is_some_and(Value::truthy) {
-                    values.insert(def.name.clone(), new_default.clone());
-                }
+            if let Some((change, new_default)) = &def.default_override
+                && !modified.contains(&def.name)
+                && values.get(change).is_some_and(Value::truthy)
+            {
+                values.insert(def.name.clone(), new_default.clone());
             }
         }
 
@@ -784,10 +785,10 @@ impl SiteSettings {
         .await?;
         {
             let cache = defs.cache.lock().unwrap_or_else(|e| e.into_inner());
-            if let Some((cached, settings)) = cache.as_ref() {
-                if *cached == fingerprint {
-                    return Ok(settings.clone());
-                }
+            if let Some((cached, settings)) = cache.as_ref()
+                && *cached == fingerprint
+            {
+                return Ok(settings.clone());
             }
         }
         let rows: Vec<(String, i32, Option<String>)> =

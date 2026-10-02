@@ -234,14 +234,13 @@ pub fn password_error(
     if owner.email.is_some_and(|e| !e.is_empty() && password == e) {
         return Ok(Some("same_as_email"));
     }
-    if let Some((hash, salt, algorithm)) = owner.current {
-        if crate::session::token::hash_password(password, salt, algorithm)
+    if let Some((hash, salt, algorithm)) = owner.current
+        && crate::session::token::hash_password(password, salt, algorithm)
             .ok()
             .as_deref()
             == Some(hash)
-        {
-            return Ok(Some("same_as_current"));
-        }
+    {
+        return Ok(Some("same_as_current"));
     }
     if settings.get("block_common_passwords")?.truthy()
         && COMMON_PASSWORDS.lines().any(|l| l == password)

@@ -232,12 +232,11 @@ pub async fn method_override(
                 .find(|(k, _)| k == "_method")
                 .map(|(_, v)| v.into_owned())
         });
-    if let Some(m) = overridden {
-        if let Ok(method) = Method::from_bytes(m.to_ascii_uppercase().as_bytes()) {
-            if matches!(method, Method::DELETE | Method::PUT | Method::PATCH) {
-                parts.method = method;
-            }
-        }
+    if let Some(m) = overridden
+        && let Ok(method) = Method::from_bytes(m.to_ascii_uppercase().as_bytes())
+        && matches!(method, Method::DELETE | Method::PUT | Method::PATCH)
+    {
+        parts.method = method;
     }
     next.run(axum::extract::Request::from_parts(parts, Body::from(bytes)))
         .await

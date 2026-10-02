@@ -208,17 +208,17 @@ impl TopicListSerializer<'_> {
                     )?);
                 }
                 // Side-loaded once each, in first-seen order, like AMS's embed :ids.
-                if let Some(g) = poster.user.primary_group_id.and_then(|id| groups.get(&id)) {
-                    if !seen_primary.contains(&g.id) {
-                        seen_primary.push(g.id);
-                        primary_groups.push(g.primary_json());
-                    }
+                if let Some(g) = poster.user.primary_group_id.and_then(|id| groups.get(&id))
+                    && !seen_primary.contains(&g.id)
+                {
+                    seen_primary.push(g.id);
+                    primary_groups.push(g.primary_json());
                 }
-                if let Some(g) = poster.user.flair_group_id.and_then(|id| groups.get(&id)) {
-                    if !seen_flair.contains(&g.id) {
-                        seen_flair.push(g.id);
-                        flair_groups.push(g.flair_json()?);
-                    }
+                if let Some(g) = poster.user.flair_group_id.and_then(|id| groups.get(&id))
+                    && !seen_flair.contains(&g.id)
+                {
+                    seen_flair.push(g.id);
+                    flair_groups.push(g.flair_json()?);
                 }
             }
             // participants_summary: the author and allowed users minus the
@@ -282,10 +282,10 @@ impl TopicListSerializer<'_> {
             ),
         );
         topic_list.insert("filter".into(), json!(list.filter));
-        if let Some(url) = &self.more_topics_url {
-            if list.topics.len() as i64 == list.per_page {
-                topic_list.insert("more_topics_url".into(), json!(url));
-            }
+        if let Some(url) = &self.more_topics_url
+            && list.topics.len() as i64 == list.per_page
+        {
+            topic_list.insert("more_topics_url".into(), json!(url));
         }
         topic_list.insert("per_page".into(), json!(list.per_page));
         if tagging {
@@ -1036,10 +1036,10 @@ pub(crate) fn posters_summary(
 
     let mut top: Vec<&LookupUser> = Vec::new();
     for id in user_ids.iter().flatten() {
-        if let Some(u) = lookup.get(id) {
-            if !top.iter().any(|x| x.id == u.id) {
-                top.push(u);
-            }
+        if let Some(u) = lookup.get(id)
+            && !top.iter().any(|x| x.id == u.id)
+        {
+            top.push(u);
         }
     }
     top.truncate(5);

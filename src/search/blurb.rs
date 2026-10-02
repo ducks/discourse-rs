@@ -16,11 +16,11 @@ pub fn blurb_for(text: &str, term: Option<&str>, blurb_length: usize) -> String 
         };
         blurb = excerpt(text, &term, blurb_length / 2);
     }
-    let blurb = match blurb.filter(|b| !b.trim().is_empty()) {
+
+    match blurb.filter(|b| !b.trim().is_empty()) {
         Some(b) => sanitize(&b),
         None => sanitize(&html_escape(&truncate(text, blurb_length))),
-    };
-    blurb
+    }
 }
 
 fn quoted_phrase(term: &str) -> Option<String> {

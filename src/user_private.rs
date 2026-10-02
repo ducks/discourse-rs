@@ -344,10 +344,10 @@ impl Private<'_> {
         .bind(uid)
         .fetch_optional(&mut *self.conn)
         .await?;
-        if let Some((gravatar, custom)) = avatars {
-            if gravatar.is_some() || custom.is_some() {
-                return Err(Unsupported("gravatar/custom avatar keys on profiles").into());
-            }
+        if let Some((gravatar, custom)) = avatars
+            && (gravatar.is_some() || custom.is_some())
+        {
+            return Err(Unsupported("gravatar/custom avatar keys on profiles").into());
         }
         let names = |table: &'static str, column: &'static str| {
             format!(

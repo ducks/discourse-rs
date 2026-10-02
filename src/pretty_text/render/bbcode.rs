@@ -293,14 +293,15 @@ fn find_inline_close(src: &str, tag: &str, start: usize, max: usize) -> Option<C
             }
         } else if c == '[' {
             let at = start + offset;
-            if let Some(info) = parse_tag(&src[at..max], false) {
-                if info.closing && info.tag == tag {
-                    return Some(CloseTag {
-                        line: None,
-                        start: at,
-                        length: info.length,
-                    });
-                }
+            if let Some(info) = parse_tag(&src[at..max], false)
+                && info.closing
+                && info.tag == tag
+            {
+                return Some(CloseTag {
+                    line: None,
+                    start: at,
+                    length: info.length,
+                });
             }
         }
     }
@@ -322,22 +323,22 @@ fn find_block_close(state: &BlockState, tag: &str, start_line: usize) -> Option<
         if start < max && state.line_indent(line) < 0 {
             return None;
         }
-        if state.src[start..max].starts_with('[') && state.line_indent(line) < 4 {
-            if let Some(info) = parse_tag(&state.src[start..max], true) {
-                if info.tag == tag {
-                    if info.closing {
-                        if nesting == 0 {
-                            return Some(CloseTag {
-                                line: Some(line),
-                                start,
-                                length: info.length,
-                            });
-                        }
-                        nesting -= 1;
-                    } else {
-                        nesting += 1;
-                    }
+        if state.src[start..max].starts_with('[')
+            && state.line_indent(line) < 4
+            && let Some(info) = parse_tag(&state.src[start..max], true)
+            && info.tag == tag
+        {
+            if info.closing {
+                if nesting == 0 {
+                    return Some(CloseTag {
+                        line: Some(line),
+                        start,
+                        length: info.length,
+                    });
                 }
+                nesting -= 1;
+            } else {
+                nesting += 1;
             }
         }
         line += 1;

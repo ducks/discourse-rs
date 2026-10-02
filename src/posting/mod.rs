@@ -275,15 +275,15 @@ async fn missing_record_level(
     .bind(topic_id)
     .fetch_one(&mut *conn)
     .await?;
-    if let Some(c) = category_level {
-        if tag_level.is_none_or(|t| t <= c) {
-            let reason = if c == notification_levels::WATCHING {
-                notification_reasons::AUTO_WATCH_CATEGORY
-            } else {
-                notification_reasons::AUTO_TRACK_CATEGORY
-            };
-            return Ok(Some((c, reason)));
-        }
+    if let Some(c) = category_level
+        && tag_level.is_none_or(|t| t <= c)
+    {
+        let reason = if c == notification_levels::WATCHING {
+            notification_reasons::AUTO_WATCH_CATEGORY
+        } else {
+            notification_reasons::AUTO_TRACK_CATEGORY
+        };
+        return Ok(Some((c, reason)));
     }
     if let Some(t) = tag_level {
         let reason = if t == notification_levels::WATCHING {

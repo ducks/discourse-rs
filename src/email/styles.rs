@@ -376,10 +376,11 @@ impl Styles {
             );
         }
         for a in self.select("a.attachment") {
-            if let Some(href) = attr(&a, "href") {
-                if href.starts_with('/') && !href.starts_with("//") {
-                    set_attr(&a, "href", &format!("{base_url}{href}"));
-                }
+            if let Some(href) = attr(&a, "href")
+                && href.starts_with('/')
+                && !href.starts_with("//")
+            {
+                set_attr(&a, "href", &format!("{base_url}{href}"));
             }
             if let Some(href) = attr(&a, "href").filter(|h| h.starts_with("//")) {
                 set_attr(&a, "href", &format!("{scheme}:{href}"));
@@ -419,16 +420,16 @@ impl Styles {
         }
         // correct_footer_style_highlight_first: the first link of the
         // first highlighted footer.
-        if let Some(footer) = self.select(".footer.highlight").first() {
-            if let Some(a) = self.select_within(footer, "a").first() {
-                set_attr(
-                    a,
-                    "style",
-                    &format!(
-                        "background-color: {accent_bg}; color: {accent_fg}; border-top: 4px solid {accent_bg}; border-right: 6px solid {accent_bg}; border-bottom: 4px solid {accent_bg}; border-left: 6px solid {accent_bg}; display: inline-block; font-weight: bold;"
-                    ),
-                );
-            }
+        if let Some(footer) = self.select(".footer.highlight").first()
+            && let Some(a) = self.select_within(footer, "a").first()
+        {
+            set_attr(
+                a,
+                "style",
+                &format!(
+                    "background-color: {accent_bg}; color: {accent_fg}; border-top: 4px solid {accent_bg}; border-right: 6px solid {accent_bg}; border-bottom: 4px solid {accent_bg}; border-left: 6px solid {accent_bg}; display: inline-block; font-weight: bold;"
+                ),
+            );
         }
         // strip_hashtag_link_icons
         for hashtag in self.select(".hashtag-cooked") {
@@ -654,26 +655,25 @@ impl Styles {
                 continue;
             };
             if src.contains("_avatar") {
-                if let Some(p) = parent(&img) {
-                    if element_name(&p) == Some("td") {
-                        set_attr(&p, "style", "vertical-align: top;");
-                    }
+                if let Some(p) = parent(&img)
+                    && element_name(&p) == Some("td")
+                {
+                    set_attr(&p, "style", "vertical-align: top;");
                 }
                 remove(&img);
                 continue;
             }
-            if let Some(title) = attr(&img, "title") {
-                if src.contains("/emoji/") || src.contains("/_emoji/") {
-                    if let Some(p) = parent(&img) {
-                        let node = Node::new(NodeData::Text {
-                            contents: RefCell::new(StrTendril::from(title)),
-                        });
-                        node.parent.set(Some(Rc::downgrade(&p)));
-                        let mut children = p.children.borrow_mut();
-                        if let Some(i) = children.iter().position(|c| Rc::ptr_eq(c, &img)) {
-                            children[i] = node;
-                        }
-                    }
+            if let Some(title) = attr(&img, "title")
+                && (src.contains("/emoji/") || src.contains("/_emoji/"))
+                && let Some(p) = parent(&img)
+            {
+                let node = Node::new(NodeData::Text {
+                    contents: RefCell::new(StrTendril::from(title)),
+                });
+                node.parent.set(Some(Rc::downgrade(&p)));
+                let mut children = p.children.borrow_mut();
+                if let Some(i) = children.iter().position(|c| Rc::ptr_eq(c, &img)) {
+                    children[i] = node;
                 }
             }
         }

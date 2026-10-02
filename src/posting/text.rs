@@ -54,20 +54,19 @@ pub fn clean_title(title: &str, o: &TitleOptions) -> String {
             .split(is_ruby_space)
             .next()
             .filter(|f| !f.is_empty())
+            && first == first.to_lowercase()
         {
-            if first == first.to_lowercase() {
-                let rest = trimmed[first.len()..].trim_start_matches(is_ruby_space);
-                let mut chars = first.chars();
-                let capitalized: String = chars
-                    .next()
-                    .map(|c| c.to_uppercase().chain(chars).collect())
-                    .unwrap_or_default();
-                text = if rest.is_empty() {
-                    capitalized
-                } else {
-                    format!("{capitalized} {rest}")
-                };
-            }
+            let rest = trimmed[first.len()..].trim_start_matches(is_ruby_space);
+            let mut chars = first.chars();
+            let capitalized: String = chars
+                .next()
+                .map(|c| c.to_uppercase().chain(chars).collect())
+                .unwrap_or_default();
+            text = if rest.is_empty() {
+                capitalized
+            } else {
+                format!("{capitalized} {rest}")
+            };
         }
         text = PERIODS_AT_END.replace(&text, "$1$2").into_owned();
         if o.remove_extraneous_space {

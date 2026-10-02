@@ -34,11 +34,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Same rustc as nixpkgs gives shell.nix, so clippy agrees locally and here.
+      # rust-toolchain.toml sets the version for rustup here and for
+      # shell.nix locally, so clippy agrees in both places.
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@1.86.0
-        with:
-          components: rustfmt, clippy
+        run: rustup show active-toolchain || rustup toolchain install
 
       - name: Cache cargo
         uses: actions/cache@v4

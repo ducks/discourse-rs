@@ -662,7 +662,7 @@ async fn replay(case: &Value, run_jobs: &[String]) -> Vec<String> {
     let mut seen_id = last_id;
     let mut from_jobs: Vec<Value> = Vec::new();
     while let Some((id, name)) = pending.pop_front() {
-        if !run_jobs.iter().any(|n| *n == name) {
+        if !run_jobs.contains(&name) {
             continue;
         }
         discourse_rs::jobs::perform_now(&client.state, id)

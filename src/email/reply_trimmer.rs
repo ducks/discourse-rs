@@ -408,11 +408,11 @@ pub fn trim(text: &str) -> Option<(String, String)> {
     }
 
     // trailing quotes after some text
-    if pattern.contains('t') {
-        if let Some(index) = find(&pattern, "[eq]+$") {
-            pattern.truncate(index);
-            lines.truncate(index);
-        }
+    if pattern.contains('t')
+        && let Some(index) = find(&pattern, "[eq]+$")
+    {
+        pattern.truncate(index);
+        lines.truncate(index);
     }
 
     let mut trimmed = ruby_strip(&lines.join("\n")).to_string();

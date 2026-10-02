@@ -226,15 +226,16 @@ fn apply(content: &str, settings: &RenderSettings) -> Option<Vec<Piece>> {
     let mut i = 0;
     while i + 1 < units.len() {
         let mut token: Option<(usize, Emoji)> = None;
-        if let Some(name) = emoji_name(&units, i, settings.inline_emoji) {
-            if let Some(emoji) = emoji_node(&name, settings) {
-                token = Some((name.encode_utf16().count() + 2, emoji));
-            }
+        if let Some(name) = emoji_name(&units, i, settings.inline_emoji)
+            && let Some(emoji) = emoji_node(&name, settings)
+        {
+            token = Some((name.encode_utf16().count() + 2, emoji));
         }
-        if settings.emoji_shortcuts && token.is_none() {
-            if let Some((pos, emoji)) = emoticon(&units, i, settings) {
-                token = Some((pos - i, emoji));
-            }
+        if settings.emoji_shortcuts
+            && token.is_none()
+            && let Some((pos, emoji)) = emoticon(&units, i, settings)
+        {
+            token = Some((pos - i, emoji));
         }
         if let Some((offset, emoji)) = token {
             let pieces = result.get_or_insert_with(Vec::new);

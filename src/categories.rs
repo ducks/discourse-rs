@@ -178,10 +178,10 @@ impl Categories<'_> {
         let mut out = Vec::with_capacity(visible.len());
         for category in visible {
             // Children of a hidden parent are dropped.
-            if let Some(parent) = category.parent_category_id {
-                if !visible_ids.contains(&parent) {
-                    continue;
-                }
+            if let Some(parent) = category.parent_category_id
+                && !visible_ids.contains(&parent)
+            {
+                continue;
             }
             let mut json = self.serialize(category).await?;
             let level = notification_levels
