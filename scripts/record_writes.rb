@@ -164,7 +164,7 @@ cases.each do |c|
         state = { "responses" => responses.map { |x| JSON.parse(x.to_json) }, "jobs" => ENQUEUED.to_h { |n, a| [n.split(" ").first, JSON.parse(a.to_json)] } }
         # A GET with `as: :json` goes out as a POST with X-Http-Method-Override,
         # which the integration session writes into the headers it was given.
-        options = { params: resolve(r["params"] || {}, state), headers: headers.dup }
+        options = { params: resolve(r["params"] || {}, state), headers: headers.merge(r["headers"] || {}) }
         options[:as] = :json if r["method"] != "GET"
         session.public_send(r["method"].downcase, resolve(r["path"], state), **options)
         body = session.response.body

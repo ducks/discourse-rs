@@ -25,6 +25,7 @@ pub async fn refuse_unported(
     new_topic: bool,
     category_id: Option<i32>,
     typing_duration_msecs: i64,
+    first_post_checks: bool,
 ) -> Result<(), AppError> {
     let s = ctx.settings;
     let user = guardian.user().ok_or(Unsupported("posting anonymously"))?;
@@ -64,7 +65,7 @@ pub async fn refuse_unported(
             Unsupported("the review queue (approve_new_topics_unless_allowed_groups)").into(),
         );
     }
-    let first_post = post_count == 0 && topic_count == 0;
+    let first_post = first_post_checks && post_count == 0 && topic_count == 0;
     if first_post {
         let threshold = match s.get("fast_typing_threshold")?.to_s().as_str() {
             "disabled" => 0,

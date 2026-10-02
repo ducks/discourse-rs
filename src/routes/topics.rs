@@ -108,7 +108,7 @@ fn split_format(segment: &str) -> (String, bool) {
 }
 
 /// `render_json_error I18n.t(:not_found)`; `extras` only for topics#show.
-pub(super) fn not_found_response(state: &AppState, with_extras: bool) -> Response {
+pub(crate) fn not_found_response(state: &AppState, with_extras: bool) -> Response {
     let i18n = &state.i18n;
     let mut body = serde_json::Map::new();
     body.insert(

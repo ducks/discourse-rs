@@ -30,11 +30,9 @@ pub async fn handle_mail(
     if !csrf_ok(&state, &headers, &pairs, uri.path(), "POST") {
         return Ok(bad_csrf());
     }
-    if guardian.is_anonymous() {
-        return Err(Unsupported("handle_mail without a session (API keys)").into());
-    }
+    // Admin routes are behind AdminConstraint: anyone else gets no route.
     if !guardian.is_admin() {
-        return Ok(super::search::invalid_access(&state));
+        return Ok(super::topics::not_found_response(&state, false));
     }
     let encoded = params::string(&p, "email_encoded").filter(|e| !e.is_empty());
     let plain = params::string(&p, "email").filter(|e| !e.is_empty());
