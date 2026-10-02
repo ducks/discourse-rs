@@ -34,9 +34,17 @@ const BIDI: [char; 9] = [
     '\u{2069}',
 ];
 
-pub(super) fn parse(html: &str) -> RcDom {
+pub(crate) fn parse(html: &str) -> RcDom {
     let context = QualName::new(None, ns!(html), local_name!("body"));
     parse_fragment(RcDom::default(), ParseOpts::default(), context, vec![])
+        .from_utf8()
+        .read_from(&mut html.as_bytes())
+        .expect("reading from a byte slice cannot fail")
+}
+
+/// `Nokogiri::HTML5(html)`: a whole document.
+pub(crate) fn parse_document(html: &str) -> RcDom {
+    html5ever::parse_document(RcDom::default(), ParseOpts::default())
         .from_utf8()
         .read_from(&mut html.as_bytes())
         .expect("reading from a byte slice cannot fail")
@@ -49,7 +57,7 @@ pub(super) fn dom_text(dom: &RcDom) -> String {
     text(&fragment_root(dom))
 }
 
-fn fragment_root(dom: &RcDom) -> Handle {
+pub(crate) fn fragment_root(dom: &RcDom) -> Handle {
     dom.document
         .children
         .borrow()
@@ -58,7 +66,7 @@ fn fragment_root(dom: &RcDom) -> Handle {
         .unwrap_or_else(|| dom.document.clone())
 }
 
-pub(super) fn to_html(dom: &RcDom) -> String {
+pub(crate) fn to_html(dom: &RcDom) -> String {
     let root = fragment_root(dom);
     let mut out = Vec::new();
     for child in root.children.borrow().iter() {
@@ -76,14 +84,14 @@ pub(super) fn to_html(dom: &RcDom) -> String {
     String::from_utf8(out).expect("the serializer writes UTF-8")
 }
 
-pub(super) fn element_name(node: &Handle) -> Option<&str> {
+pub(crate) fn element_name(node: &Handle) -> Option<&str> {
     match &node.data {
         NodeData::Element { name, .. } => Some(&name.local),
         _ => None,
     }
 }
 
-pub(super) fn attr(node: &Handle, name: &str) -> Option<String> {
+pub(crate) fn attr(node: &Handle, name: &str) -> Option<String> {
     match &node.data {
         NodeData::Element { attrs, .. } => attrs
             .borrow()
@@ -108,7 +116,7 @@ pub(super) fn set_attr(node: &Handle, name: &str, value: &str) {
     }
 }
 
-pub(super) fn has_class(node: &Handle, class: &str) -> bool {
+pub(crate) fn has_class(node: &Handle, class: &str) -> bool {
     attr(node, "class").is_some_and(|c| c.split_whitespace().any(|c| c == class))
 }
 
@@ -129,7 +137,7 @@ pub(super) fn all_elements(dom: &RcDom) -> Vec<Handle> {
 }
 
 /// `node.text`: the text of every descendant.
-pub(super) fn text(node: &Handle) -> String {
+pub(crate) fn text(node: &Handle) -> String {
     let mut out = String::new();
     fn walk(node: &Handle, out: &mut String) {
         if let NodeData::Text { contents } = &node.data {

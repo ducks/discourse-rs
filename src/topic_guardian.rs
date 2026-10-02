@@ -249,7 +249,7 @@ impl Guardian {
 
     /// `edit_time_limit_expired?(user)` (LimitedEdit) for something created
     /// at `created_at`.
-    fn edit_time_limit_expired(
+    pub(crate) fn edit_time_limit_expired(
         &self,
         settings: &SiteSettings,
         created_at: NaiveDateTime,

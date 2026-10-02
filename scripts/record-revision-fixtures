@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Record DiscourseDiff output for the pretty_text corpus
+# into parity/revisions/fixtures.json (scripts/revision_fixtures.rb).
+#
+# Usage: scripts/record-revision-fixtures <agent-name>
+set -euo pipefail
+
+if [ $# -ne 1 ]; then
+  echo "usage: $0 <agent-name>" >&2
+  exit 64
+fi
+
+agent="$1"
+root="$(cd "$(dirname "$0")/.." && pwd)"
+mkdir -p "$root/parity/revisions"
+
+dv copy "$root/scripts/revision_fixtures.rb" "$agent:/tmp/revision_fixtures.rb" > /dev/null
+dv copy "$root/parity/pretty_text/corpus.json" "$agent:/tmp/revision_corpus.json" > /dev/null
+dv run --name "$agent" -- bin/rails runner /tmp/revision_fixtures.rb /tmp/revision_corpus.json /tmp/revision_fixtures.json
+dv copy "$agent:/tmp/revision_fixtures.json" "$root/parity/revisions/fixtures.json" > /dev/null
+echo "wrote $root/parity/revisions/fixtures.json"

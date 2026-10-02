@@ -62,6 +62,12 @@ agent at the same commit and reload the databases afterwards.
 
 ## Parity
 
+Writes are measured separately: `scripts/record-writes <agent>` runs the
+requests in `parity/writes/cases.json` on the reference inside a
+rolled-back transaction and records responses, row changes and enqueued
+jobs; `tests/writes.rs` replays them on the seed and compares
+(`WRITES_DIFF=1` prints the differences).
+
 `parity/cases` lists requests, one per line:
 
 ```
@@ -119,6 +125,7 @@ What comes next, and in what order, is in [ROADMAP.md](ROADMAP.md).
 | `GET /robots.txt`, `GET /robots-builder.json` | `robots_txt_controller.rb` | allowed/blocked crawler agents, `allow_index_in_robots_txt`, `overridden_robots_txt`, the Sitemap line |
 | `GET /sitemap.xml`, `/sitemap_:n.xml`, `/sitemap_recent.xml`, `/news.xml` | `sitemap_controller.rb`, `Sitemap` | the index regenerates the `sitemaps` rows the hourly job would; recent/news touch theirs |
 | `POST /session`, `DELETE /session/:username`, `GET /session/csrf`, `GET /session/current`, `POST /login` | `session_controller.rb`, `Auth::DefaultCurrentUserProvider`, `UserAuthToken`, `CurrentUserSerializer` | local logins (PBKDF2), Rails-compatible encrypted `_t` and `_forum_session` cookies (same `secret_key_base` keeps sessions across a cutover), CSRF tokens, token rotation and expiry, logout, last-seen tracking; 2FA users get Rails' failure payload; rate limits, screened IPs, suspended-user messages, DiscourseConnect not ported |
+| `POST /posts(.json)`, `PUT /posts/:id(.json)`, `GET /posts/:id/revisions/:n(.json)`, `GET /posts/:id/revisions/latest(.json)` | `posts_controller.rb#create`, `#update`, `#revisions`, `#latest_revision`, `NewPostManager`, `PostCreator`, `TopicCreator`, `PostRevisor`, `PostValidator`, `SearchIndexer`, `TopicLink.extract_from`, `PostRevisionSerializer`, `DiscourseDiff` | replies and regular topics by trust level 1+ and staff, edits of the raw and edit reason, revision diffs; every table write measured against Rails (`tests/writes.rs`). Refused: the review queue, watched words, new users (TL0), PMs, tags, quotes, uploads, oneboxes, links to topics, grace-period edits (Rails keeps the original in Redis), title/category edits, fancy titles, hidden revisions. Jobs (notifications, post processing) are not run |
 
 Supporting ports: SiteSetting (YAML defaults, `locale_default`, typed DB
 rows, GlobalSetting shadowing, upcoming-change promotion), server-side I18n

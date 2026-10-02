@@ -119,6 +119,7 @@ struct TopicExtra {
 struct PostRow {
     id: i32,
     user_id: Option<i32>,
+    topic_id: i32,
     post_number: i32,
     cooked: String,
     created_at: NaiveDateTime,
@@ -636,6 +637,52 @@ impl TopicView<'_> {
         Ok(viewer)
     }
 
+    /// `PostSerializer.new(post, scope: guardian, add_raw: true)` outside a
+    /// topic view, with `draft_sequence` set, as posts#create and
+    /// posts#update answer: no `read`, and link counts only when asked
+    /// for (update sets `single_post_link_counts`).
+    pub async fn serialize_single_post(
+        &mut self,
+        post_id: i32,
+        with_link_counts: bool,
+    ) -> Result<Value, TopicViewError> {
+        let sql = format!("{} WHERE id = $1", Self::POST_SQL);
+        let post: PostRow = sqlx::query_as(&sql)
+            .bind(post_id)
+            .fetch_optional(&mut *self.conn)
+            .await?
+            .ok_or(TopicViewError::NotFound)?;
+        let (topic, _) = self.find_topic(post.topic_id).await?;
+        let mut viewer = self.load_viewer(topic.id).await?;
+        viewer.taken =
+            post_actions::taken_actions(&mut *self.conn, &[post.id], self.guardian.user_id())
+                .await?;
+        let Some(slug) = topic.slug.clone() else {
+            return Err(Unsupported("topics without a stored slug (Slug.for)").into());
+        };
+        let raw: String = sqlx::query_scalar("SELECT raw FROM posts WHERE id = $1")
+            .bind(post_id)
+            .fetch_one(&mut *self.conn)
+            .await?;
+        let mut serialized = self
+            .serialize_posts(&topic, &slug, std::slice::from_ref(&post), &viewer)
+            .await?;
+        let Some(Value::Object(mut p)) = serialized.pop() else {
+            return Err(TopicViewError::NotFound);
+        };
+        p.shift_remove("read");
+        if !with_link_counts {
+            p.shift_remove("link_counts");
+        }
+        // Without a topic view the reviewable lookup finds nothing as nil.
+        if p.get("reviewable_id") == Some(&json!(0)) {
+            p.insert("reviewable_id".into(), Value::Null);
+        }
+        p.insert("raw".into(), json!(raw));
+        p.insert("draft_sequence".into(), json!(viewer.draft_sequence));
+        Ok(Value::Object(p))
+    }
+
     /// `NewPostManager.queue_enabled? || reply_posting_review_required?`:
     /// the settings and watched words that send posts to review. Plugin
     /// handlers (which also enable it) aren't ported.
@@ -751,7 +798,7 @@ impl TopicView<'_> {
         Ok(((count - 1).max(0) / CHUNK_SIZE) + 1)
     }
 
-    const POST_SQL: &'static str = "SELECT id, user_id, post_number, cooked, created_at, updated_at, \
+    const POST_SQL: &'static str = "SELECT id, user_id, topic_id, post_number, cooked, created_at, updated_at, \
         reply_to_post_number, reply_count, quote_count, incoming_link_count, reads, score, post_type, \
         hidden, hidden_reason_id, user_deleted, reply_to_user_id, edit_reason, wiki, reply_quoted, \
         public_version, action_code, like_count, hidden_at, locked_by_id, deleted_at, version, \
