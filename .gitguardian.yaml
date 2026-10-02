@@ -1,0 +1,12 @@
+# GitGuardian (ggshield): the test fixtures look like secrets but are not.
+# parity/ holds recordings from a throwaway reference instance (API keys,
+# passwords and tokens that only ever existed inside a rolled-back test
+# transaction), seed/ its snapshot (fixture users' password hashes), and
+# tests/ the fixture logins. The GitHub app reads its excluded paths from
+# the dashboard, not this file.
+version: 2
+secret:
+  ignored_paths:
+    - "parity/**"
+    - "seed/**"
+    - "tests/**"
