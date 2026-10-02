@@ -3,6 +3,7 @@ mod list;
 mod login_required;
 mod messages;
 mod notifications;
+mod posts;
 mod robots;
 mod search;
 mod session;
@@ -16,7 +17,7 @@ mod users;
 use axum::Router;
 use axum::http::header;
 use axum::response::IntoResponse;
-use axum::routing::{delete, get, post};
+use axum::routing::{delete, get, post, put};
 use tower_http::services::ServeDir;
 
 use crate::AppState;
@@ -104,6 +105,10 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/sitemap.xml", get(sitemap::index))
         .route("/sitemap_{page}", get(sitemap::page))
         .route("/news.xml", get(sitemap::news))
+        .route("/posts", post(posts::create))
+        .route("/posts.json", post(posts::create))
+        .route("/posts/{id}", put(posts::update))
+        .route("/posts/{id}/revisions/{revision}", get(posts::revision))
         .route("/session", post(session::create))
         .route("/session.json", post(session::create))
         .route("/session/csrf", get(session::csrf))

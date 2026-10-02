@@ -22,7 +22,6 @@ use serde_json::{Map, Value};
 use sqlx::PgPool;
 use tower::ServiceExt;
 
-
 /// Not compared: written by the agent's scheduler during a recording
 /// (scheduler_stats, top_topics), or the login's token row, whose id and
 /// random token cannot line up (the seed leaves tokens out); tests/sessions.rs
@@ -43,22 +42,7 @@ const PLUGIN_KEYS: [&str; 9] = [
 ];
 
 /// Cases the port does not do like Rails yet. The list only shrinks.
-const NOT_YET: &[&str] = &[
-    "reply",
-    "reply_to_post",
-    "reply_by_tl1",
-    "reply_with_markdown",
-    "new_topic",
-    "reply_too_short",
-    "reply_to_restricted_topic",
-    "reply_to_closed_topic",
-    "reply_anonymous",
-    "edit",
-    "edit_someone_elses_post",
-    "edit_conflict",
-    "edit_by_admin",
-    "revision_not_found",
-];
+const NOT_YET: &[&str] = &[];
 
 struct Client {
     state: AppState,
@@ -241,6 +225,35 @@ fn modifications_value(yaml: &str) -> Value {
     }
 }
 
+/// Background tables go, and an updated row becomes the columns that
+/// changed: the seed and the reference drift apart on columns no case
+/// touches (category stats, unread markers), which is not what is measured.
+fn changed_columns(mut doc: Value) -> Value {
+    let Some(Value::Object(tables)) = doc.get_mut("changes") else {
+        return doc;
+    };
+    tables.retain(|t, _| !BACKGROUND_TABLES.contains(&t.as_str()));
+    for change in tables.values_mut() {
+        let Some(Value::Array(updated)) = change.get_mut("updated") else {
+            continue;
+        };
+        for row in updated.iter_mut() {
+            let (Some(Value::Object(before)), Some(Value::Object(after))) =
+                (row.get("before"), row.get("after"))
+            else {
+                continue;
+            };
+            let changed: Map<String, Value> = after
+                .iter()
+                .filter(|(k, v)| before.get(*k) != Some(*v))
+                .map(|(k, v)| (k.clone(), serde_json::json!([before.get(k), v])))
+                .collect();
+            *row = Value::Object(changed);
+        }
+    }
+    doc
+}
+
 /// Rows keyed by primary key (the whole row without one).
 fn keyed(rows: Vec<Value>, pk: &[String]) -> BTreeMap<String, Value> {
     rows.into_iter()
@@ -381,8 +394,8 @@ async fn replay(case: &Value) -> Vec<String> {
     let mut out = Vec::new();
     differences(
         "",
-        &normalize(&rails, rails_started),
-        &normalize(&ours, started),
+        &changed_columns(normalize(&rails, rails_started)),
+        &changed_columns(normalize(&ours, started)),
         &mut out,
     );
     out

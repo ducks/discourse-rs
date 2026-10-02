@@ -9,7 +9,8 @@ const NOT_YET: &[&str] = &[];
 
 #[test]
 fn body_changes_match_rails() {
-    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("parity/revisions/fixtures.json");
+    let path =
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("parity/revisions/fixtures.json");
     let fixtures: Value = serde_json::from_str(&std::fs::read_to_string(path).unwrap()).unwrap();
     let mut failing = Vec::new();
     let mut report = Vec::new();
@@ -39,6 +40,10 @@ fn body_changes_match_rails() {
             }
         }
     }
-    eprintln!("{} of {} pairs match Rails", pairs.len() - failing.len(), pairs.len());
+    eprintln!(
+        "{} of {} pairs match Rails",
+        pairs.len() - failing.len(),
+        pairs.len()
+    );
     assert_eq!(failing, NOT_YET, "{}", report.join("\n"));
 }

@@ -20,6 +20,7 @@ pub mod params;
 pub mod parity;
 pub mod pm_lists;
 pub mod post_actions;
+pub mod posting;
 pub mod pretty_text;
 pub mod routes;
 pub mod ruby;

@@ -44,7 +44,9 @@ pub fn load(yaml: &str) -> Result<Vec<(String, [Value; 2])>, Unsupported> {
     for (k, v) in map {
         let (serde_yaml_ng::Value::String(key), serde_yaml_ng::Value::Sequence(items)) = (k, v)
         else {
-            return Err(Unsupported("revision modifications that are not field pairs"));
+            return Err(Unsupported(
+                "revision modifications that are not field pairs",
+            ));
         };
         let [before, after]: [serde_yaml_ng::Value; 2] = items
             .try_into()
@@ -66,8 +68,14 @@ mod tests {
     fn reads_what_rails_wrote() {
         let rails = "--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\nraw:\n- Reply one.\n- Reply two.\ncooked:\n- \"<p>Reply one.</p>\"\n- \"<p>Reply two.</p>\"\nedit_reason:\n-\n- fixing it up\n";
         let fields = load(rails).unwrap();
-        assert_eq!(fields[0], ("raw".into(), [json!("Reply one."), json!("Reply two.")]));
-        assert_eq!(fields[2], ("edit_reason".into(), [Value::Null, json!("fixing it up")]));
+        assert_eq!(
+            fields[0],
+            ("raw".into(), [json!("Reply one."), json!("Reply two.")])
+        );
+        assert_eq!(
+            fields[2],
+            ("edit_reason".into(), [Value::Null, json!("fixing it up")])
+        );
     }
 
     #[test]

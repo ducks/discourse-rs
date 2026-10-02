@@ -99,7 +99,7 @@ impl ForumSession {
 
 /// `verify_authenticity_token` for a non-GET request: the session's token
 /// against `X-CSRF-Token` or the `authenticity_token` field.
-fn csrf_ok(
+pub(super) fn csrf_ok(
     state: &AppState,
     headers: &HeaderMap,
     form: &[(String, String)],
@@ -123,7 +123,7 @@ fn csrf_ok(
 }
 
 /// `handle_unverified_request`
-fn bad_csrf() -> Response {
+pub(super) fn bad_csrf() -> Response {
     (
         StatusCode::FORBIDDEN,
         [(header::CONTENT_TYPE, "text/plain; charset=utf-8")],

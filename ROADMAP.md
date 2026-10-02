@@ -121,7 +121,12 @@ Logged-in readers, no writes yet.
 - [ ] Post processor, the rest: oneboxes (network fetches, the onebox
       engines), images (sizes, optimized images, lightboxes), optimized
       videos; and its writes (post/topic image, badges, upload links)
-- [ ] Posting, editing, revisions, likes, flags
+- [x] Posting, editing, revisions: replies, regular topics, raw and
+      edit-reason edits, revision diffs; the 14 cases in parity/writes
+      write the rows Rails writes (tests/writes.rs). Refused for now:
+      review queue, watched words, TL0, PMs, tags, quotes, uploads,
+      oneboxes, topic links, grace-period edits, title/category edits
+- [ ] Likes, flags
 - [ ] Private messages
 - [ ] Uploads (local first, S3 later), optimized images
 - [ ] Background jobs (a Sidekiq replacement for cooking, notifications,

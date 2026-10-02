@@ -66,16 +66,17 @@ impl<'a> OnpDiff<'a> {
         loop {
             p += 1;
             let mut k = -p;
-            while k <= delta - 1 {
+            while k < delta {
                 fp[idx(k)] = self.snake(k, fp[idx(k - 1)] + 1, fp[idx(k + 1)], offset)?;
                 k += 1;
             }
             let mut k = delta + p;
-            while k >= delta + 1 {
+            while k > delta {
                 fp[idx(k)] = self.snake(k, fp[idx(k - 1)] + 1, fp[idx(k + 1)], offset)?;
                 k -= 1;
             }
-            fp[idx(delta)] = self.snake(delta, fp[idx(delta - 1)] + 1, fp[idx(delta + 1)], offset)?;
+            fp[idx(delta)] =
+                self.snake(delta, fp[idx(delta - 1)] + 1, fp[idx(delta + 1)], offset)?;
             if fp[idx(delta)] == n {
                 break;
             }
@@ -115,10 +116,7 @@ impl<'a> OnpDiff<'a> {
     }
 
     /// Walks the shortest path, calling `step` for every token.
-    fn walk(
-        &mut self,
-        mut step: impl FnMut(&'a str, Op),
-    ) -> Result<(), DiffLimitExceeded> {
+    fn walk(&mut self, mut step: impl FnMut(&'a str, Op)) -> Result<(), DiffLimitExceeded> {
         let path = self.compose()?;
         let (add, delete) = if self.reverse {
             (Op::Delete, Op::Add)
@@ -128,16 +126,20 @@ impl<'a> OnpDiff<'a> {
         let (mut px, mut py) = (0i64, 0i64);
         for &(sx, sy) in path.iter().rev() {
             while px < sx || py < sy {
-                if sy - sx > py - px {
-                    step(&self.b[py as usize], add);
-                    py += 1;
-                } else if sy - sx < py - px {
-                    step(&self.a[px as usize], delete);
-                    px += 1;
-                } else {
-                    step(&self.a[px as usize], Op::Common);
-                    px += 1;
-                    py += 1;
+                match (sy - sx).cmp(&(py - px)) {
+                    std::cmp::Ordering::Greater => {
+                        step(&self.b[py as usize], add);
+                        py += 1;
+                    }
+                    std::cmp::Ordering::Less => {
+                        step(&self.a[px as usize], delete);
+                        px += 1;
+                    }
+                    std::cmp::Ordering::Equal => {
+                        step(&self.a[px as usize], Op::Common);
+                        px += 1;
+                        py += 1;
+                    }
                 }
             }
         }
@@ -192,12 +194,14 @@ impl<'a> OnpDiff<'a> {
                     let num_before = j - i + 1;
                     let num_after = k - j;
                     if num_after > 1 {
-                        if num_before > num_after {
-                            let i2 = i + num_before - num_after;
-                            out.extend_from_slice(&ses[i..i2]);
-                            i = i2;
-                        } else if num_after > num_before {
-                            k -= num_after - num_before;
+                        match num_before.cmp(&num_after) {
+                            std::cmp::Ordering::Greater => {
+                                let i2 = i + num_before - num_after;
+                                out.extend_from_slice(&ses[i..i2]);
+                                i = i2;
+                            }
+                            std::cmp::Ordering::Less => k -= num_after - num_before,
+                            std::cmp::Ordering::Equal => {}
                         }
                         // pair_paragraphs(ses, i, j)
                         let pairs = j - i + 1;
@@ -254,6 +258,13 @@ pub fn body_changes(
     })
 }
 
+/// `DiscourseDiff.new(before, after)`'s `inline_html` and
+/// `side_by_side_html`.
+pub fn html_diff(before: &str, after: &str) -> Result<(String, String), DiffLimitExceeded> {
+    let blocks = block_by_block_diff(before, after)?;
+    Ok((inline_html(&blocks)?, side_by_side_html(&blocks)?))
+}
+
 const MAX_DIFFERENCE: usize = 200;
 const CLASS_ATTRIBUTE: &str = " class=\"";
 
@@ -266,7 +277,11 @@ fn block_by_block_diff(before: &str, after: &str) -> Result<Vec<(String, Op)>, D
 /// The pair `i` and its opposite next to it, as (before, after) blocks.
 fn paired(blocks: &[(String, Op)], i: usize) -> Option<(&str, &str)> {
     let op = blocks[i].1;
-    let opposite = if op == Op::Delete { Op::Add } else { Op::Delete };
+    let opposite = if op == Op::Delete {
+        Op::Add
+    } else {
+        Op::Delete
+    };
     let next = blocks.get(i + 1).filter(|b| b.1 == opposite)?;
     Some(if op == Op::Delete {
         (&blocks[i].0, &next.0)
@@ -381,7 +396,7 @@ fn side_by_side_markdown(before: &str, after: &str) -> Result<String, DiffLimitE
 }
 
 /// `CGI.escapeHTML`
-fn escape_html(s: &str) -> String {
+pub(crate) fn escape_html(s: &str) -> String {
     let mut out = String::with_capacity(s.len());
     for c in s.chars() {
         match c {
@@ -482,7 +497,9 @@ fn tokenize_html_blocks(html: &str) -> Vec<String> {
         .collect()
 }
 
-const AUTOCLOSING_TAGS: [&str; 9] = ["area", "base", "br", "col", "embed", "hr", "img", "input", "meta"];
+const AUTOCLOSING_TAGS: [&str; 9] = [
+    "area", "base", "br", "col", "embed", "hr", "img", "input", "meta",
+];
 
 /// `HtmlTokenizer.tokenize`: start tags with their attributes, end tags
 /// but for void elements, and text split into words and single
@@ -502,7 +519,11 @@ fn tokenize_node(node: &Handle, tokens: &mut Vec<String>) {
             let name = &*name.local;
             let mut tag = format!("<{name}");
             for a in attrs.borrow().iter() {
-                tag.push_str(&format!(" {}=\"{}\"", &*a.name.local, escape_html(&a.value)));
+                tag.push_str(&format!(
+                    " {}=\"{}\"",
+                    &*a.name.local,
+                    escape_html(&a.value)
+                ));
             }
             tag.push('>');
             tokens.push(tag);
@@ -568,7 +589,11 @@ fn add_class_or_wrap_in_tags(html_or_text: &str, klass: &str) -> String {
     match html_or_text.find(CLASS_ATTRIBUTE) {
         Some(class_index) if class_index <= chevron => {
             let at = class_index + CLASS_ATTRIBUTE.len();
-            format!("{}diff-{klass} {}", &html_or_text[..at], &html_or_text[at..])
+            format!(
+                "{}diff-{klass} {}",
+                &html_or_text[..at],
+                &html_or_text[at..]
+            )
         }
         _ => format!(
             "{}{CLASS_ATTRIBUTE}diff-{klass}\"{}",
