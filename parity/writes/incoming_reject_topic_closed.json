@@ -10,8 +10,8 @@
       }
     }
   ],
-  "started_at": "2026-10-02T20:59:24.62745",
-  "transaction_started_at": "2026-10-02T20:59:23.380021",
+  "started_at": "2026-10-02T21:11:52.275518",
+  "transaction_started_at": "2026-10-02T21:11:51.083012",
   "responses": [
     {
       "status": 200,
@@ -28,12 +28,12 @@
           "post_id": null,
           "user_id": null,
           "topic_id": null,
-          "bounce_key": "d444c30a-92de-5e32-c43d-3a3f5a33069f",
-          "created_at": "2026-10-02T20:59:24.706287",
+          "bounce_key": "d39afc65-04a0-dbc7-674a-30ea11bd0ffd",
+          "created_at": "2026-10-02T21:11:52.349526",
           "email_type": "email_reject_topic_closed",
-          "message_id": "b4560a78-ff68-4c03-a9e8-d2a45a1b65fb@localhost",
+          "message_id": "8dbff00d-fb28-4a2a-a404-a3e86b8af2f3@localhost",
           "to_address": "user0@example.com",
-          "updated_at": "2026-10-02T20:59:24.706287",
+          "updated_at": "2026-10-02T21:11:52.349526",
           "cc_user_ids": null,
           "cc_addresses": null,
           "bcc_addresses": null,
@@ -58,9 +58,9 @@
           "topic_id": null,
           "imap_sync": null,
           "is_bounce": false,
-          "created_at": "2026-10-02T20:59:24.649062",
+          "created_at": "2026-10-02T21:11:52.29922",
           "message_id": "reject-closed@mail.example.com",
-          "updated_at": "2026-10-02T20:59:24.708954",
+          "updated_at": "2026-10-02T21:11:52.352103",
           "created_via": 1,
           "cc_addresses": "",
           "from_address": "user0@example.com",
@@ -85,29 +85,29 @@
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "AReoDsnpMANw2GMotI59AiNu9/4=",
-            "created_at": "2026-10-02T20:59:24.016284",
-            "rotated_at": "2026-10-02T20:59:24.015447",
-            "updated_at": "2026-10-02T20:59:24.016284",
+            "auth_token": "scdrwLU1u5YtliNzQ89hM/N/emU=",
+            "created_at": "2026-10-02T21:11:51.66706",
+            "rotated_at": "2026-10-02T21:11:51.663595",
+            "updated_at": "2026-10-02T21:11:51.66706",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "AReoDsnpMANw2GMotI59AiNu9/4=",
+            "prev_auth_token": "scdrwLU1u5YtliNzQ89hM/N/emU=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
             "id": 86,
-            "seen_at": "2026-10-02T20:59:24.634017",
+            "seen_at": "2026-10-02T21:11:52.285124",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "AReoDsnpMANw2GMotI59AiNu9/4=",
-            "created_at": "2026-10-02T20:59:24.016284",
-            "rotated_at": "2026-10-02T20:59:24.015447",
-            "updated_at": "2026-10-02T20:59:24.016284",
+            "auth_token": "scdrwLU1u5YtliNzQ89hM/N/emU=",
+            "created_at": "2026-10-02T21:11:51.66706",
+            "rotated_at": "2026-10-02T21:11:51.663595",
+            "updated_at": "2026-10-02T21:11:51.66706",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "AReoDsnpMANw2GMotI59AiNu9/4=",
+            "prev_auth_token": "scdrwLU1u5YtliNzQ89hM/N/emU=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -141,7 +141,7 @@
       "headers": [
         [
           "Return-Path",
-          "replies+verp-d444c30a92de5e32c43d3a3f5a33069f@example.com"
+          "replies+verp-d39afc6504a0dbc7674a30ea11bd0ffd@example.com"
         ],
         [
           "From",
@@ -157,7 +157,7 @@
         ],
         [
           "Message-ID",
-          "<b4560a78-ff68-4c03-a9e8-d2a45a1b65fb@localhost>"
+          "<8dbff00d-fb28-4a2a-a404-a3e86b8af2f3@localhost>"
         ],
         [
           "Subject",
@@ -169,7 +169,7 @@
         ],
         [
           "Content-Type",
-          "multipart/alternative; boundary=--==_mimepart_6ac01b2cab8c0_3123f2863"
+          "multipart/alternative; boundary=--==_mimepart_6ac01e1854711_324af2826748"
         ],
         [
           "Content-Transfer-Encoding",

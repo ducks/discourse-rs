@@ -128,7 +128,7 @@ pub async fn build(
     // The per-type options of user_replied, user_mentioned, ...
     let add_re = match req.email_type {
         "user_replied" | "user_quoted" | "user_linked" | "user_mentioned" => false,
-        "user_posted" | "user_watching_first_post" => true,
+        "user_posted" | "user_watching_first_post" | "user_private_message" => true,
         other => {
             tracing::warn!(email_type = other, "notification email type not ported");
             return Err(Unsupported("this notification email type").into());
@@ -143,8 +143,20 @@ pub async fn build(
     .bind(req.post_id)
     .fetch_one(&mut *conn)
     .await?;
-    if post.archetype == "private_message" {
-        return Err(Unsupported("emails for messages").into());
+    let pm = post.archetype == "private_message";
+    // user_private_message: the posted template, no category or tags in
+    // the subject.
+    let pm_email = req.email_type == "user_private_message";
+    if pm {
+        let groups: bool = sqlx::query_scalar(
+            "SELECT EXISTS (SELECT 1 FROM topic_allowed_groups WHERE topic_id = $1)",
+        )
+        .bind(post.topic_id)
+        .fetch_one(&mut *conn)
+        .await?;
+        if groups {
+            return Err(Unsupported("emails for group messages").into());
+        }
     }
     let user: Recipient = sqlx::query_as(
         "SELECT (SELECT email FROM user_emails WHERE user_id = u.id AND \"primary\" LIMIT 1) AS email, \
@@ -199,7 +211,16 @@ pub async fn build(
 
     // send_notification_email
     let add_re_to_subject = add_re && post.post_number > 1;
-    let template = format!("user_notifications.user_{}", req.notification_type);
+    let notification_type = if pm_email {
+        "posted"
+    } else {
+        req.notification_type
+    };
+    let template = if pm {
+        format!("user_notifications.user_{notification_type}_pm")
+    } else {
+        format!("user_notifications.user_{notification_type}")
+    };
     let category: Option<(String, Option<i32>)> = match post.category_id {
         Some(id) => {
             sqlx::query_as("SELECT name, parent_category_id FROM categories WHERE id = $1")
@@ -211,6 +232,7 @@ pub async fn build(
     };
     let uncategorized = s.get("uncategorized_category_id")?.to_i() as i32;
     let show_category_in_subject = match (&category, post.category_id) {
+        _ if pm_email => None,
         (Some((name, parent)), Some(id)) if id != uncategorized => match parent {
             Some(parent) => {
                 let parent_name: String =
@@ -249,7 +271,7 @@ pub async fn build(
     .bind(max_tags)
     .fetch_all(&mut *conn)
     .await?;
-    let show_tags_in_subject = (!tags.is_empty()).then(|| tags.join(" "));
+    let show_tags_in_subject = (!tags.is_empty() && !pm_email).then(|| tags.join(" "));
 
     // get_context_posts: never (2) gives none; otherwise refused.
     if user.email_previous_replies != 2 {
@@ -306,21 +328,14 @@ pub async fn build(
     }
     let message = format!("{}\n\n", post.raw);
     let slug = post.slug.clone().unwrap_or_default();
+    // Post#url: the post number even for the first post (only share_url
+    // leaves it off).
     let url = format!(
         "{}/t/{slug}/{}/{}",
         ctx.config.globals.relative_url_root(),
         post.topic_id,
         post.post_number
     );
-    let url = if post.post_number == 1 {
-        format!(
-            "{}/t/{slug}/{}",
-            ctx.config.globals.relative_url_root(),
-            post.topic_id
-        )
-    } else {
-        url
-    };
 
     // The views.
     let first_footer_classes = if user.suspended { "" } else { "highlight" };
@@ -384,18 +399,51 @@ pub async fn build(
     let reply_by_email = s.get("reply_by_email_enabled")?.truthy()
         && s.get("reply_by_email_address")?.presence().is_some()
         && allow_reply_by_email;
-    let respond_key = if reply_by_email {
-        "user_notifications.reply_by_email"
+    let mut respond_key = if reply_by_email {
+        "user_notifications.reply_by_email".to_string()
     } else {
-        "user_notifications.visit_link_to_respond"
+        "user_notifications.visit_link_to_respond".to_string()
+    };
+    // A message's instructions name its participants (only a button
+    // when the system user sent it).
+    let participants = if pm {
+        Some(
+            pm_participants(
+                conn,
+                ctx,
+                &base_url,
+                post.topic_id,
+                post.post_number,
+                req.user_id,
+            )
+            .await?,
+        )
+    } else {
+        None
+    };
+    if pm {
+        if original_username == "system" {
+            return Err(
+                Unsupported("messages from the system user (button-only instructions)").into(),
+            );
+        }
+        respond_key.push_str("_pm");
+    }
+    let respond_args: Vec<(&str, &str)> = match &participants {
+        Some(p) => vec![("base_url", &base_url), ("url", &url), ("participants", p)],
+        None => vec![("base_url", &base_url), ("url", &url)],
     };
     let respond_instructions = if user.suspended {
-        String::new()
+        match &participants {
+            Some(p) => t(
+                ctx,
+                "user_notifications.pm_participants",
+                &[("participants", p)],
+            )?,
+            None => String::new(),
+        }
     } else {
-        format!(
-            "---\n{}",
-            t(ctx, respond_key, &[("base_url", &base_url), ("url", &url)])?
-        )
+        format!("---\n{}", t(ctx, &respond_key, &respond_args)?)
     };
     let unsubscribe_key_name = if user.mailing_list_mode {
         "unsubscribe_mailing_list"
@@ -411,6 +459,12 @@ pub async fn build(
     )?;
 
     // subject (use_site_subject)
+    // subject_pm (show_group_in_subject only applies to group messages)
+    let subject_pm = if pm {
+        t(ctx, "subject_pm", &[])?
+    } else {
+        String::new()
+    };
     let format_category = show_category_in_subject
         .as_ref()
         .map(|c| format!("[{c}] "))
@@ -430,7 +484,7 @@ pub async fn build(
         .to_s()
         .replace("%{site_name}", &email_prefix)
         .replace("%{optional_re}", &subject_re)
-        .replace("%{optional_pm}", "")
+        .replace("%{optional_pm}", &subject_pm)
         .replace("%{optional_cat}", &format_category)
         .replace("%{optional_tags}", &format_tags)
         .replace("%{topic_title}", &topic_title_unicode);
@@ -518,7 +572,8 @@ pub async fn build(
             "Reply-To".into(),
             format!(
                 "\"{}\" <{}>",
-                cleanup(&email_site_title),
+                // alias_email for a private reply, the site alias otherwise
+                cleanup(if pm { &from_alias } else { &email_site_title }),
                 s.get("reply_by_email_address")?.to_s()
             ),
         ));
@@ -704,3 +759,68 @@ const DEFAULT_TEMPLATE: &str = include_str!("default_template.html");
 const DARK_MODE_META_TAGS: &str = "\n    <meta name='color-scheme' content='light dark' />\n    <meta name='supported-color-schemes' content='light dark' />\n    ";
 
 const DARK_MODE_STYLES: &str = include_str!("dark_mode_styles.html");
+
+/// `UserNotifications.participants(post, recipient)`: the message's other
+/// people, the latest posters first, as markdown links.
+async fn pm_participants(
+    conn: &mut PgConnection,
+    ctx: &super::sender::Ctx<'_>,
+    base_url: &str,
+    topic_id: i32,
+    post_number: i32,
+    recipient: i32,
+) -> Result<String, AppError> {
+    let s = ctx.settings;
+    let max = s.get("max_participant_names")?.to_i();
+    let users: Vec<(String, Option<String>)> = sqlx::query_as(
+        "SELECT u.username, u.name FROM topic_allowed_users tau JOIN users u ON u.id = tau.user_id \
+         LEFT JOIN (SELECT user_id, MAX(post_number) AS post_number FROM posts \
+                    WHERE topic_id = $1 AND post_type = 1 AND post_number <= $2 AND user_id <> $3 \
+                      AND deleted_at IS NULL \
+                    GROUP BY user_id ORDER BY post_number DESC LIMIT $4) pu ON pu.user_id = tau.user_id \
+         WHERE tau.topic_id = $1 AND u.id <> $3 AND u.id > 0 \
+         ORDER BY pu.post_number DESC NULLS LAST, u.id",
+    )
+    .bind(topic_id)
+    .bind(post_number)
+    .bind(recipient)
+    .bind(max)
+    .fetch_all(&mut *conn)
+    .await?;
+    let full_name_first = s.get("prioritize_full_name_in_ux")?.truthy();
+    let mut list: Vec<String> = Vec::new();
+    for (username, name) in &users {
+        if list.len() as i64 >= max {
+            break;
+        }
+        // User#display_name
+        let display = match name
+            .as_deref()
+            .filter(|n| full_name_first && !n.trim().is_empty())
+        {
+            Some(n) => n.to_string(),
+            None => username.clone(),
+        };
+        if !username.is_ascii() {
+            return Err(Unsupported(
+                "participants with unicode usernames (UrlHelper.encode_component)",
+            )
+            .into());
+        }
+        list.push(format!("[{display}]({base_url}/u/{username})"));
+    }
+    let participants = list.join(&t(ctx, "word_connector.comma", &[])?);
+    let others = users.len() as i64 - list.len() as i64;
+    if others > 0 {
+        let form = if others == 1 { "one" } else { "other" };
+        return t(
+            ctx,
+            &format!("user_notifications.more_pm_participants.{form}"),
+            &[
+                ("participants", &participants),
+                ("count", &others.to_string()),
+            ],
+        );
+    }
+    Ok(participants)
+}

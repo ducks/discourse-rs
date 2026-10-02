@@ -67,6 +67,7 @@ pub mod user_actions {
     pub const NEW_TOPIC: i32 = 4;
     pub const REPLY: i32 = 5;
     pub const NEW_PRIVATE_MESSAGE: i32 = 12;
+    pub const GOT_PRIVATE_MESSAGE: i32 = 13;
 }
 
 /// `TopicUser.notification_levels`
@@ -401,18 +402,42 @@ pub async fn log_user_action(
     target_post_id: i32,
     created_at: chrono::NaiveDateTime,
 ) -> Result<(), AppError> {
+    log_user_action_by(
+        conn,
+        action_type,
+        user_id,
+        user_id,
+        target_topic_id,
+        target_post_id,
+        created_at,
+    )
+    .await
+}
+
+/// `UserAction.log_action!` with an acting user other than the user (a
+/// message's recipients get the poster's rows).
+pub async fn log_user_action_by(
+    conn: &mut PgConnection,
+    action_type: i32,
+    user_id: i32,
+    acting_user_id: i32,
+    target_topic_id: i32,
+    target_post_id: i32,
+    created_at: chrono::NaiveDateTime,
+) -> Result<(), AppError> {
     sqlx::query(
         "INSERT INTO user_actions (action_type, user_id, acting_user_id, target_topic_id, target_post_id, \
                                    created_at, updated_at) \
-         SELECT $1, $2, $2, $3, $4, $5, clock_timestamp() \
+         SELECT $1, $2, $6, $3, $4, $5, clock_timestamp() \
          WHERE NOT EXISTS (SELECT 1 FROM user_actions WHERE action_type = $1 AND user_id = $2 \
-           AND acting_user_id = $2 AND target_topic_id = $3 AND target_post_id = $4)",
+           AND acting_user_id = $6 AND target_topic_id = $3 AND target_post_id = $4)",
     )
     .bind(action_type)
     .bind(user_id)
     .bind(target_topic_id)
     .bind(target_post_id)
     .bind(created_at)
+    .bind(acting_user_id)
     .execute(&mut *conn)
     .await?;
     Ok(())

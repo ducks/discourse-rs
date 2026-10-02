@@ -142,9 +142,29 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
         return Ok(());
     }
     let s = ctx.settings;
-    if post.archetype == "private_message" {
-        return Err(Unsupported("alerts for messages").into());
+    let private_message = post.archetype == "private_message";
+    if private_message {
+        let groups: bool = sqlx::query_scalar(
+            "SELECT EXISTS (SELECT 1 FROM topic_allowed_groups WHERE topic_id = $1)",
+        )
+        .bind(post.topic_id)
+        .fetch_one(&mut *conn)
+        .await?;
+        if groups {
+            return Err(Unsupported("alerts for group messages").into());
+        }
     }
+    // pm_watching_users: the message's watchers.
+    let pm_watching: Vec<i32> = if private_message {
+        sqlx::query_scalar(
+            "SELECT user_id FROM topic_users WHERE topic_id = $1 AND notification_level = 3",
+        )
+        .bind(post.topic_id)
+        .fetch_all(&mut *conn)
+        .await?
+    } else {
+        Vec::new()
+    };
     if s.get("nested_replies_enabled")?.truthy() {
         return Err(Unsupported("alerts with nested replies").into());
     }
@@ -188,8 +208,21 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
         .bind(post.user_id)
         .fetch_all(&mut *conn)
         .await?;
+        // only_allowed_users and, in a message, not its watchers.
+        let allowed: Option<Vec<i32>> = if private_message {
+            Some(
+                sqlx::query_scalar("SELECT user_id FROM topic_allowed_users WHERE topic_id = $1")
+                    .bind(post.topic_id)
+                    .fetch_all(&mut *conn)
+                    .await?,
+            )
+        } else {
+            None
+        };
         let targets: Vec<i32> = users
             .into_iter()
+            .filter(|u| allowed.as_ref().is_none_or(|a| a.contains(u)))
+            .filter(|u| !pm_watching.contains(u))
             .filter(|u| !alerter.notified.contains(u))
             .collect();
         for user_id in targets {
@@ -202,29 +235,31 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
         }
     }
 
-    // replies
+    // replies (notify_non_pm_users: none in a message)
     let notify_about_reply = post.post_type == crate::posting::post_types::REGULAR
         || (post.post_type == crate::posting::post_types::WHISPER && post.action_code.is_none());
-    if new_record && notify_about_reply {
-        // reply_notification_target
-        if let Some(n) = post.reply_to_post_number {
-            let target: Option<Option<i32>> = sqlx::query_scalar(
-                "SELECT user_id FROM posts WHERE topic_id = $1 AND post_number = $2 \
-                 AND user_id IS DISTINCT FROM $3 AND deleted_at IS NULL LIMIT 1",
-            )
-            .bind(post.topic_id)
-            .bind(n)
-            .bind(post.user_id)
-            .fetch_optional(&mut *conn)
-            .await?;
-            if let Some(Some(target)) = target
-                && !alerter.notified.contains(&target)
-                && alerter
-                    .create_notification(conn, target, types::REPLIED, &Opts::default())
-                    .await?
-            {
-                alerter.notified.push(target);
-            }
+    // reply_notification_target
+    let reply_target: Option<i32> = match post.reply_to_post_number {
+        Some(n) => sqlx::query_scalar::<_, Option<i32>>(
+            "SELECT user_id FROM posts WHERE topic_id = $1 AND post_number = $2 \
+             AND user_id IS DISTINCT FROM $3 AND deleted_at IS NULL LIMIT 1",
+        )
+        .bind(post.topic_id)
+        .bind(n)
+        .bind(post.user_id)
+        .fetch_optional(&mut *conn)
+        .await?
+        .flatten(),
+        None => None,
+    };
+    if new_record && notify_about_reply && !private_message {
+        if let Some(target) = reply_target
+            && !alerter.notified.contains(&target)
+            && alerter
+                .create_notification(conn, target, types::REPLIED, &Opts::default())
+                .await?
+        {
+            alerter.notified.push(target);
         }
         if let Some(author) = post.topic_user_id {
             let watching: bool = sqlx::query_scalar(
@@ -246,8 +281,8 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
         }
     }
 
-    // quotes and links
-    if post.raw.contains("[quote=") {
+    // quotes and links (none in a message either)
+    if post.raw.contains("[quote=") && !private_message {
         return Err(Unsupported("alerts for quotes").into());
     }
     let topic_links: bool = sqlx::query_scalar(
@@ -257,7 +292,7 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
     .bind(post.id)
     .fetch_one(&mut *conn)
     .await?;
-    if topic_links {
+    if topic_links && !private_message {
         return Err(Unsupported("alerts for links to topics").into());
     }
 
@@ -278,7 +313,27 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
     .await?;
     alerter.notified.extend(muters);
 
-    if new_record && notify_about_reply {
+    if new_record && private_message {
+        // notify_pm_users: each allowed user not yet notified hears of it
+        // when replied to, watching the message, or staged.
+        let direct: Vec<(i32, bool)> = sqlx::query_as(
+            "SELECT u.id, u.staged FROM topic_allowed_users tau JOIN users u ON u.id = tau.user_id \
+             WHERE tau.topic_id = $1 ORDER BY tau.id",
+        )
+        .bind(post.topic_id)
+        .fetch_all(&mut *conn)
+        .await?;
+        for (user_id, staged) in direct {
+            if alerter.notified.contains(&user_id) {
+                continue;
+            }
+            if reply_target == Some(user_id) || pm_watching.contains(&user_id) || staged {
+                alerter
+                    .create_notification(conn, user_id, types::PRIVATE_MESSAGE, &Opts::default())
+                    .await?;
+            }
+        }
+    } else if new_record && notify_about_reply {
         // Topic watchers, then category and tag watchers.
         alerter.notify_post_users(conn, true, false).await?;
         alerter.notify_post_users(conn, false, true).await?;
@@ -590,8 +645,22 @@ impl Alerter<'_> {
             .await?;
         }
 
+        // A collapsed notification points at the first unread post, and
+        // takes its author for the display fields.
+        let (target_username, target_name) = if target_post_number != post.post_number {
+            sqlx::query_as::<_, (Option<String>, Option<String>)>(
+                "SELECT u.username, u.name FROM posts p LEFT JOIN users u ON u.id = p.user_id \
+                 WHERE p.topic_id = $1 AND p.post_number = $2",
+            )
+            .bind(post.topic_id)
+            .bind(target_post_number)
+            .fetch_one(&mut *conn)
+            .await?
+        } else {
+            (post.username.clone(), post.name.clone())
+        };
         // The data, in Rails' key order.
-        let displayed = display_username.clone().or_else(|| post.username.clone());
+        let displayed = display_username.clone().or_else(|| target_username.clone());
         let mut data = Map::new();
         data.insert("topic_title".into(), json!(post.topic_title));
         data.insert("original_post_id".into(), json!(post.id));
@@ -599,12 +668,26 @@ impl Alerter<'_> {
         data.insert("original_username".into(), json!(original_username));
         data.insert("revision_number".into(), Value::Null);
         data.insert("display_username".into(), json!(displayed));
-        if let Some(name) = &post.name {
+        if let Some(name) = &target_name {
             data.insert("display_name".into(), json!(name));
         }
         let data = Value::Object(data);
-        if target_post_number != post.post_number {
-            return Err(Unsupported("collapsed notifications pointing at an earlier post").into());
+        // The group_membership consolidation plan sets group_name on a message
+        // notification's in-memory data (from the post's requested_group_id)
+        // before its precondition fails; the saved row keeps the data as
+        // built, the email job gets the plan's copy.
+        let mut email_data = data.clone();
+        if notification_type == types::PRIVATE_MESSAGE {
+            let requested: bool = sqlx::query_scalar(
+                "SELECT EXISTS (SELECT 1 FROM post_custom_fields WHERE post_id = $1 AND name = 'requested_group_id')",
+            )
+            .bind(post.id)
+            .fetch_one(&mut *conn)
+            .await?;
+            if requested {
+                return Err(Unsupported("group membership request messages").into());
+            }
+            email_data["group_name"] = Value::Null;
         }
         // consolidate_or_create!: the liked plan rolls one liker's likes into a
         // liked_consolidated notification within the window; not ported.
@@ -639,7 +722,7 @@ impl Alerter<'_> {
         let notification_id: i64 = sqlx::query_scalar(
             "INSERT INTO notifications (notification_type, user_id, topic_id, post_number, data, read, \
                                         high_priority, post_action_id, created_at, updated_at) \
-             VALUES ($1, $2, $3, $4, $5, FALSE, FALSE, $6, clock_timestamp(), clock_timestamp()) RETURNING id",
+             VALUES ($1, $2, $3, $4, $5, FALSE, $7, $6, clock_timestamp(), clock_timestamp()) RETURNING id",
         )
         .bind(notification_type)
         .bind(user_id)
@@ -647,14 +730,17 @@ impl Alerter<'_> {
         .bind(target_post_number)
         .bind(data.to_string())
         .bind(opts.post_action_id)
+        // high_priority_types: private_message (and bookmark reminders).
+        .bind(notification_type == types::PRIVATE_MESSAGE)
         .fetch_one(&mut *conn)
         .await?;
 
         // after_commit send_email: NotificationEmailer.process_notification.
-        let (dnd, email_level, active, approved): (bool, Option<i32>, bool, bool) = sqlx::query_as(
+        let (dnd, email_level, email_messages_level, active, approved): (bool, Option<i32>, Option<i32>, bool, bool) = sqlx::query_as(
             "SELECT EXISTS (SELECT 1 FROM do_not_disturb_timings WHERE user_id = $1 \
                               AND starts_at <= now() AND ends_at > now()), \
-                    (SELECT email_level FROM user_options WHERE user_id = $1), u.active, u.approved \
+                    (SELECT email_level FROM user_options WHERE user_id = $1), \
+                    (SELECT email_messages_level FROM user_options WHERE user_id = $1), u.active, u.approved \
              FROM users u WHERE u.id = $1",
         )
         .bind(user_id)
@@ -664,6 +750,7 @@ impl Alerter<'_> {
             return Err(Unsupported("do not disturb (shelved notifications)").into());
         }
         let email_type = match notification_type {
+            types::PRIVATE_MESSAGE => Some("user_private_message"),
             types::MENTIONED => Some("user_mentioned"),
             types::POSTED | types::WATCHING_CATEGORY_OR_TAG => Some("user_posted"),
             types::QUOTED => Some("user_quoted"),
@@ -672,9 +759,15 @@ impl Alerter<'_> {
             types::WATCHING_FIRST_POST => Some("user_watching_first_post"),
             _ => None,
         };
-        // email_level never (2), inactive users and unapproved ones under
-        // must_approve_users get no email.
-        let emailable = email_level != Some(2)
+        // email_level never (2) (email_messages_level for messages, sent
+        // after personal_email_time_window_seconds), inactive users and
+        // unapproved ones under must_approve_users get no email.
+        let level = if notification_type == types::PRIVATE_MESSAGE {
+            email_messages_level
+        } else {
+            email_level
+        };
+        let emailable = level != Some(2)
             && active
             && (approved || !ctx.settings.get("must_approve_users")?.truthy())
             && [1, 2, 4].contains(&post.post_type);
@@ -687,17 +780,24 @@ impl Alerter<'_> {
                 types::LINKED => "linked",
                 types::WATCHING_FIRST_POST => "watching_first_post",
                 types::WATCHING_CATEGORY_OR_TAG => "watching_category_or_tag",
+                types::PRIVATE_MESSAGE => "private_message",
                 _ => "",
             };
             super::enqueue_in(
                 &mut *conn,
-                ctx.settings.get("email_time_window_mins")?.to_i() * 60,
+                if notification_type == types::PRIVATE_MESSAGE {
+                    ctx.settings
+                        .get("personal_email_time_window_seconds")?
+                        .to_i()
+                } else {
+                    ctx.settings.get("email_time_window_mins")?.to_i() * 60
+                },
                 "user_email",
                 json!({
                     "type": email_type,
                     "user_id": user_id,
                     "notification_id": notification_id,
-                    "notification_data_hash": data,
+                    "notification_data_hash": email_data,
                     "notification_type": type_name,
                     "post_id": post.id,
                 }),
