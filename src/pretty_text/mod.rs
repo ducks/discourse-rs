@@ -207,3 +207,87 @@ pub async fn options(
     out.insert("hashtagIcons".into(), Value::Object(icons));
     Ok(out)
 }
+
+/// `PrettyText.markdown(text, opts)`: raw post text to HTML, before
+/// `PrettyText.cleanup`.
+///
+/// The renderer cannot wait on the database, so it runs twice when the
+/// text refers to anything outside itself: once to learn what it would
+/// look up (quoted users and topics, hashtags, uploads), then, with those
+/// resolved, for the result.
+pub async fn markdown(host: &Host, raw: &str, opts: &MarkdownOptions) -> Result<String, CookError> {
+    use render::context::{Hashtag, Lookups, TopicInfo, Upload};
+
+    let mut conn = host.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &host.site_setting_defs, &host.config.globals).await?;
+    // What `options` refuses (watched words, custom emoji...) the renderer
+    // does not handle either.
+    let options = options(host, &mut conn, &settings).await?;
+    let hashtag_types = options["hashtagTypesInPriorityOrder"].clone();
+
+    let mut render_settings =
+        render::RenderSettings::from_site_settings(&settings, &host.i18n, &host.config)?;
+    render_settings.topic_id = opts.topic_id;
+    render_settings.post_id = opts.post_id;
+    render_settings.force_quote_link = opts.force_quote_link;
+
+    let (html, needs) = render::render(raw, &render_settings, Lookups::default())?;
+    if needs.is_empty() {
+        return Ok(html);
+    }
+
+    let text = |value: Value| value.as_str().unwrap_or_default().to_string();
+    let mut lookups = Lookups::default();
+    let mut helpers = helpers::Helpers {
+        host,
+        conn: &mut conn,
+        settings: &settings,
+    };
+    for username in &needs.usernames {
+        let avatar = helpers.avatar_template(Some(username)).await?;
+        lookups.avatars.insert(username.clone(), text(avatar));
+        let group = helpers.primary_user_group(Some(username)).await?;
+        lookups.primary_groups.insert(username.clone(), text(group));
+    }
+    for id in &needs.topics {
+        let info = helpers.topic_info(&json!(id)).await?;
+        let info = info.as_object().map(|info| TopicInfo {
+            title: text(info["title"].clone()),
+            href: text(info["href"].clone()),
+        });
+        lookups.topics.insert(*id, info);
+    }
+    for slug in &needs.hashtags {
+        let found = helpers
+            .hashtag_lookup(&json!(slug), &json!(opts.user_id), &hashtag_types)
+            .await?;
+        let optional = |value: &Value| value.as_str().map(str::to_string);
+        let found = found.as_object().map(|h| Hashtag {
+            relative_url: text(h["relative_url"].clone()),
+            text: text(h["text"].clone()),
+            kind: text(h["type"].clone()),
+            slug: text(h["slug"].clone()),
+            reference: text(h["ref"].clone()),
+            id: h["id"].as_i64().unwrap_or_default(),
+            style_type: optional(&h["style_type"]),
+            emoji: optional(&h["emoji"]),
+            icon: optional(&h["icon"]),
+        });
+        lookups.hashtags.insert(slug.clone(), found);
+    }
+    if !needs.uploads.is_empty() {
+        let found = helpers.upload_urls(&json!(needs.uploads)).await?;
+        for (short_url, upload) in found.as_object().into_iter().flatten() {
+            lookups.uploads.insert(
+                short_url.clone(),
+                Upload {
+                    url: text(upload["url"].clone()),
+                    short_path: text(upload["short_path"].clone()),
+                    base62_sha1: text(upload["base62_sha1"].clone()),
+                },
+            );
+        }
+    }
+    Ok(render::render(raw, &render_settings, lookups)?.0)
+}

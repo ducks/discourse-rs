@@ -10,7 +10,6 @@ use std::sync::Arc;
 use fancy_regex::Regex;
 use markdown_it::parser::inline::{Text, TextSpecial};
 use markdown_it::plugins::cmark::inline::autolink::Autolink;
-use markdown_it::plugins::cmark::inline::link::Link;
 use markdown_it::plugins::html::html_inline::HtmlInline;
 use markdown_it::{MarkdownIt, Node, NodeValue, Renderer};
 
@@ -424,7 +423,7 @@ pub fn run(root: &mut Node, linkify: &Arc<LinkifyIt>, md: &MarkdownIt) -> Option
         md: &MarkdownIt,
         unsupported: &mut Option<&'static str>,
     ) {
-        if node.is::<Link>() || is_auto_link(node) {
+        if super::text_post_process::is_link(node) {
             return;
         }
         // The tokens are walked from the end, counting `</a>` and `<a>`.

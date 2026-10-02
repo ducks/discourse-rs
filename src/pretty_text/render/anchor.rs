@@ -101,7 +101,11 @@ fn slug(source: &str) -> String {
 pub fn apply(root: &mut Node, settings: &RenderSettings) {
     fn visit(node: &mut Node, settings: &RenderSettings, heading_id: &mut u32) {
         // Headings inside a quote get no anchor.
-        if node.is::<Blockquote>() {
+        if node.is::<Blockquote>()
+            || node
+                .cast::<super::element::Element>()
+                .is_some_and(|e| e.tag == "aside")
+        {
             return;
         }
         if is_heading(node) {

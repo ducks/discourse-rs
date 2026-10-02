@@ -9,14 +9,19 @@
 //! byte-equal to Rails yet.
 
 mod anchor;
+mod bbcode;
 mod code;
+pub mod context;
+mod element;
 mod emoji;
 mod linkify;
 mod newline;
 mod onebox;
+mod quotes;
 mod table;
 mod text_post_process;
 mod typographer;
+mod uploads;
 
 use std::sync::Arc;
 
@@ -26,6 +31,7 @@ use markdown_it::plugins::cmark::inline::newline::{Hardbreak, Softbreak};
 use markdown_it::plugins::extra::smartquotes::SmartQuotesRule;
 use markdown_it::{MarkdownIt, Node};
 
+use self::context::{Context, Lookups, Needs};
 use self::linkify::LinkifyIt;
 use super::CookError;
 use super::sanitizer::{AllowList, sanitize};
@@ -58,6 +64,18 @@ pub struct RenderSettings {
     pub allowed_iframes: Vec<String>,
     /// `allowedHrefSchemes`: schemes links may use besides http(s).
     pub allowed_href_schemes: Vec<String>,
+    /// The spoiler plugin's rules (`spoiler_enabled`).
+    pub spoiler: bool,
+    /// `avatar_sizes`, ascending.
+    pub avatar_sizes: Vec<i64>,
+    /// `paths.baseUri`
+    pub base_path: String,
+    /// `limitedSiteSettings.secureUploads`
+    pub secure_uploads: bool,
+    /// `topicId`: a quote from another topic links to it.
+    pub topic_id: Option<i64>,
+    /// `forceQuoteLink`
+    pub force_quote_link: bool,
     /// `postId`: prefixes heading anchors.
     pub post_id: Option<i64>,
 }
@@ -106,6 +124,11 @@ impl RenderSettings {
         } else {
             None
         };
+        let mut avatar_sizes: Vec<i64> = split("avatar_sizes")?
+            .iter()
+            .map(|s| crate::ruby::to_i(s))
+            .collect();
+        avatar_sizes.sort_unstable();
         Ok(RenderSettings {
             breaks: !settings.get("traditional_markdown_linebreaks")?.truthy(),
             linkify,
@@ -127,6 +150,12 @@ impl RenderSettings {
                 .filter(|s| s.matches('/').count() >= 3)
                 .collect(),
             allowed_href_schemes: split("allowed_href_schemes")?,
+            spoiler: settings.get("spoiler_enabled")?.truthy(),
+            avatar_sizes,
+            base_path: base_path.to_string(),
+            secure_uploads: settings.get("secure_uploads")?.truthy(),
+            topic_id: None,
+            force_quote_link: false,
             post_id: None,
         })
     }
@@ -139,8 +168,12 @@ fn allow_list(settings: &RenderSettings) -> AllowList {
     list.iframes = settings.allowed_iframes.clone();
     list.href_schemes = settings.allowed_href_schemes.clone();
     anchor::allow(&mut list);
+    bbcode::allow(&mut list, settings);
     code::allow(&mut list);
+    quotes::allow(&mut list);
     table::allow(&mut list);
+    text_post_process::allow(&mut list);
+    uploads::allow(&mut list);
     if settings.emoji {
         emoji::allow(&mut list);
     }
@@ -150,28 +183,37 @@ fn allow_list(settings: &RenderSettings) -> AllowList {
 /// markdown-it's default quotes, which RenderSettings insists on.
 type SmartQuotes = SmartQuotesRule<'‘', '’', '“', '”'>;
 
-fn engine(settings: &RenderSettings) -> MarkdownIt {
+fn engine(settings: &RenderSettings, lookups: Lookups) -> MarkdownIt {
     let mut md = MarkdownIt::new();
     md.ext.insert(settings.clone());
+    md.ext.insert(Context::with(lookups));
     markdown_it::plugins::cmark::add(&mut md);
     markdown_it::plugins::html::add(&mut md);
     markdown_it::plugins::extra::strikethrough::add(&mut md);
     markdown_it::plugins::extra::tables::add(&mut md);
     newline::add(&mut md);
+    bbcode::add(&mut md);
     anchor::add(&mut md);
     md
 }
 
-/// `cook(raw, options)` of discourse-markdown-it's engine: parse, run the
-/// core rules in markdown-it's order, render, sanitize, trim.
+/// One pass of `cook(raw, options)` of discourse-markdown-it's engine:
+/// parse, run the core rules in markdown-it's order, render, sanitize,
+/// trim. Returns the HTML and what the pass wanted to look up.
 ///
 /// The crate sorts its core rules by their constraints, which moves
 /// unconstrained ones ahead of the inline parser as soon as another rule
 /// is pinned before it. So only the parsers run in the crate's chain and
 /// the passes over the parsed tree are called here, in order.
-pub fn render(raw: &str, settings: &RenderSettings) -> Result<String, CookError> {
-    let md = engine(settings);
+pub fn render(
+    raw: &str,
+    settings: &RenderSettings,
+    lookups: Lookups,
+) -> Result<(String, Needs), CookError> {
+    let md = engine(settings, lookups);
+    let ctx = md.ext.get::<Context>().expect("context");
     let mut root: Node = md.parse(raw);
+    bbcode::pair(&mut root, settings);
     if let Some(linkify) = &settings.linkify {
         if let Some(what) = linkify::run(&mut root, linkify, &md) {
             return Err(Unsupported(what).into());
@@ -182,7 +224,8 @@ pub fn render(raw: &str, settings: &RenderSettings) -> Result<String, CookError>
         typographer::apply(&mut root);
         SmartQuotes::run(&mut root, &md);
     }
-    text_post_process::apply(&mut root, settings);
+    uploads::run(&mut root, settings, ctx);
+    text_post_process::apply(&mut root, settings, ctx);
     emoji::run(&mut root, settings);
     anchor::apply(&mut root, settings);
     if settings.breaks {
@@ -194,7 +237,11 @@ pub fn render(raw: &str, settings: &RenderSettings) -> Result<String, CookError>
     }
     code::apply(&mut root, settings);
     table::apply(&mut root);
-    Ok(sanitize(&root.render(), &allow_list(settings))
+    let html = sanitize(&root.render(), &allow_list(settings))
         .trim()
-        .to_string())
+        .to_string();
+    if let Some(what) = ctx.unsupported() {
+        return Err(Unsupported(what).into());
+    }
+    Ok((html, ctx.needs()))
 }

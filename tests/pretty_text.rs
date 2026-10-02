@@ -6,8 +6,8 @@ mod common;
 
 use common::{TestDb, recorded_config, state};
 use discourse_rs::pretty_text::helpers::{Helpers, translate};
-use discourse_rs::pretty_text::render::{RenderSettings, render};
-use discourse_rs::pretty_text::{CookError, Host, options};
+
+use discourse_rs::pretty_text::{CookError, Host, MarkdownOptions, markdown, options};
 use discourse_rs::site_settings::SiteSettings;
 use serde_json::Value;
 
@@ -263,35 +263,7 @@ fn first_difference(rails: &str, ours: &str) -> String {
 /// Corpus entries the renderer does not cook like Rails yet. The list
 /// only shrinks: an entry that starts matching has to be taken out, one
 /// that stops matching fails the test.
-const NOT_COOKED_YET: &[&str] = &[
-    "sample-6",
-    "sample-7",
-    "sample-8",
-    "sample-9",
-    "sample-10",
-    "sample-11",
-    "sample-13",
-    "sample-14",
-    "sample-15",
-    "sample-16",
-    "sample-21",
-    "sample-22",
-    "sample-25",
-    "sample-27",
-    "sample-28",
-    "sample-29",
-    "sample-30",
-    "sample-31",
-    "sample-32",
-    "sample-34",
-    "sample-35",
-    "sample-47",
-    "sample-48",
-    "sample-49",
-    "sample-50",
-    "post-4",
-    "post-6",
-];
+const NOT_COOKED_YET: &[&str] = &["sample-29", "sample-30", "sample-31", "sample-32"];
 
 /// PrettyText.markdown over the recorded corpus (feature samples and every
 /// seeded post), each byte-equal to what Rails cooked, apart from the
@@ -300,12 +272,6 @@ const NOT_COOKED_YET: &[&str] = &[
 async fn cooking_matches_rails() {
     let db = TestDb::new().await;
     let host = host(&db);
-    let mut conn = db.pool.acquire().await.unwrap();
-    let settings = SiteSettings::load(&mut conn, &host.site_setting_defs, &host.config.globals)
-        .await
-        .unwrap();
-    let render_settings =
-        RenderSettings::from_site_settings(&settings, &host.i18n, &host.config).unwrap();
     let corpus = recorded("corpus.json");
     let corpus = corpus.as_array().unwrap();
     assert!(corpus.len() > 70, "{} entries", corpus.len());
@@ -315,7 +281,13 @@ async fn cooking_matches_rails() {
     for entry in corpus {
         let id = entry["id"].as_str().unwrap();
         let rails = entry["markdown"].as_str().unwrap();
-        let ours = render(entry["raw"].as_str().unwrap(), &render_settings)
+        let opts = MarkdownOptions {
+            topic_id: entry["topic_id"].as_i64(),
+            user_id: entry["user_id"].as_i64(),
+            ..Default::default()
+        };
+        let ours = markdown(&host, entry["raw"].as_str().unwrap(), &opts)
+            .await
             .unwrap_or_else(|e| format!("error: {e}"));
         if ours != rails {
             missed.push(id);
