@@ -10,8 +10,8 @@
       }
     }
   ],
-  "started_at": "2026-10-02T11:50:40.00194",
-  "transaction_started_at": "2026-10-02T11:50:39.085556",
+  "started_at": "2026-10-02T12:25:53.432029",
+  "transaction_started_at": "2026-10-02T12:25:52.554174",
   "responses": [
     {
       "status": 200,
@@ -32,11 +32,11 @@
           "user_id": 3,
           "topic_id": null,
           "bounce_key": null,
-          "created_at": "2026-10-02T11:50:40.085372",
+          "created_at": "2026-10-02T12:25:53.522903",
           "email_type": "email_login",
-          "message_id": "d8c03479-2079-43fa-8ed3-f676f309565f@localhost",
+          "message_id": "c0e38784-0ea9-45e6-8689-efb85a24a2a5@localhost",
           "to_address": "user1@example.com",
-          "updated_at": "2026-10-02T11:50:40.085372",
+          "updated_at": "2026-10-02T12:25:53.522903",
           "cc_user_ids": null,
           "cc_addresses": null,
           "bcc_addresses": null,
@@ -57,9 +57,9 @@
           "expired": false,
           "user_id": 3,
           "confirmed": false,
-          "created_at": "2026-10-02T11:50:40.014995",
-          "token_hash": "7b56d0a8fd5fd8c00305a646f28e7b1abf4b9a996c87376fd17240d999ba97a4",
-          "updated_at": "2026-10-02T11:50:40.014995"
+          "created_at": "2026-10-02T12:25:53.442206",
+          "token_hash": "7a86bc49be026596c67beabc123bdebf4ab0debec3fdb200d35100605a1aea25",
+          "updated_at": "2026-10-02T12:25:53.442206"
         }
       ],
       "deleted": [],
@@ -138,7 +138,7 @@
             "last_posted_at": "2026-09-30T07:28:29.580198",
             "suspended_till": null,
             "username_lower": "user1",
-            "last_emailed_at": "2026-10-02T11:50:39.085556",
+            "last_emailed_at": "2026-10-02T12:25:52.554174",
             "primary_group_id": null,
             "previous_visit_at": "2026-10-01T15:50:01.377372",
             "secure_identifier": null,
@@ -160,7 +160,7 @@
       {
         "type": "email_login",
         "user_id": 3,
-        "email_token": "3c9636c441bcecc26a03714c8b12cdfe"
+        "email_token": "5a4a3a00a94ac642a9117cd504c9f839"
       }
     ]
   ],
@@ -182,7 +182,7 @@
         ],
         [
           "Message-ID",
-          "<d8c03479-2079-43fa-8ed3-f676f309565f@localhost>"
+          "<c0e38784-0ea9-45e6-8689-efb85a24a2a5@localhost>"
         ],
         [
           "Subject",
@@ -194,7 +194,7 @@
         ],
         [
           "Content-Type",
-          "multipart/alternative; boundary=--==_mimepart_6abf9a9013955_18d9f2818c"
+          "multipart/alternative; boundary=--==_mimepart_6abfa2d17eae8_1a90f281b3"
         ],
         [
           "Content-Transfer-Encoding",
@@ -217,8 +217,8 @@
           "auto-generated"
         ]
       ],
-      "text": "Here's your link to log in at [Discourse](http://localhost:3042).\n\nIf you did not request this link, you can safely ignore this email.\n\nClick the following link to log in:\nhttp://localhost:3042/session/email-login/3c9636c441bcecc26a03714c8b12cdfe\n",
-      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"><p>Log in via link.</p></div>\n\n    \n    \n    <p>Here’s your link to log in at <a href=\"http://localhost:3042\" style=\"text-decoration:none;font-weight:bold;color:#006699\">Discourse</a>.</p>\n<p>If you did not request this link, you can safely ignore this email.</p>\n<p>Click the following link to log in:<br>\n<a href=\"http://localhost:3042/session/email-login/3c9636c441bcecc26a03714c8b12cdfe\" class=\"onebox\" target=\"_blank\" rel=\"noopener\" style=\"text-decoration:none;font-weight:bold;color:#006699\">http://localhost:3042/session/email-login/3c9636c441bcecc26a03714c8b12cdfe</a></p>\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
+      "text": "Here's your link to log in at [Discourse](http://localhost:3042).\n\nIf you did not request this link, you can safely ignore this email.\n\nClick the following link to log in:\nhttp://localhost:3042/session/email-login/5a4a3a00a94ac642a9117cd504c9f839\n",
+      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"><p>Log in via link.</p></div>\n\n    \n    \n    <p>Here’s your link to log in at <a href=\"http://localhost:3042\" style=\"text-decoration:none;font-weight:bold;color:#006699\">Discourse</a>.</p>\n<p>If you did not request this link, you can safely ignore this email.</p>\n<p>Click the following link to log in:<br>\n<a href=\"http://localhost:3042/session/email-login/5a4a3a00a94ac642a9117cd504c9f839\" class=\"onebox\" target=\"_blank\" rel=\"noopener\" style=\"text-decoration:none;font-weight:bold;color:#006699\">http://localhost:3042/session/email-login/5a4a3a00a94ac642a9117cd504c9f839</a></p>\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
     }
   ]
 }

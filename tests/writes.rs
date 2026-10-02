@@ -246,6 +246,25 @@ fn hide_secrets(doc: &mut Value) {
             secrets.push((token.to_string(), "<email_token>"));
         }
     }
+    // Reply keys (dashed in the row, bare in Reply-To) and VERP bounce keys.
+    let inserted = |table: &str| {
+        doc["changes"][table]["inserted"]
+            .as_array()
+            .cloned()
+            .unwrap_or_default()
+    };
+    for row in inserted("post_reply_keys") {
+        if let Some(v) = row["reply_key"].as_str() {
+            secrets.push((v.to_string(), "<reply_key>"));
+            secrets.push((v.replace('-', ""), "<reply_key>"));
+        }
+    }
+    for row in inserted("email_logs") {
+        if let Some(v) = row["bounce_key"].as_str() {
+            secrets.push((v.to_string(), "<bounce_key>"));
+            secrets.push((v.replace('-', ""), "<bounce_key>"));
+        }
+    }
     secrets.retain(|(v, _)| v.len() >= 6);
     fn walk(v: &mut Value, secrets: &[(String, &str)]) {
         match v {
@@ -542,6 +561,41 @@ async fn queued_jobs(pool: &PgPool, after_id: i64) -> Vec<(i64, String, Value)> 
         .collect()
 }
 
+/// A case's `settings`, as `SiteSetting.set` stores them: a row typed by
+/// the setting's definition, booleans as "t"/"f".
+async fn apply_settings(pool: &PgPool, state: &AppState, case: &Value) {
+    let Some(settings) = case["settings"].as_object() else {
+        return;
+    };
+    for (name, value) in settings {
+        let def = state
+            .site_setting_defs
+            .get(name)
+            .unwrap_or_else(|| panic!("case sets an unknown setting {name}"));
+        let value = match value {
+            Value::Bool(true) => "t".to_string(),
+            Value::Bool(false) => "f".to_string(),
+            Value::String(s) => s.clone(),
+            other => other.to_string(),
+        };
+        sqlx::query("DELETE FROM site_settings WHERE name = $1")
+            .bind(name)
+            .execute(pool)
+            .await
+            .unwrap();
+        sqlx::query(
+            "INSERT INTO site_settings (name, data_type, value, created_at, updated_at) \
+             VALUES ($1, $2, $3, now(), now())",
+        )
+        .bind(name)
+        .bind(def.data_type as i32)
+        .bind(value)
+        .execute(pool)
+        .await
+        .unwrap();
+    }
+}
+
 async fn replay(case: &Value, run_jobs: &[String]) -> Vec<String> {
     let db = TestDb::new().await;
     let app_state = state(db.pool.clone(), recorded_config());
@@ -558,6 +612,7 @@ async fn replay(case: &Value, run_jobs: &[String]) -> Vec<String> {
         let (_, csrf) = client.send(Method::GET, "/session/csrf.json", None).await;
         client.csrf = csrf["csrf"].as_str().map(str::to_string);
     }
+    apply_settings(&db.pool, &client.state, case).await;
 
     let tables = tables(&db.pool).await;
     let mut before_sums = HashMap::new();
