@@ -166,10 +166,18 @@ rules on the markdown-it crate, measured against Rails.
 - `pretty_text::cleanup`: `PrettyText.cleanup`, on html5ever: link `rel`
   attributes, mention links for users and groups, hidden direction marks
   in code, video thumbnails, and Nokogiri's HTML5 re-serialization.
+- `pretty_text::cooked_post_processor::cooked_column(post_id)`: the
+  `cooked` column, `Post#cook` (the post's id, its last editor, nofollow
+  by its author's trust) then what the post processor job writes: quotes
+  marked missing or modified, local urls made absolute, `u=` taken off
+  links to the site, nofollow enforced. Oneboxes, images other than emoji
+  and uploaded videos are refused: they need network fetches and image
+  processing. The recorder runs Rails' processor on each post in a
+  rolled-back transaction to know what it writes.
 - A restored backup's posts can be recorded and cooked the same way
   (`scripts/record-pretty-text <agent> <dir>`, then the ignored
   `backup_corpus_matches_rails` test); the Faker backup's 482 posts all
-  cook byte-equal.
+  cook byte-equal and get the column Rails writes.
 
 Refused with an explicit error rather than answered differently from
 Rails: custom emoji, the emoji deny list, watched words, secure uploads,

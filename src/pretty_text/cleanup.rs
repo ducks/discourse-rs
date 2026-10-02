@@ -34,7 +34,7 @@ const BIDI: [char; 9] = [
     '\u{2069}',
 ];
 
-fn parse(html: &str) -> RcDom {
+pub(super) fn parse(html: &str) -> RcDom {
     let context = QualName::new(None, ns!(html), local_name!("body"));
     parse_fragment(RcDom::default(), ParseOpts::default(), context, vec![])
         .from_utf8()
@@ -44,6 +44,11 @@ fn parse(html: &str) -> RcDom {
 
 /// The fragment's nodes: the children of the `html` element the parser
 /// puts them in.
+/// The text of a whole fragment (`fragment.text`).
+pub(super) fn dom_text(dom: &RcDom) -> String {
+    text(&fragment_root(dom))
+}
+
 fn fragment_root(dom: &RcDom) -> Handle {
     dom.document
         .children
@@ -53,7 +58,7 @@ fn fragment_root(dom: &RcDom) -> Handle {
         .unwrap_or_else(|| dom.document.clone())
 }
 
-fn to_html(dom: &RcDom) -> String {
+pub(super) fn to_html(dom: &RcDom) -> String {
     let root = fragment_root(dom);
     let mut out = Vec::new();
     for child in root.children.borrow().iter() {
@@ -71,14 +76,14 @@ fn to_html(dom: &RcDom) -> String {
     String::from_utf8(out).expect("the serializer writes UTF-8")
 }
 
-fn element_name(node: &Handle) -> Option<&str> {
+pub(super) fn element_name(node: &Handle) -> Option<&str> {
     match &node.data {
         NodeData::Element { name, .. } => Some(&name.local),
         _ => None,
     }
 }
 
-fn attr(node: &Handle, name: &str) -> Option<String> {
+pub(super) fn attr(node: &Handle, name: &str) -> Option<String> {
     match &node.data {
         NodeData::Element { attrs, .. } => attrs
             .borrow()
@@ -90,7 +95,7 @@ fn attr(node: &Handle, name: &str) -> Option<String> {
 }
 
 /// Nokogiri's `node[name] = value`: replaced in place, else appended.
-fn set_attr(node: &Handle, name: &str, value: &str) {
+pub(super) fn set_attr(node: &Handle, name: &str, value: &str) {
     if let NodeData::Element { attrs, .. } = &node.data {
         let mut attrs = attrs.borrow_mut();
         match attrs.iter_mut().find(|a| &*a.name.local == name) {
@@ -103,7 +108,7 @@ fn set_attr(node: &Handle, name: &str, value: &str) {
     }
 }
 
-fn has_class(node: &Handle, class: &str) -> bool {
+pub(super) fn has_class(node: &Handle, class: &str) -> bool {
     attr(node, "class").is_some_and(|c| c.split_whitespace().any(|c| c == class))
 }
 
@@ -117,14 +122,14 @@ fn elements(root: &Handle, out: &mut Vec<Handle>) {
     }
 }
 
-fn all_elements(dom: &RcDom) -> Vec<Handle> {
+pub(super) fn all_elements(dom: &RcDom) -> Vec<Handle> {
     let mut out = Vec::new();
     elements(&fragment_root(dom), &mut out);
     out
 }
 
 /// `node.text`: the text of every descendant.
-fn text(node: &Handle) -> String {
+pub(super) fn text(node: &Handle) -> String {
     let mut out = String::new();
     fn walk(node: &Handle, out: &mut String) {
         if let NodeData::Text { contents } = &node.data {
@@ -191,7 +196,7 @@ fn remove(node: &Handle) {
 /// `Addressable::URI.encode_component` with its default character class:
 /// everything but RFC 3986's reserved and unreserved characters is
 /// percent-encoded, `%` included.
-fn encode_component(s: &str) -> String {
+pub(super) fn encode_component(s: &str) -> String {
     let mut out = String::with_capacity(s.len());
     for c in s.chars() {
         let keep = c.is_ascii_alphanumeric() || "-._~:/?#[]@!$&'()*+,;=".contains(c);
@@ -209,7 +214,7 @@ fn encode_component(s: &str) -> String {
 
 /// The host Ruby's `URI()` finds in an encoded href: None without an
 /// authority, Err where the parser raises.
-fn uri_host(href: &str) -> Result<Option<String>, ()> {
+pub(super) fn uri_host(href: &str) -> Result<Option<String>, ()> {
     // A second `#`, or brackets outside an IPv6 host, are not RFC 3986.
     if href.matches('#').count() > 1 {
         return Err(());
@@ -259,7 +264,12 @@ fn uri_host(href: &str) -> Result<Option<String>, ()> {
 }
 
 /// `add_rel_attributes_to_user_content`
-fn add_rel_attributes(dom: &RcDom, add_nofollow: bool, site_host: &str, allowlist: &[String]) {
+pub(super) fn add_rel_attributes(
+    dom: &RcDom,
+    add_nofollow: bool,
+    site_host: &str,
+    allowlist: &[String],
+) {
     for link in all_elements(dom) {
         if element_name(&link) != Some("a") {
             continue;
@@ -484,7 +494,27 @@ fn add_mentions(dom: &RcDom, mentions: &HashMap<String, MentionType>, base_path:
     }
 }
 
-/// `PrettyText.cleanup(html, user_id:)`
+/// `add_rel_attributes_to_user_content` with the site's settings: what
+/// cleanup does to links, and the post processor's `enforce_nofollow`.
+pub(super) fn rel_settings(
+    settings: &SiteSettings,
+    config: &Config,
+) -> Result<(String, Vec<String>), CookError> {
+    let urls = Urls { config, settings };
+    let allowlist: Vec<String> = settings
+        .get("exclude_rel_nofollow_domains")?
+        .to_s()
+        .split('|')
+        .filter(|s| !s.is_empty())
+        .map(str::to_string)
+        .collect();
+    let site_host = uri_host(&urls.base_url()?)
+        .ok()
+        .flatten()
+        .unwrap_or_default();
+    Ok((site_host, allowlist))
+}
+/// `PrettyText.cleanup(html, user_id:, omit_nofollow:)`
 pub async fn cleanup(
     conn: &mut PgConnection,
     settings: &SiteSettings,
@@ -492,6 +522,7 @@ pub async fn cleanup(
     i18n: &I18n,
     html: &str,
     user_id: Option<i64>,
+    omit_nofollow: bool,
 ) -> Result<String, CookError> {
     if settings.get("block_hotlinked_media")?.truthy() {
         return Err(Unsupported("block_hotlinked_media in cooking").into());
@@ -538,18 +569,8 @@ pub async fn cleanup(
         }
     }
 
-    let add_nofollow = settings.get("add_rel_nofollow_to_user_content")?.truthy();
-    let allowlist: Vec<String> = settings
-        .get("exclude_rel_nofollow_domains")?
-        .to_s()
-        .split('|')
-        .filter(|s| !s.is_empty())
-        .map(str::to_string)
-        .collect();
-    let site_host = {
-        let base = urls.base_url()?;
-        uri_host(&base).ok().flatten().unwrap_or_default()
-    };
+    let add_nofollow = !omit_nofollow && settings.get("add_rel_nofollow_to_user_content")?.truthy();
+    let (site_host, allowlist) = rel_settings(settings, config)?;
     let bidi_title = i18n
         .t("post.hidden_bidi_character")
         .unwrap_or(

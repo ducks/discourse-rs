@@ -22,6 +22,31 @@ PrettyText::Helpers.instance_methods.each do |m|
   end
 end
 
+# What CookedPostProcessor makes of a post: the html Jobs::ProcessPost
+# writes to the column when it differs. The processor also writes (the
+# post's image, badges, its uploads) and enqueues jobs, so it runs in a
+# transaction that is rolled back, with enqueueing stubbed out. Posts with
+# oneboxes would be fetched from the network; none are processed then.
+module Jobs
+  def self.enqueue(*) = nil
+  def self.enqueue_in(*) = nil
+end
+def post_processed(post)
+  cooked = post.cook(post.raw.dup, topic_id: post.topic_id)
+  return nil if cooked.match?(/class="onebox"|inline-onebox-loading/)
+  # Jobs::ProcessPost skips a post whose topic is gone.
+  return nil if post.topic.blank?
+  html = nil
+  ActiveRecord::Base.transaction do
+    post.cooked = cooked
+    processor = CookedPostProcessor.new(post, {})
+    processor.post_process
+    html = processor.html
+    raise ActiveRecord::Rollback
+  end
+  html
+end
+
 # PrettyText.markdown's opt_input, without the per-call ids.
 custom_emoji = {}
 Emoji.custom.map { |e| custom_emoji[e.name] = e.cdn_url }
@@ -120,7 +145,22 @@ samples.each_with_index do |sample, i|
   corpus << { id: "sample-#{i}", raw: raw, topic_id: topic_id, user_id: user_id }
 end
 Post.with_deleted.order(:id).each do |p|
-  corpus << { id: "post-#{p.id}", raw: p.raw, topic_id: p.topic_id, user_id: p.user_id }
+  # What Post#cook passes, and the column the post processor wrote.
+  corpus << {
+    id: "post-#{p.id}",
+    raw: p.raw,
+    topic_id: p.topic_id,
+    user_id: p.user_id,
+    post: {
+      post_id: p.id,
+      user_id: p.last_editor_id,
+      omit_nofollow: p.omit_nofollow?,
+      cook_method: p.cook_method,
+      post_cook: p.cook(p.raw.dup, topic_id: p.topic_id),
+      stored: p.cooked,
+      processed: post_processed(p),
+    },
+  }
 end
 corpus.each do |c|
   c[:markdown] = PrettyText.markdown(c[:raw].dup, topic_id: c[:topic_id], user_id: c[:user_id])

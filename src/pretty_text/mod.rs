@@ -9,6 +9,7 @@
 //! scripts/record-pretty-text).
 
 pub mod cleanup;
+pub mod cooked_post_processor;
 pub mod helpers;
 pub mod render;
 pub mod sanitizer;
@@ -122,6 +123,9 @@ pub struct MarkdownOptions {
     pub user_id: Option<i64>,
     /// Always link `[quote]`s to their topic, also inside that topic.
     pub force_quote_link: bool,
+    /// No `nofollow` on off-site links: the post's author is staff or
+    /// trusted (`Post#omit_nofollow?`).
+    pub omit_nofollow: bool,
 }
 
 /// `opt_input` of `PrettyText.markdown`, without the per-call ids.
@@ -308,6 +312,7 @@ pub async fn cook(host: &Host, raw: &str, opts: &MarkdownOptions) -> Result<Stri
         &host.i18n,
         &html,
         opts.user_id,
+        opts.omit_nofollow,
     )
     .await
 }

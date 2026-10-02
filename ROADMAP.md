@@ -114,8 +114,13 @@ Logged-in readers, no writes yet.
 - [x] Cooking, `PrettyText.cleanup`: rel attributes, mention links,
       hidden direction marks, video thumbnails, HTML5 re-serialization;
       all 482 posts of the Faker backup cook byte-equal
-- [ ] CookedPostProcessor (oneboxes, image sizes, lightboxes), which is
-      what makes the `cooked` column out of `PrettyText.cook`
+- [x] The `cooked` column: `Post#cook` with the post's options, then the
+      post processor's html steps (quote marks, local urls, user ids off
+      links, nofollow); every post of the seed and the Faker backup gets
+      the column Rails writes
+- [ ] Post processor, the rest: oneboxes (network fetches, the onebox
+      engines), images (sizes, optimized images, lightboxes), optimized
+      videos; and its writes (post/topic image, badges, upload links)
 - [ ] Posting, editing, revisions, likes, flags
 - [ ] Private messages
 - [ ] Uploads (local first, S3 later), optimized images
