@@ -51,15 +51,6 @@ fn json_error(status: StatusCode, errors: Vec<String>) -> Response {
     (status, Json(json!({"errors": errors}))).into_response()
 }
 
-fn host(state: &AppState) -> Host {
-    Host {
-        pool: state.pool.clone(),
-        config: state.config.clone(),
-        site_setting_defs: state.site_setting_defs.clone(),
-        i18n: state.i18n.clone(),
-    }
-}
-
 /// The scalar params, for the CSRF token lookup.
 fn form_pairs(map: &Map<String, Value>) -> Vec<(String, String)> {
     map.iter()
@@ -106,8 +97,9 @@ pub async fn create(
             .get(header::USER_AGENT)
             .and_then(|v| v.to_str().ok())
             .map(str::to_string),
+        email: None,
     };
-    let cook_host = host(&state);
+    let cook_host = Host::from_state(&state);
     let ctx = Ctx {
         host: &cook_host,
         settings: &settings,
@@ -215,7 +207,7 @@ pub async fn update(
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
-    let cook_host = host(&state);
+    let cook_host = Host::from_state(&state);
     let ctx = Ctx {
         host: &cook_host,
         settings: &settings,
@@ -309,7 +301,7 @@ pub async fn revision(
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
-    let cook_host = host(&state);
+    let cook_host = Host::from_state(&state);
     let ctx = Ctx {
         host: &cook_host,
         settings: &settings,

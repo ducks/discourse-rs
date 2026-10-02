@@ -79,6 +79,19 @@ committed_at=$committed_at
 EOF
 
 versions="$(grep -cE "^\('[0-9]+'\)[,;]$" "$dest/db/structure.sql")"
+# The markers Email::Receiver cuts replies at (`user_notifications.
+# previous_discussion` and `reply_above_line`), in every server locale:
+# its regexes join the translations of all available locales. One
+# `key<TAB>value` line each, the value as the YAML double-quoted it.
+markers="$dest/config/email_markers.tsv"
+: > "$markers"
+while read -r f; do
+  git -C "$src" show "$commit:$f" \
+    | sed -n -E 's/^    (previous_discussion|reply_above_line): "(.*)"$/\1\t\2/p' >> "$markers"
+done < <(git -C "$src" ls-tree -r --name-only "$commit" config/locales \
+  | grep -E '^config/locales/server\.[^./]+\.yml$' | LC_ALL=C sort)
+echo "vendored $(wc -l < "$markers") email reply markers"
+
 echo "vendored ${#FILES[@]} files from $commit ($committed_at), $versions schema versions"
 
 # Emoji names/codes come from the discourse-emojis gem at the version in

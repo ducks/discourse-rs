@@ -7,7 +7,10 @@
 //! recordings keep them in memory instead.
 
 pub mod account;
+pub mod incoming;
 pub mod notification;
+pub mod receiver;
+pub mod reply_trimmer;
 pub mod sender;
 pub mod styles;
 

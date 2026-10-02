@@ -71,7 +71,7 @@ pub async fn skip(
 
 /// The mail gem's order for the fields it knows; the rest follow in the
 /// order they were added.
-const FIELD_ORDER: [&str; 28] = [
+pub(crate) const FIELD_ORDER: [&str; 28] = [
     "return-path",
     "received",
     "resent-date",

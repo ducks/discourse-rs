@@ -149,6 +149,8 @@ cases.each do |c|
     # A case's `settings` are set inside the transaction, so they roll back
     # with it (the in-process cache is refreshed after).
     (c["settings"] || {}).each { |name, value| SiteSetting.set(name, value) }
+    # `setup`: SQL for fixture rows a case needs (a reply key), run the same way.
+    (c["setup"] || []).each { |sql| db.execute(sql) }
     ENQUEUED.clear
     before_sums = checksums
     before_rows = before_sums.keys.to_h { |t| [t, rows(t)] }
@@ -200,6 +202,7 @@ cases.each do |c|
       jobs: from_requests,
     }
     record[:settings] = c["settings"] if c["settings"]
+    record[:setup] = c["setup"] if c["setup"]
     record[:jobs_from_jobs] = ENQUEUED.dup if c["run_jobs"]
     record[:emails] = emails if emails.any?
     File.write("#{out}/#{c["name"]}.json", JSON.pretty_generate(record) + "\n")

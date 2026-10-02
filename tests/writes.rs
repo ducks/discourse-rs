@@ -613,6 +613,13 @@ async fn replay(case: &Value, run_jobs: &[String]) -> Vec<String> {
         client.csrf = csrf["csrf"].as_str().map(str::to_string);
     }
     apply_settings(&db.pool, &client.state, case).await;
+    // `setup`: the case's fixture rows, as the recorder ran them.
+    for sql in case["setup"].as_array().into_iter().flatten() {
+        sqlx::query(sql.as_str().unwrap())
+            .execute(&db.pool)
+            .await
+            .unwrap_or_else(|e| panic!("setup {sql}: {e}"));
+    }
 
     let tables = tables(&db.pool).await;
     let mut before_sums = HashMap::new();
@@ -706,16 +713,18 @@ async fn replay(case: &Value, run_jobs: &[String]) -> Vec<String> {
     if let Some(t) = case["transaction_started_at"].as_str().and_then(timestamp) {
         rails_started = rails_started.min(t);
     }
-    let rails_jobs: Vec<Value> = case["jobs"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .filter(|j| !PLUGIN_JOBS.contains(&j[0].as_str().unwrap_or("")))
-        .cloned()
-        .collect();
+    let without_plugin_jobs = |jobs: &Value| -> Vec<Value> {
+        jobs.as_array()
+            .into_iter()
+            .flatten()
+            .filter(|j| !PLUGIN_JOBS.contains(&j[0].as_str().unwrap_or("")))
+            .cloned()
+            .collect()
+    };
+    let rails_jobs = without_plugin_jobs(&case["jobs"]);
     let mut rails = serde_json::json!({ "responses": case["responses"], "changes": case["changes"], "jobs": rails_jobs });
     if let Some(from_jobs) = case.get("jobs_from_jobs") {
-        rails["jobs_from_jobs"] = from_jobs.clone();
+        rails["jobs_from_jobs"] = Value::Array(without_plugin_jobs(from_jobs));
         rails["emails"] = case
             .get("emails")
             .cloned()

@@ -146,7 +146,18 @@ Logged-in readers, no writes yet.
       and their emails (critical_user_email, send_email_login_code),
       byte-identical to Rails; ServerSession as
       `discourse_rs.server_sessions`
-- [ ] Reply by email (incoming mail), PM emails, previous-replies context
+- [x] Reply by email, first slice: reply keys and VERP bounce addresses
+      in notification emails; POST /admin/email/handle_mail and
+      process_email for a plain-text reply by a known user to a reply
+      key (the incoming_emails row with the gem's re-serialized raw, the
+      reply trimmed by a port of email_reply_trimmer, the post by email).
+      Measured: the gem's own trimmer corpus, a sample corpus of parsed
+      and cleaned emails (parity/incoming_mail), and the write cases
+- [ ] Reply by email, next: HtmlToMarkdown (Gmail and most clients send
+      HTML), rejection emails, staged users, attachments, bounces, likes
+      and notification levels by email, API-key auth for mail-receiver,
+      POP3 polling, group and category addresses (email_in)
+- [ ] PM emails, previous-replies context
 - [ ] Jobs, next: digests, pull_hotlinked_images,
       notify_mailing_list_subscribers, scheduled jobs (category stats, top
       topics, digests), rate limits

@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# Record what Discourse makes of the sample emails in
+# parity/incoming_mail/emails (the cleaned raw it stores, the addresses,
+# subject and ids it reads, the body it posts) into
+# parity/incoming_mail/expected.json, on the reference agent, without
+# changing it (scripts/incoming_mail_export.rb). tests/incoming_mail.rs
+# parses the same samples and compares.
+#
+# Usage: scripts/record-incoming-mail <agent-name>
+set -euo pipefail
+
+if [ $# -ne 1 ]; then
+  echo "usage: $0 <agent-name>" >&2
+  exit 64
+fi
+
+agent="$1"
+root="$(cd "$(dirname "$0")/.." && pwd)"
+dir="$root/parity/incoming_mail"
+tmp="$(mktemp -d)"
+trap 'rm -rf "$tmp"' EXIT
+
+# The samples as one JSON object, raw bytes kept (they are UTF-8).
+jq -n 'reduce inputs as $f ({}; . + $f)' \
+  < <(for f in "$dir"/emails/*.eml; do
+        jq -Rs --arg n "$(basename "$f" .eml)" '{($n): .}' "$f"
+      done) > "$tmp/emails.json"
+
+dv copy "$root/scripts/incoming_mail_export.rb" "$agent:/tmp/incoming_mail_export.rb" > /dev/null
+dv copy "$tmp/emails.json" "$agent:/tmp/incoming_mail_emails.json" > /dev/null
+dv run --name "$agent" -- bin/rails runner /tmp/incoming_mail_export.rb \
+  /tmp/incoming_mail_emails.json /tmp/incoming_mail_expected.json | tail -1
+dv copy "$agent:/tmp/incoming_mail_expected.json" "$dir/expected.json" > /dev/null
+echo "wrote $dir/expected.json"
