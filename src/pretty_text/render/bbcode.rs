@@ -17,7 +17,7 @@ use regex::Regex;
 
 use super::context::Context;
 use super::element::{BlockText, Element, Holder};
-use super::{RenderSettings, quotes};
+use super::{RenderSettings, poll, quotes};
 
 /// `QUOTATION_MARKS`, as opening and closing characters.
 const QUOTATION_MARKS: [(char, char); 9] = [
@@ -231,11 +231,11 @@ enum BlockTag {
     Grid,
     Details,
     Spoiler,
+    Poll,
 }
 
 /// Tags the bundled plugins register and this port does not render.
-const UNPORTED_BLOCK_TAGS: [&str; 9] = [
-    "poll",
+const UNPORTED_BLOCK_TAGS: [&str; 8] = [
     "chat",
     "calendar",
     "timezones",
@@ -255,9 +255,10 @@ fn block_tag(tag: &str, settings: &RenderSettings, ctx: &Context) -> Option<Bloc
         "grid" => BlockTag::Grid,
         "details" => BlockTag::Details,
         "spoiler" if settings.spoiler => BlockTag::Spoiler,
+        "poll" if settings.poll => BlockTag::Poll,
         _ => {
             if UNPORTED_BLOCK_TAGS.contains(&tag) {
-                ctx.refuse("a bbcode block of a plugin that is not ported (poll, chat, events, graphviz, policy)");
+                ctx.refuse("a bbcode block of a plugin that is not ported (chat, events, graphviz, policy)");
             }
             return None;
         }
@@ -411,6 +412,14 @@ impl BlockRule for BlockBbcode {
 
         // The content: the lines between the tags as blocks, or what sits
         // between them on the one line as a paragraph.
+        // A poll inside a poll stays plain content.
+        let nested_poll = if let BlockTag::Poll = kind {
+            let depth = state.root_ext.get_or_insert_default::<poll::PollDepth>();
+            depth.0 += 1;
+            depth.0 > 1
+        } else {
+            false
+        };
         let mut holder = Node::new(Holder);
         if close.line.is_some() {
             let old_node = std::mem::replace(&mut state.node, holder);
@@ -431,6 +440,9 @@ impl BlockRule for BlockBbcode {
             holder.children.push(paragraph);
         }
         let children = std::mem::take(&mut holder.children);
+        if let BlockTag::Poll = kind {
+            state.root_ext.get_or_insert_default::<poll::PollDepth>().0 -= 1;
+        }
 
         let wrap = |tag: &str, attrs: Vec<(String, String)>, children: Vec<Node>| {
             let mut node = Node::new(Element {
@@ -447,6 +459,7 @@ impl BlockRule for BlockBbcode {
             BlockTag::Excerpt => wrap("div", class("excerpt"), children),
             BlockTag::Spoiler => wrap("div", class("spoiler"), children),
             BlockTag::Quote => quotes::build(&info, children, settings, ctx),
+            BlockTag::Poll => poll::build(&info, children, nested_poll, settings, ctx),
             BlockTag::Wrap => {
                 let mut attrs = class("d-wrap");
                 attrs.extend(data_attributes(&info.attrs, Some("wrap")));

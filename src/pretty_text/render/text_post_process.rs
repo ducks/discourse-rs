@@ -153,12 +153,21 @@ pub fn apply(root: &mut Node, settings: &RenderSettings, ctx: &Context) {
     } else {
         &HASHTAGS_ONLY
     };
-    fn visit(node: &mut Node, matcher: &Regex, ctx: &Context) {
+    fn visit(node: &mut Node, matcher: &Regex, ctx: &Context, local_dates: bool) {
         if is_link(node) {
             return;
         }
         let mut i = 0;
         while i < node.children.len() {
+            // The local dates plugin's `[date=...]` and `[date-range ...]`
+            // need a timezone database and moment's formats.
+            if local_dates
+                && node.children[i].cast::<Text>().is_some_and(|t| {
+                    t.content.contains("[date=") || t.content.contains("[date-range ")
+                })
+            {
+                ctx.refuse("local dates ([date=...])");
+            }
             let replaced = node.children[i]
                 .cast::<Text>()
                 .and_then(|text| split(&text.content, matcher, ctx));
@@ -169,13 +178,13 @@ pub fn apply(root: &mut Node, settings: &RenderSettings, ctx: &Context) {
                     i += count;
                 }
                 None => {
-                    visit(&mut node.children[i], matcher, ctx);
+                    visit(&mut node.children[i], matcher, ctx, local_dates);
                     i += 1;
                 }
             }
         }
     }
-    visit(root, matcher, ctx);
+    visit(root, matcher, ctx, settings.local_dates);
 }
 
 pub fn allow(list: &mut AllowList) {

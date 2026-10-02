@@ -11,7 +11,7 @@ use super::element::{BlockText, Element, RawHtml};
 use crate::pretty_text::sanitizer::AllowList;
 
 /// JavaScript's `parseInt(s, 10)`: the leading integer, if there is one.
-fn parse_int(s: &str) -> Option<i64> {
+pub fn parse_int(s: &str) -> Option<i64> {
     let s = s.trim_start();
     let (sign, digits) = match s.strip_prefix('-') {
         Some(rest) => (-1, rest),

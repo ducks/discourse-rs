@@ -143,27 +143,30 @@ headers.
 
 Rails cooks a post by running Discourse's JavaScript markdown bundle in
 V8. discourse-rs does not vendor that bundle or embed a JavaScript engine:
-cooking is to be Rust rules on a Rust markdown-it, measured against Rails
-like everything else. What exists so far is what surrounds the renderer:
+`pretty_text::markdown` is Discourse's markdown features ported as Rust
+rules on the markdown-it crate, measured against Rails.
 
-- `pretty_text::options`: the options `PrettyText.markdown` hands the
-  renderer (client site settings of core and the bundled plugins, allowed
-  iframes, paths, hashtag types).
-- `pretty_text::helpers`: `PrettyText::Helpers`, the lookups the rules
-  make while cooking: translations, avatars, primary groups, upload URLs
-  (Base62 short urls), topic titles for quotes, and hashtags (categories
-  and tags under the cooking user's permissions).
+- `pretty_text::render`: the rules (anchors, code, tables, typographer,
+  mentions, hashtags, emoji, linkify and onebox marking, bbcode, quotes,
+  uploads and images, and the bundled plugins' poll, details, spoiler,
+  checklist and footnotes) and the sanitizer (pretty-text's allow list
+  on a port of the xss library's tag scanner).
+- `pretty_text::options` and `pretty_text::helpers`: the options Rails
+  hands the renderer, and `PrettyText::Helpers`, the lookups made while
+  cooking. A cook renders once to learn what it refers to (quoted users
+  and topics, hashtags, uploads), resolves that from Postgres, then
+  renders again with the answers.
 - `make record-pretty-text AGENT=rs-parity` records, from Rails on the
   reference: those options, every helper call with its result, and
   `PrettyText.markdown`'s HTML for a corpus of 51 feature samples and
-  the seeded posts. `tests/pretty_text.rs` holds the options and the
-  helpers to that recording; the corpus is the target the renderer has
-  to reach, byte for byte.
+  the seeded posts. `tests/pretty_text.rs` requires the options, the
+  helpers and the cooked HTML to match; 76 of 77 entries do.
 
 Refused with an explicit error rather than answered differently from
 Rails: custom emoji, the emoji deny list, watched words, secure uploads,
 uploads behind a CDN or S3, and a hashtag chat would resolve to a channel
-the cooking user can see. What plugins add to the options (chat's,
+the cooking user can see, local dates, and the block tags of the plugins
+not ported. What plugins add to the options (chat's,
 discobot's iframe) is not produced.
 
 ## Pages

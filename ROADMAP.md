@@ -103,14 +103,14 @@ Logged-in readers, no writes yet.
 
 - [x] Cooking, around the renderer: the options and `PrettyText::Helpers`
       from the database, equal to what Rails recorded (README: Cooking)
-- [ ] Cooking, the renderer: Discourse's markdown rules in Rust (no
-      vendored JavaScript, no embedded engine; decided 2026-10-02), until
-      the recorded corpus cooks byte-equal. The plain `markdown-it` crate
-      starts at 28 of 77 entries; the rules to port are
-      `discourse-markdown-it` (anchors, quotes, mentions, hashtags,
-      emoji, bbcode, uploads, oneboxes, tables, typographer changes), the
-      sanitizer, and the bundled plugins' rules (poll, spoiler, details,
-      footnote, checklist, local dates, math)
+- [x] Cooking, the renderer: Discourse's markdown rules in Rust on the
+      markdown-it crate (no vendored JavaScript, no embedded engine;
+      decided 2026-10-02). 76 of the 77 recorded corpus entries cook
+      byte-equal to Rails: core's features, the sanitizer, linkify, and
+      the bundled plugins' poll, details, spoiler, checklist, footnotes
+- [ ] Cooking, plugins left: local dates (needs a timezone database),
+      math, chat transcripts, events, graphviz, policy; all refused
+      explicitly today
 - [ ] Cooking, after the renderer: `PrettyText.cleanup` (mention links,
       rel attributes, hotlinked media) and CookedPostProcessor (oneboxes,
       image sizes, lightboxes)

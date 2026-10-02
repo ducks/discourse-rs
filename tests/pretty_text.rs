@@ -263,7 +263,7 @@ fn first_difference(rails: &str, ours: &str) -> String {
 /// Corpus entries the renderer does not cook like Rails yet. The list
 /// only shrinks: an entry that starts matching has to be taken out, one
 /// that stops matching fails the test.
-const NOT_COOKED_YET: &[&str] = &["sample-29", "sample-30", "sample-31", "sample-32"];
+const NOT_COOKED_YET: &[&str] = &["sample-30"];
 
 /// PrettyText.markdown over the recorded corpus (feature samples and every
 /// seeded post), each byte-equal to what Rails cooked, apart from the

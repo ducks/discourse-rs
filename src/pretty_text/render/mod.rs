@@ -10,13 +10,16 @@
 
 mod anchor;
 mod bbcode;
+mod checklist;
 mod code;
 pub mod context;
 mod element;
 mod emoji;
+mod footnotes;
 mod linkify;
 mod newline;
 mod onebox;
+mod poll;
 mod quotes;
 mod table;
 mod text_post_process;
@@ -64,6 +67,18 @@ pub struct RenderSettings {
     pub allowed_iframes: Vec<String>,
     /// `allowedHrefSchemes`: schemes links may use besides http(s).
     pub allowed_href_schemes: Vec<String>,
+    /// The checklist plugin's rule (`checklist_enabled`).
+    pub checklist: bool,
+    /// The footnote plugin (`enable_markdown_footnotes`).
+    pub footnotes: bool,
+    /// The poll plugin (`poll_enabled`), its option limit and the
+    /// `poll.voters` label for no voters.
+    pub poll: bool,
+    pub poll_maximum_options: i64,
+    pub poll_voters_label: String,
+    /// The local dates plugin (`discourse_local_dates_enabled`), which is
+    /// not ported: its tags are refused.
+    pub local_dates: bool,
     /// The spoiler plugin's rules (`spoiler_enabled`).
     pub spoiler: bool,
     /// `avatar_sizes`, ascending.
@@ -150,6 +165,15 @@ impl RenderSettings {
                 .filter(|s| s.matches('/').count() >= 3)
                 .collect(),
             allowed_href_schemes: split("allowed_href_schemes")?,
+            checklist: settings.get("checklist_enabled")?.truthy(),
+            footnotes: settings.get("enable_markdown_footnotes")?.truthy(),
+            poll: settings.get("poll_enabled")?.truthy(),
+            poll_maximum_options: settings.get("poll_maximum_options")?.to_i(),
+            poll_voters_label: i18n
+                .t("js.poll.voters.other")
+                .unwrap_or("voters")
+                .to_string(),
+            local_dates: settings.get("discourse_local_dates_enabled")?.truthy(),
             spoiler: settings.get("spoiler_enabled")?.truthy(),
             avatar_sizes,
             base_path: base_path.to_string(),
@@ -174,6 +198,15 @@ fn allow_list(settings: &RenderSettings) -> AllowList {
     table::allow(&mut list);
     text_post_process::allow(&mut list);
     uploads::allow(&mut list);
+    if settings.poll {
+        poll::allow(&mut list);
+    }
+    if settings.footnotes {
+        footnotes::allow(&mut list);
+    }
+    if settings.checklist {
+        checklist::allow(&mut list);
+    }
     if settings.emoji {
         emoji::allow(&mut list);
     }
@@ -193,6 +226,8 @@ fn engine(settings: &RenderSettings, lookups: Lookups) -> MarkdownIt {
     markdown_it::plugins::extra::tables::add(&mut md);
     newline::add(&mut md);
     bbcode::add(&mut md);
+    checklist::add(&mut md);
+    footnotes::add(&mut md);
     anchor::add(&mut md);
     md
 }
@@ -213,6 +248,7 @@ pub fn render(
     let md = engine(settings, lookups);
     let ctx = md.ext.get::<Context>().expect("context");
     let mut root: Node = md.parse(raw);
+    footnotes::tail(&mut root);
     bbcode::pair(&mut root, settings);
     if let Some(linkify) = &settings.linkify {
         if let Some(what) = linkify::run(&mut root, linkify, &md) {
@@ -224,6 +260,7 @@ pub fn render(
         typographer::apply(&mut root);
         SmartQuotes::run(&mut root, &md);
     }
+    checklist::run(&mut root, settings);
     uploads::run(&mut root, settings, ctx);
     text_post_process::apply(&mut root, settings, ctx);
     emoji::run(&mut root, settings);
