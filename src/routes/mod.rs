@@ -9,6 +9,7 @@ mod post_actions;
 mod posts;
 mod robots;
 mod search;
+mod uploads;
 pub(crate) use search::invalid_access_with;
 pub(crate) use topics::not_found_response;
 mod session;
@@ -154,6 +155,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/u/email-login.json", post(accounts::email_login))
         .route("/users/email-login", post(accounts::email_login))
         .route("/users/email-login.json", post(accounts::email_login))
+        .route("/uploads.json", post(uploads::create))
         .route("/post_actions", post(post_actions::create))
         .route("/post_actions.json", post(post_actions::create))
         .route("/post_actions/{id}", delete(post_actions::destroy))

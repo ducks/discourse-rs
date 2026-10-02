@@ -26,6 +26,9 @@ pkgs.mkShell {
     pkg-config
     openssl
 
+    # uploads: the dominant colour, as Rails reads it (`magick`, IM7)
+    imagemagick
+
     # scripts/bench
     oha
     jq

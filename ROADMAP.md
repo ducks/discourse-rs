@@ -136,7 +136,11 @@ Logged-in readers, no writes yet.
       private_message notification and email (participants, `[PM]`
       subject), measured against Rails. Refused: group messages, messages to
       email addresses, recipients who screen the sender, membership requests
-- [ ] Uploads (local first, S3 later), optimized images
+- [x] Uploads: `POST /uploads.json` for attachments and GIFs, stored
+      locally as Rails stores them (dominant colour by `magick`), measured
+      against Rails
+- [ ] Uploads Rails optimizes (PNG, JPEG), optimized images and
+      thumbnails, avatars, S3
 - [x] Background job queue: Postgres (`discourse_rs.jobs`, the one table
       the port owns), a worker beside the web server, Sidekiq's retries;
       posting enqueues what Rails enqueues (measured)

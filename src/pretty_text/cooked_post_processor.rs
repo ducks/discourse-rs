@@ -97,7 +97,7 @@ async fn mark_quotes(
 
 /// `UrlHelper.cook_url` without a CDN or secure uploads: a local url made
 /// absolute and schemaless, any other left alone.
-fn cook_url(url: &str, urls: &Urls<'_>, base_path: &str) -> Result<String, CookError> {
+pub(crate) fn cook_url(url: &str, urls: &Urls<'_>, base_path: &str) -> Result<String, CookError> {
     let base_no_prefix = urls.base_url_no_prefix()?;
     // FileStore::LocalStore#has_been_uploaded?
     let uploads = format!("{base_path}/uploads/default");

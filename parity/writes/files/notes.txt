@@ -1,0 +1,1 @@
+Notes attached to a post, as a plain text file.
