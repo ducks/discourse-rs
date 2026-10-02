@@ -1,11 +1,45 @@
 [
   {
+    "method": "hashtag_lookup",
+    "args": [
+      "site-feedback",
+      -1,
+      [
+        "category",
+        "tag",
+        "channel"
+      ]
+    ],
+    "result": {
+      "relative_url": "/c/site-feedback/2",
+      "text": "Site Feedback",
+      "description": "Discussion about this site, its organization, how it works, and how we can improve it.",
+      "icon": "folder",
+      "colors": [
+        "808281"
+      ],
+      "type": "category",
+      "ref": "site-feedback",
+      "slug": "site-feedback",
+      "id": 2,
+      "style_type": "emoji",
+      "emoji": "thought_balloon"
+    }
+  },
+  {
     "method": "t",
     "args": [
       "post.heading_anchor",
       null
     ],
     "result": "Heading link"
+  },
+  {
+    "method": "format_username",
+    "args": [
+      "@user1"
+    ],
+    "result": "@user1"
   },
   {
     "method": "avatar_template",
@@ -117,13 +151,6 @@
       "nobody"
     ],
     "result": "nobody"
-  },
-  {
-    "method": "format_username",
-    "args": [
-      "@user1"
-    ],
-    "result": "@user1"
   },
   {
     "method": "format_username",
@@ -577,33 +604,6 @@
         "short_path": "/uploads/short-url/qa4V5109J7tySkPok8r3aBAruY1.png",
         "base62_sha1": "qa4V5109J7tySkPok8r3aBAruY1"
       }
-    }
-  },
-  {
-    "method": "hashtag_lookup",
-    "args": [
-      "site-feedback",
-      -1,
-      [
-        "category",
-        "tag",
-        "channel"
-      ]
-    ],
-    "result": {
-      "relative_url": "/c/site-feedback/2",
-      "text": "Site Feedback",
-      "description": "Discussion about this site, its organization, how it works, and how we can improve it.",
-      "icon": "folder",
-      "colors": [
-        "808281"
-      ],
-      "type": "category",
-      "ref": "site-feedback",
-      "slug": "site-feedback",
-      "id": 2,
-      "style_type": "emoji",
-      "emoji": "thought_balloon"
     }
   }
 ]

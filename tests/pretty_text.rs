@@ -7,6 +7,7 @@ mod common;
 use common::{TestDb, recorded_config, state};
 use discourse_rs::pretty_text::helpers::{Helpers, translate};
 
+use discourse_rs::pretty_text::cooked_post_processor::cooked_column;
 use discourse_rs::pretty_text::{CookError, Host, MarkdownOptions, cook, options};
 use discourse_rs::site_settings::SiteSettings;
 use serde_json::Value;
@@ -368,11 +369,58 @@ async fn backup_corpus_matches_rails() {
         &std::fs::read_to_string(std::path::Path::new(&dir).join("corpus.json")).unwrap(),
     )
     .unwrap();
-    let (missed, details) = cook_corpus(&host, corpus.as_array().unwrap()).await;
+    let (missed, mut details) = cook_corpus(&host, corpus.as_array().unwrap()).await;
+    let (_, columns) = cooked_columns(&host, corpus.as_array().unwrap()).await;
+    details.extend(columns.iter().map(|d| format!("cooked column of {d}")));
     assert!(
-        missed.is_empty(),
+        missed.is_empty() && columns.is_empty(),
         "{} differ:\n{}",
-        missed.len(),
+        missed.len() + columns.len(),
         details.join("\n")
     );
+}
+
+/// The `cooked` column of every recorded post: what Rails' post processor
+/// made of `Post#cook`, or `Post#cook` itself for a post it does not
+/// process. Returns the posts that differ, with where.
+async fn cooked_columns(host: &Host, corpus: &[Value]) -> (usize, Vec<String>) {
+    let mut checked = 0;
+    let mut details = Vec::new();
+    for entry in corpus.iter().filter(|e| e["post"].is_object()) {
+        let post = &entry["post"];
+        let rails = post["processed"]
+            .as_str()
+            .or(post["post_cook"].as_str())
+            .unwrap();
+        let id: i64 = entry["id"].as_str().unwrap()["post-".len()..]
+            .parse()
+            .unwrap();
+        let ours = cooked_column(host, id)
+            .await
+            .unwrap_or_else(|e| format!("error: {e}"));
+        checked += 1;
+        if ours != rails {
+            details.push(format!(
+                "{}\n{}",
+                entry["id"],
+                first_difference(rails, &ours)
+            ));
+        }
+    }
+    eprintln!(
+        "{} of {checked} posts get the cooked column Rails writes",
+        checked - details.len()
+    );
+    (checked, details)
+}
+
+/// The cooked column of every seeded post.
+#[tokio::test]
+async fn cooked_column_matches_rails() {
+    let db = TestDb::new().await;
+    let host = host(&db);
+    let corpus = recorded("corpus.json");
+    let (checked, details) = cooked_columns(&host, corpus.as_array().unwrap()).await;
+    assert!(checked > 20, "{checked} posts");
+    assert!(details.is_empty(), "{}", details.join("\n"));
 }
