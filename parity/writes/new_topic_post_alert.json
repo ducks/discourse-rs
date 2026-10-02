@@ -1,17 +1,18 @@
 {
-  "name": "reply",
+  "name": "new_topic_post_alert",
   "user": "user1",
   "requests": [
     {
       "method": "POST",
       "path": "/posts.json",
       "params": {
-        "topic_id": 35,
-        "raw": "A reply from user1 to the replies and posters topic, written for the posting slice."
+        "title": "A new topic from user1 for the posting slice",
+        "category": 4,
+        "raw": "The first post of a topic user1 creates through the posting endpoint."
       }
     }
   ],
-  "started_at": "2026-10-02T10:10:59.479766",
+  "started_at": "2026-10-02T10:11:29.378368",
   "responses": [
     {
       "status": 200,
@@ -20,12 +21,12 @@
         "name": "User1",
         "username": "user1",
         "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
-        "created_at": "2026-10-02T10:11:00.912Z",
-        "cooked": "<p>A reply from user1 to the replies and posters topic, written for the posting slice.</p>",
-        "post_number": 6,
+        "created_at": "2026-10-02T10:11:29.539Z",
+        "cooked": "<p>The first post of a topic user1 creates through the posting endpoint.</p>",
+        "post_number": 1,
         "post_type": 1,
-        "posts_count": 6,
-        "updated_at": "2026-10-02T10:11:00.912Z",
+        "posts_count": 1,
+        "updated_at": "2026-10-02T10:11:29.539Z",
         "reply_count": 0,
         "reply_to_post_number": null,
         "quote_count": 0,
@@ -34,8 +35,8 @@
         "readers_count": 0,
         "score": 0,
         "yours": true,
-        "topic_id": 35,
-        "topic_slug": "parity-fixture-replies-and-posters",
+        "topic_id": 45,
+        "topic_slug": "a-new-topic-from-user1-for-the-posting-slice",
         "display_username": "User1",
         "primary_group_name": null,
         "flair_name": null,
@@ -46,13 +47,13 @@
         "badges_granted": [],
         "version": 1,
         "can_edit": true,
-        "can_delete": true,
+        "can_delete": false,
         "can_recover": false,
         "can_see_hidden_post": true,
         "can_wiki": false,
         "user_title": null,
         "bookmarked": false,
-        "raw": "A reply from user1 to the replies and posters topic, written for the posting slice.",
+        "raw": "The first post of a topic user1 creates through the posting endpoint.",
         "actions_summary": [
           {
             "id": 3,
@@ -87,7 +88,7 @@
         "edit_reason": null,
         "can_view_edit_history": true,
         "wiki": false,
-        "post_url": "/t/parity-fixture-replies-and-posters/35/6",
+        "post_url": "/t/a-new-topic-from-user1-for-the-posting-slice/45/1",
         "reactions": [],
         "current_user_reaction": null,
         "reaction_users_count": 0,
@@ -95,7 +96,8 @@
         "can_accept_answer": false,
         "can_unaccept_answer": false,
         "accepted_answer": false,
-        "topic_accepted_answer": null
+        "topic_accepted_answer": null,
+        "can_vote": false
       }
     }
   ],
@@ -193,7 +195,7 @@
             "updated_at": "2026-10-02T09:11:12.021275",
             "description": "<p>Create topics here that don’t fit into any other existing category.</p>",
             "posts_month": 6,
-            "topic_count": 3,
+            "topic_count": 4,
             "topics_week": 2,
             "topics_year": 3,
             "allow_badges": true,
@@ -203,7 +205,7 @@
             "sort_ascending": null,
             "topic_template": null,
             "all_topics_wiki": false,
-            "latest_topic_id": 41,
+            "latest_topic_id": 45,
             "read_restricted": false,
             "search_priority": 0,
             "auto_close_hours": null,
@@ -234,13 +236,98 @@
         }
       ]
     },
+    "category_featured_topics": {
+      "inserted": [
+        {
+          "id": 59,
+          "rank": 0,
+          "topic_id": 5,
+          "created_at": "2026-10-02T10:11:29.49691",
+          "updated_at": "2026-10-02T10:11:29.49691",
+          "category_id": 4
+        },
+        {
+          "id": 60,
+          "rank": 1,
+          "topic_id": 45,
+          "created_at": "2026-10-02T10:11:29.499223",
+          "updated_at": "2026-10-02T10:11:29.499223",
+          "category_id": 4
+        },
+        {
+          "id": 61,
+          "rank": 2,
+          "topic_id": 35,
+          "created_at": "2026-10-02T10:11:29.501082",
+          "updated_at": "2026-10-02T10:11:29.501082",
+          "category_id": 4
+        },
+        {
+          "id": 62,
+          "rank": 3,
+          "topic_id": 41,
+          "created_at": "2026-10-02T10:11:29.502433",
+          "updated_at": "2026-10-02T10:11:29.502433",
+          "category_id": 4
+        },
+        {
+          "id": 63,
+          "rank": 4,
+          "topic_id": 38,
+          "created_at": "2026-10-02T10:11:29.504409",
+          "updated_at": "2026-10-02T10:11:29.504409",
+          "category_id": 4
+        }
+      ],
+      "deleted": [
+        {
+          "id": 55,
+          "rank": 0,
+          "topic_id": 5,
+          "created_at": "2026-10-01T15:44:18.466364",
+          "updated_at": "2026-10-01T15:44:18.466364",
+          "category_id": 4
+        },
+        {
+          "id": 56,
+          "rank": 1,
+          "topic_id": 35,
+          "created_at": "2026-10-01T15:44:18.467717",
+          "updated_at": "2026-10-01T15:44:18.467717",
+          "category_id": 4
+        },
+        {
+          "id": 57,
+          "rank": 2,
+          "topic_id": 41,
+          "created_at": "2026-10-01T15:44:18.468742",
+          "updated_at": "2026-10-01T15:44:18.468742",
+          "category_id": 4
+        },
+        {
+          "id": 58,
+          "rank": 3,
+          "topic_id": 38,
+          "created_at": "2026-10-01T15:44:18.46946",
+          "updated_at": "2026-10-01T15:44:18.46946",
+          "category_id": 4
+        }
+      ],
+      "updated": []
+    },
     "draft_sequences": {
       "inserted": [
         {
           "id": 1,
           "user_id": 3,
           "sequence": 1,
-          "draft_key": "topic_35"
+          "draft_key": "topic_45"
+        },
+        {
+          "id": 2,
+          "user_id": 3,
+          "sequence": 1,
+          "draft_key": "new_topic"
         }
       ],
       "deleted": [],
@@ -252,8 +339,8 @@
           "locale": "en",
           "post_id": 53,
           "version": 5,
-          "raw_data": "A reply from user1 to the replies and posters topic, written for the posting slice.",
-          "search_data": "'fixtur':2A 'general':6B 'guid':7C 'pariti':1A 'post':21 'poster':5A,16 'repli':3A,9,14 'slice':22 'topic':17 'user1':11 'written':18",
+          "raw_data": "The first post of a topic user1 creates through the posting endpoint.",
+          "search_data": "'creat':18 'endpoint':22 'first':12 'general':10B 'new':2A 'post':8A,13,21 'slice':9A 'topic':3A,16 'user1':5A,17",
           "private_message": false
         }
       ],
@@ -265,8 +352,8 @@
         {
           "id": 52,
           "post_id": 53,
-          "created_at": "2026-10-02T10:11:00.931633",
-          "updated_at": "2026-10-02T10:11:00.931633",
+          "created_at": "2026-10-02T10:11:29.561016",
+          "updated_at": "2026-10-02T10:11:29.561016",
           "drafts_saved": 0,
           "writing_device": "unknown",
           "composer_version": null,
@@ -283,8 +370,8 @@
         {
           "msecs": 5000,
           "user_id": 3,
-          "topic_id": 35,
-          "post_number": 6
+          "topic_id": 45,
+          "post_number": 1
         }
       ],
       "deleted": [],
@@ -294,34 +381,34 @@
       "inserted": [
         {
           "id": 53,
-          "raw": "A reply from user1 to the replies and posters topic, written for the posting slice.",
+          "raw": "The first post of a topic user1 creates through the posting endpoint.",
           "wiki": false,
           "reads": 1,
           "score": null,
-          "cooked": "<p>A reply from user1 to the replies and posters topic, written for the posting slice.</p>",
+          "cooked": "<p>The first post of a topic user1 creates through the posting endpoint.</p>",
           "hidden": false,
           "locale": null,
           "user_id": 3,
           "version": 1,
-          "baked_at": "2026-10-02T10:11:00.912822",
-          "topic_id": 35,
+          "baked_at": "2026-10-02T10:11:29.539252",
+          "topic_id": 45,
           "hidden_at": null,
           "post_type": 1,
           "raw_email": null,
           "via_email": false,
-          "created_at": "2026-10-02T10:11:00.912879",
+          "created_at": "2026-10-02T10:11:29.539318",
           "deleted_at": null,
           "like_count": 0,
           "like_score": 0,
           "self_edits": 0,
-          "sort_order": 6,
+          "sort_order": 1,
           "spam_count": 0,
-          "updated_at": "2026-10-02T10:11:00.912879",
-          "word_count": 15,
+          "updated_at": "2026-10-02T10:11:29.539318",
+          "word_count": 12,
           "action_code": null,
           "cook_method": 1,
           "edit_reason": null,
-          "post_number": 6,
+          "post_number": 1,
           "quote_count": 0,
           "reply_count": 0,
           "locked_by_id": null,
@@ -336,7 +423,7 @@
           "last_editor_id": 3,
           "public_version": 1,
           "image_upload_id": null,
-          "last_version_at": "2026-10-02T10:11:00.928911",
+          "last_version_at": "2026-10-02T10:11:29.5582",
           "off_topic_count": 0,
           "hidden_reason_id": null,
           "reply_to_user_id": null,
@@ -351,174 +438,113 @@
       "deleted": [],
       "updated": []
     },
-    "topic_users": {
-      "inserted": [],
-      "deleted": [],
-      "updated": [
+    "topic_search_data": {
+      "inserted": [
         {
-          "before": {
-            "id": 35,
-            "liked": false,
-            "posted": true,
-            "user_id": 3,
-            "topic_id": 35,
-            "bookmarked": true,
-            "last_posted_at": "2026-09-30T07:28:29.10764",
-            "last_visited_at": "2026-09-30T07:28:29.108382",
-            "first_visited_at": "2026-09-30T07:28:29.108382",
-            "cleared_pinned_at": null,
-            "notification_level": 2,
-            "total_msecs_viewed": 0,
-            "last_read_post_number": 2,
-            "notifications_reason_id": 4,
-            "last_emailed_post_number": null,
-            "notifications_changed_at": "2026-09-30T07:28:29.122811"
-          },
-          "after": {
-            "id": 35,
-            "liked": false,
-            "posted": true,
-            "user_id": 3,
-            "topic_id": 35,
-            "bookmarked": true,
-            "last_posted_at": "2026-10-02T10:11:00.951168",
-            "last_visited_at": "2026-09-30T07:28:29.108382",
-            "first_visited_at": "2026-09-30T07:28:29.108382",
-            "cleared_pinned_at": null,
-            "notification_level": 2,
-            "total_msecs_viewed": 0,
-            "last_read_post_number": 6,
-            "notifications_reason_id": 4,
-            "last_emailed_post_number": null,
-            "notifications_changed_at": "2026-09-30T07:28:29.122811"
-          }
+          "locale": "en",
+          "version": 4,
+          "raw_data": "A new topic from user1 for the posting slice The first post of a topic user1 creates through the posting endpoint.",
+          "topic_id": 45,
+          "search_data": "'creat':17B 'endpoint':21B 'first':11B 'new':2A 'post':8A,12B,20B 'slice':9A 'topic':3A,15B 'user1':5A,16B"
         }
-      ]
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_users": {
+      "inserted": [
+        {
+          "id": 55,
+          "liked": false,
+          "posted": true,
+          "user_id": 3,
+          "topic_id": 45,
+          "bookmarked": false,
+          "last_posted_at": "2026-10-02T10:11:29.564266",
+          "last_visited_at": "2026-10-02T10:11:29.516155",
+          "first_visited_at": "2026-10-02T10:11:29.516155",
+          "cleared_pinned_at": null,
+          "notification_level": 3,
+          "total_msecs_viewed": 0,
+          "last_read_post_number": 1,
+          "notifications_reason_id": 1,
+          "last_emailed_post_number": null,
+          "notifications_changed_at": "2026-10-02T10:11:29.514453"
+        }
+      ],
+      "deleted": [],
+      "updated": []
     },
     "topics": {
-      "inserted": [],
-      "deleted": [],
-      "updated": [
+      "inserted": [
         {
-          "before": {
-            "id": 35,
-            "slug": "parity-fixture-replies-and-posters",
-            "score": 3.2,
-            "title": "Parity fixture: replies and posters",
-            "views": 0,
-            "closed": false,
-            "locale": null,
-            "excerpt": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
-            "subtype": null,
-            "user_id": 2,
-            "visible": true,
-            "archived": false,
-            "archetype": "regular",
-            "bumped_at": "2026-10-01T15:39:51.834549",
-            "pinned_at": null,
-            "created_at": "2026-09-30T07:28:28.864868",
-            "deleted_at": null,
-            "like_count": 1,
-            "spam_count": 0,
-            "updated_at": "2026-10-01T15:39:52.00791",
-            "word_count": 68,
-            "category_id": 4,
-            "external_id": null,
-            "fancy_title": "Parity fixture: replies and posters",
-            "has_summary": false,
-            "posts_count": 5,
-            "reply_count": 0,
-            "percent_rank": 1,
-            "pinned_until": null,
-            "deleted_by_id": null,
-            "featured_link": null,
-            "bannered_until": null,
-            "last_posted_at": "2026-10-01T15:39:51.834549",
-            "image_upload_id": null,
-            "pinned_globally": false,
-            "reviewable_score": 0,
-            "featured_user1_id": 3,
-            "featured_user2_id": null,
-            "featured_user3_id": 1,
-            "featured_user4_id": 4,
-            "last_post_user_id": 2,
-            "participant_count": 4,
-            "slow_mode_seconds": 0,
-            "og_image_upload_id": null,
-            "highest_post_number": 5,
-            "incoming_link_count": 0,
-            "visibility_reason_id": null,
-            "moderator_posts_count": 0,
-            "notify_moderators_count": 0,
-            "highest_staff_post_number": 5
-          },
-          "after": {
-            "id": 35,
-            "slug": "parity-fixture-replies-and-posters",
-            "score": 3.2,
-            "title": "Parity fixture: replies and posters",
-            "views": 0,
-            "closed": false,
-            "locale": null,
-            "excerpt": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
-            "subtype": null,
-            "user_id": 2,
-            "visible": true,
-            "archived": false,
-            "archetype": "regular",
-            "bumped_at": "2026-10-02T10:11:00.912879",
-            "pinned_at": null,
-            "created_at": "2026-09-30T07:28:28.864868",
-            "deleted_at": null,
-            "like_count": 1,
-            "spam_count": 0,
-            "updated_at": "2026-10-02T10:11:00.959785",
-            "word_count": 83,
-            "category_id": 4,
-            "external_id": null,
-            "fancy_title": "Parity fixture: replies and posters",
-            "has_summary": false,
-            "posts_count": 6,
-            "reply_count": 0,
-            "percent_rank": 1,
-            "pinned_until": null,
-            "deleted_by_id": null,
-            "featured_link": null,
-            "bannered_until": null,
-            "last_posted_at": "2026-10-02T10:11:00.912879",
-            "image_upload_id": null,
-            "pinned_globally": false,
-            "reviewable_score": 0,
-            "featured_user1_id": 3,
-            "featured_user2_id": null,
-            "featured_user3_id": 1,
-            "featured_user4_id": 4,
-            "last_post_user_id": 3,
-            "participant_count": 4,
-            "slow_mode_seconds": 0,
-            "og_image_upload_id": null,
-            "highest_post_number": 6,
-            "incoming_link_count": 0,
-            "visibility_reason_id": null,
-            "moderator_posts_count": 0,
-            "notify_moderators_count": 0,
-            "highest_staff_post_number": 6
-          }
+          "id": 45,
+          "slug": "a-new-topic-from-user1-for-the-posting-slice",
+          "score": null,
+          "title": "A new topic from user1 for the posting slice",
+          "views": 0,
+          "closed": false,
+          "locale": null,
+          "excerpt": "The first post of a topic user1 creates through the posting endpoint.",
+          "subtype": null,
+          "user_id": 3,
+          "visible": true,
+          "archived": false,
+          "archetype": "regular",
+          "bumped_at": "2026-10-02T10:11:29.539318",
+          "pinned_at": null,
+          "created_at": "2026-10-02T10:11:29.475258",
+          "deleted_at": null,
+          "like_count": 0,
+          "spam_count": 0,
+          "updated_at": "2026-10-02T10:11:29.570989",
+          "word_count": 12,
+          "category_id": 4,
+          "external_id": null,
+          "fancy_title": "A new topic from user1 for the posting slice",
+          "has_summary": false,
+          "posts_count": 1,
+          "reply_count": 0,
+          "percent_rank": 1,
+          "pinned_until": null,
+          "deleted_by_id": null,
+          "featured_link": null,
+          "bannered_until": null,
+          "last_posted_at": "2026-10-02T10:11:29.539318",
+          "image_upload_id": null,
+          "pinned_globally": false,
+          "reviewable_score": 0,
+          "featured_user1_id": null,
+          "featured_user2_id": null,
+          "featured_user3_id": null,
+          "featured_user4_id": null,
+          "last_post_user_id": 3,
+          "participant_count": 1,
+          "slow_mode_seconds": 0,
+          "og_image_upload_id": null,
+          "highest_post_number": 1,
+          "incoming_link_count": 0,
+          "visibility_reason_id": null,
+          "moderator_posts_count": 0,
+          "notify_moderators_count": 0,
+          "highest_staff_post_number": 1
         }
-      ]
+      ],
+      "deleted": [],
+      "updated": []
     },
     "user_actions": {
       "inserted": [
         {
           "id": 65,
           "user_id": 3,
-          "created_at": "2026-10-02T10:11:00.912879",
-          "updated_at": "2026-10-02T10:11:00.938621",
-          "action_type": 5,
+          "created_at": "2026-10-02T10:11:29.475258",
+          "updated_at": "2026-10-02T10:11:29.524586",
+          "action_type": 4,
           "acting_user_id": 3,
-          "target_post_id": 53,
+          "target_post_id": -1,
           "target_user_id": null,
-          "target_topic_id": 35
+          "target_topic_id": 45
         }
       ],
       "deleted": [],
@@ -534,29 +560,29 @@
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "RhWiPd8+UTAyeN3tq8enxj9W0+I=",
-            "created_at": "2026-10-02T10:10:57.828375",
-            "rotated_at": "2026-10-02T10:10:57.823718",
-            "updated_at": "2026-10-02T10:10:57.828375",
+            "auth_token": "+Jr1dAqn2F+qbu5bM1OP3eB4R1k=",
+            "created_at": "2026-10-02T10:11:28.860364",
+            "rotated_at": "2026-10-02T10:11:28.859983",
+            "updated_at": "2026-10-02T10:11:28.860364",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "RhWiPd8+UTAyeN3tq8enxj9W0+I=",
+            "prev_auth_token": "+Jr1dAqn2F+qbu5bM1OP3eB4R1k=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
             "id": 78,
-            "seen_at": "2026-10-02T10:10:59.492223",
+            "seen_at": "2026-10-02T10:11:29.384146",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "RhWiPd8+UTAyeN3tq8enxj9W0+I=",
-            "created_at": "2026-10-02T10:10:57.828375",
-            "rotated_at": "2026-10-02T10:10:57.823718",
-            "updated_at": "2026-10-02T10:10:57.828375",
+            "auth_token": "+Jr1dAqn2F+qbu5bM1OP3eB4R1k=",
+            "created_at": "2026-10-02T10:11:28.860364",
+            "rotated_at": "2026-10-02T10:11:28.859983",
+            "updated_at": "2026-10-02T10:11:28.860364",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "RhWiPd8+UTAyeN3tq8enxj9W0+I=",
+            "prev_auth_token": "+Jr1dAqn2F+qbu5bM1OP3eB4R1k=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -600,10 +626,10 @@
             "read_faq": null,
             "new_since": "2026-07-25T05:59:16.445924",
             "time_read": 0,
-            "post_count": 2,
+            "post_count": 1,
             "draft_count": 0,
             "likes_given": 1,
-            "topic_count": 1,
+            "topic_count": 2,
             "bounce_score": 0,
             "days_visited": 1,
             "flags_agreed": 0,
@@ -684,7 +710,7 @@
             "created_at": "2026-07-25T05:59:16.250829",
             "flag_level": 0,
             "ip_address": "172.17.0.1",
-            "updated_at": "2026-10-02T10:11:00.971356",
+            "updated_at": "2026-10-02T10:11:29.579888",
             "approved_at": null,
             "trust_level": 2,
             "last_seen_at": "2026-10-01T22:32:51.040203",
@@ -694,7 +720,7 @@
             "silenced_till": null,
             "approved_by_id": null,
             "flair_group_id": null,
-            "last_posted_at": "2026-10-02T10:11:00.912879",
+            "last_posted_at": "2026-10-02T10:11:29.539318",
             "suspended_till": null,
             "username_lower": "user1",
             "last_emailed_at": null,
@@ -718,6 +744,14 @@
       "bot_input",
       {
         "user_id": 3,
+        "topic_id": 45,
+        "input": "topic_notification_level_changed"
+      }
+    ],
+    [
+      "bot_input",
+      {
+        "user_id": 3,
         "post_id": 53,
         "input": "reply"
       }
@@ -733,7 +767,7 @@
     [
       "feature_topic_users",
       {
-        "topic_id": 35
+        "topic_id": 45
       }
     ],
     [
@@ -758,5 +792,6 @@
         "post_id": 53
       }
     ]
-  ]
+  ],
+  "jobs_from_jobs": []
 }

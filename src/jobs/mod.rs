@@ -186,3 +186,21 @@ pub async fn work(state: AppState, stop: impl std::future::Future<Output = ()>) 
         }
     }
 }
+
+/// Runs one job now, whether due or not (a recording runs every job its
+/// requests enqueued, delayed ones too). Its row ends as `perform` leaves it.
+pub async fn perform_now(state: &AppState, id: i64) -> Result<(), sqlx::Error> {
+    let job: Option<Job> = sqlx::query_as(
+        "UPDATE discourse_rs.jobs SET locked_until = clock_timestamp() + make_interval(secs => $2), \
+                attempts = attempts + 1 \
+         WHERE id = $1 AND failed_at IS NULL RETURNING id, name, args, attempts",
+    )
+    .bind(id)
+    .bind(LOCK_SECONDS as f64)
+    .fetch_optional(&state.pool)
+    .await?;
+    if let Some(job) = job {
+        perform(state, job).await?;
+    }
+    Ok(())
+}

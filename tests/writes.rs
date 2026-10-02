@@ -45,7 +45,13 @@ const PLUGIN_KEYS: [&str; 9] = [
 const PLUGIN_JOBS: [&str; 1] = ["bot_input"];
 
 /// Cases the port does not do like Rails yet. The list only shrinks.
-const NOT_YET: &[&str] = &[];
+const NOT_YET: &[&str] = &[
+    "reply_post_alert",
+    "reply_to_post_post_alert",
+    "mention_post_alert",
+    "new_topic_post_alert",
+    "edit_post_alert",
+];
 
 struct Client {
     state: AppState,
@@ -351,7 +357,30 @@ fn short(v: &Value) -> String {
 }
 
 /// Replays one recorded case; the differences, empty when it matches.
-async fn replay(case: &Value) -> Vec<String> {
+/// Jobs in the queue after `after_id`, as (id, name, `[name, args]` with
+/// " in Ns" for a delayed one, as the recorder writes them).
+async fn queued_jobs(pool: &PgPool, after_id: i64) -> Vec<(i64, String, Value)> {
+    let rows: Vec<(i64, String, Value, f64)> = sqlx::query_as(
+        "SELECT id, name, args, EXTRACT(EPOCH FROM run_at - created_at)::float8 \
+         FROM discourse_rs.jobs WHERE id > $1 ORDER BY id",
+    )
+    .bind(after_id)
+    .fetch_all(pool)
+    .await
+    .unwrap();
+    rows.into_iter()
+        .map(|(id, name, args, delay)| {
+            let shown = if delay >= 1.0 {
+                format!("{name} in {}s", delay.round() as i64)
+            } else {
+                name.clone()
+            };
+            (id, name, serde_json::json!([shown, args]))
+        })
+        .collect()
+}
+
+async fn replay(case: &Value, run_jobs: &[String]) -> Vec<String> {
     let db = TestDb::new().await;
     let app_state = state(db.pool.clone(), recorded_config());
     reset_sequences(&db.pool).await;
@@ -388,29 +417,40 @@ async fn replay(case: &Value) -> Vec<String> {
             .await;
         responses.push(serde_json::json!({ "status": status, "body": body }));
     }
-    // The jobs the requests enqueued, as the recorder writes them.
-    let jobs: Vec<(String, Value, f64)> = sqlx::query_as(
-        "SELECT name, args, EXTRACT(EPOCH FROM run_at - created_at)::float8 FROM discourse_rs.jobs ORDER BY id",
-    )
-    .fetch_all(&db.pool)
-    .await
-    .unwrap();
-    let jobs: Vec<Value> = jobs
-        .into_iter()
-        .map(|(name, args, delay)| {
-            let name = if delay >= 1.0 {
-                format!("{name} in {}s", delay.round() as i64)
-            } else {
-                name
-            };
-            serde_json::json!([name, args])
-        })
-        .collect();
-    let ours = serde_json::json!({
+    // The jobs the requests enqueued, as the recorder writes them; then
+    // the case's run_jobs run, and what they enqueue is listed apart.
+    let from_requests = queued_jobs(&db.pool, 0).await;
+    let last_id = from_requests.last().map(|(id, _, _)| *id).unwrap_or(0);
+    let mut job_failures = Vec::new();
+    for (id, name, _) in &from_requests {
+        if !run_jobs.iter().any(|n| n == name) {
+            continue;
+        }
+        discourse_rs::jobs::perform_now(&client.state, *id)
+            .await
+            .unwrap();
+        let error: Option<Option<String>> =
+            sqlx::query_scalar("SELECT last_error FROM discourse_rs.jobs WHERE id = $1")
+                .bind(id)
+                .fetch_optional(&db.pool)
+                .await
+                .unwrap();
+        if let Some(Some(error)) = error {
+            job_failures.push(format!("{name}: {error}"));
+        }
+    }
+    let mut ours = serde_json::json!({
         "responses": responses,
-        "jobs": jobs,
+        "jobs": from_requests.into_iter().map(|(_, _, j)| j).collect::<Vec<_>>(),
         "changes": changes(&db.pool, &tables, &before_sums, &before_rows).await,
     });
+    if !run_jobs.is_empty() {
+        ours["jobs_from_jobs"] = queued_jobs(&db.pool, last_id)
+            .await
+            .into_iter()
+            .map(|(_, _, j)| j)
+            .collect();
+    }
 
     let rails_started = timestamp(case["started_at"].as_str().unwrap()).unwrap();
     let rails_jobs: Vec<Value> = case["jobs"]
@@ -420,8 +460,14 @@ async fn replay(case: &Value) -> Vec<String> {
         .filter(|j| !PLUGIN_JOBS.contains(&j[0].as_str().unwrap_or("")))
         .cloned()
         .collect();
-    let rails = serde_json::json!({ "responses": case["responses"], "changes": case["changes"], "jobs": rails_jobs });
-    let mut out = Vec::new();
+    let mut rails = serde_json::json!({ "responses": case["responses"], "changes": case["changes"], "jobs": rails_jobs });
+    if let Some(from_jobs) = case.get("jobs_from_jobs") {
+        rails["jobs_from_jobs"] = from_jobs.clone();
+    }
+    let mut out: Vec<String> = job_failures
+        .into_iter()
+        .map(|f| format!("job failed: {f}"))
+        .collect();
     differences(
         "",
         &changed_columns(normalize(&rails, rails_started)),
@@ -448,7 +494,15 @@ async fn writes_match_rails() {
             &std::fs::read_to_string(dir.join(format!("{name}.json"))).unwrap(),
         )
         .unwrap();
-        let diff = replay(&recorded).await;
+        let run_jobs: Vec<String> = case["run_jobs"]
+            .as_array()
+            .map(|a| {
+                a.iter()
+                    .filter_map(|n| n.as_str().map(str::to_string))
+                    .collect()
+            })
+            .unwrap_or_default();
+        let diff = replay(&recorded, &run_jobs).await;
         if !diff.is_empty() {
             failing.push(name.to_string());
             if !NOT_YET.contains(&name) || std::env::var("WRITES_DIFF").is_ok() {
