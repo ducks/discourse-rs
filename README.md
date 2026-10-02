@@ -66,7 +66,8 @@ Writes are measured separately: `scripts/record-writes <agent>` runs the
 requests in `parity/writes/cases.json` on the reference inside a
 rolled-back transaction and records responses, row changes and enqueued
 jobs; `tests/writes.rs` replays them on the seed and compares
-(`WRITES_DIFF=1` prints the differences).
+(`WRITES_DIFF=1` prints the differences). Cases replay side by side, each on
+its own database copy, four at a time (`WRITES_JOBS=n` to change it).
 A case with `run_jobs` also runs those of its enqueued jobs (on Rails inside
 the same transaction, here through the job queue), so a job's writes and
 the jobs it enqueues in turn are measured the same way.

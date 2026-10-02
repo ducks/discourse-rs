@@ -811,10 +811,18 @@ async fn writes_match_rails() {
     let cases: Vec<Value> =
         serde_json::from_str(&std::fs::read_to_string(dir.join("cases.json")).unwrap()).unwrap();
     let only = std::env::var("WRITES_ONLY").ok();
-    let mut failing = Vec::new();
-    let mut report = Vec::new();
-    for case in &cases {
-        let name = case["name"].as_str().unwrap();
+    // Each case replays on its own database, so they run side by side:
+    // WRITES_JOBS at a time (4 by default; every database holds up to four
+    // connections, and Postgres allows 100).
+    let jobs: usize = std::env::var("WRITES_JOBS")
+        .ok()
+        .and_then(|j| j.parse().ok())
+        .unwrap_or(4)
+        .max(1);
+    let limit = std::sync::Arc::new(tokio::sync::Semaphore::new(jobs));
+    let mut running = tokio::task::JoinSet::new();
+    for (index, case) in cases.iter().enumerate() {
+        let name = case["name"].as_str().unwrap().to_string();
         if only.as_deref().is_some_and(|o| !name.contains(o)) {
             continue;
         }
@@ -830,7 +838,25 @@ async fn writes_match_rails() {
                     .collect()
             })
             .unwrap_or_default();
-        let diff = replay(&recorded, &run_jobs).await;
+        let limit = limit.clone();
+        running.spawn(async move {
+            let _slot = limit
+                .acquire_owned()
+                .await
+                .expect("the semaphore stays open");
+            (index, name, replay(&recorded, &run_jobs).await)
+        });
+    }
+    let mut results = Vec::new();
+    while let Some(done) = running.join_next().await {
+        results.push(done.expect("a write case panicked"));
+    }
+    // Reported in the order of cases.json.
+    results.sort_by_key(|(index, _, _)| *index);
+    let mut failing: Vec<String> = Vec::new();
+    let mut report = Vec::new();
+    for (_, name, diff) in results {
+        let name = name.as_str();
         if !diff.is_empty() {
             failing.push(name.to_string());
             if !NOT_YET.contains(&name) || std::env::var("WRITES_DIFF").is_ok() {
