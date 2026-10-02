@@ -30,7 +30,7 @@ db_start
 make db-load       # schema + seeds -> discourse_rs_development (FORCE=1 to replace)
 make db-test       # schema + seeds -> discourse_rs_test (template for tests)
 cargo run          # http://127.0.0.1:8080  (BIND_ADDR to change)
-make test
+make test          # cargo nextest run: test binaries side by side
 ```
 
 `seed/fresh_install.sql` is a data snapshot of a freshly provisioned Discourse (a

@@ -99,7 +99,7 @@ build:
 # Integration tests read TEST_DATABASE_URL (set by shell.nix); run
 # `make db-test` once, and again after vendoring a new schema.
 test:
-	cargo test
+	cargo nextest run
 
 # Run clippy with warnings-as-errors (mirrors CI)
 clippy:

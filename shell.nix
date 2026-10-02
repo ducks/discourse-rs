@@ -20,6 +20,8 @@ in
 pkgs.mkShell {
   buildInputs = with pkgs; [
     rust
+    # `make test`: tests across binaries in parallel
+    cargo-nextest
 
     pkg-config
     openssl

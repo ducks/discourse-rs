@@ -39,6 +39,12 @@ jobs:
       - name: Install Rust
         run: rustup show active-toolchain || rustup toolchain install
 
+      # The same nextest as shell.nix carries.
+      - name: Install cargo-nextest
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest@0.9.95
+
       - name: Cache cargo
         uses: actions/cache@v4
         with:
