@@ -101,8 +101,19 @@ Logged-in readers, no writes yet.
 
 ## Milestone 4: writes
 
-- [ ] Cooking pipeline: markdown-it with Discourse's rules (the hard part;
-      likely embed the JS pretty-text bundle first, port later)
+- [x] Cooking, around the renderer: the options and `PrettyText::Helpers`
+      from the database, equal to what Rails recorded (README: Cooking)
+- [ ] Cooking, the renderer: Discourse's markdown rules in Rust (no
+      vendored JavaScript, no embedded engine; decided 2026-10-02), until
+      the recorded corpus cooks byte-equal. The plain `markdown-it` crate
+      starts at 28 of 77 entries; the rules to port are
+      `discourse-markdown-it` (anchors, quotes, mentions, hashtags,
+      emoji, bbcode, uploads, oneboxes, tables, typographer changes), the
+      sanitizer, and the bundled plugins' rules (poll, spoiler, details,
+      footnote, checklist, local dates, math)
+- [ ] Cooking, after the renderer: `PrettyText.cleanup` (mention links,
+      rel attributes, hotlinked media) and CookedPostProcessor (oneboxes,
+      image sizes, lightboxes)
 - [ ] Posting, editing, revisions, likes, flags
 - [ ] Private messages
 - [ ] Uploads (local first, S3 later), optimized images

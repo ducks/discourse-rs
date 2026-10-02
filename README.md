@@ -56,8 +56,9 @@ make vendor-discourse DISCOURSE=~/discourse/discourse [REF=<sha>]
 ```
 
 Copies the files as committed at REF (default HEAD), so uncommitted local
-changes never leak in. Re-snapshot the seed from an agent at the same commit
-and reload the databases afterwards.
+changes never leak in: the schema, core's settings and locales, and the
+bundled plugins' settings and client locales. Re-snapshot the seed from an
+agent at the same commit and reload the databases afterwards.
 
 ## Parity
 
@@ -135,9 +136,35 @@ Behaviors the port hits but hasn't implemented return an explicit 500
 user fields, enabled auth providers, user-selectable color schemes, group
 flair uploads, S3 CDN.
 
-Not yet: plugin settings files and plugin registries, upcoming-change
-default overrides, `mandatory_values`, themeable settings, response
-headers, any authenticated user.
+Not yet: plugin registries, themeable settings, response
+headers.
+
+## Cooking
+
+Rails cooks a post by running Discourse's JavaScript markdown bundle in
+V8. discourse-rs does not vendor that bundle or embed a JavaScript engine:
+cooking is to be Rust rules on a Rust markdown-it, measured against Rails
+like everything else. What exists so far is what surrounds the renderer:
+
+- `pretty_text::options`: the options `PrettyText.markdown` hands the
+  renderer (client site settings of core and the bundled plugins, allowed
+  iframes, paths, hashtag types).
+- `pretty_text::helpers`: `PrettyText::Helpers`, the lookups the rules
+  make while cooking: translations, avatars, primary groups, upload URLs
+  (Base62 short urls), topic titles for quotes, and hashtags (categories
+  and tags under the cooking user's permissions).
+- `make record-pretty-text AGENT=rs-parity` records, from Rails on the
+  reference: those options, every helper call with its result, and
+  `PrettyText.markdown`'s HTML for a corpus of 51 feature samples and
+  the seeded posts. `tests/pretty_text.rs` holds the options and the
+  helpers to that recording; the corpus is the target the renderer has
+  to reach, byte for byte.
+
+Refused with an explicit error rather than answered differently from
+Rails: custom emoji, the emoji deny list, watched words, secure uploads,
+uploads behind a CDN or S3, and a hashtag chat would resolve to a channel
+the cooking user can see. What plugins add to the options (chat's,
+discobot's iframe) is not produced.
 
 ## Pages
 

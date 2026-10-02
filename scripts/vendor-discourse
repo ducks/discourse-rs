@@ -59,6 +59,19 @@ done < <(git -C "$src" ls-tree -r --name-only "$commit" plugins \
   | grep -E '^plugins/[^/]+/config/settings.yml$' | LC_ALL=C sort)
 echo "vendored the settings of $plugins plugins"
 
+# The bundled plugins' client translations (`js.poll.*` and the like, which
+# cooking reads), one YAML document per plugin in the same order.
+plugin_client="$dest/config/locales/plugin_client.en.yml"
+: > "$plugin_client"
+while read -r f; do
+  {
+    echo "--- # $f"
+    { git -C "$src" show "$commit:$f"; echo; } | sed -e '/^---[[:space:]]*$/d'
+  } >> "$plugin_client"
+done < <(git -C "$src" ls-tree -r --name-only "$commit" plugins \
+  | grep -E '^plugins/[^/]+/config/locales/client\.en\.yml$' | LC_ALL=C sort)
+echo "vendored $(grep -c '^--- # ' "$plugin_client") plugin client locales"
+
 cat > "$dest/DISCOURSE_REF" <<EOF
 commit=$commit
 committed_at=$committed_at

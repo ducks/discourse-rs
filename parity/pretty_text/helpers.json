@@ -1,0 +1,539 @@
+[
+  {
+    "method": "t",
+    "args": [
+      "post.heading_anchor",
+      null
+    ],
+    "result": "Heading link"
+  },
+  {
+    "method": "avatar_template",
+    "args": [
+      "user1"
+    ],
+    "result": "//localhost:3042/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png"
+  },
+  {
+    "method": "lookup_primary_user_group",
+    "args": [
+      "user1"
+    ],
+    "result": ""
+  },
+  {
+    "method": "format_username",
+    "args": [
+      "user1"
+    ],
+    "result": "user1"
+  },
+  {
+    "method": "avatar_template",
+    "args": [
+      "user0"
+    ],
+    "result": "//localhost:3042/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png"
+  },
+  {
+    "method": "lookup_primary_user_group",
+    "args": [
+      "user0"
+    ],
+    "result": ""
+  },
+  {
+    "method": "format_username",
+    "args": [
+      "user0"
+    ],
+    "result": "user0"
+  },
+  {
+    "method": "get_topic_info",
+    "args": [
+      35
+    ],
+    "result": {
+      "title": "Parity fixture: replies and posters",
+      "href": "http://localhost:3042/t/parity-fixture-replies-and-posters/35"
+    }
+  },
+  {
+    "method": "avatar_template",
+    "args": [
+      "admin"
+    ],
+    "result": "//localhost:3042/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png"
+  },
+  {
+    "method": "lookup_primary_user_group",
+    "args": [
+      "admin"
+    ],
+    "result": ""
+  },
+  {
+    "method": "format_username",
+    "args": [
+      "admin"
+    ],
+    "result": "admin"
+  },
+  {
+    "method": "get_topic_info",
+    "args": [
+      2
+    ],
+    "result": {
+      "title": "On another topic",
+      "href": "/t/2"
+    }
+  },
+  {
+    "method": "get_topic_info",
+    "args": [
+      999999
+    ],
+    "result": null
+  },
+  {
+    "method": "avatar_template",
+    "args": [
+      "nobody"
+    ],
+    "result": ""
+  },
+  {
+    "method": "lookup_primary_user_group",
+    "args": [
+      "nobody"
+    ],
+    "result": ""
+  },
+  {
+    "method": "format_username",
+    "args": [
+      "nobody"
+    ],
+    "result": "nobody"
+  },
+  {
+    "method": "hashtag_lookup",
+    "args": [
+      "general",
+      3,
+      [
+        "category",
+        "tag",
+        "channel"
+      ]
+    ],
+    "result": {
+      "relative_url": "/c/general/4",
+      "text": "General",
+      "description": "Create topics here that don’t fit into any other existing category.",
+      "icon": "folder",
+      "colors": [
+        "25AAE2"
+      ],
+      "type": "category",
+      "ref": "general",
+      "slug": "general",
+      "id": 4,
+      "style_type": "emoji",
+      "emoji": "blue_book"
+    }
+  },
+  {
+    "method": "hashtag_lookup",
+    "args": [
+      "site-feedback",
+      3,
+      [
+        "category",
+        "tag",
+        "channel"
+      ]
+    ],
+    "result": {
+      "relative_url": "/c/site-feedback/2",
+      "text": "Site Feedback",
+      "description": "Discussion about this site, its organization, how it works, and how we can improve it.",
+      "icon": "folder",
+      "colors": [
+        "808281"
+      ],
+      "type": "category",
+      "ref": "site-feedback",
+      "slug": "site-feedback",
+      "id": 2,
+      "style_type": "emoji",
+      "emoji": "thought_balloon"
+    }
+  },
+  {
+    "method": "hashtag_lookup",
+    "args": [
+      "howto",
+      3,
+      [
+        "category",
+        "tag",
+        "channel"
+      ]
+    ],
+    "result": {
+      "relative_url": "/tag/howto/1",
+      "text": "howto",
+      "description": null,
+      "icon": "tag",
+      "colors": null,
+      "type": "tag",
+      "ref": "howto",
+      "slug": "howto",
+      "id": 1,
+      "style_type": "icon",
+      "emoji": null
+    }
+  },
+  {
+    "method": "hashtag_lookup",
+    "args": [
+      "guide",
+      3,
+      [
+        "category",
+        "tag",
+        "channel"
+      ]
+    ],
+    "result": {
+      "relative_url": "/tag/guide/2",
+      "text": "guide",
+      "description": null,
+      "icon": "tag",
+      "colors": null,
+      "type": "tag",
+      "ref": "guide",
+      "slug": "guide",
+      "id": 2,
+      "style_type": "icon",
+      "emoji": null
+    }
+  },
+  {
+    "method": "hashtag_lookup",
+    "args": [
+      "nothing",
+      3,
+      [
+        "category",
+        "tag",
+        "channel"
+      ]
+    ],
+    "result": null
+  },
+  {
+    "method": "hashtag_lookup",
+    "args": [
+      "guide::tag",
+      3,
+      [
+        "category",
+        "tag",
+        "channel"
+      ]
+    ],
+    "result": {
+      "relative_url": "/tag/guide/2",
+      "text": "guide",
+      "description": null,
+      "icon": "tag",
+      "colors": null,
+      "type": "tag",
+      "ref": "guide::tag",
+      "slug": "guide",
+      "id": 2,
+      "style_type": "icon",
+      "emoji": null
+    }
+  },
+  {
+    "method": "hashtag_lookup",
+    "args": [
+      "general::category",
+      3,
+      [
+        "category",
+        "tag",
+        "channel"
+      ]
+    ],
+    "result": {
+      "relative_url": "/c/general/4",
+      "text": "General",
+      "description": "Create topics here that don’t fit into any other existing category.",
+      "icon": "folder",
+      "colors": [
+        "25AAE2"
+      ],
+      "type": "category",
+      "ref": "general::category",
+      "slug": "general",
+      "id": 4,
+      "style_type": "emoji",
+      "emoji": "blue_book"
+    }
+  },
+  {
+    "method": "hashtag_lookup",
+    "args": [
+      "general:sub-general",
+      3,
+      [
+        "category",
+        "tag",
+        "channel"
+      ]
+    ],
+    "result": {
+      "relative_url": "/c/general/sub-general/34",
+      "text": "General > Sub General",
+      "description": null,
+      "icon": "folder",
+      "colors": [
+        "25AAE2",
+        "AB9364"
+      ],
+      "type": "category",
+      "ref": "general:sub-general",
+      "slug": "sub-general",
+      "id": 34,
+      "style_type": "square",
+      "emoji": null
+    }
+  },
+  {
+    "method": "hashtag_lookup",
+    "args": [
+      "staff",
+      3,
+      [
+        "category",
+        "tag",
+        "channel"
+      ]
+    ],
+    "result": null
+  },
+  {
+    "method": "hashtag_lookup",
+    "args": [
+      "staff",
+      1,
+      [
+        "category",
+        "tag",
+        "channel"
+      ]
+    ],
+    "result": {
+      "relative_url": "/c/staff/3",
+      "text": "Staff",
+      "description": "Private category for staff discussions. Topics are only visible to admins and moderators.",
+      "icon": "folder",
+      "colors": [
+        "E45735"
+      ],
+      "type": "category",
+      "ref": "staff",
+      "slug": "staff",
+      "id": 3,
+      "style_type": "emoji",
+      "emoji": "shield"
+    }
+  },
+  {
+    "method": "hashtag_lookup",
+    "args": [
+      "howto",
+      1,
+      [
+        "category",
+        "tag",
+        "channel"
+      ]
+    ],
+    "result": {
+      "relative_url": "/tag/howto/1",
+      "text": "howto",
+      "description": null,
+      "icon": "tag",
+      "colors": null,
+      "type": "tag",
+      "ref": "howto",
+      "slug": "howto",
+      "id": 1,
+      "style_type": "icon",
+      "emoji": null
+    }
+  },
+  {
+    "method": "hashtag_lookup",
+    "args": [
+      "general",
+      null,
+      [
+        "category",
+        "tag",
+        "channel"
+      ]
+    ],
+    "result": {
+      "relative_url": "/c/general/4",
+      "text": "General",
+      "description": "Create topics here that don’t fit into any other existing category.",
+      "icon": "folder",
+      "colors": [
+        "25AAE2"
+      ],
+      "type": "category",
+      "ref": "general",
+      "slug": "general",
+      "id": 4,
+      "style_type": "emoji",
+      "emoji": "blue_book"
+    }
+  },
+  {
+    "method": "hashtag_lookup",
+    "args": [
+      "staff",
+      null,
+      [
+        "category",
+        "tag",
+        "channel"
+      ]
+    ],
+    "result": null
+  },
+  {
+    "method": "hashtag_lookup",
+    "args": [
+      "howto",
+      null,
+      [
+        "category",
+        "tag",
+        "channel"
+      ]
+    ],
+    "result": {
+      "relative_url": "/tag/howto/1",
+      "text": "howto",
+      "description": null,
+      "icon": "tag",
+      "colors": null,
+      "type": "tag",
+      "ref": "howto",
+      "slug": "howto",
+      "id": 1,
+      "style_type": "icon",
+      "emoji": null
+    }
+  },
+  {
+    "method": "lookup_upload_urls",
+    "args": [
+      [
+        "upload://abcdefghij1234567890.png"
+      ]
+    ],
+    "result": {}
+  },
+  {
+    "method": "lookup_upload_urls",
+    "args": [
+      [
+        "upload://zyxwvutsrq0987654321.pdf"
+      ]
+    ],
+    "result": {}
+  },
+  {
+    "method": "t",
+    "args": [
+      "poll.voters",
+      {
+        "count": 0
+      }
+    ],
+    "result": "voters"
+  },
+  {
+    "method": "lookup_upload_urls",
+    "args": [
+      [
+        "upload://aaaaaaaaaaaaaaaaaaaa.png",
+        "upload://bbbbbbbbbbbbbbbbbbbb.png"
+      ]
+    ],
+    "result": {}
+  },
+  {
+    "method": "lookup_upload_urls",
+    "args": [
+      [
+        "upload://cccccccccccccccccccc.mp4",
+        "upload://dddddddddddddddddddd.mp3"
+      ]
+    ],
+    "result": {}
+  },
+  {
+    "method": "lookup_upload_urls",
+    "args": [
+      [
+        "upload://qa4V5109J7tySkPok8r3aBAruY1.png",
+        "upload://qa4V5109J7tySkPok8r3aBAruY1.png"
+      ]
+    ],
+    "result": {
+      "upload://qa4V5109J7tySkPok8r3aBAruY1.png": {
+        "url": "/uploads/default/original/1X/b75c33ea141d3a8d82fda3117d09fe33a664fec9.png",
+        "short_path": "/uploads/short-url/qa4V5109J7tySkPok8r3aBAruY1.png",
+        "base62_sha1": "qa4V5109J7tySkPok8r3aBAruY1"
+      }
+    }
+  },
+  {
+    "method": "hashtag_lookup",
+    "args": [
+      "site-feedback",
+      -1,
+      [
+        "category",
+        "tag",
+        "channel"
+      ]
+    ],
+    "result": {
+      "relative_url": "/c/site-feedback/2",
+      "text": "Site Feedback",
+      "description": "Discussion about this site, its organization, how it works, and how we can improve it.",
+      "icon": "folder",
+      "colors": [
+        "808281"
+      ],
+      "type": "category",
+      "ref": "site-feedback",
+      "slug": "site-feedback",
+      "id": 2,
+      "style_type": "emoji",
+      "emoji": "thought_balloon"
+    }
+  }
+]
