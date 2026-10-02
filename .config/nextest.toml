@@ -10,3 +10,8 @@ test-threads = 8
 [[profile.default.overrides]]
 filter = "test(writes_match_rails)"
 slow-timeout = "180s"
+
+# CI runners have four cores shared with Postgres, and the tests are CPU
+# bound: more at once than cores only slows each down.
+[profile.ci]
+test-threads = "num-cpus"
