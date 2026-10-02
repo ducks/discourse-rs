@@ -9,7 +9,7 @@
 
 use markdown_it::Node;
 use markdown_it::parser::inline::Text;
-use markdown_it::plugins::cmark::inline::autolink::Autolink;
+
 use regex::Regex;
 use std::sync::LazyLock as Lazy;
 
@@ -114,7 +114,7 @@ pub fn apply(root: &mut Node) {
             }
             return;
         }
-        let in_autolink = in_autolink || node.is::<Autolink>();
+        let in_autolink = in_autolink || super::linkify::is_auto_link(node);
         for child in node.children.iter_mut() {
             visit(child, in_autolink);
         }

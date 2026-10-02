@@ -89,8 +89,12 @@ if [ -z "$gem_dist" ]; then
   exit 1
 fi
 mkdir -p "$dest/../discourse-emojis/dist"
-for f in emojis.json aliases.json tonable_emojis.json; do
+for f in emojis.json aliases.json tonable_emojis.json translations.json; do
   cp "$gem_dist/$f" "$dest/../discourse-emojis/dist/$f"
 done
 echo "discourse_emojis=$gem_version" >> "$dest/DISCOURSE_REF"
+# The `?v=` on emoji image URLs (frontend/pretty-text/addon/emoji/version.js).
+image_version="$(git -C "$src" show "$commit:frontend/pretty-text/addon/emoji/version.js" \
+  | sed -n 's/^export const IMAGE_VERSION = "\(.*\)";$/\1/p')"
+echo "emoji_image_version=$image_version" >> "$dest/DISCOURSE_REF"
 echo "vendored discourse-emojis $gem_version"

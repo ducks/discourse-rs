@@ -5,7 +5,7 @@
 use markdown_it::common::utils::is_punct_char;
 
 use markdown_it::parser::inline::Text;
-use markdown_it::plugins::cmark::inline::autolink::Autolink;
+
 use markdown_it::plugins::cmark::inline::link::Link;
 use markdown_it::{Node, NodeValue, Renderer};
 use regex::Regex;
@@ -84,7 +84,7 @@ pub fn apply(root: &mut Node, settings: &RenderSettings) {
         return;
     }
     fn visit(node: &mut Node) {
-        if node.is::<Link>() || node.is::<Autolink>() {
+        if node.is::<Link>() || super::linkify::is_auto_link(node) {
             return;
         }
         let mut i = 0;

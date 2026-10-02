@@ -149,6 +149,107 @@ pub fn has_emoji_code(s: &str) -> bool {
     false
 }
 
+const TRANSLATIONS_JSON: &str = include_str!("../vendor/discourse-emojis/dist/translations.json");
+const DISCOURSE_REF: &str = include_str!("../vendor/discourse/DISCOURSE_REF");
+
+/// What cooking needs to know about emoji, built once.
+pub struct EmojiData {
+    /// `emojis`: the canonical names.
+    names: std::collections::HashSet<String>,
+    /// `aliasMap`: alias -> canonical name.
+    aliases: HashMap<String, String>,
+    /// `Emoji.unicode_replacements`: the emoji itself -> its name
+    /// (`name:tN` for a skin tone).
+    pub unicode: HashMap<String, String>,
+    /// The longest key of `unicode`, in chars.
+    pub unicode_max_chars: usize,
+    /// `translations`: emoticon -> name.
+    pub translations: HashMap<String, String>,
+}
+
+pub static DATA: LazyLock<EmojiData> = LazyLock::new(|| {
+    let emojis: Vec<EmojiEntry> = serde_json::from_str(EMOJIS_JSON).expect("vendored emojis.json");
+    let alias_lists: HashMap<String, Vec<String>> =
+        serde_json::from_str(ALIASES_JSON).expect("vendored aliases.json");
+    let tonable: std::collections::HashSet<String> =
+        serde_json::from_str::<Vec<String>>(TONABLE_JSON)
+            .expect("vendored tonable_emojis.json")
+            .into_iter()
+            .collect();
+    let translations: HashMap<String, String> =
+        serde_json::from_str(TRANSLATIONS_JSON).expect("vendored translations.json");
+
+    let mut aliases = HashMap::new();
+    for (name, list) in alias_lists {
+        for alias in list {
+            aliases.insert(alias, name.clone());
+        }
+    }
+
+    // Emoji.unicode_replacements
+    let mut unicode = HashMap::new();
+    for e in &emojis {
+        // Kept as symbols.
+        if matches!(
+            e.name.as_str(),
+            "registered" | "copyright" | "trade_mark" | "left_right_arrow"
+        ) {
+            continue;
+        }
+        let points = code_to_codepoints(&e.code);
+        if points.is_empty() {
+            continue;
+        }
+        unicode.insert(codepoints_to_string(&points), e.name.clone());
+        if tonable.contains(&e.name) {
+            for (i, tone) in TONES.iter().enumerate() {
+                let mut toned = points.clone();
+                if toned.get(1) == Some(&0xFE0F) {
+                    toned.remove(1);
+                }
+                toned.insert(1.min(toned.len()), *tone);
+                unicode.insert(
+                    codepoints_to_string(&toned),
+                    format!("{}:t{}", e.name, i + 2),
+                );
+            }
+        }
+    }
+    for (symbol, name) in [
+        ("\u{2639}", "frowning"),
+        ("\u{263B}", "slight_smile"),
+        ("\u{2661}", "heart"),
+        ("\u{2665}", "heart"),
+    ] {
+        unicode.insert(symbol.to_string(), name.to_string());
+    }
+    let unicode_max_chars = unicode.keys().map(|k| k.chars().count()).max().unwrap_or(0);
+
+    EmojiData {
+        names: emojis.into_iter().map(|e| e.name).collect(),
+        aliases,
+        unicode,
+        unicode_max_chars,
+        translations,
+    }
+});
+
+impl EmojiData {
+    /// `emojis.has(name) || aliasMap.has(name)`
+    pub fn exists(&self, name: &str) -> bool {
+        self.names.contains(name) || self.aliases.contains_key(name)
+    }
+}
+
+/// `IMAGE_VERSION` of pretty-text/emoji/version.js: the `?v=` on emoji
+/// image URLs, recorded by scripts/vendor-discourse.
+pub fn image_version() -> &'static str {
+    DISCOURSE_REF
+        .lines()
+        .find_map(|l| l.strip_prefix("emoji_image_version="))
+        .unwrap_or("")
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

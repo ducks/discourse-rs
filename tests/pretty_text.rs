@@ -239,6 +239,27 @@ async fn unported_inputs_are_refused() {
     assert!(matches!(error, CookError::Unsupported(_)), "{error}");
 }
 
+/// Where two strings part ways, with some of what surrounds it.
+fn first_difference(rails: &str, ours: &str) -> String {
+    let rails: Vec<char> = rails.chars().collect();
+    let ours: Vec<char> = ours.chars().collect();
+    let at = rails
+        .iter()
+        .zip(ours.iter())
+        .position(|(a, b)| a != b)
+        .unwrap_or(rails.len().min(ours.len()));
+    let window = |chars: &[char]| -> String {
+        let from = at.saturating_sub(70);
+        let to = (at + 150).min(chars.len());
+        chars[from.min(to)..to].iter().collect()
+    };
+    format!(
+        "  at {at}\n  rails: {:?}\n  ours:  {:?}",
+        window(&rails),
+        window(&ours)
+    )
+}
+
 /// Corpus entries the renderer does not cook like Rails yet. The list
 /// only shrinks: an entry that starts matching has to be taken out, one
 /// that stops matching fails the test.
@@ -253,14 +274,9 @@ const NOT_COOKED_YET: &[&str] = &[
     "sample-14",
     "sample-15",
     "sample-16",
-    "sample-17",
-    "sample-18",
-    "sample-19",
-    "sample-20",
     "sample-21",
     "sample-22",
-    "sample-24",
-    "sample-26",
+    "sample-25",
     "sample-27",
     "sample-28",
     "sample-29",
@@ -269,16 +285,12 @@ const NOT_COOKED_YET: &[&str] = &[
     "sample-32",
     "sample-34",
     "sample-35",
-    "sample-38",
-    "sample-40",
-    "sample-44",
     "sample-47",
     "sample-48",
     "sample-49",
     "sample-50",
     "post-4",
     "post-6",
-    "post-7",
 ];
 
 /// PrettyText.markdown over the recorded corpus (feature samples and every
@@ -292,7 +304,8 @@ async fn cooking_matches_rails() {
     let settings = SiteSettings::load(&mut conn, &host.site_setting_defs, &host.config.globals)
         .await
         .unwrap();
-    let render_settings = RenderSettings::from_site_settings(&settings, &host.i18n).unwrap();
+    let render_settings =
+        RenderSettings::from_site_settings(&settings, &host.i18n, &host.config).unwrap();
     let corpus = recorded("corpus.json");
     let corpus = corpus.as_array().unwrap();
     assert!(corpus.len() > 70, "{} entries", corpus.len());
@@ -302,11 +315,12 @@ async fn cooking_matches_rails() {
     for entry in corpus {
         let id = entry["id"].as_str().unwrap();
         let rails = entry["markdown"].as_str().unwrap();
-        let ours = render(entry["raw"].as_str().unwrap(), &render_settings);
+        let ours = render(entry["raw"].as_str().unwrap(), &render_settings)
+            .unwrap_or_else(|e| format!("error: {e}"));
         if ours != rails {
             missed.push(id);
             if !NOT_COOKED_YET.contains(&id) || std::env::var("COOK_DIFF").is_ok() {
-                details.push(format!("{id}\n  rails: {rails:?}\n  ours:  {ours:?}"));
+                details.push(format!("{id}\n{}", first_difference(rails, &ours)));
             }
         }
     }

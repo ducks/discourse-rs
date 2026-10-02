@@ -5,6 +5,7 @@ use markdown_it::plugins::cmark::block::fence::CodeFence;
 use markdown_it::{Node, NodeValue, Renderer};
 
 use super::RenderSettings;
+use crate::pretty_text::sanitizer::AllowList;
 
 /// `TEXT_CODE_CLASSES`
 const TEXT_CODE_CLASSES: [&str; 3] = ["text", "pre", "plain"];
@@ -107,5 +108,15 @@ pub fn apply(root: &mut Node, settings: &RenderSettings) {
             let html = html(fence, settings);
             node.replace(Fence { html });
         }
+    });
+}
+
+pub fn allow(list: &mut AllowList) {
+    list.allow(&["pre[data-code-*]"]);
+    list.allow_custom(|tag, name, value| {
+        tag == "code"
+            && name == "class"
+            && value.len() > "lang-".len()
+            && value.starts_with("lang-")
     });
 }

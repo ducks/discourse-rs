@@ -3,6 +3,8 @@
 use markdown_it::plugins::extra::tables::Table;
 use markdown_it::{Node, NodeValue, Renderer};
 
+use crate::pretty_text::sanitizer::AllowList;
+
 #[derive(Debug)]
 struct MdTable;
 
@@ -29,4 +31,29 @@ pub fn apply(root: &mut Node) {
             *node = wrapper;
         }
     });
+}
+
+pub fn allow(list: &mut AllowList) {
+    // The alignment markdown-it writes on cells, and nothing else.
+    list.allow_custom(|tag, name, value| {
+        (tag == "th" || tag == "td")
+            && name == "style"
+            && matches!(
+                value,
+                "text-align:right" | "text-align:left" | "text-align:center"
+            )
+    });
+    list.allow(&[
+        "table",
+        "tbody",
+        "thead",
+        "tr",
+        "th",
+        "th[colspan]",
+        "th[rowspan]",
+        "td",
+        "td[colspan]",
+        "td[rowspan]",
+        "div.md-table",
+    ]);
 }

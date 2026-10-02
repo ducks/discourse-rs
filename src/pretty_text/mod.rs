@@ -10,6 +10,7 @@
 
 pub mod helpers;
 pub mod render;
+pub mod sanitizer;
 
 use std::sync::Arc;
 
