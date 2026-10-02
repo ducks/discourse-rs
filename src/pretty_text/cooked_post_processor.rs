@@ -199,7 +199,7 @@ fn without_user_id(href: &str, hostname: &str) -> Result<Option<String>, CookErr
 }
 
 /// `post_process` on `Post#cook`'s html: what the job writes.
-async fn post_process(
+pub(crate) async fn post_process(
     conn: &mut PgConnection,
     settings: &SiteSettings,
     config: &Config,

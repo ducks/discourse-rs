@@ -3,102 +3,382 @@
     "name": "reply",
     "user": "user1",
     "requests": [
-      { "method": "POST", "path": "/posts.json", "params": { "topic_id": 35, "raw": "A reply from user1 to the replies and posters topic, written for the posting slice." } }
+      {
+        "method": "POST",
+        "path": "/posts.json",
+        "params": {
+          "topic_id": 35,
+          "raw": "A reply from user1 to the replies and posters topic, written for the posting slice."
+        }
+      }
     ]
   },
   {
     "name": "reply_to_post",
     "user": "user1",
     "requests": [
-      { "method": "POST", "path": "/posts.json", "params": { "topic_id": 35, "reply_to_post_number": 1, "raw": "Replying to the first post directly, which records who it answers." } }
+      {
+        "method": "POST",
+        "path": "/posts.json",
+        "params": {
+          "topic_id": 35,
+          "reply_to_post_number": 1,
+          "raw": "Replying to the first post directly, which records who it answers."
+        }
+      }
     ]
   },
   {
     "name": "reply_by_tl1",
     "user": "user0",
     "requests": [
-      { "method": "POST", "path": "/posts.json", "params": { "topic_id": 35, "raw": "A reply from user0, who is at trust level one, to the same topic." } }
+      {
+        "method": "POST",
+        "path": "/posts.json",
+        "params": {
+          "topic_id": 35,
+          "raw": "A reply from user0, who is at trust level one, to the same topic."
+        }
+      }
     ]
   },
   {
     "name": "reply_with_markdown",
     "user": "user1",
     "requests": [
-      { "method": "POST", "path": "/posts.json", "params": { "topic_id": 35, "raw": "## A heading\n\nWith **bold**, a mention of @user0, #general and :smile:, and a [link](https://example.com/page)." } }
+      {
+        "method": "POST",
+        "path": "/posts.json",
+        "params": {
+          "topic_id": 35,
+          "raw": "## A heading\n\nWith **bold**, a mention of @user0, #general and :smile:, and a [link](https://example.com/page)."
+        }
+      }
     ]
   },
   {
     "name": "new_topic",
     "user": "user1",
     "requests": [
-      { "method": "POST", "path": "/posts.json", "params": { "title": "A new topic from user1 for the posting slice", "category": 4, "raw": "The first post of a topic user1 creates through the posting endpoint." } }
+      {
+        "method": "POST",
+        "path": "/posts.json",
+        "params": {
+          "title": "A new topic from user1 for the posting slice",
+          "category": 4,
+          "raw": "The first post of a topic user1 creates through the posting endpoint."
+        }
+      }
     ]
   },
   {
     "name": "reply_too_short",
     "user": "user1",
     "requests": [
-      { "method": "POST", "path": "/posts.json", "params": { "topic_id": 35, "raw": "short" } }
+      {
+        "method": "POST",
+        "path": "/posts.json",
+        "params": {
+          "topic_id": 35,
+          "raw": "short"
+        }
+      }
     ]
   },
   {
     "name": "reply_to_restricted_topic",
     "user": "user1",
     "requests": [
-      { "method": "POST", "path": "/posts.json", "params": { "topic_id": 2, "raw": "A reply to a staff topic user1 cannot see, which has to be refused." } }
+      {
+        "method": "POST",
+        "path": "/posts.json",
+        "params": {
+          "topic_id": 2,
+          "raw": "A reply to a staff topic user1 cannot see, which has to be refused."
+        }
+      }
     ]
   },
   {
     "name": "reply_to_closed_topic",
     "user": "user1",
     "requests": [
-      { "method": "POST", "path": "/posts.json", "params": { "topic_id": 37, "raw": "A reply to a closed topic, which a regular user cannot make there." } }
+      {
+        "method": "POST",
+        "path": "/posts.json",
+        "params": {
+          "topic_id": 37,
+          "raw": "A reply to a closed topic, which a regular user cannot make there."
+        }
+      }
     ]
   },
   {
     "name": "reply_anonymous",
     "user": null,
     "requests": [
-      { "method": "POST", "path": "/posts.json", "params": { "topic_id": 35, "raw": "A reply without logging in, which has to be refused at the door." } }
+      {
+        "method": "POST",
+        "path": "/posts.json",
+        "params": {
+          "topic_id": 35,
+          "raw": "A reply without logging in, which has to be refused at the door."
+        }
+      }
     ]
   },
   {
     "name": "edit",
     "user": "user1",
     "requests": [
-      { "method": "PUT", "path": "/posts/36.json", "params": { "post": { "raw": "Reply one from user1, edited for the posting slice so it has a revision.", "edit_reason": "fixing it up" } } },
-      { "method": "GET", "path": "/posts/36/revisions/2.json" },
-      { "method": "GET", "path": "/posts/36/revisions/latest.json" }
+      {
+        "method": "PUT",
+        "path": "/posts/36.json",
+        "params": {
+          "post": {
+            "raw": "Reply one from user1, edited for the posting slice so it has a revision.",
+            "edit_reason": "fixing it up"
+          }
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/posts/36/revisions/2.json"
+      },
+      {
+        "method": "GET",
+        "path": "/posts/36/revisions/latest.json"
+      }
     ]
   },
   {
     "name": "edit_someone_elses_post",
     "user": "user1",
     "requests": [
-      { "method": "PUT", "path": "/posts/52.json", "params": { "post": { "raw": "user1 trying to edit a post that user0 wrote, which is not allowed." } } }
+      {
+        "method": "PUT",
+        "path": "/posts/52.json",
+        "params": {
+          "post": {
+            "raw": "user1 trying to edit a post that user0 wrote, which is not allowed."
+          }
+        }
+      }
     ]
   },
   {
     "name": "edit_conflict",
     "user": "user1",
     "requests": [
-      { "method": "PUT", "path": "/posts/36.json", "params": { "post": { "raw": "An edit made against text that is no longer the post's text.", "original_text": "not what the post says" } } }
+      {
+        "method": "PUT",
+        "path": "/posts/36.json",
+        "params": {
+          "post": {
+            "raw": "An edit made against text that is no longer the post's text.",
+            "original_text": "not what the post says"
+          }
+        }
+      }
     ]
   },
   {
     "name": "edit_by_admin",
     "user": "admin",
     "requests": [
-      { "method": "PUT", "path": "/posts/36.json", "params": { "post": { "raw": "Reply one from user1, as an admin rewrote it for the posting slice." } } },
-      { "method": "GET", "path": "/posts/36/revisions/latest.json" }
+      {
+        "method": "PUT",
+        "path": "/posts/36.json",
+        "params": {
+          "post": {
+            "raw": "Reply one from user1, as an admin rewrote it for the posting slice."
+          }
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/posts/36/revisions/latest.json"
+      }
     ]
   },
   {
     "name": "revision_not_found",
     "user": "user1",
     "requests": [
-      { "method": "GET", "path": "/posts/36/revisions/2.json" },
-      { "method": "GET", "path": "/posts/36/revisions/1.json" }
+      {
+        "method": "GET",
+        "path": "/posts/36/revisions/2.json"
+      },
+      {
+        "method": "GET",
+        "path": "/posts/36/revisions/1.json"
+      }
+    ]
+  },
+  {
+    "name": "reply_feature_topic_users",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/posts.json",
+        "params": {
+          "topic_id": 35,
+          "raw": "A reply from user1 to the replies and posters topic, written for the posting slice."
+        }
+      }
+    ],
+    "run_jobs": [
+      "feature_topic_users"
+    ]
+  },
+  {
+    "name": "new_topic_feature_topic_users",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/posts.json",
+        "params": {
+          "title": "A new topic from user1 for the posting slice",
+          "category": 4,
+          "raw": "The first post of a topic user1 creates through the posting endpoint."
+        }
+      }
+    ],
+    "run_jobs": [
+      "feature_topic_users"
+    ]
+  },
+  {
+    "name": "reply_process_post",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/posts.json",
+        "params": {
+          "topic_id": 35,
+          "raw": "A reply from user1 to the replies and posters topic, written for the posting slice."
+        }
+      }
+    ],
+    "run_jobs": [
+      "process_post"
+    ]
+  },
+  {
+    "name": "edit_process_post",
+    "user": "admin",
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/posts/36.json",
+        "params": {
+          "post": {
+            "raw": "Reply one from user1, as an admin rewrote it for the posting slice."
+          }
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/posts/36/revisions/latest.json"
+      }
+    ],
+    "run_jobs": [
+      "process_post"
+    ]
+  },
+  {
+    "name": "reply_post_alert",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/posts.json",
+        "params": {
+          "topic_id": 35,
+          "raw": "A reply from user1 to the replies and posters topic, written for the posting slice."
+        }
+      }
+    ],
+    "run_jobs": [
+      "post_alert"
+    ]
+  },
+  {
+    "name": "reply_to_post_post_alert",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/posts.json",
+        "params": {
+          "topic_id": 35,
+          "reply_to_post_number": 1,
+          "raw": "Replying to the first post directly, which records who it answers."
+        }
+      }
+    ],
+    "run_jobs": [
+      "post_alert"
+    ]
+  },
+  {
+    "name": "mention_post_alert",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/posts.json",
+        "params": {
+          "topic_id": 35,
+          "raw": "## A heading\n\nWith **bold**, a mention of @user0, #general and :smile:, and a [link](https://example.com/page)."
+        }
+      }
+    ],
+    "run_jobs": [
+      "post_alert"
+    ]
+  },
+  {
+    "name": "new_topic_post_alert",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/posts.json",
+        "params": {
+          "title": "A new topic from user1 for the posting slice",
+          "category": 4,
+          "raw": "The first post of a topic user1 creates through the posting endpoint."
+        }
+      }
+    ],
+    "run_jobs": [
+      "post_alert"
+    ]
+  },
+  {
+    "name": "edit_post_alert",
+    "user": "admin",
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/posts/36.json",
+        "params": {
+          "post": {
+            "raw": "Reply one from user1, as an admin rewrote it for the posting slice."
+          }
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/posts/36/revisions/latest.json"
+      }
+    ],
+    "run_jobs": [
+      "post_alert"
     ]
   }
 ]

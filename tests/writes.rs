@@ -41,6 +41,9 @@ const PLUGIN_KEYS: [&str; 9] = [
     "can_vote",
 ];
 
+/// Jobs plugins enqueue on the reference (discourse-narrative-bot).
+const PLUGIN_JOBS: [&str; 1] = ["bot_input"];
+
 /// Cases the port does not do like Rails yet. The list only shrinks.
 const NOT_YET: &[&str] = &[];
 
@@ -161,7 +164,8 @@ async fn reset_sequences(pool: &PgPool) {
          JOIN pg_depend d ON d.objid = s.oid AND d.deptype = 'a' \
          JOIN pg_class t ON t.oid = d.refobjid \
          JOIN pg_attribute a ON a.attrelid = t.oid AND a.attnum = d.refobjsubid \
-         WHERE s.relkind = 'S'",
+         JOIN pg_namespace n ON n.oid = t.relnamespace \
+         WHERE s.relkind = 'S' AND n.nspname = 'public'",
     )
     .fetch_all(pool)
     .await
@@ -347,10 +351,65 @@ fn short(v: &Value) -> String {
 }
 
 /// Replays one recorded case; the differences, empty when it matches.
-async fn replay(case: &Value) -> Vec<String> {
+/// The reference keeps writing in the background (admin notices, badge
+/// grants), so a table can be ahead of the seed: each table Rails inserted
+/// into starts where Rails' first new row did.
+async fn align_sequences(pool: &PgPool, case: &Value) {
+    let Some(changes) = case["changes"].as_object() else {
+        return;
+    };
+    for (table, change) in changes {
+        let Some(first) = change["inserted"]
+            .as_array()
+            .and_then(|rows| rows.iter().filter_map(|r| r["id"].as_i64()).min())
+        else {
+            continue;
+        };
+        let sequence: Option<String> =
+            sqlx::query_scalar("SELECT pg_get_serial_sequence($1, 'id')")
+                .bind(format!("public.{table}"))
+                .fetch_one(pool)
+                .await
+                .unwrap_or(None);
+        if let Some(sequence) = sequence {
+            sqlx::query("SELECT setval($1, GREATEST($2, 1), $2 > 0)")
+                .bind(&sequence)
+                .bind(first - 1)
+                .execute(pool)
+                .await
+                .unwrap();
+        }
+    }
+}
+
+/// Jobs in the queue after `after_id`, as (id, name, `[name, args]` with
+/// " in Ns" for a delayed one, as the recorder writes them).
+async fn queued_jobs(pool: &PgPool, after_id: i64) -> Vec<(i64, String, Value)> {
+    let rows: Vec<(i64, String, Value, f64)> = sqlx::query_as(
+        "SELECT id, name, args, EXTRACT(EPOCH FROM run_at - created_at)::float8 \
+         FROM discourse_rs.jobs WHERE id > $1 ORDER BY id",
+    )
+    .bind(after_id)
+    .fetch_all(pool)
+    .await
+    .unwrap();
+    rows.into_iter()
+        .map(|(id, name, args, delay)| {
+            let shown = if delay >= 1.0 {
+                format!("{name} in {}s", delay.round() as i64)
+            } else {
+                name.clone()
+            };
+            (id, name, serde_json::json!([shown, args]))
+        })
+        .collect()
+}
+
+async fn replay(case: &Value, run_jobs: &[String]) -> Vec<String> {
     let db = TestDb::new().await;
     let app_state = state(db.pool.clone(), recorded_config());
     reset_sequences(&db.pool).await;
+    align_sequences(&db.pool, case).await;
     let mut client = Client {
         state: app_state,
         cookies: Vec::new(),
@@ -384,14 +443,57 @@ async fn replay(case: &Value) -> Vec<String> {
             .await;
         responses.push(serde_json::json!({ "status": status, "body": body }));
     }
-    let ours = serde_json::json!({
+    // The jobs the requests enqueued, as the recorder writes them; then
+    // the case's run_jobs run, and what they enqueue is listed apart.
+    let from_requests = queued_jobs(&db.pool, 0).await;
+    let last_id = from_requests.last().map(|(id, _, _)| *id).unwrap_or(0);
+    let mut job_failures = Vec::new();
+    for (id, name, _) in &from_requests {
+        if !run_jobs.iter().any(|n| n == name) {
+            continue;
+        }
+        discourse_rs::jobs::perform_now(&client.state, *id)
+            .await
+            .unwrap();
+        let error: Option<Option<String>> =
+            sqlx::query_scalar("SELECT last_error FROM discourse_rs.jobs WHERE id = $1")
+                .bind(id)
+                .fetch_optional(&db.pool)
+                .await
+                .unwrap();
+        if let Some(Some(error)) = error {
+            job_failures.push(format!("{name}: {error}"));
+        }
+    }
+    let mut ours = serde_json::json!({
         "responses": responses,
+        "jobs": from_requests.into_iter().map(|(_, _, j)| j).collect::<Vec<_>>(),
         "changes": changes(&db.pool, &tables, &before_sums, &before_rows).await,
     });
+    if !run_jobs.is_empty() {
+        ours["jobs_from_jobs"] = queued_jobs(&db.pool, last_id)
+            .await
+            .into_iter()
+            .map(|(_, _, j)| j)
+            .collect();
+    }
 
     let rails_started = timestamp(case["started_at"].as_str().unwrap()).unwrap();
-    let rails = serde_json::json!({ "responses": case["responses"], "changes": case["changes"] });
-    let mut out = Vec::new();
+    let rails_jobs: Vec<Value> = case["jobs"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|j| !PLUGIN_JOBS.contains(&j[0].as_str().unwrap_or("")))
+        .cloned()
+        .collect();
+    let mut rails = serde_json::json!({ "responses": case["responses"], "changes": case["changes"], "jobs": rails_jobs });
+    if let Some(from_jobs) = case.get("jobs_from_jobs") {
+        rails["jobs_from_jobs"] = from_jobs.clone();
+    }
+    let mut out: Vec<String> = job_failures
+        .into_iter()
+        .map(|f| format!("job failed: {f}"))
+        .collect();
     differences(
         "",
         &changed_columns(normalize(&rails, rails_started)),
@@ -418,7 +520,15 @@ async fn writes_match_rails() {
             &std::fs::read_to_string(dir.join(format!("{name}.json"))).unwrap(),
         )
         .unwrap();
-        let diff = replay(&recorded).await;
+        let run_jobs: Vec<String> = case["run_jobs"]
+            .as_array()
+            .map(|a| {
+                a.iter()
+                    .filter_map(|n| n.as_str().map(str::to_string))
+                    .collect()
+            })
+            .unwrap_or_default();
+        let diff = replay(&recorded, &run_jobs).await;
         if !diff.is_empty() {
             failing.push(name.to_string());
             if !NOT_YET.contains(&name) || std::env::var("WRITES_DIFF").is_ok() {

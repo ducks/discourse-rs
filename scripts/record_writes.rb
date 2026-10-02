@@ -6,7 +6,8 @@
 # rolled back, as Rails' transactional tests do, so the site is left as it
 # was. Recorded per case: each response, every row the requests inserted,
 # updated or deleted (rows as Postgres' to_jsonb writes them), and the jobs
-# they enqueued.
+# they enqueued. A case with `run_jobs` also runs those of its enqueued
+# jobs, and records what they enqueue in turn (`jobs_from_jobs`).
 #
 # Before a case every id sequence is set to its table's max(id), so the
 # rows a case inserts get the ids discourse-rs will give them.
@@ -124,6 +125,17 @@ cases.each do |c|
         body = session.response.body
         { status: session.response.status, body: (JSON.parse(body) rescue body) }
       end
+    # run_jobs: the named jobs the requests enqueued run in order (delayed
+    # ones too), as Sidekiq would; what they enqueue is recorded apart.
+    from_requests = ENQUEUED.dup
+    ENQUEUED.clear
+    (c["run_jobs"] || []).then do |names|
+      from_requests.each do |name, args|
+        next if !names.include?(name.split(" ").first)
+        klass = "Jobs::#{name.split(" ").first.camelize}".constantize
+        klass.new.execute(args.with_indifferent_access)
+      end
+    end
     record = {
       name: c["name"],
       user: c["user"],
@@ -131,10 +143,11 @@ cases.each do |c|
       started_at: JSON.parse(started_at),
       responses: responses,
       changes: diff(before_sums, before_rows),
-      jobs: ENQUEUED.dup,
+      jobs: from_requests,
     }
+    record[:jobs_from_jobs] = ENQUEUED.dup if c["run_jobs"]
     File.write("#{out}/#{c["name"]}.json", JSON.pretty_generate(record) + "\n")
-    puts "#{c["name"]}: #{responses.map { |r| r[:status] }.join(",")}, #{record[:changes].size} tables, #{ENQUEUED.size} jobs"
+    puts "#{c["name"]}: #{responses.map { |r| r[:status] }.join(",")}, #{record[:changes].size} tables, #{from_requests.size} jobs"
   ensure
     clear_redis_state
     pool.unpin_connection!

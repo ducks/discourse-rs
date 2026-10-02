@@ -103,6 +103,8 @@ pub async fn refuse_unported(
 #[derive(Debug, Default)]
 pub struct Analysis {
     pub mentions: usize,
+    /// `raw_mentions`: the mentioned names, lowercased, deduplicated.
+    pub mention_names: Vec<String>,
     pub embedded_media: usize,
     pub attachments: usize,
     pub links: Vec<String>,
@@ -126,6 +128,7 @@ pub fn analyze(cooked: &str, base_path: &str) -> Result<Analysis, Unsupported> {
     mentions.sort();
     mentions.dedup();
     a.mentions = mentions.len();
+    a.mention_names = mentions;
     if a.has_oneboxes {
         return Err(Unsupported("posts with oneboxes"));
     }

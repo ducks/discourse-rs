@@ -1,5 +1,5 @@
 {
-  "name": "reply",
+  "name": "reply_post_alert",
   "user": "user1",
   "requests": [
     {
@@ -11,7 +11,7 @@
       }
     }
   ],
-  "started_at": "2026-10-02T10:10:59.479766",
+  "started_at": "2026-10-02T10:11:24.754004",
   "responses": [
     {
       "status": 200,
@@ -20,12 +20,12 @@
         "name": "User1",
         "username": "user1",
         "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
-        "created_at": "2026-10-02T10:11:00.912Z",
+        "created_at": "2026-10-02T10:11:24.809Z",
         "cooked": "<p>A reply from user1 to the replies and posters topic, written for the posting slice.</p>",
         "post_number": 6,
         "post_type": 1,
         "posts_count": 6,
-        "updated_at": "2026-10-02T10:11:00.912Z",
+        "updated_at": "2026-10-02T10:11:24.809Z",
         "reply_count": 0,
         "reply_to_post_number": null,
         "quote_count": 0,
@@ -246,6 +246,39 @@
       "deleted": [],
       "updated": []
     },
+    "notifications": {
+      "inserted": [
+        {
+          "id": 57,
+          "data": "{\"topic_title\":\"Parity fixture: replies and posters\",\"original_post_id\":53,\"original_post_type\":1,\"original_username\":\"user1\",\"revision_number\":null,\"display_username\":\"user1\",\"display_name\":\"User1\"}",
+          "read": false,
+          "user_id": 2,
+          "topic_id": 35,
+          "created_at": "2026-10-02T10:11:25.025869",
+          "updated_at": "2026-10-02T10:11:25.025869",
+          "post_number": 6,
+          "high_priority": false,
+          "post_action_id": null,
+          "notification_type": 2
+        }
+      ],
+      "deleted": [
+        {
+          "id": 39,
+          "data": "{\"topic_title\":\"Parity fixture: replies and posters\",\"original_post_id\":38,\"original_post_type\":1,\"original_username\":\"admin\",\"revision_number\":null,\"display_username\":\"3 replies\",\"display_name\":\"User1\"}",
+          "read": false,
+          "user_id": 2,
+          "topic_id": 35,
+          "created_at": "2026-09-30T07:28:29.832304",
+          "updated_at": "2026-09-30T07:28:29.832304",
+          "post_number": 2,
+          "high_priority": false,
+          "post_action_id": null,
+          "notification_type": 2
+        }
+      ],
+      "updated": []
+    },
     "post_search_data": {
       "inserted": [
         {
@@ -265,8 +298,8 @@
         {
           "id": 52,
           "post_id": 53,
-          "created_at": "2026-10-02T10:11:00.931633",
-          "updated_at": "2026-10-02T10:11:00.931633",
+          "created_at": "2026-10-02T10:11:24.827028",
+          "updated_at": "2026-10-02T10:11:24.827028",
           "drafts_saved": 0,
           "writing_device": "unknown",
           "composer_version": null,
@@ -303,20 +336,20 @@
           "locale": null,
           "user_id": 3,
           "version": 1,
-          "baked_at": "2026-10-02T10:11:00.912822",
+          "baked_at": "2026-10-02T10:11:24.809893",
           "topic_id": 35,
           "hidden_at": null,
           "post_type": 1,
           "raw_email": null,
           "via_email": false,
-          "created_at": "2026-10-02T10:11:00.912879",
+          "created_at": "2026-10-02T10:11:24.809942",
           "deleted_at": null,
           "like_count": 0,
           "like_score": 0,
           "self_edits": 0,
           "sort_order": 6,
           "spam_count": 0,
-          "updated_at": "2026-10-02T10:11:00.912879",
+          "updated_at": "2026-10-02T10:11:24.809942",
           "word_count": 15,
           "action_code": null,
           "cook_method": 1,
@@ -336,7 +369,7 @@
           "last_editor_id": 3,
           "public_version": 1,
           "image_upload_id": null,
-          "last_version_at": "2026-10-02T10:11:00.928911",
+          "last_version_at": "2026-10-02T10:11:24.824552",
           "off_topic_count": 0,
           "hidden_reason_id": null,
           "reply_to_user_id": null,
@@ -381,7 +414,7 @@
             "user_id": 3,
             "topic_id": 35,
             "bookmarked": true,
-            "last_posted_at": "2026-10-02T10:11:00.951168",
+            "last_posted_at": "2026-10-02T10:11:24.83877",
             "last_visited_at": "2026-09-30T07:28:29.108382",
             "first_visited_at": "2026-09-30T07:28:29.108382",
             "cleared_pinned_at": null,
@@ -466,13 +499,13 @@
             "visible": true,
             "archived": false,
             "archetype": "regular",
-            "bumped_at": "2026-10-02T10:11:00.912879",
+            "bumped_at": "2026-10-02T10:11:24.809942",
             "pinned_at": null,
             "created_at": "2026-09-30T07:28:28.864868",
             "deleted_at": null,
             "like_count": 1,
             "spam_count": 0,
-            "updated_at": "2026-10-02T10:11:00.959785",
+            "updated_at": "2026-10-02T10:11:24.844911",
             "word_count": 83,
             "category_id": 4,
             "external_id": null,
@@ -485,7 +518,7 @@
             "deleted_by_id": null,
             "featured_link": null,
             "bannered_until": null,
-            "last_posted_at": "2026-10-02T10:11:00.912879",
+            "last_posted_at": "2026-10-02T10:11:24.809942",
             "image_upload_id": null,
             "pinned_globally": false,
             "reviewable_score": 0,
@@ -512,9 +545,20 @@
         {
           "id": 65,
           "user_id": 3,
-          "created_at": "2026-10-02T10:11:00.912879",
-          "updated_at": "2026-10-02T10:11:00.938621",
+          "created_at": "2026-10-02T10:11:24.809942",
+          "updated_at": "2026-10-02T10:11:24.83053",
           "action_type": 5,
+          "acting_user_id": 3,
+          "target_post_id": 53,
+          "target_user_id": null,
+          "target_topic_id": 35
+        },
+        {
+          "id": 66,
+          "user_id": 2,
+          "created_at": "2026-10-02T10:11:25.019184",
+          "updated_at": "2026-10-02T10:11:25.019184",
+          "action_type": 6,
           "acting_user_id": 3,
           "target_post_id": 53,
           "target_user_id": null,
@@ -534,29 +578,29 @@
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "RhWiPd8+UTAyeN3tq8enxj9W0+I=",
-            "created_at": "2026-10-02T10:10:57.828375",
-            "rotated_at": "2026-10-02T10:10:57.823718",
-            "updated_at": "2026-10-02T10:10:57.828375",
+            "auth_token": "59U2agoEOlnr3qcZc/3sQA6kjQ8=",
+            "created_at": "2026-10-02T10:11:24.254974",
+            "rotated_at": "2026-10-02T10:11:24.254706",
+            "updated_at": "2026-10-02T10:11:24.254974",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "RhWiPd8+UTAyeN3tq8enxj9W0+I=",
+            "prev_auth_token": "59U2agoEOlnr3qcZc/3sQA6kjQ8=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
             "id": 78,
-            "seen_at": "2026-10-02T10:10:59.492223",
+            "seen_at": "2026-10-02T10:11:24.759985",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "RhWiPd8+UTAyeN3tq8enxj9W0+I=",
-            "created_at": "2026-10-02T10:10:57.828375",
-            "rotated_at": "2026-10-02T10:10:57.823718",
-            "updated_at": "2026-10-02T10:10:57.828375",
+            "auth_token": "59U2agoEOlnr3qcZc/3sQA6kjQ8=",
+            "created_at": "2026-10-02T10:11:24.254974",
+            "rotated_at": "2026-10-02T10:11:24.254706",
+            "updated_at": "2026-10-02T10:11:24.254974",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "RhWiPd8+UTAyeN3tq8enxj9W0+I=",
+            "prev_auth_token": "59U2agoEOlnr3qcZc/3sQA6kjQ8=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -684,7 +728,7 @@
             "created_at": "2026-07-25T05:59:16.250829",
             "flag_level": 0,
             "ip_address": "172.17.0.1",
-            "updated_at": "2026-10-02T10:11:00.971356",
+            "updated_at": "2026-10-02T10:11:24.852667",
             "approved_at": null,
             "trust_level": 2,
             "last_seen_at": "2026-10-01T22:32:51.040203",
@@ -694,7 +738,7 @@
             "silenced_till": null,
             "approved_by_id": null,
             "flair_group_id": null,
-            "last_posted_at": "2026-10-02T10:11:00.912879",
+            "last_posted_at": "2026-10-02T10:11:24.809942",
             "suspended_till": null,
             "username_lower": "user1",
             "last_emailed_at": null,
@@ -755,6 +799,27 @@
     [
       "notify_mailing_list_subscribers in 600s",
       {
+        "post_id": 53
+      }
+    ]
+  ],
+  "jobs_from_jobs": [
+    [
+      "user_email in 600s",
+      {
+        "type": "user_replied",
+        "user_id": 2,
+        "notification_id": 57,
+        "notification_data_hash": {
+          "topic_title": "Parity fixture: replies and posters",
+          "original_post_id": 53,
+          "original_post_type": 1,
+          "original_username": "user1",
+          "revision_number": null,
+          "display_username": "user1",
+          "display_name": "User1"
+        },
+        "notification_type": "replied",
         "post_id": 53
       }
     ]

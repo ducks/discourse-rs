@@ -67,6 +67,13 @@ requests in `parity/writes/cases.json` on the reference inside a
 rolled-back transaction and records responses, row changes and enqueued
 jobs; `tests/writes.rs` replays them on the seed and compares
 (`WRITES_DIFF=1` prints the differences).
+A case with `run_jobs` also runs those of its enqueued jobs (on Rails inside
+the same transaction, here through the job queue), so a job's writes and
+the jobs it enqueues in turn are measured the same way.
+
+Background jobs run from `discourse_rs.jobs` in Postgres: a worker runs
+beside the web server unless `DISCOURSE_RS_JOBS=off`. A job kind that is
+not ported fails at once and keeps the reason in `last_error`.
 
 `parity/cases` lists requests, one per line:
 

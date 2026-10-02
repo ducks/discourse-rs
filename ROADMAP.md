@@ -129,8 +129,16 @@ Logged-in readers, no writes yet.
 - [ ] Likes, flags
 - [ ] Private messages
 - [ ] Uploads (local first, S3 later), optimized images
-- [ ] Background jobs (a Sidekiq replacement for cooking, notifications,
-      digests), rate limits
+- [x] Background job queue: Postgres (`discourse_rs.jobs`, the one table
+      the port owns), a worker beside the web server, Sidekiq's retries;
+      posting enqueues what Rails enqueues (measured)
+- [x] Jobs: feature_topic_users, process_post, post_alert (mentions,
+      replies, topic/category/tag watchers, first-post watchers, user
+      actions, the user_email job); each measured by running it on Rails
+      (`run_jobs` cases)
+- [ ] Jobs, next: user_email (needs outgoing mail), pull_hotlinked_images,
+      notify_mailing_list_subscribers, scheduled jobs (category stats, top
+      topics, digests), rate limits
 - [ ] Name the places a plugin would attach as they are built
       (NewPostManager modifiers, post events); nothing calls them until
       milestone 5

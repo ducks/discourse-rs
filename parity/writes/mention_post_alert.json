@@ -1,5 +1,5 @@
 {
-  "name": "reply",
+  "name": "mention_post_alert",
   "user": "user1",
   "requests": [
     {
@@ -7,11 +7,11 @@
       "path": "/posts.json",
       "params": {
         "topic_id": 35,
-        "raw": "A reply from user1 to the replies and posters topic, written for the posting slice."
+        "raw": "## A heading\n\nWith **bold**, a mention of @user0, #general and :smile:, and a [link](https://example.com/page)."
       }
     }
   ],
-  "started_at": "2026-10-02T10:10:59.479766",
+  "started_at": "2026-10-02T10:11:27.778653",
   "responses": [
     {
       "status": 200,
@@ -20,12 +20,12 @@
         "name": "User1",
         "username": "user1",
         "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
-        "created_at": "2026-10-02T10:11:00.912Z",
-        "cooked": "<p>A reply from user1 to the replies and posters topic, written for the posting slice.</p>",
+        "created_at": "2026-10-02T10:11:27.853Z",
+        "cooked": "<h2><a name=\"a-heading-1\" class=\"anchor\" href=\"#a-heading-1\" aria-label=\"Heading link\"></a>A heading</h2>\n<p>With <strong>bold</strong>, a mention of <a class=\"mention\" href=\"/u/user0\">@user0</a>, <a class=\"hashtag-cooked\" href=\"/c/general/4\" data-type=\"category\" data-slug=\"general\" data-id=\"4\" data-style-type=\"emoji\" data-emoji=\"blue_book\"><span class=\"hashtag-icon-placeholder\"><svg class=\"fa d-icon d-icon-square-full svg-icon svg-node\"><use href=\"#square-full\"></use></svg></span><span>General</span></a> and <img src=\"/images/emoji/twitter/smile.png?v=15\" title=\":smile:\" class=\"emoji\" alt=\":smile:\" loading=\"lazy\" width=\"20\" height=\"20\">, and a <a href=\"https://example.com/page\" rel=\"noopener nofollow ugc\">link</a>.</p>",
         "post_number": 6,
         "post_type": 1,
         "posts_count": 6,
-        "updated_at": "2026-10-02T10:11:00.912Z",
+        "updated_at": "2026-10-02T10:11:27.853Z",
         "reply_count": 0,
         "reply_to_post_number": null,
         "quote_count": 0,
@@ -52,7 +52,7 @@
         "can_wiki": false,
         "user_title": null,
         "bookmarked": false,
-        "raw": "A reply from user1 to the replies and posters topic, written for the posting slice.",
+        "raw": "## A heading\n\nWith **bold**, a mention of @user0, #general and :smile:, and a [link](https://example.com/page).",
         "actions_summary": [
           {
             "id": 3,
@@ -246,14 +246,33 @@
       "deleted": [],
       "updated": []
     },
+    "notifications": {
+      "inserted": [
+        {
+          "id": 57,
+          "data": "{\"topic_title\":\"Parity fixture: replies and posters\",\"original_post_id\":53,\"original_post_type\":1,\"original_username\":\"user1\",\"revision_number\":null,\"display_username\":\"user1\",\"display_name\":\"User1\"}",
+          "read": false,
+          "user_id": 2,
+          "topic_id": 35,
+          "created_at": "2026-10-02T10:11:28.067379",
+          "updated_at": "2026-10-02T10:11:28.067379",
+          "post_number": 6,
+          "high_priority": false,
+          "post_action_id": null,
+          "notification_type": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
     "post_search_data": {
       "inserted": [
         {
           "locale": "en",
           "post_id": 53,
           "version": 5,
-          "raw_data": "A reply from user1 to the replies and posters topic, written for the posting slice.",
-          "search_data": "'fixtur':2A 'general':6B 'guid':7C 'pariti':1A 'post':21 'poster':5A,16 'repli':3A,9,14 'slice':22 'topic':17 'user1':11 'written':18",
+          "raw_data": "A heading With bold , a mention of @user0 , /c/general/4 #square-full General and :smile: , and a https://example.com/page link .",
+          "search_data": "'/c/general/4':16 '/page':27 'bold':11 'com':26 'exampl':26 'example.com':26 'example.com/page':25 'fixtur':2A 'full':19 'general':6B,20 'guid':7C 'head':9 'link':28 'mention':13 'pariti':1A 'poster':5A 'repli':3A 'smile':22 'squar':18 'square-ful':17 'user0':15",
           "private_message": false
         }
       ],
@@ -265,8 +284,8 @@
         {
           "id": 52,
           "post_id": 53,
-          "created_at": "2026-10-02T10:11:00.931633",
-          "updated_at": "2026-10-02T10:11:00.931633",
+          "created_at": "2026-10-02T10:11:27.890093",
+          "updated_at": "2026-10-02T10:11:27.890093",
           "drafts_saved": 0,
           "writing_device": "unknown",
           "composer_version": null,
@@ -294,30 +313,30 @@
       "inserted": [
         {
           "id": 53,
-          "raw": "A reply from user1 to the replies and posters topic, written for the posting slice.",
+          "raw": "## A heading\n\nWith **bold**, a mention of @user0, #general and :smile:, and a [link](https://example.com/page).",
           "wiki": false,
           "reads": 1,
           "score": null,
-          "cooked": "<p>A reply from user1 to the replies and posters topic, written for the posting slice.</p>",
+          "cooked": "<h2><a name=\"a-heading-1\" class=\"anchor\" href=\"#a-heading-1\" aria-label=\"Heading link\"></a>A heading</h2>\n<p>With <strong>bold</strong>, a mention of <a class=\"mention\" href=\"/u/user0\">@user0</a>, <a class=\"hashtag-cooked\" href=\"/c/general/4\" data-type=\"category\" data-slug=\"general\" data-id=\"4\" data-style-type=\"emoji\" data-emoji=\"blue_book\"><span class=\"hashtag-icon-placeholder\"><svg class=\"fa d-icon d-icon-square-full svg-icon svg-node\"><use href=\"#square-full\"></use></svg></span><span>General</span></a> and <img src=\"/images/emoji/twitter/smile.png?v=15\" title=\":smile:\" class=\"emoji\" alt=\":smile:\" loading=\"lazy\" width=\"20\" height=\"20\">, and a <a href=\"https://example.com/page\" rel=\"noopener nofollow ugc\">link</a>.</p>",
           "hidden": false,
           "locale": null,
           "user_id": 3,
           "version": 1,
-          "baked_at": "2026-10-02T10:11:00.912822",
+          "baked_at": "2026-10-02T10:11:27.853525",
           "topic_id": 35,
           "hidden_at": null,
           "post_type": 1,
           "raw_email": null,
           "via_email": false,
-          "created_at": "2026-10-02T10:11:00.912879",
+          "created_at": "2026-10-02T10:11:27.853587",
           "deleted_at": null,
           "like_count": 0,
           "like_score": 0,
           "self_edits": 0,
           "sort_order": 6,
           "spam_count": 0,
-          "updated_at": "2026-10-02T10:11:00.912879",
-          "word_count": 15,
+          "updated_at": "2026-10-02T10:11:27.853587",
+          "word_count": 18,
           "action_code": null,
           "cook_method": 1,
           "edit_reason": null,
@@ -336,7 +355,7 @@
           "last_editor_id": 3,
           "public_version": 1,
           "image_upload_id": null,
-          "last_version_at": "2026-10-02T10:11:00.928911",
+          "last_version_at": "2026-10-02T10:11:27.887902",
           "off_topic_count": 0,
           "hidden_reason_id": null,
           "reply_to_user_id": null,
@@ -346,6 +365,50 @@
           "outbound_message_id": null,
           "reply_to_post_number": null,
           "notify_moderators_count": 0
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_links": {
+      "inserted": [
+        {
+          "id": 20,
+          "url": "/c/general/4",
+          "quote": false,
+          "title": null,
+          "clicks": 0,
+          "domain": "localhost",
+          "post_id": 53,
+          "user_id": 3,
+          "internal": true,
+          "topic_id": 35,
+          "extension": null,
+          "crawled_at": null,
+          "created_at": "2026-10-02T10:11:27.908807",
+          "reflection": false,
+          "updated_at": "2026-10-02T10:11:27.908807",
+          "link_post_id": null,
+          "link_topic_id": null
+        },
+        {
+          "id": 21,
+          "url": "https://example.com/page",
+          "quote": false,
+          "title": null,
+          "clicks": 0,
+          "domain": "example.com",
+          "post_id": 53,
+          "user_id": 3,
+          "internal": false,
+          "topic_id": 35,
+          "extension": null,
+          "crawled_at": null,
+          "created_at": "2026-10-02T10:11:27.91094",
+          "reflection": false,
+          "updated_at": "2026-10-02T10:11:27.91094",
+          "link_post_id": null,
+          "link_topic_id": null
         }
       ],
       "deleted": [],
@@ -381,7 +444,7 @@
             "user_id": 3,
             "topic_id": 35,
             "bookmarked": true,
-            "last_posted_at": "2026-10-02T10:11:00.951168",
+            "last_posted_at": "2026-10-02T10:11:27.914196",
             "last_visited_at": "2026-09-30T07:28:29.108382",
             "first_visited_at": "2026-09-30T07:28:29.108382",
             "cleared_pinned_at": null,
@@ -466,14 +529,14 @@
             "visible": true,
             "archived": false,
             "archetype": "regular",
-            "bumped_at": "2026-10-02T10:11:00.912879",
+            "bumped_at": "2026-10-02T10:11:27.853587",
             "pinned_at": null,
             "created_at": "2026-09-30T07:28:28.864868",
             "deleted_at": null,
             "like_count": 1,
             "spam_count": 0,
-            "updated_at": "2026-10-02T10:11:00.959785",
-            "word_count": 83,
+            "updated_at": "2026-10-02T10:11:27.920897",
+            "word_count": 86,
             "category_id": 4,
             "external_id": null,
             "fancy_title": "Parity fixture: replies and posters",
@@ -485,7 +548,7 @@
             "deleted_by_id": null,
             "featured_link": null,
             "bannered_until": null,
-            "last_posted_at": "2026-10-02T10:11:00.912879",
+            "last_posted_at": "2026-10-02T10:11:27.853587",
             "image_upload_id": null,
             "pinned_globally": false,
             "reviewable_score": 0,
@@ -512,9 +575,20 @@
         {
           "id": 65,
           "user_id": 3,
-          "created_at": "2026-10-02T10:11:00.912879",
-          "updated_at": "2026-10-02T10:11:00.938621",
+          "created_at": "2026-10-02T10:11:27.853587",
+          "updated_at": "2026-10-02T10:11:27.893857",
           "action_type": 5,
+          "acting_user_id": 3,
+          "target_post_id": 53,
+          "target_user_id": null,
+          "target_topic_id": 35
+        },
+        {
+          "id": 66,
+          "user_id": 2,
+          "created_at": "2026-10-02T10:11:28.062108",
+          "updated_at": "2026-10-02T10:11:28.062108",
+          "action_type": 7,
           "acting_user_id": 3,
           "target_post_id": 53,
           "target_user_id": null,
@@ -534,29 +608,29 @@
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "RhWiPd8+UTAyeN3tq8enxj9W0+I=",
-            "created_at": "2026-10-02T10:10:57.828375",
-            "rotated_at": "2026-10-02T10:10:57.823718",
-            "updated_at": "2026-10-02T10:10:57.828375",
+            "auth_token": "hchrA1bYUUXMnMIoWWNMm7QP0/0=",
+            "created_at": "2026-10-02T10:11:27.277696",
+            "rotated_at": "2026-10-02T10:11:27.277434",
+            "updated_at": "2026-10-02T10:11:27.277696",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "RhWiPd8+UTAyeN3tq8enxj9W0+I=",
+            "prev_auth_token": "hchrA1bYUUXMnMIoWWNMm7QP0/0=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
             "id": 78,
-            "seen_at": "2026-10-02T10:10:59.492223",
+            "seen_at": "2026-10-02T10:11:27.785775",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "RhWiPd8+UTAyeN3tq8enxj9W0+I=",
-            "created_at": "2026-10-02T10:10:57.828375",
-            "rotated_at": "2026-10-02T10:10:57.823718",
-            "updated_at": "2026-10-02T10:10:57.828375",
+            "auth_token": "hchrA1bYUUXMnMIoWWNMm7QP0/0=",
+            "created_at": "2026-10-02T10:11:27.277696",
+            "rotated_at": "2026-10-02T10:11:27.277434",
+            "updated_at": "2026-10-02T10:11:27.277696",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "RhWiPd8+UTAyeN3tq8enxj9W0+I=",
+            "prev_auth_token": "hchrA1bYUUXMnMIoWWNMm7QP0/0=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -684,7 +758,7 @@
             "created_at": "2026-07-25T05:59:16.250829",
             "flag_level": 0,
             "ip_address": "172.17.0.1",
-            "updated_at": "2026-10-02T10:11:00.971356",
+            "updated_at": "2026-10-02T10:11:27.927848",
             "approved_at": null,
             "trust_level": 2,
             "last_seen_at": "2026-10-01T22:32:51.040203",
@@ -694,7 +768,7 @@
             "silenced_till": null,
             "approved_by_id": null,
             "flair_group_id": null,
-            "last_posted_at": "2026-10-02T10:11:00.912879",
+            "last_posted_at": "2026-10-02T10:11:27.853587",
             "suspended_till": null,
             "username_lower": "user1",
             "last_emailed_at": null,
@@ -755,6 +829,27 @@
     [
       "notify_mailing_list_subscribers in 600s",
       {
+        "post_id": 53
+      }
+    ]
+  ],
+  "jobs_from_jobs": [
+    [
+      "user_email in 600s",
+      {
+        "type": "user_mentioned",
+        "user_id": 2,
+        "notification_id": 57,
+        "notification_data_hash": {
+          "topic_title": "Parity fixture: replies and posters",
+          "original_post_id": 53,
+          "original_post_type": 1,
+          "original_username": "user1",
+          "revision_number": null,
+          "display_username": "user1",
+          "display_name": "User1"
+        },
+        "notification_type": "mentioned",
         "post_id": 53
       }
     ]

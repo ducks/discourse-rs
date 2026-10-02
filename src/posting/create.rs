@@ -653,6 +653,38 @@ pub async fn create(
             }
         }
     }
+    // PostJobsEnqueuer#enqueue_jobs, committed with the post.
+    crate::jobs::enqueue(
+        &mut tx,
+        "post_alert",
+        json!({"post_id": post_id, "new_record": true, "options": null}),
+    )
+    .await?;
+    crate::jobs::enqueue(
+        &mut tx,
+        "feature_topic_users",
+        json!({"topic_id": topic_id}),
+    )
+    .await?;
+    crate::jobs::enqueue(
+        &mut tx,
+        "process_post",
+        json!({"bypass_bump": false, "cooking_options": null, "new_post": true, "post_id": post_id, "skip_pull_hotlinked_images": false}),
+    )
+    .await?;
+    crate::jobs::enqueue(
+        &mut tx,
+        "post_update_topic_tracking_state",
+        json!({"post_id": post_id}),
+    )
+    .await?;
+    crate::jobs::enqueue_in(
+        &mut tx,
+        s.get("email_time_window_mins")?.to_i() * 60,
+        "notify_mailing_list_subscribers",
+        json!({"post_id": post_id}),
+    )
+    .await?;
     tx.commit().await?;
 
     // After the transaction: track_latest_on_category, auto_close, then
