@@ -6,6 +6,7 @@ mod common;
 
 use common::{TestDb, recorded_config, state};
 use discourse_rs::pretty_text::helpers::{Helpers, translate};
+use discourse_rs::pretty_text::render::{RenderSettings, render};
 use discourse_rs::pretty_text::{CookError, Host, options};
 use discourse_rs::site_settings::SiteSettings;
 use serde_json::Value;
@@ -236,4 +237,91 @@ async fn unported_inputs_are_refused() {
     .unwrap();
     let error = options(&host, &mut conn, &settings).await.unwrap_err();
     assert!(matches!(error, CookError::Unsupported(_)), "{error}");
+}
+
+/// Corpus entries the renderer does not cook like Rails yet. The list
+/// only shrinks: an entry that starts matching has to be taken out, one
+/// that stops matching fails the test.
+const NOT_COOKED_YET: &[&str] = &[
+    "sample-6",
+    "sample-7",
+    "sample-8",
+    "sample-9",
+    "sample-10",
+    "sample-11",
+    "sample-13",
+    "sample-14",
+    "sample-15",
+    "sample-16",
+    "sample-17",
+    "sample-18",
+    "sample-19",
+    "sample-20",
+    "sample-21",
+    "sample-22",
+    "sample-24",
+    "sample-26",
+    "sample-27",
+    "sample-28",
+    "sample-29",
+    "sample-30",
+    "sample-31",
+    "sample-32",
+    "sample-34",
+    "sample-35",
+    "sample-38",
+    "sample-40",
+    "sample-44",
+    "sample-47",
+    "sample-48",
+    "sample-49",
+    "sample-50",
+    "post-4",
+    "post-6",
+    "post-7",
+];
+
+/// PrettyText.markdown over the recorded corpus (feature samples and every
+/// seeded post), each byte-equal to what Rails cooked, apart from the
+/// entries listed above.
+#[tokio::test]
+async fn cooking_matches_rails() {
+    let db = TestDb::new().await;
+    let host = host(&db);
+    let mut conn = db.pool.acquire().await.unwrap();
+    let settings = SiteSettings::load(&mut conn, &host.site_setting_defs, &host.config.globals)
+        .await
+        .unwrap();
+    let render_settings = RenderSettings::from_site_settings(&settings, &host.i18n).unwrap();
+    let corpus = recorded("corpus.json");
+    let corpus = corpus.as_array().unwrap();
+    assert!(corpus.len() > 70, "{} entries", corpus.len());
+
+    let mut missed = Vec::new();
+    let mut details = Vec::new();
+    for entry in corpus {
+        let id = entry["id"].as_str().unwrap();
+        let rails = entry["markdown"].as_str().unwrap();
+        let ours = render(entry["raw"].as_str().unwrap(), &render_settings);
+        if ours != rails {
+            missed.push(id);
+            if !NOT_COOKED_YET.contains(&id) || std::env::var("COOK_DIFF").is_ok() {
+                details.push(format!("{id}\n  rails: {rails:?}\n  ours:  {ours:?}"));
+            }
+        }
+    }
+    eprintln!(
+        "{} of {} corpus entries cook byte-equal",
+        corpus.len() - missed.len(),
+        corpus.len()
+    );
+    if std::env::var("COOK_DIFF").is_ok() {
+        eprintln!("{}", details.join("\n"));
+    }
+    assert_eq!(
+        missed,
+        NOT_COOKED_YET,
+        "the entries that do not match Rails changed:\n{}",
+        details.join("\n")
+    );
 }

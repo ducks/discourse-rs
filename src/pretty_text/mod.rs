@@ -9,6 +9,7 @@
 //! scripts/record-pretty-text).
 
 pub mod helpers;
+pub mod render;
 
 use std::sync::Arc;
 
