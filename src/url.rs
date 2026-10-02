@@ -97,7 +97,7 @@ impl Urls<'_> {
     }
 
     /// `Discourse.asset_host`: the CDN in production and development only.
-    fn asset_host(&self) -> Option<&str> {
+    pub(crate) fn asset_host(&self) -> Option<&str> {
         match self.config.rails_env {
             RailsEnv::Production | RailsEnv::Development => self.config.globals.cdn_url(),
             RailsEnv::Test => None,

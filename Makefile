@@ -1,5 +1,6 @@
 .PHONY: help version-bump release build test clean clippy fmt fmt-check lint install-hooks \
 	db-load db-test parity parity-check parity-record vendor-discourse snapshot-dv \
+	record-pretty-text \
 	bench bench-startup release-build install
 
 # Auto-generate version from today's date with auto-incrementing patch
@@ -44,6 +45,7 @@ help:
 	@echo "  make db-load [FORCE=1]             - Load schema + seeds into $(DEV_DB)"
 	@echo "  make db-test                       - (Re)load schema + seeds into $(TEST_DB)"
 	@echo "  make snapshot-dv AGENT=name        - Regenerate seed/fresh_install.sql from a dv agent"
+	@echo "  make record-pretty-text AGENT=name - Record Rails' cooking of the corpus into parity/pretty_text"
 	@echo ""
 	@echo "Parity (run discourse-rs with: env \$$(grep -v ^\# parity/environment) cargo run):"
 	@echo "  make parity RAILS_URL=...          - Diff discourse-rs against running Discourse"
@@ -154,6 +156,10 @@ parity-check:
 snapshot-dv:
 	@test -n "$(AGENT)" || { echo "set AGENT, e.g. make snapshot-dv AGENT=rs-parity"; exit 2; }
 	scripts/snapshot-dv $(AGENT)
+
+record-pretty-text:
+	@test -n "$(AGENT)" || { echo "set AGENT, e.g. make record-pretty-text AGENT=rs-parity"; exit 2; }
+	scripts/record-pretty-text $(AGENT)
 
 release-build:
 	cargo build --release

@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Record what Rails cooks on the reference agent into parity/pretty_text/:
+#
+#   opt_input.json  the options PrettyText.markdown hands the renderer
+#   corpus.json     feature samples and every post, with
+#                   PrettyText.markdown's output for each
+#   helpers.json    the calls cooking that corpus made into
+#                   PrettyText::Helpers, with their results
+#
+# tests/pretty_text.rs cooks the same inputs on the seed database and
+# compares, so record after scripts/snapshot-dv from the same agent.
+#
+# Another site (a restored backup's agent) records its posts only, into
+# the directory given.
+#
+# Usage: scripts/record-pretty-text <agent-name> [dest-dir]
+set -euo pipefail
+
+if [ $# -lt 1 ] || [ $# -gt 2 ]; then
+  echo "usage: $0 <agent-name> [dest-dir]" >&2
+  exit 64
+fi
+
+agent="$1"
+root="$(cd "$(dirname "$0")/.." && pwd)"
+dest="${2:-$root/parity/pretty_text}"
+
+dv copy "$root/scripts/pretty_text_export.rb" "$agent:/tmp/pretty_text_export.rb" > /dev/null
+dv run --name "$agent" -- rm -rf /tmp/pretty-text-record
+dv run --name "$agent" -- bin/rails runner /tmp/pretty_text_export.rb /tmp/pretty-text-record | tail -1
+mkdir -p "$dest"
+for f in opt_input.json corpus.json helpers.json; do
+  dv copy "$agent:/tmp/pretty-text-record/$f" "$dest/$f" > /dev/null
+done
+echo "wrote $dest"

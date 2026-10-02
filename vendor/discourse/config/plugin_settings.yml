@@ -1,0 +1,3594 @@
+---
+plugin: automation
+enabled_site_setting: discourse_automation_enabled
+settings:
+  plugins:
+    discourse_automation_enabled:
+      default: false
+      client: true
+    discourse_automation_enable_recurring_debug:
+      default: false
+      hidden: true
+    discourse_automation_max_recursion_depth:
+      default: 1
+      hidden: true
+      min: 1
+  
+---
+plugin: boards
+enabled_site_setting: boards_enabled
+settings:
+  boards:
+    boards_enabled:
+      default: false
+      client: true
+      hidden: true
+      upcoming_change:
+        status: "alpha"
+        impact: "feature,all_members"
+        allow_enabled_for:
+          - "everyone"
+        learn_more_url: "https://meta.discourse.org/t/-/411418"
+        requires_plugin_enabled: false
+        permanent_warning: false
+    boards_manage_board_allowed_groups:
+      type: group_list
+      list_type: compact
+      default: "1|2" # admins and moderators by default
+      allow_any: false
+      client: true
+      mandatory_values: "1" # auto group admins
+      depends_on:
+        - boards_enabled
+  
+---
+plugin: chat
+enabled_site_setting: chat_enabled
+settings:
+  chat:
+    chat_enabled:
+      default: true
+      client: true
+    chat_pinned_messages:
+      default: false
+      hidden: true
+      client: true
+      upcoming_change:
+        status: "stable"
+        impact: "feature,all_members"
+        learn_more_url: "https://meta.discourse.org/t/-/397571"
+    enable_new_chat_reactions_popup:
+      default: false
+      hidden: true
+      client: true
+      upcoming_change:
+        status: "permanent"
+        impact: "feature,all_members"
+        learn_more_url: "https://meta.discourse.org/t/-/406004"
+    enable_public_channels:
+      default: true
+      client: true
+    chat_allowed_groups:
+      type: group_list
+      list_type: compact
+      default: "1|2|11" # @admins, @moderators, @trust_level_1
+      mandatory_values: "1|2" # @admins, @moderators
+      allow_any: false
+      client: true
+      refresh: true
+      area: "group_permissions"
+    chat_threads_enabled:
+      client: true
+      default: false
+      hidden: true
+    chat_search_enabled:
+      client: true
+      default: true
+    needs_chat_seeded:
+      default: true
+      hidden: true
+    chat_debug_webhook_payloads:
+      default: false
+      hidden: true
+    chat_channel_retention_days:
+      default: 90
+      client: true
+      max: 3652 # 10 years
+      min: 0
+    chat_max_direct_message_users:
+      default: 20
+      min: 0
+      max: 100
+      client: true
+    chat_dm_retention_days:
+      default: 0
+      client: true
+      max: 3652 # 10 years
+      min: 0
+    chat_auto_silence_duration:
+      default: 30
+      min: 0
+    chat_allowed_messages_for_trust_level_0:
+      default: 20
+      min: 0
+    chat_allowed_messages_for_other_trust_levels:
+      default: 40
+      min: 0
+    chat_silence_user_sensitivity:
+      type: enum
+      enum: "ReviewableSensitivitySetting"
+      default: 6
+    chat_auto_silence_from_flags_duration:
+      default: 60
+      min: 0
+      area: "flags"
+    chat_allow_archiving_channels:
+      default: false
+      client: true
+    chat_archive_destination_topic_status:
+      type: enum
+      default: archived
+      choices:
+        - archived
+        - open
+        - closed
+    chat_duplicate_message_sensitivity:
+      type: float
+      default: 0.5
+      min: 0
+      max: 1
+    chat_minimum_message_length:
+      type: integer
+      default: 1
+      min: 1
+      max: 50
+      client: true
+    chat_maximum_message_length:
+      type: integer
+      default: 6000
+      client: true
+      hidden: true
+      min: 100
+      max: 12000
+    chat_allow_uploads:
+      default: true
+      client: true
+      validator: "Chat::AllowUploadsValidator"
+    chat_show_copy_button_on_codeblocks:
+      client: true
+      default: true
+      hidden: true
+    max_chat_auto_joined_users:
+      min: 0
+      default: 10000
+      hidden: true
+      client: true
+    direct_message_enabled_groups:
+      default: "11" # @trust_level_1
+      type: group_list
+      allow_any: false
+      refresh: true
+      validator: "Chat::DirectMessageEnabledGroupsValidator"
+      area: "group_permissions"
+    chat_pinning_messages_allowed_groups:
+      default: "1|2" # @admins, @moderators
+      mandatory_values: "1|2" # @admins, @moderators
+      type: group_list
+      list_type: compact
+      allow_any: false
+      refresh: true
+      area: "group_permissions"
+      depends_on:
+        - "chat_pinned_messages"
+      depends_behavior: "hidden"
+    chat_message_flag_allowed_groups:
+      default: "1|2|11" # @admins, @moderators, @trust_level_1
+      mandatory_values: "1|2" # @admins, @moderators
+      type: group_list
+      allow_any: false
+      refresh: true
+      area: "flags|group_permissions"
+    max_mentions_per_chat_message:
+      client: true
+      type: integer
+      default: 5
+      max: 10
+      min: 0
+      area: "notifications"
+    max_chat_draft_length:
+      default: 50_000
+      hidden: true
+    chat_separate_sidebar_mode:
+      client: true
+      default: "never"
+      type: enum
+      enum: "Chat::SeparateSidebarModeSiteSetting"
+      area: "navigation"
+    chat_editing_grace_period:
+      client: true
+      type: integer
+      default: 30
+      min: 0
+    chat_editing_grace_period_max_diff_low_trust:
+      client: true
+      type: integer
+      default: 10
+      min: 0
+    chat_editing_grace_period_max_diff_high_trust:
+      client: true
+      type: integer
+      default: 40
+      min: 0
+    chat_preferred_index:
+      client: true
+      type: enum
+      default: channels
+      choices:
+        - channels
+        - direct_messages
+        - my_threads
+    allow_chat_in_anonymous_mode:
+      default: false
+      validator: "Chat::AllowChatInAnonymousModeValidator"
+      depends_on:
+        - "allow_anonymous_mode"
+  
+---
+plugin: checklist
+enabled_site_setting: checklist_enabled
+settings:
+  plugins:
+    checklist_enabled:
+      default: true
+      client: true
+  
+---
+plugin: discourse-adplugin
+enabled_site_setting: discourse_adplugin_enabled
+settings:
+  ad_plugin:
+    discourse_adplugin_enabled:
+      client: true
+      default: false
+    no_ads_for_personal_messages:
+      client: true
+      default: true
+    no_ads_for_restricted_categories:
+      client: true
+      default: false
+    no_ads_for_groups:
+      default: ""
+      type: group_list
+    no_ads_for_categories:
+      client: true
+      default: ""
+      type: category_list
+    no_ads_for_tags:
+      client: true
+      default: ""
+      type: list
+    house_ads_after_nth_topic:
+      client: true
+      default: 20
+      min: 1
+      max: 10000
+    house_ads_after_nth_post:
+      client: true
+      default: 20
+      min: 1
+      max: 10000
+    house_ads_after_nth_root:
+      client: true
+      default: 5
+      min: 1
+      max: 10000
+    house_ads_frequency:
+      client: true
+      default: 100
+      min: 0
+      max: 100
+    ads_txt:
+      client: false
+      default: ""
+      textarea: true
+    ad_plugin_enable_tracking:
+      client: true
+      default: false
+    ad_plugin_routes_enabled:
+      client: true
+      default: false
+  
+  adsense_plugin:
+    adsense_publisher_code:
+      client: true
+      default: ""
+      regex: '^[\d]*$'
+    adsense_through_trust_level:
+      client: true
+      default: 2
+      enum: "TrustLevelSetting"
+      hidden: true
+    adsense_display_groups:
+      default: "10|11|12"
+      type: group_list
+      allow_any: false
+      refresh: true
+      validator: "AtLeastOneGroupValidator"
+      hidden: true
+    adsense_exclude_groups:
+      default: "3|13|14"
+      type: group_list
+      allow_any: false
+      refresh: true
+      validator: "AtLeastOneGroupValidator"
+    adsense_topic_list_top_code:
+      client: true
+      default: ""
+      max: 50
+      regex: '^[\d]*$'
+    adsense_topic_list_top_ad_sizes:
+      client: true
+      default: "728*90 - leaderboard"
+      type: list
+      choices: &adsense_choices
+        - responsive
+        - fluid - for in-feed ad units
+        - 728*90 - leaderboard
+        - 336*280 - large rectangle
+        - 300*250 - medium rectangle
+        - 970*90 - large leaderboard
+        - 970*250 - billboard
+        - 468*60 - banner
+        - 320*50 - mobile leaderboard
+        - 160*600 - wide skyscraper
+        - 234*60 - half banner
+        - 125*125 - button
+        - 180*150 - small rectangle
+        - 200*200 - small square
+        - 250*250 - square
+        - 300*600 - half page ad
+        - 320*100 - large mobile banner
+        - 690*250
+    adsense_mobile_topic_list_top_code:
+      client: true
+      default: ""
+      max: 50
+      regex: '^[\d]*$'
+    adsense_mobile_topic_list_top_ad_size:
+      client: true
+      default: "responsive"
+      type: list
+      choices: *adsense_choices
+    adsense_above_site_header_code:
+      client: true
+      default: ""
+      max: 50
+      regex: '^[\d]*$'
+    adsense_above_site_header_ad_sizes:
+      client: true
+      default: "728*90 - leaderboard"
+      type: list
+      choices: *adsense_choices
+    adsense_mobile_above_site_header_code:
+      client: true
+      default: ""
+      max: 50
+      regex: '^[\d]*$'
+    adsense_mobile_above_site_header_ad_size:
+      client: true
+      default: "responsive"
+      type: list
+      choices: *adsense_choices
+    adsense_topic_above_post_stream_code:
+      client: true
+      default: ""
+      max: 50
+      regex: '^[\d]*$'
+    adsense_topic_above_post_stream_ad_sizes:
+      client: true
+      default: "728*90 - leaderboard"
+      type: list
+      choices: *adsense_choices
+    adsense_mobile_topic_above_post_stream_code:
+      client: true
+      default: ""
+      max: 50
+      regex: '^[\d]*$'
+    adsense_mobile_topic_above_post_stream_ad_size:
+      client: true
+      default: "responsive"
+      type: list
+      choices: *adsense_choices
+    adsense_topic_above_suggested_code:
+      client: true
+      default: ""
+      max: 50
+      regex: '^[\d]*$'
+    adsense_topic_above_suggested_ad_sizes:
+      client: true
+      default: "728*90 - leaderboard"
+      type: list
+      choices: *adsense_choices
+    adsense_mobile_topic_above_suggested_code:
+      client: true
+      default: ""
+      max: 50
+      regex: '^[\d]*$'
+    adsense_mobile_topic_above_suggested_ad_size:
+      client: true
+      default: "responsive"
+      type: list
+      choices: *adsense_choices
+    adsense_post_bottom_code:
+      client: true
+      default: ""
+      max: 50
+      regex: '^[\d]*$'
+    adsense_post_bottom_ad_sizes:
+      client: true
+      default: "728*90 - leaderboard"
+      type: list
+      choices: *adsense_choices
+    adsense_mobile_post_bottom_code:
+      client: true
+      default: ""
+      max: 50
+      regex: '^[\d]*$'
+    adsense_mobile_post_bottom_ad_size:
+      client: true
+      default: "responsive"
+      type: list
+      choices: *adsense_choices
+    adsense_nth_post_code:
+      client: true
+      default: ""
+      min: 1
+  
+  dfp_plugin:
+    dfp_publisher_id:
+      client: true
+      default: ""
+    dfp_publisher_id_mobile:
+      client: true
+      default: ""
+    dfp_through_trust_level:
+      client: true
+      default: 2
+      enum: "TrustLevelSetting"
+      hidden: true
+    dfp_display_groups:
+      default: "10|11|12"
+      type: group_list
+      allow_any: false
+      refresh: true
+      validator: "AtLeastOneGroupValidator"
+      hidden: true
+    dfp_exclude_groups:
+      default: "3|13|14"
+      type: group_list
+      allow_any: false
+      refresh: true
+      validator: "AtLeastOneGroupValidator"
+    dfp_topic_list_top_code:
+      client: true
+      default: ""
+      max: 50
+    dfp_topic_list_top_ad_sizes:
+      client: true
+      default: "728*90 - leaderboard"
+      type: list
+      choices: &dfp_choices
+        - fluid
+        - 728*90 - leaderboard
+        - 336*280 - large rectangle
+        - 300*250 - medium rectangle
+        - 970*90 - large leaderboard
+        - 970*250 - billboard
+        - 468*60 - banner
+        - 320*50 - mobile leaderboard
+        - 160*600 - wide skyscraper
+        - 234*60 - half banner
+        - 125*125 - button
+        - 180*150 - small rectangle
+        - 200*200 - small square
+        - 250*250 - square
+        - 300*600 - half page ad
+        - 320*100 - large mobile banner
+        - 240*400 - vertical rectangle
+        - 120*600 - skyscraper
+        - 120*240 - vertical banner
+        - 120*90 - button 1
+        - 120*60 - button 2
+        - 120*30 - custom
+        - 120*20 - custom
+        - 690*250
+        - 768*1024
+        - 480*320
+        - 320*480
+        - 300*100
+        - 300*75
+        - 300*50
+        - 216*54
+        - 216*36
+        - 168*42
+        - 168*28
+    dfp_mobile_topic_list_top_code:
+      client: true
+      default: ""
+      max: 50
+    dfp_mobile_topic_list_top_ad_sizes:
+      client: true
+      default: "320*50 - mobile leaderboard"
+      type: list
+      choices: *dfp_choices
+    dfp_target_topic_list_top_key_code:
+      default: ""
+      type: value_list
+      client: true
+    dfp_target_topic_list_top_value_code:
+      default: ""
+      type: value_list
+      client: true
+    dfp_above_site_header_code:
+      client: true
+      default: ""
+      max: 50
+    dfp_above_site_header_ad_sizes:
+      client: true
+      default: "728*90 - leaderboard"
+      type: list
+      choices: *dfp_choices
+    dfp_mobile_above_site_header_code:
+      client: true
+      default: ""
+      max: 50
+    dfp_mobile_above_site_header_ad_sizes:
+      client: true
+      default: "320*50 - mobile leaderboard"
+      type: list
+      choices: *dfp_choices
+    dfp_target_above_site_header_key_code:
+      default: ""
+      type: value_list
+      client: true
+    dfp_target_above_site_header_value_code:
+      default: ""
+      type: value_list
+      client: true
+    dfp_topic_above_post_stream_code:
+      client: true
+      default: ""
+      max: 50
+    dfp_topic_above_post_stream_ad_sizes:
+      client: true
+      default: "728*90 - leaderboard"
+      type: list
+      choices: *dfp_choices
+    dfp_mobile_topic_above_post_stream_code:
+      client: true
+      default: ""
+      max: 50
+    dfp_mobile_topic_above_post_stream_ad_sizes:
+      client: true
+      default: "320*50 - mobile leaderboard"
+      type: list
+      choices: *dfp_choices
+    dfp_target_topic_above_post_stream_key_code:
+      default: ""
+      type: value_list
+      client: true
+    dfp_target_topic_above_post_stream_value_code:
+      default: ""
+      type: value_list
+      client: true
+    dfp_topic_above_suggested_code:
+      client: true
+      default: ""
+      max: 50
+    dfp_topic_above_suggested_ad_sizes:
+      client: true
+      default: "728*90 - leaderboard"
+      type: list
+      choices: *dfp_choices
+    dfp_mobile_topic_above_suggested_code:
+      client: true
+      default: ""
+      max: 50
+    dfp_mobile_topic_above_suggested_ad_sizes:
+      client: true
+      default: "320*50 - mobile leaderboard"
+      type: list
+      choices: *dfp_choices
+    dfp_target_topic_above_suggested_key_code:
+      default: ""
+      type: value_list
+      client: true
+    dfp_target_topic_above_suggested_value_code:
+      default: ""
+      type: value_list
+      client: true
+      max: 50
+    dfp_nth_post_code:
+      client: true
+      default: ""
+      min: 1
+    dfp_post_bottom_code:
+      client: true
+      default: ""
+      max: 50
+    dfp_post_bottom_ad_sizes:
+      client: true
+      default: "728*90 - leaderboard"
+      type: list
+      choices: *dfp_choices
+    dfp_mobile_post_bottom_code:
+      client: true
+      default: ""
+      max: 50
+    dfp_mobile_post_bottom_ad_sizes:
+      client: true
+      default: "320*50 - mobile leaderboard"
+      type: list
+      choices: *dfp_choices
+    dfp_target_post_bottom_key_code:
+      default: ""
+      type: value_list
+      client: true
+    dfp_target_post_bottom_value_code:
+      default: ""
+      type: value_list
+      client: true
+  
+  amazon_plugin:
+    amazon_through_trust_level:
+      client: true
+      default: 2
+      enum: "TrustLevelSetting"
+      hidden: true
+    amazon_display_groups:
+      client: true
+      default: "10|11|12"
+      type: group_list
+      allow_any: false
+      refresh: true
+      validator: "AtLeastOneGroupValidator"
+      hidden: true
+    amazon_exclude_groups:
+      default: "3|13|14"
+      type: group_list
+      allow_any: false
+      refresh: true
+      validator: "AtLeastOneGroupValidator"
+    amazon_topic_list_top_src_code:
+      client: true
+      default: ""
+    amazon_topic_list_top_ad_width_code:
+      client: true
+      default: ""
+    amazon_topic_list_top_ad_height_code:
+      client: true
+      default: ""
+    amazon_mobile_topic_list_top_src_code:
+      client: true
+      default: ""
+    amazon_mobile_topic_list_top_ad_width_code:
+      client: true
+      default: ""
+    amazon_mobile_topic_list_top_ad_height_code:
+      client: true
+      default: ""
+    amazon_above_site_header_src_code:
+      client: true
+      default: ""
+    amazon_above_site_header_ad_width_code:
+      client: true
+      default: ""
+    amazon_above_site_header_ad_height_code:
+      client: true
+      default: ""
+    amazon_mobile_above_site_header_src_code:
+      client: true
+      default: ""
+    amazon_mobile_above_site_header_ad_width_code:
+      client: true
+      default: ""
+    amazon_mobile_above_site_header_ad_height_code:
+      client: true
+      default: ""
+    amazon_topic_above_post_stream_src_code:
+      client: true
+      default: ""
+    amazon_topic_above_post_stream_ad_width_code:
+      client: true
+      default: ""
+    amazon_topic_above_post_stream_ad_height_code:
+      client: true
+      default: ""
+    amazon_mobile_topic_above_post_stream_src_code:
+      client: true
+      default: ""
+    amazon_mobile_topic_above_post_stream_ad_width_code:
+      client: true
+      default: ""
+    amazon_mobile_topic_above_post_stream_ad_height_code:
+      client: true
+      default: ""
+    amazon_topic_above_suggested_src_code:
+      client: true
+      default: ""
+    amazon_topic_above_suggested_ad_width_code:
+      client: true
+      default: ""
+    amazon_topic_above_suggested_ad_height_code:
+      client: true
+      default: ""
+    amazon_mobile_topic_above_suggested_src_code:
+      client: true
+      default: ""
+    amazon_mobile_topic_above_suggested_ad_width_code:
+      client: true
+      default: ""
+    amazon_mobile_topic_above_suggested_ad_height_code:
+      client: true
+      default: ""
+    amazon_post_bottom_src_code:
+      client: true
+      default: ""
+    amazon_nth_post_code:
+      client: true
+      default: ""
+      min: 1
+    amazon_post_bottom_ad_width_code:
+      client: true
+      default: ""
+    amazon_post_bottom_ad_height_code:
+      client: true
+      default: ""
+    amazon_mobile_post_bottom_src_code:
+      client: true
+      default: ""
+    amazon_mobile_post_bottom_ad_width_code:
+      client: true
+      default: ""
+    amazon_mobile_post_bottom_ad_height_code:
+      client: true
+      default: ""
+  
+  carbonads_plugin:
+    carbonads_serve_id:
+      client: true
+      default: ""
+    carbonads_placement:
+      client: true
+      default: ""
+    carbonads_through_trust_level:
+      client: true
+      default: 2
+      enum: "TrustLevelSetting"
+      hidden: true
+    carbonads_display_groups:
+      client: true
+      default: "10|11|12"
+      type: group_list
+      allow_any: false
+      refresh: true
+      validator: "AtLeastOneGroupValidator"
+      hidden: true
+    carbonads_exclude_groups:
+      default: "3|13|14"
+      type: group_list
+      allow_any: false
+      refresh: true
+      validator: "AtLeastOneGroupValidator"
+    carbonads_above_site_header_enabled:
+      client: true
+      default: false
+    carbonads_topic_list_top_enabled:
+      client: true
+      default: false
+    carbonads_above_post_stream_enabled:
+      client: true
+      default: false
+  
+  adbutler_plugin:
+    adbutler_publisher_id:
+      client: true
+      default: ""
+    adbutler_through_trust_level:
+      client: true
+      default: 2
+      enum: "TrustLevelSetting"
+      hidden: true
+    adbutler_display_groups:
+      client: true
+      default: "10|11|12"
+      type: group_list
+      allow_any: false
+      refresh: true
+      validator: "AtLeastOneGroupValidator"
+      hidden: true
+    adbutler_exclude_groups:
+      default: "3|13|14"
+      type: group_list
+      allow_any: false
+      refresh: true
+      validator: "AtLeastOneGroupValidator"
+    adbutler_topic_list_top_zone_id:
+      client: true
+      default: ""
+    adbutler_mobile_topic_list_top_zone_id:
+      client: true
+      default: ""
+    adbutler_above_site_header_zone_id:
+      client: true
+      default: ""
+    adbutler_mobile_above_site_header_zone_id:
+      client: true
+      default: ""
+    adbutler_topic_above_post_stream_zone_id:
+      client: true
+      default: ""
+    adbutler_mobile_topic_above_post_stream_zone_id:
+      client: true
+      default: ""
+    adbutler_topic_above_suggested_zone_id:
+      client: true
+      default: ""
+    adbutler_mobile_topic_above_suggested_zone_id:
+      client: true
+      default: ""
+    adbutler_post_bottom_zone_id:
+      client: true
+      default: ""
+    adbutler_mobile_post_bottom_zone_id:
+      client: true
+      default: ""
+    adbutler_nth_post:
+      client: true
+      default: 4
+      min: 1
+    adbutler_adserver_hostname:
+      client: true
+      default: "servedbyadbutler.com"
+  
+---
+plugin: discourse-affiliate
+enabled_site_setting: affiliate_enabled
+settings:
+  discourse_affiliate:
+    affiliate_enabled:
+      default: false
+      client: true
+    affiliate_amazon_ca:
+      default: ""
+      client: true
+    affiliate_amazon_cn:
+      default: ""
+      client: true
+    affiliate_amazon_co_jp:
+      default: ""
+      client: true
+    affiliate_amazon_co_uk:
+      default: ""
+      client: true
+    affiliate_amazon_com:
+      default: ""
+      client: true
+    affiliate_amazon_com_au:
+      default: ""
+      client: true
+    affiliate_amazon_com_br:
+      default: ""
+      client: true
+    affiliate_amazon_com_mx:
+      default: ""
+      client: true
+    affiliate_amazon_de:
+      default: ""
+      client: true
+    affiliate_amazon_es:
+      default: ""
+      client: true
+    affiliate_amazon_fr:
+      default: ""
+      client: true
+    affiliate_amazon_in:
+      default: ""
+      client: true
+    affiliate_amazon_it:
+      default: ""
+      client: true
+    affiliate_amazon_nl:
+      default: ""
+      client: true
+    affiliate_amazon_eu:
+      default: ""
+      client: true
+    affiliate_ldlc_com:
+      default: ""
+      client: true
+      regex: "^[a-zA-Z0-9]+$"
+  
+---
+plugin: discourse-ai
+enabled_site_setting: discourse_ai_enabled
+settings:
+  discourse_ai:
+    discourse_ai_enabled:
+      default: false
+      client: true
+    ai_artifact_security:
+      client: true
+      type: enum
+      default: "strict"
+      choices:
+        - "disabled"
+        - "lax"
+        - "hybrid"
+        - "strict"
+    ai_default_llm_model:
+      default: ""
+      type: enum
+      allow_any: false
+      enum: "DiscourseAi::Configuration::LlmEnumerator"
+      validator: "DiscourseAi::Configuration::LlmValidator"
+  
+    ai_sentiment_enabled:
+      default: false
+      client: true
+    ai_sentiment_model_configs:
+      default: ""
+      secret: true
+      json_schema: DiscourseAi::Sentiment::SentimentSiteSettingJsonSchema
+    ai_sentiment_sentiment_classification_strategy:
+      default: "classification_model"
+      type: enum
+      choices:
+        - classification_model
+        - agent
+    ai_sentiment_sentiment_agent:
+      default: "-36"
+      type: enum
+      enum: "DiscourseAi::Configuration::AgentEnumerator"
+    ai_sentiment_emotion_classification_strategy:
+      default: "classification_model"
+      type: enum
+      choices:
+        - classification_model
+        - agent
+    ai_sentiment_emotion_agent:
+      default: "-37"
+      type: enum
+      enum: "DiscourseAi::Configuration::AgentEnumerator"
+    ai_sentiment_backfill_maximum_posts_per_hour:
+      default: 2500
+      min: 0
+      max: 10000
+      hidden: true
+    ai_sentiment_backfill_post_max_age_days:
+      default: 60
+      hidden: true
+  
+    ai_openai_embeddings_url:
+      hidden: true
+      default: "https://api.openai.com/v1/embeddings"
+    ai_openai_organization:
+      default: ""
+      hidden: true
+    ai_hugging_face_tei_endpoint:
+      hidden: true
+      default: ""
+    ai_hugging_face_tei_endpoint_srv:
+      default: ""
+      hidden: true
+    ai_hugging_face_tei_api_key:
+      default: ""
+      hidden: true
+    ai_hugging_face_tei_reranker_endpoint:
+      default: ""
+    ai_hugging_face_tei_reranker_endpoint_srv:
+      default: ""
+      hidden: true
+    ai_hugging_face_tei_reranker_api_key:
+      default: ""
+      secret: true
+    ai_google_custom_search_api_key:
+      default: ""
+      secret: true
+    ai_google_custom_search_cx:
+      default: ""
+    ai_cloudflare_workers_account_id:
+      default: ""
+      secret: true
+      hidden: true
+    ai_cloudflare_workers_api_token:
+      default: ""
+      secret: true
+      hidden: true
+    ai_gemini_api_key:
+      default: ""
+      hidden: true
+    ai_llm_temperature_top_p_enabled:
+      default: false
+      hidden: true
+      client: true
+    ai_strict_token_counting:
+      default: false
+      hidden: true
+  
+    ai_helper_enabled:
+      default: false
+      client: true
+      validator: "DiscourseAi::Configuration::LlmDependencyValidator"
+      area: "ai-features/ai_helper"
+    composer_ai_helper_allowed_groups:
+      type: group_list
+      list_type: compact
+      default: "3|11" # 3: @staff, 11: @trust_level_1
+      allow_any: false
+      refresh: true
+      area: "ai-features/ai_helper"
+    ai_helper_allowed_in_pm:
+      default: false
+      client: true
+      area: "ai-features/ai_helper"
+    post_ai_helper_allowed_groups:
+      type: group_list
+      list_type: compact
+      default: "3|11" # 3: @staff, 11: @trust_level_1
+      allow_any: false
+      refresh: true
+      area: "ai-features/ai_helper"
+    ai_helper_automatic_chat_thread_title:
+      default: false
+      area: "ai-features/ai_helper"
+    ai_helper_automatic_chat_thread_title_delay:
+      default: 5
+      area: "ai-features/ai_helper"
+    ai_helper_enabled_features:
+      client: true
+      default: "suggestions|context_menu"
+      type: list
+      list_type: compact
+      allow_any: false
+      refresh: true
+      choices:
+        - "suggestions"
+        - "context_menu"
+      area: "ai-features/ai_helper"
+    ai_helper_proofreader_agent:
+      default: "-22"
+      type: enum
+      enum: "DiscourseAi::Configuration::AgentEnumerator"
+      area: "ai-features/ai_helper"
+    ai_helper_title_suggestions_agent:
+      default: "-23"
+      type: enum
+      enum: "DiscourseAi::Configuration::AgentEnumerator"
+      area: "ai-features/ai_helper"
+    ai_helper_explain_agent:
+      default: "-24"
+      type: enum
+      enum: "DiscourseAi::Configuration::AgentEnumerator"
+      area: "ai-features/ai_helper"
+    ai_helper_post_illustrator_agent:
+      default: "-21"
+      type: enum
+      enum: "DiscourseAi::Configuration::AgentEnumerator"
+      area: "ai-features/ai_helper"
+    ai_helper_smart_dates_agent:
+      default: "-19"
+      type: enum
+      enum: "DiscourseAi::Configuration::AgentEnumerator"
+      area: "ai-features/ai_helper"
+    ai_helper_translator_agent:
+      default: "-25"
+      type: enum
+      enum: "DiscourseAi::Configuration::AgentEnumerator"
+      area: "ai-features/ai_helper"
+    ai_helper_markdown_tables_agent:
+      default: "-20"
+      type: enum
+      enum: "DiscourseAi::Configuration::AgentEnumerator"
+      area: "ai-features/ai_helper"
+    ai_helper_custom_prompt_agent:
+      default: "-18"
+      type: enum
+      enum: "DiscourseAi::Configuration::AgentEnumerator"
+      area: "ai-features/ai_helper"
+    ai_image_caption_agent:
+      default: "-26"
+      type: enum
+      enum: "DiscourseAi::Configuration::AgentEnumerator"
+      validator: "DiscourseAi::Configuration::ImageCaptionAgentValidator"
+      area: "ai-features/image_caption"
+    ai_post_image_captions_enabled:
+      default: false
+      client: true
+      validator: "DiscourseAi::Configuration::ImageCaptionEnabledValidator"
+      area: "ai-features/image_caption"
+    ai_post_image_captions_per_post_limit:
+      default: 10
+      min: 1
+      area: "ai-features/image_caption"
+    ai_post_image_captions_backfill_hourly_rate:
+      default: 0
+      min: 0
+      area: "ai-features/image_caption"
+    ai_post_image_captions_backfill_max_age_days:
+      default: 30
+      min: 1
+      max: 10000
+      area: "ai-features/image_caption"
+    ai_helper_chat_thread_title_agent:
+      default: "-35"
+      type: enum
+      enum: "DiscourseAi::Configuration::AgentEnumerator"
+      area: "ai-features/ai_helper"
+  
+    ai_embeddings_enabled:
+      default: false
+      client: true
+      validator: "DiscourseAi::Configuration::EmbeddingsModuleValidator"
+      area: "ai-features/embeddings"
+    ai_embeddings_selected_model:
+      type: enum
+      default: ""
+      allow_any: false
+      enum: "DiscourseAi::Configuration::EmbeddingDefsEnumerator"
+      validator: "DiscourseAi::Configuration::EmbeddingDefsValidator"
+      area: "ai-features/embeddings"
+    ai_embeddings_backfill_model:
+      type: enum
+      default: ""
+      allow_any: false
+      enum: "DiscourseAi::Configuration::EmbeddingDefsEnumerator"
+      hidden: true
+    ai_embeddings_per_post_enabled:
+      default: false
+      hidden: true
+    ai_embeddings_generate_for_pms:
+      default: false
+      area: "ai-features/embeddings"
+    ai_embeddings_semantic_related_topics_enabled:
+      default: false
+      client: true
+      area: "ai-features/embeddings"
+    ai_embeddings_semantic_related_topics:
+      default: 5
+      area: "ai-features/embeddings"
+    ai_embeddings_semantic_related_include_closed_topics:
+      default: true
+      area: "ai-features/embeddings"
+    ai_embeddings_semantic_related_age_penalty:
+      default: 0.0
+      type: float
+      min: 0.0
+      max: 2.0
+      area: "ai-features/embeddings"
+    ai_embeddings_semantic_related_age_time_scale:
+      default: 365
+      type: integer
+      min: 1
+      max: 3650
+      area: "ai-features/embeddings"
+    ai_embeddings_backfill_batch_size:
+      default: 250
+      hidden: true
+    ai_embeddings_semantic_search_enabled:
+      default: false
+      client: true
+      area: "ai-features/embeddings"
+    ai_embeddings_semantic_search_use_hyde:
+      default: false
+      validator: "DiscourseAi::Configuration::LlmDependencyValidator"
+      area: "ai-features/embeddings"
+    ai_embeddings_semantic_quick_search_enabled:
+      default: false
+      client: true
+      area: "ai-features/embeddings"
+    ai_embeddings_semantic_search_hyde_agent:
+      default: "-32"
+      type: enum
+      enum: "DiscourseAi::Configuration::AgentEnumerator"
+      area: "ai-features/embeddings"
+  
+    ai_embeddings_discourse_service_api_endpoint:
+      default: ""
+      hidden: true
+    ai_embeddings_discourse_service_api_endpoint_srv:
+      default: ""
+      hidden: true
+    ai_embeddings_discourse_service_api_key:
+      hidden: true
+      default: ""
+      secret: true
+    ai_embeddings_model:
+      hidden: true
+      type: enum
+      default: "bge-large-en"
+      allow_any: false
+      choices:
+        - all-mpnet-base-v2
+        - text-embedding-ada-002
+        - text-embedding-3-small
+        - text-embedding-3-large
+        - multilingual-e5-large
+        - bge-large-en
+        - gemini
+        - bge-m3
+    ai_embeddings_pg_connection_string:
+      default: ""
+      hidden: true
+  
+    ai_admin_dashboard_enabled:
+      default: false
+      client: true
+      validator: "DiscourseAi::Configuration::LlmDependencyValidator"
+      area: "ai-features/admin_dashboard"
+    ai_admin_dashboard_highlights_agent:
+      default: "-38"
+      type: enum
+      enum: "DiscourseAi::Configuration::AgentEnumerator"
+      area: "ai-features/admin_dashboard"
+    ai_admin_dashboard_highlights_category_scope:
+      type: enum
+      default: "public"
+      enum: "CategoryScopeSiteSetting"
+      client: false
+      area: "ai-features/admin_dashboard"
+    ai_admin_dashboard_highlights_categories:
+      type: category_list
+      default: ""
+      client: false
+      area: "ai-features/admin_dashboard"
+      depends_on:
+        - ai_admin_dashboard_highlights_category_scope
+      depends_on_values:
+        ai_admin_dashboard_highlights_category_scope:
+          - include
+          - include_strict
+          - exclude
+          - exclude_strict
+      depends_behavior: "hidden"
+      dependent_setting_display: "inline"
+    ai_summarization_enabled:
+      default: false
+      client: true
+      validator: "DiscourseAi::Configuration::LlmDependencyValidator"
+      area: "ai-features/summarization"
+    ai_summarization_agent:
+      default: "-11"
+      type: enum
+      enum: "DiscourseAi::Configuration::AgentEnumerator"
+      area: "ai-features/summarization"
+    ai_pm_summarization_allowed_groups:
+      type: group_list
+      list_type: compact
+      default: ""
+      area: "ai-features/summarization"
+    ai_summary_gists_enabled:
+      default: false
+      client: true
+      area: "ai-features/summarization"
+    ai_summary_gists_agent:
+      default: "-12"
+      type: enum
+      enum: "DiscourseAi::Configuration::AgentEnumerator"
+      area: "ai-features/summarization"
+    ai_summary_backfill_topic_max_age_days:
+      default: 30
+      min: 1
+      max: 10000
+      area: "ai-features/summarization"
+    ai_summary_backfill_maximum_topics_per_hour:
+      default: 0
+      min: 0
+      max: 10000
+      area: "ai-features/summarization"
+    ai_summary_backfill_minimum_word_count:
+      default: 200
+      area: "ai-features/summarization"
+  
+    ai_bot_enabled:
+      default: false
+      client: true
+      area: "ai-features/bot"
+    enable_ai_bot_starred_conversations:
+      default: false
+      hidden: true
+      client: true
+      upcoming_change:
+        status: "permanent"
+        impact: "feature,all_members"
+        learn_more_url: "https://meta.discourse.org/t/-/403285"
+    ai_bot_enabled_llms:
+      default: ""
+      client: true
+      type: list
+      list_type: compact
+      allow_any: false
+      enum: "DiscourseAi::Configuration::LlmEnumerator"
+      refresh: true
+      area: "ai-features/bot"
+    ai_bot_enable_chat_warning:
+      default: false
+      client: true
+      area: "ai-features/bot"
+    ai_bot_debugging_allowed_groups:
+      type: group_list
+      list_type: compact
+      default: ""
+      allow_any: false
+      area: "ai-features/bot"
+    ai_bot_allowed_groups:
+      type: group_list
+      list_type: compact
+      default: "3|14" # 3: @staff, 14: @trust_level_4
+      area: "ai-features/bot"
+      disallowed_groups: "0" # everyone
+    ai_bot_public_sharing_allowed_groups:
+      client: false
+      type: group_list
+      list_type: compact
+      default: "1|2" # 1: admins, 2: moderators
+      allow_any: false
+      refresh: true
+      area: "ai-features/bot"
+    ai_bot_add_to_header:
+      default: false
+      client: true
+      area: "ai-features/bot"
+    ai_bot_add_to_community_section:
+      default: true
+      client: true
+      area: "ai-features/bot"
+    ai_bot_github_access_token:
+      default: ""
+      secret: true
+      area: "ai-features/bot"
+    ai_bot_enable_docked_composer:
+      default: false
+      hidden: true
+      client: true
+      area: "ai-features/bot"
+      upcoming_change:
+        status: "stable"
+        impact: "feature,all_members"
+        learn_more_url: "https://meta.discourse.org/t/-/403327"
+    ai_discover_enabled:
+      default: false
+      client: true
+      validator: "DiscourseAi::Configuration::DiscoverEnabledValidator"
+      area: "ai-features/search"
+    ai_discover_agent:
+      default: "-34"
+      type: enum
+      client: true
+      enum: "DiscourseAi::Configuration::AgentEnumerator"
+      area: "ai-features/search"
+    ai_ask_ai_enabled:
+      default: false
+      client: true
+      area: "ai-features/search"
+    ai_ask_ai_report_weekly_enabled:
+      default: false
+      area: "ai-features/search"
+    ai_ask_ai_report_agent:
+      default: "-42"
+      type: enum
+      enum: "DiscourseAi::Configuration::AgentEnumerator"
+      area: "ai-features/search"
+    ai_ask_ai_report_exclude_groups:
+      type: group_list
+      list_type: compact
+      default: "3"
+      disallowed_groups: "0"
+      allow_any: false
+      area: "ai-features/search"
+    ai_ask_ai_report_max_asks:
+      default: 200
+      min: 1
+      max: 1000
+      area: "ai-features/search"
+    ai_ask_ai_report_recipient_groups:
+      type: group_list
+      list_type: compact
+      default: "1"
+      disallowed_groups: "0"
+      allow_any: false
+      area: "ai-features/search"
+    ai_ask_ai_summary_detail:
+      default: "balanced"
+      type: enum
+      enum: "DiscourseAi::Configuration::AskAiSummaryDetailEnumerator"
+      client: true
+      area: "ai-features/search"
+    ai_ask_ai_related_count:
+      default: 2
+      min: 2
+      max: 6
+      client: true
+      area: "ai-features/search"
+    ai_ask_ai_agent:
+      default: "-41"
+      type: enum
+      client: true
+      enum: "DiscourseAi::Configuration::AgentEnumerator"
+      area: "ai-features/search"
+    ai_ask_ai_query_rewriter_agent:
+      default: "-40"
+      type: enum
+      enum: "DiscourseAi::Configuration::AgentEnumerator"
+      area: "ai-features/search"
+    ai_ask_ai_follow_up_agent:
+      default: "-1"
+      type: enum
+      client: true
+      enum: "DiscourseAi::Configuration::AgentEnumerator"
+      validator: "DiscourseAi::Configuration::AskAiFollowUpAgentValidator"
+      area: "ai-features/search"
+    ai_ask_ai_allowed_groups:
+      type: group_list
+      list_type: compact
+      default: "10" # 10: @trust_level_0
+      allow_any: false
+      refresh: true
+      area: "ai-features/search"
+    ai_automation_max_triage_per_minute:
+      default: 60
+      hidden: true
+    ai_automation_max_triage_per_post_per_minute:
+      default: 2
+      hidden: true
+    ai_discord_search_enabled:
+      default: false
+      client: true
+      validator: "DiscourseAi::Configuration::DiscordSearchAgentValidator"
+      area: "ai-features/discord"
+    ai_discord_app_id:
+      default: ""
+      client: false
+      area: "ai-features/discord"
+    ai_discord_app_public_key:
+      default: ""
+      client: false
+      area: "ai-features/discord"
+    ai_discord_search_mode:
+      default: "search"
+      type: enum
+      choices:
+        - search
+        - agent
+      validator: "DiscourseAi::Configuration::DiscordSearchAgentValidator"
+      area: "ai-features/discord"
+    ai_discord_search_agent:
+      default: ""
+      type: enum
+      enum: "DiscourseAi::Configuration::AgentEnumerator"
+      validator: "DiscourseAi::Configuration::DiscordSearchAgentValidator"
+      area: "ai-features/discord"
+    ai_discord_allowed_guilds:
+      type: list
+      list_type: compact
+      default: ""
+      area: "ai-features/discord"
+  
+    ai_spam_detection_enabled:
+      default: false
+      validator: "DiscourseAi::Configuration::SpamDetectionValidator"
+    ai_spam_detection_user_id:
+      default: ""
+      hidden: true
+    ai_spam_detection_max_post_count:
+      default: 3
+      min: 1
+      max: 100
+    ai_spam_detection_max_trust_level:
+      default: 1
+      type: enum
+      choices:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+    ai_rag_images_enabled:
+      default: false
+      hidden: true
+  
+    ai_translation_enabled:
+      default: false
+      client: true
+      refresh: true
+      validator: "DiscourseAi::Configuration::LlmDependencyValidator"
+      area: "ai-features/translation"
+    ai_translation_locale_detector_agent:
+      default: "-27"
+      type: enum
+      enum: "DiscourseAi::Configuration::AgentEnumerator"
+      area: "ai-features/translation"
+    ai_translation_post_raw_translator_agent:
+      default: "-28"
+      type: enum
+      enum: "DiscourseAi::Configuration::AgentEnumerator"
+      area: "ai-features/translation"
+    ai_translation_topic_title_translator_agent:
+      default: "-29"
+      type: enum
+      enum: "DiscourseAi::Configuration::AgentEnumerator"
+      area: "ai-features/translation"
+    ai_translation_short_text_translator_agent:
+      default: "-30"
+      type: enum
+      enum: "DiscourseAi::Configuration::AgentEnumerator"
+      area: "ai-features/translation"
+    ai_translation_backfill_hourly_rate:
+      default: 50
+      min: 0
+      max: 100000
+      client: false
+      area: "ai-features/translation"
+    ai_translation_category_scope:
+      type: enum
+      default: "public"
+      enum: "CategoryScopeSiteSetting"
+      client: false
+      area: "ai-features/translation"
+    ai_translation_categories:
+      type: category_list
+      default: ""
+      client: false
+      area: "ai-features/translation"
+      depends_on:
+        - ai_translation_category_scope
+      depends_on_values:
+        ai_translation_category_scope:
+          - include
+          - include_strict
+          - exclude
+          - exclude_strict
+      depends_behavior: "hidden"
+      dependent_setting_display: "inline"
+    ai_translation_personal_messages:
+      type: enum
+      default: "none"
+      choices:
+        - "none"
+        - "group"
+        - "all"
+      client: false
+      area: "ai-features/translation"
+    ai_translation_include_bot_content:
+      default: false
+      client: false
+      area: "ai-features/translation"
+    ai_translation_backfill_start_date:
+      default: ""
+      type: "date"
+      client: false
+      area: "ai-features/translation"
+  
+    ai_translation_backfill_parallel_jobs:
+      default: 1
+      min: 1
+      max: 10
+      hidden: true
+      area: "ai-features/translation"
+  
+    ai_translation_verbose_logs:
+      default: false
+      client: false
+      hidden: true
+      area: "ai-features/translation"
+  
+    inferred_concepts_enabled:
+      default: false
+      client: true
+      area: "ai-features/inference"
+    inferred_concepts_background_match:
+      default: false
+      client: false
+      area: "ai-features/inference"
+    inferred_concepts_daily_topics_limit:
+      default: 20
+      client: false
+      area: "ai-features/inference"
+    inferred_concepts_min_posts:
+      default: 5
+      client: false
+      area: "ai-features/inference"
+    inferred_concepts_min_likes:
+      default: 10
+      client: false
+      area: "ai-features/inference"
+    inferred_concepts_min_views:
+      default: 100
+      client: false
+      area: "ai-features/inference"
+    inferred_concepts_lookback_days:
+      default: 30
+      client: false
+      area: "ai-features/inference"
+    inferred_concepts_daily_posts_limit:
+      default: 30
+      client: false
+      area: "ai-features/inference"
+    inferred_concepts_post_min_likes:
+      default: 5
+      client: false
+      area: "ai-features/inference"
+    inferred_concepts_generate_agent:
+      default: "-15"
+      type: enum
+      enum: "DiscourseAi::Configuration::AgentEnumerator"
+      area: "ai-features/inference"
+    inferred_concepts_match_agent:
+      default: "-16"
+      type: enum
+      enum: "DiscourseAi::Configuration::AgentEnumerator"
+      area: "ai-features/inference"
+    inferred_concepts_deduplicate_agent:
+      default: "-17"
+      type: enum
+      enum: "DiscourseAi::Configuration::AgentEnumerator"
+      area: "ai-features/inference"
+    ai_artifact_kv_value_max_length:
+      default: 5000
+      hidden: true
+    ai_artifact_max_keys_per_user_per_artifact:
+      default: 100
+      hidden: true
+  
+    ai_usage_rollup_after_days:
+      default: 7
+      min: 0
+      client: false
+      hidden: true
+  
+    ai_audit_logs_detailed_retention_days:
+      default: 0
+      min: 0
+      max: 36500
+      client: false
+    ai_audit_logs_purge_after_days:
+      default: 180
+      min: 0
+      max: 36500
+      client: false
+  
+---
+plugin: discourse-apple-auth
+enabled_site_setting: sign_in_with_apple_enabled
+settings:
+  plugins:
+    sign_in_with_apple_enabled:
+      default: false
+      area: "authenticators"
+      validator: "AuthProviderCredentialsValidator"
+    apple_client_id:
+      default: ''
+      area: "authenticators"
+    apple_team_id:
+      default: ''
+      area: "authenticators"
+    apple_key_id:
+      default: ''
+      area: "authenticators"
+    apple_pem:
+      default: ''
+      textarea: true
+      area: "authenticators"
+  
+---
+plugin: discourse-assign
+enabled_site_setting: assign_enabled
+settings:
+  discourse_assign:
+    assign_enabled:
+      default: false
+      client: true
+    assigns_by_staff_mention: false
+    unassign_creates_tracking_post: true
+    assigns_public:
+      default: false
+      client: true
+    assign_self_regex: ""
+    assign_other_regex: ""
+    unassign_on_close: false
+    unassign_on_group_archive: false
+    reassign_on_open: false
+    invite_on_assign: false
+    assigns_user_url_path:
+      client: true
+      default: "/u/{username}/activity/assigned"
+    assign_mailer:
+      default: "never"
+      enum: "AssignMailerSiteSettings"
+    remind_assigns_frequency:
+      client: true
+      enum: "RemindAssignsFrequencySiteSettings"
+      default: 0
+    pending_assign_reminder_threshold:
+      client: true
+      default: 2
+      min: 1
+    max_assigned_topics:
+      client: true
+      default: 10
+      min: 1
+    assign_allowed_on_groups:
+      client: true
+      type: group_list
+      list_type: compact
+      default: "3"
+      allow_any: false
+      refresh: true
+    enable_assign_status:
+      default: false
+      client: true
+    assign_statuses:
+      client: true
+      type: list
+      default: "New|In Progress|Done"
+      allow_any: true
+      validator: AssignStatusesValidator
+    ignore_solved_topics_in_assigned_reminder:
+      default: false
+    assignment_status_on_solve:
+      type: string
+      default: ""
+    assignment_status_on_unsolve:
+      type: string
+      default: ""
+  
+---
+plugin: discourse-cakeday
+enabled_site_setting: cakeday_enabled
+settings:
+  plugins:
+    cakeday_enabled:
+      default: false
+      client: true
+    cakeday_emoji:
+      default: 'cake'
+      client: true
+    cakeday_birthday_enabled:
+      default: false
+      client: true
+    cakeday_birthday_emoji:
+      default: 'birthday'
+      client: true
+  
+---
+plugin: discourse-captcha
+enabled_site_setting: discourse_captcha_enabled
+settings:
+  discourse_captcha:
+    discourse_captcha_enabled:
+      default: false
+      client: true
+    discourse_captcha_provider:
+      default: "none"
+      client: true
+      type: enum
+      choices:
+        - hcaptcha
+        - recaptcha
+        - none
+    hcaptcha_site_key:
+      default: ''
+      client: true
+    hcaptcha_secret_key:
+      default: ''
+      client: false
+      secret: true
+    recaptcha_site_key:
+      default: ''
+      client: true
+    recaptcha_secret_key:
+      default: ''
+      client: false
+      secret: true
+  
+---
+plugin: discourse-chat-integration
+enabled_site_setting: chat_integration_enabled
+settings:
+  chat_integration:
+    chat_integration_enabled:
+      default: false
+    chat_integration_discourse_username:
+      default: system
+      type: username
+    chat_integration_delay_seconds:
+      default: 20
+  
+  #######################################
+  ########## SLACK SETTINGS #############
+  #######################################
+    chat_integration_slack_username:
+      default: ''
+    chat_integration_slack_enabled:
+      default: false
+      validator: "ChatIntegrationSlackEnabledSettingValidator"
+    chat_integration_slack_access_token:
+      default: ''
+      secret: true
+    chat_integration_slack_incoming_webhook_token:
+      default: ''
+      secret: true
+    chat_integration_slack_excerpt_length:
+      default: 400
+    chat_integration_slack_outbound_webhook_url:
+      default: ''
+      secret: true
+      regex: '^https:\/\/hooks\.slack\.com\/(services|workflows)\/.+$'
+    chat_integration_slack_icon_url:
+      default: ''
+    chat_integration_slack_transcript_quote:
+      default: true
+  
+  #######################################
+  ######### TELEGRAM SETTINGS ###########
+  #######################################
+    chat_integration_telegram_enabled:
+      default: false
+    chat_integration_telegram_access_token:
+      default: ''
+      secret: true
+    chat_integration_telegram_api_base_url:
+      default: 'https://api.telegram.org'
+      validator: "ChatIntegrationTelegramApiBaseUrlSettingValidator"
+    chat_integration_telegram_excerpt_length:
+      default: 400
+    chat_integration_telegram_enable_slash_commands:
+      default: true
+    chat_integration_telegram_secret:
+      default: ''
+      hidden: true
+  
+  #######################################
+  ########## DISCORD SETTINGS ###########
+  #######################################
+    chat_integration_discord_enabled:
+      default: false
+    chat_integration_discord_message_content:
+      default: ""
+    chat_integration_discord_excerpt_length:
+      default: 400
+  
+  #######################################
+  ########## GUILDED SETTINGS ###########
+  #######################################
+    chat_integration_guilded_enabled:
+      default: false
+    chat_integration_guilded_excerpt_length:
+      default: 400
+  
+  
+  #######################################
+  ######## MATTERMOST SETTINGS ##########
+  #######################################
+    chat_integration_mattermost_enabled:
+      default: false
+    chat_integration_mattermost_webhook_url:
+      default: ''
+      secret: true
+    chat_integration_mattermost_incoming_webhook_token:
+      default: ''
+      secret: true
+    chat_integration_mattermost_icon_url:
+      default: ''
+    chat_integration_mattermost_excerpt_length:
+      default: 400
+  
+  #######################################
+  ########## MATRIX SETTINGS ############
+  #######################################
+    chat_integration_matrix_enabled:
+      default: false
+    chat_integration_matrix_homeserver:
+      default: 'https://matrix.org'
+    chat_integration_matrix_access_token:
+      default: ''
+      secret: true
+    chat_integration_matrix_excerpt_length:
+      default: 400
+    chat_integration_matrix_use_notice:
+      default: true
+  
+  #######################################
+  ########### ZULIP SETTINGS ############
+  #######################################
+    chat_integration_zulip_enabled:
+      default: false
+    chat_integration_zulip_server:
+      default: ''
+    chat_integration_zulip_bot_email_address:
+      default: ''
+    chat_integration_zulip_bot_api_key:
+      default: ''
+      secret: true
+    chat_integration_zulip_excerpt_length:
+      default: 400
+  
+  #######################################
+  ######## ROCKET CHAT SETTINGS #########
+  #######################################
+    chat_integration_rocketchat_enabled:
+      default: false
+    chat_integration_rocketchat_webhook_url:
+      default: ''
+      secret: true
+    chat_integration_rocketchat_excerpt_length:
+      default: 400
+  
+  #######################################
+  ########## GITTER SETTINGS ############
+  #######################################
+    chat_integration_gitter_enabled:
+      default: false
+  
+  #######################################
+  ########## GROUPME SETTINGS ##########
+  #######################################
+    chat_integration_groupme_enabled:
+      default: false
+    chat_integration_groupme_excerpt_length:
+      default: 400
+    chat_integration_groupme_bot_ids:
+      default: ''
+    chat_integration_groupme_instance_names:
+      default: ''
+  ###########################################
+  ######## MICROSOFT TEAMS SETTINGS #########
+  ###########################################
+    chat_integration_teams_enabled:
+      default: false
+    chat_integration_teams_excerpt_length:
+      default: 400
+  ####################################################
+  ######## MICROSOFT POWER AUTOMATE SETTINGS #########
+  ####################################################
+    chat_integration_powerautomate_enabled:
+      default: false
+    chat_integration_powerautomate_excerpt_length:
+      default: 400
+  #################################
+  ######## WEBEX SETTINGS #########
+  #################################
+    chat_integration_webex_enabled:
+      default: false
+    chat_integration_webex_excerpt_length:
+      default: 400
+  ###########################################
+  ########## GOOGLE CHAT SETTINGS ###########
+  ###########################################
+    chat_integration_google_enabled:
+      default: false
+    chat_integration_google_excerpt_length:
+      default: 100
+  
+---
+plugin: discourse-data-explorer
+enabled_site_setting: data_explorer_enabled
+settings:
+  discourse_data_explorer:
+    data_explorer_enabled:
+      default: false
+      client: true
+    data_explorer_ai_queries_enabled:
+      default: true
+      client: true
+      depends_on:
+        - discourse_ai_enabled
+      depends_behavior: hidden
+    data_explorer_query_result_limit:
+      default: 1000
+      hidden: true
+      max: 10000
+  
+---
+plugin: discourse-details
+enabled_site_setting: details_enabled
+settings:
+  plugins:
+    details_enabled:
+      default: true
+      client: true
+  
+---
+plugin: discourse-events
+enabled_site_setting: discourse_events_enabled
+settings:
+  discourse_events:
+    discourse_events_enabled:
+      default: false
+      client: true
+    holiday_calendar_topic_id:
+      default: ""
+      client: true
+    holiday_status_emoji:
+      client: true
+      default: "date"
+    delete_expired_event_posts_after:
+      min: -1
+      default: -1
+    all_day_event_start_time:
+      default: ""
+      client: true
+      validator: "DiscourseEvents::Configuration::TimeOfDayValidator"
+    all_day_event_end_time:
+      default: ""
+      client: true
+      validator: "DiscourseEvents::Configuration::TimeOfDayValidator"
+    calendar_categories:
+      type: list
+      list_type: simple
+      client: true
+      default: ""
+    calendar_event_display:
+      client: true
+      default: "auto"
+      type: enum
+      choices:
+        - auto
+        - block
+        - list-item
+    calendar_categories_outlet:
+      client: true
+      default: "discovery-list-container-top"
+      type: enum
+      choices:
+        - none
+        - discovery-list-container-top
+        - before-topic-list-body
+    working_days:
+      type: list
+      list_type: simple
+      default: Monday|Tuesday|Wednesday|Thursday|Friday
+      client: true
+    working_day_start_hour:
+      default: 8
+      client: true
+    working_day_end_hour:
+      default: 17
+      client: true
+    close_to_working_day_hours_extension:
+      default: 2
+      client: true
+    calendar_automatic_holidays_enabled: true
+    split_grouped_events_by_timezone_threshold:
+      default: 0
+      client: true
+      hidden: true
+    event_participation_buttons:
+      default: "going|interested|not going"
+      client: true
+      type: list
+      list_type: simple
+      allow_any: false
+      choices:
+        - going
+        - interested
+        - not going
+    discourse_post_event_enabled:
+      default: false
+      client: true
+    discourse_post_event_allowed_on_groups:
+      client: true
+      type: group_list
+      list_type: compact
+      default: ""
+      allow_any: false
+      refresh: true
+      mandatory_values: "1|2" # admins, moderators
+    displayed_invitees_limit:
+      default: 10
+      client: false
+      max: 25
+    display_post_event_date_on_topic_title:
+      default: true
+      client: true
+    use_local_event_date:
+      default: false
+      client: true
+    discourse_post_event_max_bulk_invitees:
+      default: 500
+      hidden: true
+    discourse_post_event_edit_notifications_time_extension:
+      default: 0
+      min: 0
+    discourse_post_event_allowed_custom_fields:
+      type: list
+      list_type: simple
+      client: true
+      default: ""
+      validator: "DiscourseEvents::Configuration::EventCustomFieldsValidator"
+    events_calendar_categories:
+      type: category_list
+      client: true
+      default: ""
+    sort_categories_by_event_start_date_enabled:
+      default: false
+      client: true
+    disable_resorting_on_categories_enabled:
+      default: false
+      client: true
+    sidebar_show_upcoming_events:
+      default: true
+      client: true
+    map_events_to_color:
+      client: true
+      default: "[]"
+      json_schema: DiscourseEvents::Configuration::MapEventTagColorsJsonSchema
+    map_events_title:
+      client: true
+      default: ""
+      json_schema: DiscourseEvents::Configuration::MapEventsTitleJsonSchema
+    calendar_first_day_of_week:
+      type: enum
+      enum: "DiscourseEvents::Configuration::FirstDayOfWeek"
+      default: monday
+      client: true
+    calendar_upcoming_events_default_view:
+      type: enum
+      enum: "DiscourseEvents::Configuration::UpcomingEventsDefaultView"
+      default: month
+      client: true
+    enable_events_category_type_setup:
+      default: false
+      hidden: true
+      client: true
+      upcoming_change:
+        status: "permanent"
+        impact: "feature,staff"
+        learn_more_url: "https://meta.discourse.org/t/-/401309"
+        requires_plugin_enabled: false
+    enable_improved_event_reminders:
+      default: false
+      hidden: true
+      client: true
+      upcoming_change:
+        status: "experimental"
+        impact: "feature,all_members"
+        learn_more_url: "https://meta.discourse.org/t/-/412427"
+    livestream_allowed_hosts:
+      type: host_list
+      default: "youtube.com|youtu.be|twitch.tv|zoom.us|kick.com|tiktok.com|instagram.com|facebook.com"
+      client: true
+      hidden: true
+      validator: "DiscourseEvents::Livestream::AllowedHostsValidator"
+    livestream_zoom_enabled:
+      default: false
+      client: true
+    livestream_zoom_sdk_key:
+      default: ""
+    livestream_zoom_sdk_secret:
+      default: ""
+      secret: true
+    livestream_embeddable_chat_allowed_paths:
+      type: list
+      default: "/t"
+      client: true
+      hidden: true
+    livestream_enable_modal_chat_on_mobile:
+      default: true
+      client: true
+  
+---
+plugin: discourse-gamification
+enabled_site_setting: discourse_gamification_enabled
+settings:
+  discourse_gamification:
+    discourse_gamification_enabled:
+      default: false
+      client: true
+    scorable_categories:
+      type: category_list
+      default: ""
+    like_received_score_value:
+      default: 1
+    like_given_score_value:
+      default: 1
+    solution_score_value:
+      default: 10
+    user_invited_score_value:
+      default: 10
+    time_read_score_value:
+      default: 1
+    post_read_score_value:
+      default: 1
+    topic_created_score_value:
+      default: 5
+    post_created_score_value:
+      default: 2
+    flag_created_score_value:
+      default: 10
+    day_visited_score_value:
+      default: 1
+    reaction_received_score_value:
+      default: 1
+    reaction_given_score_value:
+      default: 1
+    chat_reaction_received_score_value:
+      default: 1
+    chat_reaction_given_score_value:
+      default: 1
+    chat_message_created_score_value:
+      default: 1
+    score_ranking_strategy:
+      default: dense_rank
+      type: enum
+      choices:
+        - dense_rank
+        - rank
+        - row_number
+  
+---
+plugin: discourse-github
+enabled_site_setting: enable_discourse_github_plugin
+settings:
+  discourse_github:
+    enable_discourse_github_plugin:
+      default: false
+    github_linkback_enabled:
+      default: false
+    github_linkback_projects:
+      default: ""
+      type: list
+    github_linkback_access_token:
+      default: ""
+      secret: true
+      validator: "GithubLinkbackAccessTokenSettingValidator"
+    github_linkback_maximum_links:
+      default: 25
+      min: 1
+    github_linkback_ignored_categories:
+      default: ""
+      type: category_list
+    github_badges_enabled:
+      default: false
+    github_badges_repos:
+      default: ""
+      type: list
+      validator: "GithubBadgesRepoSettingValidator"
+    github_permalinks_enabled:
+      default: false
+    github_pr_status_enabled:
+      default: false
+    github_webhook_secret:
+      default: ""
+      secret: true
+    github_permalinks_exclude:
+      default: "README.md"
+      type: list
+    github_silver_badge_min_commits:
+      default: 25
+      min: 1
+    github_gold_badge_min_commits:
+      default: 250
+      min: 1
+  
+---
+plugin: discourse-graphviz
+enabled_site_setting: discourse_graphviz_enabled
+settings:
+  plugins:
+    discourse_graphviz_enabled:
+      default: false
+      client: true
+  
+---
+plugin: discourse-lazy-videos
+enabled_site_setting: lazy_videos_enabled
+settings:
+  plugins:
+    lazy_videos_enabled:
+      default: true
+      client: true
+    lazy_youtube_enabled:
+      default: true
+      client: true
+    lazy_vimeo_enabled:
+      default: true
+      client: true
+    lazy_tiktok_enabled:
+      default: false
+      client: true
+  
+---
+plugin: discourse-local-dates
+enabled_site_setting: discourse_local_dates_enabled
+settings:
+  plugins:
+    discourse_local_dates_email_timezone:
+      default: "Etc/UTC"
+      client: true
+      area: "localization"
+    discourse_local_dates_email_format:
+      default: "llll z"
+      client: true
+    discourse_local_dates_enabled:
+      default: true
+      client: true
+      area: "localization"
+    discourse_local_dates_default_formats:
+      default: "LLL|LTS|LL|LLLL"
+      client: true
+      type: list
+    discourse_local_dates_default_timezones:
+      default: "Europe/Paris|America/Los_Angeles"
+      client: true
+      type: list
+  
+---
+plugin: discourse-login-with-amazon
+enabled_site_setting: enable_login_with_amazon
+settings:
+  discourse_login_with_amazon:
+    enable_login_with_amazon:
+      default: false
+      validator: "AuthProviderCredentialsValidator"
+      area: "authenticators"
+    login_with_amazon_client_id:
+      default: ""
+      secret: true
+      area: "authenticators"
+    login_with_amazon_client_secret:
+      default: ""
+      secret: true
+      area: "authenticators"
+    login_with_amazon_scope:
+      default: "profile"
+      area: "authenticators"
+    login_with_amazon_overrides_email:
+      default: false
+      area: "authenticators"
+    login_with_amazon_email_verified:
+      hidden: true
+      default: true
+      area: "authenticators"
+    login_with_amazon_user_can_connect:
+      default: true
+      area: "authenticators"
+    login_with_amazon_user_can_revoke:
+      default: true
+      area: "authenticators"
+  
+---
+plugin: discourse-lti
+enabled_site_setting: lti_enabled
+settings:
+  plugins:
+    lti_enabled:
+      default: false
+      validator: "AuthProviderCredentialsValidator"
+    lti_authorization_endpoint:
+      default: ""
+    lti_client_ids: 
+      type: list
+      default: ""
+    lti_platform_issuer_id:
+      default: ""
+    lti_platform_public_key:
+      default: ""
+      textarea: true
+    lti_email_verified:
+      default: false
+  
+---
+plugin: discourse-math
+enabled_site_setting: discourse_math_enabled
+settings:
+  discourse_math:
+    discourse_math_enabled:
+      default: false
+      client: true
+    discourse_math_provider:
+      default: "mathjax"
+      client: true
+      type: enum
+      choices:
+        - mathjax
+        - katex
+    discourse_math_enable_latex_delimiters:
+      default: true
+      client: true
+    discourse_math_mathjax_output:
+      default: "html"
+      client: true
+      type: enum
+      choices:
+        - html
+        - svg
+    discourse_math_enable_menu:
+      default: true
+      client: true
+    discourse_math_zoom_on_click:
+      default: false
+      client: true
+    discourse_math_enable_accessibility:
+      default: false
+      client: true
+    discourse_math_enable_asciimath:
+      default: false
+      client: true
+  
+---
+plugin: discourse-microsoft-auth
+enabled_site_setting: microsoft_auth_enabled
+settings:
+  plugins:
+    microsoft_auth_enabled:
+      client: true
+      default: false
+      validator: "AuthProviderCredentialsValidator"
+      area: "authenticators"
+    microsoft_auth_client_id:
+      client: false
+      default: ""
+      area: "authenticators"
+    microsoft_auth_client_secret:
+      client: false
+      default: ""
+      secret: true
+      area: "authenticators"
+    microsoft_auth_email_verified:
+      default: false
+      area: "authenticators"
+    microsoft_auth_tenant_id:
+      client: false
+      default: "common"
+      area: "authenticators"
+  
+---
+plugin: discourse-narrative-bot
+enabled_site_setting: discourse_narrative_bot_enabled
+settings:
+  plugins:
+    discourse_narrative_bot_enabled:
+      default: true
+      client: true
+    disable_discourse_narrative_bot_welcome_post:
+      default: true
+    discourse_narrative_bot_welcome_post_type:
+      default: 'new_user_track'
+      enum: 'DiscourseNarrativeBot::WelcomePostTypeSiteSetting'
+    discourse_narrative_bot_skip_tutorials:
+      default: ''
+      type: list
+      hidden: true
+    discourse_narrative_bot_welcome_post_delay:
+      default: 0
+    discourse_narrative_bot_ignored_usernames:
+      default: 'discourse'
+      type: list
+    discourse_narrative_bot_disable_public_replies:
+      default: false
+  
+  uncategorized:
+    send_welcome_message:
+      default: false
+      hidden: true
+  
+---
+plugin: discourse-oauth2-basic
+enabled_site_setting: oauth2_enabled
+settings:
+  login:
+    oauth2_enabled:
+      default: false
+      client: true
+      validator: "AuthProviderCredentialsValidator"
+      area: "oauth2"
+    oauth2_client_id:
+      default: ""
+      area: "oauth2"
+    oauth2_client_secret:
+      default: ""
+      secret: true
+      area: "oauth2"
+    oauth2_authorize_url:
+      default: ""
+      area: "oauth2"
+    oauth2_authorize_signup_url:
+      default: ""
+      area: "oauth2"
+    oauth2_token_url:
+      default: ""
+      area: "oauth2"
+    oauth2_token_url_method:
+      default: "POST"
+      type: enum
+      choices:
+        - GET
+        - POST
+        - PUT
+      area: "oauth2"
+    oauth2_callback_user_id_path:
+      default: ""
+      area: "oauth2"
+    oauth2_callback_user_info_paths:
+      type: list
+      default: "id"
+      area: "oauth2"
+    oauth2_fetch_user_details:
+      default: true
+      validator: "Oauth2FetchUserDetailsValidator"
+      area: "oauth2"
+    oauth2_user_json_url:
+      default: ""
+      area: "oauth2"
+    oauth2_user_json_url_method:
+      default: "GET"
+      type: enum
+      choices:
+        - GET
+        - POST
+      area: "oauth2"
+    oauth2_json_user_id_path:
+      default: ""
+      area: "oauth2"
+    oauth2_json_username_path:
+      default: ""
+      area: "oauth2"
+    oauth2_json_name_path:
+      default: ""
+      area: "oauth2"
+    oauth2_json_email_path:
+      default: ""
+      area: "oauth2"
+    oauth2_json_email_verified_path:
+      default: ""
+      area: "oauth2"
+    oauth2_json_avatar_path:
+      default: ""
+      area: "oauth2"
+    oauth2_json_groups_path:
+      default: ""
+      area: "oauth2"
+    oauth2_user_field_mappings:
+      type: objects
+      default: []
+      area: "oauth2"
+      schema:
+        name: mapping
+        properties:
+          path:
+            type: string
+            required: true
+          user_field_id:
+            type: integer
+            required: true
+    oauth2_email_verified:
+      default: false
+      area: "oauth2"
+    oauth2_overrides_email:
+      default: false
+      area: "oauth2"
+    oauth2_send_auth_header:
+      default: true
+      area: "oauth2"
+    oauth2_send_auth_body:
+      default: true
+      area: "oauth2"
+    oauth2_debug_auth:
+      default: false
+      area: "oauth2"
+    oauth2_authorize_options:
+      default: "scope"
+      type: list
+      area: "oauth2"
+    oauth2_scope:
+      default: ""
+      area: "oauth2"
+    oauth2_button_title:
+      default: "with OAuth2"
+      client: true
+      area: "oauth2"
+    oauth2_allow_association_change:
+      default: false
+      area: "oauth2"
+    oauth2_disable_csrf:
+      default: false
+      hidden: true
+  
+---
+plugin: discourse-openid-connect
+enabled_site_setting: openid_connect_enabled
+settings:
+  discourse_openid_connect:
+    openid_connect_enabled:
+      default: false
+      validator: "AuthProviderCredentialsValidator"
+      area: "oidc"
+    openid_connect_discovery_document:
+      default: ""
+      area: "oidc"
+    openid_connect_client_id:
+      default: ""
+      area: "oidc"
+    openid_connect_client_secret:
+      default: ""
+      secret: true
+      area: "oidc"
+    openid_connect_rp_initiated_logout:
+      default: false
+      area: "oidc"
+    openid_connect_rp_initiated_logout_redirect:
+      default: ""
+      area: "oidc"
+    openid_connect_rp_initiated_logout_include_client_id:
+      default: false
+      area: "oidc"
+    openid_connect_rp_initiated_logout_include_state:
+      default: false
+      area: "oidc"
+    openid_connect_allow_association_change:
+      default: false
+      area: "oidc"
+    openid_connect_overrides_email:
+      default: false
+      area: "oidc"
+    openid_connect_authorize_scope:
+      default: "openid"
+      area: "oidc"
+    openid_connect_verbose_logging:
+      default: false
+      area: "oidc"
+    openid_connect_token_scope:
+      default: ""
+      area: "oidc"
+    openid_connect_error_redirects:
+      default: ""
+      type: list
+      list_type: secret
+      area: "oidc"
+    openid_connect_authorize_parameters:
+      default: ""
+      type: list
+      list_type: compact
+      area: "oidc"
+    openid_connect_claims:
+      default: ""
+      textarea: true
+      area: "oidc"
+    openid_connect_match_by_email:
+      default: true
+      area: "oidc"
+    openid_connect_groups_claim:
+      default: ""
+      area: "oidc"
+    openid_connect_user_field_mappings:
+      type: objects
+      default: []
+      area: "oidc"
+      schema:
+        name: mapping
+        properties:
+          claim:
+            type: string
+            required: true
+          user_field_id:
+            type: integer
+            required: true
+    openid_connect_use_pkce:
+      default: false
+      area: "oidc"
+    openid_connect_mtls_client_cert:
+      default: ""
+      textarea: true
+      area: "oidc"
+    openid_connect_mtls_client_key:
+      default: ""
+      textarea: true
+      secret: true
+      area: "oidc"
+    openid_connect_mtls_client_key_passcode:
+      default: ""
+      secret: true
+      area: "oidc"
+  
+---
+plugin: discourse-patreon
+enabled_site_setting: patreon_enabled
+settings:
+  discourse_patreon:
+    patreon_enabled:
+      default: false
+      client: true
+    patreon_login_enabled:
+      default: false
+      client: true
+      validator: 'AuthProviderCredentialsValidator'
+    patreon_api_version:
+      default: "1"
+      type: enum
+      choices:
+        - "1"
+        - "2"
+    patreon_client_id:
+      default: ''
+    patreon_client_secret:
+      default: ''
+      secret: true
+    patreon_webhook_secret:
+      default: ''
+      secret: true
+    patreon_creator_discourse_username:
+      default: ''
+      type: username
+    patreon_creator_access_token:
+      default: ''
+      secret: true
+    patreon_creator_refresh_token:
+      default: ''
+      secret: true
+    patreon_declined_pledges_grace_period_days:
+      default: 7
+    max_patreon_api_reqs_per_hr:
+      default: 100
+    max_patreon_api_reqs_per_day:
+      default: 1000
+    patreon_verbose_log:
+      default: false
+    patreon_login_ignore_state:
+      default: false
+      hidden: true
+    patreon_donation_prompt_enabled:
+      default: false
+      client: true
+    patreon_donation_prompt_show_after_topics:
+      default: 20
+      client: true
+      min: 0
+    patreon_donation_prompt_campaign_url:
+      default: ""
+      client: true
+      regex: "^https?:\\/\\/.+[^\\/]$"
+  
+---
+plugin: discourse-policy
+enabled_site_setting: policy_enabled
+settings:
+  plugins:
+    policy_enabled:
+      default: false
+      client: true
+    policy_restrict_to_staff_posts:
+      client: true
+      default: true
+      hidden: true
+    create_policy_allowed_groups:
+      client: true
+      type: group_list
+      default: "1|2" # Admins + moderators.
+      mandatory_values: "1|2"
+      allow_any: false
+      refresh: true
+      validator: "AtLeastOneGroupValidator"
+    policy_easy_revoke:
+      default: false
+  
+---
+plugin: discourse-post-voting
+enabled_site_setting: post_voting_enabled
+settings:
+  discourse_post_voting:
+    post_voting_enabled:
+      client: true
+      default: false
+    post_voting_undo_vote_action_window:
+      default: 10
+    post_voting_comment_enabled:
+      client: true
+      default: true
+    post_voting_comment_limit_per_post:
+      default: 10
+      min: 1
+      client: true
+    post_voting_comment_max_raw_length:
+      client: true
+      hidden: true
+      default: 600
+    post_voting_enable_likes_on_answers:
+      client: true
+      default: false
+    flag_posts_voting_comments_allowed_groups:
+      default: "11" # auto group trust_level_1
+      type: group_list
+      allow_any: false
+      refresh: true
+      validator: "AtLeastOneGroupValidator"
+  
+---
+plugin: discourse-presence
+enabled_site_setting: presence_enabled
+settings:
+  plugins:
+    presence_enabled:
+      default: true
+      client: true
+    presence_max_users_shown:
+      default: 5
+      client: true
+      min: 1
+      max: 50
+  
+---
+plugin: discourse-reactions
+enabled_site_setting: discourse_reactions_enabled
+settings:
+  discourse_reactions:
+    discourse_reactions_enabled:
+      default: true
+      client: true
+    discourse_reactions_like_icon:
+      client: true
+      type: icon
+      default: "heart"
+    discourse_reactions_reaction_for_like:
+      client: true
+      type: enum
+      default: "heart"
+      enum: ReactionForLikeSiteSettingEnum
+    discourse_reactions_enabled_reactions:
+      type: emoji_list
+      default: "+1|laughing|open_mouth|clap|confetti_ball|hugs"
+      client: true
+      area: "emojis"
+    discourse_reactions_desaturated_reaction_panel:
+      default: false
+      client: true
+    discourse_reactions_excluded_from_like:
+      type: emoji_list
+      default: "-1|poop|face_with_symbols_on_mouth|enraged_face|face_vomiting|nauseated_face|angry|kitchen_knife|water_pistol|bomb|clown_face|unamused_face|roll_eyes|confused|smirking_face|disappointed_face|pensive_face|lying_face|weary_face|tired_face|confounded_face|persevering_face|smiling_face_with_horns|angry_face_with_horns|cigarette|person_gesturing_no|prohibited|no_entry|dagger|cross_mark"
+      validator: "ReactionsExcludedFromLikeSiteSettingValidator"
+      area: "emojis"
+    discourse_reactions_like_sync_enabled:
+      default: true
+      hidden: true
+    discourse_reactions_allow_any_emoji:
+      default: false
+      client: true
+      area: "emojis"
+    enable_discourse_reactions_by_default:
+      default: false
+      hidden: true
+      client: true
+      upcoming_change:
+        status: "permanent"
+        impact: "site_setting_default,all_members"
+        learn_more_url: "https://meta.discourse.org/t/-/403795"
+        permanent_warning: false
+        requires_plugin_enabled: false
+    enable_new_post_reply_count_position:
+      default: false
+      client: true
+      hidden: true
+      area: "experimental"
+      upcoming_change:
+        status: "permanent"
+        impact: "feature,all_members"
+        learn_more_url: "https://meta.discourse.org/t/-/403390"
+  
+---
+plugin: discourse-rewind
+enabled_site_setting: discourse_rewind_enabled
+settings:
+  discourse_rewind:
+    discourse_rewind_enabled:
+      default: false
+      client: true
+  
+---
+plugin: discourse-rss-polling
+enabled_site_setting: rss_polling_enabled
+settings:
+  plugins:
+    rss_polling_enabled:
+      default: false
+      shadowed_by_global: true
+  
+    rss_polling_frequency:
+      min: 10
+      max: 180
+      default: 30
+      client: false
+  
+    rss_polling_feed_request_timeout:
+      min: 5
+      max: 300
+      default: 30
+      client: false
+  
+    rss_polling_verbose_logging:
+      default: false
+      client: false
+  
+    rss_polling_use_pubdate:
+      default: false
+      client: false
+  
+    rss_polling_update_tags:
+      default: true
+      client: false
+---
+plugin: discourse-solved
+enabled_site_setting: solved_enabled
+settings:
+  discourse_solved:
+    solved_enabled:
+      default: true
+      client: true
+    solved_allow_multiple_solutions:
+      default: false
+      client: true
+      hidden: true
+    show_who_marked_solved:
+      default: false
+      client: true
+    allow_solved_on_all_topics:
+      default: false
+      client: true
+    allow_solved_in_groups:
+      type: group_list
+      default: ""
+      allow_any: false
+      refresh: true
+    accept_all_solutions_trust_level:
+      default: 4
+      client: true
+      enum: "TrustLevelSetting"
+      hidden: true
+    accept_all_solutions_allowed_groups:
+      default: "1|2|14" # auto group admin, moderators and trust_level_4
+      mandatory_values: "1|2" # auto group admins, moderators
+      type: group_list
+      client: false
+      allow_any: false
+      refresh: true
+      validator: "AtLeastOneGroupValidator"
+    empty_box_on_unsolved:
+      default: false
+      hidden: true
+    solved_quote_length:
+      default: 700
+      client: true
+    solved_topics_auto_close_hours:
+      default: 0
+      min: 0
+      max: 175200 # 20 years
+    show_filter_by_solved_status:
+      default: false
+      client: true
+    notify_on_staff_accept_solved:
+      default: false
+      hidden: true
+    disable_solved_education_message:
+      default: false
+    accept_solutions_topic_author:
+      default: true
+    solved_add_schema_markup:
+      type: enum
+      default: "always"
+      choices:
+        - "never"
+        - "always"
+        - "answered only"
+    prioritize_solved_topics_in_search: false
+    enable_solved_tags:
+      type: tag_list
+      default: ""
+      client: true
+    enable_support_category_type_setup:
+      default: false
+      hidden: true
+      client: true
+      upcoming_change:
+        status: "permanent"
+        impact: "feature,staff"
+        learn_more_url: "https://meta.discourse.org/t/-/398338"
+        # Offers a category type that enables the plugin when chosen, so it must stay
+        # usable while the plugin is disabled.
+        requires_plugin_enabled: false
+    enable_solved_shared_issues:
+      default: false
+      hidden: true
+      client: true
+      upcoming_change:
+        status: "stable"
+        impact: "feature,all_members"
+        learn_more_url: "https://meta.discourse.org/t/-/402498"
+        permanent_warning: false
+    discourse_solved_admin_dashboard_seeded:
+      default: false
+      hidden: true
+  
+  
+---
+plugin: discourse-subscriptions
+enabled_site_setting: discourse_subscriptions_enabled
+settings:
+  discourse_subscriptions:
+    discourse_subscriptions_enabled:
+      default: false
+    discourse_subscriptions_extra_nav_subscribe:
+      default: false
+      client: true
+    discourse_subscriptions_pricing_table_id:
+      default: ''
+      client: true
+    discourse_subscriptions_pricing_table_enabled:
+      default: false
+      client: true
+    discourse_subscriptions_public_key:
+      default: ''
+      client: true
+    discourse_subscriptions_secret_key:
+      default: ''
+      client: false
+      secret: true
+    discourse_subscriptions_webhook_secret:
+      default: ''
+      client: false
+      secret: true
+    discourse_subscriptions_currency:
+      client: true
+      default: "USD"
+      type: enum
+      choices:
+        - AUD
+        - BRL
+        - CAD
+        - EUR
+        - GBP
+        - INR
+        - NZD
+        - USD
+        - DKK
+        - SGD
+        - ZAR
+        - CHF
+        - PLN
+        - CZK
+        - SEK
+    discourse_subscriptions_campaign_enabled:
+      client: true
+      default: false
+    discourse_subscriptions_campaign_goal:
+      client: true
+      default: 100
+    discourse_subscriptions_campaign_type:
+      client: true
+      type: enum
+      default: "Amount"
+      choices:
+        - Amount
+        - Subscribers
+    discourse_subscriptions_campaign_banner_location:
+      client: true
+      type: enum
+      default: "Top"
+      choices:
+        - Top
+        - Sidebar
+    discourse_subscriptions_campaign_banner_bg_image:
+      client: true
+      type: upload
+      default: ""
+    discourse_subscriptions_campaign_banner_shadow_color:
+      client: true
+      type: color
+      default: "2F70AC"
+    discourse_subscriptions_campaign_show_contributors:
+      client: true
+      default: true
+    discourse_subscriptions_campaign_product:
+      client: true
+      default: ""
+    discourse_subscriptions_campaign_amount_raised:
+      client: true
+      default: 0.00
+      hidden: true
+    discourse_subscriptions_campaign_subscribers:
+      client: true
+      default: 0
+      hidden: true
+    discourse_subscriptions_campaign_group:
+      default: ""
+      hidden: true
+    discourse_subscriptions_enable_automatic_tax:
+      default: false
+    discourse_subscriptions_enable_verbose_logging:
+      default: false
+---
+plugin: discourse-templates
+enabled_site_setting: discourse_templates_enabled
+settings:
+  discourse_templates:
+    discourse_templates_enabled:
+      default: true
+      client: true
+    discourse_templates_categories:
+      default: ""
+      type: category_list
+    discourse_templates_max_replies_fetched:
+      default: 1000
+      hidden: true
+    discourse_templates_enable_private_templates:
+      default: false
+      type: boolean
+    discourse_templates_groups_allowed_private_templates:
+      default: ""
+      type: group_list
+    discourse_templates_private_templates_tags:
+      default: ""
+      type: tag_list
+  
+---
+plugin: discourse-topic-voting
+enabled_site_setting: topic_voting_enabled
+settings:
+  discourse_topic_voting:
+    topic_voting_enabled:
+      default: true
+      client: true
+    topic_voting_enable_vote_limits:
+      default: true
+      client: true
+    topic_voting_show_who_voted:
+      default: true
+      client: true
+    topic_voting_show_votes_on_profile:
+      default: true
+      client: true
+    topic_voting_alert_votes_left:
+      default: 1
+      min: 0
+      depends_on:
+        - "topic_voting_enable_vote_limits"
+      depends_behavior: "hidden"
+    topic_voting_tl0_vote_limit:
+      default: 2
+      min: 0
+      depends_on:
+        - "topic_voting_enable_vote_limits"
+      depends_behavior: "hidden"
+    topic_voting_tl1_vote_limit:
+      default: 4
+      min: 0
+      depends_on:
+        - "topic_voting_enable_vote_limits"
+      depends_behavior: "hidden"
+    topic_voting_tl2_vote_limit:
+      default: 6
+      min: 0
+      depends_on:
+        - "topic_voting_enable_vote_limits"
+      depends_behavior: "hidden"
+    topic_voting_tl3_vote_limit:
+      default: 8
+      min: 0
+      depends_on:
+        - "topic_voting_enable_vote_limits"
+      depends_behavior: "hidden"
+    topic_voting_tl4_vote_limit:
+      default: 10
+      min: 0
+      depends_on:
+        - "topic_voting_enable_vote_limits"
+      depends_behavior: "hidden"
+    enable_ideas_category_type_setup:
+      default: false
+      hidden: true
+      client: true
+      upcoming_change:
+        status: "permanent"
+        impact: "feature,staff"
+        learn_more_url: "https://meta.discourse.org/t/-/399365"
+        requires_plugin_enabled: false
+  
+---
+plugin: discourse-user-notes
+enabled_site_setting: user_notes_enabled
+settings:
+  plugins:
+    user_notes_enabled:
+      default: false
+      client: true
+    user_notes_icon_placement:
+      client: true
+      type: enum
+      default: "name"
+      choices:
+        - name
+        - avatar
+    user_notes_moderators_delete:
+      default: true
+      client: false
+  
+---
+plugin: discourse-workflows
+enabled_site_setting: enable_discourse_workflows
+settings:
+  plugins:
+    enable_discourse_workflows:
+      default: false
+      client: true
+      hidden: true
+      upcoming_change:
+        status: "beta"
+        impact: "feature,admins"
+        learn_more_url: "https://meta.discourse.org/t/-/407100"
+        allow_enabled_for:
+          - everyone
+        requires_plugin_enabled: false
+        permanent_warning: false
+    discourse_workflows_ai_authoring_enabled:
+      default: false
+      client: true
+    discourse_workflows_ai_authoring_max_prompt_length:
+      default: 4000
+      min: 1
+      max: 20000
+      hidden: true
+    discourse_workflows_ai_authoring_rate_limit_per_minute:
+      default: 10
+      min: 1
+      max: 100
+      hidden: true
+    discourse_workflows_max_executions_per_minute:
+      default: 20
+      hidden: true
+    discourse_workflows_max_executions_per_minute_per_workflow:
+      default: 10
+      hidden: true
+    workflow_executions_retention_days:
+      default: 30
+      min: 0
+      max: 36500
+      hidden: true
+    discourse_workflows_max_pin_data_bytes:
+      default: 1048576
+      min: 0
+      max: 16777216
+      hidden: true
+  
+---
+plugin: discourse-zendesk-plugin
+enabled_site_setting: zendesk_enabled
+settings:
+  discourse_zendesk:
+    zendesk_url:
+      default: https://your-url.zendesk.com/api/v2
+      client: true
+    zendesk_enabled:
+      default: false
+      client: true
+    zendesk_jobs_api_token:
+      default: ""
+      secret: true
+    zendesk_jobs_email:
+      default: ""
+    zendesk_oauth_client_id:
+      default: ""
+    zendesk_oauth_client_secret:
+      default: ""
+      secret: true
+    zendesk_autogenerate_all_categories:
+      default: false
+    zendesk_autogenerate_categories:
+      type: category_list
+      client: false
+      default: ""
+    zendesk_job_push_all_posts:
+      default: true
+    zendesk_job_push_only_author_posts:
+      default: false
+    sync_comments_from_zendesk:
+      default: false
+    zendesk_incoming_webhook_token:
+      default: ""
+      secret: true
+    zendesk_tags:
+      type: list
+      client: false
+      default: ""
+  
+---
+plugin: footnote
+enabled_site_setting: enable_markdown_footnotes
+settings:
+  plugins:
+    enable_markdown_footnotes:
+      default: true
+      client: true
+    display_footnotes_inline:
+      default: true
+      client: true
+  
+---
+plugin: poll
+enabled_site_setting: poll_enabled
+settings:
+  poll:
+    poll_enabled:
+      default: true
+      client: true
+    poll_maximum_options:
+      default: 20
+      min: 2
+      max: 100
+      client: true
+    poll_edit_window_mins:
+      default: 5
+      min: 0
+    poll_minimum_trust_level_to_create:
+      default: 1
+      client: true
+      enum: "TrustLevelSetting"
+      hidden: true
+    poll_create_allowed_groups:
+      default: "11" # auto group trust_level_1
+      type: group_list
+      client: false
+      allow_any: false
+      refresh: true
+      validator: "AtLeastOneGroupValidator"
+      area: "group_permissions"
+    poll_groupable_user_fields:
+      default: ""
+      type: list
+      client: true
+    poll_export_data_explorer_query_id:
+      default: -16
+      min: -9999
+      client: true
+    poll_export_ranked_choice_data_explorer_query_id:
+      default: -19
+      min: -9999
+      client: true
+    poll_default_public:
+      default: true
+      client: true
+  
+---
+plugin: spoiler-alert
+enabled_site_setting: spoiler_enabled
+settings:
+  plugins:
+    spoiler_enabled:
+      default: true
+      client: true
+  
+---
+plugin: styleguide
+enabled_site_setting: styleguide_enabled
+settings:
+  plugins:
+    styleguide_enabled:
+      default: false
+    styleguide_admin_only:
+      default: true
+      hidden: true
+    styleguide_allowed_groups:
+      default: "1" # auto group admins
+      type: group_list
+      client: false
+      allow_any: false
+      refresh: true
+      validator: "AtLeastOneGroupValidator"
+      area: "group_permissions"
+  
+---
+plugin: voice
+enabled_site_setting: voice_enabled
+settings:
+  plugins:
+    voice_enabled:
+      default: false
+      client: true
+      hidden: true
+      upcoming_change:
+        status: "experimental"
+        impact: "feature,all_members"
+        allow_enabled_for:
+          - "everyone"
+        learn_more_url: "https://meta.discourse.org/t/-/411337"
+        requires_plugin_enabled: false
+        permanent_warning: false
+    voice_verbose_logging:
+      default: false
+      client: true
+    voice_allowed_groups:
+      type: group_list
+      list_type: compact
+      default: "4|5" # auto groups anonymous_users, logged_in_users
+      allow_any: false
+      refresh: true
+      disallowed_groups: "0"
+      depends_on:
+        - voice_enabled
+    voice_create_room_allowed_groups:
+      type: group_list
+      list_type: compact
+      default: "1|2|12" # auto groups admins, moderators, trust_level_2
+      allow_any: false
+      refresh: true
+      mandatory_values: "1" # auto group admins
+      disallowed_groups: "0|4"
+      depends_on:
+        - voice_enabled
+    voice_direct_calls_allowed_groups:
+      type: group_list
+      list_type: compact
+      default: ""
+      allow_any: false
+      refresh: true
+      disallowed_groups: "0|4"
+      depends_on:
+        - voice_enabled
+    voice_max_rooms_per_user:
+      default: 5
+    voice_max_invites_per_day:
+      default: 100
+      min: 1
+      max: 5000
+    voice_ephemeral_room_ttl_minutes:
+      default: 30
+      min: 5
+      max: 10080
+    voice_participant_ttl_seconds:
+      default: 30
+    voice_max_room_participants:
+      default: 50
+      min: 2
+      max: 200
+    voice_stun_servers:
+      default: "stun:stun.l.google.com:19302|stun:global.stun.twilio.com:3478"
+    voice_turn_servers:
+      default: ""
+    voice_turn_username:
+      default: ""
+    voice_turn_credential:
+      default: ""
+      secret: true
+    voice_turn_secret:
+      default: ""
+      secret: true
+    voice_turn_secret_servers:
+      default: ""
+      validator: "VoiceTurnSecretServersValidator"
+    voice_livekit_url:
+      default: ""
+      validator: "VoiceLivekitUrlValidator"
+    voice_livekit_api_key:
+      default: ""
+    voice_livekit_api_secret:
+      default: ""
+      secret: true
+    voice_livekit_room_policy:
+      default: "disabled"
+      type: enum
+      choices:
+        - disabled
+        - per_room
+        - all_rooms
+      validator: "VoiceLivekitPolicyValidator"
+    voice_livekit_room_prefix:
+      default: ""
+    voice_livekit_mesh_fallback:
+      default: false
+    voice_livekit_agent_enabled:
+      default: false
+      validator: "VoiceLivekitAgentValidator"
+      refresh: true
+    voice_livekit_agent_invite_allowed_groups:
+      type: group_list
+      list_type: compact
+      default: "1" # auto group admins
+      allow_any: false
+      refresh: true
+      mandatory_values: "1" # auto group admins
+      disallowed_groups: "0|4"
+      depends_on:
+        - voice_livekit_agent_enabled
+    voice_livekit_recording_enabled:
+      default: false
+      client: true
+    voice_livekit_recording_filepath:
+      default: "voice/{room_name}-{utc}"
+    voice_livekit_recording_s3_region:
+      default: "us-east-1"
+    voice_livekit_recording_s3_access_key_id:
+      default: ""
+      secret: true
+    voice_livekit_recording_s3_secret_access_key:
+      default: ""
+      secret: true
+    voice_livekit_recording_s3_endpoint:
+      default: ""
+      regex: '^https://[a-zA-Z0-9.-]+(:[0-9]+)?$'
+    voice_livekit_recording_s3_bucket:
+      default: ""
+      regex: '^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$'
+      validator: "VoiceLivekitRecordingS3BucketValidator"
+    voice_video_enabled:
+      default: true
+      client: true
+    voice_video_max_publishers:
+      default: 8
+      min: 2
+      max: 16
+      client: true
+    voice_video_background_blur_enabled:
+      default: true
+      client: true
+    voice_subtitles_enabled:
+      default: false
+      client: true
+    voice_stt_model_base_url:
+      default: ""
+      client: true
+    voice_max_voice_quality:
+      default: "maximum"
+      type: enum
+      client: true
+      choices:
+        - standard
+        - high
+        - maximum
+    voice_max_camera_quality:
+      default: "maximum"
+      type: enum
+      client: true
+      choices:
+        - standard
+        - high
+        - maximum
+    voice_max_screen_share_quality:
+      default: "maximum"
+      type: enum
+      client: true
+      choices:
+        - standard
+        - high
+        - maximum
+    voice_idle_threshold_minutes:
+      default: 5
+      min: 0
+      max: 60
+      client: true
+    voice_afk_auto_mute_threshold_minutes:
+      default: 15
+      min: 0
+      max: 120
+      client: true
+    voice_afk_disconnect_threshold_minutes:
+      default: 30
+      min: 0
+      max: 240
+      client: true
+    voice_auto_status_enabled:
+      default: true
+      client: true
+    voice_mesh_privacy_warning_enabled:
+      default: true
+      client: true
+    voice_badges_enabled:
+      default: true
+      depends_on:
+        - voice_enabled
+    voice_analytics_enabled:
+      default: true
+    voice_session_retention_days:
+      default: 1095
+      min: 7
+      max: 3650
+    voice_chat_enabled:
+      default: true
+      client: true
+  

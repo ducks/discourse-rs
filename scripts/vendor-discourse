@@ -35,6 +35,43 @@ for f in "${FILES[@]}"; do
   git -C "$src" show "$commit:$f" > "$dest/$f"
 done
 
+# The bundled plugins' settings, one YAML document per plugin in the order
+# Rails loads them (by directory name): the plugin, the setting its
+# plugin.rb names with `enabled_site_setting`, and its config/settings.yml
+# verbatim under `settings`.
+plugin_settings="$dest/config/plugin_settings.yml"
+: > "$plugin_settings"
+plugins=0
+while read -r f; do
+  name="$(echo "$f" | cut -d/ -f2)"
+  enabled="$(git -C "$src" show "$commit:plugins/$name/plugin.rb" 2>/dev/null \
+    | sed -n 's/^ *enabled_site_setting :\([a-z0-9_]*\).*/\1/p' | head -1)"
+  {
+    echo "---"
+    echo "plugin: $name"
+    echo "enabled_site_setting: ${enabled:-~}"
+    echo "settings:"
+    # The echo ends a file that has no trailing newline.
+    { git -C "$src" show "$commit:$f"; echo; } | sed -e '/^---[[:space:]]*$/d' -e 's/^/  /'
+  } >> "$plugin_settings"
+  plugins=$((plugins + 1))
+done < <(git -C "$src" ls-tree -r --name-only "$commit" plugins \
+  | grep -E '^plugins/[^/]+/config/settings.yml$' | LC_ALL=C sort)
+echo "vendored the settings of $plugins plugins"
+
+# The bundled plugins' client translations (`js.poll.*` and the like, which
+# cooking reads), one YAML document per plugin in the same order.
+plugin_client="$dest/config/locales/plugin_client.en.yml"
+: > "$plugin_client"
+while read -r f; do
+  {
+    echo "--- # $f"
+    { git -C "$src" show "$commit:$f"; echo; } | sed -e '/^---[[:space:]]*$/d'
+  } >> "$plugin_client"
+done < <(git -C "$src" ls-tree -r --name-only "$commit" plugins \
+  | grep -E '^plugins/[^/]+/config/locales/client\.en\.yml$' | LC_ALL=C sort)
+echo "vendored $(grep -c '^--- # ' "$plugin_client") plugin client locales"
+
 cat > "$dest/DISCOURSE_REF" <<EOF
 commit=$commit
 committed_at=$committed_at
@@ -52,8 +89,12 @@ if [ -z "$gem_dist" ]; then
   exit 1
 fi
 mkdir -p "$dest/../discourse-emojis/dist"
-for f in emojis.json aliases.json tonable_emojis.json; do
+for f in emojis.json aliases.json tonable_emojis.json translations.json; do
   cp "$gem_dist/$f" "$dest/../discourse-emojis/dist/$f"
 done
 echo "discourse_emojis=$gem_version" >> "$dest/DISCOURSE_REF"
+# The `?v=` on emoji image URLs (frontend/pretty-text/addon/emoji/version.js).
+image_version="$(git -C "$src" show "$commit:frontend/pretty-text/addon/emoji/version.js" \
+  | sed -n 's/^export const IMAGE_VERSION = "\(.*\)";$/\1/p')"
+echo "emoji_image_version=$image_version" >> "$dest/DISCOURSE_REF"
 echo "vendored discourse-emojis $gem_version"

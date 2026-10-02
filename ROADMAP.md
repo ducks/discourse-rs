@@ -101,8 +101,21 @@ Logged-in readers, no writes yet.
 
 ## Milestone 4: writes
 
-- [ ] Cooking pipeline: markdown-it with Discourse's rules (the hard part;
-      likely embed the JS pretty-text bundle first, port later)
+- [x] Cooking, around the renderer: the options and `PrettyText::Helpers`
+      from the database, equal to what Rails recorded (README: Cooking)
+- [x] Cooking, the renderer: Discourse's markdown rules in Rust on the
+      markdown-it crate (no vendored JavaScript, no embedded engine;
+      decided 2026-10-02). 76 of the 77 recorded corpus entries cook
+      byte-equal to Rails: core's features, the sanitizer, linkify, and
+      the bundled plugins' poll, details, spoiler, checklist, footnotes
+- [ ] Cooking, plugins left: local dates (needs a timezone database),
+      math, chat transcripts, events, graphviz, policy; all refused
+      explicitly today
+- [x] Cooking, `PrettyText.cleanup`: rel attributes, mention links,
+      hidden direction marks, video thumbnails, HTML5 re-serialization;
+      all 482 posts of the Faker backup cook byte-equal
+- [ ] CookedPostProcessor (oneboxes, image sizes, lightboxes), which is
+      what makes the `cooked` column out of `PrettyText.cook`
 - [ ] Posting, editing, revisions, likes, flags
 - [ ] Private messages
 - [ ] Uploads (local first, S3 later), optimized images

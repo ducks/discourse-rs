@@ -1,5 +1,5 @@
-//! Translations from the vendored config/locales/server.en.yml and
-//! client.en.yml.
+//! Translations from the vendored config/locales/server.en.yml,
+//! client.en.yml and the bundled plugins' client.en.yml files.
 //!
 //! Only the default locale is loaded, and only string leaves are indexed.
 //! Discourse's I18n.t has one quirk that matters for parity: interpolation
@@ -14,6 +14,9 @@ use serde_yaml_ng::Value as Yaml;
 
 const SERVER_EN_YML: &str = include_str!("../vendor/discourse/config/locales/server.en.yml");
 const CLIENT_EN_YML: &str = include_str!("../vendor/discourse/config/locales/client.en.yml");
+/// One YAML document per bundled plugin (scripts/vendor-discourse).
+const PLUGIN_CLIENT_EN_YML: &str =
+    include_str!("../vendor/discourse/config/locales/plugin_client.en.yml");
 
 #[derive(Debug)]
 pub struct I18n {
@@ -22,18 +25,30 @@ pub struct I18n {
 
 impl I18n {
     /// server.en.yml plus client.en.yml (whose keys sit under `js.`), the
-    /// latter for texts the HTML pages need, e.g. `js.action_codes.*`.
+    /// latter for texts the HTML pages need, e.g. `js.action_codes.*`, then
+    /// the bundled plugins' client translations, which cooking reads
+    /// (`js.poll.*`). Later files win, as in Rails' load path.
     pub fn vendored() -> Result<Self, String> {
         let mut i18n = Self::parse(SERVER_EN_YML)?;
         let client =
             Self::parse(CLIENT_EN_YML).map_err(|e| e.replace("server.en.yml", "client.en.yml"))?;
         i18n.strings.extend(client.strings);
+        for document in serde_yaml_ng::Deserializer::from_str(PLUGIN_CLIENT_EN_YML) {
+            let root: Yaml = serde::Deserialize::deserialize(document)
+                .map_err(|e| format!("plugin_client.en.yml: {e}"))?;
+            let plugin = Self::from_yaml(root)
+                .map_err(|e| e.replace("server.en.yml", "plugin_client.en.yml"))?;
+            i18n.strings.extend(plugin.strings);
+        }
         Ok(i18n)
     }
 
     pub fn parse(src: &str) -> Result<Self, String> {
-        let mut root: Yaml =
-            serde_yaml_ng::from_str(src).map_err(|e| format!("server.en.yml: {e}"))?;
+        let root: Yaml = serde_yaml_ng::from_str(src).map_err(|e| format!("server.en.yml: {e}"))?;
+        Self::from_yaml(root)
+    }
+
+    fn from_yaml(mut root: Yaml) -> Result<Self, String> {
         root.apply_merge()
             .map_err(|e| format!("server.en.yml merge keys: {e}"))?;
         let locale = root

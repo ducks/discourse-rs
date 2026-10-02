@@ -17,6 +17,7 @@ pub mod notifications;
 pub mod parity;
 pub mod pm_lists;
 pub mod post_actions;
+pub mod pretty_text;
 pub mod routes;
 pub mod ruby;
 pub mod schema;
