@@ -84,8 +84,9 @@ impl ActionTypes {
     }
 }
 
-/// A viewer's post_actions row on a post (`PostAction.counts_for`), kept
-/// even when undone, as Rails does.
+/// A viewer's post_actions row on a post (`PostAction.counts_for`). Undone
+/// ones are not counted: PostAction is Trashable, whose default scope
+/// leaves out deleted rows.
 #[derive(Debug, Clone, sqlx::FromRow)]
 pub struct TakenAction {
     pub post_id: i32,
@@ -105,7 +106,7 @@ pub async fn taken_actions(
     };
     let rows: Vec<TakenAction> = sqlx::query_as(
         "SELECT post_id, post_action_type_id, user_id, created_at FROM post_actions \
-         WHERE post_id = ANY($1) AND user_id = $2 ORDER BY id",
+         WHERE post_id = ANY($1) AND user_id = $2 AND deleted_at IS NULL ORDER BY id",
     )
     .bind(post_ids)
     .bind(user_id)

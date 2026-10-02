@@ -9,7 +9,7 @@
 //! ported fails at once with the reason kept on the row.
 
 mod handlers;
-mod post_alert;
+pub(crate) mod post_alert;
 mod user_email;
 
 use std::time::Duration;
