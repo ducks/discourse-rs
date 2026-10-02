@@ -1,3 +1,4 @@
+mod accounts;
 mod bookmarks;
 mod list;
 mod login_required;
@@ -105,6 +106,45 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/sitemap.xml", get(sitemap::index))
         .route("/sitemap_{page}", get(sitemap::page))
         .route("/news.xml", get(sitemap::news))
+        .route("/session/hp", get(accounts::honeypot))
+        .route("/session/hp.json", get(accounts::honeypot))
+        .route("/u", post(accounts::create_user))
+        .route("/u.json", post(accounts::create_user))
+        .route("/users", post(accounts::create_user))
+        .route("/users.json", post(accounts::create_user))
+        .route(
+            "/u/activate-account/{token}",
+            put(accounts::perform_account_activation),
+        )
+        .route(
+            "/users/activate-account/{token}",
+            put(accounts::perform_account_activation),
+        )
+        .route("/u/email-login", post(accounts::email_login))
+        .route("/session/forgot_password", post(accounts::forgot_password))
+        .route(
+            "/session/forgot_password.json",
+            post(accounts::forgot_password),
+        )
+        .route(
+            "/session/password-reset-code/verify",
+            post(accounts::redeem_password_reset_code),
+        )
+        .route(
+            "/session/password-reset-code/verify.json",
+            post(accounts::redeem_password_reset_code),
+        )
+        .route(
+            "/u/password-reset/{token}",
+            put(accounts::password_reset_update),
+        )
+        .route(
+            "/users/password-reset/{token}",
+            put(accounts::password_reset_update),
+        )
+        .route("/u/email-login.json", post(accounts::email_login))
+        .route("/users/email-login", post(accounts::email_login))
+        .route("/users/email-login.json", post(accounts::email_login))
         .route("/posts", post(posts::create))
         .route("/posts.json", post(posts::create))
         .route("/posts/{id}", put(posts::update))

@@ -1,0 +1,591 @@
+{
+  "name": "signup",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/session/hp.json"
+    },
+    {
+      "method": "POST",
+      "path": "/u.json",
+      "params": {
+        "name": "New Person",
+        "email": "new.person@example.com",
+        "password": "a-long-enough-pass-phrase",
+        "username": "newperson",
+        "password_confirmation": "{{responses.0.body.value}}",
+        "challenge": "{{responses.0.body.challenge|reverse}}"
+      }
+    }
+  ],
+  "started_at": "2026-10-02T11:50:31.039529",
+  "transaction_started_at": "2026-10-02T11:50:30.308986",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "value": "3570e949e997892535d6f41e84fe47d3",
+        "challenge": "2be8aec775cefaad5d279d445e63383b",
+        "expires_in": 3600
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": true,
+        "active": false,
+        "message": "<p>You’re almost done! We sent an activation mail to <b>new.person@example.com</b>. Please follow the instructions in the mail to activate your account.</p><p>If it doesn’t arrive, check your spam folder.</p>"
+      }
+    }
+  ],
+  "changes": {
+    "email_logs": {
+      "inserted": [
+        {
+          "id": 1,
+          "raw": null,
+          "bounced": false,
+          "post_id": null,
+          "user_id": 6,
+          "topic_id": null,
+          "bounce_key": null,
+          "created_at": "2026-10-02T11:50:31.354464",
+          "email_type": "signup",
+          "message_id": "b2ca53d9-8c30-4930-a600-d487c763ea01@localhost",
+          "to_address": "new.person@example.com",
+          "updated_at": "2026-10-02T11:50:31.354464",
+          "cc_user_ids": null,
+          "cc_addresses": null,
+          "bcc_addresses": null,
+          "smtp_group_id": null,
+          "bounce_error_code": null,
+          "smtp_transaction_response": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "email_tokens": {
+      "inserted": [
+        {
+          "id": 14,
+          "email": "new.person@example.com",
+          "scope": 1,
+          "expired": false,
+          "user_id": 6,
+          "confirmed": false,
+          "created_at": "2026-10-02T11:50:31.285626",
+          "token_hash": "a9a55c9472e91dbba03698f009f9b14962c5a8783e4b6c0d67e95d2fc3521fc6",
+          "updated_at": "2026-10-02T11:50:31.285626"
+        },
+        {
+          "id": 13,
+          "email": "new.person@example.com",
+          "scope": 1,
+          "expired": true,
+          "user_id": 6,
+          "confirmed": false,
+          "created_at": "2026-10-02T11:50:31.200067",
+          "token_hash": "2075198a99ae5d46ce91078da35c7b2b287a68773d8f4dbf0d13bcf00ea91421",
+          "updated_at": "2026-10-02T11:50:31.200067"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "group_users": {
+      "inserted": [
+        {
+          "id": 68,
+          "owner": false,
+          "user_id": 6,
+          "group_id": 10,
+          "created_at": "2026-10-02T11:50:31.237362",
+          "updated_at": "2026-10-02T11:50:31.237362",
+          "first_unread_pm_at": "2026-10-02T11:50:30.308986",
+          "notification_level": 3
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "groups": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 10,
+            "name": "trust_level_0",
+            "title": null,
+            "bio_raw": null,
+            "imap_ssl": null,
+            "automatic": true,
+            "full_name": "Trust level 0",
+            "imap_port": null,
+            "smtp_port": null,
+            "bio_cooked": null,
+            "created_at": "2026-07-25T05:58:06.829776",
+            "flair_icon": null,
+            "updated_at": "2026-07-25T05:58:06.832993",
+            "user_count": 5,
+            "flair_color": null,
+            "imap_server": null,
+            "public_exit": false,
+            "smtp_server": null,
+            "has_messages": false,
+            "imap_enabled": false,
+            "smtp_enabled": false,
+            "imap_last_uid": 0,
+            "primary_group": false,
+            "smtp_ssl_mode": 0,
+            "email_password": null,
+            "email_username": null,
+            "flair_bg_color": null,
+            "incoming_email": null,
+            "flair_upload_id": null,
+            "imap_last_error": null,
+            "imap_new_emails": null,
+            "imap_old_emails": null,
+            "imap_updated_at": null,
+            "smtp_updated_at": null,
+            "assignable_level": 0,
+            "email_from_alias": null,
+            "public_admission": false,
+            "visibility_level": 1,
+            "grant_trust_level": null,
+            "imap_mailbox_name": "",
+            "imap_uid_validity": 0,
+            "mentionable_level": 0,
+            "messageable_level": 0,
+            "imap_updated_by_id": null,
+            "publish_read_state": false,
+            "smtp_updated_by_id": null,
+            "members_visibility_level": 0,
+            "allow_membership_requests": false,
+            "default_notification_level": 3,
+            "membership_request_template": null,
+            "allow_unknown_sender_topic_replies": false,
+            "automatic_membership_email_domains": null
+          },
+          "after": {
+            "id": 10,
+            "name": "trust_level_0",
+            "title": null,
+            "bio_raw": null,
+            "imap_ssl": null,
+            "automatic": true,
+            "full_name": "Trust level 0",
+            "imap_port": null,
+            "smtp_port": null,
+            "bio_cooked": null,
+            "created_at": "2026-07-25T05:58:06.829776",
+            "flair_icon": null,
+            "updated_at": "2026-07-25T05:58:06.832993",
+            "user_count": 6,
+            "flair_color": null,
+            "imap_server": null,
+            "public_exit": false,
+            "smtp_server": null,
+            "has_messages": false,
+            "imap_enabled": false,
+            "smtp_enabled": false,
+            "imap_last_uid": 0,
+            "primary_group": false,
+            "smtp_ssl_mode": 0,
+            "email_password": null,
+            "email_username": null,
+            "flair_bg_color": null,
+            "incoming_email": null,
+            "flair_upload_id": null,
+            "imap_last_error": null,
+            "imap_new_emails": null,
+            "imap_old_emails": null,
+            "imap_updated_at": null,
+            "smtp_updated_at": null,
+            "assignable_level": 0,
+            "email_from_alias": null,
+            "public_admission": false,
+            "visibility_level": 1,
+            "grant_trust_level": null,
+            "imap_mailbox_name": "",
+            "imap_uid_validity": 0,
+            "mentionable_level": 0,
+            "messageable_level": 0,
+            "imap_updated_by_id": null,
+            "publish_read_state": false,
+            "smtp_updated_by_id": null,
+            "members_visibility_level": 0,
+            "allow_membership_requests": false,
+            "default_notification_level": 3,
+            "membership_request_template": null,
+            "allow_unknown_sender_topic_replies": false,
+            "automatic_membership_email_domains": null
+          }
+        }
+      ]
+    },
+    "sidebar_section_links": {
+      "inserted": [
+        {
+          "id": 28,
+          "user_id": 6,
+          "position": 0,
+          "created_at": "2026-10-02T11:50:30.308986",
+          "updated_at": "2026-10-02T11:50:30.308986",
+          "linkable_id": 2,
+          "linkable_type": "Category",
+          "sidebar_section_id": null
+        },
+        {
+          "id": 29,
+          "user_id": 6,
+          "position": 0,
+          "created_at": "2026-10-02T11:50:30.308986",
+          "updated_at": "2026-10-02T11:50:30.308986",
+          "linkable_id": 4,
+          "linkable_type": "Category",
+          "sidebar_section_id": null
+        },
+        {
+          "id": 30,
+          "user_id": 6,
+          "position": 0,
+          "created_at": "2026-10-02T11:50:30.308986",
+          "updated_at": "2026-10-02T11:50:30.308986",
+          "linkable_id": 3,
+          "linkable_type": "Category",
+          "sidebar_section_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_avatars": {
+      "inserted": [
+        {
+          "id": 8,
+          "user_id": 6,
+          "created_at": "2026-10-02T11:50:31.262603",
+          "updated_at": "2026-10-02T11:50:31.262603",
+          "custom_upload_id": null,
+          "gravatar_upload_id": null,
+          "last_gravatar_download_attempt": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_emails": {
+      "inserted": [
+        {
+          "id": 6,
+          "email": "new.person@example.com",
+          "primary": true,
+          "user_id": 6,
+          "created_at": "2026-10-02T11:50:31.085623",
+          "updated_at": "2026-10-02T11:50:31.085623",
+          "normalized_email": "newperson@example.com"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_options": {
+      "inserted": [
+        {
+          "user_id": 6,
+          "timezone": null,
+          "theme_ids": [],
+          "chat_sound": null,
+          "email_level": 1,
+          "homepage_id": null,
+          "seen_popups": null,
+          "chat_enabled": true,
+          "enable_defer": false,
+          "hide_profile": false,
+          "email_digests": true,
+          "hide_presence": false,
+          "send_shortcut": 0,
+          "text_size_key": 0,
+          "text_size_seq": 0,
+          "theme_key_seq": 0,
+          "dark_scheme_id": null,
+          "enable_quoting": true,
+          "color_scheme_id": null,
+          "dynamic_favicon": false,
+          "composition_mode": 1,
+          "default_calendar": 0,
+          "notify_on_solved": true,
+          "ai_ask_ai_default": true,
+          "email_in_reply_to": false,
+          "mailing_list_mode": false,
+          "auto_image_caption": false,
+          "chat_send_shortcut": 0,
+          "enable_smart_lists": true,
+          "skip_new_user_tips": false,
+          "chat_email_frequency": 1,
+          "digest_after_minutes": 10080,
+          "email_messages_level": 0,
+          "interface_color_mode": 1,
+          "title_count_mode_key": 0,
+          "understood_languages": [],
+          "ai_search_discoveries": true,
+          "show_original_content": false,
+          "allow_private_messages": true,
+          "chat_channel_list_sort": 0,
+          "chat_new_message_sound": false,
+          "email_previous_replies": 2,
+          "include_tl0_in_digests": false,
+          "notify_on_linked_posts": true,
+          "oldest_search_log_date": null,
+          "policy_email_frequency": 0,
+          "automatically_translate": true,
+          "enable_allowed_pm_users": false,
+          "push_notification_level": 1,
+          "chat_channel_list_filter": 0,
+          "chat_quick_reaction_type": 0,
+          "discourse_rewind_enabled": true,
+          "event_reminder_preference": 0,
+          "external_links_in_new_tab": false,
+          "hide_profile_and_presence": false,
+          "last_redirected_to_top_at": null,
+          "show_thread_title_prompts": true,
+          "automatically_unpin_topics": true,
+          "chat_announce_new_messages": true,
+          "chat_channel_list_sort_dms": 2,
+          "chat_separate_sidebar_mode": 0,
+          "new_topic_duration_minutes": 2880,
+          "chat_quick_reactions_custom": null,
+          "ignore_channel_wide_mention": null,
+          "like_notification_frequency": 1,
+          "mailing_list_mode_frequency": 1,
+          "chat_channel_list_filter_dms": 0,
+          "only_chat_push_notifications": null,
+          "auto_track_topics_after_msecs": 300000,
+          "discourse_rewind_dismissed_at": null,
+          "sidebar_link_to_filtered_list": false,
+          "watched_precedence_over_muted": false,
+          "chat_channel_list_sort_starred": 0,
+          "enable_markdown_monospace_font": true,
+          "bookmark_auto_delete_preference": 3,
+          "discourse_rewind_share_publicly": false,
+          "dismissed_dm_retention_reminder": null,
+          "hidden_composer_toolbar_buttons": [],
+          "sidebar_show_count_of_new_items": false,
+          "chat_channel_list_filter_starred": 0,
+          "chat_header_indicator_preference": 0,
+          "notification_level_when_assigned": 3,
+          "notification_level_when_replying": 2,
+          "dismissed_channel_retention_reminder": null,
+          "enable_upcoming_change_available_notifications": true
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_passwords": {
+      "inserted": [
+        {
+          "id": 8,
+          "user_id": 6,
+          "created_at": "2026-10-02T11:50:31.195562",
+          "updated_at": "2026-10-02T11:50:31.195562",
+          "password_hash": "311d5dee69c7f485c57be204e70dd6df734ac73c8244e41ff86f9c4085c3301d",
+          "password_salt": "b1f18eb066cf33b835542dbe2b222c14",
+          "password_algorithm": "$pbkdf2-sha256$i=600000,l=32$",
+          "password_expired_at": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_profiles": {
+      "inserted": [
+        {
+          "views": 0,
+          "bio_raw": null,
+          "user_id": 6,
+          "website": null,
+          "location": null,
+          "bio_cooked": null,
+          "featured_topic_id": null,
+          "bio_cooked_version": null,
+          "dismissed_banner_key": null,
+          "granted_title_badge_id": null,
+          "card_background_upload_id": null,
+          "profile_background_upload_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_search_data": {
+      "inserted": [
+        {
+          "locale": "en",
+          "user_id": 6,
+          "version": 3,
+          "raw_data": "newperson new person",
+          "search_data": "'new':2B 'newperson':1A 'person':3B"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_stats": {
+      "inserted": [
+        {
+          "user_id": 6,
+          "read_faq": null,
+          "new_since": "2026-10-02T11:50:31.204627",
+          "time_read": 0,
+          "post_count": 0,
+          "draft_count": 0,
+          "likes_given": 0,
+          "topic_count": 0,
+          "bounce_score": 0,
+          "days_visited": 0,
+          "flags_agreed": 0,
+          "flags_ignored": 0,
+          "likes_received": 0,
+          "topics_entered": 0,
+          "first_unread_at": "2026-10-02T11:50:30.308986",
+          "flags_disagreed": 0,
+          "post_edits_count": null,
+          "posts_read_count": 0,
+          "first_unread_pm_at": "2026-10-02T11:50:30.308986",
+          "digest_attempted_at": null,
+          "pending_posts_count": 0,
+          "distinct_badge_count": 0,
+          "first_post_created_at": null,
+          "reset_bounce_score_after": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "users": {
+      "inserted": [
+        {
+          "id": 6,
+          "name": "New Person",
+          "admin": false,
+          "title": null,
+          "views": 0,
+          "active": false,
+          "locale": "en",
+          "staged": false,
+          "approved": false,
+          "username": "newperson",
+          "moderator": false,
+          "created_at": "2026-10-02T11:50:31.082233",
+          "flag_level": 0,
+          "ip_address": "127.0.0.1",
+          "updated_at": "2026-10-02T11:50:31.082233",
+          "approved_at": null,
+          "trust_level": 0,
+          "last_seen_at": null,
+          "suspended_at": null,
+          "date_of_birth": null,
+          "first_seen_at": null,
+          "silenced_till": null,
+          "approved_by_id": null,
+          "flair_group_id": null,
+          "last_posted_at": null,
+          "suspended_till": null,
+          "username_lower": "newperson",
+          "last_emailed_at": "2026-10-02T11:50:30.308986",
+          "primary_group_id": null,
+          "previous_visit_at": null,
+          "secure_identifier": null,
+          "uploaded_avatar_id": null,
+          "seen_notification_id": 0,
+          "last_seen_reviewable_id": null,
+          "registration_ip_address": "127.0.0.1",
+          "required_fields_version": null,
+          "group_locked_trust_level": null,
+          "manual_locked_trust_level": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [
+    [
+      "update_gravatar in 1s",
+      {
+        "user_id": 6,
+        "avatar_id": 8
+      }
+    ],
+    [
+      "critical_user_email",
+      {
+        "type": "signup",
+        "user_id": 6,
+        "email_token": "97591609faa2ba0cef7bb3383c9a3ced",
+        "to_address": null
+      }
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "emails": [
+    {
+      "headers": [
+        [
+          "From",
+          "\"Discourse\" <noreply@unconfigured.discourse.org>"
+        ],
+        [
+          "Reply-To",
+          "\"Discourse\" <noreply@unconfigured.discourse.org>"
+        ],
+        [
+          "To",
+          "new.person@example.com"
+        ],
+        [
+          "Message-ID",
+          "<b2ca53d9-8c30-4930-a600-d487c763ea01@localhost>"
+        ],
+        [
+          "Subject",
+          "[Discourse] Confirm your new account"
+        ],
+        [
+          "MIME-Version",
+          "1.0"
+        ],
+        [
+          "Content-Type",
+          "multipart/alternative; boundary=--==_mimepart_6abf9a8755020_18d9f28-173"
+        ],
+        [
+          "Content-Transfer-Encoding",
+          "7bit"
+        ],
+        [
+          "X-Discourse-Email-Preview",
+          "Confirm your account."
+        ],
+        [
+          "X-Auto-Response-Suppress",
+          "All"
+        ],
+        [
+          "x-ms-reactions",
+          "disallow"
+        ],
+        [
+          "Auto-Submitted",
+          "auto-generated"
+        ]
+      ],
+      "text": "Welcome to Discourse!\n\nClick the following link to confirm and activate your new account:\nhttp://localhost:3042/u/activate-account/97591609faa2ba0cef7bb3383c9a3ced\n\nIf the above link is not clickable, try copying and pasting it into the address bar of your web browser.\n",
+      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"><p>Confirm your account.</p></div>\n\n    \n    \n    <p>Welcome to Discourse!</p>\n<p>Click the following link to confirm and activate your new account:<br>\n<a href=\"http://localhost:3042/u/activate-account/97591609faa2ba0cef7bb3383c9a3ced\" class=\"onebox\" target=\"_blank\" rel=\"noopener\" style=\"text-decoration:none;font-weight:bold;color:#006699\">http://localhost:3042/u/activate-account/97591609faa2ba0cef7bb3383c9a3ced</a></p>\n<p>If the above link is not clickable, try copying and pasting it into the address bar of your web browser.</p>\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
+    }
+  ]
+}

@@ -40,6 +40,7 @@ pub async fn run(
     ctx: &Ctx<'_>,
     posting: &crate::posting::Ctx<'_>,
     args: &Value,
+    critical: bool,
 ) -> Result<(), AppError> {
     let s = ctx.settings;
     let user_id = args
@@ -50,14 +51,19 @@ pub async fn run(
     let (Some(user_id), false) = (user_id, email_type.is_empty()) else {
         return Err(Unsupported("user_email without a user or type (InvalidParameters)").into());
     };
-    if s.get("disable_emails")?.to_s() == "yes" {
+    // critical_user_email ignores disable_emails (quit_email_early?).
+    if !critical && s.get("disable_emails")?.to_s() == "yes" {
         return Ok(());
     }
-    if !NOTIFICATION_TYPES.contains(&email_type) {
+    let account = crate::email::account::template_for(email_type, true).is_some();
+    if !NOTIFICATION_TYPES.contains(&email_type) && !account {
         return Err(Unsupported("this email type").into());
     }
-    if args.get("to_address").is_some() || args.get("email_token").is_some() {
-        return Err(Unsupported("user_email with an address or token").into());
+    if args.get("to_address").is_some_and(|a| !a.is_null()) {
+        return Err(Unsupported("user_email with an address").into());
+    }
+    if !account && args.get("email_token").is_some() {
+        return Err(Unsupported("notification emails with a token").into());
     }
     let post_id = args
         .get("post_id")
@@ -189,6 +195,9 @@ pub async fn run(
             r::USER_EMAIL_SEEN_RECENTLY,
         )
         .await;
+    }
+    if account {
+        return account_email(conn, ctx, args, email_type, user_id, &to_address, &user).await;
     }
     let Some(notification_type) = notification_type else {
         return Err(Unsupported("notification emails without a notification type").into());
@@ -344,7 +353,78 @@ pub async fn run(
         },
     )
     .await?;
-    sender::send(&mut *conn, ctx, built, email_type, user_id).await?;
+    sender::send(&mut *conn, ctx, built, email_type, Some(user_id)).await?;
+    let erode = s.get("bounce_score_erode_on_send")?.to_f();
+    if bounce_score > erode {
+        sqlx::query("UPDATE user_stats SET bounce_score = bounce_score - $2 WHERE user_id = $1")
+            .bind(user_id)
+            .bind(erode)
+            .execute(&mut *conn)
+            .await?;
+    }
+    Ok(())
+}
+
+/// `EmailLog::CRITICAL_EMAIL_TYPES` this port sends.
+const CRITICAL_EMAIL_TYPES: [&str; 2] = ["signup", "forgot_password"];
+
+/// The rest of message_for_email for an account email: the daily and
+/// bounce limits (critical types exempt), then the token template.
+async fn account_email(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    args: &Value,
+    email_type: &str,
+    user_id: i32,
+    to_address: &str,
+    user: &Recipient,
+) -> Result<(), AppError> {
+    let s = ctx.settings;
+    let Some(token) = args.get("email_token").and_then(Value::as_str) else {
+        return Err(Unsupported("account emails without a token").into());
+    };
+    let critical = CRITICAL_EMAIL_TYPES.contains(&email_type);
+    let max = s.get("max_emails_per_day_per_user")?.to_i();
+    if max > 0 && !critical {
+        let sent: i64 = sqlx::query_scalar(
+            "SELECT COUNT(*) FROM email_logs WHERE created_at > now() - interval '1 day' AND user_id = $1",
+        )
+        .bind(user_id)
+        .fetch_one(&mut *conn)
+        .await?;
+        if sent >= max {
+            return skip(
+                conn,
+                email_type,
+                to_address,
+                Some(user_id),
+                None,
+                r::EXCEEDED_EMAILS_LIMIT,
+            )
+            .await;
+        }
+    }
+    let bounce_score = user.bounce_score.unwrap_or(0.0);
+    if !critical && bounce_score >= s.get("bounce_score_threshold")?.to_f() {
+        return skip(
+            conn,
+            email_type,
+            to_address,
+            Some(user_id),
+            None,
+            r::EXCEEDED_BOUNCES_LIMIT,
+        )
+        .await;
+    }
+    let has_password: bool =
+        sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM user_passwords WHERE user_id = $1)")
+            .bind(user_id)
+            .fetch_one(&mut *conn)
+            .await?;
+    let template = crate::email::account::template_for(email_type, has_password)
+        .ok_or(Unsupported("this email type"))?;
+    let built = crate::email::account::build(&mut *conn, ctx, template, user_id, token).await?;
+    sender::send(&mut *conn, ctx, built, email_type, Some(user_id)).await?;
     let erode = s.get("bounce_score_erode_on_send")?.to_f();
     if bounce_score > erode {
         sqlx::query("UPDATE user_stats SET bounce_score = bounce_score - $2 WHERE user_id = $1")

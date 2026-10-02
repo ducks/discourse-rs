@@ -6,6 +6,7 @@
 //! text and an HTML part, then encoded and delivered with lettre. Tests and
 //! recordings keep them in memory instead.
 
+pub mod account;
 pub mod notification;
 pub mod sender;
 pub mod styles;

@@ -133,7 +133,7 @@ pub async fn generate(
     secret_key_base: &str,
     user_agent: Option<&str>,
     client_ip: &str,
-    path: &str,
+    path: Option<&str>,
 ) -> Result<(AuthToken, String), sqlx::Error> {
     let unhashed = new_unhashed_token();
     let hashed = hash_token(&unhashed, secret_key_base);

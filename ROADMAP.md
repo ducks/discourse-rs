@@ -141,7 +141,13 @@ Logged-in readers, no writes yet.
       HTML with Discourse's inline styles) byte-identical to Rails, sent
       over SMTP from the `DISCOURSE_SMTP_*` settings with lettre; skipped
       emails logged like Rails
-- [ ] Jobs, next: digests and account emails, pull_hotlinked_images,
+- [x] Accounts: signup (honeypot, validations, the rows User's callbacks
+      write), activation, email login, password reset by code or link,
+      and their emails (critical_user_email, send_email_login_code),
+      byte-identical to Rails; ServerSession as
+      `discourse_rs.server_sessions`
+- [ ] Reply by email (incoming mail), PM emails, previous-replies context
+- [ ] Jobs, next: digests, pull_hotlinked_images,
       notify_mailing_list_subscribers, scheduled jobs (category stats, top
       topics, digests), rate limits
 - [ ] Name the places a plugin would attach as they are built

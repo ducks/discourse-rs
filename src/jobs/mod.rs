@@ -24,28 +24,6 @@ const MAX_ATTEMPTS: i32 = 25;
 /// How long a claimed job stays locked before another worker may take it.
 const LOCK_SECONDS: i64 = 300;
 
-/// Creates the queue's schema and table when missing.
-pub async fn migrate(pool: &PgPool) -> Result<(), sqlx::Error> {
-    let mut conn = pool.acquire().await?;
-    for statement in [
-        "CREATE SCHEMA IF NOT EXISTS discourse_rs",
-        "CREATE TABLE IF NOT EXISTS discourse_rs.jobs ( \
-           id bigserial PRIMARY KEY, \
-           name text NOT NULL, \
-           args jsonb NOT NULL, \
-           run_at timestamp NOT NULL DEFAULT (now() AT TIME ZONE 'utc'), \
-           attempts integer NOT NULL DEFAULT 0, \
-           locked_until timestamp, \
-           last_error text, \
-           failed_at timestamp, \
-           created_at timestamp NOT NULL DEFAULT (now() AT TIME ZONE 'utc'))",
-        "CREATE INDEX IF NOT EXISTS jobs_due ON discourse_rs.jobs (run_at, id) WHERE failed_at IS NULL",
-    ] {
-        sqlx::query(statement).execute(&mut *conn).await?;
-    }
-    Ok(())
-}
-
 /// `Jobs.enqueue(name, args)`
 pub async fn enqueue(conn: &mut PgConnection, name: &str, args: Value) -> Result<(), sqlx::Error> {
     enqueue_in(conn, 0, name, args).await
@@ -60,7 +38,7 @@ pub async fn enqueue_in(
 ) -> Result<(), sqlx::Error> {
     sqlx::query(
         "INSERT INTO discourse_rs.jobs (name, args, run_at, created_at) \
-         VALUES ($1, $2, clock_timestamp() + make_interval(secs => $3), clock_timestamp())",
+         SELECT $1, $2, now + make_interval(secs => $3), now FROM clock_timestamp() AS now",
     )
     .bind(name)
     .bind(args)
