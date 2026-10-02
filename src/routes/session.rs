@@ -33,6 +33,11 @@ pub(super) fn csrf_ok(
     path: &str,
     method: &str,
 ) -> bool {
+    // API requests are not checked (handle_unverified_request); a key that
+    // reached a handler was valid, the session middleware saw to it.
+    if headers.contains_key(crate::session::api_key::HEADER_API_KEY) {
+        return true;
+    }
     let session = load_forum_session(state, headers);
     let Some(Scalar::Str(stored)) = session.map.get("_csrf_token") else {
         return false;

@@ -268,6 +268,38 @@ pub async fn layer(
         .extensions()
         .get::<axum::extract::ConnectInfo<std::net::SocketAddr>>()
         .map(|c| c.0);
+    // An admin API key stands in for the session (lookup_api_user). An
+    // admin route that does not let the request in is a 404, as Rails'
+    // AdminConstraint makes it; elsewhere it is invalid access.
+    if request
+        .headers()
+        .contains_key(super::api_key::HEADER_API_KEY)
+    {
+        let mut conn = state.pool.acquire().await?;
+        let ip = remote_ip(&headers, peer);
+        let refused = |key: &str| {
+            if path.starts_with("/admin/") {
+                crate::routes::not_found_response(&state, false)
+            } else {
+                crate::routes::invalid_access_with(&state, key)
+            }
+        };
+        let guardian =
+            match super::api_key::resolve(&mut conn, &headers, &ip, &method, &path).await? {
+                super::api_key::Resolved::User(user) => {
+                    crate::guardian::Guardian::for_user(&mut conn, &user).await?
+                }
+                super::api_key::Resolved::Invalid => return Ok(refused("invalid_api_credentials")),
+                super::api_key::Resolved::Refused => return Ok(refused("invalid_access")),
+            };
+        drop(conn);
+        request.extensions_mut().insert(Incoming {
+            had_token_cookie: false,
+            session: None,
+            guardian,
+        });
+        return Ok(next.run(request).await);
+    }
     // A request without the cookie has no session to resolve, rotate or
     // clear, so it never touches the pool here.
     let (incoming, settings) = if cookie(&headers, TOKEN_COOKIE).is_some() {

@@ -37,6 +37,12 @@ pub struct NewPost {
     pub user_agent: Option<String>,
     /// Set for a post Email::Receiver creates.
     pub email: Option<EmailOrigin>,
+    /// `advance_draft`: the composer's draft sequence moves on (not for API
+    /// requests or email).
+    pub advance_draft: bool,
+    /// `first_post_checks`: a first post's fast-typing check (not for API
+    /// requests or email).
+    pub first_post_checks: bool,
 }
 
 /// What Email::Receiver#create_post adds to a post: the mail's date as
@@ -197,6 +203,7 @@ pub async fn create(
         new_topic,
         category_id.or(reply_topic.as_ref().and_then(|t| t.category_id)),
         args.typing_duration_msecs.unwrap_or(0),
+        args.first_post_checks,
     )
     .await?;
 
@@ -643,8 +650,8 @@ pub async fn create(
     )
     .await?;
     // DraftSequence.next!(user, draft_key) when the composer asked
-    // (advance_draft); a post by email did not.
-    if args.email.is_none() {
+    // (advance_draft).
+    if args.advance_draft {
         next_draft_sequence(&mut tx, user.id, &draft_key).await?;
     }
     // save_reply_relationships

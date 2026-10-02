@@ -58,10 +58,15 @@ pub(super) fn invalid_parameters(state: &AppState, message: &str) -> Response {
 }
 
 /// `Discourse::InvalidAccess` as JSON.
-pub(super) fn invalid_access(state: &AppState) -> Response {
+pub(crate) fn invalid_access(state: &AppState) -> Response {
+    invalid_access_with(state, "invalid_access")
+}
+
+/// `Discourse::InvalidAccess` with a `custom_message`.
+pub(crate) fn invalid_access_with(state: &AppState, message_key: &str) -> Response {
     let text = state
         .i18n
-        .t("invalid_access")
+        .t(message_key)
         .unwrap_or("You are not permitted to view the requested resource.");
     (
         StatusCode::FORBIDDEN,

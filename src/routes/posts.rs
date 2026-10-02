@@ -84,6 +84,7 @@ pub async fn create(
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
     drop(conn);
     let integer = |k: &str| params::integer(&p, k);
+    let api = headers.contains_key(crate::session::api_key::HEADER_API_KEY);
     let args = NewPost {
         raw: params::string(&p, "raw").unwrap_or_default(),
         topic_id: integer("topic_id").map(|v| v as i32),
@@ -98,6 +99,9 @@ pub async fn create(
             .and_then(|v| v.to_str().ok())
             .map(str::to_string),
         email: None,
+        // is_api?: an admin API key (the session middleware checked it).
+        advance_draft: !api,
+        first_post_checks: !api,
     };
     let cook_host = Host::from_state(&state);
     let ctx = Ctx {

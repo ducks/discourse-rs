@@ -8,6 +8,8 @@ mod notifications;
 mod posts;
 mod robots;
 mod search;
+pub(crate) use search::invalid_access_with;
+pub(crate) use topics::not_found_response;
 mod session;
 mod site;
 mod sitemap;

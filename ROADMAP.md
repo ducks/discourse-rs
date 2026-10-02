@@ -158,8 +158,9 @@ Logged-in readers, no writes yet.
 - [x] Reply by email: rejection emails (Email::Processor's templates,
       once a day per address and kind, the message kept on the incoming
       email)
+- [x] Admin API keys (mail-receiver's handle_mail, and posting)
 - [ ] Reply by email, next: staged users, attachments, bounces, likes
-      and notification levels by email, API-key auth for mail-receiver,
+      and notification levels by email,
       POP3 polling, group and category addresses (email_in)
 - [ ] PM emails, previous-replies context
 - [ ] Jobs, next: digests, pull_hotlinked_images,

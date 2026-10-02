@@ -62,6 +62,18 @@ struct Client {
 
 impl Client {
     async fn send(&mut self, method: Method, path: &str, body: Option<&Value>) -> (u16, Value) {
+        self.send_with(method, path, body, &Map::new()).await
+    }
+
+    /// A request with the case's own headers. One with an API key goes
+    /// without the CSRF token, as an API client would.
+    async fn send_with(
+        &mut self,
+        method: Method,
+        path: &str,
+        body: Option<&Value>,
+        extra: &Map<String, Value>,
+    ) -> (u16, Value) {
         let mut request = Request::builder()
             .method(method)
             .uri(path)
@@ -76,7 +88,11 @@ impl Client {
                 .collect();
             request = request.header(header::COOKIE, cookie.join("; "));
         }
-        if let Some(token) = &self.csrf {
+        let api = extra.keys().any(|k| k.eq_ignore_ascii_case("api-key"));
+        for (name, value) in extra {
+            request = request.header(name.as_str(), value.as_str().unwrap_or(""));
+        }
+        if let Some(token) = self.csrf.as_ref().filter(|_| !api) {
             request = request.header("x-csrf-token", token.as_str());
         }
         let body = match body {
@@ -646,7 +662,10 @@ async fn replay(case: &Value, run_jobs: &[String]) -> Vec<String> {
         let params = request.get("params").map(|p| resolve(p, &state));
         let body = params.as_ref().filter(|p| p.is_object());
         let path = resolve(&request["path"], &state);
-        let (status, body) = client.send(method, path.as_str().unwrap(), body).await;
+        let extra = request["headers"].as_object().cloned().unwrap_or_default();
+        let (status, body) = client
+            .send_with(method, path.as_str().unwrap(), body, &extra)
+            .await;
         responses.push(serde_json::json!({ "status": status, "body": body }));
     }
     // The jobs the requests enqueued, as the recorder writes them; then
@@ -729,6 +748,19 @@ async fn replay(case: &Value, run_jobs: &[String]) -> Vec<String> {
             .get("emails")
             .cloned()
             .unwrap_or(Value::Array(Vec::new()));
+    }
+    // The reference runs in development, where a route that does not match
+    // (an admin route for a non-admin) renders the Routing Error page; the
+    // port renders the production 404. The status is still compared.
+    for i in 0..rails["responses"].as_array().map_or(0, Vec::len) {
+        let routing_error = rails["responses"][i]["status"] == 404
+            && rails["responses"][i]["body"]
+                .as_str()
+                .is_some_and(|b| b.starts_with("Routing Error"));
+        if routing_error && ours["responses"][i]["status"] == 404 {
+            rails["responses"][i]["body"] = Value::String("<not found>".into());
+            ours["responses"][i]["body"] = Value::String("<not found>".into());
+        }
     }
     if let Ok(dir) = std::env::var("WRITES_DUMP") {
         let name = case["name"].as_str().unwrap_or("case");
