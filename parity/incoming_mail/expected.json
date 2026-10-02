@@ -149,6 +149,231 @@
     "elided": "",
     "format": 1
   },
+  "html_apple_mail": {
+    "cleaned": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+0123456789abcdef0123456789abcdef@example.com\r\nMessage-ID: <sample@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: multipart/alternative;\r\n boundary=b;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\n\r\n--b\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nReply from Apple Mail, long enough to post.\r\n\r\n--b\r\nContent-Type: text/html;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\n<html><body dir=\"auto\"><div>Reply from Apple Mail, <i>long enough</i> to post.</div><div id=\"AppleMailSignature\">Sent from my iPad</div><div id=\"AppleMailSignature\"><br>On Sep 30, 2026, at 9:00 AM, Admin wrote:<br></div><blockquote type=\"cite\"><div>The quoted post.</div></blockquote></body></html>\r\n\r\n--b--\r\n",
+    "message_id": "sample@mail.example.com",
+    "from": [
+      "user0@example.com",
+      "User0"
+    ],
+    "to": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "cc": [],
+    "subject": "Re: [Discourse] [General] Parity fixture: replies and posters",
+    "date": "2026-10-01T10:00:00Z",
+    "reply_message_ids": [],
+    "destinations": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "text": "Reply from Apple Mail, long enough to post.\n",
+    "html": "<html><body dir=\"auto\"><div>Reply from Apple Mail, <i>long enough</i> to post.</div><div id=\"AppleMailSignature\">Sent from my iPad</div><div id=\"AppleMailSignature\"><br>On Sep 30, 2026, at 9:00 AM, Admin wrote:<br></div><blockquote type=\"cite\"><div>The quoted post.</div></blockquote></body></html>\n",
+    "attachments": 0,
+    "auto_generated": false,
+    "body": "Reply from Apple Mail, *long enough* to post.",
+    "elided": "On Sep 30, 2026, at 9:00 AM, Admin wrote:\n\n> The quoted post.",
+    "format": 2
+  },
+  "html_exchange": {
+    "cleaned": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+0123456789abcdef0123456789abcdef@example.com\r\nMessage-ID: <sample@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: multipart/alternative;\r\n boundary=b;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\n\r\n--b\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nReply from Exchange, long enough to post.\r\n\r\n--b\r\nContent-Type: text/html;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\n<div name=\"messageBodySection\"><div dir=\"auto\">Reply from Exchange, long enough to post.</div></div><div name=\"messageReplySection\">On 30 Sep 2026, Admin wrote:<br><blockquote>The quoted post.</blockquote></div>\r\n\r\n--b--\r\n",
+    "message_id": "sample@mail.example.com",
+    "from": [
+      "user0@example.com",
+      "User0"
+    ],
+    "to": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "cc": [],
+    "subject": "Re: [Discourse] [General] Parity fixture: replies and posters",
+    "date": "2026-10-01T10:00:00Z",
+    "reply_message_ids": [],
+    "destinations": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "text": "Reply from Exchange, long enough to post.\n",
+    "html": "<div name=\"messageBodySection\"><div dir=\"auto\">Reply from Exchange, long enough to post.</div></div><div name=\"messageReplySection\">On 30 Sep 2026, Admin wrote:<br><blockquote>The quoted post.</blockquote></div>\n",
+    "attachments": 0,
+    "auto_generated": false,
+    "body": "Reply from Exchange, long enough to post.",
+    "elided": "On 30 Sep 2026, Admin wrote:\n\n> The quoted post.",
+    "format": 2
+  },
+  "html_lists_and_quotes": {
+    "cleaned": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+0123456789abcdef0123456789abcdef@example.com\r\nMessage-ID: <sample@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: multipart/alternative;\r\n boundary=b;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\n\r\n--b\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nPlain fallback.\r\n\r\n--b\r\nContent-Type: text/html;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\n<div>Some points:</div><ul><li>first</li><li>second with <code>code</code></li></ul><blockquote>A quote inside the reply.</blockquote><div>And the end.</div>\r\n\r\n--b--\r\n",
+    "message_id": "sample@mail.example.com",
+    "from": [
+      "user0@example.com",
+      "User0"
+    ],
+    "to": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "cc": [],
+    "subject": "Re: [Discourse] [General] Parity fixture: replies and posters",
+    "date": "2026-10-01T10:00:00Z",
+    "reply_message_ids": [],
+    "destinations": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "text": "Plain fallback.\n",
+    "html": "<div>Some points:</div><ul><li>first</li><li>second with <code>code</code></li></ul><blockquote>A quote inside the reply.</blockquote><div>And the end.</div>\n",
+    "attachments": 0,
+    "auto_generated": false,
+    "body": "Some points:\n- first\n- second with `code`\n\n> A quote inside the reply.\n\nAnd the end.",
+    "elided": "",
+    "format": 2
+  },
+  "html_only": {
+    "cleaned": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+0123456789abcdef0123456789abcdef@example.com\r\nMessage-ID: <sample@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: text/html;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\n<div>An HTML-only reply, with <strong>no</strong> plain part, long enough to post.</div><br><div>On Wed, Admin wrote:</div><blockquote>The quoted post.</blockquote>\r\n",
+    "message_id": "sample@mail.example.com",
+    "from": [
+      "user0@example.com",
+      "User0"
+    ],
+    "to": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "cc": [],
+    "subject": "Re: [Discourse] [General] Parity fixture: replies and posters",
+    "date": "2026-10-01T10:00:00Z",
+    "reply_message_ids": [],
+    "destinations": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "text": null,
+    "html": "<div>An HTML-only reply, with <strong>no</strong> plain part, long enough to post.</div><br><div>On Wed, Admin wrote:</div><blockquote>The quoted post.</blockquote>\n",
+    "attachments": 0,
+    "auto_generated": false,
+    "body": "An HTML-only reply, with **no** plain part, long enough to post.",
+    "elided": "On Wed, Admin wrote:\n\n> The quoted post.",
+    "format": 2
+  },
+  "html_outlook": {
+    "cleaned": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+0123456789abcdef0123456789abcdef@example.com\r\nMessage-ID: <sample@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: multipart/alternative;\r\n boundary=b;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\n\r\n--b\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nReply from Outlook, long enough to post.\r\n\r\nFrom: Admin\r\nSent: Wednesday\r\nSubject: Re: posters\r\n\r\n--b\r\nContent-Type: text/html;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\n<html><body><div dir=\"ltr\"><p>Reply from <b>Outlook</b>, long enough to post.</p></div><div id=\"Signature\"><p>Jane Doe<br>Example Corp</p></div><hr><div id=\"divRplyFwdMsg\"><b>From:</b> Admin<br><b>Sent:</b> Wednesday</div><div>The quoted post.</div></body></html>\r\n\r\n--b--\r\n",
+    "message_id": "sample@mail.example.com",
+    "from": [
+      "user0@example.com",
+      "User0"
+    ],
+    "to": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "cc": [],
+    "subject": "Re: [Discourse] [General] Parity fixture: replies and posters",
+    "date": "2026-10-01T10:00:00Z",
+    "reply_message_ids": [],
+    "destinations": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "text": "Reply from Outlook, long enough to post.\n\nFrom: Admin\nSent: Wednesday\nSubject: Re: posters\n",
+    "html": "<html><body><div dir=\"ltr\"><p>Reply from <b>Outlook</b>, long enough to post.</p></div><div id=\"Signature\"><p>Jane Doe<br>Example Corp</p></div><hr><div id=\"divRplyFwdMsg\"><b>From:</b> Admin<br><b>Sent:</b> Wednesday</div><div>The quoted post.</div></body></html>\n",
+    "attachments": 0,
+    "auto_generated": false,
+    "body": "Reply from **Outlook**, long enough to post.",
+    "elided": "Jane Doe\nExample Corp\n\n---\n\n**From:** Admin\n**Sent:** Wednesday\nThe quoted post.",
+    "format": 2
+  },
+  "html_protonmail": {
+    "cleaned": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+0123456789abcdef0123456789abcdef@example.com\r\nMessage-ID: <sample@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: multipart/alternative;\r\n boundary=b;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\n\r\n--b\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nReply from ProtonMail, long enough to post.\r\n\r\n--b\r\nContent-Type: text/html;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\n<div>Reply from ProtonMail, long enough to post.</div><div class=\"protonmail_signature_block\"><div>Sent with Proton Mail</div></div><div class=\"protonmail_quote\">On Wednesday, Admin wrote:<blockquote>The quoted post.</blockquote></div>\r\n\r\n--b--\r\n",
+    "message_id": "sample@mail.example.com",
+    "from": [
+      "user0@example.com",
+      "User0"
+    ],
+    "to": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "cc": [],
+    "subject": "Re: [Discourse] [General] Parity fixture: replies and posters",
+    "date": "2026-10-01T10:00:00Z",
+    "reply_message_ids": [],
+    "destinations": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "text": "Reply from ProtonMail, long enough to post.\n",
+    "html": "<div>Reply from ProtonMail, long enough to post.</div><div class=\"protonmail_signature_block\"><div>Sent with Proton Mail</div></div><div class=\"protonmail_quote\">On Wednesday, Admin wrote:<blockquote>The quoted post.</blockquote></div>\n",
+    "attachments": 0,
+    "auto_generated": false,
+    "body": "Reply from ProtonMail, long enough to post.",
+    "elided": "Sent with Proton Mail\n\nOn Wednesday, Admin wrote:\n\n> The quoted post.",
+    "format": 2
+  },
+  "html_thunderbird": {
+    "cleaned": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+0123456789abcdef0123456789abcdef@example.com\r\nMessage-ID: <sample@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: multipart/alternative;\r\n boundary=b;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\n\r\n--b\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nReply from Thunderbird, long enough to post.\r\n\r\n--b\r\nContent-Type: text/html;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\n<html><head><meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\"></head><body><p>Reply from Thunderbird, with a <a href=\"https://example.com/doc\">link</a>.</p><div class=\"moz-cite-prefix\">On 9/30/26 9:00 AM, Admin wrote:<br></div><blockquote type=\"cite\">The quoted post.</blockquote><div class=\"moz-signature\">-- <br>Jane</div></body></html>\r\n\r\n--b--\r\n",
+    "message_id": "sample@mail.example.com",
+    "from": [
+      "user0@example.com",
+      "User0"
+    ],
+    "to": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "cc": [],
+    "subject": "Re: [Discourse] [General] Parity fixture: replies and posters",
+    "date": "2026-10-01T10:00:00Z",
+    "reply_message_ids": [],
+    "destinations": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "text": "Reply from Thunderbird, long enough to post.\n",
+    "html": "<html><head><meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\"></head><body><p>Reply from Thunderbird, with a <a href=\"https://example.com/doc\">link</a>.</p><div class=\"moz-cite-prefix\">On 9/30/26 9:00 AM, Admin wrote:<br></div><blockquote type=\"cite\">The quoted post.</blockquote><div class=\"moz-signature\">-- <br>Jane</div></body></html>\n",
+    "attachments": 0,
+    "auto_generated": false,
+    "body": "Reply from Thunderbird, with a [link](https://example.com/doc).",
+    "elided": "On 9/30/26 9:00 AM, Admin wrote:\n\n> The quoted post.\n\n--\nJane",
+    "format": 2
+  },
+  "html_word": {
+    "cleaned": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+0123456789abcdef0123456789abcdef@example.com\r\nMessage-ID: <sample@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: multipart/alternative;\r\n boundary=b;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\n\r\n--b\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nReply from Word, long enough to post.\r\n\r\n--b\r\nContent-Type: text/html;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\n<html><body><div class=\"WordSection1\"><p class=\"MsoNormal\">Reply from Word, long enough to post.</p><ul><li>a point</li></ul><div style=\"border:none\"><p><b>From:</b> Admin</p></div><p>The quoted post.</p></div></body></html>\r\n\r\n--b--\r\n",
+    "message_id": "sample@mail.example.com",
+    "from": [
+      "user0@example.com",
+      "User0"
+    ],
+    "to": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "cc": [],
+    "subject": "Re: [Discourse] [General] Parity fixture: replies and posters",
+    "date": "2026-10-01T10:00:00Z",
+    "reply_message_ids": [],
+    "destinations": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "text": "Reply from Word, long enough to post.\n",
+    "html": "<html><body><div class=\"WordSection1\"><p class=\"MsoNormal\">Reply from Word, long enough to post.</p><ul><li>a point</li></ul><div style=\"border:none\"><p><b>From:</b> Admin</p></div><p>The quoted post.</p></div></body></html>\n",
+    "attachments": 0,
+    "auto_generated": false,
+    "body": "Reply from Word, long enough to post.\n\n- a point",
+    "elided": "**From:** Admin\n\nThe quoted post.",
+    "format": 2
+  },
+  "html_zimbra": {
+    "cleaned": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+0123456789abcdef0123456789abcdef@example.com\r\nMessage-ID: <sample@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: multipart/alternative;\r\n boundary=b;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\n\r\n--b\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nReply from Zimbra, long enough to post.\r\n\r\n--b\r\nContent-Type: text/html;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\n<html><body><div style=\"font-family: arial\"><div>Reply from Zimbra, long enough to post.</div><div><br></div><hr id=\"zwchr\" data-marker=\"__DIVIDER__\"><div data-marker=\"__HEADERS__\"><b>From: </b>Admin</div><div data-marker=\"__QUOTED_TEXT__\">The quoted post.</div></div></body></html>\r\n\r\n--b--\r\n",
+    "message_id": "sample@mail.example.com",
+    "from": [
+      "user0@example.com",
+      "User0"
+    ],
+    "to": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "cc": [],
+    "subject": "Re: [Discourse] [General] Parity fixture: replies and posters",
+    "date": "2026-10-01T10:00:00Z",
+    "reply_message_ids": [],
+    "destinations": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "text": "Reply from Zimbra, long enough to post.\n",
+    "html": "<html><body><div style=\"font-family: arial\"><div>Reply from Zimbra, long enough to post.</div><div><br></div><hr id=\"zwchr\" data-marker=\"__DIVIDER__\"><div data-marker=\"__HEADERS__\"><b>From: </b>Admin</div><div data-marker=\"__QUOTED_TEXT__\">The quoted post.</div></div></body></html>\n",
+    "attachments": 0,
+    "auto_generated": false,
+    "body": "Reply from Zimbra, long enough to post.",
+    "elided": "---\n\n**From:** Admin\nThe quoted post.",
+    "format": 2
+  },
   "lf_only": {
     "cleaned": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+0123456789abcdef0123456789abcdef@example.com\r\nMessage-ID: <sample@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nDelivered with bare LF line endings.\r\n",
     "message_id": "sample@mail.example.com",

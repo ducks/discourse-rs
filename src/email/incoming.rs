@@ -97,7 +97,16 @@ impl Entity {
             // the identity, and quoted-printable keeps its line breaks.
             "7bit" | "" => to_lf(&self.body),
             "8bit" | "binary" => self.body.clone(),
-            "quoted-printable" => qp_decode(&self.body),
+            // (an ASCII result has its line breaks made LF, as the gem's
+            // to_lf only converts it then)
+            "quoted-printable" => {
+                let decoded = qp_decode(&self.body);
+                if decoded.is_ascii() {
+                    to_lf(&decoded)
+                } else {
+                    decoded
+                }
+            }
             "base64" => {
                 let compact: Vec<u8> = self
                     .body
@@ -132,13 +141,18 @@ impl Entity {
     }
 }
 
-/// `\r\n` to `\n`, as the gem's `to_lf`.
+/// `binary_unsafe_to_lf`: CRLF and lone CR to LF.
 fn to_lf(body: &[u8]) -> Vec<u8> {
     let mut out = Vec::with_capacity(body.len());
     let mut i = 0;
     while i < body.len() {
-        if body[i] == b'\r' && body.get(i + 1) == Some(&b'\n') {
-            i += 1;
+        if body[i] == b'\r' {
+            out.push(b'\n');
+            i += if body.get(i + 1) == Some(&b'\n') {
+                2
+            } else {
+                1
+            };
             continue;
         }
         out.push(body[i]);
@@ -260,8 +274,7 @@ fn parse_entity(raw: &[u8]) -> Result<Entity, Unsupported> {
             .ok_or(Unsupported("a multipart email without a boundary"))?;
         entity.parts = split_parts(&entity.body, &boundary)?
             .iter()
-            // The gem parses parts with LF line breaks.
-            .map(|p| parse_entity(&to_lf(p)))
+            .map(|p| parse_entity(p))
             .collect::<Result<_, _>>()?;
         entity.boundary = Some(boundary);
     }

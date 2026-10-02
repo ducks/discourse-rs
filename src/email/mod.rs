@@ -7,6 +7,7 @@
 //! recordings keep them in memory instead.
 
 pub mod account;
+pub mod html_to_markdown;
 pub mod incoming;
 pub mod notification;
 pub mod receiver;

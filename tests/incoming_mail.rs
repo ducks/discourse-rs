@@ -63,7 +63,7 @@ fn fields(m: &Incoming) -> Value {
 }
 
 /// Samples a field of which is refused for now, and why.
-const REFUSED: &[(&str, &str)] = &[("multipart_alternative", "HTML email bodies")];
+const REFUSED: &[(&str, &str)] = &[];
 
 #[test]
 fn samples_parse_and_clean_like_rails() {

@@ -1,0 +1,21 @@
+Date: Thu, 01 Oct 2026 10:00:00 +0000
+From: User0 <user0@example.com>
+To: replies+0123456789abcdef0123456789abcdef@example.com
+Message-ID: <sample@mail.example.com>
+Subject: Re: [Discourse] [General] Parity fixture: replies and posters
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="b"
+
+--b
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+Reply from Word, long enough to post.
+
+--b
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+<html><body><div class="WordSection1"><p class="MsoNormal">Reply from Word, long enough to post.</p><ul><li>a point</li></ul><div style="border:none"><p><b>From:</b> Admin</p></div><p>The quoted post.</p></div></body></html>
+
+--b--
