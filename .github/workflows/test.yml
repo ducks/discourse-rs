@@ -6,7 +6,28 @@ on:
   pull_request:
     branches: [main]
 
+# Two jobs side by side: `make lint` locally is the two of them in a row.
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # rust-toolchain.toml sets the version for rustup here and for
+      # shell.nix locally, so clippy agrees in both places.
+      - name: Install Rust
+        run: rustup show active-toolchain || rustup toolchain install
+
+      # Keyed on the job, the toolchain and Cargo.lock, falling back to the
+      # latest cache when they change, so a dependency bump rebuilds only
+      # what changed; stale artifacts are pruned before saving.
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Format and clippy
+        run: make fmt-check clippy
+
   test:
     runs-on: ubuntu-latest
 
@@ -34,14 +55,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # rust-toolchain.toml sets the version for rustup here and for
-      # shell.nix locally, so clippy agrees in both places.
       - name: Install Rust
         run: rustup show active-toolchain || rustup toolchain install
 
-      # Keyed on the toolchain and Cargo.lock, falling back to the latest
-      # cache when they change, so a dependency bump rebuilds only what
-      # changed; stale artifacts are pruned before saving.
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
 
@@ -54,5 +70,5 @@ jobs:
       - name: Load vendored Discourse schema
         run: scripts/db-load --force discourse_rs_test
 
-      - name: Lint and test
-        run: make lint
+      - name: Test
+        run: make test
