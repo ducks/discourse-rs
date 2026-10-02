@@ -103,3 +103,196 @@ pub async fn find_by_username_or_email(
     };
     Ok(user)
 }
+
+/// `EmailAddressValidator.valid_value?`, without the mail gem's decoding
+/// (ASCII addresses decode to themselves).
+pub fn valid_email(email: &str) -> bool {
+    static RE: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
+        regex::Regex::new(
+            r"^[a-zA-Z0-9!#$%&'*+/=?^_`{|}~\-]+(?:\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~\-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9\-]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9\-]*[a-zA-Z0-9])?$",
+        )
+        .unwrap()
+    });
+    let Some(at) = email.find('@') else {
+        return false;
+    };
+    at <= 64 && email.len() - at - 1 <= 255 && email.is_ascii() && RE.is_match(email)
+}
+
+/// `ScreenedIpAddress.actions[:block]`
+const SCREENED_BLOCK: i32 = 1;
+
+/// `ScreenedIpAddress.should_block?(ip)`: the most specific screening of
+/// the address, its match recorded when it blocks.
+pub async fn ip_blocked(conn: &mut PgConnection, ip: &str) -> Result<bool, AppError> {
+    let screening: Option<(i32, i32)> = sqlx::query_as(
+        "SELECT id, action_type FROM screened_ip_addresses WHERE $1::inet <<= ip_address \
+         ORDER BY masklen(ip_address) DESC LIMIT 1",
+    )
+    .bind(ip)
+    .fetch_optional(&mut *conn)
+    .await?;
+    match screening {
+        Some((id, action)) if action == SCREENED_BLOCK => {
+            sqlx::query(
+                "UPDATE screened_ip_addresses SET match_count = match_count + 1, \
+                 last_match_at = clock_timestamp(), updated_at = clock_timestamp() WHERE id = $1",
+            )
+            .bind(id)
+            .execute(&mut *conn)
+            .await?;
+            Ok(true)
+        }
+        _ => Ok(false),
+    }
+}
+
+/// `EmailLoginCode.purposes`
+pub mod code_purposes {
+    pub const LOGIN: i32 = 0;
+    pub const PASSWORD_RESET: i32 = 1;
+}
+
+/// `EmailLoginCode.hash_code`: HMAC-SHA256 under secret_key_base.
+pub fn hash_login_code(code: &str, secret_key_base: &str) -> String {
+    use hmac::{Hmac, Mac};
+    let mut mac = Hmac::<Sha256>::new_from_slice(secret_key_base.as_bytes())
+        .expect("HMAC takes any key length");
+    mac.update(code.as_bytes());
+    mac.finalize()
+        .into_bytes()
+        .iter()
+        .map(|b| format!("{b:02x}"))
+        .collect()
+}
+
+/// `EmailLoginCode.generate!(email:, purpose:)`: a six-digit code valid
+/// for ten minutes, replacing the address's earlier ones; (id, code).
+pub async fn generate_login_code(
+    conn: &mut PgConnection,
+    email: &str,
+    purpose: i32,
+    secret_key_base: &str,
+) -> Result<(i64, String), AppError> {
+    use rand::Rng;
+    let email = email.to_lowercase();
+    let code = format!("{:06}", rand::thread_rng().gen_range(0..1_000_000));
+    sqlx::query("DELETE FROM email_login_codes WHERE lower(email) = $1 AND purpose = $2")
+        .bind(&email)
+        .bind(purpose)
+        .execute(&mut *conn)
+        .await?;
+    let id: i64 = sqlx::query_scalar(
+        "INSERT INTO email_login_codes (email, purpose, code_hash, expires_at, attempts, created_at, updated_at) \
+         VALUES ($1, $2, $3, clock_timestamp() + interval '10 minutes', 0, clock_timestamp(), clock_timestamp()) \
+         RETURNING id",
+    )
+    .bind(&email)
+    .bind(purpose)
+    .bind(hash_login_code(&code, secret_key_base))
+    .fetch_one(&mut *conn)
+    .await?;
+    Ok((id, code))
+}
+
+/// lib/common_passwords/10-char-common-passwords.txt
+const COMMON_PASSWORDS: &str =
+    include_str!("../vendor/discourse/lib/common_passwords/10-char-common-passwords.txt");
+
+/// Who a password is checked against.
+pub struct PasswordOwner<'a> {
+    pub admin: bool,
+    pub username: &'a str,
+    pub name: Option<&'a str>,
+    pub email: Option<&'a str>,
+    /// (hash, salt, algorithm) of the current password, if any.
+    pub current: Option<(&'a str, &'a str, &'a str)>,
+}
+
+/// `UserPasswordValidator`: the first rule a new password breaks, as the
+/// error key (`too_short`, `common`, ...).
+pub fn password_error(
+    settings: &crate::site_settings::SiteSettings,
+    password: &str,
+    owner: &PasswordOwner<'_>,
+) -> Result<Option<&'static str>, AppError> {
+    let len = password.chars().count() as i64;
+    let min = settings.get("min_password_length")?.to_i();
+    let min_admin = settings.get("min_admin_password_length")?.to_i();
+    if owner.admin && len < min_admin {
+        return Ok(Some("too_short"));
+    }
+    if len < min {
+        return Ok(Some("too_short"));
+    }
+    if !owner.username.is_empty() && password == owner.username {
+        return Ok(Some("same_as_username"));
+    }
+    if owner.name.is_some_and(|n| !n.is_empty() && password == n) {
+        return Ok(Some("same_as_name"));
+    }
+    if owner.email.is_some_and(|e| !e.is_empty() && password == e) {
+        return Ok(Some("same_as_email"));
+    }
+    if let Some((hash, salt, algorithm)) = owner.current {
+        if crate::session::token::hash_password(password, salt, algorithm)
+            .ok()
+            .as_deref()
+            == Some(hash)
+        {
+            return Ok(Some("same_as_current"));
+        }
+    }
+    if settings.get("block_common_passwords")?.truthy()
+        && COMMON_PASSWORDS.lines().any(|l| l == password)
+    {
+        return Ok(Some("common"));
+    }
+    let mut unique: Vec<char> = password.chars().collect();
+    unique.sort_unstable();
+    unique.dedup();
+    if (unique.len() as i64) < settings.get("password_unique_characters")?.to_i() {
+        return Ok(Some("unique_characters"));
+    }
+    Ok(None)
+}
+
+/// `UserPassword::TARGET_PASSWORD_ALGORITHM`
+pub const PASSWORD_ALGORITHM: &str = "$pbkdf2-sha256$i=600000,l=32$";
+
+/// `user.password = pw; user.save`: a fresh salt and hash (PBKDF2 at
+/// 600k iterations runs off the async threads).
+pub async fn set_password(
+    conn: &mut PgConnection,
+    user_id: i32,
+    password: &str,
+) -> Result<(), AppError> {
+    let salt = random_hex();
+    let pw = password.to_string();
+    let salt_for_hash = salt.clone();
+    let hash = tokio::task::spawn_blocking(move || {
+        crate::session::token::hash_password(&pw, &salt_for_hash, PASSWORD_ALGORITHM)
+    })
+    .await
+    .map_err(|e| {
+        crate::Unsupported(if e.is_panic() {
+            "a panic hashing a password"
+        } else {
+            "a cancelled password hash"
+        })
+    })??;
+    sqlx::query(
+        "INSERT INTO user_passwords (user_id, password_hash, password_salt, password_algorithm, created_at, updated_at) \
+         VALUES ($1, $2, $3, $4, clock_timestamp(), clock_timestamp()) \
+         ON CONFLICT (user_id) DO UPDATE SET password_hash = EXCLUDED.password_hash, \
+           password_salt = EXCLUDED.password_salt, password_algorithm = EXCLUDED.password_algorithm, \
+           password_expired_at = NULL, updated_at = clock_timestamp()",
+    )
+    .bind(user_id)
+    .bind(hash)
+    .bind(salt)
+    .bind(PASSWORD_ALGORITHM)
+    .execute(&mut *conn)
+    .await?;
+    Ok(())
+}

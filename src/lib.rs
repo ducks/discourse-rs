@@ -19,6 +19,7 @@ pub mod jobs;
 pub mod letter_avatar;
 pub mod modifications;
 pub mod notifications;
+pub mod owned_schema;
 pub mod params;
 pub mod parity;
 pub mod pm_lists;

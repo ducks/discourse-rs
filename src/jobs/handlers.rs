@@ -21,6 +21,7 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         "post_alert" => post_alert(state, &job.args).await,
         "user_email" => user_email(state, &job.args, false).await,
         "critical_user_email" => user_email(state, &job.args, true).await,
+        "send_email_login_code" => send_email_login_code(state, &job.args).await,
         other => {
             return Err(JobError::Unported(format!(
                 "not ported yet: the {other} job"
@@ -330,6 +331,56 @@ async fn user_email(state: &AppState, args: &Value, critical: bool) -> Result<()
     };
     let mut tx = state.pool.begin().await?;
     super::user_email::run(&mut tx, &ctx, &posting, args, critical).await?;
+    tx.commit().await?;
+    Ok(())
+}
+
+/// `Jobs::SendEmailLoginCode`: EmailLoginCodeMailer's code email, sent
+/// with no user (`Email::Sender.new(message, :email_login_code)`).
+async fn send_email_login_code(state: &AppState, args: &Value) -> Result<(), AppError> {
+    let (Some(to), Some(code)) = (
+        args.get("to_address").and_then(Value::as_str),
+        args.get("code").and_then(Value::as_str),
+    ) else {
+        return Err(Unsupported(
+            "send_email_login_code without an address or code (InvalidParameters)",
+        )
+        .into());
+    };
+    let mut conn = state.pool.acquire().await?;
+    let s = settings(state, &mut conn).await?;
+    if !s.get("enable_local_logins_via_code")?.truthy() {
+        return Ok(());
+    }
+    let host = crate::pretty_text::Host {
+        pool: state.pool.clone(),
+        config: state.config.clone(),
+        site_setting_defs: state.site_setting_defs.clone(),
+        i18n: state.i18n.clone(),
+    };
+    let ctx = crate::email::sender::Ctx {
+        host: &host,
+        settings: &s,
+        config: &state.config,
+        i18n: &state.i18n,
+        mailer: &state.mailer,
+    };
+    let template = if bool_arg(args, "password_reset") {
+        "password_reset_code_mailer"
+    } else {
+        "email_login_code_mailer"
+    };
+    let mut tx = state.pool.begin().await?;
+    let built = crate::email::account::build_template(
+        &mut tx,
+        &ctx,
+        template,
+        to,
+        &[("code", code), ("minutes", "10")],
+        None,
+    )
+    .await?;
+    crate::email::sender::send(&mut tx, &ctx, built, "email_login_code", None).await?;
     tx.commit().await?;
     Ok(())
 }

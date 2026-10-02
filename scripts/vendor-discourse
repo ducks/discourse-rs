@@ -15,6 +15,7 @@ FILES=(
   app/assets/stylesheets/common/foundation/colors.scss
   config/locales/server.en.yml
   config/locales/client.en.yml
+  lib/common_passwords/10-char-common-passwords.txt
 )
 
 if [ $# -lt 1 ]; then

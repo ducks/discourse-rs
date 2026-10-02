@@ -50,9 +50,6 @@ const NOT_YET: &[&str] = &[
     "signup_username_taken",
     "signup_failed_challenge",
     "activate_account",
-    "forgot_password",
-    "forgot_password_unknown",
-    "password_reset",
 ];
 
 struct Client {
@@ -278,6 +275,10 @@ fn normalize(value: &Value, started: NaiveDateTime) -> Value {
             map.iter()
                 .filter(|(k, _)| !PLUGIN_KEYS.contains(&k.as_str()))
                 .map(|(k, v)| match (k.as_str(), v) {
+                    // A session token: random on every run.
+                    ("auth_token", Value::String(_)) => {
+                        (k.clone(), Value::String("<auth_token>".into()))
+                    }
                     // post_revisions.modifications: Rails reads any YAML,
                     // so the port's is compared as what it holds.
                     ("modifications", Value::String(yaml)) => {

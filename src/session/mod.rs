@@ -3,4 +3,6 @@
 pub mod cookie;
 pub mod csrf;
 pub mod current;
+pub mod forum;
+pub mod server;
 pub mod token;

@@ -150,7 +150,7 @@ pub async fn send(
     ctx: &Ctx<'_>,
     built: super::notification::Built,
     email_type: &str,
-    user_id: i32,
+    user_id: Option<i32>,
 ) -> Result<(), AppError> {
     let s = ctx.settings;
     let mut message = built.message;
@@ -175,7 +175,7 @@ pub async fn send(
             conn,
             email_type,
             "no_email_found",
-            Some(user_id),
+            user_id,
             None,
             skip_reasons::SENDER_MESSAGE_TO_BLANK,
         )
@@ -186,7 +186,7 @@ pub async fn send(
             conn,
             email_type,
             &to_address,
-            Some(user_id),
+            user_id,
             None,
             skip_reasons::SENDER_MESSAGE_TO_INVALID,
         )
@@ -197,7 +197,7 @@ pub async fn send(
             conn,
             email_type,
             &to_address,
-            Some(user_id),
+            user_id,
             None,
             skip_reasons::SENDER_TEXT_PART_BODY_BLANK,
         )
@@ -265,7 +265,7 @@ pub async fn send(
                 conn,
                 email_type,
                 &to_address,
-                Some(user_id),
+                user_id,
                 None,
                 skip_reasons::SENDER_POST_DELETED,
             )
@@ -276,7 +276,7 @@ pub async fn send(
                 conn,
                 email_type,
                 &to_address,
-                Some(user_id),
+                user_id,
                 None,
                 skip_reasons::SENDER_TOPIC_DELETED,
             )

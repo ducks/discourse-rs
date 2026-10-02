@@ -50,7 +50,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
         );
     }
 
-    discourse_rs::jobs::migrate(&pool).await?;
+    discourse_rs::owned_schema::migrate(&pool).await?;
 
     let listener = tokio::net::TcpListener::bind(config.bind).await?;
     tracing::info!(addr = %config.bind, "listening");

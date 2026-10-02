@@ -353,7 +353,7 @@ pub async fn run(
         },
     )
     .await?;
-    sender::send(&mut *conn, ctx, built, email_type, user_id).await?;
+    sender::send(&mut *conn, ctx, built, email_type, Some(user_id)).await?;
     let erode = s.get("bounce_score_erode_on_send")?.to_f();
     if bounce_score > erode {
         sqlx::query("UPDATE user_stats SET bounce_score = bounce_score - $2 WHERE user_id = $1")
@@ -424,7 +424,7 @@ async fn account_email(
     let template = crate::email::account::template_for(email_type, has_password)
         .ok_or(Unsupported("this email type"))?;
     let built = crate::email::account::build(&mut *conn, ctx, template, user_id, token).await?;
-    sender::send(&mut *conn, ctx, built, email_type, user_id).await?;
+    sender::send(&mut *conn, ctx, built, email_type, Some(user_id)).await?;
     let erode = s.get("bounce_score_erode_on_send")?.to_f();
     if bounce_score > erode {
         sqlx::query("UPDATE user_stats SET bounce_score = bounce_score - $2 WHERE user_id = $1")

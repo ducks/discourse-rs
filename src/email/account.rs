@@ -49,6 +49,33 @@ pub async fn build(
         return Err(Unsupported("account emails in a user's own locale").into());
     }
     let to = email.ok_or(Unsupported("a recipient without an email"))?;
+    build_template(
+        conn,
+        ctx,
+        template,
+        &to,
+        &[
+            ("email_token", email_token),
+            ("recipient_username", &username),
+        ],
+        Some(user_id),
+    )
+    .await
+}
+
+/// `build_email(to, template:, **args)` for a template with no HTML
+/// override: `extra` are the template's own arguments, `user_id` the user
+/// the text is cooked for (Email::Sender's user).
+pub async fn build_template(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    template: &str,
+    to: &str,
+    extra: &[(&str, &str)],
+    user_id: Option<i32>,
+) -> Result<Built, AppError> {
+    let s = ctx.settings;
+    let default_locale = s.get("default_locale")?.to_s();
     let overridden: bool = sqlx::query_scalar(
         "SELECT EXISTS (SELECT 1 FROM translation_overrides WHERE locale = $1 AND translation_key LIKE $2)",
     )
@@ -71,19 +98,18 @@ pub async fn build(
         .unwrap_or_else(|| site_name.clone());
     let user_preferences_url = format!("{base_url}/my/preferences");
     let hostname = urls.current_hostname()?;
-    let args: Vec<(&str, &str)> = vec![
+    let mut args: Vec<(&str, &str)> = vec![
         ("site_name", &site_name),
         ("email_prefix", &email_prefix),
         ("base_url", &base_url),
         ("user_preferences_url", &user_preferences_url),
         ("hostname", &hostname),
-        ("email_token", email_token),
-        ("recipient_username", &username),
         ("optional_re", ""),
         ("optional_pm", ""),
         ("optional_cat", ""),
         ("optional_tags", ""),
     ];
+    args.extend_from_slice(extra);
     let preview = ctx
         .i18n
         .t(&format!("{template}.preview"))
@@ -109,7 +135,7 @@ pub async fn build(
         ctx.host,
         &unescaped,
         &MarkdownOptions {
-            user_id: Some(i64::from(user_id)),
+            user_id: user_id.map(i64::from),
             ..Default::default()
         },
     )
@@ -132,7 +158,7 @@ pub async fn build(
     let cleanup = |name: &str| name.replace([':', '<', '>', ',', '"'], "");
     let from = format!("\"{}\" <{notification_email}>", cleanup(&site_title));
     let mut headers = vec![
-        ("To".to_string(), to),
+        ("To".to_string(), to.to_string()),
         ("Subject".to_string(), subject),
         ("From".to_string(), from.clone()),
     ];
