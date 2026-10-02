@@ -103,7 +103,7 @@ pub(crate) fn attr(node: &Handle, name: &str) -> Option<String> {
 }
 
 /// Nokogiri's `node[name] = value`: replaced in place, else appended.
-pub(super) fn set_attr(node: &Handle, name: &str, value: &str) {
+pub(crate) fn set_attr(node: &Handle, name: &str, value: &str) {
     if let NodeData::Element { attrs, .. } = &node.data {
         let mut attrs = attrs.borrow_mut();
         match attrs.iter_mut().find(|a| &*a.name.local == name) {

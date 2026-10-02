@@ -144,6 +144,7 @@ pub enum TopicUserAttr {
     LastReadPostNumber(i32),
     LastPostedAtNow,
     Bookmarked(bool),
+    LastEmailedPostNumber(i32),
     NotificationLevel(i32, i32),
 }
 
@@ -167,6 +168,9 @@ pub async fn change_topic_user(
                 sets.push("last_posted_at = clock_timestamp()".into())
             }
             TopicUserAttr::Bookmarked(v) => sets.push(format!("bookmarked = {v}")),
+            TopicUserAttr::LastEmailedPostNumber(n) => {
+                sets.push(format!("last_emailed_post_number = {n}"))
+            }
             TopicUserAttr::NotificationLevel(l, reason) => {
                 level = Some((*l, *reason));
                 sets.push(format!(
@@ -208,6 +212,10 @@ pub async fn change_topic_user(
             TopicUserAttr::Bookmarked(v) => {
                 columns.push("bookmarked".into());
                 values.push(v.to_string());
+            }
+            TopicUserAttr::LastEmailedPostNumber(n) => {
+                columns.push("last_emailed_post_number".into());
+                values.push(n.to_string());
             }
             TopicUserAttr::NotificationLevel(..) => {}
         }

@@ -26,6 +26,8 @@ module Jobs
   def self.enqueue_at(at, name, args = {}) = (ENQUEUED << ["#{name} at", args.except(:current_site_id)]) && nil
 end
 ActionController::Base.allow_forgery_protection = false
+ActionMailer::Base.delivery_method = :test
+ActionMailer::Base.perform_deliveries = true
 RateLimiter.disable
 
 def db = ActiveRecord::Base.connection
@@ -119,33 +121,49 @@ cases.each do |c|
     before_sums = checksums
     before_rows = before_sums.keys.to_h { |t| [t, rows(t)] }
     started_at = db.select_value("SELECT to_jsonb(clock_timestamp()::timestamp)::text")
+    transaction_started_at = db.select_value("SELECT to_jsonb(transaction_timestamp()::timestamp)::text")
     responses =
       c["requests"].map do |r|
         session.public_send(r["method"].downcase, r["path"], params: r["params"] || {}, headers: headers, as: :json)
         body = session.response.body
         { status: session.response.status, body: (JSON.parse(body) rescue body) }
       end
-    # run_jobs: the named jobs the requests enqueued run in order (delayed
-    # ones too), as Sidekiq would; what they enqueue is recorded apart.
+    # run_jobs: the named jobs run in order (delayed ones too), as Sidekiq
+    # would, including those the jobs themselves enqueue; what the jobs
+    # enqueue is recorded apart, and mail is captured, not sent.
     from_requests = ENQUEUED.dup
     ENQUEUED.clear
-    (c["run_jobs"] || []).then do |names|
-      from_requests.each do |name, args|
-        next if !names.include?(name.split(" ").first)
-        klass = "Jobs::#{name.split(" ").first.camelize}".constantize
-        klass.new.execute(args.with_indifferent_access)
-      end
+    ActionMailer::Base.deliveries.clear
+    names = c["run_jobs"] || []
+    pending = from_requests.dup
+    while (job = pending.shift)
+      name, args = job
+      base = name.split(" ").first
+      next if !names.include?(base)
+      seen = ENQUEUED.size
+      "Jobs::#{base.camelize}".constantize.new.execute(args.with_indifferent_access)
+      pending.concat(ENQUEUED[seen..])
     end
+    emails =
+      ActionMailer::Base.deliveries.map do |m|
+        {
+          headers: m.header.fields.reject { |f| %w[Date].include?(f.name) }.map { |f| [f.name, f.value.to_s] },
+          text: m.text_part&.decoded || (m.multipart? ? nil : m.decoded),
+          html: m.html_part&.decoded,
+        }
+      end
     record = {
       name: c["name"],
       user: c["user"],
       requests: c["requests"],
       started_at: JSON.parse(started_at),
+      transaction_started_at: JSON.parse(transaction_started_at),
       responses: responses,
       changes: diff(before_sums, before_rows),
       jobs: from_requests,
     }
     record[:jobs_from_jobs] = ENQUEUED.dup if c["run_jobs"]
+    record[:emails] = emails if emails.any?
     File.write("#{out}/#{c["name"]}.json", JSON.pretty_generate(record) + "\n")
     puts "#{c["name"]}: #{responses.map { |r| r[:status] }.join(",")}, #{record[:changes].size} tables, #{from_requests.size} jobs"
   ensure

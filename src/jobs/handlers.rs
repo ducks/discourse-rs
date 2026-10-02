@@ -19,6 +19,7 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         "feature_topic_users" => feature_topic_users(state, &job.args).await,
         "process_post" => process_post(state, &job.args).await,
         "post_alert" => post_alert(state, &job.args).await,
+        "user_email" => user_email(state, &job.args).await,
         other => {
             return Err(JobError::Unported(format!(
                 "not ported yet: the {other} job"
@@ -297,6 +298,37 @@ async fn post_alert(state: &AppState, args: &Value) -> Result<(), AppError> {
     };
     let mut tx = state.pool.begin().await?;
     super::post_alert::run(&ctx, &mut tx, args).await?;
+    tx.commit().await?;
+    Ok(())
+}
+
+/// `Jobs::UserEmail`, in one transaction: a refused case writes no
+/// unsubscribe key or log, and nothing is delivered before it commits.
+async fn user_email(state: &AppState, args: &Value) -> Result<(), AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let s = settings(state, &mut conn).await?;
+    drop(conn);
+    let host = crate::pretty_text::Host {
+        pool: state.pool.clone(),
+        config: state.config.clone(),
+        site_setting_defs: state.site_setting_defs.clone(),
+        i18n: state.i18n.clone(),
+    };
+    let posting = crate::posting::Ctx {
+        host: &host,
+        settings: &s,
+        config: &state.config,
+        i18n: &state.i18n,
+    };
+    let ctx = crate::email::sender::Ctx {
+        host: &host,
+        settings: &s,
+        config: &state.config,
+        i18n: &state.i18n,
+        mailer: &state.mailer,
+    };
+    let mut tx = state.pool.begin().await?;
+    super::user_email::run(&mut tx, &ctx, &posting, args).await?;
     tx.commit().await?;
     Ok(())
 }

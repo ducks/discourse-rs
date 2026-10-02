@@ -380,5 +380,60 @@
     "run_jobs": [
       "post_alert"
     ]
+  },
+  {
+    "name": "reply_email",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/posts.json",
+        "params": {
+          "topic_id": 35,
+          "raw": "A reply from user1 to the replies and posters topic, written for the posting slice."
+        }
+      }
+    ],
+    "run_jobs": [
+      "post_alert",
+      "user_email"
+    ]
+  },
+  {
+    "name": "reply_to_post_email",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/posts.json",
+        "params": {
+          "topic_id": 35,
+          "reply_to_post_number": 1,
+          "raw": "Replying to the first post directly, which records who it answers."
+        }
+      }
+    ],
+    "run_jobs": [
+      "post_alert",
+      "user_email"
+    ]
+  },
+  {
+    "name": "mention_email",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/posts.json",
+        "params": {
+          "topic_id": 35,
+          "raw": "## A heading\n\nWith **bold**, a mention of @user0, #general and :smile:, and a [link](https://example.com/page)."
+        }
+      }
+    ],
+    "run_jobs": [
+      "post_alert",
+      "user_email"
+    ]
   }
 ]

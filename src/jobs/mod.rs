@@ -10,6 +10,7 @@
 
 mod handlers;
 mod post_alert;
+mod user_email;
 
 use std::time::Duration;
 
