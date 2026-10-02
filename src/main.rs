@@ -50,6 +50,8 @@ async fn run() -> Result<(), Box<dyn Error>> {
         );
     }
 
+    discourse_rs::jobs::migrate(&pool).await?;
+
     let listener = tokio::net::TcpListener::bind(config.bind).await?;
     tracing::info!(addr = %config.bind, "listening");
     // Rails keeps secret_key_base in redis when it is not configured; a
@@ -72,12 +74,27 @@ async fn run() -> Result<(), Box<dyn Error>> {
         search_log_cache: Default::default(),
         keys: Arc::new(keys),
     };
+    // A worker beside the web server unless DISCOURSE_RS_JOBS=off, which
+    // leaves the queue to a separate process.
+    let worker = match std::env::var("DISCOURSE_RS_JOBS").as_deref() {
+        Ok("off") => None,
+        _ => {
+            tracing::info!("running background jobs");
+            Some(tokio::spawn(discourse_rs::jobs::work(
+                state.clone(),
+                shutdown_signal(),
+            )))
+        }
+    };
     axum::serve(
         listener,
         app(state).into_make_service_with_connect_info::<std::net::SocketAddr>(),
     )
     .with_graceful_shutdown(shutdown_signal())
     .await?;
+    if let Some(worker) = worker {
+        worker.await?;
+    }
 
     Ok(())
 }

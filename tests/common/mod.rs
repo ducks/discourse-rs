@@ -58,6 +58,9 @@ impl TestDb {
             .connect_with(template_opts.database(&name))
             .await
             .expect("connecting to the cloned test database");
+        discourse_rs::jobs::migrate(&pool)
+            .await
+            .expect("creating the job queue");
 
         TestDb { pool, name, admin }
     }

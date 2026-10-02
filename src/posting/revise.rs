@@ -357,6 +357,16 @@ pub async fn revise(
     }
     // advance_draft_sequence for the (new) last editor.
     next_draft_sequence(&mut tx, editor_user.id, &format!("topic_{}", post.topic_id)).await?;
+    // post_process_post and alert_users, committed with the edit.
+    crate::jobs::enqueue(
+        &mut tx,
+        "process_post",
+        json!({"bypass_bump": false, "cooking_options": null, "new_post": false, "post_id": post.id, "skip_pull_hotlinked_images": false, "invalidate_oneboxes": true}),
+    )
+    .await?;
+    if editor_user.id != -1 {
+        crate::jobs::enqueue(&mut tx, "post_alert", json!({"post_id": post.id})).await?;
+    }
     tx.commit().await?;
 
     let mut conn = pool.acquire().await?;

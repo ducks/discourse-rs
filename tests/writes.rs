@@ -41,6 +41,9 @@ const PLUGIN_KEYS: [&str; 9] = [
     "can_vote",
 ];
 
+/// Jobs plugins enqueue on the reference (discourse-narrative-bot).
+const PLUGIN_JOBS: [&str; 1] = ["bot_input"];
+
 /// Cases the port does not do like Rails yet. The list only shrinks.
 const NOT_YET: &[&str] = &[];
 
@@ -161,7 +164,8 @@ async fn reset_sequences(pool: &PgPool) {
          JOIN pg_depend d ON d.objid = s.oid AND d.deptype = 'a' \
          JOIN pg_class t ON t.oid = d.refobjid \
          JOIN pg_attribute a ON a.attrelid = t.oid AND a.attnum = d.refobjsubid \
-         WHERE s.relkind = 'S'",
+         JOIN pg_namespace n ON n.oid = t.relnamespace \
+         WHERE s.relkind = 'S' AND n.nspname = 'public'",
     )
     .fetch_all(pool)
     .await
@@ -384,13 +388,39 @@ async fn replay(case: &Value) -> Vec<String> {
             .await;
         responses.push(serde_json::json!({ "status": status, "body": body }));
     }
+    // The jobs the requests enqueued, as the recorder writes them.
+    let jobs: Vec<(String, Value, f64)> = sqlx::query_as(
+        "SELECT name, args, EXTRACT(EPOCH FROM run_at - created_at)::float8 FROM discourse_rs.jobs ORDER BY id",
+    )
+    .fetch_all(&db.pool)
+    .await
+    .unwrap();
+    let jobs: Vec<Value> = jobs
+        .into_iter()
+        .map(|(name, args, delay)| {
+            let name = if delay >= 1.0 {
+                format!("{name} in {}s", delay.round() as i64)
+            } else {
+                name
+            };
+            serde_json::json!([name, args])
+        })
+        .collect();
     let ours = serde_json::json!({
         "responses": responses,
+        "jobs": jobs,
         "changes": changes(&db.pool, &tables, &before_sums, &before_rows).await,
     });
 
     let rails_started = timestamp(case["started_at"].as_str().unwrap()).unwrap();
-    let rails = serde_json::json!({ "responses": case["responses"], "changes": case["changes"] });
+    let rails_jobs: Vec<Value> = case["jobs"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|j| !PLUGIN_JOBS.contains(&j[0].as_str().unwrap_or("")))
+        .cloned()
+        .collect();
+    let rails = serde_json::json!({ "responses": case["responses"], "changes": case["changes"], "jobs": rails_jobs });
     let mut out = Vec::new();
     differences(
         "",

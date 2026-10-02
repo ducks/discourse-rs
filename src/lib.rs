@@ -13,6 +13,7 @@ pub mod groups;
 pub mod guardian;
 pub mod html;
 pub mod i18n;
+pub mod jobs;
 pub mod letter_avatar;
 pub mod modifications;
 pub mod notifications;
@@ -102,6 +103,21 @@ where
 {
     fn from(e: E) -> Self {
         AppError(Box::new(e))
+    }
+}
+
+impl std::fmt::Display for AppError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
+impl AppError {
+    /// Whether the failure is something not ported (`Unsupported`), as
+    /// opposed to an error.
+    pub fn is_unsupported(&self) -> bool {
+        self.0.downcast_ref::<Unsupported>().is_some()
+            || self.0.to_string().starts_with("not ported yet:")
     }
 }
 
