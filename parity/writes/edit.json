@@ -21,8 +21,8 @@
       "path": "/posts/36/revisions/latest.json"
     }
   ],
-  "started_at": "2026-10-02T11:10:54.596453",
-  "transaction_started_at": "2026-10-02T11:10:53.755549",
+  "started_at": "2026-10-02T11:50:04.739343",
+  "transaction_started_at": "2026-10-02T11:50:03.694547",
   "responses": [
     {
       "status": 200,
@@ -37,7 +37,7 @@
           "post_number": 2,
           "post_type": 1,
           "posts_count": 5,
-          "updated_at": "2026-10-02T11:10:54.665Z",
+          "updated_at": "2026-10-02T11:50:04.805Z",
           "reply_count": 0,
           "reply_to_post_number": null,
           "quote_count": 0,
@@ -108,6 +108,7 @@
           "can_view_edit_history": true,
           "wiki": false,
           "post_url": "/t/parity-fixture-replies-and-posters/35/2",
+          "event": null,
           "reactions": [
             {
               "id": "heart",
@@ -128,7 +129,7 @@
     {
       "status": 200,
       "body": {
-        "created_at": "2026-10-02T11:10:54.681Z",
+        "created_at": "2026-10-02T11:50:04.820Z",
         "post_id": 36,
         "previous_hidden": false,
         "current_hidden": false,
@@ -155,7 +156,7 @@
     {
       "status": 200,
       "body": {
-        "created_at": "2026-10-02T11:10:54.681Z",
+        "created_at": "2026-10-02T11:50:04.820Z",
         "post_id": 36,
         "previous_hidden": false,
         "current_hidden": false,
@@ -201,8 +202,8 @@
           "number": 2,
           "post_id": 36,
           "user_id": 3,
-          "created_at": "2026-10-02T11:10:54.681731",
-          "updated_at": "2026-10-02T11:10:54.681731",
+          "created_at": "2026-10-02T11:50:04.82047",
+          "updated_at": "2026-10-02T11:50:04.82047",
           "modifications": "--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\nraw:\n- Reply one from user1, also long enough to pass the minimum length check.\n- Reply one from user1, edited for the posting slice so it has a revision.\ncooked:\n- \"<p>Reply one from user1, also long enough to pass the minimum length check.</p>\"\n- \"<p>Reply one from user1, edited for the posting slice so it has a revision.</p>\"\nedit_reason:\n-\n- fixing it up\n"
         }
       ],
@@ -304,7 +305,7 @@
             "locale": null,
             "user_id": 3,
             "version": 2,
-            "baked_at": "2026-10-02T11:10:54.665601",
+            "baked_at": "2026-10-02T11:50:04.805308",
             "topic_id": 35,
             "hidden_at": null,
             "post_type": 1,
@@ -317,7 +318,7 @@
             "self_edits": 1,
             "sort_order": 2,
             "spam_count": 0,
-            "updated_at": "2026-10-02T11:10:54.665991",
+            "updated_at": "2026-10-02T11:50:04.805512",
             "word_count": 14,
             "action_code": null,
             "cook_method": 1,
@@ -337,7 +338,7 @@
             "last_editor_id": 3,
             "public_version": 2,
             "image_upload_id": null,
-            "last_version_at": "2026-10-02T11:10:54.625393",
+            "last_version_at": "2026-10-02T11:50:04.756821",
             "off_topic_count": 0,
             "hidden_reason_id": null,
             "reply_to_user_id": null,
@@ -469,33 +470,33 @@
       "updated": [
         {
           "before": {
-            "id": 78,
+            "id": 80,
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "ZEAUERH4jB22SaCHO98XZxOyL5E=",
-            "created_at": "2026-10-02T11:10:54.072302",
-            "rotated_at": "2026-10-02T11:10:54.071825",
-            "updated_at": "2026-10-02T11:10:54.072302",
+            "auth_token": "JDw98yOLNBbopCgTMD6dnmGaTr8=",
+            "created_at": "2026-10-02T11:50:04.047628",
+            "rotated_at": "2026-10-02T11:50:04.047222",
+            "updated_at": "2026-10-02T11:50:04.047628",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "ZEAUERH4jB22SaCHO98XZxOyL5E=",
+            "prev_auth_token": "JDw98yOLNBbopCgTMD6dnmGaTr8=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 78,
-            "seen_at": "2026-10-02T11:10:54.608436",
+            "id": 80,
+            "seen_at": "2026-10-02T11:50:04.745359",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "ZEAUERH4jB22SaCHO98XZxOyL5E=",
-            "created_at": "2026-10-02T11:10:54.072302",
-            "rotated_at": "2026-10-02T11:10:54.071825",
-            "updated_at": "2026-10-02T11:10:54.072302",
+            "auth_token": "JDw98yOLNBbopCgTMD6dnmGaTr8=",
+            "created_at": "2026-10-02T11:50:04.047628",
+            "rotated_at": "2026-10-02T11:50:04.047222",
+            "updated_at": "2026-10-02T11:50:04.047628",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "ZEAUERH4jB22SaCHO98XZxOyL5E=",
+            "prev_auth_token": "JDw98yOLNBbopCgTMD6dnmGaTr8=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null

@@ -24,6 +24,10 @@ module Jobs
   def self.enqueue_in(delay, name, args = {}) =
     (ENQUEUED << ["#{name} in #{delay.to_i}s", args.except(:current_site_id)]) && nil
   def self.enqueue_at(at, name, args = {}) = (ENQUEUED << ["#{name} at", args.except(:current_site_id)]) && nil
+  def self.cancel_scheduled_job(name, args = {})
+    ENQUEUED.reject! { |n, a| n.split(" ").first == name.to_s && a.to_h.stringify_keys.slice(*args.keys.map(&:to_s)) == args.stringify_keys }
+    nil
+  end
 end
 ActionController::Base.allow_forgery_protection = false
 ActionMailer::Base.delivery_method = :test

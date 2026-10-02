@@ -11,8 +11,8 @@
       }
     }
   ],
-  "started_at": "2026-10-02T11:10:50.141491",
-  "transaction_started_at": "2026-10-02T11:10:49.284325",
+  "started_at": "2026-10-02T11:49:59.865521",
+  "transaction_started_at": "2026-10-02T11:49:58.931512",
   "responses": [
     {
       "status": 422,
@@ -32,33 +32,33 @@
       "updated": [
         {
           "before": {
-            "id": 78,
+            "id": 80,
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "A55qJdo6TN+cMDRXOlqZhEyP6V4=",
-            "created_at": "2026-10-02T11:10:49.620906",
-            "rotated_at": "2026-10-02T11:10:49.620682",
-            "updated_at": "2026-10-02T11:10:49.620906",
+            "auth_token": "jhLugyIkXwR9Z893JrgiQoML8YQ=",
+            "created_at": "2026-10-02T11:49:59.305256",
+            "rotated_at": "2026-10-02T11:49:59.304743",
+            "updated_at": "2026-10-02T11:49:59.305256",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "A55qJdo6TN+cMDRXOlqZhEyP6V4=",
+            "prev_auth_token": "jhLugyIkXwR9Z893JrgiQoML8YQ=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 78,
-            "seen_at": "2026-10-02T11:10:50.148043",
+            "id": 80,
+            "seen_at": "2026-10-02T11:49:59.873439",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "A55qJdo6TN+cMDRXOlqZhEyP6V4=",
-            "created_at": "2026-10-02T11:10:49.620906",
-            "rotated_at": "2026-10-02T11:10:49.620682",
-            "updated_at": "2026-10-02T11:10:49.620906",
+            "auth_token": "jhLugyIkXwR9Z893JrgiQoML8YQ=",
+            "created_at": "2026-10-02T11:49:59.305256",
+            "rotated_at": "2026-10-02T11:49:59.304743",
+            "updated_at": "2026-10-02T11:49:59.305256",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "A55qJdo6TN+cMDRXOlqZhEyP6V4=",
+            "prev_auth_token": "jhLugyIkXwR9Z893JrgiQoML8YQ=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null

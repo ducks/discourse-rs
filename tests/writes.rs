@@ -29,7 +29,9 @@ use tower::ServiceExt;
 const BACKGROUND_TABLES: [&str; 3] = ["scheduler_stats", "top_topics", "user_auth_tokens"];
 
 /// Keys plugins add to the post serializer on the reference.
-const PLUGIN_KEYS: [&str; 9] = [
+const PLUGIN_KEYS: [&str; 11] = [
+    "event",
+    "calendar_details",
     "accepted_answer",
     "can_accept_answer",
     "can_unaccept_answer",
