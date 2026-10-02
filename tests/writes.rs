@@ -191,13 +191,24 @@ fn timestamp(s: &str) -> Option<NaiveDateTime> {
     NaiveDateTime::parse_from_str(s, "%Y-%m-%dT%H:%M:%S%.f").ok()
 }
 
+/// What differs on every send: unsubscribe keys (64 hex) and MIME
+/// boundaries.
+fn unrandom(s: &str) -> String {
+    static KEY: std::sync::LazyLock<regex::Regex> =
+        std::sync::LazyLock::new(|| regex::Regex::new(r"\b[0-9a-f]{64}\b").unwrap());
+    static BOUNDARY: std::sync::LazyLock<regex::Regex> =
+        std::sync::LazyLock::new(|| regex::Regex::new(r"boundary=\S+").unwrap());
+    let s = KEY.replace_all(s, "<key>");
+    BOUNDARY.replace_all(&s, "boundary=<boundary>").into_owned()
+}
+
 /// Timestamps at or after the case's start become `<now>`, plugin keys
 /// go.
 fn normalize(value: &Value, started: NaiveDateTime) -> Value {
     match value {
         Value::String(s) => match timestamp(s) {
             Some(t) if t >= started => Value::String("<now>".into()),
-            _ => value.clone(),
+            _ => Value::String(unrandom(s)),
         },
         Value::Array(items) => Value::Array(items.iter().map(|v| normalize(v, started)).collect()),
         Value::Object(map) => Value::Object(
@@ -241,6 +252,13 @@ fn changed_columns(mut doc: Value) -> Value {
         let Some(Value::Array(updated)) = change.get_mut("updated") else {
             continue;
         };
+        // Both sides list rows in their own order; sort by identity.
+        updated.sort_by_key(|row| {
+            ["id", "user_id", "topic_id", "post_id"]
+                .iter()
+                .map(|k| row["before"][*k].to_string())
+                .collect::<Vec<_>>()
+        });
         for row in updated.iter_mut() {
             let (Some(Value::Object(before)), Some(Value::Object(after))) =
                 (row.get("before"), row.get("after"))
@@ -448,11 +466,18 @@ async fn replay(case: &Value, run_jobs: &[String]) -> Vec<String> {
     let from_requests = queued_jobs(&db.pool, 0).await;
     let last_id = from_requests.last().map(|(id, _, _)| *id).unwrap_or(0);
     let mut job_failures = Vec::new();
-    for (id, name, _) in &from_requests {
-        if !run_jobs.iter().any(|n| n == name) {
+    // Jobs the run jobs enqueue run too when named, as on the recording.
+    let mut pending: std::collections::VecDeque<(i64, String)> = from_requests
+        .iter()
+        .map(|(id, name, _)| (*id, name.clone()))
+        .collect();
+    let mut seen_id = last_id;
+    let mut from_jobs: Vec<Value> = Vec::new();
+    while let Some((id, name)) = pending.pop_front() {
+        if !run_jobs.iter().any(|n| *n == name) {
             continue;
         }
-        discourse_rs::jobs::perform_now(&client.state, *id)
+        discourse_rs::jobs::perform_now(&client.state, id)
             .await
             .unwrap();
         let error: Option<Option<String>> =
@@ -464,6 +489,11 @@ async fn replay(case: &Value, run_jobs: &[String]) -> Vec<String> {
         if let Some(Some(error)) = error {
             job_failures.push(format!("{name}: {error}"));
         }
+        for (new_id, new_name, shown) in queued_jobs(&db.pool, seen_id).await {
+            seen_id = new_id;
+            from_jobs.push(shown);
+            pending.push_back((new_id, new_name));
+        }
     }
     let mut ours = serde_json::json!({
         "responses": responses,
@@ -471,14 +501,30 @@ async fn replay(case: &Value, run_jobs: &[String]) -> Vec<String> {
         "changes": changes(&db.pool, &tables, &before_sums, &before_rows).await,
     });
     if !run_jobs.is_empty() {
-        ours["jobs_from_jobs"] = queued_jobs(&db.pool, last_id)
-            .await
-            .into_iter()
-            .map(|(_, _, j)| j)
-            .collect();
+        ours["jobs_from_jobs"] = Value::Array(from_jobs);
+        ours["emails"] = Value::Array(
+            client
+                .state
+                .mailer
+                .sent()
+                .into_iter()
+                .map(|m| {
+                    serde_json::json!({
+                        "headers": m.headers.iter().map(|(k, v)| serde_json::json!([k, v])).collect::<Vec<_>>(),
+                        "text": m.text,
+                        "html": m.html,
+                    })
+                })
+                .collect(),
+        );
     }
 
-    let rails_started = timestamp(case["started_at"].as_str().unwrap()).unwrap();
+    // CURRENT_TIMESTAMP on the reference is its rolled-back transaction's
+    // start, which opened before the case did.
+    let mut rails_started = timestamp(case["started_at"].as_str().unwrap()).unwrap();
+    if let Some(t) = case["transaction_started_at"].as_str().and_then(timestamp) {
+        rails_started = rails_started.min(t);
+    }
     let rails_jobs: Vec<Value> = case["jobs"]
         .as_array()
         .unwrap()
@@ -489,6 +535,23 @@ async fn replay(case: &Value, run_jobs: &[String]) -> Vec<String> {
     let mut rails = serde_json::json!({ "responses": case["responses"], "changes": case["changes"], "jobs": rails_jobs });
     if let Some(from_jobs) = case.get("jobs_from_jobs") {
         rails["jobs_from_jobs"] = from_jobs.clone();
+        rails["emails"] = case
+            .get("emails")
+            .cloned()
+            .unwrap_or(Value::Array(Vec::new()));
+    }
+    if let Ok(dir) = std::env::var("WRITES_DUMP") {
+        let name = case["name"].as_str().unwrap_or("case");
+        std::fs::write(
+            format!("{dir}/{name}.ours.json"),
+            serde_json::to_string_pretty(&ours).unwrap(),
+        )
+        .unwrap();
+        std::fs::write(
+            format!("{dir}/{name}.rails.json"),
+            serde_json::to_string_pretty(&rails).unwrap(),
+        )
+        .unwrap();
     }
     let mut out: Vec<String> = job_failures
         .into_iter()

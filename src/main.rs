@@ -66,6 +66,8 @@ async fn run() -> Result<(), Box<dyn Error>> {
             discourse_rs::session::current::Keys::ephemeral()
         }
     };
+    let mailer = discourse_rs::email::Mailer::from_globals(&config.globals)?;
+    tracing::info!(mailer = ?mailer, "outgoing mail");
     let state = AppState {
         pool,
         config,
@@ -73,6 +75,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
         i18n: Arc::new(i18n),
         search_log_cache: Default::default(),
         keys: Arc::new(keys),
+        mailer,
     };
     // A worker beside the web server unless DISCOURSE_RS_JOBS=off, which
     // leaves the queue to a separate process.

@@ -7,6 +7,7 @@ pub mod color_scheme;
 pub mod config;
 pub mod current_user;
 pub mod discourse_diff;
+pub mod email;
 pub mod emoji;
 pub mod excerpt;
 pub mod groups;
@@ -62,6 +63,8 @@ pub struct AppState {
     pub search_log_cache: Arc<search::SearchLogCache>,
     /// secret_key_base and the cookie codec derived from it.
     pub keys: Arc<session::current::Keys>,
+    /// Where outgoing mail goes (SMTP, sendmail, or memory in tests).
+    pub mailer: email::Mailer,
 }
 
 pub fn app(state: AppState) -> Router {

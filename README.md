@@ -71,6 +71,13 @@ A case with `run_jobs` also runs those of its enqueued jobs (on Rails inside
 the same transaction, here through the job queue), so a job's writes and
 the jobs it enqueues in turn are measured the same way.
 
+Outgoing mail goes over SMTP as configured by the `DISCOURSE_SMTP_*`
+settings Discourse uses (address, port, user name, password, authentication
+plain/login, STARTTLS or forced TLS, certificate verification, HELO domain).
+Without an address Rails falls back to sendmail; that is refused, and the
+job fails with the reason. Captured messages are compared with what Rails
+rendered (`run_jobs` cases ending in `_email`).
+
 Background jobs run from `discourse_rs.jobs` in Postgres: a worker runs
 beside the web server unless `DISCOURSE_RS_JOBS=off`. A job kind that is
 not ported fails at once and keeps the reason in `last_error`.

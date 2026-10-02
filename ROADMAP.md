@@ -136,7 +136,12 @@ Logged-in readers, no writes yet.
       replies, topic/category/tag watchers, first-post watchers, user
       actions, the user_email job); each measured by running it on Rails
       (`run_jobs` cases)
-- [ ] Jobs, next: user_email (needs outgoing mail), pull_hotlinked_images,
+- [x] Notification email: user_email for replies, mentions, quotes,
+      posted and first-post watching; the message (subject, text, headers,
+      HTML with Discourse's inline styles) byte-identical to Rails, sent
+      over SMTP from the `DISCOURSE_SMTP_*` settings with lettre; skipped
+      emails logged like Rails
+- [ ] Jobs, next: digests and account emails, pull_hotlinked_images,
       notify_mailing_list_subscribers, scheduled jobs (category stats, top
       topics, digests), rate limits
 - [ ] Name the places a plugin would attach as they are built

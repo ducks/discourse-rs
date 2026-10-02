@@ -115,6 +115,7 @@ pub fn state(pool: PgPool, config: Config) -> AppState {
         i18n: Arc::new(I18n::vendored().expect("vendored server.en.yml")),
         search_log_cache: Default::default(),
         keys: Arc::new(discourse_rs::session::current::Keys::ephemeral()),
+        mailer: discourse_rs::email::Mailer::memory(),
     }
 }
 
