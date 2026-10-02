@@ -152,9 +152,11 @@ fn json_response(body: serde_json::Value) -> Response {
     ([(header::CACHE_CONTROL, NO_STORE)], Json(body)).into_response()
 }
 
-fn parse_form(body: &Bytes) -> Vec<(String, String)> {
-    form_urlencoded::parse(body)
-        .map(|(k, v)| (k.into_owned(), v.into_owned()))
+/// The body's top-level params as strings, a form or a JSON object alike.
+fn parse_form(headers: &HeaderMap, body: &Bytes) -> Vec<(String, String)> {
+    crate::params::parse(None, headers, body)
+        .iter()
+        .filter_map(|(k, v)| crate::params::scalar(v).map(|v| (k.clone(), v)))
         .collect()
 }
 
@@ -219,17 +221,9 @@ pub async fn create(
     Peer(peer): Peer,
     body: Bytes,
 ) -> Result<Response, AppError> {
-    let form = parse_form(&body);
+    let form = parse_form(&headers, &body);
     if !csrf_ok(&state, &headers, &form, "/session", "POST") {
         return Ok(bad_csrf());
-    }
-    let json = headers
-        .get(header::CONTENT_TYPE)
-        .is_some_and(|v| v.as_bytes().starts_with(b"application/json"));
-    if json {
-        return Err(
-            Unsupported("JSON request bodies on POST /session (the client sends a form)").into(),
-        );
     }
     if !is_xhr_or_json(&headers, "/session") {
         return Ok(render_empty());
@@ -482,7 +476,7 @@ pub async fn enter(
     headers: HeaderMap,
     body: Bytes,
 ) -> Result<Response, AppError> {
-    let form = parse_form(&body);
+    let form = parse_form(&headers, &body);
     let redirect = param(&form, "redirect")
         .map(str::to_string)
         .or(query.redirect)
@@ -518,7 +512,7 @@ pub async fn destroy(
     axum::Extension(incoming): axum::Extension<Incoming>,
     body: Bytes,
 ) -> Result<Response, AppError> {
-    let form = parse_form(&body);
+    let form = parse_form(&headers, &body);
     let path = format!("/session/{username}");
     if !csrf_ok(&state, &headers, &form, &path, "DELETE") {
         return Ok(bad_csrf());

@@ -34,7 +34,7 @@ const BIDI: [char; 9] = [
     '\u{2069}',
 ];
 
-pub(super) fn parse(html: &str) -> RcDom {
+pub(crate) fn parse(html: &str) -> RcDom {
     let context = QualName::new(None, ns!(html), local_name!("body"));
     parse_fragment(RcDom::default(), ParseOpts::default(), context, vec![])
         .from_utf8()
@@ -49,7 +49,7 @@ pub(super) fn dom_text(dom: &RcDom) -> String {
     text(&fragment_root(dom))
 }
 
-fn fragment_root(dom: &RcDom) -> Handle {
+pub(crate) fn fragment_root(dom: &RcDom) -> Handle {
     dom.document
         .children
         .borrow()
@@ -58,7 +58,7 @@ fn fragment_root(dom: &RcDom) -> Handle {
         .unwrap_or_else(|| dom.document.clone())
 }
 
-pub(super) fn to_html(dom: &RcDom) -> String {
+pub(crate) fn to_html(dom: &RcDom) -> String {
     let root = fragment_root(dom);
     let mut out = Vec::new();
     for child in root.children.borrow().iter() {
