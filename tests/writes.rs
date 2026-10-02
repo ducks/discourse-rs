@@ -28,6 +28,11 @@ use tower::ServiceExt;
 /// covers it.
 const BACKGROUND_TABLES: [&str; 3] = ["scheduler_stats", "top_topics", "user_auth_tokens"];
 
+/// Tables Rails fills from a query without ORDER BY (sidebar links from
+/// `Category.where(id:).pluck(:id)`), so the rows' ids follow each
+/// database's heap order: compared as a set, without ids.
+const UNORDERED_INSERTS: [&str; 1] = ["sidebar_section_links"];
+
 /// Keys plugins add to the post serializer on the reference.
 const PLUGIN_KEYS: [&str; 11] = [
     "event",
@@ -47,12 +52,7 @@ const PLUGIN_KEYS: [&str; 11] = [
 const PLUGIN_JOBS: [&str; 1] = ["bot_input"];
 
 /// Cases the port does not do like Rails yet. The list only shrinks.
-const NOT_YET: &[&str] = &[
-    "signup",
-    "signup_username_taken",
-    "signup_failed_challenge",
-    "activate_account",
-];
+const NOT_YET: &[&str] = &[];
 
 struct Client {
     state: AppState,
@@ -314,17 +314,32 @@ fn changed_columns(mut doc: Value) -> Value {
         return doc;
     };
     tables.retain(|t, _| !BACKGROUND_TABLES.contains(&t.as_str()));
-    for change in tables.values_mut() {
+    let identity = |row: &Value| {
+        ["id", "user_id", "topic_id", "post_id"]
+            .iter()
+            .map(|k| row[*k].to_string())
+            .collect::<Vec<_>>()
+    };
+    for (table, change) in tables.iter_mut() {
+        // Both sides list rows in their own order; sort by identity.
+        for kind in ["inserted", "deleted"] {
+            if let Some(Value::Array(rows)) = change.get_mut(kind) {
+                if UNORDERED_INSERTS.contains(&table.as_str()) {
+                    for row in rows.iter_mut() {
+                        if let Value::Object(r) = row {
+                            r.remove("id");
+                        }
+                    }
+                    rows.sort_by_key(|r| r.to_string());
+                } else {
+                    rows.sort_by_key(identity);
+                }
+            }
+        }
         let Some(Value::Array(updated)) = change.get_mut("updated") else {
             continue;
         };
-        // Both sides list rows in their own order; sort by identity.
-        updated.sort_by_key(|row| {
-            ["id", "user_id", "topic_id", "post_id"]
-                .iter()
-                .map(|k| row["before"][*k].to_string())
-                .collect::<Vec<_>>()
-        });
+        updated.sort_by_key(|row| identity(&row["before"]));
         for row in updated.iter_mut() {
             let (Some(Value::Object(before)), Some(Value::Object(after))) =
                 (row.get("before"), row.get("after"))
@@ -691,6 +706,11 @@ async fn replay(case: &Value, run_jobs: &[String]) -> Vec<String> {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn writes_match_rails() {
+    // A 500's cause is only logged; show it next to the diff.
+    let _ = tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::ERROR)
+        .with_test_writer()
+        .try_init();
     let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("parity/writes");
     let cases: Vec<Value> =
         serde_json::from_str(&std::fs::read_to_string(dir.join("cases.json")).unwrap()).unwrap();

@@ -38,7 +38,7 @@ pub async fn enqueue_in(
 ) -> Result<(), sqlx::Error> {
     sqlx::query(
         "INSERT INTO discourse_rs.jobs (name, args, run_at, created_at) \
-         VALUES ($1, $2, clock_timestamp() + make_interval(secs => $3), clock_timestamp())",
+         SELECT $1, $2, now + make_interval(secs => $3), now FROM clock_timestamp() AS now",
     )
     .bind(name)
     .bind(args)

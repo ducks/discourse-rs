@@ -50,7 +50,7 @@ pub async fn index_post(
         post.tag_names,
         Some(d.as_str()),
     ];
-    let (search_data, prepared) = tsvector(conn, settings, &weights).await?;
+    let (search_data, prepared) = tsvector(conn, settings, None, &weights).await?;
     let raw_data = clean_post_raw_data(&prepared[3])?;
     sqlx::query(
         "INSERT INTO post_search_data (post_id, raw_data, locale, version, search_data, private_message) \
@@ -70,7 +70,7 @@ pub async fn index_post(
     if post.is_first_post {
         let body: String = text.chars().take(MAX_SIMILAR_BODY_LENGTH).collect();
         let weights = [Some(post.topic_title), Some(body.as_str()), None, None];
-        let (search_data, prepared) = tsvector(conn, settings, &weights).await?;
+        let (search_data, prepared) = tsvector(conn, settings, None, &weights).await?;
         let raw_data = prepared
             .iter()
             .filter(|d| !d.is_empty())
@@ -91,6 +91,51 @@ pub async fn index_post(
         .execute(&mut *conn)
         .await?;
     }
+    Ok(())
+}
+
+const USER_INDEX_VERSION: i32 = 3;
+
+/// `SearchIndexer.update_users_index`: username (A) and name (B),
+/// lowercased, under the "simple" stemmer. Searchable user fields (C) are
+/// not ported.
+pub async fn index_user(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    user_id: i32,
+    username_lower: &str,
+    name: Option<&str>,
+) -> Result<(), AppError> {
+    check_unported(settings)?;
+    let searchable: bool =
+        sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM user_fields WHERE searchable)")
+            .fetch_one(&mut *conn)
+            .await?;
+    if searchable {
+        return Err(Unsupported("indexing searchable user fields").into());
+    }
+    let name = name.map(str::to_lowercase).unwrap_or_default();
+    let weights = [Some(username_lower), Some(name.as_str()), Some(""), None];
+    let (search_data, prepared) = tsvector(conn, settings, Some("simple"), &weights).await?;
+    let raw_data = prepared
+        .iter()
+        .filter(|d| !d.is_empty())
+        .cloned()
+        .collect::<Vec<_>>()
+        .join(" ");
+    sqlx::query(
+        "INSERT INTO user_search_data (user_id, raw_data, locale, version, search_data) \
+         VALUES ($1, $2, $3, $4, $5::tsvector) \
+         ON CONFLICT (user_id) DO UPDATE SET raw_data = EXCLUDED.raw_data, locale = EXCLUDED.locale, \
+           version = EXCLUDED.version, search_data = EXCLUDED.search_data",
+    )
+    .bind(user_id)
+    .bind(&raw_data)
+    .bind(settings.get("default_locale")?.to_s())
+    .bind(USER_INDEX_VERSION)
+    .bind(&search_data)
+    .execute(&mut *conn)
+    .await?;
     Ok(())
 }
 
@@ -164,9 +209,13 @@ static TS_VECTOR_PARSE: LazyLock<Regex> =
 async fn tsvector(
     conn: &mut PgConnection,
     settings: &SiteSettings,
+    stemmer: Option<&str>,
     weights: &[Option<&str>; 4],
 ) -> Result<(String, Vec<String>), AppError> {
-    let stemmer = ts_config(&settings.get("default_locale")?.to_s());
+    let stemmer = match stemmer {
+        Some(s) => s,
+        None => ts_config(&settings.get("default_locale")?.to_s()),
+    };
     let max_word = settings
         .get("search_max_indexed_word_length")?
         .to_i()

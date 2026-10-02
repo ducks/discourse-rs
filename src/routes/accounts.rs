@@ -659,14 +659,257 @@ pub(super) async fn confirm_email_token(
     if automatic {
         return Err(crate::Unsupported("automatic group membership by email domain").into());
     }
-    if !active {
-        return Err(crate::Unsupported("activating users").into());
-    }
     sqlx::query(
         "DELETE FROM user_custom_fields WHERE user_id = $1 AND name = 'activation_reminder'",
     )
     .bind(user_id)
     .execute(&mut *conn)
     .await?;
+    if !active {
+        crate::signup::activate_user(&mut *conn, settings, user_id).await?;
+    }
     Ok(Some(user_id))
+}
+
+/// `HONEYPOT_KEY` and `CHALLENGE_KEY` in the server session.
+const HONEYPOT_KEY: &str = "HONEYPOT_KEY";
+const CHALLENGE_KEY: &str = "CHALLENGE_KEY";
+
+/// `server_session[key] ||= SecureRandom.hex`
+async fn server_session_value(
+    conn: &mut sqlx::PgConnection,
+    session_id: &str,
+    key: &str,
+) -> Result<String, AppError> {
+    if let Some(v) = crate::session::server::get(&mut *conn, session_id, key)
+        .await?
+        .and_then(|v| v.as_str().map(str::to_string))
+    {
+        return Ok(v);
+    }
+    let value = accounts::random_hex();
+    crate::session::server::set(
+        &mut *conn,
+        session_id,
+        key,
+        &json!(value),
+        crate::session::server::EXPIRY_SECONDS,
+    )
+    .await?;
+    Ok(value)
+}
+
+/// `honeypot_or_challenge_fails?(params)`
+async fn honeypot_or_challenge_fails(
+    conn: &mut sqlx::PgConnection,
+    session_id: &str,
+    p: &Map<String, Value>,
+) -> Result<bool, AppError> {
+    let honeypot = server_session_value(&mut *conn, session_id, HONEYPOT_KEY).await?;
+    if params::string(p, "password_confirmation").as_deref() != Some(honeypot.as_str()) {
+        return Ok(true);
+    }
+    let challenge = server_session_value(&mut *conn, session_id, CHALLENGE_KEY).await?;
+    let reversed: String = challenge.chars().rev().collect();
+    Ok(params::string(p, "challenge").as_deref() != Some(reversed.as_str()))
+}
+
+/// GET /session/hp(.json): the honeypot value and challenge signup and
+/// activation must echo back.
+pub async fn honeypot(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+) -> Result<Response, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let mut session = crate::session::forum::load_forum_session(&state, &headers);
+    let session_id = session.server_session_id();
+    let value = server_session_value(&mut conn, &session_id, HONEYPOT_KEY).await?;
+    let challenge = server_session_value(&mut conn, &session_id, CHALLENGE_KEY).await?;
+    let cookie = session.set_cookie(&state, &settings)?;
+    with_session_cookie(
+        Json(json!({
+            "value": value,
+            "challenge": challenge,
+            "expires_in": crate::session::server::EXPIRY_SECONDS,
+        }))
+        .into_response(),
+        cookie,
+    )
+}
+
+/// POST /u(.json): users#create for a local signup (no CSRF check).
+pub async fn create_user(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    super::search::Peer(peer): super::search::Peer,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    let p = params::parse(uri.query(), &headers, &body);
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    drop(conn);
+    let mut session = crate::session::forum::load_forum_session(&state, &headers);
+    let session_id = session.server_session_id();
+    let mut tx = state.pool.begin().await?;
+    // respond_to_suspicious_request runs before the action's own checks.
+    if honeypot_or_challenge_fails(&mut tx, &session_id, &p).await?
+        || settings.get("invite_only")?.truthy()
+    {
+        tx.commit().await?;
+        let email = params::string(&p, "email").unwrap_or_default();
+        let message = state
+            .i18n
+            .t_with("login.activate_email", &[("email", &email)])
+            .unwrap_or_default();
+        let cookie = session.set_cookie(&state, &settings)?;
+        return with_session_cookie(
+            Json(json!({"success": true, "active": false, "message": message})).into_response(),
+            cookie,
+        );
+    }
+    if guardian.is_authenticated() {
+        return Ok(super::search::invalid_access(&state));
+    }
+    let Some(email) = params::string(&p, "email").filter(|e| !e.is_empty()) else {
+        return Ok(param_missing("email"));
+    };
+    let Some(username) = params::string(&p, "username").filter(|u| !u.is_empty()) else {
+        return Ok(param_missing("username"));
+    };
+    let name = params::string(&p, "name");
+    let password = params::string(&p, "password");
+    let locale = params::string(&p, "locale");
+    let timezone = params::string(&p, "timezone");
+    let ip = crate::session::current::remote_ip(&headers, peer);
+    let created = crate::signup::create(
+        &mut tx,
+        &settings,
+        &state.i18n,
+        &crate::signup::Signup {
+            name: name.as_deref(),
+            email: &email,
+            password: password.as_deref(),
+            username: &username,
+            locale: locale.as_deref(),
+            timezone: timezone.as_deref(),
+            ip: &ip,
+        },
+    )
+    .await?;
+    let body = match created {
+        crate::signup::Created::Json(body) => {
+            tx.commit().await?;
+            body
+        }
+        crate::signup::Created::Signed { user_id, body } => {
+            crate::session::server::delete(&mut tx, &session_id, HONEYPOT_KEY).await?;
+            crate::session::server::delete(&mut tx, &session_id, CHALLENGE_KEY).await?;
+            crate::session::server::set(
+                &mut tx,
+                &session_id,
+                "user_created_message",
+                &body["message"],
+                crate::session::server::EXPIRY_SECONDS,
+            )
+            .await?;
+            tx.commit().await?;
+            session.map.insert(
+                "activate_user".into(),
+                crate::session::cookie::Scalar::Int(user_id.into()),
+            );
+            session.changed = true;
+            body
+        }
+    };
+    let cookie = session.set_cookie(&state, &settings)?;
+    with_session_cookie(Json(body).into_response(), cookie)
+}
+
+/// PUT /u/activate-account/:token(.json): the signup token confirmed, the
+/// user activated and logged in.
+pub async fn perform_account_activation(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    axum::extract::Path(token): axum::extract::Path<String>,
+    headers: HeaderMap,
+    super::search::Peer(peer): super::search::Peer,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    let token = token.strip_suffix(".json").unwrap_or(&token).to_string();
+    let p = params::parse(uri.query(), &headers, &body);
+    if !csrf_ok(&state, &headers, &form_pairs(&p), uri.path(), "PUT") {
+        return Ok(bad_csrf());
+    }
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    drop(conn);
+    let mut session = crate::session::forum::load_forum_session(&state, &headers);
+    let session_id = session.server_session_id();
+    let mut tx = state.pool.begin().await?;
+    if honeypot_or_challenge_fails(&mut tx, &session_id, &p).await? {
+        tx.commit().await?;
+        return Ok(super::search::invalid_access(&state));
+    }
+    if guardian.is_authenticated() {
+        tx.commit().await?;
+        return Ok(super::topics::not_found_response(&state, false));
+    }
+    let Some(user_id) =
+        confirm_email_token(&mut tx, &settings, &token, token_scopes::SIGNUP).await?
+    else {
+        tx.commit().await?;
+        return Ok(json_error(
+            StatusCode::UNPROCESSABLE_ENTITY,
+            vec![
+                state
+                    .i18n
+                    .t("activation.already_done")
+                    .unwrap_or("")
+                    .to_string(),
+            ],
+        ));
+    };
+    let session_user = crate::session::current::SessionUser::load(&mut tx, user_id)
+        .await?
+        .ok_or(crate::Unsupported("a user that vanished"))?;
+    if session_user.admin {
+        return Err(crate::Unsupported("the wizard redirect for admins").into());
+    }
+    let ip = crate::session::current::remote_ip(&headers, peer);
+    let user_agent = headers
+        .get(header::USER_AGENT)
+        .and_then(|v| v.to_str().ok())
+        .map(str::to_string);
+    let (_, unhashed) = crate::session::token::generate(
+        &mut tx,
+        user_id,
+        &state.keys.secret_key_base,
+        user_agent.as_deref(),
+        &ip,
+        None,
+    )
+    .await?;
+    crate::session::token::enforce_session_count_limit(
+        &mut tx,
+        user_id,
+        settings.get("maximum_session_age")?.to_i(),
+    )
+    .await?;
+    let auth =
+        crate::session::current::auth_cookie(&state.keys, &settings, &session_user, &unhashed)?;
+    tx.commit().await?;
+    let response = with_session_cookie(
+        Json(json!({"success": "OK", "redirect_to": null, "needs_approval": false}))
+            .into_response(),
+        Some(auth),
+    )?;
+    let cookie = session.set_cookie(&state, &settings)?;
+    with_session_cookie(response, cookie)
 }
