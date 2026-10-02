@@ -30,7 +30,7 @@ db_start
 make db-load       # schema + seeds -> discourse_rs_development (FORCE=1 to replace)
 make db-test       # schema + seeds -> discourse_rs_test (template for tests)
 cargo run          # http://127.0.0.1:8080  (BIND_ADDR to change)
-make test
+make test          # cargo nextest run: test binaries side by side
 ```
 
 `seed/fresh_install.sql` is a data snapshot of a freshly provisioned Discourse (a
@@ -66,7 +66,8 @@ Writes are measured separately: `scripts/record-writes <agent>` runs the
 requests in `parity/writes/cases.json` on the reference inside a
 rolled-back transaction and records responses, row changes and enqueued
 jobs; `tests/writes.rs` replays them on the seed and compares
-(`WRITES_DIFF=1` prints the differences).
+(`WRITES_DIFF=1` prints the differences). Cases replay side by side, each on
+its own database copy, four at a time (`WRITES_JOBS=n` to change it).
 A case with `run_jobs` also runs those of its enqueued jobs (on Rails inside
 the same transaction, here through the job queue), so a job's writes and
 the jobs it enqueues in turn are measured the same way.
