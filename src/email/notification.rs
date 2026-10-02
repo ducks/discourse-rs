@@ -383,10 +383,11 @@ pub async fn build(
     let reply_by_email = s.get("reply_by_email_enabled")?.truthy()
         && s.get("reply_by_email_address")?.presence().is_some()
         && allow_reply_by_email;
-    if reply_by_email {
-        return Err(Unsupported("reply by email").into());
-    }
-    let respond_key = "user_notifications.visit_link_to_respond";
+    let respond_key = if reply_by_email {
+        "user_notifications.reply_by_email"
+    } else {
+        "user_notifications.visit_link_to_respond"
+    };
     let respond_instructions = if user.suspended {
         String::new()
     } else {
@@ -509,7 +510,20 @@ pub async fn build(
     }
     headers.push(("X-Auto-Response-Suppress".into(), "All".into()));
     headers.push(("x-ms-reactions".into(), "disallow".into()));
-    headers.push(("Reply-To".into(), from.clone()));
+    if reply_by_email {
+        // The sender swaps the key in and drops the marker header.
+        headers.push(("X-Discourse-Allow-Reply-By-Email".into(), "true".into()));
+        headers.push((
+            "Reply-To".into(),
+            format!(
+                "\"{}\" <{}>",
+                cleanup(&email_site_title),
+                s.get("reply_by_email_address")?.to_s()
+            ),
+        ));
+    } else {
+        headers.push(("Reply-To".into(), from.clone()));
+    }
     for item in s.get("email_custom_headers")?.to_s().split('|') {
         if let Some((name, value)) = item.split_once(':') {
             let (name, value) = (name.trim(), value.trim());

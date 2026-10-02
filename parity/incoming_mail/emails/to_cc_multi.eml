@@ -1,0 +1,11 @@
+Date: Thu, 01 Oct 2026 10:00:00 +0000
+From: "Doe, Jane" <Jane.Doe@Example.com>
+To: someone@example.org, replies+0123456789abcdef0123456789abcdef@example.com
+Cc: "Some, One" <a@b.com>, c@d.com
+Message-ID: <sample@mail.example.com>
+Subject: Re: several recipients
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+Several recipients and a quoted display name.

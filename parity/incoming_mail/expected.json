@@ -1,0 +1,487 @@
+{
+  "auto_reply": {
+    "cleaned": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+0123456789abcdef0123456789abcdef@example.com\r\nMessage-ID: <sample@mail.example.com>\r\nSubject: Out of Office: back next week\r\nMIME-Version: 1.0\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\nAuto-Submitted: auto-replied\r\nPrecedence: bulk\r\n\r\nI am away until next week.\r\n",
+    "message_id": "sample@mail.example.com",
+    "from": [
+      "user0@example.com",
+      "User0"
+    ],
+    "to": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "cc": [],
+    "subject": "Out of Office: back next week",
+    "date": "2026-10-01T10:00:00Z",
+    "reply_message_ids": [],
+    "destinations": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "text": "I am away until next week.\n",
+    "html": null,
+    "attachments": 0,
+    "auto_generated": true,
+    "body": "I am away until next week.",
+    "elided": "",
+    "format": 1
+  },
+  "base64_utf8": {
+    "cleaned": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+0123456789abcdef0123456789abcdef@example.com\r\nMessage-ID: <sample@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\nCaf=C3=A9 sent as base64, mostly ASCII text in it.=0D\r\n",
+    "message_id": "sample@mail.example.com",
+    "from": [
+      "user0@example.com",
+      "User0"
+    ],
+    "to": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "cc": [],
+    "subject": "Re: [Discourse] [General] Parity fixture: replies and posters",
+    "date": "2026-10-01T10:00:00Z",
+    "reply_message_ids": [],
+    "destinations": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "text": "Café sent as base64, mostly ASCII text in it.\r\n",
+    "html": null,
+    "attachments": 0,
+    "auto_generated": false,
+    "body": "Café sent as base64, mostly ASCII text in it.",
+    "elided": "",
+    "format": 1
+  },
+  "eight_bit_utf8": {
+    "cleaned": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+0123456789abcdef0123456789abcdef@example.com\r\nMessage-ID: <sample@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\nQ2Fmw6kgYW5kIOKAnGN1cmx5IHF1b3Rlc+KAnSBzZW50IGFzIDhiaXQuDQo=\r\n",
+    "message_id": "sample@mail.example.com",
+    "from": [
+      "user0@example.com",
+      "User0"
+    ],
+    "to": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "cc": [],
+    "subject": "Re: [Discourse] [General] Parity fixture: replies and posters",
+    "date": "2026-10-01T10:00:00Z",
+    "reply_message_ids": [],
+    "destinations": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "text": "Café and “curly quotes” sent as 8bit.\r\n",
+    "html": null,
+    "attachments": 0,
+    "auto_generated": false,
+    "body": "Café and “curly quotes” sent as 8bit.",
+    "elided": "",
+    "format": 1
+  },
+  "encoded_headers": {
+    "cleaned": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: =?UTF-8?B?SsOpcsO0bWU=?= <jerome@example.com>\r\nTo: replies+0123456789abcdef0123456789abcdef@example.com\r\nMessage-ID: <sample@mail.example.com>\r\nSubject: =?UTF-8?Q?Re:_caf=C3=A9?=\r\nMIME-Version: 1.0\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nEncoded words in the subject and the sender's name.\r\n",
+    "message_id": "sample@mail.example.com",
+    "from": [
+      "jerome@example.com",
+      "Jérôme"
+    ],
+    "to": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "cc": [],
+    "subject": "Re: café",
+    "date": "2026-10-01T10:00:00Z",
+    "reply_message_ids": [],
+    "destinations": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "text": "Encoded words in the subject and the sender's name.\n",
+    "html": null,
+    "attachments": 0,
+    "auto_generated": false,
+    "body": "Encoded words in the subject and the sender's name.",
+    "elided": "",
+    "format": 1
+  },
+  "flowed": {
+    "cleaned": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+0123456789abcdef0123456789abcdef@example.com\r\nMessage-ID: <sample@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: text/plain;\r\n charset=UTF-8;\r\n format=flowed\r\nContent-Transfer-Encoding: 7bit\r\n\r\nA format=flowed reply with a soft \r\nbreak in it.\r\n",
+    "message_id": "sample@mail.example.com",
+    "from": [
+      "user0@example.com",
+      "User0"
+    ],
+    "to": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "cc": [],
+    "subject": "Re: [Discourse] [General] Parity fixture: replies and posters",
+    "date": "2026-10-01T10:00:00Z",
+    "reply_message_ids": [],
+    "destinations": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "text": "A format=flowed reply with a soft \nbreak in it.\n",
+    "html": null,
+    "attachments": 0,
+    "auto_generated": false,
+    "body": "A format=flowed reply with a soft \nbreak in it.",
+    "elided": "",
+    "format": 1
+  },
+  "header_order": {
+    "cleaned": "Date: Thu, 01 Oct 2026 10:00:00 +0200\r\nFrom: User0 <user0@example.com>\r\nTo: replies+0123456789abcdef0123456789abcdef@example.com\r\nMessage-ID: <sample@mail.example.com>\r\nSubject: Re: out of order\r\nMIME-Version: 1.0\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nHeaders in another order, and a one digit day.\r\n",
+    "message_id": "sample@mail.example.com",
+    "from": [
+      "user0@example.com",
+      "User0"
+    ],
+    "to": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "cc": [],
+    "subject": "Re: out of order",
+    "date": "2026-10-01T08:00:00Z",
+    "reply_message_ids": [],
+    "destinations": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "text": "Headers in another order, and a one digit day.\n",
+    "html": null,
+    "attachments": 0,
+    "auto_generated": false,
+    "body": "Headers in another order, and a one digit day.",
+    "elided": "",
+    "format": 1
+  },
+  "lf_only": {
+    "cleaned": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+0123456789abcdef0123456789abcdef@example.com\r\nMessage-ID: <sample@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nDelivered with bare LF line endings.\r\n",
+    "message_id": "sample@mail.example.com",
+    "from": [
+      "user0@example.com",
+      "User0"
+    ],
+    "to": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "cc": [],
+    "subject": "Re: [Discourse] [General] Parity fixture: replies and posters",
+    "date": "2026-10-01T10:00:00Z",
+    "reply_message_ids": [],
+    "destinations": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "text": "Delivered with bare LF line endings.\n",
+    "html": null,
+    "attachments": 0,
+    "auto_generated": false,
+    "body": "Delivered with bare LF line endings.",
+    "elided": "",
+    "format": 1
+  },
+  "long_line": {
+    "cleaned": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+0123456789abcdef0123456789abcdef@example.com\r\nMessage-ID: <sample@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\nword word word word word word word word word word word word word word wor=\r\nd word word word word word word word word word word word word word word w=\r\nord word word word word word word word word word word word word word word=\r\n word word word word word word word word word word word word word word wo=\r\nrd word word word word word word word word word word word word word word =\r\nword word word word word word word word word word word word word word wor=\r\nd word word word word word word word word word word word word word word w=\r\nord word word word word word word word word word word word word word word=\r\n word word word word word word word word word word word word word word wo=\r\nrd word word word word word word word word word word word word word word =\r\nword word word word word word word word word word word word word word wor=\r\nd word word word word word word word word word word word word word word w=\r\nord word word word word word word word word word word word word word word=\r\n word word word word word word word word word word word word word word wo=\r\nrd word word word word word word word word word word word word word word =\r\nword word word word word word word word word word word word word word wor=\r\nd word word word word word word word word word word word word word word w=\r\nord word =\r\n\r\n",
+    "message_id": "sample@mail.example.com",
+    "from": [
+      "user0@example.com",
+      "User0"
+    ],
+    "to": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "cc": [],
+    "subject": "Re: [Discourse] [General] Parity fixture: replies and posters",
+    "date": "2026-10-01T10:00:00Z",
+    "reply_message_ids": [],
+    "destinations": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "text": "word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word \n",
+    "html": null,
+    "attachments": 0,
+    "auto_generated": false,
+    "body": "word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word",
+    "elided": "",
+    "format": 1
+  },
+  "long_subject": {
+    "cleaned": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+0123456789abcdef0123456789abcdef@example.com\r\nMessage-ID: <sample@mail.example.com>\r\nSubject: Re: a subject long enough that the mail library has to fold it over\r\n two lines or more\r\nMIME-Version: 1.0\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nA long subject.\r\n",
+    "message_id": "sample@mail.example.com",
+    "from": [
+      "user0@example.com",
+      "User0"
+    ],
+    "to": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "cc": [],
+    "subject": "Re: a subject long enough that the mail library has to fold it over two lines or more",
+    "date": "2026-10-01T10:00:00Z",
+    "reply_message_ids": [],
+    "destinations": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "text": "A long subject.\n",
+    "html": null,
+    "attachments": 0,
+    "auto_generated": false,
+    "body": "A long subject.",
+    "elided": "",
+    "format": 1
+  },
+  "mobile_signature": {
+    "cleaned": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+0123456789abcdef0123456789abcdef@example.com\r\nMessage-ID: <sample@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nA quick reply from a phone, long enough to post.\r\n\r\nSent from my iPhone\r\n",
+    "message_id": "sample@mail.example.com",
+    "from": [
+      "user0@example.com",
+      "User0"
+    ],
+    "to": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "cc": [],
+    "subject": "Re: [Discourse] [General] Parity fixture: replies and posters",
+    "date": "2026-10-01T10:00:00Z",
+    "reply_message_ids": [],
+    "destinations": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "text": "A quick reply from a phone, long enough to post.\n\nSent from my iPhone\n",
+    "html": null,
+    "attachments": 0,
+    "auto_generated": false,
+    "body": "A quick reply from a phone, long enough to post.",
+    "elided": "Sent from my iPhone",
+    "format": 1
+  },
+  "multipart_alternative": {
+    "cleaned": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+0123456789abcdef0123456789abcdef@example.com\r\nMessage-ID: <sample@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: multipart/alternative;\r\n boundary=000000000000abcdef;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\n\r\n--000000000000abcdef\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nA Gmail-style reply with a plain part.\r\n\r\nOn Wed, Sep 30, 2026 at 9:00 AM Admin <noreply@unconfigured.discourse.org> wrote:\r\n\r\n> The quoted post.\r\n>\r\n\r\n--000000000000abcdef\r\nContent-Type: text/html;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\n<div dir=\"ltr\">A Gmail-style reply with a plain part.</div><br><div class=\"gmail_quote\"><div dir=\"ltr\" class=\"gmail_attr\">On Wed, Sep 30, 2026 at 9:00 AM Admin wrote:<br></div><blockquote class=\"gmail_quote\">The quoted post.</blockquote></div>\r\n\r\n--000000000000abcdef--\r\n",
+    "message_id": "sample@mail.example.com",
+    "from": [
+      "user0@example.com",
+      "User0"
+    ],
+    "to": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "cc": [],
+    "subject": "Re: [Discourse] [General] Parity fixture: replies and posters",
+    "date": "2026-10-01T10:00:00Z",
+    "reply_message_ids": [],
+    "destinations": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "text": "A Gmail-style reply with a plain part.\n\nOn Wed, Sep 30, 2026 at 9:00 AM Admin <noreply@unconfigured.discourse.org> wrote:\n\n> The quoted post.\n>\n",
+    "html": "<div dir=\"ltr\">A Gmail-style reply with a plain part.</div><br><div class=\"gmail_quote\"><div dir=\"ltr\" class=\"gmail_attr\">On Wed, Sep 30, 2026 at 9:00 AM Admin wrote:<br></div><blockquote class=\"gmail_quote\">The quoted post.</blockquote></div>\n",
+    "attachments": 0,
+    "auto_generated": false,
+    "body": "A Gmail-style reply with a plain part.",
+    "elided": "On Wed, Sep 30, 2026 at 9:00 AM Admin wrote:\n\n> The quoted post.",
+    "format": 2
+  },
+  "multipart_attachment": {
+    "cleaned": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+0123456789abcdef0123456789abcdef@example.com\r\nMessage-ID: <sample@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: multipart/mixed;\r\n boundary=mixed-1;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\n\r\n--mixed-1\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nA reply with a file attached.\r\n\r\n--mixed-1--\r\n",
+    "message_id": "sample@mail.example.com",
+    "from": [
+      "user0@example.com",
+      "User0"
+    ],
+    "to": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "cc": [],
+    "subject": "Re: [Discourse] [General] Parity fixture: replies and posters",
+    "date": "2026-10-01T10:00:00Z",
+    "reply_message_ids": [],
+    "destinations": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "text": "A reply with a file attached.\n",
+    "html": null,
+    "attachments": 1,
+    "auto_generated": false,
+    "body": "A reply with a file attached.",
+    "elided": "",
+    "format": 1
+  },
+  "no_cte": {
+    "cleaned": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+0123456789abcdef0123456789abcdef@example.com\r\nMessage-ID: <sample@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nNo Content-Transfer-Encoding header.\r\n",
+    "message_id": "sample@mail.example.com",
+    "from": [
+      "user0@example.com",
+      "User0"
+    ],
+    "to": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "cc": [],
+    "subject": "Re: [Discourse] [General] Parity fixture: replies and posters",
+    "date": "2026-10-01T10:00:00Z",
+    "reply_message_ids": [],
+    "destinations": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "text": "No Content-Transfer-Encoding header.\n",
+    "html": null,
+    "attachments": 0,
+    "auto_generated": false,
+    "body": "No Content-Transfer-Encoding header.",
+    "elided": "",
+    "format": 1
+  },
+  "plain_7bit": {
+    "cleaned": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+0123456789abcdef0123456789abcdef@example.com\r\nMessage-ID: <sample@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nThis is my reply by email, long enough to be a post on its own.\r\n",
+    "message_id": "sample@mail.example.com",
+    "from": [
+      "user0@example.com",
+      "User0"
+    ],
+    "to": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "cc": [],
+    "subject": "Re: [Discourse] [General] Parity fixture: replies and posters",
+    "date": "2026-10-01T10:00:00Z",
+    "reply_message_ids": [],
+    "destinations": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "text": "This is my reply by email, long enough to be a post on its own.\n",
+    "html": null,
+    "attachments": 0,
+    "auto_generated": false,
+    "body": "This is my reply by email, long enough to be a post on its own.",
+    "elided": "",
+    "format": 1
+  },
+  "qp_utf8": {
+    "cleaned": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+0123456789abcdef0123456789abcdef@example.com\r\nMessage-ID: <sample@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\nCaf=C3=A9 and =E2=80=9Ccurly quotes=E2=80=9D in a quoted-printable reply,=\r\n with a soft break.=0D\r\n",
+    "message_id": "sample@mail.example.com",
+    "from": [
+      "user0@example.com",
+      "User0"
+    ],
+    "to": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "cc": [],
+    "subject": "Re: [Discourse] [General] Parity fixture: replies and posters",
+    "date": "2026-10-01T10:00:00Z",
+    "reply_message_ids": [],
+    "destinations": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "text": "Café and “curly quotes” in a quoted-printable reply, with a soft break.\r\n",
+    "html": null,
+    "attachments": 0,
+    "auto_generated": false,
+    "body": "Café and “curly quotes” in a quoted-printable reply, with a soft break.",
+    "elided": "",
+    "format": 1
+  },
+  "quoted_reply": {
+    "cleaned": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+0123456789abcdef0123456789abcdef@example.com\r\nMessage-ID: <sample@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nThis is my reply by email, long enough to be a post on its own.\r\n\r\nOn Wed, Sep 30, 2026 at 9:00 AM Admin <noreply@unconfigured.discourse.org> wrote:\r\n> The post being replied to, quoted by the mail client.\r\n> Over two lines.\r\n",
+    "message_id": "sample@mail.example.com",
+    "from": [
+      "user0@example.com",
+      "User0"
+    ],
+    "to": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "cc": [],
+    "subject": "Re: [Discourse] [General] Parity fixture: replies and posters",
+    "date": "2026-10-01T10:00:00Z",
+    "reply_message_ids": [],
+    "destinations": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "text": "This is my reply by email, long enough to be a post on its own.\n\nOn Wed, Sep 30, 2026 at 9:00 AM Admin <noreply@unconfigured.discourse.org> wrote:\n> The post being replied to, quoted by the mail client.\n> Over two lines.\n",
+    "html": null,
+    "attachments": 0,
+    "auto_generated": false,
+    "body": "This is my reply by email, long enough to be a post on its own.",
+    "elided": "On Wed, Sep 30, 2026 at 9:00 AM Admin <noreply@unconfigured.discourse.org> wrote:\n> The post being replied to, quoted by the mail client.\n> Over two lines.",
+    "format": 1
+  },
+  "threading": {
+    "cleaned": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+0123456789abcdef0123456789abcdef@example.com\r\nMessage-ID: <sample@mail.example.com>\r\nIn-Reply-To: <discourse/post/38@localhost>\r\nReferences: <discourse/topic/35@localhost>\r\n <discourse/post/38@localhost>\r\nSubject: Re: threading headers\r\nMIME-Version: 1.0\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nWith In-Reply-To and References.\r\n",
+    "message_id": "sample@mail.example.com",
+    "from": [
+      "user0@example.com",
+      "User0"
+    ],
+    "to": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "cc": [],
+    "subject": "Re: threading headers",
+    "date": "2026-10-01T10:00:00Z",
+    "reply_message_ids": [
+      "discourse/post/38@localhost",
+      "discourse/topic/35@localhost"
+    ],
+    "destinations": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "text": "With In-Reply-To and References.\n",
+    "html": null,
+    "attachments": 0,
+    "auto_generated": false,
+    "body": "With In-Reply-To and References.",
+    "elided": "",
+    "format": 1
+  },
+  "to_cc_multi": {
+    "cleaned": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: \"Doe, Jane\" <Jane.Doe@Example.com>\r\nTo: someone@example.org, \r\n replies+0123456789abcdef0123456789abcdef@example.com\r\nCc: \"Some, One\" <a@b.com>, \r\n c@d.com\r\nMessage-ID: <sample@mail.example.com>\r\nSubject: Re: several recipients\r\nMIME-Version: 1.0\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nSeveral recipients and a quoted display name.\r\n",
+    "message_id": "sample@mail.example.com",
+    "from": [
+      "jane.doe@example.com",
+      "Doe, Jane"
+    ],
+    "to": [
+      "someone@example.org",
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "cc": [
+      "a@b.com",
+      "c@d.com"
+    ],
+    "subject": "Re: several recipients",
+    "date": "2026-10-01T10:00:00Z",
+    "reply_message_ids": [],
+    "destinations": [
+      "someone@example.org",
+      "replies+0123456789abcdef0123456789abcdef@example.com",
+      "a@b.com",
+      "c@d.com"
+    ],
+    "text": "Several recipients and a quoted display name.\n",
+    "html": null,
+    "attachments": 0,
+    "auto_generated": false,
+    "body": "Several recipients and a quoted display name.",
+    "elided": "",
+    "format": 1
+  },
+  "unknown_headers": {
+    "cleaned": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+0123456789abcdef0123456789abcdef@example.com\r\nMessage-ID: <sample@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\nX-Mailer: Foo Mail 1.0\r\nUser-Agent: Bar/2.0\r\n\r\nUnknown headers go last.\r\n",
+    "message_id": "sample@mail.example.com",
+    "from": [
+      "user0@example.com",
+      "User0"
+    ],
+    "to": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "cc": [],
+    "subject": "Re: [Discourse] [General] Parity fixture: replies and posters",
+    "date": "2026-10-01T10:00:00Z",
+    "reply_message_ids": [],
+    "destinations": [
+      "replies+0123456789abcdef0123456789abcdef@example.com"
+    ],
+    "text": "Unknown headers go last.\n",
+    "html": null,
+    "attachments": 0,
+    "auto_generated": false,
+    "body": "Unknown headers go last.",
+    "elided": "",
+    "format": 1
+  }
+}

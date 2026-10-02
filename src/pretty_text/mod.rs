@@ -112,6 +112,17 @@ pub struct Host {
     pub i18n: Arc<I18n>,
 }
 
+impl Host {
+    pub fn from_state(state: &crate::AppState) -> Host {
+        Host {
+            pool: state.pool.clone(),
+            config: state.config.clone(),
+            site_setting_defs: state.site_setting_defs.clone(),
+            i18n: state.i18n.clone(),
+        }
+    }
+}
+
 /// The options of `PrettyText.markdown` that are ported.
 #[derive(Debug, Clone, Default)]
 pub struct MarkdownOptions {

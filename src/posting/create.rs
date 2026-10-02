@@ -35,6 +35,18 @@ pub struct NewPost {
     pub composer_open_duration_msecs: Option<i64>,
     pub composer_version: Option<i32>,
     pub user_agent: Option<String>,
+    /// Set for a post Email::Receiver creates.
+    pub email: Option<EmailOrigin>,
+}
+
+/// What Email::Receiver#create_post adds to a post: the mail's date as
+/// created_at, the raw message, and the incoming_emails row to link.
+#[derive(Debug)]
+pub struct EmailOrigin {
+    pub raw_email: String,
+    pub created_at: NaiveDateTime,
+    pub incoming_email_id: i32,
+    pub message_id: String,
 }
 
 /// How a create ends when it isn't a server error.
@@ -433,9 +445,10 @@ pub async fn create(
     let (post_id, created_at): (i32, NaiveDateTime) = sqlx::query_as(
         "INSERT INTO posts (user_id, topic_id, post_number, raw, cooked, created_at, updated_at, \
                             reply_to_post_number, reply_to_user_id, last_editor_id, word_count, \
-                            sort_order, last_version_at, baked_at, baked_version, wiki, quote_count) \
-         VALUES ($1, $2, $3, $4, $5, clock_timestamp(), clock_timestamp(), $6, $7, $1, $8, $3, \
-                 clock_timestamp(), clock_timestamp(), $9, $10, 0) \
+                            sort_order, last_version_at, baked_at, baked_version, wiki, quote_count, \
+                            via_email, raw_email) \
+         VALUES ($1, $2, $3, $4, $5, COALESCE($11, clock_timestamp()), clock_timestamp(), $6, $7, $1, $8, $3, \
+                 clock_timestamp(), clock_timestamp(), $9, $10, 0, $12, $13) \
          RETURNING id, created_at",
     )
     .bind(user.id)
@@ -448,6 +461,9 @@ pub async fn create(
     .bind(words)
     .bind(BAKED_VERSION)
     .bind(wiki)
+    .bind(args.email.as_ref().map(|e| e.created_at))
+    .bind(args.email.is_some())
+    .bind(args.email.as_ref().map(|e| e.raw_email.as_str()))
     .fetch_one(&mut *tx)
     .await?;
     sqlx::query(
@@ -459,7 +475,8 @@ pub async fn create(
     .bind(drafts_saved)
     .bind(args.typing_duration_msecs.unwrap_or(0) as i32)
     .bind(args.composer_open_duration_msecs.unwrap_or(0) as i32)
-    .bind(device(args.user_agent.as_deref()))
+    // The composer sends the device; a post by email has none.
+    .bind(args.email.is_none().then(|| device(args.user_agent.as_deref())))
     .bind(args.user_agent.as_deref().map(truncate_400))
     .bind(args.composer_version)
     .execute(&mut *tx)
@@ -625,8 +642,11 @@ pub async fn create(
         &[TopicUserAttr::Bookmarked(bookmarked)],
     )
     .await?;
-    // DraftSequence.next!(user, draft_key)
-    next_draft_sequence(&mut tx, user.id, &draft_key).await?;
+    // DraftSequence.next!(user, draft_key) when the composer asked
+    // (advance_draft); a post by email did not.
+    if args.email.is_none() {
+        next_draft_sequence(&mut tx, user.id, &draft_key).await?;
+    }
     // save_reply_relationships
     if let Some(n) = reply_to_post_number {
         let parent: Option<i32> =
@@ -652,6 +672,23 @@ pub async fn create(
                     .await?;
             }
         }
+    }
+    // Email::Receiver links its incoming email to the post before the
+    // jobs go out.
+    if let Some(email) = &args.email {
+        sqlx::query("UPDATE incoming_emails SET topic_id = $2, post_id = $3 WHERE id = $1")
+            .bind(email.incoming_email_id)
+            .bind(topic_id)
+            .bind(post_id)
+            .execute(&mut *tx)
+            .await?;
+        sqlx::query(
+            "UPDATE posts SET outbound_message_id = $2, updated_at = clock_timestamp() WHERE id = $1",
+        )
+        .bind(post_id)
+        .bind(&email.message_id)
+        .execute(&mut *tx)
+        .await?;
     }
     // PostJobsEnqueuer#enqueue_jobs, committed with the post.
     crate::jobs::enqueue(

@@ -71,7 +71,7 @@ pub async fn skip(
 
 /// The mail gem's order for the fields it knows; the rest follow in the
 /// order they were added.
-const FIELD_ORDER: [&str; 28] = [
+pub(crate) const FIELD_ORDER: [&str; 28] = [
     "return-path",
     "received",
     "resent-date",
@@ -233,9 +233,16 @@ pub async fn send(
     let topic_id: Option<i32> = message
         .header("X-Discourse-Topic-Id")
         .and_then(|v| v.parse().ok());
-    if message.header("X-Discourse-Allow-Reply-By-Email").is_some() {
-        return Err(Unsupported("reply by email keys").into());
-    }
+    let reply_key = match (user_id, post_id) {
+        (Some(user_id), Some(post_id))
+            if message
+                .header("X-Discourse-Allow-Reply-By-Email")
+                .is_some_and(|v| !v.is_empty()) =>
+        {
+            Some(reply_key_for(&mut *conn, post_id, user_id).await?)
+        }
+        _ => None,
+    };
     let from_address = message.header("From").and_then(|f| {
         f.rsplit_once('<')
             .map(|(_, a)| a.trim_end_matches('>').to_string())
@@ -393,11 +400,47 @@ pub async fn send(
             return Err(Unsupported("email attachments").into());
         }
     }
-    if s.get("reply_by_email_address")?.to_s().contains('+') {
-        return Err(Unsupported("bounce addresses").into());
+    // A bounceable reply address: a VERP Return-Path with the log's key.
+    let reply_address = s.get("reply_by_email_address")?.to_s();
+    let bounce_key = if reply_address.contains('+') {
+        let key = crate::accounts::random_hex();
+        message.set_header(
+            "Return-Path",
+            Some(reply_address.replacen("%{reply_key}", &format!("verp-{key}"), 1)),
+        );
+        Some(key)
+    } else {
+        None
+    };
+    if let Some(key) = &reply_key {
+        let reply_to = message
+            .header("Reply-To")
+            .map(|v| v.replace("%{reply_key}", key));
+        message.set_header("Reply-To", reply_to);
+        message.set_header("X-Discourse-Allow-Reply-By-Email", None);
     }
-    // Custom headers carrying a reply key go without one.
-    message.headers.retain(|(_, v)| !v.contains("%{reply_key}"));
+    // Custom headers carrying a reply key get it, or go without one.
+    let custom: Vec<String> = s
+        .get("email_custom_headers")?
+        .to_s()
+        .split('|')
+        .filter_map(|item| {
+            item.split_once(':')
+                .map(|(n, _)| n.trim().to_ascii_lowercase())
+        })
+        .collect();
+    message.headers.retain_mut(|(name, value)| {
+        if !custom.contains(&name.to_ascii_lowercase()) || !value.contains("%{reply_key}") {
+            return true;
+        }
+        match &reply_key {
+            Some(key) => {
+                *value = value.replace("%{reply_key}", key);
+                true
+            }
+            None => false,
+        }
+    });
     let smtp_address = ctx.config.globals.get("smtp_address").unwrap_or("");
     if smtp_address.contains(".mailjet.com")
         || smtp_address == "smtp.mandrillapp.com"
@@ -433,8 +476,8 @@ pub async fn send(
     let response = ctx.mailer.deliver(&message).await?;
     sqlx::query(
         "INSERT INTO email_logs (email_type, to_address, user_id, post_id, topic_id, message_id, \
-                                 smtp_transaction_response, created_at, updated_at) \
-         VALUES ($1, $2, $3, $4, $5, $6, $7, clock_timestamp(), clock_timestamp())",
+                                 smtp_transaction_response, bounce_key, created_at, updated_at) \
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8::uuid, clock_timestamp(), clock_timestamp())",
     )
     .bind(email_type)
     .bind(&to_address)
@@ -443,6 +486,7 @@ pub async fn send(
     .bind(topic_id)
     .bind(&message_id)
     .bind(response)
+    .bind(&bounce_key)
     .execute(&mut *conn)
     .await?;
     // EmailLog after_create
@@ -469,4 +513,31 @@ fn random_uuid() -> String {
         &hex[16..20],
         &hex[20..]
     )
+}
+
+/// `PostReplyKey.create_or_find_by!(post_id:, user_id:).reply_key`: the
+/// user's key for replying to the post by email, without dashes.
+async fn reply_key_for(
+    conn: &mut PgConnection,
+    post_id: i32,
+    user_id: i32,
+) -> Result<String, AppError> {
+    sqlx::query(
+        "INSERT INTO post_reply_keys (user_id, post_id, reply_key, created_at, updated_at) \
+         VALUES ($1, $2, $3::uuid, clock_timestamp(), clock_timestamp()) \
+         ON CONFLICT (user_id, post_id) DO NOTHING",
+    )
+    .bind(user_id)
+    .bind(post_id)
+    .bind(crate::accounts::random_hex())
+    .execute(&mut *conn)
+    .await?;
+    let key: String = sqlx::query_scalar(
+        "SELECT reply_key::text FROM post_reply_keys WHERE user_id = $1 AND post_id = $2",
+    )
+    .bind(user_id)
+    .bind(post_id)
+    .fetch_one(&mut *conn)
+    .await?;
+    Ok(key.replace('-', ""))
 }
