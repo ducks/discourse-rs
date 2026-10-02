@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Record HtmlToMarkdown's output on the reference agent for the HTML in
+# Discourse's spec/lib/html_to_markdown_spec.rb and the samples in
+# parity/html_to_markdown/extra.json, into
+# parity/html_to_markdown/expected.json (scripts/html_to_markdown_export.rb,
+# read-only). tests/html_to_markdown.rs converts the same inputs.
+#
+# Usage: scripts/record-html-to-markdown <agent-name>
+set -euo pipefail
+
+if [ $# -ne 1 ]; then
+  echo "usage: $0 <agent-name>" >&2
+  exit 64
+fi
+
+agent="$1"
+root="$(cd "$(dirname "$0")/.." && pwd)"
+dir="$root/parity/html_to_markdown"
+
+dv copy "$root/scripts/html_to_markdown_export.rb" "$agent:/tmp/html_to_markdown_export.rb" > /dev/null
+dv copy "$dir/extra.json" "$agent:/tmp/html_to_markdown_extra.json" > /dev/null
+dv run --name "$agent" -- bin/rails runner /tmp/html_to_markdown_export.rb \
+  spec/lib/html_to_markdown_spec.rb /tmp/html_to_markdown_extra.json /tmp/html_to_markdown_expected.json | tail -1
+dv copy "$agent:/tmp/html_to_markdown_expected.json" "$dir/expected.json" > /dev/null
+echo "wrote $dir/expected.json"

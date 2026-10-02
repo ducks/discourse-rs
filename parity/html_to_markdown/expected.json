@@ -1,0 +1,1152 @@
+[
+  {
+    "html": "      <div dir=\"auto\">Hello,\n        <div dir=\"auto\"><br></div>\n        <div dir=\"auto\">&nbsp; &nbsp; This is the 1st paragraph.&nbsp; &nbsp; </div>\n        <div dir=\"auto\"><br></div>\n        <div dir=\"auto\">\n          &nbsp; &nbsp; &nbsp; &nbsp; This is another paragraph\n        </div>\n      </div>\n",
+    "markdown": "Hello,\n\nThis is the 1st paragraph.\n\nThis is another paragraph",
+    "receiver": "Hello,\n\nThis is the 1st paragraph.\n\nThis is another paragraph"
+  },
+  {
+    "html": "<body text=\"#000000\" bgcolor=\"#FFFFFF\">\n",
+    "markdown": "",
+    "receiver": ""
+  },
+  {
+    "html": "    <p>Let me see if it happens by answering your message through\n",
+    "markdown": "Let me see if it happens by answering your message through",
+    "receiver": "Let me see if it happens by answering your message through"
+  },
+  {
+    "html": "    <p>Long sentence 1 Long sentence 1 Long sentence 1 Long sentence 1\n",
+    "markdown": "Long sentence 1 Long sentence 1 Long sentence 1 Long sentence 1",
+    "receiver": "Long sentence 1 Long sentence 1 Long sentence 1 Long sentence 1"
+  },
+  {
+    "html": "<p>    This     post\n",
+    "markdown": "This post",
+    "receiver": "This post"
+  },
+  {
+    "html": "      has             lots<br>           of\n",
+    "markdown": "has lots\nof",
+    "receiver": "has lots\nof"
+  },
+  {
+    "html": "<pre>    This     space    was   left untouched     !</pre>\n",
+    "markdown": "```\n    This     space    was   left untouched     !\n```",
+    "receiver": "```\n    This     space    was   left untouched     !\n```"
+  },
+  {
+    "html": "<custom>Text within custom <span>tag</span></custom>\n",
+    "markdown": "",
+    "receiver": ""
+  },
+  {
+    "html": "<div>Text within allowed tag</div>\n",
+    "markdown": "Text within allowed tag",
+    "receiver": "Text within allowed tag"
+  },
+  {
+    "html": "<custom-image image-id=\"42\">Image text</custom-image>\n",
+    "markdown": "",
+    "receiver": ""
+  },
+  {
+    "html": "<aside class=\"quote no-group\">\n",
+    "markdown": "",
+    "receiver": ""
+  },
+  {
+    "html": "<blockquote>\n",
+    "markdown": ">",
+    "receiver": ">"
+  },
+  {
+    "html": "<p>Hello,<br>is it me you're looking for?</p>\n",
+    "markdown": "Hello,\nis it me you're looking for?",
+    "receiver": "Hello,\nis it me you're looking for?"
+  },
+  {
+    "html": "<br>\n",
+    "markdown": "",
+    "receiver": ""
+  },
+  {
+    "html": "<p>Hello <span hidden>cruel </span>World!</p>",
+    "markdown": "Hello World!",
+    "receiver": "Hello World!"
+  },
+  {
+    "html": "converts <strong>",
+    "markdown": "converts",
+    "receiver": "converts"
+  },
+  {
+    "html": "<strong>Strong</strong>",
+    "markdown": "**Strong**",
+    "receiver": "**Strong**"
+  },
+  {
+    "html": "<strong>Str*ng</strong>",
+    "markdown": "__Str*ng__",
+    "receiver": "__Str*ng__"
+  },
+  {
+    "html": "converts <b>",
+    "markdown": "converts",
+    "receiver": "converts"
+  },
+  {
+    "html": "<b>Bold</b>",
+    "markdown": "**Bold**",
+    "receiver": "**Bold**"
+  },
+  {
+    "html": "<b>B*ld</b>",
+    "markdown": "__B*ld__",
+    "receiver": "__B*ld__"
+  },
+  {
+    "html": "<p><b>Bold\n",
+    "markdown": "**Bold**",
+    "receiver": "**Bold**"
+  },
+  {
+    "html": "converts <em>",
+    "markdown": "converts",
+    "receiver": "converts"
+  },
+  {
+    "html": "<em>Emphasis</em>",
+    "markdown": "*Emphasis*",
+    "receiver": "*Emphasis*"
+  },
+  {
+    "html": "<em>Emph*sis</em>",
+    "markdown": "_Emph*sis_",
+    "receiver": "_Emph*sis_"
+  },
+  {
+    "html": "converts <i>",
+    "markdown": "converts",
+    "receiver": "converts"
+  },
+  {
+    "html": "<i>Italic</i>",
+    "markdown": "*Italic*",
+    "receiver": "*Italic*"
+  },
+  {
+    "html": "<i>It*lic</i>",
+    "markdown": "_It*lic_",
+    "receiver": "_It*lic_"
+  },
+  {
+    "html": "converts <a>",
+    "markdown": "converts",
+    "receiver": "converts"
+  },
+  {
+    "html": "<a href=\"https://www.discourse.org\">Discourse</a>",
+    "markdown": "[Discourse](https://www.discourse.org)",
+    "receiver": "[Discourse](https://www.discourse.org)"
+  },
+  {
+    "html": "<a href=\"steam://store/48000\">LIMBO</a>",
+    "markdown": "LIMBO",
+    "receiver": "LIMBO"
+  },
+  {
+    "html": "removes empty & invalid <a>",
+    "markdown": "removes empty & invalid",
+    "receiver": "removes empty & invalid"
+  },
+  {
+    "html": "<a>Discourse</a>",
+    "markdown": "Discourse",
+    "receiver": "Discourse"
+  },
+  {
+    "html": "<a href=\"\">Discourse</a>",
+    "markdown": "Discourse",
+    "receiver": "Discourse"
+  },
+  {
+    "html": "<a href=\"foo.bar\">Discourse</a>",
+    "markdown": "Discourse",
+    "receiver": "Discourse"
+  },
+  {
+    "html": "<img src=\"https://www.discourse.org/logo.svg\" alt=\"Discourse Logo\">",
+    "markdown": "![Discourse Logo](https://www.discourse.org/logo.svg)",
+    "receiver": "<img src=\"https://www.discourse.org/logo.svg\" alt=\"Discourse Logo\">"
+  },
+  {
+    "html": "<img src=\"cid:ii_1525434659ddb4cb\" title=\"Discourse Logo\">",
+    "markdown": "",
+    "receiver": "<img src=\"cid:ii_1525434659ddb4cb\" title=\"Discourse Logo\">"
+  },
+  {
+    "html": "converts <img>",
+    "markdown": "converts",
+    "receiver": "converts"
+  },
+  {
+    "html": "keeps <img> with 'keep_img_tags'",
+    "markdown": "keeps with 'keep_img_tags'",
+    "receiver": "keeps with 'keep_img_tags'"
+  },
+  {
+    "html": "<img src=\"https://www.discourse.org/logo.svg\" alt=\"Discourse\n\nLogo\">",
+    "markdown": "![Discourse Logo](https://www.discourse.org/logo.svg)",
+    "receiver": "<img src=\"https://www.discourse.org/logo.svg\" alt=\"Discourse Logo\">"
+  },
+  {
+    "html": "removes empty & invalid <img>",
+    "markdown": "removes empty & invalid",
+    "receiver": "removes empty & invalid"
+  },
+  {
+    "html": "<img>",
+    "markdown": "",
+    "receiver": ""
+  },
+  {
+    "html": "<img src=\"\">",
+    "markdown": "",
+    "receiver": ""
+  },
+  {
+    "html": "<img src=\"foo.bar\">",
+    "markdown": "",
+    "receiver": "<img src=\"foo.bar\">"
+  },
+  {
+    "html": "keeps <img> with src='cid:' with 'keep_cid_imgs'",
+    "markdown": "keeps with src='cid:' with 'keep_cid_imgs'",
+    "receiver": "keeps with src='cid:' with 'keep_cid_imgs'"
+  },
+  {
+    "html": "<img src=\"cid:ii_1525434659ddb4cb\" title=\"Discourse\n\nLogo\">",
+    "markdown": "",
+    "receiver": "<img src=\"cid:ii_1525434659ddb4cb\" title=\"Discourse Logo\">"
+  },
+  {
+    "html": "skips hidden <img>",
+    "markdown": "skips hidden",
+    "receiver": "skips hidden"
+  },
+  {
+    "html": "<img src=\"https://www.discourse.org/logo.svg\" width=0>",
+    "markdown": "",
+    "receiver": ""
+  },
+  {
+    "html": "<img src=\"https://www.discourse.org/logo.svg\" height=\"0\">",
+    "markdown": "",
+    "receiver": ""
+  },
+  {
+    "html": "supports width/height on <img>",
+    "markdown": "supports width/height on",
+    "receiver": "supports width/height on"
+  },
+  {
+    "html": "<img src=\"https://www.discourse.org/logo.svg\" height=100>",
+    "markdown": "![](https://www.discourse.org/logo.svg)",
+    "receiver": "<img src=\"https://www.discourse.org/logo.svg\" height=\"100\">"
+  },
+  {
+    "html": "<img src=\"https://www.discourse.org/logo.svg\" width=200>",
+    "markdown": "![](https://www.discourse.org/logo.svg)",
+    "receiver": "<img src=\"https://www.discourse.org/logo.svg\" width=\"200\">"
+  },
+  {
+    "html": "<img src=\"https://www.discourse.org/logo.svg\" height=100 width=200>",
+    "markdown": "![|200x100](https://www.discourse.org/logo.svg)",
+    "receiver": "<img src=\"https://www.discourse.org/logo.svg\" height=\"100\" width=\"200\">"
+  },
+  {
+    "html": "converts <h",
+    "markdown": "converts",
+    "receiver": "converts"
+  },
+  {
+    "html": "<h",
+    "markdown": "",
+    "receiver": ""
+  },
+  {
+    "html": "converts <br>",
+    "markdown": "converts",
+    "receiver": "converts"
+  },
+  {
+    "html": "Before<br>Inside<br>After",
+    "markdown": "Before\nInside\nAfter",
+    "receiver": "Before\nInside\nAfter"
+  },
+  {
+    "html": "skips <br> inside <p> if next character is \n",
+    "markdown": "skips\ninside\n\nif next character is",
+    "receiver": "skips\ninside\n\nif next character is"
+  },
+  {
+    "html": "<p>Before<br>\nInside<br>After</p>",
+    "markdown": "Before\nInside\nAfter",
+    "receiver": "Before\nInside\nAfter"
+  },
+  {
+    "html": "converts <hr>",
+    "markdown": "converts\n\n---",
+    "receiver": "converts\n\n---"
+  },
+  {
+    "html": "Before<hr>Inside<hr>After",
+    "markdown": "Before\n\n---\n\nInside\n\n---\n\nAfter",
+    "receiver": "Before\n\n---\n\nInside\n\n---\n\nAfter"
+  },
+  {
+    "html": "converts <tt>",
+    "markdown": "converts ``",
+    "receiver": "converts ``"
+  },
+  {
+    "html": "<tt>Teletype</tt>",
+    "markdown": "`Teletype`",
+    "receiver": "`Teletype`"
+  },
+  {
+    "html": "converts <code>",
+    "markdown": "converts ``",
+    "receiver": "converts ``"
+  },
+  {
+    "html": "<code>Code</code>",
+    "markdown": "`Code`",
+    "receiver": "`Code`"
+  },
+  {
+    "html": "supports <ins>",
+    "markdown": "supports <ins></ins>",
+    "receiver": "supports <ins></ins>"
+  },
+  {
+    "html": "This is an <ins>insertion</ins>",
+    "markdown": "This is an <ins>insertion</ins>",
+    "receiver": "This is an <ins>insertion</ins>"
+  },
+  {
+    "html": "supports <del>",
+    "markdown": "supports <del></del>",
+    "receiver": "supports <del></del>"
+  },
+  {
+    "html": "This is a <del>deletion</del>",
+    "markdown": "This is a <del>deletion</del>",
+    "receiver": "This is a <del>deletion</del>"
+  },
+  {
+    "html": "supports <sub>",
+    "markdown": "supports <sub></sub>",
+    "receiver": "supports <sub></sub>"
+  },
+  {
+    "html": "H<sub>2</sub>O",
+    "markdown": "H<sub>2</sub>O",
+    "receiver": "H<sub>2</sub>O"
+  },
+  {
+    "html": "supports <mark>",
+    "markdown": "supports<mark></mark>",
+    "receiver": "supports<mark></mark>"
+  },
+  {
+    "html": "<mark>This is highlighted!</mark>",
+    "markdown": "<mark>This is highlighted!</mark>",
+    "receiver": "<mark>This is highlighted!</mark>"
+  },
+  {
+    "html": "supports <sup>",
+    "markdown": "supports <sup></sup>",
+    "receiver": "supports <sup></sup>"
+  },
+  {
+    "html": "<sup>Super Script!</sup>",
+    "markdown": "<sup>Super Script!</sup>",
+    "receiver": "<sup>Super Script!</sup>"
+  },
+  {
+    "html": "supports <small>",
+    "markdown": "supports <small></small>",
+    "receiver": "supports <small></small>"
+  },
+  {
+    "html": "<small>Small</small>",
+    "markdown": "<small>Small</small>",
+    "receiver": "<small>Small</small>"
+  },
+  {
+    "html": "<mark><small>Small</small></mark>",
+    "markdown": "<mark><small>Small</small></mark>",
+    "receiver": "<mark><small>Small</small></mark>"
+  },
+  {
+    "html": "<strong><small>Small</small></strong>",
+    "markdown": "**<small>Small</small>**",
+    "receiver": "**<small>Small</small>**"
+  },
+  {
+    "html": "**<small>Small</small>**",
+    "markdown": "**<small>Small</small>**",
+    "receiver": "**<small>Small</small>**"
+  },
+  {
+    "html": "<small><strong>&lt;small&gt;</strong></small>",
+    "markdown": "<small>**&lt;small&gt;**</small>",
+    "receiver": "<small>**&lt;small&gt;**</small>"
+  },
+  {
+    "html": "<small>**&lt;small&gt;**</small>",
+    "markdown": "<small>**&lt;small&gt;**</small>",
+    "receiver": "<small>**&lt;small&gt;**</small>"
+  },
+  {
+    "html": "supports <big>",
+    "markdown": "supports <big></big>",
+    "receiver": "supports <big></big>"
+  },
+  {
+    "html": "<big>Big</big>",
+    "markdown": "<big>Big</big>",
+    "receiver": "<big>Big</big>"
+  },
+  {
+    "html": "<big>&lt;big&gt;</big>",
+    "markdown": "<big>&lt;big&gt;</big>",
+    "receiver": "<big>&lt;big&gt;</big>"
+  },
+  {
+    "html": "supports <kbd>",
+    "markdown": "supports <kbd></kbd>",
+    "receiver": "supports <kbd></kbd>"
+  },
+  {
+    "html": "<kbd>CTRL</kbd>+<kbd>C</kbd>",
+    "markdown": "<kbd>CTRL</kbd>+<kbd>C</kbd>",
+    "receiver": "<kbd>CTRL</kbd>+<kbd>C</kbd>"
+  },
+  {
+    "html": "<kbd>&lt;</kbd>",
+    "markdown": "<kbd>&lt;</kbd>",
+    "receiver": "<kbd>&lt;</kbd>"
+  },
+  {
+    "html": "supports <abbr>",
+    "markdown": "supports <abbr></abbr>",
+    "receiver": "supports <abbr></abbr>"
+  },
+  {
+    "html": "<abbr title=\"Civilized Discourse Construction Kit, Inc.\">CDCK</abbr>",
+    "markdown": "<abbr title=\"Civilized Discourse Construction Kit, Inc.\">CDCK</abbr>",
+    "receiver": "<abbr title=\"Civilized Discourse Construction Kit, Inc.\">CDCK</abbr>"
+  },
+  {
+    "html": "<abbr title=\"&quot;abbr&quot;: The Abbreviation element\">&lt;abbr&gt;</abbr>",
+    "markdown": "<abbr title=\"&quot;abbr&quot;: The Abbreviation element\">&lt;abbr&gt;</abbr>",
+    "receiver": "<abbr title=\"&quot;abbr&quot;: The Abbreviation element\">&lt;abbr&gt;</abbr>"
+  },
+  {
+    "html": "supports <s>",
+    "markdown": "supports",
+    "receiver": "supports"
+  },
+  {
+    "html": "<s>Strike Through</s>",
+    "markdown": "~~Strike Through~~",
+    "receiver": "~~Strike Through~~"
+  },
+  {
+    "html": "supports <strike>",
+    "markdown": "supports",
+    "receiver": "supports"
+  },
+  {
+    "html": "<strike>Strike Through</strike>",
+    "markdown": "~~Strike Through~~",
+    "receiver": "~~Strike Through~~"
+  },
+  {
+    "html": "supports <blockquote>",
+    "markdown": "supports\n\n>",
+    "receiver": "supports\n\n>"
+  },
+  {
+    "html": "<blockquote>Quote</blockquote>",
+    "markdown": "> Quote",
+    "receiver": "> Quote"
+  },
+  {
+    "html": "supports <ul>",
+    "markdown": "supports",
+    "receiver": "supports"
+  },
+  {
+    "html": "<ul><li>🍏</li><li>🍐</li><li>🍌</li></ul>",
+    "markdown": "- 🍏\n- 🍐\n- 🍌",
+    "receiver": "- 🍏\n- 🍐\n- 🍌"
+  },
+  {
+    "html": "<ul>\n<li>🍏</li>\n<li>🍐</li>\n<li>🍌</li>\n</ul>",
+    "markdown": "- 🍏\n- 🍐\n- 🍌",
+    "receiver": "- 🍏\n- 🍐\n- 🍌"
+  },
+  {
+    "html": "supports <ol>",
+    "markdown": "supports",
+    "receiver": "supports"
+  },
+  {
+    "html": "<ol><li>🍆</li><li>🍅</li><li>🍄</li></ol>",
+    "markdown": "1. 🍆\n1. 🍅\n1. 🍄",
+    "receiver": "1. 🍆\n1. 🍅\n1. 🍄"
+  },
+  {
+    "html": "supports <p> inside <li>",
+    "markdown": "supports\n\ninside\n\n-",
+    "receiver": "supports\n\ninside\n\n-"
+  },
+  {
+    "html": "<ul><li><p>🍏</p></li><li><p>🍐</p></li><li><p>🍌</p></li></ul>",
+    "markdown": "- 🍏\n\n- 🍐\n\n- 🍌",
+    "receiver": "- 🍏\n\n- 🍐\n\n- 🍌"
+  },
+  {
+    "html": "supports <ul> inside <ul>",
+    "markdown": "supports\ninside",
+    "receiver": "supports\ninside"
+  },
+  {
+    "html": "      <ul>\n        <li>Fruits\n            <ul>\n                <li>🍏</li>\n                <li>🍐</li>\n                <li>🍌</li>\n            </ul>\n        </li>\n        <li>Vegetables\n            <ul>\n                <li>🍆</li>\n                <li>🍅</li>\n                <li>🍄</li>\n            </ul>\n        </li>\n      </ul>\n",
+    "markdown": "- Fruits\n  - 🍏\n  - 🍐\n  - 🍌\n- Vegetables\n  - 🍆\n  - 🍅\n  - 🍄",
+    "receiver": "- Fruits\n  - 🍏\n  - 🍐\n  - 🍌\n- Vegetables\n  - 🍆\n  - 🍅\n  - 🍄"
+  },
+  {
+    "html": "nests lists that are siblings of the <li> they belong to",
+    "markdown": "nests lists that are siblings of the- they belong to",
+    "receiver": "nests lists that are siblings of the- they belong to"
+  },
+  {
+    "html": "      <ul>\n        <li>Fruits</li>\n        <ul>\n            <li>🍏</li>\n            <li>🍐</li>\n            <li>🍌</li>\n        </ul>\n        <li>Vegetables</li>\n        <ul>\n            <li>🍆</li>\n            <li>🍅</li>\n            <li>🍄</li>\n        </ul>\n      </ul>\n",
+    "markdown": "- Fruits\n  - 🍏\n  - 🍐\n  - 🍌\n- Vegetables\n  - 🍆\n  - 🍅\n  - 🍄",
+    "receiver": "- Fruits\n  - 🍏\n  - 🍐\n  - 🍌\n- Vegetables\n  - 🍆\n  - 🍅\n  - 🍄"
+  },
+  {
+    "html": "<ol><li>🍆</li><ol><li>🍅</li></ol><li>🍄</li></ol>",
+    "markdown": "1. 🍆\n   1. 🍅\n1. 🍄",
+    "receiver": "1. 🍆\n   1. 🍅\n1. 🍄"
+  },
+  {
+    "html": "separates a nested list from the <li> that follows it",
+    "markdown": "separates a nested list from the- that follows it",
+    "receiver": "separates a nested list from the- that follows it"
+  },
+  {
+    "html": "<ul><ol><li>🍏</li></ol><li>🍐</li></ul>",
+    "markdown": "1. 🍏\n- 🍐",
+    "receiver": "1. 🍏\n- 🍐"
+  },
+  {
+    "html": "supports bare <li>",
+    "markdown": "supports bare-",
+    "receiver": "supports bare-"
+  },
+  {
+    "html": "<li>I'm alone</li>",
+    "markdown": "- I'm alone",
+    "receiver": "- I'm alone"
+  },
+  {
+    "html": "supports <pre>",
+    "markdown": "supports\n\n```\n\n```",
+    "receiver": "supports\n\n```\n\n```"
+  },
+  {
+    "html": "<pre>var foo = 'bar';</pre>",
+    "markdown": "```\nvar foo = 'bar';\n```",
+    "receiver": "```\nvar foo = 'bar';\n```"
+  },
+  {
+    "html": "<pre><code>var foo = 'bar';</code></pre>",
+    "markdown": "```\nvar foo = 'bar';\n```",
+    "receiver": "```\nvar foo = 'bar';\n```"
+  },
+  {
+    "html": "<pre><code class=\"lang-javascript\">var foo = 'bar';</code></pre>",
+    "markdown": "```javascript\nvar foo = 'bar';\n```",
+    "receiver": "```javascript\nvar foo = 'bar';\n```"
+  },
+  {
+    "html": "<pre>    function f() {\n        console.log('Hello world!');\n    }</pre>",
+    "markdown": "```\n    function f() {\n        console.log('Hello world!');\n    }\n```",
+    "receiver": "```\n    function f() {\n        console.log('Hello world!');\n    }\n```"
+  },
+  {
+    "html": "<pre data-code-wrap=\"plaintext\"><code class=\"lang-plaintext\">Reported-and-tested-by: A &lt;a@example.com&gt;\n",
+    "markdown": "```plaintext\nReported-and-tested-by: A <a@example.com>\n\n```",
+    "receiver": "```plaintext\nReported-and-tested-by: A <a@example.com>\n\n```"
+  },
+  {
+    "html": "Reported-and-tested-by: A <a@example.com>\n",
+    "markdown": "Reported-and-tested-by: A",
+    "receiver": "Reported-and-tested-by: A"
+  },
+  {
+    "html": "Reviewed-by: B <b@example.com>\n",
+    "markdown": "Reviewed-by: B",
+    "receiver": "Reviewed-by: B"
+  },
+  {
+    "html": "supports <pre> inside <blockquote>",
+    "markdown": "supports\n\n```\n inside \n\n> \n\n```",
+    "receiver": "supports\n\n```\n inside \n\n> \n\n```"
+  },
+  {
+    "html": "<blockquote><pre><code>var foo = 'bar';</code></pre></blockquote>",
+    "markdown": "> ```\n> var foo = 'bar';\n> ```",
+    "receiver": "> ```\n> var foo = 'bar';\n> ```"
+  },
+  {
+    "html": "<ul><li><p>A list item with a blockquote:</p><blockquote><p>This is a <strong>blockquote</strong><br>inside a list item.</p></blockquote></li></ul>",
+    "markdown": "- A list item with a blockquote:\n\n  > This is a **blockquote**\n  > inside a list item.",
+    "receiver": "- A list item with a blockquote:\n\n  > This is a **blockquote**\n  > inside a list item."
+  },
+  {
+    "html": "<html><body>Hello<div>World</div></body></html>",
+    "markdown": "Hello\nWorld",
+    "receiver": "Hello\nWorld"
+  },
+  {
+    "html": "handles <p>",
+    "markdown": "handles",
+    "receiver": "handles"
+  },
+  {
+    "html": "<p>1st paragraph</p><p>2nd paragraph</p>",
+    "markdown": "1st paragraph\n\n2nd paragraph",
+    "receiver": "1st paragraph\n\n2nd paragraph"
+  },
+  {
+    "html": "<body><p>1st paragraph</p>\n    <p>    2nd paragraph\n    2nd paragraph</p>\n<p>3rd paragraph</p></body>",
+    "markdown": "1st paragraph\n\n2nd paragraph 2nd paragraph\n\n3rd paragraph",
+    "receiver": "1st paragraph\n\n2nd paragraph 2nd paragraph\n\n3rd paragraph"
+  },
+  {
+    "html": "handles <div>",
+    "markdown": "handles",
+    "receiver": "handles"
+  },
+  {
+    "html": "<div>1st div</div><div>2nd div</div>",
+    "markdown": "1st div\n2nd div",
+    "receiver": "1st div\n2nd div"
+  },
+  {
+    "html": "swallows <span>",
+    "markdown": "swallows",
+    "receiver": "swallows"
+  },
+  {
+    "html": "<span>Span</span>",
+    "markdown": "Span",
+    "receiver": "Span"
+  },
+  {
+    "html": "swallows <u>",
+    "markdown": "swallows",
+    "receiver": "swallows"
+  },
+  {
+    "html": "<u>Underline</u>",
+    "markdown": "Underline",
+    "receiver": "Underline"
+  },
+  {
+    "html": "swallows <center>",
+    "markdown": "swallows",
+    "receiver": "swallows"
+  },
+  {
+    "html": "<center>Centered</center>",
+    "markdown": "Centered",
+    "receiver": "Centered"
+  },
+  {
+    "html": "removes <script>",
+    "markdown": "removes",
+    "receiver": "removes"
+  },
+  {
+    "html": "<script>var foo = 'bar'</script>",
+    "markdown": "",
+    "receiver": ""
+  },
+  {
+    "html": "removes <style>",
+    "markdown": "removes",
+    "receiver": "removes"
+  },
+  {
+    "html": "<style>* { margin: 0 }</style>",
+    "markdown": "",
+    "receiver": ""
+  },
+  {
+    "html": "handles <p> and <div> within <span>",
+    "markdown": "handles\n\nand\n\nwithin",
+    "receiver": "handles\n\nand\n\nwithin"
+  },
+  {
+    "html": "<div>1st paragraph<span><div>2nd paragraph</div><p>3rd paragraph</p></span></div>",
+    "markdown": "1st paragraph\n2nd paragraph\n\n3rd paragraph",
+    "receiver": "1st paragraph\n2nd paragraph\n\n3rd paragraph"
+  },
+  {
+    "html": "handles <p> and <div> within <font>",
+    "markdown": "handles\n\nand\n\nwithin",
+    "receiver": "handles\n\nand\n\nwithin"
+  },
+  {
+    "html": "<font>1st paragraph<br><span>2nd paragraph</span><div>3rd paragraph</div><p>4th paragraph</p></font>",
+    "markdown": "1st paragraph\n2nd paragraph\n3rd paragraph\n\n4th paragraph",
+    "receiver": "1st paragraph\n2nd paragraph\n3rd paragraph\n\n4th paragraph"
+  },
+  {
+    "html": "with an oddly placed <br>",
+    "markdown": "with an oddly placed",
+    "receiver": "with an oddly placed"
+  },
+  {
+    "html": "handles <strong>",
+    "markdown": "handles",
+    "receiver": "handles"
+  },
+  {
+    "html": "Hello <strong><br>Bold</strong> World",
+    "markdown": "Hello\n**Bold** World",
+    "receiver": "Hello\n**Bold** World"
+  },
+  {
+    "html": "Hello <strong>Bold<br></strong> World",
+    "markdown": "Hello **Bold**\nWorld",
+    "receiver": "Hello **Bold**\nWorld"
+  },
+  {
+    "html": "Hello <strong>Bold<br>text</strong> World",
+    "markdown": "Hello **Bold**\n**text** World",
+    "receiver": "Hello **Bold**\n**text** World"
+  },
+  {
+    "html": "handles <em>",
+    "markdown": "handles",
+    "receiver": "handles"
+  },
+  {
+    "html": "Hello <em><br>Italic</em> World",
+    "markdown": "Hello\n*Italic* World",
+    "receiver": "Hello\n*Italic* World"
+  },
+  {
+    "html": "Hello <em>Italic<br></em> World",
+    "markdown": "Hello *Italic*\nWorld",
+    "receiver": "Hello *Italic*\nWorld"
+  },
+  {
+    "html": "Hello <em>Italic<br>text</em> World",
+    "markdown": "Hello *Italic*\n*text* World",
+    "receiver": "Hello *Italic*\n*text* World"
+  },
+  {
+    "html": "<div>A <b> B <i> C <br> D </i> E <br> F </b> G</div>",
+    "markdown": "A __B *C*__\n__*D* E__\n**F** G",
+    "receiver": "A __B *C*__\n__*D* E__\n**F** G"
+  },
+  {
+    "html": "<strong></strong>",
+    "markdown": "",
+    "receiver": ""
+  },
+  {
+    "html": "<strong>   </strong>",
+    "markdown": "",
+    "receiver": ""
+  },
+  {
+    "html": "Some<strong> </strong>text",
+    "markdown": "Some text",
+    "receiver": "Some text"
+  },
+  {
+    "html": "Some<strong>    </strong>text",
+    "markdown": "Some text",
+    "receiver": "Some text"
+  },
+  {
+    "html": "<em></em>",
+    "markdown": "",
+    "receiver": ""
+  },
+  {
+    "html": "<em>   </em>",
+    "markdown": "",
+    "receiver": ""
+  },
+  {
+    "html": "Some<em> </em>text",
+    "markdown": "Some text",
+    "receiver": "Some text"
+  },
+  {
+    "html": "Some<em>    </em>text",
+    "markdown": "Some text",
+    "receiver": "Some text"
+  },
+  {
+    "html": "<strong> Bold</strong>",
+    "markdown": "**Bold**",
+    "receiver": "**Bold**"
+  },
+  {
+    "html": "<strong>     Bold</strong>",
+    "markdown": "**Bold**",
+    "receiver": "**Bold**"
+  },
+  {
+    "html": "<strong>Bold </strong>",
+    "markdown": "**Bold**",
+    "receiver": "**Bold**"
+  },
+  {
+    "html": "<strong>Bold     </strong>",
+    "markdown": "**Bold**",
+    "receiver": "**Bold**"
+  },
+  {
+    "html": "Some<strong> bold</strong> text",
+    "markdown": "Some **bold** text",
+    "receiver": "Some **bold** text"
+  },
+  {
+    "html": "Some<strong>     bold</strong> text",
+    "markdown": "Some **bold** text",
+    "receiver": "Some **bold** text"
+  },
+  {
+    "html": "Some <strong>bold </strong>text",
+    "markdown": "Some **bold** text",
+    "receiver": "Some **bold** text"
+  },
+  {
+    "html": "Some <strong>bold     </strong>text",
+    "markdown": "Some **bold** text",
+    "receiver": "Some **bold** text"
+  },
+  {
+    "html": "<em> Italic</em>",
+    "markdown": "*Italic*",
+    "receiver": "*Italic*"
+  },
+  {
+    "html": "<em>     Italic</em>",
+    "markdown": "*Italic*",
+    "receiver": "*Italic*"
+  },
+  {
+    "html": "<em>Italic </em>",
+    "markdown": "*Italic*",
+    "receiver": "*Italic*"
+  },
+  {
+    "html": "<em>Italic     </em>",
+    "markdown": "*Italic*",
+    "receiver": "*Italic*"
+  },
+  {
+    "html": "Some<em> italic</em> text",
+    "markdown": "Some *italic* text",
+    "receiver": "Some *italic* text"
+  },
+  {
+    "html": "Some<em>     italic</em> text",
+    "markdown": "Some *italic* text",
+    "receiver": "Some *italic* text"
+  },
+  {
+    "html": "Some <em>italic </em>text",
+    "markdown": "Some *italic* text",
+    "receiver": "Some *italic* text"
+  },
+  {
+    "html": "Some <em>italic     </em>text",
+    "markdown": "Some *italic* text",
+    "receiver": "Some *italic* text"
+  },
+  {
+    "html": "supports <table>",
+    "markdown": "supports<table>\n</table>",
+    "receiver": "supports<table>\n</table>"
+  },
+  {
+    "html": "<table>\n",
+    "markdown": "<table>\n</table>",
+    "receiver": "<table>\n</table>"
+  },
+  {
+    "html": "  <thead>\n",
+    "markdown": "",
+    "receiver": ""
+  },
+  {
+    "html": "    <tr>\n",
+    "markdown": "",
+    "receiver": ""
+  },
+  {
+    "html": "      <th>This</th>\n",
+    "markdown": "This",
+    "receiver": "This"
+  },
+  {
+    "html": "      <th>is</th>\n",
+    "markdown": "is",
+    "receiver": "is"
+  },
+  {
+    "html": "      <th>the</th>\n",
+    "markdown": "the",
+    "receiver": "the"
+  },
+  {
+    "html": "      <th><i>headers</i></th>\n",
+    "markdown": "*headers*",
+    "receiver": "*headers*"
+  },
+  {
+    "html": "  <tbody>\n",
+    "markdown": "",
+    "receiver": ""
+  },
+  {
+    "html": "      <td>I am</td>\n",
+    "markdown": "I am",
+    "receiver": "I am"
+  },
+  {
+    "html": "      <td>the</td>\n",
+    "markdown": "the",
+    "receiver": "the"
+  },
+  {
+    "html": "      <td><b>first</b></td>\n",
+    "markdown": "**first**",
+    "receiver": "**first**"
+  },
+  {
+    "html": "      <td>row</td>\n",
+    "markdown": "row",
+    "receiver": "row"
+  },
+  {
+    "html": "      <td>And this</td>\n",
+    "markdown": "And this",
+    "receiver": "And this"
+  },
+  {
+    "html": "      <td>is the</td>\n",
+    "markdown": "is the",
+    "receiver": "is the"
+  },
+  {
+    "html": "      <td>2<sup>nd</sup></td>\n",
+    "markdown": "2<sup>nd</sup>",
+    "receiver": "2<sup>nd</sup>"
+  },
+  {
+    "html": "      <td>line</td>\n",
+    "markdown": "line",
+    "receiver": "line"
+  },
+  {
+    "html": "  <tfoot>\n",
+    "markdown": "",
+    "receiver": ""
+  },
+  {
+    "html": "      <td>This</td>\n",
+    "markdown": "This",
+    "receiver": "This"
+  },
+  {
+    "html": "      <td>is</td>\n",
+    "markdown": "is",
+    "receiver": "is"
+  },
+  {
+    "html": "      <td>footer</td>\n",
+    "markdown": "footer",
+    "receiver": "footer"
+  },
+  {
+    "html": "| And this | is the | 2<sup>nd</sup> | line |\n",
+    "markdown": "| And this | is the | 2<sup>nd</sup> | line |",
+    "receiver": "| And this | is the | 2<sup>nd</sup> | line |"
+  },
+  {
+    "html": "<table><tr><td>Hello</td><td>World</td></tr></table>",
+    "markdown": "| Hello | World |\n| - | - |",
+    "receiver": "| Hello | World |\n| - | - |"
+  },
+  {
+    "html": "keeps HTML for badly formatted <table>",
+    "markdown": "keeps HTML for badly formatted<table>\n</table>",
+    "receiver": "keeps HTML for badly formatted<table>\n</table>"
+  },
+  {
+    "html": "  <tr>\n",
+    "markdown": "",
+    "receiver": ""
+  },
+  {
+    "html": "    <th>1</th>\n",
+    "markdown": "1",
+    "receiver": "1"
+  },
+  {
+    "html": "    <th>2</th>\n",
+    "markdown": "2",
+    "receiver": "2"
+  },
+  {
+    "html": "    <th>3</th>\n",
+    "markdown": "3",
+    "receiver": "3"
+  },
+  {
+    "html": "    <th>4</th>\n",
+    "markdown": "4",
+    "receiver": "4"
+  },
+  {
+    "html": "    <td>&lt;One&gt;</td>\n",
+    "markdown": "<One>",
+    "receiver": "<One>"
+  },
+  {
+    "html": "    <td><strong>Two</strong></td>\n",
+    "markdown": "**Two**",
+    "receiver": "**Two**"
+  },
+  {
+    "html": "    <td>Three<script>alert(\"foo\")</script></td>\n",
+    "markdown": "Three",
+    "receiver": "Three"
+  },
+  {
+    "html": "<tr>\n",
+    "markdown": "",
+    "receiver": ""
+  },
+  {
+    "html": "<th>\n",
+    "markdown": "",
+    "receiver": ""
+  },
+  {
+    "html": "<td>\n",
+    "markdown": "",
+    "receiver": ""
+  },
+  {
+    "html": "keeps HTML for <table> with colspan",
+    "markdown": "keeps HTML for with colspan<table>\n</table>",
+    "receiver": "keeps HTML for with colspan<table>\n</table>"
+  },
+  {
+    "html": "    <td colspan=\"2\">One / Two</td>\n",
+    "markdown": "One / Two",
+    "receiver": "One / Two"
+  },
+  {
+    "html": "<td colspan=\"2\">\n",
+    "markdown": "",
+    "receiver": ""
+  },
+  {
+    "html": "keeps HTML for <table> with rowspan",
+    "markdown": "keeps HTML for with rowspan<table>\n</table>",
+    "receiver": "keeps HTML for with rowspan<table>\n</table>"
+  },
+  {
+    "html": "    <td>A</td>\n",
+    "markdown": "A",
+    "receiver": "A"
+  },
+  {
+    "html": "    <td rowspan=\"2\">B</td>\n",
+    "markdown": "B",
+    "receiver": "B"
+  },
+  {
+    "html": "    <td>C</td>\n",
+    "markdown": "C",
+    "receiver": "C"
+  },
+  {
+    "html": "<td rowspan=\"2\">\n",
+    "markdown": "",
+    "receiver": ""
+  },
+  {
+    "html": "<div dir=\"ltr\">A Gmail-style reply with a plain part.</div><br><div class=\"gmail_quote\"><div dir=\"ltr\" class=\"gmail_attr\">On Wed, Sep 30, 2026 at 9:00 AM Admin wrote:<br></div><blockquote class=\"gmail_quote\">The quoted post.</blockquote></div>\n",
+    "markdown": "A Gmail-style reply with a plain part.\n\nOn Wed, Sep 30, 2026 at 9:00 AM Admin wrote:\n\n> The quoted post.",
+    "receiver": "A Gmail-style reply with a plain part.\n\nOn Wed, Sep 30, 2026 at 9:00 AM Admin wrote:\n\n> The quoted post."
+  },
+  {
+    "html": "<div>Line one<br>Line two<br><br>After a blank line</div><div><br></div><div>New block with <b>bold</b>, <i>italic</i> and <a href=\"https://example.com/x\">a link</a>.</div>",
+    "markdown": "Line one\nLine two\n\nAfter a blank line\n\nNew block with **bold**, *italic* and [a link](https://example.com/x).",
+    "receiver": "Line one\nLine two\n\nAfter a blank line\n\nNew block with **bold**, *italic* and [a link](https://example.com/x)."
+  },
+  {
+    "html": "<html><head><style>p{color:red}</style></head><body><p>Paragraph&nbsp;with&nbsp;nbsp</p><section>dropped section</section><p>Kept <span>span</span> text</p></body></html>",
+    "markdown": "Paragraph with nbsp\n\nKept span text",
+    "receiver": "Paragraph with nbsp\n\nKept span text"
+  },
+  {
+    "html": "<p>Image <img src=\"https://example.com/a.png\" alt=\"Alt\ntext\" width=\"10\" height=\"20\"> and cid <img src=\"cid:abc@x\" alt=\"inline\"> and hidden <img src=\"https://example.com/b.png\" width=\"0\"></p>",
+    "markdown": "Image ![Alt text|10x20](https://example.com/a.png)and cid and hidden",
+    "receiver": "Image <img src=\"https://example.com/a.png\" alt=\"Alt text\" width=\"10\" height=\"20\">and cid <img src=\"cid:abc@x\" alt=\"inline\">and hidden"
+  },
+  {
+    "html": "<ul><li>one</li><li>two<ul><li>nested</li></ul></li></ul><ol><li>first</li><li>second</li></ol>",
+    "markdown": "- one\n- two\n  - nested\n1. first\n1. second",
+    "receiver": "- one\n- two\n  - nested\n1. first\n1. second"
+  },
+  {
+    "html": "<table><tr><th>A</th><th>B</th></tr><tr><td>1</td><td>2</td></tr></table>",
+    "markdown": "| A | B |\n| - | - |\n| 1 | 2 |",
+    "receiver": "| A | B |\n| - | - |\n| 1 | 2 |"
+  },
+  {
+    "html": "<pre><code class=\"lang-ruby\">puts `hi`\nputs 2</code></pre><p>Inline <code>code</code> and <tt>tt</tt></p>",
+    "markdown": "~~~ruby\nputs `hi`\nputs 2\n~~~\n\nInline `code` and `tt`",
+    "receiver": "~~~ruby\nputs `hi`\nputs 2\n~~~\n\nInline `code` and `tt`"
+  },
+  {
+    "html": "<blockquote><p>Quoted</p><p>Two paragraphs</p></blockquote><hr><h2>Heading</h2><p><s>struck</s> <del>del</del> <kbd>Ctrl</kbd> <abbr title=\"x\">abbr</abbr></p>",
+    "markdown": "> Quoted\n> \n> Two paragraphs\n\n---\n\n## Heading\n\n~~struck~~ <del>del</del> <kbd>Ctrl</kbd> <abbr title=\"x\">abbr</abbr>",
+    "receiver": "> Quoted\n> \n> Two paragraphs\n\n---\n\n## Heading\n\n~~struck~~ <del>del</del> <kbd>Ctrl</kbd> <abbr title=\"x\">abbr</abbr>"
+  },
+  {
+    "html": "<div><b>bold<br>split</b> and <em> spaced </em> and <strong>*star*</strong></div>",
+    "markdown": "**bold**\n**split** and *spaced* and __*star*__",
+    "receiver": "**bold**\n**split** and *spaced* and __*star*__"
+  }
+]

@@ -14,6 +14,7 @@ use std::sync::LazyLock;
 use regex::Regex;
 use sqlx::PgConnection;
 
+use super::html_to_markdown;
 use super::incoming::{self, Incoming};
 use super::reply_trimmer;
 use crate::site_settings::SiteSettings;
@@ -118,26 +119,33 @@ pub fn select_body(
     let mut elided: Option<String> = None;
     if !blank(&text) {
         let trimmed = trim_discourse_markers(text.as_deref().unwrap_or(""))?;
-        if s.get("trim_incoming_emails")?.truthy() {
-            match reply_trimmer::trim(&trimmed) {
-                Some((t, e)) => {
-                    text = Some(t);
-                    elided = Some(e);
-                }
+        (text, elided) = trim_reply(&trimmed, s)?;
+    }
+    // The HTML as markdown: a known client's quote and signature cut by
+    // its marks, or the whole of it trimmed like text.
+    let (markdown, elided_markdown) = match html.as_deref().filter(|h| !crate::ruby::is_blank(h)) {
+        Some(h) => {
+            let opts = html_to_markdown::Options {
+                keep_img_tags: true,
+                keep_cid_imgs: true,
+            };
+            let schemes = s.get("allowed_href_schemes")?.to_s();
+            match html_to_markdown::extract(h, &opts, &schemes)? {
+                Some((markdown, elided)) => (markdown, Some(elided)),
                 None => {
-                    text = None;
-                    elided = None;
+                    let markdown = html_to_markdown::to_markdown(h, &opts, &schemes);
+                    trim_reply(&trim_discourse_markers(&markdown)?, s)?
                 }
             }
-        } else {
-            text = Some(trimmed);
-            elided = Some(String::new());
         }
+        None => (None, None),
+    };
+    let mut format = formats::PLAINTEXT;
+    if blank(&text) || (s.get("incoming_email_prefer_html")?.truthy() && !blank(&markdown)) {
+        text = markdown;
+        elided = elided_markdown;
+        format = formats::MARKDOWN;
     }
-    if !blank(&html) && (blank(&text) || s.get("incoming_email_prefer_html")?.truthy()) {
-        return Err(Unsupported("HTML email bodies (HtmlToMarkdown)").into());
-    }
-    let format = formats::PLAINTEXT;
     if s.get("strip_incoming_email_lines")?.truthy() && !blank(&text) {
         text = Some(strip_lines(text.as_deref().unwrap_or("")));
     }
@@ -149,6 +157,18 @@ pub fn select_body(
             .into_owned()
     };
     Ok(Some((strip(text), strip(elided), format)))
+}
+
+/// `trim_reply_and_extract_elided`: the reply and what was cut, or the
+/// text as is when trimming is off.
+fn trim_reply(text: &str, s: &SiteSettings) -> Result<(Option<String>, Option<String>), AppError> {
+    if !s.get("trim_incoming_emails")?.truthy() {
+        return Ok((Some(text.to_string()), Some(String::new())));
+    }
+    Ok(match reply_trimmer::trim(text) {
+        Some((t, e)) => (Some(t), Some(e)),
+        None => (None, None),
+    })
 }
 
 /// `strip_incoming_email_lines`: each line stripped, list items and code

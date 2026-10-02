@@ -1,0 +1,11 @@
+[
+  "<div dir=\"ltr\">A Gmail-style reply with a plain part.</div><br><div class=\"gmail_quote\"><div dir=\"ltr\" class=\"gmail_attr\">On Wed, Sep 30, 2026 at 9:00 AM Admin wrote:<br></div><blockquote class=\"gmail_quote\">The quoted post.</blockquote></div>\n",
+  "<div>Line one<br>Line two<br><br>After a blank line</div><div><br></div><div>New block with <b>bold</b>, <i>italic</i> and <a href=\"https://example.com/x\">a link</a>.</div>",
+  "<html><head><style>p{color:red}</style></head><body><p>Paragraph&nbsp;with&nbsp;nbsp</p><section>dropped section</section><p>Kept <span>span</span> text</p></body></html>",
+  "<p>Image <img src=\"https://example.com/a.png\" alt=\"Alt\ntext\" width=\"10\" height=\"20\"> and cid <img src=\"cid:abc@x\" alt=\"inline\"> and hidden <img src=\"https://example.com/b.png\" width=\"0\"></p>",
+  "<ul><li>one</li><li>two<ul><li>nested</li></ul></li></ul><ol><li>first</li><li>second</li></ol>",
+  "<table><tr><th>A</th><th>B</th></tr><tr><td>1</td><td>2</td></tr></table>",
+  "<pre><code class=\"lang-ruby\">puts `hi`\nputs 2</code></pre><p>Inline <code>code</code> and <tt>tt</tt></p>",
+  "<blockquote><p>Quoted</p><p>Two paragraphs</p></blockquote><hr><h2>Heading</h2><p><s>struck</s> <del>del</del> <kbd>Ctrl</kbd> <abbr title=\"x\">abbr</abbr></p>",
+  "<div><b>bold<br>split</b> and <em> spaced </em> and <strong>*star*</strong></div>"
+]

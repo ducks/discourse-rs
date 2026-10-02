@@ -153,8 +153,9 @@ Logged-in readers, no writes yet.
       reply trimmed by a port of email_reply_trimmer, the post by email).
       Measured: the gem's own trimmer corpus, a sample corpus of parsed
       and cleaned emails (parity/incoming_mail), and the write cases
-- [ ] Reply by email, next: HtmlToMarkdown (Gmail and most clients send
-      HTML), rejection emails, staged users, attachments, bounces, likes
+- [x] Reply by email: HTML replies (HtmlToMarkdown and the per-client
+      extracters), measured on Discourse's spec HTML and client samples
+- [ ] Reply by email, next: rejection emails, staged users, attachments, bounces, likes
       and notification levels by email, API-key auth for mail-receiver,
       POP3 polling, group and category addresses (email_in)
 - [ ] PM emails, previous-replies context

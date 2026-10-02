@@ -1,0 +1,21 @@
+Date: Thu, 01 Oct 2026 10:00:00 +0000
+From: User0 <user0@example.com>
+To: replies+0123456789abcdef0123456789abcdef@example.com
+Message-ID: <sample@mail.example.com>
+Subject: Re: [Discourse] [General] Parity fixture: replies and posters
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="b"
+
+--b
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+Reply from Thunderbird, long enough to post.
+
+--b
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+<html><head><meta http-equiv="content-type" content="text/html; charset=UTF-8"></head><body><p>Reply from Thunderbird, with a <a href="https://example.com/doc">link</a>.</p><div class="moz-cite-prefix">On 9/30/26 9:00 AM, Admin wrote:<br></div><blockquote type="cite">The quoted post.</blockquote><div class="moz-signature">-- <br>Jane</div></body></html>
+
+--b--
