@@ -14,8 +14,9 @@ use crate::session::current::SessionUser;
 use crate::{AppError, Unsupported};
 
 /// The types `UserNotifications` answers for a notification.
-const NOTIFICATION_TYPES: [&str; 6] = [
+const NOTIFICATION_TYPES: [&str; 7] = [
     "user_replied",
+    "user_private_message",
     "user_quoted",
     "user_linked",
     "user_mentioned",

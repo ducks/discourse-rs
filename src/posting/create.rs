@@ -35,6 +35,9 @@ pub struct NewPost {
     pub composer_open_duration_msecs: Option<i64>,
     pub composer_version: Option<i32>,
     pub user_agent: Option<String>,
+    /// A new private message to these usernames, lowercased (`archetype`
+    /// and `target_recipients`).
+    pub pm_recipients: Option<Vec<String>>,
     /// Set for a post Email::Receiver creates.
     pub email: Option<EmailOrigin>,
     /// `advance_draft`: the composer's draft sequence moves on (not for API
@@ -84,7 +87,10 @@ struct ReplyTopic {
 /// What a new topic is created with.
 struct TopicPlan {
     title: String,
-    category_id: i32,
+    /// None for a message.
+    category_id: Option<i32>,
+    /// A message's recipients, by id order, as add_users_from_scope adds them.
+    pm_recipients: Option<Vec<i32>>,
     slow_mode_seconds: Option<i32>,
     all_topics_wiki: bool,
 }
@@ -121,6 +127,35 @@ fn truncate_400(s: &str) -> String {
     format!("{}...", s.chars().take(397).collect::<String>())
 }
 
+/// A regular topic's plan: its category (Uncategorized when none) and
+/// what the category gives new topics.
+async fn regular_topic_plan(
+    conn: &mut PgConnection,
+    s: &crate::site_settings::SiteSettings,
+    title: String,
+    category_id: Option<i32>,
+) -> Result<TopicPlan, AppError> {
+    let uncategorized = s.get("uncategorized_category_id")?.to_i() as i32;
+    let category_id = category_id.unwrap_or(uncategorized);
+    let (auto_close_hours, slow_mode, all_topics_wiki): (Option<f64>, Option<i32>, bool) =
+        sqlx::query_as(
+            "SELECT auto_close_hours, default_slow_mode_seconds, all_topics_wiki FROM categories WHERE id = $1",
+        )
+        .bind(category_id)
+        .fetch_one(&mut *conn)
+        .await?;
+    if auto_close_hours.is_some() {
+        return Err(Unsupported("categories that auto-close topics").into());
+    }
+    Ok(TopicPlan {
+        title,
+        category_id: Some(category_id),
+        pm_recipients: None,
+        slow_mode_seconds: slow_mode,
+        all_topics_wiki,
+    })
+}
+
 /// `NewPostManager.new(user, params).perform` for a reply or a regular topic.
 pub async fn create(
     pool: &PgPool,
@@ -138,10 +173,13 @@ pub async fn create(
     }
     let mut conn = pool.acquire().await?;
     let new_topic = args.topic_id.is_none();
+    // A new private message: no category (find_category drops it), and no
+    // can_create?(Topic) check (the recipients are checked instead).
+    let new_pm = new_topic && args.pm_recipients.is_some();
 
     // TopicCreator#setup_topic_params: the category, and the guardian's
     // can_create?(Topic, category).
-    let category_id = if new_topic {
+    let category_id = if new_topic && !new_pm {
         match args.category.as_deref().filter(|c| !c.is_empty()) {
             Some(c) if c.chars().all(|ch| ch.is_ascii_digit()) => {
                 let id: Option<i32> = c.parse().ok();
@@ -168,7 +206,7 @@ pub async fn create(
     } else {
         None
     };
-    if new_topic {
+    if new_topic && !new_pm {
         let allowed = match category_id {
             None => guardian.can_create_topic(&mut conn, s).await?,
             Some(id) => {
@@ -196,6 +234,11 @@ pub async fn create(
             .await?,
             None => None,
         };
+    // A message: a new one, or a reply in one.
+    let private_message = new_pm
+        || reply_topic
+            .as_ref()
+            .is_some_and(|t| t.archetype == "private_message");
     validate::refuse_unported(
         &mut conn,
         ctx,
@@ -210,6 +253,40 @@ pub async fn create(
     // PostCreator#valid?
     if user.suspended() {
         return Ok(Outcome::Invalid(vec![ctx.t("user_is_suspended")]));
+    }
+    // The recipients: their number, and whether they take messages from
+    // the sender (UserCommScreener, not ported).
+    if let Some(names) = &args.pm_recipients
+        && !names.is_empty()
+        && !guardian.is_staff()
+    {
+        let max = s.get("max_allowed_message_recipients")?.to_i();
+        if names.len() as i64 > max {
+            return Ok(Outcome::Invalid(vec![
+                ctx.i18n
+                    .t_with(
+                        "max_pm_recipients",
+                        &[("recipients_limit", &max.to_string())],
+                    )
+                    .unwrap_or_default(),
+            ]));
+        }
+        let screened: bool = sqlx::query_scalar(
+            "SELECT EXISTS (SELECT 1 FROM users u JOIN user_options o ON o.user_id = u.id \
+               WHERE u.username_lower = ANY($1) AND (NOT o.allow_private_messages \
+                 OR o.enable_allowed_pm_users \
+                 OR EXISTS (SELECT 1 FROM muted_users WHERE user_id = u.id AND muted_user_id = $2) \
+                 OR EXISTS (SELECT 1 FROM ignored_users WHERE user_id = u.id AND ignored_user_id = $2)))",
+        )
+        .bind(names)
+        .bind(user.id)
+        .fetch_one(&mut *conn)
+        .await?;
+        if screened {
+            return Err(
+                Unsupported("messages to users who screen the sender (UserCommScreener)").into(),
+            );
+        }
     }
     let mut plan = None;
     if new_topic {
@@ -226,32 +303,29 @@ pub async fn create(
             &TopicInput {
                 title: &title,
                 category_id,
-                private_message: false,
+                private_message,
             },
         )
         .await?;
         if !errors.is_empty() {
             return Ok(Outcome::Invalid(errors));
         }
-        let uncategorized = s.get("uncategorized_category_id")?.to_i() as i32;
-        let category_id = category_id.unwrap_or(uncategorized);
-        let (auto_close_hours, slow_mode, all_topics_wiki): (Option<f64>, Option<i32>, bool) =
-            sqlx::query_as(
-                "SELECT auto_close_hours, default_slow_mode_seconds, all_topics_wiki FROM categories WHERE id = $1",
-            )
-            .bind(category_id)
-            .fetch_one(&mut *conn)
-            .await?;
-        if auto_close_hours.is_some() {
-            return Err(Unsupported("categories that auto-close topics").into());
+        if new_pm {
+            plan = Some(TopicPlan {
+                title,
+                category_id: None,
+                pm_recipients: None,
+                slow_mode_seconds: None,
+                all_topics_wiki: false,
+            });
+        } else {
+            plan = Some(regular_topic_plan(&mut conn, s, title, category_id).await?);
         }
-        plan = Some(TopicPlan {
-            title,
-            category_id,
-            slow_mode_seconds: slow_mode,
-            all_topics_wiki,
-        });
-    } else {
+    }
+    if !new_topic {
+        if args.pm_recipients.is_some() && reply_topic.is_some() {
+            return Ok(Outcome::Invalid(vec![ctx.t("create_pm_on_existing_topic")]));
+        }
         let Some(topic) = &reply_topic else {
             return Ok(Outcome::Invalid(vec![ctx.t("topic_not_found")]));
         };
@@ -274,9 +348,6 @@ pub async fn create(
         };
         if !can {
             return Ok(Outcome::Invalid(vec![ctx.t("topic_not_found")]));
-        }
-        if topic.archetype == "private_message" {
-            return Err(Unsupported("replying to messages").into());
         }
         if topic.closed {
             return Err(Unsupported("replying to closed topics as staff").into());
@@ -327,7 +398,7 @@ pub async fn create(
             raw: &raw,
             topic_id: topic_id_for_cook,
             first_post: false,
-            private_message: false,
+            private_message,
             new_record: true,
             post_id: None,
             user_id: user.id,
@@ -349,7 +420,7 @@ pub async fn create(
                 raw: &raw,
                 topic_id: None,
                 first_post: true,
-                private_message: false,
+                private_message,
                 new_record: true,
                 post_id: None,
                 user_id: user.id,
@@ -359,6 +430,67 @@ pub async fn create(
         .await?;
         if !errors.is_empty() {
             return Ok(Outcome::Invalid(errors));
+        }
+    }
+    // TopicCreator#process_private_message: the recipients, each one the
+    // sender may message, in id order (find_each).
+    if new_pm {
+        let names = args.pm_recipients.clone().unwrap_or_default();
+        let base = "activerecord.errors.models.topic.attributes.base";
+        if names.is_empty() {
+            return Ok(Outcome::Invalid(vec![
+                ctx.t(&format!("{base}.no_user_selected")),
+            ]));
+        }
+        if names.iter().any(|n| n.contains('@')) {
+            return Err(Unsupported("messages to email addresses").into());
+        }
+        let groups: bool =
+            sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM groups WHERE lower(name) = ANY($1))")
+                .bind(&names)
+                .fetch_one(&mut *conn)
+                .await?;
+        if groups {
+            return Err(Unsupported("messages to groups").into());
+        }
+        #[derive(sqlx::FromRow)]
+        struct Target {
+            id: i32,
+            allow_private_messages: Option<bool>,
+            suspended: bool,
+            staff: bool,
+        }
+        let targets: Vec<Target> = sqlx::query_as(
+            "SELECT u.id, o.allow_private_messages, COALESCE(u.suspended_till > now(), FALSE) AS suspended, \
+                    (u.admin OR u.moderator) AS staff \
+             FROM users u LEFT JOIN user_options o ON o.user_id = u.id \
+             WHERE u.username_lower = ANY($1) ORDER BY u.id",
+        )
+        .bind(&names)
+        .fetch_all(&mut *conn)
+        .await?;
+        // can_send_private_messages?
+        let sender_can =
+            user.id == -1 || guardian.in_setting_groups(s, "personal_message_enabled_groups")?;
+        for t in &targets {
+            // can_send_private_message?(target)
+            let ok = sender_can
+                && (guardian.is_staff() || t.allow_private_messages.unwrap_or(true))
+                && (guardian.is_staff() || !t.suspended)
+                && (!guardian.is_silenced() || t.staff);
+            if !ok {
+                return Ok(Outcome::Invalid(vec![
+                    ctx.t(&format!("{base}.cant_send_pm")),
+                ]));
+            }
+        }
+        if targets.len() != names.len() {
+            return Ok(Outcome::Invalid(vec![
+                ctx.t(&format!("{base}.target_user_not_found")),
+            ]));
+        }
+        if let Some(plan) = plan.as_mut() {
+            plan.pm_recipients = Some(targets.iter().map(|t| t.id).collect());
         }
     }
     drop(conn);
@@ -400,7 +532,7 @@ pub async fn create(
                 id,
                 plan.title.clone(),
                 0,
-                Some(plan.category_id),
+                plan.category_id,
                 plan.all_topics_wiki,
             )
         }
@@ -499,17 +631,45 @@ pub async fn create(
         .await?;
     }
 
-    // UserActionManager.post_created
+    // UserActionManager.post_created: a reply, or in a message one row per
+    // allowed user (the poster's NEW_PRIVATE_MESSAGE, the others'
+    // GOT_PRIVATE_MESSAGE).
     if !new_topic {
-        super::log_user_action(
-            &mut tx,
-            user_actions::REPLY,
-            user.id,
-            topic_id,
-            post_id,
-            created_at,
-        )
-        .await?;
+        if private_message {
+            let allowed: Vec<i32> = sqlx::query_scalar(
+                "SELECT user_id FROM topic_allowed_users WHERE topic_id = $1 ORDER BY id",
+            )
+            .bind(topic_id)
+            .fetch_all(&mut *tx)
+            .await?;
+            for allowed_user in allowed {
+                let action = if allowed_user == user.id {
+                    user_actions::NEW_PRIVATE_MESSAGE
+                } else {
+                    user_actions::GOT_PRIVATE_MESSAGE
+                };
+                super::log_user_action_by(
+                    &mut tx,
+                    action,
+                    allowed_user,
+                    user.id,
+                    topic_id,
+                    post_id,
+                    created_at,
+                )
+                .await?;
+            }
+        } else {
+            super::log_user_action(
+                &mut tx,
+                user_actions::REPLY,
+                user.id,
+                topic_id,
+                post_id,
+                created_at,
+            )
+            .await?;
+        }
     }
     // extract_links (QuotedPost refused above)
     let hostname = urls.current_hostname()?;
@@ -603,19 +763,22 @@ pub async fn create(
     } else {
         "post_count"
     };
-    sqlx::query(&format!(
-        "UPDATE user_stats SET {column} = {column} + 1 WHERE user_id = $1"
-    ))
-    .bind(user.id)
-    .execute(&mut *tx)
-    .await?;
-    sqlx::query(
-        "UPDATE users SET last_posted_at = $2, updated_at = clock_timestamp() WHERE id = $1",
-    )
-    .bind(user.id)
-    .bind(created_at)
-    .execute(&mut *tx)
-    .await?;
+    // UserStatCountUpdater.increment! and last_posted_at skip messages.
+    if !private_message {
+        sqlx::query(&format!(
+            "UPDATE user_stats SET {column} = {column} + 1 WHERE user_id = $1"
+        ))
+        .bind(user.id)
+        .execute(&mut *tx)
+        .await?;
+        sqlx::query(
+            "UPDATE users SET last_posted_at = $2, updated_at = clock_timestamp() WHERE id = $1",
+        )
+        .bind(user.id)
+        .bind(created_at)
+        .execute(&mut *tx)
+        .await?;
+    }
     // delete_owned_bookmarks (on_owner_reply), then topic_users.bookmarked
     sqlx::query(
         "DELETE FROM bookmarks WHERE id IN (SELECT bookmarks.id FROM bookmarks \
@@ -722,13 +885,16 @@ pub async fn create(
         json!({"post_id": post_id}),
     )
     .await?;
-    crate::jobs::enqueue_in(
-        &mut tx,
-        s.get("email_time_window_mins")?.to_i() * 60,
-        "notify_mailing_list_subscribers",
-        json!({"post_id": post_id}),
-    )
-    .await?;
+    // after_post_create: mailing lists are not told about messages.
+    if !private_message {
+        crate::jobs::enqueue_in(
+            &mut tx,
+            s.get("email_time_window_mins")?.to_i() * 60,
+            "notify_mailing_list_subscribers",
+            json!({"post_id": post_id}),
+        )
+        .await?;
+    }
     tx.commit().await?;
 
     // After the transaction: track_latest_on_category, auto_close, then
@@ -786,7 +952,7 @@ pub async fn create(
             category_name: category_name.as_deref(),
             tag_names: tags.as_deref(),
             cooked: &cooked,
-            private_message: false,
+            private_message,
         },
     )
     .await?;
@@ -858,12 +1024,13 @@ async fn create_topic(
     if s.get("slug_generation_method")?.to_s() != "ascii" {
         return Err(Unsupported("slug_generation_method other than ascii").into());
     }
+    let pm = plan.pm_recipients.is_some();
     let slug = slug_for(&plan.title)?;
     let fancy_title = fancy_title(&plan.title)?;
     let (topic_id, created_at): (i32, NaiveDateTime) = sqlx::query_as(
         "INSERT INTO topics (title, fancy_title, slug, user_id, last_post_user_id, visible, category_id, \
-                             archetype, bumped_at, created_at, updated_at, slow_mode_seconds) \
-         VALUES ($1, $2, $3, $4, $4, TRUE, $5, 'regular', clock_timestamp(), clock_timestamp(), \
+                             archetype, subtype, bumped_at, created_at, updated_at, slow_mode_seconds) \
+         VALUES ($1, $2, $3, $4, $4, TRUE, $5, $7, $8, clock_timestamp(), clock_timestamp(), \
                  clock_timestamp(), COALESCE($6, 0)) \
          RETURNING id, created_at",
     )
@@ -873,20 +1040,41 @@ async fn create_topic(
     .bind(user_id)
     .bind(plan.category_id)
     .bind(plan.slow_mode_seconds)
+    .bind(if pm { "private_message" } else { "regular" })
+    .bind(pm.then_some("user_to_user"))
     .fetch_one(&mut *conn)
     .await?;
-    // after_create: changed_to_category, then the draft sequence.
-    let is_definition: bool =
-        sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM categories WHERE topic_id = $1)")
+    // process_private_message: the recipients, then the sender.
+    if let Some(recipients) = &plan.pm_recipients {
+        let mut allowed = recipients.clone();
+        if !allowed.contains(&user_id) {
+            allowed.push(user_id);
+        }
+        for allowed_user in allowed {
+            sqlx::query(
+                "INSERT INTO topic_allowed_users (topic_id, user_id, created_at, updated_at) \
+                         VALUES ($1, $2, clock_timestamp(), clock_timestamp())",
+            )
             .bind(topic_id)
-            .fetch_one(&mut *conn)
-            .await?;
-    if !is_definition {
-        sqlx::query("UPDATE categories SET topic_count = topic_count + 1 WHERE id = $1")
-            .bind(plan.category_id)
+            .bind(allowed_user)
             .execute(&mut *conn)
             .await?;
-        feature_topics_for(conn, s, plan.category_id).await?;
+        }
+    }
+    // after_create: changed_to_category, then the draft sequence.
+    if let Some(category_id) = plan.category_id {
+        let is_definition: bool =
+            sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM categories WHERE topic_id = $1)")
+                .bind(topic_id)
+                .fetch_one(&mut *conn)
+                .await?;
+        if !is_definition {
+            sqlx::query("UPDATE categories SET topic_count = topic_count + 1 WHERE id = $1")
+                .bind(category_id)
+                .execute(&mut *conn)
+                .await?;
+            feature_topics_for(conn, s, category_id).await?;
+        }
     }
     next_draft_sequence(conn, user_id, &format!("topic_{topic_id}")).await?;
     // set_author_notification_level: watch it.
@@ -900,26 +1088,60 @@ async fn create_topic(
         )],
     )
     .await?;
-    // UserActionManager.topic_created: the PM-typed row goes, the topic's
-    // is logged.
+    // apply_pm_recipient_notification_levels: the recipients watch too
+    // (TopicNotifier#watch!, so the reason is user_changed).
+    let allowed: Vec<i32> = if pm {
+        sqlx::query_scalar(
+            "SELECT user_id FROM topic_allowed_users WHERE topic_id = $1 ORDER BY id",
+        )
+        .bind(topic_id)
+        .fetch_all(&mut *conn)
+        .await?
+    } else {
+        Vec::new()
+    };
+    for &recipient in allowed.iter().filter(|&&u| u != -1 && u != user_id) {
+        change_topic_user(
+            conn,
+            recipient,
+            topic_id,
+            &[TopicUserAttr::NotificationLevel(
+                notification_levels::WATCHING,
+                notification_reasons::USER_CHANGED,
+            )],
+        )
+        .await?;
+    }
+    // UserActionManager.topic_created: the row of the other kind goes; the
+    // topic's (or the message's, with GOT_PRIVATE_MESSAGE for each
+    // recipient) is logged.
+    let (own, other) = if pm {
+        (user_actions::NEW_PRIVATE_MESSAGE, user_actions::NEW_TOPIC)
+    } else {
+        (user_actions::NEW_TOPIC, user_actions::NEW_PRIVATE_MESSAGE)
+    };
     sqlx::query(
         "DELETE FROM user_actions WHERE action_type = $1 AND user_id = $2 AND acting_user_id = $2 \
          AND target_topic_id = $3 AND target_post_id = -1",
     )
-    .bind(user_actions::NEW_PRIVATE_MESSAGE)
+    .bind(other)
     .bind(user_id)
     .bind(topic_id)
     .execute(&mut *conn)
     .await?;
-    super::log_user_action(
-        conn,
-        user_actions::NEW_TOPIC,
-        user_id,
-        topic_id,
-        -1,
-        created_at,
-    )
-    .await?;
+    super::log_user_action(conn, own, user_id, topic_id, -1, created_at).await?;
+    for &recipient in allowed.iter().filter(|&&u| u != user_id) {
+        super::log_user_action_by(
+            conn,
+            user_actions::GOT_PRIVATE_MESSAGE,
+            recipient,
+            user_id,
+            topic_id,
+            -1,
+            created_at,
+        )
+        .await?;
+    }
     let _ = guardian;
     Ok(topic_id)
 }

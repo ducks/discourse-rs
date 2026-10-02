@@ -22,9 +22,7 @@ use crate::url::Urls;
 use crate::{AppError, AppState, Unsupported};
 
 /// `create_params` that this slice does not write: refused, not ignored.
-const UNPORTED_CREATE_PARAMS: [&str; 22] = [
-    "archetype",
-    "target_recipients",
+const UNPORTED_CREATE_PARAMS: [&str; 20] = [
     "target_usernames",
     "tags",
     "whisper",
@@ -85,6 +83,21 @@ pub async fn create(
     drop(conn);
     let integer = |k: &str| params::integer(&p, k);
     let api = headers.contains_key(crate::session::api_key::HEADER_API_KEY);
+    // archetype: a private message to target_recipients, split as
+    // create_params does (usernames, then groups and emails, refused).
+    let pm_recipients = match params::string(&p, "archetype").as_deref() {
+        None | Some("") | Some("regular") => None,
+        Some("private_message") => {
+            let raw = params::string(&p, "target_recipients").unwrap_or_default();
+            let mut names: Vec<String> = raw.split(',').map(str::to_lowercase).collect();
+            // Ruby's split drops trailing empty pieces.
+            while names.last().is_some_and(String::is_empty) {
+                names.pop();
+            }
+            Some(names)
+        }
+        Some(_) => return Err(Unsupported("archetypes other than private messages").into()),
+    };
     let args = NewPost {
         raw: params::string(&p, "raw").unwrap_or_default(),
         topic_id: integer("topic_id").map(|v| v as i32),
@@ -98,6 +111,7 @@ pub async fn create(
             .get(header::USER_AGENT)
             .and_then(|v| v.to_str().ok())
             .map(str::to_string),
+        pm_recipients,
         email: None,
         // is_api?: an admin API key (the session middleware checked it).
         advance_draft: !api,

@@ -131,7 +131,11 @@ Logged-in readers, no writes yet.
       measured against Rails. Refused: flags, likes in messages, liked
       notifications that would consolidate; the like rate limit is not ported
 - [ ] Flags
-- [ ] Private messages
+- [x] Private messages: new messages to users and replies in them, the
+      allowed users, the recipients watching, the PM user actions, the
+      private_message notification and email (participants, `[PM]`
+      subject), measured against Rails. Refused: group messages, messages to
+      email addresses, recipients who screen the sender, membership requests
 - [ ] Uploads (local first, S3 later), optimized images
 - [x] Background job queue: Postgres (`discourse_rs.jobs`, the one table
       the port owns), a worker beside the web server, Sidekiq's retries;

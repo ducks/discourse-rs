@@ -1,25 +1,27 @@
 {
-  "name": "reply_to_restricted_topic",
+  "name": "pm_unknown_recipient",
   "user": "user1",
   "requests": [
     {
       "method": "POST",
       "path": "/posts.json",
       "params": {
-        "topic_id": 2,
-        "raw": "A reply to a staff topic user1 cannot see, which has to be refused."
+        "title": "A private message nobody can receive",
+        "raw": "This message goes to a recipient that does not exist at all.",
+        "archetype": "private_message",
+        "target_recipients": "no_such_user"
       }
     }
   ],
-  "started_at": "2026-10-02T21:10:58.436843",
-  "transaction_started_at": "2026-10-02T21:10:57.326497",
+  "started_at": "2026-10-02T21:12:24.239438",
+  "transaction_started_at": "2026-10-02T21:12:23.259977",
   "responses": [
     {
       "status": 422,
       "body": {
         "action": "create_post",
         "errors": [
-          "Something has gone wrong. Perhaps this topic was closed or deleted while you were looking at it?"
+          "One of the users you are sending this message to could not be found."
         ]
       }
     }
@@ -35,29 +37,29 @@
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "RfGmmr5JLtSpWKZB8NhaLouxU28=",
-            "created_at": "2026-10-02T21:10:57.840919",
-            "rotated_at": "2026-10-02T21:10:57.84065",
-            "updated_at": "2026-10-02T21:10:57.840919",
+            "auth_token": "FGC6oyi+rJcCO6ys2Z1H7oNdVnk=",
+            "created_at": "2026-10-02T21:12:23.627766",
+            "rotated_at": "2026-10-02T21:12:23.62751",
+            "updated_at": "2026-10-02T21:12:23.627766",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "RfGmmr5JLtSpWKZB8NhaLouxU28=",
+            "prev_auth_token": "FGC6oyi+rJcCO6ys2Z1H7oNdVnk=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
             "id": 86,
-            "seen_at": "2026-10-02T21:10:58.442907",
+            "seen_at": "2026-10-02T21:12:24.250668",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "RfGmmr5JLtSpWKZB8NhaLouxU28=",
-            "created_at": "2026-10-02T21:10:57.840919",
-            "rotated_at": "2026-10-02T21:10:57.84065",
-            "updated_at": "2026-10-02T21:10:57.840919",
+            "auth_token": "FGC6oyi+rJcCO6ys2Z1H7oNdVnk=",
+            "created_at": "2026-10-02T21:12:23.627766",
+            "rotated_at": "2026-10-02T21:12:23.62751",
+            "updated_at": "2026-10-02T21:12:23.627766",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "RfGmmr5JLtSpWKZB8NhaLouxU28=",
+            "prev_auth_token": "FGC6oyi+rJcCO6ys2Z1H7oNdVnk=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null

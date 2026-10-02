@@ -1160,5 +1160,93 @@
     "setup": [
       "INSERT INTO post_actions (id, post_id, user_id, post_action_type_id, created_at, updated_at, deleted_at, deleted_by_id, staff_took_action, targets_topic) VALUES (9201, 52, 3, 2, '2026-10-01 16:00:00', '2026-10-01 16:00:00', '2026-10-01 16:05:00', 3, FALSE, FALSE)"
     ]
+  },
+  {
+    "name": "pm_new",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/posts.json",
+        "params": {
+          "title": "A private message for the port to deliver",
+          "raw": "Hello user0, this is a private message long enough to post.",
+          "archetype": "private_message",
+          "target_recipients": "user0"
+        }
+      }
+    ],
+    "run_jobs": [
+      "post_alert",
+      "user_email"
+    ]
+  },
+  {
+    "name": "pm_new_two_recipients",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/posts.json",
+        "params": {
+          "title": "A private message to two people at once",
+          "raw": "Hello both, this is a private message to two recipients.",
+          "archetype": "private_message",
+          "target_recipients": "user0,user2"
+        }
+      }
+    ],
+    "run_jobs": [
+      "post_alert",
+      "user_email"
+    ]
+  },
+  {
+    "name": "pm_reply",
+    "user": "user0",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/posts.json",
+        "params": {
+          "topic_id": 42,
+          "raw": "A reply inside the private message from user0, long enough."
+        }
+      }
+    ],
+    "run_jobs": [
+      "post_alert",
+      "user_email"
+    ]
+  },
+  {
+    "name": "pm_unknown_recipient",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/posts.json",
+        "params": {
+          "title": "A private message nobody can receive",
+          "raw": "This message goes to a recipient that does not exist at all.",
+          "archetype": "private_message",
+          "target_recipients": "no_such_user"
+        }
+      }
+    ]
+  },
+  {
+    "name": "pm_reply_outsider",
+    "user": "user2",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/posts.json",
+        "params": {
+          "topic_id": 42,
+          "raw": "Someone outside the conversation trying to reply to it."
+        }
+      }
+    ]
   }
 ]
