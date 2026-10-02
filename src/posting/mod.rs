@@ -62,6 +62,8 @@ pub const BAKED_VERSION: i32 = 2;
 
 /// `UserAction` types this slice writes.
 pub mod user_actions {
+    pub const LIKE: i32 = 1;
+    pub const WAS_LIKED: i32 = 2;
     pub const NEW_TOPIC: i32 = 4;
     pub const REPLY: i32 = 5;
     pub const NEW_PRIVATE_MESSAGE: i32 = 12;

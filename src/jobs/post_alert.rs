@@ -5,7 +5,8 @@
 //!
 //! Refused rather than approximated: group and @here mentions, quotes,
 //! links to topics, messages, nested replies, push notifications, do not
-//! disturb and the notification consolidation plans for likes and links.
+//! disturb and the notification consolidation plans for likes and links
+//! (a first like is notified; one that would consolidate is refused).
 
 use serde_json::{Map, Value, json};
 use sqlx::PgConnection;
@@ -23,6 +24,8 @@ mod types {
     pub const REPLIED: i32 = 2;
     pub const QUOTED: i32 = 3;
     pub const EDITED: i32 = 4;
+    pub const LIKED: i32 = 5;
+    pub const LIKED_CONSOLIDATED: i32 = 25;
     pub const POSTED: i32 = 9;
     pub const PRIVATE_MESSAGE: i32 = 6;
     pub const LINKED: i32 = 11;
@@ -66,6 +69,58 @@ struct Opts {
     user_id: Option<i32>,
     display_username: Option<String>,
     original_username: Option<String>,
+    /// The like a liked notification is for.
+    post_action_id: Option<i32>,
+}
+
+/// The post and what create_notification reads about it; None when it or
+/// its topic is gone.
+async fn load_post(conn: &mut PgConnection, post_id: i32) -> Result<Option<Post>, AppError> {
+    Ok(sqlx::query_as(
+        "SELECT p.id, p.user_id, p.last_editor_id, p.topic_id, p.post_number, p.post_type, p.raw, p.cooked, \
+                p.reply_to_post_number, p.action_code, u.username, u.name, e.username AS editor_username, \
+                t.title AS topic_title, t.user_id AS topic_user_id, t.category_id, t.archetype \
+         FROM posts p JOIN topics t ON t.id = p.topic_id AND t.deleted_at IS NULL \
+         LEFT JOIN users u ON u.id = p.user_id \
+         LEFT JOIN users e ON e.id = COALESCE(p.last_editor_id, p.user_id) \
+         WHERE p.id = $1 AND p.deleted_at IS NULL",
+    )
+    .bind(post_id)
+    .fetch_optional(&mut *conn)
+    .await?)
+}
+
+/// `PostActionNotifier.post_action_created` for a like: the post's author
+/// hears who liked it.
+pub async fn notify_liked(
+    ctx: &Ctx<'_>,
+    conn: &mut PgConnection,
+    post_id: i32,
+    liker_id: i32,
+    liker_username: &str,
+    post_action_id: i32,
+) -> Result<(), AppError> {
+    let Some(post) = load_post(conn, post_id).await? else {
+        return Ok(());
+    };
+    let Some(author) = post.user_id else {
+        return Ok(());
+    };
+    let mut alerter = Alerter {
+        ctx,
+        post: &post,
+        notified: Vec::new(),
+    };
+    let opts = Opts {
+        user_id: Some(liker_id),
+        display_username: Some(liker_username.to_string()),
+        original_username: None,
+        post_action_id: Some(post_action_id),
+    };
+    alerter
+        .create_notification(conn, author, types::LIKED, &opts)
+        .await?;
+    Ok(())
 }
 
 pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result<(), AppError> {
@@ -79,18 +134,7 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
         return Err(Unsupported("post_alert options").into());
     }
     let new_record = args.get("new_record") == Some(&json!(true));
-    let post: Option<Post> = sqlx::query_as(
-        "SELECT p.id, p.user_id, p.last_editor_id, p.topic_id, p.post_number, p.post_type, p.raw, p.cooked, \
-                p.reply_to_post_number, p.action_code, u.username, u.name, e.username AS editor_username, \
-                t.title AS topic_title, t.user_id AS topic_user_id, t.category_id, t.archetype \
-         FROM posts p JOIN topics t ON t.id = p.topic_id AND t.deleted_at IS NULL \
-         LEFT JOIN users u ON u.id = p.user_id \
-         LEFT JOIN users e ON e.id = COALESCE(p.last_editor_id, p.user_id) \
-         WHERE p.id = $1 AND p.deleted_at IS NULL",
-    )
-    .bind(post_id as i32)
-    .fetch_optional(&mut *conn)
-    .await?;
+    let post = load_post(conn, post_id as i32).await?;
     let Some(post) = post else {
         return Ok(());
     };
@@ -363,6 +407,22 @@ impl Alerter<'_> {
         let Some(user) = SessionUser::load(&mut *conn, user_id).await? else {
             return Ok(false);
         };
+        // like_notification_frequency: always 0, first_time_and_daily 1,
+        // first_time 2, never 3.
+        let like_frequency: i32 = if notification_type == types::LIKED {
+            sqlx::query_scalar(
+                "SELECT like_notification_frequency FROM user_options WHERE user_id = $1",
+            )
+            .bind(user_id)
+            .fetch_optional(&mut *conn)
+            .await?
+            .unwrap_or(1)
+        } else {
+            1
+        };
+        if notification_type == types::LIKED && like_frequency == 3 {
+            return Ok(false);
+        }
         if notification_type == types::LINKED {
             return Err(Unsupported("linked notifications").into());
         }
@@ -424,7 +484,25 @@ impl Alerter<'_> {
             if notification_type == types::EDITED {
                 return Err(Unsupported("repeated edit notifications").into());
             }
-            return Ok(false);
+            // should_notify_like?: always, or first_time_and_daily once the
+            // last one is a day old.
+            let renotify = notification_type == types::LIKED && match like_frequency {
+                0 => return Err(Unsupported("likes notified every time (liked_by_two_users)").into()),
+                1 => sqlx::query_scalar::<_, bool>(
+                    "SELECT created_at < now() - interval '1 day' FROM notifications WHERE user_id = $1 \
+                     AND topic_id = $2 AND post_number = $3 AND notification_type = $4 ORDER BY id DESC LIMIT 1",
+                )
+                .bind(user_id)
+                .bind(post.topic_id)
+                .bind(post.post_number)
+                .bind(types::LIKED)
+                .fetch_one(&mut *conn)
+                .await?,
+                _ => false,
+            };
+            if !renotify {
+                return Ok(false);
+            }
         }
         if [types::QUOTED, types::LINKED, types::MENTIONED].contains(&notification_type)
             && existing.contains(&types::REPLIED)
@@ -528,16 +606,47 @@ impl Alerter<'_> {
         if target_post_number != post.post_number {
             return Err(Unsupported("collapsed notifications pointing at an earlier post").into());
         }
+        // consolidate_or_create!: the liked plan rolls one liker's likes into a
+        // liked_consolidated notification within the window; not ported.
+        if notification_type == types::LIKED {
+            let window = ctx
+                .settings
+                .get("likes_notification_consolidation_window_mins")?
+                .to_i();
+            let (consolidated, unconsolidated): (bool, i64) = sqlx::query_as(
+                "SELECT EXISTS (SELECT 1 FROM notifications WHERE user_id = $1 AND notification_type = $4 \
+                   AND data::json ->> 'display_username' = $2 \
+                   AND created_at > now() - make_interval(mins => $3)), \
+                        (SELECT COUNT(*) FROM notifications WHERE user_id = $1 AND notification_type = $5 \
+                   AND data::json ->> 'username2' IS NULL AND data::json ->> 'display_username' = $2 \
+                   AND created_at > now() - make_interval(mins => $3))",
+            )
+            .bind(user_id)
+            .bind(&displayed)
+            .bind(window as i32)
+            .bind(types::LIKED_CONSOLIDATED)
+            .bind(types::LIKED)
+            .fetch_one(&mut *conn)
+            .await?;
+            let threshold = ctx
+                .settings
+                .get("notification_consolidation_threshold")?
+                .to_i();
+            if consolidated || unconsolidated + 1 >= threshold {
+                return Err(Unsupported("consolidated like notifications").into());
+            }
+        }
         let notification_id: i64 = sqlx::query_scalar(
             "INSERT INTO notifications (notification_type, user_id, topic_id, post_number, data, read, \
-                                        high_priority, created_at, updated_at) \
-             VALUES ($1, $2, $3, $4, $5, FALSE, FALSE, clock_timestamp(), clock_timestamp()) RETURNING id",
+                                        high_priority, post_action_id, created_at, updated_at) \
+             VALUES ($1, $2, $3, $4, $5, FALSE, FALSE, $6, clock_timestamp(), clock_timestamp()) RETURNING id",
         )
         .bind(notification_type)
         .bind(user_id)
         .bind(post.topic_id)
         .bind(target_post_number)
         .bind(data.to_string())
+        .bind(opts.post_action_id)
         .fetch_one(&mut *conn)
         .await?;
 

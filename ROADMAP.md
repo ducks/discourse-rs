@@ -126,7 +126,11 @@ Logged-in readers, no writes yet.
       write the rows Rails writes (tests/writes.rs). Refused for now:
       review queue, watched words, TL0, PMs, tags, quotes, uploads,
       oneboxes, topic links, grace-period edits, title/category edits
-- [ ] Likes, flags
+- [x] Likes: like and unlike (POST and DELETE /post_actions), the counts,
+      the liked flag, daily likes, user actions and the liked notification,
+      measured against Rails. Refused: flags, likes in messages, liked
+      notifications that would consolidate; the like rate limit is not ported
+- [ ] Flags
 - [ ] Private messages
 - [ ] Uploads (local first, S3 later), optimized images
 - [x] Background job queue: Postgres (`discourse_rs.jobs`, the one table

@@ -1,18 +1,18 @@
 {
-  "name": "reply_anonymous",
+  "name": "like_anonymous",
   "user": null,
   "requests": [
     {
       "method": "POST",
-      "path": "/posts.json",
+      "path": "/post_actions.json",
       "params": {
-        "topic_id": 35,
-        "raw": "A reply without logging in, which has to be refused at the door."
+        "id": 52,
+        "post_action_type_id": 2
       }
     }
   ],
-  "started_at": "2026-10-02T20:58:33.396852",
-  "transaction_started_at": "2026-10-02T20:58:32.456848",
+  "started_at": "2026-10-02T20:59:46.581573",
+  "transaction_started_at": "2026-10-02T20:59:45.569816",
   "responses": [
     {
       "status": 403,

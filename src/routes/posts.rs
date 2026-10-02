@@ -112,7 +112,8 @@ pub async fn create(
     };
     match create::create(&state.pool, &ctx, &guardian, args).await? {
         Outcome::Created { post_id } => {
-            let mut post = serialize_post(&state, &settings, &guardian, post_id, false).await?;
+            let mut post =
+                serialize_post(&state, &settings, &guardian, post_id, false, true).await?;
             // Rails serializes the post object it created, whose reads the
             // creator's post timing bumped only in the database.
             if let Value::Object(p) = &mut post {
@@ -132,12 +133,13 @@ pub async fn create(
 }
 
 /// PostSerializer for one post, as create and update answer.
-async fn serialize_post(
+pub(super) async fn serialize_post(
     state: &AppState,
     settings: &SiteSettings,
     guardian: &crate::guardian::Guardian,
     post_id: i32,
     with_link_counts: bool,
+    with_raw_and_draft_sequence: bool,
 ) -> Result<Value, AppError> {
     let mut conn = state.pool.acquire().await?;
     let urls = Urls {
@@ -157,7 +159,7 @@ async fn serialize_post(
         post_types: Vec::new(),
     };
     Ok(view
-        .serialize_single_post(post_id, with_link_counts)
+        .serialize_single_post(post_id, with_link_counts, with_raw_and_draft_sequence)
         .await?)
 }
 
@@ -278,7 +280,7 @@ pub async fn update(
             Ok(json_error(StatusCode::UNPROCESSABLE_ENTITY, errors))
         }
         revise::Outcome::Revised => {
-            let post = serialize_post(&state, &settings, &guardian, post_id, true).await?;
+            let post = serialize_post(&state, &settings, &guardian, post_id, true, true).await?;
             Ok((StatusCode::OK, Json(json!({"post": post}))).into_response())
         }
     }

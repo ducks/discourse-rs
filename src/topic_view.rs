@@ -637,14 +637,15 @@ impl TopicView<'_> {
         Ok(viewer)
     }
 
-    /// `PostSerializer.new(post, scope: guardian, add_raw: true)` outside a
-    /// topic view, with `draft_sequence` set, as posts#create and
-    /// posts#update answer: no `read`, and link counts only when asked
-    /// for (update sets `single_post_link_counts`).
+    /// `PostSerializer.new(post, scope: guardian)` outside a topic view: no
+    /// `read`; link counts when asked for (update sets
+    /// `single_post_link_counts`); `raw` and `draft_sequence` for posts#create
+    /// and posts#update (render_post_json with add_raw: false has neither).
     pub async fn serialize_single_post(
         &mut self,
         post_id: i32,
         with_link_counts: bool,
+        with_raw_and_draft_sequence: bool,
     ) -> Result<Value, TopicViewError> {
         let sql = format!("{} WHERE id = $1", Self::POST_SQL);
         let post: PostRow = sqlx::query_as(&sql)
@@ -678,8 +679,10 @@ impl TopicView<'_> {
         if p.get("reviewable_id") == Some(&json!(0)) {
             p.insert("reviewable_id".into(), Value::Null);
         }
-        p.insert("raw".into(), json!(raw));
-        p.insert("draft_sequence".into(), json!(viewer.draft_sequence));
+        if with_raw_and_draft_sequence {
+            p.insert("raw".into(), json!(raw));
+            p.insert("draft_sequence".into(), json!(viewer.draft_sequence));
+        }
         Ok(Value::Object(p))
     }
 

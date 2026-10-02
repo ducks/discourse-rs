@@ -1059,5 +1059,106 @@
         }
       }
     ]
+  },
+  {
+    "name": "like",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/post_actions.json",
+        "params": {
+          "id": 52,
+          "post_action_type_id": 2
+        }
+      }
+    ]
+  },
+  {
+    "name": "unlike",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/post_actions.json",
+        "params": {
+          "id": 52,
+          "post_action_type_id": 2
+        }
+      },
+      {
+        "method": "DELETE",
+        "path": "/post_actions/52.json",
+        "params": {
+          "post_action_type_id": 2
+        }
+      }
+    ]
+  },
+  {
+    "name": "like_own_post",
+    "user": "user0",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/post_actions.json",
+        "params": {
+          "id": 52,
+          "post_action_type_id": 2
+        }
+      }
+    ]
+  },
+  {
+    "name": "like_twice",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/post_actions.json",
+        "params": {
+          "id": 52,
+          "post_action_type_id": 2
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/post_actions.json",
+        "params": {
+          "id": 52,
+          "post_action_type_id": 2
+        }
+      }
+    ]
+  },
+  {
+    "name": "like_anonymous",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/post_actions.json",
+        "params": {
+          "id": 52,
+          "post_action_type_id": 2
+        }
+      }
+    ]
+  },
+  {
+    "name": "relike",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/post_actions.json",
+        "params": {
+          "id": 52,
+          "post_action_type_id": 2
+        }
+      }
+    ],
+    "setup": [
+      "INSERT INTO post_actions (id, post_id, user_id, post_action_type_id, created_at, updated_at, deleted_at, deleted_by_id, staff_took_action, targets_topic) VALUES (9201, 52, 3, 2, '2026-10-01 16:00:00', '2026-10-01 16:00:00', '2026-10-01 16:05:00', 3, FALSE, FALSE)"
+    ]
   }
 ]
