@@ -673,5 +673,206 @@
     "run_jobs": [
       "process_email"
     ]
+  },
+  {
+    "name": "incoming_reject_inactive_user",
+    "user": "admin",
+    "settings": {
+      "reply_by_email_address": "replies+%{reply_key}@example.com",
+      "manual_polling_enabled": true,
+      "reply_by_email_enabled": true
+    },
+    "setup": [
+      "INSERT INTO post_reply_keys (user_id, post_id, reply_key, created_at, updated_at) VALUES (2, 38, '0123456789abcdef0123456789abcdef', now(), now())",
+      "UPDATE users SET active = FALSE WHERE id = 2"
+    ],
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/admin/email/handle_mail",
+        "params": {
+          "email_encoded": "RGF0ZTogVGh1LCAwMSBPY3QgMjAyNiAxMDowMDowMCArMDAwMA0KRnJvbTogVXNlcjAgPHVzZXIwQGV4YW1wbGUuY29tPg0KVG86IHJlcGxpZXMrMDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWZAZXhhbXBsZS5jb20NCk1lc3NhZ2UtSUQ6IDxyZWplY3QtaW5hY3RpdmVAbWFpbC5leGFtcGxlLmNvbT4NClN1YmplY3Q6IFJlOiBbRGlzY291cnNlXSBbR2VuZXJhbF0gUGFyaXR5IGZpeHR1cmU6IHJlcGxpZXMgYW5kIHBvc3RlcnMNCk1JTUUtVmVyc2lvbjogMS4wDQpDb250ZW50LVR5cGU6IHRleHQvcGxhaW47IGNoYXJzZXQ9VVRGLTgNCkNvbnRlbnQtVHJhbnNmZXItRW5jb2Rpbmc6IDdiaXQNCg0KVGhpcyBpcyBteSByZXBseSBieSBlbWFpbCwgbG9uZyBlbm91Z2ggdG8gYmUgYSBwb3N0IG9uIGl0cyBvd24uDQo="
+        }
+      }
+    ],
+    "run_jobs": [
+      "process_email"
+    ]
+  },
+  {
+    "name": "incoming_reject_empty",
+    "user": "admin",
+    "settings": {
+      "reply_by_email_address": "replies+%{reply_key}@example.com",
+      "manual_polling_enabled": true,
+      "reply_by_email_enabled": true
+    },
+    "setup": [
+      "INSERT INTO post_reply_keys (user_id, post_id, reply_key, created_at, updated_at) VALUES (2, 38, '0123456789abcdef0123456789abcdef', now(), now())"
+    ],
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/admin/email/handle_mail",
+        "params": {
+          "email_encoded": "RGF0ZTogVGh1LCAwMSBPY3QgMjAyNiAxMDowMDowMCArMDAwMA0KRnJvbTogVXNlcjAgPHVzZXIwQGV4YW1wbGUuY29tPg0KVG86IHJlcGxpZXMrMDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWZAZXhhbXBsZS5jb20NCk1lc3NhZ2UtSUQ6IDxyZWplY3QtZW1wdHlAbWFpbC5leGFtcGxlLmNvbT4NClN1YmplY3Q6IFJlOiBbRGlzY291cnNlXSBbR2VuZXJhbF0gUGFyaXR5IGZpeHR1cmU6IHJlcGxpZXMgYW5kIHBvc3RlcnMNCk1JTUUtVmVyc2lvbjogMS4wDQpDb250ZW50LVR5cGU6IHRleHQvcGxhaW47IGNoYXJzZXQ9VVRGLTgNCkNvbnRlbnQtVHJhbnNmZXItRW5jb2Rpbmc6IDdiaXQNCg0KT24gV2VkLCBTZXAgMzAsIDIwMjYgYXQgOTowMCBBTSBBZG1pbiA8bm9yZXBseUB1bmNvbmZpZ3VyZWQuZGlzY291cnNlLm9yZz4gd3JvdGU6DQo+IE9ubHkgdGhlIHF1b3RlLCBub3RoaW5nIG5ldy4NCg=="
+        }
+      }
+    ],
+    "run_jobs": [
+      "process_email"
+    ]
+  },
+  {
+    "name": "incoming_reject_bad_destination",
+    "user": "admin",
+    "settings": {
+      "reply_by_email_address": "replies+%{reply_key}@example.com",
+      "manual_polling_enabled": true,
+      "reply_by_email_enabled": true
+    },
+    "setup": [
+      "INSERT INTO post_reply_keys (user_id, post_id, reply_key, created_at, updated_at) VALUES (2, 38, '0123456789abcdef0123456789abcdef', now(), now())"
+    ],
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/admin/email/handle_mail",
+        "params": {
+          "email_encoded": "RGF0ZTogVGh1LCAwMSBPY3QgMjAyNiAxMDowMDowMCArMDAwMA0KRnJvbTogVXNlcjAgPHVzZXIwQGV4YW1wbGUuY29tPg0KVG86IHJlcGxpZXMrZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZAZXhhbXBsZS5jb20NCk1lc3NhZ2UtSUQ6IDxyZWplY3QtYmFkZGVzdEBtYWlsLmV4YW1wbGUuY29tPg0KU3ViamVjdDogUmU6IFtEaXNjb3Vyc2VdIFtHZW5lcmFsXSBQYXJpdHkgZml4dHVyZTogcmVwbGllcyBhbmQgcG9zdGVycw0KTUlNRS1WZXJzaW9uOiAxLjANCkNvbnRlbnQtVHlwZTogdGV4dC9wbGFpbjsgY2hhcnNldD1VVEYtOA0KQ29udGVudC1UcmFuc2Zlci1FbmNvZGluZzogN2JpdA0KDQpUaGlzIGlzIG15IHJlcGx5IGJ5IGVtYWlsLCBsb25nIGVub3VnaCB0byBiZSBhIHBvc3Qgb24gaXRzIG93bi4NCg=="
+        }
+      }
+    ],
+    "run_jobs": [
+      "process_email"
+    ]
+  },
+  {
+    "name": "incoming_reject_topic_closed",
+    "user": "admin",
+    "settings": {
+      "reply_by_email_address": "replies+%{reply_key}@example.com",
+      "manual_polling_enabled": true,
+      "reply_by_email_enabled": true
+    },
+    "setup": [
+      "INSERT INTO post_reply_keys (user_id, post_id, reply_key, created_at, updated_at) VALUES (2, 38, '0123456789abcdef0123456789abcdef', now(), now())",
+      "UPDATE topics SET closed = TRUE WHERE id = 35"
+    ],
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/admin/email/handle_mail",
+        "params": {
+          "email_encoded": "RGF0ZTogVGh1LCAwMSBPY3QgMjAyNiAxMDowMDowMCArMDAwMA0KRnJvbTogVXNlcjAgPHVzZXIwQGV4YW1wbGUuY29tPg0KVG86IHJlcGxpZXMrMDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWZAZXhhbXBsZS5jb20NCk1lc3NhZ2UtSUQ6IDxyZWplY3QtY2xvc2VkQG1haWwuZXhhbXBsZS5jb20+DQpTdWJqZWN0OiBSZTogW0Rpc2NvdXJzZV0gW0dlbmVyYWxdIFBhcml0eSBmaXh0dXJlOiByZXBsaWVzIGFuZCBwb3N0ZXJzDQpNSU1FLVZlcnNpb246IDEuMA0KQ29udGVudC1UeXBlOiB0ZXh0L3BsYWluOyBjaGFyc2V0PVVURi04DQpDb250ZW50LVRyYW5zZmVyLUVuY29kaW5nOiA3Yml0DQoNClRoaXMgaXMgbXkgcmVwbHkgYnkgZW1haWwsIGxvbmcgZW5vdWdoIHRvIGJlIGEgcG9zdCBvbiBpdHMgb3duLg0K"
+        }
+      }
+    ],
+    "run_jobs": [
+      "process_email"
+    ]
+  },
+  {
+    "name": "incoming_reject_post_too_short",
+    "user": "admin",
+    "settings": {
+      "reply_by_email_address": "replies+%{reply_key}@example.com",
+      "manual_polling_enabled": true,
+      "reply_by_email_enabled": true
+    },
+    "setup": [
+      "INSERT INTO post_reply_keys (user_id, post_id, reply_key, created_at, updated_at) VALUES (2, 38, '0123456789abcdef0123456789abcdef', now(), now())"
+    ],
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/admin/email/handle_mail",
+        "params": {
+          "email_encoded": "RGF0ZTogVGh1LCAwMSBPY3QgMjAyNiAxMDowMDowMCArMDAwMA0KRnJvbTogVXNlcjAgPHVzZXIwQGV4YW1wbGUuY29tPg0KVG86IHJlcGxpZXMrMDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWZAZXhhbXBsZS5jb20NCk1lc3NhZ2UtSUQ6IDxyZWplY3Qtc2hvcnRAbWFpbC5leGFtcGxlLmNvbT4NClN1YmplY3Q6IFJlOiBbRGlzY291cnNlXSBbR2VuZXJhbF0gUGFyaXR5IGZpeHR1cmU6IHJlcGxpZXMgYW5kIHBvc3RlcnMNCk1JTUUtVmVyc2lvbjogMS4wDQpDb250ZW50LVR5cGU6IHRleHQvcGxhaW47IGNoYXJzZXQ9VVRGLTgNCkNvbnRlbnQtVHJhbnNmZXItRW5jb2Rpbmc6IDdiaXQNCg0KVG9vIHNob3J0Lg0K"
+        }
+      }
+    ],
+    "run_jobs": [
+      "process_email"
+    ]
+  },
+  {
+    "name": "incoming_reject_auto_generated",
+    "user": "admin",
+    "settings": {
+      "reply_by_email_address": "replies+%{reply_key}@example.com",
+      "manual_polling_enabled": true,
+      "reply_by_email_enabled": true
+    },
+    "setup": [
+      "INSERT INTO post_reply_keys (user_id, post_id, reply_key, created_at, updated_at) VALUES (2, 38, '0123456789abcdef0123456789abcdef', now(), now())"
+    ],
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/admin/email/handle_mail",
+        "params": {
+          "email_encoded": "RGF0ZTogVGh1LCAwMSBPY3QgMjAyNiAxMDowMDowMCArMDAwMA0KRnJvbTogVXNlcjAgPHVzZXIwQGV4YW1wbGUuY29tPg0KVG86IHJlcGxpZXMrMDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWZAZXhhbXBsZS5jb20NCk1lc3NhZ2UtSUQ6IDxyZWplY3QtYXV0b0BtYWlsLmV4YW1wbGUuY29tPg0KU3ViamVjdDogUmU6IFtEaXNjb3Vyc2VdIFtHZW5lcmFsXSBQYXJpdHkgZml4dHVyZTogcmVwbGllcyBhbmQgcG9zdGVycw0KQXV0by1TdWJtaXR0ZWQ6IGF1dG8tcmVwbGllZA0KTUlNRS1WZXJzaW9uOiAxLjANCkNvbnRlbnQtVHlwZTogdGV4dC9wbGFpbjsgY2hhcnNldD1VVEYtOA0KQ29udGVudC1UcmFuc2Zlci1FbmNvZGluZzogN2JpdA0KDQpUaGlzIGlzIG15IHJlcGx5IGJ5IGVtYWlsLCBsb25nIGVub3VnaCB0byBiZSBhIHBvc3Qgb24gaXRzIG93bi4NCg=="
+        }
+      }
+    ],
+    "run_jobs": [
+      "process_email"
+    ]
+  },
+  {
+    "name": "incoming_reject_once_a_day",
+    "user": "admin",
+    "settings": {
+      "reply_by_email_address": "replies+%{reply_key}@example.com",
+      "manual_polling_enabled": true,
+      "reply_by_email_enabled": true
+    },
+    "setup": [
+      "INSERT INTO post_reply_keys (user_id, post_id, reply_key, created_at, updated_at) VALUES (2, 38, '0123456789abcdef0123456789abcdef', now(), now())"
+    ],
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/admin/email/handle_mail",
+        "params": {
+          "email_encoded": "RGF0ZTogVGh1LCAwMSBPY3QgMjAyNiAxMDowMDowMCArMDAwMA0KRnJvbTogVXNlcjAgPHVzZXIwQGV4YW1wbGUuY29tPg0KVG86IHJlcGxpZXMrMDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWZAZXhhbXBsZS5jb20NCk1lc3NhZ2UtSUQ6IDxyZWplY3QtdHdpY2UtMUBtYWlsLmV4YW1wbGUuY29tPg0KU3ViamVjdDogUmU6IFtEaXNjb3Vyc2VdIFtHZW5lcmFsXSBQYXJpdHkgZml4dHVyZTogcmVwbGllcyBhbmQgcG9zdGVycw0KTUlNRS1WZXJzaW9uOiAxLjANCkNvbnRlbnQtVHlwZTogdGV4dC9wbGFpbjsgY2hhcnNldD1VVEYtOA0KQ29udGVudC1UcmFuc2Zlci1FbmNvZGluZzogN2JpdA0KDQpUb28gc2hvcnQuDQo="
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/admin/email/handle_mail",
+        "params": {
+          "email_encoded": "RGF0ZTogVGh1LCAwMSBPY3QgMjAyNiAxMDowMDowMCArMDAwMA0KRnJvbTogVXNlcjAgPHVzZXIwQGV4YW1wbGUuY29tPg0KVG86IHJlcGxpZXMrMDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWZAZXhhbXBsZS5jb20NCk1lc3NhZ2UtSUQ6IDxyZWplY3QtdHdpY2UtMkBtYWlsLmV4YW1wbGUuY29tPg0KU3ViamVjdDogUmU6IFtEaXNjb3Vyc2VdIFtHZW5lcmFsXSBQYXJpdHkgZml4dHVyZTogcmVwbGllcyBhbmQgcG9zdGVycw0KTUlNRS1WZXJzaW9uOiAxLjANCkNvbnRlbnQtVHlwZTogdGV4dC9wbGFpbjsgY2hhcnNldD1VVEYtOA0KQ29udGVudC1UcmFuc2Zlci1FbmNvZGluZzogN2JpdA0KDQpTaG9ydCB0b28uDQo="
+        }
+      }
+    ],
+    "run_jobs": [
+      "process_email"
+    ]
+  },
+  {
+    "name": "incoming_reject_no_date",
+    "user": "admin",
+    "settings": {
+      "reply_by_email_address": "replies+%{reply_key}@example.com",
+      "manual_polling_enabled": true,
+      "reply_by_email_enabled": true
+    },
+    "setup": [
+      "INSERT INTO post_reply_keys (user_id, post_id, reply_key, created_at, updated_at) VALUES (2, 38, '0123456789abcdef0123456789abcdef', now(), now())"
+    ],
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/admin/email/handle_mail",
+        "params": {
+          "email_encoded": "RnJvbTogVXNlcjAgPHVzZXIwQGV4YW1wbGUuY29tPg0KVG86IHJlcGxpZXMrMDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWZAZXhhbXBsZS5jb20NCk1lc3NhZ2UtSUQ6IDxyZWplY3Qtbm8tZGF0ZUBtYWlsLmV4YW1wbGUuY29tPg0KU3ViamVjdDogUmU6IFtEaXNjb3Vyc2VdIFtHZW5lcmFsXSBQYXJpdHkgZml4dHVyZTogcmVwbGllcyBhbmQgcG9zdGVycw0KTUlNRS1WZXJzaW9uOiAxLjANCkNvbnRlbnQtVHlwZTogdGV4dC9wbGFpbjsgY2hhcnNldD1VVEYtOA0KQ29udGVudC1UcmFuc2Zlci1FbmNvZGluZzogN2JpdA0KDQpUaGlzIGlzIG15IHJlcGx5IGJ5IGVtYWlsLCBsb25nIGVub3VnaCB0byBiZSBhIHBvc3Qgb24gaXRzIG93bi4NCg=="
+        }
+      }
+    ],
+    "run_jobs": [
+      "process_email"
+    ]
   }
 ]

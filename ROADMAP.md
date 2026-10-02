@@ -155,7 +155,10 @@ Logged-in readers, no writes yet.
       and cleaned emails (parity/incoming_mail), and the write cases
 - [x] Reply by email: HTML replies (HtmlToMarkdown and the per-client
       extracters), measured on Discourse's spec HTML and client samples
-- [ ] Reply by email, next: rejection emails, staged users, attachments, bounces, likes
+- [x] Reply by email: rejection emails (Email::Processor's templates,
+      once a day per address and kind, the message kept on the incoming
+      email)
+- [ ] Reply by email, next: staged users, attachments, bounces, likes
       and notification levels by email, API-key auth for mail-receiver,
       POP3 polling, group and category addresses (email_in)
 - [ ] PM emails, previous-replies context
