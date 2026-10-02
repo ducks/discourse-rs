@@ -1,3 +1,4 @@
+pub mod accounts;
 pub mod avatar;
 pub mod bookmarks;
 pub mod categories;

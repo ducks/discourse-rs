@@ -53,7 +53,6 @@ const NOT_YET: &[&str] = &[
     "forgot_password",
     "forgot_password_unknown",
     "password_reset",
-    "email_login",
 ];
 
 struct Client {

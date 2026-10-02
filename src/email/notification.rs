@@ -52,7 +52,11 @@ pub fn html_escape(s: &str) -> String {
 
 /// `I18n.t(key, args)` with Rails' interpolation, where an argument the
 /// string doesn't use is ignored.
-fn t(ctx: &super::sender::Ctx<'_>, key: &str, args: &[(&str, &str)]) -> Result<String, AppError> {
+pub(super) fn t(
+    ctx: &super::sender::Ctx<'_>,
+    key: &str,
+    args: &[(&str, &str)],
+) -> Result<String, AppError> {
     let raw = ctx
         .i18n
         .t(key)
@@ -476,6 +480,7 @@ pub async fn build(
     let html_part = layout(
         &html,
         &s.get("default_locale")?.to_s().replacen('_', "-", 1),
+        "",
     );
 
     // header_args, in MessageBuilder's order.
@@ -668,11 +673,11 @@ fn render_post(ctx: &super::sender::Ctx<'_>, p: &PostPartial<'_>) -> Result<Stri
 
 /// layouts/email_template with EmailStyle's default template around the
 /// body.
-fn layout(html_body: &str, html_lang: &str) -> String {
+pub(super) fn layout(html_body: &str, html_lang: &str, preview_html: &str) -> String {
     let content = format!("\n    \n    {html_body}\n");
     DEFAULT_TEMPLATE
         .replacen("%{email_content}", &content, 1)
-        .replace("%{email_preview}", "")
+        .replace("%{email_preview}", preview_html)
         .replace("%{html_lang}", html_lang)
         .replace("%{dark_mode_meta_tags}", DARK_MODE_META_TAGS)
         .replace("%{dark_mode_styles}", DARK_MODE_STYLES)

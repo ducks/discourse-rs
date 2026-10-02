@@ -1,3 +1,4 @@
+mod accounts;
 mod bookmarks;
 mod list;
 mod login_required;
@@ -105,6 +106,10 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/sitemap.xml", get(sitemap::index))
         .route("/sitemap_{page}", get(sitemap::page))
         .route("/news.xml", get(sitemap::news))
+        .route("/u/email-login", post(accounts::email_login))
+        .route("/u/email-login.json", post(accounts::email_login))
+        .route("/users/email-login", post(accounts::email_login))
+        .route("/users/email-login.json", post(accounts::email_login))
         .route("/posts", post(posts::create))
         .route("/posts.json", post(posts::create))
         .route("/posts/{id}", put(posts::update))
