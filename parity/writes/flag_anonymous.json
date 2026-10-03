@@ -1,0 +1,29 @@
+{
+  "name": "flag_anonymous",
+  "user": null,
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/post_actions.json",
+      "params": {
+        "id": 52,
+        "post_action_type_id": 3
+      }
+    }
+  ],
+  "started_at": "2026-10-03T06:50:44.837633",
+  "transaction_started_at": "2026-10-03T06:50:44.227978",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You need to be logged in to do that."
+        ],
+        "error_type": "not_logged_in"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": []
+}

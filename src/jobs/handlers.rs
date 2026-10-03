@@ -16,6 +16,8 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         // Publishes the topic's tracking state on MessageBus, which is not
         // ported: there is no one to tell.
         "post_update_topic_tracking_state" => Ok(()),
+        // Publishes reviewable counts to staff on MessageBus, likewise.
+        "notify_reviewable" => Ok(()),
         "feature_topic_users" => feature_topic_users(state, &job.args).await,
         "process_post" => process_post(state, &job.args).await,
         "post_alert" => post_alert(state, &job.args).await,

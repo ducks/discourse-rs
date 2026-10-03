@@ -519,27 +519,7 @@ pub async fn serialize(
         return Err(Unsupported("enable_category_group_moderation").into());
     }
     let (reviewable_count, unseen_reviewable_count) = if g.is_staff() {
-        let min_score: Option<Option<String>> = sqlx::query_scalar(
-            "SELECT value FROM plugin_store_rows WHERE plugin_name = 'reviewables' AND key = $1",
-        )
-        .bind(format!(
-            "priority_{}",
-            match settings
-                .get("reviewable_default_visibility")?
-                .to_s()
-                .as_str()
-            {
-                "medium" => 5,
-                "high" => 10,
-                _ => 0,
-            }
-        ))
-        .fetch_optional(&mut *conn)
-        .await?;
-        let min_score: f64 = min_score
-            .flatten()
-            .map(|v| crate::ruby::to_f(&v))
-            .unwrap_or(0.0);
+        let min_score = crate::reviewables::min_score_for_priority(&mut *conn, settings).await?;
         if min_score > 0.0 {
             return Err(Unsupported("reviewable minimum score for priority").into());
         }

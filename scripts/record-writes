@@ -4,6 +4,9 @@
 # (scripts/record_writes.rb). tests/writes.rs replays them on the seed.
 #
 # Usage: scripts/record-writes <agent-name>
+#
+# WRITES_ONLY=<text> records only the cases whose names contain it, as
+# tests/writes.rs replays only those.
 set -euo pipefail
 
 if [ $# -ne 1 ]; then
@@ -16,7 +19,10 @@ root="$(cd "$(dirname "$0")/.." && pwd)"
 dest="$root/parity/writes"
 
 dv copy "$root/scripts/record_writes.rb" "$agent:/tmp/record_writes.rb" > /dev/null
-dv copy "$dest/cases.json" "$agent:/tmp/write_cases.json" > /dev/null
+cases="$(mktemp)"
+trap 'rm -f "$cases"' EXIT
+jq --arg only "${WRITES_ONLY:-}" '[.[] | select(.name | test($only))]' "$dest/cases.json" > "$cases"
+dv copy "$cases" "$agent:/tmp/write_cases.json" > /dev/null
 # The files cases upload (parity/writes/files).
 dv run --name "$agent" -- rm -rf /tmp/write-files
 dv run --name "$agent" -- mkdir -p /tmp/write-files
@@ -25,7 +31,7 @@ for f in "$dest"/files/*; do
 done
 dv run --name "$agent" -- rm -rf /tmp/write-record
 dv run --name "$agent" -- bin/rails runner /tmp/record_writes.rb /tmp/write_cases.json /tmp/write-record /tmp/write-files
-for f in $(jq -r '.[].name' "$dest/cases.json"); do
+for f in $(jq -r '.[].name' "$cases"); do
   dv copy "$agent:/tmp/write-record/$f.json" "$dest/$f.json" > /dev/null
 done
 echo "wrote $dest"
