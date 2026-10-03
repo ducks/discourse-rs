@@ -14,9 +14,10 @@ use crate::params;
 use crate::posting::Ctx;
 use crate::pretty_text::Host;
 use crate::review::{self, Outcome};
+use crate::review_list::Listed;
 use crate::session::current::AuthGuardian;
 use crate::site_settings::SiteSettings;
-use crate::{AppError, AppState};
+use crate::{AppError, AppState, Unsupported};
 
 fn form_pairs(map: &Map<String, Value>) -> Vec<(String, String)> {
     map.iter()
@@ -89,4 +90,47 @@ pub async fn perform(
         Outcome::Forbidden => super::search::invalid_access(&state),
         Outcome::Conflict => json_error(&state, StatusCode::CONFLICT, "reviewables.conflict"),
     })
+}
+
+/// GET /review.json: ReviewablesController#index.
+pub async fn index(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    // requires_login
+    if guardian.is_anonymous() {
+        return Ok(super::login_required::not_logged_in(&state, uri.path()));
+    }
+    let mut tx = state.pool.begin().await?;
+    let settings =
+        SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
+    // ensure_can_see: can_see_review_queue?
+    if !guardian.is_staff() {
+        if settings.get("enable_category_group_moderation")?.truthy() {
+            return Err(Unsupported("the review queue for category group moderators").into());
+        }
+        return Ok(super::search::invalid_access(&state));
+    }
+    let host = Host::from_state(&state);
+    let ctx = Ctx {
+        host: &host,
+        settings: &settings,
+        config: &state.config,
+        i18n: &state.i18n,
+    };
+    let p = params::parse(uri.query(), &headers, &body);
+    Ok(
+        match crate::review_list::index(&mut tx, &ctx, &guardian, &p).await? {
+            Listed::Page(doc) => (StatusCode::OK, Json(doc)).into_response(),
+            Listed::InvalidParameter(name) => super::search::invalid_parameters(&state, name),
+        },
+    )
+}
+
+/// GET /review: the Ember app's page.
+pub async fn page() -> Result<Response, AppError> {
+    Err(Unsupported("the review page (HTML)").into())
 }
