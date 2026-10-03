@@ -166,6 +166,13 @@ Logged-in readers, no writes yet.
 - [ ] Penalties that go further: several users at once, acting on a post,
       penalties from the review queue, re-penalizing (its "how long ago"
       message), auto-silencing new users on spam flags
+- [x] Changing a site setting (PUT /admin/site_settings/:id) for core
+      settings of the plain types: the cast, the hidden and archive checks,
+      TypeSupervisor's validation, the stored override and the
+      change_site_setting log. Measured against Rails
+- [ ] Site settings that go further: lists, uploads, groups, categories,
+      plugin settings, bulk updates, user preference backfills, and the
+      settings whose change handlers write (title, site_description...)
 - [x] Private messages: new messages to users and replies in them, the
       allowed users, the recipients watching, the PM user actions, the
       private_message notification and email (participants, `[PM]`

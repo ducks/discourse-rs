@@ -1,0 +1,118 @@
+{
+  "name": "setting_back_to_default",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/min_post_length.json",
+      "params": {
+        "min_post_length": "20"
+      }
+    }
+  ],
+  "started_at": "2026-10-03T14:28:32.90293",
+  "transaction_started_at": "2026-10-03T14:28:31.985415",
+  "responses": [
+    {
+      "status": 204,
+      "body": ""
+    }
+  ],
+  "changes": {
+    "site_settings": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 39,
+            "name": "min_post_length",
+            "value": "25",
+            "data_type": 3,
+            "created_at": "2026-10-01T10:00:00",
+            "updated_at": "2026-10-01T10:00:00"
+          },
+          "after": {
+            "id": 39,
+            "name": "min_post_length",
+            "value": "20",
+            "data_type": 3,
+            "created_at": "2026-10-01T10:00:00",
+            "updated_at": "2026-10-03T14:28:32.917025"
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 86,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "LDLunbjk50XI+QSwJnhG6X7JnW0=",
+            "created_at": "2026-10-03T14:28:32.335342",
+            "rotated_at": "2026-10-03T14:28:32.335055",
+            "updated_at": "2026-10-03T14:28:32.335342",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "LDLunbjk50XI+QSwJnhG6X7JnW0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 86,
+            "seen_at": "2026-10-03T14:28:32.908255",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "LDLunbjk50XI+QSwJnhG6X7JnW0=",
+            "created_at": "2026-10-03T14:28:32.335342",
+            "rotated_at": "2026-10-03T14:28:32.335055",
+            "updated_at": "2026-10-03T14:28:32.335342",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "LDLunbjk50XI+QSwJnhG6X7JnW0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 3,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "min_post_length",
+          "topic_id": null,
+          "new_value": "20",
+          "admin_only": true,
+          "created_at": "2026-10-03T14:28:32.919666",
+          "ip_address": null,
+          "updated_at": "2026-10-03T14:28:32.919666",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "25",
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "setup": [
+    "INSERT INTO site_settings (name, data_type, value, created_at, updated_at) VALUES ('min_post_length', 3, '25', '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ]
+}
