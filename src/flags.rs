@@ -2,15 +2,15 @@
 //! a message (off topic, inappropriate, spam): the post action and the
 //! post's count of it (PostAction#update_counters), the post's
 //! ReviewableFlaggedPost and the flag's score, and the rules a flag is held
-//! to (auto close, auto hide, auto silence).
+//! to (auto close, auto hide, auto silence). Staff taking action hide the
+//! post and agree with its flags.
 //!
 //! Refused: flags that send a message (notify user, notify moderators,
-//! illegal), taking action and queueing for review as staff, flagging
-//! topics, flags on posts already in review, flags in messages, and the
-//! rules when they would act (closing the topic, hiding the post,
-//! silencing the author). The flag rate limit (RateLimiter, Redis) and the
-//! badge queue are not ported; flags write no user actions or
-//! notifications.
+//! illegal), queueing for review as staff, flagging topics, flags on posts
+//! already in review, flags in messages, and the rules when they would
+//! close the topic, hide on a trusted spam flag or silence the author. The
+//! flag rate limit (RateLimiter, Redis) and the badge queue are not
+//! ported; flags write no user actions or notifications.
 
 use sqlx::{PgConnection, PgPool};
 
@@ -19,7 +19,7 @@ use crate::likes::Outcome;
 use crate::post_actions::{self, ActOpts, ActionTypes};
 use crate::posting::Ctx;
 use crate::posting::revisions::find_post;
-use crate::reviewables::{self, Flagger, NewFlaggedPost};
+use crate::reviewables::{self, Flagger, NewFlaggedPost, NewScore};
 use crate::{AppError, Unsupported};
 
 /// What a flag request asked for beyond the type.
@@ -54,6 +54,28 @@ async fn author(
         staged,
         trust_level,
     }))
+}
+
+/// `PostAction#update_counters` for a flag: the post's `<type>_count`.
+pub async fn update_counters(
+    conn: &mut PgConnection,
+    types: &ActionTypes,
+    post_id: i32,
+    type_id: i64,
+) -> Result<(), AppError> {
+    let name = types
+        .name(type_id)
+        .ok_or(Unsupported("counting an unknown post action type"))?;
+    sqlx::query(&format!(
+        "UPDATE posts SET {name}_count = (SELECT COUNT(*) FROM post_actions WHERE post_id = $1 \
+                                          AND post_action_type_id = $2 AND deleted_at IS NULL) \
+         WHERE id = $1"
+    ))
+    .bind(post_id)
+    .bind(type_id as i32)
+    .execute(conn)
+    .await?;
+    Ok(())
 }
 
 /// `PostActionCreator.new(user, post, type, ...).perform` for a flag.
@@ -94,9 +116,8 @@ pub async fn flag(
         )
         .into());
     }
-    if req.take_action && staff {
-        return Err(Unsupported("taking action on a flag as staff").into());
-    }
+    // @take_action = take_action && guardian.is_staff?
+    let take_action = req.take_action && staff;
 
     let taken = post_actions::taken_actions(&mut tx, &[post.id], Some(user.id)).await?;
     let taken = taken.get(&post.id);
@@ -138,7 +159,7 @@ pub async fn flag(
     // create_post_action: a trashed flag that was never reviewed comes
     // back, else a new one.
     let revived = sqlx::query(
-        "UPDATE post_actions SET deleted_at = NULL, deleted_by_id = NULL, staff_took_action = FALSE, \
+        "UPDATE post_actions SET deleted_at = NULL, deleted_by_id = NULL, staff_took_action = $5, \
                 related_post_id = NULL, targets_topic = FALSE, created_at = $4, updated_at = clock_timestamp() \
          WHERE id = (SELECT id FROM post_actions WHERE post_id = $1 AND user_id = $2 AND post_action_type_id = $3 \
                        AND deleted_at IS NOT NULL AND agreed_at IS NULL AND disagreed_at IS NULL \
@@ -148,6 +169,7 @@ pub async fn flag(
     .bind(user.id)
     .bind(req.type_id as i32)
     .bind(created_at)
+    .bind(take_action)
     .execute(&mut *tx)
     .await?
     .rows_affected();
@@ -155,25 +177,18 @@ pub async fn flag(
         sqlx::query(
             "INSERT INTO post_actions (post_id, user_id, post_action_type_id, staff_took_action, targets_topic, \
                                        created_at, updated_at) \
-             VALUES ($1, $2, $3, FALSE, FALSE, $4, clock_timestamp())",
+             VALUES ($1, $2, $3, $5, FALSE, $4, clock_timestamp())",
         )
         .bind(post.id)
         .bind(user.id)
         .bind(req.type_id as i32)
         .bind(created_at)
+        .bind(take_action)
         .execute(&mut *tx)
         .await?;
     }
-    // after_save update_counters: the post's `<type>_count`.
-    sqlx::query(&format!(
-        "UPDATE posts SET {name}_count = (SELECT COUNT(*) FROM post_actions WHERE post_id = $1 \
-                                          AND post_action_type_id = $2 AND deleted_at IS NULL) \
-         WHERE id = $1"
-    ))
-    .bind(post.id)
-    .bind(req.type_id as i32)
-    .execute(&mut *tx)
-    .await?;
+    // after_save
+    update_counters(&mut tx, &types, post.id, req.type_id).await?;
 
     // create_reviewable, for flags that go to review; none for bots' posts.
     let mut reviewable_score = None;
@@ -202,8 +217,11 @@ pub async fn flag(
             reviewable_id,
             access.topic_id,
             &flagger,
-            req.type_id,
-            created_at,
+            &NewScore {
+                score_type: req.type_id,
+                created_at,
+                take_action,
+            },
             ctx.settings,
         )
         .await?;
@@ -224,14 +242,21 @@ pub async fn flag(
         req.type_id,
         &types,
         reviewable_score,
+        take_action,
     )
     .await?;
+    // Taking action agrees with the post's flags, this one included.
+    if take_action {
+        crate::review::agree_with_flags(&mut tx, ctx, user.id, &user.username, post.id).await?;
+        update_counters(&mut tx, &types, post.id, req.type_id).await?;
+    }
     tx.commit().await?;
     Ok(Outcome::Done)
 }
 
-/// `enforce_rules`: auto close, auto hide, auto silence. Each is checked;
-/// when one would act, that action is not ported.
+/// `enforce_rules`: auto close, auto hide, auto silence. Hiding is ported;
+/// closing the topic, hiding by a trusted spam flagger and silencing are
+/// refused when they would act.
 #[allow(clippy::too_many_arguments)]
 async fn enforce_rules(
     conn: &mut PgConnection,
@@ -243,6 +268,7 @@ async fn enforce_rules(
     type_id: i64,
     types: &ActionTypes,
     reviewable_score: Option<f64>,
+    take_action: bool,
 ) -> Result<(), AppError> {
     let s = ctx.settings;
     // auto_close_if_threshold_reached: Topic#auto_close_threshold_reached?
@@ -282,8 +308,8 @@ async fn enforce_rules(
         }
         let to_hide =
             reviewables::sensitivity_score(&mut *conn, s, "hide_post_sensitivity", 1.0).await?;
-        if reviewable_score.unwrap_or(0.0) >= to_hide {
-            return Err(Unsupported("hiding a post on flags").into());
+        if reviewable_score.unwrap_or(0.0) >= to_hide || take_action {
+            crate::review::hide_post(&mut *conn, ctx, types, access.post.id, type_id).await?;
         }
     }
 

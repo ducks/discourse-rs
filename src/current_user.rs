@@ -519,36 +519,8 @@ pub async fn serialize(
         return Err(Unsupported("enable_category_group_moderation").into());
     }
     let (reviewable_count, unseen_reviewable_count) = if g.is_staff() {
-        let min_score = crate::reviewables::min_score_for_priority(&mut *conn, settings).await?;
-        if min_score > 0.0 {
-            return Err(Unsupported("reviewable minimum score for priority").into());
-        }
-        if user.moderator && !user.admin {
-            return Err(Unsupported("moderator reviewable counts").into());
-        }
-        let last_seen: Option<i32> =
-            sqlx::query_scalar("SELECT last_seen_reviewable_id FROM users WHERE id = $1")
-                .bind(uid)
-                .fetch_one(&mut *conn)
-                .await?;
-        let base = "FROM reviewables LEFT JOIN reviewable_claimed_topics rct ON reviewables.topic_id = rct.topic_id \
-                    WHERE reviewables.status = 0 AND (rct.user_id IS NULL OR rct.user_id = $1) \
-                    AND reviewables.type IN ('ReviewableFlaggedPost','ReviewableQueuedPost','ReviewableUser','ReviewablePost')";
-        let count: i64 = sqlx::query_scalar(&format!("SELECT COUNT(*) {base}"))
-            .bind(uid)
-            .fetch_one(&mut *conn)
-            .await?;
-        let unseen: i64 = match last_seen {
-            Some(id) => {
-                sqlx::query_scalar(&format!("SELECT COUNT(*) {base} AND reviewables.id > $2"))
-                    .bind(uid)
-                    .bind(id)
-                    .fetch_one(&mut *conn)
-                    .await?
-            }
-            None => count,
-        };
-        (count, unseen)
+        crate::reviewables::staff_counts(&mut *conn, settings, user.id, user.admin, user.moderator)
+            .await?
     } else {
         (0, 0)
     };

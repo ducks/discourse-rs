@@ -134,10 +134,16 @@ Logged-in readers, no writes yet.
       post's count, the ReviewableFlaggedPost with its score and history,
       the topic's reviewable score, the auto close, auto hide and auto
       silence thresholds checked, measured against Rails
-- [ ] Flags that act or message: taking action as staff (agree and hide),
-      hiding past the threshold, closing topics and silencing new users,
-      notify user and notify moderators messages, illegal, undoing flags,
-      flags on posts already in review
+- [x] Review actions on flagged posts (PUT /review/:id/perform/:action):
+      agree and keep, agree and hide (Post#hide!), disagree, ignore, with
+      the version check, the flags settled, the transition and the
+      flaggers' stats; staff taking action on a flag, and hiding past the
+      threshold; hidden posts serialized as Rails does. Measured against
+      Rails
+- [ ] Flags and reviews that go further: closing topics and silencing new
+      users on flags, notify user and notify moderators messages, illegal,
+      undoing flags, flags on posts already in review, deleting, editing,
+      restoring and unhiding from the queue, penalties, the queue's lists
 - [x] Private messages: new messages to users and replies in them, the
       allowed users, the recipients watching, the PM user actions, the
       private_message notification and email (participants, `[PM]`

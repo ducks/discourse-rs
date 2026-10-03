@@ -28,6 +28,7 @@ pub mod pm_lists;
 pub mod post_actions;
 pub mod posting;
 pub mod pretty_text;
+pub mod review;
 pub mod reviewables;
 pub mod routes;
 pub mod ruby;
