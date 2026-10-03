@@ -1713,5 +1713,65 @@
         }
       }
     ]
+  },
+  {
+    "name": "post_delete_staff",
+    "user": "admin",
+    "requests": [
+      {
+        "method": "DELETE",
+        "path": "/posts/52.json",
+        "params": {}
+      }
+    ]
+  },
+  {
+    "name": "post_delete_own",
+    "user": "user0",
+    "requests": [
+      {
+        "method": "DELETE",
+        "path": "/posts/52.json",
+        "params": {}
+      }
+    ]
+  },
+  {
+    "name": "post_delete_forbidden",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "DELETE",
+        "path": "/posts/52.json",
+        "params": {}
+      }
+    ]
+  },
+  {
+    "name": "post_recover",
+    "user": "admin",
+    "requests": [
+      {
+        "method": "DELETE",
+        "path": "/posts/52.json",
+        "params": {}
+      },
+      {
+        "method": "PUT",
+        "path": "/posts/52/recover.json",
+        "params": {}
+      }
+    ]
+  },
+  {
+    "name": "topic_delete",
+    "user": "admin",
+    "requests": [
+      {
+        "method": "DELETE",
+        "path": "/t/35.json",
+        "params": {}
+      }
+    ]
   }
 ]

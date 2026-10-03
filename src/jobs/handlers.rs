@@ -71,6 +71,14 @@ async fn feature_topic_users(state: &AppState, args: &Value) -> Result<(), AppEr
     if !exists {
         return Ok(());
     }
+    choose_featured_users(&mut conn, topic_id).await
+}
+
+/// `TopicFeaturedUsers#choose` (what Topic#feature_topic_users runs).
+pub(crate) async fn choose_featured_users(
+    conn: &mut sqlx::PgConnection,
+    topic_id: i32,
+) -> Result<(), AppError> {
     // TopicFeaturedUsers.ensure_consistency!(topic_id): two frequent and
     // two recent posters other than the topic's creator and last poster.
     sqlx::query(

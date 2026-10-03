@@ -156,9 +156,21 @@ end
 
 cases = JSON.parse(File.read(cases_file))
 pool = ActiveRecord::Base.connection_pool
+
+# DB.after_commit defers to the open transaction, and the pinned one never
+# commits, so callbacks like Topic.reset_highest would never run. Discourse's
+# test environment compares against its test transaction instead
+# (MiniSqlMultisiteConnection#transaction_open? with test_transaction); do the
+# same with the pinned one.
+PINNED = []
+DB.define_singleton_method(:transaction_open?) do
+  ActiveRecord::Base.connection.current_transaction != PINNED.last
+end
+
 cases.each do |c|
   ENQUEUED.clear
   pool.pin_connection!(true)
+  PINNED.replace([ActiveRecord::Base.connection.current_transaction])
   begin
     reset_sequences
     clear_redis_state

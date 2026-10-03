@@ -27,6 +27,10 @@ use crate::{AppError, Unsupported};
 pub struct Changes {
     pub raw: Option<String>,
     pub edit_reason: Option<String>,
+    /// `force_new_version:` a new version even within the grace period.
+    pub force_new_version: bool,
+    /// `skip_validations:` the post is saved without PostValidator.
+    pub skip_validations: bool,
 }
 
 #[derive(Debug)]
@@ -167,7 +171,11 @@ pub async fn revise(
     let edited_by_another = post.last_editor_id != Some(editor_user.id);
     let edit_reason_specified =
         edit_reason.is_some() && edit_reason.as_ref() != post.edit_reason.as_ref();
-    let new_version = edited_by_another || flagged || !grace_period_edit || edit_reason_specified;
+    let new_version = edited_by_another
+        || flagged
+        || !grace_period_edit
+        || changes.force_new_version
+        || edit_reason_specified;
     if !new_version {
         return Err(
             Unsupported("edits within the editing grace period (original kept in Redis)").into(),
@@ -229,22 +237,26 @@ pub async fn revise(
         return Err(Unsupported("posts with uploads").into());
     }
     let private_message = false;
-    let errors = validate::validate_post(
-        &mut conn,
-        ctx,
-        editor,
-        &PostInput {
-            raw: &new_raw,
-            topic_id: Some(post.topic_id),
-            first_post: post.post_number == 1,
-            private_message,
-            new_record: false,
-            post_id: Some(post.id),
-            user_id: post.user_id.unwrap_or(editor_user.id),
-        },
-        &analysis,
-    )
-    .await?;
+    let errors = if changes.skip_validations {
+        Vec::new()
+    } else {
+        validate::validate_post(
+            &mut conn,
+            ctx,
+            editor,
+            &PostInput {
+                raw: &new_raw,
+                topic_id: Some(post.topic_id),
+                first_post: post.post_number == 1,
+                private_message,
+                new_record: false,
+                post_id: Some(post.id),
+                user_id: post.user_id.unwrap_or(editor_user.id),
+            },
+            &analysis,
+        )
+        .await?
+    };
     if !errors.is_empty() {
         return Ok(Outcome::Invalid(errors));
     }
@@ -325,16 +337,57 @@ pub async fn revise(
         ));
     }
     let yaml = modifications::dump(&fields)?;
-    sqlx::query(
+    let revision_id: i32 = sqlx::query_scalar(
         "INSERT INTO post_revisions (user_id, post_id, number, modifications, hidden, created_at, updated_at) \
-         VALUES ($1, $2, $3, $4, FALSE, clock_timestamp(), clock_timestamp())",
+         VALUES ($1, $2, $3, $4, FALSE, clock_timestamp(), clock_timestamp()) RETURNING id",
     )
     .bind(editor_user.id)
     .bind(post.id)
     .bind(version)
     .bind(&yaml)
-    .execute(&mut *tx)
+    .fetch_one(&mut *tx)
     .await?;
+    // PostActionNotifier.after_create_post_revision: the author when
+    // someone else edits, and the topic's watchers when a wiki or freely
+    // editable first post changes; told once the edit commits.
+    let notify_disabled =
+        s.get("disable_system_edit_notifications")?.truthy() && editor_user.id == -1;
+    if !notify_disabled {
+        let mut user_ids: Vec<i32> = Vec::new();
+        if let Some(author) = post.user_id
+            && author != editor_user.id
+        {
+            user_ids.push(author);
+        }
+        if post.post_number == 1 {
+            let unlimited: bool = sqlx::query_scalar(
+                "SELECT COALESCE(c.allow_unlimited_owner_edits_on_first_post, FALSE) \
+                 FROM topics t LEFT JOIN categories c ON c.id = t.category_id WHERE t.id = $1",
+            )
+            .bind(post.topic_id)
+            .fetch_one(&mut *tx)
+            .await?;
+            if post.wiki || unlimited {
+                let watchers: Vec<i32> = sqlx::query_scalar(
+                    "SELECT user_id FROM topic_users WHERE topic_id = $1 AND notification_level = 3 \
+                       AND user_id <> $2 ORDER BY id",
+                )
+                .bind(post.topic_id)
+                .bind(editor_user.id)
+                .fetch_all(&mut *tx)
+                .await?;
+                user_ids.extend(watchers);
+            }
+        }
+        if !user_ids.is_empty() {
+            crate::jobs::enqueue(
+                &mut tx,
+                "notify_post_revision",
+                json!({ "user_ids": user_ids, "post_revision_id": revision_id }),
+            )
+            .await?;
+        }
+    }
     // revise_topic: a first post's excerpt.
     if post.post_number == 1 {
         let excerpt = crate::excerpt::excerpt(
@@ -470,6 +523,6 @@ pub async fn revise(
         )
         .await?;
     }
-    let _ = (post.wiki, post.self_edits, post.locale);
+    let _ = (post.self_edits, post.locale);
     Ok(Outcome::Revised)
 }

@@ -19,14 +19,14 @@
       }
     }
   ],
-  "started_at": "2026-10-02T21:11:30.867825",
-  "transaction_started_at": "2026-10-02T21:11:30.116008",
+  "started_at": "2026-10-03T08:11:33.501468",
+  "transaction_started_at": "2026-10-03T08:11:32.616238",
   "responses": [
     {
       "status": 200,
       "body": {
-        "value": "759dc34e4b8abc165b332e7b21b1a154",
-        "challenge": "8165a723f2821a5c345fa3ffe313e13b",
+        "value": "15020c6298cca4a5e94b5b2701e32b07",
+        "challenge": "3f42a9dc1a133827adb7409d4150bf69",
         "expires_in": 3600
       }
     },

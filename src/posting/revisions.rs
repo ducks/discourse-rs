@@ -30,6 +30,27 @@ pub async fn find_post(
     guardian: &Guardian,
     post_id: i32,
 ) -> Result<Option<PostAccess>, AppError> {
+    find(conn, ctx, guardian, post_id, false).await
+}
+
+/// `find_post_from_params` as `find_post_using` does it in full: a deleted
+/// post, or one in a deleted topic, for those who can moderate the topic.
+pub async fn find_post_with_deleted(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    guardian: &Guardian,
+    post_id: i32,
+) -> Result<Option<PostAccess>, AppError> {
+    find(conn, ctx, guardian, post_id, true).await
+}
+
+async fn find(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    guardian: &Guardian,
+    post_id: i32,
+    with_deleted: bool,
+) -> Result<Option<PostAccess>, AppError> {
     #[derive(sqlx::FromRow)]
     struct Row {
         id: i32,
@@ -61,14 +82,22 @@ pub async fn find_post(
     let Some(topic) = TopicCtx::load(&mut *conn, s, guardian, row.topic_id).await? else {
         return Ok(None);
     };
-    if row.deleted_at.is_some() || topic.trashed() {
-        if guardian.is_staff() {
-            return Err(Unsupported("deleted posts for staff").into());
-        }
-        return Ok(None);
-    }
     let secure = guardian.secure_category_ids(&mut *conn, s).await?;
     let can_see_topic = guardian.can_see_topic(s, &topic, true, &secure)?;
+    if row.deleted_at.is_some() || topic.trashed() {
+        if !with_deleted {
+            if guardian.is_staff() {
+                return Err(Unsupported("deleted posts for staff").into());
+            }
+            return Ok(None);
+        }
+        // can_moderate_topic?
+        let can_moderate_topic = guardian.is_staff()
+            || guardian.can_perform_action_available_to_group_moderators(s, can_see_topic)?;
+        if !can_moderate_topic {
+            return Ok(None);
+        }
+    }
     let post = PostCtx {
         id: row.id,
         user_id: row.user_id,

@@ -150,7 +150,14 @@ Logged-in readers, no writes yet.
       count, hot scores, visibility reasons and the staff action log.
       Measured against Rails
 - [ ] Topic status that goes further: messages, topic timers, pinning
-      until a time; staff deleting and recovering posts and topics
+      until a time
+- [x] Deleting posts and topics (DELETE /posts/:id, DELETE /t/:id) and
+      recovering replies (PUT /posts/:id/recover): PostDestroyer for
+      staff, the author marking their own post deleted through
+      PostRevisor, the counters, user actions, notifications, category
+      latest posts, user stats and staff logs. Measured against Rails
+- [ ] Deletion that goes further: permanent deletion, messages, posts with
+      links, likes or pending flags, recovering topics, quotes and replies
 - [x] Private messages: new messages to users and replies in them, the
       allowed users, the recipients watching, the PM user actions, the
       private_message notification and email (participants, `[PM]`

@@ -9,6 +9,7 @@
 //! ported fails at once with the reason kept on the row.
 
 mod handlers;
+pub(crate) use handlers::choose_featured_users;
 pub(crate) mod post_alert;
 mod user_email;
 

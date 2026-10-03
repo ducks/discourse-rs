@@ -414,6 +414,12 @@ fn changed_columns(mut doc: Value) -> Value {
         return doc;
     };
     tables.retain(|t, _| !BACKGROUND_TABLES.contains(&t.as_str()));
+    // A table listed with nothing inserted, deleted or updated did not change.
+    tables.retain(|_, change| {
+        ["inserted", "deleted", "updated"]
+            .iter()
+            .any(|k| change[*k].as_array().is_some_and(|rows| !rows.is_empty()))
+    });
     let identity = |row: &Value| {
         ["id", "user_id", "topic_id", "post_id"]
             .iter()
@@ -456,10 +462,20 @@ fn changed_columns(mut doc: Value) -> Value {
             else {
                 continue;
             };
+            // A column the case stamped with the current time is measured by
+            // that: what it held before is the seed's or the reference's
+            // (a category touched on the reference since the snapshot).
             let changed: Map<String, Value> = after
                 .iter()
                 .filter(|(k, v)| before.get(*k) != Some(*v))
-                .map(|(k, v)| (k.clone(), serde_json::json!([before.get(k), v])))
+                .map(|(k, v)| {
+                    let was = if v == "<now>" {
+                        Some(&Value::Null)
+                    } else {
+                        before.get(k)
+                    };
+                    (k.clone(), serde_json::json!([was, v]))
+                })
                 .collect();
             *row = Value::Object(changed);
         }
