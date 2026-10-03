@@ -2002,5 +2002,165 @@
         }
       }
     ]
+  },
+  {
+    "name": "timings_read_rest",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/topics/timings",
+        "params": {
+          "topic_id": 35,
+          "topic_time": 9000,
+          "timings": {
+            "3": 3000,
+            "4": 3000,
+            "5": 3000
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "timings_reread",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/topics/timings",
+        "params": {
+          "topic_id": 35,
+          "topic_time": 4000,
+          "timings": {
+            "1": 2000,
+            "2": 2000
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "timings_new_topic",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/topics/timings",
+        "params": {
+          "topic_id": 5,
+          "topic_time": 4000,
+          "timings": {
+            "1": 4000
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "timings_long_read",
+    "user": "user2",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/topics/timings",
+        "params": {
+          "topic_id": 35,
+          "topic_time": 400000,
+          "timings": {
+            "1": 60000,
+            "2": 60000,
+            "3": 60000,
+            "4": 60000,
+            "5": 60000
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "timings_out_of_range",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/topics/timings",
+        "params": {
+          "topic_id": 35,
+          "topic_time": 3000,
+          "timings": {
+            "0": 1000,
+            "99": 1000,
+            "3": 1000
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "timings_anonymous",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/topics/timings",
+        "params": {
+          "topic_id": 35,
+          "topic_time": 3000,
+          "timings": {
+            "1": 3000
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "notifications_read_one",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/notifications/mark-read.json",
+        "params": {
+          "id": 45
+        }
+      }
+    ]
+  },
+  {
+    "name": "notifications_read_all",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/notifications/mark-read.json",
+        "params": {}
+      }
+    ]
+  },
+  {
+    "name": "notifications_read_types",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/notifications/mark-read.json",
+        "params": {
+          "dismiss_types": "mentioned,liked"
+        }
+      }
+    ]
+  },
+  {
+    "name": "notifications_read_bad_type",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/notifications/mark-read.json",
+        "params": {
+          "dismiss_types": "nope"
+        }
+      }
+    ]
   }
 ]

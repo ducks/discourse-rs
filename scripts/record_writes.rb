@@ -102,7 +102,9 @@ BACKGROUND_TABLES = %w[scheduler_stats top_topics]
 # and post body, and Email::Processor one per address and rejection a day,
 # which would change the same case recorded twice.
 def clear_redis_state
-  %w[unique-post-* rejection_email:*].each do |pattern|
+  # user-last-seen: UserStat.update_time_read!, which would count the
+  # seconds since the previous case read a topic.
+  %w[unique-post-* rejection_email:* user-last-seen:*].each do |pattern|
     Discourse.redis.keys(pattern).each { |k| Discourse.redis.del(k) }
   end
 end

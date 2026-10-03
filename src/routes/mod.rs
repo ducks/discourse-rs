@@ -10,6 +10,7 @@ mod notifications;
 mod post_actions;
 mod post_destroy;
 mod posts;
+mod read_tracking;
 mod review;
 mod robots;
 mod search;
@@ -77,6 +78,16 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/bookmarks.json", get(list::user_list))
         .route("/notifications", get(notifications::index))
         .route("/notifications.json", get(notifications::index))
+        .route("/notifications/mark-read", put(read_tracking::mark_read))
+        .route(
+            "/notifications/mark-read.json",
+            put(read_tracking::mark_read),
+        )
+        .route("/notifications/read", put(read_tracking::mark_read))
+        .route("/notifications/read.json", put(read_tracking::mark_read))
+        .route("/topics/timings", post(read_tracking::timings))
+        .route("/topics/timings.json", post(read_tracking::timings))
+        .route("/t/{slug}/timings", post(read_tracking::topic_timings))
         .route("/topics/{kind}/{username}", get(messages::personal))
         .route(
             "/topics/private-messages-group/{username}/{*rest}",
