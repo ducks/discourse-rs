@@ -7,7 +7,6 @@
 use serde_json::json;
 use sqlx::PgConnection;
 
-use crate::posting::text::{TitleOptions, clean_title, slug_for};
 use crate::site_settings::SiteSettings;
 use crate::{AppError, Unsupported};
 
@@ -280,32 +279,15 @@ pub async fn add_score(
     Ok(score)
 }
 
-/// `topic.update(reviewable_score: ...)`: a validated save, so Topic's
-/// before_validation assigns the cleaned title back through `title=`, which
-/// recomputes the slug and clears fancy_title (read back lazily later).
-/// The row is written when anything changed.
+/// `topic.update(reviewable_score: ...)`: a validated save (see
+/// `topic_save::reassigned_slug`), written when anything changed.
 async fn update_topic_reviewable_score(
     conn: &mut PgConnection,
     s: &SiteSettings,
     topic_id: i32,
     delta: f64,
 ) -> Result<(), AppError> {
-    let title: String = sqlx::query_scalar("SELECT title FROM topics WHERE id = $1")
-        .bind(topic_id)
-        .fetch_one(&mut *conn)
-        .await?;
-    let options = TitleOptions {
-        prettify: s.get("title_prettify")?.truthy(),
-        allow_uppercase_posts: s.get("allow_uppercase_posts")?.truthy(),
-        remove_extraneous_space: s.get("title_remove_extraneous_space")?.truthy(),
-    };
-    if clean_title(&title, &options) != title {
-        return Err(Unsupported("saving a topic whose title the cleaner changes").into());
-    }
-    if s.get("slug_generation_method")?.to_s() != "ascii" {
-        return Err(Unsupported("slug_generation_method other than ascii").into());
-    }
-    let new_slug = slug_for(&title)?;
+    let new_slug = crate::posting::topic_save::reassigned_slug(&mut *conn, s, topic_id).await?;
     sqlx::query(
         "UPDATE topics SET reviewable_score = reviewable_score + $2, slug = $3, fancy_title = NULL, \
                            updated_at = clock_timestamp() \

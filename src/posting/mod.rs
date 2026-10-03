@@ -9,7 +9,9 @@ pub mod links;
 pub mod revise;
 pub mod revisions;
 pub mod search_index;
+pub mod small_action;
 pub mod text;
+pub mod topic_save;
 pub mod validate;
 
 use sqlx::PgConnection;
