@@ -168,6 +168,16 @@ impl User {
         .await
     }
 
+    /// The user by id, active or not.
+    pub async fn find_by_id(conn: &mut PgConnection, id: i32) -> Result<Option<User>, sqlx::Error> {
+        sqlx::query_as(&format!(
+            "SELECT {USER_COLUMNS} {USER_FROM} WHERE users.id = $1"
+        ))
+        .bind(id)
+        .fetch_optional(conn)
+        .await
+    }
+
     /// `User#has_trust_level?`
     fn has_trust_level(&self, level: i32) -> bool {
         self.admin || self.moderator || self.staged || self.trust_level >= level
@@ -534,11 +544,30 @@ impl Users<'_> {
             return Err(Unsupported("display_local_time_in_user_card").into());
         }
         // untrusted_attributes: only with profile details and a value.
-        let bio = user.bio_cooked.as_deref().filter(|b| !b.is_empty());
-        if profile_details && bio.is_some() {
-            return Err(Unsupported("profile bios (bio_excerpt via PrettyText.excerpt)").into());
+        let bio = user.bio_cooked.as_deref().filter(|b| !b.trim().is_empty());
+        // UserProfile#bio_excerpt(350, keep_newlines:, keep_emoji_images:)
+        // and #bio_processed; suspended users are refused above.
+        let mut bio_fields = Vec::new();
+        if let (true, Some(cooked)) = (profile_details, bio) {
+            let opts = crate::excerpt::Options {
+                keep_newlines: true,
+                keep_emoji_images: true,
+                ..Default::default()
+            };
+            let excerpt = crate::excerpt::excerpt(cooked, 350, &opts);
+            let excerpt = excerpt.strip_suffix("<br>").unwrap_or(&excerpt).to_string();
+            if !user.has_trust_level(1) && cooked.contains("<a") {
+                return Err(Unsupported("bio links of TL0 users (PrettyText.strip_links)").into());
+            }
+            if !excerpt.trim().is_empty() {
+                bio_fields.push(("bio_excerpt", excerpt));
+            }
+            bio_fields.push(("bio_cooked", cooked.to_string()));
         }
         if profile_details {
+            for (key, value) in bio_fields {
+                u.insert(key.into(), json!(value));
+            }
             if let Some(w) = user.website.as_deref().filter(|w| !w.is_empty()) {
                 u.insert("website".into(), json!(w));
                 if let Some(name) = website_name(w) {

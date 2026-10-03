@@ -1,0 +1,69 @@
+{
+  "name": "prefs_other_user",
+  "user": "user2",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/user1.json",
+      "params": {
+        "name": "Not Mine"
+      }
+    }
+  ],
+  "started_at": "2026-10-03T17:35:44.388613",
+  "transaction_started_at": "2026-10-03T17:35:43.359945",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 86,
+            "seen_at": null,
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "p+3g3e1v1/uzLzGSnsTbd7rweeI=",
+            "created_at": "2026-10-03T17:35:43.805997",
+            "rotated_at": "2026-10-03T17:35:43.805508",
+            "updated_at": "2026-10-03T17:35:43.805997",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "p+3g3e1v1/uzLzGSnsTbd7rweeI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 86,
+            "seen_at": "2026-10-03T17:35:44.395622",
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "p+3g3e1v1/uzLzGSnsTbd7rweeI=",
+            "created_at": "2026-10-03T17:35:43.805997",
+            "rotated_at": "2026-10-03T17:35:43.805508",
+            "updated_at": "2026-10-03T17:35:43.805997",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "p+3g3e1v1/uzLzGSnsTbd7rweeI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": []
+}

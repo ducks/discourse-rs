@@ -184,6 +184,11 @@ Logged-in readers, no writes yet.
       Bookmark's validations, the topic user's bookmarked flag), PUT
       /bookmarks/:id, PUT /bookmarks/:id/toggle_pin, DELETE /bookmarks/:id.
       Measured against Rails
+- [x] User preferences: PUT /u/:username (options, profile with the bio
+      cooked, name with its staff log, category tracking, muted users and
+      allowed PM senders), for the user and staff. Measured against Rails.
+      Refused: user fields, backgrounds, the notification schedule, titles
+      and groups, tag tracking, themes, sidebar links, user status
 - [x] Private messages: new messages to users and replies in them, the
       allowed users, the recipients watching, the PM user actions, the
       private_message notification and email (participants, `[PM]`

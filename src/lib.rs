@@ -56,6 +56,7 @@ pub mod uploads;
 pub mod url;
 pub mod user_penalties;
 pub mod user_private;
+pub mod user_updater;
 pub mod users;
 
 use std::sync::Arc;

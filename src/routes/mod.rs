@@ -26,6 +26,7 @@ mod srv;
 mod tags;
 mod topic_status;
 mod topics;
+mod user_update;
 mod users;
 
 use axum::Router;
@@ -125,7 +126,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         // TopicsController#status; {slug} holds the topic id here.
         .route("/t/{slug}/status", put(topic_status::status))
         .route("/t/{slug}/{id}/status", put(topic_status::status_with_slug))
-        .route("/u/{username}", get(users::show))
+        .route("/u/{username}", get(users::show).put(user_update::update))
         .route("/u/{username}/bookmarks", get(bookmarks::index))
         .route("/u/{username}/bookmarks.json", get(bookmarks::index))
         .route(
