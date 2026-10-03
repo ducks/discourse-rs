@@ -70,9 +70,18 @@ impl Drop for TestDb {
     fn drop(&mut self) {
         // Drop can't be async and may run inside the test's runtime, so the
         // cleanup gets its own thread and runtime.
+        //
+        // DROP DATABASE WITH (FORCE) waits for every backend to take a
+        // signal, and a backend still authenticating a new connection only
+        // takes it once its client answers. On a multi-thread runtime that
+        // client may be a task on this very worker: blocking the worker
+        // would deadlock both until authentication_timeout. block_in_place
+        // hands the worker's other tasks to another thread first.
         let name = self.name.clone();
         let admin = self.admin.clone();
-        let result = std::thread::spawn(move || {
+        let multi_thread = tokio::runtime::Handle::try_current()
+            .is_ok_and(|h| h.runtime_flavor() == tokio::runtime::RuntimeFlavor::MultiThread);
+        let cleanup = move || {
             tokio::runtime::Builder::new_current_thread()
                 .enable_all()
                 .build()
@@ -85,8 +94,13 @@ impl Drop for TestDb {
                     .await?;
                     Ok::<_, sqlx::Error>(())
                 })
-        })
-        .join();
+        };
+        let join = move || std::thread::spawn(cleanup).join();
+        let result = if multi_thread {
+            tokio::task::block_in_place(join)
+        } else {
+            join()
+        };
         match result {
             Ok(Ok(())) => {}
             Ok(Err(e)) => eprintln!("warning: failed to drop test database {}: {e}", self.name),
