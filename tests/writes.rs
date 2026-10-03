@@ -33,8 +33,9 @@ const BACKGROUND_TABLES: [&str; 3] = ["scheduler_stats", "top_topics", "user_aut
 /// database's heap order: compared as a set, without ids.
 const UNORDERED_INSERTS: [&str; 1] = ["sidebar_section_links"];
 
-/// Keys plugins add to the post serializer on the reference.
-const PLUGIN_KEYS: [&str; 11] = [
+/// Keys plugins add to the post and topic serializers on the reference.
+const PLUGIN_KEYS: [&str; 12] = [
+    "has_accepted_answer",
     "event",
     "calendar_details",
     "accepted_answer",

@@ -34,6 +34,7 @@ pub mod posting;
 pub mod pretty_text;
 pub mod read_tracking;
 pub mod review;
+pub mod review_list;
 pub mod reviewables;
 pub mod routes;
 pub mod ruby;

@@ -232,6 +232,8 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/users/email-login", post(accounts::email_login))
         .route("/users/email-login.json", post(accounts::email_login))
         .route("/uploads.json", post(uploads::create))
+        .route("/review", get(review::page))
+        .route("/review.json", get(review::index))
         .route(
             "/review/{reviewable_id}/perform/{action_id}",
             put(review::perform),

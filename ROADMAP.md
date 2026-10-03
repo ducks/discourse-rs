@@ -143,7 +143,14 @@ Logged-in readers, no writes yet.
 - [ ] Flags and reviews that go further: closing topics and silencing new
       users on flags, notify user and notify moderators messages, illegal,
       undoing flags, flags on posts already in review, deleting, editing,
-      restoring and unhiding from the queue, penalties, the queue's lists
+      restoring and unhiding from the queue, penalties
+- [x] The review queue (GET /review.json) for admins: flagged posts with
+      `list_for`'s status, type, topic, category, user, priority and sort
+      filters, paging, the side-loaded users, topics, scores, score types,
+      bundled actions and histories, and the meta. Measured against Rails.
+      Refused: moderators and category group moderators, other reviewable
+      types, notes, claims, score reasons, penalized authors, the date and
+      additional filters
 - [x] Topic status (PUT /t/:id/status): close, open, archive, unarchive,
       unlist, relist, pin, unpin, pin globally, with the small action post
       (PostCreator's small action path), featured topics, the category's

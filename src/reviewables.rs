@@ -10,6 +10,16 @@ use sqlx::PgConnection;
 use crate::site_settings::SiteSettings;
 use crate::{AppError, Unsupported};
 
+/// `Reviewable.sti_names`: the core types, then the type chat registers
+/// on the reference.
+pub const STI_NAMES: [&str; 5] = [
+    "ReviewableFlaggedPost",
+    "ReviewableQueuedPost",
+    "ReviewableUser",
+    "ReviewablePost",
+    "Chat::ReviewableMessage",
+];
+
 /// `Reviewable.statuses[:pending]`, also `ReviewableScore.statuses[:pending]`
 pub const PENDING: i32 = 0;
 /// `ReviewableScore.statuses[:agreed]`
@@ -65,7 +75,7 @@ pub async fn sensitivity_score(
 }
 
 /// `User#reviewable_count` and `Reviewable.unseen_reviewable_count(user)`
-/// for staff: the pending reviewables of the core types, less those on
+/// for staff: the pending reviewables of the known types, less those on
 /// topics claimed by someone else.
 pub async fn staff_counts(
     conn: &mut PgConnection,
@@ -85,9 +95,16 @@ pub async fn staff_counts(
             .bind(user_id)
             .fetch_one(&mut *conn)
             .await?;
-    let base = "FROM reviewables LEFT JOIN reviewable_claimed_topics rct ON reviewables.topic_id = rct.topic_id \
-                WHERE reviewables.status = 0 AND (rct.user_id IS NULL OR rct.user_id = $1) \
-                AND reviewables.type IN ('ReviewableFlaggedPost','ReviewableQueuedPost','ReviewableUser','ReviewablePost')";
+    let types = STI_NAMES
+        .iter()
+        .map(|t| format!("'{t}'"))
+        .collect::<Vec<_>>()
+        .join(",");
+    let base = format!(
+        "FROM reviewables LEFT JOIN reviewable_claimed_topics rct ON reviewables.topic_id = rct.topic_id \
+         WHERE reviewables.status = 0 AND (rct.user_id IS NULL OR rct.user_id = $1) \
+         AND reviewables.type IN ({types})"
+    );
     let count: i64 = sqlx::query_scalar(&format!("SELECT COUNT(*) {base}"))
         .bind(user_id)
         .fetch_one(&mut *conn)

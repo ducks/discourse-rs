@@ -33,6 +33,9 @@ pub enum Mode {
     /// and category_id; `user_data` only when the controller ran
     /// `find_user_data` (/search.json, not /search/query.json)
     SearchItem { user_data: bool },
+    /// ListableTopicSerializer for a reviewable's topic: no user data
+    /// loaded and no last_poster.
+    Reviewable,
 }
 
 /// `Topic.share_thumbnail_size`
@@ -413,7 +416,7 @@ impl TopicListSerializer<'_> {
         mode: Mode,
     ) -> Result<Value, TopicListError> {
         let user_data = match mode {
-            Mode::SearchItem { user_data: false } => None,
+            Mode::SearchItem { user_data: false } | Mode::Reviewable => None,
             _ => self.user_data(t.id).await?,
         };
         // PinnedCheck: a pin the user cleared after it was set is unpinned.
@@ -506,6 +509,9 @@ impl TopicListSerializer<'_> {
             out.insert("visibility_reason_id".into(), json!(reason));
         }
         // can_see_tags?: tagging on, and PMs only for PM taggers.
+        if mode == Mode::Reviewable {
+            return Ok(Value::Object(out));
+        }
         if mode != Mode::Listable
             && tagging
             && (t.archetype != "private_message" || self.guardian.can_tag_pms(self.settings)?)
