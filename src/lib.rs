@@ -27,6 +27,7 @@ pub mod params;
 pub mod parity;
 pub mod pm_lists;
 pub mod post_actions;
+pub mod post_destroyer;
 pub mod posting;
 pub mod pretty_text;
 pub mod review;

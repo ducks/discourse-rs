@@ -1,66 +1,22 @@
 {
-  "name": "incoming_reply_api_key_scoped",
-  "user": null,
+  "name": "post_delete_staff",
+  "user": "admin",
   "requests": [
     {
-      "method": "POST",
-      "path": "/admin/email/handle_mail",
-      "params": {
-        "email_encoded": "RGF0ZTogVGh1LCAwMSBPY3QgMjAyNiAxMDowMDowMCArMDAwMA0KRnJvbTogVXNlcjAgPHVzZXIwQGV4YW1wbGUuY29tPg0KVG86IHJlcGxpZXMrMDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWZAZXhhbXBsZS5jb20NCk1lc3NhZ2UtSUQ6IDxyZXBseS1ieS1lbWFpbC0xQG1haWwuZXhhbXBsZS5jb20+DQpTdWJqZWN0OiBSZTogW0Rpc2NvdXJzZV0gW0dlbmVyYWxdIFBhcml0eSBmaXh0dXJlOiByZXBsaWVzIGFuZCBwb3N0ZXJzDQpNSU1FLVZlcnNpb246IDEuMA0KQ29udGVudC1UeXBlOiB0ZXh0L3BsYWluOyBjaGFyc2V0PVVURi04DQpDb250ZW50LVRyYW5zZmVyLUVuY29kaW5nOiA3Yml0DQoNClRoaXMgaXMgbXkgcmVwbHkgYnkgZW1haWwsIGxvbmcgZW5vdWdoIHRvIGJlIGEgcG9zdCBvbiBpdHMgb3duLg0KDQpPbiBXZWQsIFNlcCAzMCwgMjAyNiBhdCA5OjAwIEFNIEFkbWluIDxub3JlcGx5QHVuY29uZmlndXJlZC5kaXNjb3Vyc2Uub3JnPiB3cm90ZToNCj4gVGhlIHBvc3QgYmVpbmcgcmVwbGllZCB0bywgcXVvdGVkIGJ5IHRoZSBtYWlsIGNsaWVudC4NCg=="
-      },
-      "headers": {
-        "Api-Key": "mail-receiver-key-9002",
-        "Api-Username": "system"
-      }
+      "method": "DELETE",
+      "path": "/posts/52.json",
+      "params": {}
     }
   ],
-  "started_at": "2026-10-03T08:12:02.961486",
-  "transaction_started_at": "2026-10-03T08:12:02.217735",
+  "started_at": "2026-10-03T08:13:06.441417",
+  "transaction_started_at": "2026-10-03T08:13:05.5774",
   "responses": [
     {
       "status": 200,
-      "body": "email has been received and is queued for processing"
+      "body": ""
     }
   ],
   "changes": {
-    "api_keys": {
-      "inserted": [],
-      "deleted": [],
-      "updated": [
-        {
-          "before": {
-            "id": 9002,
-            "hidden": false,
-            "user_id": null,
-            "key_hash": "488906ff6edba14d0fc10aa1df12fd1e2385f5a65f5d4300b6bfff8f5eef6b4d",
-            "created_at": "2026-10-03T08:12:02.217735",
-            "revoked_at": null,
-            "scope_mode": 2,
-            "updated_at": "2026-10-03T08:12:02.217735",
-            "allowed_ips": null,
-            "description": "mail-receiver",
-            "last_used_at": null,
-            "created_by_id": 1,
-            "truncated_key": "mail"
-          },
-          "after": {
-            "id": 9002,
-            "hidden": false,
-            "user_id": null,
-            "key_hash": "488906ff6edba14d0fc10aa1df12fd1e2385f5a65f5d4300b6bfff8f5eef6b4d",
-            "created_at": "2026-10-03T08:12:02.217735",
-            "revoked_at": null,
-            "scope_mode": 2,
-            "updated_at": "2026-10-03T08:12:02.217735",
-            "allowed_ips": null,
-            "description": "mail-receiver",
-            "last_used_at": "2026-10-03T08:12:03.177969",
-            "created_by_id": 1,
-            "truncated_key": "mail"
-          }
-        }
-      ]
-    },
     "categories": {
       "inserted": [],
       "deleted": [],
@@ -151,7 +107,7 @@
             "style_type": 2,
             "text_color": "FFFFFF",
             "topics_day": 0,
-            "updated_at": "2026-10-02T09:11:12.021275",
+            "updated_at": "2026-10-03T08:13:06.525916",
             "description": "<p>Create topics here that don’t fit into any other existing category.</p>",
             "posts_month": 6,
             "topic_count": 3,
@@ -160,7 +116,7 @@
             "allow_badges": true,
             "default_view": null,
             "topics_month": 2,
-            "latest_post_id": 53,
+            "latest_post_id": 47,
             "sort_ascending": null,
             "topic_template": null,
             "all_topics_wiki": false,
@@ -195,183 +151,73 @@
         }
       ]
     },
-    "incoming_emails": {
-      "inserted": [
+    "notifications": {
+      "inserted": [],
+      "deleted": [
         {
-          "id": 1,
-          "raw": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+0123456789abcdef0123456789abcdef@example.com\r\nMessage-ID: <reply-by-email-1@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nThis is my reply by email, long enough to be a post on its own.\r\n\r\nOn Wed, Sep 30, 2026 at 9:00 AM Admin <noreply@unconfigured.discourse.org> wrote:\r\n> The post being replied to, quoted by the mail client.\r\n",
-          "error": null,
-          "post_id": 53,
-          "subject": "Re: [Discourse] [General] Parity fixture: replies and posters",
-          "user_id": 2,
-          "imap_uid": null,
+          "id": 51,
+          "data": "{\"topic_title\":\"Parity fixture: replies and posters\",\"original_post_id\":52,\"original_post_type\":1,\"original_username\":\"user0\",\"revision_number\":null,\"display_username\":\"user0\",\"display_name\":\"User0\"}",
+          "read": false,
+          "user_id": 3,
           "topic_id": 35,
-          "imap_sync": null,
-          "is_bounce": false,
-          "created_at": "2026-10-03T08:12:03.209446",
-          "message_id": "reply-by-email-1@mail.example.com",
-          "updated_at": "2026-10-03T08:12:03.209446",
-          "created_via": 1,
-          "cc_addresses": "",
-          "from_address": "user0@example.com",
-          "imap_missing": false,
-          "to_addresses": "replies+0123456789abcdef0123456789abcdef@example.com",
-          "imap_group_id": null,
-          "imap_uid_validity": null,
-          "is_auto_generated": false,
-          "rejection_message": null
-        }
-      ],
-      "deleted": [],
-      "updated": []
-    },
-    "post_replies": {
-      "inserted": [
-        {
-          "post_id": 38,
-          "created_at": "2026-10-03T08:12:03.325114",
-          "updated_at": "2026-10-03T08:12:03.325114",
-          "reply_post_id": 53
-        }
-      ],
-      "deleted": [],
-      "updated": []
-    },
-    "post_search_data": {
-      "inserted": [
-        {
-          "locale": "en",
-          "post_id": 53,
-          "version": 5,
-          "raw_data": "This is my reply by email, long enough to be a post on its own.",
-          "search_data": "'email':13 'enough':15 'fixtur':2A 'general':6B 'guid':7C 'long':14 'pariti':1A 'post':19 'poster':5A 'repli':3A,11",
-          "private_message": false
-        }
-      ],
-      "deleted": [],
-      "updated": []
-    },
-    "post_stats": {
-      "inserted": [
+          "created_at": "2026-10-01T15:41:12.744517",
+          "updated_at": "2026-10-01T15:41:12.744517",
+          "post_number": 5,
+          "high_priority": false,
+          "post_action_id": null,
+          "notification_type": 1
+        },
         {
           "id": 52,
-          "post_id": 53,
-          "created_at": "2026-10-03T08:12:03.299372",
-          "updated_at": "2026-10-03T08:12:03.299372",
-          "drafts_saved": 0,
-          "writing_device": null,
-          "composer_version": null,
-          "typing_duration_msecs": 0,
-          "writing_device_user_agent": null,
-          "composer_open_duration_msecs": 0
-        }
-      ],
-      "deleted": [],
-      "updated": []
-    },
-    "post_timings": {
-      "inserted": [
-        {
-          "msecs": 5000,
-          "user_id": 2,
+          "data": "{\"title\":\"Parity fixture: replies and posters\",\"bookmarkable_url\":\"/t/parity-fixture-replies-and-posters/35/5\",\"display_username\":\"user1\",\"bookmark_name\":\"Parity fixture: reminder sent\",\"bookmark_id\":5,\"bookmarkable_type\":\"Post\",\"bookmarkable_id\":52}",
+          "read": false,
+          "user_id": 3,
           "topic_id": 35,
-          "post_number": 6
+          "created_at": "2026-10-01T22:32:02.464812",
+          "updated_at": "2026-10-01T22:32:02.464812",
+          "post_number": 5,
+          "high_priority": true,
+          "post_action_id": null,
+          "notification_type": 24
         }
       ],
-      "deleted": [],
       "updated": []
     },
     "posts": {
-      "inserted": [
-        {
-          "id": 53,
-          "raw": "This is my reply by email, long enough to be a post on its own.",
-          "wiki": false,
-          "reads": 1,
-          "score": null,
-          "cooked": "<p>This is my reply by email, long enough to be a post on its own.</p>",
-          "hidden": false,
-          "locale": null,
-          "user_id": 2,
-          "version": 1,
-          "baked_at": "2026-10-03T08:12:03.282358",
-          "topic_id": 35,
-          "hidden_at": null,
-          "post_type": 1,
-          "raw_email": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+0123456789abcdef0123456789abcdef@example.com\r\nMessage-ID: <reply-by-email-1@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nThis is my reply by email, long enough to be a post on its own.\r\n\r\nOn Wed, Sep 30, 2026 at 9:00 AM Admin <noreply@unconfigured.discourse.org> wrote:\r\n> The post being replied to, quoted by the mail client.\r\n",
-          "via_email": true,
-          "created_at": "2026-10-01T10:00:00",
-          "deleted_at": null,
-          "like_count": 0,
-          "like_score": 0,
-          "self_edits": 0,
-          "sort_order": 6,
-          "spam_count": 0,
-          "updated_at": "2026-10-03T08:12:03.338601",
-          "word_count": 15,
-          "action_code": null,
-          "cook_method": 1,
-          "edit_reason": null,
-          "post_number": 6,
-          "quote_count": 0,
-          "reply_count": 0,
-          "locked_by_id": null,
-          "percent_rank": 1,
-          "reply_quoted": false,
-          "user_deleted": false,
-          "baked_version": 2,
-          "deleted_by_id": null,
-          "illegal_count": 0,
-          "qa_vote_count": 0,
-          "bookmark_count": 0,
-          "last_editor_id": 2,
-          "public_version": 1,
-          "image_upload_id": null,
-          "last_version_at": "2026-10-03T08:12:03.297401",
-          "off_topic_count": 0,
-          "hidden_reason_id": null,
-          "reply_to_user_id": 1,
-          "notify_user_count": 0,
-          "inappropriate_count": 0,
-          "incoming_link_count": 0,
-          "outbound_message_id": "reply-by-email-1@mail.example.com",
-          "reply_to_post_number": 4,
-          "notify_moderators_count": 0
-        }
-      ],
+      "inserted": [],
       "deleted": [],
       "updated": [
         {
           "before": {
-            "id": 38,
-            "raw": "Reply three from admin, also long enough to pass the minimum length check.",
+            "id": 52,
+            "raw": "Reply from user0 mentioning @user1 so a mention notification exists.",
             "wiki": false,
             "reads": 1,
             "score": 0.2,
-            "cooked": "<p>Reply three from admin, also long enough to pass the minimum length check.</p>",
+            "cooked": "<p>Reply from user0 mentioning <a class=\"mention\" href=\"/u/user1\">@user1</a> so a mention notification exists.</p>",
             "hidden": false,
             "locale": null,
-            "user_id": 1,
+            "user_id": 2,
             "version": 1,
-            "baked_at": "2026-09-30T07:28:29.251646",
+            "baked_at": "2026-10-01T15:39:51.83451",
             "topic_id": 35,
             "hidden_at": null,
             "post_type": 1,
             "raw_email": null,
             "via_email": false,
-            "created_at": "2026-09-30T07:28:29.25168",
+            "created_at": "2026-10-01T15:39:51.834549",
             "deleted_at": null,
             "like_count": 0,
             "like_score": 0,
             "self_edits": 0,
-            "sort_order": 4,
+            "sort_order": 5,
             "spam_count": 0,
-            "updated_at": "2026-09-30T07:28:29.25168",
-            "word_count": 13,
+            "updated_at": "2026-10-01T15:39:51.834549",
+            "word_count": 10,
             "action_code": null,
             "cook_method": 1,
             "edit_reason": null,
-            "post_number": 4,
+            "post_number": 5,
             "quote_count": 0,
             "reply_count": 0,
             "locked_by_id": null,
@@ -383,72 +229,72 @@
             "illegal_count": 0,
             "qa_vote_count": 0,
             "bookmark_count": 0,
-            "last_editor_id": 1,
+            "last_editor_id": 2,
             "public_version": 1,
             "image_upload_id": null,
-            "last_version_at": "2026-09-30T07:28:29.265223",
+            "last_version_at": "2026-10-01T15:39:51.872879",
             "off_topic_count": 0,
             "hidden_reason_id": null,
             "reply_to_user_id": null,
             "notify_user_count": 0,
             "inappropriate_count": 0,
             "incoming_link_count": 0,
-            "outbound_message_id": "discourse/post/38@localhost",
+            "outbound_message_id": null,
             "reply_to_post_number": null,
             "notify_moderators_count": 0
           },
           "after": {
-            "id": 38,
-            "raw": "Reply three from admin, also long enough to pass the minimum length check.",
+            "id": 52,
+            "raw": "Reply from user0 mentioning @user1 so a mention notification exists.",
             "wiki": false,
             "reads": 1,
             "score": 0.2,
-            "cooked": "<p>Reply three from admin, also long enough to pass the minimum length check.</p>",
+            "cooked": "<p>Reply from user0 mentioning <a class=\"mention\" href=\"/u/user1\">@user1</a> so a mention notification exists.</p>",
             "hidden": false,
             "locale": null,
-            "user_id": 1,
+            "user_id": 2,
             "version": 1,
-            "baked_at": "2026-09-30T07:28:29.251646",
+            "baked_at": "2026-10-01T15:39:51.83451",
             "topic_id": 35,
             "hidden_at": null,
             "post_type": 1,
             "raw_email": null,
             "via_email": false,
-            "created_at": "2026-09-30T07:28:29.25168",
-            "deleted_at": null,
+            "created_at": "2026-10-01T15:39:51.834549",
+            "deleted_at": "2026-10-03T08:13:06.459782",
             "like_count": 0,
             "like_score": 0,
             "self_edits": 0,
-            "sort_order": 4,
+            "sort_order": 5,
             "spam_count": 0,
-            "updated_at": "2026-09-30T07:28:29.25168",
-            "word_count": 13,
+            "updated_at": "2026-10-01T15:39:51.834549",
+            "word_count": 10,
             "action_code": null,
             "cook_method": 1,
             "edit_reason": null,
-            "post_number": 4,
+            "post_number": 5,
             "quote_count": 0,
-            "reply_count": 1,
+            "reply_count": 0,
             "locked_by_id": null,
             "percent_rank": 0.25,
             "reply_quoted": false,
             "user_deleted": false,
             "baked_version": 2,
-            "deleted_by_id": null,
+            "deleted_by_id": 1,
             "illegal_count": 0,
             "qa_vote_count": 0,
             "bookmark_count": 0,
-            "last_editor_id": 1,
+            "last_editor_id": 2,
             "public_version": 1,
             "image_upload_id": null,
-            "last_version_at": "2026-09-30T07:28:29.265223",
+            "last_version_at": "2026-10-01T15:39:51.872879",
             "off_topic_count": 0,
             "hidden_reason_id": null,
             "reply_to_user_id": null,
             "notify_user_count": 0,
             "inappropriate_count": 0,
             "incoming_link_count": 0,
-            "outbound_message_id": "discourse/post/38@localhost",
+            "outbound_message_id": null,
             "reply_to_post_number": null,
             "notify_moderators_count": 0
           }
@@ -485,13 +331,13 @@
             "user_id": 2,
             "topic_id": 35,
             "bookmarked": false,
-            "last_posted_at": "2026-10-03T08:12:03.306863",
+            "last_posted_at": "2026-10-01T15:39:51.997065",
             "last_visited_at": "2026-09-30T07:28:28.88399",
             "first_visited_at": "2026-09-30T07:28:28.88399",
             "cleared_pinned_at": null,
             "notification_level": 3,
             "total_msecs_viewed": 0,
-            "last_read_post_number": 6,
+            "last_read_post_number": 4,
             "notifications_reason_id": 1,
             "last_emailed_post_number": 4,
             "notifications_changed_at": "2026-09-30T07:28:28.883194"
@@ -570,26 +416,26 @@
             "visible": true,
             "archived": false,
             "archetype": "regular",
-            "bumped_at": "2026-10-01T10:00:00",
+            "bumped_at": "2026-09-30T07:28:29.25168",
             "pinned_at": null,
             "created_at": "2026-09-30T07:28:28.864868",
             "deleted_at": null,
             "like_count": 1,
             "spam_count": 0,
-            "updated_at": "2026-10-03T08:12:03.310497",
-            "word_count": 83,
+            "updated_at": "2026-10-03T08:13:06.616903",
+            "word_count": 58,
             "category_id": 4,
             "external_id": null,
             "fancy_title": "Parity fixture: replies and posters",
             "has_summary": false,
-            "posts_count": 6,
-            "reply_count": 1,
+            "posts_count": 4,
+            "reply_count": 0,
             "percent_rank": 1,
             "pinned_until": null,
             "deleted_by_id": null,
             "featured_link": null,
             "bannered_until": null,
-            "last_posted_at": "2026-10-01T10:00:00",
+            "last_posted_at": "2026-09-30T07:28:29.25168",
             "image_upload_id": null,
             "pinned_globally": false,
             "reviewable_score": 0,
@@ -597,32 +443,110 @@
             "featured_user2_id": null,
             "featured_user3_id": 1,
             "featured_user4_id": 4,
-            "last_post_user_id": 2,
+            "last_post_user_id": 1,
             "participant_count": 4,
             "slow_mode_seconds": 0,
             "og_image_upload_id": null,
-            "highest_post_number": 6,
+            "highest_post_number": 4,
             "incoming_link_count": 0,
             "visibility_reason_id": null,
             "moderator_posts_count": 0,
             "notify_moderators_count": 0,
-            "highest_staff_post_number": 6
+            "highest_staff_post_number": 4
           }
         }
       ]
     },
     "user_actions": {
-      "inserted": [
+      "inserted": [],
+      "deleted": [
         {
-          "id": 65,
+          "id": 61,
           "user_id": 2,
-          "created_at": "2026-10-01T10:00:00",
-          "updated_at": "2026-10-03T08:12:03.301043",
+          "created_at": "2026-10-01T15:39:51.834549",
+          "updated_at": "2026-10-01T15:39:51.897276",
           "action_type": 5,
           "acting_user_id": 2,
-          "target_post_id": 53,
+          "target_post_id": 52,
           "target_user_id": null,
           "target_topic_id": 35
+        },
+        {
+          "id": 64,
+          "user_id": 3,
+          "created_at": "2026-10-01T15:41:12.73706",
+          "updated_at": "2026-10-01T15:41:12.73706",
+          "action_type": 7,
+          "acting_user_id": 2,
+          "target_post_id": 52,
+          "target_user_id": null,
+          "target_topic_id": 35
+        }
+      ],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 86,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "CNAXTJ0nnl0nZCAfT+J/j+I30Z8=",
+            "created_at": "2026-10-03T08:13:05.929983",
+            "rotated_at": "2026-10-03T08:13:05.929756",
+            "updated_at": "2026-10-03T08:13:05.929983",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "CNAXTJ0nnl0nZCAfT+J/j+I30Z8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 86,
+            "seen_at": "2026-10-03T08:13:06.447391",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "CNAXTJ0nnl0nZCAfT+J/j+I30Z8=",
+            "created_at": "2026-10-03T08:13:05.929983",
+            "rotated_at": "2026-10-03T08:13:05.929756",
+            "updated_at": "2026-10-03T08:13:05.929983",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "CNAXTJ0nnl0nZCAfT+J/j+I30Z8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 17,
+          "context": null,
+          "details": "id: 52\ncreated_at: 2026-10-01 15:39:51 UTC\nuser: user0 (User0)\ntopic: Parity fixture: replies and posters\npost_number: 5\nraw: Reply from user0 mentioning @user1 so a mention notification exists.",
+          "post_id": 52,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": false,
+          "created_at": "2026-10-03T08:13:06.5071",
+          "ip_address": null,
+          "updated_at": "2026-10-03T08:13:06.5071",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
         }
       ],
       "deleted": [],
@@ -664,7 +588,7 @@
             "read_faq": null,
             "new_since": "2026-07-25T05:59:16.023001",
             "time_read": 0,
-            "post_count": 2,
+            "post_count": 0,
             "draft_count": 0,
             "likes_given": 1,
             "topic_count": 2,
@@ -677,7 +601,7 @@
             "first_unread_at": "2026-10-02T09:00:45.904143",
             "flags_disagreed": 0,
             "post_edits_count": null,
-            "posts_read_count": 4,
+            "posts_read_count": 3,
             "first_unread_pm_at": "2026-10-02T09:00:45.911461",
             "digest_attempted_at": null,
             "pending_posts_count": 0,
@@ -748,7 +672,7 @@
             "created_at": "2026-07-25T05:59:15.831079",
             "flag_level": 0,
             "ip_address": "172.17.0.1",
-            "updated_at": "2026-10-03T08:12:03.315293",
+            "updated_at": "2026-10-01T15:39:52.016889",
             "approved_at": null,
             "trust_level": 1,
             "last_seen_at": "2026-10-01T22:32:51.475256",
@@ -758,7 +682,7 @@
             "silenced_till": null,
             "approved_by_id": null,
             "flair_group_id": null,
-            "last_posted_at": "2026-10-01T10:00:00",
+            "last_posted_at": "2026-10-01T15:39:51.295091",
             "suspended_till": null,
             "username_lower": "user0",
             "last_emailed_at": null,
@@ -779,31 +703,10 @@
   },
   "jobs": [
     [
-      "process_email",
+      "index_category_for_search",
       {
-        "mail": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+0123456789abcdef0123456789abcdef@example.com\r\nMessage-ID: <reply-by-email-1@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nThis is my reply by email, long enough to be a post on its own.\r\n\r\nOn Wed, Sep 30, 2026 at 9:00 AM Admin <noreply@unconfigured.discourse.org> wrote:\r\n> The post being replied to, quoted by the mail client.\r\n",
-        "retry_on_rate_limit": true,
-        "source": "handle_mail"
-      }
-    ]
-  ],
-  "settings": {
-    "reply_by_email_address": "replies+%{reply_key}@example.com",
-    "manual_polling_enabled": true,
-    "reply_by_email_enabled": true
-  },
-  "setup": [
-    "INSERT INTO post_reply_keys (user_id, post_id, reply_key, created_at, updated_at) VALUES (2, 38, '0123456789abcdef0123456789abcdef', now(), now())",
-    "INSERT INTO api_keys (id, user_id, created_by_id, created_at, updated_at, description, key_hash, truncated_key, scope_mode, revoked_at) VALUES (9002, NULL, 1, now(), now(), 'mail-receiver', encode(sha256(convert_to('mail-receiver-key-9002', 'UTF8')), 'hex'), 'mail', 2, NULL)",
-    "INSERT INTO api_key_scopes (id, api_key_id, resource, action, created_at, updated_at) VALUES (9002, 9002, 'email', 'receive_emails', now(), now())"
-  ],
-  "jobs_from_jobs": [
-    [
-      "post_alert",
-      {
-        "post_id": 53,
-        "new_record": true,
-        "options": null
+        "category_id": 4,
+        "force": false
       }
     ],
     [
@@ -813,33 +716,18 @@
       }
     ],
     [
-      "process_post",
-      {
-        "bypass_bump": false,
-        "cooking_options": null,
-        "new_post": true,
-        "post_id": 53,
-        "skip_pull_hotlinked_images": false
-      }
-    ],
-    [
-      "post_update_topic_tracking_state",
-      {
-        "post_id": 53
-      }
-    ],
-    [
-      "notify_mailing_list_subscribers in 600s",
-      {
-        "post_id": 53
-      }
-    ],
-    [
       "bot_input",
       {
-        "user_id": 2,
-        "post_id": 53,
-        "input": "reply"
+        "user_id": 1,
+        "post_id": 52,
+        "topic_id": 35,
+        "input": "delete"
+      }
+    ],
+    [
+      "sync_topic_user_bookmarked",
+      {
+        "topic_id": 35
       }
     ]
   ]

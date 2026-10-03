@@ -11,8 +11,8 @@
       }
     }
   ],
-  "started_at": "2026-10-02T21:11:27.965149",
-  "transaction_started_at": "2026-10-02T21:11:26.873181",
+  "started_at": "2026-10-03T08:11:30.47729",
+  "transaction_started_at": "2026-10-03T08:11:29.301049",
   "responses": [
     {
       "status": 200,
@@ -21,12 +21,12 @@
         "name": "User1",
         "username": "user1",
         "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
-        "created_at": "2026-10-02T21:11:28.089Z",
+        "created_at": "2026-10-03T08:11:30.595Z",
         "cooked": "<h2><a name=\"a-heading-1\" class=\"anchor\" href=\"#a-heading-1\" aria-label=\"Heading link\"></a>A heading</h2>\n<p>With <strong>bold</strong>, a mention of <a class=\"mention\" href=\"/u/user0\">@user0</a>, <a class=\"hashtag-cooked\" href=\"/c/general/4\" data-type=\"category\" data-slug=\"general\" data-id=\"4\" data-style-type=\"emoji\" data-emoji=\"blue_book\"><span class=\"hashtag-icon-placeholder\"><svg class=\"fa d-icon d-icon-square-full svg-icon svg-node\"><use href=\"#square-full\"></use></svg></span><span>General</span></a> and <img src=\"/images/emoji/twitter/smile.png?v=15\" title=\":smile:\" class=\"emoji\" alt=\":smile:\" loading=\"lazy\" width=\"20\" height=\"20\">, and a <a href=\"https://example.com/page\" rel=\"noopener nofollow ugc\">link</a>.</p>",
         "post_number": 6,
         "post_type": 1,
         "posts_count": 6,
-        "updated_at": "2026-10-02T21:11:28.089Z",
+        "updated_at": "2026-10-03T08:11:30.595Z",
         "reply_count": 0,
         "reply_to_post_number": null,
         "quote_count": 0,
@@ -258,11 +258,11 @@
           "user_id": 2,
           "topic_id": 35,
           "bounce_key": null,
-          "created_at": "2026-10-02T21:11:28.410909",
+          "created_at": "2026-10-03T08:11:30.880575",
           "email_type": "user_mentioned",
           "message_id": "discourse/post/53@localhost",
           "to_address": "user0@example.com",
-          "updated_at": "2026-10-02T21:11:28.410909",
+          "updated_at": "2026-10-03T08:11:30.880575",
           "cc_user_ids": null,
           "cc_addresses": null,
           "bcc_addresses": null,
@@ -282,8 +282,8 @@
           "read": false,
           "user_id": 2,
           "topic_id": 35,
-          "created_at": "2026-10-02T21:11:28.299915",
-          "updated_at": "2026-10-02T21:11:28.299915",
+          "created_at": "2026-10-03T08:11:30.773114",
+          "updated_at": "2026-10-03T08:11:30.773114",
           "post_number": 6,
           "high_priority": false,
           "post_action_id": null,
@@ -312,8 +312,8 @@
         {
           "id": 52,
           "post_id": 53,
-          "created_at": "2026-10-02T21:11:28.129215",
-          "updated_at": "2026-10-02T21:11:28.129215",
+          "created_at": "2026-10-03T08:11:30.629027",
+          "updated_at": "2026-10-03T08:11:30.629027",
           "drafts_saved": 0,
           "writing_device": "unknown",
           "composer_version": null,
@@ -350,20 +350,20 @@
           "locale": null,
           "user_id": 3,
           "version": 1,
-          "baked_at": "2026-10-02T21:11:28.089826",
+          "baked_at": "2026-10-03T08:11:30.595828",
           "topic_id": 35,
           "hidden_at": null,
           "post_type": 1,
           "raw_email": null,
           "via_email": false,
-          "created_at": "2026-10-02T21:11:28.089888",
+          "created_at": "2026-10-03T08:11:30.595899",
           "deleted_at": null,
           "like_count": 0,
           "like_score": 0,
           "self_edits": 0,
           "sort_order": 6,
           "spam_count": 0,
-          "updated_at": "2026-10-02T21:11:28.089888",
+          "updated_at": "2026-10-03T08:11:30.595899",
           "word_count": 18,
           "action_code": null,
           "cook_method": 1,
@@ -383,7 +383,7 @@
           "last_editor_id": 3,
           "public_version": 1,
           "image_upload_id": null,
-          "last_version_at": "2026-10-02T21:11:28.126286",
+          "last_version_at": "2026-10-03T08:11:30.626732",
           "off_topic_count": 0,
           "hidden_reason_id": null,
           "reply_to_user_id": null,
@@ -413,9 +413,9 @@
           "topic_id": 35,
           "extension": null,
           "crawled_at": null,
-          "created_at": "2026-10-02T21:11:28.146953",
+          "created_at": "2026-10-03T08:11:30.645894",
           "reflection": false,
-          "updated_at": "2026-10-02T21:11:28.146953",
+          "updated_at": "2026-10-03T08:11:30.645894",
           "link_post_id": null,
           "link_topic_id": null
         },
@@ -432,9 +432,9 @@
           "topic_id": 35,
           "extension": null,
           "crawled_at": null,
-          "created_at": "2026-10-02T21:11:28.149043",
+          "created_at": "2026-10-03T08:11:30.647964",
           "reflection": false,
-          "updated_at": "2026-10-02T21:11:28.149043",
+          "updated_at": "2026-10-03T08:11:30.647964",
           "link_post_id": null,
           "link_topic_id": null
         }
@@ -472,7 +472,7 @@
             "user_id": 3,
             "topic_id": 35,
             "bookmarked": true,
-            "last_posted_at": "2026-10-02T21:11:28.152661",
+            "last_posted_at": "2026-10-03T08:11:30.651326",
             "last_visited_at": "2026-09-30T07:28:29.108382",
             "first_visited_at": "2026-09-30T07:28:29.108382",
             "cleared_pinned_at": null,
@@ -595,13 +595,13 @@
             "visible": true,
             "archived": false,
             "archetype": "regular",
-            "bumped_at": "2026-10-02T21:11:28.089888",
+            "bumped_at": "2026-10-03T08:11:30.595899",
             "pinned_at": null,
             "created_at": "2026-09-30T07:28:28.864868",
             "deleted_at": null,
             "like_count": 1,
             "spam_count": 0,
-            "updated_at": "2026-10-02T21:11:28.161428",
+            "updated_at": "2026-10-03T08:11:30.65842",
             "word_count": 86,
             "category_id": 4,
             "external_id": null,
@@ -614,7 +614,7 @@
             "deleted_by_id": null,
             "featured_link": null,
             "bannered_until": null,
-            "last_posted_at": "2026-10-02T21:11:28.089888",
+            "last_posted_at": "2026-10-03T08:11:30.595899",
             "image_upload_id": null,
             "pinned_globally": false,
             "reviewable_score": 0,
@@ -639,12 +639,12 @@
     "unsubscribe_keys": {
       "inserted": [
         {
-          "key": "407c3f47ccc3ea2928ee669c779efe094eab028a10d67f87e2cd48c68565eab1",
+          "key": "1d6132eb1c28be4d79e448a4012d27af674593a770c0594393bbf7a59759a245",
           "post_id": 53,
           "user_id": 2,
           "topic_id": 35,
-          "created_at": "2026-10-02T21:11:28.340986",
-          "updated_at": "2026-10-02T21:11:28.340986",
+          "created_at": "2026-10-03T08:11:30.819089",
+          "updated_at": "2026-10-03T08:11:30.819089",
           "unsubscribe_key_type": "topic"
         }
       ],
@@ -656,8 +656,8 @@
         {
           "id": 65,
           "user_id": 3,
-          "created_at": "2026-10-02T21:11:28.089888",
-          "updated_at": "2026-10-02T21:11:28.133353",
+          "created_at": "2026-10-03T08:11:30.595899",
+          "updated_at": "2026-10-03T08:11:30.632451",
           "action_type": 5,
           "acting_user_id": 3,
           "target_post_id": 53,
@@ -667,8 +667,8 @@
         {
           "id": 66,
           "user_id": 2,
-          "created_at": "2026-10-02T21:11:28.294955",
-          "updated_at": "2026-10-02T21:11:28.294955",
+          "created_at": "2026-10-03T08:11:30.768412",
+          "updated_at": "2026-10-03T08:11:30.768412",
           "action_type": 7,
           "acting_user_id": 3,
           "target_post_id": 53,
@@ -689,29 +689,29 @@
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "dRE9Keb9fEANV25JmfDqRboz/s0=",
-            "created_at": "2026-10-02T21:11:27.239928",
-            "rotated_at": "2026-10-02T21:11:27.239672",
-            "updated_at": "2026-10-02T21:11:27.239928",
+            "auth_token": "KLbH6/NHRtaejOD4fe9tYinuEKE=",
+            "created_at": "2026-10-03T08:11:29.891193",
+            "rotated_at": "2026-10-03T08:11:29.890902",
+            "updated_at": "2026-10-03T08:11:29.891193",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "dRE9Keb9fEANV25JmfDqRboz/s0=",
+            "prev_auth_token": "KLbH6/NHRtaejOD4fe9tYinuEKE=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
             "id": 86,
-            "seen_at": "2026-10-02T21:11:27.973977",
+            "seen_at": "2026-10-03T08:11:30.482971",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "dRE9Keb9fEANV25JmfDqRboz/s0=",
-            "created_at": "2026-10-02T21:11:27.239928",
-            "rotated_at": "2026-10-02T21:11:27.239672",
-            "updated_at": "2026-10-02T21:11:27.239928",
+            "auth_token": "KLbH6/NHRtaejOD4fe9tYinuEKE=",
+            "created_at": "2026-10-03T08:11:29.891193",
+            "rotated_at": "2026-10-03T08:11:29.890902",
+            "updated_at": "2026-10-03T08:11:29.891193",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "dRE9Keb9fEANV25JmfDqRboz/s0=",
+            "prev_auth_token": "KLbH6/NHRtaejOD4fe9tYinuEKE=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -839,7 +839,7 @@
             "created_at": "2026-07-25T05:59:16.250829",
             "flag_level": 0,
             "ip_address": "172.17.0.1",
-            "updated_at": "2026-10-02T21:11:28.170089",
+            "updated_at": "2026-10-03T08:11:30.666996",
             "approved_at": null,
             "trust_level": 2,
             "last_seen_at": "2026-10-01T22:32:51.040203",
@@ -849,7 +849,7 @@
             "silenced_till": null,
             "approved_by_id": null,
             "flair_group_id": null,
-            "last_posted_at": "2026-10-02T21:11:28.089888",
+            "last_posted_at": "2026-10-03T08:11:30.595899",
             "suspended_till": null,
             "username_lower": "user1",
             "last_emailed_at": null,
@@ -934,7 +934,7 @@
             "last_posted_at": "2026-10-01T15:39:51.834549",
             "suspended_till": null,
             "username_lower": "user0",
-            "last_emailed_at": "2026-10-02T21:11:26.873181",
+            "last_emailed_at": "2026-10-03T08:11:29.301049",
             "primary_group_id": null,
             "previous_visit_at": "2026-10-01T15:44:57.254251",
             "secure_identifier": null,
@@ -951,6 +951,18 @@
     }
   },
   "jobs": [
+    [
+      "crawl_topic_link",
+      {
+        "topic_link_id": 20
+      }
+    ],
+    [
+      "crawl_topic_link",
+      {
+        "topic_link_id": 21
+      }
+    ],
     [
       "bot_input",
       {
@@ -1054,7 +1066,7 @@
         ],
         [
           "Content-Type",
-          "multipart/alternative; boundary=--==_mimepart_6ac01e00609c7_324af2825997"
+          "multipart/alternative; boundary=--==_mimepart_6ac0b8b2d34f7_40d4f2874293"
         ],
         [
           "Content-Transfer-Encoding",
@@ -1066,7 +1078,7 @@
         ],
         [
           "List-Unsubscribe",
-          "<http://localhost:3042/email/unsubscribe/407c3f47ccc3ea2928ee669c779efe094eab028a10d67f87e2cd48c68565eab1>"
+          "<http://localhost:3042/email/unsubscribe/1d6132eb1c28be4d79e448a4012d27af674593a770c0594393bbf7a59759a245>"
         ],
         [
           "List-Unsubscribe-Post",
@@ -1117,8 +1129,8 @@
           "http://localhost:3042/t/parity-fixture-replies-and-posters/35"
         ]
       ],
-      "text": "\n\n## A heading\n\nWith **bold**, a mention of @user0, #general and :smile:, and a [link](https://example.com/page).\n\n\n\n\n\n---\n[Visit Topic](http://localhost:3042/t/parity-fixture-replies-and-posters/35/6) to respond.\n\nTo unsubscribe from these emails, [click here](http://localhost:3042/email/unsubscribe/407c3f47ccc3ea2928ee669c779efe094eab028a10d67f87e2cd48c68565eab1).\n",
-      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <div id=\"main\" class=\"\">\n\n  <div class=\"email-preview\" style=\"display:none\"><p>Someone mentioned you in a post.</p></div>\n\n  <div class=\"header-instructions\"></div>\n\n    <div class=\"post-wrapper  \" style=\"margin-bottom:25px\">\n  <table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n    <tbody><tr>\n      <td class=\"user-avatar\" style=\"vertical-align:top;width:55px\">\n        <img src=\"http://localhost:3042/letter_avatar_proxy/v4/letter/u/5daacb/45.png\" title=\"user1\" width=\"45\" height=\"45\">\n      </td>\n      <td>\n          <a rel=\"nofollow\" class=\"username username-link\" href=\"http://localhost:3042/u/user1\" target=\"_blank\" style=\"color:#006699;font-size:13px;font-family:'lucida grande',tahoma,verdana,arial,sans-serif;text-decoration:none;font-weight:bold\">user1</a>\n        <br>\n        <span class=\"notification-date\" style=\"text-align:right;color:#999999;padding-right:5px;font-family:'lucida grande',tahoma,verdana,arial,sans-serif;font-size:11px\">October 2</span>\n      </td>\n    </tr>\n  </tbody></table>\n  <div class=\"body\" style=\"padding-top:5px\" dm=\"body\"><h2><a name=\"a-heading-1\" class=\"anchor\" href=\"http://localhost:3042#a-heading-1\" aria-label=\"Heading link\" style=\"text-decoration:none;font-weight:bold;color:#006699\"></a>A heading</h2>\n<p style=\"margin-top:0;border:0\">With <strong>bold</strong>, a mention of <a class=\"mention\" href=\"http://localhost:3042/u/user0\" style=\"text-decoration:none;font-weight:bold;color:#006699\">@user0</a>, <a class=\"hashtag-cooked\" href=\"http://localhost:3042/c/general/4\" data-type=\"category\" data-slug=\"general\" data-id=\"4\" data-style-type=\"emoji\" data-emoji=\"blue_book\" style=\"text-decoration:none;font-weight:bold;color:#006699\">#general</a> and <img src=\"http://localhost:3042/images/emoji/twitter/smile.png?v=15\" title=\":smile:\" class=\"emoji\" alt=\":smile:\" loading=\"lazy\" width=\"20\" height=\"20\">, and a <a href=\"https://example.com/page\" rel=\"noopener nofollow ugc\" style=\"text-decoration:none;font-weight:bold;color:#006699\">link</a>.</p></div>\n</div>\n\n\n\n\n\n\n  <div class=\"footer undecorated-link-footer highlight\" style=\"color:#666\"><hr style=\"background-color:#ddd;height:1px;border:1px\">\n<p><a href=\"http://localhost:3042/t/parity-fixture-replies-and-posters/35/6\" style=\"font-weight:bold;text-decoration:none;color:#FFFFFF;background-color:#2F70AC;border-top:4px solid #2F70AC;border-right:6px solid #2F70AC;border-bottom:4px solid #2F70AC;border-left:6px solid #2F70AC;display:inline-block\">Visit Topic</a> to respond.</p></div>\n  <div class=\"footer\" style=\"color:#666\"><p>To unsubscribe from these emails, <a href=\"http://localhost:3042/email/unsubscribe/407c3f47ccc3ea2928ee669c779efe094eab028a10d67f87e2cd48c68565eab1\" style=\"text-decoration:none;font-weight:bold;color:#666\">click here</a>.</p></div>\n\n</div>\n\n<div itemscope=\"\" itemtype=\"http://schema.org/EmailMessage\" style=\"display:none\">\n  <div itemprop=\"action\" itemscope=\"\" itemtype=\"http://schema.org/ViewAction\">\n    <link itemprop=\"url\" href=\"http://localhost:3042/t/parity-fixture-replies-and-posters/35/6\">\n    <meta itemprop=\"name\" content=\"Read full topic\">\n  </div>\n</div>\n\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
+      "text": "\n\n## A heading\n\nWith **bold**, a mention of @user0, #general and :smile:, and a [link](https://example.com/page).\n\n\n\n\n\n---\n[Visit Topic](http://localhost:3042/t/parity-fixture-replies-and-posters/35/6) to respond.\n\nTo unsubscribe from these emails, [click here](http://localhost:3042/email/unsubscribe/1d6132eb1c28be4d79e448a4012d27af674593a770c0594393bbf7a59759a245).\n",
+      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <div id=\"main\" class=\"\">\n\n  <div class=\"email-preview\" style=\"display:none\"><p>Someone mentioned you in a post.</p></div>\n\n  <div class=\"header-instructions\"></div>\n\n    <div class=\"post-wrapper  \" style=\"margin-bottom:25px\">\n  <table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n    <tbody><tr>\n      <td class=\"user-avatar\" style=\"vertical-align:top;width:55px\">\n        <img src=\"http://localhost:3042/letter_avatar_proxy/v4/letter/u/5daacb/45.png\" title=\"user1\" width=\"45\" height=\"45\">\n      </td>\n      <td>\n          <a rel=\"nofollow\" class=\"username username-link\" href=\"http://localhost:3042/u/user1\" target=\"_blank\" style=\"color:#006699;font-size:13px;font-family:'lucida grande',tahoma,verdana,arial,sans-serif;text-decoration:none;font-weight:bold\">user1</a>\n        <br>\n        <span class=\"notification-date\" style=\"text-align:right;color:#999999;padding-right:5px;font-family:'lucida grande',tahoma,verdana,arial,sans-serif;font-size:11px\">October 3</span>\n      </td>\n    </tr>\n  </tbody></table>\n  <div class=\"body\" style=\"padding-top:5px\" dm=\"body\"><h2><a name=\"a-heading-1\" class=\"anchor\" href=\"http://localhost:3042#a-heading-1\" aria-label=\"Heading link\" style=\"text-decoration:none;font-weight:bold;color:#006699\"></a>A heading</h2>\n<p style=\"margin-top:0;border:0\">With <strong>bold</strong>, a mention of <a class=\"mention\" href=\"http://localhost:3042/u/user0\" style=\"text-decoration:none;font-weight:bold;color:#006699\">@user0</a>, <a class=\"hashtag-cooked\" href=\"http://localhost:3042/c/general/4\" data-type=\"category\" data-slug=\"general\" data-id=\"4\" data-style-type=\"emoji\" data-emoji=\"blue_book\" style=\"text-decoration:none;font-weight:bold;color:#006699\">#general</a> and <img src=\"http://localhost:3042/images/emoji/twitter/smile.png?v=15\" title=\":smile:\" class=\"emoji\" alt=\":smile:\" loading=\"lazy\" width=\"20\" height=\"20\">, and a <a href=\"https://example.com/page\" rel=\"noopener nofollow ugc\" style=\"text-decoration:none;font-weight:bold;color:#006699\">link</a>.</p></div>\n</div>\n\n\n\n\n\n\n  <div class=\"footer undecorated-link-footer highlight\" style=\"color:#666\"><hr style=\"background-color:#ddd;height:1px;border:1px\">\n<p><a href=\"http://localhost:3042/t/parity-fixture-replies-and-posters/35/6\" style=\"font-weight:bold;text-decoration:none;color:#FFFFFF;background-color:#2F70AC;border-top:4px solid #2F70AC;border-right:6px solid #2F70AC;border-bottom:4px solid #2F70AC;border-left:6px solid #2F70AC;display:inline-block\">Visit Topic</a> to respond.</p></div>\n  <div class=\"footer\" style=\"color:#666\"><p>To unsubscribe from these emails, <a href=\"http://localhost:3042/email/unsubscribe/1d6132eb1c28be4d79e448a4012d27af674593a770c0594393bbf7a59759a245\" style=\"text-decoration:none;font-weight:bold;color:#666\">click here</a>.</p></div>\n\n</div>\n\n<div itemscope=\"\" itemtype=\"http://schema.org/EmailMessage\" style=\"display:none\">\n  <div itemprop=\"action\" itemscope=\"\" itemtype=\"http://schema.org/ViewAction\">\n    <link itemprop=\"url\" href=\"http://localhost:3042/t/parity-fixture-replies-and-posters/35/6\">\n    <meta itemprop=\"name\" content=\"Read full topic\">\n  </div>\n</div>\n\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
     }
   ]
 }

@@ -93,7 +93,7 @@ fn action_rows(liker: i32, author: Option<i32>) -> Vec<(i32, i32)> {
 }
 
 /// `UserAction.update_like_count`
-async fn update_like_count(
+pub(crate) async fn update_like_count(
     conn: &mut PgConnection,
     user_id: i32,
     action_type: i32,

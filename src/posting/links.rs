@@ -207,11 +207,11 @@ pub async fn extract_from(
         }
         let url: String = url.chars().take(MAX_URL_LENGTH).collect();
         let domain = parsed.host.unwrap_or(site.hostname);
-        sqlx::query(
+        let created: Option<i32> = sqlx::query_scalar(
             "INSERT INTO topic_links (post_id, user_id, topic_id, url, domain, internal, link_topic_id, \
                                       link_post_id, quote, extension, reflection, created_at, updated_at) \
              VALUES ($1, $2, $3, $4, $5, $6, NULL, NULL, FALSE, $7, FALSE, clock_timestamp(), clock_timestamp()) \
-             ON CONFLICT DO NOTHING",
+             ON CONFLICT DO NOTHING RETURNING id",
         )
         .bind(post.id)
         .bind(post.user_id)
@@ -220,8 +220,17 @@ pub async fn extract_from(
         .bind(domain)
         .bind(internal)
         .bind(extension(parsed.path))
-        .execute(&mut *conn)
+        .fetch_optional(&mut *conn)
         .await?;
+        // A new link's title is crawled once the post commits.
+        if let Some(id) = created {
+            crate::jobs::enqueue(
+                &mut *conn,
+                "crawl_topic_link",
+                serde_json::json!({ "topic_link_id": id }),
+            )
+            .await?;
+        }
         current_urls.push(url);
     }
     // cleanup_entries: no reflections are made, so all of the post's go.

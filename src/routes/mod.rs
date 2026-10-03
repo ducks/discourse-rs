@@ -6,6 +6,7 @@ mod login_required;
 mod messages;
 mod notifications;
 mod post_actions;
+mod post_destroy;
 mod posts;
 mod review;
 mod robots;
@@ -79,7 +80,10 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/topics/private-messages-group/{username}/{*rest}",
             get(messages::group),
         )
-        .route("/t/{id}", get(topics::show_by_id))
+        .route(
+            "/t/{id}",
+            get(topics::show_by_id).delete(post_destroy::destroy_topic),
+        )
         .route("/t/{slug}/{id}", get(topics::show_with_slug))
         .route("/t/{slug}/{id}/{post_number}", get(topics::show_post))
         // TopicsController#status; {slug} holds the topic id here.
@@ -170,7 +174,12 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/post_actions/{id}", delete(post_actions::destroy))
         .route("/posts", post(posts::create))
         .route("/posts.json", post(posts::create))
-        .route("/posts/{id}", put(posts::update))
+        .route(
+            "/posts/{id}",
+            put(posts::update).delete(post_destroy::destroy_post),
+        )
+        .route("/posts/{id}/recover", put(post_destroy::recover_post))
+        .route("/posts/{id}/recover.json", put(post_destroy::recover_post))
         .route("/posts/{id}/revisions/{revision}", get(posts::revision))
         .route("/session", post(session::create))
         .route("/session.json", post(session::create))
