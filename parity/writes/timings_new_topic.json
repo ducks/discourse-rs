@@ -1,0 +1,305 @@
+{
+  "name": "timings_new_topic",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/topics/timings",
+      "params": {
+        "topic_id": 5,
+        "topic_time": 4000,
+        "timings": {
+          "1": 4000
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-03T15:06:31.511755",
+  "transaction_started_at": "2026-10-03T15:06:30.347216",
+  "responses": [
+    {
+      "status": 200,
+      "body": ""
+    }
+  ],
+  "changes": {
+    "post_timings": {
+      "inserted": [
+        {
+          "msecs": 4000,
+          "user_id": 3,
+          "topic_id": 5,
+          "post_number": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "posts": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 6,
+            "raw": "We are so glad you joined us.\n\n\n\nHere are some things you can do to get started:\n\n:speaking_head: **Introduce yourself** by adding your picture and information about yourself and your interests to [your profile](/my/preferences/account). What is one thing you’d like to be asked about?\n\n:open_book: **Get to know the community** by [browsing discussions](/latest) that are already happening here. When you find a post interesting, informative, or entertaining, use the :heart: to show your appreciation or support!\n\n:handshake: **Contribute** by commenting, sharing your own perspective, asking questions, or offering feedback in the discussion. Before replying or starting new topics, please review the [Community Guidelines](/faq).\n\n> If you need help or have a suggestion, feel free to ask in #site-feedback or [contact the admins](/about).",
+            "wiki": false,
+            "reads": 1,
+            "score": 0.2,
+            "cooked": "<p>We are so glad you joined us.</p>\n<p>Here are some things you can do to get started:</p>\n<p><img src=\"/images/emoji/twitter/speaking_head.png?v=15\" title=\":speaking_head:\" class=\"emoji\" alt=\":speaking_head:\" loading=\"lazy\" width=\"20\" height=\"20\"> <strong>Introduce yourself</strong> by adding your picture and information about yourself and your interests to <a href=\"/my/preferences/account\">your profile</a>. What is one thing you’d like to be asked about?</p>\n<p><img src=\"/images/emoji/twitter/open_book.png?v=15\" title=\":open_book:\" class=\"emoji\" alt=\":open_book:\" loading=\"lazy\" width=\"20\" height=\"20\"> <strong>Get to know the community</strong> by <a href=\"/latest\">browsing discussions</a> that are already happening here. When you find a post interesting, informative, or entertaining, use the <img src=\"/images/emoji/twitter/heart.png?v=15\" title=\":heart:\" class=\"emoji\" alt=\":heart:\" loading=\"lazy\" width=\"20\" height=\"20\"> to show your appreciation or support!</p>\n<p><img src=\"/images/emoji/twitter/handshake.png?v=15\" title=\":handshake:\" class=\"emoji\" alt=\":handshake:\" loading=\"lazy\" width=\"20\" height=\"20\"> <strong>Contribute</strong> by commenting, sharing your own perspective, asking questions, or offering feedback in the discussion. Before replying or starting new topics, please review the <a href=\"/faq\">Community Guidelines</a>.</p>\n<blockquote>\n<p>If you need help or have a suggestion, feel free to ask in <a class=\"hashtag-cooked\" href=\"/c/site-feedback/2\" data-type=\"category\" data-slug=\"site-feedback\" data-id=\"2\" data-style-type=\"emoji\" data-emoji=\"thought_balloon\"><span class=\"hashtag-icon-placeholder\"><svg class=\"fa d-icon d-icon-square-full svg-icon svg-node\"><use href=\"#square-full\"></use></svg></span><span>Site Feedback</span></a> or <a href=\"/about\">contact the admins</a>.</p>\n</blockquote>",
+            "hidden": false,
+            "locale": null,
+            "user_id": -1,
+            "version": 1,
+            "baked_at": "2026-07-25T05:58:28.405399",
+            "topic_id": 5,
+            "hidden_at": null,
+            "post_type": 1,
+            "raw_email": null,
+            "via_email": false,
+            "created_at": "2026-07-25T05:58:28.405469",
+            "deleted_at": null,
+            "like_count": 0,
+            "like_score": 0,
+            "self_edits": 0,
+            "sort_order": 1,
+            "spam_count": 0,
+            "updated_at": "2026-07-25T05:58:28.405469",
+            "word_count": 129,
+            "action_code": null,
+            "cook_method": 1,
+            "edit_reason": null,
+            "post_number": 1,
+            "quote_count": 0,
+            "reply_count": 0,
+            "locked_by_id": null,
+            "percent_rank": 0,
+            "reply_quoted": false,
+            "user_deleted": false,
+            "baked_version": 2,
+            "deleted_by_id": null,
+            "illegal_count": 0,
+            "qa_vote_count": 0,
+            "bookmark_count": 0,
+            "last_editor_id": -1,
+            "public_version": 1,
+            "image_upload_id": null,
+            "last_version_at": "2026-07-25T05:58:28.4437",
+            "off_topic_count": 0,
+            "hidden_reason_id": null,
+            "reply_to_user_id": null,
+            "notify_user_count": 0,
+            "inappropriate_count": 0,
+            "incoming_link_count": 0,
+            "outbound_message_id": null,
+            "reply_to_post_number": null,
+            "notify_moderators_count": 0
+          },
+          "after": {
+            "id": 6,
+            "raw": "We are so glad you joined us.\n\n\n\nHere are some things you can do to get started:\n\n:speaking_head: **Introduce yourself** by adding your picture and information about yourself and your interests to [your profile](/my/preferences/account). What is one thing you’d like to be asked about?\n\n:open_book: **Get to know the community** by [browsing discussions](/latest) that are already happening here. When you find a post interesting, informative, or entertaining, use the :heart: to show your appreciation or support!\n\n:handshake: **Contribute** by commenting, sharing your own perspective, asking questions, or offering feedback in the discussion. Before replying or starting new topics, please review the [Community Guidelines](/faq).\n\n> If you need help or have a suggestion, feel free to ask in #site-feedback or [contact the admins](/about).",
+            "wiki": false,
+            "reads": 2,
+            "score": 0.2,
+            "cooked": "<p>We are so glad you joined us.</p>\n<p>Here are some things you can do to get started:</p>\n<p><img src=\"/images/emoji/twitter/speaking_head.png?v=15\" title=\":speaking_head:\" class=\"emoji\" alt=\":speaking_head:\" loading=\"lazy\" width=\"20\" height=\"20\"> <strong>Introduce yourself</strong> by adding your picture and information about yourself and your interests to <a href=\"/my/preferences/account\">your profile</a>. What is one thing you’d like to be asked about?</p>\n<p><img src=\"/images/emoji/twitter/open_book.png?v=15\" title=\":open_book:\" class=\"emoji\" alt=\":open_book:\" loading=\"lazy\" width=\"20\" height=\"20\"> <strong>Get to know the community</strong> by <a href=\"/latest\">browsing discussions</a> that are already happening here. When you find a post interesting, informative, or entertaining, use the <img src=\"/images/emoji/twitter/heart.png?v=15\" title=\":heart:\" class=\"emoji\" alt=\":heart:\" loading=\"lazy\" width=\"20\" height=\"20\"> to show your appreciation or support!</p>\n<p><img src=\"/images/emoji/twitter/handshake.png?v=15\" title=\":handshake:\" class=\"emoji\" alt=\":handshake:\" loading=\"lazy\" width=\"20\" height=\"20\"> <strong>Contribute</strong> by commenting, sharing your own perspective, asking questions, or offering feedback in the discussion. Before replying or starting new topics, please review the <a href=\"/faq\">Community Guidelines</a>.</p>\n<blockquote>\n<p>If you need help or have a suggestion, feel free to ask in <a class=\"hashtag-cooked\" href=\"/c/site-feedback/2\" data-type=\"category\" data-slug=\"site-feedback\" data-id=\"2\" data-style-type=\"emoji\" data-emoji=\"thought_balloon\"><span class=\"hashtag-icon-placeholder\"><svg class=\"fa d-icon d-icon-square-full svg-icon svg-node\"><use href=\"#square-full\"></use></svg></span><span>Site Feedback</span></a> or <a href=\"/about\">contact the admins</a>.</p>\n</blockquote>",
+            "hidden": false,
+            "locale": null,
+            "user_id": -1,
+            "version": 1,
+            "baked_at": "2026-07-25T05:58:28.405399",
+            "topic_id": 5,
+            "hidden_at": null,
+            "post_type": 1,
+            "raw_email": null,
+            "via_email": false,
+            "created_at": "2026-07-25T05:58:28.405469",
+            "deleted_at": null,
+            "like_count": 0,
+            "like_score": 0,
+            "self_edits": 0,
+            "sort_order": 1,
+            "spam_count": 0,
+            "updated_at": "2026-07-25T05:58:28.405469",
+            "word_count": 129,
+            "action_code": null,
+            "cook_method": 1,
+            "edit_reason": null,
+            "post_number": 1,
+            "quote_count": 0,
+            "reply_count": 0,
+            "locked_by_id": null,
+            "percent_rank": 0,
+            "reply_quoted": false,
+            "user_deleted": false,
+            "baked_version": 2,
+            "deleted_by_id": null,
+            "illegal_count": 0,
+            "qa_vote_count": 0,
+            "bookmark_count": 0,
+            "last_editor_id": -1,
+            "public_version": 1,
+            "image_upload_id": null,
+            "last_version_at": "2026-07-25T05:58:28.4437",
+            "off_topic_count": 0,
+            "hidden_reason_id": null,
+            "reply_to_user_id": null,
+            "notify_user_count": 0,
+            "inappropriate_count": 0,
+            "incoming_link_count": 0,
+            "outbound_message_id": null,
+            "reply_to_post_number": null,
+            "notify_moderators_count": 0
+          }
+        }
+      ]
+    },
+    "topic_users": {
+      "inserted": [
+        {
+          "id": 55,
+          "liked": false,
+          "posted": false,
+          "user_id": 3,
+          "topic_id": 5,
+          "bookmarked": false,
+          "last_posted_at": null,
+          "last_visited_at": "2026-10-03T15:06:31.538364",
+          "first_visited_at": "2026-10-03T15:06:31.538364",
+          "cleared_pinned_at": null,
+          "notification_level": 1,
+          "total_msecs_viewed": 0,
+          "last_read_post_number": 1,
+          "notifications_reason_id": null,
+          "last_emailed_post_number": null,
+          "notifications_changed_at": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 86,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "b/k4RldxD4chfPlcuuZa2cBsN10=",
+            "created_at": "2026-10-03T15:06:30.898189",
+            "rotated_at": "2026-10-03T15:06:30.896883",
+            "updated_at": "2026-10-03T15:06:30.898189",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "b/k4RldxD4chfPlcuuZa2cBsN10=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 86,
+            "seen_at": "2026-10-03T15:06:31.526969",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "b/k4RldxD4chfPlcuuZa2cBsN10=",
+            "created_at": "2026-10-03T15:06:30.898189",
+            "rotated_at": "2026-10-03T15:06:30.896883",
+            "updated_at": "2026-10-03T15:06:30.898189",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "b/k4RldxD4chfPlcuuZa2cBsN10=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_stats": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "user_id": 3,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:16.445924",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 1,
+            "topic_count": 1,
+            "bounce_score": 0,
+            "days_visited": 1,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 1,
+            "topics_entered": 0,
+            "first_unread_at": "2026-10-01T15:39:52.00791",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 2,
+            "first_unread_pm_at": "2026-10-01T15:39:51.342717",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 4,
+            "first_post_created_at": "2026-09-30T07:28:29.079439",
+            "reset_bounce_score_after": null
+          },
+          "after": {
+            "user_id": 3,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:16.445924",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 1,
+            "topic_count": 1,
+            "bounce_score": 0,
+            "days_visited": 2,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 1,
+            "topics_entered": 0,
+            "first_unread_at": "2026-10-01T15:39:52.00791",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 3,
+            "first_unread_pm_at": "2026-10-01T15:39:51.342717",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 4,
+            "first_post_created_at": "2026-09-30T07:28:29.079439",
+            "reset_bounce_score_after": null
+          }
+        }
+      ]
+    },
+    "user_visits": {
+      "inserted": [
+        {
+          "id": 5,
+          "mobile": false,
+          "user_id": 3,
+          "time_read": 0,
+          "posts_read": 1,
+          "visited_at": "2026-10-03"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [
+    [
+      "bot_input",
+      {
+        "user_id": 3,
+        "topic_id": 5,
+        "input": "topic_notification_level_changed"
+      }
+    ]
+  ]
+}

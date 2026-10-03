@@ -30,6 +30,7 @@ pub mod post_actions;
 pub mod post_destroyer;
 pub mod posting;
 pub mod pretty_text;
+pub mod read_tracking;
 pub mod review;
 pub mod reviewables;
 pub mod routes;

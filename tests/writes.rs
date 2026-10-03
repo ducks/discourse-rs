@@ -438,7 +438,9 @@ fn changed_columns(mut doc: Value) -> Value {
                     }
                     rows.sort_by_key(|r| r.to_string());
                 } else {
-                    rows.sort_by_key(identity);
+                    // The whole row breaks ties, for tables without an id
+                    // (post_timings).
+                    rows.sort_by_key(|r| (identity(r), r.to_string()));
                 }
             }
         }

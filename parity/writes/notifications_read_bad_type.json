@@ -1,0 +1,69 @@
+{
+  "name": "notifications_read_bad_type",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/notifications/mark-read.json",
+      "params": {
+        "dismiss_types": "nope"
+      }
+    }
+  ],
+  "started_at": "2026-10-03T15:04:52.539925",
+  "transaction_started_at": "2026-10-03T15:04:51.315207",
+  "responses": [
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: invalid notification types: [\"nope\"]"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 86,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "9k1VpmQrxPVch1oPgloC66iWQmc=",
+            "created_at": "2026-10-03T15:04:51.909298",
+            "rotated_at": "2026-10-03T15:04:51.909043",
+            "updated_at": "2026-10-03T15:04:51.909298",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "9k1VpmQrxPVch1oPgloC66iWQmc=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 86,
+            "seen_at": "2026-10-03T15:04:52.547963",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "9k1VpmQrxPVch1oPgloC66iWQmc=",
+            "created_at": "2026-10-03T15:04:51.909298",
+            "rotated_at": "2026-10-03T15:04:51.909043",
+            "updated_at": "2026-10-03T15:04:51.909298",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "9k1VpmQrxPVch1oPgloC66iWQmc=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": []
+}

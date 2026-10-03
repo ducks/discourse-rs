@@ -28,6 +28,11 @@ pub async fn migrate(pool: &PgPool) -> Result<(), sqlx::Error> {
         "CREATE TABLE IF NOT EXISTS discourse_rs.expiring_keys ( \
            key text PRIMARY KEY, \
            expires_at timestamp NOT NULL)",
+        // Redis values with a TTL (SETEX), such as user-last-seen.
+        "CREATE TABLE IF NOT EXISTS discourse_rs.cached_values ( \
+           key text PRIMARY KEY, \
+           value text NOT NULL, \
+           expires_at timestamp NOT NULL)",
     ] {
         sqlx::query(statement).execute(&mut *conn).await?;
     }
@@ -57,4 +62,37 @@ pub async fn set_once(
     .await?
     .rows_affected();
     Ok(inserted == 1)
+}
+
+/// Redis's `GET key` for a value set with `setex`: None once it expired.
+pub async fn cached_get(
+    conn: &mut sqlx::PgConnection,
+    key: &str,
+) -> Result<Option<String>, sqlx::Error> {
+    sqlx::query_scalar(
+        "SELECT value FROM discourse_rs.cached_values WHERE key = $1 AND expires_at > clock_timestamp()",
+    )
+    .bind(key)
+    .fetch_optional(conn)
+    .await
+}
+
+/// Redis's `SETEX key seconds value`.
+pub async fn cached_setex(
+    conn: &mut sqlx::PgConnection,
+    key: &str,
+    seconds: i64,
+    value: &str,
+) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "INSERT INTO discourse_rs.cached_values (key, value, expires_at) \
+         VALUES ($1, $2, clock_timestamp() + make_interval(secs => $3)) \
+         ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, expires_at = EXCLUDED.expires_at",
+    )
+    .bind(key)
+    .bind(value)
+    .bind(seconds as f64)
+    .execute(conn)
+    .await?;
+    Ok(())
 }

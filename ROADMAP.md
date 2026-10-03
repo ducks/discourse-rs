@@ -173,6 +173,10 @@ Logged-in readers, no writes yet.
 - [ ] Site settings that go further: lists, uploads, groups, categories,
       plugin settings, bulk updates, user preference backfills, and the
       settings whose change handlers write (title, site_description...)
+- [x] Read tracking: POST /topics/timings (post timings and reads, time
+      read, the notifications on posts read, the topic user's last read
+      post and auto tracking, the day's visit) and PUT
+      /notifications/mark-read (one, all, by type). Measured against Rails
 - [x] Private messages: new messages to users and replies in them, the
       allowed users, the recipients watching, the PM user actions, the
       private_message notification and email (participants, `[PM]`
