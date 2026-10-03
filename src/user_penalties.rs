@@ -44,7 +44,7 @@ pub struct Penalty<'a> {
 
 /// ActiveModel's `:datetime` cast for the formats the admin UI sends;
 /// None when blank. Other formats are not ported.
-fn cast_time(value: Option<&str>) -> Result<Option<NaiveDateTime>, Unsupported> {
+pub(crate) fn cast_time(value: Option<&str>) -> Result<Option<NaiveDateTime>, Unsupported> {
     let Some(v) = value.map(str::trim).filter(|v| !v.is_empty()) else {
         return Ok(None);
     };

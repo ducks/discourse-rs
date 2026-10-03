@@ -2343,5 +2343,164 @@
         }
       }
     ]
+  },
+  {
+    "name": "bookmark_post",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/bookmarks.json",
+        "params": {
+          "bookmarkable_id": 37,
+          "bookmarkable_type": "Post"
+        }
+      }
+    ]
+  },
+  {
+    "name": "bookmark_post_reminder",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/bookmarks.json",
+        "params": {
+          "bookmarkable_id": 37,
+          "bookmarkable_type": "Post",
+          "name": "Read this later",
+          "reminder_at": "2031-03-01T09:00:00Z",
+          "auto_delete_preference": 1
+        }
+      }
+    ]
+  },
+  {
+    "name": "bookmark_topic",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/bookmarks.json",
+        "params": {
+          "bookmarkable_id": 37,
+          "bookmarkable_type": "Topic"
+        }
+      }
+    ]
+  },
+  {
+    "name": "bookmark_duplicate",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/bookmarks.json",
+        "params": {
+          "bookmarkable_id": 52,
+          "bookmarkable_type": "Post"
+        }
+      }
+    ]
+  },
+  {
+    "name": "bookmark_bad_type",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/bookmarks.json",
+        "params": {
+          "bookmarkable_id": 2,
+          "bookmarkable_type": "User"
+        }
+      }
+    ]
+  },
+  {
+    "name": "bookmark_past_reminder",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/bookmarks.json",
+        "params": {
+          "bookmarkable_id": 37,
+          "bookmarkable_type": "Post",
+          "reminder_at": "2020-01-01T09:00:00Z"
+        }
+      }
+    ]
+  },
+  {
+    "name": "bookmark_update",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/bookmarks/3.json",
+        "params": {
+          "name": "Renamed bookmark",
+          "reminder_at": "2031-06-01T09:00:00Z"
+        }
+      }
+    ]
+  },
+  {
+    "name": "bookmark_toggle_pin",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/bookmarks/1/toggle_pin.json",
+        "params": {}
+      }
+    ]
+  },
+  {
+    "name": "bookmark_destroy",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "DELETE",
+        "path": "/bookmarks/3.json",
+        "params": {}
+      }
+    ]
+  },
+  {
+    "name": "bookmark_destroy_topic",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "DELETE",
+        "path": "/bookmarks/2.json",
+        "params": {}
+      }
+    ]
+  },
+  {
+    "name": "bookmark_destroy_other",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "DELETE",
+        "path": "/bookmarks/6.json",
+        "params": {}
+      }
+    ]
+  },
+  {
+    "name": "bookmark_anonymous",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/bookmarks.json",
+        "params": {
+          "bookmarkable_id": 37,
+          "bookmarkable_type": "Post"
+        }
+      }
+    ]
   }
 ]
