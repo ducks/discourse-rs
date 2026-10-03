@@ -347,7 +347,7 @@ fn normalize(value: &Value, started: NaiveDateTime) -> Value {
     match value {
         Value::String(s) => match timestamp(s) {
             Some(t) if t >= started => Value::String("<now>".into()),
-            _ => Value::String(unrandom(s)),
+            _ => Value::String(today(&unrandom(s), started.date())),
         },
         Value::Array(items) => Value::Array(items.iter().map(|v| normalize(v, started)).collect()),
         Value::Object(map) => Value::Object(
@@ -369,6 +369,24 @@ fn normalize(value: &Value, started: NaiveDateTime) -> Value {
         ),
         _ => value.clone(),
     }
+}
+
+/// The day the case ran, as a date column holds it (given_daily_likes) or
+/// as an email shows it ("October 2"), becomes `<today>`: a recording
+/// replayed on a later day is still the same case.
+fn today(s: &str, day: chrono::NaiveDate) -> String {
+    let iso = day.format("%Y-%m-%d").to_string();
+    if s == iso {
+        return "<today>".into();
+    }
+    let shown = day.format("%B %-d").to_string();
+    if !s.contains(&shown) {
+        return s.to_string();
+    }
+    regex::Regex::new(&format!(r"\b{}\b", regex::escape(&shown)))
+        .unwrap()
+        .replace_all(s, "<today>")
+        .into_owned()
 }
 
 fn modifications_value(yaml: &str) -> Value {
