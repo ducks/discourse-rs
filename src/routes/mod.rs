@@ -7,6 +7,7 @@ mod messages;
 mod notifications;
 mod post_actions;
 mod posts;
+mod review;
 mod robots;
 mod search;
 mod uploads;
@@ -156,6 +157,10 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/users/email-login", post(accounts::email_login))
         .route("/users/email-login.json", post(accounts::email_login))
         .route("/uploads.json", post(uploads::create))
+        .route(
+            "/review/{reviewable_id}/perform/{action_id}",
+            put(review::perform),
+        )
         .route("/post_actions", post(post_actions::create))
         .route("/post_actions.json", post(post_actions::create))
         .route("/post_actions/{id}", delete(post_actions::destroy))

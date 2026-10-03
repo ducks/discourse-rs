@@ -65,6 +65,47 @@ pub async fn sensitivity_score(
     Ok(value.max(min_score_for_priority(conn, s).await?))
 }
 
+/// `User#reviewable_count` and `Reviewable.unseen_reviewable_count(user)`
+/// for staff: the pending reviewables of the core types, less those on
+/// topics claimed by someone else.
+pub async fn staff_counts(
+    conn: &mut PgConnection,
+    s: &SiteSettings,
+    user_id: i32,
+    admin: bool,
+    moderator: bool,
+) -> Result<(i64, i64), AppError> {
+    if min_score_for_priority(&mut *conn, s).await? > 0.0 {
+        return Err(Unsupported("reviewable minimum score for priority").into());
+    }
+    if moderator && !admin {
+        return Err(Unsupported("moderator reviewable counts").into());
+    }
+    let last_seen: Option<i32> =
+        sqlx::query_scalar("SELECT last_seen_reviewable_id FROM users WHERE id = $1")
+            .bind(user_id)
+            .fetch_one(&mut *conn)
+            .await?;
+    let base = "FROM reviewables LEFT JOIN reviewable_claimed_topics rct ON reviewables.topic_id = rct.topic_id \
+                WHERE reviewables.status = 0 AND (rct.user_id IS NULL OR rct.user_id = $1) \
+                AND reviewables.type IN ('ReviewableFlaggedPost','ReviewableQueuedPost','ReviewableUser','ReviewablePost')";
+    let count: i64 = sqlx::query_scalar(&format!("SELECT COUNT(*) {base}"))
+        .bind(user_id)
+        .fetch_one(&mut *conn)
+        .await?;
+    let unseen: i64 = match last_seen {
+        Some(id) => {
+            sqlx::query_scalar(&format!("SELECT COUNT(*) {base} AND reviewables.id > $2"))
+                .bind(user_id)
+                .bind(id)
+                .fetch_one(&mut *conn)
+                .await?
+        }
+        None => count,
+    };
+    Ok((count, unseen))
+}
+
 /// `ReviewableScore.calc_user_accuracy_bonus(agreed, disagreed)`
 fn accuracy_bonus(agreed: i32, disagreed: i32) -> f64 {
     let total = f64::from(agreed + disagreed);
@@ -166,36 +207,46 @@ pub async fn create_flagged_post(
     Ok(id)
 }
 
-/// `Reviewable#add_score(user, type, created_at:)` without taking action,
-/// a reason, a meta topic or forcing review. Returns the score added.
+/// A flag's score: its type, when it was made, and whether staff took
+/// action with it.
+pub struct NewScore {
+    pub score_type: i64,
+    pub created_at: chrono::NaiveDateTime,
+    pub take_action: bool,
+}
+
+/// `Reviewable#add_score(user, type, created_at:, take_action:)` without a
+/// reason, a meta topic or forcing review. Returns the score added.
 pub async fn add_score(
     conn: &mut PgConnection,
     reviewable_id: i64,
     topic_id: i32,
     user: &Flagger,
-    score_type: i64,
-    created_at: chrono::NaiveDateTime,
+    new: &NewScore,
     s: &SiteSettings,
 ) -> Result<f64, AppError> {
+    let (score_type, created_at) = (new.score_type, new.created_at);
+    let take_action_bonus = if new.take_action { 5.0 } else { 0.0 };
     let type_bonus: Option<f64> =
         sqlx::query_scalar("SELECT score_bonus FROM post_action_types WHERE id = $1")
             .bind(score_type as i32)
             .fetch_optional(&mut *conn)
             .await?;
     let accuracy = user_accuracy_bonus(&mut *conn, user).await?;
-    // ReviewableScore.calculate_score: user_flag_score + type bonus
+    // ReviewableScore.calculate_score: user_flag_score + type bonus +
+    // take action bonus
     let user_flag_score =
         1.0 + if user.staff {
             5.0
         } else {
             f64::from(user.trust_level)
         } + accuracy;
-    let score = (user_flag_score + type_bonus.unwrap_or(0.0)).max(0.0);
+    let score = (user_flag_score + type_bonus.unwrap_or(0.0) + take_action_bonus).max(0.0);
     sqlx::query(
         "INSERT INTO reviewable_scores (reviewable_id, user_id, reviewable_score_type, status, score, \
                                         take_action_bonus, user_accuracy_bonus, meta_topic_id, reason, \
                                         context, created_at, updated_at) \
-         VALUES ($1, $2, $3, $4, $5, 0, $6, NULL, NULL, NULL, $7, clock_timestamp())",
+         VALUES ($1, $2, $3, $4, $5, $8, $6, NULL, NULL, NULL, $7, clock_timestamp())",
     )
     .bind(reviewable_id)
     .bind(user.id)
@@ -204,6 +255,7 @@ pub async fn add_score(
     .bind(score)
     .bind(accuracy)
     .bind(created_at)
+    .bind(take_action_bonus)
     .execute(&mut *conn)
     .await?;
     // update(score:, latest_score:, force_review:); still pending, so

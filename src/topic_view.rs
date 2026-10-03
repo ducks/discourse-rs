@@ -679,8 +679,14 @@ impl TopicView<'_> {
         if p.get("reviewable_id") == Some(&json!(0)) {
             p.insert("reviewable_id".into(), Value::Null);
         }
+        // include_raw?: a hidden post's raw is for staff and its author.
+        let raw_visible = !post.hidden
+            || self.guardian.is_staff()
+            || (self.guardian.user_id().is_some() && self.guardian.user_id() == post.user_id);
         if with_raw_and_draft_sequence {
-            p.insert("raw".into(), json!(raw));
+            if raw_visible {
+                p.insert("raw".into(), json!(raw));
+            }
             p.insert("draft_sequence".into(), json!(viewer.draft_sequence));
         }
         Ok(Value::Object(p))
@@ -1350,10 +1356,9 @@ impl TopicView<'_> {
         let mut out = Vec::with_capacity(posts.len());
         for post in posts {
             let u = user(post.user_id);
-            if post.hidden {
-                return Err(Unsupported("hidden posts").into());
-            }
             let g = self.guardian;
+            // BasicPostSerializer#cooked_hidden
+            let cooked_hidden = post.hidden && !g.is_staff();
             let s = self.settings;
             let ctx = self.post_ctx(post).await?;
             let yours = match g.user_id() {
@@ -1389,7 +1394,19 @@ impl TopicView<'_> {
             };
             p.insert("avatar_template".into(), json!(avatar));
             p.insert("created_at".into(), json!(time_json(post.created_at)));
-            p.insert("cooked".into(), json!(post.cooked));
+            if cooked_hidden {
+                let mine = g.user_id().is_some() && g.user_id() == post.user_id;
+                let message = if mine {
+                    self.i18n
+                        .t_with("flagging.you_must_edit", &[("path", "/my/messages")])
+                } else {
+                    self.i18n.t("flagging.user_must_edit").map(str::to_string)
+                };
+                p.insert("cooked".into(), json!(message));
+                p.insert("cooked_hidden".into(), json!(true));
+            } else {
+                p.insert("cooked".into(), json!(post.cooked));
+            }
             p.insert("post_number".into(), json!(post.post_number));
             p.insert("post_type".into(), json!(post.post_type));
             p.insert("posts_count".into(), json!(topic.posts_count));
@@ -1452,7 +1469,10 @@ impl TopicView<'_> {
             p.insert("badges_granted".into(), json!([]));
             p.insert(
                 "version".into(),
-                json!(if g.is_staff() {
+                // Hidden revisions are for staff (can_view_hidden_post_revisions?).
+                json!(if post.hidden && !g.is_staff() {
+                    1
+                } else if g.is_staff() {
                     post.version
                 } else {
                     post.public_version
@@ -1482,12 +1502,14 @@ impl TopicView<'_> {
                 "can_recover".into(),
                 json!(g.can_recover_post(s, &ctx, viewer.can_see)?),
             );
-            p.insert(
-                "can_see_hidden_post".into(),
-                json!(g.can_see_hidden_post(s, &ctx)?),
-            );
+            let can_see_hidden_post = g.can_see_hidden_post(s, &ctx)?;
+            p.insert("can_see_hidden_post".into(), json!(can_see_hidden_post));
             p.insert("can_wiki".into(), json!(g.can_wiki(s, &ctx)?));
-            let link_counts = self.link_counts(post.id).await?;
+            let link_counts = if post.hidden && !can_see_hidden_post {
+                Vec::new()
+            } else {
+                self.link_counts(post.id).await?
+            };
             if !link_counts.is_empty() {
                 p.insert("link_counts".into(), Value::Array(link_counts));
             }
