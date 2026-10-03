@@ -1,0 +1,100 @@
+{
+  "name": "bookmark_post_reminder",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/bookmarks.json",
+      "params": {
+        "bookmarkable_id": 37,
+        "bookmarkable_type": "Post",
+        "name": "Read this later",
+        "reminder_at": "2031-03-01T09:00:00Z",
+        "auto_delete_preference": 1
+      }
+    }
+  ],
+  "started_at": "2026-10-03T16:27:14.042714",
+  "transaction_started_at": "2026-10-03T16:27:12.85376",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "id": 8
+      }
+    }
+  ],
+  "changes": {
+    "bookmarks": {
+      "inserted": [
+        {
+          "id": 8,
+          "name": "Read this later",
+          "pinned": null,
+          "user_id": 3,
+          "created_at": "2026-10-03T16:27:14.068205",
+          "updated_at": "2026-10-03T16:27:14.068205",
+          "reminder_at": "2031-03-01T09:00:00",
+          "bookmarkable_id": 37,
+          "reminder_set_at": "2026-10-03T16:27:14.063723",
+          "bookmarkable_type": "Post",
+          "reminder_last_sent_at": null,
+          "auto_delete_preference": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 86,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "bE17UIhIqUJF8pJv4fm995xiVzE=",
+            "created_at": "2026-10-03T16:27:13.287751",
+            "rotated_at": "2026-10-03T16:27:13.287429",
+            "updated_at": "2026-10-03T16:27:13.287751",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "bE17UIhIqUJF8pJv4fm995xiVzE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 86,
+            "seen_at": "2026-10-03T16:27:14.051278",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "bE17UIhIqUJF8pJv4fm995xiVzE=",
+            "created_at": "2026-10-03T16:27:13.287751",
+            "rotated_at": "2026-10-03T16:27:13.287429",
+            "updated_at": "2026-10-03T16:27:13.287751",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "bE17UIhIqUJF8pJv4fm995xiVzE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "bot_input",
+      {
+        "user_id": 3,
+        "post_id": 37,
+        "input": "bookmark"
+      }
+    ]
+  ]
+}

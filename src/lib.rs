@@ -1,5 +1,6 @@
 pub mod accounts;
 pub mod avatar;
+pub mod bookmark_manager;
 pub mod bookmarks;
 pub mod categories;
 pub mod category;

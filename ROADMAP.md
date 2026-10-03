@@ -180,6 +180,10 @@ Logged-in readers, no writes yet.
 - [x] Drafts: POST /drafts (saved under the draft sequence, a stale sequence
       a 409, force_save, the draft count, the edit conflict check), GET
       /drafts/:id and DELETE /drafts/:id. Measured against Rails
+- [x] Bookmark writes: POST /bookmarks for posts and topics (visibility,
+      Bookmark's validations, the topic user's bookmarked flag), PUT
+      /bookmarks/:id, PUT /bookmarks/:id/toggle_pin, DELETE /bookmarks/:id.
+      Measured against Rails
 - [x] Private messages: new messages to users and replies in them, the
       allowed users, the recipients watching, the PM user actions, the
       private_message notification and email (participants, `[PM]`

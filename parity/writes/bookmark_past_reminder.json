@@ -1,0 +1,71 @@
+{
+  "name": "bookmark_past_reminder",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/bookmarks.json",
+      "params": {
+        "bookmarkable_id": 37,
+        "bookmarkable_type": "Post",
+        "reminder_at": "2020-01-01T09:00:00Z"
+      }
+    }
+  ],
+  "started_at": "2026-10-03T16:27:19.846442",
+  "transaction_started_at": "2026-10-03T16:27:18.630851",
+  "responses": [
+    {
+      "status": 400,
+      "body": {
+        "failed": "FAILED",
+        "errors": [
+          "You cannot set a bookmark reminder in the past."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 86,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "/OZrDC3gu57t4MmfW2JudOJ1Vvs=",
+            "created_at": "2026-10-03T16:27:19.225852",
+            "rotated_at": "2026-10-03T16:27:19.22559",
+            "updated_at": "2026-10-03T16:27:19.225852",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "/OZrDC3gu57t4MmfW2JudOJ1Vvs=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 86,
+            "seen_at": "2026-10-03T16:27:19.852899",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "/OZrDC3gu57t4MmfW2JudOJ1Vvs=",
+            "created_at": "2026-10-03T16:27:19.225852",
+            "rotated_at": "2026-10-03T16:27:19.22559",
+            "updated_at": "2026-10-03T16:27:19.225852",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "/OZrDC3gu57t4MmfW2JudOJ1Vvs=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": []
+}

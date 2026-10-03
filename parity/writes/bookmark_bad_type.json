@@ -1,0 +1,70 @@
+{
+  "name": "bookmark_bad_type",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/bookmarks.json",
+      "params": {
+        "bookmarkable_id": 2,
+        "bookmarkable_type": "User"
+      }
+    }
+  ],
+  "started_at": "2026-10-03T16:27:18.372964",
+  "transaction_started_at": "2026-10-03T16:27:17.167978",
+  "responses": [
+    {
+      "status": 400,
+      "body": {
+        "failed": "FAILED",
+        "errors": [
+          "A User cannot be bookmarked."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 86,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "1SxsZwxgdXnQJfT5OfRvyPCkgrY=",
+            "created_at": "2026-10-03T16:27:17.714596",
+            "rotated_at": "2026-10-03T16:27:17.714278",
+            "updated_at": "2026-10-03T16:27:17.714596",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "1SxsZwxgdXnQJfT5OfRvyPCkgrY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 86,
+            "seen_at": "2026-10-03T16:27:18.380111",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "1SxsZwxgdXnQJfT5OfRvyPCkgrY=",
+            "created_at": "2026-10-03T16:27:17.714596",
+            "rotated_at": "2026-10-03T16:27:17.714278",
+            "updated_at": "2026-10-03T16:27:17.714596",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "1SxsZwxgdXnQJfT5OfRvyPCkgrY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": []
+}
