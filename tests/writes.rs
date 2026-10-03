@@ -48,6 +48,58 @@ const PLUGIN_KEYS: [&str; 11] = [
     "can_vote",
 ];
 
+/// Keys plugins add to the user serializer and its user_option on the
+/// reference (chat, discourse-solved, discourse-calendar).
+const PLUGIN_USER_KEYS: [&str; 21] = [
+    "can_chat_user",
+    "accepted_answers",
+    "chat_enabled",
+    "ignore_channel_wide_mention",
+    "show_thread_title_prompts",
+    "chat_announce_new_messages",
+    "chat_channel_list_filter",
+    "chat_channel_list_sort",
+    "chat_channel_list_sort_starred",
+    "chat_channel_list_sort_dms",
+    "chat_channel_list_filter_starred",
+    "chat_channel_list_filter_dms",
+    "chat_new_message_sound",
+    "chat_email_frequency",
+    "chat_header_indicator_preference",
+    "chat_separate_sidebar_mode",
+    "chat_send_shortcut",
+    "chat_quick_reaction_type",
+    "chat_quick_reactions_custom",
+    "event_reminder_preference",
+    "notify_on_solved",
+];
+
+/// User serializer keys that follow what the reference does in the
+/// background between seeding and recording (profile views, other
+/// sessions, badge grants): not compared.
+const DRIFTING_USER_KEYS: [&str; 3] = [
+    "profile_view_count",
+    "user_auth_tokens",
+    "featured_user_badge_ids",
+];
+
+/// A serialized user in a response, less plugin and drifting keys, with
+/// `sidebar_category_ids` (plucked without ORDER BY) sorted.
+fn undrift_user(user: &mut Value) {
+    let Some(map) = user.as_object_mut() else {
+        return;
+    };
+    map.retain(|k, _| {
+        !PLUGIN_USER_KEYS.contains(&k.as_str()) && !DRIFTING_USER_KEYS.contains(&k.as_str())
+    });
+    if let Some(Value::Object(options)) = map.get_mut("user_option") {
+        options.retain(|k, _| !PLUGIN_USER_KEYS.contains(&k.as_str()));
+    }
+    if let Some(Value::Array(ids)) = map.get_mut("sidebar_category_ids") {
+        ids.sort_by_key(|v| v.as_i64());
+    }
+}
+
 /// Jobs plugins enqueue on the reference (discourse-narrative-bot, and
 /// discourse-topic-voting on topic_status_updated).
 const PLUGIN_JOBS: [&str; 3] = [
@@ -864,6 +916,16 @@ async fn replay(case: &Value, run_jobs: &[String]) -> Vec<String> {
         if routing_error && ours["responses"][i]["status"] == 404 {
             rails["responses"][i]["body"] = Value::String("<not found>".into());
             ours["responses"][i]["body"] = Value::String("<not found>".into());
+        }
+    }
+    for doc in [&mut rails, &mut ours] {
+        for response in doc["responses"].as_array_mut().into_iter().flatten() {
+            if let Some(user) = response["body"]
+                .as_object_mut()
+                .and_then(|b| b.get_mut("user"))
+            {
+                undrift_user(user);
+            }
         }
     }
     if let Ok(dir) = std::env::var("WRITES_DUMP") {

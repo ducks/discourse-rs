@@ -2502,5 +2502,112 @@
         }
       }
     ]
+  },
+  {
+    "name": "prefs_options",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/u/user1.json",
+        "params": {
+          "email_level": 2,
+          "email_messages_level": 0,
+          "external_links_in_new_tab": "true",
+          "enable_quoting": "false",
+          "auto_track_topics_after_msecs": 60000,
+          "timezone": "America/Chicago",
+          "like_notification_frequency": 1
+        }
+      }
+    ]
+  },
+  {
+    "name": "prefs_profile",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/u/user1.json",
+        "params": {
+          "name": "User One",
+          "location": "Portland",
+          "website": "example.com",
+          "bio_raw": "Hello, I *like* parity."
+        }
+      }
+    ]
+  },
+  {
+    "name": "prefs_muted",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/u/user1.json",
+        "params": {
+          "muted_usernames": "user2",
+          "allowed_pm_usernames": "user3",
+          "enable_allowed_pm_users": "true"
+        }
+      }
+    ]
+  },
+  {
+    "name": "prefs_categories",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/u/user1.json",
+        "params": {
+          "watched_category_ids": [
+            4
+          ],
+          "muted_category_ids": [
+            2
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "prefs_text_size",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/u/user1.json",
+        "params": {
+          "text_size": "larger"
+        }
+      }
+    ]
+  },
+  {
+    "name": "prefs_other_user",
+    "user": "user2",
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/u/user1.json",
+        "params": {
+          "name": "Not Mine"
+        }
+      }
+    ]
+  },
+  {
+    "name": "prefs_admin_other",
+    "user": "admin",
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/u/user1.json",
+        "params": {
+          "name": "Renamed By Admin"
+        }
+      }
+    ]
   }
 ]
