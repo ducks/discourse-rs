@@ -128,9 +128,16 @@ Logged-in readers, no writes yet.
       oneboxes, topic links, grace-period edits, title/category edits
 - [x] Likes: like and unlike (POST and DELETE /post_actions), the counts,
       the liked flag, daily likes, user actions and the liked notification,
-      measured against Rails. Refused: flags, likes in messages, liked
+      measured against Rails. Refused: likes in messages, liked
       notifications that would consolidate; the like rate limit is not ported
-- [ ] Flags
+- [x] Flags: off topic, inappropriate and spam (POST /post_actions), the
+      post's count, the ReviewableFlaggedPost with its score and history,
+      the topic's reviewable score, the auto close, auto hide and auto
+      silence thresholds checked, measured against Rails
+- [ ] Flags that act or message: taking action as staff (agree and hide),
+      hiding past the threshold, closing topics and silencing new users,
+      notify user and notify moderators messages, illegal, undoing flags,
+      flags on posts already in review
 - [x] Private messages: new messages to users and replies in them, the
       allowed users, the recipients watching, the PM user actions, the
       private_message notification and email (participants, `[PM]`

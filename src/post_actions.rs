@@ -24,6 +24,7 @@ struct FlagRow {
     applies_to: Vec<String>,
     enabled: bool,
     score_type: bool,
+    auto_action_type: bool,
 }
 
 /// `PostActionTypeView`: the action types in `types` order (like, then
@@ -35,6 +36,8 @@ pub struct ActionTypes {
     notify_flag_ids: Vec<i64>,
     additional_message_ids: Vec<i64>,
     disabled: Vec<String>,
+    /// `auto_action_flag_types`: flags that may hide a post.
+    auto_action_ids: Vec<i64>,
     /// `topic_flag_types` ids by position.
     pub topic_flag_ids: Vec<i64>,
 }
@@ -42,7 +45,7 @@ pub struct ActionTypes {
 impl ActionTypes {
     pub async fn load(conn: &mut PgConnection) -> Result<ActionTypes, sqlx::Error> {
         let rows: Vec<FlagRow> = sqlx::query_as(
-            "SELECT id, name_key, notify_type, require_message, applies_to, enabled, score_type \
+            "SELECT id, name_key, notify_type, require_message, applies_to, enabled, score_type, auto_action_type \
              FROM flags ORDER BY position",
         )
         .fetch_all(conn)
@@ -70,12 +73,40 @@ impl ActionTypes {
                 .filter(|f| !f.enabled)
                 .map(|f| f.name_key.clone())
                 .collect(),
+            auto_action_ids: flags
+                .iter()
+                .filter(|f| f.auto_action_type)
+                .map(|f| f.id)
+                .collect(),
             topic_flag_ids: flags
                 .iter()
                 .filter(|f| f.applies_to.iter().any(|a| a == "Topic"))
                 .map(|f| f.id)
                 .collect(),
         })
+    }
+
+    /// The type's `name_key`.
+    pub fn name(&self, id: i64) -> Option<&str> {
+        self.types
+            .iter()
+            .find(|(_, i)| *i == id)
+            .map(|(k, _)| k.as_str())
+    }
+
+    /// `notify_flag_type_ids`: flags that go to review.
+    pub fn is_notify_flag(&self, id: i64) -> bool {
+        self.notify_flag_ids.contains(&id)
+    }
+
+    /// `additional_message_types`: flags that send a message.
+    pub fn requires_message(&self, id: i64) -> bool {
+        self.additional_message_ids.contains(&id)
+    }
+
+    /// `auto_action_flag_types`
+    pub fn is_auto_action(&self, id: i64) -> bool {
+        self.auto_action_ids.contains(&id)
     }
 
     /// `is_flag?`: notify or message flags, i.e. everything but like.
