@@ -1,0 +1,115 @@
+{
+  "name": "draft_update",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/drafts.json",
+      "params": {
+        "draft_key": "topic_35",
+        "sequence": 0,
+        "data": "{\"reply\":\"A draft reply being written\",\"action\":\"reply\",\"categoryId\":4,\"composerTime\":3000,\"typingTime\":2000}"
+      }
+    }
+  ],
+  "started_at": "2026-10-03T16:04:24.538148",
+  "transaction_started_at": "2026-10-03T16:04:23.362181",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "draft_sequence": 1
+      }
+    }
+  ],
+  "changes": {
+    "draft_sequences": {
+      "inserted": [
+        {
+          "id": 1,
+          "user_id": 3,
+          "sequence": 1,
+          "draft_key": "topic_35"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "drafts": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 9501,
+            "data": "{\"reply\":\"Earlier draft\",\"action\":\"reply\"}",
+            "owner": null,
+            "user_id": 3,
+            "sequence": 0,
+            "draft_key": "topic_35",
+            "revisions": 1,
+            "created_at": "2026-10-01T10:00:00",
+            "updated_at": "2026-10-01T10:00:00"
+          },
+          "after": {
+            "id": 9501,
+            "data": "{\"reply\":\"A draft reply being written\",\"action\":\"reply\",\"categoryId\":4,\"composerTime\":3000,\"typingTime\":2000}",
+            "owner": null,
+            "user_id": 3,
+            "sequence": 1,
+            "draft_key": "topic_35",
+            "revisions": 2,
+            "created_at": "2026-10-01T10:00:00",
+            "updated_at": "2026-10-03T16:04:23.362181"
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 86,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "gLeIWkRsQZxDZ7oiOZ3GzSrbcFo=",
+            "created_at": "2026-10-03T16:04:23.754436",
+            "rotated_at": "2026-10-03T16:04:23.754189",
+            "updated_at": "2026-10-03T16:04:23.754436",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "gLeIWkRsQZxDZ7oiOZ3GzSrbcFo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 86,
+            "seen_at": "2026-10-03T16:04:24.547348",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "gLeIWkRsQZxDZ7oiOZ3GzSrbcFo=",
+            "created_at": "2026-10-03T16:04:23.754436",
+            "rotated_at": "2026-10-03T16:04:23.754189",
+            "updated_at": "2026-10-03T16:04:23.754436",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "gLeIWkRsQZxDZ7oiOZ3GzSrbcFo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "setup": [
+    "INSERT INTO drafts (id, user_id, draft_key, data, sequence, revisions, owner, created_at, updated_at) VALUES (9501, 3, 'topic_35', '{\"reply\":\"Earlier draft\",\"action\":\"reply\"}', 0, 1, NULL, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "UPDATE user_stats SET draft_count = 1 WHERE user_id = 3"
+  ]
+}

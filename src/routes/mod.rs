@@ -3,6 +3,7 @@ mod admin_email;
 mod admin_site_settings;
 mod admin_users;
 mod bookmarks;
+mod drafts;
 mod list;
 mod login_required;
 mod messages;
@@ -78,6 +79,9 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/bookmarks.json", get(list::user_list))
         .route("/notifications", get(notifications::index))
         .route("/notifications.json", get(notifications::index))
+        .route("/drafts", post(drafts::create))
+        .route("/drafts.json", post(drafts::create))
+        .route("/drafts/{id}", get(drafts::show).delete(drafts::destroy))
         .route("/notifications/mark-read", put(read_tracking::mark_read))
         .route(
             "/notifications/mark-read.json",

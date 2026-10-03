@@ -177,6 +177,9 @@ Logged-in readers, no writes yet.
       read, the notifications on posts read, the topic user's last read
       post and auto tracking, the day's visit) and PUT
       /notifications/mark-read (one, all, by type). Measured against Rails
+- [x] Drafts: POST /drafts (saved under the draft sequence, a stale sequence
+      a 409, force_save, the draft count, the edit conflict check), GET
+      /drafts/:id and DELETE /drafts/:id. Measured against Rails
 - [x] Private messages: new messages to users and replies in them, the
       allowed users, the recipients watching, the PM user actions, the
       private_message notification and email (participants, `[PM]`

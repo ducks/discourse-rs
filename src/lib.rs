@@ -9,6 +9,7 @@ pub mod color_scheme;
 pub mod config;
 pub mod current_user;
 pub mod discourse_diff;
+pub mod drafts;
 pub mod email;
 pub mod emoji;
 pub mod excerpt;
