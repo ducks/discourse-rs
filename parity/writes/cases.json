@@ -2162,5 +2162,186 @@
         }
       }
     ]
+  },
+  {
+    "name": "draft_create",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/drafts.json",
+        "params": {
+          "draft_key": "topic_35",
+          "sequence": 0,
+          "data": "{\"reply\":\"A draft reply being written\",\"action\":\"reply\",\"categoryId\":4,\"composerTime\":3000,\"typingTime\":2000}"
+        }
+      }
+    ]
+  },
+  {
+    "name": "draft_update",
+    "user": "user1",
+    "setup": [
+      "INSERT INTO drafts (id, user_id, draft_key, data, sequence, revisions, owner, created_at, updated_at) VALUES (9501, 3, 'topic_35', '{\"reply\":\"Earlier draft\",\"action\":\"reply\"}', 0, 1, NULL, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+      "UPDATE user_stats SET draft_count = 1 WHERE user_id = 3"
+    ],
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/drafts.json",
+        "params": {
+          "draft_key": "topic_35",
+          "sequence": 0,
+          "data": "{\"reply\":\"A draft reply being written\",\"action\":\"reply\",\"categoryId\":4,\"composerTime\":3000,\"typingTime\":2000}"
+        }
+      }
+    ]
+  },
+  {
+    "name": "draft_out_of_sequence",
+    "user": "user1",
+    "setup": [
+      "INSERT INTO drafts (id, user_id, draft_key, data, sequence, revisions, owner, created_at, updated_at) VALUES (9501, 3, 'topic_35', '{\"reply\":\"Earlier draft\",\"action\":\"reply\"}', 0, 1, NULL, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+      "UPDATE user_stats SET draft_count = 1 WHERE user_id = 3"
+    ],
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/drafts.json",
+        "params": {
+          "draft_key": "topic_35",
+          "sequence": 3,
+          "data": "{\"reply\":\"A draft reply being written\",\"action\":\"reply\",\"categoryId\":4,\"composerTime\":3000,\"typingTime\":2000}"
+        }
+      }
+    ]
+  },
+  {
+    "name": "draft_force_save",
+    "user": "user1",
+    "setup": [
+      "INSERT INTO drafts (id, user_id, draft_key, data, sequence, revisions, owner, created_at, updated_at) VALUES (9501, 3, 'topic_35', '{\"reply\":\"Earlier draft\",\"action\":\"reply\"}', 0, 1, NULL, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+      "UPDATE user_stats SET draft_count = 1 WHERE user_id = 3"
+    ],
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/drafts.json",
+        "params": {
+          "draft_key": "topic_35",
+          "sequence": 3,
+          "data": "{\"reply\":\"A draft reply being written\",\"action\":\"reply\",\"categoryId\":4,\"composerTime\":3000,\"typingTime\":2000}",
+          "force_save": "true"
+        }
+      }
+    ]
+  },
+  {
+    "name": "draft_show",
+    "user": "user1",
+    "setup": [
+      "INSERT INTO drafts (id, user_id, draft_key, data, sequence, revisions, owner, created_at, updated_at) VALUES (9501, 3, 'topic_35', '{\"reply\":\"Earlier draft\",\"action\":\"reply\"}', 0, 1, NULL, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+      "UPDATE user_stats SET draft_count = 1 WHERE user_id = 3"
+    ],
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/drafts/topic_35.json",
+        "params": {}
+      }
+    ]
+  },
+  {
+    "name": "draft_destroy",
+    "user": "user1",
+    "setup": [
+      "INSERT INTO drafts (id, user_id, draft_key, data, sequence, revisions, owner, created_at, updated_at) VALUES (9501, 3, 'topic_35', '{\"reply\":\"Earlier draft\",\"action\":\"reply\"}', 0, 1, NULL, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+      "UPDATE user_stats SET draft_count = 1 WHERE user_id = 3"
+    ],
+    "requests": [
+      {
+        "method": "DELETE",
+        "path": "/drafts/topic_35.json",
+        "params": {
+          "sequence": 0
+        }
+      }
+    ]
+  },
+  {
+    "name": "draft_destroy_wrong_sequence",
+    "user": "user1",
+    "setup": [
+      "INSERT INTO drafts (id, user_id, draft_key, data, sequence, revisions, owner, created_at, updated_at) VALUES (9501, 3, 'topic_35', '{\"reply\":\"Earlier draft\",\"action\":\"reply\"}', 0, 1, NULL, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+      "UPDATE user_stats SET draft_count = 1 WHERE user_id = 3"
+    ],
+    "requests": [
+      {
+        "method": "DELETE",
+        "path": "/drafts/topic_35.json",
+        "params": {
+          "sequence": 4
+        }
+      }
+    ]
+  },
+  {
+    "name": "draft_invalid_data",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/drafts.json",
+        "params": {
+          "draft_key": "topic_35",
+          "sequence": 0,
+          "data": "not json"
+        }
+      }
+    ]
+  },
+  {
+    "name": "draft_anonymous",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/drafts.json",
+        "params": {
+          "draft_key": "topic_35",
+          "sequence": 0,
+          "data": "{\"reply\":\"A draft reply being written\",\"action\":\"reply\",\"categoryId\":4,\"composerTime\":3000,\"typingTime\":2000}"
+        }
+      }
+    ]
+  },
+  {
+    "name": "draft_edit_conflict",
+    "user": "user0",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/drafts.json",
+        "params": {
+          "draft_key": "topic_35",
+          "sequence": 0,
+          "data": "{\"reply\":\"An edited reply\",\"action\":\"edit\",\"postId\":52,\"originalText\":\"The text as it was before\"}"
+        }
+      }
+    ]
+  },
+  {
+    "name": "draft_edit_no_conflict",
+    "user": "user0",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/drafts.json",
+        "params": {
+          "draft_key": "topic_35",
+          "sequence": 0,
+          "data": "{\"reply\":\"An edited reply\",\"action\":\"edit\",\"postId\":52,\"originalText\":\"Reply from user0 mentioning @user1 so a mention notification exists.\"}"
+        }
+      }
+    ]
   }
 ]

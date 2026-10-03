@@ -91,8 +91,8 @@ fn staff_message(reason: &str, message: Option<&str>) -> String {
     out
 }
 
-/// `BasicUserSerializer` for the acting user.
-async fn basic_user(
+/// `BasicUserSerializer`
+pub(crate) async fn basic_user(
     conn: &mut PgConnection,
     ctx: &Ctx<'_>,
     user_id: i32,
