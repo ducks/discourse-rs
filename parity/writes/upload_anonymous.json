@@ -1,0 +1,31 @@
+{
+  "name": "upload_anonymous",
+  "user": null,
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/uploads.json",
+      "params": {
+        "upload_type": "composer",
+        "file": {
+          "fixture": "static.gif"
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-02T21:43:45.807751",
+  "transaction_started_at": "2026-10-02T21:43:44.87062",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You need to be logged in to do that."
+        ],
+        "error_type": "not_logged_in"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": []
+}

@@ -96,6 +96,11 @@ impl Client {
             request = request.header("x-csrf-token", token.as_str());
         }
         let body = match body {
+            Some(Value::Object(params)) if params.values().any(is_fixture) => {
+                let (content_type, bytes) = multipart(params);
+                request = request.header(header::CONTENT_TYPE, content_type);
+                Body::from(bytes)
+            }
             Some(json) => {
                 request = request.header(header::CONTENT_TYPE, "application/json");
                 Body::from(json.to_string())
@@ -133,6 +138,43 @@ impl Client {
         let (status, reply) = self.send(Method::POST, "/session.json", Some(&body)).await;
         assert_eq!(status, 200, "login as {username}: {reply}");
     }
+}
+
+/// A `{"fixture": name}` param: a file from parity/writes/files, sent as
+/// the recorder sent it, a Rack::Test::UploadedFile in a multipart form.
+fn is_fixture(value: &Value) -> bool {
+    value.get("fixture").is_some_and(Value::is_string)
+}
+
+fn multipart(params: &Map<String, Value>) -> (String, Vec<u8>) {
+    let boundary = "----discourse-rs-writes-boundary";
+    let files = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("parity/writes/files");
+    let mut out = Vec::new();
+    for (name, value) in params {
+        out.extend_from_slice(format!("--{boundary}\r\n").as_bytes());
+        if is_fixture(value) {
+            let file = value["fixture"].as_str().unwrap();
+            out.extend_from_slice(
+                format!(
+                    "Content-Disposition: form-data; name=\"{name}\"; filename=\"{file}\"\r\n\
+                     Content-Type: application/octet-stream\r\n\r\n"
+                )
+                .as_bytes(),
+            );
+            out.extend(std::fs::read(files.join(file)).unwrap());
+        } else {
+            let text = match value {
+                Value::String(s) => s.clone(),
+                other => other.to_string(),
+            };
+            out.extend_from_slice(
+                format!("Content-Disposition: form-data; name=\"{name}\"\r\n\r\n{text}").as_bytes(),
+            );
+        }
+        out.extend_from_slice(b"\r\n");
+    }
+    out.extend_from_slice(format!("--{boundary}--\r\n").as_bytes());
+    (format!("multipart/form-data; boundary={boundary}"), out)
 }
 
 /// Every table with its primary key columns.
@@ -614,7 +656,15 @@ async fn apply_settings(pool: &PgPool, state: &AppState, case: &Value) {
 
 async fn replay(case: &Value, run_jobs: &[String]) -> Vec<String> {
     let db = TestDb::new().await;
-    let app_state = state(db.pool.clone(), recorded_config());
+    // A public dir of the case's own, for the files uploads store.
+    let public = std::env::temp_dir().join(format!(
+        "discourse-rs-writes-{}-{}",
+        std::process::id(),
+        case["name"].as_str().unwrap()
+    ));
+    let mut config = recorded_config();
+    config.public_dir = public.clone();
+    let app_state = state(db.pool.clone(), config);
     reset_sequences(&db.pool).await;
     align_sequences(&db.pool, case).await;
     let mut client = Client {
@@ -779,6 +829,26 @@ async fn replay(case: &Value, run_jobs: &[String]) -> Vec<String> {
         .into_iter()
         .map(|f| format!("job failed: {f}"))
         .collect();
+    // The files the uploads stored, where Rails stored them.
+    for upload in rails["changes"]["uploads"]["inserted"]
+        .as_array()
+        .into_iter()
+        .flatten()
+    {
+        let url = upload["url"].as_str().unwrap_or_default();
+        let stored = public.join(url.trim_start_matches('/'));
+        match std::fs::read(&stored) {
+            Ok(bytes) => {
+                use sha1::Digest;
+                let sha1 = format!("{:x}", sha1::Sha1::digest(&bytes));
+                if upload["sha1"] != sha1.as_str() {
+                    out.push(format!("{url}: stored file has sha1 {sha1}"));
+                }
+            }
+            Err(e) => out.push(format!("{url}: not stored ({e})")),
+        }
+    }
+    let _ = std::fs::remove_dir_all(&public);
     differences(
         "",
         &changed_columns(normalize(

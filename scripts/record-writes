@@ -17,8 +17,14 @@ dest="$root/parity/writes"
 
 dv copy "$root/scripts/record_writes.rb" "$agent:/tmp/record_writes.rb" > /dev/null
 dv copy "$dest/cases.json" "$agent:/tmp/write_cases.json" > /dev/null
+# The files cases upload (parity/writes/files).
+dv run --name "$agent" -- rm -rf /tmp/write-files
+dv run --name "$agent" -- mkdir -p /tmp/write-files
+for f in "$dest"/files/*; do
+  [ -f "$f" ] && dv copy "$f" "$agent:/tmp/write-files/$(basename "$f")" > /dev/null
+done
 dv run --name "$agent" -- rm -rf /tmp/write-record
-dv run --name "$agent" -- bin/rails runner /tmp/record_writes.rb /tmp/write_cases.json /tmp/write-record
+dv run --name "$agent" -- bin/rails runner /tmp/record_writes.rb /tmp/write_cases.json /tmp/write-record /tmp/write-files
 for f in $(jq -r '.[].name' "$dest/cases.json"); do
   dv copy "$agent:/tmp/write-record/$f.json" "$dest/$f.json" > /dev/null
 done

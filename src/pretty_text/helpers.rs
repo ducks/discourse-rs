@@ -79,7 +79,7 @@ fn base62_decode(encoded: &str) -> Option<Vec<u8>> {
 }
 
 /// `Base62.encode(sha1.hex)`
-pub(super) fn base62_sha1(sha1: &str) -> Option<String> {
+pub(crate) fn base62_sha1(sha1: &str) -> Option<String> {
     let mut digits: Vec<u8> = sha1
         .chars()
         .map(|c| c.to_digit(16).map(|d| d as u8))

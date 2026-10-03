@@ -14,8 +14,8 @@
 require "json"
 require "fileutils"
 
-cases_file, out = ARGV
-abort "usage: record_writes.rb <cases.json> <dir>" if cases_file.blank? || out.blank?
+cases_file, out, files_dir = ARGV
+abort "usage: record_writes.rb <cases.json> <dir> [files-dir]" if cases_file.blank? || out.blank?
 FileUtils.mkdir_p(out)
 
 ENQUEUED = []
@@ -35,6 +35,26 @@ ActionMailer::Base.perform_deliveries = true
 RateLimiter.disable
 
 def db = ActiveRecord::Base.connection
+
+# `{"fixture": "name"}` in a case's params: that file from
+# parity/writes/files, sent as a multipart upload.
+def fixtures(value, files_dir)
+  case value
+  when Hash
+    if value.keys == ["fixture"]
+      path = File.join(files_dir, value["fixture"])
+      Rack::Test::UploadedFile.new(path, Rack::Mime.mime_type(File.extname(path), "application/octet-stream"))
+    else
+      value.transform_values { |v| fixtures(v, files_dir) }
+    end
+  else
+    value
+  end
+end
+
+def multipart?(value)
+  value.is_a?(Hash) && value.values.any? { |v| v.is_a?(Rack::Test::UploadedFile) || multipart?(v) }
+end
 
 # `{{path.to.value}}` (optionally `|reverse`) in a case's path or params:
 # a value from the responses so far or the last job of a name enqueued so far,
@@ -164,8 +184,9 @@ cases.each do |c|
         state = { "responses" => responses.map { |x| JSON.parse(x.to_json) }, "jobs" => ENQUEUED.to_h { |n, a| [n.split(" ").first, JSON.parse(a.to_json)] } }
         # A GET with `as: :json` goes out as a POST with X-Http-Method-Override,
         # which the integration session writes into the headers it was given.
-        options = { params: resolve(r["params"] || {}, state), headers: headers.merge(r["headers"] || {}) }
-        options[:as] = :json if r["method"] != "GET"
+        params = fixtures(resolve(r["params"] || {}, state), files_dir)
+        options = { params: params, headers: headers.merge(r["headers"] || {}) }
+        options[:as] = :json if r["method"] != "GET" && !multipart?(params)
         session.public_send(r["method"].downcase, resolve(r["path"], state), **options)
         body = session.response.body
         responses << { status: session.response.status, body: (JSON.parse(body) rescue body) }
@@ -211,6 +232,11 @@ cases.each do |c|
     File.write("#{out}/#{c["name"]}.json", JSON.pretty_generate(record) + "\n")
     puts "#{c["name"]}: #{responses.map { |r| r[:status] }.join(",")}, #{record[:changes].size} tables, #{from_requests.size} jobs"
   ensure
+    # Stored files are not rolled back: the case's uploads go.
+    Array(record && record[:changes]&.dig("uploads", :inserted)).each do |u|
+      path = File.join(Rails.root, "public", u["url"].to_s)
+      File.delete(path) if u["url"].to_s.start_with?("/uploads/") && File.file?(path)
+    end
     clear_redis_state
     pool.unpin_connection!
     SiteSetting.refresh! if c["settings"]

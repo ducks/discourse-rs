@@ -41,6 +41,7 @@ pub mod topic_guardian;
 pub mod topic_list;
 pub mod topic_query;
 pub mod topic_view;
+pub mod uploads;
 pub mod url;
 pub mod user_private;
 pub mod users;

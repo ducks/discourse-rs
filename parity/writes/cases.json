@@ -1248,5 +1248,116 @@
         }
       }
     ]
+  },
+  {
+    "name": "upload_text",
+    "user": "user1",
+    "settings": {
+      "authorized_extensions": "jpg|jpeg|png|gif|heic|heif|webp|avif|svg|txt"
+    },
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/uploads.json",
+        "params": {
+          "upload_type": "composer",
+          "file": {
+            "fixture": "notes.txt"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "upload_gif",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/uploads.json",
+        "params": {
+          "upload_type": "composer",
+          "file": {
+            "fixture": "static.gif"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "upload_gif_animated",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/uploads.json",
+        "params": {
+          "upload_type": "composer",
+          "file": {
+            "fixture": "animated.gif"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "upload_duplicate",
+    "user": "user1",
+    "settings": {
+      "authorized_extensions": "jpg|jpeg|png|gif|heic|heif|webp|avif|svg|txt"
+    },
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/uploads.json",
+        "params": {
+          "upload_type": "composer",
+          "file": {
+            "fixture": "notes.txt"
+          }
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/uploads.json",
+        "params": {
+          "upload_type": "composer",
+          "file": {
+            "fixture": "notes.txt"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "upload_unauthorized",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/uploads.json",
+        "params": {
+          "upload_type": "composer",
+          "file": {
+            "fixture": "notes.txt"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "upload_anonymous",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/uploads.json",
+        "params": {
+          "upload_type": "composer",
+          "file": {
+            "fixture": "static.gif"
+          }
+        }
+      }
+    ]
   }
 ]

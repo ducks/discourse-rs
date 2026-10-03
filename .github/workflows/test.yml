@@ -80,6 +80,20 @@ jobs:
         with:
           tool: cargo-nextest@0.9.95
 
+      # Uploads read the dominant colour as Rails does, with ImageMagick 7's
+      # `magick` (apt has 6). The reference's version, extracted once (no
+      # FUSE on the runner); AppRun sets up the bundled libraries.
+      - name: Install ImageMagick 7
+        if: matrix.shard.name == 'writes'
+        run: |
+          curl -sSLf -o /tmp/magick.AppImage \
+            https://github.com/ImageMagick/ImageMagick/releases/download/7.1.2-25/ImageMagick-7.1.2-25-gcc-x86_64.AppImage
+          echo "af7b861b68adc5957f4b9bb2206c29a0a1d7a89646addb9289e3740e22f9729f  /tmp/magick.AppImage" | sha256sum -c -
+          chmod +x /tmp/magick.AppImage
+          cd /opt && sudo /tmp/magick.AppImage --appimage-extract > /dev/null
+          sudo ln -s /opt/squashfs-root/AppRun /usr/local/bin/magick
+          magick -version | head -1
+
       - name: Load vendored Discourse schema
         run: scripts/db-load --force discourse_rs_test
 
