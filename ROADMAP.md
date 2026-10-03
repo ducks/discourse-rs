@@ -144,6 +144,13 @@ Logged-in readers, no writes yet.
       users on flags, notify user and notify moderators messages, illegal,
       undoing flags, flags on posts already in review, deleting, editing,
       restoring and unhiding from the queue, penalties, the queue's lists
+- [x] Topic status (PUT /t/:id/status): close, open, archive, unarchive,
+      unlist, relist, pin, unpin, pin globally, with the small action post
+      (PostCreator's small action path), featured topics, the category's
+      count, hot scores, visibility reasons and the staff action log.
+      Measured against Rails
+- [ ] Topic status that goes further: messages, topic timers, pinning
+      until a time; staff deleting and recovering posts and topics
 - [x] Private messages: new messages to users and replies in them, the
       allowed users, the recipients watching, the PM user actions, the
       private_message notification and email (participants, `[PM]`

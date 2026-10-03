@@ -18,6 +18,7 @@ mod site;
 mod sitemap;
 mod srv;
 mod tags;
+mod topic_status;
 mod topics;
 mod users;
 
@@ -81,6 +82,9 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/t/{id}", get(topics::show_by_id))
         .route("/t/{slug}/{id}", get(topics::show_with_slug))
         .route("/t/{slug}/{id}/{post_number}", get(topics::show_post))
+        // TopicsController#status; {slug} holds the topic id here.
+        .route("/t/{slug}/status", put(topic_status::status))
+        .route("/t/{slug}/{id}/status", put(topic_status::status_with_slug))
         .route("/u/{username}", get(users::show))
         .route("/u/{username}/bookmarks", get(bookmarks::index))
         .route("/u/{username}/bookmarks.json", get(bookmarks::index))

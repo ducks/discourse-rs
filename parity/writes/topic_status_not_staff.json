@@ -1,0 +1,70 @@
+{
+  "name": "topic_status_not_staff",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35/status",
+      "params": {
+        "status": "closed",
+        "enabled": "true"
+      }
+    }
+  ],
+  "started_at": "2026-10-03T07:51:13.062626",
+  "transaction_started_at": "2026-10-03T07:51:11.963026",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 86,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "XJfpTmZvHjjU2o+A7gMwHdsGE1Y=",
+            "created_at": "2026-10-03T07:51:12.520178",
+            "rotated_at": "2026-10-03T07:51:12.519894",
+            "updated_at": "2026-10-03T07:51:12.520178",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "XJfpTmZvHjjU2o+A7gMwHdsGE1Y=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 86,
+            "seen_at": "2026-10-03T07:51:13.070314",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "XJfpTmZvHjjU2o+A7gMwHdsGE1Y=",
+            "created_at": "2026-10-03T07:51:12.520178",
+            "rotated_at": "2026-10-03T07:51:12.519894",
+            "updated_at": "2026-10-03T07:51:12.520178",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "XJfpTmZvHjjU2o+A7gMwHdsGE1Y=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": []
+}

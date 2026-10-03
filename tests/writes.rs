@@ -48,8 +48,13 @@ const PLUGIN_KEYS: [&str; 11] = [
     "can_vote",
 ];
 
-/// Jobs plugins enqueue on the reference (discourse-narrative-bot).
-const PLUGIN_JOBS: [&str; 1] = ["bot_input"];
+/// Jobs plugins enqueue on the reference (discourse-narrative-bot, and
+/// discourse-topic-voting on topic_status_updated).
+const PLUGIN_JOBS: [&str; 3] = [
+    "bot_input",
+    "Jobs::DiscourseTopicVoting::VoteRelease",
+    "Jobs::DiscourseTopicVoting::VoteReclaim",
+];
 
 /// Cases the port does not do like Rails yet. The list only shrinks.
 const NOT_YET: &[&str] = &[];
@@ -428,6 +433,16 @@ fn changed_columns(mut doc: Value) -> Value {
                     rows.sort_by_key(|r| r.to_string());
                 } else {
                     rows.sort_by_key(identity);
+                }
+            }
+        }
+        // A deleted row is measured by which row it was: its contents are
+        // what the seed or the reference held before the case (a hot
+        // score recalculated on schedule, say), not what the case wrote.
+        if let Some(Value::Array(rows)) = change.get_mut("deleted") {
+            for row in rows.iter_mut() {
+                if let Value::Object(r) = row {
+                    r.retain(|k, _| ["id", "user_id", "topic_id", "post_id"].contains(&k.as_str()));
                 }
             }
         }
