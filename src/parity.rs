@@ -181,6 +181,10 @@ pub struct Golden {
     /// Where the response came from: the Rails URL it was recorded against,
     /// or a note if it was written by hand.
     pub source: String,
+    /// When it was recorded (RFC 3339): replays pin the clock to it, so
+    /// time windows (edit windows, recent sitemaps) answer as they did.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub recorded_at: Option<String>,
     #[serde(flatten)]
     pub response: Recorded,
 }

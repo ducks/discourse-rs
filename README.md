@@ -111,7 +111,10 @@ make parity-check                             # running discourse-rs vs golden
 ```
 
 `cargo test` also replays every golden file against the in-process router
-(`tests/parity.rs`) on the snapshot database with the recorded environment.
+(`tests/parity.rs`) on the snapshot database with the recorded environment,
+with the clock pinned to the golden's `recorded_at` (the port's
+`clock::now()` and the database's `now()`), so edit windows and "recent"
+lists answer as they did when Rails was recorded.
 
 Recording workflow: create a fresh dv agent, vendor its commit, snapshot its
 database, write its env to `parity/environment`, then `make parity-record`.

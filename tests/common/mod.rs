@@ -32,6 +32,31 @@ pub struct TestDb {
 
 impl TestDb {
     pub async fn new() -> TestDb {
+        TestDb::create(&[]).await
+    }
+
+    /// A copy whose database clock can be pinned (`pin_clock`): `now()` and
+    /// `clock_timestamp()` resolve to functions in a `test_clock` schema,
+    /// searched before pg_catalog, that answer the pinned time when there
+    /// is one.
+    pub async fn with_clock() -> TestDb {
+        TestDb::create(&[
+            "CREATE SCHEMA test_clock",
+            "CREATE TABLE test_clock.pinned (at timestamptz NOT NULL)",
+            "CREATE FUNCTION test_clock.now() RETURNS timestamptz LANGUAGE sql STABLE AS \
+             'SELECT COALESCE((SELECT at FROM test_clock.pinned LIMIT 1), pg_catalog.now())'",
+            "CREATE FUNCTION test_clock.clock_timestamp() RETURNS timestamptz LANGUAGE sql VOLATILE AS \
+             'SELECT COALESCE((SELECT at FROM test_clock.pinned LIMIT 1), pg_catalog.clock_timestamp())'",
+            r#"ALTER DATABASE "{db}" SET search_path = test_clock, pg_catalog, "$user", public"#,
+        ])
+        .await
+    }
+
+    /// Clones the template, runs `setup` on the copy (`{db}` is its name)
+    /// before anything else connects, so database settings apply to every
+    /// pooled connection, then opens the pool and creates the port's own
+    /// schema.
+    async fn create(setup: &[&str]) -> TestDb {
         let template_opts = PgConnectOptions::from_str(&test_database_url())
             .expect("TEST_DATABASE_URL is not a valid postgres URL");
         let template = template_opts
@@ -53,9 +78,23 @@ impl TestDb {
             .unwrap_or_else(|e| panic!("cloning {template}; run `make db-test` first: {e}"));
         conn.close().await.ok();
 
+        let opts = template_opts.database(&name);
+        if !setup.is_empty() {
+            let mut conn = PgConnection::connect_with(&opts)
+                .await
+                .expect("connecting to set up the test database");
+            for sql in setup {
+                let sql = sql.replace("{db}", &name);
+                conn.execute(sql.as_str())
+                    .await
+                    .unwrap_or_else(|e| panic!("setting up the test database ({sql}): {e}"));
+            }
+            conn.close().await.ok();
+        }
+
         let pool = PgPoolOptions::new()
             .max_connections(4)
-            .connect_with(template_opts.database(&name))
+            .connect_with(opts)
             .await
             .expect("connecting to the cloned test database");
         discourse_rs::owned_schema::migrate(&pool)
@@ -63,6 +102,22 @@ impl TestDb {
             .expect("creating the job queue");
 
         TestDb { pool, name, admin }
+    }
+
+    /// Pins the port's clock and the database's (None releases both).
+    pub async fn pin_clock(&self, at: Option<chrono::DateTime<chrono::Utc>>) {
+        discourse_rs::clock::pin(at);
+        sqlx::query("DELETE FROM test_clock.pinned")
+            .execute(&self.pool)
+            .await
+            .expect("unpinning the database clock");
+        if let Some(at) = at {
+            sqlx::query("INSERT INTO test_clock.pinned (at) VALUES ($1)")
+                .bind(at)
+                .execute(&self.pool)
+                .await
+                .expect("pinning the database clock");
+        }
     }
 }
 

@@ -932,7 +932,7 @@ pub async fn serialize(
                 .await?;
         let days = settings.get("site_owner_onboarding_max_days")?.to_i();
         if first_admin == Some(uid)
-            && row.created_at > chrono::Utc::now().naive_utc() - chrono::Duration::days(days)
+            && row.created_at > crate::clock::now_naive() - chrono::Duration::days(days)
         {
             out.insert("show_site_owner_onboarding".into(), json!(true));
         }
@@ -1082,7 +1082,7 @@ async fn user_option(
             .any(|m| m == "top")
         && (o.trust_level == 0
             || o.last_seen_at
-                .is_none_or(|t| t < chrono::Utc::now().naive_utc() - chrono::Duration::days(30)))
+                .is_none_or(|t| t < crate::clock::now_naive() - chrono::Duration::days(30)))
     {
         let per_page = settings.get("topics_per_period_in_top_page")?.to_i();
         for period in ["daily", "weekly", "monthly", "quarterly", "yearly", "all"] {
@@ -1103,7 +1103,7 @@ async fn user_option(
             .get("default_other_new_topic_duration_minutes")?
             .to_i(),
     );
-    let now = chrono::Utc::now().naive_utc();
+    let now = crate::clock::now_naive();
     let base = match duration {
         -1 => created_at,
         -2 => o.previous_visit_at.or(*new_since).unwrap_or(created_at),

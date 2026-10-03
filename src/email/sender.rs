@@ -490,7 +490,7 @@ pub async fn send(
     .execute(&mut *conn)
     .await?;
     // EmailLog after_create
-    sqlx::query("UPDATE users SET last_emailed_at = CURRENT_TIMESTAMP WHERE id = $1")
+    sqlx::query("UPDATE users SET last_emailed_at = now() WHERE id = $1")
         .bind(user_id)
         .execute(&mut *conn)
         .await?;

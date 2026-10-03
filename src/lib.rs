@@ -4,6 +4,7 @@ pub mod bookmarks;
 pub mod categories;
 pub mod category;
 pub mod category_list;
+pub mod clock;
 pub mod color_scheme;
 pub mod config;
 pub mod current_user;

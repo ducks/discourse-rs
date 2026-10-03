@@ -769,7 +769,7 @@ impl TopicView<'_> {
         topic_id: i32,
     ) -> Result<Vec<(i32, i32)>, TopicViewError> {
         Ok(sqlx::query_as(
-            "SELECT id, (EXTRACT(EPOCH FROM CURRENT_TIMESTAMP - posts.created_at) / 86400)::INT AS days_ago \
+            "SELECT id, (EXTRACT(EPOCH FROM now() - posts.created_at) / 86400)::INT AS days_ago \
              FROM posts WHERE topic_id = $1 AND deleted_at IS NULL AND post_type = ANY($2) \
              ORDER BY sort_order",
         )

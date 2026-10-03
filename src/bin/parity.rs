@@ -91,6 +91,7 @@ async fn run(cli: Cli) -> Result<bool, String> {
                 let golden = Golden {
                     request: case.label(),
                     source: rails.trim_end_matches('/').to_string(),
+                    recorded_at: Some(chrono::Utc::now().to_rfc3339()),
                     response,
                 };
                 let path = parity::write_golden(&cli.golden, case, &golden)?;

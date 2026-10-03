@@ -192,7 +192,7 @@ async fn reject(
     .await?;
     let text = built.message.text.clone();
     // can_send_rejection_email?: Redis's rejection_email:<from>:<type>:<date>.
-    let today: chrono::NaiveDate = sqlx::query_scalar("SELECT CURRENT_DATE")
+    let today: chrono::NaiveDate = sqlx::query_scalar("SELECT now()::date")
         .fetch_one(&mut *conn)
         .await?;
     let key = format!(

@@ -175,12 +175,12 @@ impl User {
 
     fn suspended(&self) -> bool {
         self.suspended_till
-            .is_some_and(|t| t > chrono::Utc::now().naive_utc())
+            .is_some_and(|t| t > crate::clock::now_naive())
     }
 
     fn silenced(&self) -> bool {
         self.silenced_till
-            .is_some_and(|t| t > chrono::Utc::now().naive_utc())
+            .is_some_and(|t| t > crate::clock::now_naive())
     }
 
     /// `guardian.can_see_profile?(user)` for an anonymous reader.
@@ -570,7 +570,7 @@ impl Users<'_> {
             username_period > 0
                 && me
                 && user.created_at
-                    > chrono::Utc::now().naive_utc() - chrono::Duration::days(username_period)
+                    > crate::clock::now_naive() - chrono::Duration::days(username_period)
         };
         u.insert("can_edit_username".into(), json!(can_edit_username));
         // can_edit_email?

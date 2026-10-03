@@ -265,7 +265,7 @@ impl Guardian {
         } else {
             settings.get("tl2_post_edit_time_limit")?.to_i()
         };
-        let now = chrono::Utc::now().naive_utc();
+        let now = crate::clock::now_naive();
         Ok(limit > 0 && created_at < now - chrono::Duration::minutes(limit))
     }
 
@@ -396,7 +396,7 @@ impl Guardian {
             return Ok(true);
         };
         let cooldown = settings.get("cooldown_minutes_after_hiding_posts")?.to_i();
-        Ok(hidden_at < chrono::Utc::now().naive_utc() - chrono::Duration::minutes(cooldown))
+        Ok(hidden_at < crate::clock::now_naive() - chrono::Duration::minutes(cooldown))
     }
 
     /// `can_moderate?(topic)`
@@ -441,7 +441,7 @@ impl Guardian {
         if self.can_delete_all_posts_and_topics(settings)? {
             return Ok(true);
         }
-        let day_ago = chrono::Utc::now().naive_utc() - chrono::Duration::hours(24);
+        let day_ago = crate::clock::now_naive() - chrono::Duration::hours(24);
         Ok(self.is_me_opt(topic.user_id) && topic.posts_count <= 1 && topic.created_at > day_ago)
     }
 
@@ -853,7 +853,7 @@ impl Guardian {
         }
         let window = settings.get("post_undo_action_window_mins")?.to_i();
         Ok(
-            action_created_at > chrono::Utc::now().naive_utc() - chrono::Duration::minutes(window)
+            action_created_at > crate::clock::now_naive() - chrono::Duration::minutes(window)
                 && !topic.archived,
         )
     }
