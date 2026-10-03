@@ -19,6 +19,8 @@ pub async fn migrate(pool: &PgPool) -> Result<(), sqlx::Error> {
            failed_at timestamp, \
            created_at timestamp NOT NULL DEFAULT (now() AT TIME ZONE 'utc'))",
         "CREATE INDEX IF NOT EXISTS jobs_due ON discourse_rs.jobs (run_at, id) WHERE failed_at IS NULL",
+        // Jobs.enqueue_at: due at a point in time rather than after a delay.
+        "ALTER TABLE discourse_rs.jobs ADD COLUMN IF NOT EXISTS at_time boolean NOT NULL DEFAULT FALSE",
         "CREATE TABLE IF NOT EXISTS discourse_rs.server_sessions ( \
            key text PRIMARY KEY, \
            value jsonb NOT NULL, \

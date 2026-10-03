@@ -648,8 +648,8 @@ fn resolve(value: &Value, state: &Value) -> Value {
 /// Jobs in the queue after `after_id`, as (id, name, `[name, args]` with
 /// " in Ns" for a delayed one, as the recorder writes them).
 async fn queued_jobs(pool: &PgPool, after_id: i64) -> Vec<(i64, String, Value)> {
-    let rows: Vec<(i64, String, Value, f64)> = sqlx::query_as(
-        "SELECT id, name, args, EXTRACT(EPOCH FROM run_at - created_at)::float8 \
+    let rows: Vec<(i64, String, Value, f64, bool)> = sqlx::query_as(
+        "SELECT id, name, args, EXTRACT(EPOCH FROM run_at - created_at)::float8, at_time \
          FROM discourse_rs.jobs WHERE id > $1 ORDER BY id",
     )
     .bind(after_id)
@@ -657,8 +657,11 @@ async fn queued_jobs(pool: &PgPool, after_id: i64) -> Vec<(i64, String, Value)> 
     .await
     .unwrap();
     rows.into_iter()
-        .map(|(id, name, args, delay)| {
-            let shown = if delay >= 1.0 {
+        .map(|(id, name, args, delay, at_time)| {
+            // " at" for Jobs.enqueue_at, as the recorder writes it.
+            let shown = if at_time {
+                format!("{name} at")
+            } else if delay >= 1.0 {
                 format!("{name} in {}s", delay.round() as i64)
             } else {
                 name.clone()

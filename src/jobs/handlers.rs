@@ -23,6 +23,7 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         "post_alert" => post_alert(state, &job.args).await,
         "user_email" => user_email(state, &job.args, false).await,
         "critical_user_email" => user_email(state, &job.args, true).await,
+        "send_system_message" => send_system_message(state, &job.args).await,
         "send_email_login_code" => send_email_login_code(state, &job.args).await,
         "process_email" => process_email(state, &job.args).await,
         other => {
@@ -253,6 +254,8 @@ async fn process_post(state: &AppState, args: &Value) -> Result<(), AppError> {
                 &links::Site {
                     hostname: &hostname,
                     base_path: state.config.globals.relative_url_root(),
+                    base_url_no_prefix: &urls.base_url_no_prefix()?,
+                    settings: &s,
                 },
                 &LinkPost {
                     id: post_id,
@@ -386,4 +389,73 @@ async fn process_email(state: &AppState, args: &Value) -> Result<(), AppError> {
     let mail = args.get("mail").and_then(Value::as_str).unwrap_or("");
     let source = args.get("source").and_then(Value::as_str);
     crate::email::receiver::process(state, mail, source).await
+}
+
+/// `Jobs::SendSystemMessage`: SystemMessage.create for the user, the
+/// message options interpolated into the templates.
+async fn send_system_message(state: &AppState, args: &Value) -> Result<(), AppError> {
+    let Some(user_id) = int_arg(args, "user_id")? else {
+        return Err(
+            Unsupported("send_system_message without a user_id (InvalidParameters)").into(),
+        );
+    };
+    let Some(message_type) = args
+        .get("message_type")
+        .and_then(Value::as_str)
+        .filter(|t| !t.is_empty())
+    else {
+        return Err(
+            Unsupported("send_system_message without a message_type (InvalidParameters)").into(),
+        );
+    };
+    let mut conn = state.pool.acquire().await?;
+    let exists: bool = sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM users WHERE id = $1)")
+        .bind(user_id)
+        .fetch_one(&mut *conn)
+        .await?;
+    if !exists {
+        return Ok(());
+    }
+    let s = settings(state, &mut conn).await?;
+    drop(conn);
+    let mut params = Vec::new();
+    let mut post_alert_options = None;
+    if let Some(options) = args.get("message_options").and_then(Value::as_object) {
+        for (key, value) in options {
+            if key == "post_alert_options" {
+                post_alert_options = Some(value.clone());
+                continue;
+            }
+            // Ruby's string interpolation of the value.
+            let text = match value {
+                Value::String(s) => s.clone(),
+                Value::Null => String::new(),
+                Value::Number(n) => n.to_string(),
+                Value::Bool(b) => b.to_string(),
+                _ => {
+                    return Err(
+                        Unsupported("system message options that are lists or hashes").into(),
+                    );
+                }
+            };
+            params.push((key.clone(), text));
+        }
+    }
+    let host = crate::pretty_text::Host::from_state(state);
+    let ctx = crate::posting::Ctx {
+        host: &host,
+        settings: &s,
+        config: &state.config,
+        i18n: &state.i18n,
+    };
+    crate::system_message::create(
+        &state.pool,
+        &ctx,
+        user_id,
+        message_type,
+        &params,
+        post_alert_options,
+    )
+    .await?;
+    Ok(())
 }

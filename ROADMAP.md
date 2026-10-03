@@ -158,6 +158,14 @@ Logged-in readers, no writes yet.
       latest posts, user stats and staff logs. Measured against Rails
 - [ ] Deletion that goes further: permanent deletion, messages, posts with
       links, likes or pending flags, recovering topics, quotes and replies
+- [x] Suspending, unsuspending, silencing and unsilencing users
+      (PUT /admin/users/:id/...): the user, the staff log, the expiry job, the
+      penalty emails, and SystemMessage (a private message from the site
+      contact through PostCreator), which also runs send_system_message
+      (the post_hidden message). Measured against Rails
+- [ ] Penalties that go further: several users at once, acting on a post,
+      penalties from the review queue, re-penalizing (its "how long ago"
+      message), auto-silencing new users on spam flags
 - [x] Private messages: new messages to users and replies in them, the
       allowed users, the recipients watching, the PM user actions, the
       private_message notification and email (participants, `[PM]`

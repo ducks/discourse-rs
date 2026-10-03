@@ -1,5 +1,6 @@
 mod accounts;
 mod admin_email;
+mod admin_users;
 mod bookmarks;
 mod list;
 mod login_required;
@@ -120,6 +121,32 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/sitemap.xml", get(sitemap::index))
         .route("/sitemap_{page}", get(sitemap::page))
         .route("/news.xml", get(sitemap::news))
+        .route("/admin/users/{user_id}/suspend", put(admin_users::suspend))
+        .route(
+            "/admin/users/{user_id}/suspend.json",
+            put(admin_users::suspend),
+        )
+        .route(
+            "/admin/users/{user_id}/unsuspend",
+            put(admin_users::unsuspend),
+        )
+        .route(
+            "/admin/users/{user_id}/unsuspend.json",
+            put(admin_users::unsuspend),
+        )
+        .route("/admin/users/{user_id}/silence", put(admin_users::silence))
+        .route(
+            "/admin/users/{user_id}/silence.json",
+            put(admin_users::silence),
+        )
+        .route(
+            "/admin/users/{user_id}/unsilence",
+            put(admin_users::unsilence),
+        )
+        .route(
+            "/admin/users/{user_id}/unsilence.json",
+            put(admin_users::unsilence),
+        )
         .route("/admin/email/handle_mail", post(admin_email::handle_mail))
         .route(
             "/admin/email/handle_mail.json",

@@ -453,6 +453,8 @@ pub async fn revise(
             &links::Site {
                 hostname: &hostname,
                 base_path: &base_path,
+                base_url_no_prefix: &urls.base_url_no_prefix()?,
+                settings: s,
             },
             &LinkPost {
                 id: post.id,

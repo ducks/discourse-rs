@@ -46,6 +46,16 @@ pub struct NewPost {
     /// `first_post_checks`: a first post's fast-typing check (not for API
     /// requests or email).
     pub first_post_checks: bool,
+    /// `skip_validations:` no post or topic validations, suspension check
+    /// or recipient permissions (SystemMessage).
+    pub skip_validations: bool,
+    /// A new message's subtype (`user_to_user` unless given).
+    pub subtype: Option<String>,
+    /// `post_alert_options:`, handed to the post_alert job.
+    pub post_alert_options: Option<serde_json::Value>,
+    /// Sent by PostsController, which passes the writing device; email and
+    /// system messages have none.
+    pub from_composer: bool,
 }
 
 /// What Email::Receiver#create_post adds to a post: the mail's date as
@@ -93,6 +103,8 @@ struct TopicPlan {
     pm_recipients: Option<Vec<i32>>,
     slow_mode_seconds: Option<i32>,
     all_topics_wiki: bool,
+    /// A message's subtype.
+    subtype: Option<String>,
 }
 
 /// `BrowserDetection.device(user_agent)`
@@ -153,6 +165,7 @@ async fn regular_topic_plan(
         pm_recipients: None,
         slow_mode_seconds: slow_mode,
         all_topics_wiki,
+        subtype: None,
     })
 }
 
@@ -251,7 +264,7 @@ pub async fn create(
     .await?;
 
     // PostCreator#valid?
-    if user.suspended() {
+    if user.suspended() && !args.skip_validations {
         return Ok(Outcome::Invalid(vec![ctx.t("user_is_suspended")]));
     }
     // The recipients: their number, and whether they take messages from
@@ -307,7 +320,7 @@ pub async fn create(
             },
         )
         .await?;
-        if !errors.is_empty() {
+        if !errors.is_empty() && !args.skip_validations {
             return Ok(Outcome::Invalid(errors));
         }
         if new_pm {
@@ -317,6 +330,7 @@ pub async fn create(
                 pm_recipients: None,
                 slow_mode_seconds: None,
                 all_topics_wiki: false,
+                subtype: args.subtype.clone(),
             });
         } else {
             plan = Some(regular_topic_plan(&mut conn, s, title, category_id).await?);
@@ -406,7 +420,7 @@ pub async fn create(
         &analysis,
     )
     .await?;
-    if !errors.is_empty() {
+    if !errors.is_empty() && !args.skip_validations {
         return Ok(Outcome::Invalid(errors));
     }
     if new_topic {
@@ -428,7 +442,7 @@ pub async fn create(
             &analysis,
         )
         .await?;
-        if !errors.is_empty() {
+        if !errors.is_empty() && !args.skip_validations {
             return Ok(Outcome::Invalid(errors));
         }
     }
@@ -478,7 +492,7 @@ pub async fn create(
                 && (guardian.is_staff() || t.allow_private_messages.unwrap_or(true))
                 && (guardian.is_staff() || !t.suspended)
                 && (!guardian.is_silenced() || t.staff);
-            if !ok {
+            if !ok && !args.skip_validations {
                 return Ok(Outcome::Invalid(vec![
                     ctx.t(&format!("{base}.cant_send_pm")),
                 ]));
@@ -614,8 +628,8 @@ pub async fn create(
     .bind(drafts_saved)
     .bind(args.typing_duration_msecs.unwrap_or(0) as i32)
     .bind(args.composer_open_duration_msecs.unwrap_or(0) as i32)
-    // The composer sends the device; a post by email has none.
-    .bind(args.email.is_none().then(|| device(args.user_agent.as_deref())))
+    // PostsController sends the device; email and system messages have none.
+    .bind(args.from_composer.then(|| device(args.user_agent.as_deref())))
     .bind(args.user_agent.as_deref().map(truncate_400))
     .bind(args.composer_version)
     .execute(&mut *tx)
@@ -678,6 +692,8 @@ pub async fn create(
         &links::Site {
             hostname: &hostname,
             base_path: &base_path,
+            base_url_no_prefix: &urls.base_url_no_prefix()?,
+            settings: s,
         },
         &LinkPost {
             id: post_id,
@@ -864,7 +880,7 @@ pub async fn create(
     crate::jobs::enqueue(
         &mut tx,
         "post_alert",
-        json!({"post_id": post_id, "new_record": true, "options": null}),
+        json!({"post_id": post_id, "new_record": true, "options": args.post_alert_options}),
     )
     .await?;
     crate::jobs::enqueue(
@@ -1041,7 +1057,7 @@ async fn create_topic(
     .bind(plan.category_id)
     .bind(plan.slow_mode_seconds)
     .bind(if pm { "private_message" } else { "regular" })
-    .bind(pm.then_some("user_to_user"))
+    .bind(pm.then(|| plan.subtype.as_deref().unwrap_or("user_to_user")))
     .fetch_one(&mut *conn)
     .await?;
     // process_private_message: the recipients, then the sender.
