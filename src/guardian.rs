@@ -478,7 +478,7 @@ impl Guardian {
                 .get("default_other_new_topic_duration_minutes")?
                 .to_i(),
         );
-        let now = chrono::Utc::now().naive_utc();
+        let now = crate::clock::now_naive();
         let base = match duration {
             -1 => created_at,
             -2 => previous_visit_at.or(new_since).unwrap_or(created_at),

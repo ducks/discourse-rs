@@ -12,12 +12,22 @@ use discourse_rs::parity;
 use http_body_util::BodyExt;
 use tower::ServiceExt;
 
+/// Goldens recorded before they carried `recorded_at` replay at this time:
+/// CI last passed them all on 2026-10-03 at 06:49 UTC, after the latest of
+/// them was recorded (2026-10-02 20:29 UTC).
+static GOLDENS_LAST_PASSING: std::sync::LazyLock<chrono::DateTime<chrono::Utc>> =
+    std::sync::LazyLock::new(|| {
+        chrono::DateTime::parse_from_rfc3339("2026-10-03T06:00:00Z")
+            .unwrap()
+            .with_timezone(&chrono::Utc)
+    });
+
 #[tokio::test]
 async fn golden_responses_match() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"));
     let cases = parity::load_cases(&root.join("parity/cases")).unwrap();
     let golden_dir = root.join("parity/golden");
-    let db = common::TestDb::new().await;
+    let db = common::TestDb::with_clock().await;
     // The golden files came from the Discourse whose database is the test
     // template (seed/fresh_install.sql) and whose env is parity/environment.
     let config = common::recorded_config();
@@ -31,6 +41,15 @@ async fn golden_responses_match() {
             eprintln!("skip {} (no golden file)", case.label());
             continue;
         };
+
+        // The time Rails answered at, so time windows answer the same.
+        let recorded_at = match &golden.recorded_at {
+            Some(t) => chrono::DateTime::parse_from_rfc3339(t)
+                .unwrap_or_else(|e| panic!("{}: recorded_at {t}: {e}", case.label()))
+                .with_timezone(&chrono::Utc),
+            None => *GOLDENS_LAST_PASSING,
+        };
+        db.pin_clock(Some(recorded_at)).await;
 
         // The host Rails saw when the golden was recorded.
         let host = golden

@@ -278,7 +278,7 @@ pub async fn rotate(
 /// Whether `refresh_session` rotates: ten minutes after a seen rotation,
 /// one minute after an unseen one.
 pub fn needs_rotation(row: &AuthToken) -> bool {
-    let age = chrono::Utc::now().naive_utc() - row.rotated_at;
+    let age = crate::clock::now_naive() - row.rotated_at;
     if row.auth_token_seen {
         age > chrono::Duration::minutes(10)
     } else {

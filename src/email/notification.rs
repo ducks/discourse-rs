@@ -727,7 +727,7 @@ fn render_post(ctx: &super::sender::Ctx<'_>, p: &PostPartial<'_>) -> Result<Stri
             html_escape(title)
         ));
     }
-    let now = chrono::Utc::now().naive_utc();
+    let now = crate::clock::now_naive();
     let date = if chrono::Datelike::year(&p.created_at) == chrono::Datelike::year(&now) {
         p.created_at.format("%B %-d").to_string()
     } else {

@@ -193,7 +193,7 @@ impl Private<'_> {
         out.insert("topic_count".into(), json!(topic_count));
         let g = self.guardian;
         let s = self.settings;
-        let now = chrono::Utc::now().naive_utc();
+        let now = crate::clock::now_naive();
         let max_age = s.get("delete_user_max_post_age")?.to_i();
         let age_ok =
             |t: Option<NaiveDateTime>| t.is_none_or(|t| t >= now - chrono::Duration::days(max_age));

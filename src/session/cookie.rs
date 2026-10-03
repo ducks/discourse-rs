@@ -135,7 +135,7 @@ impl Codec {
             let rails = &envelope["_rails"];
             if let Some(exp) = rails["exp"].as_str() {
                 let exp: DateTime<Utc> = exp.parse().map_err(|_| CookieError::Payload)?;
-                if Utc::now() >= exp {
+                if crate::clock::now() >= exp {
                     return Err(CookieError::Expired);
                 }
             }
@@ -471,7 +471,7 @@ mod tests {
             "_t",
             &map,
             true,
-            Some(Utc::now() + chrono::Duration::hours(1)),
+            Some(crate::clock::now() + chrono::Duration::hours(1)),
         );
         assert!(value.contains("--"));
         assert!(
@@ -488,7 +488,7 @@ mod tests {
             "_t",
             &map,
             true,
-            Some(Utc::now() - chrono::Duration::seconds(1)),
+            Some(crate::clock::now() - chrono::Duration::seconds(1)),
         );
         assert!(matches!(
             codec.decrypt("_t", &expired),

@@ -716,7 +716,7 @@ async fn default_sidebar_links(
         for id in existing.into_iter().take(500) {
             sqlx::query(
                 "INSERT INTO sidebar_section_links (user_id, linkable_id, linkable_type, created_at, updated_at) \
-                 VALUES ($1, $2, 'Category', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+                 VALUES ($1, $2, 'Category', now(), now())",
             )
             .bind(user_id)
             .bind(id)

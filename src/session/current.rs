@@ -84,7 +84,7 @@ impl SessionUser {
     }
     pub fn suspended(&self) -> bool {
         self.suspended_till
-            .is_some_and(|t| t > chrono::Utc::now().naive_utc())
+            .is_some_and(|t| t > crate::clock::now_naive())
     }
 }
 
@@ -144,7 +144,7 @@ fn find_auth_token(keys: &Keys, raw: &str, max_age_hours: i64) -> Option<String>
     }
     let map = keys.codec.decrypt(TOKEN_COOKIE, raw).ok()?;
     let issued_at = map.get("issued_at")?.as_i64()?;
-    let oldest = chrono::Utc::now().timestamp() - max_age_hours * 3600;
+    let oldest = crate::clock::now().timestamp() - max_age_hours * 3600;
     if issued_at < oldest {
         return None;
     }
@@ -212,7 +212,7 @@ pub fn auth_cookie(
 ) -> Result<String, AppError> {
     let expires = if settings.get("persistent_sessions")?.truthy() {
         let hours = settings.get("maximum_session_age")?.to_i();
-        Some(chrono::Utc::now() + chrono::Duration::hours(hours))
+        Some(crate::clock::now() + chrono::Duration::hours(hours))
     } else {
         None
     };
@@ -221,7 +221,7 @@ pub fn auth_cookie(
         ("user_id", Scalar::Int(i64::from(user.id))),
         ("username", Scalar::Str(user.username.clone())),
         ("trust_level", Scalar::Int(i64::from(user.trust_level))),
-        ("issued_at", Scalar::Int(chrono::Utc::now().timestamp())),
+        ("issued_at", Scalar::Int(crate::clock::now().timestamp())),
     ];
     let value = keys.codec.encrypt(TOKEN_COOKIE, &map, true, expires);
     let mut cookie = format!("{TOKEN_COOKIE}={value}; path=/");
@@ -401,7 +401,7 @@ async fn update_last_seen(
     ip: &str,
 ) -> Result<(), AppError> {
     let limit = settings.get("active_user_rate_limit_secs")?.to_i();
-    let today = chrono::Utc::now().format("%Y-%m-%d").to_string();
+    let today = crate::clock::now().format("%Y-%m-%d").to_string();
     let allowed = {
         let mut gate = keys
             .last_seen_gate
