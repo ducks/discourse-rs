@@ -278,6 +278,16 @@ pub struct Definition {
     /// An upcoming change of a plugin only takes effect while the plugin
     /// is enabled, unless it opts out (`requires_plugin_enabled: false`).
     change_requires_plugin: bool,
+    /// The setting's options as declared (min, max, hidden, choices, regex,
+    /// validator...), for validating a new value.
+    pub options: Option<serde_yaml_ng::Mapping>,
+}
+
+impl Definition {
+    /// Declared as an upcoming change (its value comes from UpcomingChanges).
+    pub fn is_upcoming_change(&self) -> bool {
+        self.upcoming_change.is_some()
+    }
 }
 
 /// `UpcomingChanges.statuses`, ordered by their numeric rank.
@@ -510,6 +520,7 @@ fn parse_definition(category: &str, name: &str, entry: &Yaml) -> Result<Definiti
             mandatory_values: None,
             default_override: None,
             change_requires_plugin: true,
+            options: None,
         });
     };
 
@@ -615,6 +626,7 @@ fn parse_definition(category: &str, name: &str, entry: &Yaml) -> Result<Definiti
                 .and_then(|c| c.get(Yaml::String("requires_plugin_enabled".into()))),
             Some(Yaml::Bool(false))
         ),
+        options: Some(opts.clone()),
     })
 }
 

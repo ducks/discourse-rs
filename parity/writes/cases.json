@@ -1895,5 +1895,112 @@
     "run_jobs": [
       "send_system_message"
     ]
+  },
+  {
+    "name": "setting_string",
+    "user": "admin",
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/admin/site_settings/short_site_description.json",
+        "params": {
+          "short_site_description": "A forum for parity tests"
+        }
+      }
+    ]
+  },
+  {
+    "name": "setting_bool_off",
+    "user": "admin",
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/admin/site_settings/allow_user_locale.json",
+        "params": {
+          "allow_user_locale": "false"
+        }
+      }
+    ]
+  },
+  {
+    "name": "setting_integer",
+    "user": "admin",
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/admin/site_settings/min_post_length.json",
+        "params": {
+          "min_post_length": "25"
+        }
+      }
+    ]
+  },
+  {
+    "name": "setting_back_to_default",
+    "user": "admin",
+    "setup": [
+      "INSERT INTO site_settings (name, data_type, value, created_at, updated_at) VALUES ('min_post_length', 3, '25', '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+    ],
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/admin/site_settings/min_post_length.json",
+        "params": {
+          "min_post_length": "20"
+        }
+      }
+    ]
+  },
+  {
+    "name": "setting_below_min",
+    "user": "admin",
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/admin/site_settings/min_post_length.json",
+        "params": {
+          "min_post_length": "0"
+        }
+      }
+    ]
+  },
+  {
+    "name": "setting_unknown",
+    "user": "admin",
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/admin/site_settings/no_such_setting.json",
+        "params": {
+          "no_such_setting": "x"
+        }
+      }
+    ]
+  },
+  {
+    "name": "setting_not_admin",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/admin/site_settings/title.json",
+        "params": {
+          "title": "Nope"
+        }
+      }
+    ]
+  },
+  {
+    "name": "setting_hidden",
+    "user": "admin",
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/admin/site_settings/generate_topic_og_image.json",
+        "params": {
+          "generate_topic_og_image": "true"
+        }
+      }
+    ]
   }
 ]
