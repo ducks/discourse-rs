@@ -49,6 +49,25 @@ pub async fn enqueue_in(
     Ok(())
 }
 
+/// `Jobs.enqueue_at(time, name, args)`: due at `at` (now, if it has passed).
+pub async fn enqueue_at(
+    conn: &mut PgConnection,
+    at: chrono::NaiveDateTime,
+    name: &str,
+    args: Value,
+) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "INSERT INTO discourse_rs.jobs (name, args, run_at, created_at, at_time) \
+         SELECT $1, $2, GREATEST($3, now), now, TRUE FROM clock_timestamp() AS now",
+    )
+    .bind(name)
+    .bind(args)
+    .bind(at)
+    .execute(conn)
+    .await?;
+    Ok(())
+}
+
 /// A claimed job.
 #[derive(Debug, sqlx::FromRow)]
 pub struct Job {

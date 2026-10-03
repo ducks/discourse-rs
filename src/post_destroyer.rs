@@ -897,6 +897,8 @@ pub async fn recover_post(
             &crate::posting::links::Site {
                 hostname: &hostname,
                 base_path: ctx.config.globals.relative_url_root(),
+                base_url_no_prefix: &urls.base_url_no_prefix()?,
+                settings: s,
             },
             &crate::posting::links::LinkPost {
                 id: post.id,

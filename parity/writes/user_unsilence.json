@@ -1,0 +1,506 @@
+{
+  "name": "user_unsilence",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/4/unsilence.json",
+      "params": {}
+    }
+  ],
+  "started_at": "2026-10-03T08:59:40.575963",
+  "transaction_started_at": "2026-10-03T08:59:39.610519",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "unsilence": {
+          "silenced": false,
+          "silence_reason": null,
+          "full_silence_reason": null,
+          "silenced_till": null,
+          "silenced_at": null
+        }
+      }
+    }
+  ],
+  "changes": {
+    "post_search_data": {
+      "inserted": [
+        {
+          "locale": "en",
+          "post_id": 53,
+          "version": 5,
+          "raw_data": "Hello, This is an automated message from Discourse to let you know that your account is no longer on hold after staff review. You can now create new replies and topics again. Thank you for your patience.",
+          "search_data": "'account':1A,20 'autom':10 'creat':32 'discours':13 'hello':6 'hold':5A,25 'know':17 'let':15 'longer':3A,23 'messag':11 'new':33 'patienc':42 'repli':34 'review':28 'staff':27 'thank':38 'topic':36",
+          "private_message": true
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_stats": {
+      "inserted": [
+        {
+          "id": 52,
+          "post_id": 53,
+          "created_at": "2026-10-03T08:59:40.714907",
+          "updated_at": "2026-10-03T08:59:40.714907",
+          "drafts_saved": 0,
+          "writing_device": null,
+          "composer_version": null,
+          "typing_duration_msecs": 0,
+          "writing_device_user_agent": null,
+          "composer_open_duration_msecs": 0
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_timings": {
+      "inserted": [
+        {
+          "msecs": 5000,
+          "user_id": -1,
+          "topic_id": 45,
+          "post_number": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "posts": {
+      "inserted": [
+        {
+          "id": 53,
+          "raw": "Hello,\n\nThis is an automated message from Discourse to let you know that your account is no longer on hold after staff review.\n\nYou can now create new replies and topics again. Thank you for your patience.",
+          "wiki": false,
+          "reads": 1,
+          "score": null,
+          "cooked": "<p>Hello,</p>\n<p>This is an automated message from Discourse to let you know that your account is no longer on hold after staff review.</p>\n<p>You can now create new replies and topics again. Thank you for your patience.</p>",
+          "hidden": false,
+          "locale": null,
+          "user_id": -1,
+          "version": 1,
+          "baked_at": "2026-10-03T08:59:40.688852",
+          "topic_id": 45,
+          "hidden_at": null,
+          "post_type": 1,
+          "raw_email": null,
+          "via_email": false,
+          "created_at": "2026-10-03T08:59:40.688942",
+          "deleted_at": null,
+          "like_count": 0,
+          "like_score": 0,
+          "self_edits": 0,
+          "sort_order": 1,
+          "spam_count": 0,
+          "updated_at": "2026-10-03T08:59:40.688942",
+          "word_count": 37,
+          "action_code": null,
+          "cook_method": 1,
+          "edit_reason": null,
+          "post_number": 1,
+          "quote_count": 0,
+          "reply_count": 0,
+          "locked_by_id": null,
+          "percent_rank": 1,
+          "reply_quoted": false,
+          "user_deleted": false,
+          "baked_version": 2,
+          "deleted_by_id": null,
+          "illegal_count": 0,
+          "qa_vote_count": 0,
+          "bookmark_count": 0,
+          "last_editor_id": -1,
+          "public_version": 1,
+          "image_upload_id": null,
+          "last_version_at": "2026-10-03T08:59:40.712803",
+          "off_topic_count": 0,
+          "hidden_reason_id": null,
+          "reply_to_user_id": null,
+          "notify_user_count": 0,
+          "inappropriate_count": 0,
+          "incoming_link_count": 0,
+          "outbound_message_id": null,
+          "reply_to_post_number": null,
+          "notify_moderators_count": 0
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_allowed_users": {
+      "inserted": [
+        {
+          "id": 9,
+          "user_id": 4,
+          "topic_id": 45,
+          "created_at": "2026-10-03T08:59:40.623353",
+          "updated_at": "2026-10-03T08:59:40.623353"
+        },
+        {
+          "id": 10,
+          "user_id": -1,
+          "topic_id": 45,
+          "created_at": "2026-10-03T08:59:40.626775",
+          "updated_at": "2026-10-03T08:59:40.626775"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_search_data": {
+      "inserted": [
+        {
+          "locale": "en",
+          "version": 4,
+          "raw_data": "Account no longer on hold Hello, This is an automated message from Discourse to let you know that your account is no longer on hold after staff review. You can now create new replies and topics again. Thank you for your patien",
+          "topic_id": 45,
+          "search_data": "'account':1A,20B 'autom':10B 'creat':32B 'discours':13B 'hello':6B 'hold':5A,25B 'know':17B 'let':15B 'longer':3A,23B 'messag':11B 'new':33B 'patien':42B 'repli':34B 'review':28B 'staff':27B 'thank':38B 'topic':36B"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_users": {
+      "inserted": [
+        {
+          "id": 56,
+          "liked": false,
+          "posted": false,
+          "user_id": 4,
+          "topic_id": 45,
+          "bookmarked": false,
+          "last_posted_at": null,
+          "last_visited_at": "2026-10-03T08:59:40.645755",
+          "first_visited_at": "2026-10-03T08:59:40.645755",
+          "cleared_pinned_at": null,
+          "notification_level": 3,
+          "total_msecs_viewed": 0,
+          "last_read_post_number": null,
+          "notifications_reason_id": 2,
+          "last_emailed_post_number": null,
+          "notifications_changed_at": "2026-10-03T08:59:40.644179"
+        },
+        {
+          "id": 55,
+          "liked": false,
+          "posted": true,
+          "user_id": -1,
+          "topic_id": 45,
+          "bookmarked": false,
+          "last_posted_at": "2026-10-03T08:59:40.718521",
+          "last_visited_at": "2026-10-03T08:59:40.634854",
+          "first_visited_at": "2026-10-03T08:59:40.634854",
+          "cleared_pinned_at": null,
+          "notification_level": 3,
+          "total_msecs_viewed": 0,
+          "last_read_post_number": 1,
+          "notifications_reason_id": 1,
+          "last_emailed_post_number": null,
+          "notifications_changed_at": "2026-10-03T08:59:40.633544"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topics": {
+      "inserted": [
+        {
+          "id": 45,
+          "slug": "account-no-longer-on-hold",
+          "score": null,
+          "title": "Account no longer on hold",
+          "views": 0,
+          "closed": false,
+          "locale": null,
+          "excerpt": "Hello, \nThis is an automated message from Discourse to let you know that your account is no longer on hold after staff review. \nYou can now create new replies and topics again. Thank you for your patience.",
+          "subtype": "system_message",
+          "user_id": -1,
+          "visible": true,
+          "archived": false,
+          "archetype": "private_message",
+          "bumped_at": "2026-10-03T08:59:40.688942",
+          "pinned_at": null,
+          "created_at": "2026-10-03T08:59:40.61883",
+          "deleted_at": null,
+          "like_count": 0,
+          "spam_count": 0,
+          "updated_at": "2026-10-03T08:59:40.725231",
+          "word_count": 37,
+          "category_id": null,
+          "external_id": null,
+          "fancy_title": "Account no longer on hold",
+          "has_summary": false,
+          "posts_count": 1,
+          "reply_count": 0,
+          "percent_rank": 1,
+          "pinned_until": null,
+          "deleted_by_id": null,
+          "featured_link": null,
+          "bannered_until": null,
+          "last_posted_at": "2026-10-03T08:59:40.688942",
+          "image_upload_id": null,
+          "pinned_globally": false,
+          "reviewable_score": 0,
+          "featured_user1_id": null,
+          "featured_user2_id": null,
+          "featured_user3_id": null,
+          "featured_user4_id": null,
+          "last_post_user_id": -1,
+          "participant_count": 1,
+          "slow_mode_seconds": 0,
+          "og_image_upload_id": null,
+          "highest_post_number": 1,
+          "incoming_link_count": 0,
+          "visibility_reason_id": null,
+          "moderator_posts_count": 0,
+          "notify_moderators_count": 0,
+          "highest_staff_post_number": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_actions": {
+      "inserted": [
+        {
+          "id": 65,
+          "user_id": -1,
+          "created_at": "2026-10-03T08:59:40.61883",
+          "updated_at": "2026-10-03T08:59:40.656307",
+          "action_type": 12,
+          "acting_user_id": -1,
+          "target_post_id": -1,
+          "target_user_id": null,
+          "target_topic_id": 45
+        },
+        {
+          "id": 66,
+          "user_id": 4,
+          "created_at": "2026-10-03T08:59:40.61883",
+          "updated_at": "2026-10-03T08:59:40.665345",
+          "action_type": 13,
+          "acting_user_id": -1,
+          "target_post_id": -1,
+          "target_user_id": null,
+          "target_topic_id": 45
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_archived_messages": {
+      "inserted": [
+        {
+          "id": 2,
+          "user_id": -1,
+          "topic_id": 45,
+          "created_at": "2026-10-03T08:59:40.767287",
+          "updated_at": "2026-10-03T08:59:40.767287"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 86,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "s/7TV1gSuGo1rrbXjBwVx/MHXR4=",
+            "created_at": "2026-10-03T08:59:40.005736",
+            "rotated_at": "2026-10-03T08:59:40.005485",
+            "updated_at": "2026-10-03T08:59:40.005736",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "s/7TV1gSuGo1rrbXjBwVx/MHXR4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 86,
+            "seen_at": "2026-10-03T08:59:40.581939",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "s/7TV1gSuGo1rrbXjBwVx/MHXR4=",
+            "created_at": "2026-10-03T08:59:40.005736",
+            "rotated_at": "2026-10-03T08:59:40.005485",
+            "updated_at": "2026-10-03T08:59:40.005736",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "s/7TV1gSuGo1rrbXjBwVx/MHXR4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 31,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": false,
+          "created_at": "2026-10-03T08:59:40.771219",
+          "ip_address": null,
+          "updated_at": "2026-10-03T08:59:40.771219",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": 4
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "users": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 4,
+            "name": "User2",
+            "admin": false,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": false,
+            "username": "user2",
+            "moderator": false,
+            "created_at": "2026-07-25T05:59:16.733827",
+            "flag_level": 0,
+            "ip_address": null,
+            "updated_at": "2026-09-30T07:28:29.889848",
+            "approved_at": null,
+            "trust_level": 2,
+            "last_seen_at": null,
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": null,
+            "silenced_till": "2027-01-01T00:00:00",
+            "approved_by_id": null,
+            "flair_group_id": null,
+            "last_posted_at": "2026-09-30T07:28:29.179534",
+            "suspended_till": null,
+            "username_lower": "user2",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": null,
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          },
+          "after": {
+            "id": 4,
+            "name": "User2",
+            "admin": false,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": false,
+            "username": "user2",
+            "moderator": false,
+            "created_at": "2026-07-25T05:59:16.733827",
+            "flag_level": 0,
+            "ip_address": null,
+            "updated_at": "2026-10-03T08:59:40.593183",
+            "approved_at": null,
+            "trust_level": 2,
+            "last_seen_at": null,
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": null,
+            "silenced_till": null,
+            "approved_by_id": null,
+            "flair_group_id": null,
+            "last_posted_at": "2026-09-30T07:28:29.179534",
+            "suspended_till": null,
+            "username_lower": "user2",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": null,
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "bot_input",
+      {
+        "user_id": 4,
+        "topic_id": 45,
+        "input": "topic_notification_level_changed"
+      }
+    ],
+    [
+      "post_alert",
+      {
+        "post_id": 53,
+        "new_record": true,
+        "options": null
+      }
+    ],
+    [
+      "feature_topic_users",
+      {
+        "topic_id": 45
+      }
+    ],
+    [
+      "process_post",
+      {
+        "bypass_bump": false,
+        "cooking_options": null,
+        "new_post": true,
+        "post_id": 53,
+        "skip_pull_hotlinked_images": false
+      }
+    ],
+    [
+      "post_update_topic_tracking_state",
+      {
+        "post_id": 53
+      }
+    ]
+  ],
+  "setup": [
+    "UPDATE users SET silenced_till = '2027-01-01 00:00:00' WHERE id = 4"
+  ]
+}

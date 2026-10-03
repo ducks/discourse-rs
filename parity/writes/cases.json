@@ -1773,5 +1773,127 @@
         "params": {}
       }
     ]
+  },
+  {
+    "name": "user_suspend",
+    "user": "admin",
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/admin/users/4/suspend.json",
+        "params": {
+          "reason": "Breaking the rules",
+          "suspend_until": "2027-01-01T00:00:00Z"
+        }
+      }
+    ]
+  },
+  {
+    "name": "user_suspend_with_message",
+    "user": "admin",
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/admin/users/4/suspend.json",
+        "params": {
+          "reason": "Breaking the rules",
+          "suspend_until": "2027-01-01T00:00:00Z",
+          "message": "Please read the community guidelines."
+        }
+      }
+    ]
+  },
+  {
+    "name": "user_suspend_without_reason",
+    "user": "admin",
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/admin/users/4/suspend.json",
+        "params": {
+          "suspend_until": "2027-01-01T00:00:00Z"
+        }
+      }
+    ]
+  },
+  {
+    "name": "user_suspend_not_admin",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/admin/users/4/suspend.json",
+        "params": {
+          "reason": "x",
+          "suspend_until": "2027-01-01T00:00:00Z"
+        }
+      }
+    ]
+  },
+  {
+    "name": "user_unsuspend",
+    "user": "admin",
+    "setup": [
+      "UPDATE users SET suspended_at = '2026-10-01 10:00:00', suspended_till = '2027-01-01 00:00:00' WHERE id = 4"
+    ],
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/admin/users/4/unsuspend.json",
+        "params": {}
+      }
+    ]
+  },
+  {
+    "name": "user_silence",
+    "user": "admin",
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/admin/users/4/silence.json",
+        "params": {
+          "reason": "Spamming",
+          "silenced_till": "2027-01-01T00:00:00Z"
+        }
+      }
+    ]
+  },
+  {
+    "name": "user_unsilence",
+    "user": "admin",
+    "setup": [
+      "UPDATE users SET silenced_till = '2027-01-01 00:00:00' WHERE id = 4"
+    ],
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/admin/users/4/unsilence.json",
+        "params": {}
+      }
+    ]
+  },
+  {
+    "name": "review_agree_and_hide_message",
+    "user": "admin",
+    "setup": [
+      "INSERT INTO post_actions (id, post_id, user_id, post_action_type_id, created_at, updated_at, staff_took_action, targets_topic) VALUES (9301, 52, 3, 3, '2026-10-02 10:00:00', '2026-10-02 10:00:00', FALSE, FALSE)",
+      "UPDATE posts SET off_topic_count = 1 WHERE id = 52",
+      "INSERT INTO reviewables (id, type, type_source, status, created_by_id, reviewable_by_moderator, category_id, topic_id, score, potential_spam, target_id, target_type, target_created_by_id, payload, version, latest_score, force_review, potentially_illegal, created_at, updated_at) VALUES (9301, 'ReviewableFlaggedPost', 'core', 0, 3, TRUE, 4, 35, 3, FALSE, 52, 'Post', 2, '{\"targets_topic\":false}', 0, '2026-10-02 10:00:00', FALSE, FALSE, '2026-10-02 10:00:00', '2026-10-02 10:00:00')",
+      "INSERT INTO reviewable_scores (id, reviewable_id, user_id, reviewable_score_type, status, score, take_action_bonus, user_accuracy_bonus, created_at, updated_at) VALUES (9301, 9301, 3, 3, 0, 3, 0, 0, '2026-10-02 10:00:00', '2026-10-02 10:00:00')",
+      "INSERT INTO reviewable_histories (id, reviewable_id, reviewable_history_type, status, created_by_id, created_at, updated_at) VALUES (9301, 9301, 0, 0, 3, '2026-10-02 10:00:00', '2026-10-02 10:00:00')",
+      "UPDATE topics SET reviewable_score = 3 WHERE id = 35"
+    ],
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/review/9301/perform/agree_and_hide",
+        "params": {
+          "version": 0
+        }
+      }
+    ],
+    "run_jobs": [
+      "send_system_message"
+    ]
   }
 ]

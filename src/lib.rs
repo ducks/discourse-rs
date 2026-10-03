@@ -41,6 +41,7 @@ pub mod signup;
 pub mod site;
 pub mod site_icons;
 pub mod site_settings;
+pub mod system_message;
 pub mod tags;
 pub mod topic_guardian;
 pub mod topic_list;
@@ -49,6 +50,7 @@ pub mod topic_status;
 pub mod topic_view;
 pub mod uploads;
 pub mod url;
+pub mod user_penalties;
 pub mod user_private;
 pub mod users;
 

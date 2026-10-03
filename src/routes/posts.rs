@@ -116,6 +116,8 @@ pub async fn create(
         // is_api?: an admin API key (the session middleware checked it).
         advance_draft: !api,
         first_post_checks: !api,
+        from_composer: true,
+        ..Default::default()
     };
     let cook_host = Host::from_state(&state);
     let ctx = Ctx {
