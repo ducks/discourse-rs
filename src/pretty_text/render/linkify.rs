@@ -1,11 +1,13 @@
-//! Port of linkify-it 5.0.2 (lib/re.mjs and the matching half of
-//! index.mjs) and of markdown-it's `linkify` core rule: urls, bare hosts
-//! with a known TLD and email addresses in text become links.
+//! Port of linkify-it 6.1.0 (the REBuilder sources and the matching half
+//! of LinkifyIt), the version markdown-it 15 brings, and of markdown-it's
+//! `linkify` core rule: urls, bare hosts with a known TLD and email
+//! addresses in text become links.
 //!
 //! linkify-it's patterns lean on lookaheads, which the regex crate does
 //! not have, so they are compiled with fancy-regex from the same sources.
 
-use std::sync::Arc;
+use std::collections::HashMap;
+use std::sync::{Arc, LazyLock, Mutex};
 
 use fancy_regex::Regex;
 use markdown_it::parser::inline::{Text, TextSpecial};
@@ -50,74 +52,91 @@ const CC: &str = r"\p{Cc}";
 const DOT: &str = r"[^\n\r\x{2028}\x{2029}]";
 const TEXT_SEPARATORS: &str = r"[><\x{ff5c}]";
 
+/// The schemas linkify-it knows by default, in its key order.
+const SCHEMAS: [&str; 5] = ["http:", "https:", "ftp:", "//", "mailto:"];
+
+/// `nestedPairRE(open, close)`: a bracketed run, nested four deep. The
+/// JS bounds each run to 1000 characters, which a backtracking regex
+/// would have to unroll; it is unbounded here.
+fn nested_pair(open: &str, close: &str, zcc: &str) -> String {
+    let atom = format!("(?:(?!{zcc}|{open}|{close}){DOT})");
+    let mut pair = format!("{open}{atom}*{close}");
+    for _ in 2..=4 {
+        pair = format!("{open}(?:{atom}|{pair})*{close}");
+    }
+    pair
+}
+
+/// linkify-it's REBuilder, with Discourse's options: no `---`, no url
+/// auth, no fuzzy IPs, and `maxLength` (10000) not enforced.
 struct Sources {
     zpcc: String,
-    auth: String,
+    zcc: String,
     port: &'static str,
     host_terminator: String,
     path: String,
-    email_name: &'static str,
-    xn: &'static str,
+    mail_name: &'static str,
     domain_root: String,
     domain: String,
-    host: String,
+    ipv6_url_host: String,
+    ipv6_mail_host: String,
 }
 
-/// lib/re.mjs, without the `---` option.
 fn sources() -> Sources {
     let zpcc = format!("{Z}|{P}|{CC}");
     let zcc = format!("{Z}|{CC}");
     let pseudo_letter = format!("(?:(?!{TEXT_SEPARATORS}|{zpcc})(?s:.))");
-    let auth = format!(r"(?:(?:(?!{zcc}|[@/\[\]()]){DOT}){{1,50}}@)?");
+    let ip4 = "(?:(?:25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9][0-9]|[0-9])[.]){3}(?:25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9][0-9]|[0-9])";
+    let h16 = "[0-9A-Fa-f]{1,4}";
+    let ls32 = format!("(?:(?:{h16}:{h16})|{ip4})");
+    let ipv6 = format!(
+        "(?:(?:{h16}:){{6}}{ls32}|::(?:{h16}:){{5}}{ls32}|(?:{h16})?::(?:{h16}:){{4}}{ls32}|(?:(?:{h16}:){{0,1}}{h16})?::(?:{h16}:){{3}}{ls32}|(?:(?:{h16}:){{0,2}}{h16})?::(?:{h16}:){{2}}{ls32}|(?:(?:{h16}:){{0,3}}{h16})?::{h16}:{ls32}|(?:(?:{h16}:){{0,4}}{h16})?::{ls32}|(?:(?:{h16}:){{0,5}}{h16})?::{h16}|(?:(?:{h16}:){{0,6}}{h16})?::)"
+    );
     let port =
         r"(?::(?:6(?:[0-4][0-9]{3}|5(?:[0-4][0-9]{2}|5(?:[0-2][0-9]|3[0-5])))|[1-5]?[0-9]{1,4}))?";
     let host_terminator =
         format!(r"(?=$|{TEXT_SEPARATORS}|{zpcc})(?!-|_|:[0-9]|\.-|\.(?!$|{zpcc}))");
+    let path_terminator = format!("{zpcc}|{TEXT_SEPARATORS}");
     let path = format!(
         concat!(
-            "(?:",
-            r"[/?#]",
-            "(?:",
-            r#"(?!{zcc}|{sep}|[()\[\]{{}}.,"'?!\-;]){dot}|"#,
-            r"\[(?:(?!{zcc}|\]){dot})*\]|",
-            r"\((?:(?!{zcc}|[)]){dot})*\)|",
-            r"\{{(?:(?!{zcc}|[}}]){dot})*\}}|",
-            r#"\"(?:(?!{zcc}|["]){dot})+\"|"#,
-            r"\'(?:(?!{zcc}|[']){dot})+\'|",
+            r"(?:[/?#](?:",
+            "{square}|{round}|{curly}|",
+            r#"\"(?:(?!{zcc}|["]){dot}){{1,100}}\"|"#,
+            r"\'(?:(?!{zcc}|[']){dot}){{1,100}}\'|",
             r"\'(?={pseudo}|[-])|",
-            r"\.{{2,}}[a-zA-Z0-9%/&]|",
+            r"\.{{2,20}}[:]?[a-zA-Z0-9%/&]|",
             r"\.(?!{zcc}|[.]|$)|",
-            r"\-+|",
+            r"\-{{1,20}}|",
             r",(?!{zcc}|$)|",
             r";(?!{zcc}|$)|",
-            r"\!+(?!{zcc}|[!]|$)|",
-            r"\?(?!{zcc}|[?]|$)",
-            ")+",
-            r"|\/",
-            ")?"
+            r"\!{{1,20}}(?!{zcc}|[!]|$)|",
+            r"\?(?!{zcc}|[?]|$)|",
+            r"[\\/:%@#&=_~*]|",
+            r"(?!{terminator}){dot}",
+            r")+|\/)?"
         ),
+        square = nested_pair(r"\[", r"\]", &zcc),
+        round = nested_pair(r"\(", r"\)", &zcc),
+        curly = nested_pair(r"\{", r"\}", &zcc),
         zcc = zcc,
-        sep = TEXT_SEPARATORS,
         dot = DOT,
         pseudo = pseudo_letter,
+        terminator = path_terminator,
     );
     let xn = r"xn--[a-z0-9\-]{1,59}";
-    let domain_root = format!("(?:{xn}|{pseudo_letter}{{1,63}})");
-    let domain = format!(
-        "(?:{xn}|(?:{pseudo_letter})|(?:{pseudo_letter}(?:-|{pseudo_letter}){{0,61}}{pseudo_letter}))"
-    );
-    let host = format!(r"(?:(?:(?:(?:{domain})\.)*{domain}))");
     Sources {
-        zpcc,
-        auth,
         port,
         host_terminator,
         path,
-        email_name: r#"[\-;:&=\+\$,\.a-zA-Z0-9_][\-;:&=\+\$,\"\.a-zA-Z0-9_]{0,63}"#,
-        xn,
-        domain_root,
-        domain,
-        host,
+        mail_name: r"[-!#$%&'*+/=?^_`{|}~a-zA-Z0-9](?:[-!#$%&'*+/=?^_`{|}~a-zA-Z0-9]|[.](?=[-!#$%&'*+/=?^_`{|}~a-zA-Z0-9])){0,63}",
+        domain_root: format!("(?:{xn}|{pseudo_letter}{{1,63}})"),
+        domain: format!(
+            "(?:{xn}|(?:{pseudo_letter})|(?:{pseudo_letter}(?:-|{pseudo_letter}){{0,61}}{pseudo_letter}))"
+        ),
+        ipv6_url_host: format!(r"\[{ipv6}\]"),
+        ipv6_mail_host: format!(r"\[IPv6:{ipv6}\]"),
+        zpcc,
+        zcc,
     }
 }
 
@@ -130,61 +149,115 @@ struct Match {
 }
 
 /// linkify-it, as markdown-it configures it for Discourse: fuzzy links and
-/// emails, no fuzzy IPs, and the site's own list of TLDs.
+/// emails, and the site's own list of TLDs.
 #[derive(Debug)]
 pub struct LinkifyIt {
     schema_search: Regex,
     http: Regex,
-    no_http: Regex,
+    relative: Regex,
     mailto: Regex,
-    host_fuzzy_test: Regex,
-    link_no_ip_fuzzy: Regex,
-    email_fuzzy: Regex,
+    fuzzy_link_search: Regex,
+    fuzzy_mail_host_search: Regex,
+    mail_name: Regex,
 }
 
+/// The start of a regex match at or after `from`.
+fn find_from(regex: &Regex, text: &str, from: usize) -> Option<(usize, usize)> {
+    let caps = regex.captures_from_pos(text, from).ok()??;
+    let whole = caps.get(0)?;
+    Some((whole.start(), whole.end()))
+}
+
+/// The byte offset `units` UTF-16 code units before `pos`, as JS counts
+/// string offsets (clamped to the start).
+fn back_utf16(text: &str, pos: usize, units: usize) -> usize {
+    let mut left = units;
+    let mut at = pos;
+    for c in text[..pos].chars().rev() {
+        let n = c.len_utf16();
+        if n > left {
+            break;
+        }
+        left -= n;
+        at -= c.len_utf8();
+    }
+    at
+}
+
+/// Compiled instances by TLD list: the patterns take a while to build and
+/// only the site setting changes them.
+static COMPILED: LazyLock<Mutex<HashMap<Vec<String>, Arc<LinkifyIt>>>> =
+    LazyLock::new(Default::default);
+
 impl LinkifyIt {
-    /// `linkify.tlds(list)`: the list replaces the default one, so the
-    /// two-letter country codes are not added.
+    /// The instance for this TLD list, compiled on first use.
+    pub fn for_tlds(tlds: &[String]) -> Result<Arc<LinkifyIt>, String> {
+        if let Some(found) = COMPILED.lock().expect("linkify cache").get(tlds) {
+            return Ok(found.clone());
+        }
+        let compiled = Arc::new(LinkifyIt::new(tlds)?);
+        COMPILED
+            .lock()
+            .expect("linkify cache")
+            .insert(tlds.to_vec(), compiled.clone());
+        Ok(compiled)
+    }
+
+    /// `linkify.tlds(list)` then `set({ fuzzyLink: true })`.
     pub fn new(tlds: &[String]) -> Result<LinkifyIt, String> {
         let s = sources();
-        let mut tld_list: Vec<String> = tlds.to_vec();
-        tld_list.push(s.xn.to_string());
-        let tlds = tld_list.join("|");
         let compile = |source: String| {
             Regex::new(&format!("(?i){source}")).map_err(|e| format!("linkify: {e}"))
         };
-        let host_no_ip_fuzzy = format!(r"(?:(?:(?:{})\.)+(?:{tlds}))", s.domain);
-        let host_fuzzy = format!(
-            r"(?:(?:(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){{3}}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|{host_no_ip_fuzzy})"
+        // get_tld: the list sorted, deduplicated and reversed, then xn--.
+        let mut list: Vec<&str> = tlds.iter().map(String::as_str).collect();
+        list.sort_unstable_by(|a, b| a.encode_utf16().cmp(b.encode_utf16()));
+        list.dedup();
+        list.reverse();
+        let tld = match list.join("|") {
+            joined if joined.is_empty() => r"\$#none#\$".to_string(),
+            joined => joined,
+        };
+        let tld = format!(r"{tld}|xn--[a-z0-9\-]{{1,59}}");
+        let schema_names = SCHEMAS.join("|");
+        let url_host_port = format!(
+            r"(?:{}|(?:(?:(?:{})\.){{0,10}}{})){}{}",
+            s.ipv6_url_host, s.domain, s.domain, s.port, s.host_terminator
         );
-        let before_link = format!(r"(^|(?![.:/\-_@])(?:[$+<=>^`|\x{{ff5c}}]|{}))", s.zpcc);
+        let fuzzy_url_host_port = format!(
+            r"(?:(?:(?:(?:{})\.){{1,10}}(?:{tld}))){}",
+            s.domain, s.host_terminator
+        );
+        let mail_host = format!(
+            r"(?:{}|(?:(?:(?:{})\.){{0,4}}{})){}",
+            s.ipv6_mail_host, s.domain, s.domain, s.host_terminator
+        );
+        let fuzzy_mail_host = format!(
+            r"(?:{}|(?:(?:(?:{})[.]){{1,4}}{})){}",
+            s.ipv6_mail_host, s.domain, s.domain_root, s.host_terminator
+        );
         Ok(LinkifyIt {
-            // The schemas: http:, https:, ftp:, //, mailto:.
             schema_search: compile(format!(
-                r"(^|(?!_)(?:[><\x{{ff5c}}]|{}))(http:|https:|ftp:|//|mailto:)",
+                r"(^|(?!_)(?:[><\x{{ff5c}}]|{}))({schema_names})",
                 s.zpcc
             ))?,
-            http: compile(format!(
-                r"^//{}{}{}{}{}",
-                s.auth, s.host, s.port, s.host_terminator, s.path
+            http: compile(format!(r"^//{url_host_port}{}", s.path))?,
+            relative: compile(format!(
+                r"^(?:localhost|{}|(?:(?:{})[.]){{1,10}}{}){}{}{}",
+                s.ipv6_url_host, s.domain, s.domain_root, s.port, s.host_terminator, s.path
             ))?,
-            no_http: compile(format!(
-                r"^{}(?:localhost|(?:(?:{})\.)+{}){}{}{}",
-                s.auth, s.domain, s.domain_root, s.port, s.host_terminator, s.path
+            mailto: compile(format!("^{}@{mail_host}", s.mail_name))?,
+            fuzzy_link_search: compile(format!(
+                r"(^|(?![.:/\-_@])(?:[$+<=>^`|\x{{ff5c}}]|{}))(?:(?![$+<=>^`|\x{{ff5c}}]){fuzzy_url_host_port}{})",
+                s.zpcc, s.path
             ))?,
-            mailto: compile(format!("^{}@{}{}", s.email_name, s.host, s.host_terminator))?,
-            host_fuzzy_test: compile(format!(
-                r"localhost|www\.|\.[0-9]{{1,3}}\.|(?:\.(?:{tlds})(?:{}|>|$))",
-                s.zpcc
-            ))?,
-            link_no_ip_fuzzy: compile(format!(
-                r"{before_link}((?![$+<=>^`|\x{{ff5c}}]){host_no_ip_fuzzy}{}{}{})",
-                s.port, s.host_terminator, s.path
-            ))?,
-            email_fuzzy: compile(format!(
-                r#"(^|{TEXT_SEPARATORS}|"|\(|{Z}|{CC})({}@{host_fuzzy}{})"#,
-                s.email_name, s.host_terminator
-            ))?,
+            fuzzy_mail_host_search: compile(format!("@{fuzzy_mail_host}"))?,
+            // No `i` flag in the JS; the class names both cases.
+            mail_name: Regex::new(&format!(
+                r#"(?:^|{TEXT_SEPARATORS}|"|\(|{})({})$"#,
+                s.zcc, s.mail_name
+            ))
+            .map_err(|e| format!("linkify: {e}"))?,
         })
     }
 
@@ -199,7 +272,7 @@ impl LinkifyIt {
                 if matches!(third_back, Some(':') | Some('/')) {
                     return 0;
                 }
-                &self.no_http
+                &self.relative
             }
             "mailto:" => &self.mailto,
             _ => return 0,
@@ -210,107 +283,166 @@ impl LinkifyIt {
         }
     }
 
-    /// Every match of a global regex, as `exec` in a loop finds them.
-    fn each(regex: &Regex, text: &str, mut f: impl FnMut(&fancy_regex::Captures)) {
-        let mut pos = 0;
-        while pos <= text.len() {
-            let Ok(Some(caps)) = regex.captures_from_pos(text, pos) else {
-                break;
-            };
-            let whole = caps.get(0).unwrap();
-            f(&caps);
-            pos = if whole.end() > whole.start() {
-                whole.end()
-            } else {
-                // An empty match advances by one character.
-                match text[whole.end()..].chars().next() {
-                    Some(c) => whole.end() + c.len_utf8(),
-                    None => break,
-                }
-            };
-        }
+    /// The name before an `@host` match at `at`: `mail_name_validator` on
+    /// the 65 code units before it. Returns where the name starts.
+    fn mail_name_start(&self, text: &str, at: usize) -> Option<usize> {
+        let from = back_utf16(text, at, 65);
+        let caps = self.mail_name.captures(&text[from..at]).ok()??;
+        Some(from + caps.get(1)?.start())
     }
 
-    /// `match(text)`: the links in the text, schemed ones first where two
-    /// start together, none overlapping.
+    /// `match(text)`: the three searches advance together; at each step
+    /// the earliest candidate wins, the longer on a tie, a schema before an
+    /// email before a fuzzy link, and the next search starts where it ended.
     fn matches(&self, text: &str) -> Vec<Match> {
-        let mut schemed = Vec::new();
-        let mut fuzzy_link = Vec::new();
-        let mut fuzzy_email = Vec::new();
-        if text.is_empty() {
-            return Vec::new();
-        }
-        Self::each(&self.schema_search, text, |caps| {
-            let whole = caps.get(0).unwrap();
-            let schema = caps.get(2).unwrap().as_str();
-            let len = self.schema_length(text, schema, whole.end());
-            if len > 0 {
-                schemed.push(Match {
-                    schema: schema.to_lowercase(),
-                    index: whole.start() + caps.get(1).map_or(0, |m| m.as_str().len()),
-                    last_index: whole.end() + len,
-                });
-            }
-        });
-        if self.host_fuzzy_test.is_match(text).unwrap_or(false) {
-            Self::each(&self.link_no_ip_fuzzy, text, |caps| {
-                let whole = caps.get(0).unwrap();
-                fuzzy_link.push(Match {
-                    schema: String::new(),
-                    index: whole.start() + caps.get(1).map_or(0, |m| m.as_str().len()),
-                    last_index: whole.end(),
-                });
-            });
-        }
-        if text.contains('@') {
-            Self::each(&self.email_fuzzy, text, |caps| {
-                let whole = caps.get(0).unwrap();
-                fuzzy_email.push(Match {
-                    schema: "mailto:".to_string(),
-                    index: whole.start() + caps.get(1).map_or(0, |m| m.as_str().len()),
-                    last_index: whole.end(),
-                });
-            });
-        }
-
-        // The earliest candidate of the three lists; on a tie the longest,
-        // then schemed before email before fuzzy link.
-        fn choose<'a>(a: Option<&'a Match>, b: Option<&'a Match>) -> Option<&'a Match> {
-            match (a, b) {
-                (None, b) => b,
-                (a, None) => a,
-                (Some(a), Some(b)) if a.index != b.index => {
-                    Some(if a.index < b.index { a } else { b })
-                }
-                (Some(a), Some(b)) => Some(if a.last_index >= b.last_index { a } else { b }),
-            }
-        }
-        let lists = [&schemed, &fuzzy_email, &fuzzy_link];
-        let mut indexes = [0usize; 3];
         let mut result = Vec::new();
-        let mut last_index = 0;
+        if text.is_empty() {
+            return result;
+        }
+        let mut pos = 0;
+        // Each search's `lastIndex`, and whether it has run out.
+        let (mut mail_last, mut mail_done) = (0, false);
+        let (mut link_last, mut link_done) = (0, false);
+        let (mut schema_last, mut schema_done) = (0, false);
+        let mut mail_candidate: Option<Match> = None;
+        let mut link_candidate: Option<Match> = None;
+        let mut schema_prefix: Option<(String, usize, usize)> = None;
         loop {
-            let candidates = [
-                lists[0].get(indexes[0]),
-                lists[1].get(indexes[1]),
-                lists[2].get(indexes[2]),
-            ];
-            let Some(candidate) = choose(choose(candidates[0], candidates[1]), candidates[2])
-            else {
-                break;
-            };
-            let from = candidates
-                .iter()
-                .position(|c| c.is_some_and(|c| std::ptr::eq(c, candidate)))
-                .unwrap_or(2);
-            indexes[from] += 1;
-            if candidate.index < last_index {
-                continue;
+            // `Math.max(pos - 1, 0)`: one character back.
+            let scan_from = back_utf16(text, pos, 1);
+            if !mail_done && mail_candidate.as_ref().is_none_or(|c| c.index < pos) {
+                mail_last = mail_last.max(scan_from);
+                loop {
+                    let Some((start, end)) =
+                        find_from(&self.fuzzy_mail_host_search, text, mail_last)
+                    else {
+                        mail_done = true;
+                        mail_candidate = None;
+                        break;
+                    };
+                    mail_last = end;
+                    let Some(name) = self.mail_name_start(text, start) else {
+                        continue;
+                    };
+                    mail_candidate = Some(Match {
+                        schema: "mailto:".to_string(),
+                        index: name,
+                        last_index: end,
+                    });
+                    if name >= pos {
+                        break;
+                    }
+                    mail_last = mail_last.max(scan_from);
+                }
             }
-            last_index = candidate.last_index;
-            result.push(candidate.clone());
+            if !link_done && link_candidate.as_ref().is_none_or(|c| c.index < pos) {
+                link_last = link_last.max(scan_from);
+                loop {
+                    let found = self
+                        .fuzzy_link_search
+                        .captures_from_pos(text, link_last)
+                        .ok()
+                        .flatten();
+                    let Some(caps) = found else {
+                        link_done = true;
+                        link_candidate = None;
+                        break;
+                    };
+                    let whole = caps.get(0).unwrap();
+                    link_last = whole.end();
+                    let index = whole.start() + caps.get(1).map_or(0, |m| m.as_str().len());
+                    link_candidate = Some(Match {
+                        schema: String::new(),
+                        index,
+                        last_index: whole.end(),
+                    });
+                    if index >= pos {
+                        break;
+                    }
+                    link_last = link_last.max(scan_from);
+                }
+            }
+            let fuzzy = earlier(mail_candidate.as_ref(), link_candidate.as_ref());
+            let mut schema_candidate = None;
+            while !schema_done {
+                let prefix = match schema_prefix.take() {
+                    Some(prefix) => prefix,
+                    None => {
+                        schema_last = schema_last.max(scan_from);
+                        let found = self
+                            .schema_search
+                            .captures_from_pos(text, schema_last)
+                            .ok()
+                            .flatten();
+                        let Some(caps) = found else {
+                            schema_done = true;
+                            break;
+                        };
+                        let whole = caps.get(0).unwrap();
+                        schema_last = whole.end();
+                        let schema = caps.get(2).unwrap().as_str().to_string();
+                        let index = whole.start() + caps.get(1).map_or(0, |m| m.as_str().len());
+                        (schema, index, whole.end())
+                    }
+                };
+                if prefix.1 < pos {
+                    continue;
+                }
+                if fuzzy.is_some_and(|f| prefix.1 > f.index) {
+                    schema_prefix = Some(prefix);
+                    break;
+                }
+                let len = self.schema_length(text, &prefix.0, prefix.2);
+                if len > 0 {
+                    schema_candidate = Some(Match {
+                        schema: prefix.0.to_lowercase(),
+                        index: prefix.1,
+                        last_index: prefix.2 + len,
+                    });
+                    break;
+                }
+            }
+            // The schema's, then the email if it wins over that, then the
+            // fuzzy link if it wins over the result; the email or link taken
+            // is used up.
+            let picks = [
+                schema_candidate.as_ref(),
+                mail_candidate.as_ref(),
+                link_candidate.as_ref(),
+            ];
+            let mut best: Option<usize> = None;
+            for (i, pick) in picks.iter().enumerate() {
+                if let Some(c) = pick
+                    && best.is_none_or(|b| wins(c, picks[b].unwrap()))
+                {
+                    best = Some(i);
+                }
+            }
+            let candidate = match best {
+                None => break,
+                Some(0) => schema_candidate.unwrap(),
+                Some(1) => mail_candidate.take().unwrap(),
+                Some(_) => link_candidate.take().unwrap(),
+            };
+            pos = candidate.last_index;
+            result.push(candidate);
         }
         result
+    }
+}
+
+/// `b` takes `a`'s place: it starts earlier, or at the same place and ends
+/// later.
+fn wins(b: &Match, a: &Match) -> bool {
+    b.index < a.index || (b.index == a.index && b.last_index > a.last_index)
+}
+
+/// `a` unless `b` wins over it.
+fn earlier<'a>(a: Option<&'a Match>, b: Option<&'a Match>) -> Option<&'a Match> {
+    match (a, b) {
+        (None, b) => b,
+        (Some(a), Some(b)) if wins(b, a) => Some(b),
+        (a, _) => a,
     }
 }
 
