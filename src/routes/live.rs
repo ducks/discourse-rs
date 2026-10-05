@@ -225,3 +225,219 @@ async fn fragment(live: &Live, message: &Message) -> Result<Option<String>, AppE
     .render()?;
     Ok(Some(html))
 }
+
+#[derive(Deserialize, Default)]
+pub struct ListParams {
+    position: Option<String>,
+    /// The list the page shows (`latest`, `new`, `unread`): the latest
+    /// list also gets the new-or-updated banner.
+    filter: Option<String>,
+    /// When the page was rendered, in milliseconds: topics bumped after it
+    /// are the new or updated ones.
+    since: Option<i64>,
+}
+
+/// GET /live/lists: what a topic list page keeps current, as `list`
+/// events of htmx out-of-band HTML: the "N new or updated topics" banner
+/// on the latest list, and a logged-in viewer's unread and new counts in
+/// the nav. Each is the viewer's own list query run again (their muting,
+/// categories, permissions), on connect and after any tracking message
+/// they may hear; a burst of messages is one recount, and nothing is sent
+/// when nothing changed.
+pub async fn lists(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Query(params): Query<ListParams>,
+    headers: HeaderMap,
+) -> Result<Response, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let tags = crate::bus::tags(&mut conn, guardian.user_id()).await?;
+    drop(conn);
+    let from = match pg_bus::sse::last_event_id(&headers) {
+        Some(position) => position,
+        None => match params.position.as_deref().filter(|p| !p.is_empty()) {
+            Some(raw) => match raw.parse() {
+                Ok(position) => position,
+                Err(_) => return Ok((StatusCode::BAD_REQUEST, "invalid position").into_response()),
+            },
+            None => state.bus.now().await?,
+        },
+    };
+    let mut channels: Vec<String> = ["/latest", "/new", "/unread", "/delete", "/recover"]
+        .into_iter()
+        .map(str::to_string)
+        .collect();
+    if let Some(user_id) = guardian.user_id() {
+        channels.push(format!("/unread/{user_id}"));
+    }
+    let since = match params.filter.as_deref() {
+        Some("latest") => params
+            .since
+            .and_then(chrono::DateTime::from_timestamp_millis)
+            .map(|t| t.naive_utc()),
+        _ => None,
+    };
+    let subscription = state.bus.subscribe(from, Filter { channels, tags });
+    let live = ListLive {
+        state,
+        guardian,
+        settings,
+        subscription,
+        since,
+        sent: None,
+        deadline: tokio::time::Instant::now() + MAX_LIFETIME,
+    };
+    let stream = stream::unfold(live, |mut live| async move {
+        // First the state as it is now, then again after each burst.
+        let mut id = None;
+        loop {
+            if live.sent.is_some() {
+                let item = tokio::time::timeout_at(live.deadline, live.subscription.next())
+                    .await
+                    .ok()?;
+                match item {
+                    Ok(Item::Message(m)) => id = Some(m.position),
+                    Ok(Item::Gap) => {}
+                    Err(e) => {
+                        tracing::warn!("live lists: {e}");
+                        return None;
+                    }
+                }
+                // Whatever else is already due is part of the same recount.
+                while let Ok(item) =
+                    tokio::time::timeout(Duration::ZERO, live.subscription.next()).await
+                {
+                    match item {
+                        Ok(Item::Message(m)) => id = Some(m.position),
+                        Ok(Item::Gap) => {}
+                        Err(e) => {
+                            tracing::warn!("live lists: {e}");
+                            return None;
+                        }
+                    }
+                }
+            }
+            let html = match list_state(&live).await {
+                Ok(html) => html,
+                Err(e) => {
+                    tracing::warn!("live lists: counting: {e}");
+                    return None;
+                }
+            };
+            if live.sent.as_ref() == Some(&html) {
+                continue;
+            }
+            live.sent = Some(html.clone());
+            if html.is_empty() {
+                continue;
+            }
+            let mut event = Event::default().event("list").data(html);
+            if let Some(position) = id {
+                event = event.id(position.to_string());
+            }
+            return Some((Ok::<_, Infallible>(event), live));
+        }
+    });
+    let mut response = Sse::new(stream)
+        .keep_alive(KeepAlive::new().interval(Duration::from_secs(25)))
+        .into_response();
+    response
+        .headers_mut()
+        .insert("x-accel-buffering", HeaderValue::from_static("no"));
+    response
+        .headers_mut()
+        .insert(header::CACHE_CONTROL, HeaderValue::from_static("no-cache"));
+    Ok(response)
+}
+
+struct ListLive {
+    state: AppState,
+    guardian: Guardian,
+    settings: SiteSettings,
+    subscription: Subscription,
+    since: Option<chrono::NaiveDateTime>,
+    /// The HTML last computed, sent or (when empty) not.
+    sent: Option<String>,
+    deadline: tokio::time::Instant,
+}
+
+/// The most a count shows before "99+".
+const COUNT_CAP: i64 = 100;
+
+async fn list_state(live: &ListLive) -> Result<String, AppError> {
+    use crate::topic_query::{Filter as ListFilter, Options};
+    let mut conn = live.state.pool.acquire().await?;
+    let mut out = String::new();
+    if let Some(since) = live.since {
+        // The front page's latest list: no category definitions.
+        let list = viewer_list(
+            live,
+            &mut conn,
+            ListFilter::Latest,
+            Options {
+                no_definitions: true,
+                ..Default::default()
+            },
+        )
+        .await?;
+        let n = list.topics.iter().filter(|t| t.bumped_at > since).count();
+        let banner = match n {
+            0 => String::new(),
+            1 => r#"<a href="">1 new or updated topic. Show</a>"#.to_string(),
+            n => format!(r#"<a href="">{n} new or updated topics. Show</a>"#),
+        };
+        out.push_str(&format!(
+            r#"<div id="list-updates" class="list-updates" hx-swap-oob="true">{banner}</div>"#
+        ));
+    }
+    if live.guardian.user_id().is_some() {
+        for (filter, id) in [
+            (ListFilter::Unread, "unread-count"),
+            (ListFilter::New, "new-count"),
+        ] {
+            let list = viewer_list(
+                live,
+                &mut conn,
+                filter,
+                Options {
+                    per_page: Some(COUNT_CAP),
+                    ..Default::default()
+                },
+            )
+            .await?;
+            let n = list.topics.len() as i64;
+            let count = match n {
+                0 => String::new(),
+                n if n >= COUNT_CAP => " (99+)".to_string(),
+                n => format!(" ({n})"),
+            };
+            out.push_str(&format!(
+                r#"<span id="{id}" hx-swap-oob="true">{count}</span>"#
+            ));
+        }
+    }
+    Ok(out)
+}
+
+/// The viewer's own list: `TopicQuery#list_<filter>` with these options.
+async fn viewer_list(
+    live: &ListLive,
+    conn: &mut sqlx::PgConnection,
+    filter: crate::topic_query::Filter,
+    options: crate::topic_query::Options,
+) -> Result<crate::topic_query::TopicList, AppError> {
+    Ok(crate::topic_query::TopicQuery {
+        conn,
+        settings: &live.settings,
+        guardian: &live.guardian,
+        options,
+        category: Default::default(),
+        tags: Default::default(),
+        filter: Default::default(),
+        user: Default::default(),
+    }
+    .list(filter)
+    .await?)
+}

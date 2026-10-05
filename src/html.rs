@@ -162,6 +162,11 @@ pub struct LatestPage {
     pub heading: Option<CategoryHeading>,
     /// Set on tag pages (list.erb's tag breadcrumb).
     pub tag: Option<TagHeading>,
+    /// The list kept live (`latest`, `new`, `unread`), empty for none.
+    pub live_filter: String,
+    /// When the page was rendered, in milliseconds (live updates count the
+    /// topics bumped after it).
+    pub live_since: String,
 }
 
 pub struct TagHeading {
@@ -333,6 +338,8 @@ pub async fn latest_page(
         topics,
         heading: None,
         tag: None,
+        live_filter: String::new(),
+        live_since: String::new(),
         more_url: list["topic_list"]["more_topics_url"]
             .as_str()
             .map(str::to_string),

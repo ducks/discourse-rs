@@ -310,8 +310,16 @@ Discourse's own clients keep working.
       requests only, as Rails' before_action does, so an unknown path
       such as a browser's /favicon.ico is a 404 rather than a redirect
       that overwrites destination_url
-- [ ] First slice, next: topic lists live (`/latest`, the new and unread
-      counts), the notification count and alert in the header
+- [x] Topic lists live: on /latest, /new and /unread, GET /live/lists
+      sends the "N new or updated topics" banner (latest) and a member's
+      unread and new counts in the nav, each the viewer's own list query
+      run again on connect and after the tracking messages they may hear
+      (a burst is one recount; nothing is sent when nothing changed). As
+      Discourse does, the list is not reordered under the reader; the
+      banner reloads it
+- [ ] First slice, next: the notification count and alert in the
+      header, on every page; one stream per page instead of one per
+      feature (the topic page and lists have their own today)
 - [ ] The composer: markdown preview with the Rust renderer, uploads,
       drafts
 - [ ] The user menu, notifications, bookmarks, messages, preferences

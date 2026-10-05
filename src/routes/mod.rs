@@ -81,6 +81,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/srv/status", get(srv::status))
         .route("/bus/events", get(bus::events))
         .route("/bus/poll", get(bus::poll))
+        .route("/live/lists", get(live::lists))
         .route("/", get(list::latest))
         .route("/latest", get(list::latest))
         .route("/latest.json", get(list::latest_json))

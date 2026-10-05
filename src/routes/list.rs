@@ -314,6 +314,8 @@ pub async fn latest(
     // Before the page's data is read (crate::bus::page_position).
     let bus_position = crate::bus::page_position(&state.bus).await?;
     let list_path = format!("{}/latest", state.config.globals.relative_url_root());
+    // Also before: topics bumped after it are news to this page.
+    let live_since = crate::clock::now().timestamp_millis().to_string();
     let (json, settings) = match list_document(
         &state,
         &guardian,
@@ -335,6 +337,8 @@ pub async fn latest(
     site.viewer = vs.viewer.clone();
     site.bus_position = bus_position;
     let mut page = crate::html::latest_page(&mut conn, site, &json).await?;
+    page.live_filter = "latest".to_string();
+    page.live_since = live_since;
     // Strip `no_definitions`, which is what the JSON list carries around
     // but the HTML list applies on its own.
     page.more_url = page.more_url.map(|u| {
@@ -835,6 +839,7 @@ async fn front_list(
     } else {
         crate::bus::page_position(&state.bus).await?
     };
+    let live_since = crate::clock::now().timestamp_millis().to_string();
     if let Some(response) = ensure_logged_in(&state, &guardian, kind, json) {
         return Ok(response);
     }
@@ -858,6 +863,10 @@ async fn front_list(
     site.viewer = vs.viewer.clone();
     site.bus_position = bus_position;
     let mut page = crate::html::latest_page(&mut conn, site, &doc).await?;
+    if matches!(kind, ListKind::Latest | ListKind::New | ListKind::Unread) {
+        page.live_filter = kind.name().to_string();
+        page.live_since = live_since;
+    }
     let uri = uri.unwrap_or_default();
     page.crawler = list_crawler(&mut conn, &state, &settings, &uri, None, None).await?;
     let body = page.render().map_err(crate::html::HtmlError::from)?;

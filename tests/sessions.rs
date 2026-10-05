@@ -1220,3 +1220,60 @@ async fn no_login_form_without_local_logins() {
     assert_eq!(page.status, StatusCode::OK);
     assert!(!page.body.contains("hx-post="), "{}", page.body);
 }
+
+impl Client {
+    /// A GET whose body is streamed (an event stream), with the client's
+    /// cookies.
+    async fn open(&self, path: &str) -> Body {
+        let cookie: Vec<String> = self
+            .cookies
+            .iter()
+            .map(|(k, v)| format!("{k}={v}"))
+            .collect();
+        let response = discourse_rs::app(self.state.clone())
+            .oneshot(
+                Request::get(path)
+                    .header(header::HOST, "test.localhost")
+                    .header(header::COOKIE, cookie.join("; "))
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK, "{path}");
+        response.into_body()
+    }
+}
+
+/// A member's list pages keep their unread and new counts current, the
+/// same counts the /unread and /new lists show them.
+#[tokio::test(flavor = "multi_thread")]
+async fn list_pages_show_the_members_unread_and_new_counts() {
+    let db = TestDb::new().await;
+    let mut client = Client::new(state(db.pool.clone(), config(RailsEnv::Test, &[])).await);
+    let reply = client.login("user1", "password").await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+
+    let page = client.get("/latest").await;
+    assert!(page.body.contains(r#"<span id="unread-count"></span>"#));
+    assert!(page.body.contains(r#"<span id="new-count"></span>"#));
+
+    let mut expected = Vec::new();
+    for (list, id) in [("unread", "unread-count"), ("new", "new-count")] {
+        let doc = client.get(&format!("/{list}.json")).await.json();
+        let n = doc["topic_list"]["topics"].as_array().unwrap().len();
+        let count = if n == 0 {
+            String::new()
+        } else {
+            format!(" ({n})")
+        };
+        expected.push(format!(
+            r#"<span id="{id}" hx-swap-oob="true">{count}</span>"#
+        ));
+    }
+
+    let mut body = client.open("/live/lists").await;
+    let mut buffer = String::new();
+    let html = common::next_sse_event(&mut body, &mut buffer, "list").await;
+    assert_eq!(html, expected.join(""));
+}

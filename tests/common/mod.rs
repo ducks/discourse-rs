@@ -303,3 +303,37 @@ pub async fn bus_messages(
         .await
         .unwrap()
 }
+
+/// Reads an event stream until an event called `name` arrives; its data
+/// lines joined. What comes before it is dropped; what follows it stays in
+/// `buffer` for the next call.
+pub async fn next_sse_event(
+    body: &mut axum::body::Body,
+    buffer: &mut String,
+    name: &str,
+) -> String {
+    use http_body_util::BodyExt;
+    let deadline = tokio::time::Instant::now() + std::time::Duration::from_secs(30);
+    let marker = format!("event: {name}\n");
+    loop {
+        if let Some(start) = buffer.find(&marker)
+            && let Some(end) = buffer[start..].find("\n\n")
+        {
+            let data = buffer[start..start + end]
+                .lines()
+                .filter_map(|l| l.strip_prefix("data: ").or(l.strip_prefix("data:")))
+                .collect::<Vec<_>>()
+                .join("\n");
+            buffer.replace_range(..start + end + 2, "");
+            return data;
+        }
+        let frame = tokio::time::timeout_at(deadline, body.frame())
+            .await
+            .unwrap_or_else(|_| panic!("a {name} event within 30 s"))
+            .expect("the stream stays open")
+            .unwrap();
+        if let Ok(data) = frame.into_data() {
+            buffer.push_str(&String::from_utf8_lossy(&data));
+        }
+    }
+}

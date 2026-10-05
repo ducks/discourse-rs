@@ -1,5 +1,11 @@
 {% extends "layout.html" %}
 {% block title %}{% if let Some(h) = heading %}{{ h.name }}{% else if let Some(t) = tag %}Topics tagged {{ t.name }}{% else %}Latest topics{% endif %} - {{ site_title }}{% endblock %}
+{% block head %}
+{% if !live_filter.is_empty() %}
+    <script src="{{ base_path }}/assets/htmx.min.js" defer></script>
+    <script src="{{ base_path }}/assets/htmx-ext-sse.js" defer></script>
+{% endif %}
+{% endblock %}
 {% block content %}
 {% if let Some(h) = heading %}
 <h1 class="category-heading">
@@ -14,6 +20,7 @@
 {% if let Some(t) = tag %}
 <h1 class="tag-heading"><a href="{{ t.url }}" class="discourse-tag">{{ t.name }}</a></h1>
 {% endif %}
+<div id="list-updates" class="list-updates"></div>
 <div class="topic-list-container">
   <table class="topic-list">
     <thead>
@@ -61,4 +68,9 @@
   <div class="more-topics"><a href="{{ url }}" rel="next">Next page</a></div>
   {% endif %}
 </div>
+{% if !live_filter.is_empty() %}
+{#- The new-or-updated banner and the nav counts arrive as htmx out-of-band
+    swaps; the sink itself stays empty. -#}
+<div hidden hx-ext="sse" sse-connect="{{ base_path }}/live/lists?filter={{ live_filter }}&amp;since={{ live_since }}{% if !bus_position.is_empty() %}&amp;position={{ bus_position }}{% endif %}" sse-swap="list"></div>
+{% endif %}
 {% endblock %}
