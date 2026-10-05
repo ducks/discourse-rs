@@ -3,11 +3,9 @@
 
 mod common;
 
-use std::time::Duration;
-
 use axum::body::Body;
 use axum::http::{Request, StatusCode, header};
-use common::{TestDb, config, state};
+use common::{TestDb, config, next_sse_event, state};
 use discourse_rs::AppState;
 use discourse_rs::config::RailsEnv;
 use discourse_rs::site_settings::SiteSettings;
@@ -61,32 +59,6 @@ async fn publish(st: &AppState, post_id: i32, kind: &str) {
     tx.commit().await.unwrap();
 }
 
-/// Reads the stream until a `post` event arrives; its data lines joined.
-async fn next_post_event(body: &mut Body) -> String {
-    let mut buffer = String::new();
-    let deadline = tokio::time::Instant::now() + Duration::from_secs(30);
-    loop {
-        if let Some(start) = buffer.find("event: post\n") {
-            let rest = &buffer[start..];
-            if let Some(end) = rest.find("\n\n") {
-                return rest[..end]
-                    .lines()
-                    .filter_map(|l| l.strip_prefix("data: ").or(l.strip_prefix("data:")))
-                    .collect::<Vec<_>>()
-                    .join("\n");
-            }
-        }
-        let frame = tokio::time::timeout_at(deadline, body.frame())
-            .await
-            .expect("a post event within 30 s")
-            .expect("the stream stays open")
-            .unwrap();
-        if let Ok(data) = frame.into_data() {
-            buffer.push_str(&String::from_utf8_lossy(&data));
-        }
-    }
-}
-
 #[tokio::test(flavor = "multi_thread")]
 async fn the_topic_page_connects_to_its_live_stream() {
     let db = TestDb::new().await;
@@ -129,10 +101,11 @@ async fn changes_arrive_as_html_for_the_viewer() {
             .starts_with("text/event-stream")
     );
     let mut body = response.into_body();
+    let mut buffer = String::new();
 
     // An edit replaces the post where it is.
     publish(&st, post_id, "revised").await;
-    let html = next_post_event(&mut body).await;
+    let html = next_sse_event(&mut body, &mut buffer, "post").await;
     assert!(
         html.contains(&format!(r#"<div id="post_{post_number}""#)),
         "{html}"
@@ -145,7 +118,7 @@ async fn changes_arrive_as_html_for_the_viewer() {
 
     // A new post is appended to the posts.
     publish(&st, post_id, "created").await;
-    let html = next_post_event(&mut body).await;
+    let html = next_sse_event(&mut body, &mut buffer, "post").await;
     assert!(
         html.starts_with(r##"<div hx-swap-oob="beforeend:#posts">"##),
         "{html}"
@@ -158,7 +131,7 @@ async fn changes_arrive_as_html_for_the_viewer() {
         .await
         .unwrap();
     publish(&st, post_id, "deleted").await;
-    let html = next_post_event(&mut body).await;
+    let html = next_sse_event(&mut body, &mut buffer, "post").await;
     assert_eq!(
         html,
         format!(r#"<div id="post_{post_number}" hx-swap-oob="delete"></div>"#)
@@ -187,4 +160,57 @@ async fn a_topic_the_viewer_cannot_see_has_no_stream() {
         get(&st, "/t/nope/live").await.status(),
         StatusCode::NOT_FOUND
     );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn the_latest_list_learns_of_new_and_updated_topics() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let response = get(&st, "/latest").await;
+    let bytes = response.into_body().collect().await.unwrap().to_bytes();
+    let html = String::from_utf8_lossy(&bytes);
+    assert!(html.contains(r#"<div id="list-updates""#));
+    assert!(
+        html.contains(r#"sse-connect="/live/lists?filter=latest&amp;since="#),
+        "{html}"
+    );
+    assert!(
+        !html.contains("unread-count"),
+        "no counts for an anonymous reader"
+    );
+
+    let since = discourse_rs::clock::now().timestamp_millis();
+    let from = st.bus.now().await.unwrap();
+    let response = get(
+        &st,
+        &format!("/live/lists?filter=latest&since={since}&position={from}"),
+    )
+    .await;
+    assert_eq!(response.status(), StatusCode::OK);
+    let mut body = response.into_body();
+    let mut buffer = String::new();
+    // Nothing new yet: an empty banner.
+    assert_eq!(
+        next_sse_event(&mut body, &mut buffer, "list").await,
+        r#"<div id="list-updates" class="list-updates" hx-swap-oob="true"></div>"#
+    );
+
+    // A topic bumped after the page, and the message that says so.
+    sqlx::query("UPDATE topics SET bumped_at = now() + interval '1 second' WHERE id = $1")
+        .bind(TOPIC)
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let mut conn = db.pool.acquire().await.unwrap();
+    let settings = SiteSettings::load(&mut conn, &st.site_setting_defs, &st.config.globals)
+        .await
+        .unwrap();
+    drop(conn);
+    let mut tx = db.pool.begin().await.unwrap();
+    discourse_rs::topic_tracking_state::publish_latest(&st.bus, &settings, &mut tx, TOPIC)
+        .await
+        .unwrap();
+    tx.commit().await.unwrap();
+    let html = next_sse_event(&mut body, &mut buffer, "list").await;
+    assert!(html.contains("1 new or updated topic. Show"), "{html}");
 }
