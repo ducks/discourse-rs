@@ -374,3 +374,31 @@ pub async fn publish_notification_level_change(
     .await?;
     Ok(())
 }
+
+/// The live half of `PostAlerter.create_notification_alert`: the alert
+/// the browser pops up, to the user alone when they were seen in the last
+/// 30 days (`allow_live_notifications?`).
+pub async fn publish_notification_alert(
+    bus: &pg_bus::Bus,
+    conn: &mut PgConnection,
+    user_id: i32,
+    payload: &Value,
+) -> Result<(), AppError> {
+    let live: Option<bool> = sqlx::query_scalar(
+        "SELECT COALESCE(last_seen_at >= now() - interval '30 days', FALSE) FROM users WHERE id = $1",
+    )
+    .bind(user_id)
+    .fetch_optional(&mut *conn)
+    .await?;
+    if live != Some(true) {
+        return Ok(());
+    }
+    bus.publish(
+        conn,
+        &format!("/notification-alert/{user_id}"),
+        payload,
+        Some(&[user_tag(user_id)]),
+    )
+    .await?;
+    Ok(())
+}
