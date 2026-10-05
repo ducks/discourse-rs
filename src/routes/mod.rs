@@ -81,7 +81,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/srv/status", get(srv::status))
         .route("/bus/events", get(bus::events))
         .route("/bus/poll", get(bus::poll))
-        .route("/live/lists", get(live::lists))
+        .route("/live", get(live::page))
         .route("/", get(list::latest))
         .route("/latest", get(list::latest))
         .route("/latest.json", get(list::latest_json))
@@ -135,7 +135,6 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/topics/timings", post(read_tracking::timings))
         .route("/topics/timings.json", post(read_tracking::timings))
         .route("/t/{slug}/timings", post(read_tracking::topic_timings))
-        .route("/t/{slug}/live", get(live::topic))
         .route("/topics/{kind}/{username}", get(messages::personal))
         .route(
             "/topics/private-messages-group/{username}/{*rest}",

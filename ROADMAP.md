@@ -317,9 +317,14 @@ Discourse's own clients keep working.
       (a burst is one recount; nothing is sent when nothing changed). As
       Discourse does, the list is not reordered under the reader; the
       banner reloads it
-- [ ] First slice, next: the notification count and alert in the
-      header, on every page; one stream per page instead of one per
-      feature (the topic page and lists have their own today)
+- [x] The header: a member's unread notification count (on connect,
+      then from their notification state) and the alert for a new
+      notification (PostAlerter's payload, its user content escaped), on
+      every page. One stream per page now, GET /live, carrying whatever
+      the page follows: a topic's posts, a list's banner, a member's
+      counts and notifications; it replaces /t/:id/live and /live/lists
+- [ ] Next for the client: the user menu (notifications list), topic
+      composer (new topics), likes and bookmarks from the page
 - [ ] The composer: markdown preview with the Rust renderer, uploads,
       drafts
 - [ ] The user menu, notifications, bookmarks, messages, preferences

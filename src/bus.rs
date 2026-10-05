@@ -411,3 +411,20 @@ pub async fn publish_notification_alert(
 pub async fn page_position(bus: &pg_bus::Bus) -> Result<String, AppError> {
     Ok(bus.now().await?.to_string())
 }
+
+/// `User#all_unread_notifications_count`: unread notifications newer than
+/// the last one the user saw, at most 99 (as in the published state).
+pub async fn all_unread_notifications_count(
+    conn: &mut PgConnection,
+    user_id: i32,
+) -> Result<i64, AppError> {
+    Ok(sqlx::query_scalar(
+        "SELECT COUNT(*) FROM (SELECT 1 FROM notifications n LEFT JOIN topics t ON t.id = n.topic_id \
+           WHERE t.deleted_at IS NULL AND n.user_id = $1 \
+             AND n.id > (SELECT seen_notification_id FROM users WHERE id = $1) \
+             AND NOT read LIMIT 99) x",
+    )
+    .bind(user_id)
+    .fetch_one(&mut *conn)
+    .await?)
+}

@@ -70,7 +70,7 @@ async fn the_topic_page_connects_to_its_live_stream() {
     assert!(html.contains("/assets/htmx.min.js"));
     assert!(html.contains(r#"<div id="posts""#));
     assert!(
-        html.contains(r#"sse-connect="/t/35/live?position="#),
+        html.contains(r#"sse-connect="/live?position="#) && html.contains("&amp;topic=35"),
         "the stream starts at the page's position"
     );
     assert!(
@@ -92,7 +92,7 @@ async fn changes_arrive_as_html_for_the_viewer() {
     let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
     let (post_id, post_number) = a_reply(&st).await;
     let from = st.bus.now().await.unwrap();
-    let response = get(&st, &format!("/t/{TOPIC}/live?position={from}")).await;
+    let response = get(&st, &format!("/live?topic={TOPIC}&position={from}")).await;
     assert_eq!(response.status(), StatusCode::OK);
     assert!(
         response.headers()[header::CONTENT_TYPE]
@@ -153,11 +153,11 @@ async fn a_topic_the_viewer_cannot_see_has_no_stream() {
         .await
         .unwrap();
     assert_eq!(
-        get(&st, &format!("/t/{TOPIC}/live")).await.status(),
+        get(&st, &format!("/live?topic={TOPIC}")).await.status(),
         StatusCode::NOT_FOUND
     );
     assert_eq!(
-        get(&st, "/t/nope/live").await.status(),
+        get(&st, "/live?topic=nope").await.status(),
         StatusCode::NOT_FOUND
     );
 }
@@ -170,10 +170,7 @@ async fn the_latest_list_learns_of_new_and_updated_topics() {
     let bytes = response.into_body().collect().await.unwrap().to_bytes();
     let html = String::from_utf8_lossy(&bytes);
     assert!(html.contains(r#"<div id="list-updates""#));
-    assert!(
-        html.contains(r#"sse-connect="/live/lists?filter=latest&amp;since="#),
-        "{html}"
-    );
+    assert!(html.contains("&amp;filter=latest&amp;since="), "{html}");
     assert!(
         !html.contains("unread-count"),
         "no counts for an anonymous reader"
@@ -183,7 +180,7 @@ async fn the_latest_list_learns_of_new_and_updated_topics() {
     let from = st.bus.now().await.unwrap();
     let response = get(
         &st,
-        &format!("/live/lists?filter=latest&since={since}&position={from}"),
+        &format!("/live?filter=latest&since={since}&position={from}"),
     )
     .await;
     assert_eq!(response.status(), StatusCode::OK);
