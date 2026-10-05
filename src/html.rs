@@ -180,6 +180,7 @@ pub struct PostItem {
     pub id: i64,
     /// Where likes are posted (`/post_actions`).
     pub actions_url: String,
+    pub base_path: String,
     pub url: String,
     pub username: String,
     pub name: Option<String>,
@@ -196,6 +197,10 @@ pub struct PostItem {
     pub liked: bool,
     /// The viewer may take their like back (`can_undo`).
     pub can_unlike: bool,
+    /// A logged-in viewer may bookmark it.
+    pub can_bookmark: bool,
+    /// The viewer's bookmark of it.
+    pub bookmark_id: Option<i64>,
 }
 
 #[derive(Template)]
@@ -402,12 +407,13 @@ pub async fn topic_page(
         });
     }
 
+    let member = site.viewer.is_some();
     let posts = view["post_stream"]["posts"]
         .as_array()
         .map(|posts| {
             posts
                 .iter()
-                .map(|p| post_item(i18n, &base, &topic_url, p))
+                .map(|p| post_item(i18n, &base, &topic_url, p, member))
                 .collect()
         })
         .unwrap_or_default();
@@ -824,7 +830,8 @@ pub fn crawler_response(
 }
 
 /// One post of a topic as the page shows it, from its PostSerializer JSON.
-pub fn post_item(i18n: &I18n, base: &str, topic_url: &str, p: &Value) -> PostItem {
+/// `member`: the viewer is logged in (they may bookmark).
+pub fn post_item(i18n: &I18n, base: &str, topic_url: &str, p: &Value, member: bool) -> PostItem {
     let number = p["post_number"].as_i64().unwrap_or(0);
     let username = s(&p["username"]);
     let action = p["action_code"].as_str();
@@ -837,6 +844,7 @@ pub fn post_item(i18n: &I18n, base: &str, topic_url: &str, p: &Value) -> PostIte
         number,
         id: p["id"].as_i64().unwrap_or(0),
         actions_url: format!("{base}/post_actions"),
+        base_path: base.to_string(),
         url: format!("{topic_url}/{number}"),
         user_url: format!("{base}/u/{username}"),
         username,
@@ -854,6 +862,8 @@ pub fn post_item(i18n: &I18n, base: &str, topic_url: &str, p: &Value) -> PostIte
         can_like: flag("can_act"),
         liked: flag("acted"),
         can_unlike: flag("can_undo"),
+        can_bookmark: member,
+        bookmark_id: p["bookmark_id"].as_i64(),
     }
 }
 
