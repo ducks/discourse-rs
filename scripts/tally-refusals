@@ -1,0 +1,121 @@
+#!/usr/bin/env bash
+# Rank what the port still refuses on a real site: crawl every page of a
+# restored backup (lists, categories, tags, topics with their pages, users,
+# a few searches; HTML and JSON; anonymously and as an admin) and count the
+# "not ported yet" reasons the server logs, by how many URLs hit each.
+#
+# Works on a throwaway copy of the database, where one admin gets the
+# password "password" (the seed's hash and salt), so the crawl can log in.
+# The copy is dropped at the end.
+#
+# Usage: scripts/tally-refusals <dbname> [public-dir]
+#   e.g. scripts/tally-refusals rs_backup backups/rs_backup
+# Runs inside shell.nix (psql, the local Postgres); builds target/debug.
+set -euo pipefail
+
+if [ $# -lt 1 ]; then
+  echo "usage: $0 <dbname> [public-dir]" >&2
+  exit 64
+fi
+source_db="$1"
+public_dir="${2:-public}"
+root="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$root"
+
+host="host=$root/.nix-postgres"
+admin_url="postgresql://localhost:5442/postgres?$host"
+copy="tally_$$"
+copy_url="postgresql://localhost:5442/$copy?$host"
+port=8097
+base="http://127.0.0.1:$port"
+work="$(mktemp -d)"
+server_pid=""
+
+cleanup() {
+  if [ -n "$server_pid" ]; then
+    kill "$server_pid" 2>/dev/null || true
+    wait "$server_pid" 2>/dev/null || true
+  fi
+  psql -q "$admin_url" -c "DROP DATABASE IF EXISTS \"$copy\" WITH (FORCE)" || true
+  rm -rf "$work"
+}
+trap cleanup EXIT
+
+psql -q "$admin_url" -c "CREATE DATABASE \"$copy\" TEMPLATE \"$source_db\""
+# The seed's user1 has the password "password": its hash and salt, on the
+# copy's first admin.
+read -r hash salt algorithm < <(psql -At -F ' ' \
+  "postgresql://localhost:5442/discourse_rs_test?$host" \
+  -c "SELECT password_hash, password_salt, password_algorithm FROM user_passwords p
+      JOIN users u ON u.id = p.user_id WHERE u.username = 'user1'")
+admin="$(psql -At "$copy_url" -c "SELECT username FROM users WHERE admin AND id > 0 ORDER BY id LIMIT 1")"
+psql -q "$copy_url" <<SQL
+DELETE FROM user_passwords WHERE user_id = (SELECT id FROM users WHERE username = '$admin');
+INSERT INTO user_passwords (user_id, password_hash, password_salt, password_algorithm, created_at, updated_at)
+SELECT id, '$hash', '$salt', '$algorithm', now(), now() FROM users WHERE username = '$admin';
+SQL
+
+cargo build -q
+env RAILS_ENV=development UNICORN_PORT=3000 DISCOURSE_RS_JOBS=off BIND_ADDR="127.0.0.1:$port" \
+  PUBLIC_DIR="$public_dir" DATABASE_URL="$copy_url" RUST_LOG=warn \
+  target/debug/discourse-rs >> "$work/server.log" 2>&1 &
+# Appended to by the server and by the crawl's markers alike (both in append
+# mode, or one would write over the other).
+server_pid=$!
+for _ in $(seq 50); do
+  curl -sf -o /dev/null "$base/srv/status" && break
+  sleep 0.2
+done
+
+# Every page there is, from the database.
+q() { psql -At "$copy_url" -c "$1"; }
+{
+  echo / ; echo /latest ; echo /top ; echo /hot ; echo /categories ; echo /tags
+  q "SELECT '/latest?page=' || g FROM generate_series(1, (SELECT count(*) FROM topics) / 30 + 1) g"
+  q "SELECT '/c/' || slug || '/' || id FROM categories"
+  q "SELECT '/tag/' || name FROM tags"
+  q "SELECT '/t/' || slug || '/' || id FROM topics WHERE archetype = 'regular'"
+  q "SELECT '/t/' || slug || '/' || id || '?page=' || g FROM topics, generate_series(2, (posts_count - 1) / 20 + 1) g
+     WHERE archetype = 'regular' AND posts_count > 20"
+  q "SELECT '/u/' || username FROM users WHERE id > 0"
+  q "SELECT '/u/' || username || '/summary' FROM users WHERE id > 0"
+  q "SELECT '/u/' || username || '/activity' FROM users WHERE id > 0"
+  for term in the a test discourse; do echo "/search?q=$term"; done
+} > "$work/pages"
+# The JSON of each, as the Ember client asks for it.
+sed -e 's#^/$#/latest#' -e 's#^\(/[^?]*\)\(?.*\)\{0,1\}$#\1.json\2#' "$work/pages" > "$work/json"
+cat "$work/pages" "$work/json" | sort -u > "$work/urls"
+
+crawl() { # <label> <curl cookie args...>
+  local label="$1"; shift
+  while read -r path; do
+    echo "== $label $path" >> "$work/server.log"
+    code=$(curl -s -o /dev/null -w '%{http_code}' "$@" "$base$path")
+    echo "$label $code $path" >> "$work/results"
+  done < "$work/urls"
+}
+
+crawl anonymous
+# As the admin: the session cookie from a login.
+jar="$work/jar"
+csrf=$(curl -s -c "$jar" -b "$jar" "$base/session/csrf.json" | sed 's/.*"csrf":"\([^"]*\)".*/\1/')
+curl -s -o /dev/null -c "$jar" -b "$jar" -X POST -H "X-CSRF-Token: $csrf" \
+  -H "X-Requested-With: XMLHttpRequest" --data "login=$admin&password=password" "$base/session"
+crawl "$admin" -b "$jar"
+
+# Each refusal under the URL that caused it (the log marks every request).
+awk '/^== / { url = $2 " " $3; next }
+     /not ported yet: / { sub(/.*not ported yet: /, ""); sub(/[[:space:]]*$/, ""); print $0 "\t" url }' \
+  <(sed 's/\x1b\[[0-9;]*m//g' "$work/server.log") | sort -u > "$work/refusals"
+
+total=$(wc -l < "$work/results")
+failed=$(awk '$2 >= 500' "$work/results" | wc -l)
+echo "requests: $total, 5xx: $failed ($(cut -f2 "$work/refusals" | sort -u | wc -l) refused as not ported)"
+echo
+echo "URLs  reason"
+cut -f1 "$work/refusals" | sort | uniq -c | sort -rn
+echo
+echo "5xx without a not-ported reason (bugs):"
+awk '$2 >= 500 { print $1 " " $3 }' "$work/results" | sort -u > "$work/failed"
+cut -f2 "$work/refusals" | sort -u > "$work/refused_urls"
+comm -23 "$work/failed" "$work/refused_urls" | head -20
