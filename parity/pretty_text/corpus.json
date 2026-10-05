@@ -481,6 +481,14 @@
   },
   {
     "id": "sample-60",
+    "raw": "<img src=\"https://example.com/a.png\"> \n<img src=\"https://example.com/b.png\">\t\n\ntext\n\n- <img src=\"https://example.com/c.png\">  \n- d",
+    "topic_id": 35,
+    "user_id": 3,
+    "markdown": "<p><img src=\"https://example.com/a.png\"><br>\n<img src=\"https://example.com/b.png\">\t</p>\n<p>text</p>\n<ul>\n<li><img src=\"https://example.com/c.png\">  </li>\n<li>d</li>\n</ul>",
+    "cooked": "<p><img src=\"https://example.com/a.png\"><br>\n<img src=\"https://example.com/b.png\">\t</p>\n<p>text</p>\n<ul>\n<li><img src=\"https://example.com/c.png\">  </li>\n<li>d</li>\n</ul>"
+  },
+  {
+    "id": "sample-61",
     "raw": "An upload that exists: ![image|64x64](upload://qa4V5109J7tySkPok8r3aBAruY1.png) and [a link|attachment](upload://qa4V5109J7tySkPok8r3aBAruY1.png).",
     "topic_id": 35,
     "user_id": 3,
