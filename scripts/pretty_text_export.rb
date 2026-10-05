@@ -159,6 +159,8 @@ samples = [
   # A fence or html block right after a tight item's text follows it on the
   # same line; one opening an item, or a blockquote, starts a new line.
   ["- a\n  ```\n  x\n  ```\n  after\n- b\n  <div>\n  y\n  </div>\n- ```\n  z\n  ```\n- c\n  > q", replies.id, u1.id],
+  # The space after an <img> line's last tag stays in its paragraph.
+  ["<img src=\"https://example.com/a.png\"> \n<img src=\"https://example.com/b.png\">\t\n\ntext\n\n- <img src=\"https://example.com/c.png\">  \n- d", replies.id, u1.id],
 ]
 if upload
   samples << ["An upload that exists: ![image|64x64](#{upload.short_url}) and [a link|attachment](#{upload.short_url}).", replies.id, u1.id]
