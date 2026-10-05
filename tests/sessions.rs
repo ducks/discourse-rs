@@ -1439,3 +1439,114 @@ async fn members_like_from_the_topic_page() {
     );
     assert!(html.contains(r#"aria-pressed="true""#), "{html}");
 }
+
+/// A member bookmarks a post from the topic page as its button does: the
+/// bookmark, then the post fetched again as they now see it.
+#[tokio::test(flavor = "multi_thread")]
+async fn members_bookmark_from_the_topic_page() {
+    let db = TestDb::new().await;
+    let mut client = Client::new(state(db.pool.clone(), config(RailsEnv::Test, &[])).await);
+    let reply = client.login("user1", "password").await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    let (post_id, post_number): (i32, i32) = sqlx::query_as(
+        "SELECT p.id, p.post_number FROM posts p WHERE p.topic_id = 35 AND p.post_type = 1 \
+           AND p.deleted_at IS NULL \
+           AND NOT EXISTS (SELECT 1 FROM bookmarks b WHERE b.bookmarkable_type = 'Post' \
+                             AND b.bookmarkable_id = p.id \
+                             AND b.user_id = (SELECT id FROM users WHERE username = 'user1')) \
+         ORDER BY p.post_number LIMIT 1",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+
+    let page = client.get("/t/parity-fixture-replies-and-posters/35").await;
+    assert!(
+        page.body.contains(&format!(
+            r#"hx-vals='{{"bookmarkable_id": {post_id}, "bookmarkable_type": "Post"}}'"#
+        )),
+        "{}",
+        page.body
+    );
+    let marker = r#""X-CSRF-Token": ""#;
+    let at = page.body.find(marker).expect("the body carries the token");
+    let rest = &page.body[at + marker.len()..];
+    client.csrf =
+        Some(html_escape::decode_html_entities(&rest[..rest.find('"').unwrap()]).into_owned());
+
+    let headers = [
+        ("x-requested-with", "XMLHttpRequest"),
+        ("hx-request", "true"),
+    ];
+    let made = client
+        .send(
+            Method::POST,
+            "/bookmarks",
+            &headers,
+            &format!("bookmarkable_id={post_id}&bookmarkable_type=Post"),
+        )
+        .await;
+    assert_eq!(made.status, StatusCode::OK, "{}", made.body);
+    let bookmark_id = made.json()["id"].as_i64().expect("the new bookmark's id");
+
+    let html = client.get(&format!("/live/post/{post_id}")).await;
+    assert_eq!(html.status, StatusCode::OK);
+    assert!(
+        html.body
+            .contains(&format!(r#"<div id="post_{post_number}""#)),
+        "{}",
+        html.body
+    );
+    assert!(html.body.contains(r#"hx-swap-oob="true""#));
+    assert!(
+        html.body
+            .contains(&format!(r#"hx-delete="/bookmarks/{bookmark_id}""#)),
+        "{}",
+        html.body
+    );
+    assert!(html.body.contains("Bookmarked"));
+
+    let removed = client
+        .send(
+            Method::DELETE,
+            &format!("/bookmarks/{bookmark_id}"),
+            &headers,
+            "",
+        )
+        .await;
+    assert_eq!(removed.status, StatusCode::OK, "{}", removed.body);
+    let html = client.get(&format!("/live/post/{post_id}")).await;
+    assert!(
+        html.body.contains(r#"hx-post="/bookmarks""#),
+        "{}",
+        html.body
+    );
+}
+
+/// The post endpoint shows what the viewer may see: no bookmark button for
+/// an anonymous reader, and nothing at all of a post they cannot see.
+#[tokio::test]
+async fn post_fragments_follow_what_the_viewer_may_see() {
+    let db = TestDb::new().await;
+    let mut client = Client::new(state(db.pool.clone(), config(RailsEnv::Test, &[])).await);
+    let public: i32 =
+        sqlx::query_scalar("SELECT id FROM posts WHERE topic_id = 35 AND post_number = 1")
+            .fetch_one(&db.pool)
+            .await
+            .unwrap();
+    let html = client.get(&format!("/live/post/{public}")).await;
+    assert_eq!(html.status, StatusCode::OK);
+    assert!(!html.body.contains("bookmark"), "{}", html.body);
+
+    let private: i32 = sqlx::query_scalar(
+        "SELECT p.id FROM posts p JOIN topics t ON t.id = p.topic_id \
+         WHERE t.archetype = 'private_message' ORDER BY p.id LIMIT 1",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        client.get(&format!("/live/post/{private}")).await.status,
+        StatusCode::NOT_FOUND
+    );
+}

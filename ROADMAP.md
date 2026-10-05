@@ -330,8 +330,14 @@ Discourse's own clients keep working.
       appended only on the last). A member's htmx requests carry their
       CSRF token from the body; refused requests show the server's
       errors in a page alert
+- [x] Bookmarks from the topic page: a member's bookmark button
+      (POST /bookmarks, DELETE /bookmarks/:id). Rails publishes nothing
+      for bookmarks, so the page fetches the post again as the member now
+      sees it, from GET /live/post/:id (the stream's renderer, a 404 for
+      a post they cannot see). Reminders and names are not on the page
+      yet
 - [ ] Next for the client: the user menu (notifications list), topic
-      composer (new topics), bookmarks from the page
+      composer (new topics)
 - [ ] The composer: markdown preview with the Rust renderer, uploads,
       drafts
 - [ ] The user menu, notifications, bookmarks, messages, preferences

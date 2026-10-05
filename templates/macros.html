@@ -24,6 +24,17 @@
     {% else if post.likes > 0 %}
     <div class="post-likes">&#x2764; {{ post.likes }}</div>
     {% endif %}
+    {#- A member's bookmark is theirs alone and nothing publishes it, so the
+        page fetches the post again once the change is made. -#}
+    {% if post.can_bookmark %}
+    <div class="post-bookmark">
+      {% if let Some(b) = post.bookmark_id %}
+      <button class="bookmark bookmarked" hx-delete="{{ post.base_path }}/bookmarks/{{ b }}" hx-swap="none" hx-on::after-request="refreshPost(event, '{{ post.base_path }}/live/post/{{ post.id }}')" aria-pressed="true" title="Remove bookmark">&#x1F516; Bookmarked</button>
+      {% else %}
+      <button class="bookmark" hx-post="{{ post.base_path }}/bookmarks" hx-vals='{"bookmarkable_id": {{ post.id }}, "bookmarkable_type": "Post"}' hx-swap="none" hx-on::after-request="refreshPost(event, '{{ post.base_path }}/live/post/{{ post.id }}')" aria-pressed="false" title="Bookmark this post">&#x1F516; Bookmark</button>
+      {% endif %}
+    </div>
+    {% endif %}
   </div>
 {% endmacro %}
 

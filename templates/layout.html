@@ -76,6 +76,13 @@
     <script>
       // A refused htmx request (a like over the daily limit, say): the
       // server's errors, as Rails renders them, or a plain notice.
+      // After a change only this viewer sees (a bookmark), the post again
+      // as they see it: GET /live/post/:id answers an out-of-band swap.
+      function refreshPost(event, url) {
+        if (event.detail.successful) {
+          htmx.ajax("GET", url, { swap: "none" });
+        }
+      }
       document.addEventListener("htmx:responseError", function (event) {
         // Forms that show their own errors say so.
         if (event.detail.elt.closest("[data-own-errors]")) { return; }

@@ -350,41 +350,62 @@ async fn post_fragment(live: &Live, message: &Message) -> Result<Option<String>,
     else {
         return Ok(None);
     };
-    let removal = || format!(r#"<div id="post_{post_number}" hx-swap-oob="delete"></div>"#);
     // A new post belongs at the end of the topic, not on an earlier page.
     if kind == "created" && !live.tail {
         return Ok(None);
     }
-    let state = &live.state;
+    let html = render_post(
+        &live.state,
+        &live.settings,
+        &live.guardian,
+        post_id as i32,
+        kind == "created",
+    )
+    .await?;
+    // Deleted, or no longer visible to them: it goes from the page.
+    Ok(Some(html.unwrap_or_else(|| {
+        format!(r#"<div id="post_{post_number}" hx-swap-oob="delete"></div>"#)
+    })))
+}
+
+/// One post as this viewer sees it now, as an out-of-band swap: appended
+/// to the posts (`append`) or replacing the post in place. `None` when it
+/// is deleted or not visible to them.
+async fn render_post(
+    state: &AppState,
+    settings: &SiteSettings,
+    guardian: &Guardian,
+    post_id: i32,
+    append: bool,
+) -> Result<Option<String>, AppError> {
     let host = crate::pretty_text::Host::from_state(state);
     let ctx = crate::posting::Ctx {
         host: &host,
-        settings: &live.settings,
+        settings,
         config: &state.config,
         i18n: &state.i18n,
         bus: &state.bus,
     };
     let mut conn = state.pool.acquire().await?;
-    let access = find_post_with_deleted(&mut conn, &ctx, &live.guardian, post_id as i32).await?;
+    let access = find_post_with_deleted(&mut conn, &ctx, guardian, post_id).await?;
     let visible = access.as_ref().is_some_and(|a| {
         !a.post.trashed()
-            && live
-                .guardian
-                .can_see_post(&live.settings, &a.post, a.can_see_topic)
+            && guardian
+                .can_see_post(settings, &a.post, a.can_see_topic)
                 .unwrap_or(false)
     });
     if !visible {
-        return Ok(Some(removal()));
+        return Ok(None);
     }
     let urls = Urls {
         config: &state.config,
-        settings: &live.settings,
+        settings,
     };
     let mut view = crate::topic_view::TopicView {
         conn: &mut conn,
-        settings: &live.settings,
+        settings,
         i18n: &state.i18n,
-        guardian: &live.guardian,
+        guardian,
         urls: &urls,
         options: crate::topic_view::Options {
             page: 0,
@@ -392,9 +413,7 @@ async fn post_fragment(live: &Live, message: &Message) -> Result<Option<String>,
         },
         post_types: Vec::new(),
     };
-    let post = view
-        .serialize_single_post(post_id as i32, false, false)
-        .await?;
+    let post = view.serialize_single_post(post_id, false, false).await?;
     let base = state.config.globals.relative_url_root();
     let topic_url = format!(
         "{base}/t/{}/{}",
@@ -402,8 +421,14 @@ async fn post_fragment(live: &Live, message: &Message) -> Result<Option<String>,
         post["topic_id"]
     );
     let html = PostFragment {
-        post: post_item(&state.i18n, base, &topic_url, &post),
-        append: kind == "created",
+        post: post_item(
+            &state.i18n,
+            base,
+            &topic_url,
+            &post,
+            guardian.user_id().is_some(),
+        ),
+        append,
     }
     .render()?;
     Ok(Some(html))
@@ -486,4 +511,34 @@ async fn viewer_list(
     }
     .list(filter)
     .await?)
+}
+
+/// GET /live/post/:id: one post as the viewer sees it now, as an
+/// out-of-band swap replacing it on the page. For changes that are the
+/// viewer's alone, such as a bookmark, which nothing publishes: the page
+/// fetches the post again once the change is made. 404 for a post they
+/// cannot see.
+pub async fn post(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    axum::extract::Path(id): axum::extract::Path<String>,
+) -> Result<Response, AppError> {
+    let Ok(post_id) = id.parse::<i32>() else {
+        return Ok(StatusCode::NOT_FOUND.into_response());
+    };
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    drop(conn);
+    match render_post(&state, &settings, &guardian, post_id, false).await? {
+        Some(html) => Ok((
+            [
+                (header::CONTENT_TYPE, "text/html; charset=utf-8"),
+                (header::CACHE_CONTROL, "no-cache, no-store"),
+            ],
+            html,
+        )
+            .into_response()),
+        None => Ok(StatusCode::NOT_FOUND.into_response()),
+    }
 }

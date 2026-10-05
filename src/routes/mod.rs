@@ -82,6 +82,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/bus/events", get(bus::events))
         .route("/bus/poll", get(bus::poll))
         .route("/live", get(live::page))
+        .route("/live/post/{id}", get(live::post))
         .route("/", get(list::latest))
         .route("/latest", get(list::latest))
         .route("/latest.json", get(list::latest_json))
