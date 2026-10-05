@@ -113,9 +113,18 @@ Logged-in readers, no writes yet.
       participants and staff; whispers to staff and the author). Not
       yet: :acted (notify flags, unhiding), :read, :rebaked, permanent
       deletion, reload_topic with topic edits
-- [ ] Live updates, next: `/latest` and the unread and new counts
-      (TopicTrackingState), `/notification-alert/<id>`, and the
-      starting position handed to the client with the page
+- [x] Live updates: TopicTrackingState for regular topics, keeping
+      lists and the new and unread counts current: `/new` for new
+      topics, `/latest` (bumped, muted, unmuted), `/unread` for replies
+      to the users tracking the topic, `/unread/<id>` for the reader's
+      own position, `/delete` for deleted topics, and the reader's
+      notification level change on `/topic/<id>`. The
+      post_update_topic_tracking_state job does its part now. Not yet:
+      messages (PrivateMessageTopicTrackingState, TopicGroup), dismiss
+      new and dismiss new posts (topic bulk actions are not ported),
+      recovering topics, category changes
+- [ ] Live updates, next: `/notification-alert/<id>`, and the starting
+      position handed to the client with the page
 
 ## Milestone 4: writes
 

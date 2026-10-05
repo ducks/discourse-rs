@@ -105,7 +105,7 @@ async fn record(
         return Ok(super::topics::not_found_response(&state, false));
     }
     let notifications_read = read_tracking::process_timings(
-        &mut tx, &settings, &guardian, topic_id, topic_time, timings,
+        &state.bus, &mut tx, &settings, &guardian, topic_id, topic_time, timings,
     )
     .await?;
     if notifications_read && let Some(user_id) = guardian.user_id() {

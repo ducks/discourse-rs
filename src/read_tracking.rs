@@ -124,6 +124,7 @@ async fn record_new_timing(
 /// topic the user can see. Whether it marked any notifications read (Rails
 /// then publishes the user's notification state).
 pub async fn process_timings(
+    bus: &pg_bus::Bus,
     conn: &mut PgConnection,
     s: &crate::site_settings::SiteSettings,
     guardian: &Guardian,
@@ -225,6 +226,7 @@ pub async fn process_timings(
     }
     let topic_time = topic_time.min(max_time_per_post);
     update_last_read(
+        bus,
         conn,
         s,
         user.id,
@@ -243,6 +245,7 @@ pub async fn process_timings(
 /// threshold; a first read makes the topic user.
 #[allow(clippy::too_many_arguments)]
 async fn update_last_read(
+    bus: &pg_bus::Bus,
     conn: &mut PgConnection,
     s: &crate::site_settings::SiteSettings,
     user_id: i32,
@@ -254,7 +257,7 @@ async fn update_last_read(
 ) -> Result<(), AppError> {
     let msecs = msecs.max(0);
     let threshold = s.get("default_other_auto_track_topics_after_msecs")?.to_i();
-    let row: Option<(i32, i32)> = sqlx::query_as(
+    let row: Option<(i32, i32, Option<i32>, String)> = sqlx::query_as(
         "UPDATE topic_users SET \
            last_read_post_number = LEAST( \
              CASE WHEN $3 THEN t.highest_staff_post_number ELSE t.highest_post_number END, \
@@ -270,7 +273,7 @@ async fn update_last_read(
          JOIN user_options uo ON uo.user_id = $1 \
          WHERE tu.topic_id = topic_users.topic_id AND tu.user_id = topic_users.user_id \
            AND tu.topic_id = $2 AND tu.user_id = $1 \
-         RETURNING topic_users.notification_level, tu.notification_level",
+         RETURNING topic_users.notification_level, tu.notification_level, tu.last_read_post_number, t.archetype",
     )
     .bind(user_id)
     .bind(topic_id)
@@ -281,11 +284,29 @@ async fn update_last_read(
     .bind(TRACKING)
     .fetch_optional(&mut *conn)
     .await?;
-    // The levels before and after only feed notification_level_change
-    // (MessageBus and a plugin event).
-    if row.is_some() {
+    if let Some((after, before, before_last_read, archetype)) = row {
+        // The user read at least one new post. Messages' read state
+        // (PrivateMessageTopicTrackingState) is not ported.
+        if before_last_read.unwrap_or(0) < post_number && archetype == "regular" {
+            crate::topic_tracking_state::publish_read(
+                bus,
+                s,
+                &mut *conn,
+                topic_id,
+                post_number,
+                user_id,
+                Some(after),
+            )
+            .await?;
+        }
         if new_posts_read > 0 {
             update_posts_read(&mut *conn, user_id, new_posts_read).await?;
+        }
+        if before != after {
+            crate::bus::publish_notification_level_change(
+                bus, &mut *conn, user_id, topic_id, after,
+            )
+            .await?;
         }
         return Ok(());
     }
@@ -302,6 +323,24 @@ async fn update_last_read(
     } else {
         REGULAR
     };
+    let private_message: bool = sqlx::query_scalar(
+        "SELECT EXISTS (SELECT 1 FROM topics WHERE id = $1 AND archetype = 'private_message')",
+    )
+    .bind(topic_id)
+    .fetch_one(&mut *conn)
+    .await?;
+    if !private_message {
+        crate::topic_tracking_state::publish_read(
+            bus,
+            s,
+            &mut *conn,
+            topic_id,
+            post_number,
+            user_id,
+            Some(new_status),
+        )
+        .await?;
+    }
     update_posts_read(&mut *conn, user_id, new_posts_read).await?;
     sqlx::query(
         "INSERT INTO topic_users (user_id, topic_id, last_read_post_number, last_visited_at, first_visited_at, \
@@ -316,6 +355,8 @@ async fn update_last_read(
     .bind(new_status)
     .execute(&mut *conn)
     .await?;
+    crate::bus::publish_notification_level_change(bus, &mut *conn, user_id, topic_id, new_status)
+        .await?;
     Ok(())
 }
 

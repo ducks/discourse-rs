@@ -53,6 +53,7 @@ pub mod topic_guardian;
 pub mod topic_list;
 pub mod topic_query;
 pub mod topic_status;
+pub mod topic_tracking_state;
 pub mod topic_view;
 pub mod uploads;
 pub mod url;
