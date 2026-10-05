@@ -142,6 +142,9 @@ samples = [
   # An entity joins the text beside it (text_join) before emoji: not an emoji
   # alone, drawn large.
   ["[:question:&nbsp;**Support**](https://example.com/support) and :smile:&amp;", replies.id, u1.id],
+  # Lines that are only an <img> are a paragraph (html_img), not an HTML
+  # block; indented four spaces they are code, and they cannot interrupt one.
+  ["Before.\n\n<img src=\"https://example.com/a.png\" width=\"10\">\n<IMG src=\"https://example.com/b.png\" />\n\nText\n<img src=\"https://example.com/c.png\">\n\n    <img src=\"https://example.com/d.png\">", replies.id, u1.id],
 ]
 if upload
   samples << ["An upload that exists: ![image|64x64](#{upload.short_url}) and [a link|attachment](#{upload.short_url}).", replies.id, u1.id]

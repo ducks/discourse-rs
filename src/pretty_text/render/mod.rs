@@ -16,6 +16,7 @@ pub mod context;
 mod element;
 mod emoji;
 mod footnotes;
+mod html_img;
 mod linkify;
 mod newline;
 mod onebox;
@@ -223,6 +224,7 @@ fn engine(settings: &RenderSettings, lookups: Lookups) -> MarkdownIt {
     md.ext.insert(Context::with(lookups));
     markdown_it::plugins::cmark::add(&mut md);
     markdown_it::plugins::html::add(&mut md);
+    html_img::add(&mut md);
     markdown_it::plugins::extra::strikethrough::add(&mut md);
     markdown_it::plugins::extra::tables::add(&mut md);
     newline::add(&mut md);
