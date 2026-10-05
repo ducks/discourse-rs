@@ -9,6 +9,7 @@
 
 use markdown_it::Node;
 use markdown_it::parser::inline::Text;
+use markdown_it::plugins::cmark::inline::image::Image;
 
 use regex::Regex;
 use std::sync::LazyLock as Lazy;
@@ -102,9 +103,14 @@ fn replace_scoped(text: &str) -> String {
         .into_owned()
 }
 
-/// The `replacements` core rule, over every text outside an autolink.
+/// The `replacements` core rule, over every text outside an autolink. An
+/// image's alt text is the image token's own children in JS, which it
+/// does not visit.
 pub fn apply(root: &mut Node) {
     fn visit(node: &mut Node, in_autolink: bool) {
+        if node.is::<Image>() {
+            return;
+        }
         if let Some(text) = node.cast_mut::<Text>() {
             if SCOPED.is_match(&text.content) {
                 text.content = replace_scoped(&text.content);

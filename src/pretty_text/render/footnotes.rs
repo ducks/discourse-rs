@@ -6,6 +6,7 @@
 
 use std::collections::HashMap;
 
+use markdown_it::common::sourcemap::SourcePos;
 use markdown_it::parser::block::{BlockRule, BlockState};
 use markdown_it::parser::extset::RootExt;
 use markdown_it::parser::inline::{InlineRule, InlineState, Text};
@@ -359,12 +360,16 @@ pub fn tail(root: &mut Node) {
     take_definitions(root, &mut definitions);
 
     // The inline notes' content, by id.
-    let mut inline: HashMap<usize, Vec<Node>> = HashMap::new();
+    let mut inline: HashMap<usize, (Option<SourcePos>, Vec<Node>)> = HashMap::new();
     root.walk_mut(|node, _| {
         if let Some((id, true)) = node.cast::<Reference>().map(|r| (r.id, r.inline)) {
-            inline.insert(id, std::mem::take(&mut node.children));
+            inline.insert(id, (node.srcmap, std::mem::take(&mut node.children)));
         }
     });
+    let source = root
+        .cast::<Root>()
+        .map(|r| r.content.clone())
+        .unwrap_or_default();
 
     if footnotes.list.is_empty() {
         return;
@@ -389,7 +394,13 @@ pub fn tail(root: &mut Node) {
             Some(label) => item.children = definitions.remove(label).unwrap_or_default(),
             None => {
                 let mut paragraph = Node::new(Paragraph);
-                paragraph.children = inline.remove(&id).unwrap_or_default();
+                let (srcmap, children) = inline.remove(&id).unwrap_or_default();
+                paragraph.children = children;
+                // Its own inline block in JS, quoted by the note's source.
+                if let Some((start, end)) = srcmap.map(|s| s.get_byte_offsets()) {
+                    let text = source.get(start..end).unwrap_or_default();
+                    super::smartquotes::keep_block(&mut paragraph, start..end, text);
+                }
                 item.children.push(paragraph);
             }
         }
