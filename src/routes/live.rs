@@ -1,26 +1,39 @@
-//! GET /t/:topic_id/live: the topic page's live updates as server-sent
-//! events of HTML for htmx. Each change on `/topic/<id>` that is about a
-//! post becomes a `post` event carrying that post rendered for this
-//! viewer as an out-of-band swap: appended when created, replaced when
-//! changed, removed when deleted or no longer visible to them.
+//! GET /live: a page's live updates as server-sent events of HTML for
+//! htmx, one stream per page. Every event is htmx out-of-band swaps into
+//! the page, rendered for this viewer:
+//!
+//! - `post`, on a topic page (`topic=<id>`): each change on the topic's
+//!   channel that is about a post, the post appended when created,
+//!   replaced when changed, removed when deleted or not visible to them.
+//! - `list`, on list pages and for members everywhere: the latest list's
+//!   "N new or updated topics" banner (`filter=latest`, `since` the page's
+//!   render time) and a member's unread and new counts in the nav, each
+//!   the viewer's own list query run again on connect and after the
+//!   tracking messages they may hear.
+//! - `header`, for members: the unread notification count, on connect and
+//!   from their notification state, and the alert for a new notification.
 //!
 //! The stream starts after the Last-Event-ID header (the browser
 //! reconnecting), else `position` (the page's `bus-position`), else now;
-//! each event's id is its bus position. Who may hear what is decided by
-//! the viewer's audience tags, as for /bus/events, and the post itself is
-//! checked against the viewer's guardian before it is rendered.
+//! an event's id is the bus position it brings the page up to. Who may hear
+//! what is decided by the viewer's audience tags, as for /bus/events.
+//! Messages that arrive together are handled as one batch: the lists are
+//! counted once for it, and nothing is sent when nothing changed.
 
+use std::collections::VecDeque;
 use std::convert::Infallible;
 use std::time::Duration;
 
 use askama::Template;
-use axum::extract::{Path, Query, State};
+use axum::extract::{Query, State};
 use axum::http::{HeaderMap, HeaderValue, StatusCode, header};
 use axum::response::sse::{Event, KeepAlive, Sse};
 use axum::response::{IntoResponse, Response};
+use chrono::NaiveDateTime;
 use futures_util::stream;
-use pg_bus::{Filter, Item, Message, Subscription};
+use pg_bus::{Filter, Item, Message, Position, Subscription};
 use serde::Deserialize;
+use serde_json::Value;
 
 use crate::guardian::Guardian;
 use crate::html::{PostFragment, post_item};
@@ -34,39 +47,54 @@ use crate::{AppError, AppState};
 /// its last event id, which checks the viewer's session again.
 const MAX_LIFETIME: Duration = Duration::from_secs(600);
 
+/// TopicTrackingState's channels; a member's own `/unread/<id>` too.
+const TRACKING_CHANNELS: [&str; 5] = ["/latest", "/new", "/unread", "/delete", "/recover"];
+
 #[derive(Deserialize, Default)]
 pub struct Params {
     position: Option<String>,
+    /// The topic the page shows.
+    topic: Option<String>,
+    /// The list the page shows (`latest`, `new`, `unread`).
+    filter: Option<String>,
+    /// When the page was rendered, in milliseconds: on the latest list,
+    /// topics bumped after it are the new or updated ones.
+    since: Option<i64>,
 }
 
-/// GET /t/:topic_id/live
-pub async fn topic(
+/// GET /live
+pub async fn page(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
-    Path(id): Path<String>,
     Query(params): Query<Params>,
     headers: HeaderMap,
 ) -> Result<Response, AppError> {
-    let Ok(topic_id) = id.parse::<i32>() else {
-        return Ok(StatusCode::NOT_FOUND.into_response());
-    };
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
-    // A topic the viewer cannot see has no live updates for them.
-    let visible =
-        match crate::topic_guardian::TopicCtx::load(&mut conn, &settings, &guardian, topic_id)
-            .await?
-        {
-            Some(topic) => {
-                let secure = guardian.secure_category_ids(&mut conn, &settings).await?;
-                guardian.can_see_topic(&settings, &topic, true, &secure)?
+    let topic_id = match params.topic.as_deref().filter(|t| !t.is_empty()) {
+        Some(raw) => {
+            let Ok(id) = raw.parse::<i32>() else {
+                return Ok(StatusCode::NOT_FOUND.into_response());
+            };
+            // A topic the viewer cannot see has no live updates for them.
+            let visible =
+                match crate::topic_guardian::TopicCtx::load(&mut conn, &settings, &guardian, id)
+                    .await?
+                {
+                    Some(topic) => {
+                        let secure = guardian.secure_category_ids(&mut conn, &settings).await?;
+                        guardian.can_see_topic(&settings, &topic, true, &secure)?
+                    }
+                    None => false,
+                };
+            if !visible {
+                return Ok(StatusCode::NOT_FOUND.into_response());
             }
-            None => false,
-        };
-    if !visible {
-        return Ok(StatusCode::NOT_FOUND.into_response());
-    }
+            Some(id)
+        }
+        None => None,
+    };
     let tags = crate::bus::tags(&mut conn, guardian.user_id()).await?;
     drop(conn);
     let from = match pg_bus::sse::last_event_id(&headers) {
@@ -79,67 +107,58 @@ pub async fn topic(
             None => state.bus.now().await?,
         },
     };
-    let subscription = state.bus.subscribe(
-        from,
-        Filter {
-            channels: vec![crate::bus::topic_channel(topic_id)],
-            tags,
-        },
-    );
-    Ok(events(state, guardian, settings, subscription))
-}
+    let since = match params.filter.as_deref() {
+        Some("latest") => params
+            .since
+            .and_then(chrono::DateTime::from_timestamp_millis)
+            .map(|t| t.naive_utc()),
+        _ => None,
+    };
+    let user_id = guardian.user_id();
+    // Lists are kept current for the banner, and for a member's counts.
+    let lists = since.is_some() || user_id.is_some();
 
-struct Live {
-    state: AppState,
-    guardian: Guardian,
-    settings: SiteSettings,
-    subscription: Subscription,
-    deadline: tokio::time::Instant,
-}
-
-fn events(
-    state: AppState,
-    guardian: Guardian,
-    settings: SiteSettings,
-    subscription: Subscription,
-) -> Response {
+    let mut channels = Vec::new();
+    if let Some(id) = topic_id {
+        channels.push(crate::bus::topic_channel(id));
+    }
+    if lists {
+        channels.extend(TRACKING_CHANNELS.iter().map(|c| c.to_string()));
+    }
+    if let Some(id) = user_id {
+        channels.push(format!("/unread/{id}"));
+        channels.push(crate::bus::notification_channel(id));
+        channels.push(format!("/notification-alert/{id}"));
+    }
+    let subscription = state.bus.subscribe(from, Filter { channels, tags });
     let live = Live {
         state,
         guardian,
         settings,
         subscription,
+        topic_channel: topic_id.map(crate::bus::topic_channel),
+        user_id,
+        lists,
+        since,
+        sent_lists: None,
+        started: false,
+        pending: VecDeque::new(),
         deadline: tokio::time::Instant::now() + MAX_LIFETIME,
     };
     let stream = stream::unfold(live, |mut live| async move {
         loop {
-            // next is cancel-safe: ending here loses nothing.
-            let item = tokio::time::timeout_at(live.deadline, live.subscription.next())
-                .await
-                .ok()?;
-            let message = match item {
-                Ok(Item::Message(message)) => message,
-                // Trimmed before this viewer read it: the page is stale, and
-                // a reload is the honest fix. Not sent yet; the client has
-                // nothing to do with it.
-                Ok(Item::Gap) => continue,
-                Err(e) => {
-                    tracing::warn!("live topic: {e}");
-                    return None;
-                }
+            if let Some(event) = live.pending.pop_front() {
+                return Some((Ok::<_, Infallible>(event), live));
+            }
+            let result = if live.started {
+                next_batch(&mut live).await?
+            } else {
+                live.started = true;
+                initial(&mut live).await
             };
-            match fragment(&live, &message).await {
-                Ok(Some(html)) => {
-                    let event = Event::default()
-                        .event("post")
-                        .id(message.position.to_string())
-                        .data(html);
-                    return Some((Ok::<_, Infallible>(event), live));
-                }
-                Ok(None) => continue,
-                Err(e) => {
-                    tracing::warn!("live topic: rendering a post: {e}");
-                    return None;
-                }
+            if let Err(e) = result {
+                tracing::warn!("live: {e}");
+                return None;
             }
         }
     });
@@ -153,13 +172,168 @@ fn events(
     response
         .headers_mut()
         .insert(header::CACHE_CONTROL, HeaderValue::from_static("no-cache"));
-    response
+    Ok(response)
 }
 
-/// The HTML for one message: the post as this viewer sees it now, or its
-/// removal; `None` for messages that are not about a post (the topic's
-/// stats, the viewer's notification level).
-async fn fragment(live: &Live, message: &Message) -> Result<Option<String>, AppError> {
+struct Live {
+    state: AppState,
+    guardian: Guardian,
+    settings: SiteSettings,
+    subscription: Subscription,
+    topic_channel: Option<String>,
+    user_id: Option<i32>,
+    lists: bool,
+    since: Option<NaiveDateTime>,
+    /// The list HTML last computed, sent or (when empty) not.
+    sent_lists: Option<String>,
+    started: bool,
+    /// Events rendered and not yet sent, in bus order.
+    pending: VecDeque<Event>,
+    deadline: tokio::time::Instant,
+}
+
+/// What the page needs as soon as it connects: the member's notification
+/// count, and the lists as they are now.
+async fn initial(live: &mut Live) -> Result<(), AppError> {
+    if let Some(user_id) = live.user_id {
+        let mut conn = live.state.pool.acquire().await?;
+        let count = crate::bus::all_unread_notifications_count(&mut conn, user_id).await?;
+        live.pending.push_back(
+            Event::default()
+                .event("header")
+                .data(notification_count(count)),
+        );
+    }
+    if live.lists {
+        recount_lists(live, None).await?;
+    }
+    Ok(())
+}
+
+/// Waits for the next message and takes whatever else is already due with
+/// it; `None` when the stream's lifetime is up.
+async fn next_batch(live: &mut Live) -> Option<Result<(), AppError>> {
+    let first = tokio::time::timeout_at(live.deadline, live.subscription.next())
+        .await
+        .ok()?;
+    let mut batch = vec![first];
+    while let Ok(item) = tokio::time::timeout(Duration::ZERO, live.subscription.next()).await {
+        batch.push(item);
+    }
+    Some(handle_batch(live, batch).await)
+}
+
+async fn handle_batch(
+    live: &mut Live,
+    batch: Vec<Result<Item, pg_bus::Error>>,
+) -> Result<(), AppError> {
+    let notification = live.user_id.map(crate::bus::notification_channel);
+    let alert = live.user_id.map(|id| format!("/notification-alert/{id}"));
+    let mut tracking: Option<Position> = None;
+    let mut last: Option<Position> = None;
+    for item in batch {
+        let message = match item? {
+            Item::Message(message) => message,
+            // Trimmed before this viewer read it: the page is stale, and a
+            // reload is the honest fix. Not sent yet.
+            Item::Gap => continue,
+        };
+        last = Some(message.position);
+        let id = message.position.to_string();
+        if live.topic_channel.as_ref() == Some(&message.channel) {
+            if let Some(html) = post_fragment(live, &message).await? {
+                live.pending
+                    .push_back(Event::default().event("post").id(id).data(html));
+            }
+        } else if notification.as_ref() == Some(&message.channel) {
+            let count = message.data["all_unread_notifications_count"]
+                .as_i64()
+                .unwrap_or(0);
+            live.pending.push_back(
+                Event::default()
+                    .event("header")
+                    .id(id)
+                    .data(notification_count(count)),
+            );
+        } else if alert.as_ref() == Some(&message.channel) {
+            let base = live.state.config.globals.relative_url_root();
+            live.pending.push_back(
+                Event::default()
+                    .event("header")
+                    .id(id)
+                    .data(notification_alert(base, &message.data)),
+            );
+        } else {
+            tracking = Some(message.position);
+        }
+    }
+    if tracking.is_some() && live.lists {
+        // Carries the batch's last position, so the ids stay in bus order.
+        recount_lists(live, last).await?;
+    }
+    Ok(())
+}
+
+/// The lists counted again; queued only when they changed.
+async fn recount_lists(live: &mut Live, id: Option<Position>) -> Result<(), AppError> {
+    let html = list_state(live).await?;
+    if live.sent_lists.as_ref() == Some(&html) {
+        return Ok(());
+    }
+    live.sent_lists = Some(html.clone());
+    if html.is_empty() {
+        return Ok(());
+    }
+    let mut event = Event::default().event("list").data(html);
+    if let Some(position) = id {
+        event = event.id(position.to_string());
+    }
+    live.pending.push_back(event);
+    Ok(())
+}
+
+/// The header's unread notification count.
+fn notification_count(count: i64) -> String {
+    let shown = if count > 0 {
+        count.to_string()
+    } else {
+        String::new()
+    };
+    format!(r#"<span id="notification-count" hx-swap-oob="true">{shown}</span>"#)
+}
+
+/// The alert PostAlerter publishes, shown in the header: who, what and
+/// where, linking to the post. Everything in it is escaped: titles,
+/// usernames and excerpts are user content.
+fn notification_alert(base_path: &str, data: &Value) -> String {
+    use html_escape::{encode_double_quoted_attribute as attr, encode_text as text};
+    let s = |key: &str| data[key].as_str().unwrap_or_default();
+    // NotificationSerializer's types, as the alert's verb.
+    let verb = match data["notification_type"].as_i64() {
+        Some(1) => "mentioned you in",
+        Some(2) => "replied in",
+        Some(3) => "quoted you in",
+        Some(6) => "sent you a message,",
+        Some(9) => "posted in",
+        Some(11) => "linked to your post in",
+        Some(17) => "posted a new topic,",
+        Some(36) => "posted in",
+        _ => "in",
+    };
+    format!(
+        r#"<div id="notification-alert" class="notification-alert" role="status" aria-live="polite" hx-swap-oob="true"><a href="{}{}"><strong>{}</strong> {verb} <em>{}</em>: {}</a></div>"#,
+        attr(base_path),
+        attr(s("post_url")),
+        text(s("username")),
+        text(s("topic_title")),
+        text(s("excerpt")),
+    )
+}
+
+/// The HTML for one change on the topic's channel: the post as this
+/// viewer sees it now, or its removal; `None` for messages that are not
+/// about a post (the topic's stats, the viewer's notification level).
+async fn post_fragment(live: &Live, message: &Message) -> Result<Option<String>, AppError> {
     let data = &message.data;
     let Some(kind) = data["type"].as_str() else {
         return Ok(None);
@@ -226,147 +400,10 @@ async fn fragment(live: &Live, message: &Message) -> Result<Option<String>, AppE
     Ok(Some(html))
 }
 
-#[derive(Deserialize, Default)]
-pub struct ListParams {
-    position: Option<String>,
-    /// The list the page shows (`latest`, `new`, `unread`): the latest
-    /// list also gets the new-or-updated banner.
-    filter: Option<String>,
-    /// When the page was rendered, in milliseconds: topics bumped after it
-    /// are the new or updated ones.
-    since: Option<i64>,
-}
-
-/// GET /live/lists: what a topic list page keeps current, as `list`
-/// events of htmx out-of-band HTML: the "N new or updated topics" banner
-/// on the latest list, and a logged-in viewer's unread and new counts in
-/// the nav. Each is the viewer's own list query run again (their muting,
-/// categories, permissions), on connect and after any tracking message
-/// they may hear; a burst of messages is one recount, and nothing is sent
-/// when nothing changed.
-pub async fn lists(
-    State(state): State<AppState>,
-    AuthGuardian(guardian): AuthGuardian,
-    Query(params): Query<ListParams>,
-    headers: HeaderMap,
-) -> Result<Response, AppError> {
-    let mut conn = state.pool.acquire().await?;
-    let settings =
-        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
-    let tags = crate::bus::tags(&mut conn, guardian.user_id()).await?;
-    drop(conn);
-    let from = match pg_bus::sse::last_event_id(&headers) {
-        Some(position) => position,
-        None => match params.position.as_deref().filter(|p| !p.is_empty()) {
-            Some(raw) => match raw.parse() {
-                Ok(position) => position,
-                Err(_) => return Ok((StatusCode::BAD_REQUEST, "invalid position").into_response()),
-            },
-            None => state.bus.now().await?,
-        },
-    };
-    let mut channels: Vec<String> = ["/latest", "/new", "/unread", "/delete", "/recover"]
-        .into_iter()
-        .map(str::to_string)
-        .collect();
-    if let Some(user_id) = guardian.user_id() {
-        channels.push(format!("/unread/{user_id}"));
-    }
-    let since = match params.filter.as_deref() {
-        Some("latest") => params
-            .since
-            .and_then(chrono::DateTime::from_timestamp_millis)
-            .map(|t| t.naive_utc()),
-        _ => None,
-    };
-    let subscription = state.bus.subscribe(from, Filter { channels, tags });
-    let live = ListLive {
-        state,
-        guardian,
-        settings,
-        subscription,
-        since,
-        sent: None,
-        deadline: tokio::time::Instant::now() + MAX_LIFETIME,
-    };
-    let stream = stream::unfold(live, |mut live| async move {
-        // First the state as it is now, then again after each burst.
-        let mut id = None;
-        loop {
-            if live.sent.is_some() {
-                let item = tokio::time::timeout_at(live.deadline, live.subscription.next())
-                    .await
-                    .ok()?;
-                match item {
-                    Ok(Item::Message(m)) => id = Some(m.position),
-                    Ok(Item::Gap) => {}
-                    Err(e) => {
-                        tracing::warn!("live lists: {e}");
-                        return None;
-                    }
-                }
-                // Whatever else is already due is part of the same recount.
-                while let Ok(item) =
-                    tokio::time::timeout(Duration::ZERO, live.subscription.next()).await
-                {
-                    match item {
-                        Ok(Item::Message(m)) => id = Some(m.position),
-                        Ok(Item::Gap) => {}
-                        Err(e) => {
-                            tracing::warn!("live lists: {e}");
-                            return None;
-                        }
-                    }
-                }
-            }
-            let html = match list_state(&live).await {
-                Ok(html) => html,
-                Err(e) => {
-                    tracing::warn!("live lists: counting: {e}");
-                    return None;
-                }
-            };
-            if live.sent.as_ref() == Some(&html) {
-                continue;
-            }
-            live.sent = Some(html.clone());
-            if html.is_empty() {
-                continue;
-            }
-            let mut event = Event::default().event("list").data(html);
-            if let Some(position) = id {
-                event = event.id(position.to_string());
-            }
-            return Some((Ok::<_, Infallible>(event), live));
-        }
-    });
-    let mut response = Sse::new(stream)
-        .keep_alive(KeepAlive::new().interval(Duration::from_secs(25)))
-        .into_response();
-    response
-        .headers_mut()
-        .insert("x-accel-buffering", HeaderValue::from_static("no"));
-    response
-        .headers_mut()
-        .insert(header::CACHE_CONTROL, HeaderValue::from_static("no-cache"));
-    Ok(response)
-}
-
-struct ListLive {
-    state: AppState,
-    guardian: Guardian,
-    settings: SiteSettings,
-    subscription: Subscription,
-    since: Option<chrono::NaiveDateTime>,
-    /// The HTML last computed, sent or (when empty) not.
-    sent: Option<String>,
-    deadline: tokio::time::Instant,
-}
-
 /// The most a count shows before "99+".
 const COUNT_CAP: i64 = 100;
 
-async fn list_state(live: &ListLive) -> Result<String, AppError> {
+async fn list_state(live: &Live) -> Result<String, AppError> {
     use crate::topic_query::{Filter as ListFilter, Options};
     let mut conn = live.state.pool.acquire().await?;
     let mut out = String::new();
@@ -423,7 +460,7 @@ async fn list_state(live: &ListLive) -> Result<String, AppError> {
 
 /// The viewer's own list: `TopicQuery#list_<filter>` with these options.
 async fn viewer_list(
-    live: &ListLive,
+    live: &Live,
     conn: &mut sqlx::PgConnection,
     filter: crate::topic_query::Filter,
     options: crate::topic_query::Options,

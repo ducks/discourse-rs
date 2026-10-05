@@ -17,3 +17,18 @@
     {% if post.likes > 0 %}<div class="post-likes">&#x2764; {{ post.likes }}</div>{% endif %}
   </div>
 {% endmacro %}
+
+{#- The page's live updates (GET /live): a hidden sink for htmx's SSE
+    extension. Every event is out-of-band swaps, so the sink stays empty.
+    `topic_id` above 0 follows a topic, `filter` a list. -#}
+{% macro live_sink(base_path, bus_position, topic_id, filter, since) %}
+<div hidden hx-ext="sse" sse-connect="{{ base_path }}/live?position={{ bus_position }}{% if topic_id > 0 %}&amp;topic={{ topic_id }}{% endif %}{% if !filter.is_empty() %}&amp;filter={{ filter }}&amp;since={{ since }}{% endif %}" sse-swap="post,list,header"></div>
+{% endmacro %}
+
+{#- The stream every page has for a member: their notifications and
+    counts, nothing more. -#}
+{% macro live_sink_for_member(member, base_path, bus_position) %}
+{% if member && !bus_position.is_empty() %}
+<div hidden hx-ext="sse" sse-connect="{{ base_path }}/live?position={{ bus_position }}" sse-swap="post,list,header"></div>
+{% endif %}
+{% endmacro %}

@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+{% import "macros.html" as m %}
 <html lang="{{ lang }}"{% if viewer.is_none() %} class="anon"{% endif %}>
   <head>
     <meta charset="utf-8">
@@ -30,6 +31,8 @@
     {% if !bus_position.is_empty() %}
     <meta name="bus-position" content="{{ bus_position }}">
     {% endif %}
+    <script src="{{ base_path }}/assets/htmx.min.js" defer></script>
+    <script src="{{ base_path }}/assets/htmx-ext-sse.js" defer></script>
     {% block head %}{% endblock %}
     <link rel="stylesheet" href="{{ base_path }}/assets/site.css">
   </head>
@@ -47,6 +50,8 @@
         {% endif %}
       </nav>
       {% if let Some(v) = viewer %}
+      <span class="site-notifications" title="Unread notifications">&#x1F514;<span id="notification-count"></span></span>
+      <div id="notification-alert" class="notification-alert" role="status" aria-live="polite"></div>
       <form class="site-session" method="post" action="{{ base_path }}/session/{{ v.username }}">
         <input type="hidden" name="_method" value="delete">
         <input type="hidden" name="authenticity_token" value="{{ v.csrf_token }}">
@@ -63,5 +68,8 @@
     <footer class="site-footer">
       <span>{{ site_description }}</span>
     </footer>
+    {#- Pages that follow more (a topic, a list) override this; a member
+        always hears their notifications and counts. -#}
+    {% block live %}{% call m::live_sink_for_member(viewer.is_some(), base_path, bus_position) %}{% endblock %}
   </body>
 </html>

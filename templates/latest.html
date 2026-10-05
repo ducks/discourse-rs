@@ -1,11 +1,6 @@
 {% extends "layout.html" %}
+{% import "macros.html" as m %}
 {% block title %}{% if let Some(h) = heading %}{{ h.name }}{% else if let Some(t) = tag %}Topics tagged {{ t.name }}{% else %}Latest topics{% endif %} - {{ site_title }}{% endblock %}
-{% block head %}
-{% if !live_filter.is_empty() %}
-    <script src="{{ base_path }}/assets/htmx.min.js" defer></script>
-    <script src="{{ base_path }}/assets/htmx-ext-sse.js" defer></script>
-{% endif %}
-{% endblock %}
 {% block content %}
 {% if let Some(h) = heading %}
 <h1 class="category-heading">
@@ -68,9 +63,7 @@
   <div class="more-topics"><a href="{{ url }}" rel="next">Next page</a></div>
   {% endif %}
 </div>
-{% if !live_filter.is_empty() %}
-{#- The new-or-updated banner and the nav counts arrive as htmx out-of-band
-    swaps; the sink itself stays empty. -#}
-<div hidden hx-ext="sse" sse-connect="{{ base_path }}/live/lists?filter={{ live_filter }}&amp;since={{ live_since }}{% if !bus_position.is_empty() %}&amp;position={{ bus_position }}{% endif %}" sse-swap="list"></div>
-{% endif %}
 {% endblock %}
+{#- The new-or-updated banner and a member's counts arrive on the page's
+    stream. -#}
+{% block live %}{% if !live_filter.is_empty() %}{% call m::live_sink(base_path, bus_position, 0, live_filter, live_since) %}{% else %}{% call m::live_sink_for_member(viewer.is_some(), base_path, bus_position) %}{% endif %}{% endblock %}

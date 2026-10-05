@@ -1,10 +1,6 @@
 {% extends "layout.html" %}
 {% import "macros.html" as m %}
 {% block title %}{{ title }} - {{ site_title }}{% endblock %}
-{% block head %}
-    <script src="{{ base_path }}/assets/htmx.min.js" defer></script>
-    <script src="{{ base_path }}/assets/htmx-ext-sse.js" defer></script>
-{% endblock %}
 {% block content %}
 <div id="topic-title">
   <h1><a href="{{ canonical_url }}">{{ title_unicode }}</a></h1>
@@ -30,9 +26,6 @@
   {% for post in posts %}{% call m::post_block(post, "") %}{% endfor %}
 </div>
 {% if live %}
-{#- New and changed posts arrive as htmx out-of-band swaps; the sink itself
-    stays empty. -#}
-<div hidden hx-ext="sse" sse-connect="{{ base_path }}/t/{{ topic_id }}/live{% if !bus_position.is_empty() %}?position={{ bus_position }}{% endif %}" sse-swap="post"></div>
 <script>
   // A post created while the page was read can arrive once more: keep the
   // first copy of each.
@@ -80,3 +73,6 @@
 </div>
 {% endif %}
 {% endblock %}
+{#- New and changed posts arrive on the page's stream, on the last page,
+    where new posts land; elsewhere the layout's (a member's header). -#}
+{% block live %}{% if live %}{% call m::live_sink(base_path, bus_position, topic_id, "", "") %}{% else %}{% call m::live_sink_for_member(viewer.is_some(), base_path, bus_position) %}{% endif %}{% endblock %}

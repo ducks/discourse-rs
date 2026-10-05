@@ -1272,8 +1272,101 @@ async fn list_pages_show_the_members_unread_and_new_counts() {
         ));
     }
 
-    let mut body = client.open("/live/lists").await;
+    let mut body = client.open("/live").await;
     let mut buffer = String::new();
     let html = common::next_sse_event(&mut body, &mut buffer, "list").await;
     assert_eq!(html, expected.join(""));
+}
+
+/// A member's header: every page connects, the unread notification count
+/// arrives first and follows their notification state, and alerts show
+/// with their user content escaped.
+#[tokio::test(flavor = "multi_thread")]
+async fn members_hear_their_notifications_on_every_page() {
+    let db = TestDb::new().await;
+    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut client = Client::new(app_state.clone());
+    let reply = client.login("user1", "password").await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    let user_id: i32 = sqlx::query_scalar(
+        "UPDATE users SET last_seen_at = now() WHERE username = 'user1' RETURNING id",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    // One unread notification newer than the last seen.
+    sqlx::query(
+        "INSERT INTO notifications (notification_type, user_id, data, read, high_priority, \
+                                    created_at, updated_at) \
+         VALUES (1, $1, '{}', FALSE, FALSE, now(), now())",
+    )
+    .bind(user_id)
+    .execute(&db.pool)
+    .await
+    .unwrap();
+
+    let page = client.get("/categories").await;
+    assert!(
+        page.body
+            .contains(r#"<span id="notification-count"></span>"#)
+    );
+    assert!(
+        page.body.contains(r#"sse-connect="/live?position="#),
+        "{}",
+        page.body
+    );
+
+    let mut conn = db.pool.acquire().await.unwrap();
+    let unread = discourse_rs::bus::all_unread_notifications_count(&mut conn, user_id)
+        .await
+        .unwrap();
+    drop(conn);
+    assert!(unread > 0);
+    let mut body = client.open("/live").await;
+    let mut buffer = String::new();
+    assert_eq!(
+        common::next_sse_event(&mut body, &mut buffer, "header").await,
+        format!(r#"<span id="notification-count" hx-swap-oob="true">{unread}</span>"#)
+    );
+
+    // An alert, its user content escaped.
+    let mut tx = db.pool.begin().await.unwrap();
+    discourse_rs::bus::publish_notification_alert(
+        &app_state.bus,
+        &mut tx,
+        user_id,
+        &serde_json::json!({
+            "notification_type": 2,
+            "username": "user2",
+            "topic_title": "A <b>bold</b> title",
+            "excerpt": "<script>alert(1)</script>",
+            "post_url": "/t/a-topic/35/2",
+        }),
+    )
+    .await
+    .unwrap();
+    tx.commit().await.unwrap();
+    let alert = common::next_sse_event(&mut body, &mut buffer, "header").await;
+    assert!(
+        alert.starts_with(r#"<div id="notification-alert""#),
+        "{alert}"
+    );
+    assert!(alert.contains(r#"href="/t/a-topic/35/2""#), "{alert}");
+    assert!(
+        alert.contains("<strong>user2</strong> replied in"),
+        "{alert}"
+    );
+    assert!(alert.contains("&lt;script&gt;"), "{alert}");
+    assert!(!alert.contains("<script>"), "{alert}");
+    assert!(!alert.contains("<b>"), "{alert}");
+
+    // Reading them all clears the count.
+    let reply = client
+        .send(Method::PUT, "/notifications/mark-read.json", &[], "")
+        .await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    assert_eq!(
+        common::next_sse_event(&mut body, &mut buffer, "header").await,
+        r#"<span id="notification-count" hx-swap-oob="true"></span>"#
+    );
 }
