@@ -264,6 +264,8 @@ impl Private<'_> {
         &mut self,
         user: &User,
         system_avatar_template: &str,
+        // gravatar_avatar_* and custom_avatar_*, when the user has them.
+        avatar_keys: &[(&str, Value)],
         out: &mut Map<String, Value>,
     ) -> Result<(), UsersError> {
         let uid = user.id;
@@ -338,16 +340,8 @@ impl Private<'_> {
             "system_avatar_template".into(),
             json!(system_avatar_template),
         );
-        let avatars: Option<(Option<i32>, Option<i32>)> = sqlx::query_as(
-            "SELECT gravatar_upload_id, custom_upload_id FROM user_avatars WHERE user_id = $1 LIMIT 1",
-        )
-        .bind(uid)
-        .fetch_optional(&mut *self.conn)
-        .await?;
-        if let Some((gravatar, custom)) = avatars
-            && (gravatar.is_some() || custom.is_some())
-        {
-            return Err(Unsupported("gravatar/custom avatar keys on profiles").into());
+        for (key, value) in avatar_keys {
+            out.insert((*key).to_string(), value.clone());
         }
         let names = |table: &'static str, column: &'static str| {
             format!(

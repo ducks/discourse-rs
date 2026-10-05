@@ -646,43 +646,46 @@ impl Users<'_> {
         if g.is_staff() {
             self.private().staff_attributes(user, &mut u).await?;
         }
-        if can_edit {
-            let system_avatar = avatar::class_avatar_template(self.urls, &user.username, None)?;
-            self.private()
-                .private_block(user, &system_avatar, &mut u)
-                .await?;
-        }
-        // The gravatar/custom avatar ids leak to anonymous readers because
-        // their include_ predicates are redefined after private_attributes.
+        // gravatar_avatar_* and custom_avatar_*: in the private block for
+        // those who may edit the user; for everyone else they leak at the
+        // end, because their include_ predicates are redefined after
+        // private_attributes.
         let avatars: Option<(Option<i32>, Option<i32>)> = sqlx::query_as(
             "SELECT gravatar_upload_id, custom_upload_id FROM user_avatars WHERE user_id = $1",
         )
         .bind(user.id)
         .fetch_optional(&mut *self.conn)
         .await?;
-        if let (Some((gravatar, custom)), false) = (avatars, can_edit) {
-            if let Some(id) = gravatar {
-                u.insert("gravatar_avatar_upload_id".into(), json!(id));
-                u.insert(
-                    "gravatar_avatar_template".into(),
-                    json!(avatar::class_avatar_template(
-                        self.urls,
-                        &user.username,
-                        Some(id)
-                    )?),
-                );
+        let mut avatar_keys: Vec<(&'static str, Value)> = Vec::new();
+        if let Some((gravatar, custom)) = avatars {
+            for (id, id_key, template_key) in [
+                (
+                    gravatar,
+                    "gravatar_avatar_upload_id",
+                    "gravatar_avatar_template",
+                ),
+                (custom, "custom_avatar_upload_id", "custom_avatar_template"),
+            ] {
+                if let Some(id) = id {
+                    avatar_keys.push((id_key, json!(id)));
+                    avatar_keys.push((
+                        template_key,
+                        json!(avatar::class_avatar_template(
+                            self.urls,
+                            &user.username,
+                            Some(id)
+                        )?),
+                    ));
+                }
             }
-            if let Some(id) = custom {
-                u.insert("custom_avatar_upload_id".into(), json!(id));
-                u.insert(
-                    "custom_avatar_template".into(),
-                    json!(avatar::class_avatar_template(
-                        self.urls,
-                        &user.username,
-                        Some(id)
-                    )?),
-                );
-            }
+        }
+        if can_edit {
+            let system_avatar = avatar::class_avatar_template(self.urls, &user.username, None)?;
+            self.private()
+                .private_block(user, &system_avatar, &avatar_keys, &mut u)
+                .await?;
+        } else {
+            u.extend(avatar_keys.into_iter().map(|(k, v)| (k.to_string(), v)));
         }
         u.insert(
             "featured_user_badge_ids".into(),
