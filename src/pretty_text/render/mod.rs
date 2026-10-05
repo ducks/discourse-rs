@@ -245,6 +245,9 @@ pub fn render(
     settings: &RenderSettings,
     lookups: Lookups,
 ) -> Result<(String, Needs), CookError> {
+    if let Some(what) = table::refuse_glue(raw) {
+        return Err(Unsupported(what).into());
+    }
     let md = engine(settings, lookups);
     let ctx = md.ext.get::<Context>().expect("context");
     let mut root: Node = md.parse(raw);
@@ -275,7 +278,7 @@ pub fn render(
     }
     code::apply(&mut root, settings);
     table::apply(&mut root);
-    let html = sanitize(&root.render(), &allow_list(settings))
+    let html = sanitize(&table::unglue(&root.render()), &allow_list(settings))
         .trim()
         .to_string();
     if let Some(what) = ctx.unsupported() {

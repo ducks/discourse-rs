@@ -425,6 +425,14 @@
   },
   {
     "id": "sample-53",
+    "raw": "| a | b |\n|---|---|\n| 1 | 2 |\n\nAfter the table.\n\n> | q |\n> |---|\n> | 1 |\n\nAfter the quote.",
+    "topic_id": 35,
+    "user_id": 3,
+    "markdown": "<div class=\"md-table\">\n<table>\n<thead>\n<tr>\n<th>a</th>\n<th>b</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>1</td>\n<td>2</td>\n</tr>\n</tbody>\n</table>\n</div><p>After the table.</p>\n<blockquote>\n<div class=\"md-table\">\n<table>\n<thead>\n<tr>\n<th>q</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>1</td>\n</tr>\n</tbody>\n</table>\n</div></blockquote>\n<p>After the quote.</p>",
+    "cooked": "<div class=\"md-table\">\n<table>\n<thead>\n<tr>\n<th>a</th>\n<th>b</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>1</td>\n<td>2</td>\n</tr>\n</tbody>\n</table>\n</div><p>After the table.</p>\n<blockquote>\n<div class=\"md-table\">\n<table>\n<thead>\n<tr>\n<th>q</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>1</td>\n</tr>\n</tbody>\n</table>\n</div></blockquote>\n<p>After the quote.</p>"
+  },
+  {
+    "id": "sample-54",
     "raw": "An upload that exists: ![image|64x64](upload://qa4V5109J7tySkPok8r3aBAruY1.png) and [a link|attachment](upload://qa4V5109J7tySkPok8r3aBAruY1.png).",
     "topic_id": 35,
     "user_id": 3,
