@@ -123,8 +123,12 @@ Logged-in readers, no writes yet.
       messages (PrivateMessageTopicTrackingState, TopicGroup), dismiss
       new and dismiss new posts (topic bulk actions are not ported),
       recovering topics, category changes
-- [ ] Live updates, next: `/notification-alert/<id>`, and the starting
-      position handed to the client with the page
+- [x] Live updates: `/notification-alert/<id>`
+      (PostAlerter.create_notification_alert) for a user's first
+      notification of an alerting type on a post: the post's url, topic
+      title, excerpt and who, to users seen in the last 30 days
+- [ ] Live updates, next: the starting position handed to the client
+      with the page
 
 ## Milestone 4: writes
 

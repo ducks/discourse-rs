@@ -40,6 +40,20 @@ const COLLAPSED: [i32; 4] = [
     types::WATCHING_CATEGORY_OR_TAG,
 ];
 
+/// `PostAlerter::NOTIFIABLE_TYPES`: the types that alert the user live
+/// and by push. Group mentions are refused, and event reminders and
+/// invitations come from a plugin, so neither is here.
+const NOTIFIABLE: [i32; 8] = [
+    types::MENTIONED,
+    types::REPLIED,
+    types::QUOTED,
+    types::POSTED,
+    types::LINKED,
+    types::PRIVATE_MESSAGE,
+    types::WATCHING_FIRST_POST,
+    types::WATCHING_CATEGORY_OR_TAG,
+];
+
 /// The post being alerted about.
 #[derive(sqlx::FromRow)]
 struct Post {
@@ -807,9 +821,42 @@ impl Alerter<'_> {
             )
             .await?;
         }
-        // create_notification_alert: MessageBus (not ported) and push
-        // notifications, refused for users who have push set up.
-        if existing.is_empty() && !user.suspended() {
+        // create_notification_alert for a first notification of a notifiable
+        // type: the live alert (to users seen in the last 30 days), then
+        // push notifications, refused for users who have push set up.
+        if existing.is_empty() && NOTIFIABLE.contains(&notification_type) && !user.suspended() {
+            let slug: Option<String> = sqlx::query_scalar("SELECT slug FROM topics WHERE id = $1")
+                .bind(post.topic_id)
+                .fetch_one(&mut *conn)
+                .await?;
+            let excerpt = crate::excerpt::excerpt(
+                &post.cooked,
+                400,
+                &crate::excerpt::Options {
+                    text_entities: true,
+                    strip_links: true,
+                    remap_emoji: true,
+                    plain_hashtags: true,
+                    ..Default::default()
+                },
+            );
+            let payload = json!({
+                "notification_type": notification_type,
+                "post_number": post.post_number,
+                "topic_title": post.topic_title,
+                "topic_id": post.topic_id,
+                "post_id": post.id,
+                "excerpt": excerpt,
+                "username": original_username,
+                // Post.url: no base path.
+                "post_url": format!(
+                    "/t/{}/{}/{}",
+                    slug.unwrap_or_default(),
+                    post.topic_id,
+                    post.post_number
+                ),
+            });
+            crate::bus::publish_notification_alert(ctx.bus, &mut *conn, user_id, &payload).await?;
             let push: bool = sqlx::query_scalar(
                 "SELECT EXISTS (SELECT 1 FROM push_subscriptions WHERE user_id = $1) \
                  OR EXISTS (SELECT 1 FROM user_api_keys k \
