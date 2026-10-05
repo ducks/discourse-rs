@@ -313,18 +313,7 @@ fn notification_count(count: i64) -> String {
 fn notification_alert(base_path: &str, data: &Value) -> String {
     use html_escape::{encode_double_quoted_attribute as attr, encode_text as text};
     let s = |key: &str| data[key].as_str().unwrap_or_default();
-    // NotificationSerializer's types, as the alert's verb.
-    let verb = match data["notification_type"].as_i64() {
-        Some(1) => "mentioned you in",
-        Some(2) => "replied in",
-        Some(3) => "quoted you in",
-        Some(6) => "sent you a message,",
-        Some(9) => "posted in",
-        Some(11) => "linked to your post in",
-        Some(17) => "posted a new topic,",
-        Some(36) => "posted in",
-        _ => "in",
-    };
+    let verb = crate::html::notification_verb(data["notification_type"].as_i64().unwrap_or(0));
     format!(
         r#"<div id="notification-alert" class="notification-alert" role="status" aria-live="polite" hx-swap-oob="true"><a href="{}{}"><strong>{}</strong> {verb} <em>{}</em>: {}</a></div>"#,
         attr(base_path),

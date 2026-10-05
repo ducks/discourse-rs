@@ -875,3 +875,24 @@ pub struct PostFragment {
     pub post: PostItem,
     pub append: bool,
 }
+
+/// What a notification says its actor did, by `Notification.types`, for
+/// the header's alert and the user menu.
+pub fn notification_verb(notification_type: i64) -> &'static str {
+    match notification_type {
+        1 => "mentioned you in",
+        2 => "replied in",
+        3 => "quoted you in",
+        4 => "edited your post in",
+        5 | 19 => "liked your post in",
+        6 => "sent you a message,",
+        7 => "invited you to a message,",
+        9 | 36 => "posted in",
+        11 => "linked to your post in",
+        12 => "earned a badge,",
+        13 => "invited you to",
+        17 => "posted a new topic,",
+        24 => "Reminder:",
+        _ => "in",
+    }
+}
