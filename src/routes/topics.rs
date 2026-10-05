@@ -163,6 +163,12 @@ async fn show(
     params: &ShowParams,
     json: bool,
 ) -> Result<Response, AppError> {
+    // Before the page's data is read (crate::bus::page_position).
+    let bus_position = if json {
+        String::new()
+    } else {
+        crate::bus::page_position(&state.bus).await?
+    };
     let Incoming {
         headers,
         uri,
@@ -265,6 +271,7 @@ async fn show(
     let vs = super::session::viewer_state(state, headers, &settings, guardian)?;
     let mut site = crate::html::Site::from_settings(&settings, &base_path)?;
     site.viewer = vs.viewer.clone();
+    site.bus_position = bus_position;
     let mut page =
         crate::html::topic_page(&mut conn, &state.i18n, site, &rendered.json, page).await?;
     page.crawler = topic_crawler(

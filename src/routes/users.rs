@@ -154,6 +154,12 @@ async fn respond(
     peer: Option<std::net::SocketAddr>,
     uri: axum::http::Uri,
 ) -> Result<Response, AppError> {
+    // Before the page's data is read (crate::bus::page_position).
+    let bus_position = if target.json {
+        String::new()
+    } else {
+        crate::bus::page_position(&state.bus).await?
+    };
     let guardian = incoming.guardian.clone();
     let auth_token: Option<String> = incoming
         .session
@@ -233,6 +239,7 @@ async fn respond(
     let vs = super::session::viewer_state(&state, &headers, &settings, &guardian)?;
     let mut site = crate::html::Site::from_settings(&settings, base_path)?;
     site.viewer = vs.viewer.clone();
+    site.bus_position = bus_position;
     let mut page = profile_page(
         site,
         &user,
@@ -346,6 +353,7 @@ pub struct ProfilePage {
     pub base_path: String,
     pub crawler: Crawler,
     pub viewer: Option<crate::html::Viewer>,
+    pub bus_position: String,
     pub username: String,
     pub name: Option<String>,
     pub title: Option<String>,
@@ -448,6 +456,7 @@ fn profile_page(
     Ok(ProfilePage {
         site_title: site.site_title,
         viewer: site.viewer,
+        bus_position: site.bus_position,
         site_description: site.site_description,
         lang: site.lang,
         base_path: site.base_path,

@@ -155,6 +155,7 @@ pub struct LoginRequiredPage {
     pub base_path: String,
     pub crawler: Crawler,
     pub viewer: Option<crate::html::Viewer>,
+    pub bus_position: String,
     pub welcome: String,
 }
 
@@ -184,6 +185,7 @@ pub fn login_page(
         crawler,
         site_title: site.site_title,
         viewer: site.viewer,
+        bus_position: site.bus_position,
         site_description: site.site_description,
         lang: site.lang,
         base_path: site.base_path,

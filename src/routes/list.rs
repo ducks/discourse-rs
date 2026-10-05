@@ -311,6 +311,8 @@ pub async fn latest(
     headers: HeaderMap,
     uri: axum::http::Uri,
 ) -> Result<Response, AppError> {
+    // Before the page's data is read (crate::bus::page_position).
+    let bus_position = crate::bus::page_position(&state.bus).await?;
     let list_path = format!("{}/latest", state.config.globals.relative_url_root());
     let (json, settings) = match list_document(
         &state,
@@ -331,6 +333,7 @@ pub async fn latest(
     let vs = super::session::viewer_state(&state, &headers, &settings, &guardian)?;
     let mut site = crate::html::Site::from_settings(&settings, base_path)?;
     site.viewer = vs.viewer.clone();
+    site.bus_position = bus_position;
     let mut page = crate::html::latest_page(&mut conn, site, &json).await?;
     // Strip `no_definitions`, which is what the JSON list carries around
     // but the HTML list applies on its own.
@@ -394,6 +397,12 @@ pub async fn category(
     let (path, json) = match path.strip_suffix(".json") {
         Some(p) => (p.to_string(), true),
         None => (path.clone(), false),
+    };
+    // Before the page's data is read (crate::bus::page_position).
+    let bus_position = if json {
+        String::new()
+    } else {
+        crate::bus::page_position(&state.bus).await?
     };
     // `.../none` (no_subcategories) and `.../none/l/latest`, else `.../l/latest`.
     // `.../none` (no_subcategories), `.../l/{latest,top,hot}`, or both.
@@ -499,6 +508,7 @@ pub async fn category(
     let vs = super::session::viewer_state(&state, &headers, &settings, &guardian)?;
     let mut site = crate::html::Site::from_settings(&settings, &base_path)?;
     site.viewer = vs.viewer.clone();
+    site.bus_position = bus_position;
     let mut page = crate::html::latest_page(&mut conn, site, &doc).await?;
     page.heading = Some(
         crate::html::category_heading(&mut conn, &base_path, &category, params.page.is_none())
@@ -556,6 +566,12 @@ async fn categories_response(
     headers: HeaderMap,
     uri: Option<axum::http::Uri>,
 ) -> Result<Response, AppError> {
+    // Before the page's data is read (crate::bus::page_position).
+    let bus_position = if json {
+        String::new()
+    } else {
+        crate::bus::page_position(&state.bus).await?
+    };
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
@@ -587,6 +603,7 @@ async fn categories_response(
     let mut site =
         crate::html::Site::from_settings(&settings, state.config.globals.relative_url_root())?;
     site.viewer = vs.viewer.clone();
+    site.bus_position = bus_position;
     let mut page = crate::html::categories_page(&mut conn, &state.i18n, site, &doc).await?;
     let uri = uri.unwrap_or_default();
     page.crawler = list_crawler(&mut conn, &state, &settings, &uri, None, None).await?;
@@ -812,6 +829,12 @@ async fn front_list(
     headers: HeaderMap,
     uri: Option<axum::http::Uri>,
 ) -> Result<Response, AppError> {
+    // Before the page's data is read (crate::bus::page_position).
+    let bus_position = if json {
+        String::new()
+    } else {
+        crate::bus::page_position(&state.bus).await?
+    };
     if let Some(response) = ensure_logged_in(&state, &guardian, kind, json) {
         return Ok(response);
     }
@@ -833,6 +856,7 @@ async fn front_list(
     let mut site =
         crate::html::Site::from_settings(&settings, state.config.globals.relative_url_root())?;
     site.viewer = vs.viewer.clone();
+    site.bus_position = bus_position;
     let mut page = crate::html::latest_page(&mut conn, site, &doc).await?;
     let uri = uri.unwrap_or_default();
     page.crawler = list_crawler(&mut conn, &state, &settings, &uri, None, None).await?;

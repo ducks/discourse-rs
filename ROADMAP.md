@@ -127,8 +127,13 @@ Logged-in readers, no writes yet.
       (PostAlerter.create_notification_alert) for a user's first
       notification of an alerting type on a post: the post's url, topic
       title, excerpt and who, to users seen in the last 30 days
-- [ ] Live updates, next: the starting position handed to the client
-      with the page
+- [x] Live updates: the starting position handed to the client with the
+      page: `<meta name="bus-position">` on every server-rendered page,
+      taken before the page reads its data, for /bus/events and
+      /bus/poll. A client working from the JSON API opens its stream
+      first and then loads, which needs no position. Rails' own position
+      fields in JSON (`message_bus_last_id`,
+      `notification_channel_position`) keep Rails' values
 
 ## Milestone 4: writes
 

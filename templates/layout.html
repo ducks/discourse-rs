@@ -27,6 +27,9 @@
     <meta name="csrf-param" content="authenticity_token" />
     <meta name="csrf-token" content="{{ v.csrf_token }}" />
     {% endif %}
+    {% if !bus_position.is_empty() %}
+    <meta name="bus-position" content="{{ bus_position }}">
+    {% endif %}
     {% block head %}{% endblock %}
     <link rel="stylesheet" href="{{ base_path }}/assets/site.css">
   </head>
