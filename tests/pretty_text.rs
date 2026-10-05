@@ -362,12 +362,17 @@ async fn backup_corpus_matches_rails() {
         .connect(&database_url)
         .await
         .unwrap();
-    let app_state = state(pool, config).await;
+    // Only what cooking reads: no bus, whose start would create its schema.
     let host = Host {
-        pool: app_state.pool,
-        config: app_state.config,
-        site_setting_defs: app_state.site_setting_defs,
-        i18n: app_state.i18n,
+        pool,
+        config,
+        site_setting_defs: std::sync::Arc::new(
+            discourse_rs::site_settings::Definitions::vendored()
+                .expect("vendored site_settings.yml"),
+        ),
+        i18n: std::sync::Arc::new(
+            discourse_rs::i18n::I18n::vendored().expect("vendored server.en.yml"),
+        ),
     };
     let corpus: Value = serde_json::from_str(
         &std::fs::read_to_string(std::path::Path::new(&dir).join("corpus.json")).unwrap(),
