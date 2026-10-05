@@ -449,6 +449,14 @@
   },
   {
     "id": "sample-56",
+    "raw": "- no new posts since \"last visit\"\n- an \"open one\n- closed\" here\n\n| Default |\n|---|\n| \"Upcoming events\" |\n\n![it's \"alt\"](https://example.com/a.png) it's \"done\"",
+    "topic_id": 35,
+    "user_id": 3,
+    "markdown": "<ul>\n<li>no new posts since “last visit”</li>\n<li>an &quot;open one</li>\n<li>closed&quot; here</li>\n</ul>\n<div class=\"md-table\">\n<table>\n<thead>\n<tr>\n<th>Default</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>“Upcoming events”</td>\n</tr>\n</tbody>\n</table>\n</div><p><img src=\"https://example.com/a.png\" alt=\"it's &quot;alt&quot;\"> it’s “done”</p>",
+    "cooked": "<ul>\n<li>no new posts since “last visit”</li>\n<li>an \"open one</li>\n<li>closed\" here</li>\n</ul>\n<div class=\"md-table\">\n<table>\n<thead>\n<tr>\n<th>Default</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>“Upcoming events”</td>\n</tr>\n</tbody>\n</table>\n</div><p><img src=\"https://example.com/a.png\" alt=\"it's &quot;alt&quot;\"> it’s “done”</p>"
+  },
+  {
+    "id": "sample-57",
     "raw": "An upload that exists: ![image|64x64](upload://qa4V5109J7tySkPok8r3aBAruY1.png) and [a link|attachment](upload://qa4V5109J7tySkPok8r3aBAruY1.png).",
     "topic_id": 35,
     "user_id": 3,

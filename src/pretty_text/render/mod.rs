@@ -22,6 +22,7 @@ mod newline;
 mod onebox;
 mod poll;
 mod quotes;
+mod smartquotes;
 mod table;
 mod text_join;
 mod text_post_process;
@@ -30,10 +31,8 @@ mod uploads;
 
 use std::sync::Arc;
 
-use markdown_it::parser::core::CoreRule;
 use markdown_it::parser::extset::MarkdownItExt;
 use markdown_it::plugins::cmark::inline::newline::{Hardbreak, Softbreak};
-use markdown_it::plugins::extra::smartquotes::SmartQuotesRule;
 use markdown_it::{MarkdownIt, Node};
 
 use self::context::{Context, Lookups, Needs};
@@ -215,9 +214,6 @@ fn allow_list(settings: &RenderSettings) -> AllowList {
     list
 }
 
-/// markdown-it's default quotes, which RenderSettings insists on.
-type SmartQuotes = SmartQuotesRule<'‘', '’', '“', '”'>;
-
 fn engine(settings: &RenderSettings, lookups: Lookups) -> MarkdownIt {
     let mut md = MarkdownIt::new();
     md.ext.insert(settings.clone());
@@ -232,6 +228,7 @@ fn engine(settings: &RenderSettings, lookups: Lookups) -> MarkdownIt {
     checklist::add(&mut md);
     footnotes::add(&mut md);
     anchor::add(&mut md);
+    smartquotes::add(&mut md);
     md
 }
 
@@ -265,7 +262,7 @@ pub fn render(
     }
     if settings.typographer {
         typographer::apply(&mut root);
-        SmartQuotes::run(&mut root, &md);
+        smartquotes::run(&mut root, &md);
     }
     // markdown-it's text_join, before the core rules Discourse adds.
     text_join::apply(&mut root);
