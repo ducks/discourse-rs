@@ -473,6 +473,14 @@
   },
   {
     "id": "sample-59",
+    "raw": "- a\n  ```\n  x\n  ```\n  after\n- b\n  <div>\n  y\n  </div>\n- ```\n  z\n  ```\n- c\n  > q",
+    "topic_id": 35,
+    "user_id": 3,
+    "markdown": "<ul>\n<li>a<pre><code class=\"lang-auto\">x\n</code></pre>\nafter</li>\n<li>b<div>\ny\n</div>\n</li>\n<li>\n<pre><code class=\"lang-auto\">z\n</code></pre>\n</li>\n<li>c\n<blockquote>\n<p>q</p>\n</blockquote>\n</li>\n</ul>",
+    "cooked": "<ul>\n<li>a<pre><code class=\"lang-auto\">x\n</code></pre>\nafter</li>\n<li>b<div>\ny\n</div>\n</li>\n<li>\n<pre><code class=\"lang-auto\">z\n</code></pre>\n</li>\n<li>c\n<blockquote>\n<p>q</p>\n</blockquote>\n</li>\n</ul>"
+  },
+  {
+    "id": "sample-60",
     "raw": "An upload that exists: ![image|64x64](upload://qa4V5109J7tySkPok8r3aBAruY1.png) and [a link|attachment](upload://qa4V5109J7tySkPok8r3aBAruY1.png).",
     "topic_id": 35,
     "user_id": 3,

@@ -26,6 +26,7 @@ mod smartquotes;
 mod table;
 mod text_join;
 mod text_post_process;
+mod tight;
 mod typographer;
 mod uploads;
 
@@ -229,6 +230,7 @@ fn engine(settings: &RenderSettings, lookups: Lookups) -> MarkdownIt {
     footnotes::add(&mut md);
     anchor::add(&mut md);
     smartquotes::add(&mut md);
+    tight::add(&mut md);
     md
 }
 
@@ -280,6 +282,7 @@ pub fn render(
     }
     code::apply(&mut root, settings);
     table::apply(&mut root);
+    tight::apply(&mut root);
     let html = sanitize(&table::unglue(&root.render()), &allow_list(settings))
         .trim()
         .to_string();
