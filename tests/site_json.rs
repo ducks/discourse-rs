@@ -21,7 +21,7 @@ const INTEGER: i32 = 3;
 const BOOL: i32 = 5;
 
 async fn get_site(pool: &PgPool) -> Value {
-    let app = discourse_rs::app(state(pool.clone(), config(RailsEnv::Test, &[])));
+    let app = discourse_rs::app(state(pool.clone(), config(RailsEnv::Test, &[])).await);
     let response = app
         .oneshot(Request::get("/site.json").body(Body::empty()).unwrap())
         .await
@@ -34,7 +34,7 @@ async fn get_site(pool: &PgPool) -> Value {
 /// `Site.json_for(Guardian.new)` itself, for states the route refuses
 /// anonymously (login_required 403s before the action).
 async fn json_for(pool: &PgPool) -> Value {
-    let state = state(pool.clone(), config(RailsEnv::Test, &[]));
+    let state = state(pool.clone(), config(RailsEnv::Test, &[])).await;
     let mut conn = pool.acquire().await.unwrap();
     let settings = SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals)
         .await

@@ -28,6 +28,8 @@ pub struct Ctx<'a> {
     pub settings: &'a SiteSettings,
     pub config: &'a Config,
     pub i18n: &'a I18n,
+    /// Where live updates go (see `crate::bus`).
+    pub bus: &'a pg_bus::Bus,
 }
 
 impl Ctx<'_> {

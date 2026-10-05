@@ -78,6 +78,7 @@ pub async fn perform(
         settings: &settings,
         config: &state.config,
         i18n: &state.i18n,
+        bus: &state.bus,
     };
     let outcome =
         review::perform(&mut tx, &ctx, &guardian, reviewable_id, &action_id, version).await?;
@@ -120,6 +121,7 @@ pub async fn index(
         settings: &settings,
         config: &state.config,
         i18n: &state.i18n,
+        bus: &state.bus,
     };
     let p = params::parse(uri.query(), &headers, &body);
     Ok(

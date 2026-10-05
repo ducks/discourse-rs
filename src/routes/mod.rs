@@ -4,6 +4,7 @@ mod admin_site_settings;
 mod admin_users;
 mod bookmark_writes;
 mod bookmarks;
+mod bus;
 mod drafts;
 mod list;
 mod login_required;
@@ -59,6 +60,8 @@ pub fn router(state: &AppState) -> Router<AppState> {
     };
     let mut router = Router::new()
         .route("/srv/status", get(srv::status))
+        .route("/bus/events", get(bus::events))
+        .route("/bus/poll", get(bus::poll))
         .route("/", get(list::latest))
         .route("/latest", get(list::latest))
         .route("/latest.json", get(list::latest_json))

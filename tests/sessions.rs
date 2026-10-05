@@ -143,7 +143,7 @@ impl Client {
 #[tokio::test]
 async fn csrf_and_current_for_an_anonymous_visitor() {
     let db = TestDb::new().await;
-    let mut client = Client::new(state(db.pool.clone(), config(RailsEnv::Test, &[])));
+    let mut client = Client::new(state(db.pool.clone(), config(RailsEnv::Test, &[])).await);
     let reply = client.get("/session/current.json").await;
     assert_eq!(reply.status, StatusCode::NOT_FOUND);
     assert_eq!(reply.body, "");
@@ -188,7 +188,7 @@ async fn csrf_and_current_for_an_anonymous_visitor() {
 #[tokio::test]
 async fn logs_in_and_sets_a_rails_compatible_auth_cookie() {
     let db = TestDb::new().await;
-    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[]));
+    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
     let mut client = Client::new(app_state.clone());
     let reply = client.login("user1", "password").await;
     assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
@@ -279,7 +279,7 @@ async fn logs_in_and_sets_a_rails_compatible_auth_cookie() {
 #[tokio::test]
 async fn login_errors_match_rails() {
     let db = TestDb::new().await;
-    let mut client = Client::new(state(db.pool.clone(), config(RailsEnv::Test, &[])));
+    let mut client = Client::new(state(db.pool.clone(), config(RailsEnv::Test, &[])).await);
     for (login, password) in [
         ("user1", "wrong"),
         ("nobody", "password"),
@@ -370,7 +370,7 @@ async fn login_errors_match_rails() {
 #[tokio::test]
 async fn sessions_rotate_expire_and_drop_suspended_users() {
     let db = TestDb::new().await;
-    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[]));
+    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
     let mut client = Client::new(app_state.clone());
     client.login("user1", "password").await;
     let first = client.cookie("_t").unwrap().to_string();
@@ -461,7 +461,7 @@ async fn logged_in_users_pass_the_login_gate_and_update_last_seen() {
         .execute(&db.pool)
         .await
         .unwrap();
-    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[]));
+    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
     let mut client = Client::new(app_state.clone());
     client.login("user1", "password").await;
 
@@ -548,7 +548,7 @@ async fn logged_in_users_pass_the_login_gate_and_update_last_seen() {
 #[tokio::test]
 async fn pages_carry_the_viewer_and_the_logout_form_works() {
     let db = TestDb::new().await;
-    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[]));
+    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
 
     // Anonymous: the anon class, a login link, no CSRF meta, cacheable.
     let mut anon = Client::new(app_state.clone());
@@ -614,7 +614,7 @@ async fn pages_carry_the_viewer_and_the_logout_form_works() {
 #[tokio::test]
 async fn recent_notifications_bump_the_seen_id_unless_silent() {
     let db = TestDb::new().await;
-    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[]));
+    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
     let mut client = Client::new(app_state.clone());
     client.login("user1", "password").await;
 
@@ -671,7 +671,7 @@ async fn recent_notifications_bump_the_seen_id_unless_silent() {
 #[tokio::test]
 async fn private_messages_open_for_participants_only() {
     let db = TestDb::new().await;
-    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[]));
+    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
 
     let mut user1 = Client::new(app_state.clone());
     user1.login("user1", "password").await;
@@ -726,7 +726,7 @@ async fn private_messages_open_for_participants_only() {
 #[tokio::test]
 async fn own_profile_lists_auth_tokens_with_the_current_one_active() {
     let db = TestDb::new().await;
-    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[]));
+    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
     let mut client = Client::new(app_state.clone());
     client.login("user1", "password").await;
     let reply = client
@@ -789,7 +789,10 @@ async fn requests_without_a_token_cookie_do_not_touch_the_pool() {
         .acquire_timeout(std::time::Duration::from_millis(200))
         .connect_lazy("postgresql://127.0.0.1:1/nowhere")
         .unwrap();
-    let app_state = state(pool, config(RailsEnv::Test, &[]));
+    // The bus needs a database at start; the app's pool is the one tested.
+    let db = TestDb::new().await;
+    let app_state =
+        common::state_with_bus_on(db.pool.clone(), pool, config(RailsEnv::Test, &[])).await;
 
     let mut client = Client::new(app_state.clone());
     let reply = client.get("/srv/status").await;
@@ -826,7 +829,7 @@ fn bookmark_ids(json: &Value) -> Vec<i64> {
 #[tokio::test]
 async fn bookmark_lists_follow_what_the_viewer_can_see() {
     let db = TestDb::new().await;
-    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[]));
+    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
     let mut client = Client::new(app_state.clone());
     client.login("user1", "password").await;
     let mut admin = Client::new(app_state.clone());
@@ -924,7 +927,7 @@ async fn bookmark_lists_follow_what_the_viewer_can_see() {
 #[tokio::test]
 async fn the_user_menu_pairs_unread_reminders_with_the_other_bookmarks() {
     let db = TestDb::new().await;
-    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[]));
+    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
     let mut client = Client::new(app_state.clone());
     client.login("user1", "password").await;
     let path = "/u/user1/user-menu-bookmarks.json";
@@ -1003,4 +1006,88 @@ async fn the_user_menu_pairs_unread_reminders_with_the_other_bookmarks() {
     let json = client.get(path).await.json();
     assert_eq!(ids(&json, "notifications"), Vec::<i64>::new());
     assert_eq!(ids(&json, "bookmarks"), vec![4, 3, 5, 2, 1]);
+}
+
+/// Marking notifications read publishes the user's notification state
+/// (User#publish_notifications_state) to them alone, and their poll gets it.
+#[tokio::test(flavor = "multi_thread")]
+async fn notification_state_goes_live_to_its_user_only() {
+    let db = TestDb::new().await;
+    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut client = Client::new(app_state.clone());
+    let reply = client.login("user1", "password").await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    let user_id: i32 = sqlx::query_scalar(
+        "UPDATE users SET last_seen_at = now() WHERE username = 'user1' RETURNING id",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    let notification_id: i64 = sqlx::query_scalar(
+        "INSERT INTO notifications (notification_type, user_id, data, read, high_priority, \
+                                    created_at, updated_at) \
+         VALUES (1, $1, '{}', FALSE, FALSE, now(), now()) RETURNING id",
+    )
+    .bind(user_id)
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    let from = app_state.bus.now().await.unwrap();
+
+    let reply = client
+        .send(Method::PUT, "/notifications/mark-read.json", &[], "")
+        .await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+
+    let channel = format!("/notification/{user_id}");
+    let reply = client
+        .get(&format!("/bus/poll?channels={channel}&position={from}"))
+        .await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    let poll = reply.json();
+    let messages = poll["messages"].as_array().unwrap();
+    assert_eq!(messages.len(), 1, "{poll}");
+    assert_eq!(messages[0]["channel"], channel.as_str());
+    let data = &messages[0]["data"];
+    assert_eq!(data["unread_notifications"], 0, "{data}");
+    assert_eq!(data["all_unread_notifications_count"], 0, "{data}");
+    // Newest first, and the seed's notifications were marked read with it.
+    let recent = data["recent"].as_array().unwrap();
+    assert_eq!(recent[0], serde_json::json!([notification_id, true]));
+    assert!(recent.iter().all(|r| r[1] == true), "{data}");
+    assert_eq!(
+        data["last_notification"]["notification"]["id"],
+        notification_id
+    );
+    assert_eq!(poll["position"], messages[0]["id"]);
+
+    // Nobody else holds the user's tag: not an anonymous viewer, not
+    // another user.
+    let mut conn = db.pool.acquire().await.unwrap();
+    let other: i32 = sqlx::query_scalar("SELECT id FROM users WHERE username = 'user2'")
+        .fetch_one(&mut *conn)
+        .await
+        .unwrap();
+    for viewer in [None, Some(other)] {
+        let tags = discourse_rs::bus::tags(&mut conn, viewer).await.unwrap();
+        let heard = app_state
+            .bus
+            .backlog(
+                from,
+                &pg_bus::Filter {
+                    channels: vec![channel.clone()],
+                    tags,
+                },
+                10,
+            )
+            .await
+            .unwrap();
+        assert!(heard.is_empty(), "{viewer:?} heard {heard:?}");
+    }
+
+    // A malformed position is refused rather than read as "now".
+    let reply = client
+        .get(&format!("/bus/poll?channels={channel}&position=nope"))
+        .await;
+    assert_eq!(reply.status, StatusCode::BAD_REQUEST);
 }

@@ -16,7 +16,7 @@ use tower::ServiceExt;
 const BOOL: i32 = 5;
 
 async fn get(pool: &PgPool, path: &str) -> (StatusCode, Value) {
-    let app = discourse_rs::app(state(pool.clone(), config(RailsEnv::Test, &[])));
+    let app = discourse_rs::app(state(pool.clone(), config(RailsEnv::Test, &[])).await);
     let response = app
         .oneshot(Request::get(path).body(Body::empty()).unwrap())
         .await

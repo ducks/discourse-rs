@@ -42,7 +42,7 @@ const COMPUTED_CLIENT_SETTINGS: &[&str] = &[
 #[tokio::test]
 async fn client_settings_match_rails() {
     let db = TestDb::new().await;
-    let app_state = state(db.pool.clone(), recorded_config());
+    let app_state = state(db.pool.clone(), recorded_config()).await;
     let mut conn = db.pool.acquire().await.unwrap();
     let settings = SiteSettings::load(
         &mut conn,
@@ -82,12 +82,16 @@ async fn client_settings_match_rails() {
 }
 
 fn host(db: &TestDb) -> Host {
-    let app_state = state(db.pool.clone(), recorded_config());
     Host {
-        pool: app_state.pool,
-        config: app_state.config,
-        site_setting_defs: app_state.site_setting_defs,
-        i18n: app_state.i18n,
+        pool: db.pool.clone(),
+        config: recorded_config(),
+        site_setting_defs: std::sync::Arc::new(
+            discourse_rs::site_settings::Definitions::vendored()
+                .expect("vendored site_settings.yml"),
+        ),
+        i18n: std::sync::Arc::new(
+            discourse_rs::i18n::I18n::vendored().expect("vendored server.en.yml"),
+        ),
     }
 }
 
@@ -358,7 +362,7 @@ async fn backup_corpus_matches_rails() {
         .connect(&database_url)
         .await
         .unwrap();
-    let app_state = state(pool, config);
+    let app_state = state(pool, config).await;
     let host = Host {
         pool: app_state.pool,
         config: app_state.config,

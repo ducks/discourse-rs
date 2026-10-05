@@ -197,6 +197,7 @@ async fn edit_conflict(
         settings: s,
         config: &state.config,
         i18n: &state.i18n,
+        bus: &state.bus,
     };
     if crate::posting::revisions::find_post(&mut *conn, &ctx, guardian, post_id)
         .await?
@@ -242,6 +243,7 @@ async fn edit_conflict(
         settings: s,
         config: &state.config,
         i18n: &state.i18n,
+        bus: &state.bus,
     };
     Ok(Some(
         crate::user_penalties::basic_user(&mut *conn, &ctx, editor).await?,

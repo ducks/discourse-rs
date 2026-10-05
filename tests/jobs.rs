@@ -9,7 +9,7 @@ use serde_json::json;
 #[tokio::test]
 async fn due_jobs_run_and_unported_ones_fail_with_the_reason() {
     let db = TestDb::new().await;
-    let app = state(db.pool.clone(), recorded_config());
+    let app = state(db.pool.clone(), recorded_config()).await;
     let mut conn = db.pool.acquire().await.unwrap();
     jobs::enqueue(
         &mut conn,

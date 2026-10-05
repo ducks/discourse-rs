@@ -120,6 +120,7 @@ pub async fn create(
         settings: &settings,
         config: &state.config,
         i18n: &state.i18n,
+        bus: &state.bus,
     };
     let outcome = if type_id == crate::post_actions::LIKE {
         likes::like(&state.pool, &ctx, &guardian, post_id).await?
@@ -159,6 +160,7 @@ pub async fn destroy(
         settings: &settings,
         config: &state.config,
         i18n: &state.i18n,
+        bus: &state.bus,
     };
     let outcome = likes::unlike(&state.pool, &ctx, &guardian, post_id).await?;
     respond(&state, &settings, &guardian, outcome, post_id).await

@@ -79,6 +79,7 @@ async fn handle(
         settings: &settings,
         config: &state.config,
         i18n: &state.i18n,
+        bus: &state.bus,
     };
     let outcome = match action {
         Action::Create => {

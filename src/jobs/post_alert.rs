@@ -735,6 +735,9 @@ impl Alerter<'_> {
         .fetch_one(&mut *conn)
         .await?;
 
+        // after_commit refresh_notification_count.
+        crate::bus::publish_notifications_state(ctx.bus, &mut *conn, ctx.settings, user_id).await?;
+
         // after_commit send_email: NotificationEmailer.process_notification.
         let (dnd, email_level, email_messages_level, active, approved): (bool, Option<i32>, Option<i32>, bool, bool) = sqlx::query_as(
             "SELECT EXISTS (SELECT 1 FROM do_not_disturb_timings WHERE user_id = $1 \

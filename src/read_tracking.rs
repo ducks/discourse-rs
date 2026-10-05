@@ -121,7 +121,8 @@ async fn record_new_timing(
 }
 
 /// `PostTiming.process_timings(user, topic_id, topic_time, timings)` for a
-/// topic the user can see.
+/// topic the user can see. Whether it marked any notifications read (Rails
+/// then publishes the user's notification state).
 pub async fn process_timings(
     conn: &mut PgConnection,
     s: &crate::site_settings::SiteSettings,
@@ -129,7 +130,7 @@ pub async fn process_timings(
     topic_id: i32,
     topic_time: i64,
     timings: Vec<(i64, i64)>,
-) -> Result<(), AppError> {
+) -> Result<bool, AppError> {
     let user = guardian.user().ok_or(Unsupported("reading anonymously"))?;
     let whisperer = guardian.is_whisperer(s)?;
     let column = if whisperer {
@@ -143,7 +144,7 @@ pub async fn process_timings(
             .fetch_optional(&mut *conn)
             .await?;
     let Some(highest) = highest else {
-        return Ok(());
+        return Ok(false);
     };
     let (allowed_groups, archetype): (bool, String) = sqlx::query_as(
         "SELECT EXISTS (SELECT 1 FROM topic_allowed_groups WHERE topic_id = $1), archetype \
@@ -175,6 +176,7 @@ pub async fn process_timings(
     let highest_seen = timings.iter().map(|(n, _)| *n).max().unwrap_or(1).max(1);
 
     let mut new_posts_read = 0;
+    let mut notifications_read = 0;
     if !timings.is_empty() {
         let mut existing = 0;
         let mut fresh = Vec::new();
@@ -210,7 +212,7 @@ pub async fn process_timings(
         }
         // Notification.mark_posts_read
         let numbers: Vec<i32> = timings.iter().map(|(n, _)| *n).collect();
-        sqlx::query(
+        notifications_read = sqlx::query(
             "UPDATE notifications SET read = TRUE WHERE user_id = $1 AND topic_id = $2 \
                AND post_number = ANY($3) AND NOT read",
         )
@@ -218,7 +220,8 @@ pub async fn process_timings(
         .bind(topic_id)
         .bind(&numbers)
         .execute(&mut *conn)
-        .await?;
+        .await?
+        .rows_affected();
     }
     let topic_time = topic_time.min(max_time_per_post);
     update_last_read(
@@ -231,7 +234,8 @@ pub async fn process_timings(
         new_posts_read,
         topic_time,
     )
-    .await
+    .await?;
+    Ok(notifications_read > 0)
 }
 
 /// `TopicUser.update_last_read`: the last read post (no further than the

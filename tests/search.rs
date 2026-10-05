@@ -45,7 +45,12 @@ async fn get_with(
 }
 
 async fn get(pool: &PgPool, path: &str) -> (StatusCode, Vec<(String, String)>, String) {
-    get_with(&state(pool.clone(), config(RailsEnv::Test, &[])), path, &[]).await
+    get_with(
+        &state(pool.clone(), config(RailsEnv::Test, &[])).await,
+        path,
+        &[],
+    )
+    .await
 }
 
 fn post_ids(body: &str) -> Vec<i64> {
@@ -61,7 +66,7 @@ fn post_ids(body: &str) -> Vec<i64> {
 #[tokio::test]
 async fn logs_searches_and_folds_extensions_of_the_last_term() {
     let db = TestDb::new().await;
-    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[]));
+    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
     let (status, headers, body) = get_with(
         &app_state,
         "/search/query.json?term=fix",

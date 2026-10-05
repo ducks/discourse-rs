@@ -21,6 +21,8 @@ markdown-it = { version = "0.6", default-features = false }
 mdurl = "0.3"
 md5 = "0.7"
 pbkdf2 = "0.12"
+# Until it is on crates.io.
+pg-bus = { git = "https://github.com/ducks/pg-bus", rev = "a712b1cc043db32c6c3de1d18443945c6a16dd2b", features = ["axum"] }
 rand = "0.8"
 regex = "1"
 reqwest = { version = "0.12", default-features = false, features = ["rustls-tls"] }

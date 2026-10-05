@@ -771,7 +771,7 @@ async fn replay(case: &Value, run_jobs: &[String]) -> Vec<String> {
     ));
     let mut config = recorded_config();
     config.public_dir = public.clone();
-    let app_state = state(db.pool.clone(), config);
+    let app_state = state(db.pool.clone(), config).await;
     reset_sequences(&db.pool).await;
     align_sequences(&db.pool, case).await;
     let mut client = Client {

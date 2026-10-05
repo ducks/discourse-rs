@@ -93,13 +93,16 @@ pub async fn index(
         filter: params.filter.clone(),
         types,
     };
-    let doc = Notifications {
+    let (doc, bumped) = Notifications {
         conn: &mut conn,
         settings: &settings,
         guardian: &guardian,
     }
     .index(user_id, &username, &query)
     .await?;
+    if bumped {
+        crate::bus::publish_notifications_state(&state.bus, &mut conn, &settings, user_id).await?;
+    }
     Ok((
         StatusCode::OK,
         [(header::CACHE_CONTROL, "no-cache, no-store")],
