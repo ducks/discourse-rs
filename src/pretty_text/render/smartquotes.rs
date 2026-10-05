@@ -25,24 +25,47 @@ use markdown_it::{MarkdownIt, Node};
 /// markdown-it's default quotes, which RenderSettings insists on.
 type SmartQuotes = SmartQuotesRule<'‘', '’', '“', '”'>;
 
-/// The source byte ranges of a node's inline blocks.
+/// An inline block: its source byte range, and whether that source has a
+/// quote at all (`QUOTE_TEST_RE`); JS skips a block without one, even when
+/// linkify has since decoded a `%27` in it into a quote.
+#[derive(Debug)]
+struct Span {
+    range: Range<usize>,
+    quoted: bool,
+}
+
+impl Span {
+    fn new(range: Range<usize>, source: &str) -> Self {
+        let quoted = source.contains(['\'', '"']);
+        Self { range, quoted }
+    }
+}
+
+/// The inline blocks a node's children came from.
 #[derive(Debug, Default)]
-struct InlineSpans(Vec<Range<usize>>);
+struct InlineSpans(Vec<Span>);
 
 impl NodeExt for InlineSpans {}
+
+/// Makes all of `node`'s children one inline block, from `range` of the
+/// source: a footnote's paragraph, built after parsing from a note's nodes.
+pub fn keep_block(node: &mut Node, range: Range<usize>, source: &str) {
+    node.ext.insert(InlineSpans(vec![Span::new(range, source)]));
+}
 
 struct KeepInlineSpans;
 
 impl CoreRule for KeepInlineSpans {
     fn run(root: &mut Node, _: &MarkdownIt) {
         root.walk_mut(|node, _| {
-            let spans: Vec<Range<usize>> = node
+            let spans: Vec<Span> = node
                 .children
                 .iter()
                 .filter_map(|c| c.cast::<InlineRoot>())
                 .filter_map(|inline| {
                     let (first, last) = (inline.mapping.first()?, inline.mapping.last()?);
-                    Some(first.1..last.1 + (inline.content.len() - last.0))
+                    let range = first.1..last.1 + (inline.content.len() - last.0);
+                    Some(Span::new(range, &inline.content))
                 })
                 .collect();
             if !spans.is_empty() {
@@ -78,6 +101,10 @@ pub fn run(root: &mut Node, md: &MarkdownIt) {
             while let Some((next, _)) = children.next_if(|(_, o)| *o == Some(span)) {
                 block.children.push(next);
             }
+            if !spans[span].quoted {
+                node.children.append(&mut block.children);
+                continue;
+            }
             let mut alts = Vec::new();
             take_alts(&mut block, &mut alts);
             SmartQuotes::run(&mut block, md);
@@ -92,12 +119,12 @@ pub fn run(root: &mut Node, md: &MarkdownIt) {
 /// Nodes made after parsing (linkify's) have no source and belong to the
 /// block of the nodes around them, or to the only block there is; a block
 /// child has a source outside them all and belongs to none.
-fn owners(children: &[Node], spans: &[Range<usize>]) -> Vec<Option<usize>> {
+fn owners(children: &[Node], spans: &[Span]) -> Vec<Option<usize>> {
     let sourced: Vec<Option<Option<usize>>> = children
         .iter()
         .map(|c| {
             let (start, _) = c.srcmap?.get_byte_offsets();
-            Some(spans.iter().position(|s| s.contains(&start)))
+            Some(spans.iter().position(|s| s.range.contains(&start)))
         })
         .collect();
     (0..children.len())

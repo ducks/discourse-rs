@@ -465,6 +465,14 @@
   },
   {
     "id": "sample-58",
+    "raw": "https://example.com/Capture%20d%27%C3%A9cran.png\n\n| a |\n|---|\n| x^[the \"calendar's\" view] |\n\n![wait... it's](https://example.com/a.png) and wait...",
+    "topic_id": 35,
+    "user_id": 3,
+    "markdown": "<p><a href=\"https://example.com/Capture%20d%27%C3%A9cran.png\" class=\"onebox\" target=\"_blank\">https://example.com/Capture%20d'écran.png</a></p>\n<div class=\"md-table\">\n<table>\n<thead>\n<tr>\n<th>a</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>x<sup class=\"footnote-ref\"><a href=\"#fn1\" id=\"fnref1\">[1]</a></sup></td>\n</tr>\n</tbody>\n</table>\n</div><p><img src=\"https://example.com/a.png\" alt=\"wait... it's\"> and wait…</p>\n<hr class=\"footnotes-sep\">\n\n<ol class=\"footnotes-list\">\n<li id=\"fn1\" class=\"footnote-item\"><p>the “calendar’s” view <a href=\"#fnref1\" class=\"footnote-backref\">↩︎</a></p>\n</li>\n</ol>",
+    "cooked": "<p><a href=\"https://example.com/Capture%20d%27%C3%A9cran.png\" class=\"onebox\" target=\"_blank\" rel=\"noopener nofollow ugc\">https://example.com/Capture%20d'écran.png</a></p>\n<div class=\"md-table\">\n<table>\n<thead>\n<tr>\n<th>a</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>x<sup class=\"footnote-ref\"><a href=\"#fn1\" id=\"fnref1\">[1]</a></sup></td>\n</tr>\n</tbody>\n</table>\n</div><p><img src=\"https://example.com/a.png\" alt=\"wait... it's\"> and wait…</p>\n<hr class=\"footnotes-sep\">\n\n<ol class=\"footnotes-list\">\n<li id=\"fn1\" class=\"footnote-item\"><p>the “calendar’s” view <a href=\"#fnref1\" class=\"footnote-backref\">↩︎</a></p>\n</li>\n</ol>"
+  },
+  {
+    "id": "sample-59",
     "raw": "An upload that exists: ![image|64x64](upload://qa4V5109J7tySkPok8r3aBAruY1.png) and [a link|attachment](upload://qa4V5109J7tySkPok8r3aBAruY1.png).",
     "topic_id": 35,
     "user_id": 3,

@@ -152,6 +152,10 @@ samples = [
   # Mentions and hashtags skip text inside an html link (textReplace's
   # skipAllLinks), not inside other html.
   ["<a class=\"mention-group\">@staff</a>, <A href=\"https://example.com\">**@admins** #support</A> but @staff and <b>@admins</b>", replies.id, u1.id],
+  # Typography where JS scopes it: a block whose source has no quote is
+  # skipped though linkify decodes a %27 into one, an inline footnote's
+  # text is a block of its own, and alt text gets no replacements.
+  ["https://example.com/Capture%20d%27%C3%A9cran.png\n\n| a |\n|---|\n| x^[the \"calendar's\" view] |\n\n![wait... it's](https://example.com/a.png) and wait...", replies.id, u1.id],
 ]
 if upload
   samples << ["An upload that exists: ![image|64x64](#{upload.short_url}) and [a link|attachment](#{upload.short_url}).", replies.id, u1.id]
