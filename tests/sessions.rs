@@ -1136,3 +1136,87 @@ async fn members_reply_from_the_topic_page() {
         .unwrap();
     assert_eq!(after, before + 1);
 }
+
+/// The token the login page's form sends, from its hx-headers.
+fn form_token(html: &str) -> String {
+    let marker = r#""X-CSRF-Token": ""#;
+    let at = html.find(marker).expect("the form carries a token");
+    let rest = &html[at + marker.len()..];
+    html_escape::decode_html_entities(&rest[..rest.find('"').unwrap()]).into_owned()
+}
+
+/// Logging in from the page as its script does: the form's token on
+/// POST /session, then static#enter to where the reader was going.
+#[tokio::test(flavor = "multi_thread")]
+async fn the_login_page_logs_in() {
+    for login_required in [false, true] {
+        let db = TestDb::new().await;
+        if login_required {
+            set_setting(&db.pool, "login_required", BOOL, "t").await;
+        }
+        let mut client = Client::new(state(db.pool.clone(), config(RailsEnv::Test, &[])).await);
+
+        let page = client.get("/login").await;
+        assert_eq!(page.status, StatusCode::OK);
+        assert!(page.body.contains(r#"hx-post="/session""#), "{}", page.body);
+        assert!(
+            client.cookie("_forum_session").is_some(),
+            "the token lives in the session the page started"
+        );
+        // htmx is served even while reading needs an account.
+        assert_eq!(
+            client.get("/assets/htmx.min.js").await.status,
+            StatusCode::OK
+        );
+
+        client.csrf = Some(form_token(&page.body));
+        let refused = client
+            .send(
+                Method::POST,
+                "/session",
+                &[("x-requested-with", "XMLHttpRequest")],
+                "login=user1&password=wrong",
+            )
+            .await;
+        assert_eq!(refused.status, StatusCode::OK, "Rails answers 200");
+        assert!(refused.json()["error"].is_string(), "{}", refused.body);
+
+        let reply = client
+            .send(
+                Method::POST,
+                "/session",
+                &[("x-requested-with", "XMLHttpRequest")],
+                "login=user1&password=password",
+            )
+            .await;
+        assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+        assert_eq!(reply.json()["user"]["username"], "user1", "{}", reply.body);
+
+        let enter = client
+            .send(Method::POST, "/login", &[], "redirect=%2Flatest")
+            .await;
+        assert_eq!(
+            enter.status,
+            StatusCode::FOUND,
+            "login_required={login_required}"
+        );
+        assert!(
+            enter
+                .headers
+                .iter()
+                .any(|(k, v)| k == "location" && v == "http://test.localhost/latest"),
+            "{:?}",
+            enter.headers
+        );
+    }
+}
+
+#[tokio::test]
+async fn no_login_form_without_local_logins() {
+    let db = TestDb::new().await;
+    set_setting(&db.pool, "enable_local_logins", BOOL, "f").await;
+    let mut client = Client::new(state(db.pool.clone(), config(RailsEnv::Test, &[])).await);
+    let page = client.get("/login").await;
+    assert_eq!(page.status, StatusCode::OK);
+    assert!(!page.body.contains("hx-post="), "{}", page.body);
+}

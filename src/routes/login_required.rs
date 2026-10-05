@@ -25,10 +25,10 @@ fn exempt(path: &str) -> bool {
         "/srv/status"
             | "/site/basic-info"
             | "/site/basic-info.json"
-            | "/assets/site.css"
             | "/robots.txt"
             | "/robots-builder.json"
-    ) || path.starts_with("/images/")
+    ) || path.starts_with("/assets/")
+        || path.starts_with("/images/")
         || path.starts_with("/uploads/")
 }
 
@@ -88,7 +88,7 @@ pub async fn gate(
     let headers: HeaderMap = request.extract_parts().await?;
     let uri: Uri = request.uri().clone();
     if path == "/" || path == "/login" {
-        return login_page(&state, &settings, &uri);
+        return login_page(&state, &settings, &headers, &uri);
     }
     let host = headers
         .get(header::HOST)
@@ -157,6 +157,12 @@ pub struct LoginRequiredPage {
     pub viewer: Option<crate::html::Viewer>,
     pub bus_position: String,
     pub welcome: String,
+    /// The note that reading needs an account.
+    pub login_required: bool,
+    /// Username and password logins are on (the form); external logins are
+    /// not ported.
+    pub local_logins: bool,
+    pub csrf_token: String,
 }
 
 /// The login page: what `/login` shows, and what the front page shows
@@ -164,6 +170,7 @@ pub struct LoginRequiredPage {
 pub fn login_page(
     state: &AppState,
     settings: &SiteSettings,
+    headers: &HeaderMap,
     uri: &Uri,
 ) -> Result<Response, AppError> {
     let base_path = state.config.globals.relative_url_root().to_string();
@@ -179,6 +186,9 @@ pub fn login_page(
         config: &state.config,
         settings,
     };
+    // The form posts to /session, which checks this token; the page is never
+    // cached, so it can carry one.
+    let (csrf_token, set_cookie) = super::session::anonymous_csrf(state, headers, settings)?;
     let mut crawler = crate::html::Crawler::for_request(&urls, uri, None)?;
     crawler.description = site.site_description.clone();
     let page = LoginRequiredPage {
@@ -190,21 +200,34 @@ pub fn login_page(
         lang: site.lang,
         base_path: site.base_path,
         welcome: welcome.trim_start_matches("# ").to_string(),
+        login_required: settings.get("login_required")?.truthy(),
+        local_logins: settings.get("enable_local_logins")?.truthy(),
+        csrf_token,
     };
-    Ok((
+    let mut response = (
         [(
             header::CACHE_CONTROL,
             HeaderValue::from_static("no-store, must-revalidate, private, max-age=0"),
         )],
         Html(page.render().map_err(crate::html::HtmlError::from)?),
     )
-        .into_response())
+        .into_response();
+    if let Some(cookie) = set_cookie {
+        response
+            .headers_mut()
+            .append(header::SET_COOKIE, HeaderValue::from_str(&cookie)?);
+    }
+    Ok(response)
 }
 
 /// GET /login
-pub async fn show_login(State(state): State<AppState>, uri: Uri) -> Result<Response, AppError> {
+pub async fn show_login(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+    uri: Uri,
+) -> Result<Response, AppError> {
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
-    login_page(&state, &settings, &uri)
+    login_page(&state, &settings, &headers, &uri)
 }

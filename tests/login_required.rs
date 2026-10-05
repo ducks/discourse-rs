@@ -152,3 +152,16 @@ async fn nothing_changes_when_the_setting_is_off() {
     assert_eq!(status, StatusCode::OK);
     assert!(html.contains("Welcome to Discourse"));
 }
+
+/// The gate guards routes, as Rails' before_action does: a path nothing
+/// serves is a 404, not a redirect. A browser's automatic /favicon.ico
+/// request must not replace destination_url, the page to return to after
+/// logging in.
+#[tokio::test]
+async fn unrouted_paths_are_not_sent_to_login() {
+    let db = TestDb::new().await;
+    set_setting(&db.pool, "login_required", BOOL, "t").await;
+    let (status, headers, _) = get(&db.pool, "/favicon.ico").await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+    assert!(header(&headers, "set-cookie").is_none());
+}

@@ -307,7 +307,10 @@ pub fn router(state: &AppState) -> Router<AppState> {
     }
     router
         .nest_service("/images", images)
-        .layer(axum::middleware::from_fn_with_state(
+        // Only for routed requests, as Rails' before_action only runs once a
+        // route matched: an unknown path (a browser's /favicon.ico) is a 404,
+        // not a redirect to the login page that overwrites destination_url.
+        .route_layer(axum::middleware::from_fn_with_state(
             state.clone(),
             login_required::gate,
         ))

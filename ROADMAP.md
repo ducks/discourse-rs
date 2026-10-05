@@ -302,9 +302,16 @@ Discourse's own clients keep working.
       recovered posts arrive live (GET /t/:id/live, on the last page),
       and members reply from a form on the page, the reply coming back
       over the stream. Checked in headless Firefox as well as the tests
+- [x] Login from a page: /login (and the front page while login is
+      required) has a username and password form posting to /session
+      with htmx and the visitor's CSRF token, Rails' error shown when
+      refused, then static#enter back to the page the login gate sent
+      the reader from (destination_url). The gate now guards routed
+      requests only, as Rails' before_action does, so an unknown path
+      such as a browser's /favicon.ico is a 404 rather than a redirect
+      that overwrites destination_url
 - [ ] First slice, next: topic lists live (`/latest`, the new and unread
-      counts), the notification count and alert in the header, login
-      from a page
+      counts), the notification count and alert in the header
 - [ ] The composer: markdown preview with the Rust renderer, uploads,
       drafts
 - [ ] The user menu, notifications, bookmarks, messages, preferences
