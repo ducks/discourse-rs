@@ -423,6 +423,22 @@ pub async fn revise(
         .await?;
     tx.commit().await?;
 
+    // bump_topic, after the transaction as Rails does. should_bump?: a new
+    // version that changed the post (every edit that gets this far) of a
+    // wiki first post; bypass_bump is refused by the route.
+    if post.post_number == 1 && post.wiki {
+        let mut tx = pool.begin().await?;
+        sqlx::query("UPDATE topics SET bumped_at = clock_timestamp() WHERE id = $1")
+            .bind(post.topic_id)
+            .execute(&mut *tx)
+            .await?;
+        use crate::topic_tracking_state as tracking;
+        tracking::publish_muted(ctx.bus, &mut tx, post.topic_id).await?;
+        tracking::publish_unmuted(ctx.bus, &mut tx, post.topic_id).await?;
+        tracking::publish_latest(ctx.bus, s, &mut tx, post.topic_id).await?;
+        tx.commit().await?;
+    }
+
     let mut conn = pool.acquire().await?;
     if s.get("staff_edit_locks_post")?.truthy() && !post.wiki && editor.is_staff() {
         return Err(Unsupported("staff_edit_locks_post").into());
