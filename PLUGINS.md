@@ -232,7 +232,9 @@ it.
 1. **Where the frontend hooks go.** The server-rendered HTML takes
    outlets (`html` hook). When the Ember client runs against this port,
    plugin JS is the client's business (the plugin ships it as an asset);
-   core only serves the files. Revisit if the port grows its own client.
+   core only serves the files. Revisit if the port grows its own client:
+   it is going to (ROADMAP.md, milestone 4.5, 2026-10-05), so this is
+   open again.
 2. **Settings ownership: shared.** Plugin settings live in the
    `site_settings` table like Rails', so a backup carries them and the
    admin API is one API. Decided 2026-10-01.

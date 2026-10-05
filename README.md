@@ -1,8 +1,10 @@
 # discourse-rs
 
-A Rust port of the [Discourse](https://github.com/discourse/discourse) backend,
-aiming for feature parity: same database, same JSON API, so the real Ember
-frontend can run against it.
+A Rust port of [Discourse](https://github.com/discourse/discourse), aiming
+for feature parity: same database, same JSON API. The backend comes first;
+the browser client is to be Rust too rather than Ember (ROADMAP.md,
+milestone 4.5), and keeping Rails' API means Discourse's own clients
+still work against it.
 
 The pre-rewrite Actix/Diesel version is tagged `v20260610.0.1`.
 

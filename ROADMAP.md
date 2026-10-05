@@ -97,7 +97,19 @@ Logged-in readers, no writes yet.
       the `.ics` feed and plugin bookmarkables are refused)
 - [ ] The other user-menu endpoints (`/u/:username/user-menu-private-messages`,
       `/review/user-menu-list`)
-- [ ] Live updates: a MessageBus-compatible long-poll endpoint (`/message-bus/:client_id/poll`); nothing in the Rust ecosystem provides it, so it is ours to write
+- [x] Live updates, the transport: pg-bus (its own crate,
+      github.com/ducks/pg-bus) in MessageBus's place, Postgres only: a
+      message is written in the transaction that made the change and
+      goes out when it commits, in commit order. GET /bus/events
+      (server-sent events) and GET /bus/poll (long poll); MessageBus's
+      user_ids and group_ids are audience tags (`src/bus.rs`). Not
+      MessageBus's wire protocol: the client is ours (milestone 4.5)
+- [x] Live updates: the notification state (`/notification/<id>`) from
+      every place Rails publishes it
+- [ ] Live updates, next: `/topic/<id>` (posts created, edited,
+      deleted), `/latest` and the unread and new counts,
+      `/notification-alert/<id>`, and the starting position handed to
+      the client with the page
 
 ## Milestone 4: writes
 
@@ -246,8 +258,23 @@ Logged-in readers, no writes yet.
 - [ ] Name the places a plugin would attach as they are built
       (NewPostManager modifiers, post events); nothing calls them until
       milestone 5
-- [ ] Ember frontend against the Rust API as a compatibility check, not a
-      product goal
+
+## Milestone 4.5: the client
+
+The whole application in Rust, the browser side included: not Ember on
+top of the Rust API (decided 2026-10-05). The JSON API stays Rails'
+shape, measured as before, so the client is one consumer of it and
+Discourse's own clients keep working.
+
+- [ ] Decide the stack: a WASM framework (Leptos, Dioxus), or the
+      server-rendered askama pages grown into the app with a small script
+      for live updates and forms
+- [ ] First slice: topic lists, a topic, replying, live updates
+      (`/topic/<id>`, notifications), login
+- [ ] The composer: markdown preview with the Rust renderer, uploads,
+      drafts
+- [ ] The user menu, notifications, bookmarks, messages, preferences
+- [ ] Review queue and topic status for staff
 
 ## Milestone 5: plugins
 
