@@ -42,53 +42,8 @@ async fn publish(st: &AppState, post_id: i32, kind: &str, skip_stats: bool) {
 }
 
 /// Everything on the topic's channel after `from`, whoever it is for.
-async fn sent(st: &AppState, pool: &PgPool, from: Position, topic_id: i32) -> Vec<Message> {
-    // Messages are delivered once no older transaction is open anywhere on
-    // the server, and other tests hold some. A marker committed after the
-    // publish is delivered after it: once the marker shows, so has it.
-    let mut tx = pool.begin().await.unwrap();
-    st.bus
-        .publish(&mut tx, "/test-marker", &json!({}), None)
-        .await
-        .unwrap();
-    tx.commit().await.unwrap();
-    let marker = Filter {
-        channels: vec!["/test-marker".into()],
-        tags: vec![],
-    };
-    let deadline = tokio::time::Instant::now() + std::time::Duration::from_secs(30);
-    while st.bus.backlog(from, &marker, 1).await.unwrap().is_empty() {
-        assert!(
-            tokio::time::Instant::now() < deadline,
-            "the marker never arrived"
-        );
-        tokio::time::sleep(std::time::Duration::from_millis(20)).await;
-    }
-
-    // The backlog filter needs a tag for audience-limited messages: give
-    // it every tag there is.
-    let mut tags = vec![];
-    let users: Vec<i32> = sqlx::query_scalar("SELECT id FROM users")
-        .fetch_all(pool)
-        .await
-        .unwrap();
-    let groups: Vec<i32> = sqlx::query_scalar("SELECT id FROM groups")
-        .fetch_all(pool)
-        .await
-        .unwrap();
-    tags.extend(users.into_iter().map(discourse_rs::bus::user_tag));
-    tags.extend(groups.into_iter().map(discourse_rs::bus::group_tag));
-    st.bus
-        .backlog(
-            from,
-            &Filter {
-                channels: vec![format!("/topic/{topic_id}")],
-                tags,
-            },
-            100,
-        )
-        .await
-        .unwrap()
+async fn sent(st: &AppState, from: Position, topic_id: i32) -> Vec<Message> {
+    common::bus_messages(st, from, &[&format!("/topic/{topic_id}")]).await
 }
 
 /// A reply in a public regular topic: (post id, topic id, category id).
@@ -121,7 +76,7 @@ async fn a_public_topic_tells_everyone_with_its_stats() {
     let from = st.bus.now().await.unwrap();
 
     publish(&st, post_id, "created", false).await;
-    let messages = sent(&st, &db.pool, from, topic_id).await;
+    let messages = sent(&st, from, topic_id).await;
     assert_eq!(messages.len(), 2, "{messages:?}");
     let change = &messages[0];
     assert_eq!(change.audience, None, "public: everyone, anonymous too");
@@ -138,7 +93,7 @@ async fn a_public_topic_tells_everyone_with_its_stats() {
     // Revisions carry no username and no stats.
     let from = st.bus.now().await.unwrap();
     publish(&st, post_id, "revised", false).await;
-    let messages = sent(&st, &db.pool, from, topic_id).await;
+    let messages = sent(&st, from, topic_id).await;
     assert_eq!(messages.len(), 1, "{messages:?}");
     assert_eq!(messages[0].data["type"], "revised");
     assert!(messages[0].data.get("username").is_none());
@@ -146,7 +101,7 @@ async fn a_public_topic_tells_everyone_with_its_stats() {
     // skip_topic_stats leaves the stats out.
     let from = st.bus.now().await.unwrap();
     publish(&st, post_id, "recovered", true).await;
-    let messages = sent(&st, &db.pool, from, topic_id).await;
+    let messages = sent(&st, from, topic_id).await;
     assert_eq!(messages.len(), 1, "{messages:?}");
 }
 
@@ -169,7 +124,7 @@ async fn a_restricted_category_tells_its_groups_only() {
     // No groups: MessageBus would publish to nobody, so nothing goes out.
     let from = st.bus.now().await.unwrap();
     publish(&st, post_id, "created", false).await;
-    assert!(sent(&st, &db.pool, from, topic_id).await.is_empty());
+    assert!(sent(&st, from, topic_id).await.is_empty());
 
     sqlx::query(
         "INSERT INTO category_groups (category_id, group_id, permission_type, created_at, updated_at) \
@@ -181,7 +136,7 @@ async fn a_restricted_category_tells_its_groups_only() {
     .unwrap();
     let from = st.bus.now().await.unwrap();
     publish(&st, post_id, "created", false).await;
-    let messages = sent(&st, &db.pool, from, topic_id).await;
+    let messages = sent(&st, from, topic_id).await;
     assert_eq!(messages.len(), 2, "{messages:?}");
     for m in &messages {
         assert_eq!(m.audience, Some(vec!["group:3".to_string()]));
@@ -224,7 +179,7 @@ async fn whispers_and_messages_go_to_who_may_read_them() {
             .unwrap();
     let from = st.bus.now().await.unwrap();
     publish(&st, post_id, "revised", false).await;
-    let messages = sent(&st, &db.pool, from, topic_id).await;
+    let messages = sent(&st, from, topic_id).await;
     assert_eq!(messages.len(), 1);
     let mut expected: Vec<i32> = staff.clone();
     expected.push(author);
@@ -254,7 +209,7 @@ async fn whispers_and_messages_go_to_who_may_read_them() {
             .unwrap();
     let from = st.bus.now().await.unwrap();
     publish(&st, pm_post, "revised", false).await;
-    let messages = sent(&st, &db.pool, from, pm_topic).await;
+    let messages = sent(&st, from, pm_topic).await;
     assert_eq!(messages.len(), 1);
     let audience = messages[0].audience.clone().unwrap();
     for id in staff.iter().chain(&participants) {

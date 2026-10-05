@@ -13,9 +13,9 @@ use crate::{AppError, AppState, Unsupported};
 /// Runs a job by its Sidekiq name.
 pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
     let result = match job.name.as_str() {
-        // Publishes the topic's tracking state on MessageBus, which is not
-        // ported: there is no one to tell.
-        "post_update_topic_tracking_state" => Ok(()),
+        "post_update_topic_tracking_state" => {
+            post_update_topic_tracking_state(state, &job.args).await
+        }
         // Publishes reviewable counts to staff on MessageBus, likewise.
         "notify_reviewable" => Ok(()),
         "feature_topic_users" => feature_topic_users(state, &job.args).await,
@@ -54,6 +54,42 @@ fn bool_arg(args: &Value, key: &str) -> bool {
 
 async fn settings(state: &AppState, conn: &mut PgConnection) -> Result<SiteSettings, AppError> {
     Ok(SiteSettings::load(conn, &state.site_setting_defs, &state.config.globals).await?)
+}
+
+/// `Jobs::PostUpdateTopicTrackingState`: a regular topic's lists and
+/// counts told about a post, in one transaction. Messages
+/// (PrivateMessageTopicTrackingState, TopicGroup.new_message_update) are
+/// not ported and left alone, as before.
+async fn post_update_topic_tracking_state(state: &AppState, args: &Value) -> Result<(), AppError> {
+    let Some(post_id) = args.get("post_id").and_then(Value::as_i64) else {
+        return Ok(());
+    };
+    let mut tx = state.pool.begin().await?;
+    let post: Option<(i32, i32, i32, String)> = sqlx::query_as(
+        "SELECT p.topic_id, p.post_number, p.post_type, t.archetype FROM posts p \
+         JOIN topics t ON t.id = p.topic_id WHERE p.id = $1",
+    )
+    .bind(post_id as i32)
+    .fetch_optional(&mut *tx)
+    .await?;
+    let Some((topic_id, post_number, post_type, archetype)) = post else {
+        return Ok(());
+    };
+    if post_type == crate::posting::post_types::SMALL_ACTION || archetype == "private_message" {
+        return Ok(());
+    }
+    let s = settings(state, &mut tx).await?;
+    use crate::topic_tracking_state as tracking;
+    tracking::publish_unmuted(&state.bus, &mut tx, topic_id).await?;
+    if post_number > 1 {
+        tracking::publish_muted(&state.bus, &mut tx, topic_id).await?;
+        tracking::publish_unread(&state.bus, &s, &mut tx, post_id as i32).await?;
+    }
+    if post_type != crate::posting::post_types::WHISPER {
+        tracking::publish_latest(&state.bus, &s, &mut tx, topic_id).await?;
+    }
+    tx.commit().await?;
+    Ok(())
 }
 
 /// `Jobs::FeatureTopicUsers` -> `TopicFeaturedUsers#choose`: the four

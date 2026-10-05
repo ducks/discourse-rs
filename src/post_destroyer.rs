@@ -244,6 +244,9 @@ async fn destroy(
             false,
         )
         .await?;
+        if post.is_first_post() {
+            crate::topic_tracking_state::publish_delete(ctx.bus, &mut tx, topic.id).await?;
+        }
     }
 
     // UserActionManager.post_destroyed: a reply's REPLY row (already gone

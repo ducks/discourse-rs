@@ -881,6 +881,10 @@ pub async fn create(
     if post_number != 1 {
         crate::bus::publish_post_change(ctx, &mut tx, post_id, "created", Map::new(), false)
             .await?;
+    } else {
+        // PostJobsEnqueuer#after_topic_create (regular topics; messages'
+        // tracking state is not ported).
+        crate::topic_tracking_state::publish_new(ctx.bus, ctx.settings, &mut tx, topic_id).await?;
     }
     // PostJobsEnqueuer#enqueue_jobs, committed with the post.
     crate::jobs::enqueue(

@@ -252,3 +252,54 @@ pub async fn clear_optimized_images(pool: &PgPool) {
         .await
         .unwrap();
 }
+
+/// Every bus message on `channels` after `from`, whoever it is for (all
+/// users' and groups' tags held). Waits for delivery first: messages go out
+/// once no older transaction is open anywhere on the server, and other
+/// tests hold some, so a marker committed after the publishes is awaited.
+pub async fn bus_messages(
+    st: &AppState,
+    from: pg_bus::Position,
+    channels: &[&str],
+) -> Vec<pg_bus::Message> {
+    let pool = &st.pool;
+    let mut tx = pool.begin().await.unwrap();
+    st.bus
+        .publish(&mut tx, "/test-marker", &serde_json::json!({}), None)
+        .await
+        .unwrap();
+    tx.commit().await.unwrap();
+    let marker = pg_bus::Filter {
+        channels: vec!["/test-marker".into()],
+        tags: vec![],
+    };
+    let deadline = tokio::time::Instant::now() + std::time::Duration::from_secs(30);
+    while st.bus.backlog(from, &marker, 1).await.unwrap().is_empty() {
+        assert!(
+            tokio::time::Instant::now() < deadline,
+            "the marker never arrived"
+        );
+        tokio::time::sleep(std::time::Duration::from_millis(20)).await;
+    }
+    let users: Vec<i32> = sqlx::query_scalar("SELECT id FROM users")
+        .fetch_all(pool)
+        .await
+        .unwrap();
+    let groups: Vec<i32> = sqlx::query_scalar("SELECT id FROM groups")
+        .fetch_all(pool)
+        .await
+        .unwrap();
+    let mut tags: Vec<String> = users.into_iter().map(discourse_rs::bus::user_tag).collect();
+    tags.extend(groups.into_iter().map(discourse_rs::bus::group_tag));
+    st.bus
+        .backlog(
+            from,
+            &pg_bus::Filter {
+                channels: channels.iter().map(|c| c.to_string()).collect(),
+                tags,
+            },
+            1000,
+        )
+        .await
+        .unwrap()
+}

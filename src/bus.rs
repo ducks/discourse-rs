@@ -355,3 +355,22 @@ async fn basic_user(
     out.insert("avatar_template".into(), json!(avatar));
     Ok(Value::Object(out))
 }
+
+/// `TopicUser.notification_level_change`: the user's own notification
+/// level for a topic, on the topic's channel to them alone.
+pub async fn publish_notification_level_change(
+    bus: &pg_bus::Bus,
+    conn: &mut PgConnection,
+    user_id: i32,
+    topic_id: i32,
+    notification_level: i32,
+) -> Result<(), AppError> {
+    bus.publish(
+        conn,
+        &topic_channel(topic_id),
+        &json!({ "notification_level_change": notification_level }),
+        Some(&[user_tag(user_id)]),
+    )
+    .await?;
+    Ok(())
+}
