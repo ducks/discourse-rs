@@ -309,32 +309,43 @@ pub async fn unlike(
         .user()
         .ok_or(Unsupported("unliking anonymously"))?
         .clone();
-    if guardian.is_staff() {
-        return Err(Unsupported("unliking as staff (deleted likes and posts)").into());
-    }
+    let staff = guardian.is_staff();
     let mut tx = pool.begin().await?;
-    // Post.find_by(id:): the destroyer does not check visibility first.
-    let post: Option<(i32, Option<i32>, i32, i32)> = sqlx::query_as(
-        "SELECT id, user_id, topic_id, post_number FROM posts WHERE id = $1 AND deleted_at IS NULL",
+    // fetch_post_from_params: staff find deleted posts too. The destroyer does
+    // not check visibility first.
+    let post: Option<(i32, Option<i32>, i32, i32, bool)> = sqlx::query_as(
+        "SELECT id, user_id, topic_id, post_number, deleted_at IS NOT NULL FROM posts \
+         WHERE id = $1 AND ($2 OR deleted_at IS NULL)",
     )
     .bind(post_id)
+    .bind(staff)
     .fetch_optional(&mut *tx)
     .await?;
-    let Some((post_id, author, topic_id, post_number)) = post else {
+    let Some((post_id, author, topic_id, post_number, post_deleted)) = post else {
         return Ok(Outcome::NotFound);
     };
-    let action: Option<(i32, i32, chrono::NaiveDateTime)> = sqlx::query_as(
-        "SELECT id, user_id, created_at FROM post_actions WHERE user_id = $1 AND post_id = $2 \
-         AND post_action_type_id = $3 AND deleted_at IS NULL ORDER BY id LIMIT 1",
+    if post_deleted {
+        return Err(Unsupported("unliking a deleted post as staff").into());
+    }
+    // `finder.with_deleted` for staff: their removed likes count too, and
+    // `first` is the lowest id.
+    let action: Option<(i32, i32, chrono::NaiveDateTime, bool)> = sqlx::query_as(
+        "SELECT id, user_id, created_at, deleted_at IS NOT NULL FROM post_actions \
+         WHERE user_id = $1 AND post_id = $2 AND post_action_type_id = $3 \
+           AND ($4 OR deleted_at IS NULL) ORDER BY id LIMIT 1",
     )
     .bind(user.id)
     .bind(post_id)
     .bind(LIKE as i32)
+    .bind(staff)
     .fetch_optional(&mut *tx)
     .await?;
-    let Some((action_id, action_user, action_created_at)) = action else {
+    let Some((action_id, action_user, action_created_at, action_deleted)) = action else {
         return Ok(Outcome::NotFound);
     };
+    if action_deleted {
+        return Err(Unsupported("undoing a like already removed, as staff").into());
+    }
     let topic = crate::topic_guardian::TopicCtx::load(&mut tx, ctx.settings, guardian, topic_id)
         .await?
         .ok_or(Unsupported("likes on posts of deleted topics"))?;
