@@ -202,6 +202,12 @@ async fn show_response(
     json: bool,
     uri: Option<axum::http::Uri>,
 ) -> Result<Response, AppError> {
+    // Before the page's data is read (crate::bus::page_position).
+    let bus_position = if json {
+        String::new()
+    } else {
+        crate::bus::page_position(&state.bus).await?
+    };
     if params.search_context.is_some() || params.context.is_some() || params.context_id.is_some() {
         return Err(Unsupported("search contexts (user, topic, category, tag)").into());
     }
@@ -255,6 +261,7 @@ async fn show_response(
     let vs = super::session::viewer_state(&state, &headers, &settings, &guardian)?;
     let mut site = crate::html::Site::from_settings(&settings, base_path)?;
     site.viewer = vs.viewer.clone();
+    site.bus_position = bus_position;
     let mut page = search_page(&state, site, &term, &doc, page, &mut conn).await?;
     // No crawlable_meta_data on search; the description meta and the
     // default canonical (only the page param survives) remain.
@@ -342,6 +349,7 @@ pub struct SearchPage {
     pub base_path: String,
     pub crawler: Crawler,
     pub viewer: Option<crate::html::Viewer>,
+    pub bus_position: String,
     pub term: String,
     pub results: Vec<SearchResult>,
     pub searched: bool,
@@ -403,6 +411,7 @@ async fn search_page(
     Ok(SearchPage {
         site_title: site.site_title,
         viewer: site.viewer,
+        bus_position: site.bus_position,
         site_description: site.site_description,
         lang: site.lang,
         base_path: site.base_path,

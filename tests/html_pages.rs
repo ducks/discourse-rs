@@ -127,3 +127,65 @@ async fn stylesheet_is_served() {
     assert!(content_type.starts_with("text/css"));
     assert!(css.contains("topic-list"));
 }
+
+/// Each page says where its live updates start, as a pg-bus position, and
+/// polling from there delivers what changed after the page was read.
+#[tokio::test(flavor = "multi_thread")]
+async fn pages_carry_where_their_live_updates_start() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let position_of = |path: &'static str| {
+        let st = st.clone();
+        async move {
+            let response = discourse_rs::app(st)
+                .oneshot(
+                    Request::get(path)
+                        .header(header::HOST, "test.localhost")
+                        .body(Body::empty())
+                        .unwrap(),
+                )
+                .await
+                .unwrap();
+            assert_eq!(response.status(), StatusCode::OK, "{path}");
+            let bytes = response.into_body().collect().await.unwrap().to_bytes();
+            let body = String::from_utf8_lossy(&bytes).into_owned();
+            let marker = "<meta name=\"bus-position\" content=\"";
+            let start = body
+                .find(marker)
+                .unwrap_or_else(|| panic!("{path} has no bus position"))
+                + marker.len();
+            let end = start + body[start..].find('"').unwrap();
+            body[start..end]
+                .parse::<pg_bus::Position>()
+                .unwrap_or_else(|e| panic!("{path}: {e}"))
+        }
+    };
+    for path in [
+        "/",
+        "/categories",
+        "/t/parity-fixture-replies-and-posters/35",
+        "/u/user1",
+        "/search?q=fixture",
+    ] {
+        position_of(path).await;
+    }
+
+    let from = position_of("/latest").await;
+    let mut conn = db.pool.acquire().await.unwrap();
+    let settings = discourse_rs::site_settings::SiteSettings::load(
+        &mut conn,
+        &st.site_setting_defs,
+        &st.config.globals,
+    )
+    .await
+    .unwrap();
+    drop(conn);
+    let mut tx = db.pool.begin().await.unwrap();
+    discourse_rs::topic_tracking_state::publish_latest(&st.bus, &settings, &mut tx, 35)
+        .await
+        .unwrap();
+    tx.commit().await.unwrap();
+    let messages = common::bus_messages(&st, from, &["/latest"]).await;
+    assert_eq!(messages.len(), 1, "{messages:?}");
+    assert_eq!(messages[0].data["topic_id"], 35);
+}

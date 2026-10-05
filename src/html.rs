@@ -96,6 +96,9 @@ pub struct Site {
     pub lang: String,
     pub base_path: String,
     pub viewer: Option<Viewer>,
+    /// Where the page's live updates start (pg-bus position as text), taken
+    /// before its data was read; empty for no live updates.
+    pub bus_position: String,
 }
 
 impl Site {
@@ -106,6 +109,7 @@ impl Site {
             lang: settings.get("default_locale")?.to_s().replace('_', "-"),
             base_path: base_path.to_string(),
             viewer: None,
+            bus_position: String::new(),
         })
     }
 }
@@ -151,6 +155,7 @@ pub struct LatestPage {
     pub base_path: String,
     pub crawler: Crawler,
     pub viewer: Option<Viewer>,
+    pub bus_position: String,
     pub topics: Vec<TopicItem>,
     pub more_url: Option<String>,
     /// Set on category pages.
@@ -187,6 +192,7 @@ pub struct TopicPage {
     pub base_path: String,
     pub crawler: Crawler,
     pub viewer: Option<Viewer>,
+    pub bus_position: String,
     pub title: String,
     pub title_unicode: String,
     pub canonical_url: String,
@@ -315,6 +321,7 @@ pub async fn latest_page(
     Ok(LatestPage {
         site_title: site.site_title,
         viewer: site.viewer,
+        bus_position: site.bus_position,
         site_description: site.site_description,
         lang: site.lang,
         base_path: site.base_path,
@@ -428,6 +435,7 @@ pub async fn topic_page(
     Ok(TopicPage {
         site_title: site.site_title,
         viewer: site.viewer,
+        bus_position: site.bus_position,
         site_description: site.site_description,
         lang: site.lang,
         base_path: site.base_path,
@@ -557,6 +565,7 @@ pub struct CategoriesPage {
     pub base_path: String,
     pub crawler: Crawler,
     pub viewer: Option<Viewer>,
+    pub bus_position: String,
     pub categories: Vec<CategoryIndexItem>,
 }
 
@@ -616,6 +625,7 @@ pub async fn categories_page(
     Ok(CategoriesPage {
         site_title: site.site_title,
         viewer: site.viewer,
+        bus_position: site.bus_position,
         site_description: site.site_description,
         lang: site.lang,
         base_path: site.base_path,
@@ -633,6 +643,7 @@ pub struct TagsPage {
     pub base_path: String,
     pub crawler: Crawler,
     pub viewer: Option<Viewer>,
+    pub bus_position: String,
     pub groups: Vec<TagGroupItem>,
 }
 
@@ -697,6 +708,7 @@ pub fn tags_page(
     TagsPage {
         site_title: site.site_title,
         viewer: site.viewer,
+        bus_position: site.bus_position,
         site_description: site.site_description,
         lang: site.lang,
         base_path: site.base_path,

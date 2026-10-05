@@ -213,6 +213,12 @@ async fn show_list(
     headers: HeaderMap,
     uri: axum::http::Uri,
 ) -> Result<Response, AppError> {
+    // Before the page's data is read (crate::bus::page_position).
+    let bus_position = if path.json {
+        String::new()
+    } else {
+        crate::bus::page_position(&state.bus).await?
+    };
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
@@ -388,6 +394,7 @@ async fn show_list(
     let vs = super::session::viewer_state(&state, &headers, &settings, &guardian)?;
     let mut site = crate::html::Site::from_settings(&settings, &base_path)?;
     site.viewer = vs.viewer.clone();
+    site.bus_position = bus_position;
     let mut page = crate::html::latest_page(&mut conn, site, &doc).await?;
     if let Some(c) = &category {
         page.heading = Some(
@@ -498,6 +505,12 @@ async fn index_response(
     headers: HeaderMap,
     uri: Option<axum::http::Uri>,
 ) -> Result<Response, AppError> {
+    // Before the page's data is read (crate::bus::page_position).
+    let bus_position = if json {
+        String::new()
+    } else {
+        crate::bus::page_position(&state.bus).await?
+    };
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
@@ -578,6 +591,7 @@ async fn index_response(
     let mut site =
         crate::html::Site::from_settings(&settings, state.config.globals.relative_url_root())?;
     site.viewer = vs.viewer.clone();
+    site.bus_position = bus_position;
     let mut page = crate::html::tags_page(&state.i18n, site, &doc, &category_names);
     let urls = Urls {
         config: &state.config,

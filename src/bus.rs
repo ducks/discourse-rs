@@ -402,3 +402,12 @@ pub async fn publish_notification_alert(
     .await?;
     Ok(())
 }
+
+/// Where a page's live updates start: the bus's position taken before the
+/// page reads its data, so a change committed while it renders is
+/// delivered after it (at worst repeating what the page shows) rather
+/// than missed. The page puts it in `<meta name="bus-position">` for
+/// /bus/events and /bus/poll.
+pub async fn page_position(bus: &pg_bus::Bus) -> Result<String, AppError> {
+    Ok(bus.now().await?.to_string())
+}
