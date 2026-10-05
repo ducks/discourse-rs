@@ -1,4 +1,4 @@
-.PHONY: help version-bump release build test clean clippy fmt fmt-check lint install-hooks \
+.PHONY: help version-bump release build test parity-test clean clippy fmt fmt-check lint install-hooks \
 	db-load db-test parity parity-check parity-record vendor-discourse snapshot-dv \
 	record-pretty-text \
 	bench bench-startup release-build install
@@ -33,9 +33,10 @@ help:
 	@echo "  make release VERSION=20260125.0.0  - Release with specific version"
 	@echo "  make build                         - Build release binary"
 	@echo "  make test                          - Run tests (needs make db-test once)"
+	@echo "  make parity-test                   - Run the Rails comparison tests (slow)"
 	@echo "  make clippy                        - Run clippy"
 	@echo "  make fmt / fmt-check               - Format / check formatting"
-	@echo "  make lint                          - All CI checks (fmt-check, clippy, tests)"
+	@echo "  make lint                          - fmt-check, clippy, tests (CI also runs parity-test)"
 	@echo "  make install-hooks                 - Install a pre-push hook running 'make lint'"
 	@echo "  sudo make install                  - Install the built binary as a systemd service (deploy/)"
 	@echo "  make clean                         - Clean build artifacts"
@@ -101,6 +102,11 @@ build:
 test:
 	cargo nextest run
 
+# The comparisons against recorded Rails output (.config/nextest.toml),
+# left out of `make test`: the slow part of the suite. CI runs both.
+parity-test:
+	cargo nextest run --profile parity
+
 # Run clippy with warnings-as-errors (mirrors CI)
 clippy:
 	cargo clippy --all-targets -- -D warnings
@@ -117,7 +123,8 @@ fmt:
 fmt-check:
 	cargo fmt -- --check
 
-# Run all the checks CI runs, in order. Cheap to run locally before pushing.
+# The checks CI runs, in order, minus parity-test (slow; CI runs it).
+# Cheap to run locally before pushing.
 lint: fmt-check clippy test
 
 # Install a pre-push hook that runs `make lint` before any push, so CI
