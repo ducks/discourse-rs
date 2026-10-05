@@ -1091,3 +1091,48 @@ async fn notification_state_goes_live_to_its_user_only() {
         .await;
     assert_eq!(reply.status, StatusCode::BAD_REQUEST);
 }
+
+/// A member's topic page carries the reply form with their CSRF token, and
+/// posting it as htmx does (form fields, the token and XHR headers) makes
+/// the reply, which the live stream then delivers.
+#[tokio::test(flavor = "multi_thread")]
+async fn members_reply_from_the_topic_page() {
+    let db = TestDb::new().await;
+    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut client = Client::new(app_state.clone());
+    let reply = client.login("user1", "password").await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+
+    let page = client.get("/t/parity-fixture-replies-and-posters/35").await;
+    assert_eq!(page.status, StatusCode::OK);
+    assert!(page.body.contains(r#"hx-post="/posts""#), "{}", page.body);
+    assert!(page.body.contains(r#"name="topic_id" value="35""#));
+    // hx-headers is single-quoted JSON; only the token itself is escaped.
+    let marker = r#""X-CSRF-Token": ""#;
+    let at = page.body.find(marker).expect("the form carries the token");
+    let rest = &page.body[at + marker.len()..];
+    let token = html_escape::decode_html_entities(&rest[..rest.find('"').unwrap()]).into_owned();
+
+    let before: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM posts WHERE topic_id = 35")
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+    client.csrf = Some(token);
+    let reply = client
+        .send(
+            Method::POST,
+            "/posts",
+            &[
+                ("x-requested-with", "XMLHttpRequest"),
+                ("hx-request", "true"),
+            ],
+            "topic_id=35&raw=A+reply+from+the+topic+page%2C+long+enough+to+pass.",
+        )
+        .await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    let after: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM posts WHERE topic_id = 35")
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+    assert_eq!(after, before + 1);
+}

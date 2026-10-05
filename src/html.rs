@@ -201,6 +201,10 @@ pub struct TopicPage {
     pub posts: Vec<PostItem>,
     pub prev_url: Option<String>,
     pub next_url: Option<String>,
+    pub topic_id: i64,
+    /// The last page: live updates append new posts here.
+    pub live: bool,
+    pub can_reply: bool,
 }
 
 /// `categories` rows the pages link to.
@@ -386,33 +390,7 @@ pub async fn topic_page(
         .map(|posts| {
             posts
                 .iter()
-                .map(|p| {
-                    let number = p["post_number"].as_i64().unwrap_or(0);
-                    let username = s(&p["username"]);
-                    let action = p["action_code"].as_str();
-                    PostItem {
-                        number,
-                        url: format!("{topic_url}/{number}"),
-                        user_url: format!("{base}/u/{username}"),
-                        username,
-                        name: p["name"]
-                            .as_str()
-                            .filter(|n| !n.is_empty())
-                            .map(str::to_string),
-                        created_at: date(&s(&p["created_at"])),
-                        created_at_iso: s(&p["created_at"]),
-                        cooked: s(&p["cooked"]),
-                        likes: p["actions_summary"]
-                            .as_array()
-                            .and_then(|a| a.iter().find(|x| x["id"] == 2))
-                            .and_then(|x| x["count"].as_i64())
-                            .unwrap_or(0),
-                        small_action: action.is_some(),
-                        action_text: action.map(|code| {
-                            action_text(i18n, code, p["action_code_who"].as_str().unwrap_or(""))
-                        }),
-                    }
-                })
+                .map(|p| post_item(i18n, &base, &topic_url, p))
                 .collect()
         })
         .unwrap_or_default();
@@ -446,6 +424,11 @@ pub async fn topic_page(
         breadcrumbs,
         tags: tags(&base, &view["tags"]),
         posts,
+        topic_id: id,
+        // New posts land on the last page; earlier pages stay as they are.
+        live: page >= last_page,
+        // details.can_create_post: a logged-in viewer who may reply.
+        can_reply: view["details"]["can_create_post"] == true,
         prev_url: (page > 1).then(|| page_url(page - 1)),
         next_url: (page < last_page).then(|| page_url(page + 1)),
     })
@@ -821,4 +804,41 @@ pub fn crawler_response(
         );
     }
     Ok(with_viewer_headers(response, viewer))
+}
+
+/// One post of a topic as the page shows it, from its PostSerializer JSON.
+pub fn post_item(i18n: &I18n, base: &str, topic_url: &str, p: &Value) -> PostItem {
+    let number = p["post_number"].as_i64().unwrap_or(0);
+    let username = s(&p["username"]);
+    let action = p["action_code"].as_str();
+    PostItem {
+        number,
+        url: format!("{topic_url}/{number}"),
+        user_url: format!("{base}/u/{username}"),
+        username,
+        name: p["name"]
+            .as_str()
+            .filter(|n| !n.is_empty())
+            .map(str::to_string),
+        created_at: date(&s(&p["created_at"])),
+        created_at_iso: s(&p["created_at"]),
+        cooked: s(&p["cooked"]),
+        likes: p["actions_summary"]
+            .as_array()
+            .and_then(|a| a.iter().find(|x| x["id"] == 2))
+            .and_then(|x| x["count"].as_i64())
+            .unwrap_or(0),
+        small_action: action.is_some(),
+        action_text: action
+            .map(|code| action_text(i18n, code, p["action_code_who"].as_str().unwrap_or(""))),
+    }
+}
+
+/// A live update of one post for the topic page: appended to the posts
+/// when new, else replacing the post in place (htmx out-of-band swaps).
+#[derive(Template)]
+#[template(path = "post_fragment.html")]
+pub struct PostFragment {
+    pub post: PostItem,
+    pub append: bool,
 }
