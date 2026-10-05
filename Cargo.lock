@@ -1744,7 +1744,8 @@ checksum = "9b4f627cb1b25917193a259e49bdad08f671f8d9708acfd5fe0a8c1455d87220"
 [[package]]
 name = "pg-bus"
 version = "20261005.0.0"
-source = "git+https://github.com/ducks/pg-bus?rev=a712b1cc043db32c6c3de1d18443945c6a16dd2b#a712b1cc043db32c6c3de1d18443945c6a16dd2b"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9b6f5d1744db2c955037c8994898d0069b7c9908bf335cec6fa9b4620807df08"
 dependencies = [
  "axum",
  "futures-util",
