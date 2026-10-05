@@ -812,6 +812,7 @@ async fn process_internal(
         settings: s,
         config: &state.config,
         i18n: &state.i18n,
+        bus: &state.bus,
     };
     let outcome = crate::posting::create::create(
         &state.pool,

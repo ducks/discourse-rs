@@ -104,6 +104,7 @@ pub async fn destroy_post(
         settings: &settings,
         config: &state.config,
         i18n: &state.i18n,
+        bus: &state.bus,
     };
     let Some(access) = find_post(&mut conn, &ctx, &guardian, id_of(&id)).await? else {
         return Ok(super::topics::not_found_response(&state, false));
@@ -145,6 +146,7 @@ pub async fn recover_post(
         settings: &settings,
         config: &state.config,
         i18n: &state.i18n,
+        bus: &state.bus,
     };
     let Some(access) = find_post_with_deleted(&mut tx, &ctx, &guardian, post_id).await? else {
         return Ok(super::topics::not_found_response(&state, false));
@@ -196,6 +198,7 @@ pub async fn destroy_topic(
         settings: &settings,
         config: &state.config,
         i18n: &state.i18n,
+        bus: &state.bus,
     };
     // context: params[:context].presence || "Deleted via API"
     let context = p

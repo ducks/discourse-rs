@@ -2,6 +2,7 @@ pub mod accounts;
 pub mod avatar;
 pub mod bookmark_manager;
 pub mod bookmarks;
+pub mod bus;
 pub mod categories;
 pub mod category;
 pub mod category_list;
@@ -84,6 +85,8 @@ pub struct AppState {
     pub keys: Arc<session::current::Keys>,
     /// Where outgoing mail goes (SMTP, sendmail, or memory in tests).
     pub mailer: email::Mailer,
+    /// Live updates to browsers (MessageBus's role).
+    pub bus: pg_bus::Bus,
 }
 
 pub fn app(state: AppState) -> Router {

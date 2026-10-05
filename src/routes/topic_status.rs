@@ -102,6 +102,7 @@ async fn update(
         settings: &settings,
         config: &state.config,
         i18n: &state.i18n,
+        bus: &state.bus,
     };
     let outcome = topic_status::update(
         &mut tx,

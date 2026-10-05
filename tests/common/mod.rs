@@ -176,8 +176,18 @@ pub fn config(env: RailsEnv, globals: &[(&str, &str)]) -> Config {
     }
 }
 
-pub fn state(pool: PgPool, config: Config) -> AppState {
+pub async fn state(pool: PgPool, config: Config) -> AppState {
+    state_with_bus_on(pool.clone(), pool, config).await
+}
+
+/// `state` with the bus on another database, for an app pool that cannot
+/// connect.
+pub async fn state_with_bus_on(bus_pool: PgPool, pool: PgPool, config: Config) -> AppState {
+    let bus = pg_bus::Bus::start(bus_pool, discourse_rs::bus::config())
+        .await
+        .expect("bus starts");
     AppState {
+        bus,
         pool,
         config,
         site_setting_defs: Arc::new(Definitions::vendored().expect("vendored site_settings.yml")),

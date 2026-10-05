@@ -31,7 +31,7 @@ async fn golden_responses_match() {
     // The golden files came from the Discourse whose database is the test
     // template (seed/fresh_install.sql) and whose env is parity/environment.
     let config = common::recorded_config();
-    let app = discourse_rs::app(common::state(db.pool.clone(), config));
+    let app = discourse_rs::app(common::state(db.pool.clone(), config).await);
 
     let mut failures = Vec::new();
     let mut checked = 0;

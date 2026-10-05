@@ -20,7 +20,7 @@ const BOOL: i32 = 5;
 const UPLOAD: i32 = 18;
 
 async fn get_basic_info(pool: &PgPool, env: RailsEnv, globals: &[(&str, &str)]) -> Value {
-    let app = discourse_rs::app(state(pool.clone(), config(env, globals)));
+    let app = discourse_rs::app(state(pool.clone(), config(env, globals)).await);
     let response = app
         .oneshot(
             Request::get("/site/basic-info.json")

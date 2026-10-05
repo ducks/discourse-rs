@@ -77,6 +77,7 @@ async fn handle(
         settings: &settings,
         config: &state.config,
         i18n: &state.i18n,
+        bus: &state.bus,
     };
     let text = |k: &str| p.get(k).and_then(params::scalar);
     let until_param = match action {

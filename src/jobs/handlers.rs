@@ -306,6 +306,7 @@ async fn post_alert(state: &AppState, args: &Value) -> Result<(), AppError> {
         settings: &s,
         config: &state.config,
         i18n: &state.i18n,
+        bus: &state.bus,
     };
     let mut tx = state.pool.begin().await?;
     super::post_alert::run(&ctx, &mut tx, args).await?;
@@ -325,6 +326,7 @@ async fn user_email(state: &AppState, args: &Value, critical: bool) -> Result<()
         settings: &s,
         config: &state.config,
         i18n: &state.i18n,
+        bus: &state.bus,
     };
     let ctx = crate::email::sender::Ctx {
         host: &host,
@@ -447,6 +449,7 @@ async fn send_system_message(state: &AppState, args: &Value) -> Result<(), AppEr
         settings: &s,
         config: &state.config,
         i18n: &state.i18n,
+        bus: &state.bus,
     };
     crate::system_message::create(
         &state.pool,

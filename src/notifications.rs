@@ -158,22 +158,28 @@ pub struct Notifications<'a> {
 }
 
 impl Notifications<'_> {
-    /// The document for `user_id` (the viewer, or the admin's target).
+    /// The document for `user_id` (the viewer, or the admin's target), and
+    /// whether `seen_notification_id` moved (Rails then publishes the
+    /// notification state).
     pub async fn index(
         &mut self,
         user_id: i32,
         username: &str,
         q: &Query,
-    ) -> Result<Value, NotificationsError> {
+    ) -> Result<(Value, bool), NotificationsError> {
         if q.recent {
             self.recent(user_id, q).await
         } else {
-            self.paged(user_id, username, q).await
+            Ok((self.paged(user_id, username, q).await?, false))
         }
     }
 
     /// `Notification.prioritized_list` + the bump of `seen_notification_id`.
-    async fn recent(&mut self, user_id: i32, q: &Query) -> Result<Value, NotificationsError> {
+    async fn recent(
+        &mut self,
+        user_id: i32,
+        q: &Query,
+    ) -> Result<(Value, bool), NotificationsError> {
         let has_option: bool =
             sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM user_options WHERE user_id = $1)")
                 .bind(user_id)
@@ -223,6 +229,7 @@ impl Notifications<'_> {
         };
         // bump_last_seen_notification!: the newest visible notification,
         // before the in-memory filters.
+        let mut bumped = false;
         if !rows.is_empty() && !q.silent {
             let max: Option<i64> = sqlx::query_scalar(
                 "SELECT MAX(notifications.id) FROM notifications LEFT JOIN topics ON notifications.topic_id = topics.id \
@@ -240,6 +247,7 @@ impl Notifications<'_> {
                 .bind(max)
                 .execute(&mut *self.conn)
                 .await?;
+                bumped = true;
             }
         }
         let rows = self.post_filter(rows).await?;
@@ -264,7 +272,7 @@ impl Notifications<'_> {
             }
             out.insert("pending_reviewables".into(), json!([]));
         }
-        Ok(Value::Object(out))
+        Ok((Value::Object(out), bumped))
     }
 
     /// The paged branch: newest first, counted before the page is cut.
@@ -417,47 +425,75 @@ impl Notifications<'_> {
         Ok(rows)
     }
 
-    /// NotificationSerializer for each row.
     fn serialize(&self, rows: &[Row]) -> Result<Value, NotificationsError> {
-        let enable_names = self.settings.get("enable_names")?.truthy();
-        if self.settings.get("enable_discourse_connect")?.truthy() {
-            return Err(Unsupported("external_id on notifications").into());
-        }
-        let mut out = Vec::with_capacity(rows.len());
-        for r in rows {
-            let mut n = Map::new();
-            if let Some(title) = r.fancy_title.as_deref().filter(|t| !t.is_empty()) {
-                n.insert("fancy_title".into(), json!(title));
-            }
-            n.insert("id".into(), json!(r.id));
-            n.insert("user_id".into(), json!(r.user_id));
-            n.insert("notification_type".into(), json!(r.notification_type));
-            n.insert("read".into(), json!(r.read));
-            n.insert("high_priority".into(), json!(r.high_priority));
-            n.insert("created_at".into(), json!(time_json(r.created_at)));
-            n.insert("post_number".into(), json!(r.post_number));
-            n.insert("topic_id".into(), json!(r.topic_id));
-            // Slug.for(topic.title) is the stored slug on every topic here.
-            let slug = match (r.topic_id, &r.slug) {
-                (Some(_), Some(s)) if !s.is_empty() => json!(s),
-                (Some(_), _) => {
-                    return Err(Unsupported("topics without a stored slug (Slug.for)").into());
-                }
-                (None, _) => Value::Null,
-            };
-            n.insert("slug".into(), slug);
-            let mut data: Value = serde_json::from_str(&r.data).unwrap_or(json!({}));
-            if !enable_names && let Some(obj) = data.as_object_mut() {
-                obj.remove("display_name");
-            }
-            n.insert("data".into(), data);
-            if r.subtype.as_deref() == Some("moderator_warning") {
-                n.insert("is_warning".into(), json!(true));
-            }
-            out.push(Value::Object(n));
-        }
-        Ok(Value::Array(out))
+        serialize(self.settings, rows)
     }
+}
+
+/// `notifications.visible.order("notifications.created_at desc").first`,
+/// serialized: the last notification in the published notification state.
+pub async fn last_visible(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    user_id: i32,
+) -> Result<Option<Value>, NotificationsError> {
+    let row: Option<Row> = sqlx::query_as(&format!(
+        "SELECT {COLUMNS} FROM notifications LEFT JOIN topics ON notifications.topic_id = topics.id \
+         WHERE notifications.user_id = $1 AND (topics.id IS NULL OR topics.deleted_at IS NULL) \
+         ORDER BY notifications.created_at DESC LIMIT 1"
+    ))
+    .bind(user_id)
+    .fetch_optional(&mut *conn)
+    .await?;
+    Ok(match row {
+        Some(row) => match serialize(settings, &[row])? {
+            Value::Array(mut items) => items.pop(),
+            _ => None,
+        },
+        None => None,
+    })
+}
+
+/// NotificationSerializer for each row.
+fn serialize(settings: &SiteSettings, rows: &[Row]) -> Result<Value, NotificationsError> {
+    let enable_names = settings.get("enable_names")?.truthy();
+    if settings.get("enable_discourse_connect")?.truthy() {
+        return Err(Unsupported("external_id on notifications").into());
+    }
+    let mut out = Vec::with_capacity(rows.len());
+    for r in rows {
+        let mut n = Map::new();
+        if let Some(title) = r.fancy_title.as_deref().filter(|t| !t.is_empty()) {
+            n.insert("fancy_title".into(), json!(title));
+        }
+        n.insert("id".into(), json!(r.id));
+        n.insert("user_id".into(), json!(r.user_id));
+        n.insert("notification_type".into(), json!(r.notification_type));
+        n.insert("read".into(), json!(r.read));
+        n.insert("high_priority".into(), json!(r.high_priority));
+        n.insert("created_at".into(), json!(time_json(r.created_at)));
+        n.insert("post_number".into(), json!(r.post_number));
+        n.insert("topic_id".into(), json!(r.topic_id));
+        // Slug.for(topic.title) is the stored slug on every topic here.
+        let slug = match (r.topic_id, &r.slug) {
+            (Some(_), Some(s)) if !s.is_empty() => json!(s),
+            (Some(_), _) => {
+                return Err(Unsupported("topics without a stored slug (Slug.for)").into());
+            }
+            (None, _) => Value::Null,
+        };
+        n.insert("slug".into(), slug);
+        let mut data: Value = serde_json::from_str(&r.data).unwrap_or(json!({}));
+        if !enable_names && let Some(obj) = data.as_object_mut() {
+            obj.remove("display_name");
+        }
+        n.insert("data".into(), data);
+        if r.subtype.as_deref() == Some("moderator_warning") {
+            n.insert("is_warning".into(), json!(true));
+        }
+        out.push(Value::Object(n));
+    }
+    Ok(Value::Array(out))
 }
 
 /// `filter_by_types=a,b` to ids; the first unknown name is the error.

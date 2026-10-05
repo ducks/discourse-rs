@@ -125,6 +125,7 @@ pub async fn create(
         settings: &settings,
         config: &state.config,
         i18n: &state.i18n,
+        bus: &state.bus,
     };
     match create::create(&state.pool, &ctx, &guardian, args).await? {
         Outcome::Created { post_id } => {
@@ -235,6 +236,7 @@ pub async fn update(
         settings: &settings,
         config: &state.config,
         i18n: &state.i18n,
+        bus: &state.bus,
     };
     let exists: Option<(Option<i32>, bool, chrono::NaiveDateTime)> = sqlx::query_as(
         "SELECT user_id, deleted_at IS NOT NULL, created_at FROM posts WHERE id = $1",
@@ -331,6 +333,7 @@ pub async fn revision(
         settings: &settings,
         config: &state.config,
         i18n: &state.i18n,
+        bus: &state.bus,
     };
     Ok(
         match revisions::show(&mut conn, &ctx, &guardian, post_id, which).await? {

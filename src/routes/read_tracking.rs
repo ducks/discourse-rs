@@ -104,8 +104,13 @@ async fn record(
     if !visible {
         return Ok(super::topics::not_found_response(&state, false));
     }
-    read_tracking::process_timings(&mut tx, &settings, &guardian, topic_id, topic_time, timings)
-        .await?;
+    let notifications_read = read_tracking::process_timings(
+        &mut tx, &settings, &guardian, topic_id, topic_time, timings,
+    )
+    .await?;
+    if notifications_read && let Some(user_id) = guardian.user_id() {
+        crate::bus::publish_notifications_state(&state.bus, &mut tx, &settings, user_id).await?;
+    }
     tx.commit().await?;
     // render body: nil
     Ok(StatusCode::OK.into_response())
@@ -136,6 +141,11 @@ pub async fn mark_read(
     Ok(
         match read_tracking::mark_read(&mut tx, user_id, id, dismiss_types.as_deref()).await? {
             MarkRead::Done => {
+                let settings =
+                    SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals)
+                        .await?;
+                crate::bus::publish_notifications_state(&state.bus, &mut tx, &settings, user_id)
+                    .await?;
                 tx.commit().await?;
                 (StatusCode::OK, Json(read_tracking::success())).into_response()
             }

@@ -51,6 +51,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
     }
 
     discourse_rs::owned_schema::migrate(&pool).await?;
+    let bus = pg_bus::Bus::start(pool.clone(), discourse_rs::bus::config()).await?;
 
     let listener = tokio::net::TcpListener::bind(config.bind).await?;
     tracing::info!(addr = %config.bind, "listening");
@@ -76,6 +77,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
         search_log_cache: Default::default(),
         keys: Arc::new(keys),
         mailer,
+        bus,
     };
     // A worker beside the web server unless DISCOURSE_RS_JOBS=off, which
     // leaves the queue to a separate process.

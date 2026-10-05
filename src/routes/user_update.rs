@@ -63,6 +63,7 @@ pub async fn update(
         settings: &settings,
         config: &state.config,
         i18n: &state.i18n,
+        bus: &state.bus,
     };
     user_updater::update(&mut tx, &ctx, &guardian, &target, &attrs).await?;
 

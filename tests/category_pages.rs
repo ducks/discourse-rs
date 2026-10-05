@@ -14,7 +14,7 @@ use sqlx::PgPool;
 use tower::ServiceExt;
 
 async fn get(pool: &PgPool, path: &str) -> (StatusCode, Option<String>, String) {
-    let app = discourse_rs::app(state(pool.clone(), config(RailsEnv::Test, &[])));
+    let app = discourse_rs::app(state(pool.clone(), config(RailsEnv::Test, &[])).await);
     let response = app
         .oneshot(
             Request::get(path)
