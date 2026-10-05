@@ -14,15 +14,25 @@
       </span>
     </div>
     <div class="post" itemprop="text">{{ post.cooked|safe }}</div>
-    {% if post.likes > 0 %}<div class="post-likes">&#x2764; {{ post.likes }}</div>{% endif %}
+    {#- A member's like button. Nothing is swapped from the response: the
+        post comes back on the page's live stream, re-rendered with the
+        count and their like. -#}
+    {% if post.liked && post.can_unlike %}
+    <div class="post-likes"><button class="like liked" hx-delete="{{ post.actions_url }}/{{ post.id }}" hx-vals='{"post_action_type_id": 2}' hx-swap="none" aria-pressed="true" title="Undo like">&#x2764; {{ post.likes }}</button></div>
+    {% else if post.can_like %}
+    <div class="post-likes"><button class="like" hx-post="{{ post.actions_url }}" hx-vals='{"id": {{ post.id }}, "post_action_type_id": 2}' hx-swap="none" aria-pressed="false" title="Like this post">&#x2661;{% if post.likes > 0 %} {{ post.likes }}{% endif %}</button></div>
+    {% else if post.likes > 0 %}
+    <div class="post-likes">&#x2764; {{ post.likes }}</div>
+    {% endif %}
   </div>
 {% endmacro %}
 
 {#- The page's live updates (GET /live): a hidden sink for htmx's SSE
     extension. Every event is out-of-band swaps, so the sink stays empty.
-    `topic_id` above 0 follows a topic, `filter` a list. -#}
-{% macro live_sink(base_path, bus_position, topic_id, filter, since) %}
-<div hidden hx-ext="sse" sse-connect="{{ base_path }}/live?position={{ bus_position }}{% if topic_id > 0 %}&amp;topic={{ topic_id }}{% endif %}{% if !filter.is_empty() %}&amp;filter={{ filter }}&amp;since={{ since }}{% endif %}" sse-swap="post,list,header"></div>
+    `topic_id` above 0 follows a topic (`tail` on its last page, where new
+    posts are appended), `filter` a list. -#}
+{% macro live_sink(base_path, bus_position, topic_id, tail, filter, since) %}
+<div hidden hx-ext="sse" sse-connect="{{ base_path }}/live?position={{ bus_position }}{% if topic_id > 0 %}&amp;topic={{ topic_id }}{% if tail %}&amp;tail=1{% endif %}{% endif %}{% if !filter.is_empty() %}&amp;filter={{ filter }}&amp;since={{ since }}{% endif %}" sse-swap="post,list,header"></div>
 {% endmacro %}
 
 {#- The stream every page has for a member: their notifications and

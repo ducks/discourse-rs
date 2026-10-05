@@ -66,4 +66,4 @@
 {% endblock %}
 {#- The new-or-updated banner and a member's counts arrive on the page's
     stream. -#}
-{% block live %}{% if !live_filter.is_empty() %}{% call m::live_sink(base_path, bus_position, 0, live_filter, live_since) %}{% else %}{% call m::live_sink_for_member(viewer.is_some(), base_path, bus_position) %}{% endif %}{% endblock %}
+{% block live %}{% if !live_filter.is_empty() %}{% call m::live_sink(base_path, bus_position, 0, false, live_filter, live_since) %}{% else %}{% call m::live_sink_for_member(viewer.is_some(), base_path, bus_position) %}{% endif %}{% endblock %}

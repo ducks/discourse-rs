@@ -92,7 +92,7 @@ async fn changes_arrive_as_html_for_the_viewer() {
     let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
     let (post_id, post_number) = a_reply(&st).await;
     let from = st.bus.now().await.unwrap();
-    let response = get(&st, &format!("/live?topic={TOPIC}&position={from}")).await;
+    let response = get(&st, &format!("/live?topic={TOPIC}&tail=1&position={from}")).await;
     assert_eq!(response.status(), StatusCode::OK);
     assert!(
         response.headers()[header::CONTENT_TYPE]
@@ -210,4 +210,27 @@ async fn the_latest_list_learns_of_new_and_updated_topics() {
     tx.commit().await.unwrap();
     let html = next_sse_event(&mut body, &mut buffer, "list").await;
     assert!(html.contains("1 new or updated topic. Show"), "{html}");
+}
+
+/// An earlier page of a topic hears its posts change, but new posts are
+/// left to the last page.
+#[tokio::test(flavor = "multi_thread")]
+async fn earlier_pages_change_posts_without_appending() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let (post_id, post_number) = a_reply(&st).await;
+    let from = st.bus.now().await.unwrap();
+    let response = get(&st, &format!("/live?topic={TOPIC}&position={from}")).await;
+    let mut body = response.into_body();
+    let mut buffer = String::new();
+
+    publish(&st, post_id, "created").await;
+    publish(&st, post_id, "revised").await;
+    // The first post event is the edit: the new post was not sent.
+    let html = next_sse_event(&mut body, &mut buffer, "post").await;
+    assert!(html.contains(r#"hx-swap-oob="true""#), "{html}");
+    assert!(
+        html.contains(&format!(r#"<div id="post_{post_number}""#)),
+        "{html}"
+    );
 }

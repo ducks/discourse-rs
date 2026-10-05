@@ -55,6 +55,8 @@ pub struct Params {
     position: Option<String>,
     /// The topic the page shows.
     topic: Option<String>,
+    /// The page is the topic's last, where new posts are appended.
+    tail: Option<String>,
     /// The list the page shows (`latest`, `new`, `unread`).
     filter: Option<String>,
     /// When the page was rendered, in milliseconds: on the latest list,
@@ -137,6 +139,7 @@ pub async fn page(
         settings,
         subscription,
         topic_channel: topic_id.map(crate::bus::topic_channel),
+        tail: params.tail.as_deref() == Some("1"),
         user_id,
         lists,
         since,
@@ -181,6 +184,8 @@ struct Live {
     settings: SiteSettings,
     subscription: Subscription,
     topic_channel: Option<String>,
+    /// New posts are appended (the topic's last page).
+    tail: bool,
     user_id: Option<i32>,
     lists: bool,
     since: Option<NaiveDateTime>,
@@ -346,6 +351,10 @@ async fn post_fragment(live: &Live, message: &Message) -> Result<Option<String>,
         return Ok(None);
     };
     let removal = || format!(r#"<div id="post_{post_number}" hx-swap-oob="delete"></div>"#);
+    // A new post belongs at the end of the topic, not on an earlier page.
+    if kind == "created" && !live.tail {
+        return Ok(None);
+    }
     let state = &live.state;
     let host = crate::pretty_text::Host::from_state(state);
     let ctx = crate::posting::Ctx {

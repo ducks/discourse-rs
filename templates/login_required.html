@@ -6,7 +6,7 @@
   {% if local_logins %}
   {#- POST /session answers 200 with an `error` for refused logins, as Rails
       does, so the script reads the body rather than the status. -#}
-  <form class="login" hx-post="{{ base_path }}/session" hx-swap="none"
+  <form class="login" data-own-errors hx-post="{{ base_path }}/session" hx-swap="none"
         hx-headers='{"X-CSRF-Token": "{{ csrf_token }}", "X-Requested-With": "XMLHttpRequest"}'
         hx-on::after-request="loggedIn(event)">
     <label>Username or email <input name="login" autocomplete="username" required autofocus></label>

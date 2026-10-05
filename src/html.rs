@@ -176,6 +176,10 @@ pub struct TagHeading {
 
 pub struct PostItem {
     pub number: i64,
+    /// The post's id, for its actions.
+    pub id: i64,
+    /// Where likes are posted (`/post_actions`).
+    pub actions_url: String,
     pub url: String,
     pub username: String,
     pub name: Option<String>,
@@ -186,6 +190,12 @@ pub struct PostItem {
     pub likes: i64,
     pub small_action: bool,
     pub action_text: Option<String>,
+    /// The viewer may like it (`actions_summary` like `can_act`).
+    pub can_like: bool,
+    /// The viewer liked it (`acted`).
+    pub liked: bool,
+    /// The viewer may take their like back (`can_undo`).
+    pub can_unlike: bool,
 }
 
 #[derive(Template)]
@@ -818,8 +828,15 @@ pub fn post_item(i18n: &I18n, base: &str, topic_url: &str, p: &Value) -> PostIte
     let number = p["post_number"].as_i64().unwrap_or(0);
     let username = s(&p["username"]);
     let action = p["action_code"].as_str();
+    // The like entry of PostSerializer's actions_summary, as the viewer sees it.
+    let like = p["actions_summary"]
+        .as_array()
+        .and_then(|a| a.iter().find(|x| x["id"] == 2));
+    let flag = |key: &str| like.is_some_and(|l| l[key] == true);
     PostItem {
         number,
+        id: p["id"].as_i64().unwrap_or(0),
+        actions_url: format!("{base}/post_actions"),
         url: format!("{topic_url}/{number}"),
         user_url: format!("{base}/u/{username}"),
         username,
@@ -830,14 +847,13 @@ pub fn post_item(i18n: &I18n, base: &str, topic_url: &str, p: &Value) -> PostIte
         created_at: date(&s(&p["created_at"])),
         created_at_iso: s(&p["created_at"]),
         cooked: s(&p["cooked"]),
-        likes: p["actions_summary"]
-            .as_array()
-            .and_then(|a| a.iter().find(|x| x["id"] == 2))
-            .and_then(|x| x["count"].as_i64())
-            .unwrap_or(0),
+        likes: like.and_then(|x| x["count"].as_i64()).unwrap_or(0),
         small_action: action.is_some(),
         action_text: action
             .map(|code| action_text(i18n, code, p["action_code_who"].as_str().unwrap_or(""))),
+        can_like: flag("can_act"),
+        liked: flag("acted"),
+        can_unlike: flag("can_undo"),
     }
 }
 
