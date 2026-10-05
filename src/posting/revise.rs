@@ -417,6 +417,10 @@ pub async fn revise(
     if editor_user.id != -1 {
         crate::jobs::enqueue(&mut tx, "post_alert", json!({"post_id": post.id})).await?;
     }
+    // publish_changes; reload_topic only comes with topic edits, refused
+    // above.
+    crate::bus::publish_post_change(ctx, &mut tx, post.id, "revised", Default::default(), false)
+        .await?;
     tx.commit().await?;
 
     let mut conn = pool.acquire().await?;

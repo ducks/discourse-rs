@@ -9,8 +9,13 @@
 use serde_json::{Map, Value, json};
 use sqlx::PgConnection;
 
-use crate::AppError;
+use chrono::NaiveDateTime;
+
+use crate::posting::Ctx;
 use crate::site_settings::SiteSettings;
+use crate::topic_list::time_json;
+use crate::url::Urls;
+use crate::{AppError, Unsupported};
 
 /// The schema holding the backlog, beside `discourse_rs`.
 pub const SCHEMA: &str = "discourse_rs_bus";
@@ -141,4 +146,212 @@ pub async fn publish_notifications_state(
     )
     .await?;
     Ok(())
+}
+
+pub fn topic_channel(topic_id: i32) -> String {
+    format!("/topic/{topic_id}")
+}
+
+/// Who hears a topic's messages: `None` when nobody would (MessageBus
+/// skips a publish to an empty user or group list), `Some(None)` for
+/// everyone, else the tags. `Topic#secure_audience_publish_messages`:
+/// a message's human staff and participants (allowed users and the
+/// members of allowed groups), a read-restricted category's groups.
+async fn topic_audience(
+    conn: &mut PgConnection,
+    topic_id: i32,
+) -> Result<Option<Option<Vec<String>>>, AppError> {
+    let topic: Option<(String, Option<bool>, Option<i32>)> = sqlx::query_as(
+        "SELECT t.archetype, c.read_restricted, c.id FROM topics t \
+         LEFT JOIN categories c ON c.id = t.category_id WHERE t.id = $1",
+    )
+    .bind(topic_id)
+    .fetch_optional(&mut *conn)
+    .await?;
+    let Some((archetype, read_restricted, category_id)) = topic else {
+        return Ok(None);
+    };
+    if archetype == "private_message" {
+        let users: Vec<i32> = sqlx::query_scalar(
+            "SELECT id FROM users WHERE id > 0 AND (admin OR moderator) \
+             UNION SELECT user_id FROM topic_allowed_users WHERE topic_id = $1 \
+             UNION SELECT gu.user_id FROM topic_allowed_groups tg \
+               JOIN group_users gu ON gu.group_id = tg.group_id WHERE tg.topic_id = $1 \
+             ORDER BY 1",
+        )
+        .bind(topic_id)
+        .fetch_all(&mut *conn)
+        .await?;
+        return Ok(audience(users.into_iter().map(user_tag).collect()));
+    }
+    if read_restricted == Some(true) {
+        let groups: Vec<i32> = sqlx::query_scalar(
+            "SELECT group_id FROM category_groups WHERE category_id = $1 ORDER BY group_id",
+        )
+        .bind(category_id)
+        .fetch_all(&mut *conn)
+        .await?;
+        return Ok(audience(groups.into_iter().map(group_tag).collect()));
+    }
+    Ok(Some(None))
+}
+
+fn audience(tags: Vec<String>) -> Option<Option<Vec<String>>> {
+    if tags.is_empty() {
+        None
+    } else {
+        Some(Some(tags))
+    }
+}
+
+/// `Post#publish_change_to_clients!(type, opts)`: the change on
+/// `/topic/<id>`, `opts` merged over the message, then the topic's stats
+/// unless `skip_topic_stats`. Posts of a type everyone sees go to the
+/// topic's audience; whispers to human staff and the author.
+pub async fn publish_post_change(
+    ctx: &Ctx<'_>,
+    conn: &mut PgConnection,
+    post_id: i32,
+    kind: &str,
+    opts: Map<String, Value>,
+    skip_topic_stats: bool,
+) -> Result<(), AppError> {
+    type PostRow = (i32, i32, Option<i32>, Option<i32>, i32, i32, Option<String>);
+    let post: Option<PostRow> = sqlx::query_as(
+        "SELECT p.topic_id, p.post_number, p.user_id, p.last_editor_id, p.version, p.post_type, \
+                u.username \
+         FROM posts p JOIN topics t ON t.id = p.topic_id LEFT JOIN users u ON u.id = p.user_id \
+         WHERE p.id = $1",
+    )
+    .bind(post_id)
+    .fetch_optional(&mut *conn)
+    .await?;
+    // A post without its topic is skipped, as Rails does.
+    let Some((topic_id, post_number, user_id, last_editor_id, version, post_type, username)) = post
+    else {
+        return Ok(());
+    };
+    let mut message = Map::new();
+    message.insert("id".into(), json!(post_id));
+    message.insert("post_number".into(), json!(post_number));
+    message.insert("updated_at".into(), json!(now_json()));
+    message.insert("user_id".into(), json!(user_id));
+    message.insert("last_editor_id".into(), json!(last_editor_id));
+    message.insert("type".into(), json!(kind));
+    message.insert("version".into(), json!(version));
+    if kind == "created" {
+        message.insert("username".into(), json!(username));
+    }
+    message.extend(opts);
+
+    // Topic.visible_post_types: regular, moderator_action, small_action.
+    let tags = if [1, 2, 3].contains(&post_type) {
+        topic_audience(conn, topic_id).await?
+    } else {
+        let users: Vec<i32> = sqlx::query_scalar(
+            "SELECT id FROM users WHERE id > 0 AND (admin OR moderator OR id = $1) ORDER BY id",
+        )
+        .bind(user_id)
+        .fetch_all(&mut *conn)
+        .await?;
+        audience(users.into_iter().map(user_tag).collect())
+    };
+    if let Some(tags) = tags {
+        ctx.bus
+            .publish(
+                conn,
+                &topic_channel(topic_id),
+                &Value::Object(message),
+                tags.as_deref(),
+            )
+            .await?;
+    }
+    if !skip_topic_stats {
+        publish_topic_stats(ctx, conn, topic_id, kind).await?;
+    }
+    Ok(())
+}
+
+/// `Topic.publish_stats_to_clients!(topic_id, type)`: the like count after
+/// a like, the post count and last poster after posts come and go.
+pub async fn publish_topic_stats(
+    ctx: &Ctx<'_>,
+    conn: &mut PgConnection,
+    topic_id: i32,
+    kind: &str,
+) -> Result<(), AppError> {
+    let topic: Option<(i32, i32, Option<NaiveDateTime>, Option<i32>)> = sqlx::query_as(
+        "SELECT like_count, posts_count, last_posted_at, last_post_user_id FROM topics WHERE id = $1",
+    )
+    .bind(topic_id)
+    .fetch_optional(&mut *conn)
+    .await?;
+    let Some((like_count, posts_count, last_posted_at, last_poster)) = topic else {
+        return Ok(());
+    };
+    let mut message = match kind {
+        "liked" | "unliked" => json!({ "like_count": like_count }),
+        "created" | "destroyed" | "deleted" | "recovered" => {
+            let last_poster = match last_poster {
+                Some(id) => basic_user(ctx, conn, id).await?,
+                None => Value::Null,
+            };
+            json!({
+                "posts_count": posts_count,
+                "last_posted_at": last_posted_at.map(time_json),
+                "last_poster": last_poster,
+            })
+        }
+        _ => return Ok(()),
+    };
+    let Some(tags) = topic_audience(conn, topic_id).await? else {
+        return Ok(());
+    };
+    if let Some(m) = message.as_object_mut() {
+        m.insert("id".into(), json!(topic_id));
+        m.insert("updated_at".into(), json!(now_json()));
+        m.insert("type".into(), json!("stats"));
+    }
+    ctx.bus
+        .publish(conn, &topic_channel(topic_id), &message, tags.as_deref())
+        .await?;
+    Ok(())
+}
+
+/// `Time.now.as_json`.
+fn now_json() -> String {
+    time_json(crate::clock::now_naive())
+}
+
+/// `BasicUserSerializer`: the name only with enable_names.
+async fn basic_user(
+    ctx: &Ctx<'_>,
+    conn: &mut PgConnection,
+    user_id: i32,
+) -> Result<Value, AppError> {
+    if ctx.settings.get("enable_user_status")?.truthy() {
+        return Err(Unsupported("user status on BasicUserSerializer").into());
+    }
+    let user: Option<(String, Option<String>, Option<i32>)> =
+        sqlx::query_as("SELECT username, name, uploaded_avatar_id FROM users WHERE id = $1")
+            .bind(user_id)
+            .fetch_optional(&mut *conn)
+            .await?;
+    let Some((username, name, uploaded_avatar_id)) = user else {
+        return Ok(Value::Null);
+    };
+    let urls = Urls {
+        config: ctx.config,
+        settings: ctx.settings,
+    };
+    let avatar =
+        crate::avatar::avatar_template(&urls, user_id, &username, uploaded_avatar_id, None)?;
+    let mut out = Map::new();
+    out.insert("id".into(), json!(user_id));
+    out.insert("username".into(), json!(username));
+    if ctx.settings.get("enable_names")?.truthy() {
+        out.insert("name".into(), json!(name));
+    }
+    out.insert("avatar_template".into(), json!(avatar));
+    Ok(Value::Object(out))
 }

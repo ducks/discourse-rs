@@ -266,6 +266,23 @@ async fn process_post(state: &AppState, args: &Value) -> Result<(), AppError> {
             )
             .await?;
         }
+        let host = crate::pretty_text::Host::from_state(state);
+        let ctx = crate::posting::Ctx {
+            host: &host,
+            settings: &s,
+            config: &state.config,
+            i18n: &state.i18n,
+            bus: &state.bus,
+        };
+        crate::bus::publish_post_change(
+            &ctx,
+            &mut conn,
+            post_id,
+            "revised",
+            Default::default(),
+            false,
+        )
+        .await?;
     }
     if !bool_arg(args, "skip_pull_hotlinked_images") {
         // Jobs.cancel_scheduled_job, then enqueue.
