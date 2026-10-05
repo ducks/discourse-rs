@@ -156,6 +156,9 @@ samples = [
   # skipped though linkify decodes a %27 into one, an inline footnote's
   # text is a block of its own, and alt text gets no replacements.
   ["https://example.com/Capture%20d%27%C3%A9cran.png\n\n| a |\n|---|\n| x^[the \"calendar's\" view] |\n\n![wait... it's](https://example.com/a.png) and wait...", replies.id, u1.id],
+  # A fence or html block right after a tight item's text follows it on the
+  # same line; one opening an item, or a blockquote, starts a new line.
+  ["- a\n  ```\n  x\n  ```\n  after\n- b\n  <div>\n  y\n  </div>\n- ```\n  z\n  ```\n- c\n  > q", replies.id, u1.id],
 ]
 if upload
   samples << ["An upload that exists: ![image|64x64](#{upload.short_url}) and [a link|attachment](#{upload.short_url}).", replies.id, u1.id]

@@ -5,6 +5,7 @@ use markdown_it::plugins::cmark::block::fence::CodeFence;
 use markdown_it::{Node, NodeValue, Renderer};
 
 use super::RenderSettings;
+use super::tight::AfterText;
 use crate::pretty_text::sanitizer::AllowList;
 
 /// `TEXT_CODE_CLASSES`
@@ -16,8 +17,10 @@ struct Fence {
 }
 
 impl NodeValue for Fence {
-    fn render(&self, _: &Node, fmt: &mut dyn Renderer) {
-        fmt.cr();
+    fn render(&self, node: &Node, fmt: &mut dyn Renderer) {
+        if node.ext.get::<AfterText>().is_none() {
+            fmt.cr();
+        }
         fmt.text_raw(&self.html);
         fmt.cr();
     }
