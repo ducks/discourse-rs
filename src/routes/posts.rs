@@ -176,7 +176,7 @@ pub(super) async fn serialize_post(
         post_types: Vec::new(),
     };
     Ok(view
-        .serialize_single_post(post_id, with_link_counts, with_raw_and_draft_sequence)
+        .serialize_single_post(post_id, with_link_counts, with_raw_and_draft_sequence, true)
         .await?)
 }
 

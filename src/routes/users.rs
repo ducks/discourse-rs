@@ -50,15 +50,24 @@ enum Action {
     Summary,
 }
 
+/// Where `/u/:username(/...)` goes.
+enum Routed {
+    /// UsersController: the username, the action, and whether the request
+    /// wants JSON.
+    Profile(String, Action, bool),
+    /// `/activity.json`, PostsController#user_posts_feed: the username.
+    PostsFeed(String),
+}
+
 /// `/u/:username(/...)`: which action the tail selects, and whether the
 /// request wants JSON.
-fn route(username: &str, rest: Option<&str>) -> Result<(String, Action, bool), Unsupported> {
+fn route(username: &str, rest: Option<&str>) -> Result<Routed, Unsupported> {
     let (username, json) = match username.strip_suffix(".json") {
         Some(u) => (u.to_string(), true),
         None => (username.to_string(), false),
     };
     let Some(rest) = rest else {
-        return Ok((username, Action::Show, json));
+        return Ok(Routed::Profile(username, Action::Show, json));
     };
     let (rest, json) = match rest.strip_suffix(".json") {
         Some(r) => (r, true),
@@ -69,7 +78,7 @@ fn route(username: &str, rest: Option<&str>) -> Result<(String, Action, bool), U
         "badges" | "notifications" | "messages" | "private-messages" | "deleted-posts" => {
             Action::Show
         }
-        "activity" if json => return Err(Unsupported("/u/:username/activity.json (posts feed)")),
+        "activity" if json => return Ok(Routed::PostsFeed(username)),
         "activity" => Action::Show,
         r if r.starts_with("activity/")
             || r.starts_with("notifications/")
@@ -81,7 +90,7 @@ fn route(username: &str, rest: Option<&str>) -> Result<(String, Action, bool), U
         "card" => return Err(Unsupported("/u/:username/card.json")),
         _ => return Err(Unsupported("unknown /u/:username route")),
     };
-    Ok((username, action, json))
+    Ok(Routed::Profile(username, action, json))
 }
 
 /// GET /u/{username}
@@ -94,7 +103,9 @@ pub async fn show(
     Peer(peer): Peer,
     uri: axum::http::Uri,
 ) -> Result<Response, AppError> {
-    let (username, action, json) = route(&username, None)?;
+    let Routed::Profile(username, action, json) = route(&username, None)? else {
+        return Err(Unsupported("a feed without a path").into());
+    };
     respond(
         state,
         incoming,
@@ -121,7 +132,12 @@ pub async fn show_with_tail(
     Peer(peer): Peer,
     uri: axum::http::Uri,
 ) -> Result<Response, AppError> {
-    let (username, action, json) = route(&username, Some(&rest))?;
+    let (username, action, json) = match route(&username, Some(&rest))? {
+        Routed::Profile(username, action, json) => (username, action, json),
+        Routed::PostsFeed(username) => {
+            return posts_feed(&state, &incoming.guardian, &username).await;
+        }
+    };
     respond(
         state,
         incoming,
@@ -472,4 +488,107 @@ fn profile_page(
         top_categories,
         activity,
     })
+}
+
+/// GET /u/:username/activity.json: PostsController#user_posts_feed. The
+/// user's latest public posts (Post.public_posts.visible, regular ones,
+/// newest first, 50 at most), less those the viewer cannot see, each
+/// PostSerializer with add_excerpt. A user the viewer may not see the
+/// profile of is a 404.
+async fn posts_feed(
+    state: &AppState,
+    guardian: &crate::guardian::Guardian,
+    username: &str,
+) -> Result<Response, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let not_found = || super::topics::not_found_response(state, false);
+    let Some(user) = User::find_active(&mut conn, username).await? else {
+        return Ok(not_found());
+    };
+    if !user.visible_to(&settings, guardian)? {
+        return Ok(not_found());
+    }
+    if settings.get("content_localization_enabled")?.truthy() {
+        return Err(Unsupported("translated excerpts in the posts feed").into());
+    }
+    // ignored_user_like_counts takes likes by users the viewer ignores off
+    // the counts.
+    if let Some(viewer) = guardian.user_id() {
+        let ignores: bool =
+            sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM ignored_users WHERE user_id = $1)")
+                .bind(viewer)
+                .fetch_one(&mut *conn)
+                .await?;
+        if ignores {
+            return Err(Unsupported("posts feed for a viewer who ignores users").into());
+        }
+    }
+    let ids: Vec<i32> = sqlx::query_scalar(
+        "SELECT p.id FROM posts p JOIN topics t ON t.id = p.topic_id \
+         WHERE p.user_id = $1 AND p.post_type = 1 AND p.deleted_at IS NULL AND NOT p.hidden \
+           AND t.visible AND t.deleted_at IS NULL AND t.archetype <> 'private_message' \
+         ORDER BY p.created_at DESC LIMIT 50",
+    )
+    .bind(user.id)
+    .fetch_all(&mut *conn)
+    .await?;
+    let host = crate::pretty_text::Host::from_state(state);
+    let ctx = crate::posting::Ctx {
+        host: &host,
+        settings: &settings,
+        config: &state.config,
+        i18n: &state.i18n,
+        bus: &state.bus,
+    };
+    let urls = Urls {
+        config: &state.config,
+        settings: &settings,
+    };
+    let max_length = settings.get("post_excerpt_maxlength")?.to_i().max(0) as usize;
+    let mut posts = Vec::with_capacity(ids.len());
+    for id in ids {
+        // posts.reject { !guardian.can_see?(post) }
+        let visible = crate::posting::revisions::find_post(&mut conn, &ctx, guardian, id)
+            .await?
+            .is_some_and(|a| a.can_see_post);
+        if !visible {
+            continue;
+        }
+        let mut view = crate::topic_view::TopicView {
+            conn: &mut conn,
+            settings: &settings,
+            i18n: &state.i18n,
+            guardian,
+            urls: &urls,
+            options: crate::topic_view::Options {
+                page: 0,
+                post_number: None,
+            },
+            post_types: Vec::new(),
+        };
+        let Value::Object(mut post) = view.serialize_single_post(id, false, false, false).await?
+        else {
+            continue;
+        };
+        // add_excerpt: excerpt and truncated, which PostSerializer lists
+        // before post_url.
+        let post_url = post.shift_remove("post_url");
+        let cooked = post["cooked"].as_str().unwrap_or_default().to_string();
+        post.insert(
+            "excerpt".into(),
+            json!(crate::excerpt::excerpt(
+                &cooked,
+                max_length,
+                &crate::excerpt::Options::default()
+            )),
+        );
+        post.insert("truncated".into(), json!(true));
+        if let Some(url) = post_url {
+            post.insert("post_url".into(), url);
+        }
+        posts.push(Value::Object(post));
+    }
+    Ok(Json(Value::Array(posts)).into_response())
 }

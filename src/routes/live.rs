@@ -402,7 +402,9 @@ async fn render_post(
         },
         post_types: Vec::new(),
     };
-    let post = view.serialize_single_post(post_id, false, false).await?;
+    let post = view
+        .serialize_single_post(post_id, false, false, true)
+        .await?;
     let base = state.config.globals.relative_url_root();
     let topic_url = format!(
         "{base}/t/{}/{}",
