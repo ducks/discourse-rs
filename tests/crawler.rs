@@ -133,8 +133,10 @@ async fn sitemaps_regenerate_their_rows_and_honor_the_setting() {
     assert!(!body.contains("deleted-topic"), "trashed topics stay out");
     assert!(!body.contains("unlisted"), "invisible topics stay out");
 
-    // A topic with more posts than a page links to its last page.
-    sqlx::query("UPDATE topics SET posts_count = 45 WHERE id = 35")
+    // A topic with more posts than a page links to its last page. Bumped
+    // now: the recent sitemap lists only topics bumped within 3 days, and
+    // the seed's dates age.
+    sqlx::query("UPDATE topics SET posts_count = 45, bumped_at = now() WHERE id = 35")
         .execute(&db.pool)
         .await
         .unwrap();
