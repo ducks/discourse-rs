@@ -6,7 +6,10 @@ require "json"
 require "fileutils"
 
 out = ARGV[0]
-abort "usage: pretty_text_export.rb <dir>" if out.blank?
+abort "usage: pretty_text_export.rb <dir> [raws.json]" if out.blank?
+# Inputs to cook instead of this site's samples and posts
+# (scripts/fetch-discourse-corpus): [{id, source, raw, topic_id, user_id}].
+raws_file = ARGV[1]
 FileUtils.mkdir_p(out)
 
 # Every call the cooking JavaScript makes back into Ruby
@@ -140,11 +143,25 @@ end
 end
 
 corpus = []
+if raws_file.present?
+  JSON
+    .parse(File.read(raws_file))
+    .each do |r|
+      corpus << {
+        id: r["id"],
+        source: r["source"],
+        raw: r["raw"],
+        topic_id: r["topic_id"],
+        user_id: r["user_id"],
+      }
+    end
+  samples = []
+end
 samples.each_with_index do |sample, i|
   raw, topic_id, user_id = sample
   corpus << { id: "sample-#{i}", raw: raw, topic_id: topic_id, user_id: user_id }
 end
-Post.with_deleted.order(:id).each do |p|
+(raws_file.present? ? [] : Post.with_deleted.order(:id)).each do |p|
   # What Post#cook passes, and the column the post processor wrote.
   corpus << {
     id: "post-#{p.id}",

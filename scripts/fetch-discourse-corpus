@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+# Fetch real posts' raw markdown from a public Discourse, as a cooking
+# corpus: scripts/record-pretty-text cooks it on the reference and
+# tests/pretty_text.rs (backup_corpus_matches_rails) cooks it here.
+#
+# Topics come from the latest list and the all-time top list; each is read
+# once with include_raw (its first posts). One request a second, with a user
+# agent that says what this is. The content belongs to that site's users:
+# keep the output local (backups/ is ignored), never commit it.
+#
+# Each entry is {id, source, raw, topic_id, user_id}; topic_id and user_id
+# are the cooking context on our seed (a public topic and a member), since
+# the source's ids mean nothing there.
+#
+# Usage: scripts/fetch-discourse-corpus <base-url> <pages> <out.json>
+#   e.g. scripts/fetch-discourse-corpus https://meta.discourse.org 4 backups/meta/raws.json
+set -euo pipefail
+
+if [ $# -ne 3 ]; then
+  echo "usage: $0 <base-url> <pages> <out.json>" >&2
+  exit 64
+fi
+base="${1%/}"
+pages="$2"
+out="$3"
+agent="discourse-rs cooking corpus (https://github.com/ducks/discourse-rs)"
+work="$(mktemp -d)"
+trap 'rm -rf "$work"' EXIT
+
+get() {
+  sleep 1
+  curl -sf -A "$agent" -H "Accept: application/json" "$base$1"
+}
+
+for page in $(seq 0 $((pages - 1))); do
+  for list in "/latest.json?page=$page" "/top.json?period=all&page=$page"; do
+    get "$list" | jq -r '.topic_list.topics[].id' >> "$work/ids" || true
+  done
+done
+sort -un "$work/ids" > "$work/topics"
+echo "$(wc -l < "$work/topics") topics" >&2
+
+: > "$work/posts"
+while read -r id; do
+  if get "/t/$id.json?include_raw=1" > "$work/topic.json"; then
+    jq -c --arg source "$base/t/$id" \
+      '.post_stream.posts[] | select(.raw != null and .raw != "")
+       | {id: "src-\(.id)", source: "\($source)/\(.post_number)", raw}' \
+      "$work/topic.json" >> "$work/posts"
+  fi
+done < "$work/topics"
+
+mkdir -p "$(dirname "$out")"
+# The seed's cooking context: the public fixture topic and user1.
+jq -s 'map(. + {topic_id: 35, user_id: 3})' "$work/posts" > "$out"
+echo "$(jq length "$out") posts -> $out" >&2
