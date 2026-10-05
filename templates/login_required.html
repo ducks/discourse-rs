@@ -1,7 +1,50 @@
 {% extends "layout.html" %}
+{% block head %}
+    <script src="{{ base_path }}/assets/htmx.min.js" defer></script>
+{% endblock %}
 {% block content %}
 <div class="login-required">
   <h1>{{ welcome }}</h1>
-  <p>This site requires an account to read. Log in to continue.</p>
+  {% if login_required %}<p>This site requires an account to read. Log in to continue.</p>{% endif %}
+  {% if local_logins %}
+  {#- POST /session answers 200 with an `error` for refused logins, as Rails
+      does, so the script reads the body rather than the status. -#}
+  <form class="login" hx-post="{{ base_path }}/session" hx-swap="none"
+        hx-headers='{"X-CSRF-Token": "{{ csrf_token }}", "X-Requested-With": "XMLHttpRequest"}'
+        hx-on::after-request="loggedIn(event)">
+    <label>Username or email <input name="login" autocomplete="username" required autofocus></label>
+    <label>Password <input name="password" type="password" autocomplete="current-password" required></label>
+    <p class="login-error" role="alert" hidden></p>
+    <button type="submit">Log in</button>
+  </form>
+  {#- static#enter, which the client submits after logging in: it redirects to
+      a path on this site, the one the reader was sent here from. -#}
+  <form id="login-enter" method="post" action="{{ base_path }}/login" hidden>
+    <input type="hidden" name="redirect" value="">
+  </form>
+  <script>
+    function loggedIn(event) {
+      var body = {};
+      try { body = JSON.parse(event.detail.xhr.responseText); } catch (_) {}
+      if (event.detail.successful && !body.error) {
+        // destination_url is the full URL the login gate sent the reader
+        // away from; static#enter takes a path.
+        var match = document.cookie.match(/(?:^|; )destination_url=([^;]*)/);
+        if (match) {
+          try {
+            var url = new URL(decodeURIComponent(match[1]));
+            document.querySelector("#login-enter [name=redirect]").value = url.pathname + url.search;
+          } catch (_) {}
+          document.cookie = "destination_url=; path=/; max-age=0";
+        }
+        document.getElementById("login-enter").submit();
+        return;
+      }
+      var error = document.querySelector(".login-error");
+      error.textContent = body.error || "Could not log in.";
+      error.hidden = false;
+    }
+  </script>
+  {% endif %}
 </div>
 {% endblock %}

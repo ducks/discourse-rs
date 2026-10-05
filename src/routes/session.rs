@@ -115,6 +115,20 @@ pub async fn csrf(State(state): State<AppState>, headers: HeaderMap) -> Result<R
     Ok(response)
 }
 
+/// A masked CSRF token for an anonymous visitor's form, and the
+/// `_forum_session` cookie to set when minting it created the session. Only
+/// for pages that are never cached, such as the login page.
+pub(super) fn anonymous_csrf(
+    state: &AppState,
+    headers: &HeaderMap,
+    settings: &SiteSettings,
+) -> Result<(String, Option<String>), AppError> {
+    let mut session = load_forum_session(state, headers);
+    let stored = session.csrf_token();
+    let masked = csrf::mask(&stored).ok_or(Unsupported("session csrf token not decodable"))?;
+    Ok((masked, session.set_cookie(state, settings)?))
+}
+
 /// The page shell's viewer block for a logged-in guardian: the username
 /// and a masked CSRF token from the `_forum_session` (created when
 /// absent, which sets the cookie).
