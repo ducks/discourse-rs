@@ -1,0 +1,190 @@
+//! The topic page's live updates for htmx: GET /t/:id/live streams each
+//! post change as HTML for that viewer, and the page wires it up.
+
+mod common;
+
+use std::time::Duration;
+
+use axum::body::Body;
+use axum::http::{Request, StatusCode, header};
+use common::{TestDb, config, state};
+use discourse_rs::AppState;
+use discourse_rs::config::RailsEnv;
+use discourse_rs::site_settings::SiteSettings;
+use http_body_util::BodyExt;
+use tower::ServiceExt;
+
+/// The public fixture topic: (topic id, a reply's id and post number).
+const TOPIC: i32 = 35;
+
+async fn a_reply(st: &AppState) -> (i32, i32) {
+    sqlx::query_as(
+        "SELECT id, post_number FROM posts WHERE topic_id = $1 AND post_number > 1 \
+           AND post_type = 1 AND deleted_at IS NULL ORDER BY post_number LIMIT 1",
+    )
+    .bind(TOPIC)
+    .fetch_one(&st.pool)
+    .await
+    .unwrap()
+}
+
+async fn get(st: &AppState, path: &str) -> axum::response::Response {
+    discourse_rs::app(st.clone())
+        .oneshot(
+            Request::get(path)
+                .header(header::HOST, "test.localhost")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap()
+}
+
+async fn publish(st: &AppState, post_id: i32, kind: &str) {
+    let mut conn = st.pool.acquire().await.unwrap();
+    let settings = SiteSettings::load(&mut conn, &st.site_setting_defs, &st.config.globals)
+        .await
+        .unwrap();
+    drop(conn);
+    let host = discourse_rs::pretty_text::Host::from_state(st);
+    let ctx = discourse_rs::posting::Ctx {
+        host: &host,
+        settings: &settings,
+        config: &st.config,
+        i18n: &st.i18n,
+        bus: &st.bus,
+    };
+    let mut tx = st.pool.begin().await.unwrap();
+    discourse_rs::bus::publish_post_change(&ctx, &mut tx, post_id, kind, Default::default(), true)
+        .await
+        .unwrap();
+    tx.commit().await.unwrap();
+}
+
+/// Reads the stream until a `post` event arrives; its data lines joined.
+async fn next_post_event(body: &mut Body) -> String {
+    let mut buffer = String::new();
+    let deadline = tokio::time::Instant::now() + Duration::from_secs(30);
+    loop {
+        if let Some(start) = buffer.find("event: post\n") {
+            let rest = &buffer[start..];
+            if let Some(end) = rest.find("\n\n") {
+                return rest[..end]
+                    .lines()
+                    .filter_map(|l| l.strip_prefix("data: ").or(l.strip_prefix("data:")))
+                    .collect::<Vec<_>>()
+                    .join("\n");
+            }
+        }
+        let frame = tokio::time::timeout_at(deadline, body.frame())
+            .await
+            .expect("a post event within 30 s")
+            .expect("the stream stays open")
+            .unwrap();
+        if let Ok(data) = frame.into_data() {
+            buffer.push_str(&String::from_utf8_lossy(&data));
+        }
+    }
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn the_topic_page_connects_to_its_live_stream() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let response = get(&st, "/t/parity-fixture-replies-and-posters/35").await;
+    assert_eq!(response.status(), StatusCode::OK);
+    let bytes = response.into_body().collect().await.unwrap().to_bytes();
+    let html = String::from_utf8_lossy(&bytes);
+    assert!(html.contains("/assets/htmx.min.js"));
+    assert!(html.contains(r#"<div id="posts""#));
+    assert!(
+        html.contains(r#"sse-connect="/t/35/live?position="#),
+        "the stream starts at the page's position"
+    );
+    assert!(
+        !html.contains("hx-post="),
+        "no reply form for an anonymous reader"
+    );
+
+    let js = get(&st, "/assets/htmx-ext-sse.js").await;
+    assert_eq!(js.status(), StatusCode::OK);
+    assert_eq!(
+        js.headers()[header::CONTENT_TYPE],
+        "text/javascript; charset=utf-8"
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn changes_arrive_as_html_for_the_viewer() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let (post_id, post_number) = a_reply(&st).await;
+    let from = st.bus.now().await.unwrap();
+    let response = get(&st, &format!("/t/{TOPIC}/live?position={from}")).await;
+    assert_eq!(response.status(), StatusCode::OK);
+    assert!(
+        response.headers()[header::CONTENT_TYPE]
+            .to_str()
+            .unwrap()
+            .starts_with("text/event-stream")
+    );
+    let mut body = response.into_body();
+
+    // An edit replaces the post where it is.
+    publish(&st, post_id, "revised").await;
+    let html = next_post_event(&mut body).await;
+    assert!(
+        html.contains(&format!(r#"<div id="post_{post_number}""#)),
+        "{html}"
+    );
+    assert!(html.contains(r#"hx-swap-oob="true""#), "{html}");
+    assert!(
+        html.contains(r#"itemprop="text""#),
+        "the cooked post: {html}"
+    );
+
+    // A new post is appended to the posts.
+    publish(&st, post_id, "created").await;
+    let html = next_post_event(&mut body).await;
+    assert!(
+        html.starts_with(r##"<div hx-swap-oob="beforeend:#posts">"##),
+        "{html}"
+    );
+
+    // A deleted post goes away for a reader who cannot see deleted posts.
+    sqlx::query("UPDATE posts SET deleted_at = now() WHERE id = $1")
+        .bind(post_id)
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    publish(&st, post_id, "deleted").await;
+    let html = next_post_event(&mut body).await;
+    assert_eq!(
+        html,
+        format!(r#"<div id="post_{post_number}" hx-swap-oob="delete"></div>"#)
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn a_topic_the_viewer_cannot_see_has_no_stream() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let category: i32 = sqlx::query_scalar("SELECT category_id FROM topics WHERE id = $1")
+        .bind(TOPIC)
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+    sqlx::query("UPDATE categories SET read_restricted = TRUE WHERE id = $1")
+        .bind(category)
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    assert_eq!(
+        get(&st, &format!("/t/{TOPIC}/live")).await.status(),
+        StatusCode::NOT_FOUND
+    );
+    assert_eq!(
+        get(&st, "/t/nope/live").await.status(),
+        StatusCode::NOT_FOUND
+    );
+}

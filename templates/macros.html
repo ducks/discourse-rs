@@ -1,0 +1,19 @@
+{#- One post as the topic page shows it. `oob`, when not empty, is htmx's
+    hx-swap-oob for a live update replacing the post on the page. -#}
+{% macro post_block(post, oob) %}
+  <div id="post_{{ post.number }}" class="topic-body crawler-post{% if post.small_action %} small-action{% endif %}"{% if !oob.is_empty() %} hx-swap-oob="{{ oob }}"{% endif %}>
+    <div class="crawler-post-meta">
+      <span class="creator">
+        <a rel="nofollow" href="{{ post.user_url }}">{{ post.username }}</a>
+        {% if let Some(n) = post.name %}<span class="full-name">({{ n }})</span>{% endif %}
+        {% if let Some(a) = post.action_text %}<span class="action">{{ a }}</span>{% endif %}
+      </span>
+      <span class="crawler-post-infos">
+        <time datetime="{{ post.created_at_iso }}">{{ post.created_at }}</time>
+        <a class="post-link" href="{{ post.url }}">#{{ post.number }}</a>
+      </span>
+    </div>
+    <div class="post" itemprop="text">{{ post.cooked|safe }}</div>
+    {% if post.likes > 0 %}<div class="post-likes">&#x2764; {{ post.likes }}</div>{% endif %}
+  </div>
+{% endmacro %}

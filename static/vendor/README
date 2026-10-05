@@ -1,0 +1,11 @@
+Vendored from npm, served at /assets/ (src/routes/mod.rs):
+
+  htmx.min.js       htmx.org@2.0.11, dist/htmx.min.js
+  htmx-ext-sse.js   htmx-ext-sse@2.2.4, dist/sse.js
+
+Each was checked against the package tarball's npm integrity (sha512) and
+compared byte for byte with the file in the tarball. To update, fetch the
+new versions the same way and check them again:
+
+  curl -s https://registry.npmjs.org/<pkg>/<version>    # dist.integrity
+  curl -sL https://registry.npmjs.org/<pkg>/-/<pkg>-<version>.tgz

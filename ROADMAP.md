@@ -290,11 +290,21 @@ top of the Rust API (decided 2026-10-05). The JSON API stays Rails'
 shape, measured as before, so the client is one consumer of it and
 Discourse's own clients keep working.
 
-- [ ] Decide the stack: a WASM framework (Leptos, Dioxus), or the
-      server-rendered askama pages grown into the app with a small script
-      for live updates and forms
-- [ ] First slice: topic lists, a topic, replying, live updates
-      (`/topic/<id>`, notifications), login
+- [x] Decide the stack: the server-rendered askama pages grown into the
+      app with htmx (decided 2026-10-05). Rust renders every piece of
+      HTML, live updates included: a page's live endpoint turns bus
+      messages into fragments for that viewer, sent as htmx out-of-band
+      swaps over SSE. htmx and its SSE extension are vendored
+      (static/vendor), no build step. WASM only where it pays, the
+      composer preview first. Datastar was the alternative (SSE native,
+      signals built in); the server side would be the same
+- [x] First slice, the topic page: new, edited, liked, deleted and
+      recovered posts arrive live (GET /t/:id/live, on the last page),
+      and members reply from a form on the page, the reply coming back
+      over the stream. Checked in headless Firefox as well as the tests
+- [ ] First slice, next: topic lists live (`/latest`, the new and unread
+      counts), the notification count and alert in the header, login
+      from a page
 - [ ] The composer: markdown preview with the Rust renderer, uploads,
       drafts
 - [ ] The user menu, notifications, bookmarks, messages, preferences

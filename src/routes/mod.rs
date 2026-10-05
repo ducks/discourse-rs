@@ -7,6 +7,7 @@ mod bookmarks;
 mod bus;
 mod drafts;
 mod list;
+mod live;
 mod login_required;
 mod messages;
 mod notifications;
@@ -44,6 +45,24 @@ async fn site_css() -> impl IntoResponse {
     (
         [(header::CONTENT_TYPE, "text/css; charset=utf-8")],
         SITE_CSS,
+    )
+}
+
+// htmx and its SSE extension, vendored from npm (static/vendor/README).
+const HTMX: &str = include_str!("../../static/vendor/htmx.min.js");
+const HTMX_SSE: &str = include_str!("../../static/vendor/htmx-ext-sse.js");
+
+async fn htmx() -> impl IntoResponse {
+    (
+        [(header::CONTENT_TYPE, "text/javascript; charset=utf-8")],
+        HTMX,
+    )
+}
+
+async fn htmx_sse() -> impl IntoResponse {
+    (
+        [(header::CONTENT_TYPE, "text/javascript; charset=utf-8")],
+        HTMX_SSE,
     )
 }
 
@@ -115,6 +134,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/topics/timings", post(read_tracking::timings))
         .route("/topics/timings.json", post(read_tracking::timings))
         .route("/t/{slug}/timings", post(read_tracking::topic_timings))
+        .route("/t/{slug}/live", get(live::topic))
         .route("/topics/{kind}/{username}", get(messages::personal))
         .route(
             "/topics/private-messages-group/{username}/{*rest}",
@@ -279,6 +299,8 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/site/basic-info", get(site::basic_info))
         .route("/site/basic-info.json", get(site::basic_info))
         .route("/assets/site.css", get(site_css))
+        .route("/assets/htmx.min.js", get(htmx))
+        .route("/assets/htmx-ext-sse.js", get(htmx_sse))
         .nest_service("/uploads", ServeDir::new(public.join("uploads")));
     if let Some(emoji) = config.emoji_dir() {
         router = router.nest_service("/images/emoji", ServeDir::new(emoji));

@@ -1,5 +1,10 @@
 {% extends "layout.html" %}
+{% import "macros.html" as m %}
 {% block title %}{{ title }} - {{ site_title }}{% endblock %}
+{% block head %}
+    <script src="{{ base_path }}/assets/htmx.min.js" defer></script>
+    <script src="{{ base_path }}/assets/htmx-ext-sse.js" defer></script>
+{% endblock %}
 {% block content %}
 <div id="topic-title">
   <h1><a href="{{ canonical_url }}">{{ title_unicode }}</a></h1>
@@ -21,25 +26,53 @@
   </div>
   {% endif %}
 </div>
-<div class="topic-body-container">
-  {% for post in posts %}
-  <div id="post_{{ post.number }}" class="topic-body crawler-post{% if post.small_action %} small-action{% endif %}">
-    <div class="crawler-post-meta">
-      <span class="creator">
-        <a rel="nofollow" href="{{ post.user_url }}">{{ post.username }}</a>
-        {% if let Some(n) = post.name %}<span class="full-name">({{ n }})</span>{% endif %}
-        {% if let Some(a) = post.action_text %}<span class="action">{{ a }}</span>{% endif %}
-      </span>
-      <span class="crawler-post-infos">
-        <time datetime="{{ post.created_at_iso }}">{{ post.created_at }}</time>
-        <a class="post-link" href="{{ post.url }}">#{{ post.number }}</a>
-      </span>
-    </div>
-    <div class="post" itemprop="text">{{ post.cooked|safe }}</div>
-    {% if post.likes > 0 %}<div class="post-likes">&#x2764; {{ post.likes }}</div>{% endif %}
-  </div>
-  {% endfor %}
+<div id="posts" class="topic-body-container">
+  {% for post in posts %}{% call m::post_block(post, "") %}{% endfor %}
 </div>
+{% if live %}
+{#- New and changed posts arrive as htmx out-of-band swaps; the sink itself
+    stays empty. -#}
+<div hidden hx-ext="sse" sse-connect="{{ base_path }}/t/{{ topic_id }}/live{% if !bus_position.is_empty() %}?position={{ bus_position }}{% endif %}" sse-swap="post"></div>
+<script>
+  // A post created while the page was read can arrive once more: keep the
+  // first copy of each.
+  document.addEventListener("htmx:sseMessage", function () {
+    var seen = {};
+    document.querySelectorAll("#posts > [id^=\"post_\"]").forEach(function (el) {
+      if (seen[el.id]) { el.remove(); } else { seen[el.id] = true; }
+    });
+  });
+</script>
+{% endif %}
+{% if can_reply %}{% if let Some(v) = viewer %}
+{#- The new post comes back over the live stream, so the response is only
+    checked for errors. -#}
+<form class="reply" hx-post="{{ base_path }}/posts" hx-swap="none"
+      hx-headers='{"X-CSRF-Token": "{{ v.csrf_token }}", "X-Requested-With": "XMLHttpRequest"}'
+      hx-on::after-request="replied(this, event)">
+  <input type="hidden" name="topic_id" value="{{ topic_id }}">
+  <textarea name="raw" rows="5" required aria-label="Reply"></textarea>
+  <p class="reply-error" role="alert" hidden></p>
+  <button type="submit">Reply</button>
+</form>
+<script>
+  function replied(form, event) {
+    var error = form.querySelector(".reply-error");
+    if (event.detail.successful) {
+      form.reset();
+      error.hidden = true;
+      return;
+    }
+    var message = "Could not post the reply.";
+    try {
+      var body = JSON.parse(event.detail.xhr.responseText);
+      if (body.errors) { message = body.errors.join(" "); }
+    } catch (_) {}
+    error.textContent = message;
+    error.hidden = false;
+  }
+</script>
+{% endif %}{% endif %}
 {% if prev_url.is_some() || next_url.is_some() %}
 <div class="topic-pagination">
   {% if let Some(url) = prev_url %}<a href="{{ url }}" rel="prev">Previous page</a>{% endif %}
