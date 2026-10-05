@@ -116,8 +116,11 @@ with the clock pinned to the golden's `recorded_at` (the port's
 `clock::now()` and the database's `now()`), so edit windows and "recent"
 lists answer as they did when Rails was recorded.
 
-Recording workflow: create a fresh dv agent, vendor its commit, snapshot its
-database, write its env to `parity/environment`, then `make parity-record`.
+Recording workflow: create a fresh dv agent, run `scripts/reference-env
+<agent>` (no Sidekiq or scheduler, so its database only changes when a
+recording changes it; see `parity/reference.env`), vendor its commit,
+snapshot its database, write its env to `parity/environment`, then
+`make parity-record`.
 Live comparison needs both sides on the same database and configuration:
 run discourse-rs against a `make db-load` of the snapshot with
 `env $(grep -v ^# parity/environment) cargo run`.

@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+# Run the reference agent's Rails server with parity/reference.env: the
+# variables go into an envdir its runit service reads (chpst -e), the
+# service restarts, and the running server is checked for each of them.
+#
+# Usage: scripts/reference-env <agent-name>
+#
+# The service change lives in the container, so run this again after the
+# agent is recreated. It is safe to run any time.
+set -euo pipefail
+
+if [ $# -ne 1 ]; then
+  echo "usage: $0 <agent-name>" >&2
+  exit 64
+fi
+
+agent="$1"
+root="$(cd "$(dirname "$0")/.." && pwd)"
+vars="$(grep -vE '^\s*(#|$)' "$root/parity/reference.env")"
+
+setup="$(mktemp)"
+trap 'rm -f "$setup"' EXIT
+{
+  echo "set -euo pipefail"
+  echo "rm -rf /etc/service/rails/env"
+  echo "mkdir -p /etc/service/rails/env"
+  while IFS='=' read -r key value; do
+    printf "printf '%%s' '%s' > /etc/service/rails/env/%s\n" "$value" "$key"
+  done <<< "$vars"
+  cat <<'EOF'
+if ! grep -q 'chpst -e /etc/service/rails/env' /etc/service/rails/run; then
+  sed -i 's|exec chpst |exec chpst -e /etc/service/rails/env |' /etc/service/rails/run
+fi
+sv restart rails
+EOF
+} > "$setup"
+dv copy "$setup" "$agent:/tmp/reference-env.sh" > /dev/null
+dv run --name "$agent" --root -- bash /tmp/reference-env.sh
+
+# The server is up when it answers; then check what it runs with.
+for _ in $(seq 1 120); do
+  if dv run --name "$agent" -- curl -sf -o /dev/null http://localhost:3000/srv/status 2> /dev/null; then
+    break
+  fi
+  sleep 1
+done
+running="$(dv run --name "$agent" -- bash -c 'tr "\0" "\n" < /proc/$(pgrep -f "pitchfork monitor" | head -1)/environ')"
+status=0
+while IFS= read -r var; do
+  if ! grep -qxF "$var" <<< "$running"; then
+    echo "the server does not run with $var" >&2
+    status=1
+  fi
+done <<< "$vars"
+if dv run --name "$agent" -- pgrep -f '^sidekiq' > /dev/null 2>&1 \
+  && grep -qx 'UNICORN_SIDEKIQS=0' <<< "$vars"; then
+  echo "sidekiq is still running" >&2
+  status=1
+fi
+[ "$status" -eq 0 ] || exit 1
+echo "$agent: Rails runs with $(paste -sd' ' <<< "$vars")"
