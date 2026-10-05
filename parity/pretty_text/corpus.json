@@ -457,6 +457,14 @@
   },
   {
     "id": "sample-57",
+    "raw": "<a class=\"mention-group\">@staff</a>, <A href=\"https://example.com\">**@admins** #support</A> but @staff and <b>@admins</b>",
+    "topic_id": 35,
+    "user_id": 3,
+    "markdown": "<p><a class=\"mention-group\">@staff</a>, <a href=\"https://example.com\"><strong>@admins</strong> #support</a> but <span class=\"mention\">@staff</span> and <b><span class=\"mention\">@admins</span></b></p>",
+    "cooked": "<p><a class=\"mention-group\">@staff</a>, <a href=\"https://example.com\" rel=\"noopener nofollow ugc\"><strong>@admins</strong> #support</a> but <a class=\"mention-group\" href=\"/groups/staff\">@staff</a> and <b><a class=\"mention-group\" href=\"/groups/admins\">@admins</a></b></p>"
+  },
+  {
+    "id": "sample-58",
     "raw": "An upload that exists: ![image|64x64](upload://qa4V5109J7tySkPok8r3aBAruY1.png) and [a link|attachment](upload://qa4V5109J7tySkPok8r3aBAruY1.png).",
     "topic_id": 35,
     "user_id": 3,
