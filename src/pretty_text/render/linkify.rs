@@ -447,7 +447,11 @@ pub fn run(root: &mut Node, linkify: &Arc<LinkifyIt>, md: &MarkdownIt) -> Option
                 .cast::<Text>()
                 .and_then(|text| split(&text.content, after_special, linkify, md, unsupported));
             match replaced {
-                Some(nodes) => {
+                Some(mut nodes) => {
+                    // The pieces keep the text's source, which smartquotes
+                    // groups by.
+                    let srcmap = node.children[i].srcmap;
+                    nodes.iter_mut().for_each(|n| n.srcmap = srcmap);
                     node.children.splice(i..=i, nodes);
                 }
                 None => visit(&mut node.children[i], linkify, md, unsupported),

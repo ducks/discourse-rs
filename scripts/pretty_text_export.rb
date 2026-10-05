@@ -145,6 +145,10 @@ samples = [
   # Lines that are only an <img> are a paragraph (html_img), not an HTML
   # block; indented four spaces they are code, and they cannot interrupt one.
   ["Before.\n\n<img src=\"https://example.com/a.png\" width=\"10\">\n<IMG src=\"https://example.com/b.png\" />\n\nText\n<img src=\"https://example.com/c.png\">\n\n    <img src=\"https://example.com/d.png\">", replies.id, u1.id],
+  # Smart quotes pair within one inline block, whose ends count as space: a
+  # quote closing a tight list item or a table cell, an item's open quote
+  # that the next item does not close, and image alt text left alone.
+  ["- no new posts since \"last visit\"\n- an \"open one\n- closed\" here\n\n| Default |\n|---|\n| \"Upcoming events\" |\n\n![it's \"alt\"](https://example.com/a.png) it's \"done\"", replies.id, u1.id],
 ]
 if upload
   samples << ["An upload that exists: ![image|64x64](#{upload.short_url}) and [a link|attachment](#{upload.short_url}).", replies.id, u1.id]
