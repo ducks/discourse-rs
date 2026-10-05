@@ -1,4 +1,12 @@
 //! features/table.js: a table sits in `<div class="md-table">`.
+//!
+//! Its `table_close` rule returns `</table>\n</div>` with no newline after
+//! it, and markdown-it starts a block on a new line only after a hidden
+//! token, so whatever follows a table follows `</div>` on the same line
+//! (`</div><p>`, `</div></blockquote>`). This crate's blocks start with
+//! `cr()`, which would add one: the wrapper ends with [`GLUE`], which `cr()`
+//! does not take for a line end, and [`unglue`] removes it and the newline
+//! put after it.
 
 use markdown_it::plugins::extra::tables::Table;
 use markdown_it::{Node, NodeValue, Renderer};
@@ -16,8 +24,25 @@ impl NodeValue for MdTable {
         fmt.contents(&node.children);
         fmt.cr();
         fmt.close("div");
-        fmt.cr();
+        fmt.text_raw(GLUE);
     }
+}
+
+/// Marks where nothing may follow on a new line: U+FFFF, a noncharacter,
+/// reserved for uses like this one. (Not a NUL: the crate turns every NUL
+/// in its output into U+FFFD.) A post containing it is refused, see
+/// [`refuse_glue`].
+pub const GLUE: &str = "\u{FFFF}";
+
+/// The rendered HTML without [`GLUE`] and the newline a block put after it.
+pub fn unglue(html: &str) -> String {
+    html.replace("\u{FFFF}\n", "").replace('\u{FFFF}', "")
+}
+
+/// A post that contains [`GLUE`] itself would lose it to [`unglue`].
+pub fn refuse_glue(raw: &str) -> Option<&'static str> {
+    raw.contains('\u{FFFF}')
+        .then_some("U+FFFF in a post (the table renderer's marker)")
 }
 
 pub fn apply(root: &mut Node) {

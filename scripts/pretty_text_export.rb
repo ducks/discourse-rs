@@ -136,6 +136,9 @@ samples = [
   ["[wrap=foo bar=1]\nwrapped block\n[/wrap]\n\ninline [wrap=x]y[/wrap]", replies.id, u1.id],
   ["[grid]\n![a](upload://aaaaaaaaaaaaaaaaaaaa.png)\n![b](upload://bbbbbbbbbbbbbbbbbbbb.png)\n[/grid]", replies.id, u1.id],
   ["![video|video](upload://cccccccccccccccccccc.mp4)\n\n![audio|audio](upload://dddddddddddddddddddd.mp3)", replies.id, u1.id],
+  # Nothing follows a table on a new line (table_close ends with </div>):
+  # a paragraph after one, and one at the end of a blockquote.
+  ["| a | b |\n|---|---|\n| 1 | 2 |\n\nAfter the table.\n\n> | q |\n> |---|\n> | 1 |\n\nAfter the quote.", replies.id, u1.id],
 ]
 if upload
   samples << ["An upload that exists: ![image|64x64](#{upload.short_url}) and [a link|attachment](#{upload.short_url}).", replies.id, u1.id]
