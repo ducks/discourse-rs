@@ -441,6 +441,14 @@
   },
   {
     "id": "sample-55",
+    "raw": "Before.\n\n<img src=\"https://example.com/a.png\" width=\"10\">\n<IMG src=\"https://example.com/b.png\" />\n\nText\n<img src=\"https://example.com/c.png\">\n\n    <img src=\"https://example.com/d.png\">",
+    "topic_id": 35,
+    "user_id": 3,
+    "markdown": "<p>Before.</p>\n<p><img src=\"https://example.com/a.png\" width=\"10\"><br>\n<img src=\"https://example.com/b.png\"></p>\n<p>Text<br>\n<img src=\"https://example.com/c.png\"></p>\n<pre><code>&lt;img src=&quot;https://example.com/d.png&quot;&gt;\n</code></pre>",
+    "cooked": "<p>Before.</p>\n<p><img src=\"https://example.com/a.png\" width=\"10\"><br>\n<img src=\"https://example.com/b.png\"></p>\n<p>Text<br>\n<img src=\"https://example.com/c.png\"></p>\n<pre><code>&lt;img src=\"https://example.com/d.png\"&gt;\n</code></pre>"
+  },
+  {
+    "id": "sample-56",
     "raw": "An upload that exists: ![image|64x64](upload://qa4V5109J7tySkPok8r3aBAruY1.png) and [a link|attachment](upload://qa4V5109J7tySkPok8r3aBAruY1.png).",
     "topic_id": 35,
     "user_id": 3,
