@@ -161,6 +161,9 @@ samples = [
   ["- a\n  ```\n  x\n  ```\n  after\n- b\n  <div>\n  y\n  </div>\n- ```\n  z\n  ```\n- c\n  > q", replies.id, u1.id],
   # The space after an <img> line's last tag stays in its paragraph.
   ["<img src=\"https://example.com/a.png\"> \n<img src=\"https://example.com/b.png\">\t\n\ntext\n\n- <img src=\"https://example.com/c.png\">  \n- d", replies.id, u1.id],
+  # linkify-it 6: a fuzzy email's host needs no known TLD and its name takes
+  # more characters; paths keep nested brackets.
+  ["a \"unset-value@2.0.1\" and x@^1.0.0, bounce+{%something}@www.mydomain.com\n\nsee http://example.com/a_(b_(c))/d and (http://example.com/x) and example.com/path?q=1.\n\nftp://x.org http://ex.com. //relative.org/path and foo://bar.com", replies.id, u1.id],
 ]
 if upload
   samples << ["An upload that exists: ![image|64x64](#{upload.short_url}) and [a link|attachment](#{upload.short_url}).", replies.id, u1.id]

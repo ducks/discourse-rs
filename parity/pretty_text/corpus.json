@@ -489,6 +489,14 @@
   },
   {
     "id": "sample-61",
+    "raw": "a \"unset-value@2.0.1\" and x@^1.0.0, bounce+{%something}@www.mydomain.com\n\nsee http://example.com/a_(b_(c))/d and (http://example.com/x) and example.com/path?q=1.\n\nftp://x.org http://ex.com. //relative.org/path and foo://bar.com",
+    "topic_id": 35,
+    "user_id": 3,
+    "markdown": "<p>a “<a href=\"mailto:unset-value@2.0.1\">unset-value@2.0.1</a>” and <a href=\"mailto:x@%5E1.0.0\">x@^1.0.0</a>, <a href=\"mailto:bounce+%7B%25something%7D@www.mydomain.com\">bounce+{%something}@www.mydomain.com</a></p>\n<p>see <a href=\"http://example.com/a_(b_(c))/d\" class=\"inline-onebox-loading\">http://example.com/a_(b_(c))/d</a> and (<a href=\"http://example.com/x\" class=\"inline-onebox-loading\">http://example.com/x</a>) and <a href=\"http://example.com/path?q=1\" class=\"inline-onebox-loading\">example.com/path?q=1</a>.</p>\n<p><a>ftp://x.org</a> <a href=\"http://ex.com\">http://ex.com</a>. <a href=\"//relative.org/path\">//relative.org/path</a> and foo://bar.com</p>",
+    "cooked": "<p>a “<a href=\"mailto:unset-value@2.0.1\">unset-value@2.0.1</a>” and <a href=\"mailto:x@%5E1.0.0\">x@^1.0.0</a>, <a href=\"mailto:bounce+%7B%25something%7D@www.mydomain.com\">bounce+{%something}@www.mydomain.com</a></p>\n<p>see <a href=\"http://example.com/a_(b_(c))/d\" class=\"inline-onebox-loading\" rel=\"noopener nofollow ugc\">http://example.com/a_(b_(c))/d</a> and (<a href=\"http://example.com/x\" class=\"inline-onebox-loading\" rel=\"noopener nofollow ugc\">http://example.com/x</a>) and <a href=\"http://example.com/path?q=1\" class=\"inline-onebox-loading\" rel=\"noopener nofollow ugc\">example.com/path?q=1</a>.</p>\n<p><a>ftp://x.org</a> <a href=\"http://ex.com\" rel=\"noopener nofollow ugc\">http://ex.com</a>. <a href=\"//relative.org/path\" rel=\"noopener nofollow ugc\">//relative.org/path</a> and foo://bar.com</p>"
+  },
+  {
+    "id": "sample-62",
     "raw": "An upload that exists: ![image|64x64](upload://qa4V5109J7tySkPok8r3aBAruY1.png) and [a link|attachment](upload://qa4V5109J7tySkPok8r3aBAruY1.png).",
     "topic_id": 35,
     "user_id": 3,

@@ -135,9 +135,10 @@ impl RenderSettings {
         };
         let linkify = if settings.get("enable_markdown_linkify")?.truthy() {
             let tlds = split("markdown_linkify_tlds")?;
-            Some(Arc::new(LinkifyIt::new(&tlds).map_err(|_| {
-                Unsupported("markdown_linkify_tlds that do not compile")
-            })?))
+            Some(
+                LinkifyIt::for_tlds(&tlds)
+                    .map_err(|_| Unsupported("markdown_linkify_tlds that do not compile"))?,
+            )
         } else {
             None
         };
