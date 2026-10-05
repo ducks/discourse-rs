@@ -11,6 +11,7 @@ use markdown_it::Node;
 use markdown_it::common::utils::is_punct_char;
 use markdown_it::parser::inline::Text;
 use markdown_it::plugins::cmark::inline::link::Link;
+use markdown_it::plugins::html::html_inline::HtmlInline;
 
 use super::RenderSettings;
 use super::context::Context;
@@ -146,6 +147,33 @@ pub fn is_link(node: &Node) -> bool {
         || node.cast::<Element>().is_some_and(|e| e.tag == "a")
 }
 
+/// textReplace's `/^<a(\s.*)?>/i`.
+fn is_html_link_open(html: &str) -> bool {
+    let bytes = html.as_bytes();
+    if !bytes
+        .get(..2)
+        .is_some_and(|b| b.eq_ignore_ascii_case(b"<a"))
+    {
+        return false;
+    }
+    match html[2..].chars().next() {
+        Some('>') => true,
+        // `\s` may be a newline itself; `.` then stops at the next one.
+        Some(c) if c.is_whitespace() => html[2 + c.len_utf8()..]
+            .split(['\n', '\r', '\u{2028}', '\u{2029}'])
+            .next()
+            .is_some_and(|line| line.contains('>')),
+        _ => false,
+    }
+}
+
+/// textReplace's `</a>` prefix, any case.
+fn is_html_link_close(html: &str) -> bool {
+    html.as_bytes()
+        .get(..4)
+        .is_some_and(|b| b.eq_ignore_ascii_case(b"</a>"))
+}
+
 /// The `text-post-process` core rule.
 pub fn apply(root: &mut Node, settings: &RenderSettings, ctx: &Context) {
     let matcher: &Regex = if settings.mentions {
@@ -153,12 +181,28 @@ pub fn apply(root: &mut Node, settings: &RenderSettings, ctx: &Context) {
     } else {
         &HASHTAGS_ONLY
     };
-    fn visit(node: &mut Node, matcher: &Regex, ctx: &Context, local_dates: bool) {
+    // Like textReplace, children are walked from the end and an html `</a>`
+    // and `<a ...>` move the level text has to be at (0) to be searched.
+    fn visit(
+        node: &mut Node,
+        matcher: &Regex,
+        ctx: &Context,
+        local_dates: bool,
+        html_level: &mut i32,
+    ) {
         if is_link(node) {
             return;
         }
-        let mut i = 0;
-        while i < node.children.len() {
+        let mut i = node.children.len();
+        while i > 0 {
+            i -= 1;
+            if let Some(html) = node.children[i].cast::<HtmlInline>() {
+                if is_html_link_open(&html.content) {
+                    *html_level += 1;
+                } else if is_html_link_close(&html.content) {
+                    *html_level -= 1;
+                }
+            }
             // The local dates plugin's `[date=...]` and `[date-range ...]`
             // need a timezone database and moment's formats.
             if local_dates
@@ -168,23 +212,19 @@ pub fn apply(root: &mut Node, settings: &RenderSettings, ctx: &Context) {
             {
                 ctx.refuse("local dates ([date=...])");
             }
-            let replaced = node.children[i]
-                .cast::<Text>()
+            let replaced = (*html_level == 0)
+                .then(|| node.children[i].cast::<Text>())
+                .flatten()
                 .and_then(|text| split(&text.content, matcher, ctx));
             match replaced {
                 Some(nodes) => {
-                    let count = nodes.len();
                     node.children.splice(i..=i, nodes);
-                    i += count;
                 }
-                None => {
-                    visit(&mut node.children[i], matcher, ctx, local_dates);
-                    i += 1;
-                }
+                None => visit(&mut node.children[i], matcher, ctx, local_dates, html_level),
             }
         }
     }
-    visit(root, matcher, ctx, settings.local_dates);
+    visit(root, matcher, ctx, settings.local_dates, &mut 0);
 }
 
 pub fn allow(list: &mut AllowList) {
@@ -202,4 +242,20 @@ pub fn allow(list: &mut AllowList) {
         "a[data-icon]",
         "a[data-emoji]",
     ]);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{is_html_link_close, is_html_link_open};
+
+    #[test]
+    fn html_links_as_text_replace_matches_them() {
+        assert!(is_html_link_open("<a>"));
+        assert!(is_html_link_open(r#"<A class="mention-group">"#));
+        assert!(is_html_link_open("<a\nhref=x>"));
+        assert!(!is_html_link_open("<a\nhref=x\n>"));
+        assert!(!is_html_link_open("<abbr>"));
+        assert!(is_html_link_close("</A>"));
+        assert!(!is_html_link_close("</a >"));
+    }
 }

@@ -149,6 +149,9 @@ samples = [
   # quote closing a tight list item or a table cell, an item's open quote
   # that the next item does not close, and image alt text left alone.
   ["- no new posts since \"last visit\"\n- an \"open one\n- closed\" here\n\n| Default |\n|---|\n| \"Upcoming events\" |\n\n![it's \"alt\"](https://example.com/a.png) it's \"done\"", replies.id, u1.id],
+  # Mentions and hashtags skip text inside an html link (textReplace's
+  # skipAllLinks), not inside other html.
+  ["<a class=\"mention-group\">@staff</a>, <A href=\"https://example.com\">**@admins** #support</A> but @staff and <b>@admins</b>", replies.id, u1.id],
 ]
 if upload
   samples << ["An upload that exists: ![image|64x64](#{upload.short_url}) and [a link|attachment](#{upload.short_url}).", replies.id, u1.id]
