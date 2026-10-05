@@ -4,7 +4,7 @@
 //! post and the search index.
 
 use chrono::NaiveDateTime;
-use serde_json::json;
+use serde_json::{Map, json};
 use sqlx::{PgConnection, PgPool};
 
 use super::links::{self, LinkPost};
@@ -875,6 +875,12 @@ pub async fn create(
         .bind(&email.message_id)
         .execute(&mut *tx)
         .await?;
+    }
+    // PostCreator#publish: replies only (the first post's topic is news to
+    // the topic list instead).
+    if post_number != 1 {
+        crate::bus::publish_post_change(ctx, &mut tx, post_id, "created", Map::new(), false)
+            .await?;
     }
     // PostJobsEnqueuer#enqueue_jobs, committed with the post.
     crate::jobs::enqueue(

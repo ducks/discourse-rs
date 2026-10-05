@@ -106,10 +106,16 @@ Logged-in readers, no writes yet.
       MessageBus's wire protocol: the client is ours (milestone 4.5)
 - [x] Live updates: the notification state (`/notification/<id>`) from
       every place Rails publishes it
-- [ ] Live updates, next: `/topic/<id>` (posts created, edited,
-      deleted), `/latest` and the unread and new counts,
-      `/notification-alert/<id>`, and the starting position handed to
-      the client with the page
+- [x] Live updates: `/topic/<id>` (Post#publish_change_to_clients! and
+      the topic's stats) for replies, edits and recooks, likes and
+      unlikes, staff deletion and recovery, to the topic's audience
+      (everyone, a restricted category's groups, a message's
+      participants and staff; whispers to staff and the author). Not
+      yet: :acted (notify flags, unhiding), :read, :rebaked, permanent
+      deletion, reload_topic with topic edits
+- [ ] Live updates, next: `/latest` and the unread and new counts
+      (TopicTrackingState), `/notification-alert/<id>`, and the
+      starting position handed to the client with the page
 
 ## Milestone 4: writes
 

@@ -234,6 +234,16 @@ async fn destroy(
     let mut tx = pool.begin().await?;
     if perform {
         perform_delete(&mut tx, ctx, user.id, &post, &topic, req).await?;
+        // Permanent deletion (:destroyed) is not ported.
+        crate::bus::publish_post_change(
+            ctx,
+            &mut tx,
+            post.id,
+            "deleted",
+            Default::default(),
+            false,
+        )
+        .await?;
     }
 
     // UserActionManager.post_destroyed: a reply's REPLY row (already gone
@@ -971,6 +981,16 @@ pub async fn recover_post(
         )
         .await?;
     }
+    // skip_topic_stats, as Rails does here.
+    crate::bus::publish_post_change(
+        ctx,
+        &mut *conn,
+        post.id,
+        "recovered",
+        Default::default(),
+        true,
+    )
+    .await?;
     crate::jobs::enqueue(
         &mut *conn,
         "sync_topic_user_bookmarked",

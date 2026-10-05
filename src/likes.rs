@@ -273,8 +273,29 @@ pub async fn like(
         action_id,
     )
     .await?;
+    // notify_subscribers: the like count after this like.
+    publish_like_change(ctx, &mut tx, post.id, "liked", user.id).await?;
     tx.commit().await?;
     Ok(Outcome::Done)
+}
+
+/// `notify_subscribers` for a like or unlike: the post's like count now
+/// and who acted, on the topic's channel with its stats.
+async fn publish_like_change(
+    ctx: &Ctx<'_>,
+    conn: &mut PgConnection,
+    post_id: i32,
+    kind: &str,
+    user_id: i32,
+) -> Result<(), AppError> {
+    let likes: i32 = sqlx::query_scalar("SELECT like_count FROM posts WHERE id = $1")
+        .bind(post_id)
+        .fetch_one(&mut *conn)
+        .await?;
+    let mut opts = serde_json::Map::new();
+    opts.insert("likes_count".into(), serde_json::json!(likes));
+    opts.insert("user_id".into(), serde_json::json!(user_id));
+    crate::bus::publish_post_change(ctx, conn, post_id, kind, opts, false).await
 }
 
 /// `PostActionDestroyer.new(user, post, like).perform`
@@ -392,6 +413,7 @@ pub async fn unlike(
             return Err(Unsupported("rebuilding the liked notification from other likers").into());
         }
     }
+    publish_like_change(ctx, &mut tx, post_id, "unliked", user.id).await?;
     tx.commit().await?;
     Ok(Outcome::Done)
 }
