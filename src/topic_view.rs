@@ -641,11 +641,16 @@ impl TopicView<'_> {
     /// `read`; link counts when asked for (update sets
     /// `single_post_link_counts`); `raw` and `draft_sequence` for posts#create
     /// and posts#update (render_post_json with add_raw: false has neither).
+    /// `with_viewer_actions`: the viewer's own actions on the post (`acted`,
+    /// `can_undo`), as posts#show gives the serializer; without them, as
+    /// serialize_data does for a list of posts (the posts feed), the
+    /// serializer sees none.
     pub async fn serialize_single_post(
         &mut self,
         post_id: i32,
         with_link_counts: bool,
         with_raw_and_draft_sequence: bool,
+        with_viewer_actions: bool,
     ) -> Result<Value, TopicViewError> {
         let sql = format!("{} WHERE id = $1", Self::POST_SQL);
         let post: PostRow = sqlx::query_as(&sql)
@@ -655,9 +660,11 @@ impl TopicView<'_> {
             .ok_or(TopicViewError::NotFound)?;
         let (topic, _) = self.find_topic(post.topic_id).await?;
         let mut viewer = self.load_viewer(topic.id).await?;
-        viewer.taken =
-            post_actions::taken_actions(&mut *self.conn, &[post.id], self.guardian.user_id())
-                .await?;
+        if with_viewer_actions {
+            viewer.taken =
+                post_actions::taken_actions(&mut *self.conn, &[post.id], self.guardian.user_id())
+                    .await?;
+        }
         let Some(slug) = topic.slug.clone() else {
             return Err(Unsupported("topics without a stored slug (Slug.for)").into());
         };

@@ -112,6 +112,13 @@ GET /u/user1/summary.json ignore=/user_summary/solved_count,/topics/*/has_accept
 # Rails has no tiebreak, so the order is ignored above.
 # admin's top categories tie on totals; Rails orders ties by heap order, unreproducible.
 GET /u/admin/summary.json ignore=/user_summary/solved_count,/topics/*/has_accepted_answer,/topics/*/can_have_answer,/user_summary/top_categories
+
+# posts#user_posts_feed: a user's latest public posts, PostSerializer with
+# add_excerpt.
+GET /u/user0/activity.json ignore=/*/accepted_answer,/*/can_accept_answer,/*/can_unaccept_answer,/*/topic_accepted_answer,/*/current_user_reaction,/*/current_user_used_main_reaction,/*/reaction_users_count,/*/reactions,/*/event,/*/calendar_details,/*/can_vote
+GET /u/user0/activity.json as=user1 ignore=/*/accepted_answer,/*/can_accept_answer,/*/can_unaccept_answer,/*/topic_accepted_answer,/*/current_user_reaction,/*/current_user_used_main_reaction,/*/reaction_users_count,/*/reactions,/*/event,/*/calendar_details,/*/can_vote
+GET /u/user0/activity.json as=admin ignore=/*/accepted_answer,/*/can_accept_answer,/*/can_unaccept_answer,/*/topic_accepted_answer,/*/current_user_reaction,/*/current_user_used_main_reaction,/*/reaction_users_count,/*/reactions,/*/event,/*/calendar_details,/*/can_vote
+GET /u/admin/activity.json ignore=/*/accepted_answer,/*/can_accept_answer,/*/can_unaccept_answer,/*/topic_accepted_answer,/*/current_user_reaction,/*/current_user_used_main_reaction,/*/reaction_users_count,/*/reactions,/*/event,/*/calendar_details,/*/can_vote
 GET /u/user0/summary.json ignore=/user_summary/solved_count,/topics/*/has_accepted_answer,/topics/*/can_have_answer
 # user_actions#index
 GET /user_actions.json?username=user1
