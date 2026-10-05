@@ -306,3 +306,101 @@ async fn reading_tells_the_reader_where_they_are() {
     assert_eq!(messages[0].data["payload"]["last_read_post_number"], 2);
     assert!(read(2).await.is_empty());
 }
+
+/// PostRevisor#bump_topic: editing a wiki's first post bumps its topic and
+/// tells the lists; editing any other first post does not.
+#[tokio::test(flavor = "multi_thread")]
+async fn editing_a_wiki_first_post_bumps_the_topic() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let s = settings(&st).await;
+    let (_, topic_id, _, _, _) = public_reply(&db.pool).await;
+    let (post_id, owner): (i32, i32) =
+        sqlx::query_as("SELECT id, user_id FROM posts WHERE topic_id = $1 AND post_number = 1")
+            .bind(topic_id)
+            .fetch_one(&db.pool)
+            .await
+            .unwrap();
+    sqlx::query("UPDATE posts SET last_version_at = now() - interval '1 day' WHERE id = $1")
+        .bind(post_id)
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    sqlx::query("UPDATE topics SET bumped_at = now() - interval '1 day' WHERE id = $1")
+        .bind(topic_id)
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let mut conn = db.pool.acquire().await.unwrap();
+    let user = discourse_rs::session::current::SessionUser::load(&mut conn, owner)
+        .await
+        .unwrap()
+        .unwrap();
+    let guardian = discourse_rs::guardian::Guardian::for_user(&mut conn, &user)
+        .await
+        .unwrap();
+    drop(conn);
+    let host = discourse_rs::pretty_text::Host::from_state(&st);
+    let ctx = discourse_rs::posting::Ctx {
+        host: &host,
+        settings: &s,
+        config: &st.config,
+        i18n: &st.i18n,
+        bus: &st.bus,
+    };
+    let edit = |raw: &'static str| {
+        let (ctx, guardian, pool) = (&ctx, &guardian, &st.pool);
+        async move {
+            let outcome = discourse_rs::posting::revise::revise(
+                pool,
+                ctx,
+                guardian,
+                post_id,
+                discourse_rs::posting::revise::Changes {
+                    raw: Some(raw.to_string()),
+                    edit_reason: None,
+                    force_new_version: true,
+                    skip_validations: true,
+                },
+            )
+            .await
+            .unwrap();
+            assert!(
+                matches!(outcome, discourse_rs::posting::revise::Outcome::Revised),
+                "the edit went through"
+            );
+        }
+    };
+    let bumped = || async {
+        sqlx::query_scalar::<_, bool>(
+            "SELECT bumped_at > now() - interval '1 hour' FROM topics WHERE id = $1",
+        )
+        .bind(topic_id)
+        .fetch_one(&db.pool)
+        .await
+        .unwrap()
+    };
+
+    let from = st.bus.now().await.unwrap();
+    edit("An ordinary first post, edited and long enough to pass.").await;
+    assert!(!bumped().await, "not a wiki: no bump");
+    let latest = bus_messages(&st, from, &["/latest"]).await;
+    assert!(latest.is_empty(), "{latest:?}");
+
+    sqlx::query(
+        "UPDATE posts SET wiki = TRUE, last_version_at = now() - interval '1 day' WHERE id = $1",
+    )
+    .bind(post_id)
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let from = st.bus.now().await.unwrap();
+    edit("A wiki first post, edited and long enough to pass too.").await;
+    assert!(bumped().await, "a wiki's first post bumps its topic");
+    let latest = bus_messages(&st, from, &["/latest"]).await;
+    let types: Vec<&str> = latest
+        .iter()
+        .map(|m| m.data["message_type"].as_str().unwrap())
+        .collect();
+    assert!(types.contains(&"latest"), "{types:?}");
+}
