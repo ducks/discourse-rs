@@ -22,6 +22,7 @@ mod onebox;
 mod poll;
 mod quotes;
 mod table;
+mod text_join;
 mod text_post_process;
 mod typographer;
 mod uploads;
@@ -264,6 +265,8 @@ pub fn render(
         typographer::apply(&mut root);
         SmartQuotes::run(&mut root, &md);
     }
+    // markdown-it's text_join, before the core rules Discourse adds.
+    text_join::apply(&mut root);
     checklist::run(&mut root, settings);
     uploads::run(&mut root, settings, ctx);
     text_post_process::apply(&mut root, settings, ctx);

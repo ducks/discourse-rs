@@ -433,6 +433,14 @@
   },
   {
     "id": "sample-54",
+    "raw": "[:question:&nbsp;**Support**](https://example.com/support) and :smile:&amp;",
+    "topic_id": 35,
+    "user_id": 3,
+    "markdown": "<p><a href=\"https://example.com/support\"><img src=\"/images/emoji/twitter/question.png?v=15\" title=\":question:\" class=\"emoji\" alt=\":question:\" loading=\"lazy\" width=\"20\" height=\"20\"> <strong>Support</strong></a> and <img src=\"/images/emoji/twitter/smile.png?v=15\" title=\":smile:\" class=\"emoji\" alt=\":smile:\" loading=\"lazy\" width=\"20\" height=\"20\">&amp;</p>",
+    "cooked": "<p><a href=\"https://example.com/support\" rel=\"noopener nofollow ugc\"><img src=\"/images/emoji/twitter/question.png?v=15\" title=\":question:\" class=\"emoji\" alt=\":question:\" loading=\"lazy\" width=\"20\" height=\"20\">&nbsp;<strong>Support</strong></a> and <img src=\"/images/emoji/twitter/smile.png?v=15\" title=\":smile:\" class=\"emoji\" alt=\":smile:\" loading=\"lazy\" width=\"20\" height=\"20\">&amp;</p>"
+  },
+  {
+    "id": "sample-55",
     "raw": "An upload that exists: ![image|64x64](upload://qa4V5109J7tySkPok8r3aBAruY1.png) and [a link|attachment](upload://qa4V5109J7tySkPok8r3aBAruY1.png).",
     "topic_id": 35,
     "user_id": 3,
