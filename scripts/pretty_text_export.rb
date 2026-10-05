@@ -139,6 +139,9 @@ samples = [
   # Nothing follows a table on a new line (table_close ends with </div>):
   # a paragraph after one, and one at the end of a blockquote.
   ["| a | b |\n|---|---|\n| 1 | 2 |\n\nAfter the table.\n\n> | q |\n> |---|\n> | 1 |\n\nAfter the quote.", replies.id, u1.id],
+  # An entity joins the text beside it (text_join) before emoji: not an emoji
+  # alone, drawn large.
+  ["[:question:&nbsp;**Support**](https://example.com/support) and :smile:&amp;", replies.id, u1.id],
 ]
 if upload
   samples << ["An upload that exists: ![image|64x64](#{upload.short_url}) and [a link|attachment](#{upload.short_url}).", replies.id, u1.id]
