@@ -1550,3 +1550,72 @@ async fn post_fragments_follow_what_the_viewer_may_see() {
         StatusCode::NOT_FOUND
     );
 }
+
+/// The header's user menu: a member's recent notifications, each linking
+/// to its post; opening it marks them seen, which clears the header's
+/// count over the live stream.
+#[tokio::test(flavor = "multi_thread")]
+async fn the_user_menu_lists_notifications_and_clears_the_count() {
+    let db = TestDb::new().await;
+    let mut client = Client::new(state(db.pool.clone(), config(RailsEnv::Test, &[])).await);
+    assert_ne!(
+        client.get("/user-menu").await.status,
+        StatusCode::OK,
+        "members only"
+    );
+    let reply = client.login("user1", "password").await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    let user_id: i32 = sqlx::query_scalar(
+        "UPDATE users SET last_seen_at = now() WHERE username = 'user1' RETURNING id",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "INSERT INTO notifications (notification_type, user_id, topic_id, post_number, data, read, \
+                                    high_priority, created_at, updated_at) \
+         VALUES (1, $1, 35, 2, $2, FALSE, FALSE, now(), now())",
+    )
+    .bind(user_id)
+    .bind(
+        serde_json::json!({
+            "topic_title": "Parity fixture: replies and posters",
+            "display_username": "user2",
+            "original_post_id": 1,
+        })
+        .to_string(),
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+
+    let page = client.get("/latest").await;
+    assert!(
+        page.body.contains(r#"hx-get="/user-menu""#),
+        "{}",
+        page.body
+    );
+    let mut body = client.open("/live").await;
+    let mut buffer = String::new();
+    let count = common::next_sse_event(&mut body, &mut buffer, "header").await;
+    assert_ne!(
+        count, r#"<span id="notification-count" hx-swap-oob="true"></span>"#,
+        "something unread before the menu opens"
+    );
+
+    let menu = client.get("/user-menu").await;
+    assert_eq!(menu.status, StatusCode::OK);
+    assert!(
+        menu.body.contains(
+            r#"<li class="notification unread"><a href="/t/parity-fixture-replies-and-posters/35/2"><strong>user2</strong> mentioned you in"#
+        ),
+        "{}",
+        menu.body
+    );
+    assert!(menu.body.contains("Mark all read"));
+    assert_eq!(
+        common::next_sse_event(&mut body, &mut buffer, "header").await,
+        r#"<span id="notification-count" hx-swap-oob="true"></span>"#,
+        "seen now"
+    );
+}

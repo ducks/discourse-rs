@@ -336,8 +336,15 @@ Discourse's own clients keep working.
       sees it, from GET /live/post/:id (the stream's renderer, a 404 for
       a post they cannot see). Reminders and names are not on the page
       yet
-- [ ] Next for the client: the user menu (notifications list), topic
-      composer (new topics)
+- [x] The user menu: the header's bell opens a member's recent
+      notifications (GET /user-menu, the Ember client's
+      `/notifications?recent=true` list as HTML), who, what and where
+      linking to each post, unread ones marked, and "mark all read".
+      Opening it marks them seen, and the published state clears the
+      count over the live stream. Not yet: the menu's other tabs
+      (replies, mentions, likes, messages, bookmarks, review), marking
+      one notification read on click
+- [ ] Next for the client: the composer for new topics
 - [ ] The composer: markdown preview with the Rust renderer, uploads,
       drafts
 - [ ] The user menu, notifications, bookmarks, messages, preferences

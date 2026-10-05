@@ -51,7 +51,12 @@
         {% endif %}
       </nav>
       {% if let Some(v) = viewer %}
-      <span class="site-notifications" title="Unread notifications">&#x1F514;<span id="notification-count"></span></span>
+      {#- The bell opens the user menu: its notifications fetched as HTML,
+          or the menu closed again when it is open. -#}
+      <button class="site-notifications" title="Notifications" aria-controls="user-menu" aria-expanded="false"
+              hx-get="{{ base_path }}/user-menu" hx-target="#user-menu"
+              hx-on::before-request="var menu = document.getElementById('user-menu'); if (menu.childElementCount) { menu.replaceChildren(); this.setAttribute('aria-expanded', 'false'); event.preventDefault(); } else { this.setAttribute('aria-expanded', 'true'); }">&#x1F514;<span id="notification-count"></span></button>
+      <div id="user-menu" class="user-menu"></div>
       <div id="notification-alert" class="notification-alert" role="status" aria-live="polite"></div>
       <form class="site-session" method="post" action="{{ base_path }}/session/{{ v.username }}">
         <input type="hidden" name="_method" value="delete">

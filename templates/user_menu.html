@@ -1,0 +1,15 @@
+<div class="user-menu-panel">
+  {% if items.is_empty() %}
+  <p class="empty">No notifications yet.</p>
+  {% else %}
+  <ul class="notifications">
+    {% for n in items %}
+    <li class="notification{% if !n.read %} unread{% endif %}"><a href="{{ n.url }}">{% if !n.actor.is_empty() %}<strong>{{ n.actor }}</strong> {% endif %}{{ n.verb }} <span class="title">{{ n.title_html|safe }}</span></a></li>
+    {% endfor %}
+  </ul>
+  {#- Marks everything read, then shows the menu again (the published state
+      updates the header's count). -#}
+  <button class="mark-read" hx-put="{{ base_path }}/notifications/mark-read" hx-swap="none"
+          hx-on::after-request="if (event.detail.successful) { htmx.ajax('GET', '{{ base_path }}/user-menu', { target: '#user-menu' }); }">Mark all read</button>
+  {% endif %}
+</div>
