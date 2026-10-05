@@ -323,8 +323,15 @@ Discourse's own clients keep working.
       every page. One stream per page now, GET /live, carrying whatever
       the page follows: a topic's posts, a list's banner, a member's
       counts and notifications; it replaces /t/:id/live and /live/lists
+- [x] Likes from the topic page: a member's like button (post_actions,
+      undone with DELETE), its state from their actions_summary; the post
+      comes back re-rendered on their stream, on whichever page of the
+      topic shows it (topic pages now always connect; new posts are
+      appended only on the last). A member's htmx requests carry their
+      CSRF token from the body; refused requests show the server's
+      errors in a page alert
 - [ ] Next for the client: the user menu (notifications list), topic
-      composer (new topics), likes and bookmarks from the page
+      composer (new topics), bookmarks from the page
 - [ ] The composer: markdown preview with the Rust renderer, uploads,
       drafts
 - [ ] The user menu, notifications, bookmarks, messages, preferences

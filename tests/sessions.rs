@@ -1370,3 +1370,72 @@ async fn members_hear_their_notifications_on_every_page() {
         r#"<span id="notification-count" hx-swap-oob="true"></span>"#
     );
 }
+
+/// A member likes a post from the topic page as its button does, and the
+/// post comes back on their stream as liked, with the button to undo it.
+#[tokio::test(flavor = "multi_thread")]
+async fn members_like_from_the_topic_page() {
+    let db = TestDb::new().await;
+    let mut client = Client::new(state(db.pool.clone(), config(RailsEnv::Test, &[])).await);
+    let reply = client.login("user1", "password").await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    let (post_id, post_number): (i32, i32) = sqlx::query_as(
+        "SELECT p.id, p.post_number FROM posts p JOIN users u ON u.id = p.user_id \
+         WHERE p.topic_id = 35 AND p.post_type = 1 AND p.deleted_at IS NULL \
+           AND u.username <> 'user1' \
+           AND NOT EXISTS (SELECT 1 FROM post_actions a WHERE a.post_id = p.id \
+                             AND a.post_action_type_id = 2 AND a.user_id = \
+                               (SELECT id FROM users WHERE username = 'user1')) \
+         ORDER BY p.post_number LIMIT 1",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+
+    let page = client.get("/t/parity-fixture-replies-and-posters/35").await;
+    assert!(
+        page.body.contains(&format!(
+            r#"hx-vals='{{"id": {post_id}, "post_action_type_id": 2}}'"#
+        )),
+        "{}",
+        page.body
+    );
+    let marker = r#""X-CSRF-Token": ""#;
+    let at = page.body.find(marker).expect("the body carries the token");
+    let rest = &page.body[at + marker.len()..];
+    client.csrf =
+        Some(html_escape::decode_html_entities(&rest[..rest.find('"').unwrap()]).into_owned());
+
+    let from = {
+        let marker = r#"<meta name="bus-position" content=""#;
+        let at = page.body.find(marker).unwrap() + marker.len();
+        page.body[at..at + page.body[at..].find('"').unwrap()].to_string()
+    };
+    let mut body = client
+        .open(&format!("/live?topic=35&tail=1&position={from}"))
+        .await;
+    let mut buffer = String::new();
+
+    let reply = client
+        .send(
+            Method::POST,
+            "/post_actions",
+            &[
+                ("x-requested-with", "XMLHttpRequest"),
+                ("hx-request", "true"),
+            ],
+            &format!("id={post_id}&post_action_type_id=2"),
+        )
+        .await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    let html = common::next_sse_event(&mut body, &mut buffer, "post").await;
+    assert!(
+        html.contains(&format!(r#"<div id="post_{post_number}""#)),
+        "{html}"
+    );
+    assert!(
+        html.contains(&format!(r#"hx-delete="/post_actions/{post_id}""#)),
+        "the member's own render shows their like: {html}"
+    );
+    assert!(html.contains(r#"aria-pressed="true""#), "{html}");
+}

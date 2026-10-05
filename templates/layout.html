@@ -36,7 +36,8 @@
     {% block head %}{% endblock %}
     <link rel="stylesheet" href="{{ base_path }}/assets/site.css">
   </head>
-  <body class="crawler">
+  {#- A member's htmx requests carry their CSRF token, as Rails' client does. -#}
+  <body class="crawler"{% if let Some(v) = viewer %} hx-headers='{"X-CSRF-Token": "{{ v.csrf_token }}", "X-Requested-With": "XMLHttpRequest"}'{% endif %}>
     <header class="site-header">
       <a class="site-title" href="{{ base_path }}/">{{ site_title }}</a>
       <nav>
@@ -62,6 +63,7 @@
       <a class="site-login" href="{{ base_path }}/login">Log in</a>
       {% endif %}
     </header>
+    <p id="page-error" class="page-error" role="alert" hidden></p>
     <div id="main-outlet" class="wrap" role="main">
       {% block content %}{% endblock %}
     </div>
@@ -71,5 +73,21 @@
     {#- Pages that follow more (a topic, a list) override this; a member
         always hears their notifications and counts. -#}
     {% block live %}{% call m::live_sink_for_member(viewer.is_some(), base_path, bus_position) %}{% endblock %}
+    <script>
+      // A refused htmx request (a like over the daily limit, say): the
+      // server's errors, as Rails renders them, or a plain notice.
+      document.addEventListener("htmx:responseError", function (event) {
+        // Forms that show their own errors say so.
+        if (event.detail.elt.closest("[data-own-errors]")) { return; }
+        var message = "Something went wrong.";
+        try {
+          var body = JSON.parse(event.detail.xhr.responseText);
+          if (body.errors) { message = body.errors.join(" "); }
+        } catch (_) {}
+        var error = document.getElementById("page-error");
+        error.textContent = message;
+        error.hidden = false;
+      });
+    </script>
   </body>
 </html>
