@@ -42,6 +42,7 @@ pub mod ruby;
 pub mod schema;
 pub mod search;
 pub mod session;
+pub mod sidebar;
 pub mod signup;
 pub mod site;
 pub mod site_icons;

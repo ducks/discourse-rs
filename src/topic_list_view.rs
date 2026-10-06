@@ -202,7 +202,7 @@ fn t_count(cx: &ListContext, key: &str, count: i64, args: &[(&str, &str)]) -> St
 }
 
 /// An icon from the sprite (`iconHTML`).
-fn icon(name: &str, extra_class: Option<&str>) -> String {
+pub fn icon(name: &str, extra_class: Option<&str>) -> String {
     let class = extra_class.map(|c| format!(" {c}")).unwrap_or_default();
     format!(
         "<svg class=\"fa d-icon d-icon-{name} svg-icon fa-width-auto{class} svg-string\" width=\"1em\" height=\"1em\" aria-hidden=\"true\" xmlns=\"http://www.w3.org/2000/svg\"><use href=\"#{name}\"></use></svg>"

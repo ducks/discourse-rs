@@ -178,7 +178,8 @@ pub async fn login_page(
 ) -> Result<Response, AppError> {
     let base_path = state.config.globals.relative_url_root().to_string();
     let mut site = crate::html::Site::from_settings(settings, &base_path)?;
-    site.load_chrome(state, settings).await?;
+    site.load_chrome(state, settings, crate::sidebar::Active::None)
+        .await?;
     let welcome = state
         .i18n
         .t_with(

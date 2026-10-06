@@ -53,6 +53,7 @@ const DISCOURSE_CSS: &str = concat!(
     include_str!("../../static/css/header.css"),
     include_str!("../../static/css/navs.css"),
     include_str!("../../static/css/topic-list.css"),
+    include_str!("../../static/css/sidebar.css"),
 );
 
 async fn discourse_css() -> impl IntoResponse {
@@ -76,11 +77,19 @@ async fn site_css() -> impl IntoResponse {
 // htmx and its SSE extension, vendored from npm (static/vendor/README).
 const HTMX: &str = include_str!("../../static/vendor/htmx.min.js");
 const HTMX_SSE: &str = include_str!("../../static/vendor/htmx-ext-sse.js");
+const SIDEBAR_JS: &str = include_str!("../../static/js/sidebar.js");
 
 async fn htmx() -> impl IntoResponse {
     (
         [(header::CONTENT_TYPE, "text/javascript; charset=utf-8")],
         HTMX,
+    )
+}
+
+async fn sidebar_js() -> impl IntoResponse {
+    (
+        [(header::CONTENT_TYPE, "text/javascript; charset=utf-8")],
+        SIDEBAR_JS,
     )
 }
 
@@ -339,6 +348,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         )
         .route("/assets/htmx.min.js", get(htmx))
         .route("/assets/htmx-ext-sse.js", get(htmx_sse))
+        .route("/assets/sidebar.js", get(sidebar_js))
         .nest_service("/uploads", ServeDir::new(public.join("uploads")));
     if let Some(emoji) = config.emoji_dir() {
         router = router.nest_service("/images/emoji", ServeDir::new(emoji));

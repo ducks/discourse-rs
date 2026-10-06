@@ -18,6 +18,25 @@ ICONS=(
   angle-right
   bell
   magnifying-glass
+  angle-down
+  layer-group
+  ellipsis-vertical
+  list
+  tag
+  keyboard
+  users
+  user-group
+  circle-info
+  circle-question
+  certificate
+  filter
+  inbox
+  flag
+  wrench
+  paper-plane
+  circle
+  link
+  pencil
 )
 
 root="$(cd "$(dirname "$0")/.." && pwd)"

@@ -132,16 +132,22 @@ pub struct Chrome {
     pub body_classes: String,
     /// `canSignUp`: the header shows a Sign Up button.
     pub can_signup: bool,
+    /// The sidebar's markup, empty when the page has none
+    /// (ApplicationController#sidebarEnabled).
+    pub sidebar: String,
 }
 
 impl Site {
-    /// Fills the page chrome. Every enabled upcoming change counts as
-    /// enabled for the viewer; changes enabled for some groups only are
-    /// not told apart yet, and read-only mode is not ported.
+    /// Fills the page chrome, after `viewer` is set. Every enabled upcoming
+    /// change counts as enabled for the viewer; changes enabled for some
+    /// groups only are not told apart yet, and read-only mode is not
+    /// ported. Only anonymous visitors get the sidebar so far: a member's
+    /// comes from their own sections, categories and tags.
     pub async fn load_chrome(
         &mut self,
         state: &crate::AppState,
         settings: &SiteSettings,
+        active: crate::sidebar::Active,
     ) -> Result<(), crate::AppError> {
         let mut conn = state.pool.acquire().await?;
         let urls = crate::url::Urls {
@@ -155,10 +161,39 @@ impl Site {
                 classes.push(format!("uc-{}", name.replace('_', "-")));
             }
         }
-        self.chrome.body_classes = classes.join(" ");
         self.chrome.can_signup = !settings.get("invite_only")?.truthy()
             && settings.get("allow_new_registrations")?.truthy()
             && !settings.get("enable_discourse_connect")?.truthy();
+
+        // sidebarEnabled: canDisplaySidebar (not for anonymous visitors
+        // when login is required) and the sidebar navigation menu.
+        let sidebar_enabled = self.viewer.is_none()
+            && !settings.get("login_required")?.truthy()
+            && settings.get("navigation_menu")?.to_s() == "sidebar";
+        if sidebar_enabled {
+            let site = crate::site::Site {
+                conn: &mut conn,
+                config: &state.config,
+                settings,
+                defs: &state.site_setting_defs,
+                i18n: &state.i18n,
+                guardian: crate::guardian::Guardian::anonymous(),
+            }
+            .json_for()
+            .await?;
+            self.chrome.sidebar = crate::sidebar::render(
+                &site,
+                &crate::sidebar::Context {
+                    i18n: &state.i18n,
+                    settings,
+                    base_path: &self.base_path,
+                    active: &active,
+                },
+            )?;
+            // Sidebar.gjs's bodyClass
+            classes.push("has-sidebar-page".into());
+        }
+        self.chrome.body_classes = classes.join(" ");
         Ok(())
     }
 }
