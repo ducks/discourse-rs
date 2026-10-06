@@ -1,0 +1,34 @@
+{
+  "name": "reply_anonymous",
+  "user": null,
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "A reply without logging in, which has to be refused at the door."
+      }
+    }
+  ],
+  "started_at": "2026-10-03T08:11:03.451754",
+  "transaction_started_at": "2026-10-03T08:11:02.704763",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You need to be logged in to do that."
+        ],
+        "error_type": "not_logged_in"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "recorded_from": {
+    "case": "d755795839b08d5dc6a300d064fb9d51c15ccc990fade8443924a515d0b29ee8",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

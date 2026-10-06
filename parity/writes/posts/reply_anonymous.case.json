@@ -1,0 +1,13 @@
+{
+  "user": null,
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "A reply without logging in, which has to be refused at the door."
+      }
+    }
+  ]
+}

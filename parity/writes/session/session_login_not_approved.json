@@ -1,0 +1,37 @@
+{
+  "name": "session_login_not_approved",
+  "user": null,
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/session.json",
+      "params": {
+        "login": "user0@example.com",
+        "password": "password"
+      }
+    }
+  ],
+  "started_at": "2026-10-06T20:27:32.688086",
+  "transaction_started_at": "2026-10-06T20:27:22.331054",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "error": "Your account hasn't been approved yet. You will be notified by email when you are ready to log in."
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "settings": {
+    "must_approve_users": true
+  },
+  "setup": [
+    "UPDATE users SET approved = FALSE WHERE id = 2"
+  ],
+  "recorded_from": {
+    "case": "b13c38a4512f3a197736c48728e051f7446ae8a37df2bcd968a6f5684c967dc5",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

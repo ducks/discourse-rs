@@ -1,0 +1,14 @@
+{
+  "user": "user0",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/drafts.json",
+      "params": {
+        "draft_key": "topic_43",
+        "sequence": 0,
+        "data": "{\"reply\":\"An edit of a post I cannot see\",\"action\":\"edit\",\"postId\":50,\"originalText\":\"wrong text to trigger conflict\"}"
+      }
+    }
+  ]
+}

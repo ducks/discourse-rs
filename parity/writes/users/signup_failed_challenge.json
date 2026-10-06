@@ -1,0 +1,49 @@
+{
+  "name": "signup_failed_challenge",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/session/hp.json"
+    },
+    {
+      "method": "POST",
+      "path": "/u.json",
+      "params": {
+        "name": "Bot",
+        "email": "bot@example.com",
+        "password": "a-long-enough-pass-phrase",
+        "username": "botperson",
+        "password_confirmation": "wrong",
+        "challenge": "wrong"
+      }
+    }
+  ],
+  "started_at": "2026-10-03T08:11:34.567653",
+  "transaction_started_at": "2026-10-03T08:11:33.823375",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "value": "d0333e78a10ed82d48b9c9801785407c",
+        "challenge": "a04ee16a50d65bbcf537696d29ef99a7",
+        "expires_in": 3600
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": true,
+        "active": false,
+        "message": "<p>You’re almost done! We sent an activation mail to <b>bot@example.com</b>. Please follow the instructions in the mail to activate your account.</p><p>If it doesn’t arrive, check your spam folder.</p>"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "recorded_from": {
+    "case": "f800046ad8432fcd413555ea206fccc80454dabbc1906ba6500aa547c3385c87",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

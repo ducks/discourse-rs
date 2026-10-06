@@ -1,0 +1,12 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/notifications/mark-read.json",
+      "params": {
+        "id": 45
+      }
+    }
+  ]
+}

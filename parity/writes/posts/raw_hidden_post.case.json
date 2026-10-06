@@ -1,0 +1,16 @@
+{
+  "user": "user0",
+  "setup": [
+    "UPDATE posts SET hidden = TRUE, hidden_at = now(), hidden_reason_id = 1 WHERE id = 37"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/raw/35/3"
+    },
+    {
+      "method": "GET",
+      "path": "/raw/35/2"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/forwarded_emails_behaviour.json",
+      "params": {
+        "forwarded_emails_behaviour": "quote"
+      }
+    }
+  ]
+}

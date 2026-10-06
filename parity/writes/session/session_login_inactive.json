@@ -1,0 +1,37 @@
+{
+  "name": "session_login_inactive",
+  "user": null,
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/session.json",
+      "params": {
+        "login": "user1",
+        "password": "password"
+      }
+    }
+  ],
+  "started_at": "2026-10-06T20:09:32.558346",
+  "transaction_started_at": "2026-10-06T20:09:31.50203",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "error": "You can't log in yet. We sent an activation email to you. Please follow the instructions in the email to activate your account.",
+        "reason": "not_activated",
+        "sent_to_email": "user1@example.com",
+        "current_email": "user1@example.com"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "setup": [
+    "UPDATE users SET active = false WHERE id = 3"
+  ],
+  "recorded_from": {
+    "case": "1b28f46a9797c0f698b98cadfcb8ae39f215889c571c3b455805058b7e6c3132",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

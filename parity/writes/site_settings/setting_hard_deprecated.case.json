@@ -1,0 +1,13 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/allow_duplicate_topic_titles.json",
+      "params": {
+        "allow_duplicate_topic_titles": "true"
+      }
+    }
+  ],
+  "not_yet": "The hidden-setting error comes before the deprecation one."
+}

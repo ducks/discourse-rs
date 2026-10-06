@@ -1,0 +1,12 @@
+{
+  "user": "user0",
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/post_actions/36.json",
+      "params": {
+        "post_action_type_id": 2
+      }
+    }
+  ]
+}

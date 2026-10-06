@@ -1,0 +1,19 @@
+{
+  "user": null,
+  "settings": {
+    "must_approve_users": true
+  },
+  "setup": [
+    "UPDATE users SET approved = FALSE WHERE id = 2"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/session.json",
+      "params": {
+        "login": "user0@example.com",
+        "password": "password"
+      }
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "user": "user3",
+  "setup": [
+    "UPDATE users SET moderator = TRUE WHERE id = 5",
+    "INSERT INTO group_users (group_id, user_id, created_at, updated_at) VALUES (2, 5, '2026-10-01 10:00:00', '2026-10-01 10:00:00'), (3, 5, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "UPDATE groups SET user_count = user_count + 1 WHERE id IN (2, 3)",
+    "UPDATE users SET suspended_at = '2026-10-01 10:00:00', suspended_till = '2027-01-01 00:00:00' WHERE id = 1"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/1/unsuspend.json",
+      "params": {}
+    }
+  ]
+}

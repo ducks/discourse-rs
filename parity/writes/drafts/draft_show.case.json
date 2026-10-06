@@ -1,0 +1,14 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO drafts (id, user_id, draft_key, data, sequence, revisions, owner, created_at, updated_at) VALUES (9501, 3, 'topic_35', '{\"reply\":\"Earlier draft\",\"action\":\"reply\"}', 0, 1, NULL, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "UPDATE user_stats SET draft_count = 1 WHERE user_id = 3"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/drafts/topic_35.json",
+      "params": {}
+    }
+  ]
+}

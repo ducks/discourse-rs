@@ -1,0 +1,13 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/4/suspend.json",
+      "params": {
+        "reason": "x",
+        "suspend_until": "2027-01-01T00:00:00Z"
+      }
+    }
+  ]
+}

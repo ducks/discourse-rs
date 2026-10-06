@@ -1,0 +1,13 @@
+{
+  "user": "user0",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/u/email-login.json",
+      "params": {
+        "login": "user0@example.com"
+      }
+    }
+  ],
+  "not_yet": "Redirects with 303, Rails 302."
+}

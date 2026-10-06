@@ -1,0 +1,32 @@
+{
+  "user": "user0",
+  "setup": [
+    "INSERT INTO drafts (id, user_id, draft_key, data, sequence, revisions, owner, created_at, updated_at) VALUES (9501, 2, 'topic_43', '{\"reply\":\"A draft in a message I am not in\",\"action\":\"reply\"}', 0, 1, NULL, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO drafts (id, user_id, draft_key, data, sequence, revisions, owner, created_at, updated_at) VALUES (9502, 2, 'topic_42', '{\"reply\":\"A draft reply to my message\",\"action\":\"reply\"}', 0, 1, NULL, '2026-10-01 11:00:00', '2026-10-01 11:00:00')",
+    "UPDATE user_stats SET draft_count = 2 WHERE user_id = 2"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/drafts.json",
+      "params": {
+        "draft_key": "new_topic",
+        "sequence": 0,
+        "data": "{\"reply\":\"The body of a topic still being written\",\"action\":\"createTopic\",\"title\":\"A draft topic title\",\"categoryId\":4,\"tags\":[],\"composerTime\":3000,\"typingTime\":2000}"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/drafts.json",
+      "params": {
+        "draft_key": "new_private_message",
+        "sequence": 0,
+        "data": "{\"reply\":\"A message still being written\",\"action\":\"privateMessage\",\"title\":\"A draft message title\",\"recipients\":\"user2\",\"archetypeId\":\"private_message\",\"composerTime\":3000,\"typingTime\":2000}"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/drafts.json"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE users SET suspended_at = '2026-10-01 10:00:00', suspended_till = '2027-01-01 00:00:00' WHERE id = 4"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/4/unsuspend.json",
+      "params": {}
+    }
+  ]
+}

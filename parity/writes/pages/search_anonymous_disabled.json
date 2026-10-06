@@ -1,0 +1,46 @@
+{
+  "name": "search_anonymous_disabled",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/search/query.json?term=fixture"
+    },
+    {
+      "method": "GET",
+      "path": "/search.json?q=fixture"
+    }
+  ],
+  "started_at": "2026-10-06T20:09:46.116284",
+  "transaction_started_at": "2026-10-06T20:09:45.440067",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You need to be logged in to do that."
+        ],
+        "error_type": "not_logged_in"
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You need to be logged in to do that."
+        ],
+        "error_type": "not_logged_in"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "settings": {
+    "allow_anonymous_search": false
+  },
+  "recorded_from": {
+    "case": "eb83f39e87cd88ea7a0f3813e93a2467e1333c4eb977652f27ee78bea1ab00c2",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "name": "new_topic_restricted_category",
+  "user": "user0",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A new topic user0 tries to start in the staff category",
+        "category": 3,
+        "raw": "The first post of a topic in a category user0 is not allowed to post in."
+      }
+    }
+  ],
+  "started_at": "2026-10-06T20:05:42.450194",
+  "transaction_started_at": "2026-10-06T20:05:02.986739",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 119,
+            "seen_at": null,
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "voybxTBJvURuPxrJEeVVrve57ac=",
+            "created_at": "2026-10-06T20:05:19.881137",
+            "rotated_at": "2026-10-06T20:05:19.828129",
+            "updated_at": "2026-10-06T20:05:19.881137",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "voybxTBJvURuPxrJEeVVrve57ac=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 119,
+            "seen_at": "2026-10-06T20:05:42.574538",
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "voybxTBJvURuPxrJEeVVrve57ac=",
+            "created_at": "2026-10-06T20:05:19.881137",
+            "rotated_at": "2026-10-06T20:05:19.828129",
+            "updated_at": "2026-10-06T20:05:19.881137",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "voybxTBJvURuPxrJEeVVrve57ac=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "recorded_from": {
+    "case": "e88826d9784b9109cdcafb0bac4eef5286db36080b13892a77a4a93891908057",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

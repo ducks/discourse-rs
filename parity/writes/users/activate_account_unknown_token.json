@@ -1,0 +1,45 @@
+{
+  "name": "activate_account_unknown_token",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/session/hp.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/u/activate-account/123abc.json",
+      "params": {
+        "password_confirmation": "{{responses.0.body.value}}",
+        "challenge": "{{responses.0.body.challenge|reverse}}"
+      }
+    }
+  ],
+  "started_at": "2026-10-06T20:09:20.257201",
+  "transaction_started_at": "2026-10-06T20:09:19.612818",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "value": "e4eae49391cfbef09e7b4970f9b53925",
+        "challenge": "62dec76f5ef83d7535cdd5fa1f33a560",
+        "expires_in": 3600
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Sorry, this account confirmation link is no longer valid. Perhaps your account is already active?"
+        ]
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "recorded_from": {
+    "case": "afc3b3ce0a11cbb9e4ca40a812a5ddeed669679337b58edd1d620aa28d552ec6",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

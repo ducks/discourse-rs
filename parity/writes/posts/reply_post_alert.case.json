@@ -1,0 +1,16 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "A reply from user1 to the replies and posters topic, written for the posting slice."
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert"
+  ]
+}

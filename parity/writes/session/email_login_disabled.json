@@ -1,0 +1,36 @@
+{
+  "name": "email_login_disabled",
+  "user": null,
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/u/email-login.json",
+      "params": {
+        "login": "user0"
+      }
+    }
+  ],
+  "started_at": "2026-10-06T20:09:22.470108",
+  "transaction_started_at": "2026-10-06T20:09:21.76072",
+  "responses": [
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "settings": {
+    "enable_local_logins_via_email": false
+  },
+  "recorded_from": {
+    "case": "c1532b2655146ece9e08d24c512e0d01a31e27b0c91d9dbdfacd0487163a3f1a",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

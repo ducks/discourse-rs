@@ -1,0 +1,10 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/t/35.json",
+      "params": {}
+    }
+  ]
+}

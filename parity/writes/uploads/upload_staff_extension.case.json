@@ -1,0 +1,18 @@
+{
+  "user": "admin",
+  "settings": {
+    "authorized_extensions_for_staff": "txt"
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/uploads.json",
+      "params": {
+        "upload_type": "composer",
+        "file": {
+          "fixture": "notes.txt"
+        }
+      }
+    }
+  ]
+}

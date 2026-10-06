@@ -1,0 +1,132 @@
+{
+  "name": "upload_png_small",
+  "user": "user3",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/uploads.json",
+      "params": {
+        "upload_type": "composer",
+        "file": {
+          "fixture": "small.png"
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-06T18:37:05.200875",
+  "transaction_started_at": "2026-10-06T18:37:04.312852",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "id": 36,
+        "url": "//localhost:3042/uploads/default/original/1X/cbb1c0fc135d810e3b866f3c78a021b13dd893d5.png",
+        "original_filename": "small.png",
+        "filesize": 38137,
+        "width": 300,
+        "height": 200,
+        "thumbnail_width": 300,
+        "thumbnail_height": 200,
+        "extension": "png",
+        "short_url": "upload://t3XLgvSugbW4iv2amYbpaoY6nsx.png",
+        "short_path": "/uploads/short-url/t3XLgvSugbW4iv2amYbpaoY6nsx.png",
+        "retain_hours": null,
+        "human_filesize": "37.2 KB",
+        "dominant_color": "355258",
+        "thumbnail": null
+      }
+    }
+  ],
+  "changes": {
+    "uploads": {
+      "inserted": [
+        {
+          "id": 36,
+          "url": "/uploads/default/original/1X/cbb1c0fc135d810e3b866f3c78a021b13dd893d5.png",
+          "etag": null,
+          "sha1": "cbb1c0fc135d810e3b866f3c78a021b13dd893d5",
+          "width": 300,
+          "height": 200,
+          "origin": null,
+          "secure": false,
+          "user_id": 5,
+          "animated": false,
+          "filesize": 38137,
+          "extension": "png",
+          "created_at": "2026-10-06T18:37:05.311944",
+          "updated_at": "2026-10-06T18:37:05.316372",
+          "retain_hours": null,
+          "original_sha1": null,
+          "dominant_color": "355258",
+          "thumbnail_width": 300,
+          "thumbnail_height": 200,
+          "original_filename": "small.png",
+          "verification_status": 1,
+          "access_control_post_id": null,
+          "security_last_changed_at": null,
+          "security_last_changed_reason": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 119,
+            "seen_at": null,
+            "user_id": 5,
+            "client_ip": "127.0.0.1",
+            "auth_token": "CcHYUheNdtvwLkZVE/N6R6wnJ6w=",
+            "created_at": "2026-10-06T18:37:04.670923",
+            "rotated_at": "2026-10-06T18:37:04.670703",
+            "updated_at": "2026-10-06T18:37:04.670923",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "CcHYUheNdtvwLkZVE/N6R6wnJ6w=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 119,
+            "seen_at": "2026-10-06T18:37:05.20904",
+            "user_id": 5,
+            "client_ip": "127.0.0.1",
+            "auth_token": "CcHYUheNdtvwLkZVE/N6R6wnJ6w=",
+            "created_at": "2026-10-06T18:37:04.670923",
+            "rotated_at": "2026-10-06T18:37:04.670703",
+            "updated_at": "2026-10-06T18:37:04.670923",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "CcHYUheNdtvwLkZVE/N6R6wnJ6w=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_uploads": {
+      "inserted": [
+        {
+          "id": 36,
+          "user_id": 5,
+          "upload_id": 36,
+          "created_at": "2026-10-06T18:37:05.321344"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "recorded_from": {
+    "case": "0b7cb830c14a155e13c5cec001d1321755dc37c3c8382c6694e7571afe186ef6",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

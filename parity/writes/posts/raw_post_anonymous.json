@@ -1,0 +1,33 @@
+{
+  "name": "raw_post_anonymous",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/raw/35/1"
+    },
+    {
+      "method": "GET",
+      "path": "/raw/35/1.json"
+    }
+  ],
+  "started_at": "2026-10-06T20:07:57.262998",
+  "transaction_started_at": "2026-10-06T20:07:56.491235",
+  "responses": [
+    {
+      "status": 200,
+      "body": "First post of a topic with several repliers, long enough to be a real post body for the excerpt."
+    },
+    {
+      "status": 200,
+      "body": "First post of a topic with several repliers, long enough to be a real post body for the excerpt."
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "recorded_from": {
+    "case": "e2b6ba2e78870754588fb4b05b979b18d9dd3efe25f8d9668aa2e99cdf8f35ce",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

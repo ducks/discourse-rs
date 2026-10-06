@@ -1,0 +1,91 @@
+{
+  "name": "signup_logged_in",
+  "user": "user0",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/session/hp.json"
+    },
+    {
+      "method": "POST",
+      "path": "/u.json",
+      "params": {
+        "name": "Second Account",
+        "email": "second.account@example.com",
+        "password": "a-long-enough-pass-phrase",
+        "username": "secondaccount",
+        "password_confirmation": "{{responses.0.body.value}}",
+        "challenge": "{{responses.0.body.challenge|reverse}}"
+      }
+    }
+  ],
+  "started_at": "2026-10-06T20:09:19.064108",
+  "transaction_started_at": "2026-10-06T20:09:17.957618",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "value": "2b61297c35afbe4705a32c63175cc3cd",
+        "challenge": "412d236d272b3c92060f1db9f5ac3e99",
+        "expires_in": 3600
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 119,
+            "seen_at": null,
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "2QmaLzPFcCDVsV0x1dv3OXH+NK0=",
+            "created_at": "2026-10-06T20:09:18.40983",
+            "rotated_at": "2026-10-06T20:09:18.409505",
+            "updated_at": "2026-10-06T20:09:18.40983",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "2QmaLzPFcCDVsV0x1dv3OXH+NK0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 119,
+            "seen_at": "2026-10-06T20:09:19.072605",
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "2QmaLzPFcCDVsV0x1dv3OXH+NK0=",
+            "created_at": "2026-10-06T20:09:18.40983",
+            "rotated_at": "2026-10-06T20:09:18.409505",
+            "updated_at": "2026-10-06T20:09:18.40983",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "2QmaLzPFcCDVsV0x1dv3OXH+NK0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "recorded_from": {
+    "case": "5b166223bcfcc14398c953089afe425ff6959e8326820b80e916fda3fdc02619",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

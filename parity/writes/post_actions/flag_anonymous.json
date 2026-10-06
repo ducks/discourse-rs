@@ -1,0 +1,34 @@
+{
+  "name": "flag_anonymous",
+  "user": null,
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/post_actions.json",
+      "params": {
+        "id": 52,
+        "post_action_type_id": 3
+      }
+    }
+  ],
+  "started_at": "2026-10-03T08:12:43.23778",
+  "transaction_started_at": "2026-10-03T08:12:42.487488",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You need to be logged in to do that."
+        ],
+        "error_type": "not_logged_in"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "recorded_from": {
+    "case": "990adba92c0351a2c12eb7982dc125afbeccd4a06130a98f6d75b9ebf3f3eef6",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

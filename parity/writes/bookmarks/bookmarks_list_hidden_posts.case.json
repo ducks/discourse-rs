@@ -1,0 +1,16 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE posts SET hidden = TRUE, hidden_at = '2026-10-02 10:00:00', hidden_reason_id = 1 WHERE id IN (35, 52)"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/u/user1/bookmarks.json"
+    },
+    {
+      "method": "GET",
+      "path": "/u/user1/bookmarks.json?q=Parity%20fixture"
+    }
+  ]
+}

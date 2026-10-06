@@ -1,0 +1,19 @@
+{
+  "user": "user2",
+  "settings": {
+    "authorized_extensions": "jpg|jpeg|png|gif|heic|heif|webp|avif|svg|txt",
+    "max_attachment_size_kb": 1
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/uploads.json",
+      "params": {
+        "upload_type": "composer",
+        "file": {
+          "fixture": "large.txt"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A new topic from user1 for the posting slice",
+        "category": 4,
+        "raw": "The first post of a topic user1 creates through the posting endpoint."
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert"
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "user": "admin",
+  "settings": {
+    "reply_by_email_address": "replies+%{reply_key}@example.com",
+    "manual_polling_enabled": true,
+    "reply_by_email_enabled": true
+  },
+  "setup": [
+    "INSERT INTO post_reply_keys (user_id, post_id, reply_key, created_at, updated_at) VALUES (2, 38, '0123456789abcdef0123456789abcdef', now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/email/handle_mail",
+      "params": {
+        "email": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+0123456789abcdef0123456789abcdef@example.com\r\nMessage-ID: <deprecated-param-1@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nThis reply came in through the deprecated email parameter, long enough to post.\r"
+      }
+    }
+  ],
+  "run_jobs": [
+    "process_email"
+  ]
+}

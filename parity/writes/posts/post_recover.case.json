@@ -1,0 +1,15 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/posts/52.json",
+      "params": {}
+    },
+    {
+      "method": "PUT",
+      "path": "/posts/52/recover.json",
+      "params": {}
+    }
+  ]
+}

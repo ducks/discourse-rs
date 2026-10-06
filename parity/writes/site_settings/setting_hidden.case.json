@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/generate_topic_og_image.json",
+      "params": {
+        "generate_topic_og_image": "true"
+      }
+    }
+  ]
+}

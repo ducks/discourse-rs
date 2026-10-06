@@ -1,0 +1,17 @@
+{
+  "user": "user2",
+  "setup": [
+    "UPDATE posts SET hidden = TRUE, hidden_at = '2026-10-02 10:00:00', hidden_reason_id = 1 WHERE id IN (35)"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/bookmarks.json",
+      "params": {
+        "bookmarkable_id": 35,
+        "bookmarkable_type": "Topic"
+      }
+    }
+  ],
+  "not_yet": "A topic bookmark is allowed though the first post is hidden."
+}

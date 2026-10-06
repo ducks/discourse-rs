@@ -1,0 +1,14 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/user1.json",
+      "params": {
+        "muted_usernames": "user2",
+        "allowed_pm_usernames": "user3",
+        "enable_allowed_pm_users": "true"
+      }
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "name": "draft_out_of_sequence",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/drafts.json",
+      "params": {
+        "draft_key": "topic_35",
+        "sequence": 3,
+        "data": "{\"reply\":\"A draft reply being written\",\"action\":\"reply\",\"categoryId\":4,\"composerTime\":3000,\"typingTime\":2000}"
+      }
+    }
+  ],
+  "started_at": "2026-10-03T16:04:25.9298",
+  "transaction_started_at": "2026-10-03T16:04:24.792675",
+  "responses": [
+    {
+      "status": 409,
+      "body": {
+        "errors": [
+          "draft error"
+        ],
+        "extras": {
+          "description": "Draft is being edited in another window. Please reload this page."
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 86,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "XWJZ4FseJ2GhTkzv1meRayisiSc=",
+            "created_at": "2026-10-03T16:04:25.162135",
+            "rotated_at": "2026-10-03T16:04:25.161861",
+            "updated_at": "2026-10-03T16:04:25.162135",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "XWJZ4FseJ2GhTkzv1meRayisiSc=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 86,
+            "seen_at": "2026-10-03T16:04:25.936988",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "XWJZ4FseJ2GhTkzv1meRayisiSc=",
+            "created_at": "2026-10-03T16:04:25.162135",
+            "rotated_at": "2026-10-03T16:04:25.161861",
+            "updated_at": "2026-10-03T16:04:25.162135",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "XWJZ4FseJ2GhTkzv1meRayisiSc=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "setup": [
+    "INSERT INTO drafts (id, user_id, draft_key, data, sequence, revisions, owner, created_at, updated_at) VALUES (9501, 3, 'topic_35', '{\"reply\":\"Earlier draft\",\"action\":\"reply\"}', 0, 1, NULL, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "UPDATE user_stats SET draft_count = 1 WHERE user_id = 3"
+  ],
+  "recorded_from": {
+    "case": "4a98113695067d53ab54226181d75a3322876ed9a3e04859dc9f55b0e05e2840",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

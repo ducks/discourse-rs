@@ -1,0 +1,15 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A private message nobody can receive",
+        "raw": "This message goes to a recipient that does not exist at all.",
+        "archetype": "private_message",
+        "target_recipients": "no_such_user"
+      }
+    }
+  ]
+}

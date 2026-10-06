@@ -1,0 +1,24 @@
+{
+  "user": "user0",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/bookmarks/6.json",
+      "params": {
+        "name": "Not my bookmark"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/bookmarks/7/toggle_pin.json",
+      "params": {}
+    },
+    {
+      "method": "PUT",
+      "path": "/bookmarks/9999.json",
+      "params": {
+        "name": "No such bookmark"
+      }
+    }
+  ]
+}

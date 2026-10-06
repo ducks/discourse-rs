@@ -1,0 +1,199 @@
+{
+  "name": "incoming_reject_bad_destination",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/email/handle_mail",
+      "params": {
+        "email_encoded": "RGF0ZTogVGh1LCAwMSBPY3QgMjAyNiAxMDowMDowMCArMDAwMA0KRnJvbTogVXNlcjAgPHVzZXIwQGV4YW1wbGUuY29tPg0KVG86IHJlcGxpZXMrZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZAZXhhbXBsZS5jb20NCk1lc3NhZ2UtSUQ6IDxyZWplY3QtYmFkZGVzdEBtYWlsLmV4YW1wbGUuY29tPg0KU3ViamVjdDogUmU6IFtEaXNjb3Vyc2VdIFtHZW5lcmFsXSBQYXJpdHkgZml4dHVyZTogcmVwbGllcyBhbmQgcG9zdGVycw0KTUlNRS1WZXJzaW9uOiAxLjANCkNvbnRlbnQtVHlwZTogdGV4dC9wbGFpbjsgY2hhcnNldD1VVEYtOA0KQ29udGVudC1UcmFuc2Zlci1FbmNvZGluZzogN2JpdA0KDQpUaGlzIGlzIG15IHJlcGx5IGJ5IGVtYWlsLCBsb25nIGVub3VnaCB0byBiZSBhIHBvc3Qgb24gaXRzIG93bi4NCg=="
+      }
+    }
+  ],
+  "started_at": "2026-10-03T08:11:52.799443",
+  "transaction_started_at": "2026-10-03T08:11:51.621377",
+  "responses": [
+    {
+      "status": 200,
+      "body": "email has been received and is queued for processing"
+    }
+  ],
+  "changes": {
+    "email_logs": {
+      "inserted": [
+        {
+          "id": 1,
+          "raw": null,
+          "bounced": false,
+          "post_id": null,
+          "user_id": null,
+          "topic_id": null,
+          "bounce_key": "5b13da60-3b9b-a807-04f6-4918915bc774",
+          "created_at": "2026-10-03T08:11:52.880376",
+          "email_type": "email_reject_bad_destination_address",
+          "message_id": "0d8473b5-534c-47bc-8560-76867d7558ae@localhost",
+          "to_address": "user0@example.com",
+          "updated_at": "2026-10-03T08:11:52.880376",
+          "cc_user_ids": null,
+          "cc_addresses": null,
+          "bcc_addresses": null,
+          "smtp_group_id": null,
+          "bounce_error_code": null,
+          "smtp_transaction_response": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "incoming_emails": {
+      "inserted": [
+        {
+          "id": 1,
+          "raw": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+ffffffffffffffffffffffffffffffff@example.com\r\nMessage-ID: <reject-baddest@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nThis is my reply by email, long enough to be a post on its own.\r\n",
+          "error": "Email::Receiver::BadDestinationAddress",
+          "post_id": null,
+          "subject": "Re: [Discourse] [General] Parity fixture: replies and posters",
+          "user_id": 2,
+          "imap_uid": null,
+          "topic_id": null,
+          "imap_sync": null,
+          "is_bounce": false,
+          "created_at": "2026-10-03T08:11:52.819643",
+          "message_id": "reject-baddest@mail.example.com",
+          "updated_at": "2026-10-03T08:11:52.882588",
+          "created_via": 1,
+          "cc_addresses": "",
+          "from_address": "user0@example.com",
+          "imap_missing": false,
+          "to_addresses": "replies+ffffffffffffffffffffffffffffffff@example.com",
+          "imap_group_id": null,
+          "imap_uid_validity": null,
+          "is_auto_generated": false,
+          "rejection_message": "We're sorry, but your email message to [\"replies+ffffffffffffffffffffffffffffffff@example.com\"] (titled Re: [Discourse] [General] Parity fixture: replies and posters) didn't work.\n\nHere are some things to check:\n\n  - Do you use more than one email address? Did you reply from a different email address than the one you originally used? Email replies require that you use the same email address when replying.\n\n  - Did your email software properly use the Reply-To: email address when replying? Unfortunately, some email software incorrectly sends replies to the From: address, which won’t work.\n\n  - Was the Message-ID header in the email modified? The Message-ID must be consistent and unchanged.\n\nNeed more help? Reach out to us via the Contact Us details at http://localhost:3042/about\n"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 86,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "jGynho5WI0AClQv48S9uKmf3azs=",
+            "created_at": "2026-10-03T08:11:51.979978",
+            "rotated_at": "2026-10-03T08:11:51.979047",
+            "updated_at": "2026-10-03T08:11:51.979978",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "jGynho5WI0AClQv48S9uKmf3azs=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 86,
+            "seen_at": "2026-10-03T08:11:52.805371",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "jGynho5WI0AClQv48S9uKmf3azs=",
+            "created_at": "2026-10-03T08:11:51.979978",
+            "rotated_at": "2026-10-03T08:11:51.979047",
+            "updated_at": "2026-10-03T08:11:51.979978",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "jGynho5WI0AClQv48S9uKmf3azs=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "process_email",
+      {
+        "mail": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+ffffffffffffffffffffffffffffffff@example.com\r\nMessage-ID: <reject-baddest@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nThis is my reply by email, long enough to be a post on its own.\r\n",
+        "retry_on_rate_limit": true,
+        "source": "handle_mail"
+      }
+    ]
+  ],
+  "settings": {
+    "reply_by_email_address": "replies+%{reply_key}@example.com",
+    "manual_polling_enabled": true,
+    "reply_by_email_enabled": true
+  },
+  "setup": [
+    "INSERT INTO post_reply_keys (user_id, post_id, reply_key, created_at, updated_at) VALUES (2, 38, '0123456789abcdef0123456789abcdef', now(), now())"
+  ],
+  "jobs_from_jobs": [],
+  "emails": [
+    {
+      "headers": [
+        [
+          "Return-Path",
+          "replies+verp-5b13da603b9ba80704f64918915bc774@example.com"
+        ],
+        [
+          "From",
+          "\"Discourse\" <noreply@unconfigured.discourse.org>"
+        ],
+        [
+          "Reply-To",
+          "\"Discourse\" <noreply@unconfigured.discourse.org>"
+        ],
+        [
+          "To",
+          "user0@example.com"
+        ],
+        [
+          "Message-ID",
+          "<0d8473b5-534c-47bc-8560-76867d7558ae@localhost>"
+        ],
+        [
+          "Subject",
+          "[Discourse] Email issue -- Unknown To: Address"
+        ],
+        [
+          "MIME-Version",
+          "1.0"
+        ],
+        [
+          "Content-Type",
+          "multipart/alternative; boundary=--==_mimepart_6ac0b8c8d6137_40d4f28749b6"
+        ],
+        [
+          "Content-Transfer-Encoding",
+          "7bit"
+        ],
+        [
+          "X-Auto-Response-Suppress",
+          "All"
+        ],
+        [
+          "x-ms-reactions",
+          "disallow"
+        ],
+        [
+          "Auto-Submitted",
+          "auto-generated"
+        ]
+      ],
+      "text": "We're sorry, but your email message to [\"replies+ffffffffffffffffffffffffffffffff@example.com\"] (titled Re: [Discourse] [General] Parity fixture: replies and posters) didn't work.\n\nHere are some things to check:\n\n  - Do you use more than one email address? Did you reply from a different email address than the one you originally used? Email replies require that you use the same email address when replying.\n\n  - Did your email software properly use the Reply-To: email address when replying? Unfortunately, some email software incorrectly sends replies to the From: address, which won’t work.\n\n  - Was the Message-ID header in the email modified? The Message-ID must be consistent and unchanged.\n\nNeed more help? Reach out to us via the Contact Us details at http://localhost:3042/about\n",
+      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <p>We’re sorry, but your email message to [“<a href=\"mailto:replies+ffffffffffffffffffffffffffffffff@example.com\" style=\"text-decoration:none;font-weight:bold;color:#006699\">replies+ffffffffffffffffffffffffffffffff@example.com</a>”] (titled Re: [Discourse] [General] Parity fixture: replies and posters) didn’t work.</p>\n<p>Here are some things to check:</p>\n<ul style=\"margin:0 0 0 10px;padding:0 0 0 20px\">\n<li style=\"padding-bottom:10px\">\n<p>Do you use more than one email address? Did you reply from a different email address than the one you originally used? Email replies require that you use the same email address when replying.</p>\n</li>\n<li style=\"padding-bottom:10px\">\n<p>Did your email software properly use the Reply-To: email address when replying? Unfortunately, some email software incorrectly sends replies to the From: address, which won’t work.</p>\n</li>\n<li style=\"padding-bottom:10px\">\n<p>Was the Message-ID header in the email modified? The Message-ID must be consistent and unchanged.</p>\n</li>\n</ul>\n<p>Need more help? Reach out to us via the Contact Us details at <a href=\"http://localhost:3042/about\" class=\"inline-onebox-loading\" style=\"text-decoration:none;font-weight:bold;color:#006699\">http://localhost:3042/about</a></p>\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
+    }
+  ],
+  "recorded_from": {
+    "case": "d3659f839508cd7c30f3750177c41620815b0e2595867f40206cb88cd110c37c",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

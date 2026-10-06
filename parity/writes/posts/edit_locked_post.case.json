@@ -1,0 +1,20 @@
+{
+  "user": "user2",
+  "settings": {
+    "tl2_post_edit_time_limit": 525600
+  },
+  "setup": [
+    "UPDATE posts SET locked_by_id = 1 WHERE id = 37"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/37.json",
+      "params": {
+        "post": {
+          "raw": "user2 editing their own reply after staff locked it, which is refused."
+        }
+      }
+    }
+  ]
+}

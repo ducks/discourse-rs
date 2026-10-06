@@ -1,0 +1,19 @@
+{
+  "user": null,
+  "settings": {
+    "login_required": true,
+    "title": "Hammer Time",
+    "site_description": "A time for Hammer",
+    "include_in_discourse_discover": true
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/latest.json"
+    },
+    {
+      "method": "GET",
+      "path": "/site/basic-info.json"
+    }
+  ]
+}

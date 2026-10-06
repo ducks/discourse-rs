@@ -1,0 +1,13 @@
+{
+  "user": "user0",
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/session/user0.json",
+      "params": {
+        "return_url": "/\\evil.com"
+      }
+    }
+  ],
+  "not_yet": "A return_url of \"/\\evil.com\" is passed through, Rails falls back to \"/\"."
+}

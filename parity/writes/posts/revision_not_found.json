@@ -1,0 +1,84 @@
+{
+  "name": "revision_not_found",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/posts/36/revisions/2.json"
+    },
+    {
+      "method": "GET",
+      "path": "/posts/36/revisions/1.json"
+    }
+  ],
+  "started_at": "2026-10-03T08:11:10.543784",
+  "transaction_started_at": "2026-10-03T08:11:09.39011",
+  "responses": [
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: revision"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 86,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "+llg3L0Kjp3bTLy3bq3imUxaOzY=",
+            "created_at": "2026-10-03T08:11:09.781325",
+            "rotated_at": "2026-10-03T08:11:09.781058",
+            "updated_at": "2026-10-03T08:11:09.781325",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "+llg3L0Kjp3bTLy3bq3imUxaOzY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 86,
+            "seen_at": "2026-10-03T08:11:10.550884",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "+llg3L0Kjp3bTLy3bq3imUxaOzY=",
+            "created_at": "2026-10-03T08:11:09.781325",
+            "rotated_at": "2026-10-03T08:11:09.781058",
+            "updated_at": "2026-10-03T08:11:09.781325",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "+llg3L0Kjp3bTLy3bq3imUxaOzY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "recorded_from": {
+    "case": "1909d672ffed8029cb4988b418fa4b86e61fa16ac626f03f1a63232e2c6e72bf",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

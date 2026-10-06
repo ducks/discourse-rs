@@ -1,0 +1,20 @@
+{
+  "user": "user2",
+  "settings": {
+    "edit_history_visible_to_public": false
+  },
+  "setup": [
+    "INSERT INTO post_revisions (id, user_id, post_id, modifications, number, created_at, updated_at, hidden) VALUES (9401, 3, 36, E'---\\nraw:\\n- An earlier text of reply one from user1\\n- A later text of reply one from user1\\n', 2, now(), now(), FALSE)",
+    "UPDATE posts SET version = 2, public_version = 2 WHERE id = 36"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/posts/36/revisions/2.json"
+    },
+    {
+      "method": "GET",
+      "path": "/posts/36/revisions/latest.json"
+    }
+  ]
+}

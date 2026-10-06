@@ -1,0 +1,13 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/bookmarks.json",
+      "params": {
+        "bookmarkable_id": 52,
+        "bookmarkable_type": "Post"
+      }
+    }
+  ]
+}

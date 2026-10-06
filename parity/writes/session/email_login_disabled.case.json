@@ -1,0 +1,15 @@
+{
+  "user": null,
+  "settings": {
+    "enable_local_logins_via_email": false
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/u/email-login.json",
+      "params": {
+        "login": "user0"
+      }
+    }
+  ]
+}

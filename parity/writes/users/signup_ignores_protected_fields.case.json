@@ -1,0 +1,27 @@
+{
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/session/hp.json"
+    },
+    {
+      "method": "POST",
+      "path": "/u.json",
+      "params": {
+        "name": "Sneaky Person",
+        "email": "sneaky.person@example.com",
+        "password": "a-long-enough-pass-phrase",
+        "username": "sneakyperson",
+        "title": "Moderator",
+        "active": true,
+        "approved": true,
+        "staged": true,
+        "admin": true,
+        "trust_level": 4,
+        "password_confirmation": "{{responses.0.body.value}}",
+        "challenge": "{{responses.0.body.challenge|reverse}}"
+      }
+    }
+  ]
+}

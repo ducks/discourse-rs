@@ -1,0 +1,13 @@
+{
+  "user": "user3",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/5/status",
+      "params": {
+        "status": "pinned_globally",
+        "enabled": "false"
+      }
+    }
+  ]
+}

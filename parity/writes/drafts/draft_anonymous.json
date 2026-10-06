@@ -1,0 +1,35 @@
+{
+  "name": "draft_anonymous",
+  "user": null,
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/drafts.json",
+      "params": {
+        "draft_key": "topic_35",
+        "sequence": 0,
+        "data": "{\"reply\":\"A draft reply being written\",\"action\":\"reply\",\"categoryId\":4,\"composerTime\":3000,\"typingTime\":2000}"
+      }
+    }
+  ],
+  "started_at": "2026-10-03T16:04:34.311999",
+  "transaction_started_at": "2026-10-03T16:04:33.452434",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You need to be logged in to do that."
+        ],
+        "error_type": "not_logged_in"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "recorded_from": {
+    "case": "5bf67c1fb6b3ceed3d8fbeff4cec29afe909bb008a9f8d43ccdafd9bab31c6d2",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

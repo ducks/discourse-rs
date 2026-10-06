@@ -1,0 +1,21 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/36.json",
+      "params": {
+        "post": {
+          "raw": "Reply one from user1, as an admin rewrote it for the posting slice."
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/posts/36/revisions/latest.json"
+    }
+  ],
+  "run_jobs": [
+    "process_post"
+  ]
+}

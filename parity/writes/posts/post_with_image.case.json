@@ -1,0 +1,26 @@
+{
+  "user": "user3",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/uploads.json",
+      "params": {
+        "upload_type": "composer",
+        "file": {
+          "fixture": "photo.jpg"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "raw": "A photo:\n\n![photo|690x388]({{responses.0.body.short_url}})",
+        "topic_id": 35
+      }
+    }
+  ],
+  "run_jobs": [
+    "process_post"
+  ]
+}

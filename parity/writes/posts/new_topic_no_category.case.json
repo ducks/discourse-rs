@@ -1,0 +1,13 @@
+{
+  "user": "user0",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A new topic from user0 without any category given",
+        "raw": "The first post of a topic that names no category while uncategorized topics are off."
+      }
+    }
+  ]
+}

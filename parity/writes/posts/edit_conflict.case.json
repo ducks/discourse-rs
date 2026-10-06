@@ -1,0 +1,15 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/36.json",
+      "params": {
+        "post": {
+          "raw": "An edit made against text that is no longer the post's text.",
+          "original_text": "not what the post says"
+        }
+      }
+    }
+  ]
+}

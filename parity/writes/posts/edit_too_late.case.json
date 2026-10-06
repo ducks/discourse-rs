@@ -1,0 +1,17 @@
+{
+  "user": "user0",
+  "settings": {
+    "post_edit_time_limit": 5
+  },
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/52.json",
+      "params": {
+        "post": {
+          "raw": "user0 editing an old reply after the edit time limit has passed."
+        }
+      }
+    }
+  ]
+}

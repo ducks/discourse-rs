@@ -1,0 +1,13 @@
+{
+  "user": "user0",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/post_actions.json",
+      "params": {
+        "id": 52,
+        "post_action_type_id": 3
+      }
+    }
+  ]
+}

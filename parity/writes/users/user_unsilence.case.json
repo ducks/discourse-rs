@@ -1,0 +1,13 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE users SET silenced_till = '2027-01-01 00:00:00' WHERE id = 4"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/4/unsilence.json",
+      "params": {}
+    }
+  ]
+}

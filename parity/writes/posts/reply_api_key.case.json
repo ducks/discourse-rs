@@ -1,0 +1,20 @@
+{
+  "user": null,
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "A reply from user1 to the replies and posters topic, written for the posting slice."
+      },
+      "headers": {
+        "Api-Key": "api-key-9101",
+        "Api-Username": "user1"
+      }
+    }
+  ],
+  "setup": [
+    "INSERT INTO api_keys (id, user_id, created_by_id, created_at, updated_at, description, key_hash, truncated_key, scope_mode) VALUES (9101, NULL, 1, now(), now(), 'integration', encode(sha256(convert_to('api-key-9101', 'UTF8')), 'hex'), 'apik', 0)"
+  ]
+}

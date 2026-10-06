@@ -1,0 +1,71 @@
+{
+  "name": "topic_delete_pm_outsider",
+  "user": "user0",
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/t/43.json",
+      "params": {}
+    }
+  ],
+  "started_at": "2026-10-06T20:08:15.853506",
+  "transaction_started_at": "2026-10-06T20:08:12.05434",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "There was an error deleting that topic. Please contact the site's administrator."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 119,
+            "seen_at": null,
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "Z1fsGdWqfst9EPBv2hFXJz/bwlk=",
+            "created_at": "2026-10-06T20:08:13.953344",
+            "rotated_at": "2026-10-06T20:08:13.940361",
+            "updated_at": "2026-10-06T20:08:13.953344",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "Z1fsGdWqfst9EPBv2hFXJz/bwlk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 119,
+            "seen_at": "2026-10-06T20:08:15.868656",
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "Z1fsGdWqfst9EPBv2hFXJz/bwlk=",
+            "created_at": "2026-10-06T20:08:13.953344",
+            "rotated_at": "2026-10-06T20:08:13.940361",
+            "updated_at": "2026-10-06T20:08:13.953344",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "Z1fsGdWqfst9EPBv2hFXJz/bwlk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "recorded_from": {
+    "case": "fdcec7e6620fad99b773d90bfd4713c1840dbc28b6da7fb425a92180751bd177",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

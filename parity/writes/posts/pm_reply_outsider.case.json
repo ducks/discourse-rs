@@ -1,0 +1,13 @@
+{
+  "user": "user2",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 42,
+        "raw": "Someone outside the conversation trying to reply to it."
+      }
+    }
+  ]
+}

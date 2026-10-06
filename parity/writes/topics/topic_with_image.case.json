@@ -1,0 +1,27 @@
+{
+  "user": "user3",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/uploads.json",
+      "params": {
+        "upload_type": "composer",
+        "file": {
+          "fixture": "photo.jpg"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A topic opening with a photo of noise",
+        "raw": "![photo|690x388]({{responses.0.body.short_url}})\n\nThe photo above is plasma noise, for the thumbnails.",
+        "category": 4
+      }
+    }
+  ],
+  "run_jobs": [
+    "process_post"
+  ]
+}

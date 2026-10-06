@@ -1,0 +1,13 @@
+{
+  "user": "user0",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "A reply from user0, who is at trust level one, to the same topic."
+      }
+    }
+  ]
+}

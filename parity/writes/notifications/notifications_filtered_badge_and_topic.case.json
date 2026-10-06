@@ -1,0 +1,17 @@
+{
+  "user": "user0",
+  "setup": [
+    "UPDATE badges SET enabled = FALSE WHERE id = 1",
+    "INSERT INTO notifications (id, user_id, notification_type, data, read, topic_id, post_number, high_priority, created_at, updated_at) VALUES (9601, 2, 6, '{\"topic_title\":\"Parity fixture: PM admin to user1 and user2\",\"original_post_id\":50,\"original_post_type\":1,\"original_username\":\"admin\",\"revision_number\":null,\"display_username\":\"admin\",\"display_name\":\"Admin\"}', FALSE, 43, 1, TRUE, '2026-10-02 10:00:00', '2026-10-02 10:00:00')"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/notifications.json"
+    },
+    {
+      "method": "GET",
+      "path": "/notifications.json?recent=true&silent=true"
+    }
+  ]
+}

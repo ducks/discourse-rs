@@ -1,0 +1,14 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/drafts.json",
+      "params": {
+        "draft_key": "topic_35",
+        "sequence": 0,
+        "data": "not json"
+      }
+    }
+  ]
+}

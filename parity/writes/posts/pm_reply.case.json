@@ -1,0 +1,17 @@
+{
+  "user": "user0",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 42,
+        "raw": "A reply inside the private message from user0, long enough."
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert",
+    "user_email"
+  ]
+}

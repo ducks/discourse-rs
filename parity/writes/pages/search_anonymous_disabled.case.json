@@ -1,0 +1,17 @@
+{
+  "user": null,
+  "settings": {
+    "allow_anonymous_search": false
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/search/query.json?term=fixture"
+    },
+    {
+      "method": "GET",
+      "path": "/search.json?q=fixture"
+    }
+  ],
+  "not_yet": "allow_anonymous_search off is not enforced."
+}

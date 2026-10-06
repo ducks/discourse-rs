@@ -1,0 +1,17 @@
+{
+  "user": null,
+  "setup": [
+    "UPDATE categories SET default_view = 'top', default_top_period = 'monthly' WHERE id = 4"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/c/general/4.json"
+    },
+    {
+      "method": "GET",
+      "path": "/c/general/4/none.json"
+    }
+  ],
+  "not_yet": "A category's default_view top is ignored on /none."
+}

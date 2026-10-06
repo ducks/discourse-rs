@@ -1,24 +1,24 @@
 # cargo nextest runs every test in its own process, test binaries side by
 # side. Each test copies the template database and holds up to four
-# connections (tests/writes.rs holds four such copies at once), and
-# Postgres allows 100: eight at a time keeps well clear of that.
+# connections, and Postgres allows 100: eight at a time keeps well clear
+# of that.
 #
 # The default profile leaves out the comparisons against recorded Rails
-# output (parity goldens, the write replay, cooking, mail parsing): they
-# take about 40% of the suite's time and the write replay alone sets its
-# floor. `make parity-test` runs them; CI runs everything.
+# output (parity goldens, the write cases, cooking, mail parsing): they
+# take about 40% of the suite's time. `make parity-test` runs them; CI
+# runs everything.
 [profile.default]
 test-threads = 8
-default-filter = "not (kind(test) & test(/(match|matches|like)_rails|^golden_responses_match$/))"
+default-filter = "not (binary(writes) | (kind(test) & test(/(match|matches|like)_rails|^golden_responses_match$/)))"
 
-# The write parity suite replays every recorded case in one test; a
-# minute or so is its normal pace.
+# A write case replays a few requests and maybe its jobs: seconds, more
+# when it makes thumbnails in a debug build.
 [[profile.default.overrides]]
-filter = "test(writes_match_rails)"
-slow-timeout = "180s"
+filter = "binary(writes)"
+slow-timeout = "60s"
 
 [profile.parity]
-default-filter = "kind(test) & test(/(match|matches|like)_rails|^golden_responses_match$/)"
+default-filter = "binary(writes) | (kind(test) & test(/(match|matches|like)_rails|^golden_responses_match$/))"
 
 # CI runners have four cores shared with Postgres, and the tests are CPU
 # bound: more at once than cores only slows each down.

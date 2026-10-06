@@ -1,0 +1,22 @@
+{
+  "user": "user0",
+  "setup": [
+    "UPDATE posts SET wiki = TRUE WHERE id = 37"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/37.json",
+      "params": {
+        "post": {
+          "raw": "Reply two from user2, made a wiki, and edited by user0 who may edit wikis.",
+          "edit_reason": "wiki edit"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/posts/37/revisions/latest.json"
+    }
+  ]
+}

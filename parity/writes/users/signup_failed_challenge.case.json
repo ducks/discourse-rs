@@ -1,0 +1,20 @@
+{
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/session/hp.json"
+    },
+    {
+      "method": "POST",
+      "path": "/u.json",
+      "params": {
+        "name": "Bot",
+        "email": "bot@example.com",
+        "password": "a-long-enough-pass-phrase",
+        "username": "botperson",
+        "password_confirmation": "wrong",
+        "challenge": "wrong"
+      }
+    }
+  ]
+}

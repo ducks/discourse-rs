@@ -1,0 +1,18 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/user1.json",
+      "params": {
+        "email_level": 2,
+        "email_messages_level": 0,
+        "external_links_in_new_tab": "true",
+        "enable_quoting": "false",
+        "auto_track_topics_after_msecs": 60000,
+        "timezone": "America/Chicago",
+        "like_notification_frequency": 1
+      }
+    }
+  ]
+}

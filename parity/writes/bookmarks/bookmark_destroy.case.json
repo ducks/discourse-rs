@@ -1,0 +1,10 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/bookmarks/3.json",
+      "params": {}
+    }
+  ]
+}

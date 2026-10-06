@@ -1,0 +1,16 @@
+{
+  "user": null,
+  "setup": [
+    "UPDATE users SET active = false WHERE id = 3"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/session.json",
+      "params": {
+        "login": "user1",
+        "password": "password"
+      }
+    }
+  ]
+}

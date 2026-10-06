@@ -1,0 +1,18 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/topics/timings",
+      "params": {
+        "topic_id": 35,
+        "topic_time": 3000,
+        "timings": {
+          "0": 1000,
+          "99": 1000,
+          "3": 1000
+        }
+      }
+    }
+  ]
+}

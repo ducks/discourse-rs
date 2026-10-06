@@ -1,0 +1,16 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/bookmarks.json",
+      "params": {
+        "bookmarkable_id": 37,
+        "bookmarkable_type": "Post",
+        "name": "Read this later",
+        "reminder_at": "2031-03-01T09:00:00Z",
+        "auto_delete_preference": 1
+      }
+    }
+  ]
+}
