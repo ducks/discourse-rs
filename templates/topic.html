@@ -5,48 +5,30 @@
 <div class="regular">
 <div class="container" id="topic-title">{{ title_html|safe }}</div>
 <div class="container posts">
+  {{ bottom_map|safe }}
+  {{ timeline|safe }}
   <div class="row">
     <section class="topic-area" id="topic">
       <div class="posts-wrapper">
-        <div class="post-stream" id="posts">{% for post in posts %}{{ post|safe }}{% endfor %}</div>
+        <div class="post-stream" id="posts">{% for post in posts %}{{ post|safe }}{% endfor %}<div class="post-stream__bottom-boundary"></div></div>
       </div>
       <div id="topic-bottom"></div>
+      <div class="loading-container"><div class="topic-timer-info"></div></div>
     </section>
   </div>
 </div>
-{% if live %}
-<script>
-  // A post created while the page was read can arrive once more: keep the
-  // first copy of each.
-  document.addEventListener("htmx:sseMessage", function () {
-    var seen = {};
-    document.querySelectorAll("#posts > [data-post-number]").forEach(function (el) {
-      var n = el.getAttribute("data-post-number");
-      if (seen[n]) { el.remove(); } else { seen[n] = true; }
-    });
-  });
-</script>
+{% if prev_url.is_some() || next_url.is_some() %}
+<div class="topic-pagination">
+  {% if let Some(url) = prev_url %}<a href="{{ url }}" rel="prev">Previous page</a>{% endif %}
+  {% if let Some(url) = next_url %}<a href="{{ url }}" rel="next">Next page</a>{% endif %}
+</div>
 {% endif %}
-<script>
-  // The post menu's copy link: the post's URL, absolute.
-  document.addEventListener("click", function (event) {
-    var copy = event.target.closest(".post-action-menu__copy-link");
-    if (copy) {
-      navigator.clipboard.writeText(new URL(copy.dataset.shareUrl, location.href).href);
-      return;
-    }
-    // A post's reply button: the form below, replying to that post.
-    var reply = event.target.closest(".post-action-menu__reply");
-    var form = document.querySelector("form.reply");
-    if (reply && form) {
-      form.querySelector("[name=reply_to_post_number]").value = reply.dataset.postNumber;
-      form.querySelector("textarea").focus();
-    }
-  });
-</script>
+{#- Ember shows the footer and the suggested topics once every post is
+    loaded: here, on the last page. -#}
+{% if live %}{{ footer_buttons|safe }}{% endif %}
 {% if can_reply %}{% if let Some(v) = viewer %}
-{#- The new post comes back over the live stream, so the response is only
-    checked for errors. -#}
+{#- The composer's stand-in. The new post comes back over the live stream,
+    so the response is only checked for errors. -#}
 <form class="reply" data-own-errors hx-post="{{ base_path }}/posts" hx-swap="none"
       hx-headers='{"X-CSRF-Token": "{{ v.csrf_token }}", "X-Requested-With": "XMLHttpRequest"}'
       hx-on::after-request="replied(this, event)">
@@ -56,31 +38,10 @@
   <p class="reply-error" role="alert" hidden></p>
   <button type="submit">Reply</button>
 </form>
-<script>
-  function replied(form, event) {
-    var error = form.querySelector(".reply-error");
-    if (event.detail.successful) {
-      form.reset();
-      error.hidden = true;
-      return;
-    }
-    var message = "Could not post the reply.";
-    try {
-      var body = JSON.parse(event.detail.xhr.responseText);
-      if (body.errors) { message = body.errors.join(" "); }
-    } catch (_) {}
-    error.textContent = message;
-    error.hidden = false;
-  }
-</script>
 {% endif %}{% endif %}
-{% if prev_url.is_some() || next_url.is_some() %}
-<div class="topic-pagination">
-  {% if let Some(url) = prev_url %}<a href="{{ url }}" rel="prev">Previous page</a>{% endif %}
-  {% if let Some(url) = next_url %}<a href="{{ url }}" rel="next">Next page</a>{% endif %}
+{% if live %}<br>{{ more_topics|safe }}{% endif %}
 </div>
-{% endif %}
-</div>
+<script src="{{ base_path }}/assets/topic.js"></script>
 {% endblock %}
 {#- The topic's changes arrive on the page's stream on every page (a like
     re-renders its post wherever it is shown); new posts only on the last,

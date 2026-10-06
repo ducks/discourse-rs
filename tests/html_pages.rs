@@ -244,3 +244,40 @@ async fn color_definitions_are_the_sites_schemes() {
         }
     }
 }
+
+/// Around the posts: the topic map in the first post and at the bottom,
+/// the timeline, an anonymous reader's reply and the suggested topics.
+#[tokio::test]
+async fn topic_page_has_its_map_timeline_footer_and_suggestions() {
+    let db = TestDb::new().await;
+    let (_, _, html) = get(&db.pool, "/t/parity-fixture-replies-and-posters/35").await;
+    let first = html.find(r#"id="post_1""#).unwrap();
+    let second = html.find(r#"id="post_2""#).unwrap();
+    let op_map = html
+        .find(r#"<div class="post__topic-map topic-map --op">"#)
+        .expect("the first post's topic map");
+    assert!(first < op_map && op_map < second);
+    assert!(html.contains(r#"<div class="topic-map --bottom">"#));
+    assert!(html.contains(r#"<div class="topic-map__users-list --users-summary">"#));
+    assert!(html.contains(r#"<span class="post-count">2</span>"#));
+    // The timeline at the first of five posts.
+    assert!(html.contains(r#"<div class="with-timeline topic-navigation">"#));
+    assert!(html.contains(r#"<div class="timeline-replies">1 / 5</div>"#));
+    assert!(html.contains(r#"<a class="start-date" href="/t/parity-fixture-replies-and-posters/35/1" title="Jump to the first post">"#));
+    assert!(html.contains(
+        r#"<a class="now-date" href="/t/parity-fixture-replies-and-posters/35/5"><span><span class="relative-date" title="Jump to the last post""#
+    ));
+    // The footer's reply asks an anonymous reader to log in.
+    assert!(html.contains(
+        r#"<div id="topic-footer-buttons" role="region"><div class="topic-footer-main-buttons"><button class="btn btn-icon-text btn-primary" data-login-url="/login" type="button">"#
+    ));
+    // The suggested topics, and where to read more.
+    assert!(html.contains(r#"<h3 class="more-topics__list-title" id="suggested-topics-title">New &amp; Unread Topics</h3>"#));
+    assert!(html.contains(r#"<thead class="topic-list-header --has-tabs">"#));
+    assert!(
+        !html.contains(r#"<td class="posters topic-list-data">"#),
+        "no posters column"
+    );
+    assert!(html.contains(r#"<h3 class="more-topics__browse-more">Want to read more? Browse other topics in <a class="badge-category__wrapper ""#));
+    assert!(html.contains(r#"<script src="/assets/topic.js"></script>"#));
+}

@@ -313,6 +313,12 @@ pub struct TopicPage {
     pub title_html: String,
     /// The posts as Ember renders them (post_view::stream).
     pub posts: Vec<String>,
+    /// Around the posts (post_view): the bottom topic map, the timeline,
+    /// the footer buttons and the suggested topics.
+    pub bottom_map: String,
+    pub timeline: String,
+    pub footer_buttons: String,
+    pub more_topics: String,
     pub prev_url: Option<String>,
     pub next_url: Option<String>,
     pub topic_id: i64,
@@ -449,17 +455,36 @@ pub async fn topic_page(
     };
     let title_html = crate::post_view::topic_title(&list, view, &topic_url);
     let post_settings = crate::post_view::PostSettings::load(settings)?;
-    let topic = crate::post_view::TopicInfo::from_view(view);
+    let viewer = site.viewer.as_ref().map(|v| v.username.as_str());
+    let mut topic = crate::post_view::TopicInfo::from_view(view);
+    // The first post's topic map, rendered before the posts that carry it.
+    if crate::post_view::shows_op_map(view, &post_settings) {
+        let cx = crate::post_view::PostContext {
+            list: &list,
+            settings: &post_settings,
+            topic: &topic,
+            viewer,
+        };
+        topic.op_map = crate::post_view::topic_map(&cx, view, "--op");
+    }
     let cx = crate::post_view::PostContext {
         list: &list,
         settings: &post_settings,
         topic: &topic,
-        viewer: site.viewer.as_ref().map(|v| v.username.as_str()),
+        viewer,
     };
     let posts = view["post_stream"]["posts"]
         .as_array()
         .map(|posts| crate::post_view::stream(&cx, posts))
         .unwrap_or_default();
+    let bottom_map = if crate::post_view::shows_bottom_map(view, &post_settings) {
+        crate::post_view::topic_map(&cx, view, "--bottom")
+    } else {
+        String::new()
+    };
+    let timeline = crate::post_view::timeline(&cx, view);
+    let footer_buttons = crate::post_view::footer_buttons(&cx, view);
+    let more_topics = crate::post_view::more_topics(&cx, view);
 
     let stream_len = view["post_stream"]["stream"]
         .as_array()
@@ -489,6 +514,10 @@ pub async fn topic_page(
         canonical_url: page_url(page),
         title_html,
         posts,
+        bottom_map,
+        timeline,
+        footer_buttons,
+        more_topics,
         topic_id: id,
         // New posts land on the last page; earlier pages stay as they are.
         live: page >= last_page,

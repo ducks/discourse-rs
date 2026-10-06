@@ -125,7 +125,9 @@ async fn changes_arrive_as_html_for_the_viewer() {
     publish(&st, post_id, "created").await;
     let html = next_sse_event(&mut body, &mut buffer, "post").await;
     assert!(
-        html.starts_with(r##"<div hx-swap-oob="beforeend:#posts">"##),
+        html.starts_with(
+            r##"<div hx-swap-oob="beforebegin:#posts > .post-stream__bottom-boundary">"##
+        ),
         "{html}"
     );
 

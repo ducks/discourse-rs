@@ -355,8 +355,11 @@ Discourse's own clients keep working.
       own, active links, collapsed sections and the hidden sidebar kept in
       localStorage as Ember keeps them), and the topic page's title and posts
       (avatars, names, post infos, cooked content, small actions, time gaps,
-      the post menu's like, copy link, bookmark and reply). Not yet: the
-      topic map, timeline, footer buttons and suggested topics; the post
+      the post menu's like, copy link, bookmark and reply), the topic map,
+      the timeline following the post being read, the footer buttons
+      (share, the topic's bookmark, reply) and the suggested topics. Not
+      yet: the topic map's menus; the footer's flag, mark unread,
+      notifications and pinned buttons and the admin menu; the post
       menu's flag, edit, delete, admin, read and replies (modals and the
       composer); the sidebar's unread and
       new dots and counts (TopicTrackingState), its header actions and

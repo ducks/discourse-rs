@@ -73,6 +73,13 @@ h6 code {
   --below-topic-margin: 0.75em;
 }
 /* topic.scss:7 */
+.container.posts {
+  display: grid;
+  grid-template-areas: "posts timeline";
+  grid-template-columns: auto auto;
+  margin-bottom: var(--below-topic-margin);
+}
+/* topic.scss:7 */
 @media screen and (width <= 924px) {
   .container.posts {
     grid-template-areas: "posts";
@@ -84,6 +91,18 @@ h6 code {
   grid-area: posts;
   max-width: calc(100vw - 20px);
   min-width: 0;
+}
+/* topic.scss:115 */
+.topic-status-info,
+.topic-timer-info {
+  border-top: 1px solid var(--content-border-color);
+  margin: 0;
+  max-width: calc(var(--topic-body-width) + var(--topic-body-width-padding)*2 + var(--topic-avatar-width));
+}
+/* topic.scss:124 */
+.topic-status-info:empty,
+.topic-timer-info:empty {
+  padding: 0;
 }
 /* topic.scss:153 */
 .title-wrapper {
@@ -1758,4 +1777,439 @@ span.post-count {
 /* topic.scss:2 */
 :where(.uc-modernize-foundation-theme) .posts-wrapper {
   -webkit-font-smoothing: var(--webkit-font-smoothing);
+}
+
+/*
+ * Around the posts: topic.scss's navigation column, base/topic-footer.scss,
+ * components/topic-map.scss, topic-timeline.scss and
+ * components/more-topics.scss. Left out: the mobile fullscreen timeline and
+ * progress bar, the composer's states, the topic map's menus, the admin
+ * menu and pinned buttons.
+ */
+/* common/base/topic.scss */
+
+/* topic.scss:21 */
+.container.posts .timeline-container {
+  margin-left: unset !important;
+}
+/* topic.scss:29 */
+.container.posts .topic-navigation {
+  overflow-anchor: none;
+}
+/* topic.scss:36 */
+@media screen and (width >= 925px) {
+  .container.posts .topic-navigation {
+    grid-area: timeline;
+    align-self: start;
+    position: sticky;
+    top: calc(var(--header-offset, 60px) + 1.5em);
+    margin-left: 1em;
+    z-index: 100;
+  }
+}
+/* topic.scss:52 */
+@media screen and (width >= 925px) {
+  .container.posts .topic-navigation>* {
+    margin-bottom: .5em;
+  }
+}
+/* topic.scss:91 */
+@media screen and (width <= 924px) {
+  .container.posts .timeline-container:not(.timeline-fullscreen) {
+    display: none;
+  }
+}
+/* topic.scss:95 */
+@media screen and (width <= 924px) {
+  .container.posts .timeline-container .timeline-scroller-content {
+    position: relative;
+  }
+}
+
+/* common/base/topic-footer.scss */
+
+/* topic-footer.scss:3 */
+#topic-footer-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--below-topic-margin);
+  max-width: calc(var(--topic-avatar-width) + var(--topic-body-width) + var(--topic-body-width-padding)*2);
+}
+/* topic-footer.scss:12 */
+html.anon #topic-footer-buttons {
+  align-items: end;
+}
+/* topic-footer.scss:17 */
+#topic-footer-buttons .topic-footer-main-buttons {
+  display: flex;
+  gap: .5rem;
+}
+/* topic-footer.scss:17 */
+@media(width < 40rem) {
+  #topic-footer-buttons .topic-footer-main-buttons {
+    gap: .75rem;
+    justify-content: space-between;
+  }
+}
+/* topic-footer.scss:31 */
+@media(width < 40rem) {
+  html:not(.anon) #topic-footer-buttons .topic-footer-main-buttons {
+    width: 100%;
+  }
+}
+/* topic-footer.scss:34 */
+@media(width < 40rem) {
+  html:not(.anon) #topic-footer-buttons .topic-footer-main-buttons .d-button-label {
+    display: none;
+  }
+}
+/* topic-footer.scss:38 */
+@media(width < 40rem) {
+  html:not(.anon) #topic-footer-buttons .topic-footer-main-buttons .d-icon {
+    margin-right: 0;
+  }
+}
+/* topic-footer.scss:44 */
+#topic-footer-buttons .topic-footer-main-buttons__actions {
+  display: flex;
+  gap: .75rem;
+  flex-wrap: wrap;
+}
+/* topic-footer.scss:44 */
+@media(width >= 40rem) {
+  #topic-footer-buttons .topic-footer-main-buttons__actions {
+    gap: .5rem;
+  }
+}
+/* topic-footer.scss:55 */
+#topic-footer-buttons .topic-footer-main-buttons .bookmark.bookmarked .d-icon-discourse-bookmark-clock {
+  color: var(--tertiary);
+}
+/* topic-footer.scss:60 */
+#topic-footer-buttons .topic-footer-main-buttons .bookmark.bookmarked:not(.--post-bookmarked-only) .d-icon-bookmark {
+  color: var(--tertiary);
+}
+/* topic-footer.scss:66 */
+#topic-footer-buttons .topic-footer-main-buttons .create {
+  align-self: flex-start;
+}
+/* topic-footer.scss:125 */
+.container.posts .topic-navigation {
+  --border-offset: -1px;
+}
+/* topic-footer.scss:125 */
+@media screen and (width <= 924px) {
+  .container.posts .topic-navigation {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    grid-area: posts;
+    grid-row: 3;
+    width: auto;
+    margin-top: var(--border-offset);
+  }
+}
+
+/* common/components/more-topics.scss */
+
+/* more-topics.scss:3 */
+.more-topics__container {
+  position: relative;
+  padding-bottom: max(env(safe-area-inset-bottom),1em);
+  max-width: calc(var(--d-max-width)*.87);
+}
+/* more-topics.scss:57 */
+.more-topics__container .more-topics__lists:not(.single-list) .more-topics__list-title {
+  display: none;
+}
+/* more-topics.scss:64 */
+.more-topics__container .more-topics__list .topic-list-body {
+  border-top-width: 1px;
+}
+/* more-topics.scss:79 */
+@media(width < 40rem) {
+  .more-topics__container .more-topics__list .topic-list-header.--has-tabs {
+    display: flex;
+  }
+}
+/* more-topics.scss:87 */
+@media(width < 40rem) {
+  .more-topics__container .more-topics__list .topic-list-header.--has-tabs th:not(.default) {
+    display: none;
+  }
+}
+/* more-topics.scss:103 */
+.more-topics__container .more-topics__list-title,
+.more-topics__container .more-topics__browse-more {
+  padding-left: .5em;
+}
+
+/* common/components/topic-map.scss */
+
+/* topic-map.scss:3 */
+.topic-map.--op {
+  border-top: 1px solid var(--content-border-color);
+  border-bottom: none;
+  padding-left: calc(var(--topic-body-width-padding) + var(--topic-avatar-width));
+}
+/* topic-map.scss:12 */
+.topic-map.--bottom {
+  grid-area: posts;
+  grid-row: 2;
+  max-width: calc(var(--topic-avatar-width) + var(--topic-body-width) + var(--topic-body-width-padding)*2);
+}
+/* topic-map.scss:22 */
+.topic-map {
+  --chart-line-color: var(--tertiary);
+  --chart-point-color: var(--tertiary-medium);
+  --chart-prediction-color: var(--primary-low-mid);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  column-gap: .75em;
+  border-bottom: 1px solid var(--content-border-color);
+  box-sizing: border-box;
+  max-width: calc(var(--topic-avatar-width) + var(--topic-body-width) + var(--topic-body-width-padding)*2);
+  padding-block: .5em;
+  overflow-anchor: none;
+}
+/* topic-map.scss:22 */
+@media(width < 40rem) {
+  .topic-map {
+    font-size: var(--font-down-1);
+  }
+}
+/* topic-map.scss:45 */
+@media screen and (width <= 500px) {
+  .topic-map.--op,
+  .topic-map.--bottom {
+    padding-left: 0;
+  }
+}
+/* topic-map.scss:52 */
+.topic-map .--users-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  overflow: hidden;
+  height: 2em;
+  align-self: center;
+  flex: 1 2 0;
+  gap: .25em;
+  min-width: 2em;
+  width: 0;
+}
+/* topic-map.scss:64 */
+.topic-map .--users-summary .avatar {
+  width: 2em;
+  height: 2em;
+  margin-right: 0;
+}
+/* topic-map.scss:70 */
+.topic-map .--users-summary .avatar-flair,
+.topic-map .--users-summary .post-count {
+  display: none;
+}
+/* topic-map.scss:76 */
+.topic-map__stats {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0;
+  list-style: none;
+}
+/* topic-map.scss:83 */
+.topic-map a {
+  overflow-wrap: anywhere;
+}
+/* topic-map.scss:87 */
+.topic-map__contents {
+  flex-grow: 1;
+}
+/* topic-map.scss:90 */
+.topic-map__contents .number {
+  font-size: var(--font-up-1);
+  line-height: 1.2;
+}
+/* topic-map.scss:95 */
+.topic-map__contents .topic-map__stats {
+  gap: .75em;
+}
+/* topic-map.scss:99 */
+.topic-map__contents .topic-map__stats.--single-stat .fk-d-menu__trigger {
+  flex-direction: row;
+  gap: .25em;
+}
+/* topic-map.scss:103 */
+.topic-map__contents .topic-map__stats.--single-stat .fk-d-menu__trigger span {
+  font-size: var(--font-0);
+  color: var(--primary-700);
+  min-width: unset;
+  overflow: visible;
+}
+/* topic-map.scss:112 */
+.topic-map__contents .topic-map__stats .fk-d-menu__trigger,
+.topic-map__contents .topic-map__stats .topic-map__stat {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  background: rgba(0,0,0,0);
+  min-width: 0;
+}
+/* topic-map.scss:122 */
+.topic-map__contents .topic-map__stats .fk-d-menu__trigger .number,
+.topic-map__contents .topic-map__stats .topic-map__stat .number {
+  color: var(--tertiary);
+  white-space: nowrap;
+}
+/* topic-map.scss:127 */
+.topic-map__contents .topic-map__stats .fk-d-menu__trigger .topic-map__stat-label,
+.topic-map__contents .topic-map__stats .topic-map__stat .topic-map__stat-label {
+  display: block;
+  min-width: 0;
+  font-size: var(--font-down-1);
+  color: var(--primary-medium);
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+/* topic-map.scss:140 */
+.topic-map .controls {
+  display: flex;
+  align-items: center;
+}
+/* topic-map.scss:153 */
+.topic-map__buttons {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: .75em;
+}
+/* topic-map.scss:160 */
+.topic-map .view-explainer {
+  color: var(--primary-700);
+  font-size: var(--font-down-1);
+}
+
+/* common/topic-timeline.scss */
+
+/* topic-timeline.scss:5 */
+.timeline-container {
+  box-sizing: border-box;
+  z-index: 100;
+}
+/* topic-timeline.scss:10 */
+.timeline-container.timeline-docked-bottom .timeline-footer-controls {
+  opacity: 0;
+  pointer-events: none;
+  cursor: default;
+}
+/* topic-timeline.scss:197 */
+.timeline-container .topic-timeline {
+  transition: opacity .2s ease-in;
+  touch-action: none;
+  min-width: 6em;
+}
+/* topic-timeline.scss:206 */
+.timeline-container .topic-timeline .timeline-controls {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+/* topic-timeline.scss:212 */
+.timeline-container .topic-timeline .timeline-date-wrapper {
+  max-width: 9em;
+  overflow-wrap: anywhere;
+}
+/* topic-timeline.scss:217 */
+.timeline-container .topic-timeline .timeline-footer-controls {
+  position: absolute;
+  margin-top: 1em;
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+/* topic-timeline.scss:217 */
+@media(prefers-reduced-motion: no-preference) {
+  .timeline-container .topic-timeline .timeline-footer-controls {
+    transition: opacity .2s ease-in;
+  }
+}
+/* topic-timeline.scss:231 */
+.timeline-container .topic-timeline .timeline-footer-controls button:last-child {
+  margin-right: 0;
+}
+/* topic-timeline.scss:236 */
+.timeline-container .topic-timeline .start-date {
+  color: var(--primary-med-or-secondary-med);
+}
+/* topic-timeline.scss:240 */
+.timeline-container .topic-timeline .timeline-scrollarea {
+  margin-top: .5em;
+  margin-left: .5em;
+  border-left: 1px solid var(--topic-timeline-border-color);
+  position: relative;
+  max-width: 100%;
+  transform: translateZ(0);
+}
+/* topic-timeline.scss:256 */
+.timeline-container .topic-timeline .timeline-padding {
+  transition: height .15s ease-out;
+  cursor: pointer;
+  margin-left: -1em;
+}
+/* topic-timeline.scss:267 */
+.timeline-container .topic-timeline .timeline-handle {
+  border-radius: .8em;
+  width: .35em;
+  background-color: var(--topic-timeline-handle-color);
+  height: 100%;
+  float: left;
+  flex-shrink: 0;
+  z-index: 2;
+  outline: 1px solid rgba(0,0,0,0);
+  margin-left: .5px;
+}
+/* topic-timeline.scss:279 */
+.timeline-container .topic-timeline .timeline-scroller-content {
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow: hidden;
+  padding-left: var(--space-4);
+  position: absolute;
+  max-height: 3em;
+}
+/* topic-timeline.scss:288 */
+.timeline-container .topic-timeline .timeline-ago {
+  color: var(--primary-med-or-secondary-med);
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* topic-timeline.scss:296 */
+.timeline-container .topic-timeline .timeline-scroller {
+  cursor: default;
+  -webkit-user-select: none;
+  user-select: none;
+  margin-left: -0.22em;
+  cursor: ns-resize;
+  display: flex;
+  align-items: center;
+}
+/* topic-timeline.scss:308 */
+.timeline-container .topic-timeline .timeline-replies {
+  overflow: hidden;
+  overflow-wrap: break-word;
+  font-weight: bold;
+}
+/* topic-timeline.scss:331 */
+.timeline-container .topic-timeline .now-date {
+  display: inline-block;
+  color: var(--primary-med-or-secondary-med);
+  margin-top: var(--space-2);
 }

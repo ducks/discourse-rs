@@ -1456,12 +1456,7 @@ async fn members_like_from_the_topic_page() {
         .await;
     assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
     let html = common::next_sse_event(&mut body, &mut buffer, "post").await;
-    assert!(
-        html.contains(&format!(
-            r#"hx-swap-oob="outerHTML:#posts > [data-post-number='{post_number}']""#
-        )),
-        "{html}"
-    );
+    assert!(html.contains(&post_swap(post_number)), "{html}");
     assert!(
         html.contains(&format!(r#"hx-delete="/post_actions/{post_id}""#)),
         "the member's own render shows their like: {html}"
@@ -1523,13 +1518,7 @@ async fn members_bookmark_from_the_topic_page() {
 
     let html = client.get(&format!("/live/post/{post_id}")).await;
     assert_eq!(html.status, StatusCode::OK);
-    assert!(
-        html.body.contains(&format!(
-            r#"hx-swap-oob="outerHTML:#posts > [data-post-number='{post_number}']""#
-        )),
-        "{}",
-        html.body
-    );
+    assert!(html.body.contains(&post_swap(post_number)), "{}", html.body);
     assert!(
         html.body
             .contains(&format!(r#"hx-delete="/bookmarks/{bookmark_id}""#)),
@@ -1717,4 +1706,14 @@ async fn members_get_their_own_sidebar() {
     assert!(page.contains(
         r#"data-link-name="configure-default-navigation-menu-tags" href="/admin/site_settings/category/sidebar?filter=default_navigation_menu_tags""#
     ));
+}
+
+/// How a live update replaces a post on the page: the post's wrapper, or
+/// the first post's main row, which keeps its topic map.
+fn post_swap(post_number: i32) -> String {
+    if post_number == 1 {
+        r#"hx-swap-oob="outerHTML:#post_1 > .post__row:has(> .post__body)""#.to_string()
+    } else {
+        format!(r#"hx-swap-oob="outerHTML:#posts > [data-post-number='{post_number}']""#)
+    }
 }
