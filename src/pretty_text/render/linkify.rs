@@ -646,8 +646,10 @@ fn is_link_close(html: &str) -> bool {
 }
 
 /// markdown-it's `linkify` core rule: every text outside a link, also
-/// outside one written as inline html. Returns what it met that is not
-/// ported, if anything.
+/// outside one written as inline html, in an inline block whose whole
+/// source passes `test`: a host written right before a code span is no
+/// link, since a backtick does not end a host. Returns what it met that is
+/// not ported, if anything.
 pub fn run(root: &mut Node, linkify: &Arc<LinkifyIt>, md: &MarkdownIt) -> Option<&'static str> {
     fn visit(
         node: &mut Node,
@@ -691,6 +693,10 @@ pub fn run(root: &mut Node, linkify: &Arc<LinkifyIt>, md: &MarkdownIt) -> Option
         }
     }
     let mut unsupported = None;
-    visit(root, linkify, md, &mut unsupported);
+    super::blocks::each_block(root, |block, source| {
+        if !linkify.matches(source).is_empty() {
+            visit(block, linkify, md, &mut unsupported);
+        }
+    });
     unsupported
 }

@@ -10,6 +10,7 @@
 
 mod anchor;
 mod bbcode;
+mod blocks;
 mod checklist;
 mod code;
 pub mod context;
@@ -231,7 +232,7 @@ fn engine(settings: &RenderSettings, lookups: Lookups) -> MarkdownIt {
     checklist::add(&mut md);
     footnotes::add(&mut md);
     anchor::add(&mut md);
-    smartquotes::add(&mut md);
+    blocks::add(&mut md);
     tight::add(&mut md);
     linkify::add(&mut md);
     md

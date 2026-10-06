@@ -399,7 +399,7 @@ pub fn tail(root: &mut Node) {
                 // Its own inline block in JS, quoted by the note's source.
                 if let Some((start, end)) = srcmap.map(|s| s.get_byte_offsets()) {
                     let text = source.get(start..end).unwrap_or_default();
-                    super::smartquotes::keep_block(&mut paragraph, start..end, text);
+                    super::blocks::keep_block(&mut paragraph, start..end, text);
                 }
                 item.children.push(paragraph);
             }

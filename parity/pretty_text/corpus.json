@@ -545,6 +545,14 @@
   },
   {
     "id": "sample-68",
+    "raw": "tab. (forum.example.com`/admin/x`) and example.org\n\n1. see x.com\n2. y.com`z`\n\n| forum.example.com`x` | ok.com |\n|---|---|\n| a | b |",
+    "topic_id": 35,
+    "user_id": 3,
+    "markdown": "<p>tab. (<a href=\"http://forum.example.com\">forum.example.com</a><code>/admin/x</code>) and <a href=\"http://example.org\">example.org</a></p>\n<ol>\n<li>see <a href=\"http://x.com\">x.com</a></li>\n<li>y.com<code>z</code></li>\n</ol>\n<div class=\"md-table\">\n<table>\n<thead>\n<tr>\n<th>forum.example.com<code>x</code></th>\n<th><a href=\"http://ok.com\">ok.com</a></th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>a</td>\n<td>b</td>\n</tr>\n</tbody>\n</table>\n</div>",
+    "cooked": "<p>tab. (<a href=\"http://forum.example.com\" rel=\"noopener nofollow ugc\">forum.example.com</a><code>/admin/x</code>) and <a href=\"http://example.org\" rel=\"noopener nofollow ugc\">example.org</a></p>\n<ol>\n<li>see <a href=\"http://x.com\" rel=\"noopener nofollow ugc\">x.com</a></li>\n<li>y.com<code>z</code></li>\n</ol>\n<div class=\"md-table\">\n<table>\n<thead>\n<tr>\n<th>forum.example.com<code>x</code></th>\n<th><a href=\"http://ok.com\" rel=\"noopener nofollow ugc\">ok.com</a></th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>a</td>\n<td>b</td>\n</tr>\n</tbody>\n</table>\n</div>"
+  },
+  {
+    "id": "sample-69",
     "raw": "An upload that exists: ![image|64x64](upload://qa4V5109J7tySkPok8r3aBAruY1.png) and [a link|attachment](upload://qa4V5109J7tySkPok8r3aBAruY1.png).",
     "topic_id": 35,
     "user_id": 3,

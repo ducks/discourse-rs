@@ -178,6 +178,9 @@ samples = [
   ["a\n[quote] plugins/x.js [/quote]\n[spoiler]i wonder… [/spoiler]\n\n[details=\"s\"]\tx\t[/details]\n\n[quote] [/quote]", replies.id, u1.id],
   # A bbcode block opening a list item, or after its text, starts a line.
   ["- [quote] a [/quote]\n- b\n  [quote]\n  q\n  [/quote]\n1. [details=\"x\"]\n   y\n   [/details]", replies.id, u1.id],
+  # Linkify only runs on an inline block whose whole source has a link: a
+  # host right before a code span has none, so its other hosts stay text.
+  ["tab. (forum.example.com`/admin/x`) and example.org\n\n1. see x.com\n2. y.com`z`\n\n| forum.example.com`x` | ok.com |\n|---|---|\n| a | b |", replies.id, u1.id],
 ]
 if upload
   samples << ["An upload that exists: ![image|64x64](#{upload.short_url}) and [a link|attachment](#{upload.short_url}).", replies.id, u1.id]
