@@ -15,10 +15,10 @@ use crate::site_settings::SiteSettings;
 use crate::topic_list::TopicListSerializer;
 use crate::topic_query::{Filter, Options, TopicQuery};
 use crate::url::Urls;
-use crate::{AppError, AppState};
+use crate::{AppError, AppState, Unsupported};
 
-/// The TopicQuery.public_valid_options ported so far; the rest are
-/// rejected until they are.
+/// The TopicQuery.public_valid_options ported so far, and the rest by
+/// name (only topic_ids is checked among them).
 #[derive(Deserialize, Default)]
 pub struct ListParams {
     pub(super) page: Option<String>,
@@ -27,15 +27,40 @@ pub struct ListParams {
     pub(super) ascending: Option<String>,
     /// top lists only; not a TopicQuery option, so never echoed unless given
     pub(super) period: Option<String>,
+    /// Every other param, for the ones checked by name only.
+    #[serde(flatten)]
+    pub(super) rest: std::collections::HashMap<String, String>,
+}
+
+/// Discourse::InvalidParameters from a list's params: JSON as Rails
+/// renders it; the HTML error page is not ported, so plain text.
+pub(super) fn invalid_list_params(state: &AppState, message: &str, json: bool) -> Response {
+    if json {
+        super::search::invalid_parameters(state, message)
+    } else {
+        (StatusCode::BAD_REQUEST, message.to_string()).into_response()
+    }
 }
 
 /// `build_topic_list_options` + `TopicQuery.validate?`: a bad value is
-/// Discourse::InvalidParameters, a 400.
+/// Discourse::InvalidParameters (its message the inner error).
 pub(super) fn build_options(
     params: &ListParams,
     settings: &SiteSettings,
-) -> Result<Options, (StatusCode, String)> {
-    let invalid = |name: &str| (StatusCode::BAD_REQUEST, format!("{name} is invalid"));
+) -> Result<Result<Options, String>, Unsupported> {
+    // topic_ids must be a string or an array: topic_ids[key]= is a hash.
+    for key in params.rest.keys() {
+        match key.as_str() {
+            "topic_ids" | "topic_ids[]" => return Err(Unsupported("the topic_ids list filter")),
+            k if k.starts_with("topic_ids[") => return Ok(Err("topic_ids".into())),
+            _ => {}
+        }
+    }
+    Ok(validated_options(params, settings))
+}
+
+fn validated_options(params: &ListParams, settings: &SiteSettings) -> Result<Options, String> {
+    let invalid = |name: &str| name.to_string();
     let mut options = Options {
         no_definitions: !settings
             .get("show_category_definitions_in_topic_lists")
@@ -129,7 +154,7 @@ async fn list_document(
     no_subcategories: bool,
     kind: ListKind,
     list_path: &str,
-) -> Result<Result<(serde_json::Value, SiteSettings), (StatusCode, String)>, AppError> {
+) -> Result<Result<(serde_json::Value, SiteSettings), String>, AppError> {
     list_document_for(
         state,
         guardian,
@@ -159,7 +184,7 @@ pub(super) async fn list_document_for(
     guardian: &Guardian,
     params: &ListParams,
     scope: ListScope<'_>,
-) -> Result<Result<(serde_json::Value, SiteSettings), (StatusCode, String)>, AppError> {
+) -> Result<Result<(serde_json::Value, SiteSettings), String>, AppError> {
     let ListScope {
         category,
         no_subcategories,
@@ -173,7 +198,7 @@ pub(super) async fn list_document_for(
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
     let t_settings = t0.elapsed();
-    let mut options = match build_options(params, &settings) {
+    let mut options = match build_options(params, &settings)? {
         Ok(o) => o,
         Err(e) => return Ok(Err(e)),
     };
@@ -185,11 +210,10 @@ pub(super) async fn list_document_for(
             None => best_period_for(&mut conn, &settings, category.map(|c| c.id)).await?,
         };
         if !crate::topic_query::PERIODS.contains(&period.as_str()) {
-            return Ok(Err((
-                StatusCode::BAD_REQUEST,
+            return Ok(Err(
                 "Invalid period. Valid periods are all, yearly, quarterly, monthly, weekly, daily"
                     .into(),
-            )));
+            ));
         }
         // top_#{period}: per_page defaults to topics_per_period_in_top_page and
         // is always carried in the next-page URL. Tag lists keep the default.
@@ -298,7 +322,7 @@ pub async fn latest_json(
     .await?
     {
         Ok((json, _)) => Ok(Json(json).into_response()),
-        Err((status, message)) => Ok((status, message).into_response()),
+        Err(message) => Ok(invalid_list_params(&state, &message, true)),
     }
 }
 
@@ -328,7 +352,7 @@ pub async fn latest(
     .await?
     {
         Ok(doc) => doc,
-        Err((status, message)) => return Ok((status, message).into_response()),
+        Err(message) => return Ok(invalid_list_params(&state, &message, false)),
     };
     let mut conn = state.pool.acquire().await?;
     let base_path = state.config.globals.relative_url_root();
@@ -523,7 +547,7 @@ pub async fn category(
     .await?
     {
         Ok(doc) => doc,
-        Err((status, message)) => return Ok((status, message).into_response()),
+        Err(message) => return Ok(invalid_list_params(&state, &message, json)),
     };
     if json {
         return Ok(Json(doc).into_response());
@@ -890,7 +914,7 @@ async fn front_list(
     let (doc, settings) =
         match list_document(&state, &guardian, &params, None, false, kind, &list_path).await? {
             Ok(doc) => doc,
-            Err((status, message)) => return Ok((status, message).into_response()),
+            Err(message) => return Ok(invalid_list_params(&state, &message, json)),
         };
     if json {
         return Ok(Json(doc).into_response());

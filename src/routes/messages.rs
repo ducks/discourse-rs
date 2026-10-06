@@ -134,9 +134,9 @@ async fn respond(
             }
         }
     }
-    let mut options = match build_options(params, &settings) {
+    let mut options = match build_options(params, &settings)? {
         Ok(o) => o,
-        Err((status, message)) => return Ok((status, message).into_response()),
+        Err(message) => return Ok(super::list::invalid_list_params(&state, &message, true)),
     };
     options.no_definitions = false;
     if params.period.is_some() {
