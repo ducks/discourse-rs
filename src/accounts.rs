@@ -295,3 +295,31 @@ pub async fn set_password(
     .await?;
     Ok(())
 }
+
+/// `User#update_timezone_if_missing`: the timezone, when valid, for a user
+/// who has not set one. TimezoneValidator also takes ActiveSupport's own
+/// zone names ("London", "Eastern Time (US & Canada)"); anything outside
+/// the IANA database is refused rather than guessed at.
+pub async fn update_timezone_if_missing(
+    conn: &mut PgConnection,
+    user_id: i32,
+    timezone: Option<&str>,
+) -> Result<(), AppError> {
+    let Some(tz) = timezone.filter(|t| !t.trim().is_empty()) else {
+        return Ok(());
+    };
+    let known: bool =
+        sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM pg_timezone_names WHERE name = $1)")
+            .bind(tz)
+            .fetch_one(&mut *conn)
+            .await?;
+    if !known {
+        return Err(crate::Unsupported("timezones outside the IANA database").into());
+    }
+    sqlx::query("UPDATE user_options SET timezone = $2 WHERE user_id = $1 AND timezone IS NULL")
+        .bind(user_id)
+        .bind(tz)
+        .execute(&mut *conn)
+        .await?;
+    Ok(())
+}
