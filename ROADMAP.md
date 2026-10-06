@@ -349,12 +349,13 @@ Discourse's own clients keep working.
 - [x] Discourse's look, ported by hand from its SCSS (only the rules a
       page uses, compared against the reference with scripts/ui-compare):
       the color schemes, fonts and foundation, the header, the nav pills,
-      the topic list as Ember renders it, letter avatars, and the
-      anonymous sidebar (the public community section with More, the
-      categories and tags sections, active links, collapsed sections and
-      the hidden sidebar kept in localStorage as Ember keeps them). Not
-      yet: a member's sidebar (their own sections, categories and tags),
-      the welcome banner, the category and tag dropdowns by the nav pills,
+      the topic list as Ember renders it, letter avatars, and the sidebar
+      (the community section with More and a member's own links, the
+      categories and tags sections from the site's defaults or a member's
+      own, active links, collapsed sections and the hidden sidebar kept in
+      localStorage as Ember keeps them). Not yet: the sidebar's unread and
+      new dots and counts (TopicTrackingState), its header actions and
+      Customize (modals), the welcome banner, the category and tag dropdowns by the nav pills,
       the keyboard shortcuts modal behind the sidebar footer's button,
       icons beyond the static sprite (a category's icon style)
 - [ ] Next for the client: the composer for new topics

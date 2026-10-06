@@ -138,15 +138,15 @@ pub struct Chrome {
 }
 
 impl Site {
-    /// Fills the page chrome, after `viewer` is set. Every enabled upcoming
-    /// change counts as enabled for the viewer; changes enabled for some
-    /// groups only are not told apart yet, and read-only mode is not
-    /// ported. Only anonymous visitors get the sidebar so far: a member's
-    /// comes from their own sections, categories and tags.
+    /// Fills the page chrome for the request's `guardian`. Every enabled
+    /// upcoming change counts as enabled for the viewer; changes enabled
+    /// for some groups only are not told apart yet, and read-only mode is
+    /// not ported.
     pub async fn load_chrome(
         &mut self,
         state: &crate::AppState,
         settings: &SiteSettings,
+        guardian: &crate::guardian::Guardian,
         active: crate::sidebar::Active,
     ) -> Result<(), crate::AppError> {
         let mut conn = state.pool.acquire().await?;
@@ -167,20 +167,27 @@ impl Site {
 
         // sidebarEnabled: canDisplaySidebar (not for anonymous visitors
         // when login is required) and the sidebar navigation menu.
-        let sidebar_enabled = self.viewer.is_none()
-            && !settings.get("login_required")?.truthy()
+        let sidebar_enabled = (guardian.user().is_some()
+            || !settings.get("login_required")?.truthy())
             && settings.get("navigation_menu")?.to_s() == "sidebar";
         if sidebar_enabled {
+            let member = match guardian.user() {
+                Some(user) => {
+                    Some(crate::current_user::sidebar_member(&mut conn, settings, user).await?)
+                }
+                None => None,
+            };
             let site = crate::site::Site {
                 conn: &mut conn,
                 config: &state.config,
                 settings,
                 defs: &state.site_setting_defs,
                 i18n: &state.i18n,
-                guardian: crate::guardian::Guardian::anonymous(),
+                guardian: guardian.clone(),
             }
             .json_for()
             .await?;
+            let emoji_set = settings.get("emoji_set")?.to_s().to_string();
             self.chrome.sidebar = crate::sidebar::render(
                 &site,
                 &crate::sidebar::Context {
@@ -188,6 +195,8 @@ impl Site {
                     settings,
                     base_path: &self.base_path,
                     active: &active,
+                    member: member.as_ref(),
+                    emoji_set: &emoji_set,
                 },
             )?;
             // Sidebar.gjs's bodyClass

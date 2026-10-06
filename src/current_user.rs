@@ -323,16 +323,14 @@ pub async fn serialize(
     );
     out.insert(
         "can_send_private_messages".into(),
-        json!(uid <= 0 || g.in_setting_groups("personal_message_enabled_groups")?),
+        json!(can_send_private_messages(&g)?),
     );
     out.insert(
         "can_upload_avatar".into(),
         json!(g.in_setting_groups("uploaded_avatars_allowed_groups")?),
     );
     out.insert("can_edit".into(), json!(true));
-    let can_invite = g.in_setting_groups("invite_allowed_groups")?
-        && (settings.get("max_invites_per_day")?.to_i() > 0 || g.is_staff());
-    if can_invite {
+    if can_invite_to_forum(&g, settings)? {
         out.insert("can_invite_to_forum".into(), json!(true));
     }
     if user.admin
@@ -721,129 +719,7 @@ pub async fn serialize(
         Value::Object(grouped_json),
     );
 
-    // Sidebar.
-    let allowed = g.allowed_category_ids(conn).await?;
-    if tagging {
-        let browsable = if user.admin {
-            "SELECT EXISTS (SELECT 1 FROM tags WHERE target_tag_id IS NULL)".to_string()
-        } else {
-            format!(
-                "SELECT EXISTS (SELECT 1 FROM tags WHERE tags.target_tag_id IS NULL AND {})",
-                visible_tags_where_for_user()
-            )
-        };
-        let display: bool = sqlx::query_scalar(&browsable)
-            .bind(uid)
-            .bind(&allowed)
-            .fetch_one(&mut *conn)
-            .await?;
-        out.insert("display_sidebar_tags".into(), json!(display));
-        let count_column = if g.is_staff()
-            || settings
-                .get("include_secure_categories_in_tag_counts")?
-                .truthy()
-        {
-            "staff_topic_count"
-        } else {
-            "public_topic_count"
-        };
-        let visible = if user.admin {
-            "TRUE".to_string()
-        } else {
-            visible_tags_where_for_user()
-        };
-        let sidebar_tags: Vec<SidebarTag> = sqlx::query_as(&format!(
-            "SELECT tags.id, tags.name, tags.slug, tags.description, (tags.{count_column} = 0 AND tags.pm_topic_count > 0) \
-             FROM tags WHERE tags.target_tag_id IS NULL AND {visible} \
-             AND tags.id IN (SELECT linkable_id FROM sidebar_section_links WHERE user_id = $1 AND linkable_type = 'Tag') \
-             ORDER BY tags.{count_column} DESC"
-        ))
-        .bind(uid)
-        .bind(&allowed)
-        .fetch_all(&mut *conn)
-        .await?;
-        out.insert(
-            "sidebar_tags".into(),
-            json!(sidebar_tags
-                .into_iter()
-                .map(|(id, name, slug, description, pm_only)| {
-                    json!({
-                        "id": id, "name": name,
-                        "slug": slug.filter(|s| !s.is_empty()).unwrap_or_else(|| format!("{id}-tag")),
-                        "description": description, "pm_only": pm_only,
-                    })
-                })
-                .collect::<Vec<_>>()),
-        );
-    }
-    let linked: Vec<i32> = sqlx::query_scalar(
-        "SELECT linkable_id::int FROM sidebar_section_links WHERE user_id = $1 AND linkable_type = 'Category'",
-    )
-    .bind(uid)
-    .fetch_all(&mut *conn)
-    .await?;
-    let sidebar_category_ids: Vec<i32> = linked
-        .into_iter()
-        .filter(|id| allowed.contains(id))
-        .collect();
-    out.insert(
-        "sidebar_category_ids".into(),
-        ids_json(&sidebar_category_ids),
-    );
-    if settings.get("content_localization_enabled")?.truthy() {
-        return Err(Unsupported("content_localization_enabled").into());
-    }
-    #[derive(sqlx::FromRow)]
-    struct Section {
-        id: i64,
-        title: String,
-        public: bool,
-        section_type: Option<i32>,
-        locale: Option<String>,
-    }
-    let sections: Vec<Section> = sqlx::query_as(
-        "SELECT id, title, public, section_type, locale FROM sidebar_sections \
-         WHERE (user_id = $1 OR public) ORDER BY (section_type IS NOT NULL) DESC, (public IS TRUE) DESC, id ASC",
-    )
-    .bind(uid)
-    .fetch_all(&mut *conn)
-    .await?;
-    let mut sections_json = Vec::new();
-    for s in sections {
-        #[derive(sqlx::FromRow)]
-        struct Link {
-            id: i64,
-            name: String,
-            value: String,
-            icon: String,
-            external: bool,
-            segment: i32,
-            locale: Option<String>,
-        }
-        let links: Vec<Link> = sqlx::query_as(
-            "SELECT sidebar_urls.id, sidebar_urls.name, sidebar_urls.value, sidebar_urls.icon, sidebar_urls.external, \
-                    sidebar_urls.segment, sidebar_urls.locale FROM sidebar_urls \
-             INNER JOIN sidebar_section_links ON sidebar_urls.id = sidebar_section_links.linkable_id \
-             WHERE sidebar_section_links.sidebar_section_id = $1 AND sidebar_section_links.linkable_type = 'SidebarUrl' \
-             ORDER BY sidebar_section_links.position",
-        )
-        .bind(s.id)
-        .fetch_all(&mut *conn)
-        .await?;
-        sections_json.push(json!({
-            "id": s.id,
-            "title": s.title,
-            "links": links.into_iter().map(|l| json!({
-                "id": l.id, "name": l.name, "value": l.value, "icon": l.icon, "external": l.external,
-                "segment": if l.segment == 0 { "primary" } else { "secondary" }, "locale": l.locale,
-            })).collect::<Vec<_>>(),
-            "slug": parameterize(&s.title),
-            "public": s.public,
-            "section_type": if s.section_type == Some(COMMUNITY_SECTION) { json!("community") } else { Value::Null },
-            "locale": s.locale,
-        }));
-    }
-    out.insert("sidebar_sections".into(), Value::Array(sections_json));
+    out.extend(sidebar_fields(conn, settings, &g, user, tagging).await?);
     out.insert(
         "unified_new_enabled".into(),
         json!(
@@ -1013,6 +889,187 @@ fn parameterize(s: &str) -> String {
     out.trim_end_matches('-').to_string()
 }
 
+/// What a member's sidebar reads from their current user: the fields of
+/// `serialize` its sections and links ask for.
+pub async fn sidebar_member(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    user: &SessionUser,
+) -> Result<crate::sidebar::Member, AppError> {
+    let g = UserGuardian::load(conn, settings, user).await?;
+    let tagging = settings.get("tagging_enabled")?.truthy();
+    let fields = sidebar_fields(conn, settings, &g, user, tagging).await?;
+    let (draft_count, show_count): (i32, bool) = sqlx::query_as(
+        "SELECT COALESCE(us.draft_count, 0), COALESCE(uo.sidebar_show_count_of_new_items, false) \
+         FROM users u LEFT JOIN user_stats us ON us.user_id = u.id \
+         LEFT JOIN user_options uo ON uo.user_id = u.id WHERE u.id = $1",
+    )
+    .bind(user.id)
+    .fetch_one(&mut *conn)
+    .await?;
+    let reviewable_count = if g.is_staff() {
+        if settings.get("enable_category_group_moderation")?.truthy() {
+            return Err(Unsupported("enable_category_group_moderation").into());
+        }
+        crate::reviewables::staff_counts(&mut *conn, settings, user.id, user.admin, user.moderator)
+            .await?
+            .0
+    } else {
+        0
+    };
+    Ok(crate::sidebar::Member {
+        username: user.username.clone(),
+        admin: user.admin,
+        staff: g.is_staff(),
+        can_review: g.is_staff(),
+        can_send_private_messages: can_send_private_messages(&g)?,
+        can_invite_to_forum: can_invite_to_forum(&g, settings)?,
+        draft_count: i64::from(draft_count),
+        reviewable_count,
+        show_count,
+        unified_new: g
+            .upcoming_change_enabled(conn, "enable_unified_new")
+            .await?,
+        fields,
+    })
+}
+
+/// The serializer's sidebar fields: display_sidebar_tags and sidebar_tags
+/// (with tagging), sidebar_category_ids and sidebar_sections.
+pub async fn sidebar_fields(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    g: &UserGuardian<'_>,
+    user: &SessionUser,
+    tagging: bool,
+) -> Result<Map<String, Value>, AppError> {
+    let uid = user.id;
+    let mut out = Map::new();
+    let allowed = g.allowed_category_ids(conn).await?;
+    if tagging {
+        let browsable = if user.admin {
+            "SELECT EXISTS (SELECT 1 FROM tags WHERE target_tag_id IS NULL)".to_string()
+        } else {
+            format!(
+                "SELECT EXISTS (SELECT 1 FROM tags WHERE tags.target_tag_id IS NULL AND {})",
+                visible_tags_where_for_user()
+            )
+        };
+        let display: bool = sqlx::query_scalar(&browsable)
+            .bind(uid)
+            .bind(&allowed)
+            .fetch_one(&mut *conn)
+            .await?;
+        out.insert("display_sidebar_tags".into(), json!(display));
+        let count_column = if g.is_staff()
+            || settings
+                .get("include_secure_categories_in_tag_counts")?
+                .truthy()
+        {
+            "staff_topic_count"
+        } else {
+            "public_topic_count"
+        };
+        let visible = if user.admin {
+            "TRUE".to_string()
+        } else {
+            visible_tags_where_for_user()
+        };
+        let sidebar_tags: Vec<SidebarTag> = sqlx::query_as(&format!(
+            "SELECT tags.id, tags.name, tags.slug, tags.description, (tags.{count_column} = 0 AND tags.pm_topic_count > 0) \
+             FROM tags WHERE tags.target_tag_id IS NULL AND {visible} \
+             AND tags.id IN (SELECT linkable_id FROM sidebar_section_links WHERE user_id = $1 AND linkable_type = 'Tag') \
+             ORDER BY tags.{count_column} DESC"
+        ))
+        .bind(uid)
+        .bind(&allowed)
+        .fetch_all(&mut *conn)
+        .await?;
+        out.insert(
+            "sidebar_tags".into(),
+            json!(sidebar_tags
+                .into_iter()
+                .map(|(id, name, slug, description, pm_only)| {
+                    json!({
+                        "id": id, "name": name,
+                        "slug": slug.filter(|s| !s.is_empty()).unwrap_or_else(|| format!("{id}-tag")),
+                        "description": description, "pm_only": pm_only,
+                    })
+                })
+                .collect::<Vec<_>>()),
+        );
+    }
+    let linked: Vec<i32> = sqlx::query_scalar(
+        "SELECT linkable_id::int FROM sidebar_section_links WHERE user_id = $1 AND linkable_type = 'Category'",
+    )
+    .bind(uid)
+    .fetch_all(&mut *conn)
+    .await?;
+    let sidebar_category_ids: Vec<i32> = linked
+        .into_iter()
+        .filter(|id| allowed.contains(id))
+        .collect();
+    out.insert(
+        "sidebar_category_ids".into(),
+        ids_json(&sidebar_category_ids),
+    );
+    if settings.get("content_localization_enabled")?.truthy() {
+        return Err(Unsupported("content_localization_enabled").into());
+    }
+    #[derive(sqlx::FromRow)]
+    struct Section {
+        id: i64,
+        title: String,
+        public: bool,
+        section_type: Option<i32>,
+        locale: Option<String>,
+    }
+    let sections: Vec<Section> = sqlx::query_as(
+        "SELECT id, title, public, section_type, locale FROM sidebar_sections \
+         WHERE (user_id = $1 OR public) ORDER BY (section_type IS NOT NULL) DESC, (public IS TRUE) DESC, id ASC",
+    )
+    .bind(uid)
+    .fetch_all(&mut *conn)
+    .await?;
+    let mut sections_json = Vec::new();
+    for s in sections {
+        #[derive(sqlx::FromRow)]
+        struct Link {
+            id: i64,
+            name: String,
+            value: String,
+            icon: String,
+            external: bool,
+            segment: i32,
+            locale: Option<String>,
+        }
+        let links: Vec<Link> = sqlx::query_as(
+            "SELECT sidebar_urls.id, sidebar_urls.name, sidebar_urls.value, sidebar_urls.icon, sidebar_urls.external, \
+                    sidebar_urls.segment, sidebar_urls.locale FROM sidebar_urls \
+             INNER JOIN sidebar_section_links ON sidebar_urls.id = sidebar_section_links.linkable_id \
+             WHERE sidebar_section_links.sidebar_section_id = $1 AND sidebar_section_links.linkable_type = 'SidebarUrl' \
+             ORDER BY sidebar_section_links.position",
+        )
+        .bind(s.id)
+        .fetch_all(&mut *conn)
+        .await?;
+        sections_json.push(json!({
+            "id": s.id,
+            "title": s.title,
+            "links": links.into_iter().map(|l| json!({
+                "id": l.id, "name": l.name, "value": l.value, "icon": l.icon, "external": l.external,
+                "segment": if l.segment == 0 { "primary" } else { "secondary" }, "locale": l.locale,
+            })).collect::<Vec<_>>(),
+            "slug": parameterize(&s.title),
+            "public": s.public,
+            "section_type": if s.section_type == Some(COMMUNITY_SECTION) { json!("community") } else { Value::Null },
+            "locale": s.locale,
+        }));
+    }
+    out.insert("sidebar_sections".into(), Value::Array(sections_json));
+    Ok(out)
+}
+
 /// CurrentUserOptionSerializer
 async fn user_option(
     conn: &mut PgConnection,
@@ -1147,4 +1204,18 @@ async fn user_option(
         "understood_languages": o.understood_languages,
         "hidden_composer_toolbar_buttons": o.hidden_composer_toolbar_buttons,
     }))
+}
+
+/// `can_send_private_messages`
+pub fn can_send_private_messages(g: &UserGuardian<'_>) -> Result<bool, AppError> {
+    Ok(g.user.id <= 0 || g.in_setting_groups("personal_message_enabled_groups")?)
+}
+
+/// `can_invite_to_forum`
+pub fn can_invite_to_forum(
+    g: &UserGuardian<'_>,
+    settings: &SiteSettings,
+) -> Result<bool, AppError> {
+    Ok(g.in_setting_groups("invite_allowed_groups")?
+        && (settings.get("max_invites_per_day")?.to_i() > 0 || g.is_staff()))
 }

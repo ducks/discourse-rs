@@ -1,7 +1,9 @@
-//! The anonymous sidebar, rendered as Ember's components render it
-//! (components/sidebar/anonymous/*, lib/sidebar/*) from the same Site
-//! document they read: the public custom sections, the categories section
-//! and the tags section, then the footer.
+//! The sidebar, rendered as Ember's components render it
+//! (components/sidebar/anonymous/* and user/*, lib/sidebar/*) from the same
+//! documents they read, the Site and a member's current user: the custom
+//! sections, the categories section and the tags section, then the footer.
+//! Unread and new counts on the links are not shown yet; the section
+//! header actions open modals that are not ported.
 
 use serde_json::Value;
 
@@ -30,11 +32,35 @@ pub enum Active {
 /// `TOP_SITE_CATEGORIES_TO_SHOW`
 const TOP_SITE_CATEGORIES_TO_SHOW: usize = 5;
 
+/// What a member's sidebar reads from their current user
+/// (`current_user::sidebar_member`).
+pub struct Member {
+    pub username: String,
+    pub admin: bool,
+    pub staff: bool,
+    pub can_review: bool,
+    pub can_send_private_messages: bool,
+    pub can_invite_to_forum: bool,
+    pub draft_count: i64,
+    pub reviewable_count: i64,
+    /// user_option.sidebar_show_count_of_new_items
+    pub show_count: bool,
+    /// unified_new_enabled
+    pub unified_new: bool,
+    /// sidebar_sections, sidebar_category_ids, display_sidebar_tags and
+    /// sidebar_tags, as the serializer writes them.
+    pub fields: serde_json::Map<String, Value>,
+}
+
 pub struct Context<'a> {
     pub i18n: &'a I18n,
     pub settings: &'a SiteSettings,
     pub base_path: &'a str,
     pub active: &'a Active,
+    /// The member, or None for an anonymous visitor.
+    pub member: Option<&'a Member>,
+    /// SiteSetting.emoji_set, for emoji prefixes.
+    pub emoji_set: &'a str,
 }
 
 impl Context<'_> {
@@ -55,25 +81,36 @@ impl Context<'_> {
     }
 }
 
-/// Sidebar.gjs with the anonymous sections, inside SidebarWrapper.
+/// Sidebar.gjs with the anonymous or the user sections, inside
+/// SidebarWrapper.
 pub fn render(site: &Value, cx: &Context) -> Result<String, SettingError> {
     let mut out = String::new();
     out.push_str(&format!(
-        "<div class=\"sidebar-wrapper\"><nav aria-label=\"{}\" class=\"sidebar-container\" id=\"d-sidebar\"><div class=\"sidebar-sections sidebar-sections-anonymous\">",
-        escape(&cx.t("sidebar.title"))
+        "<div class=\"sidebar-wrapper\"><nav aria-label=\"{}\" class=\"sidebar-container\" id=\"d-sidebar\"><div class=\"sidebar-sections{}\">",
+        escape(&cx.t("sidebar.title")),
+        if cx.member.is_some() {
+            ""
+        } else {
+            " sidebar-sections-anonymous"
+        }
     ));
     out.push_str("<div class=\"sidebar-custom-sections\">");
-    for section in site["anonymous_sidebar_sections"]
-        .as_array()
-        .into_iter()
-        .flatten()
-    {
+    let sections = match cx.member {
+        Some(m) => m.fields.get("sidebar_sections").unwrap_or(&Value::Null),
+        None => &site["anonymous_sidebar_sections"],
+    };
+    for section in sections.as_array().into_iter().flatten() {
         out.push_str(&custom_section(section, cx)?);
     }
     out.push_str("</div>");
     out.push_str(&categories_section(site, cx)?);
-    if cx.flag("tagging_enabled")? {
-        out.push_str(&tags_section(site, cx));
+    // The user sections show tags when the member has some to browse.
+    let show_tags = match cx.member {
+        Some(m) => m.fields.get("display_sidebar_tags") == Some(&Value::Bool(true)),
+        None => cx.flag("tagging_enabled")?,
+    };
+    if show_tags {
+        out.push_str(&tags_section(site, cx)?);
     }
     out.push_str("</div>");
     // The footer's only anonymous action, keyboard shortcuts, opens a modal
@@ -97,6 +134,10 @@ struct Link {
     content: String,
     prefix: Prefix,
     active: bool,
+    /// `@badgeText`
+    badge: Option<String>,
+    /// An unread suffix icon (`@suffixType` icon, `@suffixCSSClass` unread).
+    suffix: Option<&'static str>,
 }
 
 #[derive(Default)]
@@ -138,16 +179,44 @@ fn link_html(link: &Link, cx: &Context) -> String {
     if let Some(name) = &link.link_name {
         a.push_str(&format!(" data-link-name=\"{}\"", escape(name)));
     }
-    a.push_str(&format!(" href=\"{}\"", escape(&link.href)));
+    a.push_str(&format!(" href=\"{}\"", attr(&link.href)));
     if link.plain {
         a.push_str(" rel=\"noopener noreferrer\" target=\"_self\"");
     }
     a.push('>');
+    let badge = link
+        .badge
+        .as_ref()
+        .map(|b| {
+            format!(
+                "<span class=\"sidebar-section-link-content-badge\">{}</span>",
+                escape(b)
+            )
+        })
+        .unwrap_or_default();
+    let suffix = link
+        .suffix
+        .map(|s| {
+            format!(
+                "<span class=\"sidebar-section-link-suffix icon unread\">{}</span>",
+                icon(s, None)
+            )
+        })
+        .unwrap_or_default();
     format!(
-        "{li}{a}{}<span class=\"sidebar-section-link-content-text\">{}</span></a></li>",
+        "{li}{a}{}<span class=\"sidebar-section-link-content-text\">{}</span>{badge}{suffix}</a></li>",
         prefix_html(&link.prefix, cx),
         link.content
     )
+}
+
+/// An attribute value escaped as the DOM serializes it: a URL keeps its
+/// `=` and `'`, which escape() would write as references.
+fn attr(s: &str) -> String {
+    s.replace('&', "&amp;")
+        .replace('"', "&quot;")
+        .replace('<', "&lt;")
+        .replace('>', "&gt;")
 }
 
 /// SectionLink#prefixColor: a hex color, with its `#`.
@@ -208,11 +277,7 @@ fn emoji_html(name: &str, cx: &Context) -> String {
     if !crate::emoji::DATA.exists(name) {
         return escape(&format!(":{name}:"));
     }
-    let set = cx
-        .settings
-        .get("emoji_set")
-        .map(|v| v.to_s().to_string())
-        .unwrap_or_default();
+    let set = cx.emoji_set;
     let url = format!(
         "{}/images/emoji/{set}/{name}.png?v={}",
         cx.base_path,
@@ -406,9 +471,8 @@ fn community_link(link: &Value, cx: &Context) -> Result<Option<Link>, SettingErr
                 false,
             )
         }
-        // A member's links: my posts, my messages, review, admin, invite.
         "/my/activity" | "/my/messages" | "/review" | "/admin" | "/new-invite" => {
-            return Ok(None);
+            return Ok(member_link(value, overridden_name, overridden_icon, cx));
         }
         _ => return Ok(Some(plain_link(link))),
     };
@@ -424,7 +488,128 @@ fn community_link(link: &Value, cx: &Context) -> Result<Option<Link>, SettingErr
             color: None,
         },
         active: name == "everything" && *cx.active == Active::Discovery,
+        ..Default::default()
     }))
+}
+
+/// lib/sidebar/user/community-section: a member's own links, None for an
+/// anonymous visitor or a member they are not for (shouldDisplay).
+fn member_link(
+    value: &str,
+    overridden_name: &str,
+    overridden_icon: Option<&str>,
+    cx: &Context,
+) -> Option<Link> {
+    let m = cx.member?;
+    let base = cx.base_path;
+    let links_key = "sidebar.sections.community.links";
+    // The user route's username, lowercased.
+    let user_path = format!("{base}/u/{}", escape(&m.username.to_lowercase()));
+    // `overriddenName.toLowerCase().replace(" ", "_")`
+    let key_name = overridden_name.to_lowercase().replacen(' ', "_", 1);
+    let text = cx.t_or(&format!("{links_key}.{key_name}.content"), overridden_name);
+    let title = |key: &str| Some(cx.t(&format!("{links_key}.{key}")));
+    let icon = |default: &str| Prefix::Icon {
+        name: overridden_icon.unwrap_or(default).to_string(),
+        color: None,
+    };
+    let mut link = Link {
+        attributes: " data-sidebar-custom-link=\"true\"".into(),
+        ..Default::default()
+    };
+    match value {
+        "/my/activity" => {
+            let has_draft = m.draft_count > 0;
+            link.link_name = Some("my-posts".into());
+            if has_draft {
+                link.href = format!("{user_path}/activity/drafts");
+                link.title = title("my_posts.title_drafts");
+                link.content = escape(&if m.unified_new {
+                    cx.t(&format!("{links_key}.my_posts.content_drafts"))
+                } else {
+                    text
+                });
+                link.prefix = if m.unified_new {
+                    Prefix::Icon {
+                        name: "pencil".into(),
+                        color: None,
+                    }
+                } else {
+                    icon("user")
+                };
+                if m.show_count {
+                    link.badge = Some(if m.unified_new {
+                        m.draft_count.to_string()
+                    } else {
+                        cx.i18n
+                            .t_count(
+                                &format!("js.{links_key}.my_posts.draft_count"),
+                                m.draft_count,
+                                &[],
+                            )
+                            .unwrap_or_default()
+                    });
+                } else {
+                    link.suffix = Some("circle");
+                }
+            } else {
+                link.href = format!("{user_path}/activity");
+                link.title = title("my_posts.title");
+                link.content = escape(&text);
+                link.prefix = icon("user");
+            }
+        }
+        "/my/messages" => {
+            if !m.can_send_private_messages {
+                return None;
+            }
+            link.link_name = Some("my-messages".into());
+            link.href = format!("{user_path}/messages");
+            link.title = title("my_messages.title");
+            link.content = escape(&text);
+            link.prefix = icon("link");
+        }
+        "/review" => {
+            if !m.can_review {
+                return None;
+            }
+            link.link_name = Some("review".into());
+            link.href = format!("{base}/review");
+            link.title = title("review.title");
+            link.content = escape(&text);
+            link.prefix = icon("flag");
+            // getReviewBadgeText
+            if m.reviewable_count > 0 {
+                link.badge = cx.i18n.t_count(
+                    &format!("js.{links_key}.review.pending_count"),
+                    m.reviewable_count,
+                    &[],
+                );
+            }
+        }
+        "/admin" => {
+            if !m.staff {
+                return None;
+            }
+            link.link_name = Some("admin".into());
+            link.href = format!("{base}/admin");
+            link.title = title("admin.content");
+            link.content = escape(&text);
+            link.prefix = icon("wrench");
+        }
+        "/new-invite" => {
+            if !m.can_invite_to_forum {
+                return None;
+            }
+            link.link_name = Some("invite".into());
+            link.href = format!("{base}/new-invite");
+            link.title = title("invite.title");
+            link.content = escape(&text);
+            link.prefix = icon("paper-plane");
+        }
+        _ => return None,
+    }
+    Some(link)
 }
 
 /// MoreSectionLinks: the secondary links behind a More button, in an
@@ -505,8 +690,8 @@ fn categories_section(site: &Value, cx: &Context) -> Result<String, SettingError
         .filter_map(|id| id.trim().parse().ok())
         .collect();
 
-    let shown: Vec<Value> = if default_ids.is_empty() {
-        // topSiteCategories over Site#categoriesList.
+    // topSiteCategories over Site#categoriesList.
+    let top_site = || -> Vec<Value> {
         let list = if fixed_positions {
             all.clone()
         } else {
@@ -519,9 +704,43 @@ fn categories_section(site: &Value, cx: &Context) -> Result<String, SettingError
             .filter(|c| c["parent_category_id"].is_null() && can_display(c))
             .take(TOP_SITE_CATEGORIES_TO_SHOW)
             .collect()
-    } else {
+    };
+    // `categories`, and whether sortedCategories reorders them: a member's
+    // own categories (else the top ones) always are; an anonymous
+    // visitor's only when they are the site's defaults.
+    let (categories, sort) = match cx.member {
+        Some(m) => {
+            let ids: Vec<i64> = m
+                .fields
+                .get("sidebar_category_ids")
+                .and_then(Value::as_array)
+                .map(|ids| ids.iter().filter_map(Value::as_i64).collect())
+                .unwrap_or_default();
+            if ids.is_empty() {
+                (top_site(), true)
+            } else {
+                let found = all
+                    .iter()
+                    .filter(|c| c["id"].as_i64().is_some_and(|id| ids.contains(&id)))
+                    .cloned()
+                    .collect();
+                (found, true)
+            }
+        }
+        None if default_ids.is_empty() => (top_site(), false),
+        None => {
+            let found = all
+                .iter()
+                .filter(|c| c["id"].as_i64().is_some_and(|id| default_ids.contains(&id)))
+                .cloned()
+                .collect();
+            (found, true)
+        }
+    };
+    let shown: Vec<Value> = if sort {
         // sortedCategories: by name unless positions are fixed, parents
-        // before children, only the default ones.
+        // before children, only the chosen ones.
+        let chosen: Vec<i64> = categories.iter().filter_map(|c| c["id"].as_i64()).collect();
         let mut sorted = all.clone();
         if !fixed_positions {
             sorted.sort_by(|a, b| {
@@ -531,10 +750,10 @@ fn categories_section(site: &Value, cx: &Context) -> Result<String, SettingError
         }
         sort_categories(&sorted)
             .into_iter()
-            .filter(|c| {
-                c["id"].as_i64().is_some_and(|id| default_ids.contains(&id)) && can_display(c)
-            })
+            .filter(|c| c["id"].as_i64().is_some_and(|id| chosen.contains(&id)) && can_display(c))
             .collect()
+    } else {
+        categories
     };
 
     let mut links = String::new();
@@ -596,33 +815,79 @@ fn categories_section(site: &Value, cx: &Context) -> Result<String, SettingError
         },
         cx,
     ));
+    if cx.member.is_some_and(|m| m.admin) && default_ids.is_empty() {
+        links.push_str(&configure_defaults_link("categories", cx));
+    }
     let header = cx.t("sidebar.sections.categories.header_link_text");
     Ok(section_html("categories", Some(&header), &links, cx))
 }
 
-/// anonymous/tags-section: the default tags, else the site's top tags;
-/// nothing when there are neither.
-fn tags_section(site: &Value, cx: &Context) -> String {
-    let defaults = site["anonymous_default_navigation_menu_tags"].as_array();
+/// The admin's link to set the site's default categories or tags
+/// (`kind`), shown while there are none.
+fn configure_defaults_link(kind: &str, cx: &Context) -> String {
+    let name = format!("configure-default-navigation-menu-{kind}");
+    link_html(
+        &Link {
+            href: format!(
+                "{}/admin/site_settings/category/sidebar?filter=default_navigation_menu_{kind}",
+                cx.base_path
+            ),
+            content: escape(&cx.t(&format!("sidebar.sections.{kind}.configure_defaults"))),
+            prefix: Prefix::Icon {
+                name: "wrench".into(),
+                color: None,
+            },
+            link_name: Some(name),
+            ..Default::default()
+        },
+        cx,
+    )
+}
+
+/// anonymous/tags-section and user/tags-section. An anonymous visitor gets
+/// the default tags, else the site's top tags, and no section when there
+/// are neither; a member gets their own tags, else the top ones, and the
+/// section either way.
+fn tags_section(site: &Value, cx: &Context) -> Result<String, SettingError> {
     let top = site["navigation_menu_site_top_tags"].as_array();
-    let present = |tags: Option<&Vec<Value>>| tags.is_some_and(|t| !t.is_empty());
-    if !present(defaults) && !present(top) {
-        return String::new();
-    }
-    // `defaults || top`: an empty default list still wins.
-    let tags = defaults.or(top).cloned().unwrap_or_default();
+    let tags = match cx.member {
+        Some(m) => match m.fields.get("sidebar_tags").and_then(Value::as_array) {
+            Some(own) if !own.is_empty() => own.clone(),
+            _ => top.cloned().unwrap_or_default(),
+        },
+        None => {
+            let defaults = site["anonymous_default_navigation_menu_tags"].as_array();
+            let present = |tags: Option<&Vec<Value>>| tags.is_some_and(|t| !t.is_empty());
+            if !present(defaults) && !present(top) {
+                return Ok(String::new());
+            }
+            // `defaults || top`: an empty default list still wins.
+            defaults.or(top).cloned().unwrap_or_default()
+        }
+    };
     let mut links = String::new();
     for tag in &tags {
         let name = tag["name"].as_str().unwrap_or("");
+        // PMTagSectionLink: a tag only on messages links to the member's
+        // messages with it.
+        let href = match cx.member {
+            Some(m) if tag["pm_only"] == Value::Bool(true) => format!(
+                "{}/u/{}/messages/tags/{}",
+                cx.base_path,
+                m.username.to_lowercase(),
+                name
+            ),
+            _ => format!(
+                "{}/tag/{}/{}",
+                cx.base_path,
+                tag["slug"].as_str().unwrap_or(""),
+                tag["id"]
+            ),
+        };
         links.push_str(&link_html(
             &Link {
                 attributes: format!(" data-tag-name=\"{}\"", escape(name)),
-                href: format!(
-                    "{}/tag/{}/{}",
-                    cx.base_path,
-                    tag["slug"].as_str().unwrap_or(""),
-                    tag["id"]
-                ),
+                href,
                 content: escape(name),
                 prefix: Prefix::Icon {
                     name: "tag".into(),
@@ -648,8 +913,17 @@ fn tags_section(site: &Value, cx: &Context) -> String {
         },
         cx,
     ));
+    if cx.member.is_some_and(|m| m.admin)
+        && cx
+            .settings
+            .get("default_navigation_menu_tags")?
+            .to_s()
+            .is_empty()
+    {
+        links.push_str(&configure_defaults_link("tags", cx));
+    }
     let header = cx.t("sidebar.sections.tags.header_link_text");
-    section_html("tags", Some(&header), &links, cx)
+    Ok(section_html("tags", Some(&header), &links, cx))
 }
 
 #[cfg(test)]
