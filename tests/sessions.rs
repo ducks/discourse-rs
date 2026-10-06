@@ -589,8 +589,6 @@ async fn pages_carry_the_viewer_and_the_logout_form_works() {
     // The avatar button, with the avatar Rails shows user1 (the reference's
     // header).
     assert!(reply.body.contains(r#"id="toggle-current-user""#));
-    // A member's sidebar comes from their own sections, not ported yet.
-    assert!(!reply.body.contains(r#"id="d-sidebar""#));
     assert!(
         reply
             .body
@@ -1648,4 +1646,67 @@ async fn the_user_menu_lists_notifications_and_clears_the_count() {
         r#"<span id="notification-count" class="badge-notification unread-notifications" hx-swap-oob="true"></span>"#,
         "seen now"
     );
+}
+
+/// A member's sidebar: their community links, their own categories, a dot
+/// on My posts while they have drafts; an admin's review and admin links.
+#[tokio::test]
+async fn members_get_their_own_sidebar() {
+    let db = TestDb::new().await;
+    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+
+    let mut client = Client::new(app_state.clone());
+    client.login("user1", "password").await;
+    let page = client.get("/latest").await.body;
+    assert!(
+        page.contains(r#"<div class="sidebar-sections"><div class="sidebar-custom-sections">"#)
+    );
+    assert!(page.contains(
+        r#"<a class="sidebar-section-link sidebar-row" title="My recent topic activity" data-link-name="my-posts" href="/u/user1/activity">"#
+    ));
+    assert!(page.contains(r#"data-link-name="my-messages" href="/u/user1/messages""#));
+    assert!(page.contains(r#"data-link-name="invite""#));
+    assert!(!page.contains(r#"data-link-name="review""#));
+    assert!(!page.contains(r#"data-link-name="admin""#));
+    assert!(!page.contains("configure-default-navigation-menu"));
+
+    // The section follows their own category links (General and Site
+    // Feedback in the fixture).
+    sqlx::query(
+        "DELETE FROM sidebar_section_links WHERE linkable_type = 'Category' AND linkable_id = 4 \
+         AND user_id = (SELECT id FROM users WHERE username = 'user1')",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    // Drafts move My posts to them, with a dot; with unified new (on in
+    // the fixture) it reads My drafts.
+    sqlx::query(
+        "UPDATE user_stats SET draft_count = 2 WHERE user_id = (SELECT id FROM users WHERE username = 'user1')",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let page = client.get("/latest").await.body;
+    assert!(page.contains(r#"<li class="sidebar-section-link-wrapper" data-category-id="2">"#));
+    assert!(!page.contains(r#"<li class="sidebar-section-link-wrapper" data-category-id="4">"#));
+    assert!(page.contains(
+        r#"title="My unposted drafts" data-link-name="my-posts" href="/u/user1/activity/drafts">"#
+    ));
+    assert!(page.contains(
+        r#"My drafts</span><span class="sidebar-section-link-suffix icon unread"><svg class="fa d-icon d-icon-circle "#
+    ));
+
+    let mut admin = Client::new(app_state.clone());
+    admin.login("admin", "password").await;
+    let page = admin.get("/latest").await.body;
+    assert!(page.contains(r#"data-link-name="review" href="/review""#));
+    assert!(page.contains(r#"title="Admin" data-link-name="admin" href="/admin""#));
+    assert!(
+        page.contains(r#"<li class="sidebar-section-link-wrapper" data-category-id="3">"#),
+        "Staff"
+    );
+    assert!(page.contains(
+        r#"data-link-name="configure-default-navigation-menu-tags" href="/admin/site_settings/category/sidebar?filter=default_navigation_menu_tags""#
+    ));
 }

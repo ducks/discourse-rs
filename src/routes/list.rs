@@ -335,8 +335,13 @@ pub async fn latest(
     let vs = super::session::viewer_state(&state, &headers, &settings, &guardian)?;
     let mut site = crate::html::Site::from_settings(&settings, base_path)?;
     site.viewer = vs.viewer.clone();
-    site.load_chrome(&state, &settings, crate::sidebar::Active::Discovery)
-        .await?;
+    site.load_chrome(
+        &state,
+        &settings,
+        &guardian,
+        crate::sidebar::Active::Discovery,
+    )
+    .await?;
     site.bus_position = bus_position;
     let mut page =
         crate::html::latest_page(&mut conn, site, &json, &state.i18n, &settings, false).await?;
@@ -525,6 +530,7 @@ pub async fn category(
     site.load_chrome(
         &state,
         &settings,
+        &guardian,
         crate::sidebar::Active::Category(category.id),
     )
     .await?;
@@ -624,8 +630,13 @@ async fn categories_response(
     let mut site =
         crate::html::Site::from_settings(&settings, state.config.globals.relative_url_root())?;
     site.viewer = vs.viewer.clone();
-    site.load_chrome(&state, &settings, crate::sidebar::Active::Categories)
-        .await?;
+    site.load_chrome(
+        &state,
+        &settings,
+        &guardian,
+        crate::sidebar::Active::Categories,
+    )
+    .await?;
     site.bus_position = bus_position;
     let mut page = crate::html::categories_page(&mut conn, &state.i18n, site, &doc).await?;
     let uri = uri.unwrap_or_default();
@@ -880,8 +891,13 @@ async fn front_list(
     let mut site =
         crate::html::Site::from_settings(&settings, state.config.globals.relative_url_root())?;
     site.viewer = vs.viewer.clone();
-    site.load_chrome(&state, &settings, crate::sidebar::Active::Discovery)
-        .await?;
+    site.load_chrome(
+        &state,
+        &settings,
+        &guardian,
+        crate::sidebar::Active::Discovery,
+    )
+    .await?;
     site.bus_position = bus_position;
     let mut page =
         crate::html::latest_page(&mut conn, site, &doc, &state.i18n, &settings, false).await?;
