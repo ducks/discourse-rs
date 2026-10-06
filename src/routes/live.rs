@@ -429,6 +429,7 @@ async fn render_post(
         created_by_id: topic_ctx.user_id.map(i64::from),
         archived: topic_ctx.archived,
         can_create_post,
+        op_map: String::new(),
     };
     // The post shown above it, for its reply-to tab and time gap.
     let number = post["post_number"].as_i64().unwrap_or(0) as i32;
@@ -463,6 +464,14 @@ async fn render_post(
     };
     let html = if append {
         crate::post_view::post(&cx, &post, prev)
+    } else if number == 1 && post["post_type"].as_i64() != Some(3) {
+        // The first post's main row only: its topic map, which needs the
+        // whole topic view, stays as the page rendered it.
+        crate::post_view::main_row(&cx, &post, prev).replacen(
+            "<div class=\"post__row row\">",
+            "<div class=\"post__row row\" hx-swap-oob=\"outerHTML:#post_1 > .post__row:has(> .post__body)\">",
+            1,
+        )
     } else {
         // Replaces the post where it is shown: its wrapper carries the
         // out-of-band swap.

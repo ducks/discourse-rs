@@ -79,6 +79,7 @@ async fn site_css() -> impl IntoResponse {
 const HTMX: &str = include_str!("../../static/vendor/htmx.min.js");
 const HTMX_SSE: &str = include_str!("../../static/vendor/htmx-ext-sse.js");
 const SIDEBAR_JS: &str = include_str!("../../static/js/sidebar.js");
+const TOPIC_JS: &str = include_str!("../../static/js/topic.js");
 
 async fn htmx() -> impl IntoResponse {
     (
@@ -91,6 +92,13 @@ async fn sidebar_js() -> impl IntoResponse {
     (
         [(header::CONTENT_TYPE, "text/javascript; charset=utf-8")],
         SIDEBAR_JS,
+    )
+}
+
+async fn topic_js() -> impl IntoResponse {
+    (
+        [(header::CONTENT_TYPE, "text/javascript; charset=utf-8")],
+        TOPIC_JS,
     )
 }
 
@@ -350,6 +358,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/htmx.min.js", get(htmx))
         .route("/assets/htmx-ext-sse.js", get(htmx_sse))
         .route("/assets/sidebar.js", get(sidebar_js))
+        .route("/assets/topic.js", get(topic_js))
         .nest_service("/uploads", ServeDir::new(public.join("uploads")));
     if let Some(emoji) = config.emoji_dir() {
         router = router.nest_service("/images/emoji", ServeDir::new(emoji));

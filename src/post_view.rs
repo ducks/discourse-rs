@@ -37,6 +37,9 @@ pub struct PostSettings {
     pub suppress_reply_directly_above: bool,
     pub show_time_gap_days: i64,
     pub old_post_notice_days: i64,
+    pub read_time_word_count: i64,
+    pub show_topic_map_in_topics_without_replies: bool,
+    pub show_bottom_topic_map: bool,
 }
 
 impl PostSettings {
@@ -69,6 +72,11 @@ impl PostSettings {
             suppress_reply_directly_above: flag("suppress_reply_directly_above")?,
             show_time_gap_days: settings.get("show_time_gap_days")?.to_i(),
             old_post_notice_days: settings.get("old_post_notice_days")?.to_i(),
+            read_time_word_count: settings.get("read_time_word_count")?.to_i(),
+            show_topic_map_in_topics_without_replies: flag(
+                "show_topic_map_in_topics_without_replies",
+            )?,
+            show_bottom_topic_map: flag("show_bottom_topic_map")?,
         })
     }
 }
@@ -82,6 +90,8 @@ pub struct TopicInfo {
     pub archived: bool,
     /// `details.can_create_post`: the reply button.
     pub can_create_post: bool,
+    /// The first post's topic map, rendered (empty when it has none).
+    pub op_map: String,
 }
 
 impl TopicInfo {
@@ -93,6 +103,7 @@ impl TopicInfo {
             created_by_id: view["details"]["created_by"]["id"].as_i64(),
             archived: view["archived"] == true,
             can_create_post: view["details"]["can_create_post"] == true,
+            op_map: String::new(),
         }
     }
 }
@@ -419,6 +430,24 @@ fn regular(cx: &PostContext, p: &Value, prev: Option<Prev>) -> String {
         article_classes.push_str(" post--auto-generated is-auto-generated");
     }
 
+    let map = if number == 1 {
+        cx.topic.op_map.as_str()
+    } else {
+        ""
+    };
+    format!(
+        "<div class=\"{}\" data-post-number=\"{number}\"><h2 aria-hidden=\"false\" class=\"sr-only\" id=\"post-heading-{number}\">{}</h2><article aria-labelledby=\"post-heading-{number}\" class=\"{article_classes}\" data-post-id=\"{}\" data-user-id=\"{}\" id=\"post_{number}\">{}{}{map}</article></div>",
+        classes.join(" "),
+        escape(&heading),
+        p["id"],
+        user_id.map(|id| id.to_string()).unwrap_or_default(),
+        notice(cx, p),
+        main_row(cx, p, prev),
+    )
+}
+
+/// A regular post's main row: the avatar and the body.
+pub fn main_row(cx: &PostContext, p: &Value, prev: Option<Prev>) -> String {
     let reply_tab = reply_to_tab(cx, p, prev);
     let contents_class = if reply_tab.is_empty() {
         "post__regular regular post__contents contents"
@@ -426,12 +455,7 @@ fn regular(cx: &PostContext, p: &Value, prev: Option<Prev>) -> String {
         "post__regular regular post__contents contents post__contents--avoid-tab avoid-tab"
     };
     format!(
-        "<div class=\"{}\" data-post-number=\"{number}\"><h2 aria-hidden=\"false\" class=\"sr-only\" id=\"post-heading-{number}\">{}</h2><article aria-labelledby=\"post-heading-{number}\" class=\"{article_classes}\" data-post-id=\"{}\" data-user-id=\"{}\" id=\"post_{number}\">{}<div class=\"post__row row\">{}<div class=\"post__body topic-body clearfix\">{}<div class=\"{contents_class}\"><div class=\"cooked\">{}<div class=\"cooked-selection-barrier\" aria-hidden=\"true\"><br></div></div><section aria-label=\"{}\" class=\"post__menu-area post-menu-area clearfix\" role=\"group\">{}</section></div><section class=\"post__actions post-actions\">{}</section></div></div></article></div>",
-        classes.join(" "),
-        escape(&heading),
-        p["id"],
-        user_id.map(|id| id.to_string()).unwrap_or_default(),
-        notice(cx, p),
+        "<div class=\"post__row row\">{}<div class=\"post__body topic-body clearfix\">{}<div class=\"{contents_class}\"><div class=\"cooked\">{}<div class=\"cooked-selection-barrier\" aria-hidden=\"true\"><br></div></div><section aria-label=\"{}\" class=\"post__menu-area post-menu-area clearfix\" role=\"group\">{}</section></div><section class=\"post__actions post-actions\">{}</section></div></div>",
         avatar(cx, p),
         meta_data(cx, p, &reply_tab),
         s(&p["cooked"]),
@@ -1096,6 +1120,414 @@ fn small_action(cx: &PostContext, p: &Value) -> String {
     )
 }
 
+/// `number()` (lib/formatter): 1.2k, 345k, 1.2M; past `max` it shows
+/// `max+`.
+fn d_number(n: i64, max: Option<i64>) -> String {
+    if let Some(max) = max
+        && n > max
+    {
+        return format!("{max}+");
+    }
+    let n = n as f64;
+    if n > 999_999.0 {
+        format!("{:.1}M", n / 1_000_000.0)
+    } else if n > 99_999.0 {
+        format!("{}k", (n / 1000.0).floor())
+    } else if n > 999.0 {
+        format!("{:.1}k", n / 1000.0)
+    } else {
+        format!("{}", n.round())
+    }
+}
+
+/// A topic-map stat: the number and its label.
+fn stat_body(cx: &PostContext, n: i64, max: Option<i64>, key: &str) -> String {
+    format!(
+        "<span class=\"number\">{}</span> <span class=\"topic-map__stat-label\">{}</span>",
+        d_number(n, max),
+        escape(&t_count(cx.list, key, n, &[]))
+    )
+}
+
+/// components/topic-map: the topic's views, likes, links and users, and
+/// its most frequent posters. `modifier` is `--op` (in the first post) or
+/// `--bottom`. The stats that open menus (likes, links, users) show as
+/// plain stats, as Ember shows likes where search is off; the views
+/// count keeps its trigger's markup.
+pub fn topic_map(cx: &PostContext, view: &Value, modifier: &str) -> String {
+    let n = |key: &str| view[key].as_i64().unwrap_or(0);
+    let posts_count = n("posts_count");
+    let links = view["details"]["links"]
+        .as_array()
+        .map(Vec::len)
+        .unwrap_or(0) as i64;
+    let has_likes = n("like_count") > 5 && posts_count > 3;
+    let has_users = n("participant_count") > 5;
+    let has_links = links > 0;
+    let has_summary = view["has_summary"] == true;
+    let mut stats_class = String::from("topic-map__stats");
+    if !has_summary && !has_likes && !has_users && !has_links {
+        stats_class.push_str(" --single-stat");
+    }
+    if has_likes && has_users && has_links {
+        stats_class.push_str(" --many-stats");
+    }
+    let views = n("views").max(1);
+    let mut stats = format!(
+        "<button aria-expanded=\"false\" class=\"btn no-text fk-d-menu__trigger topic-map__views-trigger\" data-identifier=\"topic-map__views\" data-trigger=\"\" type=\"button\">{}</button>",
+        stat_body(cx, views, None, "views_lowercase")
+    );
+    if has_likes {
+        stats.push_str(&format!(
+            "<div class=\"topic-map__stat topic-map__likes\">{}</div>",
+            stat_body(cx, n("like_count"), None, "likes_lowercase")
+        ));
+    }
+    if has_links {
+        stats.push_str(&format!(
+            "<div class=\"topic-map__stat topic-map__links\">{}</div>",
+            stat_body(cx, links, Some(50), "links_lowercase")
+        ));
+    }
+    if has_users {
+        stats.push_str(&format!(
+            "<div class=\"topic-map__stat topic-map__users\">{}</div>",
+            stat_body(cx, n("participant_count"), None, "users_lowercase")
+        ));
+    }
+    let participants = view["details"]["participants"]
+        .as_array()
+        .cloned()
+        .unwrap_or_default();
+    if posts_count >= 3 && participants.len() >= 2 {
+        stats.push_str("<div class=\"topic-map__users-list --users-summary\">");
+        for p in participants.iter().take(5) {
+            let username = s(&p["username"]);
+            let group = p["primary_group_name"]
+                .as_str()
+                .filter(|g| !g.is_empty())
+                .map(|g| format!("group-{g}"))
+                .unwrap_or_default();
+            let title = p["name"]
+                .as_str()
+                .filter(|n| !n.trim().is_empty())
+                .unwrap_or(username);
+            let count = p["post_count"].as_i64().unwrap_or(0);
+            stats.push_str(&format!(
+                "<div class=\"{group}\"><a class=\"{}poster trigger-user-card\" title=\"{}\"{}>{}{}</a></div>",
+                if cx.settings.hide_user_profiles_from_public && cx.viewer.is_none() {
+                    "non-clickable "
+                } else {
+                    ""
+                },
+                escape(username),
+                user_link_attrs(cx, username, false).replacen(" class=\"non-clickable\"", "", 1),
+                avatar_img(
+                    s(&p["avatar_template"]),
+                    cx.settings.avatar_size_48,
+                    &format!(" title=\"{}\"", escape(title))
+                ),
+                if count > 1 {
+                    format!("<span class=\"post-count\">{count}</span>")
+                } else {
+                    String::new()
+                }
+            ));
+        }
+        stats.push_str("</div>");
+    }
+    // The estimated read time, past three minutes.
+    let read_minutes = ((n("word_count") as f64 / cx.settings.read_time_word_count.max(1) as f64)
+        .max(posts_count as f64 * 4.0 / 60.0))
+    .ceil() as i64;
+    let buttons = if read_minutes > 3 {
+        format!(
+            "<div class=\"estimated-read-time\"><span> {} </span><span> {read_minutes} {} </span></div>",
+            escape(&t(cx.list, "topic_map.read")),
+            escape(&t(cx.list, "topic_map.minutes"))
+        )
+    } else {
+        String::new()
+    };
+    stats.push_str(&format!(
+        "<div class=\"topic-map__buttons\">{buttons}</div>"
+    ));
+    let class = if modifier == "--op" {
+        "post__topic-map topic-map --op"
+    } else {
+        "topic-map --bottom"
+    };
+    format!(
+        "<div class=\"{class}\"><section class=\"topic-map__contents\"><div class=\"{stats_class}\">{stats}</div></section></div>"
+    )
+}
+
+/// Whether the first post shows the topic map (post.gjs
+/// shouldShowTopicMap).
+pub fn shows_op_map(view: &Value, settings: &PostSettings) -> bool {
+    match view["archetype"].as_str() {
+        Some("private_message") => true,
+        Some("regular") => {
+            view["posts_count"].as_i64().unwrap_or(0) > 1
+                || settings.show_topic_map_in_topics_without_replies
+        }
+        _ => false,
+    }
+}
+
+/// Whether the bottom topic map shows (showBottomTopicMap), with every
+/// post of the topic on the page.
+pub fn shows_bottom_map(view: &Value, settings: &PostSettings) -> bool {
+    let posts = view["post_stream"]["posts"].as_array();
+    let regular = posts
+        .map(|p| {
+            p.iter()
+                .filter(|p| p["post_type"].as_i64() != Some(SMALL_ACTION))
+                .count()
+        })
+        .unwrap_or(0);
+    let loaded = posts.map(Vec::len).unwrap_or(0);
+    let stream = view["post_stream"]["stream"]
+        .as_array()
+        .map(Vec::len)
+        .unwrap_or(0);
+    // The client means to require 200 words, but tests `isTesting` without
+    // calling it, so the minimum never applies.
+    settings.show_bottom_topic_map && regular > 3 && loaded >= stream
+}
+
+/// `timelineDate`: "Sep 30" this year, else "Sep 2025".
+fn timeline_date(cx: &PostContext, at: DateTime<Utc>) -> String {
+    use chrono::Datelike;
+    let key = if at.year() == cx.list.now.year() {
+        "dates.long_no_year_no_time"
+    } else {
+        "dates.timeline_date"
+    };
+    crate::pretty_text::render::local_dates::format_utc(at, &t(cx.list, key)).unwrap_or_default()
+}
+
+/// The docked timeline (components/topic-timeline) as it first renders,
+/// at the first post; static/js/topic.js moves it as the page scrolls.
+/// The stream's post ids and the timeline lookup ride along for that.
+pub fn timeline(cx: &PostContext, view: &Value) -> String {
+    let base = cx.list.base_path;
+    let url = format!("{base}/t/{}/{}", cx.topic.slug, cx.topic.id);
+    let stream: Vec<i64> = view["post_stream"]["stream"]
+        .as_array()
+        .map(|s| s.iter().filter_map(Value::as_i64).collect())
+        .unwrap_or_default();
+    let total = stream.len().max(1);
+    let start = date(&view["created_at"])
+        .map(|at| timeline_date(cx, at))
+        .unwrap_or_default();
+    let last = date(&view["last_posted_at"]).or_else(|| date(&view["created_at"]));
+    let now_date = last
+        .map(|at| {
+            let tiny = relative_age_tiny(cx.list, at);
+            // addAgo: only a relative age gets "ago".
+            let age = if tiny.chars().next().is_some_and(|c| c.is_ascii_digit())
+                && tiny.ends_with(['m', 'h', 'd'])
+            {
+                t_with(cx.list, "dates.wrap_ago", &[("date", &tiny)])
+            } else {
+                tiny
+            };
+            format!(
+                "<span class=\"relative-date\" title=\"{}\" data-time=\"{}\" data-format=\"tiny\">{}</span>",
+                escape(&t(cx.list, "topic_entrance.jump_bottom_button_title")),
+                at.timestamp_millis(),
+                escape(&age)
+            )
+        })
+        .unwrap_or_default();
+    // timeline-ago for the first post: the lookup's entry for index 1.
+    let days_ago = view["timeline_lookup"]
+        .as_array()
+        .and_then(|l| l.first())
+        .and_then(|e| e[1].as_i64());
+    let ago = days_ago
+        .map(|d| {
+            format!(
+                "<div class=\"timeline-ago\">{}</div>",
+                escape(&timeline_date(cx, cx.list.now - chrono::Duration::days(d)))
+            )
+        })
+        .unwrap_or_default();
+    let mut footer = String::new();
+    if cx.viewer.is_some() && cx.topic.can_create_post {
+        footer.push_str(&format!(
+            "<button class=\"btn no-text btn-icon btn-default create reply-to-post\" title=\"{}\" type=\"button\">{}<span aria-hidden=\"true\">&#8203;</span></button>",
+            escape(&t(cx.list, "topic.reply.help")),
+            icon("reply", None)
+        ));
+    }
+    let controls = if cx.viewer.is_some() {
+        "<div class=\"timeline-controls\"></div>"
+    } else {
+        ""
+    };
+    let stream_json = serde_json::to_string(&stream).unwrap_or_default();
+    // The lookup with each entry's date label, for the script.
+    let labels: Vec<Value> = view["timeline_lookup"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .map(|e| {
+            let label = e[1]
+                .as_i64()
+                .map(|d| timeline_date(cx, cx.list.now - chrono::Duration::days(d)));
+            serde_json::json!([e[0], label])
+        })
+        .collect();
+    let lookup_json = serde_json::to_string(&labels).unwrap_or_default();
+    format!(
+        "<div class=\"with-timeline topic-navigation\"><div class=\"timeline-container\" data-topic-url=\"{}\" data-chunk-size=\"{}\" data-stream=\"{}\" data-lookup=\"{}\" data-replies-format=\"{}\"><div class=\"topic-timeline\">{controls}<div class=\"timeline-scrollarea-wrapper\"><div class=\"timeline-date-wrapper\"><a class=\"start-date\" href=\"{}/1\" title=\"{}\"><span>{}</span></a></div><div class=\"timeline-scrollarea\" style=\"height: 300px\"><div class=\"timeline-padding\" style=\"height: 0px\"></div><div class=\"timeline-scroller\" style=\"height: 50px\"><div class=\"timeline-handle\"></div><div class=\"timeline-scroller-content\"><div class=\"timeline-replies\">{}</div>{ago}</div></div><div class=\"timeline-padding\" style=\"height: 250px\"></div></div><div class=\"timeline-date-wrapper\"><a class=\"now-date\" href=\"{}/{}\"><span>{now_date}</span></a></div></div><div class=\"timeline-footer-controls\">{footer}</div></div></div></div>",
+        escape(&url),
+        view["chunk_size"].as_i64().unwrap_or(20),
+        escape(&stream_json),
+        escape(&lookup_json),
+        escape(&t(cx.list, "topic.timeline.replies_short")),
+        escape(&url),
+        escape(&t(cx.list, "topic_entrance.jump_top_button_title")),
+        escape(&start),
+        escape(&t_with(
+            cx.list,
+            "topic.timeline.replies_short",
+            &[("current", "1"), ("total", &total.to_string())]
+        )),
+        escape(&url),
+        view["highest_post_number"].as_i64().unwrap_or(1),
+    )
+}
+
+/// The topic's footer buttons: an anonymous reader's Reply (to log in);
+/// a member's share, bookmark and Reply. Flag, Mark unread, the pinned
+/// and notifications buttons and the admin menu are not ported yet.
+pub fn footer_buttons(cx: &PostContext, view: &Value) -> String {
+    let l = cx.list;
+    let reply_label = escape(&t(l, "topic.reply.title"));
+    let Some(_) = cx.viewer else {
+        return format!(
+            "<div id=\"topic-footer-buttons\" role=\"region\"><div class=\"topic-footer-main-buttons\"><button class=\"btn btn-icon-text btn-primary\" data-login-url=\"{}/login\" type=\"button\">{}<span class=\"d-button-label\">{reply_label}</span></button></div></div>",
+            l.base_path,
+            icon("reply", None)
+        );
+    };
+    let url = format!("{}/t/{}/{}", l.base_path, cx.topic.slug, cx.topic.id);
+    let mut actions = format!(
+        "<button class=\"btn btn-icon-text btn-default topic-footer-button share-and-invite\" aria-label=\"{share}\" data-share-url=\"{}\" id=\"topic-footer-button-share-and-invite\" title=\"{}\" type=\"button\">{}<span class=\"d-button-label\">{share}</span></button>",
+        escape(&url),
+        escape(&t(l, "topic.share.help")),
+        d_icon("d-topic-share", None),
+        share = escape(&t(l, "footer_nav.share"))
+    );
+    // The topic's own bookmark.
+    let topic_bookmark = view["bookmarks"].as_array().and_then(|b| {
+        b.iter()
+            .find(|b| b["bookmarkable_type"] == "Topic")
+            .and_then(|b| b["id"].as_i64())
+    });
+    let base = l.base_path;
+    let (icon_name, label, title, extra, htmx) = match topic_bookmark {
+        Some(id) => (
+            "bookmark",
+            t_count(l, "bookmarked.edit_bookmark", 1, &[]),
+            t_with(l, "bookmarks.created_generic", &[("name", "")]),
+            " bookmarked",
+            format!(" hx-delete=\"{base}/bookmarks/{id}\""),
+        ),
+        None => (
+            "far-bookmark",
+            t(l, "bookmarked.title"),
+            t(l, "bookmarks.not_bookmarked"),
+            "",
+            format!(
+                " hx-post=\"{base}/bookmarks\" hx-vals='{{\"bookmarkable_id\": {}, \"bookmarkable_type\": \"Topic\"}}'",
+                cx.topic.id
+            ),
+        ),
+    };
+    actions.push_str(&format!(
+        "<button class=\"btn btn-icon-text fk-d-menu__trigger bookmark-menu-trigger bookmark widget-button bookmark-menu__trigger btn-icon-text btn-default topic-footer-button{extra}\" title=\"{}\" aria-expanded=\"false\" data-identifier=\"bookmark-menu\" data-trigger=\"\"{htmx} hx-swap=\"none\" hx-on::after-request=\"if (event.detail.successful) location.reload()\" type=\"button\">{}<span class=\"d-button-label\">{}</span></button>",
+        escape(title.trim()),
+        icon(icon_name, None),
+        escape(&label)
+    ));
+    let reply = if cx.topic.can_create_post {
+        format!(
+            "<button class=\"btn btn-icon-text btn-primary create topic-footer-button\" title=\"{}\" type=\"button\">{}<span class=\"d-button-label\">{reply_label}</span></button>",
+            escape(&t(l, "topic.reply.help")),
+            icon("reply", None)
+        )
+    } else {
+        String::new()
+    };
+    format!(
+        "<div aria-label=\"{}\" id=\"topic-footer-buttons\" role=\"region\"><div class=\"topic-footer-main-buttons\"><div class=\"topic-footer-main-buttons__actions\">{actions}</div>{reply}</div></div>",
+        escape(&t(l, "topic.footer_buttons.region_label"))
+    )
+}
+
+/// more-topics: the suggested topics and the browse-more line. New and
+/// unread counts come from topic tracking, not ported, so the line reads
+/// as it does for an anonymous reader.
+pub fn more_topics(cx: &PostContext, view: &Value) -> String {
+    let l = cx.list;
+    let suggested = view["suggested_topics"]
+        .as_array()
+        .cloned()
+        .unwrap_or_default();
+    if suggested.is_empty() {
+        return "<div class=\"more-topics__container\"></div>".to_string();
+    }
+    let rows: String = suggested
+        .iter()
+        .map(|topic| crate::topic_list_view::suggested_row(l, topic))
+        .collect();
+    let base = l.base_path;
+    let category = view["category_id"]
+        .as_i64()
+        .filter(|id| *id != l.settings.uncategorized_category_id)
+        .and_then(|id| l.categories.get(&id));
+    let browse_more = match category {
+        Some(c) => t_with(
+            l,
+            "topic.read_more_in_category",
+            &[
+                (
+                    "categoryLink",
+                    &crate::topic_list_view::category_badge(l, c),
+                ),
+                ("latestLink", &format!("{base}/latest")),
+            ],
+        ),
+        None => t_with(
+            l,
+            "topic.read_more",
+            &[
+                ("categoryLink", &format!("{base}/categories")),
+                ("latestLink", &format!("{base}/latest")),
+            ],
+        ),
+    };
+    let th = |class: &str, label: &str| {
+        format!(
+            "<th class=\"topic-list-data {class}\" data-sort-order=\"{}\" scope=\"col\"><span>{label}</span></th>",
+            class.split(' ').next().unwrap_or("")
+        )
+    };
+    format!(
+        "<div class=\"more-topics__container\"><div class=\"more-topics__lists single-list\"><div aria-labelledby=\"suggested-topics-title\" class=\"more-topics__list\" id=\"suggested-topics\" role=\"complementary\"><h3 class=\"more-topics__list-title\" id=\"suggested-topics-title\">{}</h3><div class=\"topics\"><table class=\"topic-list\"><caption class=\"sr-only\">{}</caption><thead class=\"topic-list-header --has-tabs\"><tr>{}{}{}{}</tr></thead><tbody class=\"topic-list-body\">{rows}</tbody></table></div></div></div><h3 class=\"more-topics__browse-more\">{browse_more}</h3></div>",
+        escape(&t(l, "suggested_topics.title")),
+        escape(&t(l, "sr_topic_list_caption")),
+        th("default", "Topic"),
+        th("posts num", "Replies"),
+        th("views num", "Views"),
+        th("activity num", "Activity"),
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1156,6 +1588,9 @@ mod tests {
             suppress_reply_directly_above: true,
             show_time_gap_days: 7,
             old_post_notice_days: 14,
+            read_time_word_count: 500,
+            show_topic_map_in_topics_without_replies: true,
+            show_bottom_topic_map: true,
         };
         let topic = TopicInfo {
             id: 9,
@@ -1163,6 +1598,7 @@ mod tests {
             created_by_id: Some(1),
             archived: false,
             can_create_post: false,
+            op_map: String::new(),
         };
         let cx = PostContext {
             list: &list,
@@ -1245,6 +1681,119 @@ mod tests {
                 );
                 assert!(html[0].contains(r#"aria-label="Sep 30" class="post-date" href="/t/t/9""#));
             },
+        );
+    }
+
+    #[test]
+    fn numbers_shorten_as_the_client_does() {
+        assert_eq!(d_number(0, None), "0");
+        assert_eq!(d_number(999, None), "999");
+        assert_eq!(d_number(1000, None), "1.0k");
+        assert_eq!(d_number(1234, None), "1.2k");
+        assert_eq!(d_number(123_456, None), "123k");
+        assert_eq!(d_number(1_234_567, None), "1.2M");
+        assert_eq!(d_number(51, Some(50)), "50+");
+    }
+
+    #[test]
+    fn the_topic_map_shows_what_the_topic_has() {
+        let i18n = crate::i18n::I18n::vendored().unwrap();
+        let categories = std::collections::HashMap::new();
+        let list = ListContext {
+            i18n: &i18n,
+            base_path: "",
+            now: Utc::now(),
+            categories: &categories,
+            expand_all_pinned: false,
+            member_trust_level: None,
+            settings: crate::topic_list_view::ListSettings {
+                show_pinned_excerpt_desktop: true,
+                suppress_uncategorized_badge: true,
+                uncategorized_category_id: 1,
+                tag_style: "simple".into(),
+                suppress_overlapping_tags_in_list: false,
+                topic_views_heat: [1000, 2000, 5000],
+                topic_post_like_heat: [0.5, 1.0, 2.0],
+                cold_age_days: [14.0, 30.0, 60.0],
+                relative_date_duration: 30,
+                avatar_size_24: 24,
+                prioritize_name: false,
+                inline_emoji: false,
+                emoji_set: "twitter".into(),
+                support_mixed_text_direction: false,
+            },
+        };
+        let settings = PostSettings {
+            prioritize_username_in_ux: true,
+            display_name_on_posts: false,
+            hide_user_profiles_from_public: false,
+            avatar_size_24: 24,
+            avatar_size_48: 48,
+            enable_badges: true,
+            allow_username_in_share_links: true,
+            suppress_reply_directly_above: true,
+            show_time_gap_days: 7,
+            old_post_notice_days: 14,
+            read_time_word_count: 500,
+            show_topic_map_in_topics_without_replies: true,
+            show_bottom_topic_map: true,
+        };
+        let topic = TopicInfo {
+            id: 9,
+            slug: "t".into(),
+            created_by_id: Some(1),
+            archived: false,
+            can_create_post: false,
+            op_map: String::new(),
+        };
+        let cx = PostContext {
+            list: &list,
+            settings: &settings,
+            topic: &topic,
+            viewer: None,
+        };
+        let participants: Vec<Value> = (0..7)
+            .map(|i| {
+                serde_json::json!({"username": format!("u{i}"), "avatar_template": "/a/{size}.png",
+                                   "post_count": 7 - i})
+            })
+            .collect();
+        // A quiet topic: one stat, at least one view.
+        let quiet = serde_json::json!({"views": 0, "posts_count": 2, "like_count": 0,
+            "participant_count": 1, "details": {"participants": []}});
+        let html = topic_map(&cx, &quiet, "--op");
+        assert!(html.starts_with(r#"<div class="post__topic-map topic-map --op"><section class="topic-map__contents"><div class="topic-map__stats --single-stat"><button"#), "{html}");
+        assert!(html.contains(
+            r#"<span class="number">1</span> <span class="topic-map__stat-label">view</span>"#
+        ));
+        // A busy one: likes, users and links, the five top posters, and
+        // the read time.
+        let busy = serde_json::json!({"views": 1234, "posts_count": 40, "like_count": 9,
+            "participant_count": 7, "word_count": 3000,
+            "details": {"participants": participants, "links": [{"url": "x"}]}});
+        let html = topic_map(&cx, &busy, "--bottom");
+        assert!(html.starts_with(r#"<div class="topic-map --bottom">"#));
+        assert!(
+            html.contains(r#"<div class="topic-map__stats --many-stats">"#),
+            "{html}"
+        );
+        assert!(html.contains(
+            "<span class=\"number\">1.2k</span> <span class=\"topic-map__stat-label\">views</span>"
+        ));
+        assert!(html.contains(
+            r#"<div class="topic-map__stat topic-map__likes"><span class="number">9</span>"#
+        ));
+        assert!(html.contains(r#"<div class="topic-map__stat topic-map__links"><span class="number">1</span> <span class="topic-map__stat-label">link</span>"#));
+        assert_eq!(
+            html.matches("class=\"poster trigger-user-card\"").count(),
+            5
+        );
+        assert!(html.contains(r#"<span class="post-count">7</span>"#));
+        assert!(
+            html.contains(
+                "<div class=\"estimated-read-time\"><span> read </span><span> 6 min </span></div>"
+            ),
+            "{html}"
         );
     }
 

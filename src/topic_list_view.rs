@@ -500,6 +500,16 @@ fn s(v: &Value) -> &str {
 
 /// One topic's row.
 pub fn row(cx: &ListContext, topic: &Value, users: &[Value]) -> String {
+    row_for(cx, topic, users, false)
+}
+
+/// A suggested topic's row (more-topics): no posters column, and no
+/// pinned excerpt.
+pub fn suggested_row(cx: &ListContext, topic: &Value) -> String {
+    row_for(cx, topic, &[], true)
+}
+
+fn row_for(cx: &ListContext, topic: &Value, users: &[Value], suggested: bool) -> String {
     let base = cx.base_path;
     let id = topic["id"].as_i64().unwrap_or(0);
     let slug = match s(&topic["slug"]).trim() {
@@ -521,7 +531,8 @@ pub fn row(cx: &ListContext, topic: &Value, users: &[Value]) -> String {
         .as_i64()
         .and_then(|id| cx.categories.get(&id));
     let excerpt = topic["excerpt"].as_str().filter(|e| !e.is_empty());
-    let expand_pinned = flag("pinned")
+    let expand_pinned = !suggested
+        && flag("pinned")
         && cx.settings.show_pinned_excerpt_desktop
         && ((!cx.expand_all_pinned && flag("pinned_globally")) || cx.expand_all_pinned);
 
@@ -679,6 +690,9 @@ pub fn row(cx: &ListContext, topic: &Value, users: &[Value]) -> String {
         ));
     }
     posters.push_str("</td>");
+    if suggested {
+        posters.clear();
+    }
 
     // RepliesCell: posts_count - 1, heat by likes per post.
     let reply_count = posts_count - 1;
