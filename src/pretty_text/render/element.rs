@@ -36,6 +36,12 @@ impl Element {
 
 impl NodeValue for Element {
     fn render(&self, node: &Node, fmt: &mut dyn Renderer) {
+        // renderToken starts a block on a new line after a hidden token (a
+        // tight item's text), and the crate's `<li>` leaves its newline to
+        // the block that opens it.
+        if self.block {
+            fmt.cr();
+        }
         let mut open = format!("<{}", self.tag);
         for (name, value) in &self.attrs {
             open.push_str(&format!(
