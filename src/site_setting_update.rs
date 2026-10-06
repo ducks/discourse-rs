@@ -199,6 +199,17 @@ pub async fn update(
         .execute(&mut *conn)
         .await?;
     }
+    // SiteSettingExtension#log: hidden settings go unlogged, secret ones
+    // without their values.
+    if hidden {
+        return Ok(Outcome::Done);
+    }
+    let secret = opt(def, "secret").is_some_and(|v| matches!(v, Yaml::Bool(true)));
+    let (previous, new_value) = if secret {
+        ("[FILTERED]".to_string(), "[FILTERED]".to_string())
+    } else {
+        (previous.to_s(), new_value.to_s())
+    };
     // StaffActionLogger#log_site_setting_change
     sqlx::query(
         "INSERT INTO user_histories (action, acting_user_id, subject, previous_value, new_value, admin_only, \
@@ -208,8 +219,8 @@ pub async fn update(
     .bind(CHANGE_SITE_SETTING)
     .bind(actor.id)
     .bind(name)
-    .bind(previous.to_s())
-    .bind(new_value.to_s())
+    .bind(previous)
+    .bind(new_value)
     .execute(&mut *conn)
     .await?;
     Ok(Outcome::Done)
