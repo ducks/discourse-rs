@@ -9,18 +9,23 @@
 //! the blocks' source ranges are kept on the parent before it runs, and the
 //! crate's rule runs on each run of siblings that came from one of them.
 //! Image alt text is left alone: in JS it is the image token's own
-//! children, which smartquotes does not visit.
+//! children, which smartquotes does not visit. Inline code is not changed
+//! but is read for the characters around a quote.
 
 use std::ops::Range;
 
 use markdown_it::parser::block::builtin::BlockParserRule;
 use markdown_it::parser::core::CoreRule;
 use markdown_it::parser::extset::NodeExt;
-use markdown_it::parser::inline::InlineRoot;
 use markdown_it::parser::inline::builtin::InlineParserRule;
+use markdown_it::parser::inline::{InlineRoot, Text};
+use markdown_it::plugins::cmark::inline::backticks::CodeInline;
 use markdown_it::plugins::cmark::inline::image::Image;
 use markdown_it::plugins::extra::smartquotes::SmartQuotesRule;
+use markdown_it::plugins::html::html_inline::HtmlInline;
 use markdown_it::{MarkdownIt, Node};
+
+use super::element::CodeText;
 
 /// markdown-it's default quotes, which RenderSettings insists on.
 type SmartQuotes = SmartQuotesRule<'‘', '’', '“', '”'>;
@@ -105,11 +110,10 @@ pub fn run(root: &mut Node, md: &MarkdownIt) {
                 node.children.append(&mut block.children);
                 continue;
             }
-            let mut alts = Vec::new();
-            take_alts(&mut block, &mut alts);
+            let mut aside = Vec::new();
+            set_aside(&mut block, &mut aside);
             SmartQuotes::run(&mut block, md);
-            let mut alts = alts.into_iter();
-            put_alts(&mut block, &mut alts);
+            put_back(&mut block, &mut aside.into_iter());
             node.children.append(&mut block.children);
         }
     });
@@ -139,22 +143,58 @@ fn owners(children: &[Node], spans: &[Span]) -> Vec<Option<usize>> {
         .collect()
 }
 
-fn take_alts(node: &mut Node, alts: &mut Vec<Vec<Node>>) {
+/// What is kept out of the crate's sight while it runs: an image's alt
+/// text, or an inline code node, which stands in as html of its text. JS
+/// reads a `code_inline` token's content for the characters around a
+/// quote (`app.yml`'s) but never changes it; the crate does the same with
+/// inline html and skips inline code altogether.
+enum Aside {
+    Alt(Vec<Node>),
+    Code(Node),
+}
+
+fn set_aside(node: &mut Node, aside: &mut Vec<Aside>) {
     for child in &mut node.children {
         if child.is::<Image>() {
-            alts.push(std::mem::take(&mut child.children));
+            aside.push(Aside::Alt(std::mem::take(&mut child.children)));
+        } else if child.is::<CodeInline>() {
+            let mut content = String::new();
+            child.walk(|n, _| {
+                if let Some(text) = n.cast::<CodeText>() {
+                    content.push_str(&text.0);
+                } else if let Some(text) = n.cast::<Text>() {
+                    content.push_str(&text.content);
+                }
+            });
+            let mut stand_in = Node::new(HtmlInline { content });
+            stand_in.ext.insert(StandIn);
+            let code = std::mem::replace(child, stand_in);
+            aside.push(Aside::Code(code));
         } else {
-            take_alts(child, alts);
+            set_aside(child, aside);
         }
     }
 }
 
-fn put_alts(node: &mut Node, alts: &mut impl Iterator<Item = Vec<Node>>) {
+/// Marks the html that stands in for inline code.
+#[derive(Debug, Default)]
+struct StandIn;
+
+impl NodeExt for StandIn {}
+
+/// Puts back what `set_aside` took, in the order it took it.
+fn put_back(node: &mut Node, aside: &mut impl Iterator<Item = Aside>) {
     for child in &mut node.children {
         if child.is::<Image>() {
-            child.children = alts.next().unwrap_or_default();
+            if let Some(Aside::Alt(alt)) = aside.next() {
+                child.children = alt;
+            }
+        } else if child.ext.get::<StandIn>().is_some() {
+            if let Some(Aside::Code(code)) = aside.next() {
+                *child = code;
+            }
         } else {
-            put_alts(child, alts);
+            put_back(child, aside);
         }
     }
 }

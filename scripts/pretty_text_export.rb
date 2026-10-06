@@ -171,6 +171,9 @@ samples = [
   # line has none either. A shorter marker does not close it.
   ["text\n\n> ```\n> x", replies.id, u1.id],
   ["````\nx\n```", replies.id, u1.id],
+  # Smart quotes read inline code for the characters around a quote but
+  # leave its own quotes alone.
+  ["(in `app.yml`'s hooks) and `\"x\"` said \"`it's`\" and <b>it</b>'s", replies.id, u1.id],
 ]
 if upload
   samples << ["An upload that exists: ![image|64x64](#{upload.short_url}) and [a link|attachment](#{upload.short_url}).", replies.id, u1.id]

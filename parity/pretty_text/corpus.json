@@ -521,6 +521,14 @@
   },
   {
     "id": "sample-65",
+    "raw": "(in `app.yml`'s hooks) and `\"x\"` said \"`it's`\" and <b>it</b>'s",
+    "topic_id": 35,
+    "user_id": 3,
+    "markdown": "<p>(in <code>app.yml</code>’s hooks) and <code>&quot;x&quot;</code> said “<code>it's</code>” and <b>it</b>'s</p>",
+    "cooked": "<p>(in <code>app.yml</code>’s hooks) and <code>\"x\"</code> said “<code>it's</code>” and <b>it</b>'s</p>"
+  },
+  {
+    "id": "sample-66",
     "raw": "An upload that exists: ![image|64x64](upload://qa4V5109J7tySkPok8r3aBAruY1.png) and [a link|attachment](upload://qa4V5109J7tySkPok8r3aBAruY1.png).",
     "topic_id": 35,
     "user_id": 3,
