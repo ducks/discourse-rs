@@ -2,13 +2,14 @@
 //! `color_definitions_*`): the default theme's color scheme, or the base
 //! light palette, and its dark scheme when it has one.
 
-use axum::extract::State;
+use axum::extract::{Path, State};
 use axum::http::{StatusCode, header};
 use axum::response::{IntoResponse, Response};
 
 use crate::color_scheme::ColorScheme;
 use crate::site_settings::SiteSettings;
 use crate::stylesheet::color_definitions::{SchemeColors, css};
+use crate::stylesheet::fonts;
 use crate::{AppError, AppState};
 
 async fn scheme_css(
@@ -52,7 +53,10 @@ pub async fn light(State(state): State<AppState>) -> Result<Response, AppError> 
             .fetch_optional(&mut *conn)
             .await?
             .flatten();
-    Ok(stylesheet(scheme_css(&mut conn, scheme_id).await?))
+    let body = scheme_css(&mut conn, scheme_id).await?;
+    Ok(stylesheet(
+        body.map(|css| css + &font_css(&state, &settings)),
+    ))
 }
 
 /// The default theme's dark scheme (`dark_scheme_id`), if it has one.
@@ -68,7 +72,55 @@ pub async fn dark(State(state): State<AppState>) -> Result<Response, AppError> {
             .await?
             .flatten();
     match id.filter(|id| *id > 0) {
-        Some(id) => Ok(stylesheet(scheme_css(&mut conn, Some(id)).await?)),
+        Some(id) => {
+            let body = scheme_css(&mut conn, Some(id)).await?;
+            Ok(stylesheet(
+                body.map(|css| css + &font_css(&state, &settings)),
+            ))
+        }
         None => Ok(StatusCode::NOT_FOUND.into_response()),
+    }
+}
+
+/// The font definitions Rails adds to every color definitions file.
+fn font_css(state: &AppState, settings: &SiteSettings) -> String {
+    let setting = |name| {
+        settings
+            .get(name)
+            .map(|v| v.to_s().to_string())
+            .unwrap_or_default()
+    };
+    let fonts_dir = format!("{}/fonts", state.config.globals.relative_url_root());
+    fonts::css(&setting("base_font"), &setting("heading_font"), &fonts_dir)
+}
+
+/// The discourse-fonts files this port has (static/fonts/README).
+const FONT_FILES: &[(&str, &[u8])] = &[
+    (
+        "InterVariable.woff2",
+        include_bytes!("../../static/fonts/InterVariable.woff2"),
+    ),
+    (
+        "JetBrainsMono-Regular.woff2",
+        include_bytes!("../../static/fonts/JetBrainsMono-Regular.woff2"),
+    ),
+    (
+        "JetBrainsMono-Bold.woff2",
+        include_bytes!("../../static/fonts/JetBrainsMono-Bold.woff2"),
+    ),
+];
+
+/// `/fonts/:file`
+pub async fn font(Path(file): Path<String>) -> Response {
+    match FONT_FILES.iter().find(|(name, _)| *name == file) {
+        Some((_, bytes)) => (
+            [
+                (header::CONTENT_TYPE, "font/woff2"),
+                (header::CACHE_CONTROL, "max-age=31556952, public, immutable"),
+            ],
+            *bytes,
+        )
+            .into_response(),
+        None => StatusCode::NOT_FOUND.into_response(),
     }
 }

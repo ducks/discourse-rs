@@ -3,6 +3,7 @@
 //! rest is ported from Discourse's SCSS by hand into static/css.
 
 pub mod color_definitions;
+pub mod fonts;
 pub mod sass_color;
 
 #[cfg(test)]

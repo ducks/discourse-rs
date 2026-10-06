@@ -12,6 +12,7 @@ use axum::response::{Html, IntoResponse, Response};
 use axum::{Json, RequestExt};
 use serde_json::json;
 
+use crate::html::Chrome;
 use crate::html::Crawler;
 use crate::site_settings::SiteSettings;
 use crate::{AppError, AppState, Unsupported};
@@ -28,6 +29,7 @@ fn exempt(path: &str) -> bool {
             | "/robots.txt"
             | "/robots-builder.json"
     ) || path.starts_with("/assets/")
+        || path.starts_with("/fonts/")
         || path.starts_with("/images/")
         || path.starts_with("/uploads/")
 }
@@ -88,7 +90,7 @@ pub async fn gate(
     let headers: HeaderMap = request.extract_parts().await?;
     let uri: Uri = request.uri().clone();
     if path == "/" || path == "/login" {
-        return login_page(&state, &settings, &headers, &uri);
+        return login_page(&state, &settings, &headers, &uri).await;
     }
     let host = headers
         .get(header::HOST)
@@ -150,12 +152,12 @@ pub(super) fn not_logged_in(state: &AppState, path: &str) -> Response {
 #[template(path = "login_required.html")]
 pub struct LoginRequiredPage {
     pub site_title: String,
-    pub site_description: String,
     pub lang: String,
     pub base_path: String,
     pub crawler: Crawler,
     pub viewer: Option<crate::html::Viewer>,
     pub bus_position: String,
+    pub chrome: Chrome,
     pub welcome: String,
     /// The note that reading needs an account.
     pub login_required: bool,
@@ -167,14 +169,15 @@ pub struct LoginRequiredPage {
 
 /// The login page: what `/login` shows, and what the front page shows
 /// while login is required.
-pub fn login_page(
+pub async fn login_page(
     state: &AppState,
     settings: &SiteSettings,
     headers: &HeaderMap,
     uri: &Uri,
 ) -> Result<Response, AppError> {
     let base_path = state.config.globals.relative_url_root().to_string();
-    let site = crate::html::Site::from_settings(settings, &base_path)?;
+    let mut site = crate::html::Site::from_settings(settings, &base_path)?;
+    site.load_chrome(state, settings).await?;
     let welcome = state
         .i18n
         .t_with(
@@ -196,7 +199,7 @@ pub fn login_page(
         site_title: site.site_title,
         viewer: site.viewer,
         bus_position: site.bus_position,
-        site_description: site.site_description,
+        chrome: site.chrome,
         lang: site.lang,
         base_path: site.base_path,
         welcome: welcome.trim_start_matches("# ").to_string(),
@@ -229,5 +232,5 @@ pub async fn show_login(
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
-    login_page(&state, &settings, &headers, &uri)
+    login_page(&state, &settings, &headers, &uri).await
 }
