@@ -13,6 +13,5 @@
         "challenge": "{{responses.0.body.challenge|reverse}}"
       }
     }
-  ],
-  "not_yet": "A token Rails' route constraint rejects (404) answers 422."
+  ]
 }
