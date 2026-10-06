@@ -602,6 +602,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "discourse-markdown"
+version = "20261006.0.0"
+dependencies = [
+ "chrono",
+ "chrono-tz",
+ "fancy-regex",
+ "markdown-it",
+ "md5",
+ "mdurl",
+ "regex",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "discourse-rs"
 version = "20261002.0.1"
 dependencies = [
@@ -612,6 +627,7 @@ dependencies = [
  "chrono",
  "chrono-tz",
  "clap",
+ "discourse-markdown",
  "fancy-regex",
  "form_urlencoded",
  "futures-util",

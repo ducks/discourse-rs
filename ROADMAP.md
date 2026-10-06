@@ -373,8 +373,12 @@ Discourse's own clients keep working.
       fullscreen and resizing. Not yet: tags, the heading, emoji and
       options menus, the composer actions menu, the rich text editor;
       edits within the grace period are refused by the post reviser
-- [ ] The composer: markdown preview with the Rust renderer, uploads,
-      drafts
+- [x] The composer's preview: the renderer (crates/markdown) built to
+      WebAssembly by build.rs, served at /assets/markdown.wasm with the
+      site's render settings at /assets/markdown-settings.json, rendering
+      as the post cooks less what the server looks up (quoted avatars,
+      hashtags, upload urls) and the rel attributes cleanup adds
+- [ ] The composer: uploads, drafts
 - [ ] The user menu, notifications, bookmarks, messages, preferences
 - [ ] Review queue and topic status for staff
 

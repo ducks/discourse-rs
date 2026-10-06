@@ -14,7 +14,7 @@ pub mod current_user;
 pub mod discourse_diff;
 pub mod drafts;
 pub mod email;
-pub mod emoji;
+pub use discourse_markdown::emoji;
 pub mod excerpt;
 pub mod flags;
 pub mod groups;
@@ -110,18 +110,7 @@ pub fn app(state: AppState) -> Router {
         .layer(TraceLayer::new_for_http())
 }
 
-/// A Discourse behavior this port doesn't cover yet, hit at runtime. Failing
-/// loudly beats serving a plausible but wrong response in a parity port.
-#[derive(Debug)]
-pub struct Unsupported(pub &'static str);
-
-impl std::fmt::Display for Unsupported {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "not ported yet: {}", self.0)
-    }
-}
-
-impl std::error::Error for Unsupported {}
+pub use discourse_markdown::Unsupported;
 
 /// Any failure a handler can't turn into a proper response: logged in full,
 /// returned as a bare 500.

@@ -100,7 +100,7 @@ build:
 # Integration tests read TEST_DATABASE_URL (set by shell.nix); run
 # `make db-test` once, and again after vendoring a new schema.
 test:
-	cargo nextest run
+	cargo nextest run --workspace
 
 # The comparisons against recorded Rails output (.config/nextest.toml),
 # left out of `make test`: the slow part of the suite. CI runs both.
@@ -109,7 +109,8 @@ parity-test:
 
 # Run clippy with warnings-as-errors (mirrors CI)
 clippy:
-	cargo clippy --all-targets -- -D warnings
+	cargo clippy --workspace --all-targets -- -D warnings
+	cargo clippy --package discourse-markdown --target wasm32-unknown-unknown -- -D warnings
 
 # Clean build artifacts
 clean:
@@ -117,11 +118,11 @@ clean:
 
 # Run rustfmt to format the code
 fmt:
-	cargo fmt
+	cargo fmt --all
 
 # Check that rustfmt is satisfied without modifying files (mirrors CI)
 fmt-check:
-	cargo fmt -- --check
+	cargo fmt --all -- --check
 
 # The checks CI runs, in order, minus parity-test (slow; CI runs it).
 # Cheap to run locally before pushing.

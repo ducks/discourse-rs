@@ -10,7 +10,7 @@ use markdown_it::{Node, NodeValue, Renderer};
 
 use super::RenderSettings;
 use crate::emoji::DATA;
-use crate::pretty_text::sanitizer::AllowList;
+use crate::sanitizer::AllowList;
 
 const MAX_NAME_LENGTH: usize = 60;
 const ZERO_WIDTH_SPACE: u16 = 0x200b;

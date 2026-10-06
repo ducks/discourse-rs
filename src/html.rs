@@ -260,10 +260,17 @@ impl Site {
         };
         let default_category =
             Some(settings.get("default_composer_category")?.to_i()).filter(|id| *id > 0);
+        let wasm = format!(
+            "{}/assets/markdown.wasm?v={}",
+            self.base_path,
+            crate::routes::composer::MARKDOWN_WASM_VERSION
+        );
+        let render_settings = format!("{}/assets/markdown-settings.json", self.base_path);
         Ok(crate::composer_view::render(
             &list,
             &chooser,
             default_category,
+            Some((&wasm, &render_settings)),
         ))
     }
 }

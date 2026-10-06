@@ -33,7 +33,7 @@ jobs:
       - name: Install Rust
         run: |
           rustup show active-toolchain || rustup toolchain install
-          rustup target add ${{ env.TARGET }}
+          rustup target add ${{ env.TARGET }} wasm32-unknown-unknown
 
       # Static musl binary: nothing to match on the host's libc.
       - name: Install musl toolchain

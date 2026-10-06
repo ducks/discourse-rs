@@ -126,10 +126,13 @@ fn toolbar(list: &ListContext) -> String {
 
 /// The closed composer with its category chooser. `default_category` is
 /// the category a new topic starts in (default_composer_category).
+/// `preview` is where the preview's WebAssembly and render settings are
+/// served; None leaves the composer without a preview.
 pub fn render(
     list: &ListContext,
     allowed: &[ChooserCategory],
     default_category: Option<i64>,
+    preview: Option<(&str, &str)>,
 ) -> String {
     let control = |class: &str, icon_name: &str, title: &str| {
         format!(
@@ -177,8 +180,28 @@ pub fn render(
         escape(&t(list, "select_kit.filter_placeholder")),
         icon("magnifying-glass", Some("filter-icon")),
     );
+    // ComposerToggles' preview toggle; composer.js sets its title and
+    // `active` from the stored preference.
+    let preview_toggle = match preview {
+        Some(_) => format!(
+            "<button class=\"btn no-text btn-icon btn-transparent btn-mini-toggle toggle-preview\" title=\"{}\" type=\"button\">{}<span aria-hidden=\"true\">&#8203;</span></button>",
+            escape(&t(list, "composer.hide_preview")),
+            icon("angles-left", None)
+        ),
+        None => String::new(),
+    };
+    let preview_data = match preview {
+        Some((wasm, settings)) => format!(
+            " data-preview-wasm=\"{}\" data-preview-settings=\"{}\" data-label-show-preview=\"{}\" data-label-hide-preview=\"{}\"",
+            escape(wasm),
+            escape(settings),
+            escape(&t(list, "composer.show_preview")),
+            escape(&t(list, "composer.hide_preview")),
+        ),
+        None => String::new(),
+    };
     format!(
-        "<div id=\"reply-control\" class=\"closed hide-preview\" data-base-path=\"{}\" data-default-category=\"{}\" data-action-reply=\"{}\" data-action-create-topic=\"{}\" data-action-edit=\"{}\" data-submit-reply=\"{}\" data-submit-create-topic=\"{}\" data-submit-edit=\"{}\" data-label-reply-to-topic=\"{}\" data-label-fullscreen=\"{}\" data-label-exit-fullscreen=\"{}\" data-text-bold=\"{}\" data-text-italic=\"{}\" data-text-link=\"{}\" data-text-blockquote=\"{}\" data-text-code=\"{}\" data-text-list=\"{}\"><div class=\"d-resize-separator grippie\" aria-label=\"{}\" aria-orientation=\"horizontal\" role=\"separator\" tabindex=\"0\"></div><div class=\"reply-area with-category\" role=\"dialog\"><div class=\"reply-to\"><div class=\"composer-action-title\"><span aria-level=\"1\" class=\"action-title\" role=\"heading\"><button class=\"btn btn-icon-text composer-actions-trigger btn-flat btn-icon-text composer-actions\" tabindex=\"-1\" type=\"button\"></button></span></div><div class=\"composer-controls\">{}{}{}</div></div><div class=\"toolbar-visible wmd-controls\"><div class=\"d-editor\"><div class=\"d-editor-container --markdown-editor-enabled\"><div class=\"d-editor-textarea-column\"><div class=\"composer-fields\"><div class=\"title-and-category\" hidden><div class=\"title-input\"><input aria-label=\"{title}\" autocomplete=\"off\" id=\"reply-title\" placeholder=\"{title}\" type=\"text\"></div><div class=\"category-input\">{chooser}</div></div></div><div class=\"d-editor-textarea-wrapper\"><div class=\"d-overflow-controls d-editor-button-bar__wrap\"><div class=\"d-overflow-controls__content d-editor-button-bar\" role=\"toolbar\">{}</div></div><textarea aria-label=\"{body}\" autocomplete=\"off\" class=\"d-editor-input --markdown-monospace\" placeholder=\"{body}\"></textarea></div></div><div class=\"d-editor-preview-wrapper\"><div class=\"d-editor-preview\"></div></div></div></div></div><div class=\"submit-panel\"><div class=\"save-or-cancel\"><button class=\"btn btn-icon-text btn-primary create\" type=\"button\"></button><button class=\"btn discard-button btn-transparent\" title=\"{discard}\" type=\"button\"><span class=\"d-button-label\">{discard}</span></button></div><p class=\"composer-error\" role=\"alert\" hidden></p></div></div></div>",
+        "<div id=\"reply-control\" class=\"closed hide-preview\"{preview_data} data-base-path=\"{}\" data-default-category=\"{}\" data-action-reply=\"{}\" data-action-create-topic=\"{}\" data-action-edit=\"{}\" data-submit-reply=\"{}\" data-submit-create-topic=\"{}\" data-submit-edit=\"{}\" data-label-reply-to-topic=\"{}\" data-label-fullscreen=\"{}\" data-label-exit-fullscreen=\"{}\" data-text-bold=\"{}\" data-text-italic=\"{}\" data-text-link=\"{}\" data-text-blockquote=\"{}\" data-text-code=\"{}\" data-text-list=\"{}\"><div class=\"d-resize-separator grippie\" aria-label=\"{}\" aria-orientation=\"horizontal\" role=\"separator\" tabindex=\"0\"></div><div class=\"reply-area with-category\" role=\"dialog\"><div class=\"reply-to\"><div class=\"composer-action-title\"><span aria-level=\"1\" class=\"action-title\" role=\"heading\"><button class=\"btn btn-icon-text composer-actions-trigger btn-flat btn-icon-text composer-actions\" tabindex=\"-1\" type=\"button\"></button></span></div><div class=\"composer-controls\">{}{}{}</div></div><div class=\"toolbar-visible wmd-controls\"><div class=\"d-editor\"><div class=\"d-editor-container --markdown-editor-enabled\"><div class=\"d-editor-textarea-column\"><div class=\"composer-fields\"><div class=\"title-and-category\" hidden><div class=\"title-input\"><input aria-label=\"{title}\" autocomplete=\"off\" id=\"reply-title\" placeholder=\"{title}\" type=\"text\"></div><div class=\"category-input\">{chooser}</div></div></div><div class=\"d-editor-textarea-wrapper\"><div class=\"d-overflow-controls d-editor-button-bar__wrap\"><div class=\"d-overflow-controls__content d-editor-button-bar\" role=\"toolbar\">{}</div></div><textarea aria-label=\"{body}\" autocomplete=\"off\" class=\"d-editor-input --markdown-monospace\" placeholder=\"{body}\"></textarea></div></div><div class=\"d-editor-preview-wrapper\"><div class=\"d-editor-preview\"></div></div></div></div></div><div class=\"submit-panel\"><div class=\"save-or-cancel\"><button class=\"btn btn-icon-text btn-primary create\" type=\"button\"></button><button class=\"btn discard-button btn-transparent\" title=\"{discard}\" type=\"button\"><span class=\"d-button-label\">{discard}</span></button></div><p class=\"composer-error\" role=\"alert\" hidden></p></div></div></div>",
         escape(list.base_path),
         selected.map(|c| c.id.to_string()).unwrap_or_default(),
         escape(&action(
@@ -209,11 +232,12 @@ pub fn render(
         escape(&t(list, "composer.paste_code_text")),
         escape(&t(list, "composer.list_item")),
         escape(&t(list, "composer.resize")),
-        control(
-            "toggle-fullscreen",
-            "discourse-expand",
-            "composer.enter_fullscreen"
-        ),
+        preview_toggle.clone()
+            + &control(
+                "toggle-fullscreen",
+                "discourse-expand",
+                "composer.enter_fullscreen",
+            ),
         control("toggler toggle-minimize", "minus", "composer.collapse"),
         control(
             "toggler toggle-save-and-close",

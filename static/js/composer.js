@@ -99,6 +99,7 @@
     control.classList.remove("closed", "draft");
     control.classList.add("open");
     root.style.setProperty("--composer-height", defaultHeight(opts.mode));
+    updatePreview();
     if (opts.mode === "edit") {
       textarea.disabled = true;
       fetch(base + "/raw/" + opts.topicId + "/" + opts.postNumber, {
@@ -114,6 +115,7 @@
           textarea.value = raw;
           textarea.disabled = false;
           textarea.focus();
+          updatePreview();
         })
         .catch(function () {
           textarea.disabled = false;
@@ -239,6 +241,98 @@
       prefixLines("- ", data.textList);
     },
   };
+
+  // The preview: the markdown crate as WebAssembly, loaded the first time
+  // the composer opens with the preview shown. Its exports are in
+  // crates/markdown/src/wasm.rs.
+  var preview = control.querySelector(".d-editor-preview");
+  var previewToggle = control.querySelector(".toggle-preview");
+  var renderer = null;
+  var previewTimer = null;
+
+  function loadRenderer() {
+    if (!renderer) {
+      renderer = Promise.all([
+        WebAssembly.instantiateStreaming(fetch(data.previewWasm), {}),
+        fetch(data.previewSettings, { credentials: "same-origin" }).then(function (r) {
+          if (!r.ok) {
+            throw new Error("settings " + r.status);
+          }
+          return r.text();
+        }),
+      ]).then(function (loaded) {
+        var wasm = loaded[0].instance.exports;
+        var call = function (fn, text) {
+          var bytes = new TextEncoder().encode(text);
+          var ptr = wasm.alloc(bytes.length);
+          new Uint8Array(wasm.memory.buffer, ptr, bytes.length).set(bytes);
+          var status = fn(ptr, bytes.length);
+          wasm.dealloc(ptr, bytes.length);
+          var out = new TextDecoder().decode(
+            new Uint8Array(wasm.memory.buffer, wasm.output_ptr(), wasm.output_len())
+          );
+          if (status !== 0) {
+            throw new Error(out);
+          }
+          return out;
+        };
+        call(wasm.configure, loaded[1]);
+        return function (raw) {
+          return call(wasm.preview, raw);
+        };
+      });
+    }
+    return renderer;
+  }
+
+  function previewShown() {
+    return (getItem("composer.showPreview") || "true") === "true";
+  }
+
+  function updatePreview() {
+    if (!previewToggle || !previewShown()) {
+      return;
+    }
+    var raw = textarea.value;
+    loadRenderer()
+      .then(function (render) {
+        // What the server cooks the renderer refuses; the preview says so
+        // rather than showing something the post will not be.
+        try {
+          preview.innerHTML = render(raw);
+        } catch (e) {
+          preview.textContent = e.message;
+        }
+      })
+      .catch(function (e) {
+        preview.textContent = "The preview could not load: " + e.message;
+      });
+  }
+
+  function schedulePreview() {
+    clearTimeout(previewTimer);
+    previewTimer = setTimeout(updatePreview, 30);
+  }
+
+  function applyPreviewShown() {
+    if (!previewToggle) {
+      return;
+    }
+    var shown = previewShown();
+    control.classList.toggle("show-preview", shown);
+    control.classList.toggle("hide-preview", !shown);
+    previewToggle.classList.toggle("active", !shown);
+    previewToggle.title = shown ? data.labelHidePreview : data.labelShowPreview;
+  }
+
+  function togglePreview() {
+    setItem("composer.showPreview", String(!previewShown()));
+    applyPreviewShown();
+    updatePreview();
+  }
+
+  applyPreviewShown();
+  textarea.addEventListener("input", schedulePreview);
 
   // The category chooser.
   function selectCategory(id) {
@@ -374,7 +468,9 @@
       actions[tool.dataset.action]();
       return;
     }
-    if (event.target.closest(".toggle-fullscreen")) {
+    if (event.target.closest(".toggle-preview")) {
+      togglePreview();
+    } else if (event.target.closest(".toggle-fullscreen")) {
       toggleFullscreen();
     } else if (event.target.closest(".toggle-minimize")) {
       minimize();

@@ -17,7 +17,9 @@ jobs:
       # rust-toolchain.toml sets the version for rustup here and for
       # shell.nix locally, so clippy agrees in both places.
       - name: Install Rust
-        run: rustup show active-toolchain || rustup toolchain install
+        run: |
+          rustup show active-toolchain || rustup toolchain install
+          rustup target add wasm32-unknown-unknown
 
       # Keyed on the job, the toolchain and Cargo.lock, falling back to the
       # latest cache when they change, so a dependency bump rebuilds only
@@ -67,7 +69,9 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Rust
-        run: rustup show active-toolchain || rustup toolchain install
+        run: |
+          rustup show active-toolchain || rustup toolchain install
+          rustup target add wasm32-unknown-unknown
 
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
@@ -98,4 +102,4 @@ jobs:
         run: scripts/db-load --force discourse_rs_test
 
       - name: Test
-        run: cargo nextest run --profile ci -E '${{ matrix.shard.filter }}' ${{ matrix.shard.partition }}
+        run: cargo nextest run --workspace --profile ci -E '${{ matrix.shard.filter }}' ${{ matrix.shard.partition }}

@@ -18,7 +18,7 @@ use markdown_it::plugins::html::html_inline::HtmlInline;
 use super::RenderSettings;
 use super::context::Context;
 use super::element::{CodeText, Element, RawHtml};
-use crate::pretty_text::sanitizer::AllowList;
+use crate::sanitizer::AllowList;
 
 const UPLOAD: &str = "upload://";
 

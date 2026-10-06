@@ -4,7 +4,11 @@ version = "20261002.0.1"
 edition = "2024"
 default-run = "discourse-rs"
 
+[workspace]
+members = ["crates/markdown"]
+
 [dependencies]
+discourse-markdown = { path = "crates/markdown" }
 aes-gcm = "0.10"
 askama = "0.14"
 axum = { version = "0.8", features = ["multipart"] }

@@ -18,7 +18,7 @@ use super::context::Context;
 use super::element::Element;
 use super::local_dates;
 use super::md_utils::{is_punct_char, is_white_space};
-use crate::pretty_text::sanitizer::AllowList;
+use crate::sanitizer::AllowList;
 
 /// `mentionRegex(false)`: `\w` is ASCII in JavaScript.
 const MENTION: &str = r"@([0-9A-Za-z_][0-9A-Za-z_.-]{0,58}[0-9A-Za-z])|@([0-9A-Za-z_])";

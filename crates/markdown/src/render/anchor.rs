@@ -12,7 +12,7 @@ use markdown_it::plugins::cmark::block::lheading::SetextHeader;
 use markdown_it::{MarkdownIt, Node, NodeValue, Renderer};
 
 use super::RenderSettings;
-use crate::pretty_text::sanitizer::AllowList;
+use crate::sanitizer::AllowList;
 
 /// The heading's inline source, kept from before the inline parser turns
 /// it into nodes: the slug is made from the markdown, not the text.

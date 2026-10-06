@@ -207,7 +207,10 @@ rules on the markdown-it crate, measured against Rails.
   mentions, hashtags, emoji, linkify and onebox marking, bbcode, quotes,
   uploads and images, and the bundled plugins' poll, details, spoiler,
   checklist and footnotes) and the sanitizer (pretty-text's allow list
-  on a port of the xss library's tag scanner).
+  on a port of the xss library's tag scanner). They live in their own
+  crate, `crates/markdown`, which build.rs also compiles to WebAssembly
+  for the composer's preview (`rustup` needs the `wasm32-unknown-unknown`
+  target, which rust-toolchain.toml asks for).
 - `pretty_text::options` and `pretty_text::helpers`: the options Rails
   hands the renderer, and `PrettyText::Helpers`, the lookups made while
   cooking. A cook renders once to learn what it refers to (quoted users

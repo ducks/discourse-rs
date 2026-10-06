@@ -3,4 +3,6 @@
 [toolchain]
 channel = "1.99.0"
 components = ["rustfmt", "clippy"]
+# The composer preview: the markdown crate built as WebAssembly.
+targets = ["wasm32-unknown-unknown"]
 profile = "minimal"

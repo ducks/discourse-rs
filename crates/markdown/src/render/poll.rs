@@ -14,7 +14,7 @@ use super::bbcode::TagInfo;
 use super::context::Context;
 use super::element::{Element, Holder, RawHtml};
 use super::quotes::parse_int;
-use crate::pretty_text::sanitizer::AllowList;
+use crate::sanitizer::AllowList;
 
 /// How many `[poll]` blocks are open around the one being parsed: a poll
 /// inside a poll is not a poll.

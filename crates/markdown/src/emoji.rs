@@ -7,9 +7,10 @@ use std::sync::LazyLock;
 
 use serde::Deserialize;
 
-const EMOJIS_JSON: &str = include_str!("../vendor/discourse-emojis/dist/emojis.json");
-const ALIASES_JSON: &str = include_str!("../vendor/discourse-emojis/dist/aliases.json");
-const TONABLE_JSON: &str = include_str!("../vendor/discourse-emojis/dist/tonable_emojis.json");
+const EMOJIS_JSON: &str = include_str!("../../../vendor/discourse-emojis/dist/emojis.json");
+const ALIASES_JSON: &str = include_str!("../../../vendor/discourse-emojis/dist/aliases.json");
+const TONABLE_JSON: &str =
+    include_str!("../../../vendor/discourse-emojis/dist/tonable_emojis.json");
 
 /// Fitzpatrick modifiers for `:name:t2` .. `:name:t6`.
 const TONES: [u32; 5] = [0x1f3fb, 0x1f3fc, 0x1f3fd, 0x1f3fe, 0x1f3ff];
@@ -150,8 +151,9 @@ pub fn has_emoji_code(s: &str) -> bool {
     false
 }
 
-const TRANSLATIONS_JSON: &str = include_str!("../vendor/discourse-emojis/dist/translations.json");
-const DISCOURSE_REF: &str = include_str!("../vendor/discourse/DISCOURSE_REF");
+const TRANSLATIONS_JSON: &str =
+    include_str!("../../../vendor/discourse-emojis/dist/translations.json");
+const DISCOURSE_REF: &str = include_str!("../../../vendor/discourse/DISCOURSE_REF");
 
 /// What cooking needs to know about emoji, built once.
 pub struct EmojiData {
