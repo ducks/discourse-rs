@@ -68,7 +68,7 @@ async fn the_topic_page_connects_to_its_live_stream() {
     let bytes = response.into_body().collect().await.unwrap().to_bytes();
     let html = String::from_utf8_lossy(&bytes);
     assert!(html.contains("/assets/htmx.min.js"));
-    assert!(html.contains(r#"<div id="posts""#));
+    assert!(html.contains(r#"<div class="post-stream" id="posts">"#));
     assert!(
         html.contains(r#"sse-connect="/live?position="#) && html.contains("&amp;topic=35"),
         "the stream starts at the page's position"
@@ -107,12 +107,17 @@ async fn changes_arrive_as_html_for_the_viewer() {
     publish(&st, post_id, "revised").await;
     let html = next_sse_event(&mut body, &mut buffer, "post").await;
     assert!(
-        html.contains(&format!(r#"<div id="post_{post_number}""#)),
+        html.contains(&format!(
+            r#"data-post-number="{post_number}" hx-swap-oob="outerHTML:#posts > [data-post-number='{post_number}']""#
+        )),
         "{html}"
     );
-    assert!(html.contains(r#"hx-swap-oob="true""#), "{html}");
     assert!(
-        html.contains(r#"itemprop="text""#),
+        html.contains(&format!(r#"id="post_{post_number}""#)),
+        "{html}"
+    );
+    assert!(
+        html.contains(r#"<div class="cooked">"#),
         "the cooked post: {html}"
     );
 
@@ -134,7 +139,7 @@ async fn changes_arrive_as_html_for_the_viewer() {
     let html = next_sse_event(&mut body, &mut buffer, "post").await;
     assert_eq!(
         html,
-        format!(r#"<div id="post_{post_number}" hx-swap-oob="delete"></div>"#)
+        format!(r#"<div hx-swap-oob="delete:#posts > [data-post-number='{post_number}']"></div>"#)
     );
 }
 
@@ -228,9 +233,10 @@ async fn earlier_pages_change_posts_without_appending() {
     publish(&st, post_id, "revised").await;
     // The first post event is the edit: the new post was not sent.
     let html = next_sse_event(&mut body, &mut buffer, "post").await;
-    assert!(html.contains(r#"hx-swap-oob="true""#), "{html}");
     assert!(
-        html.contains(&format!(r#"<div id="post_{post_number}""#)),
+        html.contains(&format!(
+            r#"hx-swap-oob="outerHTML:#posts > [data-post-number='{post_number}']""#
+        )),
         "{html}"
     );
 }

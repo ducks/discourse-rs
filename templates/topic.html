@@ -2,28 +2,17 @@
 {% import "macros.html" as m %}
 {% block title %}{{ title }} - {{ site_title }}{% endblock %}
 {% block content %}
-<div id="topic-title">
-  <h1><a href="{{ canonical_url }}">{{ title_unicode }}</a></h1>
-  {% if !breadcrumbs.is_empty() %}
-  <div class="topic-category">
-    {% for c in breadcrumbs %}
-    <a href="{{ c.url }}" class="badge-wrapper bullet">
-      <span class="badge-category-bg" style="background-color: #{{ c.color }}"></span>
-      <span class="badge-category clear-badge"><span class="category-name">{{ c.name }}</span></span>
-    </a>
-    {% endfor %}
+<div class="regular">
+<div class="container" id="topic-title">{{ title_html|safe }}</div>
+<div class="container posts">
+  <div class="row">
+    <section class="topic-area" id="topic">
+      <div class="posts-wrapper">
+        <div class="post-stream" id="posts">{% for post in posts %}{{ post|safe }}{% endfor %}</div>
+      </div>
+      <div id="topic-bottom"></div>
+    </section>
   </div>
-  {% endif %}
-  {% if !tags.is_empty() %}
-  <div class="topic-category">
-    <div class="discourse-tags list-tags">
-      {% for tag in tags %}<a href="{{ tag.url }}" class="discourse-tag" rel="tag">{{ tag.name }}</a> {% endfor %}
-    </div>
-  </div>
-  {% endif %}
-</div>
-<div id="posts" class="topic-body-container">
-  {% for post in posts %}{% call m::post_block(post, "") %}{% endfor %}
 </div>
 {% if live %}
 <script>
@@ -31,12 +20,30 @@
   // first copy of each.
   document.addEventListener("htmx:sseMessage", function () {
     var seen = {};
-    document.querySelectorAll("#posts > [id^=\"post_\"]").forEach(function (el) {
-      if (seen[el.id]) { el.remove(); } else { seen[el.id] = true; }
+    document.querySelectorAll("#posts > [data-post-number]").forEach(function (el) {
+      var n = el.getAttribute("data-post-number");
+      if (seen[n]) { el.remove(); } else { seen[n] = true; }
     });
   });
 </script>
 {% endif %}
+<script>
+  // The post menu's copy link: the post's URL, absolute.
+  document.addEventListener("click", function (event) {
+    var copy = event.target.closest(".post-action-menu__copy-link");
+    if (copy) {
+      navigator.clipboard.writeText(new URL(copy.dataset.shareUrl, location.href).href);
+      return;
+    }
+    // A post's reply button: the form below, replying to that post.
+    var reply = event.target.closest(".post-action-menu__reply");
+    var form = document.querySelector("form.reply");
+    if (reply && form) {
+      form.querySelector("[name=reply_to_post_number]").value = reply.dataset.postNumber;
+      form.querySelector("textarea").focus();
+    }
+  });
+</script>
 {% if can_reply %}{% if let Some(v) = viewer %}
 {#- The new post comes back over the live stream, so the response is only
     checked for errors. -#}
@@ -44,6 +51,7 @@
       hx-headers='{"X-CSRF-Token": "{{ v.csrf_token }}", "X-Requested-With": "XMLHttpRequest"}'
       hx-on::after-request="replied(this, event)">
   <input type="hidden" name="topic_id" value="{{ topic_id }}">
+  <input type="hidden" name="reply_to_post_number" value="">
   <textarea name="raw" rows="5" required aria-label="Reply"></textarea>
   <p class="reply-error" role="alert" hidden></p>
   <button type="submit">Reply</button>
@@ -72,6 +80,7 @@
   {% if let Some(url) = next_url %}<a href="{{ url }}" rel="next">Next page</a>{% endif %}
 </div>
 {% endif %}
+</div>
 {% endblock %}
 {#- The topic's changes arrive on the page's stream on every page (a like
     re-renders its post wherever it is shown); new posts only on the last,

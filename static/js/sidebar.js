@@ -93,21 +93,6 @@
       });
   }
 
-  // --header-offset and --main-outlet-offset, which Ember's site header
-  // sets: where the sticky sidebar starts below the header.
-  function setOffsets() {
-    var header = document.querySelector(".d-header-wrap");
-    if (!header) {
-      return;
-    }
-    var offset = header.getBoundingClientRect().height + "px";
-    var root = document.documentElement.style;
-    root.setProperty("--header-offset", offset);
-    root.setProperty("--main-outlet-offset", offset);
-  }
-  setOffsets();
-  window.addEventListener("resize", setOffsets);
-
   // Stored state. A section holding the current page stays open
   // (expandWhenActive).
   if (getItem("sidebar-hidden") === "true") {

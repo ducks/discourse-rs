@@ -274,8 +274,15 @@ async fn show(
     site.load_chrome(state, &settings, guardian, crate::sidebar::Active::None)
         .await?;
     site.bus_position = bus_position;
-    let mut page =
-        crate::html::topic_page(&mut conn, &state.i18n, site, &rendered.json, page).await?;
+    let mut page = crate::html::topic_page(
+        &mut conn,
+        &state.i18n,
+        &settings,
+        site,
+        &rendered.json,
+        page,
+    )
+    .await?;
     page.crawler = topic_crawler(
         &mut conn,
         state,
