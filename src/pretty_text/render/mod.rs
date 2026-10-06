@@ -19,6 +19,7 @@ mod emoji;
 mod footnotes;
 mod html_img;
 mod linkify;
+mod md_utils;
 mod newline;
 mod onebox;
 mod poll;

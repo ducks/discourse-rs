@@ -181,6 +181,9 @@ samples = [
   # Linkify only runs on an inline block whose whole source has a link: a
   # host right before a code span has none, so its other hosts stay text.
   ["tab. (forum.example.com`/admin/x`) and example.org\n\n1. see x.com\n2. y.com`z`\n\n| forum.example.com`x` | ok.com |\n|---|---|\n| a | b |", replies.id, u1.id],
+  # Symbols are punctuation to md.utils.isPunctChar since markdown-it 14:
+  # a mention or an emoji after or before one is still one.
+  ["&lt;something>@forum.example.com and $@admins and +@staff=\n\na>:smile: b$:smile:$ and 2+:smile:", replies.id, u1.id],
 ]
 if upload
   samples << ["An upload that exists: ![image|64x64](#{upload.short_url}) and [a link|attachment](#{upload.short_url}).", replies.id, u1.id]

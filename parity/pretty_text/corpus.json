@@ -553,6 +553,14 @@
   },
   {
     "id": "sample-69",
+    "raw": "&lt;something>@forum.example.com and $@admins and +@staff=\n\na>:smile: b$:smile:$ and 2+:smile:",
+    "topic_id": 35,
+    "user_id": 3,
+    "markdown": "<p>&lt;something&gt;<span class=\"mention\">@forum.example.com</span> and $<span class=\"mention\">@admins</span> and +<span class=\"mention\">@staff</span>=</p>\n<p>a&gt;<img src=\"/images/emoji/twitter/smile.png?v=15\" title=\":smile:\" class=\"emoji\" alt=\":smile:\" loading=\"lazy\" width=\"20\" height=\"20\"> b$<img src=\"/images/emoji/twitter/smile.png?v=15\" title=\":smile:\" class=\"emoji\" alt=\":smile:\" loading=\"lazy\" width=\"20\" height=\"20\">$ and 2+<img src=\"/images/emoji/twitter/smile.png?v=15\" title=\":smile:\" class=\"emoji\" alt=\":smile:\" loading=\"lazy\" width=\"20\" height=\"20\"></p>",
+    "cooked": "<p>&lt;something&gt;<span class=\"mention\">@forum.example.com</span> and $<a class=\"mention-group\" href=\"/groups/admins\">@admins</a> and +<a class=\"mention-group\" href=\"/groups/staff\">@staff</a>=</p>\n<p>a&gt;<img src=\"/images/emoji/twitter/smile.png?v=15\" title=\":smile:\" class=\"emoji\" alt=\":smile:\" loading=\"lazy\" width=\"20\" height=\"20\"> b$<img src=\"/images/emoji/twitter/smile.png?v=15\" title=\":smile:\" class=\"emoji\" alt=\":smile:\" loading=\"lazy\" width=\"20\" height=\"20\">$ and 2+<img src=\"/images/emoji/twitter/smile.png?v=15\" title=\":smile:\" class=\"emoji\" alt=\":smile:\" loading=\"lazy\" width=\"20\" height=\"20\"></p>"
+  },
+  {
+    "id": "sample-70",
     "raw": "An upload that exists: ![image|64x64](upload://qa4V5109J7tySkPok8r3aBAruY1.png) and [a link|attachment](upload://qa4V5109J7tySkPok8r3aBAruY1.png).",
     "topic_id": 35,
     "user_id": 3,
