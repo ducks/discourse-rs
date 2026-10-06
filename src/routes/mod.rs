@@ -57,6 +57,7 @@ const DISCOURSE_CSS: &str = concat!(
     include_str!("../../static/css/sidebar.css"),
     include_str!("../../static/css/topic.css"),
     include_str!("../../static/css/composer.css"),
+    include_str!("../../static/css/menus.css"),
 );
 
 async fn discourse_css() -> impl IntoResponse {
@@ -185,8 +186,8 @@ pub fn router(state: &AppState) -> Router<AppState> {
         )
         .route("/notifications", get(notifications::index))
         .route("/notifications.json", get(notifications::index))
-        .route("/drafts", post(drafts::create))
-        .route("/drafts.json", post(drafts::create))
+        .route("/drafts", get(drafts::index).post(drafts::create))
+        .route("/drafts.json", get(drafts::index).post(drafts::create))
         .route("/drafts/{id}", get(drafts::show).delete(drafts::destroy))
         .route("/notifications/mark-read", put(read_tracking::mark_read))
         .route(

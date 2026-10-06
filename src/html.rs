@@ -139,6 +139,9 @@ pub struct Chrome {
     pub composer: String,
     /// `canCreateTopic`: the lists' New Topic button.
     pub can_create_topic: bool,
+    /// TopicDraftsDropdown's menu trigger beside New Topic, while the
+    /// member has drafts (`draft_count`); empty otherwise.
+    pub drafts_menu_trigger: String,
     /// A member's topic tracking state, for the nav pills' counts.
     pub tracking: Option<crate::topic_tracking_report::Tracking>,
     /// What the page's live updates keep counted besides the stream's own
@@ -154,6 +157,25 @@ impl Chrome {
             form_urlencoded::byte_serialize(value.as_bytes()).collect::<String>()
         ));
     }
+}
+
+/// DMenu's trigger for the topic drafts menu, with what composer.js needs
+/// to fill the menu (the count, and the labels of its items and its link
+/// to every draft); empty without drafts (`@hasMenu`).
+fn drafts_menu_trigger(i18n: &I18n, draft_count: i64) -> String {
+    if draft_count <= 0 {
+        return String::new();
+    }
+    let t = |key: &str| crate::topic_list_view::escape(i18n.t(&format!("js.{key}")).unwrap_or(key));
+    format!(
+        "<button aria-expanded=\"false\" aria-label=\"{title}\" class=\"btn no-text btn-icon fk-d-menu__trigger topic-drafts-menu-trigger d-combo-button-menu btn-primary\" title=\"{title}\" data-identifier=\"topic-drafts-menu\" data-trigger=\"\" type=\"button\" data-draft-count=\"{draft_count}\" data-label-untitled=\"{}\" data-label-view-all=\"{}\" data-label-other-drafts-one=\"{}\" data-label-other-drafts-other=\"{}\">{}</button>",
+        t("drafts.dropdown.untitled"),
+        t("drafts.dropdown.view_all"),
+        t("drafts.dropdown.other_drafts.one"),
+        t("drafts.dropdown.other_drafts.other"),
+        crate::topic_list_view::icon("chevron-down", None),
+        title = t("drafts.dropdown.title"),
+    )
 }
 
 /// What the sidebar renders from: the Site's sidebar fields and the member
@@ -246,8 +268,15 @@ impl Site {
             // Sidebar.gjs's bodyClass
             classes.push("has-sidebar-page".into());
         }
-        if guardian.user().is_some() {
+        if let Some(user_id) = guardian.user_id() {
             self.chrome.can_create_topic = guardian.can_create_topic(&mut conn, settings).await?;
+            let draft_count: Option<i32> =
+                sqlx::query_scalar("SELECT draft_count FROM user_stats WHERE user_id = $1")
+                    .bind(user_id)
+                    .fetch_optional(&mut *conn)
+                    .await?;
+            self.chrome.drafts_menu_trigger =
+                drafts_menu_trigger(&state.i18n, i64::from(draft_count.unwrap_or(0)));
             self.chrome.composer = self.composer(&mut conn, state, settings, guardian).await?;
         }
         self.chrome.body_classes = classes.join(" ");

@@ -145,3 +145,35 @@
 .d-combo-button {
   display: inline-flex;
 }
+/* d-combo-button.scss:7 */
+.d-combo-button.--has-menu .d-combo-button-button {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-right-color: rgba(0,0,0,0);
+}
+/* d-combo-button.scss:13 */
+.d-combo-button.--has-menu .d-combo-button-menu {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-left-color: rgba(0,0,0,0);
+  margin-left: .1em;
+}
+/* d-combo-button.scss:19 */
+.d-combo-button.--has-menu .d-combo-button-menu.fk-d-menu__trigger .d-icon {
+  font-size: var(--font-down-1);
+}
+/* d-combo-button.scss:28 */
+.d-combo-button.--has-menu .d-combo-button-button:where(.btn-default) {
+  border-right: var(--d-button-default-border);
+}
+/* d-combo-button.scss:34 */
+.d-combo-button.--has-menu .d-combo-button-menu:where(.btn-default) {
+  border-left: var(--d-button-default-border);
+  margin-left: -1px;
+}
+/* d-combo-button.scss:41 */
+@media(width < 40rem) {
+  .d-combo-button .d-icon {
+    margin-right: 0;
+  }
+}

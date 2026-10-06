@@ -1,0 +1,248 @@
+/*
+ * Float-kit's menus (DMenu: its trigger and the content it floats in
+ * #d-menu-portals) with the dropdown menu inside, and the topic drafts
+ * menu by the New Topic button, ported from float-kit/d-menu.scss,
+ * components/drafts-dropdown-menu.scss and base/discourse.scss's
+ * keyframes. The menu's arrow is not rendered.
+ */
+
+/* base/discourse.scss */
+
+/* discourse.scss:90 */
+@keyframes float-down {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+/* discourse.scss:102 */
+@keyframes float-up {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+/* discourse.scss:114 */
+@keyframes dissolve-up {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+/* discourse.scss:126 */
+@keyframes dissolve-down {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+/* float-kit/d-menu.scss */
+
+/* d-menu.scss:1 */
+.fk-d-menu {
+  width: max-content;
+  position: absolute;
+  top: 0;
+  max-width: 600px;
+  display: flex;
+  padding: 0;
+  z-index: 701;
+}
+/* d-menu.scss:11 */
+.touch .fk-d-menu__trigger {
+  cursor: default;
+  -webkit-user-select: none;
+  user-select: none;
+}
+/* d-menu.scss:16 */
+.fk-d-menu.-animated {
+  animation: float-down 250ms ease forwards;
+}
+/* d-menu.scss:16 */
+@media(prefers-reduced-motion) {
+  .fk-d-menu.-animated {
+    animation-duration: 0s;
+  }
+}
+/* d-menu.scss:19 */
+.fk-d-menu.-animated.-closing {
+  animation: dissolve-up 125ms ease forwards;
+}
+/* d-menu.scss:19 */
+@media(prefers-reduced-motion) {
+  .fk-d-menu.-animated.-closing {
+    animation-duration: 0s;
+  }
+}
+/* d-menu.scss:23 */
+.fk-d-menu.-animated[data-placement^=bottom] {
+  transform-origin: top center;
+}
+/* d-menu.scss:27 */
+.fk-d-menu.-animated[data-placement^=top] {
+  animation: float-up 250ms ease forwards;
+}
+/* d-menu.scss:27 */
+@media(prefers-reduced-motion) {
+  .fk-d-menu.-animated[data-placement^=top] {
+    animation-duration: 0s;
+  }
+}
+/* d-menu.scss:27 */
+.fk-d-menu.-animated[data-placement^=top] {
+  transform-origin: bottom center;
+}
+/* d-menu.scss:31 */
+.fk-d-menu.-animated[data-placement^=top].-closing {
+  animation: dissolve-down 125ms ease forwards;
+}
+/* d-menu.scss:31 */
+@media(prefers-reduced-motion) {
+  .fk-d-menu.-animated[data-placement^=top].-closing {
+    animation-duration: 0s;
+  }
+}
+/* d-menu.scss:36 */
+.fk-d-menu.-animated[data-placement^=right] {
+  transform-origin: center left;
+}
+/* d-menu.scss:40 */
+.fk-d-menu.-animated[data-placement^=left] {
+  transform-origin: center right;
+}
+/* d-menu.scss:45 */
+.fk-d-menu[data-strategy=fixed] {
+  position: fixed;
+}
+/* d-menu.scss:49 */
+.fk-d-menu__inner-content {
+  display: flex;
+  border-radius: var(--d-border-radius);
+  background-color: var(--secondary);
+  border: 1px solid var(--content-border-color);
+  box-shadow: var(--shadow-dropdown);
+  overscroll-behavior: contain;
+  overflow: auto;
+}
+/* d-menu.scss:93 */
+.dropdown-menu {
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--d-sidebar-vertical-gap);
+  padding: var(--space-1);
+  margin: 0;
+  list-style: none;
+}
+/* d-menu.scss:103 */
+.dropdown-menu__item .btn {
+  display: inline-flex;
+  gap: var(--d-sidebar-section-link-prefix-margin-right);
+  padding: var(--space-2) var(--d-sidebar-row-horizontal-padding);
+  width: 100%;
+  justify-content: flex-start;
+  background: rgba(0,0,0,0);
+  border-radius: var(--d-border-radius);
+}
+/* The menu-item mixin's rules, at the include above. */
+/* mixins.scss:498 */
+.dropdown-menu__item .btn:not(.notifications-tracking-btn,.--with-description,.pinned-options-btn) {
+  height: var(--d-sidebar-row-height);
+  padding-block: 0;
+}
+/* mixins.scss:503 */
+.dropdown-menu__item .btn.-selected {
+  background: var(--d-hover);
+}
+/* mixins.scss:507 */
+.dropdown-menu__item .btn.btn-danger {
+  color: var(--danger);
+}
+/* mixins.scss:510 */
+.dropdown-menu__item .btn.btn-danger .d-icon {
+  color: inherit;
+}
+/* mixins.scss:515 */
+.dropdown-menu__item .btn .svg-icon {
+  width: var(--d-sidebar-section-link-prefix-width);
+  margin-right: 0;
+}
+/* mixins.scss:522 */
+.discourse-no-touch .dropdown-menu__item .btn:hover,
+.discourse-no-touch .dropdown-menu__item .btn:focus-visible {
+  background: var(--d-hover);
+  color: var(--primary);
+}
+/* mixins.scss:526 */
+.discourse-no-touch .dropdown-menu__item .btn:hover .d-icon,
+.discourse-no-touch .dropdown-menu__item .btn:focus-visible .d-icon {
+  color: inherit;
+}
+/* mixins.scss:530 */
+.discourse-no-touch .dropdown-menu__item .btn:hover.btn-danger,
+.discourse-no-touch .dropdown-menu__item .btn:focus-visible.btn-danger {
+  background: var(--danger-low);
+  color: var(--danger);
+}
+/* mixins.scss:534 */
+.discourse-no-touch .dropdown-menu__item .btn:hover.btn-danger .d-icon,
+.discourse-no-touch .dropdown-menu__item .btn:focus-visible.btn-danger .d-icon {
+  color: var(--danger-hover);
+}
+/* d-menu.scss:108 */
+.dropdown-menu__divider {
+  margin: 0;
+}
+/* d-menu.scss:112 */
+.dropdown-menu__subheader {
+  padding: var(--space-2) var(--d-sidebar-row-horizontal-padding) var(--space-1);
+  color: var(--primary-medium);
+  font-size: var(--font-down-1-rem);
+  font-weight: bold;
+}
+
+/* components/drafts-dropdown-menu.scss */
+
+/* drafts-dropdown-menu.scss:3 */
+@media(width >= 40rem) {
+  .topic-drafts-menu-content .dropdown-menu {
+    max-width: 350px;
+    min-width: 275px;
+  }
+}
+/* drafts-dropdown-menu.scss:4 */
+.topic-drafts-menu-content .dropdown-menu .btn .d-button-label {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+/* drafts-dropdown-menu.scss:8 */
+.topic-drafts-menu-content .dropdown-menu .view-all-drafts {
+  display: flex;
+  justify-content: space-between;
+}
+/* drafts-dropdown-menu.scss:12 */
+.topic-drafts-menu-content .dropdown-menu .view-all-drafts span:first-child {
+  color: var(--primary-high);
+}

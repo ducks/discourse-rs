@@ -43,6 +43,8 @@ pub struct NewPost {
     /// `advance_draft`: the composer's draft sequence moves on (not for API
     /// requests or email).
     pub advance_draft: bool,
+    /// `draft_key`: the composer's draft, else the topic's or `new_topic`.
+    pub draft_key: Option<String>,
     /// `first_post_checks`: a first post's fast-typing check (not for API
     /// requests or email).
     pub first_post_checks: bool,
@@ -515,9 +517,10 @@ pub async fn create(
         config: ctx.config,
         settings: s,
     };
-    let draft_key = match &reply_topic {
-        Some(t) => format!("topic_{}", t.id),
-        None => "new_topic".to_string(),
+    let draft_key = match (&args.draft_key, &reply_topic) {
+        (Some(key), _) => key.clone(),
+        (None, Some(t)) => format!("topic_{}", t.id),
+        (None, None) => "new_topic".to_string(),
     };
     // build_post_stats
     let sequence = current_draft_sequence(&mut tx, user.id, &draft_key).await?;

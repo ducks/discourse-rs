@@ -77,14 +77,264 @@
     error.hidden = !messages;
   }
 
+  // Drafts, as models/composer's saveDraft and services/composer's
+  // _saveDraft keep them: saved two seconds after typing stops (at once
+  // when the last save is fifteen seconds old), on minimizing, and by
+  // beacon when the page is left with a save pending; restored when the
+  // composer opens on the same key. A reply and an edit share the topic's
+  // key (`topic_<id>`), a new topic has its own (`new_topic_<time>`).
+  // The owner is this page, as MessageBus's client id is in Ember.
+  var clientId = Array.from(crypto.getRandomValues(new Uint8Array(16)), function (b) {
+    return b.toString(16).padStart(2, "0");
+  }).join("");
+  var draftStatus = control.querySelector("#draft-status");
+  var draftTimer = null;
+  var lastDraftSaved = null;
+  var draftSaving = null;
+
+  // The composer's draftStatus: an error while drafts cannot be saved.
+  function showDraftStatus(text) {
+    var span = draftStatus.querySelector(".draft-error");
+    span.title = text || "";
+    while (span.childNodes.length > 1) {
+      span.removeChild(span.lastChild);
+    }
+    if (text) {
+      span.appendChild(document.createTextNode(text));
+    }
+    draftStatus.hidden = !text;
+  }
+
+  // The composer's action as a draft names it.
+  function draftAction(mode) {
+    return { reply: "reply", "create-topic": "createTopic", edit: "edit" }[mode];
+  }
+
+  // _draft_serializer's fields the composer has.
+  function draftData(s) {
+    var d = { reply: textarea.value, action: draftAction(s.mode), archetypeId: "regular" };
+    if (s.mode === "create-topic") {
+      d.title = title.value;
+      var category = chooser.querySelector("summary").dataset.value;
+      d.categoryId = category ? parseInt(category, 10) : null;
+    } else if (s.mode === "edit") {
+      d.postId = parseInt(s.postId, 10);
+    } else {
+      d.reply_to_post_number = s.replyTo ? parseInt(s.replyTo, 10) : null;
+    }
+    return d;
+  }
+
+  // canSaveDraft
+  function canSaveDraft() {
+    if (!state || state.loading || draftSaving) {
+      return false;
+    }
+    if (state.mode === "create-topic") {
+      return textarea.value !== "" || title.value !== "";
+    }
+    return textarea.value !== "";
+  }
+
+  function saveDraft() {
+    clearTimeout(draftTimer);
+    draftTimer = null;
+    if (draftSaving) {
+      draftTimer = setTimeout(saveDraft, 2000);
+      return draftSaving;
+    }
+    if (!canSaveDraft()) {
+      return Promise.resolve();
+    }
+    var s = state;
+    var sequence = s.draftSequence;
+    s.draftSequence += 1;
+    draftSaving = fetch(base + "/drafts.json", {
+      method: "POST",
+      headers: csrfHeaders(),
+      credentials: "same-origin",
+      body: form([
+        ["draft_key", s.draftKey],
+        ["sequence", sequence],
+        ["data", JSON.stringify(draftData(s))],
+        ["owner", clientId],
+        ["force_save", s.forceSave ? "true" : "false"],
+      ]),
+    })
+      .then(function (r) {
+        return r
+          .json()
+          .catch(function () {
+            return null;
+          })
+          .then(function (json) {
+            if (r.ok && json) {
+              if ("draft_sequence" in json) {
+                s.draftSequence = json.draft_sequence;
+              }
+              s.forceSave = false;
+              showDraftStatus(json.conflict_user ? data.labelEditConflict : "");
+              return;
+            }
+            var message = null;
+            if (r.status === 409 && json && json.errors && json.errors.length) {
+              message = json.errors[0];
+              // Ember's dialog offers to reload or to ignore the newer
+              // draft (forceSave on the next save).
+              if (json.extras && json.extras.description) {
+                if (window.confirm(json.extras.description)) {
+                  window.location.reload();
+                } else {
+                  s.forceSave = true;
+                }
+              }
+            }
+            showDraftStatus(message || data.labelDraftsOffline);
+          });
+      })
+      .catch(function () {
+        showDraftStatus(data.labelDraftsOffline);
+      })
+      .finally(function () {
+        draftSaving = null;
+        lastDraftSaved = Date.now();
+      });
+    return draftSaving;
+  }
+
+  // _shouldSaveDraft, on the reply and the title changing.
+  function scheduleDraft() {
+    if (!state || state.loading) {
+      return;
+    }
+    if (!lastDraftSaved) {
+      lastDraftSaved = Date.now();
+    }
+    if (Date.now() - lastDraftSaved > 15000) {
+      saveDraft();
+    } else {
+      clearTimeout(draftTimer);
+      draftTimer = setTimeout(saveDraft, 2000);
+    }
+  }
+
+  // destroyDraft: after a save in flight.
+  function destroyDraft(s) {
+    clearTimeout(draftTimer);
+    draftTimer = null;
+    return (draftSaving || Promise.resolve()).then(function () {
+      return fetch(base + "/drafts/" + encodeURIComponent(s.draftKey) + ".json", {
+        method: "DELETE",
+        headers: csrfHeaders(),
+        credentials: "same-origin",
+        body: form([
+          ["draft_key", s.draftKey],
+          ["sequence", s.draftSequence],
+        ]),
+      });
+    });
+  }
+
+  // Draft.get: the draft (parsed) and the key's sequence.
+  function fetchDraft(key) {
+    return fetch(base + "/drafts/" + encodeURIComponent(key) + ".json", {
+      credentials: "same-origin",
+    })
+      .then(function (r) {
+        if (!r.ok) {
+          throw new Error(r.status);
+        }
+        return r.json();
+      })
+      .then(function (json) {
+        var draft = null;
+        try {
+          draft = json.draft ? JSON.parse(json.draft) : null;
+        } catch (e) {
+          // loadDraft: a draft that does not parse is dropped.
+        }
+        return { draft: draft, sequence: json.draft_sequence || 0 };
+      });
+  }
+
+  // _beaconSaveDraft
+  window.addEventListener("beforeunload", function () {
+    if (!draftTimer || !canSaveDraft()) {
+      return;
+    }
+    clearTimeout(draftTimer);
+    draftTimer = null;
+    var sequence = state.draftSequence;
+    state.draftSequence += 1;
+    // Form-encoded rather than Ember's FormData: the server does not
+    // parse multipart bodies.
+    navigator.sendBeacon(
+      base + "/drafts.json",
+      new URLSearchParams([
+        ["draft_key", state.draftKey],
+        ["sequence", sequence],
+        ["data", JSON.stringify(draftData(state))],
+        ["owner", clientId],
+        ["authenticity_token", csrfHeaders()["X-CSRF-Token"] || ""],
+      ])
+    );
+  });
+
+  function rawToEdit(s) {
+    return fetch(base + "/raw/" + s.topicId + "/" + s.postNumber, {
+      credentials: "same-origin",
+    }).then(function (r) {
+      if (!r.ok) {
+        throw new Error(r.status);
+      }
+      return r.text();
+    });
+  }
+
+  // What the composer opens with: the key's draft when it is for this
+  // composer, an edit's raw markdown otherwise. A reply opened over an
+  // edit's draft opens that edit (loadDraft takes the draft's action).
+  function initialText(s, found) {
+    var draft = found && found.draft;
+    if (found) {
+      s.draftSequence = found.sequence;
+    }
+    var editDraft = draft && draft.action === "edit";
+    if (s.mode === "reply" && editDraft && draft.postId) {
+      s.mode = "edit";
+      s.postId = draft.postId;
+      setMode("edit");
+    }
+    if (s.mode === "edit") {
+      if (editDraft && String(draft.postId) === String(s.postId)) {
+        return Promise.resolve(draft.reply || "");
+      }
+      return rawToEdit(s);
+    }
+    if (draft && !editDraft) {
+      if (s.mode === "create-topic") {
+        title.value = draft.title || "";
+        if (draft.categoryId) {
+          selectCategory(draft.categoryId);
+        }
+      } else if ("reply_to_post_number" in draft) {
+        s.replyTo = draft.reply_to_post_number;
+      }
+      return Promise.resolve(draft.reply || "");
+    }
+    return Promise.resolve("");
+  }
+
   // open({mode, topicId, replyTo, replyToUsername, postId, postNumber,
-  // category}): to reply, create a topic or edit a post.
+  // category, draftKey, draftSequence}): to reply, create a topic or edit
+  // a post; a draft key from the drafts menu resumes that draft.
   function open(opts) {
     if (state && state.mode === opts.mode && control.classList.contains("draft")) {
       expand();
       return;
     }
     state = opts;
+    var s = state;
     setMode(opts.mode);
     if (opts.mode === "reply" && opts.replyToUsername) {
       actionButton.querySelector(".d-button-label").textContent =
@@ -93,6 +343,8 @@
     textarea.value = "";
     title.value = "";
     showError("");
+    showDraftStatus("");
+    lastDraftSaved = null;
     if (opts.mode === "create-topic") {
       selectCategory(opts.category || data.defaultCategory);
     }
@@ -100,35 +352,56 @@
     control.classList.add("open");
     root.style.setProperty("--composer-height", defaultHeight(opts.mode));
     updatePreview();
-    if (opts.mode === "edit") {
-      textarea.disabled = true;
-      fetch(base + "/raw/" + opts.topicId + "/" + opts.postNumber, {
-        credentials: "same-origin",
-      })
-        .then(function (r) {
-          if (!r.ok) {
-            throw new Error(r.status);
-          }
-          return r.text();
-        })
-        .then(function (raw) {
-          textarea.value = raw;
-          textarea.disabled = false;
-          textarea.focus();
-          updatePreview();
-        })
-        .catch(function () {
-          textarea.disabled = false;
-          showError("Could not load the post to edit.");
-        });
-    } else if (opts.mode === "create-topic") {
-      title.focus();
+
+    var resuming = Boolean(opts.draftKey);
+    if (opts.mode === "create-topic") {
+      s.draftKey = opts.draftKey || "new_topic_" + Date.now();
     } else {
-      textarea.focus();
+      s.draftKey = "topic_" + opts.topicId;
     }
+    s.draftSequence = opts.draftSequence || 0;
+    s.loading = true;
+    textarea.disabled = true;
+    // A new topic's key is new: there is no draft to look up.
+    var lookup =
+      opts.mode === "create-topic" && !resuming
+        ? Promise.resolve(null)
+        : fetchDraft(s.draftKey);
+    lookup
+      .then(function (found) {
+        return initialText(s, found);
+      })
+      .then(function (text) {
+        if (state !== s) {
+          return;
+        }
+        textarea.value = text;
+        updatePreview();
+      })
+      .catch(function () {
+        if (state === s) {
+          showError(
+            s.mode === "edit" ? "Could not load the post to edit." : "Could not load the draft."
+          );
+        }
+      })
+      .finally(function () {
+        if (state !== s) {
+          return;
+        }
+        s.loading = false;
+        textarea.disabled = false;
+        if (s.mode === "create-topic" && title.value === "") {
+          title.focus();
+        } else {
+          textarea.focus();
+        }
+      });
   }
 
   function close() {
+    clearTimeout(draftTimer);
+    draftTimer = null;
     control.classList.remove("open", "draft", "fullscreen");
     control.classList.add("closed");
     document.body.classList.remove("fullscreen-composer");
@@ -139,8 +412,10 @@
     return textarea.value.trim() !== "" || title.value.trim() !== "";
   }
 
-  // Minimized, the composer is a bar that opens again when clicked.
+  // Minimized, the composer is a bar that opens again when clicked; its
+  // draft is saved (collapse).
   function minimize() {
+    saveDraft();
     control.classList.remove("open", "fullscreen");
     control.classList.add("draft");
     document.body.classList.remove("fullscreen-composer");
@@ -152,6 +427,7 @@
   }
 
   function toggleFullscreen() {
+    saveDraft();
     var on = !control.classList.contains("fullscreen");
     control.classList.toggle("fullscreen", on);
     document.body.classList.toggle("fullscreen-composer", on);
@@ -403,7 +679,11 @@
         body: form([["post[raw]", textarea.value]]),
       });
     } else {
-      var pairs = [["raw", textarea.value]];
+      // The draft goes with the post (PostCreator's draft_key).
+      var pairs = [
+        ["raw", textarea.value],
+        ["draft_key", state.draftKey],
+      ];
       if (state.mode === "create-topic") {
         pairs.push(["title", title.value]);
         var category = chooser.querySelector("summary").dataset.value;
@@ -423,6 +703,9 @@
         body: form(pairs),
       });
     }
+    // A pending draft save would outlive the post.
+    clearTimeout(draftTimer);
+    draftTimer = null;
     submit.disabled = true;
     request
       .then(function (r) {
@@ -475,10 +758,21 @@
     } else if (event.target.closest(".toggle-minimize")) {
       minimize();
     } else if (event.target.closest(".toggle-save-and-close")) {
-      // Drafts are not kept yet: closing keeps the text for this page.
-      minimize();
+      // saveAndCloseComposer: the draft is kept for the next time the
+      // composer opens on its key; with nothing written it goes.
+      if (state && dirty()) {
+        saveDraft();
+        close();
+      } else if (state) {
+        destroyDraft(state);
+        close();
+      }
     } else if (event.target.closest(".discard-button")) {
-      if (!dirty() || window.confirm("Discard what you have written?")) {
+      // cancelComposer: DiscardDraftModal's question, then the draft goes.
+      var confirmText =
+        state && state.mode === "edit" ? data.labelDiscardConfirmEdit : data.labelDiscardConfirm;
+      if (state && (!dirty() || window.confirm(confirmText))) {
+        destroyDraft(state);
         close();
       }
     } else if (event.target.closest(".save-or-cancel .create")) {
@@ -496,6 +790,9 @@
   textarea.addEventListener("blur", function () {
     wrapper.classList.remove("in-focus");
   });
+
+  textarea.addEventListener("input", scheduleDraft);
+  title.addEventListener("input", scheduleDraft);
 
   textarea.addEventListener("keydown", function (event) {
     // Ctrl or Cmd + Enter submits, as in Ember.
@@ -539,6 +836,166 @@
       event.target.closest(".topic-footer-main-buttons .create, .reply-to-post")
     ) {
       open({ mode: "reply", topicId: topicId });
+    }
+  });
+
+  // TopicDraftsDropdown: the member's latest drafts in a DMenu under the
+  // trigger beside New Topic. A draft on a topic goes to the topic (its
+  // postUrl, which takes the draft's post id for a post number, as
+  // Ember's does); a new topic's opens the composer on it.
+  var DRAFTS_LIMIT = 4;
+  var draftsMenu = null;
+
+  function closeDraftsMenu() {
+    if (!draftsMenu) {
+      return;
+    }
+    draftsMenu.trigger.setAttribute("aria-expanded", "false");
+    draftsMenu.trigger.classList.remove("-expanded");
+    draftsMenu.content.remove();
+    draftsMenu = null;
+  }
+
+  // lib/utilities' postUrl
+  function draftPostUrl(draft) {
+    var url = base + "/t/" + (draft.slug ? draft.slug + "/" : "topic/") + draft.topic_id;
+    var postNumber = draft.data.postId || null;
+    if (postNumber > 1) {
+      url += "/" + postNumber;
+    }
+    return url;
+  }
+
+  function draftIcon(key) {
+    var name = key.indexOf("new_topic") === 0
+      ? "layer-group"
+      : key.indexOf("new_private_message") === 0
+        ? "envelope"
+        : "reply";
+    return (
+      '<svg class="fa d-icon d-icon-' + name +
+      ' svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#' +
+      name + '"></use></svg>'
+    );
+  }
+
+  function escapeHtml(s) {
+    var div = document.createElement("div");
+    div.textContent = s;
+    return div.innerHTML;
+  }
+
+  function openDraftsMenu(trigger) {
+    var labels = trigger.dataset;
+    var portals = document.getElementById("d-menu-portals");
+    if (!portals) {
+      portals = document.createElement("div");
+      portals.id = "d-menu-portals";
+      document.body.appendChild(portals);
+    }
+    var content = document.createElement("div");
+    content.className = "fk-d-menu topic-drafts-menu-content -animated -expanded";
+    content.setAttribute("role", "dialog");
+    content.dataset.content = "";
+    content.dataset.identifier = "topic-drafts-menu";
+    content.dataset.strategy = "absolute";
+    content.dataset.placement = "bottom-end";
+    content.style.visibility = "hidden";
+    content.innerHTML = '<div class="fk-d-menu__inner-content"><ul class="dropdown-menu"></ul></div>';
+    portals.appendChild(content);
+    trigger.setAttribute("aria-expanded", "true");
+    trigger.classList.add("-expanded");
+    draftsMenu = { trigger: trigger, content: content, drafts: [] };
+    var menu = draftsMenu;
+
+    // UserDraftsStream's first page.
+    fetch(base + "/drafts.json?offset=0&limit=30", { credentials: "same-origin" })
+      .then(function (r) {
+        if (!r.ok) {
+          throw new Error(r.status);
+        }
+        return r.json();
+      })
+      .then(function (result) {
+        if (draftsMenu !== menu) {
+          return;
+        }
+        var drafts = (result.drafts || []).slice(0, DRAFTS_LIMIT).map(function (d) {
+          d.data = JSON.parse(d.data);
+          if (d.draft_key.indexOf("new_topic") === 0 || d.draft_key.indexOf("new_private_message") === 0) {
+            d.title = d.data.title;
+          }
+          return d;
+        });
+        menu.drafts = drafts;
+        var html = drafts
+          .map(function (d, i) {
+            return (
+              '<li class="dropdown-menu__item topic-drafts-item"><button class="btn btn-icon-text" type="button" data-draft-index="' +
+              i + '">' + draftIcon(d.draft_key) +
+              '<span class="d-button-label">' + escapeHtml(d.title || labels.labelUntitled) +
+              "</span></button></li>"
+            );
+          })
+          .join("");
+        var count = parseInt(labels.draftCount, 10);
+        if (count > DRAFTS_LIMIT) {
+          var other = count - DRAFTS_LIMIT;
+          var otherText = (other === 1 ? labels.labelOtherDraftsOne : labels.labelOtherDraftsOther).replace(
+            "%{count}",
+            other
+          );
+          html +=
+            '<li><hr class="dropdown-menu__divider"></li><li class="dropdown-menu__item"><a class="btn btn-link view-all-drafts" href="' +
+            base + '/my/activity/drafts"><span data-other-drafts="' + other + '">' +
+            escapeHtml(otherText) + "</span><span>" + escapeHtml(labels.labelViewAll) + "</span></a></li>";
+        }
+        content.querySelector(".dropdown-menu").innerHTML = html;
+        // bottom-end, ten pixels below the trigger.
+        var rect = trigger.getBoundingClientRect();
+        content.style.left = rect.right + window.scrollX - content.offsetWidth + "px";
+        content.style.top = rect.bottom + window.scrollY + 10 + "px";
+        content.style.visibility = "visible";
+      })
+      .catch(function (e) {
+        console.error("Failed to fetch drafts with error:", e);
+        closeDraftsMenu();
+      });
+  }
+
+  document.addEventListener("click", function (event) {
+    var trigger = event.target.closest(".topic-drafts-menu-trigger");
+    if (trigger) {
+      if (draftsMenu) {
+        closeDraftsMenu();
+      } else {
+        openDraftsMenu(trigger);
+      }
+      return;
+    }
+    if (!draftsMenu) {
+      return;
+    }
+    var item = event.target.closest(".topic-drafts-item [data-draft-index]");
+    if (item) {
+      var draft = draftsMenu.drafts[parseInt(item.dataset.draftIndex, 10)];
+      closeDraftsMenu();
+      if (draft.topic_id) {
+        window.location.href = draftPostUrl(draft);
+      } else {
+        open({
+          mode: "create-topic",
+          draftKey: draft.draft_key,
+          draftSequence: draft.sequence,
+        });
+      }
+    } else if (!event.target.closest(".fk-d-menu")) {
+      closeDraftsMenu();
+    }
+  });
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") {
+      closeDraftsMenu();
     }
   });
 
