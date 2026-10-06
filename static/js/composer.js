@@ -400,6 +400,7 @@
   }
 
   function close() {
+    cancelUploads();
     clearTimeout(draftTimer);
     draftTimer = null;
     control.classList.remove("open", "draft", "fullscreen");
@@ -513,6 +514,9 @@
         surround("`", "`", "");
       }
     },
+    upload: function () {
+      fileInput.click();
+    },
     list: function () {
       prefixLines("- ", data.textList);
     },
@@ -576,6 +580,7 @@
         // rather than showing something the post will not be.
         try {
           preview.innerHTML = render(raw);
+          resolveShortUrls();
         } catch (e) {
           preview.textContent = e.message;
         }
@@ -838,6 +843,327 @@
       open({ mode: "reply", topicId: topicId });
     }
   });
+
+  // Uploads, as lib/uppy/composer-upload.js sends them (one POST to
+  // /uploads.json per file, without Uppy) with TextareaPlaceholderHandler's
+  // placeholders: "[Uploading: name…]()" at the cursor while the file goes,
+  // replaced by getUploadMarkdown's markdown when it is stored. Validation
+  // is the server's (its errors are shown); Ember also checks extensions and
+  // sizes before sending.
+  var fileInput = control.querySelector("#file-uploader");
+  var uploadingLine = control.querySelector("#file-uploading");
+  var uploads = [];
+  var uploadSequence = 0;
+  // upload-short-url.js's cache: short url to {url, short_path}.
+  var shortUrls = {};
+
+  function escapeRegExp(s) {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
+
+  // insertText: at the cursor, replacing the selection.
+  function insertText(text) {
+    var start = textarea.selectionStart;
+    textarea.setRangeText(text, start, textarea.selectionEnd, "end");
+  }
+
+  // replaceText: the first occurrence, keeping the cursor where it was
+  // relative to the text around it.
+  function replaceText(from, to) {
+    var at = textarea.value.indexOf(from);
+    if (at < 0) {
+      return;
+    }
+    var cursor = textarea.selectionStart;
+    textarea.setRangeText(to, at, at + from.length, "preserve");
+    if (cursor > at) {
+      var moved = Math.max(at + to.length, cursor + to.length - from.length);
+      textarea.selectionStart = textarea.selectionEnd = moved;
+    }
+    updatePreview();
+    scheduleDraft();
+  }
+
+  // #uploadPlaceholder: the file's name (numbered when a placeholder for
+  // the same name is already there), on a line of its own.
+  function uploadPlaceholder(file) {
+    var name = file.name.replace(/[​-‍﻿]/g, "") || data.labelClipboard;
+    var pattern = new RegExp(
+      "\\[" +
+        escapeRegExp(data.labelUploadingFilename).replace(
+          "%\\{filename\\}",
+          escapeRegExp(name) + "(?:\\()?([0-9])?(?:\\))?"
+        ) +
+        "\\]\\(\\)",
+      "g"
+    );
+    var matches = textarea.value.match(pattern);
+    if (matches) {
+      var last = new RegExp(pattern.source).exec(matches[matches.length - 1]);
+      name = name + "(" + (last[1] ? parseInt(last[1], 10) + 1 : 1) + ")";
+    }
+    var placeholder =
+      "[" + data.labelUploadingFilename.replace("%{filename}", name) + "]()\n";
+    var start = textarea.selectionStart;
+    if (!(start === 0 || textarea.value.charAt(start - 1) === "\n")) {
+      placeholder = "\n" + placeholder;
+    }
+    return placeholder;
+  }
+
+  // I18n.toHumanSize
+  function humanSize(bytes) {
+    var units = JSON.parse(data.sizeUnits);
+    var size = bytes;
+    var iterations = 0;
+    while (size >= 1024 && iterations < 4) {
+      size = size / 1024;
+      iterations += 1;
+    }
+    var number;
+    var unit;
+    if (iterations === 0) {
+      number = String(size);
+      unit = size === 1 ? units.byte_one : units.byte_other;
+    } else {
+      number = size - Math.floor(size) === 0 ? size.toFixed(0) : size.toFixed(1);
+      unit = units[[null, "kb", "mb", "gb", "tb"][iterations]];
+    }
+    return units.format.replace("%n", number).replace("%u", unit);
+  }
+
+  function markdownName(filename) {
+    var name = filename.slice(0, filename.lastIndexOf("."));
+    return name.replace(/\[|\]|\|/g, "");
+  }
+
+  // getUploadMarkdown
+  function uploadMarkdown(upload) {
+    var name = upload.original_filename;
+    if (/\.(png|webp|jpe?g|gif|svg|ico|heic|heif|avif|jxl)$/i.test(name)) {
+      return (
+        "![" + markdownName(name) + "|" + upload.thumbnail_width + "x" +
+        upload.thumbnail_height + "](" + (upload.short_url || upload.url) + ")"
+      );
+    }
+    if (/\.(mp3|og[ga]|opus|wav|m4[abpr]|aac|flac)$/i.test(name)) {
+      return "![" + markdownName(name) + "|audio](" + upload.short_url + ")";
+    }
+    if (/\.(mov|mp4|webm|m4v|3gp|ogv|avi|mpeg)$/i.test(name)) {
+      return "![" + markdownName(name) + "|video](" + upload.short_url + ")";
+    }
+    return (
+      "[" + name.replace(/\[|\]|\|/g, "") + "|attachment](" + upload.short_url +
+      ") (" + humanSize(upload.filesize) + ")"
+    );
+  }
+
+  // The progress line: the uploads' combined progress while they send,
+  // "Processing upload" while the server stores them.
+  function showProgress() {
+    if (uploads.length === 0) {
+      uploadingLine.hidden = true;
+      return;
+    }
+    var sent = 0;
+    var total = 0;
+    uploads.forEach(function (u) {
+      sent += u.sent;
+      total += u.total;
+    });
+    var sending = uploads.some(function (u) {
+      return u.sent < u.total;
+    });
+    var label = uploadingLine.querySelector("span");
+    label.textContent = sending
+      ? data.labelUploading + " " + Math.round((sent / Math.max(total, 1)) * 100) + "%"
+      : data.labelProcessing;
+    uploadingLine.querySelector("#cancel-file-upload").hidden = !sending;
+    uploadingLine.hidden = false;
+  }
+
+  function finishUpload(upload) {
+    uploads = uploads.filter(function (u) {
+      return u !== upload;
+    });
+    showProgress();
+  }
+
+  function uploadFile(file, pasted) {
+    var upload = {
+      id: ++uploadSequence,
+      sent: 0,
+      total: file.size,
+      placeholder: uploadPlaceholder(file),
+      xhr: new XMLHttpRequest(),
+    };
+    uploads.push(upload);
+    insertText(upload.placeholder);
+    updatePreview();
+    showProgress();
+
+    var body = new FormData();
+    body.append("upload_type", "composer");
+    if (pasted) {
+      body.append("pasted", "true");
+    }
+    body.append("file", file, file.name);
+    var xhr = upload.xhr;
+    xhr.open("POST", base + "/uploads.json?client_id=" + clientId);
+    var headers = csrfHeaders();
+    delete headers["Content-Type"];
+    Object.keys(headers).forEach(function (k) {
+      xhr.setRequestHeader(k, headers[k]);
+    });
+    xhr.upload.addEventListener("progress", function (e) {
+      if (e.lengthComputable) {
+        upload.sent = e.loaded;
+        upload.total = e.total;
+        showProgress();
+      }
+    });
+    xhr.addEventListener("load", function () {
+      var json = null;
+      try {
+        json = JSON.parse(xhr.responseText);
+      } catch (e) {
+        // An error page.
+      }
+      finishUpload(upload);
+      if (xhr.status >= 200 && xhr.status < 300 && json && json.short_url) {
+        // cacheShortUploadUrl: the preview needs no lookup for it.
+        shortUrls[json.short_url] = { url: json.url, short_path: json.short_path };
+        replaceText(upload.placeholder.trim(), uploadMarkdown(json));
+      } else {
+        replaceText(upload.placeholder, "");
+        showError(
+          json && json.errors ? json.errors.join(" ") : "Could not upload (" + xhr.status + ")."
+        );
+      }
+    });
+    xhr.addEventListener("error", function () {
+      finishUpload(upload);
+      replaceText(upload.placeholder, "");
+      showError("Could not upload " + file.name + ".");
+    });
+    xhr.send(body);
+  }
+
+  function addFiles(files, pasted) {
+    if (!state || files.length === 0) {
+      return;
+    }
+    showError("");
+    Array.prototype.forEach.call(files, function (file) {
+      uploadFile(file, pasted);
+    });
+  }
+
+  // The cancel link: every upload stopped and its placeholder removed.
+  function cancelUploads() {
+    uploads.slice().forEach(function (upload) {
+      upload.xhr.abort();
+      finishUpload(upload);
+      replaceText(upload.placeholder, "");
+    });
+  }
+
+  if (fileInput) {
+    fileInput.addEventListener("change", function () {
+      addFiles(fileInput.files, false);
+      fileInput.value = "";
+    });
+    uploadingLine.querySelector("#cancel-file-upload").addEventListener("click", function (e) {
+      e.preventDefault();
+      cancelUploads();
+    });
+    // _pasteEventListener: files pasted without text are uploaded.
+    textarea.addEventListener("paste", function (event) {
+      var clipboard = event.clipboardData;
+      if (!clipboard) {
+        return;
+      }
+      var types = Array.prototype.slice.call(clipboard.types);
+      if (!types.includes("Files") || types.includes("text/plain")) {
+        return;
+      }
+      if (clipboard.files && clipboard.files.length > 0) {
+        event.preventDefault();
+        addFiles(clipboard.files, true);
+      }
+    });
+    // DropTarget: files dropped anywhere on the composer.
+    control.addEventListener("dragover", function (event) {
+      if (event.dataTransfer && Array.prototype.includes.call(event.dataTransfer.types, "Files")) {
+        event.preventDefault();
+      }
+    });
+    control.addEventListener("drop", function (event) {
+      if (event.dataTransfer && event.dataTransfer.files.length > 0) {
+        event.preventDefault();
+        addFiles(event.dataTransfer.files, false);
+      }
+    });
+  }
+
+  // resolveAllShortUrls on the preview: upload:// sources and links
+  // pointed at the uploads, from the cache or one lookup for the rest.
+  var pendingLookup = null;
+  function resolveShortUrls() {
+    var elements = preview.querySelectorAll("img[data-orig-src], source[data-orig-src], a[data-orig-href]");
+    var missing = [];
+    elements.forEach(function (el) {
+      var attr = el.hasAttribute("data-orig-href") ? "data-orig-href" : "data-orig-src";
+      var short = el.getAttribute(attr);
+      var cached = shortUrls[short];
+      if (!cached) {
+        if (missing.indexOf(short) < 0) {
+          missing.push(short);
+        }
+        return;
+      }
+      if (cached.url === "missing") {
+        return;
+      }
+      el.removeAttribute(attr);
+      if (attr === "data-orig-href") {
+        el.href = cached.short_path;
+      } else {
+        el.src = cached.url;
+      }
+    });
+    if (missing.length === 0 || pendingLookup) {
+      return;
+    }
+    pendingLookup = fetch(base + "/uploads/lookup-urls", {
+      method: "POST",
+      headers: csrfHeaders(),
+      credentials: "same-origin",
+      body: form(
+        missing.map(function (u) {
+          return ["short_urls[]", u];
+        })
+      ),
+    })
+      .then(function (r) {
+        return r.ok ? r.json() : [];
+      })
+      .then(function (found) {
+        found.forEach(function (u) {
+          shortUrls[u.short_url] = { url: u.url, short_path: u.short_path };
+        });
+        missing.forEach(function (u) {
+          shortUrls[u] = shortUrls[u] || { url: "missing", short_path: "missing" };
+        });
+      })
+      .catch(function () {
+        // Unresolved: the placeholders stay.
+      })
+      .finally(function () {
+        pendingLookup = null;
+        resolveShortUrls();
+      });
+  }
 
   // TopicDraftsDropdown: the member's latest drafts in a DMenu under the
   // trigger beside New Topic. A draft on a topic goes to the topic (its

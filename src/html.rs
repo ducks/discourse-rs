@@ -340,6 +340,12 @@ impl Site {
             &chooser,
             default_category,
             Some((&wasm, &render_settings)),
+            crate::composer_view::UploadUi::for_user(
+                &settings.get("authorized_extensions")?.to_s(),
+                &settings.get("authorized_extensions_for_staff")?.to_s(),
+                guardian.is_staff(),
+            )
+            .as_ref(),
         ))
     }
 }
