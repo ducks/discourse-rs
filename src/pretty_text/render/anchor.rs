@@ -146,6 +146,7 @@ pub fn apply(root: &mut Node, settings: &RenderSettings) {
 pub fn add(md: &mut MarkdownIt) {
     md.add_rule::<KeepHeadingSource>()
         .after::<BlockParserRule>()
+        .after::<super::link_pipes::RestoreLinkPipes>()
         .before::<InlineParserRule>();
 }
 

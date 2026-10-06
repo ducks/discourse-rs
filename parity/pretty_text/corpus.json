@@ -561,6 +561,14 @@
   },
   {
     "id": "sample-70",
+    "raw": "Image | Description\n---|---\n![A dog |411x500, 30%](https://example.com/dog.png) | A dog.\n[x|y](https://example.com/a|b) | [r|s][ref]\n[[nested|x]](https://e.com) | `[c|d](e)`\n\n[ref]: https://example.com/r",
+    "topic_id": 35,
+    "user_id": 3,
+    "markdown": "<div class=\"md-table\">\n<table>\n<thead>\n<tr>\n<th>Image</th>\n<th>Description</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td><img src=\"https://example.com/dog.png\" alt=\"A dog\" width=\"123\" height=\"150\"></td>\n<td>A dog.</td>\n</tr>\n<tr>\n<td><a href=\"https://example.com/a%7Cb\">x|y</a></td>\n<td><a href=\"https://example.com/r\">r|s</a></td>\n</tr>\n<tr>\n<td><a href=\"https://e.com\">[nested|x]</a></td>\n<td>`[c</td>\n</tr>\n</tbody>\n</table>\n</div>",
+    "cooked": "<div class=\"md-table\">\n<table>\n<thead>\n<tr>\n<th>Image</th>\n<th>Description</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td><img src=\"https://example.com/dog.png\" alt=\"A dog\" width=\"123\" height=\"150\"></td>\n<td>A dog.</td>\n</tr>\n<tr>\n<td><a href=\"https://example.com/a%7Cb\" rel=\"noopener nofollow ugc\">x|y</a></td>\n<td><a href=\"https://example.com/r\" rel=\"noopener nofollow ugc\">r|s</a></td>\n</tr>\n<tr>\n<td><a href=\"https://e.com\" rel=\"noopener nofollow ugc\">[nested|x]</a></td>\n<td>`[c</td>\n</tr>\n</tbody>\n</table>\n</div>"
+  },
+  {
+    "id": "sample-71",
     "raw": "An upload that exists: ![image|64x64](upload://qa4V5109J7tySkPok8r3aBAruY1.png) and [a link|attachment](upload://qa4V5109J7tySkPok8r3aBAruY1.png).",
     "topic_id": 35,
     "user_id": 3,

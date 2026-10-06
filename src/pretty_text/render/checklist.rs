@@ -230,6 +230,7 @@ pub fn add(md: &mut MarkdownIt) {
     md.inline.add_rule::<CandidateScanner>();
     md.add_rule::<KeepInlineSource>()
         .after::<BlockParserRule>()
+        .after::<super::link_pipes::RestoreLinkPipes>()
         .before::<InlineParserRule>();
 }
 
