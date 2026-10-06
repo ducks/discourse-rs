@@ -77,9 +77,19 @@ pub async fn gate(
     if json || request.method() != axum::http::Method::GET {
         return Ok(not_logged_in(&state, &path));
     }
-    // redirect_to_login: auth_immediately sends readers straight to
-    // DiscourseConnect, or to the only external login when local logins
-    // are off; neither exists here yet.
+    let headers: HeaderMap = request.extract_parts().await?;
+    let uri: Uri = request.uri().clone();
+    if path == "/" || path == "/login" {
+        check_auth_immediately(&settings)?;
+        return login_page(&state, &settings, &headers, &uri).await;
+    }
+    redirect_to_login(&state, &settings, &headers, &uri)
+}
+
+/// redirect_to_login's auth_immediately branches send readers straight to
+/// DiscourseConnect, or to the only external login when local logins are
+/// off; neither exists here yet.
+fn check_auth_immediately(settings: &SiteSettings) -> Result<(), AppError> {
     if settings.get("auth_immediately")?.truthy()
         && (settings.get("enable_discourse_connect")?.truthy()
             || !settings.get("enable_local_logins")?.truthy())
@@ -88,11 +98,18 @@ pub async fn gate(
             Unsupported("auth_immediately (DiscourseConnect or single external login)").into(),
         );
     }
-    let headers: HeaderMap = request.extract_parts().await?;
-    let uri: Uri = request.uri().clone();
-    if path == "/" || path == "/login" {
-        return login_page(&state, &settings, &headers, &uri).await;
-    }
+    Ok(())
+}
+
+/// `ApplicationController#redirect_to_login` away from the front page.
+pub(super) fn redirect_to_login(
+    state: &AppState,
+    settings: &SiteSettings,
+    headers: &HeaderMap,
+    uri: &Uri,
+) -> Result<Response, AppError> {
+    check_auth_immediately(settings)?;
+    let base_path = state.config.globals.relative_url_root();
     let host = headers
         .get(header::HOST)
         .and_then(|h| h.to_str().ok())
