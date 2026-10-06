@@ -172,13 +172,36 @@ pub async fn drain(state: &AppState) -> Result<usize, sqlx::Error> {
     Ok(count)
 }
 
+/// Jobs::Scheduled the port runs: the name and how often. They run when
+/// the worker starts and then on their interval; with one worker per site
+/// there is no lock between workers as MiniScheduler keeps.
+const SCHEDULED: &[(&str, Duration)] = &[("regenerate_sitemaps", Duration::from_secs(3600))];
+
+/// Runs one of the SCHEDULED jobs now.
+pub async fn run_scheduled(state: &AppState, name: &str) -> Result<(), AppError> {
+    match name {
+        "regenerate_sitemaps" => crate::routes::regenerate_sitemaps(state).await,
+        _ => unreachable!("every SCHEDULED job has a handler"),
+    }
+}
+
 /// A worker: drains the queue, then polls once a second, until `stop`
-/// resolves.
+/// resolves. Scheduled jobs run between polls when due.
 pub async fn work(state: AppState, stop: impl std::future::Future<Output = ()>) {
     tokio::pin!(stop);
+    let mut last_run: Vec<Option<std::time::Instant>> = vec![None; SCHEDULED.len()];
     loop {
         if let Err(e) = drain(&state).await {
             tracing::error!("job queue: {e}");
+        }
+        for (i, (name, every)) in SCHEDULED.iter().enumerate() {
+            if last_run[i].is_some_and(|at| at.elapsed() < *every) {
+                continue;
+            }
+            last_run[i] = Some(std::time::Instant::now());
+            if let Err(e) = run_scheduled(&state, name).await {
+                tracing::error!("scheduled job {name}: {e}");
+            }
         }
         tokio::select! {
             _ = &mut stop => return,
