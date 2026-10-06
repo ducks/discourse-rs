@@ -19,6 +19,5 @@
   ],
   "run_jobs": [
     "process_email"
-  ],
-  "not_yet": "The re-encoded raw of a mail with undeclared latin1 bytes ends in a quoted \"=0D=\" soft break."
+  ]
 }

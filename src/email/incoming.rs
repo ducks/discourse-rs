@@ -668,8 +668,11 @@ fn encode_body(decoded: &[u8]) -> (String, String) {
         .count();
     let qp_cost = ((decoded.len() - cheap) * 3 + cheap) as f64 / decoded.len().max(1) as f64;
     if qp_cost <= 4.0 / 3.0 {
+        // QuotedPrintable.encode: to_crlf([to_lf(str)].pack("M")), so a CR
+        // is a line break, never "=0D".
+        let lf = binary_unsafe_to_lf(decoded);
         (
-            String::from_utf8(binary_unsafe_to_crlf(qp_encode(decoded).as_bytes())).expect("ASCII"),
+            String::from_utf8(binary_unsafe_to_crlf(qp_encode(&lf).as_bytes())).expect("ASCII"),
             "quoted-printable".into(),
         )
     } else {
@@ -682,6 +685,24 @@ fn encode_body(decoded: &[u8]) -> (String, String) {
         }
         (out, "base64".into())
     }
+}
+
+/// `binary_unsafe_to_lf`: every line break (CRLF or a lone CR) as LF.
+fn binary_unsafe_to_lf(s: &[u8]) -> Vec<u8> {
+    let mut out = Vec::with_capacity(s.len());
+    let mut i = 0;
+    while i < s.len() {
+        if s[i] == b'\r' {
+            out.push(b'\n');
+            if s.get(i + 1) == Some(&b'\n') {
+                i += 1;
+            }
+        } else {
+            out.push(s[i]);
+        }
+        i += 1;
+    }
+    out
 }
 
 /// `binary_unsafe_to_crlf`: every line break as CRLF.
