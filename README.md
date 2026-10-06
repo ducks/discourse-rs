@@ -322,3 +322,10 @@ proxy may reach it. `systemctl stop` (SIGTERM) lets in-flight requests
 finish. A release binary embeds the schema vendored at its tag; a backup
 older than that needs a build from a checkout vendored at the backup's
 commit.
+
+## License
+
+discourse-rs is a port of [Discourse](https://github.com/discourse/discourse),
+which is licensed under the GNU General Public License version 2.0 or later.
+discourse-rs is licensed under the GNU General Public License version 3.0 or
+later (GPL-3.0-or-later); see [LICENSE](LICENSE).
