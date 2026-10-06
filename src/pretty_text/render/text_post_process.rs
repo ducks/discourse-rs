@@ -6,9 +6,9 @@
 
 use std::sync::LazyLock;
 
+use super::md_utils::{is_punct_char, is_white_space};
 use fancy_regex::Regex;
 use markdown_it::Node;
-use markdown_it::common::utils::is_punct_char;
 use markdown_it::parser::inline::Text;
 use markdown_it::plugins::cmark::inline::link::Link;
 use markdown_it::plugins::html::html_inline::HtmlInline;
@@ -96,7 +96,7 @@ fn hashtag(matched: &str, slug: &str, ctx: &Context) -> Node {
 
 /// `allowedBoundary`: whitespace or punctuation.
 fn boundary(c: char) -> bool {
-    c.is_whitespace() || is_punct_char(c)
+    is_white_space(c) || is_punct_char(c)
 }
 
 /// `hasAllowedBoundaries`

@@ -3,7 +3,7 @@
 //! by UTF-16 unit and so does this, since the name length limit and the
 //! boundary checks count that way.
 
-use markdown_it::common::utils::is_punct_char;
+use super::md_utils::is_punct_char;
 use markdown_it::parser::inline::Text;
 
 use markdown_it::{Node, NodeValue, Renderer};
