@@ -19,5 +19,8 @@
       "method": "GET",
       "path": "/posts/36/revisions/latest.json"
     }
-  ]
+  ],
+  "settings": {
+    "tl2_post_edit_time_limit": 0
+  }
 }
