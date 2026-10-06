@@ -569,6 +569,14 @@
   },
   {
     "id": "sample-71",
+    "raw": "[url]https://example.com/a[/url] and [url=https://example.com/b]text **bold**[/url]\n\n[url]example.com[/url] and [url=example.org]x[/url] and [url]not a url[/url]\n\n[url][link](https://example.com/c)[/url] and [URL]http://e.com/[/URL]\n\n[url=https://example.com/d][b]bold[/b] https://inner.com[/url]\n\na [url]**x.com**[/url] b [url]*y.com*[/url]",
+    "topic_id": 35,
+    "user_id": 3,
+    "markdown": "<p><a href=\"https://example.com/a\" data-bbcode=\"true\">https://example.com/a</a> and <a href=\"https://example.com/b\" data-bbcode=\"true\">text <strong>bold</strong></a></p>\n<p><a href=\"https://example.com\" data-bbcode=\"true\">example.com</a> and <a href=\"https://example.org\" data-bbcode=\"true\">x</a>not a url and </p>\n<p><a href=\"https://example.com/c\" data-bbcode=\"true\">link</a> and <a href=\"http://e.com/\" data-bbcode=\"true\">http://e.com/</a></p>\n<p><a href=\"https://example.com/d\" data-bbcode=\"true\"><span class=\"bbcode-b\">bold</span> https://inner.com</a></p>\n<p><strong><a href=\"http://x.com\">x.com</a></strong>a  b <a href=\"https://y.com\" data-bbcode=\"true\"><em>y.com</em></a></p>",
+    "cooked": "<p><a href=\"https://example.com/a\" data-bbcode=\"true\" rel=\"noopener nofollow ugc\">https://example.com/a</a> and <a href=\"https://example.com/b\" data-bbcode=\"true\" rel=\"noopener nofollow ugc\">text <strong>bold</strong></a></p>\n<p><a href=\"https://example.com\" data-bbcode=\"true\" rel=\"noopener nofollow ugc\">example.com</a> and <a href=\"https://example.org\" data-bbcode=\"true\" rel=\"noopener nofollow ugc\">x</a>not a url and </p>\n<p><a href=\"https://example.com/c\" data-bbcode=\"true\" rel=\"noopener nofollow ugc\">link</a> and <a href=\"http://e.com/\" data-bbcode=\"true\" rel=\"noopener nofollow ugc\">http://e.com/</a></p>\n<p><a href=\"https://example.com/d\" data-bbcode=\"true\" rel=\"noopener nofollow ugc\"><span class=\"bbcode-b\">bold</span> https://inner.com</a></p>\n<p><strong><a href=\"http://x.com\" rel=\"noopener nofollow ugc\">x.com</a></strong>a  b <a href=\"https://y.com\" data-bbcode=\"true\" rel=\"noopener nofollow ugc\"><em>y.com</em></a></p>"
+  },
+  {
+    "id": "sample-72",
     "raw": "An upload that exists: ![image|64x64](upload://qa4V5109J7tySkPok8r3aBAruY1.png) and [a link|attachment](upload://qa4V5109J7tySkPok8r3aBAruY1.png).",
     "topic_id": 35,
     "user_id": 3,
