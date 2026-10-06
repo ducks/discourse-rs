@@ -10,6 +10,5 @@
         "timezone": "Australia/Melbourne"
       }
     }
-  ],
-  "not_yet": "The login response's user lacks most of UserSerializer's keys and its can_* are false."
+  ]
 }

@@ -190,9 +190,17 @@ async fn ensure_can_search(
     if settings.get("allow_anonymous_search")?.truthy() {
         return Ok(None);
     }
+    // request.format.html?: no .json, and an Accept that does not ask
+    // for JSON.
+    let accepts_json = headers
+        .get(header::ACCEPT)
+        .and_then(|v| v.to_str().ok())
+        .is_some_and(|a| a.contains("application/json"));
     Ok(Some(match uri {
-        Some(uri) => super::login_required::redirect_to_login(state, &settings, headers, uri)?,
-        None => super::login_required::not_logged_in(state, "/search"),
+        Some(uri) if !accepts_json => {
+            super::login_required::redirect_to_login(state, &settings, headers, uri)?
+        }
+        _ => super::login_required::not_logged_in(state, "/search"),
     }))
 }
 

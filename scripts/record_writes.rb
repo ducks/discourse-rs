@@ -201,7 +201,10 @@ cases.each do |c|
         params = fixtures(resolve(r["params"] || {}, state), files_dir)
         options = { params: params, headers: headers.merge(r["headers"] || {}) }
         options[:as] = :json if r["method"] != "GET" && !multipart?(params)
-        session.public_send(r["method"].downcase, resolve(r["path"], state), **options)
+        path = resolve(r["path"], state)
+        # Unicorn sets REQUEST_PATH; log_on_user logs it as the token's path.
+        options[:env] = { "REQUEST_PATH" => path.split("?").first }
+        session.public_send(r["method"].downcase, path, **options)
         body = session.response.body
         responses << { status: session.response.status, body: (JSON.parse(body) rescue body) }
       end

@@ -11,6 +11,14 @@
     {
       "method": "GET",
       "path": "/search.json?q=fixture"
+    },
+    {
+      "method": "GET",
+      "path": "/search?q=fixture",
+      "headers": {
+        "Accept": "text/html",
+        "X-Requested-With": ""
+      }
     }
   ]
 }

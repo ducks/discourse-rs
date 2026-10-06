@@ -233,6 +233,7 @@ pub async fn create(
     State(state): State<AppState>,
     headers: HeaderMap,
     Peer(peer): Peer,
+    uri: axum::http::Uri,
     body: Bytes,
 ) -> Result<Response, AppError> {
     let form = parse_form(&headers, &body);
@@ -403,7 +404,8 @@ pub async fn create(
         &state.keys.secret_key_base,
         user_agent.as_deref(),
         &ip,
-        Some("/session"),
+        // log_on_user logs REQUEST_PATH, the path without the query.
+        Some(uri.path()),
     )
     .await?;
     if user.staged {
@@ -420,10 +422,10 @@ pub async fn create(
     .await?;
     let cookie = current::auth_cookie(&state.keys, &settings, &user, &unhashed)?;
 
-    // The body: UserSerializer for the user themselves; until the
-    // logged-in serializers are ported this is the public profile
-    // document, which the client ignores (it reloads the page).
-    let guardian = crate::guardian::Guardian::anonymous();
+    // The body: UserSerializer for the user themselves, seen as them
+    // (log_on_user has set current_user). The request carried no auth
+    // cookie, so no token is the active one.
+    let guardian = crate::guardian::Guardian::for_user(&mut conn, &user).await?;
     let urls = Urls {
         config: &state.config,
         settings: &settings,

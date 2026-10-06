@@ -577,7 +577,7 @@ pub async fn password_reset_update(
             &state.keys.secret_key_base,
             user_agent.as_deref(),
             &ip,
-            None,
+            Some(uri.path()),
         )
         .await?;
         crate::session::token::enforce_session_count_limit(
@@ -921,7 +921,7 @@ pub async fn perform_account_activation(
         &state.keys.secret_key_base,
         user_agent.as_deref(),
         &ip,
-        None,
+        Some(uri.path()),
     )
     .await?;
     crate::session::token::enforce_session_count_limit(
