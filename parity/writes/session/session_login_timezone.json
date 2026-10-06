@@ -12,8 +12,8 @@
       }
     }
   ],
-  "started_at": "2026-10-06T20:09:31.011409",
-  "transaction_started_at": "2026-10-06T20:09:30.307347",
+  "started_at": "2026-10-06T22:40:30.140932",
+  "transaction_started_at": "2026-10-06T22:40:29.543736",
   "responses": [
     {
       "status": 200,
@@ -871,8 +871,8 @@
               "device": "unknown device",
               "os": "unknown operating system",
               "icon": "question",
-              "created_at": "2026-10-06T20:09:31.152Z",
-              "seen_at": "2026-10-06T20:09:31.152Z",
+              "created_at": "2026-10-06T22:40:30.271Z",
+              "seen_at": "2026-10-06T22:40:30.271Z",
               "is_active": false
             }
           ],
@@ -1097,12 +1097,12 @@
       "inserted": [
         {
           "id": 119,
-          "path": null,
+          "path": "/session.json",
           "action": "generate",
           "user_id": 3,
           "client_ip": "127.0.0.1",
-          "auth_token": "xuTnbpUkJDrojy1NFVPczAmrz7E=",
-          "created_at": "2026-10-06T20:09:31.1567",
+          "auth_token": "6sIwbnqpJOEOt83r0G3+nHfJZM4=",
+          "created_at": "2026-10-06T22:40:30.283896",
           "user_agent": null,
           "user_auth_token_id": 119
         }
@@ -1117,13 +1117,13 @@
           "seen_at": null,
           "user_id": 3,
           "client_ip": "127.0.0.1",
-          "auth_token": "xuTnbpUkJDrojy1NFVPczAmrz7E=",
-          "created_at": "2026-10-06T20:09:31.152331",
-          "rotated_at": "2026-10-06T20:09:31.150891",
-          "updated_at": "2026-10-06T20:09:31.152331",
+          "auth_token": "6sIwbnqpJOEOt83r0G3+nHfJZM4=",
+          "created_at": "2026-10-06T22:40:30.271567",
+          "rotated_at": "2026-10-06T22:40:30.271303",
+          "updated_at": "2026-10-06T22:40:30.271567",
           "user_agent": null,
           "auth_token_seen": false,
-          "prev_auth_token": "xuTnbpUkJDrojy1NFVPczAmrz7E=",
+          "prev_auth_token": "6sIwbnqpJOEOt83r0G3+nHfJZM4=",
           "impersonated_user_id": null,
           "authenticated_with_oauth": false,
           "impersonation_expires_at": null

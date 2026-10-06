@@ -176,8 +176,13 @@ impl Client {
             request = request.header(header::COOKIE, cookie.join("; "));
         }
         let api = extra.keys().any(|k| k.eq_ignore_ascii_case("api-key"));
-        for (name, value) in extra {
-            request = request.header(name.as_str(), value.as_str().unwrap_or(""));
+        // The case's headers replace the defaults, as the recorder's
+        // headers.merge does.
+        if let Some(headers) = request.headers_mut() {
+            for (name, value) in extra {
+                let name = header::HeaderName::from_bytes(name.as_bytes()).unwrap();
+                headers.insert(name, value.as_str().unwrap_or("").parse().unwrap());
+            }
         }
         if let Some(token) = self.csrf.as_ref().filter(|_| !api) {
             request = request.header("x-csrf-token", token.as_str());
