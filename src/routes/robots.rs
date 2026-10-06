@@ -7,6 +7,7 @@ use axum::http::{HeaderMap, header};
 use axum::response::{IntoResponse, Response};
 use serde_json::{Value, json};
 
+use crate::session::current::AuthGuardian;
 use crate::site_settings::SiteSettings;
 use crate::{AppError, AppState};
 
@@ -99,6 +100,7 @@ fn default_robots_info(settings: &SiteSettings, base_path: &str) -> Result<Vec<A
 /// GET /robots.txt
 pub async fn index(
     State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
     headers: HeaderMap,
 ) -> Result<Response, AppError> {
     let mut conn = state.pool.acquire().await?;
@@ -106,6 +108,17 @@ pub async fn index(
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
     let plain = [(header::CONTENT_TYPE, "text/plain; charset=utf-8")];
     if let Some(overridden) = settings.get("overridden_robots_txt")?.presence() {
+        // OVERRIDDEN_HEADER, for admins in the browser (not over the API).
+        let is_api = headers.contains_key(crate::session::api_key::HEADER_API_KEY);
+        if guardian.is_admin() && !is_api {
+            return Ok((
+                plain,
+                format!(
+                    "# This robots.txt file has been customized at /admin/customize/robots\n{overridden}"
+                ),
+            )
+                .into_response());
+        }
         return Ok((plain, overridden).into_response());
     }
     let base_path = state.config.globals.relative_url_root();

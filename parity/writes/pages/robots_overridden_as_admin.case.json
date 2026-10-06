@@ -8,6 +8,5 @@
       "method": "GET",
       "path": "/robots.txt"
     }
-  ],
-  "not_yet": "An overridden robots.txt lacks the \"customized\" header for admins."
+  ]
 }
