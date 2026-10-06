@@ -404,9 +404,10 @@ mod tests {
     }
 }
 
-/// `/c/*category_slug_path_with_id(.json)` -> list#category_default, and
-/// `.../l/latest` -> list#category_latest. The other filters and `/none`
-/// aren't ported.
+/// `/c/*category_slug_path_with_id(.json)` -> list#category_default,
+/// `.../none` -> list#category_none_default (both in the category's
+/// default view), and `.../l/<filter>` with or without `/none` for the
+/// ported filters.
 pub async fn category(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
@@ -426,17 +427,18 @@ pub async fn category(
     } else {
         crate::bus::page_position(&state.bus).await?
     };
-    // `.../none` (no_subcategories) and `.../none/l/latest`, else `.../l/latest`.
     // `.../none` (no_subcategories), `.../l/{latest,top,hot}`, or both.
     let mut rest = path.as_str();
     let mut kind = ListKind::Latest;
     let mut action = String::new();
+    let mut filtered = false;
     for (name, k) in ListKind::ALL {
         let suffix = format!("/l/{name}");
         if let Some(p) = rest.strip_suffix(suffix.as_str()) {
             rest = p;
             kind = k;
             action = suffix;
+            filtered = true;
             break;
         }
     }
@@ -495,7 +497,7 @@ pub async fn category(
     // category_default_view: the category's default_view when anonymous users
     // may list it (latest, top, hot), else latest. The URL stays the
     // category_default one.
-    if action.is_empty() {
+    if !filtered {
         // Only a filter the user may list; anonymous users get latest,
         // top, hot (and categories, which isn't a topic list).
         kind = match category
