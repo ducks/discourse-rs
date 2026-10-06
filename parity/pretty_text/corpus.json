@@ -577,6 +577,14 @@
   },
   {
     "id": "sample-72",
+    "raw": "Congratulations!!!\n<img src=\"upload://n9ttlOETZUkdG4IF2iOWXLG7uB1.gif\">\n\n<div>\n<img width=\"10\" src='upload://n9ttlOETZUkdG4IF2iOWXLG7uB1.gif' alt=\"x\"><IMG SRC=upload://abc.png>\n</div>\n\n<pre>\n\"remote_short_url\": \"upload://lEa4tU1PrUVkMAfBK4bVl5TCibx.png\"\n</pre>\n\ntext <a href=\"upload://x.png\">a</a> <img alt=\"upload://y.png\" src=\"https://e.com/i.png\">",
+    "topic_id": 35,
+    "user_id": 3,
+    "markdown": "<p>Congratulations!!!<br>\n<img src=\"/images/transparent.png\" data-orig-src=\"upload://n9ttlOETZUkdG4IF2iOWXLG7uB1.gif\"></p>\n<div>\n<img width=\"10\" src=\"/images/transparent.png\" data-orig-src=\"upload://n9ttlOETZUkdG4IF2iOWXLG7uB1.gif\" alt=\"x\"><img src=\"/images/transparent.png\" data-orig-src=\"upload://abc.png\">\n</div>\n<pre>\n\"remote_short_url\": \"upload://lEa4tU1PrUVkMAfBK4bVl5TCibx.png\"\n</pre>\n<p>text <a>a</a> <img alt=\"upload://y.png\" src=\"https://e.com/i.png\"></p>",
+    "cooked": "<p>Congratulations!!!<br>\n<img src=\"/images/transparent.png\" data-orig-src=\"upload://n9ttlOETZUkdG4IF2iOWXLG7uB1.gif\"></p>\n<div>\n<img width=\"10\" src=\"/images/transparent.png\" data-orig-src=\"upload://n9ttlOETZUkdG4IF2iOWXLG7uB1.gif\" alt=\"x\"><img src=\"/images/transparent.png\" data-orig-src=\"upload://abc.png\">\n</div>\n<pre>\"remote_short_url\": \"upload://lEa4tU1PrUVkMAfBK4bVl5TCibx.png\"\n</pre>\n<p>text <a>a</a> <img alt=\"upload://y.png\" src=\"https://e.com/i.png\"></p>"
+  },
+  {
+    "id": "sample-73",
     "raw": "An upload that exists: ![image|64x64](upload://qa4V5109J7tySkPok8r3aBAruY1.png) and [a link|attachment](upload://qa4V5109J7tySkPok8r3aBAruY1.png).",
     "topic_id": 35,
     "user_id": 3,

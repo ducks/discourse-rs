@@ -191,6 +191,9 @@ samples = [
   # linkify. Without one the content goes ahead of the text before the tag,
   # and a **strong** start has none (an empty text token comes first).
   ["[url]https://example.com/a[/url] and [url=https://example.com/b]text **bold**[/url]\n\n[url]example.com[/url] and [url=example.org]x[/url] and [url]not a url[/url]\n\n[url][link](https://example.com/c)[/url] and [URL]http://e.com/[/URL]\n\n[url=https://example.com/d][b]bold[/b] https://inner.com[/url]\n\na [url]**x.com**[/url] b [url]*y.com*[/url]", replies.id, u1.id],
+  # upload:// as an <img> src in raw html resolves like a markdown image;
+  # elsewhere in html it is left alone.
+  ["Congratulations!!!\n<img src=\"upload://n9ttlOETZUkdG4IF2iOWXLG7uB1.gif\">\n\n<div>\n<img width=\"10\" src='upload://n9ttlOETZUkdG4IF2iOWXLG7uB1.gif' alt=\"x\"><IMG SRC=upload://abc.png>\n</div>\n\n<pre>\n\"remote_short_url\": \"upload://lEa4tU1PrUVkMAfBK4bVl5TCibx.png\"\n</pre>\n\ntext <a href=\"upload://x.png\">a</a> <img alt=\"upload://y.png\" src=\"https://e.com/i.png\">", replies.id, u1.id],
 ]
 if upload
   samples << ["An upload that exists: ![image|64x64](#{upload.short_url}) and [a link|attachment](#{upload.short_url}).", replies.id, u1.id]

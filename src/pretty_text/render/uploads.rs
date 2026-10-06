@@ -320,6 +320,107 @@ fn link(node: &mut Node, settings: &RenderSettings, ctx: &Context) -> Option<Nod
     Some(element)
 }
 
+/// `findUploadsInHtml`: in raw html, an `<img>` whose `src` is a short url
+/// gets the upload's url and sha1, or the placeholder and the short url
+/// kept aside, as an image written in markdown does. The JS finds them
+/// with js-xss, which also re-serializes every other attribute; the
+/// sanitizer serializes them all again, so only the `src` is rewritten
+/// here. Returns the new html when something changed.
+fn html_uploads(html: &str, settings: &RenderSettings, ctx: &Context) -> Option<String> {
+    if !html.contains(UPLOAD) {
+        return None;
+    }
+    let lower = html.to_ascii_lowercase();
+    let mut out = String::new();
+    let mut copied = 0;
+    let mut from = 0;
+    while let Some(found) = lower[from..].find("<img") {
+        let tag_start = from + found;
+        from = tag_start + 4;
+        if !lower[from..].starts_with(|c: char| c.is_ascii_whitespace() || c == '/' || c == '>') {
+            continue;
+        }
+        let Some((src, short_url, end)) = upload_src(&html[from..]) else {
+            continue;
+        };
+        let (start, stop) = (from + src.start, from + src.end);
+        let attrs = match ctx.upload(&short_url) {
+            Some(upload) => format!(
+                "src=\"{}\" data-base62-sha1=\"{}\"",
+                escape(&upload.url),
+                escape(&upload.base62_sha1)
+            ),
+            None => format!(
+                "src=\"{}\" data-orig-src=\"{}\"",
+                escape(&format!("{}/images/transparent.png", settings.base_path)),
+                escape(&short_url)
+            ),
+        };
+        out.push_str(&html[copied..start]);
+        out.push_str(&attrs);
+        copied = stop;
+        from += end;
+    }
+    (copied > 0).then(|| out + &html[copied..])
+}
+
+/// The whole `src=...` attribute of the tag at the start of `rest` when
+/// its value is a short url, that value, and where the tag ends, as
+/// offsets into `rest`.
+fn upload_src(rest: &str) -> Option<(std::ops::Range<usize>, String, usize)> {
+    let bytes = rest.as_bytes();
+    let mut i = 0;
+    let mut found = None;
+    while i < bytes.len() {
+        match bytes[i] {
+            b'>' => return found.map(|(range, value)| (range, value, i + 1)),
+            c if c.is_ascii_whitespace() || c == b'/' => i += 1,
+            _ => {
+                let name_start = i;
+                while i < bytes.len()
+                    && !matches!(bytes[i], b'=' | b'>' | b'/')
+                    && !bytes[i].is_ascii_whitespace()
+                {
+                    i += 1;
+                }
+                let name = &rest[name_start..i];
+                while i < bytes.len() && bytes[i].is_ascii_whitespace() {
+                    i += 1;
+                }
+                if bytes.get(i) != Some(&b'=') {
+                    continue;
+                }
+                i += 1;
+                while i < bytes.len() && bytes[i].is_ascii_whitespace() {
+                    i += 1;
+                }
+                let value_start = i;
+                match bytes.get(i) {
+                    Some(&quote @ (b'"' | b'\'')) => {
+                        i += 1;
+                        while i < bytes.len() && bytes[i] != quote {
+                            i += 1;
+                        }
+                        i = (i + 1).min(bytes.len());
+                    }
+                    _ => {
+                        while i < bytes.len() && bytes[i] != b'>' && !bytes[i].is_ascii_whitespace()
+                        {
+                            i += 1;
+                        }
+                    }
+                }
+                let value = rest[value_start..i].trim_matches(|c| c == '"' || c == '\'');
+                if found.is_none() && name.eq_ignore_ascii_case("src") && value.starts_with(UPLOAD)
+                {
+                    found = Some((name_start..i, value.to_string()));
+                }
+            }
+        }
+    }
+    None
+}
+
 /// The `upload-protocol` core rule and the renderers that follow it.
 pub fn run(root: &mut Node, settings: &RenderSettings, ctx: &Context) {
     fn visit(node: &mut Node, settings: &RenderSettings, ctx: &Context) {
@@ -333,13 +434,14 @@ pub fn run(root: &mut Node, settings: &RenderSettings, ctx: &Context) {
             if let Some(replacement) = link(node, settings, ctx) {
                 *node = replacement;
             }
-        } else if let Some(html) = node
-            .cast::<HtmlInline>()
-            .map(|h| &h.content)
-            .or(node.cast::<HtmlBlock>().map(|h| &h.content))
-            && html.contains(UPLOAD)
+        } else if let Some(html) = node.cast_mut::<HtmlInline>() {
+            if let Some(rewritten) = html_uploads(&html.content, settings, ctx) {
+                html.content = rewritten;
+            }
+        } else if let Some(html) = node.cast_mut::<HtmlBlock>()
+            && let Some(rewritten) = html_uploads(&html.content, settings, ctx)
         {
-            ctx.refuse("upload:// urls inside raw html");
+            html.content = rewritten;
         }
     }
     visit(root, settings, ctx);
