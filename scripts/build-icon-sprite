@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# Build static/vendor/icons.svg: the Font Awesome Free icons the pages use,
+# as <symbol>s named as Discourse names them (<use href="#bars">), from the
+# npm package Discourse depends on. The tarball is checked against its npm
+# integrity first. Icons are CC BY 4.0 (static/vendor/fontawesome-LICENSE.txt).
+#
+# Usage: scripts/build-icon-sprite
+#   The icons are listed below as "name" or "name=fontawesome-file".
+set -euo pipefail
+
+VERSION=7.3.1
+ICONS=(
+  bars
+  user
+  envelope
+  thumbtack
+  lock
+  angle-right
+  bell
+  magnifying-glass
+)
+
+root="$(cd "$(dirname "$0")/.." && pwd)"
+work="$(mktemp -d)"
+trap 'rm -rf "$work"' EXIT
+
+url="https://registry.npmjs.org/@fortawesome/fontawesome-free/-/fontawesome-free-$VERSION.tgz"
+want=$(curl -sf "https://registry.npmjs.org/@fortawesome/fontawesome-free/$VERSION" | jq -r .dist.integrity)
+curl -sfL "$url" -o "$work/fa.tgz"
+got="sha512-$(openssl dgst -sha512 -binary "$work/fa.tgz" | base64 -w0)"
+if [ "$want" != "$got" ]; then
+  echo "integrity mismatch: $want != $got" >&2
+  exit 1
+fi
+tar xzf "$work/fa.tgz" -C "$work"
+
+out="$root/static/vendor/icons.svg"
+{
+  echo "<!-- Font Awesome Free $VERSION by @fontawesome - https://fontawesome.com"
+  echo "     License - https://fontawesome.com/license/free (Icons: CC BY 4.0)"
+  echo "     Copyright 2026 Fonticons, Inc. Built by scripts/build-icon-sprite. -->"
+  echo '<svg xmlns="http://www.w3.org/2000/svg" style="display: none">'
+  for icon in "${ICONS[@]}"; do
+    name="${icon%%=*}"
+    file="${icon#*=}"
+    svg="$work/package/svgs/solid/$file.svg"
+    view_box=$(grep -o 'viewBox="[^"]*"' "$svg")
+    body=$(sed -e 's/<svg[^>]*>//' -e 's/<\/svg>//' -e 's/<!--[^>]*-->//' "$svg")
+    echo "  <symbol id=\"$name\" $view_box>$body</symbol>"
+  done
+  echo '</svg>'
+} > "$out"
+cp "$work/package/LICENSE.txt" "$root/static/vendor/fontawesome-LICENSE.txt"
+echo "wrote $out (${#ICONS[@]} icons)" >&2

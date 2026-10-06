@@ -144,10 +144,24 @@ pub(super) fn viewer_state(
     let mut session = load_forum_session(state, headers);
     let stored = session.csrf_token();
     let masked = csrf::mask(&stored).ok_or(Unsupported("session csrf token not decodable"))?;
+    let urls = crate::url::Urls {
+        config: &state.config,
+        settings,
+    };
+    // The header's avatar, at the size the Ember client asks for.
+    let avatar_url = crate::avatar::avatar_template(
+        &urls,
+        user.id,
+        &user.username,
+        user.uploaded_avatar_id,
+        None,
+    )?
+    .replace("{size}", "48");
     Ok(crate::html::ViewerState {
         viewer: Some(crate::html::Viewer {
             username: user.username.clone(),
             csrf_token: masked,
+            avatar_url,
         }),
         set_cookie: session.set_cookie(state, settings)?,
     })

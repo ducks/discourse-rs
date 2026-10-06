@@ -334,9 +334,17 @@ pub async fn latest(
     let base_path = state.config.globals.relative_url_root();
     let vs = super::session::viewer_state(&state, &headers, &settings, &guardian)?;
     let mut site = crate::html::Site::from_settings(&settings, base_path)?;
+    site.load_chrome(&state, &settings).await?;
     site.viewer = vs.viewer.clone();
     site.bus_position = bus_position;
     let mut page = crate::html::latest_page(&mut conn, site, &json).await?;
+    page.nav = crate::html::nav_items(
+        &state.i18n,
+        &settings,
+        base_path,
+        "latest",
+        vs.viewer.is_some(),
+    )?;
     page.live_filter = "latest".to_string();
     page.live_since = live_since;
     // Strip `no_definitions`, which is what the JSON list carries around
@@ -511,6 +519,7 @@ pub async fn category(
     let mut conn = state.pool.acquire().await?;
     let vs = super::session::viewer_state(&state, &headers, &settings, &guardian)?;
     let mut site = crate::html::Site::from_settings(&settings, &base_path)?;
+    site.load_chrome(&state, &settings).await?;
     site.viewer = vs.viewer.clone();
     site.bus_position = bus_position;
     let mut page = crate::html::latest_page(&mut conn, site, &doc).await?;
@@ -606,6 +615,7 @@ async fn categories_response(
     let vs = super::session::viewer_state(&state, &headers, &settings, &guardian)?;
     let mut site =
         crate::html::Site::from_settings(&settings, state.config.globals.relative_url_root())?;
+    site.load_chrome(&state, &settings).await?;
     site.viewer = vs.viewer.clone();
     site.bus_position = bus_position;
     let mut page = crate::html::categories_page(&mut conn, &state.i18n, site, &doc).await?;
@@ -860,6 +870,7 @@ async fn front_list(
     let vs = super::session::viewer_state(&state, &headers, &settings, &guardian)?;
     let mut site =
         crate::html::Site::from_settings(&settings, state.config.globals.relative_url_root())?;
+    site.load_chrome(&state, &settings).await?;
     site.viewer = vs.viewer.clone();
     site.bus_position = bus_position;
     let mut page = crate::html::latest_page(&mut conn, site, &doc).await?;
@@ -867,6 +878,13 @@ async fn front_list(
         page.live_filter = kind.name().to_string();
         page.live_since = live_since;
     }
+    page.nav = crate::html::nav_items(
+        &state.i18n,
+        &settings,
+        state.config.globals.relative_url_root(),
+        kind.name(),
+        vs.viewer.is_some(),
+    )?;
     let uri = uri.unwrap_or_default();
     page.crawler = list_crawler(&mut conn, &state, &settings, &uri, None, None).await?;
     let body = page.render().map_err(crate::html::HtmlError::from)?;

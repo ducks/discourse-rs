@@ -64,10 +64,12 @@ pub struct SessionUser {
     pub suspended_till: Option<NaiveDateTime>,
     pub last_seen_at: Option<NaiveDateTime>,
     pub ip_address: Option<String>,
+    pub uploaded_avatar_id: Option<i32>,
 }
 
 pub const SESSION_USER_COLUMNS: &str = "users.id, users.username, users.trust_level, users.admin, users.moderator, users.staged, users.active, \
-    users.suspended_till, users.last_seen_at, host(users.ip_address) AS ip_address";
+    users.suspended_till, users.last_seen_at, host(users.ip_address) AS ip_address, \
+    users.uploaded_avatar_id";
 
 impl SessionUser {
     /// The session user columns for a user id.

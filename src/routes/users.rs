@@ -10,6 +10,7 @@ use serde::Deserialize;
 use serde_json::{Value, json};
 
 use super::search::Peer;
+use crate::html::Chrome;
 use crate::html::Crawler;
 use crate::session::current::AuthGuardian;
 use crate::site_settings::SiteSettings;
@@ -254,6 +255,7 @@ async fn respond(
     };
     let vs = super::session::viewer_state(&state, &headers, &settings, &guardian)?;
     let mut site = crate::html::Site::from_settings(&settings, base_path)?;
+    site.load_chrome(&state, &settings).await?;
     site.viewer = vs.viewer.clone();
     site.bus_position = bus_position;
     let mut page = profile_page(
@@ -364,12 +366,12 @@ pub async fn actions(
 #[template(path = "user.html")]
 pub struct ProfilePage {
     pub site_title: String,
-    pub site_description: String,
     pub lang: String,
     pub base_path: String,
     pub crawler: Crawler,
     pub viewer: Option<crate::html::Viewer>,
     pub bus_position: String,
+    pub chrome: Chrome,
     pub username: String,
     pub name: Option<String>,
     pub title: Option<String>,
@@ -473,7 +475,7 @@ fn profile_page(
         site_title: site.site_title,
         viewer: site.viewer,
         bus_position: site.bus_position,
-        site_description: site.site_description,
+        chrome: site.chrome,
         lang: site.lang,
         base_path: site.base_path,
         crawler: Crawler::default(),

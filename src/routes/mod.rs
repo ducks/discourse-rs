@@ -43,6 +43,27 @@ use crate::AppState;
 
 const SITE_CSS: &str = include_str!("../../static/site.css");
 
+/// The ported stylesheets (static/css), in the order Discourse's common
+/// stylesheet imports their sources, after normalize.css.
+const DISCOURSE_CSS: &str = concat!(
+    include_str!("../../static/vendor/normalize.css"),
+    include_str!("../../static/css/foundation.css"),
+    include_str!("../../static/css/buttons.css"),
+    include_str!("../../static/css/header.css"),
+    include_str!("../../static/css/navs.css"),
+);
+
+async fn discourse_css() -> impl IntoResponse {
+    (
+        [(header::CONTENT_TYPE, "text/css; charset=utf-8")],
+        DISCOURSE_CSS,
+    )
+}
+
+/// The Font Awesome icons the pages use, as a sprite of <symbol>s
+/// (scripts/build-icon-sprite), which the layout includes inline.
+pub const ICONS_SVG: &str = include_str!("../../static/vendor/icons.svg");
+
 async fn site_css() -> impl IntoResponse {
     (
         [(header::CONTENT_TYPE, "text/css; charset=utf-8")],
@@ -303,11 +324,13 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/site/basic-info", get(site::basic_info))
         .route("/site/basic-info.json", get(site::basic_info))
         .route("/assets/site.css", get(site_css))
+        .route("/assets/discourse.css", get(discourse_css))
         .route(
             "/assets/color_definitions_light.css",
             get(stylesheets::light),
         )
         .route("/assets/color_definitions_dark.css", get(stylesheets::dark))
+        .route("/fonts/{file}", get(stylesheets::font))
         .route("/assets/htmx.min.js", get(htmx))
         .route("/assets/htmx-ext-sse.js", get(htmx_sse))
         .nest_service("/uploads", ServeDir::new(public.join("uploads")));

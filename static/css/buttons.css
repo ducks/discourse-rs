@@ -1,0 +1,210 @@
+/*
+ * Buttons and icons, ported from components/buttons.scss (the btn mixin
+ * and the default, primary, flat and small variants), components/svg.scss,
+ * and the buttons of the uc-modernize-foundation-theme upcoming change.
+ */
+
+:root {
+  --d-button-border-radius: var(--d-border-radius);
+  --d-button-transition: none;
+  --d-button-border: 1px solid transparent;
+  --d-button-default-text-color: var(--primary);
+  --d-button-default-text-color--hover: var(--secondary);
+  --d-button-default-bg-color: var(--primary-low);
+  --d-button-default-bg-color--hover: var(--primary-medium);
+  --d-button-default-icon-color: var(--primary-high);
+  --d-button-default-icon-color--hover: var(--primary-low);
+  --d-button-default-border: var(--d-button-border);
+  --d-button-default-border--hover: var(--d-button-border);
+  --d-button-primary-text-color: var(--secondary);
+  --d-button-primary-text-color--hover: var(--secondary);
+  --d-button-primary-bg-color: var(--tertiary);
+  --d-button-primary-bg-color--hover: var(--tertiary-hover);
+  --d-button-primary-icon-color: var(--secondary);
+  --d-button-primary-icon-color--hover: var(--secondary);
+  --d-button-primary-border: var(--d-button-border);
+  --d-button-primary-border--hover: var(--d-button-border);
+  --d-button-danger-text-color: var(--secondary);
+  --d-button-danger-text-color--hover: var(--secondary);
+  --d-button-danger-bg-color: var(--danger);
+  --d-button-danger-bg-color--hover: var(--danger-hover);
+  --d-button-danger-icon-color: var(--danger-low);
+  --d-button-danger-icon-color--hover: var(--danger-low);
+  --d-button-danger-border: var(--d-button-border);
+  --d-button-danger-border--hover: var(--d-button-border);
+  --d-button-success-text-color: var(--secondary);
+  --d-button-success-text-color--hover: var(--secondary);
+  --d-button-success-bg-color: var(--success);
+  --d-button-success-bg-color--hover: var(--success-hover);
+  --d-button-success-icon-color: var(--success-low);
+  --d-button-success-icon-color--hover: var(--success-low);
+  --d-button-success-border: var(--d-button-border);
+  --d-button-success-border--hover: var(--d-button-border);
+  --d-button-flat-text-color: var(--tertiary);
+  --d-button-flat-text-color--hover: var(--primary);
+  --d-button-flat-icon-color: var(--primary-low-mid);
+  --d-button-flat-icon-color--hover: var(--primary);
+  --d-button-flat-bg-color: transparent;
+  --d-button-flat-bg-color--hover: var(--d-hover);
+  --d-button-flat-bg-color--focus: var(--d-hover);
+  --d-button-flat-text-color--disabled: var(--primary);
+  --d-button-flat-close-text-color: var(--primary-high);
+  --d-button-flat-close-bg-color: transparent;
+  --d-button-flat-close-icon-color: var(--primary-high);
+  --d-button-flat-close-icon-color--hover: var(--primary);
+  --d-button-transparent-text-color: var(--primary);
+  --d-button-transparent-text-color--hover: var(--tertiary-hover);
+  --d-button-transparent-icon-color: var(--primary-high);
+  --d-button-transparent-icon-color--hover: var(--tertiary-hover);
+}
+
+/* uc-modernize-foundation-theme/buttons-controls.scss */
+:where(.uc-modernize-foundation-theme) {
+  --d-button-default-bg-color: var(--secondary);
+  --d-button-default-border: 1px solid var(--primary-300);
+  --d-button-default-border--hover: 1px solid var(--primary-400);
+  --d-button-default-bg-color--hover: var(--primary-200);
+  --d-button-default-text-color--hover: var(--primary);
+  --d-button-default-icon-color--hover: var(--primary);
+  --d-button-default-text-color: var(--primary-900);
+  --d-button-default-icon-color: var(--primary-900);
+}
+
+/* svg.scss */
+.svg-icon {
+  height: 1em;
+  width: 1em;
+  line-height: 1;
+  display: inline-flex;
+  position: relative;
+  vertical-align: -0.125em;
+  fill: currentcolor;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+svg > use {
+  pointer-events: none;
+}
+
+/* .btn: the btn mixin with the default colors */
+.btn {
+  color: var(--d-button-default-text-color);
+  background-color: var(--d-button-default-bg-color);
+  transition: var(--d-button-transition);
+  border: var(--d-button-border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  font-weight: normal;
+  background-image: linear-gradient(to bottom, rgb(0, 0, 0, 0), rgb(0, 0, 0, 0));
+  box-sizing: border-box;
+  padding: 0.5em 0.65em;
+  cursor: pointer;
+  line-height: normal;
+  white-space: nowrap;
+}
+
+.btn:visited {
+  color: var(--d-button-default-text-color);
+}
+
+.btn .d-icon {
+  color: var(--d-button-default-icon-color);
+  margin-right: 0.45em;
+  transition: var(--d-button-transition);
+}
+
+.btn.no-text .d-icon {
+  margin-right: 0;
+}
+
+.discourse-no-touch .btn:hover,
+.btn:focus-visible {
+  background-color: var(--d-button-default-bg-color--hover);
+  color: var(--d-button-default-text-color--hover);
+}
+
+.discourse-no-touch .btn:hover {
+  border: var(--d-button-border);
+}
+
+.btn:focus-visible {
+  outline: none;
+}
+
+.discourse-no-touch .btn:hover .d-icon,
+.btn:focus-visible .d-icon {
+  color: var(--d-button-default-icon-color--hover);
+}
+
+/* .btn-primary */
+.btn-primary {
+  border-radius: var(--d-button-border-radius);
+  color: var(--d-button-primary-text-color);
+  background-color: var(--d-button-primary-bg-color);
+  transition: var(--d-button-transition);
+  border: var(--d-button-primary-border);
+}
+
+.btn-primary:visited {
+  color: var(--d-button-primary-text-color);
+}
+
+.btn-primary .d-icon {
+  color: var(--d-button-primary-icon-color);
+  margin-right: 0.45em;
+  transition: var(--d-button-transition);
+}
+
+.discourse-no-touch .btn-primary:hover,
+.btn-primary:focus-visible {
+  background-color: var(--d-button-primary-bg-color--hover);
+  color: var(--d-button-primary-text-color--hover);
+}
+
+.discourse-no-touch .btn-primary:hover {
+  border: var(--d-button-primary-border--hover);
+}
+
+.discourse-no-touch .btn-primary:hover .d-icon,
+.btn-primary:focus-visible .d-icon {
+  color: var(--d-button-primary-icon-color--hover);
+}
+
+/* .btn-small */
+.btn-small {
+  font-size: var(--font-down-1);
+  min-height: 20px;
+}
+
+/* .btn-flat */
+.btn-flat {
+  border-radius: var(--d-button-border-radius);
+  color: var(--d-button-default-text-color);
+  background-color: var(--d-button-flat-bg-color);
+  transition: var(--d-button-transition);
+  border: var(--d-button-border);
+}
+
+.btn-flat .d-icon {
+  color: var(--d-button-flat-icon-color);
+  margin-right: 0.45em;
+  transition: var(--d-button-transition);
+}
+
+.btn-flat.no-text .d-icon {
+  margin-right: 0;
+}
+
+.discourse-no-touch .btn-flat:hover,
+.btn-flat:focus-visible {
+  background-color: var(--d-button-flat-bg-color--hover);
+  color: var(--d-button-flat-text-color--hover);
+}
+
+.discourse-no-touch .btn-flat:hover .d-icon,
+.btn-flat:focus-visible .d-icon {
+  color: var(--d-button-flat-icon-color--hover);
+}

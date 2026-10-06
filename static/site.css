@@ -1,13 +1,6 @@
-:root { --primary: #222; --secondary: #fff; --tertiary: #08c; --muted: #777; --line: #e9e9e9; }
-* { box-sizing: border-box; }
-body { margin: 0; font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--primary); background: var(--secondary); }
-a { color: var(--tertiary); text-decoration: none; }
-a:hover { text-decoration: underline; }
-.site-header { display: flex; align-items: center; gap: 1.5rem; padding: .75rem 1.5rem; border-bottom: 1px solid var(--line); }
-.site-title { font-weight: 700; font-size: 1.15rem; color: var(--primary); }
-.site-header nav a { color: var(--muted); }
-.wrap { max-width: 1110px; margin: 0 auto; padding: 1rem 1.5rem; }
-.site-footer { color: var(--muted); font-size: .85rem; padding: 1rem 1.5rem; border-top: 1px solid var(--line); }
+/* Styles of the pages not ported to Discourse's look yet (static/css has the
+   ported ones); each goes as its page is ported. */
+:root { --muted: #777; --line: #e9e9e9; }
 table.topic-list { width: 100%; border-collapse: collapse; }
 .topic-list th { text-align: left; color: var(--muted); font-weight: 400; font-size: .85rem; padding: .5rem .5rem; border-bottom: 3px solid var(--line); }
 .topic-list td { padding: .75rem .5rem; border-bottom: 1px solid var(--line); vertical-align: top; }

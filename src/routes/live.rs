@@ -297,14 +297,17 @@ async fn recount_lists(live: &mut Live, id: Option<Position>) -> Result<(), AppE
     Ok(())
 }
 
-/// The header's unread notification count.
+/// The unread notification count, the badge on a member's avatar
+/// (empty, and so hidden, at none).
 fn notification_count(count: i64) -> String {
     let shown = if count > 0 {
         count.to_string()
     } else {
         String::new()
     };
-    format!(r#"<span id="notification-count" hx-swap-oob="true">{shown}</span>"#)
+    format!(
+        r#"<span id="notification-count" class="badge-notification unread-notifications" hx-swap-oob="true">{shown}</span>"#
+    )
 }
 
 /// The alert PostAlerter publishes, shown in the header: who, what and

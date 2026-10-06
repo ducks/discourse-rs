@@ -23,6 +23,8 @@ const LIMIT: i64 = 30;
 pub struct UserMenu {
     pub base_path: String,
     pub items: Vec<MenuItem>,
+    pub username: String,
+    pub csrf_token: String,
 }
 
 pub struct MenuItem {
@@ -39,7 +41,7 @@ pub struct MenuItem {
 pub async fn show(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
-    _headers: HeaderMap,
+    headers: HeaderMap,
 ) -> Result<Response, AppError> {
     let Some(user) = guardian.user().cloned() else {
         return Ok(super::login_required::not_logged_in(&state, "/user-menu"));
@@ -70,17 +72,30 @@ pub async fn show(
         .as_array()
         .map(|list| list.iter().map(|n| menu_item(&base_path, n)).collect())
         .unwrap_or_default();
-    let html = UserMenu { base_path, items }
-        .render()
-        .map_err(crate::html::HtmlError::from)?;
-    Ok((
+    // Logging out is in the menu, as in the Ember client's profile tab.
+    let vs = super::session::viewer_state(&state, &headers, &settings, &guardian)?;
+    let csrf_token = vs
+        .viewer
+        .as_ref()
+        .map(|v| v.csrf_token.clone())
+        .unwrap_or_default();
+    let html = UserMenu {
+        base_path,
+        items,
+        username: user.username.clone(),
+        csrf_token,
+    }
+    .render()
+    .map_err(crate::html::HtmlError::from)?;
+    let response = (
         [
             (header::CONTENT_TYPE, "text/html; charset=utf-8"),
             (header::CACHE_CONTROL, "no-cache, no-store"),
         ],
         html,
     )
-        .into_response())
+        .into_response();
+    Ok(crate::html::with_viewer_headers(response, &vs))
 }
 
 /// One notification as the menu shows it: who, what, where, and the link.
