@@ -176,6 +176,8 @@ samples = [
   ["(in `app.yml`'s hooks) and `\"x\"` said \"`it's`\" and <b>it</b>'s", replies.id, u1.id],
   # A one-line bbcode block keeps the spaces around its content.
   ["a\n[quote] plugins/x.js [/quote]\n[spoiler]i wonder… [/spoiler]\n\n[details=\"s\"]\tx\t[/details]\n\n[quote] [/quote]", replies.id, u1.id],
+  # A bbcode block opening a list item, or after its text, starts a line.
+  ["- [quote] a [/quote]\n- b\n  [quote]\n  q\n  [/quote]\n1. [details=\"x\"]\n   y\n   [/details]", replies.id, u1.id],
 ]
 if upload
   samples << ["An upload that exists: ![image|64x64](#{upload.short_url}) and [a link|attachment](#{upload.short_url}).", replies.id, u1.id]

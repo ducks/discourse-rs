@@ -537,6 +537,14 @@
   },
   {
     "id": "sample-67",
+    "raw": "- [quote] a [/quote]\n- b\n  [quote]\n  q\n  [/quote]\n1. [details=\"x\"]\n   y\n   [/details]",
+    "topic_id": 35,
+    "user_id": 3,
+    "markdown": "<ul>\n<li>\n<aside class=\"quote no-group\">\n<blockquote>\n<p> a </p>\n</blockquote>\n</aside>\n</li>\n<li>b\n<aside class=\"quote no-group\">\n<blockquote>\n<p>q</p>\n</blockquote>\n</aside>\n</li>\n</ul>\n<ol>\n<li>\n<details>\n<summary>\nx</summary>\n<p>y</p>\n</details>\n</li>\n</ol>",
+    "cooked": "<ul>\n<li>\n<aside class=\"quote no-group\">\n<blockquote>\n<p> a </p>\n</blockquote>\n</aside>\n</li>\n<li>b\n<aside class=\"quote no-group\">\n<blockquote>\n<p>q</p>\n</blockquote>\n</aside>\n</li>\n</ul>\n<ol>\n<li>\n<details>\n<summary>\nx</summary>\n<p>y</p>\n</details>\n</li>\n</ol>"
+  },
+  {
+    "id": "sample-68",
     "raw": "An upload that exists: ![image|64x64](upload://qa4V5109J7tySkPok8r3aBAruY1.png) and [a link|attachment](upload://qa4V5109J7tySkPok8r3aBAruY1.png).",
     "topic_id": 35,
     "user_id": 3,
