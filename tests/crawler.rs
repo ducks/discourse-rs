@@ -110,6 +110,12 @@ async fn sitemaps_regenerate_their_rows_and_honor_the_setting() {
         .unwrap();
     let (status, _, _) = get(&db.pool, "/sitemap_1.xml").await;
     assert_eq!(status, StatusCode::NOT_FOUND, "no rows until regenerated");
+    let (_, _, body) = get(&db.pool, "/sitemap.xml").await;
+    assert!(!body.contains("<loc>"), "the index only reads the rows");
+    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    discourse_rs::jobs::run_scheduled(&app_state, "regenerate_sitemaps")
+        .await
+        .unwrap();
     let (status, headers, body) = get(&db.pool, "/sitemap.xml").await;
     assert_eq!(status, StatusCode::OK);
     assert!(

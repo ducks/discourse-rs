@@ -8,6 +8,5 @@
       "method": "GET",
       "path": "/sitemap.xml"
     }
-  ],
-  "not_yet": "/sitemap.xml writes sitemaps rows, Rails only reads them."
+  ]
 }

@@ -21,6 +21,7 @@ mod robots;
 mod search;
 mod uploads;
 pub(crate) use search::invalid_access_with;
+pub(crate) use sitemap::regenerate_sitemaps;
 pub(crate) use topics::not_found_response;
 mod session;
 mod site;

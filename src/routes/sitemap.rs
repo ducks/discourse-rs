@@ -1,7 +1,7 @@
 //! Port of app/controllers/sitemap_controller.rb and app/models/sitemap.rb.
-//! Rails regenerates the `sitemaps` rows hourly in a job; the index here
-//! regenerates them on request, and recent/news touch their row as the
-//! controller does.
+//! The `sitemaps` rows are regenerated hourly by the job worker
+//! (Jobs::RegenerateSitemaps); the index only reads them, and recent/news
+//! touch their row as the controller does.
 
 use axum::extract::{Path, State};
 use axum::http::header;
@@ -88,6 +88,19 @@ async fn touch(
     Ok(last_posted_at)
 }
 
+/// Jobs::RegenerateSitemaps, scheduled hourly.
+pub(crate) async fn regenerate_sitemaps(state: &AppState) -> Result<(), AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let Some(ctx) = context(state, &mut conn).await? else {
+        return Ok(());
+    };
+    let page_size = ctx.settings.get("sitemap_page_size")?.to_i().max(1);
+    let mut tx = state.pool.begin().await?;
+    regenerate(&mut tx, page_size).await?;
+    tx.commit().await?;
+    Ok(())
+}
+
 /// `Sitemap.regenerate_sitemaps`
 async fn regenerate(conn: &mut PgConnection, page_size: i64) -> Result<(), sqlx::Error> {
     let mut names = vec![RECENT.to_string(), NEWS.to_string()];
@@ -166,8 +179,6 @@ pub async fn index(State(state): State<AppState>) -> Result<Response, AppError> 
     let Some(ctx) = context(&state, &mut conn).await? else {
         return Ok(super::topics::not_found_response(&state, false));
     };
-    let page_size = ctx.settings.get("sitemap_page_size")?.to_i().max(1);
-    regenerate(&mut conn, page_size).await?;
     let rows: Vec<(String, NaiveDateTime)> = sqlx::query_as(
         "SELECT name, last_posted_at FROM sitemaps WHERE enabled = TRUE AND name <> $1 ORDER BY id",
     )
