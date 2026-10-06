@@ -278,6 +278,8 @@ pub struct NewUpload<'a> {
     pub bytes: &'a [u8],
     /// `params[:pasted] == "true"`: pasted from the clipboard.
     pub pasted: bool,
+    /// `params[:for_private_message] == "true"`
+    pub for_private_message: bool,
 }
 
 /// How an upload ends: the serialized upload or its errors.
@@ -508,7 +510,7 @@ pub async fn create(
 }
 
 /// `UploadValidator#validate` for an upload by a user (not for a theme,
-/// an export, a site setting, a message or a gravatar).
+/// an export, a site setting, a group message or a gravatar).
 fn validate(
     s: &SiteSettings,
     i18n: &crate::i18n::I18n,
@@ -516,6 +518,11 @@ fn validate(
     original_filename: &str,
     filesize: usize,
 ) -> Result<Vec<String>, AppError> {
+    // Staff can upload any file into a message, at any size.
+    if up.for_private_message && up.staff && s.get("allow_staff_to_upload_any_file_in_pm")?.truthy()
+    {
+        return Ok(Vec::new());
+    }
     let extension = Path::new(original_filename)
         .extension()
         .map(|e| e.to_string_lossy().to_string())

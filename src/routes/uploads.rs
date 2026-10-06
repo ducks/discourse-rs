@@ -169,6 +169,21 @@ pub async fn create(
         None => return Ok(super::accounts::param_missing("upload_type")),
     };
     let upload_type: String = parameterize(upload_type).chars().take(51).collect();
+    if upload_type == "avatar" {
+        let mut conn = state.pool.acquire().await?;
+        let settings =
+            SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+        if settings.get("discourse_connect_overrides_avatar")?.truthy()
+            || settings.get("auth_overrides_avatar")?.truthy()
+            || !guardian.in_setting_groups(&settings, "uploaded_avatars_allowed_groups")?
+        {
+            return Ok((
+                StatusCode::UNPROCESSABLE_ENTITY,
+                Json(json!({"failed": "FAILED"})),
+            )
+                .into_response());
+        }
+    }
     if form.get("for_site_setting") == Some("true") {
         return Err(Unsupported("site setting uploads").into());
     }
@@ -209,6 +224,7 @@ pub async fn create(
         filename,
         bytes,
         pasted: form.get("pasted") == Some("true"),
+        for_private_message: form.get("for_private_message") == Some("true"),
     };
     let outcome = uploads::create(
         &mut conn,
