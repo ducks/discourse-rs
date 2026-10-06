@@ -14,6 +14,5 @@
         "second_factor_method": 1
       }
     }
-  ],
-  "not_yet": "A wrong TOTP code reports invalid_second_factor_method."
+  ]
 }

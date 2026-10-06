@@ -333,25 +333,22 @@ pub async fn create(
     if blocked {
         return Err(Unsupported("screened IP addresses").into());
     }
-    // Second factors: refused with Rails' failure payload.
-    let (totp, backup, keys): (bool, bool, bool) = sqlx::query_as(
-        "SELECT EXISTS (SELECT 1 FROM user_second_factors WHERE user_id = $1 AND enabled AND method = 1), \
-                EXISTS (SELECT 1 FROM user_second_factors WHERE user_id = $1 AND enabled AND method = 2), \
-                EXISTS (SELECT 1 FROM user_security_keys WHERE user_id = $1 AND enabled AND factor_type = 0)",
-    )
-    .bind(user.id)
-    .fetch_one(&mut *conn)
-    .await?;
-    if totp || backup || keys {
-        return Ok(json_response(json!({
-            "failed": "FAILED",
-            "error": state.i18n.t("login.invalid_second_factor_method").unwrap_or("The selected two-factor method is invalid."),
-            "reason": "invalid_second_factor_method",
-            "backup_enabled": backup,
-            "security_key_enabled": keys,
-            "totp_enabled": totp,
-            "multiple_second_factor_methods": keys && (totp || backup),
-        })));
+    // authenticate_second_factor: only its failures are ported.
+    let enabled = crate::second_factor::Enabled::load(&mut conn, &settings, user.id).await?;
+    if enabled.any() {
+        let failure = crate::second_factor::authenticate(
+            &mut conn,
+            &state.i18n,
+            user.id,
+            &enabled,
+            param(&form, "second_factor_method"),
+            param(&form, "second_factor_token"),
+            crate::clock::now().timestamp(),
+        )
+        .await?;
+        if let Some(failure) = failure {
+            return Ok(json_response(failure));
+        }
     }
     // user.active && user.email_confirmed?
     let email_confirmed = match &email {

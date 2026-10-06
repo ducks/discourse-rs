@@ -46,6 +46,7 @@ pub mod routes;
 pub mod ruby;
 pub mod schema;
 pub mod search;
+pub mod second_factor;
 pub mod session;
 pub mod sidebar;
 pub mod signup;
