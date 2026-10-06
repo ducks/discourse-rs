@@ -13,6 +13,5 @@
       "method": "GET",
       "path": "/top.json?period=decadely"
     }
-  ],
-  "not_yet": "Invalid list params answer plain text, and topic_ids is not checked."
+  ]
 }

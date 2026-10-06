@@ -380,7 +380,11 @@ async fn show_list(
     .await?
     {
         Ok(doc) => doc,
-        Err((status, message)) => return Ok((status, message).into_response()),
+        Err(message) => {
+            return Ok(super::list::invalid_list_params(
+                &state, &message, path.json,
+            ));
+        }
     };
     let mut conn = state.pool.acquire().await?;
     let empty = doc["topic_list"]["topics"]
