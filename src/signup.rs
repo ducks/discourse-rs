@@ -414,17 +414,7 @@ pub async fn create(
         json!({"type": "signup", "user_id": user_id, "email_token": token, "to_address": null}),
     )
     .await?;
-    if let Some(tz) = s.timezone.filter(|t| !t.is_empty())
-        && (tz.contains('/') || tz == "UTC")
-    {
-        sqlx::query(
-            "UPDATE user_options SET timezone = $2 WHERE user_id = $1 AND timezone IS NULL",
-        )
-        .bind(user_id)
-        .bind(tz)
-        .execute(&mut *conn)
-        .await?;
-    }
+    accounts::update_timezone_if_missing(&mut *conn, user_id, s.timezone).await?;
     let message = i18n
         .t_with(
             "login.activate_email",

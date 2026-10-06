@@ -511,6 +511,12 @@ pub async fn password_reset_update(
     if error.is_some() {
         return Err(crate::Unsupported("password reset error responses").into());
     }
+    accounts::update_timezone_if_missing(
+        &mut tx,
+        user_id,
+        params::string(&p, "timezone").as_deref(),
+    )
+    .await?;
     accounts::set_password(&mut tx, user_id, &password).await?;
     // expire_tokens_if_password_changed
     sqlx::query("DELETE FROM user_auth_tokens WHERE user_id = $1")

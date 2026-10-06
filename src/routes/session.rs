@@ -393,17 +393,8 @@ pub async fn create(
     }
 
     // login(user): timezone, log_on_user, UserSerializer.
-    if let Some(tz) = param(&form, "timezone").filter(|t| !t.is_empty())
-        && (tz.contains('/') || tz == "UTC")
-    {
-        sqlx::query(
-            "UPDATE user_options SET timezone = $2 WHERE user_id = $1 AND timezone IS NULL",
-        )
-        .bind(user.id)
-        .bind(tz)
-        .execute(&mut *conn)
+    crate::accounts::update_timezone_if_missing(&mut conn, user.id, param(&form, "timezone"))
         .await?;
-    }
     let ip = current::remote_ip(&headers, peer);
     let user_agent = headers
         .get(header::USER_AGENT)
