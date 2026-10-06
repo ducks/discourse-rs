@@ -91,6 +91,8 @@ pub struct RenderSettings {
     pub local_dates_email_timezone: String,
     /// The spoiler plugin's rules (`spoiler_enabled`).
     pub spoiler: bool,
+    /// The policy plugin's `[policy]` (`policy_enabled`).
+    pub policy: bool,
     /// `avatar_sizes`, ascending.
     pub avatar_sizes: Vec<i64>,
     /// `paths.baseUri`
@@ -194,6 +196,7 @@ impl RenderSettings {
                 .to_s()
                 .to_string(),
             spoiler: settings.get("spoiler_enabled")?.truthy(),
+            policy: settings.get("policy_enabled")?.truthy(),
             avatar_sizes,
             base_path: base_path.to_string(),
             secure_uploads: settings.get("secure_uploads")?.truthy(),

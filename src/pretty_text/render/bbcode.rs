@@ -20,7 +20,7 @@ use markdown_it::{MarkdownIt, Node, NodeValue, Renderer};
 use regex::Regex;
 
 use super::context::Context;
-use super::element::{BlockText, Element, Holder};
+use super::element::{BlockText, Element, Holder, RawHtml};
 use super::linkify::Linkified;
 use super::{RenderSettings, poll, quotes, untrimmed};
 
@@ -237,10 +237,11 @@ enum BlockTag {
     Details,
     Spoiler,
     Poll,
+    Policy,
 }
 
 /// Tags the bundled plugins register and this port does not render.
-const UNPORTED_BLOCK_TAGS: [&str; 8] = [
+const UNPORTED_BLOCK_TAGS: [&str; 7] = [
     "chat",
     "calendar",
     "timezones",
@@ -248,7 +249,6 @@ const UNPORTED_BLOCK_TAGS: [&str; 8] = [
     "preview",
     "hidden",
     "graphviz",
-    "policy",
 ];
 
 fn block_tag(tag: &str, settings: &RenderSettings, ctx: &Context) -> Option<BlockTag> {
@@ -261,9 +261,12 @@ fn block_tag(tag: &str, settings: &RenderSettings, ctx: &Context) -> Option<Bloc
         "details" => BlockTag::Details,
         "spoiler" if settings.spoiler => BlockTag::Spoiler,
         "poll" if settings.poll => BlockTag::Poll,
+        "policy" if settings.policy => BlockTag::Policy,
         _ => {
             if UNPORTED_BLOCK_TAGS.contains(&tag) {
-                ctx.refuse("a bbcode block of a plugin that is not ported (chat, events, graphviz, policy)");
+                ctx.refuse(
+                    "a bbcode block of a plugin that is not ported (chat, events, graphviz)",
+                );
             }
             return None;
         }
@@ -399,6 +402,18 @@ impl BlockRule for BlockBbcode {
         }
         let next_line = close.line.unwrap_or(start_line);
         let lines = next_line + 1 - start_line;
+        // The policy rule's `wrap` declines a policy without a group, after
+        // applyBBCode has set `state.lineMax` to the closing line and
+        // without setting it back: what follows is parsed one line at a
+        // time. The crate's block loop runs on that limit itself, so this
+        // is not reproduced.
+        if let BlockTag::Policy = kind {
+            let present = |key| info.attr(key).is_some_and(|v| !v.is_empty());
+            if !present("group") && !present("groups") {
+                ctx.refuse("a [policy] without a group");
+                return None;
+            }
+        }
 
         if let BlockTag::Code = kind {
             let content = if close.line.is_none() {
@@ -465,6 +480,7 @@ impl BlockRule for BlockBbcode {
             BlockTag::Code => unreachable!("handled above"),
             BlockTag::Excerpt => wrap("div", class("excerpt"), children),
             BlockTag::Spoiler => wrap("div", class("spoiler"), children),
+            BlockTag::Policy => policy(&info, children),
             BlockTag::Quote => quotes::build(&info, children, settings, ctx),
             BlockTag::Poll => poll::build(&info, children, nested_poll, settings, ctx),
             BlockTag::Wrap => {
@@ -634,6 +650,44 @@ impl InlineRule for InlineBbcode {
     }
 }
 
+/// The policy plugin's `wrap`: `<div class="policy">` with every attribute
+/// as `data-<key>` (not dashed or cleaned, as `applyDataAttributes`
+/// would), sorted, and `version` 1 unless given. The token is made with
+/// `new state.Token`, which is not a block one, so no newline follows the
+/// tags: each ends with the table's glue, which takes the newline the next
+/// block's `cr()` would write.
+fn policy(info: &TagInfo, children: Vec<Node>) -> Node {
+    let mut attrs: Vec<(String, String)> = Vec::new();
+    for (key, value) in &info.attrs {
+        match attrs.iter_mut().find(|(k, _)| k == key) {
+            Some(entry) => entry.1 = value.clone(),
+            None => attrs.push((key.clone(), value.clone())),
+        }
+    }
+    match attrs.iter_mut().find(|(k, _)| k == "version") {
+        Some((_, version)) if version.is_empty() => *version = "1".to_string(),
+        Some(_) => {}
+        None => attrs.push(("version".to_string(), "1".to_string())),
+    }
+    attrs.sort_by(|a, b| a.0.encode_utf16().cmp(b.0.encode_utf16()));
+    let mut open = String::from("<div class=\"policy\"");
+    for (key, value) in attrs {
+        open.push_str(&format!(
+            " data-{}=\"{}\"",
+            markdown_it::common::utils::escape_html(&key),
+            markdown_it::common::utils::escape_html(&value)
+        ));
+    }
+    open.push('>');
+    let mut node = Node::new(Holder);
+    node.children
+        .push(Node::new(RawHtml(format!("{open}{}", super::table::GLUE))));
+    node.children.extend(children);
+    node.children
+        .push(Node::new(RawHtml(format!("</div>{}", super::table::GLUE))));
+    node
+}
+
 /// The `url` rule: the content parsed inline, nested links unwrapped, in a
 /// link to the tag's url, else the first link or text inside it, when
 /// linkify finds a url there (with `https://` in front if need be).
@@ -794,6 +848,9 @@ pub fn allow(list: &mut crate::pretty_text::sanitizer::AllowList, settings: &Ren
     ]);
     if settings.spoiler {
         list.allow(&["span.spoiler", "div.spoiler"]);
+    }
+    if settings.policy {
+        list.allow(&["div.policy"]);
     }
 }
 

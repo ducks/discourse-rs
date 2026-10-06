@@ -197,6 +197,9 @@ samples = [
   # Local dates: zones, ranges, DST gaps and overlaps, unknown zones and
   # dates, the aliases, and moment's format tokens.
   ["[date=2018-09-01 time=21:00 format=\"LL\" timezones=\"Europe/Paris|America/Los_Angeles\"] and [date=2019-10-11 timezone=\"Europe/Paris\"]\n\n[date-range from=2024-04-18 to=2024-04-19 timezone=\"Europe/London\"] and [date-range from=2024-04-18T10:00 to=2024-04-19T11:30:00 format=\"LLLL\"]\n\n[date=2024-03-31 time=02:30 timezone=\"Europe/Paris\"] [date=2024-10-27 time=02:30 timezone=\"Europe/Paris\"] [date=2020-1-5 timezone=\"Mars/Base\"] [date=2020-13-01] [date=2022-01-01 timezone=\"IST\" displayedTimezone=\"Nope/Zone\" countdown=\"true\" recurring=\"1.weeks\"]\n\nx[date=2022-01-01] and ([date=2022-01-01 format=\"L LT LTS l ll lll\"]) [date=2022-01-01 timezones=\"Bad/Zone|Asia/Tokyo\" time=10:00:00.5] [date-range to=2030-06-01] [date=20-6-1] [date=2023-04-03 time=24:00]\n\n[date=2021-12-31 time=23:59:59 format=\"dddd Do MMMM YYYY, h:mm:ss a w/W Q gggg GGGG DDDo E e X x Z ZZ zz\"] [date=2021-01-03 format=\"ww WW wo Wo gg GG YY Mo DDDD do dd kk hh SSS A\"] [date=2016-01-01 format=\"w W gggg GGGG\"]", replies.id, u1.id],
+  # The policy plugin is off on the reference: [policy] is text, which
+  # interrupts nothing.
+  ["text\n[policy group=staff]\nAccept this.\n[/policy]", replies.id, u1.id],
 ]
 if upload
   samples << ["An upload that exists: ![image|64x64](#{upload.short_url}) and [a link|attachment](#{upload.short_url}).", replies.id, u1.id]
