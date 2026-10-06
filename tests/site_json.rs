@@ -388,3 +388,39 @@ async fn uncategorized_category_uses_translated_texts() {
         uncategorized["description_text"]
     );
 }
+
+/// The sidebar's slice of the document is json_for's, key for key.
+#[tokio::test]
+async fn the_sidebar_slice_matches_the_full_document() {
+    let db = TestDb::new().await;
+    let full = json_for(&db.pool).await;
+    let state = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut conn = db.pool.acquire().await.unwrap();
+    let settings = SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals)
+        .await
+        .unwrap();
+    let slice = Site {
+        conn: &mut conn,
+        config: &state.config,
+        settings: &settings,
+        defs: &state.site_setting_defs,
+        i18n: &state.i18n,
+        guardian: Guardian::anonymous(),
+    }
+    .sidebar_json()
+    .await
+    .unwrap();
+    let keys: Vec<&String> = slice.as_object().unwrap().keys().collect();
+    assert_eq!(
+        keys,
+        [
+            "uncategorized_category_id",
+            "navigation_menu_site_top_tags",
+            "categories",
+            "anonymous_sidebar_sections"
+        ]
+    );
+    for (key, value) in slice.as_object().unwrap() {
+        assert_eq!(value, &full[key], "{key}");
+    }
+}

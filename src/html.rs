@@ -171,7 +171,7 @@ impl Site {
             || !settings.get("login_required")?.truthy())
             && settings.get("navigation_menu")?.to_s() == "sidebar";
         if sidebar_enabled {
-            let member = match guardian.user() {
+            let member = match guardian.logged_in() {
                 Some(user) => {
                     Some(crate::current_user::sidebar_member(&mut conn, settings, user).await?)
                 }
@@ -185,7 +185,7 @@ impl Site {
                 i18n: &state.i18n,
                 guardian: guardian.clone(),
             }
-            .json_for()
+            .sidebar_json()
             .await?;
             let emoji_set = settings.get("emoji_set")?.to_s().to_string();
             self.chrome.sidebar = crate::sidebar::render(
