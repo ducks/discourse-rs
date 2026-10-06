@@ -57,6 +57,8 @@ pub struct Viewer {
     pub csrf_token: String,
     /// The header's avatar (48px).
     pub avatar_url: String,
+    /// For the topic list's new-topic dot (`trust_level > 0`).
+    pub trust_level: i32,
 }
 
 /// The viewer block for a page, plus the `_forum_session` cookie to set
@@ -172,27 +174,6 @@ pub struct TagLink {
     pub url: String,
 }
 
-pub struct PosterItem {
-    pub username: String,
-    pub description: String,
-}
-
-pub struct TopicItem {
-    pub title_unicode: String,
-    pub url: String,
-    pub title: String,
-    pub category: Option<CategoryBadge>,
-    pub tags: Vec<TagLink>,
-    pub excerpt: Option<String>,
-    pub posters: Vec<PosterItem>,
-    pub replies: i64,
-    pub views: i64,
-    pub bumped_at: String,
-    pub bumped_at_iso: String,
-    pub pinned: bool,
-    pub closed: bool,
-}
-
 #[derive(Template)]
 #[template(path = "latest.html")]
 pub struct LatestPage {
@@ -204,7 +185,8 @@ pub struct LatestPage {
     pub viewer: Option<Viewer>,
     pub bus_position: String,
     pub chrome: Chrome,
-    pub topics: Vec<TopicItem>,
+    /// The topic list's rows, rendered (topic_list_view).
+    pub rows: Vec<String>,
     pub more_url: Option<String>,
     /// Set on category pages.
     pub heading: Option<CategoryHeading>,
@@ -394,53 +376,33 @@ fn s(v: &Value) -> String {
     v.as_str().unwrap_or_default().to_string()
 }
 
-/// The latest page from the /latest.json document.
+/// The latest page from the /latest.json document. `expand_all_pinned` is
+/// a category's or a tag's list, which shows every pinned topic's excerpt.
 pub async fn latest_page(
     conn: &mut PgConnection,
     site: Site,
     list: &Value,
+    i18n: &I18n,
+    settings: &SiteSettings,
+    expand_all_pinned: bool,
 ) -> Result<LatestPage, HtmlError> {
-    let cats = categories(conn).await?;
-    let users = list["users"].as_array().cloned().unwrap_or_default();
-    let username = |id: &Value| {
-        users
-            .iter()
-            .find(|u| u["id"] == *id)
-            .and_then(|u| u["username"].as_str())
-            .unwrap_or("")
-            .to_string()
+    let categories = crate::topic_list_view::categories(conn).await?;
+    let cx = crate::topic_list_view::ListContext {
+        i18n,
+        base_path: &site.base_path,
+        now: chrono::Utc::now(),
+        categories: &categories,
+        expand_all_pinned,
+        member_trust_level: site.viewer.as_ref().map(|v| v.trust_level),
+        settings: crate::topic_list_view::ListSettings::load(settings)?,
     };
-    let base = site.base_path.clone();
-    let topics = list["topic_list"]["topics"]
+    let users = list["users"].as_array().cloned().unwrap_or_default();
+    let rows = list["topic_list"]["topics"]
         .as_array()
         .map(|topics| {
             topics
                 .iter()
-                .map(|t| TopicItem {
-                    url: format!("{base}/t/{}/{}", s(&t["slug"]), t["id"]),
-                    title: s(&t["title"]),
-                    title_unicode: crate::emoji::gsub_emoji_to_unicode(&s(&t["title"])),
-                    category: badge(&base, &cats, t["category_id"].as_i64()),
-                    tags: tags(&base, &t["tags"]),
-                    excerpt: t["excerpt"].as_str().map(str::to_string),
-                    posters: t["posters"]
-                        .as_array()
-                        .map(|ps| {
-                            ps.iter()
-                                .map(|p| PosterItem {
-                                    username: username(&p["user_id"]),
-                                    description: s(&p["description"]),
-                                })
-                                .collect()
-                        })
-                        .unwrap_or_default(),
-                    replies: t["reply_count"].as_i64().unwrap_or(0),
-                    views: t["views"].as_i64().unwrap_or(0),
-                    bumped_at: date(&s(&t["bumped_at"])),
-                    bumped_at_iso: s(&t["bumped_at"]),
-                    pinned: t["pinned"] == true,
-                    closed: t["closed"] == true,
-                })
+                .map(|t| crate::topic_list_view::row(&cx, t, &users))
                 .collect()
         })
         .unwrap_or_default();
@@ -453,7 +415,7 @@ pub async fn latest_page(
         lang: site.lang,
         base_path: site.base_path,
         crawler: Crawler::default(),
-        topics,
+        rows,
         heading: None,
         tag: None,
         live_filter: String::new(),

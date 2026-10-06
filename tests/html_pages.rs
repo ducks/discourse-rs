@@ -49,12 +49,20 @@ async fn home_and_latest_render_the_topic_list() {
         assert!(html.contains("<!DOCTYPE html>"));
         assert!(html.contains("<title>Latest topics - Discourse</title>"));
         assert!(
-            html.contains(r#"href="/t/welcome-to-discourse/5""#),
+            html.contains(r#"href="/t/welcome-to-discourse/5/1""#),
             "{path}"
         );
-        assert!(html.contains("Welcome to Discourse! 👋"), "emoji title");
-        assert!(html.contains(r#"<span class="category-name">General</span>"#));
-        assert!(html.contains(r#"class="discourse-tag">howto</a>"#));
+        assert!(
+            html.contains(
+                r#"Welcome to Discourse! <img width="20" height="20" src='/images/emoji/twitter/wave.png?v=15' title='wave' alt='wave' class='emoji'>"#
+            ),
+            "emoji title"
+        );
+        assert!(html.contains(r#"<span class="badge-category__name">General</span>"#));
+        assert!(html.contains(
+            r#"<a href='/tag/howto/1'  data-tag-name=howto class='discourse-tag simple'>howto</a>"#
+        ));
+        assert!(html.contains(r#"<table class="topic-list">"#));
         assert!(!html.contains("Parity fixture: unlisted topic"));
         assert!(!html.contains("Parity fixture: deleted topic"));
     }
@@ -125,7 +133,11 @@ async fn stylesheet_is_served() {
     let (status, content_type, css) = get(&db.pool, "/assets/site.css").await;
     assert_eq!(status, StatusCode::OK);
     assert!(content_type.starts_with("text/css"));
-    assert!(css.contains("topic-list"));
+    assert!(css.contains("topic-pagination"));
+    let (status, content_type, css) = get(&db.pool, "/assets/discourse.css").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(content_type.starts_with("text/css"));
+    assert!(css.contains(".topic-list .posters"));
 }
 
 /// Each page says where its live updates start, as a pg-bus position, and

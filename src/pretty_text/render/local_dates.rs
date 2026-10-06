@@ -410,6 +410,12 @@ fn week_of_year(date: NaiveDate, dow: i64, doy: i64) -> (i64, i64) {
     }
 }
 
+/// `moment(date).format(format)` in English, in UTC, the zone the pages
+/// show dates in until a viewer's own is used.
+pub fn format_utc(utc: DateTime<Utc>, pattern: &str) -> Result<String, &'static str> {
+    format(&Moment::utc(utc), pattern)
+}
+
 /// `moment#format`, English, for a valid moment.
 fn format(m: &Moment, format: &str) -> Result<String, &'static str> {
     let format = expand(format);

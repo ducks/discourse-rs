@@ -20,7 +20,7 @@ mod footnotes;
 mod html_img;
 mod link_pipes;
 mod linkify;
-mod local_dates;
+pub mod local_dates;
 mod md_utils;
 mod newline;
 mod onebox;

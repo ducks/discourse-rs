@@ -31,49 +31,28 @@
 </div>
 {% endif %}
 <div id="list-updates" class="list-updates"></div>
-<div class="topic-list-container">
+<div class="container list-container --topic-list">
+ <div class="row full-width">
+  <div id="list-area">
+   <div class="contents">
   <table class="topic-list">
-    <thead>
+    <caption class="sr-only">Topic list, column headers with buttons are sortable.</caption>
+    <thead class="topic-list-header">
       <tr>
-        <th>Topic</th>
-        <th class="posters"></th>
-        <th class="replies">Replies</th>
-        <th class="views">Views</th>
-        <th class="activity">Activity</th>
+        <th class="topic-list-data default" data-sort-order="default" scope="col"><span>Topic</span></th>
+        <th aria-label="Posters" class="topic-list-data posters" data-sort-order="posters" scope="col"><span class="sr-only">Posters</span></th>
+        <th class="topic-list-data posts sortable num" data-sort-order="posts" scope="col"><button>Replies</button></th>
+        <th class="topic-list-data views sortable num" data-sort-order="views" scope="col"><button>Views</button></th>
+        <th class="topic-list-data activity sortable num" data-sort-order="activity" scope="col"><button>Activity</button></th>
       </tr>
     </thead>
-    <tbody>
-      {% for t in topics %}
-      <tr class="topic-list-item{% if t.pinned %} pinned{% endif %}{% if t.closed %} closed{% endif %}">
-        <td class="main-link">
-          <span class="link-top-line">
-            {% if t.pinned %}<span class="topic-status" title="pinned">&#x1F4CC;</span>{% endif %}
-            {% if t.closed %}<span class="topic-status" title="closed">&#x1F512;</span>{% endif %}
-            <a href="{{ t.url }}" class="title raw-link raw-topic-link">{{ t.title_unicode }}</a>
-          </span>
-          <div class="link-bottom-line">
-            {% if let Some(c) = t.category %}
-            <a href="{{ c.url }}" class="badge-wrapper bullet">
-              <span class="badge-category-bg" style="background-color: #{{ c.color }}"></span>
-              <span class="badge-category clear-badge"><span class="category-name">{{ c.name }}</span></span>
-            </a>
-            {% endif %}
-            {% if !t.tags.is_empty() %}
-            <span class="discourse-tags">
-              {% for tag in t.tags %}<a href="{{ tag.url }}" class="discourse-tag">{{ tag.name }}</a> {% endfor %}
-            </span>
-            {% endif %}
-          </div>
-          {% if let Some(e) = t.excerpt %}<p class="excerpt">{{ e|safe }}</p>{% endif %}
-        </td>
-        <td class="posters">{% for p in t.posters %}<a class="poster" rel="nofollow" href="{{ base_path }}/u/{{ p.username }}" title="{{ p.description }}">{{ p.username }}</a> {% endfor %}</td>
-        <td class="num replies">{{ t.replies }}</td>
-        <td class="num views">{{ t.views }}</td>
-        <td class="activity"><time datetime="{{ t.bumped_at_iso }}" title="{{ t.bumped_at_iso }}">{{ t.bumped_at }}</time></td>
-      </tr>
-      {% endfor %}
+    <tbody class="topic-list-body">
+      {% for row in rows %}{{ row|safe }}{% endfor %}
     </tbody>
   </table>
+   </div>
+  </div>
+ </div>
   {% if let Some(url) = more_url %}
   <div class="more-topics"><a href="{{ url }}" rel="next">Next page</a></div>
   {% endif %}
