@@ -578,7 +578,13 @@ fn render_entity(e: &Entity, limit: usize, top: bool, out: &mut String) -> Resul
         if text.chars().count() > limit {
             return Err(Unsupported("truncating a long incoming email"));
         }
-        let (encoded, encoding) = encode_body(text.as_bytes());
+        // 7bit and 8bit bodies decode to a string still in the message's
+        // UTF-8; quoted-printable and base64 ones to binary.
+        let binary = matches!(
+            e.transfer_encoding().as_str(),
+            "quoted-printable" | "base64"
+        );
+        let (encoded, encoding) = encode_body(text.as_bytes(), binary);
         (Some(encoded), encoding)
     };
     // The fields, with the charset set to UTF-8 and the transfer encoding
@@ -651,8 +657,9 @@ fn render_entity(e: &Entity, limit: usize, top: bool, out: &mut String) -> Resul
 
 /// The body in the transfer encoding the gem negotiates for a 7bit
 /// message: 7bit when it can, else the cheaper of quoted-printable and
-/// base64 (quoted-printable on a tie).
-fn encode_body(decoded: &[u8]) -> (String, String) {
+/// base64 (quoted-printable on a tie). `binary`: the decoded body is a
+/// binary string to Ruby.
+fn encode_body(decoded: &[u8], binary: bool) -> (String, String) {
     let ascii = decoded.is_ascii();
     let long_line = decoded.split(|b| *b == b'\n').any(|line| line.len() > 998);
     if ascii && !long_line {
@@ -668,9 +675,14 @@ fn encode_body(decoded: &[u8]) -> (String, String) {
         .count();
     let qp_cost = ((decoded.len() - cheap) * 3 + cheap) as f64 / decoded.len().max(1) as f64;
     if qp_cost <= 4.0 / 3.0 {
-        // QuotedPrintable.encode: to_crlf([to_lf(str)].pack("M")), so a CR
-        // is a line break, never "=0D".
-        let lf = binary_unsafe_to_lf(decoded);
+        // QuotedPrintable.encode: to_crlf([to_lf(str)].pack("M")). The
+        // gem's to_lf leaves a binary, non-ASCII string alone, whose CRs
+        // become "=0D"; a text one has its line breaks made LF.
+        let lf = if binary && !ascii {
+            decoded.to_vec()
+        } else {
+            to_lf(decoded)
+        };
         (
             String::from_utf8(binary_unsafe_to_crlf(qp_encode(&lf).as_bytes())).expect("ASCII"),
             "quoted-printable".into(),
@@ -685,24 +697,6 @@ fn encode_body(decoded: &[u8]) -> (String, String) {
         }
         (out, "base64".into())
     }
-}
-
-/// `binary_unsafe_to_lf`: every line break (CRLF or a lone CR) as LF.
-fn binary_unsafe_to_lf(s: &[u8]) -> Vec<u8> {
-    let mut out = Vec::with_capacity(s.len());
-    let mut i = 0;
-    while i < s.len() {
-        if s[i] == b'\r' {
-            out.push(b'\n');
-            if s.get(i + 1) == Some(&b'\n') {
-                i += 1;
-            }
-        } else {
-            out.push(s[i]);
-        }
-        i += 1;
-    }
-    out
 }
 
 /// `binary_unsafe_to_crlf`: every line break as CRLF.
