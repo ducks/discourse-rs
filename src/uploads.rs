@@ -1,12 +1,11 @@
 //! Uploads: UploadsController#create through UploadCreator, UploadValidator
 //! and the local FileStore, and UploadSerializer.
 //!
-//! Rails rewrites most images before storing them (image_optim for PNG and
-//! JPEG, JPEG re-encoding, HEIF conversion, SVG cleaning, orientation,
-//! cropping, downsizing), with external tools whose output the port cannot
-//! reproduce byte for byte. Those are refused. What Rails stores as sent is
-//! ported: attachments, and GIFs (never optimized), with FastImage's size and
-//! animation and ImageMagick's dominant colour, run as Rails runs it.
+//! Attachments and GIFs are stored as sent. PNG, JPEG and WebP go through
+//! UploadCreator's steps (conversion to JPEG, re-encoding, orientation,
+//! optimization, downsizing) with the in-process tools of src/images.rs,
+//! which make Rails' decisions but not always its bytes. Refused: SVG
+//! cleaning, HEIF conversion, cropped upload types.
 
 use std::path::{Path, PathBuf};
 
@@ -14,6 +13,7 @@ use serde_json::{Value, json};
 use sha1::{Digest, Sha1};
 use sqlx::PgConnection;
 
+use crate::images;
 use crate::site_settings::SiteSettings;
 use crate::url::Urls;
 use crate::{AppError, Unsupported};
@@ -92,48 +92,6 @@ fn detect(bytes: &[u8]) -> Option<ImageType> {
     }
 }
 
-/// A GIF's logical screen size and frame count (FastImage's size and
-/// `animated?`, which counts image descriptors).
-fn gif_info(bytes: &[u8]) -> Option<(u32, u32, usize)> {
-    if bytes.len() < 13 {
-        return None;
-    }
-    let width = u16::from_le_bytes([bytes[6], bytes[7]]) as u32;
-    let height = u16::from_le_bytes([bytes[8], bytes[9]]) as u32;
-    let flags = bytes[10];
-    let mut i = 13;
-    if flags & 0x80 != 0 {
-        i += 3 * (1usize << ((flags & 0x07) + 1));
-    }
-    let skip_sub_blocks = |mut i: usize| -> Option<usize> {
-        loop {
-            let len = *bytes.get(i)? as usize;
-            i += 1;
-            if len == 0 {
-                return Some(i);
-            }
-            i += len;
-        }
-    };
-    let mut frames = 0;
-    loop {
-        match *bytes.get(i)? {
-            0x21 => i = skip_sub_blocks(i + 2)?,
-            0x2C => {
-                frames += 1;
-                let local = *bytes.get(i + 9)?;
-                i += 10;
-                if local & 0x80 != 0 {
-                    i += 3 * (1usize << ((local & 0x07) + 1));
-                }
-                i = skip_sub_blocks(i + 1)?;
-            }
-            0x3B => return Some((width, height, frames)),
-            _ => return None,
-        }
-    }
-}
-
 /// `ImageSizer.resize(w, h)`: within max_image_width and
 /// max_image_height, keeping the ratio.
 fn image_sizer_resize(s: &SiteSettings, w: u32, h: u32) -> Result<(i64, i64), AppError> {
@@ -168,36 +126,6 @@ pub fn human_size(bytes: i64) -> String {
     format!("{text} {}", units[(exponent - 1) as usize])
 }
 
-/// `Upload#calculate_dominant_color!` with ImageMagick, as Rails runs it:
-/// a failed command (bad input) saves an empty colour, output without one
-/// raises. A missing `magick` is an error here, not bad input.
-async fn dominant_color(path: &Path) -> Result<String, AppError> {
-    let output = tokio::process::Command::new("magick")
-        .arg(path)
-        .args([
-            "-depth",
-            "8",
-            "-resize",
-            "1x1",
-            "-define",
-            "histogram:unique-colors=true",
-            "-format",
-            "%c",
-            "histogram:info:",
-        ])
-        .output()
-        .await?;
-    if !output.status.success() {
-        return Ok(String::new());
-    }
-    let text = String::from_utf8_lossy(&output.stdout);
-    let color = regex::Regex::new(r"#([0-9A-F]{6})")
-        .expect("valid regex")
-        .captures(&text)
-        .map(|c| c[1].to_string());
-    color.ok_or_else(|| Unsupported("dominant colour output without a colour").into())
-}
-
 /// `FileStore::BaseStore#get_path_for("original", id, sha, extension)`
 fn store_path(id: i32, sha1: &str, extension: &str) -> String {
     let depth = if id > 0 {
@@ -225,6 +153,132 @@ fn extensions_to_set(value: &str) -> Vec<String> {
     out
 }
 
+/// `UploadCreator::MIN_PIXELS_TO_CONVERT_TO_JPEG`, `MIN_CONVERT_TO_JPEG_
+/// BYTES_SAVED` and `MIN_CONVERT_TO_JPEG_SAVING_RATIO`.
+const MIN_PIXELS_TO_CONVERT_TO_JPEG: u64 = 1280 * 720;
+const MIN_CONVERT_TO_JPEG_BYTES_SAVED: usize = 75_000;
+const MIN_CONVERT_TO_JPEG_SAVING_RATIO: f64 = 0.70;
+
+/// What the image steps read from the settings and the request.
+#[derive(Clone, Copy)]
+struct ImageOpts {
+    pasted: bool,
+    /// max_image_megapixels in pixels, 0 for no limit.
+    max_pixels: u64,
+    /// max_image_size_kb in bytes, 0 for no limit.
+    max_size: usize,
+    png_to_jpg_quality: u8,
+    recompress_quality: u8,
+}
+
+/// Why an image upload is refused, as UploadCreator's errors.
+enum ImageRefusal {
+    Corrupted,
+    SizeNotFound,
+    TooManyPixels,
+    TooLarge,
+    OptimizeFailure,
+}
+
+/// `extract_image_info!`
+fn extract_image_info(bytes: &[u8], opts: &ImageOpts) -> Result<images::Info, ImageRefusal> {
+    let info = images::info(bytes).ok_or(ImageRefusal::Corrupted)?;
+    if info.pixels() == 0 {
+        return Err(ImageRefusal::SizeNotFound);
+    }
+    if opts.max_pixels > 0 && info.pixels() >= opts.max_pixels {
+        return Err(ImageRefusal::TooManyPixels);
+    }
+    Ok(info)
+}
+
+/// `replace_with_jpeg_if_sufficiently_smaller!`
+fn replace_with_jpeg(bytes: &mut Vec<u8>, info: &mut images::Info, quality: u8, opts: &ImageOpts) {
+    if bytes.len() < MIN_CONVERT_TO_JPEG_BYTES_SAVED {
+        return;
+    }
+    let Some(jpeg) = images::to_jpeg(bytes, info.format, quality) else {
+        return;
+    };
+    let keep = (jpeg.len() as f64) < bytes.len() as f64 * MIN_CONVERT_TO_JPEG_SAVING_RATIO
+        && bytes.len() - jpeg.len() > MIN_CONVERT_TO_JPEG_BYTES_SAVED;
+    if keep && let Ok(new_info) = extract_image_info(&jpeg, opts) {
+        *bytes = jpeg;
+        *info = new_info;
+    }
+}
+
+/// UploadCreator#create_for's image steps, in its order: PNG to JPEG
+/// (large or pasted PNGs), JPEG re-encoding (over the recompress
+/// quality), orientation, optimization and downsizing, then the size
+/// check. GIFs are stored as sent.
+fn process_image(
+    mut bytes: Vec<u8>,
+    opts: &ImageOpts,
+) -> Result<(Vec<u8>, images::Info), ImageRefusal> {
+    use images::Format;
+    let mut info = extract_image_info(&bytes, opts)?;
+    if info.format == Format::Gif {
+        return Ok((bytes, info));
+    }
+    match info.format {
+        // convert_png_to_jpeg?
+        Format::Png
+            if opts.png_to_jpg_quality != 100
+                && (opts.pasted || info.pixels() > MIN_PIXELS_TO_CONVERT_TO_JPEG) =>
+        {
+            replace_with_jpeg(&mut bytes, &mut info, opts.png_to_jpg_quality, opts);
+        }
+        // should_alter_jpeg_quality?: target_jpeg_image_quality is present
+        // when the file's quality is unknown or above the target.
+        Format::Jpeg => {
+            let quality = images::jpeg_quality(&bytes);
+            if quality == 0 || quality > u32::from(opts.recompress_quality) {
+                replace_with_jpeg(&mut bytes, &mut info, opts.recompress_quality, opts);
+            }
+        }
+        _ => {}
+    }
+    // fix_orientation!
+    if info.format == Format::Jpeg && info.orientation > 1 {
+        let upright = images::fix_orientation(&bytes).ok_or(ImageRefusal::Corrupted)?;
+        info = extract_image_info(&upright, opts)?;
+        bytes = upright;
+    }
+    // should_optimize?: never GIF; PNG under two megapixels.
+    if (info.format != Format::Png || info.pixels() < 2_000_000)
+        && let Some(optimized) = images::optimize(&bytes, info.format, false)
+    {
+        info = extract_image_info(&optimized, opts)?;
+        bytes = optimized;
+    }
+    // should_downsize? / downsize!: halved up to three times.
+    let should_downsize = |bytes: &[u8], info: &images::Info| {
+        opts.max_size > 0 && bytes.len() >= opts.max_size && !info.animated
+    };
+    if should_downsize(&bytes, &info) {
+        for _ in 0..3 {
+            let original_size = bytes.len();
+            let smaller =
+                images::downsize_half(&bytes, info.format).ok_or(ImageRefusal::OptimizeFailure)?;
+            info = extract_image_info(&smaller, opts).map_err(|_| ImageRefusal::OptimizeFailure)?;
+            bytes = smaller;
+            if bytes.len() >= original_size || info.pixels() == 0 || !should_downsize(&bytes, &info)
+            {
+                break;
+            }
+        }
+    }
+    // is_still_too_big?
+    if opts.max_pixels > 0 && info.pixels() >= opts.max_pixels {
+        return Err(ImageRefusal::TooManyPixels);
+    }
+    if opts.max_size > 0 && bytes.len() >= opts.max_size {
+        return Err(ImageRefusal::TooLarge);
+    }
+    Ok((bytes, info))
+}
+
 /// What an upload request carried.
 pub struct NewUpload<'a> {
     pub user_id: i32,
@@ -232,6 +286,8 @@ pub struct NewUpload<'a> {
     pub upload_type: &'a str,
     pub filename: &'a str,
     pub bytes: &'a [u8],
+    /// `params[:pasted] == "true"`: pasted from the clipboard.
+    pub pasted: bool,
 }
 
 /// How an upload ends: the serialized upload or its errors.
@@ -269,51 +325,76 @@ pub async fn create(
         || detected.is_some_and(|d| is_supported_image(&format!("test.{}", d.name())));
     let mut image: Option<(u32, u32, bool)> = None;
     let mut image_type: Option<&'static str> = None;
+    let mut bytes: Vec<u8> = up.bytes.to_vec();
     if is_image {
         match detected {
-            Some(ImageType::Gif) => {}
-            Some(other) => {
-                return Err(Unsupported(match other {
-                    ImageType::Png | ImageType::Jpeg | ImageType::Webp => {
-                        "uploading images Rails optimizes (image_optim)"
-                    }
-                    _ => "uploading this image type",
-                })
-                .into());
-            }
+            Some(ImageType::Gif | ImageType::Png | ImageType::Jpeg | ImageType::Webp) => {}
+            Some(_) => return Err(Unsupported("uploading this image type").into()),
             None => {
                 return Ok(Outcome::Invalid(vec![t(
                     "upload.images.not_supported_or_corrupted",
                 )]));
             }
         }
-        // extract_image_info!
-        let Some((w, h, frames)) = gif_info(up.bytes) else {
-            return Ok(Outcome::Invalid(vec![t(
-                "upload.images.not_supported_or_corrupted",
-            )]));
-        };
-        let pixels = w as i64 * h as i64;
-        if pixels == 0 {
-            return Ok(Outcome::Invalid(vec![t("upload.images.size_not_found")]));
-        }
-        let max_pixels = (s.get("max_image_megapixels")?.to_f() * 1_000_000.0) as i64;
-        if max_pixels > 0 && pixels >= max_pixels {
-            return Err(Unsupported("images over max_image_megapixels").into());
-        }
         if TYPES_TO_CROP.contains(&up.upload_type) {
             return Err(Unsupported("cropped upload types").into());
         }
-        let animated = frames > 1;
-        let max_size = s.get("max_image_size_kb")?.to_i() * 1024;
-        if max_size > 0 && up.bytes.len() as i64 >= max_size {
-            return Err(Unsupported("downsizing or refusing images over max_image_size_kb").into());
+        if !s.get("strip_image_metadata")?.truthy() {
+            return Err(Unsupported("keeping image metadata (strip_image_metadata off)").into());
         }
-        image = Some((w, h, animated));
-        image_type = Some("gif");
+        let quality = |name: &str| -> Result<u8, AppError> {
+            // SiteSetting::ImageQuality: the setting, else image_quality.
+            let value = match s.get(name)?.to_i() {
+                0 => s.get("image_quality")?.to_i(),
+                q => q,
+            };
+            Ok(value.clamp(1, 100) as u8)
+        };
+        let opts = ImageOpts {
+            pasted: up.pasted,
+            max_pixels: (s.get("max_image_megapixels")?.to_f() * 1_000_000.0) as u64,
+            max_size: (s.get("max_image_size_kb")?.to_i() * 1024).max(0) as usize,
+            png_to_jpg_quality: quality("png_to_jpg_quality")?,
+            recompress_quality: quality("recompress_original_jpg_quality")?,
+        };
+        let processed = tokio::task::spawn_blocking(move || process_image(bytes, &opts))
+            .await
+            .map_err(std::io::Error::other)?;
+        let (processed, info) = match processed {
+            Ok(done) => done,
+            Err(error) => {
+                let message = match error {
+                    ImageRefusal::Corrupted => t("upload.images.not_supported_or_corrupted"),
+                    ImageRefusal::SizeNotFound => t("upload.images.size_not_found"),
+                    ImageRefusal::OptimizeFailure => t("upload.optimize_failure_message"),
+                    ImageRefusal::TooManyPixels => i18n
+                        .t_with(
+                            "upload.images.larger_than_x_megapixels",
+                            &[
+                                (
+                                    "max_image_megapixels",
+                                    &s.get("max_image_megapixels")?.to_s(),
+                                ),
+                                ("original_filename", up.filename),
+                            ],
+                        )
+                        .unwrap_or_default(),
+                    ImageRefusal::TooLarge => i18n
+                        .t_with(
+                            "upload.images.too_large_humanized",
+                            &[("max_size", &human_size(opts.max_size as i64))],
+                        )
+                        .unwrap_or_default(),
+                };
+                return Ok(Outcome::Invalid(vec![message]));
+            }
+        };
+        bytes = processed;
+        image = Some((info.width, info.height, info.animated));
+        image_type = Some(info.format.name());
     }
 
-    let sha1 = format!("{:x}", Sha1::digest(up.bytes));
+    let sha1 = format!("{:x}", Sha1::digest(&bytes));
     // do we already have that upload?
     let existing: Option<(i32, String)> =
         sqlx::query_as("SELECT id, url FROM uploads WHERE sha1 = $1")
@@ -364,7 +445,7 @@ pub async fn create(
     };
 
     // UploadValidator on save.
-    let errors = validate(s, i18n, up, &original_filename)?;
+    let errors = validate(s, i18n, up, &original_filename, bytes.len())?;
     if !errors.is_empty() {
         return Ok(Outcome::Invalid(errors));
     }
@@ -388,7 +469,7 @@ pub async fn create(
     )
     .bind(up.user_id)
     .bind(&original_filename)
-    .bind(up.bytes.len() as i32)
+    .bind(bytes.len() as i32)
     .bind(&sha1)
     .bind(&extension)
     .bind(width.map(|v| v as i32))
@@ -410,12 +491,21 @@ pub async fn create(
     if let Some(parent) = path.parent() {
         tokio::fs::create_dir_all(parent).await?;
     }
-    tokio::fs::write(&path, up.bytes).await?;
+    tokio::fs::write(&path, &bytes).await?;
     let url = format!("/uploads/default/{relative}");
-    // Rails reads the colour from the file as sent, before saving; the
-    // stored file is the same bytes.
-    let color = match image {
-        Some(_) => Some(dominant_color(&path).await?),
+    // calculate_dominant_color! on the processed file; one that does not
+    // decode saves an empty colour.
+    let color = match image_type.and_then(crate::images::Format::from_extension) {
+        Some(format) => {
+            let colour_bytes = bytes.clone();
+            Some(
+                tokio::task::spawn_blocking(move || {
+                    crate::images::dominant_color(&colour_bytes, format).unwrap_or_default()
+                })
+                .await
+                .map_err(std::io::Error::other)?,
+            )
+        }
         None => None,
     };
     sqlx::query(
@@ -445,6 +535,7 @@ fn validate(
     i18n: &crate::i18n::I18n,
     up: &NewUpload<'_>,
     original_filename: &str,
+    filesize: usize,
 ) -> Result<Vec<String>, AppError> {
     let extension = Path::new(original_filename)
         .extension()
@@ -499,7 +590,7 @@ fn validate(
         s.get(&format!("max_{kind}_size_kb"))?.to_i()
     };
     let max_bytes = max_kb * 1024;
-    if up.bytes.len() as i64 > max_bytes {
+    if filesize as i64 > max_bytes {
         errors.push(
             i18n.t_with(
                 &format!("upload.{kind}s.too_large_humanized"),

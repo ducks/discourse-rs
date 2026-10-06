@@ -946,12 +946,33 @@ async fn replay(case: &Value, run_jobs: &[String]) -> Vec<String> {
         .into_iter()
         .map(|f| format!("job failed: {f}"))
         .collect();
+    // An image upload whose processed file our encoders wrote differently
+    // (src/images.rs) is compared through its byte-derived values mapped
+    // onto Rails': its file is checked against its own sha1.
+    let encoded = encoded_uploads(&rails, &ours);
+    for upload in &encoded {
+        let stored = public.join(upload.url.trim_start_matches('/'));
+        match std::fs::read(&stored) {
+            Ok(bytes) => {
+                use sha1::Digest;
+                let sha1 = format!("{:x}", sha1::Sha1::digest(&bytes));
+                if upload.sha1 != sha1 {
+                    out.push(format!("{}: stored file has sha1 {sha1}", upload.url));
+                }
+            }
+            Err(e) => out.push(format!("{}: not stored ({e})", upload.url)),
+        }
+    }
+    ours = map_encoded(&ours, &encoded, None);
     // The files the uploads stored, where Rails stored them.
     for upload in rails["changes"]["uploads"]["inserted"]
         .as_array()
         .into_iter()
         .flatten()
     {
+        if encoded.iter().any(|e| e.id == upload["id"]) {
+            continue;
+        }
         let url = upload["url"].as_str().unwrap_or_default();
         let stored = public.join(url.trim_start_matches('/'));
         match std::fs::read(&stored) {
@@ -985,6 +1006,106 @@ async fn replay(case: &Value, run_jobs: &[String]) -> Vec<String> {
         &mut out,
     );
     out
+}
+
+/// An image upload of ours whose bytes differ from Rails' row of the same
+/// id: what its bytes decided, and Rails' values for them.
+struct EncodedUpload {
+    id: Value,
+    url: String,
+    sha1: String,
+    pairs: Vec<(String, String)>,
+    filesize: (Value, Value),
+}
+
+/// `Upload.base62_sha1`: the sha1 as a base62 number.
+fn base62(sha1: &str) -> String {
+    const DIGITS: &[u8] = b"0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    let mut n: Vec<u8> = (0..sha1.len() / 2)
+        .filter_map(|i| u8::from_str_radix(&sha1[2 * i..2 * i + 2], 16).ok())
+        .collect();
+    let mut out = Vec::new();
+    while n.iter().any(|b| *b != 0) {
+        let mut rem = 0u32;
+        for b in n.iter_mut() {
+            let acc = (rem << 8) | u32::from(*b);
+            *b = (acc / 62) as u8;
+            rem = acc % 62;
+        }
+        out.push(DIGITS[rem as usize]);
+    }
+    out.reverse();
+    String::from_utf8(out).unwrap()
+}
+
+/// The image uploads (rows with a width) both sides inserted under one id
+/// with different sha1s: byte-for-byte equality is not expected of the
+/// image encoders, so their sha1, its short form and the file size are
+/// mapped onto Rails' before comparing. Everything else about the row
+/// (dimensions, colour, names, extension) still compares.
+fn encoded_uploads(rails: &Value, ours: &Value) -> Vec<EncodedUpload> {
+    let inserted = |v: &Value| -> Vec<Value> {
+        v["changes"]["uploads"]["inserted"]
+            .as_array()
+            .cloned()
+            .unwrap_or_default()
+    };
+    let rails_rows = inserted(rails);
+    inserted(ours)
+        .into_iter()
+        .filter(|o| !o["width"].is_null())
+        .filter_map(|o| {
+            let r = rails_rows.iter().find(|r| r["id"] == o["id"])?;
+            let (os, rs) = (o["sha1"].as_str()?, r["sha1"].as_str()?);
+            if os == rs {
+                return None;
+            }
+            let size = |row: &Value| {
+                discourse_rs::uploads::human_size(row["filesize"].as_i64().unwrap_or(0))
+            };
+            Some(EncodedUpload {
+                id: o["id"].clone(),
+                url: o["url"].as_str().unwrap_or_default().to_string(),
+                sha1: os.to_string(),
+                pairs: vec![
+                    (os.to_string(), rs.to_string()),
+                    (base62(os), base62(rs)),
+                    (size(&o), size(r)),
+                ],
+                filesize: (o["filesize"].clone(), r["filesize"].clone()),
+            })
+        })
+        .collect()
+}
+
+/// `value` with each encoded upload's values replaced by Rails'.
+fn map_encoded(value: &Value, encoded: &[EncodedUpload], key: Option<&str>) -> Value {
+    if encoded.is_empty() {
+        return value.clone();
+    }
+    match value {
+        Value::Object(m) => Value::Object(
+            m.iter()
+                .map(|(k, v)| (k.clone(), map_encoded(v, encoded, Some(k))))
+                .collect(),
+        ),
+        Value::Array(a) => Value::Array(a.iter().map(|v| map_encoded(v, encoded, key)).collect()),
+        Value::String(s) => {
+            let mut s = s.clone();
+            for e in encoded {
+                for (from, to) in &e.pairs {
+                    s = s.replace(from, to);
+                }
+            }
+            Value::String(s)
+        }
+        Value::Number(_) if key == Some("filesize") => encoded
+            .iter()
+            .find(|e| &e.filesize.0 == value)
+            .map(|e| e.filesize.1.clone())
+            .unwrap_or_else(|| value.clone()),
+        other => other.clone(),
+    }
 }
 
 #[tokio::test(flavor = "multi_thread")]

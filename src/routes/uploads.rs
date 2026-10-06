@@ -156,6 +156,7 @@ pub async fn create(
         upload_type: &upload_type,
         filename,
         bytes,
+        pasted: form.get("pasted") == Some("true"),
     };
     let outcome = uploads::create(
         &mut conn,

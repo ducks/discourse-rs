@@ -2807,5 +2807,53 @@
         }
       }
     ]
+  },
+  {
+    "name": "upload_jpeg",
+    "user": "user3",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/uploads.json",
+        "params": {
+          "upload_type": "composer",
+          "file": {
+            "fixture": "photo.jpg"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "upload_png_to_jpeg",
+    "user": "user3",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/uploads.json",
+        "params": {
+          "upload_type": "composer",
+          "file": {
+            "fixture": "photo.png"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "upload_png_small",
+    "user": "user3",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/uploads.json",
+        "params": {
+          "upload_type": "composer",
+          "file": {
+            "fixture": "small.png"
+          }
+        }
+      }
+    ]
   }
 ]

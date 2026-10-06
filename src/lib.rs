@@ -21,6 +21,7 @@ pub mod groups;
 pub mod guardian;
 pub mod html;
 pub mod i18n;
+pub mod images;
 pub mod jobs;
 pub mod letter_avatar;
 pub mod likes;
