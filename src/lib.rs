@@ -47,6 +47,7 @@ pub mod site;
 pub mod site_icons;
 pub mod site_setting_update;
 pub mod site_settings;
+pub mod stylesheet;
 pub mod system_message;
 pub mod tags;
 pub mod topic_guardian;

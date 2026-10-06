@@ -189,3 +189,37 @@ async fn pages_carry_where_their_live_updates_start() {
     assert_eq!(messages.len(), 1, "{messages:?}");
     assert_eq!(messages[0].data["topic_id"], 35);
 }
+
+/// The site's color schemes as stylesheets, each custom property as Rails
+/// compiled it on the reference: the default theme has no scheme of its
+/// own (the base light palette) and dark mode uses the Dark scheme.
+#[tokio::test]
+async fn color_definitions_are_the_sites_schemes() {
+    use discourse_rs::stylesheet::color_definitions::properties;
+    let db = TestDb::new().await;
+    for (path, rails) in [
+        (
+            "/assets/color_definitions_light.css",
+            include_str!("../parity/stylesheets/color_definitions_light-default.css"),
+        ),
+        (
+            "/assets/color_definitions_dark.css",
+            include_str!("../parity/stylesheets/color_definitions_dark-13.css"),
+        ),
+    ] {
+        let (status, content_type, css) = get(&db.pool, path).await;
+        assert_eq!(status, StatusCode::OK, "{path}: {css}");
+        assert_eq!(content_type, "text/css; charset=utf-8");
+        let rails = properties(rails);
+        for (name, value) in properties(&css) {
+            if name == "--topic-timeline-handle-color" {
+                continue;
+            }
+            let theirs = rails
+                .iter()
+                .find(|(n, _)| *n == name)
+                .map(|(_, v)| v.as_str());
+            assert_eq!(theirs, Some(value.as_str()), "{path} {name}");
+        }
+    }
+}

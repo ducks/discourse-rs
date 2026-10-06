@@ -611,7 +611,7 @@ impl ColorScheme {
     /// `ColorScheme#resolved_colors`: scss base, then the base palette
     /// (minus hover/selected), then DB colors; hover/selected derived when
     /// missing. Insertion order is Ruby's Hash merge order.
-    fn resolved_colors(&self) -> Result<Vec<(String, String)>, crate::Unsupported> {
+    pub fn resolved_colors(&self) -> Result<Vec<(String, String)>, crate::Unsupported> {
         let mut resolved: Vec<(String, String)> = BASE_COLORS_ORDERED.clone();
         let mut merge = |name: &str, hex: &str| match resolved.iter_mut().find(|(n, _)| n == name) {
             Some(entry) => entry.1 = hex.to_string(),
