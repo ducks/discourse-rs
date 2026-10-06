@@ -138,12 +138,15 @@ pub async fn forgot_password(
     if !csrf_ok(&state, &headers, &form_pairs(&p), uri.path(), "POST") {
         return Ok(bad_csrf());
     }
-    let Some(login) = normalized_login(&p)? else {
-        return Ok(param_missing("login"));
-    };
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    if let Some(forbidden) = super::session::check_local_login_allowed(&state, &settings)? {
+        return Ok(forbidden);
+    }
+    let Some(login) = normalized_login(&p)? else {
+        return Ok(param_missing("login"));
+    };
     let ip = crate::session::current::remote_ip(&headers, peer);
     let mut tx = state.pool.begin().await?;
     if accounts::ip_blocked(&mut tx, &ip).await? {
@@ -263,6 +266,9 @@ pub async fn redeem_password_reset_code(
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    if let Some(forbidden) = super::session::check_local_login_allowed(&state, &settings)? {
+        return Ok(forbidden);
+    }
     if !guardian
         .upcoming_change_enabled(&mut conn, &settings, "enable_local_logins_via_code")
         .await?

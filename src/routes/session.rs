@@ -130,6 +130,21 @@ fn local_return_url(url: &str) -> bool {
         && valid(fragment, b"/?")
 }
 
+/// SessionController#check_local_login_allowed, for create, forgot_password
+/// and redeem_password_reset_code: a 403 while DiscourseConnect takes over
+/// or local logins are off.
+pub(crate) fn check_local_login_allowed(
+    state: &AppState,
+    settings: &SiteSettings,
+) -> Result<Option<Response>, AppError> {
+    if settings.get("enable_discourse_connect")?.truthy()
+        || !settings.get("enable_local_logins")?.truthy()
+    {
+        return Ok(Some(super::search::invalid_access(state)));
+    }
+    Ok(None)
+}
+
 fn param<'a>(form: &'a [(String, String)], name: &str) -> Option<&'a str> {
     form.iter()
         .find(|(k, _)| k == name)
@@ -230,18 +245,8 @@ pub async fn create(
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
-    // check_local_login_allowed
-    if settings.get("enable_discourse_connect")?.truthy()
-        || !settings.get("enable_local_logins")?.truthy()
-    {
-        return Ok((
-            StatusCode::FORBIDDEN,
-            Json(json!({
-                "errors": [state.i18n.t("invalid_access").unwrap_or("You are not permitted to view the requested resource.")],
-                "error_type": "invalid_access"
-            })),
-        )
-            .into_response());
+    if let Some(forbidden) = check_local_login_allowed(&state, &settings)? {
+        return Ok(forbidden);
     }
     for required in ["login", "password"] {
         if param(&form, required).is_none_or(|v| v.trim().is_empty()) {
