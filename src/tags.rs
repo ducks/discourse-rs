@@ -116,8 +116,20 @@ impl Tag {
         format!("{base_path}/tag/{}/{}", self.slug_for_url(), self.id)
     }
 
-    /// `guardian.can_see_tag?`: not among hidden_tag_names.
-    pub async fn visible_to_anonymous(&self, conn: &mut PgConnection) -> Result<bool, sqlx::Error> {
+    /// `guardian.can_see_tag?`: not among hidden_tag_names, the tags in a
+    /// permissioned tag group with no permission for everyone or one of
+    /// the user's groups. Admins see every tag.
+    pub async fn visible_to(
+        &self,
+        conn: &mut PgConnection,
+        guardian: &Guardian,
+    ) -> Result<bool, sqlx::Error> {
+        if guardian.is_admin() {
+            return Ok(true);
+        }
+        // permitted_group_ids_query: everyone, plus the user's groups.
+        let mut permitted: Vec<i64> = vec![0];
+        permitted.extend_from_slice(guardian.group_ids());
         let hidden: bool = sqlx::query_scalar(
             "SELECT EXISTS ( \
                SELECT 1 FROM tags WHERE tags.id = $1 \
@@ -125,9 +137,10 @@ impl Tag {
                                JOIN tag_group_permissions tgp ON tgp.tag_group_id = tgm.tag_group_id) \
                AND tags.id NOT IN (SELECT tgm.tag_id FROM tag_group_memberships tgm \
                                    JOIN tag_group_permissions tgp ON tgp.tag_group_id = tgm.tag_group_id \
-                                   WHERE tgp.group_id = 0))",
+                                   WHERE tgp.group_id = ANY($2::int[])))",
         )
         .bind(self.id)
+        .bind(&permitted)
         .fetch_one(conn)
         .await?;
         Ok(!hidden)

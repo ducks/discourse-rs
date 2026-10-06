@@ -14,6 +14,5 @@
       "method": "GET",
       "path": "/tags.json"
     }
-  ],
-  "not_yet": "A staff-only tag 404s for an admin."
+  ]
 }

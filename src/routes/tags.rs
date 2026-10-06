@@ -242,10 +242,18 @@ async fn show_list(
     if let Some(slug_path) = &path.category_path {
         let max_nesting = settings.get("max_category_nesting")?.to_i();
         let found = Category::find_by_slug_path_with_id(&mut conn, slug_path, max_nesting).await?;
-        match found {
-            Some(c) if !c.read_restricted => category = Some(c),
-            _ => return Ok(not_found()),
+        let Some(c) = found else {
+            return Ok(not_found());
+        };
+        if c.read_restricted
+            && !guardian
+                .secure_category_ids(&mut conn, &settings)
+                .await?
+                .contains(&c.id)
+        {
+            return Ok(not_found());
         }
+        category = Some(c);
     }
 
     // fetch_tag(raise_not_found: false)
@@ -257,7 +265,7 @@ async fn show_list(
         TagRef::Name(name) => (Tag::find_by_name(&mut conn, name).await?, false),
     };
     if let Some(t) = &tag
-        && !t.visible_to_anonymous(&mut conn).await?
+        && !t.visible_to(&mut conn, &guardian).await?
     {
         return Ok(not_found());
     }
