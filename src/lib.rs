@@ -58,6 +58,7 @@ pub mod topic_list;
 pub mod topic_list_view;
 pub mod topic_query;
 pub mod topic_status;
+pub mod topic_tracking_report;
 pub mod topic_tracking_state;
 pub mod topic_view;
 pub mod uploads;

@@ -7,9 +7,11 @@
 //!   replaced when changed, removed when deleted or not visible to them.
 //! - `list`, on list pages and for members everywhere: the latest list's
 //!   "N new or updated topics" banner (`filter=latest`, `since` the page's
-//!   render time) and a member's unread and new counts in the nav, each
-//!   the viewer's own list query run again on connect and after the
-//!   tracking messages they may hear.
+//!   render time), the viewer's own list query run again, and a member's
+//!   new and unread counts from their TopicTrackingState report, in the
+//!   nav pills (`nav`, the active pill) and on the sidebar's links
+//!   (`sidebar`, its Active key); on connect and after the tracking
+//!   messages they may hear.
 //! - `header`, for members: the unread notification count, on connect and
 //!   from their notification state, and the alert for a new notification.
 //!
@@ -62,6 +64,10 @@ pub struct Params {
     /// When the page was rendered, in milliseconds: on the latest list,
     /// topics bumped after it are the new or updated ones.
     since: Option<i64>,
+    /// The page's active nav pill: a member's counts in the pills.
+    nav: Option<String>,
+    /// The page's sidebar (`Active::key`): a member's counts on its links.
+    sidebar: Option<String>,
 }
 
 /// GET /live
@@ -143,6 +149,11 @@ pub async fn page(
         user_id,
         lists,
         since,
+        nav: params.nav.filter(|_| user_id.is_some()),
+        sidebar: params
+            .sidebar
+            .filter(|_| user_id.is_some())
+            .map(|key| crate::sidebar::Active::parse(&key)),
         sent_lists: None,
         started: false,
         pending: VecDeque::new(),
@@ -189,6 +200,9 @@ struct Live {
     user_id: Option<i32>,
     lists: bool,
     since: Option<NaiveDateTime>,
+    /// The nav pill and sidebar a member's counts are kept on.
+    nav: Option<String>,
+    sidebar: Option<crate::sidebar::Active>,
     /// The list HTML last computed, sent or (when empty) not.
     sent_lists: Option<String>,
     started: bool,
@@ -487,9 +501,9 @@ async fn render_post(
     Ok(Some(html))
 }
 
-/// The most a count shows before "99+".
-const COUNT_CAP: i64 = 100;
-
+/// The latest list's banner, and a member's counts from their tracking
+/// state: the nav pills' labels (`nav`) and the sidebar's counted links
+/// (`sidebar`), each only where the page has them.
 async fn list_state(live: &Live) -> Result<String, AppError> {
     use crate::topic_query::{Filter as ListFilter, Options};
     let mut conn = live.state.pool.acquire().await?;
@@ -516,31 +530,55 @@ async fn list_state(live: &Live) -> Result<String, AppError> {
             r#"<div id="list-updates" class="list-updates" hx-swap-oob="true">{banner}</div>"#
         ));
     }
-    if live.guardian.user_id().is_some() {
-        for (filter, id) in [
-            (ListFilter::Unread, "unread-count"),
-            (ListFilter::New, "new-count"),
-        ] {
-            let list = viewer_list(
-                live,
-                &mut conn,
-                filter,
-                Options {
-                    per_page: Some(COUNT_CAP),
-                    ..Default::default()
-                },
-            )
-            .await?;
-            let n = list.topics.len() as i64;
-            let count = match n {
-                0 => String::new(),
-                n if n >= COUNT_CAP => " (99+)".to_string(),
-                n => format!(" ({n})"),
-            };
-            out.push_str(&format!(
-                r#"<span id="{id}" hx-swap-oob="true">{count}</span>"#
-            ));
+    if live.nav.is_none() && live.sidebar.is_none() {
+        return Ok(out);
+    }
+    let tracking =
+        crate::topic_tracking_report::load(&mut conn, &live.settings, &live.guardian).await?;
+    if tracking.is_none() {
+        return Ok(out);
+    }
+    let base_path = live.state.config.globals.relative_url_root();
+    if let Some(nav) = &live.nav {
+        // The pills' labels: only new and unread count.
+        for item in crate::html::nav_items(
+            &live.state.i18n,
+            &live.settings,
+            base_path,
+            nav,
+            tracking.as_ref(),
+        )? {
+            if item.name == "new" || item.name == "unread" {
+                out.push_str(&format!(
+                    r#"<a hx-swap-oob="innerHTML:#navigation-bar > li.nav-item_{} > a">{}</a>"#,
+                    item.name,
+                    crate::topic_list_view::escape(&item.label)
+                ));
+            }
         }
+    }
+    if let Some(active) = &live.sidebar {
+        let (site, member) = crate::html::sidebar_inputs(
+            &mut conn,
+            &live.state,
+            &live.settings,
+            &live.guardian,
+            tracking,
+        )
+        .await?;
+        let emoji_set = live.settings.get("emoji_set")?.to_s().to_string();
+        let links = crate::sidebar::tracked_links(
+            &site,
+            &crate::sidebar::Context {
+                i18n: &live.state.i18n,
+                settings: &live.settings,
+                base_path,
+                active,
+                member: member.as_ref(),
+                emoji_set: &emoji_set,
+            },
+        )?;
+        out.push_str(&links.concat());
     }
     Ok(out)
 }

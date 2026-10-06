@@ -139,6 +139,49 @@ pub struct Chrome {
     pub composer: String,
     /// `canCreateTopic`: the lists' New Topic button.
     pub can_create_topic: bool,
+    /// A member's topic tracking state, for the nav pills' counts.
+    pub tracking: Option<crate::topic_tracking_report::Tracking>,
+    /// What the page's live updates keep counted besides the stream's own
+    /// parameters (`&sidebar=<Active key>`, `&nav=<active pill>`), encoded.
+    pub live_params: String,
+}
+
+impl Chrome {
+    /// Adds a parameter for the page's live updates.
+    pub fn live_param(&mut self, name: &str, value: &str) {
+        self.live_params.push_str(&format!(
+            "&{name}={}",
+            form_urlencoded::byte_serialize(value.as_bytes()).collect::<String>()
+        ));
+    }
+}
+
+/// What the sidebar renders from: the Site's sidebar fields and the member
+/// (with `tracking`), None for a visitor.
+pub async fn sidebar_inputs(
+    conn: &mut sqlx::PgConnection,
+    state: &crate::AppState,
+    settings: &SiteSettings,
+    guardian: &crate::guardian::Guardian,
+    tracking: Option<crate::topic_tracking_report::Tracking>,
+) -> Result<(serde_json::Value, Option<crate::sidebar::Member>), crate::AppError> {
+    let member = match (guardian.logged_in(), tracking) {
+        (Some(user), Some(tracking)) => {
+            Some(crate::current_user::sidebar_member(&mut *conn, settings, user, tracking).await?)
+        }
+        _ => None,
+    };
+    let site = crate::site::Site {
+        conn: &mut *conn,
+        config: &state.config,
+        settings,
+        defs: &state.site_setting_defs,
+        i18n: &state.i18n,
+        guardian: guardian.clone(),
+    }
+    .sidebar_json()
+    .await?;
+    Ok((site, member))
 }
 
 impl Site {
@@ -174,22 +217,16 @@ impl Site {
         let sidebar_enabled = (guardian.user().is_some()
             || !settings.get("login_required")?.truthy())
             && settings.get("navigation_menu")?.to_s() == "sidebar";
+        self.chrome.tracking =
+            crate::topic_tracking_report::load(&mut conn, settings, guardian).await?;
         if sidebar_enabled {
-            let member = match guardian.logged_in() {
-                Some(user) => {
-                    Some(crate::current_user::sidebar_member(&mut conn, settings, user).await?)
-                }
-                None => None,
-            };
-            let site = crate::site::Site {
-                conn: &mut conn,
-                config: &state.config,
+            let (site, member) = sidebar_inputs(
+                &mut conn,
+                state,
                 settings,
-                defs: &state.site_setting_defs,
-                i18n: &state.i18n,
-                guardian: guardian.clone(),
-            }
-            .sidebar_json()
+                guardian,
+                self.chrome.tracking.clone(),
+            )
             .await?;
             let emoji_set = settings.get("emoji_set")?.to_s().to_string();
             self.chrome.sidebar = crate::sidebar::render(
@@ -203,6 +240,9 @@ impl Site {
                     emoji_set: &emoji_set,
                 },
             )?;
+            if self.chrome.tracking.is_some() {
+                self.chrome.live_param("sidebar", &active.key());
+            }
             // Sidebar.gjs's bodyClass
             classes.push("has-sidebar-page".into());
         }
@@ -317,46 +357,76 @@ pub struct NavItem {
     pub title: String,
     pub href: String,
     pub active: bool,
-    /// The id of the live count span (`new-count`, `unread-count`), for a
-    /// member.
-    pub count_id: Option<&'static str>,
+    /// `hasIcon`: the unread pill.
+    pub has_icon: bool,
 }
 
-/// The pills of the top-level lists: `top_menu` in order, the ones that
-/// need an account only for a member, `active` marked.
+/// The pills of the top-level lists (NavItem.buildList): `top_menu` in
+/// order, the ones that need an account only for a member (who has
+/// `tracking`), unread folded into new with unified new, the active list
+/// added when the menu lacks it, and the member's counts in the labels.
 pub fn nav_items(
     i18n: &I18n,
     settings: &SiteSettings,
     base_path: &str,
     active: &str,
-    member: bool,
+    tracking: Option<&crate::topic_tracking_report::Tracking>,
 ) -> Result<Vec<NavItem>, SettingError> {
     const MEMBERS_ONLY: [&str; 5] = ["new", "unread", "read", "posted", "bookmarks"];
+    let unified_new = tracking.is_some_and(|t| t.unified_new);
     let top_menu = settings.get("top_menu")?.to_s();
-    Ok(top_menu
+    let mut names: Vec<&str> = top_menu
         .split('|')
         .map(str::trim)
         .filter(|name| !name.is_empty())
-        .filter(|name| member || !MEMBERS_ONLY.contains(name))
+        .filter(|name| !(unified_new && *name == "unread"))
+        .collect();
+    if !active.is_empty() && !names.contains(&active) {
+        names.push(active);
+    }
+    Ok(names
+        .into_iter()
+        .filter(|name| tracking.is_some() || !MEMBERS_ONLY.contains(name))
         .map(|name| NavItem {
             name: name.to_string(),
-            label: i18n
-                .t(&format!("js.filters.{name}.title"))
-                .unwrap_or(name)
-                .to_string(),
+            label: nav_label(i18n, name, tracking),
             title: i18n
-                .t(&format!("js.filters.{name}.help"))
+                .t(&format!(
+                    "js.filters.{}.help",
+                    if name == "new" && unified_new {
+                        "unified_new"
+                    } else {
+                        name
+                    }
+                ))
                 .unwrap_or_default()
                 .to_string(),
             href: format!("{base_path}/{name}"),
             active: name == active,
-            count_id: match (member, name) {
-                (true, "new") => Some("new-count"),
-                (true, "unread") => Some("unread-count"),
-                _ => None,
-            },
+            has_icon: name == "unread",
         })
         .collect())
+}
+
+/// NavItem#displayName: `title_with_count` while the member has topics in
+/// the list (never for latest on desktop), else `title`.
+pub fn nav_label(
+    i18n: &I18n,
+    name: &str,
+    tracking: Option<&crate::topic_tracking_report::Tracking>,
+) -> String {
+    let count = tracking.map(|t| t.lookup(name)).unwrap_or(0);
+    let title = || {
+        i18n.t(&format!("js.filters.{name}.title"))
+            .unwrap_or(name)
+            .to_string()
+    };
+    if count > 0 {
+        i18n.t_count(&format!("js.filters.{name}.title_with_count"), count, &[])
+            .unwrap_or_else(title)
+    } else {
+        title()
+    }
 }
 
 pub struct TagHeading {

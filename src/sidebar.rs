@@ -2,8 +2,9 @@
 //! (components/sidebar/anonymous/* and user/*, lib/sidebar/*) from the same
 //! documents they read, the Site and a member's current user: the custom
 //! sections, the categories section and the tags section, then the footer.
-//! Unread and new counts on the links are not shown yet; the section
-//! header actions open modals that are not ported.
+//! The Topics, category and tag links carry the member's new and unread
+//! counts (topic_tracking_report); the section header actions open modals
+//! that are not ported.
 
 use serde_json::Value;
 
@@ -29,6 +30,33 @@ pub enum Active {
     Tags,
 }
 
+impl Active {
+    /// The page's `Active` for its live updates' url (`parse` reads it).
+    pub fn key(&self) -> String {
+        match self {
+            Active::None => String::new(),
+            Active::Discovery => "discovery".into(),
+            Active::Category(id) => format!("category:{id}"),
+            Active::Categories => "categories".into(),
+            Active::Tag(name) => format!("tag:{name}"),
+            Active::Tags => "tags".into(),
+        }
+    }
+
+    pub fn parse(key: &str) -> Active {
+        match key.split_once(':') {
+            Some(("category", id)) => id.parse().map(Active::Category).unwrap_or(Active::None),
+            Some(("tag", name)) => Active::Tag(name.to_string()),
+            _ => match key {
+                "discovery" => Active::Discovery,
+                "categories" => Active::Categories,
+                "tags" => Active::Tags,
+                _ => Active::None,
+            },
+        }
+    }
+}
+
 /// `TOP_SITE_CATEGORIES_TO_SHOW`
 const TOP_SITE_CATEGORIES_TO_SHOW: usize = 5;
 
@@ -47,6 +75,11 @@ pub struct Member {
     pub show_count: bool,
     /// unified_new_enabled
     pub unified_new: bool,
+    /// user_option.sidebar_link_to_filtered_list: a link with new or
+    /// unread topics goes to that list.
+    pub link_to_filtered_list: bool,
+    /// Their topic tracking state, for the links' counts.
+    pub tracking: crate::topic_tracking_report::Tracking,
     /// sidebar_sections, sidebar_category_ids, display_sidebar_tags and
     /// sidebar_tags, as the serializer writes them.
     pub fields: serde_json::Map<String, Value>,
@@ -120,6 +153,56 @@ pub fn render(site: &Value, cx: &Context) -> Result<String, SettingError> {
     Ok(out)
 }
 
+/// The member's links that carry counts (Topics, their categories and
+/// tags), each with an out-of-band swap that replaces it on the page: the
+/// live updates' sidebar.
+pub fn tracked_links(site: &Value, cx: &Context) -> Result<Vec<String>, SettingError> {
+    let Some(m) = cx.member else {
+        return Ok(Vec::new());
+    };
+    let oob = |link: &Link, selector: String| {
+        link_html(link, cx).replacen(
+            "<li ",
+            &format!("<li hx-swap-oob=\"outerHTML:{}\" ", attr(&selector)),
+            1,
+        )
+    };
+    let mut out = Vec::new();
+    let sections = m.fields.get("sidebar_sections").and_then(Value::as_array);
+    let everything = sections
+        .into_iter()
+        .flatten()
+        .filter(|s| s["section_type"] == "community")
+        .flat_map(|s| s["links"].as_array().cloned().unwrap_or_default())
+        .find(|l| l["value"] == "/latest");
+    if let Some(link) = everything
+        && let Some(link) = community_link(&link, cx)?
+    {
+        out.push(oob(
+            &link,
+            "#d-sidebar li[data-list-item-name='everything']".into(),
+        ));
+    }
+    for (id, link) in category_links(site, cx)? {
+        out.push(oob(
+            &link,
+            format!("#sidebar-section-content-categories > li[data-category-id='{id}']"),
+        ));
+    }
+    if m.fields.get("display_sidebar_tags") == Some(&Value::Bool(true))
+        && let Some(links) = tag_links(site, cx)?
+    {
+        for (name, link) in links {
+            let name = name.replace('\\', "\\\\").replace('\'', "\\'");
+            out.push(oob(
+                &link,
+                format!("#sidebar-section-content-tags > li[data-tag-name='{name}']"),
+            ));
+        }
+    }
+    Ok(out)
+}
+
 /// A rendered link (SectionLink's arguments).
 #[derive(Default)]
 struct Link {
@@ -157,6 +240,80 @@ enum Prefix {
         color: Option<String>,
         badge: Option<&'static str>,
     },
+}
+
+/// What a link counts: the countable that is active (the first with
+/// topics) and its count.
+#[derive(Clone, Copy)]
+enum Countable {
+    Unread(i64),
+    New(i64),
+    /// unified new: the new and the unread together.
+    NewAndUnread(i64),
+}
+
+/// EverythingSectionLink and TagSectionLink: unread first, new when there
+/// is nothing unread, both together with unified new.
+fn unread_then_new(m: &Member, tag: Option<i32>) -> Option<Countable> {
+    use crate::topic_tracking_report::Kind;
+    let unread = m.tracking.count(Kind::Unread, None, tag);
+    let new = if unread == 0 || m.unified_new {
+        m.tracking.count(Kind::New, None, tag)
+    } else {
+        0
+    };
+    if m.unified_new && unread + new > 0 {
+        Some(Countable::NewAndUnread(unread + new))
+    } else if unread > 0 {
+        Some(Countable::Unread(unread))
+    } else if new > 0 {
+        Some(Countable::New(new))
+    } else {
+        None
+    }
+}
+
+/// CategorySectionLink's countables: new and unread together with unified
+/// new, else unread, then new.
+fn category_countable(m: &Member, category_id: i32) -> Option<Countable> {
+    use crate::topic_tracking_report::Kind;
+    let count = |kind| m.tracking.count(kind, Some(category_id), None);
+    if m.unified_new {
+        let n = count(Kind::NewAndUnread);
+        return (n > 0).then_some(Countable::NewAndUnread(n));
+    }
+    let unread = count(Kind::Unread);
+    if unread > 0 {
+        return Some(Countable::Unread(unread));
+    }
+    let new = count(Kind::New);
+    (new > 0).then_some(Countable::New(new))
+}
+
+/// The countable on the link: the count as its badge
+/// (sidebar_show_count_of_new_items) or else a dot, and with
+/// sidebar_link_to_filtered_list its href to the list, `filtered` being
+/// the path the list's name is appended to.
+fn show_countable(link: &mut Link, cx: &Context, countable: Option<Countable>, filtered: &str) {
+    let (Some(m), Some(countable)) = (cx.member, countable) else {
+        return;
+    };
+    if m.show_count {
+        link.badge = match countable {
+            Countable::NewAndUnread(n) => Some(n.to_string()),
+            Countable::Unread(n) => cx.i18n.t_count("js.sidebar.unread_count", n, &[]),
+            Countable::New(n) => cx.i18n.t_count("js.sidebar.new_count", n, &[]),
+        };
+    } else {
+        link.suffix = Some("circle");
+    }
+    if m.link_to_filtered_list {
+        let list = match countable {
+            Countable::Unread(_) => "unread",
+            Countable::New(_) | Countable::NewAndUnread(_) => "new",
+        };
+        link.href = format!("{filtered}/{list}");
+    }
 }
 
 fn link_html(link: &Link, cx: &Context) -> String {
@@ -476,7 +633,7 @@ fn community_link(link: &Value, cx: &Context) -> Result<Option<Link>, SettingErr
         }
         _ => return Ok(Some(plain_link(link))),
     };
-    Ok(Some(Link {
+    let mut link = Link {
         link_name: Some(name.to_string()),
         attributes: " data-sidebar-custom-link=\"true\"".into(),
         plain,
@@ -489,7 +646,13 @@ fn community_link(link: &Value, cx: &Context) -> Result<Option<Link>, SettingErr
         },
         active: name == "everything" && *cx.active == Active::Discovery,
         ..Default::default()
-    }))
+    };
+    if name == "everything"
+        && let Some(m) = cx.member
+    {
+        show_countable(&mut link, cx, unread_then_new(m, None), base);
+    }
+    Ok(Some(link))
 }
 
 /// lib/sidebar/user/community-section: a member's own links, None for an
@@ -674,21 +837,26 @@ fn sort_categories(categories: &[Value]) -> Vec<Value> {
     out
 }
 
-/// anonymous/categories-section
-fn categories_section(site: &Value, cx: &Context) -> Result<String, SettingError> {
-    let all: Vec<Value> = site["categories"].as_array().cloned().unwrap_or_default();
-    let uncategorized = site["uncategorized_category_id"].as_i64();
-    let allow_uncategorized = cx.flag("allow_uncategorized_topics")?;
-    let can_display = |c: &Value| allow_uncategorized || c["id"].as_i64() != uncategorized;
-    let fixed_positions = cx.flag("fixed_category_positions")?;
-
-    let default_ids: Vec<i64> = cx
+/// `default_navigation_menu_categories`
+fn default_category_ids(cx: &Context) -> Result<Vec<i64>, SettingError> {
+    Ok(cx
         .settings
         .get("default_navigation_menu_categories")?
         .to_s()
         .split('|')
         .filter_map(|id| id.trim().parse().ok())
-        .collect();
+        .collect())
+}
+
+/// The categories section's category links (anonymous/categories-section
+/// and user/categories-section), by id.
+fn category_links(site: &Value, cx: &Context) -> Result<Vec<(i64, Link)>, SettingError> {
+    let all: Vec<Value> = site["categories"].as_array().cloned().unwrap_or_default();
+    let uncategorized = site["uncategorized_category_id"].as_i64();
+    let allow_uncategorized = cx.flag("allow_uncategorized_topics")?;
+    let can_display = |c: &Value| allow_uncategorized || c["id"].as_i64() != uncategorized;
+    let fixed_positions = cx.flag("fixed_category_positions")?;
+    let default_ids = default_category_ids(cx)?;
 
     // topSiteCategories over Site#categoriesList.
     let top_site = || -> Vec<Value> {
@@ -756,7 +924,7 @@ fn categories_section(site: &Value, cx: &Context) -> Result<String, SettingError
         categories
     };
 
-    let mut links = String::new();
+    let mut links = Vec::new();
     for category in &shown {
         let id = category["id"].as_i64().unwrap_or(0);
         let color = category["color"].as_str().unwrap_or("").to_string();
@@ -789,18 +957,29 @@ fn categories_section(site: &Value, cx: &Context) -> Result<String, SettingError
                 }
             }
         };
-        links.push_str(&link_html(
-            &Link {
-                attributes: format!(" data-category-id=\"{id}\""),
-                href: format!("{}/c/{}/{id}", cx.base_path, slug_for(&all, category, 3)),
-                content: escape(category["name"].as_str().unwrap_or("")),
-                prefix,
-                active: *cx.active == Active::Category(id as i32),
-                ..Default::default()
-            },
-            cx,
-        ));
+        let href = format!("{}/c/{}/{id}", cx.base_path, slug_for(&all, category, 3));
+        let mut link = Link {
+            attributes: format!(" data-category-id=\"{id}\""),
+            href: href.clone(),
+            content: escape(category["name"].as_str().unwrap_or("")),
+            prefix,
+            active: *cx.active == Active::Category(id as i32),
+            ..Default::default()
+        };
+        if let Some(m) = cx.member {
+            let countable = category_countable(m, id as i32);
+            show_countable(&mut link, cx, countable, &format!("{href}/l"));
+        }
+        links.push((id, link));
     }
+    Ok(links)
+}
+
+fn categories_section(site: &Value, cx: &Context) -> Result<String, SettingError> {
+    let mut links: String = category_links(site, cx)?
+        .iter()
+        .map(|(_, link)| link_html(link, cx))
+        .collect();
     links.push_str(&link_html(
         &Link {
             link_name: Some("all-categories".into()),
@@ -815,7 +994,7 @@ fn categories_section(site: &Value, cx: &Context) -> Result<String, SettingError
         },
         cx,
     ));
-    if cx.member.is_some_and(|m| m.admin) && default_ids.is_empty() {
+    if cx.member.is_some_and(|m| m.admin) && default_category_ids(cx)?.is_empty() {
         links.push_str(&configure_defaults_link("categories", cx));
     }
     let header = cx.t("sidebar.sections.categories.header_link_text");
@@ -848,7 +1027,7 @@ fn configure_defaults_link(kind: &str, cx: &Context) -> String {
 /// the default tags, else the site's top tags, and no section when there
 /// are neither; a member gets their own tags, else the top ones, and the
 /// section either way.
-fn tags_section(site: &Value, cx: &Context) -> Result<String, SettingError> {
+fn tag_links(site: &Value, cx: &Context) -> Result<Option<Vec<(String, Link)>>, SettingError> {
     let top = site["navigation_menu_site_top_tags"].as_array();
     let tags = match cx.member {
         Some(m) => match m.fields.get("sidebar_tags").and_then(Value::as_array) {
@@ -859,19 +1038,20 @@ fn tags_section(site: &Value, cx: &Context) -> Result<String, SettingError> {
             let defaults = site["anonymous_default_navigation_menu_tags"].as_array();
             let present = |tags: Option<&Vec<Value>>| tags.is_some_and(|t| !t.is_empty());
             if !present(defaults) && !present(top) {
-                return Ok(String::new());
+                return Ok(None);
             }
             // `defaults || top`: an empty default list still wins.
             defaults.or(top).cloned().unwrap_or_default()
         }
     };
-    let mut links = String::new();
+    let mut links = Vec::new();
     for tag in &tags {
         let name = tag["name"].as_str().unwrap_or("");
         // PMTagSectionLink: a tag only on messages links to the member's
         // messages with it.
+        let pm_only = tag["pm_only"] == Value::Bool(true);
         let href = match cx.member {
-            Some(m) if tag["pm_only"] == Value::Bool(true) => format!(
+            Some(m) if pm_only => format!(
                 "{}/u/{}/messages/tags/{}",
                 cx.base_path,
                 m.username.to_lowercase(),
@@ -884,21 +1064,40 @@ fn tags_section(site: &Value, cx: &Context) -> Result<String, SettingError> {
                 tag["id"]
             ),
         };
-        links.push_str(&link_html(
-            &Link {
-                attributes: format!(" data-tag-name=\"{}\"", escape(name)),
-                href,
-                content: escape(name),
-                prefix: Prefix::Icon {
-                    name: "tag".into(),
-                    color: None,
-                },
-                active: matches!(cx.active, Active::Tag(t) if t.eq_ignore_ascii_case(name)),
-                ..Default::default()
+        let mut link = Link {
+            attributes: format!(" data-tag-name=\"{}\"", escape(name)),
+            href: href.clone(),
+            content: escape(name),
+            prefix: Prefix::Icon {
+                name: "tag".into(),
+                color: None,
             },
-            cx,
-        ));
+            active: matches!(cx.active, Active::Tag(t) if t.eq_ignore_ascii_case(name)),
+            ..Default::default()
+        };
+        // TagSectionLink counts; PMTagSectionLink does not.
+        if let Some(m) = cx.member
+            && !pm_only
+        {
+            let countable = tag["id"]
+                .as_i64()
+                .and_then(|id| unread_then_new(m, Some(id as i32)));
+            show_countable(&mut link, cx, countable, &format!("{href}/l"));
+        }
+        links.push((name.to_string(), link));
     }
+    Ok(Some(links))
+}
+
+/// The tags section, when there is one (tag_links).
+fn tags_section(site: &Value, cx: &Context) -> Result<String, SettingError> {
+    let Some(tag_links) = tag_links(site, cx)? else {
+        return Ok(String::new());
+    };
+    let mut links: String = tag_links
+        .iter()
+        .map(|(_, link)| link_html(link, cx))
+        .collect();
     links.push_str(&link_html(
         &Link {
             link_name: Some("all-tags".into()),

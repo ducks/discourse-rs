@@ -361,9 +361,7 @@ Discourse's own clients keep working.
       yet: the topic map's menus; the footer's flag, mark unread,
       notifications and pinned buttons and the admin menu; the post
       menu's flag, edit, delete, admin, read and replies (modals and the
-      composer); the sidebar's unread and
-      new dots and counts (TopicTrackingState), its header actions and
-      Customize (modals), the welcome banner, the category and tag dropdowns by the nav pills,
+      composer); the sidebar's header actions and Customize (modals), the welcome banner, the category and tag dropdowns by the nav pills,
       the keyboard shortcuts modal behind the sidebar footer's button,
       icons beyond the static sprite (a category's icon style)
 - [x] The composer (Ember's #reply-control in its markdown mode): reply to
@@ -378,6 +376,16 @@ Discourse's own clients keep working.
       site's render settings at /assets/markdown-settings.json, rendering
       as the post cooks less what the server looks up (quoted avatars,
       hashtags, upload urls) and the rel attributes cleanup adds
+- [x] Tracking state on the pages: TopicTrackingState.report for a
+      member (topic_tracking_report), counted as topic-tracking-state.js
+      counts, in the New and Unread pills (unified new folding unread
+      into New) and as dots or counts on the sidebar's Topics, category
+      and tag links (sidebar_show_count_of_new_items,
+      sidebar_link_to_filtered_list), kept current by the page's stream.
+      Reading is timed as screen-track does (static/js/screen-track.js,
+      POST /topics/timings) and marks the posts read. Not yet: the
+      topic list's per-row state from the tracking state, an anonymous
+      reader's time, dismissing new
 - [ ] The composer: uploads, drafts
 - [ ] The user menu, notifications, bookmarks, messages, preferences
 - [ ] Review queue and topic status for staff
