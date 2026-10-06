@@ -1,6 +1,7 @@
 //! features/code.js: fenced code as `<pre data-code-*><code class="lang-*">`.
 
 use markdown_it::common::utils::{escape_html, unescape_all};
+use markdown_it::parser::core::Root;
 use markdown_it::plugins::cmark::block::fence::CodeFence;
 use markdown_it::{Node, NodeValue, Renderer};
 
@@ -105,8 +106,37 @@ fn html(fence: &CodeFence, settings: &RenderSettings) -> String {
     )
 }
 
+/// A fence left open at the end of a source without a final newline. JS
+/// `getLines` adds a line's newline only if there is one, the crate always
+/// does, so its content would end in a newline Rails does not write.
+fn open_at_end(node: &Node, fence: &CodeFence, source: &str) -> bool {
+    let ends_source = node
+        .srcmap
+        .is_some_and(|map| map.get_byte_offsets().1 >= source.len());
+    if !ends_source || source.ends_with('\n') {
+        return false;
+    }
+    // The closing marker, after any blockquote markers and indent.
+    let last = source.rsplit('\n').next().unwrap_or_default();
+    let last = last.trim_start_matches([' ', '\t', '>']);
+    let run = last.chars().take_while(|c| *c == fence.marker).count();
+    let closed = run >= fence.marker_len && last[run * fence.marker.len_utf8()..].trim().is_empty();
+    !closed
+}
+
 pub fn apply(root: &mut Node, settings: &RenderSettings) {
+    let source = root
+        .cast::<Root>()
+        .map(|r| r.content.clone())
+        .unwrap_or_default();
     root.walk_mut(|node, _| {
+        if node.is::<CodeFence>() {
+            let open = open_at_end(node, node.cast::<CodeFence>().unwrap(), &source);
+            let fence = node.cast_mut::<CodeFence>().unwrap();
+            if open && fence.content.ends_with('\n') {
+                fence.content.pop();
+            }
+        }
         if let Some(fence) = node.cast::<CodeFence>() {
             let html = html(fence, settings);
             node.replace(Fence { html });

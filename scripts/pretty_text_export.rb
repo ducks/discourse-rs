@@ -167,6 +167,10 @@ samples = [
   # A url with a schema is taken during inline parsing (the linkify inline
   # rule), before emphasis or code can claim part of it; trailing * drop.
   ["_see http://example.com/a_b_\n\nsee http://example.com/*x* end, http://example.com/`code` and https://a.com/__init__.py\n\n**http://example.com/** *http://example.com/x* [text http://inner.com](http://outer.com)", replies.id, u1.id],
+  # A fence left open at the end of a post with no final newline: its last
+  # line has none either. A shorter marker does not close it.
+  ["text\n\n> ```\n> x", replies.id, u1.id],
+  ["````\nx\n```", replies.id, u1.id],
 ]
 if upload
   samples << ["An upload that exists: ![image|64x64](#{upload.short_url}) and [a link|attachment](#{upload.short_url}).", replies.id, u1.id]

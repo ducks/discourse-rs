@@ -505,6 +505,22 @@
   },
   {
     "id": "sample-63",
+    "raw": "text\n\n> ```\n> x",
+    "topic_id": 35,
+    "user_id": 3,
+    "markdown": "<p>text</p>\n<blockquote>\n<pre><code class=\"lang-auto\">x</code></pre>\n</blockquote>",
+    "cooked": "<p>text</p>\n<blockquote>\n<pre><code class=\"lang-auto\">x</code></pre>\n</blockquote>"
+  },
+  {
+    "id": "sample-64",
+    "raw": "````\nx\n```",
+    "topic_id": 35,
+    "user_id": 3,
+    "markdown": "<pre><code class=\"lang-auto\">x\n```</code></pre>",
+    "cooked": "<pre><code class=\"lang-auto\">x\n```</code></pre>"
+  },
+  {
+    "id": "sample-65",
     "raw": "An upload that exists: ![image|64x64](upload://qa4V5109J7tySkPok8r3aBAruY1.png) and [a link|attachment](upload://qa4V5109J7tySkPok8r3aBAruY1.png).",
     "topic_id": 35,
     "user_id": 3,
