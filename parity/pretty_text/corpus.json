@@ -529,6 +529,14 @@
   },
   {
     "id": "sample-66",
+    "raw": "a\n[quote] plugins/x.js [/quote]\n[spoiler]i wonder… [/spoiler]\n\n[details=\"s\"]\tx\t[/details]\n\n[quote] [/quote]",
+    "topic_id": 35,
+    "user_id": 3,
+    "markdown": "<p>a</p>\n<aside class=\"quote no-group\">\n<blockquote>\n<p> plugins/x.js </p>\n</blockquote>\n</aside>\n<div class=\"spoiler\">\n<p>i wonder… </p>\n</div>\n<details>\n<summary>\ns</summary>\n<p>\tx\t</p>\n</details>\n<aside class=\"quote no-group\">\n<blockquote>\n<p> </p>\n</blockquote>\n</aside>",
+    "cooked": "<p>a</p>\n<aside class=\"quote no-group\">\n<blockquote>\n<p> plugins/x.js </p>\n</blockquote>\n</aside>\n<div class=\"spoiler\">\n<p>i wonder… </p>\n</div>\n<details>\n<summary>\ns</summary>\n<p>\tx\t</p>\n</details>\n<aside class=\"quote no-group\">\n<blockquote>\n<p> </p>\n</blockquote>\n</aside>"
+  },
+  {
+    "id": "sample-67",
     "raw": "An upload that exists: ![image|64x64](upload://qa4V5109J7tySkPok8r3aBAruY1.png) and [a link|attachment](upload://qa4V5109J7tySkPok8r3aBAruY1.png).",
     "topic_id": 35,
     "user_id": 3,

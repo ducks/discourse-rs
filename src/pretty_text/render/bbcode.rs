@@ -9,7 +9,7 @@
 use std::sync::LazyLock;
 
 use markdown_it::parser::block::{BlockRule, BlockState};
-use markdown_it::parser::inline::{InlineRoot, InlineRule, InlineState, Text};
+use markdown_it::parser::inline::{InlineRule, InlineState, Text};
 use markdown_it::plugins::cmark::block::fence::{CodeFence, FenceScanner};
 use markdown_it::plugins::cmark::block::paragraph::Paragraph;
 use markdown_it::{MarkdownIt, Node, NodeValue, Renderer};
@@ -17,7 +17,7 @@ use regex::Regex;
 
 use super::context::Context;
 use super::element::{BlockText, Element, Holder};
-use super::{RenderSettings, poll, quotes};
+use super::{RenderSettings, poll, quotes, untrimmed};
 
 /// `QUOTATION_MARKS`, as opening and closing characters.
 const QUOTATION_MARKS: [(char, char); 9] = [
@@ -433,11 +433,12 @@ impl BlockRule for BlockBbcode {
             holder = std::mem::replace(&mut state.node, old_node);
         } else {
             let content_start = start + info.length;
+            // Untrimmed, as JS hands it to the inline parser.
             let mut paragraph = Node::new(Paragraph);
-            paragraph.children.push(Node::new(InlineRoot::new(
+            paragraph.children = untrimmed::inline(
                 src[content_start..close.start].to_string(),
                 vec![(0, content_start)],
-            )));
+            );
             holder.children.push(paragraph);
         }
         let children = std::mem::take(&mut holder.children);
