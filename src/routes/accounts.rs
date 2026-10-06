@@ -5,7 +5,7 @@ use axum::Json;
 use axum::body::Bytes;
 use axum::extract::State;
 use axum::http::{HeaderMap, StatusCode, Uri, header};
-use axum::response::{IntoResponse, Redirect, Response};
+use axum::response::{IntoResponse, Response};
 use serde_json::{Map, Value, json};
 
 use super::session::{bad_csrf, csrf_ok};
@@ -53,9 +53,17 @@ pub async fn email_login(
         return Ok(super::topics::not_found_response(&state, false));
     }
     if guardian.is_authenticated() {
-        return Ok(
-            Redirect::to(&format!("{}/", state.config.globals.relative_url_root())).into_response(),
-        );
+        // redirect_to path("/"): a 302 to the absolute URL.
+        let host = headers
+            .get(header::HOST)
+            .and_then(|h| h.to_str().ok())
+            .unwrap_or("localhost");
+        let base_path = state.config.globals.relative_url_root();
+        return Ok((
+            StatusCode::FOUND,
+            [(header::LOCATION, format!("http://{host}{base_path}/"))],
+        )
+            .into_response());
     }
     let Some(login) = params::string(&p, "login").filter(|l| !l.trim().is_empty()) else {
         return Ok(param_missing("login"));
