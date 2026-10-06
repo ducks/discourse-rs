@@ -28,10 +28,13 @@ use tower::ServiceExt;
 /// covers it.
 const BACKGROUND_TABLES: [&str; 3] = ["scheduler_stats", "top_topics", "user_auth_tokens"];
 
-/// Tables Rails fills from a query without ORDER BY (sidebar links from
-/// `Category.where(id:).pluck(:id)`), so the rows' ids follow each
-/// database's heap order: compared as a set, without ids.
-const UNORDERED_INSERTS: [&str; 1] = ["sidebar_section_links"];
+/// Compared as a set, without ids: tables Rails fills from a query without
+/// ORDER BY (sidebar links from `Category.where(id:).pluck(:id)`), whose
+/// ids follow each database's heap order, and upload references, which
+/// `link_post_uploads` deletes and inserts again within a case (on create,
+/// then in the post processor), so their ids count rows the recording no
+/// longer shows and the sequence cannot be lined up from it.
+const UNORDERED_INSERTS: [&str; 2] = ["sidebar_section_links", "upload_references"];
 
 /// Keys plugins add to the post and topic serializers on the reference.
 const PLUGIN_KEYS: [&str; 12] = [
@@ -1051,7 +1054,7 @@ fn encoded_uploads(rails: &Value, ours: &Value) -> Vec<EncodedUpload> {
             .unwrap_or_default()
     };
     let rails_rows = inserted(rails);
-    inserted(ours)
+    let uploads = inserted(ours)
         .into_iter()
         .filter(|o| !o["width"].is_null())
         .filter_map(|o| {
@@ -1075,7 +1078,37 @@ fn encoded_uploads(rails: &Value, ours: &Value) -> Vec<EncodedUpload> {
                 filesize: (o["filesize"].clone(), r["filesize"].clone()),
             })
         })
-        .collect()
+        .collect::<Vec<_>>();
+    // Thumbnails (optimized_images) are always our encoder's: their sha1
+    // and size map the same way. Their urls are built from the original
+    // upload's sha1, so they need nothing.
+    let optimized = |v: &Value| -> Vec<Value> {
+        v["changes"]["optimized_images"]["inserted"]
+            .as_array()
+            .cloned()
+            .unwrap_or_default()
+    };
+    let rails_thumbnails = optimized(rails);
+    let mut out = uploads;
+    for o in optimized(ours) {
+        let Some(r) = rails_thumbnails.iter().find(|r| r["id"] == o["id"]) else {
+            continue;
+        };
+        let (Some(os), Some(rs)) = (o["sha1"].as_str(), r["sha1"].as_str()) else {
+            continue;
+        };
+        if os == rs {
+            continue;
+        }
+        out.push(EncodedUpload {
+            id: Value::Null,
+            url: o["url"].as_str().unwrap_or_default().to_string(),
+            sha1: os.to_string(),
+            pairs: vec![(os.to_string(), rs.to_string())],
+            filesize: (o["filesize"].clone(), r["filesize"].clone()),
+        });
+    }
+    out
 }
 
 /// `value` with each encoded upload's values replaced by Rails'.

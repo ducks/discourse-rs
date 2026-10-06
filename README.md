@@ -231,10 +231,13 @@ rules on the markdown-it crate, measured against Rails.
   `cooked` column, `Post#cook` (the post's id, its last editor, nofollow
   by its author's trust) then what the post processor job writes: quotes
   marked missing or modified, local urls made absolute, `u=` taken off
-  links to the site, nofollow enforced. Oneboxes, images other than emoji
-  and uploaded videos are refused: they need network fetches and image
-  processing. The recorder runs Rails' processor on each post in a
-  rolled-back transaction to know what it writes.
+  links to the site, nofollow enforced, and uploaded images sized,
+  thumbnailed (`OptimizedImage`, made in Rust by src/images.rs, with the
+  responsive sizes as `srcset`) and given lightboxes. Oneboxes, images
+  from other sites without both dimensions (sized over HTTP), hotlinked
+  media and uploaded videos are refused. The recorder runs Rails'
+  processor on each post in a rolled-back transaction to know what it
+  writes.
 - A restored backup's posts can be recorded and cooked the same way
   (`scripts/record-pretty-text <agent> <dir>`, then the ignored
   `backup_corpus_matches_rails` test); the Faker backup's 482 posts all

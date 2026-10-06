@@ -126,15 +126,21 @@ pub fn human_size(bytes: i64) -> String {
     format!("{text} {}", units[(exponent - 1) as usize])
 }
 
-/// `FileStore::BaseStore#get_path_for("original", id, sha, extension)`
-fn store_path(id: i32, sha1: &str, extension: &str) -> String {
+/// `FileStore::BaseStore#get_path_for(type, id, sha, extension)`: the path
+/// under the store's root, deeper as ids grow.
+pub(crate) fn get_path_for(kind: &str, id: i32, sha1: &str, extension: &str) -> String {
     let depth = if id > 0 {
         ((id as f64 / 1000.0).ln() / 16f64.ln()).ceil().max(0.0) as usize
     } else {
         0
     };
     let tree: String = sha1.chars().take(depth).map(|c| format!("{c}/")).collect();
-    format!("original/{}X/{tree}{sha1}{extension}", depth + 1)
+    format!("{kind}/{}X/{tree}{sha1}{extension}", depth + 1)
+}
+
+/// `get_path_for("original", ...)`
+fn store_path(id: i32, sha1: &str, extension: &str) -> String {
+    get_path_for("original", id, sha1, extension)
 }
 
 /// `UploadValidator`'s extension list (`extensions_to_set`).
@@ -297,7 +303,7 @@ pub enum Outcome {
 }
 
 /// The public directory's upload root: `public/uploads/default`.
-fn upload_root(public_dir: &Path) -> PathBuf {
+pub(crate) fn upload_root(public_dir: &Path) -> PathBuf {
     public_dir.join("uploads").join("default")
 }
 

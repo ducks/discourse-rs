@@ -213,7 +213,10 @@ pub fn each_upload_url(html: &str, hostname: &str) -> Vec<UploadUrl> {
 }
 
 /// `Upload.fetch_from(sha1:, url:)`: by sha1, else `get_from_url`.
-async fn fetch_from(conn: &mut PgConnection, found: &UploadUrl) -> Result<Option<i32>, AppError> {
+pub(crate) async fn fetch_from(
+    conn: &mut PgConnection,
+    found: &UploadUrl,
+) -> Result<Option<i32>, AppError> {
     if let Some(sha1) = found.sha1.as_deref().filter(|s| !s.is_empty()) {
         let id: Option<i32> = sqlx::query_scalar("SELECT id FROM uploads WHERE sha1 = $1 LIMIT 1")
             .bind(sha1)
@@ -233,7 +236,7 @@ async fn fetch_from(conn: &mut PgConnection, found: &UploadUrl) -> Result<Option
 pub async fn get_from_url(
     conn: &mut PgConnection,
     url: &str,
-) -> Result<Option<(i32, String)>, AppError> {
+) -> Result<Option<(i32, String)>, sqlx::Error> {
     let Some(path) = url_path(&unencode(url)).filter(|p| !p.is_empty()) else {
         return Ok(None);
     };
@@ -272,6 +275,88 @@ pub async fn get_from_url(
         }
     };
     Ok(found)
+}
+
+/// `update_post_image`'s choice: the first upload among the post's images
+/// marked `data-thumbnail`, else among the others (`extract_images_for_
+/// post`: not emoji, quoted, onebox site icons or avatars, or GitHub
+/// folder oneboxes).
+pub async fn post_image_upload(
+    conn: &mut PgConnection,
+    hostname: &str,
+    cooked: &str,
+) -> Result<Option<i32>, AppError> {
+    let (marked, others) = {
+        let dom = parse(cooked);
+        let mut marked = String::new();
+        let mut others = String::new();
+        for e in all_elements(&dom) {
+            if element_name(&e) != Some("img") {
+                continue;
+            }
+            let Some(src) = attr(&e, "src") else {
+                continue;
+            };
+            let class = attr(&e, "class").unwrap_or_default();
+            let classes: Vec<&str> = class.split_whitespace().collect();
+            if [
+                "emoji",
+                "site-icon",
+                "onebox-avatar",
+                "onebox-avatar-inline",
+            ]
+            .iter()
+            .any(|c| classes.contains(c))
+            {
+                continue;
+            }
+            let mut ancestors = Vec::new();
+            let mut current = parent(&e);
+            while let Some(p) = current {
+                current = parent(&p);
+                ancestors.push(p);
+            }
+            let has = |node: &markup5ever_rcdom::Handle, c: &str| {
+                attr(node, "class").is_some_and(|v| v.split_whitespace().any(|x| x == c))
+            };
+            if ancestors.iter().any(|a| has(a, "quote"))
+                || ancestors
+                    .iter()
+                    .any(|a| has(a, "onebox") && has(a, "githubfolder"))
+            {
+                continue;
+            }
+            // The image alone, for each_upload_url to read again.
+            let escaped = |v: &str| v.replace('&', "&amp;").replace('"', "&quot;");
+            let mut tag = format!("<img src=\"{}\"", escaped(&src));
+            if let Some(orig) = attr(&e, "data-orig-src") {
+                tag.push_str(&format!(" data-orig-src=\"{}\"", escaped(&orig)));
+            }
+            tag.push('>');
+            if attr(&e, "data-thumbnail").is_some() {
+                marked.push_str(&tag);
+            } else {
+                others.push_str(&tag);
+            }
+        }
+        (marked, others)
+    };
+    for images in [marked, others] {
+        for found in each_upload_url(&images, hostname) {
+            if let Some(id) = fetch_from(&mut *conn, &found).await? {
+                return Ok(Some(id));
+            }
+        }
+    }
+    Ok(None)
+}
+
+/// A node's parent, left in place.
+fn parent(node: &markup5ever_rcdom::Handle) -> Option<markup5ever_rcdom::Handle> {
+    let weak = node.parent.take();
+    let up = weak.as_ref().and_then(|w| w.upgrade());
+    node.parent.set(weak);
+    up
 }
 
 /// `link_post_uploads(fragments:)` for the post `post_id` with this

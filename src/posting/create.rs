@@ -397,7 +397,7 @@ pub async fn create(
     let base_path = ctx.config.globals.relative_url_root().to_string();
     let analysis = validate::analyze(&cooked, &base_path)?;
     if analysis.has_upload_media {
-        return Err(Unsupported("posts with upload images or media").into());
+        return Err(Unsupported("posts with uploaded video or audio").into());
     }
     if analysis.has_quotes {
         return Err(Unsupported("posts with quotes (QuotedPost)").into());

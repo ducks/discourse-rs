@@ -242,27 +242,83 @@ async fn process_post(state: &AppState, args: &Value) -> Result<(), AppError> {
         &mut conn,
         &s,
         &state.config,
+        &state.i18n,
         &post.cooked,
         post.omit_nofollow,
+        Some(post_id),
     )
     .await?;
-    // update_post_image: images are refused by the post processor, so the
-    // post (and a first post's topic) has none.
-    if post.image_upload_id.is_some() {
-        sqlx::query("UPDATE posts SET image_upload_id = NULL WHERE id = $1")
-            .bind(post_id)
-            .execute(&mut *conn)
-            .await?;
+    // update_post_image: the post's (and a first post's topic's) image.
+    let hostname = Urls {
+        config: &state.config,
+        settings: &s,
     }
-    if post.post_number == 1 {
-        if post.topic_image_upload_id.is_some() {
-            sqlx::query("UPDATE topics SET image_upload_id = NULL WHERE id = $1")
-                .bind(post.topic_id)
+    .current_hostname()?;
+    let image = crate::upload_references::post_image_upload(&mut conn, &hostname, &html).await?;
+    match image {
+        Some(upload_id) => {
+            sqlx::query("UPDATE posts SET image_upload_id = $2 WHERE id = $1")
+                .bind(post_id)
+                .bind(i64::from(upload_id))
                 .execute(&mut *conn)
                 .await?;
+            if post.post_number == 1 {
+                sqlx::query("UPDATE topics SET image_upload_id = $2 WHERE id = $1")
+                    .bind(post.topic_id)
+                    .bind(i64::from(upload_id))
+                    .execute(&mut *conn)
+                    .await?;
+                // clear_generated_og_image!
+                let og: Option<i64> =
+                    sqlx::query_scalar("SELECT og_image_upload_id FROM topics WHERE id = $1")
+                        .bind(post.topic_id)
+                        .fetch_one(&mut *conn)
+                        .await?;
+                if let Some(og) = og {
+                    sqlx::query("UPDATE topics SET og_image_upload_id = NULL WHERE id = $1")
+                        .bind(post.topic_id)
+                        .execute(&mut *conn)
+                        .await?;
+                    sqlx::query(
+                        "DELETE FROM upload_references WHERE target_type = 'Topic' AND target_id = $1 \
+                         AND upload_id = $2",
+                    )
+                    .bind(post.topic_id)
+                    .bind(og)
+                    .execute(&mut *conn)
+                    .await?;
+                }
+                if let Some(upload) =
+                    crate::optimized_images::Upload::find(&mut conn, upload_id).await?
+                {
+                    crate::optimized_images::generate_topic_thumbnails(
+                        &mut conn,
+                        &s,
+                        &state.config.public_dir,
+                        &upload,
+                    )
+                    .await?;
+                }
+            }
         }
-        if s.get("generate_topic_og_image")?.truthy() {
-            return Err(Unsupported("generate_topic_og_image").into());
+        None => {
+            if post.image_upload_id.is_some() {
+                sqlx::query("UPDATE posts SET image_upload_id = NULL WHERE id = $1")
+                    .bind(post_id)
+                    .execute(&mut *conn)
+                    .await?;
+            }
+            if post.post_number == 1 {
+                if post.topic_image_upload_id.is_some() {
+                    sqlx::query("UPDATE topics SET image_upload_id = NULL WHERE id = $1")
+                        .bind(post.topic_id)
+                        .execute(&mut *conn)
+                        .await?;
+                }
+                if s.get("generate_topic_og_image")?.truthy() {
+                    return Err(Unsupported("generate_topic_og_image").into());
+                }
+            }
         }
     }
     // grant_badges: the first emoji badge is a write.
@@ -271,21 +327,41 @@ async fn process_post(state: &AppState, args: &Value) -> Result<(), AppError> {
         return Err(Unsupported("granting the first emoji badge").into());
     }
     // @post.link_post_uploads(fragments: @doc)
-    let hostname = Urls {
-        config: &state.config,
-        settings: &s,
-    }
-    .current_hostname()?;
     crate::upload_references::link_post_uploads(&mut conn, &s, &hostname, post_id, &html).await?;
     if html != post.cooked {
-        if post.post_number == 1 {
-            return Err(Unsupported("first post caches after post processing").into());
-        }
         sqlx::query("UPDATE posts SET cooked = $2 WHERE id = $1")
             .bind(post_id)
             .bind(&html)
             .execute(&mut *conn)
             .await?;
+        // sync_first_post_caches: the topic's excerpt from the new html; a
+        // category's description is not synced from its definition here.
+        if post.post_number == 1 {
+            let definition: bool =
+                sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM categories WHERE topic_id = $1)")
+                    .bind(post.topic_id)
+                    .fetch_one(&mut *conn)
+                    .await?;
+            if definition {
+                return Err(
+                    Unsupported("syncing a category description after post processing").into(),
+                );
+            }
+            let excerpt = crate::excerpt::excerpt(
+                &html,
+                s.get("topic_excerpt_maxlength")?.to_i().max(0) as usize,
+                &crate::excerpt::Options {
+                    strip_links: true,
+                    image_mode: crate::excerpt::ImageMode::Strip,
+                    ..Default::default()
+                },
+            );
+            sqlx::query("UPDATE topics SET excerpt = $2 WHERE id = $1")
+                .bind(post.topic_id)
+                .bind(excerpt)
+                .execute(&mut *conn)
+                .await?;
+        }
         if let Some(user_id) = post.user_id {
             let urls = Urls {
                 config: &state.config,

@@ -27,6 +27,7 @@ pub mod letter_avatar;
 pub mod likes;
 pub mod modifications;
 pub mod notifications;
+pub mod optimized_images;
 pub mod owned_schema;
 pub mod params;
 pub mod parity;

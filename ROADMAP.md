@@ -156,9 +156,14 @@ Logged-in readers, no writes yet.
       post processor's html steps (quote marks, local urls, user ids off
       links, nofollow); every post of the seed and the Faker backup gets
       the column Rails writes
+- [x] Post processor, images: uploads sized, thumbnailed and given
+      lightboxes (`convert_to_link!`, `OptimizedImage.create_for` in Rust),
+      the post's and topic's image, topic thumbnails, upload references,
+      the first post's excerpt after processing
 - [ ] Post processor, the rest: oneboxes (network fetches, the onebox
-      engines), images (sizes, optimized images, lightboxes), optimized
-      videos; and its writes (post/topic image, badges, upload links)
+      engines), images from other sites sized over HTTP, hotlinked media,
+      optimized videos, badges, a category description synced from its
+      definition
 - [x] Posting, editing, revisions: replies, regular topics, raw and
       edit-reason edits, revision diffs; the 14 cases in parity/writes
       write the rows Rails writes (tests/writes.rs). Refused for now:

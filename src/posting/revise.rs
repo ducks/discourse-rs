@@ -234,7 +234,7 @@ pub async fn revise(
     let base_path = ctx.config.globals.relative_url_root().to_string();
     let analysis = validate::analyze(&cooked, &base_path)?;
     if analysis.has_upload_media {
-        return Err(Unsupported("posts with upload images or media").into());
+        return Err(Unsupported("posts with uploaded video or audio").into());
     }
     let private_message = false;
     let errors = if changes.skip_validations {
