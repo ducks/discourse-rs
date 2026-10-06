@@ -346,3 +346,53 @@ pub async fn revision(
         },
     )
 }
+
+/// GET /raw/:topic_id/:post_number (posts#markdown_num): a post's raw
+/// markdown as plain text, for whoever can see it; the composer reads it
+/// to edit. The topic's whole markdown and a revision's are not ported.
+pub async fn raw(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path((topic_id, post_number)): Path<(String, String)>,
+    uri: Uri,
+) -> Result<Response, AppError> {
+    if uri.query().is_some_and(|q| q.contains("revision=")) {
+        return Err(Unsupported("raw of a revision").into());
+    }
+    let (Ok(topic_id), Ok(post_number)) = (topic_id.parse::<i32>(), post_number.parse::<i32>())
+    else {
+        return Ok(super::topics::not_found_response(&state, false));
+    };
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let post_id: Option<i32> = sqlx::query_scalar(
+        "SELECT id FROM posts WHERE topic_id = $1 AND post_number = $2 AND deleted_at IS NULL",
+    )
+    .bind(topic_id)
+    .bind(post_number)
+    .fetch_optional(&mut *conn)
+    .await?;
+    let cook_host = Host::from_state(&state);
+    let ctx = Ctx {
+        host: &cook_host,
+        settings: &settings,
+        config: &state.config,
+        i18n: &state.i18n,
+        bus: &state.bus,
+    };
+    let visible = match post_id {
+        Some(id) => revisions::find_post(&mut conn, &ctx, &guardian, id)
+            .await?
+            .is_some_and(|a| a.can_see_post),
+        None => false,
+    };
+    if !visible {
+        return Ok(super::topics::not_found_response(&state, false));
+    }
+    let raw: String = sqlx::query_scalar("SELECT raw FROM posts WHERE id = $1")
+        .bind(post_id)
+        .fetch_one(&mut *conn)
+        .await?;
+    Ok(([(header::CONTENT_TYPE, "text/plain; charset=utf-8")], raw).into_response())
+}

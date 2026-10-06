@@ -366,7 +366,13 @@ Discourse's own clients keep working.
       Customize (modals), the welcome banner, the category and tag dropdowns by the nav pills,
       the keyboard shortcuts modal behind the sidebar footer's button,
       icons beyond the static sprite (a category's icon style)
-- [ ] Next for the client: the composer for new topics
+- [x] The composer (Ember's #reply-control in its markdown mode): reply to
+      a topic or a post, create a topic in a chosen category, edit a post
+      (its markdown from GET /raw/:topic_id/:post_number), with the
+      toolbar's bold, italic, link, quote, code and list, minimizing,
+      fullscreen and resizing. Not yet: tags, the heading, emoji and
+      options menus, the composer actions menu, the rich text editor;
+      edits within the grace period are refused by the post reviser
 - [ ] The composer: markdown preview with the Rust renderer, uploads,
       drafts
 - [ ] The user menu, notifications, bookmarks, messages, preferences

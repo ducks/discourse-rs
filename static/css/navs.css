@@ -140,3 +140,8 @@
   padding: 0 0.65em;
   height: var(--d-control-height);
 }
+
+/* components/d-combo-button.scss */
+.d-combo-button {
+  display: inline-flex;
+}

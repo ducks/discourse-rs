@@ -8,7 +8,7 @@
   {{ bottom_map|safe }}
   {{ timeline|safe }}
   <div class="row">
-    <section class="topic-area" id="topic">
+    <section class="topic-area" data-topic-id="{{ topic_id }}" id="topic">
       <div class="posts-wrapper">
         <div class="post-stream" id="posts">{% for post in posts %}{{ post|safe }}{% endfor %}<div class="post-stream__bottom-boundary"></div></div>
       </div>
@@ -26,19 +26,6 @@
 {#- Ember shows the footer and the suggested topics once every post is
     loaded: here, on the last page. -#}
 {% if live %}{{ footer_buttons|safe }}{% endif %}
-{% if can_reply %}{% if let Some(v) = viewer %}
-{#- The composer's stand-in. The new post comes back over the live stream,
-    so the response is only checked for errors. -#}
-<form class="reply" data-own-errors hx-post="{{ base_path }}/posts" hx-swap="none"
-      hx-headers='{"X-CSRF-Token": "{{ v.csrf_token }}", "X-Requested-With": "XMLHttpRequest"}'
-      hx-on::after-request="replied(this, event)">
-  <input type="hidden" name="topic_id" value="{{ topic_id }}">
-  <input type="hidden" name="reply_to_post_number" value="">
-  <textarea name="raw" rows="5" required aria-label="Reply"></textarea>
-  <p class="reply-error" role="alert" hidden></p>
-  <button type="submit">Reply</button>
-</form>
-{% endif %}{% endif %}
 {% if live %}<br>{{ more_topics|safe }}{% endif %}
 </div>
 <script src="{{ base_path }}/assets/topic.js"></script>

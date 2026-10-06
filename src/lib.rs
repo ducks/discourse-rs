@@ -8,6 +8,7 @@ pub mod category;
 pub mod category_list;
 pub mod clock;
 pub mod color_scheme;
+pub mod composer_view;
 pub mod config;
 pub mod current_user;
 pub mod discourse_diff;

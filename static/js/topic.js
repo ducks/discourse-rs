@@ -1,41 +1,10 @@
-// The topic page's client side: the buttons that act in the browser
-// (copy link, share, reply, an anonymous reader's reply), the reply form's
-// errors, live updates arriving twice, and the timeline, which follows
+// The topic page's client side: the buttons that act in the browser (copy
+// link, share, show more, an anonymous reader's reply), live updates
+// arriving twice, and the timeline, which follows
 // the post being read as Ember's does (components/topic-timeline,
 // modifiers/post-stream-viewport-tracker).
 (function () {
   "use strict";
-
-  var form = document.querySelector("form.reply");
-
-  // The reply form's response: cleared when posted, else its errors.
-  window.replied = function (form, event) {
-    var error = form.querySelector(".reply-error");
-    if (event.detail.successful) {
-      form.reset();
-      error.hidden = true;
-      return;
-    }
-    var message = "Could not post the reply.";
-    try {
-      var body = JSON.parse(event.detail.xhr.responseText);
-      if (body.errors) {
-        message = body.errors.join(" ");
-      }
-    } catch (e) {
-      // Not JSON: the plain message.
-    }
-    error.textContent = message;
-    error.hidden = false;
-  };
-
-  function replyTo(postNumber) {
-    if (!form) {
-      return;
-    }
-    form.querySelector("[name=reply_to_post_number]").value = postNumber || "";
-    form.querySelector("textarea").focus();
-  }
 
   document.addEventListener("click", function (event) {
     // A post's copy link, and the footer's share: the URL, absolute.
@@ -48,14 +17,15 @@
       );
       return;
     }
-    var postReply = event.target.closest(".post-action-menu__reply");
-    if (postReply) {
-      replyTo(postReply.dataset.postNumber);
-      return;
-    }
-    // The footer's and the timeline's reply: to the topic.
-    if (event.target.closest(".topic-footer-main-buttons .create, .reply-to-post")) {
-      replyTo("");
+    // Show more: the post menu's collapsed buttons.
+    var more = event.target.closest(".post-action-menu__show-more");
+    if (more) {
+      var nav = more.closest("nav.post-controls");
+      nav.querySelectorAll(".actions > [hidden]").forEach(function (b) {
+        b.hidden = false;
+      });
+      nav.classList.replace("collapsed", "expanded");
+      more.remove();
       return;
     }
     // An anonymous reader's reply asks them to log in.

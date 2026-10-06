@@ -63,6 +63,17 @@ ICONS=(
   arrow-up-from-bracket
   book-open-reader
   ellipsis
+  discourse-expand
+  discourse-compress
+  discourse-bookmark-clock
+  minus
+  xmark
+  bold
+  italic
+  quote-right
+  code
+  angle-up
+  angles-left
 )
 
 root="$(cd "$(dirname "$0")/.." && pwd)"
@@ -83,11 +94,19 @@ out="$root/static/vendor/icons.svg"
 {
   echo "<!-- Font Awesome Free $VERSION by @fontawesome - https://fontawesome.com"
   echo "     License - https://fontawesome.com/license/free (Icons: CC BY 4.0)"
-  echo "     Copyright 2026 Fonticons, Inc. Built by scripts/build-icon-sprite. -->"
+  echo "     Copyright 2026 Fonticons, Inc. The discourse-* icons are Discourse's"
+  echo "     (vendor/discourse/vendor/assets/svg-icons, GPL-2.0). Built by"
+  echo "     scripts/build-icon-sprite. -->"
   echo '<svg xmlns="http://www.w3.org/2000/svg" style="display: none">'
   for icon in "${ICONS[@]}"; do
     name="${icon%%=*}"
     file="${icon#*=}"
+    # Discourse's own icons (discourse-*), from its vendored sprite.
+    if [[ $file == discourse-* ]]; then
+      tr -d '\n' < "$root/vendor/discourse/vendor/assets/svg-icons/discourse-additional.svg" \
+        | grep -o "<symbol id=\"$file\"[^>]*>.*" | sed 's|</symbol>.*|</symbol>|' | sed "s/^/  /"
+      continue
+    fi
     # Discourse names the regular style's icons far-<name>.
     if [[ $file == far-* ]]; then
       svg="$work/package/svgs/regular/${file#far-}.svg"

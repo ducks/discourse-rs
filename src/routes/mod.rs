@@ -55,6 +55,7 @@ const DISCOURSE_CSS: &str = concat!(
     include_str!("../../static/css/topic-list.css"),
     include_str!("../../static/css/sidebar.css"),
     include_str!("../../static/css/topic.css"),
+    include_str!("../../static/css/composer.css"),
 );
 
 async fn discourse_css() -> impl IntoResponse {
@@ -80,6 +81,7 @@ const HTMX: &str = include_str!("../../static/vendor/htmx.min.js");
 const HTMX_SSE: &str = include_str!("../../static/vendor/htmx-ext-sse.js");
 const SIDEBAR_JS: &str = include_str!("../../static/js/sidebar.js");
 const TOPIC_JS: &str = include_str!("../../static/js/topic.js");
+const COMPOSER_JS: &str = include_str!("../../static/js/composer.js");
 
 async fn htmx() -> impl IntoResponse {
     (
@@ -99,6 +101,13 @@ async fn topic_js() -> impl IntoResponse {
     (
         [(header::CONTENT_TYPE, "text/javascript; charset=utf-8")],
         TOPIC_JS,
+    )
+}
+
+async fn composer_js() -> impl IntoResponse {
+    (
+        [(header::CONTENT_TYPE, "text/javascript; charset=utf-8")],
+        COMPOSER_JS,
     )
 }
 
@@ -315,6 +324,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/posts/{id}",
             put(posts::update).delete(post_destroy::destroy_post),
         )
+        .route("/raw/{topic_id}/{post_number}", get(posts::raw))
         .route("/posts/{id}/recover", put(post_destroy::recover_post))
         .route("/posts/{id}/recover.json", put(post_destroy::recover_post))
         .route("/posts/{id}/revisions/{revision}", get(posts::revision))
@@ -359,6 +369,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/htmx-ext-sse.js", get(htmx_sse))
         .route("/assets/sidebar.js", get(sidebar_js))
         .route("/assets/topic.js", get(topic_js))
+        .route("/assets/composer.js", get(composer_js))
         .nest_service("/uploads", ServeDir::new(public.join("uploads")));
     if let Some(emoji) = config.emoji_dir() {
         router = router.nest_service("/images/emoji", ServeDir::new(emoji));

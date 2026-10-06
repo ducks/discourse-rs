@@ -135,6 +135,10 @@ pub struct Chrome {
     /// The sidebar's markup, empty when the page has none
     /// (ApplicationController#sidebarEnabled).
     pub sidebar: String,
+    /// A member's composer (composer_view), empty for a visitor.
+    pub composer: String,
+    /// `canCreateTopic`: the lists' New Topic button.
+    pub can_create_topic: bool,
 }
 
 impl Site {
@@ -202,8 +206,65 @@ impl Site {
             // Sidebar.gjs's bodyClass
             classes.push("has-sidebar-page".into());
         }
+        if guardian.user().is_some() {
+            self.chrome.can_create_topic = guardian.can_create_topic(&mut conn, settings).await?;
+            self.chrome.composer = self.composer(&mut conn, state, settings, guardian).await?;
+        }
         self.chrome.body_classes = classes.join(" ");
         Ok(())
+    }
+
+    /// The member's composer, with the categories they may create topics
+    /// in for its chooser.
+    async fn composer(
+        &self,
+        conn: &mut PgConnection,
+        state: &crate::AppState,
+        settings: &SiteSettings,
+        guardian: &crate::guardian::Guardian,
+    ) -> Result<String, crate::AppError> {
+        let mut allowed = guardian
+            .topic_create_allowed_category_ids(&mut *conn, settings)
+            .await?;
+        // The chooser leaves out uncategorized unless topics may go there.
+        if !settings.get("allow_uncategorized_topics")?.truthy() {
+            let uncategorized = settings.get("uncategorized_category_id")?.to_i() as i32;
+            allowed.retain(|id| *id != uncategorized);
+        }
+        let rows: Vec<(i32, i32, Option<String>)> = sqlx::query_as(
+            "SELECT id, topic_count, description FROM categories WHERE id = ANY($1)",
+        )
+        .bind(&allowed)
+        .fetch_all(&mut *conn)
+        .await?;
+        let mut chooser = Vec::with_capacity(rows.len());
+        for (id, topic_count, description) in rows {
+            chooser.push(crate::composer_view::ChooserCategory {
+                id: i64::from(id),
+                topic_count: i64::from(topic_count),
+                // Category#description_text
+                description_text: crate::categories::description_plain_text(
+                    description.as_deref(),
+                )?,
+            });
+        }
+        let categories = crate::topic_list_view::categories(&mut *conn).await?;
+        let list = crate::topic_list_view::ListContext {
+            i18n: &state.i18n,
+            base_path: &self.base_path,
+            now: chrono::Utc::now(),
+            categories: &categories,
+            expand_all_pinned: false,
+            member_trust_level: guardian.user().map(|u| u.trust_level),
+            settings: crate::topic_list_view::ListSettings::load(settings)?,
+        };
+        let default_category =
+            Some(settings.get("default_composer_category")?.to_i()).filter(|id| *id > 0);
+        Ok(crate::composer_view::render(
+            &list,
+            &chooser,
+            default_category,
+        ))
     }
 }
 
@@ -324,7 +385,6 @@ pub struct TopicPage {
     pub topic_id: i64,
     /// The last page: live updates append new posts here.
     pub live: bool,
-    pub can_reply: bool,
 }
 
 /// `categories` rows the pages link to.
@@ -521,8 +581,6 @@ pub async fn topic_page(
         topic_id: id,
         // New posts land on the last page; earlier pages stay as they are.
         live: page >= last_page,
-        // details.can_create_post: a logged-in viewer who may reply.
-        can_reply: view["details"]["can_create_post"] == true,
         prev_url: (page > 1).then(|| page_url(page - 1)),
         next_url: (page < last_page).then(|| page_url(page + 1)),
     })
@@ -568,6 +626,8 @@ pub struct SubcategoryItem {
 /// The category page header: the category (and its parent) as links,
 /// plus its visible subcategories on the first page (list.erb 13-37).
 pub struct CategoryHeading {
+    /// For the New Topic button: a topic created here starts in it.
+    pub id: i32,
     pub name: String,
     pub url: String,
     pub parent: Option<CategoryBadge>,
@@ -609,6 +669,7 @@ pub async fn category_heading(
         }
     }
     Ok(CategoryHeading {
+        id: category.id,
         name: category.name.clone(),
         url: category.url(conn, base_path).await?,
         parent,
