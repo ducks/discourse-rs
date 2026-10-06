@@ -100,10 +100,9 @@ Scenarios per action (an `it` marked (xN) counts N).
 
 ## Cases added from this inventory
 
-94 cases, recorded on the reference and replayed: 68 match, 26 differ
-(listed in NOT_YET in tests/writes.rs).
+94 cases, recorded on the reference and replayed. 68 matched as added:
 
-Match: new_topic_restricted_category, new_topic_no_category,
+new_topic_restricted_category, new_topic_no_category,
 pm_no_recipients, pm_on_existing_topic, reply_duplicate,
 reply_to_archived_topic, edit_too_late, edit_archived_topic,
 edit_locked_post, edit_wiki, post_delete_first_post,
@@ -132,36 +131,8 @@ session_login_inactive, session_login_not_approved,
 users_update_ignores_protected_fields, users_update_names_disabled,
 login_required_lists_anonymous.
 
-Differ:
-
-| Case | Port vs Rails |
-|---|---|
-| raw_post_anonymous | GET /raw/35/1.json: 404, Rails 200 with the raw (".json" read as part of the post number) |
-| unlike_not_liked | 404 body has `error_type: "not_found"`, Rails' has none |
-| unlike_lost_access | 200 with the serialized post, Rails 204 when the user can no longer see the post; also touches post_actions.updated_at |
-| bookmark_topic_hidden_first_post | 200 and a bookmark row, Rails 403 (can't see the topic's first post) |
-| upload_staff_any_file_in_pm | 422 "not authorized", Rails 200: `for_private_message` lets staff upload any file |
-| upload_avatar_not_allowed | 500 Unsupported("avatar uploads"), Rails 422 `{"failed":"FAILED"}` before any upload code |
-| setting_secret | user_histories previous_value/new_value hold the secret, Rails "[FILTERED]" |
-| setting_hard_deprecated | "You are not allowed to change hidden settings", Rails the deprecation message (checked first) |
-| user_silence_missing_user | 400 "Reason can't be blank", Rails 404 (user lookup before validation) |
-| incoming_invalid_utf8 | incoming_emails.raw re-encoded with a trailing "=0D=" soft break, Rails without |
-| activate_account_bad_token_format | 422 invalid link, Rails 404 (route constraint on the token) |
-| email_login_logged_in | 303, Rails 302 |
-| password_reset_timezone | the `timezone` param is not saved to user_options |
-| forgot_password_local_logins_disabled | 200 and a reset mail, Rails 403 when enable_local_logins is off |
-| session_login_timezone | login response `user` lacks most UserSerializer keys (email, user_option, group_users, ...) and has can_edit/can_send_private_messages false |
-| session_login_totp_invalid | reason "invalid_second_factor_method", Rails "invalid_second_factor" with `ok: false` |
-| session_logout_backslash_return_url | redirect_url "/\\evil.com" passed through, Rails "/" |
-| list_latest_invalid_params | 400 bodies are plain text, Rails JSON invalid_parameters; `topic_ids[1]=haxx` is 200, Rails 400 |
-| list_category_default_view_top | /c/general/4/none.json ignores the category's default_view top (filter latest, no for_period) |
-| categories_subcategory_params | include_subcategories (subcategory_list) and parent_category_id ignored |
-| search_anonymous_disabled | 200 with results, Rails 403 when allow_anonymous_search is off |
-| search_query_logs_term | search_logs.crawler true for a request without a user agent, Rails false |
-| tags_show_hidden_as_admin | 404 for an admin on a staff-only tag, Rails 200 |
-| tags_in_staff_category_as_admin | /tags/c/staff/3/howto.json 404 for an admin, Rails 200 |
-| robots_overridden_as_admin | missing the "# This robots.txt file has been customized" line Rails adds for admins |
-| sitemap_index_not_generated | /sitemap.xml inserts sitemaps rows, Rails only reads them |
+The 26 that differed when they were added have since been fixed, each on
+its own branch (`git log --merges --grep fix/`), so all 94 match.
 
 ## PostsController#create
 
@@ -309,7 +280,7 @@ Differ:
 
 | Line | Scenario | Class | Case / note |
 |---|---|---|---|
-| 4278 | anonymous GET /raw/:topic/1.json | covered | raw_post_anonymous (new, differs) |
+| 4278 | anonymous GET /raw/:topic/1.json | covered | raw_post_anonymous (new) |
 | 4287 | whole topic /raw/:topic_id | out-of-scope | route without post_number not ported |
 | 4311 | hidden post > logged out 404 | recordable | raw_hidden_post_anonymous |
 | 4320 | hidden post > regular user 404 | covered | raw_hidden_post (new, matches) |
@@ -525,11 +496,11 @@ Differ:
 |---|---|---|---|
 | 10 | #destroy > requires you to be logged in | recordable | unlike_anonymous (DELETE /post_actions/52.json anon, 403; not proposed, trivial) |
 | 18 | #destroy > logged in > 400 when post_action_type_id is missing | recordable | unlike_missing_type (not proposed, no data change) |
-| 23 | #destroy > logged in > 404 when the action doesn't exist for that user | covered | unlike_not_liked (new, differs) |
+| 23 | #destroy > logged in > 404 when the action doesn't exist for that user | covered | unlike_not_liked (new) |
 | 40 | #destroy > with a post_action > returns success | covered | unlike |
 | 48 | #destroy > with a post_action > deletes the action | covered | unlike |
 | 65 | #destroy > with a post_action > not deleted when the user doesn't have permission (created 1 day ago) | covered | unlike_after_window (new, matches) |
-| 76 | #destroy > with a post_action > 204, no body, when the user can no longer see the post | covered | unlike_lost_access (new, differs) |
+| 76 | #destroy > with a post_action > 204, no body, when the user can no longer see the post | covered | unlike_lost_access (new) |
 
 ## PostActionsController#create
 
@@ -624,7 +595,7 @@ Differ:
 | 14 | #create > rate limits creates (429) | needs-harness | rate limits disabled on the Rails side |
 | 41 | #create > max bookmark limit reached, 400 too_many | recordable | bookmark_too_many (admin has 2 bookmarks, max_bookmarks_per_user=2; not proposed) |
 | 67 | #create > already bookmarked (Post and Topic), 400 | covered | bookmark_duplicate (Post half; the Topic half runs the same query with the type) |
-| 96 | #create > 403 when the first post of a topic is hidden | covered | bookmark_topic_hidden_first_post (new, differs) |
+| 96 | #create > 403 when the first post of a topic is hidden | covered | bookmark_topic_hidden_first_post (new) |
 | - | extra (brief): bookmark a PM the user can't see | covered | bookmark_pm_not_participant (new, matches) |
 | - | extra (brief): auto_delete_preference from the user option when not given | covered | bookmark_user_auto_delete_default (new, matches) |
 
@@ -771,10 +742,10 @@ Differ:
 | 174 | logged in > correctly sets retain_hours for admins | out-of-scope | Unsupported "retain_hours" |
 | 189 | logged in > requires a file (422 file_missing) | out-of-scope | without a fixture the harness sends a urlencoded form: Unsupported "uploads not sent as multipart/form-data" |
 | 198 | logged in > properly returns errors (too large, max_attachment_size_kb 1) | covered | upload_too_large (new, matches) |
-| 212 | logged in > user must be in uploaded_avatars_allowed_groups for an avatar | covered | upload_avatar_not_allowed (new, differs) |
+| 212 | logged in > user must be in uploaded_avatars_allowed_groups for an avatar | covered | upload_avatar_not_allowed (new) |
 | 223 | logged in > discourse_connect_overrides_avatar blocks avatars | recordable | upload_avatar_sso_overrides (same controller-level 422 as above) |
 | 229 | logged in > auth_overrides_avatar blocks avatars | recordable | upload_avatar_auth_overrides (same controller-level 422) |
-| 235 | logged in > staff may upload any file in a PM | covered | upload_staff_any_file_in_pm (new, differs) |
+| 235 | logged in > staff may upload any file in a PM | covered | upload_staff_any_file_in_pm (new) |
 | 252 | logged in > staff upload supported images for site settings | out-of-scope | Unsupported "site setting uploads" |
 | 272 | logged in > authorized_extensions_for_staff respected for staff | covered | upload_staff_extension (new, matches) |
 | 284 | logged in > authorized_extensions_for_staff ignored for non-staff | recordable | upload_staff_extension_not_staff (user2, same settings, 422 unauthorized) |
@@ -848,7 +819,7 @@ Differ:
 |---|---|---|---|
 | 248 | admin > sets the value when the param is present (title) | covered | setting_string (title itself is Unsupported "settings whose change handlers write") |
 | 254 | admin > bulk updates settings | out-of-scope | Unsupported "bulk site setting updates" |
-| 271 | admin > error for hard deprecated settings | covered | setting_hard_deprecated (new, differs) |
+| 271 | admin > error for hard deprecated settings | covered | setting_hard_deprecated (new) |
 | 282 | admin > works for soft deprecated settings | needs-harness | stub_deprecated_settings!(override: true); no real soft deprecation in SETTINGS |
 | 291 | admin > not a configurable setting (clear_cache!) with update_existing_user | covered | setting_unknown (with update_existing_user the port hits Unsupported "backfilling user preferences") |
 | 304 | admin > deprecated enable_personal_messages with override false | covered | setting_unknown (the setting no longer exists at this commit) |
@@ -872,7 +843,7 @@ Differ:
 | 781 | moderator > prevents updates with a 404 | recordable | setting_moderator (user3 made moderator) |
 | 781 | non-staff > prevents updates with a 404 | covered | setting_not_admin |
 | 817 | non-staff > default categories, default tags not updated (x2) | covered | setting_not_admin (404 before anything) |
-| - | (no spec it) secret setting logged as [FILTERED] | covered | setting_secret (new, differs) |
+| - | (no spec it) secret setting logged as [FILTERED] | covered | setting_secret (new) |
 | - | (no spec it) enum with listed choices | covered | setting_enum (new, matches) |
 
 ## Admin::UsersController#suspend
@@ -915,7 +886,7 @@ Differ:
 
 | Line | Scenario | Class | Case / note |
 |---|---|---|---|
-| 2181 | admin > 404 if the user doesn't exist | covered | user_silence_missing_user (new, differs) |
+| 2181 | admin > 404 if the user doesn't exist | covered | user_silence_missing_user (new) |
 | 2186 | admin > doesn't allow silencing another admin | recordable | user_silence_self (admin target, 403) |
 | 2196 | admin > another admin via other_user_ids | out-of-scope | Unsupported "penalizing several users at once (other_user_ids)" |
 | 2208 | admin > punishes the user for spamming | covered | user_silence |
@@ -952,7 +923,7 @@ Differ:
 | 299 | admin > 400 if neither email parameter is present | recordable | incoming_missing_param |
 | 305 | admin > enqueues with the deprecated email param, warns | covered | incoming_deprecated_email_param (new, matches) |
 | 320 | admin > decodes email_encoded and enqueues | covered | incoming_reply |
-| 338 | admin > normalizes invalid UTF-8 bytes | covered | incoming_invalid_utf8 (new, differs) |
+| 338 | admin > normalizes invalid UTF-8 bytes | covered | incoming_invalid_utf8 (new) |
 | 349 | moderator > 404 | recordable | incoming_moderator |
 | 349 | non-staff > 404 | recordable | incoming_not_staff |
 
@@ -1047,7 +1018,7 @@ Differ:
 | Line | Scenario | Class | Case / note |
 |---|---|---|---|
 | 65 | inexistent token > 422 | covered | activate_account_unknown_token (new, matches) |
-| 72 | invalid token (`123%2f%252e`) > 404 | covered | activate_account_bad_token_format (new, differs) |
+| 72 | invalid token (`123%2f%252e`) > 404 | covered | activate_account_bad_token_format (new) |
 | 80 | valid token > welcome message enqueued | covered | activate_account (signup then activation of the inactive user) |
 | 91 | valid token > already active user gets no welcome message | recordable | activate_account_already_active (setup SQL signup-scope email_tokens row with a known raw token for user0) |
 | 100 | valid token > invalid honeypot > 403 | recordable | activate_account_failed_challenge (wrong challenge, any token) |
@@ -1071,7 +1042,7 @@ Differ:
 | 6722 | enable_local_logins_via_email disabled > 404 | covered | email_login_disabled (new, matches) |
 | 6729 | invalid username or email > user_found false, no job | recordable | email_login_unknown (hide_email_address_taken false, login `@random`) |
 | 6741 | hide_email_address_taken > generic response | covered | email_login (default hide_email_address_taken is true) |
-| 6753 | already logged in > redirects to root | covered | email_login_logged_in (new, differs) |
+| 6753 | already logged in > redirects to root | covered | email_login_logged_in (new) |
 
 ## UsersController#password_reset_update (PUT /u/password-reset/:token)
 
@@ -1083,7 +1054,7 @@ Differ:
 | 366 | valid token > returns success, auth tokens removed | covered | password_reset |
 | 390 | valid token > disallows double password reset | out-of-scope | second PUT hits accounts.rs:433 |
 | 404 | valid token > first admin redirected to wizard | out-of-scope | HTML format (redirect_to wizard_path) |
-| 415 | valid token > sets the timezone if missing | covered | password_reset_timezone (new, differs) |
+| 415 | valid token > sets the timezone if missing | covered | password_reset_timezone (new) |
 | 427 | valid token > deletes user associated accounts | covered | password_reset_associated_accounts (new, matches) |
 | 452 | valid token > logs the password change | covered | password_reset |
 | 474 | previewed token superseded by forgot_password | out-of-scope | accounts.rs:433 |
@@ -1243,15 +1214,15 @@ Differ:
 | 3423 | suspended > suspension error | out-of-scope | session.rs:283 |
 | 3441 | suspended forever | out-of-scope | session.rs:283 |
 | 3459 | deactivated > activation error | covered | session_login_inactive (new, matches) |
-| 3471 | success by username and password | covered | session_login_timezone (new, differs) |
-| 3496 | timezone param sets user_option timezone | covered | session_login_timezone (new, differs) |
+| 3471 | success by username and password | covered | session_login_timezone (new) |
+| 3496 | timezone param sets user_option timezone | covered | session_login_timezone (new) |
 | 3513 | password expired > expired error | recordable | session_login_expired_password (setup SQL user_passwords.password_expired_at) |
 | 3546 | security key only > blank params | needs-harness | webauthn credential + challenge fixtures |
 | 3566 | security key only > invalid params | needs-harness | webauthn |
 | 3589 | security key only > valid > logs in | needs-harness | webauthn |
 | 3626 | security key disabled in background, TOTP on | needs-harness | webauthn |
 | 3651 | TOTP > token missing > missing-second-factor error | recordable | session_login_totp_missing (setup SQL user_second_factors) |
-| 3663 | TOTP > invalid TOTP token | covered | session_login_totp_invalid (new, differs) |
+| 3663 | TOTP > invalid TOTP token | covered | session_login_totp_invalid (new) |
 | 3680 | TOTP > invalid backup code | recordable | session_login_backup_code_invalid (setup SQL totp + backup rows) |
 | 3699 | TOTP > valid token logs in | needs-harness | time-based code |
 | 3722 | TOTP > valid backup code logs in | needs-harness | hashed backup code fixture |
@@ -1286,7 +1257,7 @@ Differ:
 | 4071 | before_session_destroy event params | needs-harness | DiscourseEvent listener |
 | 4091 | return_url absolute external rejected | recordable | session_logout_external_return_url |
 | 4103 | return_url protocol-relative rejected | recordable | session_logout_protocol_relative_return_url |
-| 4115 | return_url backslash variant rejected | covered | session_logout_backslash_return_url (new, differs) |
+| 4115 | return_url backslash variant rejected | covered | session_logout_backslash_return_url (new) |
 | 4123 | return_url javascript: rejected | recordable | session_logout_javascript_return_url |
 | 4135 | external return_url non-XHR redirects to root | needs-harness | Location header not recorded |
 | 4143 | valid relative return_url | recordable | session_logout_relative_return_url |
@@ -1311,7 +1282,7 @@ Differ:
 | 4370 | screens blocked IP | needs-harness | REMOTE_ADDR |
 | 4392 | rate limiting | needs-harness | rate limits |
 | 4431 | made up username > no token | covered | forgot_password_unknown |
-| 4448 | local login disabled > 403 | covered | forgot_password_local_logins_disabled (new, differs) |
+| 4448 | local login disabled > 403 | covered | forgot_password_local_logins_disabled (new) |
 | 4460 | SSO enabled > 403 (spec posts /session.json) | recordable | session_login_discourse_connect; forgot_password_discourse_connect for the real action |
 | 4470 | local logins disabled > 403 (spec posts /session.json) | recordable | session_login_local_logins_disabled |
 | 4476 | via email disabled > still makes a token | recordable | forgot_password_email_logins_off |
@@ -1410,13 +1381,13 @@ Differ:
 | Line | Scenario | Class | Case / note |
 |---|---|---|---|
 | 15 | #index > Klipy key not in preloaded site settings | out-of-scope | HTML data-preloaded |
-| 31 | invalid params > 400 page negative | covered | list_latest_invalid_params (new, differs) |
+| 31 | invalid params > 400 page negative | covered | list_latest_invalid_params (new) |
 | 36 | invalid params > 400 page above max int (x2) | recordable | same branch as page=-1; port 400 plain text |
 | 44 | invalid params > 400 before[1]=haxx | recordable | port ignores `before`, answers 200 |
 | 49 | invalid params > 400 bumped_before[1]=haxx | recordable | port ignores the param, 200 |
-| 54 | invalid params > 400 topic_ids[1]=haxx | covered | list_latest_invalid_params (new, differs) |
+| 54 | invalid params > 400 topic_ids[1]=haxx | covered | list_latest_invalid_params (new) |
 | 59-154 | invalid params > 400 for category/order/ascending/min_posts/max_posts/status/filter/state/search/q/f/subset/group_name/tags/user/match_all_tags/no_subcategories/no_tags/exclude_tag non-scalar values (x20) | recordable | only page/per_page/ascending are validated by the port; the rest are dropped, so 200 vs 400 |
-| 160 | legit requests return 200 (no_definitions, max_posts, min_posts, page=0/1/1999, search=, topic_ids[], tags[]) | covered | list_latest_invalid_params (new, differs) |
+| 160 | legit requests return 200 (no_definitions, max_posts, min_posts, page=0/1/1999, search=, topic_ids[], tags[]) | covered | list_latest_invalid_params (new) |
 | 194 | anonymous filters (latest, top, hot...) return 200 (xN) | covered | golden: GET /latest.json, /top.json, /hot.json?per_page=3 |
 | 201 | filter on a set of topic ids | recordable | `/latest.json?topic_ids=35` (port ignores topic_ids, returns full list) |
 | 210 | homepage title with short_site_description | out-of-scope | HTML title |
@@ -1452,7 +1423,7 @@ Differ:
 |---|---|---|---|
 | 983 | renders top | covered | golden: GET /top.json |
 | 988 | renders top with a period | covered | golden: GET /top.json?period=weekly |
-| 993 | 400 for invalid period | covered | list_latest_invalid_params (new, differs) |
+| 993 | 400 for invalid period | covered | list_latest_invalid_params (new) |
 | 999 | per page > per_page param used | recordable | `/top.json?per_page=5` |
 | 1005 | per page > topics_per_period_in_top_page setting | recordable | settings topics_per_period_in_top_page=32, GET /top.json |
 | 885 | RSS > top RSS | out-of-scope | .rss not routed |
@@ -1490,14 +1461,14 @@ Differ:
 | 1107 | feed > RSS in subfolder | out-of-scope | .rss not routed |
 | 1115 | feed > exclude_tag | out-of-scope | .rss not routed |
 | 1128 | feed > no route-derived category param in self URL | out-of-scope | .rss not routed |
-| 1153 | default views > top default view, for_period=default_top_period | covered | list_category_default_view_top (new, differs) |
+| 1153 | default views > top default view, for_period=default_top_period | covered | list_category_default_view_top (new) |
 | 1161 | default views > unsupported default_top_period falls back to site default | recordable | setup UPDATE categories SET default_view='top', default_top_period='bogus' + settings top_page_default_timeframe=monthly |
 | 1173 | default views > nil default view | covered | golden: GET /c/general/4.json (seed default_view NULL) |
 | 1181 | default views > '' default view | recordable | setup UPDATE categories SET default_view='' |
 | 1189 | default views > latest default view | recordable | setup UPDATE categories SET default_view='latest' |
 | 1204 | default views > unreachable filter falls back to latest (destroy, categories, unread for anon) | recordable | setup default_view='unread', anon GET /c/general/4.json |
 | 1210 | default views > logged-in-only view for logged-in users | recordable | same setup as user0 |
-| 1216 | default views > honoured with /none | covered | list_category_default_view_top (new, differs) |
+| 1216 | default views > honoured with /none | covered | list_category_default_view_top (new) |
 | 1222 | canonical tag > category default view | out-of-scope | HTML |
 | 1228 | canonical tag > category latest view | out-of-scope | HTML |
 | 1238 | category default view > title | out-of-scope | HTML |
@@ -1553,7 +1524,7 @@ Differ:
 | 97 | omits invisible topics with stale featured rows | recordable | setup UPDATE topics SET visible=false on a featured topic, GET /categories.json?include_topics=true |
 | 112 | no subcategories without permission | recordable | include_subcategories ignored by port |
 | 129 | private subcategory counts excluded for anon | recordable | setup restricted subcategory rows; anon GET /categories.json |
-| 162 | subcategory response with permission | covered | categories_subcategory_params (new, differs) |
+| 162 | subcategory response with permission | covered | categories_subcategory_params (new) |
 | 179 | no subcategories without param | covered | golden: GET /categories.json as=user1 |
 | 194 | topics for categories, subs and subsubs | recordable | include_subcategories + include_topics, needs 3rd-level category setup |
 | 233 | tag filter > categories | recordable | `?tag=howto&include_topics=true` (port drops `tag`) |
@@ -1567,7 +1538,7 @@ Differ:
 | 379 | no extra queries with more categories | needs-harness | SQL query counting |
 | 404 | no N+1 with multiple topics | needs-harness | SQL query counting |
 | 446 | uncategorized hidden unless allow_uncategorized_topics | recordable | settings desktop_category_page_style=categories_boxes_with_topics, allow_uncategorized_topics=false |
-| 461 | parent_category_id lists subcategories | covered | categories_subcategory_params (new, differs) |
+| 461 | parent_category_id lists subcategories | covered | categories_subcategory_params (new) |
 | 479 | page > lazy_load_categories pagination | out-of-scope | Unsupported("paginated category lists") src/category_list.rs:122 (also stub_const) |
 | 491 | page > many categories pagination | needs-harness | stub_const MAX_UNOPTIMIZED_CATEGORIES |
 | 503 | page > no pagination by default | needs-harness | stub_const CATEGORIES_PER_PAGE (page=2 -> empty list is recordable without the stub) |
@@ -1590,9 +1561,9 @@ Differ:
 | 213 | category-restricted tags > admin sees both | needs-harness | as above |
 | 229 | search by topic id ignores min length | out-of-scope | Unsupported("search_for_id (topic id and URL lookup)") src/routes/search.rs:311 |
 | 245 | search by topic id returns topic | out-of-scope | same marker |
-| 265 | anonymous search disabled > anon 403 not_logged_in | covered | search_anonymous_disabled (new, differs) |
+| 265 | anonymous search disabled > anon 403 not_logged_in | covered | search_anonymous_disabled (new) |
 | 272 | anonymous search disabled > logged-in allowed | recordable | settings allow_anonymous_search=false as user0 |
-| 281 | logs the search term (search_log_id) | covered | search_query_logs_term (new, differs) |
+| 281 | logs the search term (search_log_id) | covered | search_query_logs_term (new) |
 | 297 | logs pageview session id | recordable | header Discourse-Pageview-Session-Id |
 | 313 | no log when disabled | recordable | settings log_search_queries=false |
 | 320 | no log for exclude_topics | recordable | `type_filter=exclude_topics`, compare search_logs rows |
@@ -1616,7 +1587,7 @@ Differ:
 |---|---|---|---|
 | 63 | overloaded > no results and error | needs-harness | global_setting + freeze_time |
 | 428 | anon cannot search > HTML redirect to login with destination | needs-harness | HTML request; harness sends xhr JSON |
-| 437 | anon cannot search > JSON rejected 403 | covered | search_anonymous_disabled (new, differs) |
+| 437 | anon cannot search > JSON rejected 403 | covered | search_anonymous_disabled (new) |
 | 445 | no term > 200 | covered | golden: GET /search.json |
 | 450 | term shorter than min > 400 | covered | golden: GET /search.json?q=ba |
 | 455 | term is a hash > 400 | recordable | `/search.json?q[foo]` (port drops it, 200) |
@@ -1665,7 +1636,7 @@ Differ:
 | 335 | not grouped > pm-only shown in category lists to admins | recordable | as above, admin |
 | 349 | not grouped > tags and category tags for admin | recordable | setup category_tags (cat 4, tag 1), admin |
 | 386 | not grouped > no N+1 with category tags | needs-harness | SQL query counting |
-| 453 | hidden tags > returned to admins | covered | tags_show_hidden_as_admin (new, differs) |
+| 453 | hidden tags > returned to admins | covered | tags_show_hidden_as_admin (new) |
 | 460 | hidden tags > not returned to anon | recordable | same setup, anon GET /tags.json |
 | 466 | hidden tags > not returned to regular user | recordable | same setup, user0 |
 | 476 | hidden + restricted to category > admins | recordable | setup + category_tags |
@@ -1689,7 +1660,7 @@ Differ:
 | 588 | synonyms redirect (l/top.json?period=daily) | recordable | setup synonym tag (target_tag_id=1), `/tag/syn/l/top.json?period=daily` 301 |
 | 595 | raw query strings preserved in redirects | recordable | `/tag/howto?encoded=...` 301 (HTML route, harness sends Accept JSON) |
 | 608 | tag synonym of itself no loop | recordable | setup UPDATE tags SET target_tag_id=id |
-| 615 | staff-only tags 404 for anon, 200 for admin | covered | tags_show_hidden_as_admin (new, differs) |
+| 615 | staff-only tags 404 for anon, 200 for admin | covered | tags_show_hidden_as_admin (new) |
 | 630 | additional tags in query params | recordable | `/tag/howto.json?match_all_tags=true&tags[]=guide` |
 | 641 | duplicate tags in query params | recordable | `...&tags[]=howto&tags[]=guide` |
 | 652 | tag description in meta description | out-of-scope | HTML |
@@ -1707,7 +1678,7 @@ Differ:
 | 764 | in category > topic inside category | covered | golden: GET /tags/c/general/4/howto.json |
 | 773 | in category > next topic URL | covered | golden: GET /tags/c/general/4/none/howto/1.json?per_page=1 |
 | 781 | in category > invalid category path 404 | recordable | `/tags/c/general/4/somerandomstring/howto.json` |
-| 787 | in category > restricted category 404 | covered | tags_in_staff_category_as_admin (new, differs) |
+| 787 | in category > restricted category 404 | covered | tags_in_staff_category_as_admin (new) |
 | 802 | in subcategory > topic inside subcategory | recordable | `/tags/c/general/sub-general/howto.json` (no-id path) |
 | 812 | invalid tag parameter ignored | recordable | `/tag/howto.json?tags[0]=nada` |
 
@@ -1744,7 +1715,7 @@ Differ:
 | Line | Scenario | Class | Case / note |
 |---|---|---|---|
 | 27 | overridden > not prepended without overrides (admin) | covered | golden: GET /robots.txt (same body for admin with no override) |
-| 33 | overridden > header prepended for admin | covered | robots_overridden_as_admin (new, differs) |
+| 33 | overridden > header prepended for admin | covered | robots_overridden_as_admin (new) |
 | 40 | overridden > not prepended for non-admin | recordable | settings overridden_robots_txt, anon |
 | 48 | subfolder prefixes rules | needs-harness | set_subfolder |
 | 84 | indexing allowed | covered | golden: GET /robots.txt |
@@ -1766,7 +1737,7 @@ Differ:
 |---|---|---|---|
 | 5 | 404 when sitemap disabled | recordable | settings enable_sitemap=false, GET /sitemap.xml and /news.xml |
 | 14 | 404 without format (/news) | recordable | anon GET /news (port routes only /news.xml) |
-| 22 | index lists none if not generated | covered | sitemap_index_not_generated (new, differs) |
+| 22 | index lists none if not generated | covered | sitemap_index_not_generated (new) |
 | 30 | index lists generated sitemaps | covered | golden: GET /sitemap.xml |
 | 40 | index skips disabled sitemaps | recordable | setup UPDATE sitemaps SET enabled=false WHERE name='recent' (port's regenerate re-enables it) |
 | 53 | page 404 if sitemap missing | covered | golden: GET /sitemap_9.xml |
