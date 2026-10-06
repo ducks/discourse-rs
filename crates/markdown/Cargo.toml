@@ -1,6 +1,7 @@
 [package]
 name = "discourse-markdown"
 version = "20261006.0.0"
+license = "GPL-3.0-or-later"
 edition = "2024"
 description = "Discourse's markdown renderer (PrettyText's markdown-it), the sanitizer and the emoji data, with no I/O: the server cooks with it, the composer previews with it as WebAssembly."
 publish = false
