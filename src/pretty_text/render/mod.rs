@@ -20,6 +20,7 @@ mod footnotes;
 mod html_img;
 mod link_pipes;
 mod linkify;
+mod local_dates;
 mod md_utils;
 mod newline;
 mod onebox;
@@ -82,9 +83,12 @@ pub struct RenderSettings {
     pub poll: bool,
     pub poll_maximum_options: i64,
     pub poll_voters_label: String,
-    /// The local dates plugin (`discourse_local_dates_enabled`), which is
-    /// not ported: its tags are refused.
+    /// The local dates plugin (`discourse_local_dates_enabled`).
     pub local_dates: bool,
+    /// `discourse_local_dates_email_format` and `_email_timezone`: the
+    /// `data-email-preview` of a date.
+    pub local_dates_email_format: String,
+    pub local_dates_email_timezone: String,
     /// The spoiler plugin's rules (`spoiler_enabled`).
     pub spoiler: bool,
     /// `avatar_sizes`, ascending.
@@ -181,6 +185,14 @@ impl RenderSettings {
                 .unwrap_or("voters")
                 .to_string(),
             local_dates: settings.get("discourse_local_dates_enabled")?.truthy(),
+            local_dates_email_format: settings
+                .get("discourse_local_dates_email_format")?
+                .to_s()
+                .to_string(),
+            local_dates_email_timezone: settings
+                .get("discourse_local_dates_email_timezone")?
+                .to_s()
+                .to_string(),
             spoiler: settings.get("spoiler_enabled")?.truthy(),
             avatar_sizes,
             base_path: base_path.to_string(),
@@ -216,6 +228,9 @@ fn allow_list(settings: &RenderSettings) -> AllowList {
     }
     if settings.emoji {
         emoji::allow(&mut list);
+    }
+    if settings.local_dates {
+        local_dates::allow(&mut list);
     }
     list
 }

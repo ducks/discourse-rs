@@ -237,10 +237,11 @@ rules on the markdown-it crate, measured against Rails.
 
 Refused with an explicit error rather than answered differently from
 Rails: custom emoji, the emoji deny list, watched words, secure uploads,
-uploads behind a CDN or S3, and a hashtag chat would resolve to a channel
-the cooking user can see, local dates, and the block tags of the plugins
-not ported. What plugins add to the options (chat's,
-discobot's iframe) is not produced.
+uploads behind a CDN or S3, a hashtag chat would resolve to a channel
+the cooking user can see, a local date moment would only read through
+the browser's `Date` (a time like `9:00`, or no year), and the block
+tags of the plugins not ported. What plugins add to the options
+(chat's, discobot's iframe) is not produced.
 
 ## Pages
 
