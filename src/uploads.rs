@@ -7,12 +7,13 @@
 //! which make Rails' decisions but not always its bytes. Refused: SVG
 //! cleaning, HEIF conversion, cropped upload types.
 
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use serde_json::{Value, json};
 use sha1::{Digest, Sha1};
 use sqlx::PgConnection;
 
+use crate::file_store::FileStore;
 use crate::images;
 use crate::site_settings::SiteSettings;
 use crate::url::Urls;
@@ -124,23 +125,6 @@ pub fn human_size(bytes: i64) -> String {
         text = text.trim_end_matches('0').trim_end_matches('.').to_string();
     }
     format!("{text} {}", units[(exponent - 1) as usize])
-}
-
-/// `FileStore::BaseStore#get_path_for(type, id, sha, extension)`: the path
-/// under the store's root, deeper as ids grow.
-pub(crate) fn get_path_for(kind: &str, id: i32, sha1: &str, extension: &str) -> String {
-    let depth = if id > 0 {
-        ((id as f64 / 1000.0).ln() / 16f64.ln()).ceil().max(0.0) as usize
-    } else {
-        0
-    };
-    let tree: String = sha1.chars().take(depth).map(|c| format!("{c}/")).collect();
-    format!("{kind}/{}X/{tree}{sha1}{extension}", depth + 1)
-}
-
-/// `get_path_for("original", ...)`
-fn store_path(id: i32, sha1: &str, extension: &str) -> String {
-    get_path_for("original", id, sha1, extension)
 }
 
 /// `UploadValidator`'s extension list (`extensions_to_set`).
@@ -302,18 +286,13 @@ pub enum Outcome {
     Invalid(Vec<String>),
 }
 
-/// The public directory's upload root: `public/uploads/default`.
-pub(crate) fn upload_root(public_dir: &Path) -> PathBuf {
-    public_dir.join("uploads").join("default")
-}
-
 /// `UploadsController.create_upload` -> `UploadCreator#create_for`.
 pub async fn create(
     conn: &mut PgConnection,
     s: &SiteSettings,
     i18n: &crate::i18n::I18n,
     urls: &Urls<'_>,
-    public_dir: &Path,
+    store: &FileStore,
     up: &NewUpload<'_>,
 ) -> Result<Outcome, AppError> {
     let t = |key: &str| i18n.t(key).unwrap_or(key).to_string();
@@ -492,13 +471,7 @@ pub async fn create(
     } else {
         format!(".{extension}")
     };
-    let relative = store_path(id, &sha1, &ext);
-    let path = upload_root(public_dir).join(&relative);
-    if let Some(parent) = path.parent() {
-        tokio::fs::create_dir_all(parent).await?;
-    }
-    tokio::fs::write(&path, &bytes).await?;
-    let url = format!("/uploads/default/{relative}");
+    let url = store.store_upload(&bytes, id, &sha1, &ext).await?;
     // calculate_dominant_color! on the processed file; one that does not
     // decode saves an empty colour.
     let color = match image_type.and_then(crate::images::Format::from_extension) {
@@ -638,14 +611,13 @@ pub async fn serialize(
     .bind(id)
     .fetch_one(&mut *conn)
     .await?;
-    if s.get("enable_s3_uploads")?.truthy() {
-        return Err(Unsupported("S3 uploads").into());
-    }
+    let store = FileStore::for_site(urls.config, s)?;
     // for_site_setting uploads keep their url uncooked; they are refused.
     let url = crate::pretty_text::cooked_post_processor::cook_url(
         &u.url,
         urls,
         urls.config.globals.relative_url_root(),
+        &store,
     )?;
     let sha1 = u.sha1.clone().unwrap_or_default();
     let base62 = crate::pretty_text::helpers::base62_sha1(&sha1).unwrap_or_default();
@@ -706,15 +678,6 @@ mod tests {
         assert_eq!(human_size(10240), "10 KB");
         assert_eq!(human_size(4096 * 1024), "4 MB");
         assert_eq!(human_size(123_456), "121 KB");
-    }
-
-    #[test]
-    fn store_paths_deepen_with_the_id() {
-        assert_eq!(store_path(36, "abcdef", ".gif"), "original/1X/abcdef.gif");
-        assert_eq!(
-            store_path(5000, "abcdef", ".gif"),
-            "original/2X/a/abcdef.gif"
-        );
     }
 
     #[test]

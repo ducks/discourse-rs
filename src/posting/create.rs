@@ -836,6 +836,7 @@ pub async fn create(
         &mut tx,
         s,
         &urls.current_hostname()?,
+        &crate::file_store::FileStore::for_site(ctx.config, s)?,
         post_id,
         &cooked,
     )
@@ -981,6 +982,7 @@ pub async fn create(
         &BaseUrls {
             base_path: &base_path,
             base_url_no_prefix: urls.base_url_no_prefix()?,
+            store: crate::file_store::FileStore::for_site(urls.config, s)?,
         },
         &PostIndex {
             post_id,

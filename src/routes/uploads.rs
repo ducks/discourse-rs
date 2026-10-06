@@ -163,7 +163,7 @@ pub async fn create(
         &settings,
         &state.i18n,
         &urls,
-        &state.config.public_dir,
+        &crate::file_store::FileStore::for_site(&state.config, &settings)?,
         &up,
     )
     .await?;

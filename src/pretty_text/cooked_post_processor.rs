@@ -99,17 +99,14 @@ async fn mark_quotes(
 
 /// `UrlHelper.cook_url` without a CDN or secure uploads: a local url made
 /// absolute and schemaless, any other left alone.
-pub(crate) fn cook_url(url: &str, urls: &Urls<'_>, base_path: &str) -> Result<String, CookError> {
+pub(crate) fn cook_url(
+    url: &str,
+    urls: &Urls<'_>,
+    base_path: &str,
+    store: &crate::file_store::FileStore,
+) -> Result<String, CookError> {
     let base_no_prefix = urls.base_url_no_prefix()?;
-    // FileStore::LocalStore#has_been_uploaded?
-    let uploads = format!("{base_path}/uploads/default");
-    let scheme = urls.scheme()?;
-    let absolute_form = match url.strip_prefix("//") {
-        Some(rest) => format!("{scheme}://{rest}"),
-        None => url.to_string(),
-    };
-    let uploaded = url.starts_with(&uploads)
-        || absolute_form.starts_with(&format!("{base_no_prefix}{uploads}"));
+    let uploaded = store.has_been_uploaded(url);
     let assets = ["assets", "plugins", "images"]
         .iter()
         .any(|dir| url.starts_with(&format!("{base_path}/{dir}/")));
@@ -319,7 +316,7 @@ struct ImageSteps<'a> {
     settings: &'a SiteSettings,
     urls: Urls<'a>,
     base_path: &'a str,
-    public_dir: &'a std::path::Path,
+    store: &'a crate::file_store::FileStore,
     pasted_image_filename: String,
     sizer: ImageSizer,
     /// responsive_post_image_sizes over 1, ascending.
@@ -469,7 +466,7 @@ impl ImageSteps<'_> {
                 crate::optimized_images::create_thumbnail(
                     &mut *conn,
                     self.settings,
-                    self.public_dir,
+                    self.store,
                     &upload,
                     tw as i32,
                     th as i32,
@@ -513,12 +510,10 @@ impl ImageSteps<'_> {
             upload.original_filename.clone()
         };
         Ok(Some(Edit::Lightbox {
-            href: cook_url(&img.src, &self.urls, self.base_path)?,
-            download: format!(
-                "{}/uploads/default/{}",
-                self.base_path,
-                upload.sha1.as_deref().unwrap_or_default()
-            ),
+            href: cook_url(&img.src, &self.urls, self.base_path, self.store)?,
+            download: self
+                .store
+                .download_url(upload.sha1.as_deref().unwrap_or_default()),
             title: img
                 .title
                 .clone()
@@ -552,19 +547,20 @@ impl ImageSteps<'_> {
                         let (rw, rh) = ((w as f64 * ratio) as i64, (h as f64 * ratio) as i64);
                         let label = ratio_label(*ratio);
                         if !cropped && upload.width.is_some_and(|uw| rw > i64::from(uw)) {
-                            let url = cook_url(&upload.url, &self.urls, self.base_path)?;
+                            let url =
+                                cook_url(&upload.url, &self.urls, self.base_path, self.store)?;
                             srcset.push_str(&format!(", {url} {label}x"));
                         } else if let Some(r) = crate::optimized_images::thumbnail(
                             &mut *conn, upload.id, rw as i32, rh as i32,
                         )
                         .await?
                         {
-                            let url = cook_url(&r.url, &self.urls, self.base_path)?;
+                            let url = cook_url(&r.url, &self.urls, self.base_path, self.store)?;
                             srcset.push_str(&format!(", {url} {label}x"));
                         }
                     }
                     if !srcset.is_empty() {
-                        let first = cook_url(&t.url, &self.urls, self.base_path)?;
+                        let first = cook_url(&t.url, &self.urls, self.base_path, self.store)?;
                         edits.push(Edit::Set("srcset", format!("{first}{srcset}")));
                     }
                 }
@@ -718,6 +714,7 @@ pub(crate) async fn post_process(
     if config.globals.cdn_url().is_some() || config.globals.s3_cdn_url().is_some() {
         return Err(Unsupported("a CDN in the post processor").into());
     }
+    let store = crate::file_store::FileStore::for_site(config, settings)?;
     {
         let dom = parse(html);
         for e in all_elements(&dom) {
@@ -736,7 +733,7 @@ pub(crate) async fn post_process(
         settings,
         urls: Urls { config, settings },
         base_path,
-        public_dir: &config.public_dir,
+        store: &store,
         pasted_image_filename: i18n
             .t("upload.pasted_image_filename")
             .unwrap_or("Pasted image")
@@ -782,13 +779,13 @@ pub(crate) async fn post_process(
             Some("a") => {
                 for name in ["href", "data-download-href"] {
                     if let Some(value) = attr(&e, name) {
-                        set_attr(&e, name, &cook_url(&value, &urls, base_path)?);
+                        set_attr(&e, name, &cook_url(&value, &urls, base_path, &store)?);
                     }
                 }
             }
             Some("img") | Some("video") => {
                 if let Some(src) = attr(&e, "src") {
-                    set_attr(&e, "src", &cook_url(&src, &urls, base_path)?);
+                    set_attr(&e, "src", &cook_url(&src, &urls, base_path, &store)?);
                 }
             }
             _ => {}

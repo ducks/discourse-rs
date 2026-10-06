@@ -217,7 +217,11 @@ pub async fn send(
         style.format_html(s)?;
         style.to_html(&base_url, &base_url_no_prefix)
     };
-    if message.text.contains("/uploads/default/") {
+    let store = crate::file_store::FileStore::for_site(ctx.config, s)?;
+    if message
+        .text
+        .contains(&format!("{}/", store.relative_base_url()))
+    {
         return Err(Unsupported("uploads in email text").into());
     }
 

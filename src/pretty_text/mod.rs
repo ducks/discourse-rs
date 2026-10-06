@@ -111,6 +111,17 @@ impl From<AvatarError> for CookError {
     }
 }
 
+impl From<crate::file_store::StoreError> for CookError {
+    fn from(e: crate::file_store::StoreError) -> Self {
+        use crate::file_store::StoreError;
+        match e {
+            StoreError::Setting(e) => CookError::Setting(e),
+            StoreError::Url(e) => CookError::Url(e),
+            StoreError::Unsupported(e) => CookError::Unsupported(e),
+        }
+    }
+}
+
 /// What cooking reads from the application.
 #[derive(Clone)]
 pub struct Host {
@@ -162,9 +173,8 @@ pub async fn options(
         config: &host.config,
         settings,
     };
-    if settings.get("enable_s3_uploads")?.truthy() {
-        return Err(Unsupported("S3 upload paths in cooking").into());
-    }
+    // Upload urls in cooking are the store's; only the local one is ported.
+    crate::file_store::FileStore::for_site(&host.config, settings)?;
     let custom_emoji: bool = sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM custom_emojis)")
         .fetch_one(&mut *conn)
         .await?;

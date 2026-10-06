@@ -294,7 +294,9 @@ pub async fn revise(
         settings: s,
     }
     .current_hostname()?;
-    crate::upload_references::link_post_uploads(&mut tx, s, &hostname, post.id, &cooked).await?;
+    let store = crate::file_store::FileStore::for_site(ctx.config, s)?;
+    crate::upload_references::link_post_uploads(&mut tx, s, &hostname, &store, post.id, &cooked)
+        .await?;
     // save_reply_relationships: the reply_to_post_number link, kept.
     if let Some(n) = post.reply_to_post_number {
         let parent: Option<i32> =
@@ -538,6 +540,7 @@ pub async fn revise(
             &BaseUrls {
                 base_path: &base_path,
                 base_url_no_prefix: urls.base_url_no_prefix()?,
+                store: crate::file_store::FileStore::for_site(urls.config, s)?,
             },
             &PostIndex {
                 post_id: post.id,
