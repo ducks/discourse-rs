@@ -255,6 +255,11 @@ API document instead. The structure follows Discourse's crawler views.
 `PUBLIC_DIR` (default `public`) is served at `/images` and `/uploads`: point
 it at a Discourse `public/` directory or a restored backup's.
 
+Letter avatars (`/letter_avatar_proxy/...`, the default
+`external_system_avatars_url`) are fetched once from the avatar CDN
+(`LETTER_AVATAR_CDN`, default `https://avatars.discourse-cdn.com`) and cached
+under `TMP_DIR` (default `tmp`) in `avatar_proxy/`, as Rails does.
+
 ## Serving a backup
 
 ```bash

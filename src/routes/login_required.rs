@@ -30,6 +30,7 @@ fn exempt(path: &str) -> bool {
             | "/robots-builder.json"
     ) || path.starts_with("/assets/")
         || path.starts_with("/fonts/")
+        || path.starts_with("/letter_avatar_proxy/")
         || path.starts_with("/images/")
         || path.starts_with("/uploads/")
 }
