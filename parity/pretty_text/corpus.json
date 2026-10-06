@@ -593,6 +593,14 @@
   },
   {
     "id": "sample-74",
+    "raw": "text\n[policy group=staff]\nAccept this.\n[/policy]",
+    "topic_id": 35,
+    "user_id": 3,
+    "markdown": "<p>text<br>\n[policy group=staff]<br>\nAccept this.<br>\n[/policy]</p>",
+    "cooked": "<p>text<br>\n[policy group=staff]<br>\nAccept this.<br>\n[/policy]</p>"
+  },
+  {
+    "id": "sample-75",
     "raw": "An upload that exists: ![image|64x64](upload://qa4V5109J7tySkPok8r3aBAruY1.png) and [a link|attachment](upload://qa4V5109J7tySkPok8r3aBAruY1.png).",
     "topic_id": 35,
     "user_id": 3,

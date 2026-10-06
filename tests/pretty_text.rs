@@ -244,6 +244,49 @@ async fn unported_inputs_are_refused() {
     assert!(matches!(error, CookError::Unsupported(_)), "{error}");
 }
 
+/// The policy plugin is off on the reference, so the recorded corpus only
+/// has `[policy]` as text; with `policy_enabled` on it cooks as Rails did
+/// (PrettyText.cook on the reference, the setting set in a rolled-back
+/// transaction).
+#[tokio::test]
+async fn policy_cooks_as_rails_when_enabled() {
+    let db = TestDb::new().await;
+    let host = host(&db);
+    common::set_setting(&db.pool, "policy_enabled", 5, "t").await;
+    let cases = [
+        (
+            "[policy group=staff]\nAccept this.\n[/policy]",
+            "<div class=\"policy\" data-group=\"staff\" data-version=\"1\"><p>Accept this.</p>\n</div>",
+        ),
+        (
+            "[policy groups=\"a,b\" reminder=daily accept=\"I Accept\" version=\"\"]\n**Terms**\n[/policy]",
+            "<div class=\"policy\" data-accept=\"I Accept\" data-groups=\"a,b\" data-reminder=\"daily\" data-version=\"&quot;&quot;\"><p><strong>Terms</strong></p>\n</div>",
+        ),
+        (
+            "text\n[policy group=x]\ninterrupts\n[/policy]",
+            "<p>text</p>\n<div class=\"policy\" data-group=\"x\" data-version=\"1\"><p>interrupts</p>\n</div>",
+        ),
+        (
+            "[policy group=x version=3 add-users-to-group=tos renew=365 renew-start=\"2024-01-01\" private=true]\nx\n[/policy]",
+            "<div class=\"policy\" data-add-users-to-group=\"tos\" data-group=\"x\" data-private=\"true\" data-renew=\"365\" data-renew-start=\"2024-01-01\" data-version=\"3\"><p>x</p>\n</div>",
+        ),
+    ];
+    for (raw, rails) in cases {
+        let ours = cook(&host, raw, &MarkdownOptions::default()).await.unwrap();
+        assert_eq!(ours, rails, "{raw}");
+    }
+    // Rails: "<p>[policy]<br>\nno group</p>\n<p>[/policy]</p>", from a
+    // lineMax applyBBCode leaves short; refused.
+    let error = cook(
+        &host,
+        "[policy]\nno group\n[/policy]",
+        &MarkdownOptions::default(),
+    )
+    .await
+    .unwrap_err();
+    assert!(matches!(error, CookError::Unsupported(_)), "{error}");
+}
+
 /// Where two strings part ways, with some of what surrounds it.
 fn first_difference(rails: &str, ours: &str) -> String {
     let rails: Vec<char> = rails.chars().collect();
