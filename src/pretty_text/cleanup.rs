@@ -130,7 +130,7 @@ fn elements(root: &Handle, out: &mut Vec<Handle>) {
     }
 }
 
-pub(super) fn all_elements(dom: &RcDom) -> Vec<Handle> {
+pub(crate) fn all_elements(dom: &RcDom) -> Vec<Handle> {
     let mut out = Vec::new();
     elements(&fragment_root(dom), &mut out);
     out
@@ -222,7 +222,7 @@ pub(super) fn encode_component(s: &str) -> String {
 
 /// The host Ruby's `URI()` finds in an encoded href: None without an
 /// authority, Err where the parser raises.
-pub(super) fn uri_host(href: &str) -> Result<Option<String>, ()> {
+pub(crate) fn uri_host(href: &str) -> Result<Option<String>, ()> {
     // A second `#`, or brackets outside an IPv6 host, are not RFC 3986.
     if href.matches('#').count() > 1 {
         return Err(());

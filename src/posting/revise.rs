@@ -233,8 +233,8 @@ pub async fn revise(
     };
     let base_path = ctx.config.globals.relative_url_root().to_string();
     let analysis = validate::analyze(&cooked, &base_path)?;
-    if analysis.has_uploads {
-        return Err(Unsupported("posts with uploads").into());
+    if analysis.has_upload_media {
+        return Err(Unsupported("posts with upload images or media").into());
     }
     let private_message = false;
     let errors = if changes.skip_validations {
@@ -288,6 +288,13 @@ pub async fn revise(
     .fetch_one(&mut *tx)
     .await?;
     let _ = updated_at;
+    // @post.link_post_uploads
+    let hostname = Urls {
+        config: ctx.config,
+        settings: s,
+    }
+    .current_hostname()?;
+    crate::upload_references::link_post_uploads(&mut tx, s, &hostname, post.id, &cooked).await?;
     // save_reply_relationships: the reply_to_post_number link, kept.
     if let Some(n) = post.reply_to_post_number {
         let parent: Option<i32> =

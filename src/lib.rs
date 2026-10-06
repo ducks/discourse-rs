@@ -61,6 +61,7 @@ pub mod topic_status;
 pub mod topic_tracking_report;
 pub mod topic_tracking_state;
 pub mod topic_view;
+pub mod upload_references;
 pub mod uploads;
 pub mod url;
 pub mod user_penalties;

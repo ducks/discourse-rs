@@ -270,6 +270,13 @@ async fn process_post(state: &AppState, args: &Value) -> Result<(), AppError> {
     if has_emoji && post.first_emoji_enabled && !post.has_first_emoji && post.user_id.is_some() {
         return Err(Unsupported("granting the first emoji badge").into());
     }
+    // @post.link_post_uploads(fragments: @doc)
+    let hostname = Urls {
+        config: &state.config,
+        settings: &s,
+    }
+    .current_hostname()?;
+    crate::upload_references::link_post_uploads(&mut conn, &s, &hostname, post_id, &html).await?;
     if html != post.cooked {
         if post.post_number == 1 {
             return Err(Unsupported("first post caches after post processing").into());

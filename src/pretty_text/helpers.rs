@@ -103,7 +103,7 @@ pub(crate) fn base62_sha1(sha1: &str) -> Option<String> {
 }
 
 /// `Upload.sha1_from_base62_encoded`
-fn sha1_from_base62(encoded: &str) -> Option<String> {
+pub(crate) fn sha1_from_base62(encoded: &str) -> Option<String> {
     if encoded.len() > MAX_BASE62_SHA1_LENGTH {
         return None;
     }
@@ -115,7 +115,7 @@ fn sha1_from_base62(encoded: &str) -> Option<String> {
 
 /// `Upload.sha1_from_short_url`: the first run of `[a-zA-Z0-9]`, after
 /// `upload://` when the url starts with it.
-fn sha1_from_short_url(url: &str) -> Option<String> {
+pub(crate) fn sha1_from_short_url(url: &str) -> Option<String> {
     let rest = url.strip_prefix("upload://").unwrap_or(url);
     let start = rest.find(|c: char| c.is_ascii_alphanumeric())?;
     let run: String = rest[start..]
