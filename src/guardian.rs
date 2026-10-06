@@ -28,6 +28,9 @@ pub struct GuardianUser {
     /// `belonging_to_group_ids`
     pub group_ids: Vec<i64>,
     pub silenced: bool,
+    /// `@secure_category_ids ||=`: read once per request, shared by the
+    /// guardian's clones.
+    pub secure_category_ids: std::sync::Arc<std::sync::OnceLock<Vec<i32>>>,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -60,8 +63,14 @@ impl Guardian {
                 user: user.clone(),
                 group_ids,
                 silenced,
+                secure_category_ids: Default::default(),
             }),
         })
+    }
+
+    /// The logged-in half, with what was loaded for it.
+    pub fn logged_in(&self) -> Option<&GuardianUser> {
+        self.user.as_ref()
     }
 
     pub fn user(&self) -> Option<&SessionUser> {
@@ -154,27 +163,30 @@ impl Guardian {
         let Some(u) = &self.user else {
             return Ok(Vec::new());
         };
-        if u.user.admin
+        if let Some(ids) = u.secure_category_ids.get() {
+            return Ok(ids.clone());
+        }
+        let ids: Vec<i32> = if u.user.admin
             && !settings
                 .get("suppress_secured_categories_from_admin")?
                 .truthy()
         {
-            return Ok(sqlx::query_scalar(
-                "SELECT id FROM categories WHERE read_restricted = TRUE ORDER BY id",
-            )
-            .fetch_all(conn)
-            .await?);
-        }
-        Ok(sqlx::query_scalar(
-            "SELECT DISTINCT categories.id FROM categories \
+            sqlx::query_scalar("SELECT id FROM categories WHERE read_restricted = TRUE ORDER BY id")
+                .fetch_all(conn)
+                .await?
+        } else {
+            sqlx::query_scalar(
+                "SELECT DISTINCT categories.id FROM categories \
              INNER JOIN category_groups ON categories.id = category_groups.category_id \
              INNER JOIN groups ON category_groups.group_id = groups.id \
              INNER JOIN group_users ON groups.id = group_users.group_id \
              WHERE group_users.user_id = $1 ORDER BY categories.id",
-        )
-        .bind(u.user.id)
-        .fetch_all(conn)
-        .await?)
+            )
+            .bind(u.user.id)
+            .fetch_all(conn)
+            .await?
+        };
+        Ok(u.secure_category_ids.get_or_init(|| ids).clone())
     }
 
     /// `allowed_category_ids` as a subquery, for composing into other SQL.

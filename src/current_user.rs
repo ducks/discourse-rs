@@ -24,10 +24,13 @@ pub struct UserGuardian<'a> {
     /// `belonging_to_group_ids`
     pub group_ids: Vec<i32>,
     pub silenced: bool,
+    /// `@secure_category_ids ||=`, shared with the request's Guardian when
+    /// built from it.
+    secure_category_ids: std::sync::Arc<std::sync::OnceLock<Vec<i32>>>,
 }
 
-impl UserGuardian<'_> {
-    pub async fn load<'a>(
+impl<'a> UserGuardian<'a> {
+    pub async fn load(
         conn: &mut PgConnection,
         settings: &'a SiteSettings,
         user: &'a SessionUser,
@@ -48,7 +51,23 @@ impl UserGuardian<'_> {
             settings,
             group_ids,
             silenced,
+            secure_category_ids: Default::default(),
         })
+    }
+
+    /// The request's guardian as a UserGuardian, with what it already
+    /// loaded: memberships, silence and secure category ids.
+    pub fn from_guardian(
+        settings: &'a SiteSettings,
+        guardian: &'a crate::guardian::GuardianUser,
+    ) -> UserGuardian<'a> {
+        UserGuardian {
+            user: &guardian.user,
+            settings,
+            group_ids: guardian.group_ids.iter().map(|id| *id as i32).collect(),
+            silenced: guardian.silenced,
+            secure_category_ids: guardian.secure_category_ids.clone(),
+        }
     }
 
     pub fn is_admin(&self) -> bool {
@@ -116,6 +135,10 @@ impl UserGuardian<'_> {
             sqlx::query_scalar("SELECT id FROM categories WHERE read_restricted = FALSE")
                 .fetch_all(&mut *conn)
                 .await?;
+        if let Some(secure) = self.secure_category_ids.get() {
+            ids.extend(secure);
+            return Ok(ids);
+        }
         let secure: Vec<i32> = if self.is_admin()
             && !self
                 .settings
@@ -137,7 +160,7 @@ impl UserGuardian<'_> {
             .fetch_all(&mut *conn)
             .await?
         };
-        ids.extend(secure);
+        ids.extend(self.secure_category_ids.get_or_init(|| secure));
         Ok(ids)
     }
 
@@ -894,9 +917,10 @@ fn parameterize(s: &str) -> String {
 pub async fn sidebar_member(
     conn: &mut PgConnection,
     settings: &SiteSettings,
-    user: &SessionUser,
+    guardian: &crate::guardian::GuardianUser,
 ) -> Result<crate::sidebar::Member, AppError> {
-    let g = UserGuardian::load(conn, settings, user).await?;
+    let g = UserGuardian::from_guardian(settings, guardian);
+    let user = &guardian.user;
     let tagging = settings.get("tagging_enabled")?.truthy();
     let fields = sidebar_fields(conn, settings, &g, user, tagging).await?;
     let (draft_count, show_count): (i32, bool) = sqlx::query_as(

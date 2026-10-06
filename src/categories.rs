@@ -149,6 +149,27 @@ impl Categories<'_> {
             .collect();
 
         let notification_levels = self.notification_levels().await?;
+        let tagging = self.settings.get("tagging_enabled")?.truthy();
+        // form_template_ids and required_tag_groups, fetched for every
+        // category at once.
+        let form_templates: Vec<(i32, i32)> = sqlx::query_as(
+            "SELECT category_id, form_template_id FROM category_form_templates \
+             WHERE category_id = ANY($1) ORDER BY category_id, form_template_id",
+        )
+        .bind(&visible_ids)
+        .fetch_all(&mut *self.conn)
+        .await?;
+        let tag_groups: Vec<(i32, i32)> = if tagging {
+            sqlx::query_as(
+                "SELECT category_id, min_count FROM category_required_tag_groups \
+                 WHERE category_id = ANY($1) ORDER BY category_id, \"order\" ASC",
+            )
+            .bind(&visible_ids)
+            .fetch_all(&mut *self.conn)
+            .await?
+        } else {
+            Vec::new()
+        };
         // permission: full (1) where the viewer may create topics.
         let allowed_topic_create = if self.guardian.is_admin() {
             None
@@ -183,7 +204,9 @@ impl Categories<'_> {
             {
                 continue;
             }
-            let mut json = self.serialize(category).await?;
+            let mut json = self
+                .serialize(category, tagging, &form_templates, &tag_groups)
+                .await?;
             let level = notification_levels
                 .iter()
                 .find(|(id, _)| *id == i64::from(category.id))
@@ -251,8 +274,13 @@ impl Categories<'_> {
     /// SiteCategorySerializer as cached by Site.all_categories_cache (no
     /// scope), in attribute order. notification_level, has_children and
     /// can_edit are filled in by for_site.
-    async fn serialize(&mut self, c: &CategoryRow) -> Result<Map<String, Value>, CategoriesError> {
-        let tagging = self.settings.get("tagging_enabled")?.truthy();
+    async fn serialize(
+        &mut self,
+        c: &CategoryRow,
+        tagging: bool,
+        form_templates: &[(i32, i32)],
+        tag_groups: &[(i32, i32)],
+    ) -> Result<Map<String, Value>, CategoriesError> {
         let mut out = self.basic_fields(c).await?;
         // custom_fields: only present when plugins register category fields.
         if tagging {
@@ -261,12 +289,25 @@ impl Categories<'_> {
         out.insert("read_only_banner".into(), json!(c.read_only_banner));
         out.insert(
             "form_template_ids".into(),
-            self.form_template_ids(c.id).await?,
+            json!(
+                form_templates
+                    .iter()
+                    .filter(|(id, _)| *id == c.id)
+                    .map(|(_, t)| *t)
+                    .collect::<Vec<_>>()
+            ),
         );
         if tagging {
             out.insert(
                 "required_tag_groups".into(),
-                self.required_tag_groups(c.id).await?,
+                // Without `name`, which needs can_edit.
+                json!(
+                    tag_groups
+                        .iter()
+                        .filter(|(id, _)| *id == c.id)
+                        .map(|(_, min_count)| json!({"min_count": min_count}))
+                        .collect::<Vec<_>>()
+                ),
             );
         }
         out.insert("category_types".into(), self.category_types()?);
@@ -391,35 +432,6 @@ impl Categories<'_> {
             json!(c.navigate_to_first_post_after_read),
         );
         Ok(out)
-    }
-
-    /// `object.form_template_ids.sort`
-    async fn form_template_ids(&mut self, category_id: i32) -> Result<Value, CategoriesError> {
-        let ids: Vec<i32> = sqlx::query_scalar(
-            "SELECT form_template_id FROM category_form_templates WHERE category_id = $1 \
-             ORDER BY form_template_id",
-        )
-        .bind(category_id)
-        .fetch_all(&mut *self.conn)
-        .await?;
-        Ok(json!(ids))
-    }
-
-    /// `required_tag_groups` without `name`, which needs can_edit.
-    async fn required_tag_groups(&mut self, category_id: i32) -> Result<Value, CategoriesError> {
-        let counts: Vec<i32> = sqlx::query_scalar(
-            "SELECT min_count FROM category_required_tag_groups WHERE category_id = $1 \
-             ORDER BY \"order\" ASC",
-        )
-        .bind(category_id)
-        .fetch_all(&mut *self.conn)
-        .await?;
-        Ok(json!(
-            counts
-                .into_iter()
-                .map(|min_count| json!({"min_count": min_count}))
-                .collect::<Vec<_>>()
-        ))
     }
 
     /// `Category#category_types` with the core Discussion type, which

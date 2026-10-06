@@ -243,6 +243,49 @@ impl Site<'_> {
 
     /// `Site.json_for(guardian)`: the full serializer, or the reduced
     /// login_required document for anonymous users.
+    /// The part of `json_for` the sidebar reads, built the same way:
+    /// uncategorized_category_id, categories, navigation_menu_site_top_tags,
+    /// and for an anonymous visitor anonymous_default_navigation_menu_tags
+    /// and anonymous_sidebar_sections.
+    pub async fn sidebar_json(&mut self) -> Result<Value, SiteError> {
+        let mut out = Map::new();
+        out.insert(
+            "uncategorized_category_id".into(),
+            json!(self.setting("uncategorized_category_id")?),
+        );
+        let tagging = self.truthy("tagging_enabled")?;
+        if tagging {
+            let top_tags = self.top_tags().await?;
+            out.insert(
+                "navigation_menu_site_top_tags".into(),
+                self.navigation_menu_site_top_tags(&top_tags).await?,
+            );
+        }
+        let categories = Categories {
+            conn: self.conn,
+            settings: self.settings,
+            i18n: self.i18n,
+            guardian: &self.guardian,
+            base_path: self.config.globals.relative_url_root(),
+            topic_url_via_slug: true,
+        }
+        .for_site()
+        .await?;
+        if !categories.is_empty() {
+            out.insert("categories".into(), Value::Array(categories));
+        }
+        if self.guardian.is_anonymous() {
+            if let Some(tags) = self.anonymous_default_navigation_menu_tags(tagging).await? {
+                out.insert("anonymous_default_navigation_menu_tags".into(), tags);
+            }
+            out.insert(
+                "anonymous_sidebar_sections".into(),
+                self.anonymous_sidebar_sections().await?,
+            );
+        }
+        Ok(Value::Object(out))
+    }
+
     pub async fn json_for(&mut self) -> Result<Value, SiteError> {
         if self.guardian.is_anonymous() && self.truthy("login_required")? {
             return self.login_required_json().await;
