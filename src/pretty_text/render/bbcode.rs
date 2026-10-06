@@ -9,14 +9,19 @@
 use std::sync::LazyLock;
 
 use markdown_it::parser::block::{BlockRule, BlockState};
+use markdown_it::parser::extset::InlineRootExtSet;
 use markdown_it::parser::inline::{InlineRule, InlineState, Text};
 use markdown_it::plugins::cmark::block::fence::{CodeFence, FenceScanner};
 use markdown_it::plugins::cmark::block::paragraph::Paragraph;
+use markdown_it::plugins::cmark::inline::autolink::Autolink;
+use markdown_it::plugins::cmark::inline::emphasis::Strong;
+use markdown_it::plugins::cmark::inline::link::Link;
 use markdown_it::{MarkdownIt, Node, NodeValue, Renderer};
 use regex::Regex;
 
 use super::context::Context;
 use super::element::{BlockText, Element, Holder};
+use super::linkify::Linkified;
 use super::{RenderSettings, poll, quotes, untrimmed};
 
 /// `QUOTATION_MARKS`, as opening and closing characters.
@@ -615,13 +620,109 @@ impl InlineRule for InlineBbcode {
                     markdown_it::common::utils::escape_html(content)
                 )))
             }
-            _ => {
-                ctx.refuse("[url] bbcode");
-                return None;
+            "url" => {
+                let start = state.pos + info.length;
+                let srcmap = state
+                    .get_map(start, start + content.len())
+                    .map_or(0, |map| map.get_byte_offsets().0);
+                let content = content.to_string();
+                url_link(state, &info, &content, srcmap, settings)
             }
+            _ => return None,
         };
         Some((node, length))
     }
+}
+
+/// The `url` rule: the content parsed inline, nested links unwrapped, in a
+/// link to the tag's url, else the first link or text inside it, when
+/// linkify finds a url there (with `https://` in front if need be).
+fn url_link(
+    state: &mut InlineState,
+    info: &TagInfo,
+    content: &str,
+    srcmap: usize,
+    settings: &RenderSettings,
+) -> Node {
+    let md = state.md;
+    let parsed = md.inline.parse(
+        content.to_string(),
+        vec![(0, srcmap)],
+        Node::new(Holder),
+        md,
+        state.root_ext,
+        // A state of its own, as in JS: the link rule caches label scans
+        // by position, which mean other places in this content.
+        &mut InlineRootExtSet::new(),
+    );
+    let mut url = info.attr("_default").map(str::to_string);
+    if url.as_deref().is_none_or(str::is_empty) {
+        url = None;
+        parsed.walk(|node, _| {
+            if url.is_some() {
+                return;
+            }
+            if let Some(link) = node.cast::<Link>() {
+                url = Some(link.url.clone());
+            } else if let Some(link) = node.cast::<Linkified>() {
+                url = Some(link.url.clone());
+            } else if let Some(link) = node.cast::<Autolink>() {
+                url = Some(link.url.clone());
+            } else if let Some(text) = node.cast::<Text>() {
+                url = Some(text.content.clone());
+            } else if node.is::<Strong>() {
+                // markdown-it's emphasis leaves the outer `*` of a `**`
+                // pair as an empty text token before strong_open, and that
+                // is the first text: no url.
+                url = Some(String::new());
+            }
+        });
+    }
+    let url = match &settings.linkify {
+        Some(linkify) => url.filter(|u| !u.contains(' ')).and_then(|u| {
+            linkify
+                .match_at_start(&u)
+                .or_else(|| linkify.match_at_start(&format!("https://{u}")))
+        }),
+        None => url.map(|u| {
+            if u.starts_with("http://") || u.starts_with("https://") {
+                u
+            } else {
+                format!("https://{u}")
+            }
+        }),
+    };
+    // Nested links give up their tags and keep what they hold.
+    fn unwrap_links(nodes: Vec<Node>) -> Vec<Node> {
+        let mut out = Vec::new();
+        for mut node in nodes {
+            if node.is::<Link>() || node.is::<Linkified>() || node.is::<Autolink>() {
+                out.extend(unwrap_links(std::mem::take(&mut node.children)));
+            } else {
+                node.children = unwrap_links(std::mem::take(&mut node.children));
+                out.push(node);
+            }
+        }
+        out
+    }
+    let mut parsed = parsed;
+    let mut children = unwrap_links(std::mem::take(&mut parsed.children));
+    let mut node = match url {
+        Some(url) => Element::inline("a", &[("href", &url), ("data-bbcode", "true")]),
+        None => {
+            // Without a link the JS pushes the content straight onto the
+            // token list, ahead of the pending text written before the
+            // tag, which follows it.
+            let pending = state.trailing_text_get().to_string();
+            state.trailing_text_pop(pending.len());
+            if !pending.is_empty() {
+                children.push(Node::new(Text { content: pending }));
+            }
+            Node::new(Holder)
+        }
+    };
+    node.children = children;
+    node
 }
 
 /// `processBBCode`: pairs the wrapping delimiters among siblings, each

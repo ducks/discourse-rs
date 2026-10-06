@@ -266,7 +266,7 @@ impl LinkifyIt {
 
     /// `matchAtStart(text)`: a link with a schema starting the text, as
     /// its normalized url.
-    fn match_at_start(&self, text: &str) -> Option<String> {
+    pub fn match_at_start(&self, text: &str) -> Option<String> {
         let caps = self.schema_at_start.captures(text).ok()??;
         let whole = caps.get(0)?;
         let schema = caps.get(2)?.as_str();

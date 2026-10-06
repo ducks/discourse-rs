@@ -187,6 +187,10 @@ samples = [
   # A pipe inside a link or an image does not end a table cell
   # (features/table.js protects it while rows are split).
   ["Image | Description\n---|---\n![A dog |411x500, 30%](https://example.com/dog.png) | A dog.\n[x|y](https://example.com/a|b) | [r|s][ref]\n[[nested|x]](https://e.com) | `[c|d](e)`\n\n[ref]: https://example.com/r", replies.id, u1.id],
+  # [url]: the tag's url or the first link or text inside, through
+  # linkify. Without one the content goes ahead of the text before the tag,
+  # and a **strong** start has none (an empty text token comes first).
+  ["[url]https://example.com/a[/url] and [url=https://example.com/b]text **bold**[/url]\n\n[url]example.com[/url] and [url=example.org]x[/url] and [url]not a url[/url]\n\n[url][link](https://example.com/c)[/url] and [URL]http://e.com/[/URL]\n\n[url=https://example.com/d][b]bold[/b] https://inner.com[/url]\n\na [url]**x.com**[/url] b [url]*y.com*[/url]", replies.id, u1.id],
 ]
 if upload
   samples << ["An upload that exists: ![image|64x64](#{upload.short_url}) and [a link|attachment](#{upload.short_url}).", replies.id, u1.id]
