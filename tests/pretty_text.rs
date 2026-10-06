@@ -268,7 +268,7 @@ fn first_difference(rails: &str, ours: &str) -> String {
 /// Corpus entries the renderer does not cook like Rails yet. The list
 /// only shrinks: an entry that starts matching has to be taken out, one
 /// that stops matching fails the test.
-const NOT_COOKED_YET: &[&str] = &["sample-30"];
+const NOT_COOKED_YET: &[&str] = &[];
 
 /// Cooks every entry of a recorded corpus and returns the ids that do
 /// not come out as Rails cooked them, with where each one differs.

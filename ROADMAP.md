@@ -141,12 +141,14 @@ Logged-in readers, no writes yet.
       from the database, equal to what Rails recorded (README: Cooking)
 - [x] Cooking, the renderer: Discourse's markdown rules in Rust on the
       markdown-it crate (no vendored JavaScript, no embedded engine;
-      decided 2026-10-02). 76 of the 77 recorded corpus entries cook
+      decided 2026-10-02). All 101 recorded corpus entries cook
       byte-equal to Rails: core's features, the sanitizer, linkify, and
-      the bundled plugins' poll, details, spoiler, checklist, footnotes
-- [ ] Cooking, plugins left: local dates (needs a timezone database),
-      math, chat transcripts, events, graphviz, policy; all refused
-      explicitly today
+      the bundled plugins' poll, details, spoiler, checklist, footnotes,
+      local dates. Of 4232 posts from meta.discourse.org (kept local,
+      scripts/fetch-discourse-corpus), 4230 cook byte-equal; the rest are
+      a policy block and a discourse-ai quote the reference's plugins add
+- [ ] Cooking, plugins left: math, chat transcripts, events, graphviz,
+      policy; all refused explicitly today
 - [x] Cooking, `PrettyText.cleanup`: rel attributes, mention links,
       hidden direction marks, video thumbnails, HTML5 re-serialization;
       all 482 posts of the Faker backup cook byte-equal

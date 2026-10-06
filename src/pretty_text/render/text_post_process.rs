@@ -1,12 +1,12 @@
 //! features/text-post-process.js and the rules pushed on its ruler: text
 //! outside links is searched for patterns that become nodes. Mentions
 //! (features/mentions.js), then hashtags
-//! (features/hashtag-autocomplete.js), tried in that order at each
+//! (features/hashtag-autocomplete.js), then the local dates plugin's
+//! `[date=...]` and `[date-range ...]`, tried in that order at each
 //! position.
 
 use std::sync::LazyLock;
 
-use super::md_utils::{is_punct_char, is_white_space};
 use fancy_regex::Regex;
 use markdown_it::Node;
 use markdown_it::parser::inline::Text;
@@ -16,6 +16,8 @@ use markdown_it::plugins::html::html_inline::HtmlInline;
 use super::RenderSettings;
 use super::context::Context;
 use super::element::Element;
+use super::local_dates;
+use super::md_utils::{is_punct_char, is_white_space};
 use crate::pretty_text::sanitizer::AllowList;
 
 /// `mentionRegex(false)`: `\w` is ASCII in JavaScript.
@@ -23,12 +25,35 @@ const MENTION: &str = r"@([0-9A-Za-z_][0-9A-Za-z_.-]{0,58}[0-9A-Za-z])|@([0-9A-Z
 /// hashtag-autocomplete's `MATCHER`: not after a slash.
 const HASHTAG: &str = r"(?<!/)#([\x{C0}-\x{1FFF}\x{2C00}-\x{D7FF}0-9A-Za-z_:-](?:[\x{C0}-\x{1FFF}\x{2C00}-\x{D7FF}0-9A-Za-z_:.-]{0,99}[\x{C0}-\x{1FFF}\x{2C00}-\x{D7FF}0-9A-Za-z_:-])?)";
 
-/// The ruler's rules joined as alternatives: groups 1 and 2 are a
-/// mention's name, group 3 a hashtag's.
-static WITH_MENTIONS: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(&format!("{MENTION}|{HASHTAG}")).unwrap());
-static HASHTAGS_ONLY: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(&format!("(x^)|(x^)|{HASHTAG}")).unwrap());
+/// The local dates plugin's matchers (with JavaScript's `.`).
+const DATE: &str = r"(\[date=[^\n\r\x{2028}\x{2029}]+?\])";
+const DATE_RANGE: &str = r"(\[date-range [^\n\r\x{2028}\x{2029}]+?\])";
+/// A rule that is off: a group that never matches.
+const NEVER: &str = "(x^)";
+
+/// The ruler's rules joined as alternatives in the order they are pushed:
+/// groups 1 and 2 are a mention's name, group 3 a hashtag's, group 4 a
+/// `[date=...]` and group 5 a `[date-range ...]`. Indexed by whether
+/// mentions, then local dates, are on.
+static MATCHERS: LazyLock<[[Regex; 2]; 2]> = LazyLock::new(|| {
+    let build = |mentions: bool, dates: bool| {
+        let mention = if mentions {
+            MENTION.to_string()
+        } else {
+            format!("{NEVER}|{NEVER}")
+        };
+        let (date, range) = if dates {
+            (DATE, DATE_RANGE)
+        } else {
+            (NEVER, NEVER)
+        };
+        Regex::new(&format!("{mention}|{HASHTAG}|{date}|{range}")).unwrap()
+    };
+    [
+        [build(false, false), build(false, true)],
+        [build(true, false), build(true, true)],
+    ]
+});
 
 fn text(content: &str) -> Node {
     Node::new(Text {
@@ -108,7 +133,12 @@ fn allowed_boundaries(content: &str, start: usize, end: usize) -> bool {
 
 /// `textPostProcess`: the text split around its matches, or None when
 /// nothing matched.
-fn split(content: &str, matcher: &Regex, ctx: &Context) -> Option<Vec<Node>> {
+fn split(
+    content: &str,
+    matcher: &Regex,
+    settings: &RenderSettings,
+    ctx: &Context,
+) -> Option<Vec<Node>> {
     let mut result: Option<Vec<Node>> = None;
     let mut pos = 0;
     let mut search = 0;
@@ -129,6 +159,10 @@ fn split(content: &str, matcher: &Regex, ctx: &Context) -> Option<Vec<Node>> {
             nodes.push(hashtag(whole.as_str(), slug.as_str(), ctx));
         } else if let Some(name) = caps.get(1).or(caps.get(2)) {
             nodes.push(mention(name.as_str()));
+        } else if caps.get(4).is_some() {
+            nodes.extend(local_dates::date(whole.as_str(), settings, ctx));
+        } else if caps.get(5).is_some() {
+            nodes.extend(local_dates::range(whole.as_str(), settings, ctx));
         }
         pos = whole.end();
     }
@@ -176,18 +210,14 @@ fn is_html_link_close(html: &str) -> bool {
 
 /// The `text-post-process` core rule.
 pub fn apply(root: &mut Node, settings: &RenderSettings, ctx: &Context) {
-    let matcher: &Regex = if settings.mentions {
-        &WITH_MENTIONS
-    } else {
-        &HASHTAGS_ONLY
-    };
+    let matcher = &MATCHERS[usize::from(settings.mentions)][usize::from(settings.local_dates)];
     // Like textReplace, children are walked from the end and an html `</a>`
     // and `<a ...>` move the level text has to be at (0) to be searched.
     fn visit(
         node: &mut Node,
         matcher: &Regex,
+        settings: &RenderSettings,
         ctx: &Context,
-        local_dates: bool,
         html_level: &mut i32,
     ) {
         if is_link(node) {
@@ -203,28 +233,19 @@ pub fn apply(root: &mut Node, settings: &RenderSettings, ctx: &Context) {
                     *html_level -= 1;
                 }
             }
-            // The local dates plugin's `[date=...]` and `[date-range ...]`
-            // need a timezone database and moment's formats.
-            if local_dates
-                && node.children[i].cast::<Text>().is_some_and(|t| {
-                    t.content.contains("[date=") || t.content.contains("[date-range ")
-                })
-            {
-                ctx.refuse("local dates ([date=...])");
-            }
             let replaced = (*html_level == 0)
                 .then(|| node.children[i].cast::<Text>())
                 .flatten()
-                .and_then(|text| split(&text.content, matcher, ctx));
+                .and_then(|text| split(&text.content, matcher, settings, ctx));
             match replaced {
                 Some(nodes) => {
                     node.children.splice(i..=i, nodes);
                 }
-                None => visit(&mut node.children[i], matcher, ctx, local_dates, html_level),
+                None => visit(&mut node.children[i], matcher, settings, ctx, html_level),
             }
         }
     }
-    visit(root, matcher, ctx, settings.local_dates, &mut 0);
+    visit(root, matcher, settings, ctx, &mut 0);
 }
 
 pub fn allow(list: &mut AllowList) {
