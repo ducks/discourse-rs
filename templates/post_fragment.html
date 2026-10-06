@@ -1,6 +1,5 @@
-{%- import "macros.html" as m -%}
 {%- if append -%}
-<div hx-swap-oob="beforeend:#posts">{% call m::post_block(post, "") %}</div>
+<div hx-swap-oob="beforeend:#posts">{{ html|safe }}</div>
 {%- else -%}
-{% call m::post_block(post, "true") %}
+{{ html|safe }}
 {%- endif -%}

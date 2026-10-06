@@ -36,7 +36,7 @@ use serde::Deserialize;
 use serde_json::Value;
 
 use crate::guardian::Guardian;
-use crate::html::{PostFragment, post_item};
+use crate::html::PostFragment;
 use crate::posting::revisions::find_post_with_deleted;
 use crate::session::current::AuthGuardian;
 use crate::site_settings::SiteSettings;
@@ -354,9 +354,10 @@ async fn post_fragment(live: &Live, message: &Message) -> Result<Option<String>,
         kind == "created",
     )
     .await?;
-    // Deleted, or no longer visible to them: it goes from the page.
+    // Deleted, or no longer visible to them: it goes from the page, its
+    // wrapper with it.
     Ok(Some(html.unwrap_or_else(|| {
-        format!(r#"<div id="post_{post_number}" hx-swap-oob="delete"></div>"#)
+        format!(r#"<div hx-swap-oob="delete:#posts > [data-post-number='{post_number}']"></div>"#)
     })))
 }
 
@@ -409,22 +410,71 @@ async fn render_post(
         .serialize_single_post(post_id, false, false, true)
         .await?;
     let base = state.config.globals.relative_url_root();
-    let topic_url = format!(
-        "{base}/t/{}/{}",
-        post["topic_slug"].as_str().unwrap_or_default(),
-        post["topic_id"]
-    );
-    let html = PostFragment {
-        post: post_item(
-            &state.i18n,
-            base,
-            &topic_url,
-            &post,
-            guardian.user_id().is_some(),
-        ),
-        append,
-    }
-    .render()?;
+    let topic_id = post["topic_id"].as_i64().unwrap_or(0) as i32;
+    let Some(topic_ctx) =
+        crate::topic_guardian::TopicCtx::load(&mut conn, settings, guardian, topic_id).await?
+    else {
+        return Ok(None);
+    };
+    // details.can_create_post, as the topic view computes it.
+    let can_create_post = guardian.is_authenticated() && {
+        let anywhere = guardian
+            .can_create_post_anywhere(&mut conn, settings)
+            .await?;
+        guardian.can_create_post_on_topic(settings, &topic_ctx, anywhere)?
+    };
+    let topic = crate::post_view::TopicInfo {
+        id: i64::from(topic_id),
+        slug: post["topic_slug"].as_str().unwrap_or_default().to_string(),
+        created_by_id: topic_ctx.user_id.map(i64::from),
+        archived: topic_ctx.archived,
+        can_create_post,
+    };
+    // The post shown above it, for its reply-to tab and time gap.
+    let number = post["post_number"].as_i64().unwrap_or(0) as i32;
+    let prev: Option<(i32, chrono::NaiveDateTime)> = sqlx::query_as(
+        "SELECT post_number, created_at FROM posts WHERE topic_id = $1 AND post_number < $2 \
+         AND deleted_at IS NULL ORDER BY post_number DESC LIMIT 1",
+    )
+    .bind(topic_id)
+    .bind(number)
+    .fetch_optional(&mut *conn)
+    .await?;
+    let prev = prev.map(|(post_number, created_at)| crate::post_view::Prev {
+        post_number: i64::from(post_number),
+        created_at: created_at.and_utc(),
+    });
+    let categories = crate::topic_list_view::categories(&mut conn).await?;
+    let list = crate::topic_list_view::ListContext {
+        i18n: &state.i18n,
+        base_path: base,
+        now: chrono::Utc::now(),
+        categories: &categories,
+        expand_all_pinned: false,
+        member_trust_level: guardian.user().map(|u| u.trust_level),
+        settings: crate::topic_list_view::ListSettings::load(settings)?,
+    };
+    let post_settings = crate::post_view::PostSettings::load(settings)?;
+    let cx = crate::post_view::PostContext {
+        list: &list,
+        settings: &post_settings,
+        topic: &topic,
+        viewer: guardian.user().map(|u| u.username.as_str()),
+    };
+    let html = if append {
+        crate::post_view::post(&cx, &post, prev)
+    } else {
+        // Replaces the post where it is shown: its wrapper carries the
+        // out-of-band swap.
+        crate::post_view::post_body(&cx, &post, prev).replacen(
+            &format!("data-post-number=\"{number}\""),
+            &format!(
+                "data-post-number=\"{number}\" hx-swap-oob=\"outerHTML:#posts > [data-post-number='{number}']\""
+            ),
+            1,
+        )
+    };
+    let html = PostFragment { html, append }.render()?;
     Ok(Some(html))
 }
 

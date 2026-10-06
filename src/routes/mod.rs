@@ -54,6 +54,7 @@ const DISCOURSE_CSS: &str = concat!(
     include_str!("../../static/css/navs.css"),
     include_str!("../../static/css/topic-list.css"),
     include_str!("../../static/css/sidebar.css"),
+    include_str!("../../static/css/topic.css"),
 );
 
 async fn discourse_css() -> impl IntoResponse {

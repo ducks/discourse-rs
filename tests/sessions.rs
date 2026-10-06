@@ -1457,14 +1457,19 @@ async fn members_like_from_the_topic_page() {
     assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
     let html = common::next_sse_event(&mut body, &mut buffer, "post").await;
     assert!(
-        html.contains(&format!(r#"<div id="post_{post_number}""#)),
+        html.contains(&format!(
+            r#"hx-swap-oob="outerHTML:#posts > [data-post-number='{post_number}']""#
+        )),
         "{html}"
     );
     assert!(
         html.contains(&format!(r#"hx-delete="/post_actions/{post_id}""#)),
         "the member's own render shows their like: {html}"
     );
-    assert!(html.contains(r#"aria-pressed="true""#), "{html}");
+    assert!(
+        html.contains("post-action-menu__like toggle-like btn-icon has-like btn-flat"),
+        "{html}"
+    );
 }
 
 /// A member bookmarks a post from the topic page as its button does: the
@@ -1519,19 +1524,22 @@ async fn members_bookmark_from_the_topic_page() {
     let html = client.get(&format!("/live/post/{post_id}")).await;
     assert_eq!(html.status, StatusCode::OK);
     assert!(
-        html.body
-            .contains(&format!(r#"<div id="post_{post_number}""#)),
+        html.body.contains(&format!(
+            r#"hx-swap-oob="outerHTML:#posts > [data-post-number='{post_number}']""#
+        )),
         "{}",
         html.body
     );
-    assert!(html.body.contains(r#"hx-swap-oob="true""#));
     assert!(
         html.body
             .contains(&format!(r#"hx-delete="/bookmarks/{bookmark_id}""#)),
         "{}",
         html.body
     );
-    assert!(html.body.contains("Bookmarked"));
+    assert!(
+        html.body
+            .contains("bookmark-menu__trigger btn-icon no-text bookmarked")
+    );
 
     let removed = client
         .send(

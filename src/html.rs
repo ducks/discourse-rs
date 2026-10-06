@@ -213,11 +213,6 @@ pub struct CategoryBadge {
     pub url: String,
 }
 
-pub struct TagLink {
-    pub name: String,
-    pub url: String,
-}
-
 #[derive(Template)]
 #[template(path = "latest.html")]
 pub struct LatestPage {
@@ -301,35 +296,6 @@ pub struct TagHeading {
     pub url: String,
 }
 
-pub struct PostItem {
-    pub number: i64,
-    /// The post's id, for its actions.
-    pub id: i64,
-    /// Where likes are posted (`/post_actions`).
-    pub actions_url: String,
-    pub base_path: String,
-    pub url: String,
-    pub username: String,
-    pub name: Option<String>,
-    pub user_url: String,
-    pub created_at: String,
-    pub created_at_iso: String,
-    pub cooked: String,
-    pub likes: i64,
-    pub small_action: bool,
-    pub action_text: Option<String>,
-    /// The viewer may like it (`actions_summary` like `can_act`).
-    pub can_like: bool,
-    /// The viewer liked it (`acted`).
-    pub liked: bool,
-    /// The viewer may take their like back (`can_undo`).
-    pub can_unlike: bool,
-    /// A logged-in viewer may bookmark it.
-    pub can_bookmark: bool,
-    /// The viewer's bookmark of it.
-    pub bookmark_id: Option<i64>,
-}
-
 #[derive(Template)]
 #[template(path = "topic.html")]
 pub struct TopicPage {
@@ -342,11 +308,11 @@ pub struct TopicPage {
     pub bus_position: String,
     pub chrome: Chrome,
     pub title: String,
-    pub title_unicode: String,
     pub canonical_url: String,
-    pub breadcrumbs: Vec<CategoryBadge>,
-    pub tags: Vec<TagLink>,
-    pub posts: Vec<PostItem>,
+    /// `#topic-title`'s title wrapper (post_view::topic_title).
+    pub title_html: String,
+    /// The posts as Ember renders them (post_view::stream).
+    pub posts: Vec<String>,
     pub prev_url: Option<String>,
     pub next_url: Option<String>,
     pub topic_id: i64,
@@ -393,20 +359,6 @@ pub(crate) fn badge(
         color: c.color.clone(),
         url: category_url(base_path, cats, c),
     })
-}
-
-fn tags(base_path: &str, v: &Value) -> Vec<TagLink> {
-    v.as_array()
-        .map(|tags| {
-            tags.iter()
-                .filter_map(|t| t["name"].as_str())
-                .map(|name| TagLink {
-                    name: name.to_string(),
-                    url: format!("{base_path}/tag/{name}"),
-                })
-                .collect()
-        })
-        .unwrap_or_default()
 }
 
 /// "Sep 30, 2026" from a Rails ISO timestamp; the raw string if unparsable.
@@ -471,61 +423,42 @@ pub async fn latest_page(
     })
 }
 
-/// `js.action_codes.<code>` with an empty `when`, as the crawler view does.
-fn action_text(i18n: &I18n, code: &str, who: &str) -> String {
-    i18n.t_with(
-        &format!("js.action_codes.{code}"),
-        &[("when", ""), ("who", who), ("href", "")],
-    )
-    .map(|t| t.trim().to_string())
-    .unwrap_or_else(|| code.to_string())
-}
-
 /// The topic page from the /t/:id.json document.
 pub async fn topic_page(
     conn: &mut PgConnection,
     i18n: &I18n,
+    settings: &SiteSettings,
     site: Site,
     view: &Value,
     page: i64,
 ) -> Result<TopicPage, HtmlError> {
-    let cats = categories(conn).await?;
     let base = site.base_path.clone();
     let slug = s(&view["slug"]);
     let id = view["id"].as_i64().unwrap_or(0);
     let topic_url = format!("{base}/t/{slug}/{id}");
 
-    let mut breadcrumbs = Vec::new();
-    if let Some(c) = cats
-        .iter()
-        .find(|c| Some(i64::from(c.id)) == view["category_id"].as_i64())
-    {
-        if let Some(parent) = c
-            .parent_category_id
-            .and_then(|p| cats.iter().find(|x| x.id == p))
-        {
-            breadcrumbs.push(CategoryBadge {
-                name: parent.name.clone(),
-                color: parent.color.clone(),
-                url: category_url(&base, &cats, parent),
-            });
-        }
-        breadcrumbs.push(CategoryBadge {
-            name: c.name.clone(),
-            color: c.color.clone(),
-            url: category_url(&base, &cats, c),
-        });
-    }
-
-    let member = site.viewer.is_some();
+    let categories = crate::topic_list_view::categories(conn).await?;
+    let list = crate::topic_list_view::ListContext {
+        i18n,
+        base_path: &base,
+        now: chrono::Utc::now(),
+        categories: &categories,
+        expand_all_pinned: false,
+        member_trust_level: site.viewer.as_ref().map(|v| v.trust_level),
+        settings: crate::topic_list_view::ListSettings::load(settings)?,
+    };
+    let title_html = crate::post_view::topic_title(&list, view, &topic_url);
+    let post_settings = crate::post_view::PostSettings::load(settings)?;
+    let topic = crate::post_view::TopicInfo::from_view(view);
+    let cx = crate::post_view::PostContext {
+        list: &list,
+        settings: &post_settings,
+        topic: &topic,
+        viewer: site.viewer.as_ref().map(|v| v.username.as_str()),
+    };
     let posts = view["post_stream"]["posts"]
         .as_array()
-        .map(|posts| {
-            posts
-                .iter()
-                .map(|p| post_item(i18n, &base, &topic_url, p, member))
-                .collect()
-        })
+        .map(|posts| crate::post_view::stream(&cx, posts))
         .unwrap_or_default();
 
     let stream_len = view["post_stream"]["stream"]
@@ -553,10 +486,8 @@ pub async fn topic_page(
         base_path: site.base_path,
         crawler: Crawler::default(),
         title: s(&view["title"]),
-        title_unicode: crate::emoji::gsub_emoji_to_unicode(&s(&view["title"])),
         canonical_url: page_url(page),
-        breadcrumbs,
-        tags: tags(&base, &view["tags"]),
+        title_html,
         posts,
         topic_id: id,
         // New posts land on the last page; earlier pages stay as they are.
@@ -944,50 +875,14 @@ pub fn crawler_response(
     Ok(with_viewer_headers(response, viewer))
 }
 
-/// One post of a topic as the page shows it, from its PostSerializer JSON.
-/// `member`: the viewer is logged in (they may bookmark).
-pub fn post_item(i18n: &I18n, base: &str, topic_url: &str, p: &Value, member: bool) -> PostItem {
-    let number = p["post_number"].as_i64().unwrap_or(0);
-    let username = s(&p["username"]);
-    let action = p["action_code"].as_str();
-    // The like entry of PostSerializer's actions_summary, as the viewer sees it.
-    let like = p["actions_summary"]
-        .as_array()
-        .and_then(|a| a.iter().find(|x| x["id"] == 2));
-    let flag = |key: &str| like.is_some_and(|l| l[key] == true);
-    PostItem {
-        number,
-        id: p["id"].as_i64().unwrap_or(0),
-        actions_url: format!("{base}/post_actions"),
-        base_path: base.to_string(),
-        url: format!("{topic_url}/{number}"),
-        user_url: format!("{base}/u/{username}"),
-        username,
-        name: p["name"]
-            .as_str()
-            .filter(|n| !n.is_empty())
-            .map(str::to_string),
-        created_at: date(&s(&p["created_at"])),
-        created_at_iso: s(&p["created_at"]),
-        cooked: s(&p["cooked"]),
-        likes: like.and_then(|x| x["count"].as_i64()).unwrap_or(0),
-        small_action: action.is_some(),
-        action_text: action
-            .map(|code| action_text(i18n, code, p["action_code_who"].as_str().unwrap_or(""))),
-        can_like: flag("can_act"),
-        liked: flag("acted"),
-        can_unlike: flag("can_undo"),
-        can_bookmark: member,
-        bookmark_id: p["bookmark_id"].as_i64(),
-    }
-}
-
 /// A live update of one post for the topic page: appended to the posts
 /// when new, else replacing the post in place (htmx out-of-band swaps).
 #[derive(Template)]
 #[template(path = "post_fragment.html")]
 pub struct PostFragment {
-    pub post: PostItem,
+    /// The post as post_view renders it; when replacing, its wrapper
+    /// carries the out-of-band swap onto the post shown.
+    pub html: String,
     pub append: bool,
 }
 

@@ -104,6 +104,22 @@
             </div>
           </header>
         </div>
+        <script>
+          // --header-offset and --main-outlet-offset, which Ember's site
+          // header sets: where sticky content (the sidebar, a post's
+          // avatar) starts below the header.
+          (function () {
+            function setOffsets() {
+              var header = document.querySelector(".d-header-wrap");
+              var offset = header.getBoundingClientRect().height + "px";
+              var root = document.documentElement.style;
+              root.setProperty("--header-offset", offset);
+              root.setProperty("--main-outlet-offset", offset);
+            }
+            setOffsets();
+            window.addEventListener("resize", setOffsets);
+          })();
+        </script>
         <p id="page-error" class="page-error" role="alert" hidden></p>
         <div id="main-outlet-wrapper" class="wrap" role="main">
           {%- if !chrome.sidebar.is_empty() %}

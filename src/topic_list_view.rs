@@ -185,17 +185,17 @@ impl ListSettings {
     }
 }
 
-fn t(cx: &ListContext, key: &str) -> String {
+pub(crate) fn t(cx: &ListContext, key: &str) -> String {
     cx.i18n.t(&format!("js.{key}")).unwrap_or(key).to_string()
 }
 
-fn t_with(cx: &ListContext, key: &str, args: &[(&str, &str)]) -> String {
+pub(crate) fn t_with(cx: &ListContext, key: &str, args: &[(&str, &str)]) -> String {
     cx.i18n
         .t_with(&format!("js.{key}"), args)
         .unwrap_or_else(|| key.to_string())
 }
 
-fn t_count(cx: &ListContext, key: &str, count: i64, args: &[(&str, &str)]) -> String {
+pub(crate) fn t_count(cx: &ListContext, key: &str, count: i64, args: &[(&str, &str)]) -> String {
     cx.i18n
         .t_count(&format!("js.{key}"), count, args)
         .unwrap_or_else(|| key.to_string())
@@ -346,7 +346,7 @@ pub fn category_badge(cx: &ListContext, category: &ListCategory) -> String {
 }
 
 /// `renderTags` in list mode, with `defaultRenderTag`.
-fn tags_html(cx: &ListContext, topic: &Value, title: &str) -> String {
+pub(crate) fn tags_html(cx: &ListContext, topic: &Value, title: &str) -> String {
     let tags: Vec<&Value> = topic["tags"]
         .as_array()
         .map(|t| t.iter().collect())
@@ -411,12 +411,12 @@ fn date(v: &Value) -> Option<DateTime<Utc>> {
 }
 
 /// `longDate`
-fn long_date(cx: &ListContext, at: DateTime<Utc>) -> String {
+pub(crate) fn long_date(cx: &ListContext, at: DateTime<Utc>) -> String {
     format_utc(at, &t(cx, "dates.long_with_year")).unwrap_or_default()
 }
 
 /// `relativeAgeTiny`
-fn relative_age_tiny(cx: &ListContext, at: DateTime<Utc>) -> String {
+pub(crate) fn relative_age_tiny(cx: &ListContext, at: DateTime<Utc>) -> String {
     let distance = ((cx.now - at).num_milliseconds() as f64 / 1000.0)
         .round()
         .abs();
@@ -557,41 +557,7 @@ pub fn row(cx: &ListContext, topic: &Value, users: &[Value]) -> String {
         }
     }
 
-    // TopicStatus, for a visitor (a member's pin toggles are links).
-    let mut statuses = String::new();
-    if flag("bookmarked") {
-        statuses.push_str(&format!(
-            "<span class=\"topic-status --bookmarked\" title=\"{}\">{}</span>",
-            t(cx, "topic_statuses.bookmarked.help"),
-            icon("bookmark", None)
-        ));
-    }
-    let closed_status = match (flag("closed"), flag("archived")) {
-        (true, true) => Some(("--closed --archived", "locked_and_archived")),
-        (true, false) => Some(("--closed", "locked")),
-        (false, true) => Some(("--archived", "archived")),
-        _ => None,
-    };
-    if let Some((class, key)) = closed_status {
-        statuses.push_str(&format!(
-            "<span class=\"topic-status {class}\" title=\"{}\">{}</span>",
-            t(cx, &format!("topic_statuses.{key}.help")),
-            icon(CLOSED_ICON, None)
-        ));
-    }
-    if flag("pinned") {
-        statuses.push_str(&format!(
-            "<span class=\"topic-status --pinned\" title=\"{}\">{}</span>",
-            t(cx, "topic_statuses.pinned.help"),
-            icon("thumbtack", None)
-        ));
-    } else if flag("unpinned") {
-        statuses.push_str(&format!(
-            "<span class=\"topic-status --unpinned\" title=\"{}\">{}</span>",
-            t(cx, "topic_statuses.unpinned.help"),
-            icon("thumbtack", Some("unpinned"))
-        ));
-    }
+    let statuses = topic_statuses(cx, topic);
 
     // TopicLink: to the first unread post.
     let last_read = topic["last_read_post_number"].as_i64().unwrap_or(0);
@@ -797,6 +763,46 @@ pub fn row(cx: &ListContext, topic: &Value, users: &[Value]) -> String {
         "<tr class=\"{}\" data-topic-id=\"{id}\">{topic_cell}{posters}{replies}{views}{activity}</tr>",
         classes.join(" ")
     )
+}
+
+/// TopicStatus, for a visitor (a member's pin toggles are links).
+pub fn topic_statuses(cx: &ListContext, topic: &Value) -> String {
+    let flag = |name: &str| topic[name] == true;
+    let mut statuses = String::new();
+    if flag("bookmarked") {
+        statuses.push_str(&format!(
+            "<span class=\"topic-status --bookmarked\" title=\"{}\">{}</span>",
+            t(cx, "topic_statuses.bookmarked.help"),
+            icon("bookmark", None)
+        ));
+    }
+    let closed_status = match (flag("closed"), flag("archived")) {
+        (true, true) => Some(("--closed --archived", "locked_and_archived")),
+        (true, false) => Some(("--closed", "locked")),
+        (false, true) => Some(("--archived", "archived")),
+        _ => None,
+    };
+    if let Some((class, key)) = closed_status {
+        statuses.push_str(&format!(
+            "<span class=\"topic-status {class}\" title=\"{}\">{}</span>",
+            t(cx, &format!("topic_statuses.{key}.help")),
+            icon(CLOSED_ICON, None)
+        ));
+    }
+    if flag("pinned") {
+        statuses.push_str(&format!(
+            "<span class=\"topic-status --pinned\" title=\"{}\">{}</span>",
+            t(cx, "topic_statuses.pinned.help"),
+            icon("thumbtack", None)
+        ));
+    } else if flag("unpinned") {
+        statuses.push_str(&format!(
+            "<span class=\"topic-status --unpinned\" title=\"{}\">{}</span>",
+            t(cx, "topic_statuses.unpinned.help"),
+            icon("thumbtack", Some("unpinned"))
+        ));
+    }
+    statuses
 }
 
 #[cfg(test)]

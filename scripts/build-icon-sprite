@@ -37,6 +37,32 @@ ICONS=(
   circle
   link
   pencil
+  heart
+  far-heart
+  bookmark
+  far-bookmark
+  reply
+  share
+  shield-halved
+  far-envelope
+  unlock
+  folder
+  folder-open
+  far-eye
+  far-eye-slash
+  right-from-bracket
+  circle-plus
+  circle-minus
+  comment
+  hand-point-right
+  exclamation
+  trash-can
+  user-shield
+  far-pen-to-square
+  chevron-down
+  arrow-up-from-bracket
+  book-open-reader
+  ellipsis
 )
 
 root="$(cd "$(dirname "$0")/.." && pwd)"
@@ -62,7 +88,12 @@ out="$root/static/vendor/icons.svg"
   for icon in "${ICONS[@]}"; do
     name="${icon%%=*}"
     file="${icon#*=}"
-    svg="$work/package/svgs/solid/$file.svg"
+    # Discourse names the regular style's icons far-<name>.
+    if [[ $file == far-* ]]; then
+      svg="$work/package/svgs/regular/${file#far-}.svg"
+    else
+      svg="$work/package/svgs/solid/$file.svg"
+    fi
     view_box=$(grep -o 'viewBox="[^"]*"' "$svg")
     body=$(sed -e 's/<svg[^>]*>//' -e 's/<\/svg>//' -e 's/<!--[^>]*-->//' "$svg")
     echo "  <symbol id=\"$name\" $view_box>$body</symbol>"

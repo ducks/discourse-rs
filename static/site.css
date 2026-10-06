@@ -5,17 +5,6 @@
 .badge-category-bg { display: inline-block; width: .6rem; height: .6rem; }
 .excerpt { margin: .35rem 0 0; color: #555; font-size: .9rem; }
 .more-topics, .topic-pagination { margin: 1rem 0; display: flex; gap: 1rem; }
-#topic-title h1 { font-size: 1.6rem; margin: 0 0 .25rem; }
-.topic-body { border-bottom: 1px solid var(--line); padding: 1rem 0; }
-.topic-body.small-action { color: var(--muted); font-size: .9rem; }
-.crawler-post-meta { display: flex; justify-content: space-between; color: var(--muted); font-size: .9rem; margin-bottom: .5rem; }
-.crawler-post-meta .creator a { font-weight: 600; color: var(--primary); }
-.crawler-post-meta .full-name { margin-left: .35rem; }
-.post img { max-width: 100%; height: auto; }
-.post pre { background: #f6f6f6; padding: .75rem; overflow: auto; }
-.post blockquote, .post aside.quote { border-left: 4px solid var(--line); margin: .5rem 0; padding: .25rem .75rem; background: #fafafa; }
-.post .emoji { width: 20px; height: 20px; vertical-align: middle; }
-.post-likes { color: var(--muted); font-size: .85rem; }
 .category-heading { font-size: 1.4rem; margin: 0 0 .75rem; }
 .category-heading a { color: var(--primary); }
 .subcategories { margin: 0 0 1rem; font-size: .9rem; }

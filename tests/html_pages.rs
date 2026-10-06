@@ -92,29 +92,38 @@ async fn topic_page_renders_posts_and_small_actions() {
     assert!(
         html.contains(r#"<link rel="canonical" href="http://test.localhost/t/parity-fixture-pinned-and-closed/37">"#)
     );
-    assert!(html.contains(r#"<span class="category-name">Site Feedback</span>"#));
+    assert!(html.contains(r#"<span class="badge-category__name">Site Feedback</span>"#));
+    assert!(html.contains(r#"<span class="topic-status --closed""#));
     assert!(html.contains(r#"id="post_1""#));
-    assert!(html.contains("<p>A pinned, closed topic in Site Feedback"));
-    assert!(html.contains(r#"<span class="action">Closed</span>"#));
-    assert!(html.contains(r#"href="/u/admin">admin</a>"#));
+    assert!(html.contains(r#"<div class="cooked"><p>A pinned, closed topic in Site Feedback"#));
+    // The close is a small action: its icon, the actor, what they did.
+    assert!(html.contains(r#"class="small-action onscreen-post""#));
+    assert!(html.contains(r#"<p aria-hidden="true">Closed <span class="relative-date""#));
+    assert!(html.contains(r#"data-user-card="admin" href="/u/admin""#));
 }
 
 #[tokio::test]
 async fn topic_page_shows_subcategory_breadcrumbs_and_likes() {
     let db = TestDb::new().await;
     let (_, _, html) = get(&db.pool, "/t/parity-fixture-tagged-in-a-subcategory/38").await;
-    assert!(html.contains(r#"href="/c/general/4""#), "parent crumb");
-    assert!(
-        html.contains(r#"href="/c/general/sub-general/34""#),
-        "child crumb"
-    );
-    assert!(html.contains(r#"href="/tag/howto" class="discourse-tag""#));
+    // The subcategory's badge, marked with its parent.
+    assert!(html.contains(
+        r#"href="/c/general/sub-general/34"><span data-category-id="34" data-parent-category-id="4" data-drop-close="true" class="badge-category --has-parent --style-square">"#
+    ));
+    assert!(html.contains(
+        r#"<li><a href='/tag/howto/1'  data-tag-name=howto class='discourse-tag simple'>howto</a>"#
+    ));
 
     let (_, _, html) = get(&db.pool, "/t/parity-fixture-liked-and-archived/41").await;
+    // The like count, and the like button an anonymous reader may press
+    // (it asks them to log in), disabled in an archived topic.
     assert!(
-        html.contains(r#"<div class="post-likes">&#x2764; 1</div>"#),
+        html.contains(
+            r#"aria-label="1 person liked this post." class="btn btn-flat no-text post-action-menu__like-count like-count button-count highlight-action regular-likes btn-flat""#
+        ),
         "{html}"
     );
+    assert!(html.contains(r#"title="like this post" type="button" disabled>"#));
 }
 
 #[tokio::test]

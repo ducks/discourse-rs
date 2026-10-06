@@ -280,6 +280,8 @@ button {
   --d-header-padding-x: 0.67em;
   --d-table-border-top-height: 3px;
   --d-wrap-padding-x: 0.67em;
+  --d-post-aside-background: var(--blend-primary-secondary-5);
+  --d-post-aside-border-left: 5px solid var(--primary-300);
   --topic-title-font-weight: 400;
   --topic-title-font-weight--visited: 400;
   --topic-list-item-background-color: var(--secondary);

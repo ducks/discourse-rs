@@ -265,6 +265,19 @@ img.emoji {
 }
 
 /* tagging.scss */
+.topic-category {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5em;
+}
+
+.topic-category .topic-header-extra {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+}
+
 .discourse-tag {
   max-width: var(--tag-max-width);
   display: inline-block;
@@ -286,7 +299,8 @@ img.emoji {
   color: var(--tag-text-color);
 }
 
-.link-bottom-line {
+.link-bottom-line,
+.topic-header-extra {
   --tag-max-width: 18em;
 }
 
@@ -301,6 +315,11 @@ img.emoji {
   display: inline-flex;
   align-items: center;
   flex-wrap: wrap;
+}
+
+.list-tags {
+  display: inline-block;
+  font-size: var(--font-down-1);
 }
 
 .discourse-tags__tag-separator {
