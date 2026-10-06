@@ -232,6 +232,7 @@ fn engine(settings: &RenderSettings, lookups: Lookups) -> MarkdownIt {
     anchor::add(&mut md);
     smartquotes::add(&mut md);
     tight::add(&mut md);
+    linkify::add(&mut md);
     md
 }
 
