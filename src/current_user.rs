@@ -206,6 +206,49 @@ fn ids_json(ids: &[i32]) -> Value {
     json!(ids)
 }
 
+/// `CategoryUser.indirectly_muted_category_ids`: subcategories with no
+/// level of their own under a muted parent (or grandparent, with three
+/// levels of nesting).
+pub async fn indirectly_muted_category_ids(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    uid: i32,
+) -> Result<Vec<i32>, AppError> {
+    let nesting = settings.get("max_category_nesting")?.to_i();
+    let default_level = if settings.get("mute_all_categories_by_default")?.truthy() {
+        0
+    } else {
+        1
+    };
+    let mut sql = String::from(
+        "SELECT categories.id FROM categories \
+         LEFT JOIN categories categories2 ON categories2.id = categories.parent_category_id \
+         LEFT JOIN category_users ON category_users.category_id = categories.id AND category_users.user_id = $1 \
+         LEFT JOIN category_users category_users2 ON category_users2.category_id = categories2.id AND category_users2.user_id = $1 ",
+    );
+    if nesting == 3 {
+        sql.push_str(
+            "LEFT JOIN categories categories3 ON categories3.id = categories2.parent_category_id \
+             LEFT JOIN category_users category_users3 ON category_users3.category_id = categories3.id AND category_users3.user_id = $1 ",
+        );
+    }
+    sql.push_str(
+        "WHERE categories.parent_category_id IS NOT NULL \
+         AND ((category_users.id IS NULL AND COALESCE(category_users2.notification_level, $2) = 0)",
+    );
+    if nesting == 3 {
+        sql.push_str(
+            " OR (category_users.id IS NULL AND category_users2.id IS NULL AND COALESCE(category_users3.notification_level, $2) = 0)",
+        );
+    }
+    sql.push(')');
+    Ok(sqlx::query_scalar(&sql)
+        .bind(uid)
+        .bind(default_level)
+        .fetch_all(&mut *conn)
+        .await?)
+}
+
 /// `/session/current.json`'s `current_user`.
 pub async fn serialize(
     conn: &mut PgConnection,
@@ -448,39 +491,7 @@ pub async fn serialize(
             .collect()
     };
     out.insert("muted_category_ids".into(), ids_json(&with_level(0)));
-    let nesting = settings.get("max_category_nesting")?.to_i();
-    let default_level = if settings.get("mute_all_categories_by_default")?.truthy() {
-        0
-    } else {
-        1
-    };
-    let mut indirectly_sql = String::from(
-        "SELECT categories.id FROM categories \
-         LEFT JOIN categories categories2 ON categories2.id = categories.parent_category_id \
-         LEFT JOIN category_users ON category_users.category_id = categories.id AND category_users.user_id = $1 \
-         LEFT JOIN category_users category_users2 ON category_users2.category_id = categories2.id AND category_users2.user_id = $1 ",
-    );
-    if nesting == 3 {
-        indirectly_sql.push_str(
-            "LEFT JOIN categories categories3 ON categories3.id = categories2.parent_category_id \
-             LEFT JOIN category_users category_users3 ON category_users3.category_id = categories3.id AND category_users3.user_id = $1 ",
-        );
-    }
-    indirectly_sql.push_str(
-        "WHERE categories.parent_category_id IS NOT NULL \
-         AND ((category_users.id IS NULL AND COALESCE(category_users2.notification_level, $2) = 0)",
-    );
-    if nesting == 3 {
-        indirectly_sql.push_str(
-            " OR (category_users.id IS NULL AND category_users2.id IS NULL AND COALESCE(category_users3.notification_level, $2) = 0)",
-        );
-    }
-    indirectly_sql.push(')');
-    let indirectly: Vec<i32> = sqlx::query_scalar(&indirectly_sql)
-        .bind(uid)
-        .bind(default_level)
-        .fetch_all(&mut *conn)
-        .await?;
+    let indirectly = indirectly_muted_category_ids(conn, settings, uid).await?;
     out.insert(
         "indirectly_muted_category_ids".into(),
         ids_json(&indirectly),
@@ -913,18 +924,20 @@ fn parameterize(s: &str) -> String {
 }
 
 /// What a member's sidebar reads from their current user: the fields of
-/// `serialize` its sections and links ask for.
+/// `serialize` its sections and links ask for, and their tracking state.
 pub async fn sidebar_member(
     conn: &mut PgConnection,
     settings: &SiteSettings,
     guardian: &crate::guardian::GuardianUser,
+    tracking: crate::topic_tracking_report::Tracking,
 ) -> Result<crate::sidebar::Member, AppError> {
     let g = UserGuardian::from_guardian(settings, guardian);
     let user = &guardian.user;
     let tagging = settings.get("tagging_enabled")?.truthy();
     let fields = sidebar_fields(conn, settings, &g, user, tagging).await?;
-    let (draft_count, show_count): (i32, bool) = sqlx::query_as(
-        "SELECT COALESCE(us.draft_count, 0), COALESCE(uo.sidebar_show_count_of_new_items, false) \
+    let (draft_count, show_count, link_to_filtered_list): (i32, bool, bool) = sqlx::query_as(
+        "SELECT COALESCE(us.draft_count, 0), COALESCE(uo.sidebar_show_count_of_new_items, false), \
+                COALESCE(uo.sidebar_link_to_filtered_list, false) \
          FROM users u LEFT JOIN user_stats us ON us.user_id = u.id \
          LEFT JOIN user_options uo ON uo.user_id = u.id WHERE u.id = $1",
     )
@@ -951,9 +964,9 @@ pub async fn sidebar_member(
         draft_count: i64::from(draft_count),
         reviewable_count,
         show_count,
-        unified_new: g
-            .upcoming_change_enabled(conn, "enable_unified_new")
-            .await?,
+        unified_new: tracking.unified_new,
+        link_to_filtered_list,
+        tracking,
         fields,
     })
 }

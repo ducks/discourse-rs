@@ -83,6 +83,7 @@ const HTMX_SSE: &str = include_str!("../../static/vendor/htmx-ext-sse.js");
 const SIDEBAR_JS: &str = include_str!("../../static/js/sidebar.js");
 const TOPIC_JS: &str = include_str!("../../static/js/topic.js");
 const COMPOSER_JS: &str = include_str!("../../static/js/composer.js");
+const SCREEN_TRACK_JS: &str = include_str!("../../static/js/screen-track.js");
 
 async fn htmx() -> impl IntoResponse {
     (
@@ -109,6 +110,13 @@ async fn composer_js() -> impl IntoResponse {
     (
         [(header::CONTENT_TYPE, "text/javascript; charset=utf-8")],
         COMPOSER_JS,
+    )
+}
+
+async fn screen_track_js() -> impl IntoResponse {
+    (
+        [(header::CONTENT_TYPE, "text/javascript; charset=utf-8")],
+        SCREEN_TRACK_JS,
     )
 }
 
@@ -371,6 +379,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/sidebar.js", get(sidebar_js))
         .route("/assets/topic.js", get(topic_js))
         .route("/assets/composer.js", get(composer_js))
+        .route("/assets/screen-track.js", get(screen_track_js))
         .route("/assets/markdown.wasm", get(composer::markdown_wasm))
         .route(
             "/assets/markdown-settings.json",

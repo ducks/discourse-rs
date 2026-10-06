@@ -21,8 +21,8 @@
     <section class="navigation-container">
       <ul class="nav nav-pills" id="navigation-bar">
         {%- for item in nav %}
-        <li class="{% if item.active %}active {% endif %}{{ item.name }} nav-item_{{ item.name }}" title="{{ item.title }}">
-          <a{% if item.active %} aria-current="page"{% endif %} class="{% if item.active %}active{% endif %}" href="{{ item.href }}">{{ item.label }}{% if let Some(id) = item.count_id %}<span id="{{ id }}"></span>{% endif %}</a>
+        <li class="{% if item.active %}active {% endif %}{% if item.has_icon %}has-icon {% endif %}{{ item.name }} nav-item_{{ item.name }}" title="{{ item.title }}">
+          <a{% if item.active %} aria-current="page"{% endif %} class="{% if item.active %}active{% endif %}" href="{{ item.href }}">{{ item.label }}</a>
         </li>
         {%- endfor %}
       </ul>
@@ -67,4 +67,4 @@
 {% endblock %}
 {#- The new-or-updated banner and a member's counts arrive on the page's
     stream. -#}
-{% block live %}{% if !live_filter.is_empty() %}{% call m::live_sink(base_path, bus_position, 0, false, live_filter, live_since) %}{% else %}{% call m::live_sink_for_member(viewer.is_some(), base_path, bus_position) %}{% endif %}{% endblock %}
+{% block live %}{% if !live_filter.is_empty() %}{% call m::live_sink(base_path, bus_position, 0, false, live_filter, live_since, chrome.live_params) %}{% else %}{% call m::live_sink_for_member(viewer.is_some(), base_path, bus_position, chrome.live_params) %}{% endif %}{% endblock %}

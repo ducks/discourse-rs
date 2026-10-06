@@ -350,8 +350,11 @@ pub async fn latest(
         &settings,
         base_path,
         "latest",
-        vs.viewer.is_some(),
+        page.chrome.tracking.as_ref(),
     )?;
+    if page.chrome.tracking.is_some() {
+        page.chrome.live_param("nav", "latest");
+    }
     page.live_filter = "latest".to_string();
     page.live_since = live_since;
     // Strip `no_definitions`, which is what the JSON list carries around
@@ -910,8 +913,11 @@ async fn front_list(
         &settings,
         state.config.globals.relative_url_root(),
         kind.name(),
-        vs.viewer.is_some(),
+        page.chrome.tracking.as_ref(),
     )?;
+    if page.chrome.tracking.is_some() {
+        page.chrome.live_param("nav", kind.name());
+    }
     let uri = uri.unwrap_or_default();
     page.crawler = list_crawler(&mut conn, &state, &settings, &uri, None, None).await?;
     let body = page.render().map_err(crate::html::HtmlError::from)?;

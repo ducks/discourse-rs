@@ -1266,10 +1266,12 @@ impl Client {
     }
 }
 
-/// A member's list pages keep their unread and new counts current, the
-/// same counts the /unread and /new lists show them, in the navigation
-/// pills `top_menu` lists (the seed's is latest|new|hot|categories, as the
-/// reference's: a New pill, no Unread one).
+/// A member's list pages show their new and unread counts from their
+/// tracking state, as the reference does: in the New pill (with unified
+/// new, which folds unread into it and drops the Unread pill; the count is
+/// the /new list's) and as dots on the sidebar's Topics, category and tag
+/// links. The page's stream sends them again, for the pill and sidebar it
+/// names.
 #[tokio::test(flavor = "multi_thread")]
 async fn list_pages_show_the_members_unread_and_new_counts() {
     let db = TestDb::new().await;
@@ -1277,31 +1279,45 @@ async fn list_pages_show_the_members_unread_and_new_counts() {
     let reply = client.login("user1", "password").await;
     assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
 
-    let page = client.get("/latest").await;
-    assert!(
-        page.body
-            .contains(r#"href="/new">New<span id="new-count"></span></a>"#)
+    let new_list = client.get("/new.json").await.json();
+    assert_eq!(
+        new_list["topic_list"]["topics"].as_array().unwrap().len(),
+        2
     );
-    assert!(!page.body.contains("unread-count"));
+    let page = client.get("/latest").await.body;
+    assert!(page.contains(
+        r#"<li class="new nav-item_new" title="topics created or replied to in the last few days">"#
+    ));
+    assert!(page.contains(r#"href="/new">New (2)</a>"#));
+    assert!(!page.contains("nav-item_unread"));
+    assert!(
+        page.contains("&#38;sidebar=discovery&#38;nav=latest\""),
+        "{page}"
+    );
+    let dot = r#"<span class="sidebar-section-link-suffix icon unread">"#;
+    let link = |page: &str, marker: &str| -> String {
+        let start = page.find(marker).unwrap_or_else(|| panic!("{marker}"));
+        page[start..start + page[start..].find("</li>").unwrap()].to_string()
+    };
+    // Topic 34 (Sub General's definition) is new, topic 35 in General,
+    // tagged guide, unread.
+    assert!(link(&page, r#"data-list-item-name="everything""#).contains(dot));
+    assert!(link(&page, r#"data-category-id="4""#).contains(dot));
+    assert!(!link(&page, r#"data-category-id="2""#).contains(dot));
 
-    let mut expected = Vec::new();
-    for (list, id) in [("unread", "unread-count"), ("new", "new-count")] {
-        let doc = client.get(&format!("/{list}.json")).await.json();
-        let n = doc["topic_list"]["topics"].as_array().unwrap().len();
-        let count = if n == 0 {
-            String::new()
-        } else {
-            format!(" ({n})")
-        };
-        expected.push(format!(
-            r#"<span id="{id}" hx-swap-oob="true">{count}</span>"#
-        ));
-    }
-
-    let mut body = client.open("/live").await;
+    let mut body = client.open("/live?nav=latest&sidebar=discovery").await;
     let mut buffer = String::new();
     let html = common::next_sse_event(&mut body, &mut buffer, "list").await;
-    assert_eq!(html, expected.join(""));
+    assert!(html.starts_with(
+        r#"<a hx-swap-oob="innerHTML:#navigation-bar > li.nav-item_new > a">New (2)</a>"#
+    ));
+    let everything = link(
+        &html,
+        r#"hx-swap-oob="outerHTML:#d-sidebar li[data-list-item-name='everything']""#,
+    );
+    assert!(everything.contains(r#"class="active sidebar-section-link sidebar-row""#));
+    assert!(everything.contains(dot));
+    assert!(link(&html, "li[data-category-id='4']").contains(dot));
 }
 
 /// A member's header: every page connects, the unread notification count
@@ -1750,6 +1766,17 @@ async fn members_get_the_composer_and_raw_posts() {
         .body;
     assert!(page.contains(r#"class="btn no-text btn-icon post-action-menu__edit edit btn-flat" data-post-id="36" data-post-number="2""#));
     assert!(page.contains(r#"<section class="topic-area" data-topic-id="35" id="topic">"#));
+    // A member's reading is timed (static/js/screen-track.js).
+    assert!(page.contains(r#"<script src="/assets/screen-track.js" defer></script>"#));
+    let anon_topic = anon
+        .get("/t/parity-fixture-replies-and-posters/35")
+        .await
+        .body;
+    assert!(!anon_topic.contains("screen-track.js"));
+    assert_eq!(
+        client.get("/assets/screen-track.js").await.status,
+        StatusCode::OK
+    );
     assert!(
         !page.contains(r#"<form class="reply""#),
         "the composer replaces the form"

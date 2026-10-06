@@ -140,7 +140,7 @@
     </section>
     {#- Pages that follow more (a topic, a list) override this; a member
         always hears their notifications and counts. -#}
-    {% block live %}{% call m::live_sink_for_member(viewer.is_some(), base_path, bus_position) %}{% endblock %}
+    {% block live %}{% call m::live_sink_for_member(viewer.is_some(), base_path, bus_position, chrome.live_params) %}{% endblock %}
     <script>
       // A refused htmx request (a like over the daily limit, say): the
       // server's errors, as Rails renders them, or a plain notice.

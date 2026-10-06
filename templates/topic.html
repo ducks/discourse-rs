@@ -29,8 +29,9 @@
 {% if live %}<br>{{ more_topics|safe }}{% endif %}
 </div>
 <script src="{{ base_path }}/assets/topic.js"></script>
+{% if viewer.is_some() %}<script src="{{ base_path }}/assets/screen-track.js" defer></script>{% endif %}
 {% endblock %}
 {#- The topic's changes arrive on the page's stream on every page (a like
     re-renders its post wherever it is shown); new posts only on the last,
     where they land. -#}
-{% block live %}{% call m::live_sink(base_path, bus_position, topic_id, live, "", "") %}{% endblock %}
+{% block live %}{% call m::live_sink(base_path, bus_position, topic_id, live, "", "", chrome.live_params) %}{% endblock %}
