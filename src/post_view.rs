@@ -147,7 +147,7 @@ fn d_icon(name: &str, extra: Option<&str>) -> String {
     let replaced = match name {
         "d-liked" => "heart",
         "d-unliked" => "far-heart",
-        "d-post-share" => "arrow-up-from-bracket",
+        "d-post-share" | "d-topic-share" => "arrow-up-from-bracket",
         "topic.closed" => "lock",
         "topic.opened" => "unlock",
         other => other,
@@ -819,13 +819,52 @@ fn menu(cx: &PostContext, p: &Value) -> String {
         "link",
         &format!(" data-share-url=\"{}\"", escape(&share_url(cx, number(p)))),
     ));
-    if cx.viewer.is_some() {
-        actions.push_str(&bookmark_button(cx, p));
+    // Edit and bookmark, in post_menu order. Each is in
+    // post_menu_hidden_items: an edit unless the post is the viewer's, a
+    // bookmark unless it is set. Two or more of those collapse behind show
+    // more; one stays.
+    let can_edit = cx.viewer.is_some() && p["can_edit"] == true;
+    let edit = can_edit.then(|| {
+        button(
+            "btn no-text btn-icon post-action-menu__edit edit btn-flat",
+            &t(cx.list, "post.controls.edit"),
+            &t(cx.list, "post.controls.edit"),
+            "pencil",
+            &format!(
+                " data-post-id=\"{}\" data-post-number=\"{}\"",
+                p["id"],
+                number(p)
+            ),
+        )
+    });
+    let bookmark = cx.viewer.is_some().then(|| bookmark_button(cx, p));
+    let collapsible = [
+        edit.is_some() && p["yours"] != true,
+        bookmark.is_some() && p["bookmark_id"].is_null(),
+    ];
+    let collapsed = collapsible.iter().filter(|c| **c).count() > 1;
+    for (html, collapses) in [edit, bookmark].into_iter().zip(collapsible) {
+        if let Some(html) = html {
+            if collapsed && collapses {
+                actions.push_str(&html.replacen("<button ", "<button hidden ", 1));
+            } else {
+                actions.push_str(&html);
+            }
+        }
+    }
+    if collapsed {
+        actions.push_str(&button(
+            "btn no-text btn-icon post-action-menu__show-more show-more-actions btn-flat",
+            &t(cx.list, "show_more"),
+            &t(cx.list, "show_more"),
+            "ellipsis",
+            "",
+        ));
     }
     if cx.topic.can_create_post && cx.viewer.is_some() {
         let username = s(&p["username"]);
         actions.push_str(&format!(
-            "<button aria-label=\"{}\" class=\"btn btn-icon-text post-action-menu__reply reply create fade-out btn-flat\" data-post-number=\"{}\" title=\"{}\" type=\"button\">{}<span class=\"d-button-label\">{}</span></button>",
+            "<button aria-label=\"{}\" class=\"btn btn-icon-text post-action-menu__reply reply create fade-out btn-flat\" data-post-number=\"{}\" data-username=\"{}\" title=\"{}\" type=\"button\">{}<span class=\"d-button-label\">{}</span></button>",
             escape(&t_with(
                 cx.list,
                 "post.sr_reply_to",
@@ -835,13 +874,15 @@ fn menu(cx: &PostContext, p: &Value) -> String {
                 ]
             )),
             number(p),
+            escape(username),
             escape(&t(cx.list, "post.controls.reply")),
             icon("reply", None),
             escape(&t(cx.list, "topic.reply.title"))
         ));
     }
     format!(
-        "<nav class=\"post-controls expanded\" role=\"none\"><div class=\"actions\">{actions}</div></nav><div class=\"small-user-list  who-read\"><span aria-atomic=\"true\" aria-live=\"polite\" class=\"small-user-list-content\" role=\"list\"></span></div>"
+        "<nav class=\"post-controls {}\" role=\"none\"><div class=\"actions\">{actions}</div></nav><div class=\"small-user-list  who-read\"><span aria-atomic=\"true\" aria-live=\"polite\" class=\"small-user-list-content\" role=\"list\"></span></div>",
+        if collapsed { "collapsed" } else { "expanded" }
     )
 }
 
@@ -1829,6 +1870,8 @@ mod tests {
             "post.controls.undo_like",
             "post.controls.has_liked",
             "post.controls.reply",
+            "post.controls.edit",
+            "show_more",
             "post.sr_reply_to",
             "topic.reply.title",
             "bookmarks.created_generic",

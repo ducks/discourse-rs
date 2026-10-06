@@ -1113,9 +1113,9 @@ async fn notification_state_goes_live_to_its_user_only() {
     assert_eq!(reply.status, StatusCode::BAD_REQUEST);
 }
 
-/// A member's topic page carries the reply form with their CSRF token, and
-/// posting it as htmx does (form fields, the token and XHR headers) makes
-/// the reply, which the live stream then delivers.
+/// A member's topic page carries the composer and their CSRF token, and
+/// posting as composer.js does (form fields, the token and XHR headers)
+/// makes the reply, which the live stream then delivers.
 #[tokio::test(flavor = "multi_thread")]
 async fn members_reply_from_the_topic_page() {
     let db = TestDb::new().await;
@@ -1126,11 +1126,11 @@ async fn members_reply_from_the_topic_page() {
 
     let page = client.get("/t/parity-fixture-replies-and-posters/35").await;
     assert_eq!(page.status, StatusCode::OK);
-    assert!(page.body.contains(r#"hx-post="/posts""#), "{}", page.body);
-    assert!(page.body.contains(r#"name="topic_id" value="35""#));
+    assert!(page.body.contains(r#"id="reply-control""#), "{}", page.body);
+    assert!(page.body.contains(r#"data-topic-id="35" id="topic""#));
     // hx-headers is single-quoted JSON; only the token itself is escaped.
     let marker = r#""X-CSRF-Token": ""#;
-    let at = page.body.find(marker).expect("the form carries the token");
+    let at = page.body.find(marker).expect("the body carries the token");
     let rest = &page.body[at + marker.len()..];
     let token = html_escape::decode_html_entities(&rest[..rest.find('"').unwrap()]).into_owned();
 
@@ -1716,4 +1716,52 @@ fn post_swap(post_number: i32) -> String {
     } else {
         format!(r#"hx-swap-oob="outerHTML:#posts > [data-post-number='{post_number}']""#)
     }
+}
+
+/// A member's pages carry the composer (and the lists a New Topic button);
+/// /raw serves a post's markdown to edit, only to who can see it.
+#[tokio::test]
+async fn members_get_the_composer_and_raw_posts() {
+    let db = TestDb::new().await;
+    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+
+    let mut anon = Client::new(app_state.clone());
+    let page = anon.get("/latest").await.body;
+    assert!(!page.contains(r#"id="reply-control""#));
+    assert!(!page.contains(r#"id="create-topic""#));
+
+    let mut client = Client::new(app_state.clone());
+    client.login("user1", "password").await;
+    let page = client.get("/latest").await.body;
+    assert!(page.contains(r#"<div id="reply-control" class="closed hide-preview""#));
+    assert!(page.contains(r#"<script src="/assets/composer.js" defer></script>"#));
+    assert!(page.contains(r#"id="create-topic" type="button">"#));
+    // The chooser: the categories user1 may create topics in, the
+    // default_composer_category selected.
+    assert!(
+        page.contains(r#"class="select-kit single-select combobox combo-box category-chooser"#)
+    );
+    assert!(page.contains(r#"class="category-row select-kit-row" data-name="Site Feedback""#));
+
+    // Their own post can be edited from its menu.
+    let page = client
+        .get("/t/parity-fixture-replies-and-posters/35")
+        .await
+        .body;
+    assert!(page.contains(r#"class="btn no-text btn-icon post-action-menu__edit edit btn-flat" data-post-id="36" data-post-number="2""#));
+    assert!(page.contains(r#"<section class="topic-area" data-topic-id="35" id="topic">"#));
+    assert!(
+        !page.contains(r#"<form class="reply""#),
+        "the composer replaces the form"
+    );
+
+    let raw = client.get("/raw/35/2").await;
+    assert_eq!(raw.status, StatusCode::OK);
+    assert!(
+        raw.headers
+            .iter()
+            .any(|(k, v)| k == "content-type" && v.starts_with("text/plain"))
+    );
+    assert!(raw.body.starts_with("Reply one from user1"), "{}", raw.body);
+    assert_eq!(client.get("/raw/35/99").await.status, StatusCode::NOT_FOUND);
 }

@@ -139,6 +139,12 @@ svg > use {
   color: var(--d-button-default-icon-color--hover);
 }
 
+/* .btn-default (buttons.scss:259) */
+.btn-default {
+  border: var(--d-button-default-border);
+  border-radius: var(--d-button-border-radius);
+}
+
 /* .btn-primary */
 .btn-primary {
   border-radius: var(--d-button-border-radius);

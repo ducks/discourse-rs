@@ -133,6 +133,10 @@
           </div>
         </div>
       </div>
+      {%- if !chrome.composer.is_empty() %}
+      {{ chrome.composer|safe }}
+      <script src="{{ base_path }}/assets/composer.js" defer></script>
+      {%- endif %}
     </section>
     {#- Pages that follow more (a topic, a list) override this; a member
         always hears their notifications and counts. -#}
