@@ -38,7 +38,9 @@ make test          # cargo nextest run: test binaries side by side
 `seed/fresh_install.sql` is a data snapshot of a freshly provisioned Discourse (a
 dv agent at the vendored commit), taken with `make snapshot-dv AGENT=<name>`.
 It is the database the parity golden files were recorded from, so tests and
-recordings see the same data.
+recordings see the same data. Browsing the reference changes its database
+(Ember saves drafts and read timings as you go), so put it back first with
+`make reset-reference AGENT=<name>` before recording.
 
 Configuration mirrors Discourse: `RAILS_ENV` (default development, as in
 Rails) changes URL generation the same way, and every `DISCOURSE_*` env var is
