@@ -18,6 +18,7 @@ mod element;
 mod emoji;
 mod footnotes;
 mod html_img;
+mod link_pipes;
 mod linkify;
 mod md_utils;
 mod newline;
@@ -233,6 +234,7 @@ fn engine(settings: &RenderSettings, lookups: Lookups) -> MarkdownIt {
     checklist::add(&mut md);
     footnotes::add(&mut md);
     anchor::add(&mut md);
+    link_pipes::add(&mut md);
     blocks::add(&mut md);
     tight::add(&mut md);
     linkify::add(&mut md);
@@ -257,7 +259,8 @@ pub fn render(
     }
     let md = engine(settings, lookups);
     let ctx = md.ext.get::<Context>().expect("context");
-    let mut root: Node = md.parse(raw);
+    let raw = link_pipes::protect(&md, raw);
+    let mut root: Node = md.parse(&raw);
     untrimmed::restore(&mut root);
     element::seal_inline_code(&mut root);
     footnotes::tail(&mut root);

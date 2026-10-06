@@ -184,6 +184,9 @@ samples = [
   # Symbols are punctuation to md.utils.isPunctChar since markdown-it 14:
   # a mention or an emoji after or before one is still one.
   ["&lt;something>@forum.example.com and $@admins and +@staff=\n\na>:smile: b$:smile:$ and 2+:smile:", replies.id, u1.id],
+  # A pipe inside a link or an image does not end a table cell
+  # (features/table.js protects it while rows are split).
+  ["Image | Description\n---|---\n![A dog |411x500, 30%](https://example.com/dog.png) | A dog.\n[x|y](https://example.com/a|b) | [r|s][ref]\n[[nested|x]](https://e.com) | `[c|d](e)`\n\n[ref]: https://example.com/r", replies.id, u1.id],
 ]
 if upload
   samples << ["An upload that exists: ![image|64x64](#{upload.short_url}) and [a link|attachment](#{upload.short_url}).", replies.id, u1.id]

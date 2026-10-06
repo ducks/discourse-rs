@@ -62,6 +62,7 @@ impl CoreRule for KeepInlineSpans {
 pub fn add(md: &mut MarkdownIt) {
     md.add_rule::<KeepInlineSpans>()
         .after::<BlockParserRule>()
+        .after::<super::link_pipes::RestoreLinkPipes>()
         .before::<InlineParserRule>();
 }
 
