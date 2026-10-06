@@ -172,6 +172,30 @@ fn min_length_bypass(term: &str) -> bool {
     .any(|k| lower.contains(k))
 }
 
+/// SearchController#ensure_can_search: `Guardian#can_search?` is a user
+/// or allow_anonymous_search. Anonymous HTML (`uri` given) is sent to log
+/// in, anything else gets ensure_logged_in's 403.
+async fn ensure_can_search(
+    state: &AppState,
+    guardian: &Guardian,
+    headers: &HeaderMap,
+    uri: Option<&axum::http::Uri>,
+) -> Result<Option<Response>, AppError> {
+    if guardian.user_id().is_some() {
+        return Ok(None);
+    }
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    if settings.get("allow_anonymous_search")?.truthy() {
+        return Ok(None);
+    }
+    Ok(Some(match uri {
+        Some(uri) => super::login_required::redirect_to_login(state, &settings, headers, uri)?,
+        None => super::login_required::not_logged_in(state, "/search"),
+    }))
+}
+
 /// GET /search(.json)?q=&page=
 pub async fn show(
     State(state): State<AppState>,
@@ -203,6 +227,9 @@ async fn show_response(
     json: bool,
     uri: Option<axum::http::Uri>,
 ) -> Result<Response, AppError> {
+    if let Some(refused) = ensure_can_search(&state, &guardian, &headers, uri.as_ref()).await? {
+        return Ok(refused);
+    }
     // Before the page's data is read (crate::bus::page_position).
     let bus_position = if json {
         String::new()
@@ -290,6 +317,9 @@ pub async fn query(
     headers: HeaderMap,
     Peer(peer): Peer,
 ) -> Result<Response, AppError> {
+    if let Some(refused) = ensure_can_search(&state, &guardian, &headers, None).await? {
+        return Ok(refused);
+    }
     let Some(term) = params.term.clone().filter(|t| !t.trim().is_empty()) else {
         return Ok((
             StatusCode::BAD_REQUEST,
