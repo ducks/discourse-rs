@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+# Compare a page as the reference (Rails, Ember) renders it with ours:
+# a screenshot of each, and for each selector the first match's box and
+# computed styles, printed where they differ. The reference's development
+# extras (profiler, dev toolbar) are hidden first.
+#
+# Usage: scripts/ui-compare <reference-url> <our-url> <out-dir> [selector...]
+#   e.g. scripts/ui-compare http://127.0.0.1:3042/latest \
+#          http://127.0.0.1:8100/latest /tmp/ui '.d-header' '.topic-list'
+set -euo pipefail
+
+if [ $# -lt 3 ]; then
+  echo "usage: $0 <reference-url> <our-url> <out-dir> [selector...]" >&2
+  exit 64
+fi
+mkdir -p "$3"
+
+exec nix-shell -p "python3.withPackages (ps: [ ps.playwright ])" playwright-driver.browsers --run "
+  export PLAYWRIGHT_BROWSERS_PATH=\$(nix-build '<nixpkgs>' -A playwright-driver.browsers --no-out-link)
+  python3 - $(printf '%q ' "$@")
+" <<'PYTHON'
+import json
+import sys
+
+from playwright.sync_api import sync_playwright
+
+reference, ours, out, *selectors = sys.argv[1:]
+PROPERTIES = [
+    "display", "position", "box-sizing", "font-family", "font-size",
+    "font-weight", "line-height", "color", "background-color",
+    "padding-top", "padding-right", "padding-bottom", "padding-left",
+    "margin-top", "margin-right", "margin-bottom", "margin-left",
+    "border-top-width", "border-bottom-width", "border-bottom-color",
+    "border-radius", "gap", "text-align", "vertical-align",
+]
+HIDE = ".profiler-results, .dev-tools-toolbar, #dev-tools-toolbar { display: none !important; }"
+MEASURE = """(args) => {
+  const [selectors, properties] = args;
+  const out = {};
+  for (const selector of selectors) {
+    const el = document.querySelector(selector);
+    if (!el) { out[selector] = null; continue; }
+    const box = el.getBoundingClientRect();
+    const style = getComputedStyle(el);
+    const values = {
+      x: Math.round(box.x), y: Math.round(box.y),
+      width: Math.round(box.width), height: Math.round(box.height),
+    };
+    for (const p of properties) values[p] = style.getPropertyValue(p);
+    out[selector] = values;
+  }
+  return out;
+}"""
+
+
+def measure(browser, url, name):
+    page = browser.new_page(viewport={"width": 1280, "height": 900})
+    page.goto(url, wait_until="load")
+    page.wait_for_selector("body", state="attached")
+    page.wait_for_timeout(1500)
+    page.add_style_tag(content=HIDE)
+    page.screenshot(path=f"{out}/{name}.png")
+    found = page.evaluate(MEASURE, [selectors, PROPERTIES])
+    page.close()
+    return found
+
+
+with sync_playwright() as p:
+    browser = p.chromium.launch()
+    theirs = measure(browser, reference, "reference")
+    mine = measure(browser, ours, "ours")
+    browser.close()
+
+report = {}
+for selector in selectors:
+    a, b = theirs.get(selector), mine.get(selector)
+    if a is None or b is None:
+        report[selector] = {"reference": a is not None, "ours": b is not None}
+        continue
+    differ = {k: [a[k], b[k]] for k in a if a[k] != b.get(k)}
+    if differ:
+        report[selector] = differ
+print(json.dumps(report, indent=1))
+print(f"screenshots: {out}/reference.png {out}/ours.png", file=sys.stderr)
+PYTHON

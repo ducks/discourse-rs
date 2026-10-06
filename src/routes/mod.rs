@@ -25,6 +25,7 @@ mod session;
 mod site;
 mod sitemap;
 mod srv;
+mod stylesheets;
 mod tags;
 mod topic_status;
 mod topics;
@@ -302,6 +303,11 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/site/basic-info", get(site::basic_info))
         .route("/site/basic-info.json", get(site::basic_info))
         .route("/assets/site.css", get(site_css))
+        .route(
+            "/assets/color_definitions_light.css",
+            get(stylesheets::light),
+        )
+        .route("/assets/color_definitions_dark.css", get(stylesheets::dark))
         .route("/assets/htmx.min.js", get(htmx))
         .route("/assets/htmx-ext-sse.js", get(htmx_sse))
         .nest_service("/uploads", ServeDir::new(public.join("uploads")));
