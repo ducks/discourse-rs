@@ -359,8 +359,10 @@ pub async fn raw(
     if uri.query().is_some_and(|q| q.contains("revision=")) {
         return Err(Unsupported("raw of a revision").into());
     }
-    let (Ok(topic_id), Ok(post_number)) = (topic_id.parse::<i32>(), post_number.parse::<i32>())
-    else {
+    let (Ok(topic_id), Ok(post_number)) = (
+        topic_id.parse::<i32>(),
+        strip_format(&post_number).parse::<i32>(),
+    ) else {
         return Ok(super::topics::not_found_response(&state, false));
     };
     let mut conn = state.pool.acquire().await?;
