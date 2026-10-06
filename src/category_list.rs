@@ -3,9 +3,9 @@
 //! CategoryDetailedSerializer.
 //!
 //! Not ported: pagination (sites with more than 1000 categories or lazy
-//! loaded categories), a parent category (`/c/.../subcategories`), tag
-//! filtering, and `subcategory_list` nesting (only emitted for the
-//! `subcategories_with_featured_topics` page styles).
+//! loaded categories), the `/c/.../subcategories` route, tag filtering,
+//! and the `subcategories_with_featured_topics` page styles. The
+//! `include_subcategories` and `parent_category_id` params are.
 
 use chrono::NaiveDateTime;
 use serde_json::{Value, json};
@@ -31,6 +31,10 @@ pub struct CategoryList<'a> {
     pub urls: &'a Urls<'a>,
     /// `params[:include_topics]` present (any value counts as true).
     pub include_topics_param: bool,
+    /// `params[:include_subcategories] == "true"`
+    pub include_subcategories_param: bool,
+    /// `params[:parent_category_id]`, when present.
+    pub parent_category_param: Option<String>,
     /// `params[:page]`, 1 when absent.
     pub page: i64,
     /// The guardian's secure category ids, set by `json`.
@@ -39,7 +43,10 @@ pub struct CategoryList<'a> {
 
 struct Entry {
     row: CategoryRow,
-    subcategory_ids: Vec<i32>,
+    /// Unset (null) when listing one parent's children.
+    subcategory_ids: Option<Vec<i32>>,
+    /// With include_subcategories: the children, nested the same way.
+    subcategory_list: Vec<Entry>,
     notification_level: i64,
     /// `CategoryGroup.permission_types[:full]` where the viewer may create topics.
     permission: Option<i64>,
@@ -89,7 +96,7 @@ impl CategoryList<'_> {
             .contains(&mobile.as_str()))
     }
 
-    fn include_subcategories(&self) -> Result<bool, CategoriesError> {
+    fn subcategories_page_style(&self) -> Result<bool, CategoriesError> {
         Ok(
             self.setting_str("desktop_category_page_style")?
                 == "subcategories_with_featured_topics"
@@ -98,50 +105,95 @@ impl CategoryList<'_> {
         )
     }
 
+    /// fetch_category_list's parent_category: by top-level slug
+    /// (`Category.find_by_slug`), else by id; its id and
+    /// subcategory_list_style.
+    async fn parent_category(&mut self) -> Result<Option<(i32, String)>, CategoriesError> {
+        let Some(param) = self.parent_category_param.clone() else {
+            return Ok(None);
+        };
+        let slug = param.to_lowercase();
+        if !slug
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_')
+        {
+            return Err(Unsupported("parent_category_id slugs needing CGI escapes").into());
+        }
+        // find_by_slug_path's "<id>-category" slugs match by id too.
+        let slug_id: Option<i32> = slug
+            .split_once("-category")
+            .and_then(|(id, _)| id.parse().ok());
+        let by_slug: Option<(i32, String)> = sqlx::query_as(
+            "SELECT id, subcategory_list_style FROM categories \
+             WHERE parent_category_id IS NULL AND (slug = $1 OR id = $2) ORDER BY id LIMIT 1",
+        )
+        .bind(&slug)
+        .bind(slug_id)
+        .fetch_optional(&mut *self.conn)
+        .await?;
+        if by_slug.is_some() {
+            return Ok(by_slug);
+        }
+        Ok(
+            sqlx::query_as("SELECT id, subcategory_list_style FROM categories WHERE id = $1")
+                .bind(crate::ruby::to_i(&param) as i32)
+                .fetch_optional(&mut *self.conn)
+                .await?,
+        )
+    }
+
     /// The whole `{"category_list": ...}` document.
     pub async fn json(&mut self) -> Result<Value, CategoriesError> {
-        if self.include_subcategories()? {
-            return Err(Unsupported(
-                "subcategory_list (subcategories_with_featured_topics styles)",
-            )
-            .into());
+        if self.subcategories_page_style()? {
+            return Err(Unsupported("the subcategories_with_featured_topics page styles").into());
         }
+        let parent = self.parent_category().await?;
+        let parent_id = parent.as_ref().map(|(id, _)| *id);
         // Category.secured(guardian) for every query below.
         let secure_ids = self
             .guardian
             .secure_category_ids(&mut *self.conn, self.settings)
             .await?;
         self.secure_ids = secure_ids;
+        // paginate_results?
         let total: i64 = sqlx::query_scalar(&format!(
-            "SELECT count(*) FROM categories WHERE {}",
+            "SELECT count(*) FROM categories WHERE {} AND ($1::int IS NULL OR parent_category_id = $1)",
             self.secured()
         ))
+        .bind(parent_id)
         .fetch_one(&mut *self.conn)
         .await?;
         if total > 1000 || self.guardian.can_lazy_load_categories(self.settings)? {
             return Err(Unsupported("paginated category lists").into());
         }
+        let include_topics = self.include_topics()?
+            || parent
+                .as_ref()
+                .is_some_and(|(_, style)| style.ends_with("with_featured_topics"));
 
+        // Every category listed, descendants included, until nested below.
         let mut entries = if self.page > 1 {
             // Without pagination, `page > 1` is `query.none`.
             Vec::new()
         } else {
-            self.find_categories().await?
+            self.find_categories(parent_id).await?
         };
-        if self.include_topics()? {
+        if include_topics {
             self.find_relevant_topics(&mut entries).await?;
             self.sort_unpinned(&mut entries).await?;
         }
+        // trim_results
+        for e in &mut entries {
+            let n = e.row.num_featured_topics.max(0) as usize;
+            e.topics.truncate(n);
+        }
+        let mut entries = nest(entries, parent_id.is_some());
         // prune_empty: drop Uncategorized unless uncategorized topics are allowed.
         if !self.settings.get("allow_uncategorized_topics")?.truthy() {
             let uncategorized = self.settings.get("uncategorized_category_id")?.to_i();
             entries.retain(|e| i64::from(e.row.id) != uncategorized);
         }
-        // trim_results, then demote_muted (stable).
-        for e in &mut entries {
-            let n = e.row.num_featured_topics.max(0) as usize;
-            e.topics.truncate(n);
-        }
+        // demote_muted (stable).
         let (muted, rest): (Vec<Entry>, Vec<Entry>) = entries
             .into_iter()
             .partition(|e| e.notification_level == MUTED);
@@ -162,10 +214,15 @@ impl CategoryList<'_> {
         }))
     }
 
-    /// `find_categories`: readable categories in featured-activity order,
-    /// children folded into their parents' subcategory_ids, then
-    /// `Category.preload_user_fields!`.
-    async fn find_categories(&mut self) -> Result<Vec<Entry>, CategoriesError> {
+    /// `find_categories`: readable categories in featured-activity order
+    /// (a parent's children only, when given), then
+    /// `Category.preload_user_fields!`. Without a parent, children become
+    /// their parents' subcategory_ids and stay listed (for `nest`) only
+    /// with include_subcategories.
+    async fn find_categories(
+        &mut self,
+        parent: Option<i32>,
+    ) -> Result<Vec<Entry>, CategoriesError> {
         let all = Categories::load_all(&mut *self.conn).await?;
         let visible_ids: Vec<i32> = all
             .iter()
@@ -197,30 +254,32 @@ impl CategoryList<'_> {
         let rows: Vec<CategoryRow> = ordered_ids
             .iter()
             .filter_map(|id| all.iter().find(|c| c.id == *id).cloned())
+            .filter(|c| parent.is_none_or(|p| c.parent_category_id == Some(p)))
             .collect();
-
-        // Children become their parents' subcategory_ids and drop out of
-        // the top level, in load order.
+        let subcategory_ids = |id: i32| -> Vec<i32> {
+            rows.iter()
+                .filter(|c| c.parent_category_id == Some(id))
+                .map(|c| c.id)
+                .collect()
+        };
         let mut top: Vec<Entry> = Vec::new();
-        let mut children: Vec<(i32, i32)> = Vec::new();
-        for row in rows {
-            match row.parent_category_id {
-                Some(parent) => children.push((parent, row.id)),
-                None => top.push(Entry {
-                    row,
-                    subcategory_ids: Vec::new(),
-                    notification_level: 1,
-                    permission: None,
-                    has_children: false,
-                    subcategory_count: None,
-                    topics: Vec::new(),
-                }),
+        for row in &rows {
+            if parent.is_none()
+                && row.parent_category_id.is_some()
+                && !self.include_subcategories_param
+            {
+                continue;
             }
-        }
-        for (parent, child) in &children {
-            if let Some(e) = top.iter_mut().find(|e| e.row.id == *parent) {
-                e.subcategory_ids.push(*child);
-            }
+            top.push(Entry {
+                row: row.clone(),
+                subcategory_ids: parent.is_none().then(|| subcategory_ids(row.id)),
+                subcategory_list: Vec::new(),
+                notification_level: 1,
+                permission: None,
+                has_children: false,
+                subcategory_count: None,
+                topics: Vec::new(),
+            });
         }
 
         // preload_user_fields!
@@ -502,8 +561,41 @@ impl CategoryList<'_> {
             }
             out.insert("topics".into(), Value::Array(topics));
         }
+        if !e.subcategory_list.is_empty() {
+            let mut list = Vec::with_capacity(e.subcategory_list.len());
+            for child in &e.subcategory_list {
+                list.push(Box::pin(self.serialize(child)).await?);
+            }
+            out.insert("subcategory_list".into(), Value::Array(list));
+        }
         Ok(Value::Object(out))
     }
+}
+
+/// The listed categories as CategoryList leaves them: the top level, each
+/// with its subcategory_list. Listing one parent's children, they are all
+/// top level; otherwise a child whose parent is not listed drops out.
+fn nest(entries: Vec<Entry>, of_parent: bool) -> Vec<Entry> {
+    if of_parent {
+        return entries;
+    }
+    fn attach(parent: &mut Entry, pool: &mut Vec<Entry>) {
+        let (mine, rest): (Vec<Entry>, Vec<Entry>) = std::mem::take(pool)
+            .into_iter()
+            .partition(|c| c.row.parent_category_id == Some(parent.row.id));
+        *pool = rest;
+        parent.subcategory_list = mine;
+        for child in &mut parent.subcategory_list {
+            attach(child, pool);
+        }
+    }
+    let (mut top, mut children): (Vec<Entry>, Vec<Entry>) = entries
+        .into_iter()
+        .partition(|e| e.row.parent_category_id.is_none());
+    for e in &mut top {
+        attach(e, &mut children);
+    }
+    top
 }
 
 impl From<crate::topic_list::TopicListError> for CategoriesError {

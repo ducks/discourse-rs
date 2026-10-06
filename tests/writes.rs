@@ -53,6 +53,34 @@ const PLUGIN_KEYS: [&str; 12] = [
     "can_vote",
 ];
 
+/// Category custom fields the reference's plugins preload
+/// (Site.preloaded_category_custom_fields), which BasicCategorySerializer
+/// then shows as `custom_fields`.
+const PLUGIN_CATEGORY_FIELDS: [&str; 12] = [
+    "additional_assign_allowed_on_groups",
+    "create_as_post_voting_default",
+    "disable_topic_resorting",
+    "empty_box_on_unsolved",
+    "enable_accepted_answers",
+    "enable_shared_issues",
+    "enable_topic_voting",
+    "enable_unassigned_filter",
+    "has_chat_enabled",
+    "notify_on_staff_accept_solved",
+    "only_post_voting_in_this_category",
+    "sort_topics_by_event_start_date",
+];
+
+/// A category's `custom_fields` holding only plugin fields.
+fn only_plugin_category_fields(value: &Value) -> bool {
+    value.as_object().is_some_and(|fields| {
+        !fields.is_empty()
+            && fields
+                .keys()
+                .all(|k| PLUGIN_CATEGORY_FIELDS.contains(&k.as_str()))
+    })
+}
+
 /// Keys plugins add to the user serializer and its user_option on the
 /// reference (chat, discourse-solved, discourse-calendar).
 const PLUGIN_USER_KEYS: [&str; 21] = [
@@ -436,6 +464,7 @@ fn normalize(value: &Value, started: NaiveDateTime) -> Value {
         Value::Object(map) => Value::Object(
             map.iter()
                 .filter(|(k, _)| !PLUGIN_KEYS.contains(&k.as_str()))
+                .filter(|(k, v)| !(k.as_str() == "custom_fields" && only_plugin_category_fields(v)))
                 .map(|(k, v)| match (k.as_str(), v) {
                     // A session token: random on every run.
                     ("auth_token", Value::String(_)) => {

@@ -619,6 +619,8 @@ async fn categories_response(
         guardian: &guardian,
         urls: &urls,
         include_topics_param: params.include_topics.is_some(),
+        include_subcategories_param: params.include_subcategories.as_deref() == Some("true"),
+        parent_category_param: params.parent_category_id.filter(|p| !p.trim().is_empty()),
         page: params
             .page
             .as_deref()
@@ -658,6 +660,8 @@ async fn categories_response(
 #[derive(Deserialize, Default)]
 pub struct CategoriesParams {
     include_topics: Option<String>,
+    include_subcategories: Option<String>,
+    parent_category_id: Option<String>,
     page: Option<String>,
 }
 
