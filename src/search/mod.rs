@@ -890,7 +890,11 @@ impl Search<'_> {
                     .session_id
                     .as_deref()
                     .map(|s| s.chars().take(32).collect());
-                let crawler = self.crawler(user_agent.as_deref())?;
+                // `user_agent.present? && CrawlerDetection.crawler?(user_agent)`
+                let crawler = match user_agent.as_deref().filter(|u| !u.trim().is_empty()) {
+                    Some(ua) => self.crawler(Some(ua))?,
+                    None => false,
+                };
                 sqlx::query_scalar(
                     "INSERT INTO search_logs (term, search_type, ip_address, user_agent, user_id, session_id, \
                                               crawler, likely_crawler, created_at) \
