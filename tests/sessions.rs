@@ -555,11 +555,17 @@ async fn pages_carry_the_viewer_and_the_logout_form_works() {
     let reply = anon.get("/latest").await;
     assert_eq!(reply.status, StatusCode::OK);
     assert!(
-        reply.body.contains(r#"<html lang="en" class="anon">"#),
+        reply.body.contains(
+            r#"<html lang="en" class="text-size-normal anon no-touch discourse-no-touch desktop-view not-mobile-device">"#
+        ),
         "{}",
         reply.body
     );
-    assert!(reply.body.contains(r#"class="site-login""#));
+    assert!(
+        reply
+            .body
+            .contains(r#"class="btn btn-icon-text btn-primary btn-small login-button""#)
+    );
     assert!(!reply.body.contains("csrf-token"));
     assert!(
         !reply
@@ -573,8 +579,23 @@ async fn pages_carry_the_viewer_and_the_logout_form_works() {
     client.login("user1", "password").await;
     let reply = client.get("/t/parity-fixture-replies-and-posters/35").await;
     assert_eq!(reply.status, StatusCode::OK);
-    assert!(reply.body.contains(r#"<html lang="en">"#), "{}", reply.body);
-    assert!(reply.body.contains(r#"class="site-user" href="/u/user1""#));
+    assert!(
+        reply.body.contains(
+            r#"<html lang="en" class="text-size-normal no-touch discourse-no-touch desktop-view not-mobile-device">"#
+        ),
+        "{}",
+        reply.body
+    );
+    // The avatar button, with the avatar Rails shows user1 (the reference's
+    // header).
+    assert!(reply.body.contains(r#"id="toggle-current-user""#));
+    assert!(
+        reply
+            .body
+            .contains(r#"src="/letter_avatar_proxy/v4/letter/u/5daacb/48.png" class="avatar""#),
+        "{}",
+        reply.body
+    );
     let token = reply
         .body
         .split(r#"<meta name="csrf-token" content=""#)
@@ -1246,7 +1267,9 @@ impl Client {
 }
 
 /// A member's list pages keep their unread and new counts current, the
-/// same counts the /unread and /new lists show them.
+/// same counts the /unread and /new lists show them, in the navigation
+/// pills `top_menu` lists (the seed's is latest|new|hot|categories, as the
+/// reference's: a New pill, no Unread one).
 #[tokio::test(flavor = "multi_thread")]
 async fn list_pages_show_the_members_unread_and_new_counts() {
     let db = TestDb::new().await;
@@ -1255,8 +1278,11 @@ async fn list_pages_show_the_members_unread_and_new_counts() {
     assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
 
     let page = client.get("/latest").await;
-    assert!(page.body.contains(r#"<span id="unread-count"></span>"#));
-    assert!(page.body.contains(r#"<span id="new-count"></span>"#));
+    assert!(
+        page.body
+            .contains(r#"href="/new">New<span id="new-count"></span></a>"#)
+    );
+    assert!(!page.body.contains("unread-count"));
 
     let mut expected = Vec::new();
     for (list, id) in [("unread", "unread-count"), ("new", "new-count")] {
@@ -1306,10 +1332,9 @@ async fn members_hear_their_notifications_on_every_page() {
     .unwrap();
 
     let page = client.get("/categories").await;
-    assert!(
-        page.body
-            .contains(r#"<span id="notification-count"></span>"#)
-    );
+    assert!(page.body.contains(
+        r#"<span id="notification-count" class="badge-notification unread-notifications"></span>"#
+    ));
     assert!(
         page.body.contains(r#"sse-connect="/live?position="#),
         "{}",
@@ -1326,7 +1351,9 @@ async fn members_hear_their_notifications_on_every_page() {
     let mut buffer = String::new();
     assert_eq!(
         common::next_sse_event(&mut body, &mut buffer, "header").await,
-        format!(r#"<span id="notification-count" hx-swap-oob="true">{unread}</span>"#)
+        format!(
+            r#"<span id="notification-count" class="badge-notification unread-notifications" hx-swap-oob="true">{unread}</span>"#
+        )
     );
 
     // An alert, its user content escaped.
@@ -1367,7 +1394,7 @@ async fn members_hear_their_notifications_on_every_page() {
     assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
     assert_eq!(
         common::next_sse_event(&mut body, &mut buffer, "header").await,
-        r#"<span id="notification-count" hx-swap-oob="true"></span>"#
+        r#"<span id="notification-count" class="badge-notification unread-notifications" hx-swap-oob="true"></span>"#
     );
 }
 
@@ -1599,7 +1626,8 @@ async fn the_user_menu_lists_notifications_and_clears_the_count() {
     let mut buffer = String::new();
     let count = common::next_sse_event(&mut body, &mut buffer, "header").await;
     assert_ne!(
-        count, r#"<span id="notification-count" hx-swap-oob="true"></span>"#,
+        count,
+        r#"<span id="notification-count" class="badge-notification unread-notifications" hx-swap-oob="true"></span>"#,
         "something unread before the menu opens"
     );
 
@@ -1615,7 +1643,7 @@ async fn the_user_menu_lists_notifications_and_clears_the_count() {
     assert!(menu.body.contains("Mark all read"));
     assert_eq!(
         common::next_sse_event(&mut body, &mut buffer, "header").await,
-        r#"<span id="notification-count" hx-swap-oob="true"></span>"#,
+        r#"<span id="notification-count" class="badge-notification unread-notifications" hx-swap-oob="true"></span>"#,
         "seen now"
     );
 }

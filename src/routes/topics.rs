@@ -270,6 +270,7 @@ async fn show(
     }
     let vs = super::session::viewer_state(state, headers, &settings, guardian)?;
     let mut site = crate::html::Site::from_settings(&settings, &base_path)?;
+    site.load_chrome(state, &settings).await?;
     site.viewer = vs.viewer.clone();
     site.bus_position = bus_position;
     let mut page =

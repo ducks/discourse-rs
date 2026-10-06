@@ -2,6 +2,7 @@ Vendored from npm, served at /assets/ (src/routes/mod.rs):
 
   htmx.min.js       htmx.org@2.0.11, dist/htmx.min.js
   htmx-ext-sse.js   htmx-ext-sse@2.2.4, dist/sse.js
+  normalize.css     normalize.css@8.0.1, normalize.css
 
 Each was checked against the package tarball's npm integrity (sha512) and
 compared byte for byte with the file in the tarball. To update, fetch the

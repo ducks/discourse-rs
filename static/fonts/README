@@ -1,0 +1,11 @@
+Fonts from the discourse-fonts gem 0.0.19 (vendor/assets/fonts), the ones
+the default base, heading and monospace fonts use:
+
+- InterVariable.woff2: Inter (https://github.com/rsms/inter), SIL Open Font
+  License 1.1, Inter-LICENSE.txt
+- JetBrainsMono-Regular.woff2, JetBrainsMono-Bold.woff2: JetBrains Mono
+  (https://github.com/JetBrains/JetBrainsMono), SIL Open Font License 1.1,
+  JetBrainsMono-LICENSE.txt
+
+Served at /fonts/ as Rails serves them. A site set to another of the gem's
+fonts gets its @font-face rules, whose files are not here yet.

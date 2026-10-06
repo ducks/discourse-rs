@@ -148,6 +148,6 @@ async fn top_and_hot_render_html() {
         let (status, _, html) = get(&db.pool, path).await;
         assert_eq!(status, StatusCode::OK, "{path}");
         assert!(html.contains("<!DOCTYPE html>"), "{path}");
-        assert!(html.contains(r#"href="/top">Top</a>"#));
+        assert!(html.contains(r#"<table class="topic-list">"#), "{path}");
     }
 }

@@ -1,0 +1,239 @@
+/*
+ * The site header, ported from base/header.scss and the header of the
+ * uc-modernize-foundation-theme upcoming change: the logo, the
+ * anonymous visitor's buttons and a member's avatar button.
+ */
+
+:root {
+  --d-header-icon-color: var(--header_primary-low-mid);
+  --d-header-icon-color--hover: var(--header_primary);
+  --d-header-icon-color--active: var(--header_primary-medium);
+  --d-header-icon-background--hover: var(--d-hover);
+  --d-header-icon-background--active: var(--secondary);
+}
+
+.d-header-wrap {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.d-header {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  width: 100%;
+  background-color: var(--header_background);
+  box-shadow: var(--shadow-header);
+  backface-visibility: hidden;
+  height: 3.66em;
+}
+
+/* viewport.from(sm) */
+@media (width >= 40rem) {
+  .d-header {
+    height: 4em;
+  }
+}
+
+.d-header > .wrap {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  padding: 0 var(--d-header-padding-x);
+}
+
+.d-header > .wrap .contents {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.d-header .title {
+  --d-logo-height: 2.4em;
+  min-width: var(--d-logo-height);
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+@media (width >= 40rem) {
+  .d-header .title {
+    --d-logo-height: 2.667em;
+  }
+}
+
+.d-header .title a,
+.d-header .title a:visited {
+  min-width: 0;
+  color: var(--header_primary);
+}
+
+.d-header .title:not(.title--minimized) {
+  overflow: hidden;
+}
+
+.d-header #site-logo {
+  height: var(--d-logo-height);
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.d-header .home-logo-wrapper-outlet {
+  overflow: hidden;
+}
+
+.d-header #site-text-logo {
+  margin: 0;
+  font-size: var(--font-up-1);
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (width >= 40rem) {
+  .d-header #site-text-logo {
+    font-size: var(--font-up-3);
+  }
+}
+
+.d-header .panel {
+  position: relative;
+  display: flex;
+  flex: 0 0 auto;
+  margin-left: auto;
+  align-items: center;
+}
+
+.d-header .header-buttons {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.d-header .header-buttons .auth-buttons {
+  display: flex;
+  gap: 0.5em;
+}
+
+@media (width < 40rem) {
+  .d-header .sign-up-button {
+    display: none;
+  }
+}
+
+.d-header-icons {
+  display: flex;
+  margin: 0 0 0 0.5em;
+  list-style: none;
+}
+
+.d-header-icons .icon {
+  box-sizing: content-box;
+  appearance: none;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.2857em;
+  height: 2.2857em;
+  padding: 0.2143em;
+  text-decoration: none;
+  cursor: pointer;
+  outline: none;
+}
+
+.d-header-icons .icon img.avatar {
+  width: 2.1333em;
+  height: 2.1333em;
+}
+
+.discourse-no-touch .d-header-icons .icon:hover,
+.discourse-no-touch .d-header-icons .icon:focus-visible {
+  background-color: var(--d-header-icon-background--hover);
+}
+
+.discourse-no-touch .d-header-icons .icon:hover > .d-icon,
+.discourse-no-touch .d-header-icons .icon:focus-visible > .d-icon {
+  color: var(--d-header-icon-color--hover);
+}
+
+.d-header-icons .active .icon {
+  position: relative;
+  background-color: var(--d-header-icon-background--active);
+  cursor: default;
+}
+
+.d-header-icons .d-icon {
+  width: 100%;
+  font-size: var(--font-up-4);
+  line-height: var(--line-height-large);
+  display: inline-block;
+  color: var(--d-header-icon-color);
+}
+
+.d-header-icons .header-dropdown-toggle {
+  position: relative;
+}
+
+.d-header-icons .badge-notification {
+  border: 2px solid var(--header_background);
+  position: absolute;
+  top: -4px;
+  min-width: 0.6em;
+  left: auto;
+  right: -3px;
+}
+
+.d-header-icons .unread-notifications {
+  background-color: var(--tertiary-med-or-tertiary);
+}
+
+/* badges.scss: %badge and .badge-notification */
+.badge-notification {
+  display: inline-block;
+  font-weight: normal;
+  white-space: nowrap;
+  border-radius: 10px;
+  position: relative;
+  top: -2px;
+  padding: 0.21em 0.42em;
+  min-width: 0.5em;
+  color: var(--secondary);
+  font-size: var(--font-down-2);
+  line-height: var(--line-height-small);
+  text-align: center;
+  background-color: var(--primary-low-mid-or-secondary-low);
+}
+
+.badge-notification[href],
+.badge-notification:hover {
+  color: var(--secondary);
+}
+
+/* The live count's span is there, empty, while there is nothing unread. */
+.badge-notification:empty {
+  display: none;
+}
+
+/* uc-modernize-foundation-theme/header.scss */
+:where(.uc-modernize-foundation-theme) .d-header {
+  height: 3.25em;
+}
+
+:where(.uc-modernize-foundation-theme) .d-header .title {
+  --d-logo-height: 2.3em;
+}
+
+:where(.uc-modernize-foundation-theme) .d-header-icons .icon {
+  width: 2em;
+  height: 2em;
+}
+
+:where(.uc-modernize-foundation-theme)
+  .d-header-icons
+  .header-dropdown-toggle:not(.user-menu-panel) .d-icon {
+  font-size: var(--font-up-3);
+}

@@ -13,6 +13,7 @@ use serde::Deserialize;
 use serde_json::{Value, json};
 
 use crate::guardian::Guardian;
+use crate::html::Chrome;
 use crate::html::Crawler;
 use crate::search::{BLURB_LENGTH, Search, SearchArgs, TypeFilter};
 use crate::session::current::AuthGuardian;
@@ -260,6 +261,7 @@ async fn show_response(
     let base_path = state.config.globals.relative_url_root();
     let vs = super::session::viewer_state(&state, &headers, &settings, &guardian)?;
     let mut site = crate::html::Site::from_settings(&settings, base_path)?;
+    site.load_chrome(&state, &settings).await?;
     site.viewer = vs.viewer.clone();
     site.bus_position = bus_position;
     let mut page = search_page(&state, site, &term, &doc, page, &mut conn).await?;
@@ -344,12 +346,12 @@ pub async fn query(
 #[template(path = "search.html")]
 pub struct SearchPage {
     pub site_title: String,
-    pub site_description: String,
     pub lang: String,
     pub base_path: String,
     pub crawler: Crawler,
     pub viewer: Option<crate::html::Viewer>,
     pub bus_position: String,
+    pub chrome: Chrome,
     pub term: String,
     pub results: Vec<SearchResult>,
     pub searched: bool,
@@ -412,7 +414,7 @@ async fn search_page(
         site_title: site.site_title,
         viewer: site.viewer,
         bus_position: site.bus_position,
-        site_description: site.site_description,
+        chrome: site.chrome,
         lang: site.lang,
         base_path: site.base_path,
         crawler: Crawler::default(),

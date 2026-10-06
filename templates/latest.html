@@ -15,6 +15,21 @@
 {% if let Some(t) = tag %}
 <h1 class="tag-heading"><a href="{{ t.url }}" class="discourse-tag">{{ t.name }}</a></h1>
 {% endif %}
+{% if !nav.is_empty() %}
+<div class="list-controls">
+  <div class="container">
+    <section class="navigation-container">
+      <ul class="nav nav-pills" id="navigation-bar">
+        {%- for item in nav %}
+        <li class="{% if item.active %}active {% endif %}{{ item.name }} nav-item_{{ item.name }}" title="{{ item.title }}">
+          <a{% if item.active %} aria-current="page"{% endif %} class="{% if item.active %}active{% endif %}" href="{{ item.href }}">{{ item.label }}{% if let Some(id) = item.count_id %}<span id="{{ id }}"></span>{% endif %}</a>
+        </li>
+        {%- endfor %}
+      </ul>
+    </section>
+  </div>
+</div>
+{% endif %}
 <div id="list-updates" class="list-updates"></div>
 <div class="topic-list-container">
   <table class="topic-list">

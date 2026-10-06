@@ -1,0 +1,142 @@
+/*
+ * The list controls and their navigation pills, ported from
+ * base/list-controls.scss, components/navs.scss (with the nav-hover and
+ * nav-active mixins) and the nav pills of the uc-modernize-foundation-theme
+ * upcoming change.
+ */
+
+/* list-controls.scss */
+.list-controls {
+  background: var(--d-content-background);
+}
+
+.navigation-container {
+  width: calc(100% - var(--nav-horizontal-padding) * 2);
+  font-size: var(--d-nav-font-size);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--nav-space);
+  padding: 0 var(--nav-horizontal-padding);
+  margin-bottom: var(--nav-space);
+}
+
+#navigation-bar {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0;
+  margin-right: auto;
+}
+
+.navigation-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: var(--nav-space) 0.5em;
+}
+
+.navigation-controls > * {
+  white-space: nowrap;
+}
+
+/* navs.scss: %nav and the pills */
+.nav-pills {
+  margin-left: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 0.5em;
+}
+
+.nav-pills li a {
+  display: block;
+  text-decoration: none;
+}
+
+.nav-pills > li {
+  display: flex;
+}
+
+.nav-pills > li > a,
+.nav-pills > li button {
+  position: relative;
+  border: 0;
+  border-radius: var(--d-nav-pill-border-radius);
+  padding: 0.65em 0.75em;
+  color: var(--d-nav-color);
+  line-height: var(--line-height-small);
+  box-sizing: border-box;
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+  background-color: var(--d-nav-bg-color);
+  transition: var(--d-button-transition);
+  white-space: nowrap;
+}
+
+/* viewport.between(sm, lg) */
+@media (40rem <= width < 64rem) {
+  .nav-pills > li > a,
+  .nav-pills > li button {
+    font-size: var(--font-0);
+    padding: var(--space-2) var(--space-3);
+  }
+}
+
+.nav-pills > li > a .d-icon,
+.nav-pills > li button .d-icon {
+  margin-right: 5px;
+  color: var(--primary-high);
+  transition: color 0.2s;
+}
+
+.nav-pills > li > a:hover,
+.nav-pills > li button:hover {
+  color: var(--d-nav-color--hover);
+  background: var(--d-nav-bg-color--hover);
+}
+
+.nav-pills > li > a:hover .d-icon,
+.nav-pills > li button:hover .d-icon {
+  color: var(--d-nav-color--active);
+}
+
+.nav-pills > li a.active,
+.nav-pills > li button.active {
+  color: var(--d-nav-color--active);
+  background: var(--d-nav-bg-color--active);
+}
+
+.nav-pills > li a.active .d-icon,
+.nav-pills > li button.active .d-icon {
+  color: var(--d-nav-color--active);
+}
+
+.nav-pills > li a.active::after,
+.nav-pills > li button.active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  height: var(--d-nav-underline-height);
+  background: var(--d-nav-color--active);
+}
+
+/* uc-modernize-foundation-theme/nav-pills.scss. --d-control-height is
+   defined nowhere, so the height falls back to auto there too. */
+:where(.uc-modernize-foundation-theme) .nav-pills > li > a:hover::after,
+:where(.uc-modernize-foundation-theme) .nav-pills > li button:hover::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  height: var(--d-nav-underline-height);
+  background: var(--d-nav-color--hover);
+}
+
+:where(.uc-modernize-foundation-theme) .navigation-container .nav-pills > li > a {
+  padding: 0 0.65em;
+  height: var(--d-control-height);
+}

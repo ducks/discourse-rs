@@ -55,6 +55,8 @@ impl From<askama::Error> for HtmlError {
 pub struct Viewer {
     pub username: String,
     pub csrf_token: String,
+    /// The header's avatar (48px).
+    pub avatar_url: String,
 }
 
 /// The viewer block for a page, plus the `_forum_session` cookie to set
@@ -99,6 +101,8 @@ pub struct Site {
     /// Where the page's live updates start (pg-bus position as text), taken
     /// before its data was read; empty for no live updates.
     pub bus_position: String,
+    /// What the layout's header and body need beyond the settings.
+    pub chrome: Chrome,
 }
 
 impl Site {
@@ -110,7 +114,50 @@ impl Site {
             base_path: base_path.to_string(),
             viewer: None,
             bus_position: String::new(),
+            chrome: Chrome::default(),
         })
+    }
+}
+
+/// The page chrome around every page: the header and the body's classes.
+#[derive(Clone, Default)]
+pub struct Chrome {
+    /// The header's logo (`SiteSetting.site_logo_url`), empty for the site
+    /// title as text.
+    pub logo_url: String,
+    /// The body's classes: `uc-<name>` for each enabled upcoming change
+    /// with CSS (ApplicationController#upcomingChangeBodyClasses).
+    pub body_classes: String,
+    /// `canSignUp`: the header shows a Sign Up button.
+    pub can_signup: bool,
+}
+
+impl Site {
+    /// Fills the page chrome. Every enabled upcoming change counts as
+    /// enabled for the viewer; changes enabled for some groups only are
+    /// not told apart yet, and read-only mode is not ported.
+    pub async fn load_chrome(
+        &mut self,
+        state: &crate::AppState,
+        settings: &SiteSettings,
+    ) -> Result<(), crate::AppError> {
+        let mut conn = state.pool.acquire().await?;
+        let urls = crate::url::Urls {
+            config: &state.config,
+            settings,
+        };
+        self.chrome.logo_url = crate::site_icons::site_url(&mut conn, &urls, "logo").await?;
+        let mut classes = Vec::new();
+        for name in state.site_setting_defs.upcoming_changes_with_css() {
+            if settings.get(name)?.truthy() {
+                classes.push(format!("uc-{}", name.replace('_', "-")));
+            }
+        }
+        self.chrome.body_classes = classes.join(" ");
+        self.chrome.can_signup = !settings.get("invite_only")?.truthy()
+            && settings.get("allow_new_registrations")?.truthy()
+            && !settings.get("enable_discourse_connect")?.truthy();
+        Ok(())
     }
 }
 
@@ -156,6 +203,7 @@ pub struct LatestPage {
     pub crawler: Crawler,
     pub viewer: Option<Viewer>,
     pub bus_position: String,
+    pub chrome: Chrome,
     pub topics: Vec<TopicItem>,
     pub more_url: Option<String>,
     /// Set on category pages.
@@ -167,6 +215,59 @@ pub struct LatestPage {
     /// When the page was rendered, in milliseconds (live updates count the
     /// topics bumped after it).
     pub live_since: String,
+    /// The navigation pills (`top_menu`); empty where the page has none.
+    pub nav: Vec<NavItem>,
+}
+
+/// A navigation pill, as NavItem renders it.
+pub struct NavItem {
+    /// The filter: `latest`, `new`, `hot`, `categories`...
+    pub name: String,
+    pub label: String,
+    /// `js.filters.<name>.help`
+    pub title: String,
+    pub href: String,
+    pub active: bool,
+    /// The id of the live count span (`new-count`, `unread-count`), for a
+    /// member.
+    pub count_id: Option<&'static str>,
+}
+
+/// The pills of the top-level lists: `top_menu` in order, the ones that
+/// need an account only for a member, `active` marked.
+pub fn nav_items(
+    i18n: &I18n,
+    settings: &SiteSettings,
+    base_path: &str,
+    active: &str,
+    member: bool,
+) -> Result<Vec<NavItem>, SettingError> {
+    const MEMBERS_ONLY: [&str; 5] = ["new", "unread", "read", "posted", "bookmarks"];
+    let top_menu = settings.get("top_menu")?.to_s();
+    Ok(top_menu
+        .split('|')
+        .map(str::trim)
+        .filter(|name| !name.is_empty())
+        .filter(|name| member || !MEMBERS_ONLY.contains(name))
+        .map(|name| NavItem {
+            name: name.to_string(),
+            label: i18n
+                .t(&format!("js.filters.{name}.title"))
+                .unwrap_or(name)
+                .to_string(),
+            title: i18n
+                .t(&format!("js.filters.{name}.help"))
+                .unwrap_or_default()
+                .to_string(),
+            href: format!("{base_path}/{name}"),
+            active: name == active,
+            count_id: match (member, name) {
+                (true, "new") => Some("new-count"),
+                (true, "unread") => Some("unread-count"),
+                _ => None,
+            },
+        })
+        .collect())
 }
 
 pub struct TagHeading {
@@ -213,6 +314,7 @@ pub struct TopicPage {
     pub crawler: Crawler,
     pub viewer: Option<Viewer>,
     pub bus_position: String,
+    pub chrome: Chrome,
     pub title: String,
     pub title_unicode: String,
     pub canonical_url: String,
@@ -346,6 +448,7 @@ pub async fn latest_page(
         site_title: site.site_title,
         viewer: site.viewer,
         bus_position: site.bus_position,
+        chrome: site.chrome,
         site_description: site.site_description,
         lang: site.lang,
         base_path: site.base_path,
@@ -355,6 +458,7 @@ pub async fn latest_page(
         tag: None,
         live_filter: String::new(),
         live_since: String::new(),
+        nav: Vec::new(),
         more_url: list["topic_list"]["more_topics_url"]
             .as_str()
             .map(str::to_string),
@@ -437,6 +541,7 @@ pub async fn topic_page(
         site_title: site.site_title,
         viewer: site.viewer,
         bus_position: site.bus_position,
+        chrome: site.chrome,
         site_description: site.site_description,
         lang: site.lang,
         base_path: site.base_path,
@@ -572,6 +677,7 @@ pub struct CategoriesPage {
     pub crawler: Crawler,
     pub viewer: Option<Viewer>,
     pub bus_position: String,
+    pub chrome: Chrome,
     pub categories: Vec<CategoryIndexItem>,
 }
 
@@ -632,6 +738,7 @@ pub async fn categories_page(
         site_title: site.site_title,
         viewer: site.viewer,
         bus_position: site.bus_position,
+        chrome: site.chrome,
         site_description: site.site_description,
         lang: site.lang,
         base_path: site.base_path,
@@ -650,6 +757,7 @@ pub struct TagsPage {
     pub crawler: Crawler,
     pub viewer: Option<Viewer>,
     pub bus_position: String,
+    pub chrome: Chrome,
     pub groups: Vec<TagGroupItem>,
 }
 
@@ -715,6 +823,7 @@ pub fn tags_page(
         site_title: site.site_title,
         viewer: site.viewer,
         bus_position: site.bus_position,
+        chrome: site.chrome,
         site_description: site.site_description,
         lang: site.lang,
         base_path: site.base_path,
