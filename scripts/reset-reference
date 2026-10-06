@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# Put a dv agent's database back to seed/fresh_install.sql: every table the
+# snapshot holds is emptied and reloaded from the seed, in one transaction.
+# Browsing the reference changes it (Ember autosaves drafts, reading records
+# timings, logins touch the users), and the recorders (record-writes,
+# parity-record) assume it is the seed, so run this before recording.
+#
+# The tables scripts/snapshot-dv leaves out keep their rows (migrations,
+# asset caches, scheduler bookkeeping, search logs, auth tokens). Redis is
+# flushed and Discourse restarted, so no cache outlives the data it held.
+#
+# Usage: scripts/reset-reference <agent-name>
+set -euo pipefail
+
+if [ $# -ne 1 ]; then
+  echo "usage: $0 <agent-name>" >&2
+  exit 64
+fi
+
+agent="$1"
+root="$(cd "$(dirname "$0")/.." && pwd)"
+seed="$root/seed/fresh_install.sql"
+
+commit="$(dv run --name "$agent" -- git -C /var/www/discourse rev-parse HEAD)"
+vendored="$(sed -n 's/^commit=//p' "$root/vendor/discourse/DISCOURSE_REF")"
+if [ "$commit" != "$vendored" ]; then
+  echo "agent $agent runs Discourse $commit but the seed is from $vendored" >&2
+  exit 1
+fi
+
+# The seed's tables, as its COPY statements name them.
+tables="$(sed -n 's/^COPY \(public\.[a-z0-9_]*\) .*/\1/p' "$seed" | paste -sd, -)"
+script="$(mktemp)"
+trap 'rm -f "$script"' EXIT
+{
+  # CASCADE: javascript_caches, an asset cache the snapshot leaves out,
+  # references the theme tables; Discourse rebuilds it.
+  echo "TRUNCATE $tables CASCADE;"
+  cat "$seed"
+} > "$script"
+dv copy "$script" "$agent:/tmp/reset-reference.sql" > /dev/null
+dv run --name "$agent" -- psql -q -v ON_ERROR_STOP=1 --single-transaction \
+  -f /tmp/reset-reference.sql discourse_development > /dev/null
+dv run --name "$agent" -- rm -f /tmp/reset-reference.sql
+dv run --name "$agent" -- redis-cli flushall > /dev/null
+dv restart --name "$agent" discourse > /dev/null
+echo "reset $agent to $(basename "$seed") ($(grep -c '^COPY ' "$seed") tables)"
