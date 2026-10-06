@@ -615,6 +615,17 @@
     "method": "lookup_upload_urls",
     "args": [
       [
+        "upload://n9ttlOETZUkdG4IF2iOWXLG7uB1.gif",
+        "upload://n9ttlOETZUkdG4IF2iOWXLG7uB1.gif",
+        "upload://abc.png"
+      ]
+    ],
+    "result": {}
+  },
+  {
+    "method": "lookup_upload_urls",
+    "args": [
+      [
         "upload://qa4V5109J7tySkPok8r3aBAruY1.png",
         "upload://qa4V5109J7tySkPok8r3aBAruY1.png"
       ]
