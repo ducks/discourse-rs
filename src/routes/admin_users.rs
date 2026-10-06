@@ -68,6 +68,15 @@ async fn handle(
     }
     let user_id = crate::ruby::to_i(user_id.strip_suffix(".json").unwrap_or(&user_id)) as i32;
     let mut conn = state.pool.acquire().await?;
+    // The controller's fetch_user before_action, ahead of the service's
+    // params contract.
+    let exists: bool = sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM users WHERE id = $1)")
+        .bind(user_id)
+        .fetch_one(&mut *conn)
+        .await?;
+    if !exists {
+        return Ok(super::topics::not_found_response(&state, false));
+    }
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
     drop(conn);
