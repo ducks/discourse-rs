@@ -250,6 +250,53 @@ async fn edit_conflict(
     ))
 }
 
+/// `DraftsController::INDEX_LIMIT`
+const INDEX_LIMIT: i64 = 50;
+
+/// GET /drafts: the user's drafts (`Draft.stream`), as the drafts menu
+/// and the drafts page read them.
+pub async fn index(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    uri: Uri,
+) -> Result<Response, AppError> {
+    let Some(user_id) = guardian.user_id() else {
+        return Ok(super::login_required::not_logged_in(&state, uri.path()));
+    };
+    let query = params::parse_query(uri.query().unwrap_or_default());
+    // fetch_limit_from_params(default: nil, max: INDEX_LIMIT); Draft.stream
+    // takes 30 without one.
+    let limit = match query.get("limit").and_then(params::scalar) {
+        None => 30,
+        Some(raw) => match raw.trim().parse::<i64>() {
+            Ok(n) if (0..=INDEX_LIMIT).contains(&n) => n,
+            _ => return Ok(super::search::invalid_parameters(&state, "limit")),
+        },
+    };
+    let offset = query
+        .get("offset")
+        .and_then(params::scalar)
+        .map(|o| crate::ruby::to_i(&o))
+        .unwrap_or(0);
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    // ContentLocalization.translated_topic_title and the categories that
+    // come along when they are lazy loaded.
+    if settings.get("content_localization_enabled")?.truthy() {
+        return Err(Unsupported("draft titles with content localization").into());
+    }
+    if guardian.can_lazy_load_categories(&settings)? {
+        return Err(Unsupported("the drafts' categories when lazy loaded").into());
+    }
+    let urls = crate::url::Urls {
+        config: &state.config,
+        settings: &settings,
+    };
+    let drafts = drafts::stream(&mut conn, &urls, &guardian, user_id, offset, limit).await?;
+    Ok(Json(json!({ "drafts": drafts })).into_response())
+}
+
 /// GET /drafts/:id
 pub async fn show(
     State(state): State<AppState>,

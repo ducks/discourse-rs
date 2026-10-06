@@ -611,6 +611,38 @@ impl Guardian {
             && self.is_staff()
     }
 
+    /// `Topic.listable_topics.secured(guardian).or(Topic.private_messages_
+    /// for_user(user))` as a condition on `topics`: the categories are the
+    /// viewer's, the messages `user_id`'s.
+    pub async fn listable_or_own_messages(
+        &self,
+        conn: &mut PgConnection,
+        settings: &SiteSettings,
+        user_id: i32,
+    ) -> Result<String, GuardianError> {
+        let secure = self.secure_category_ids(&mut *conn, settings).await?;
+        let read_restricted = if secure.is_empty() {
+            "NOT read_restricted".to_string()
+        } else {
+            format!(
+                "NOT read_restricted OR id IN ({})",
+                secure
+                    .iter()
+                    .map(|id| id.to_string())
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            )
+        };
+        Ok(format!(
+            "topics.deleted_at IS NULL AND (topics.archetype != 'private_message' \
+               AND (topics.category_id IS NULL OR topics.category_id IN (SELECT id FROM categories WHERE {read_restricted})) \
+             OR topics.archetype = 'private_message' \
+               AND (topics.id IN (SELECT topic_id FROM topic_allowed_users WHERE user_id = {user_id}) \
+                 OR topics.id IN (SELECT tg.topic_id FROM topic_allowed_groups tg \
+                     JOIN group_users gu ON gu.user_id = {user_id} AND gu.group_id = tg.group_id)))"
+        ))
+    }
+
     /// `can_see_all_hidden_posts?`
     pub fn can_see_all_hidden_posts(&self, settings: &SiteSettings) -> Result<bool, GuardianError> {
         if self.is_anonymous()

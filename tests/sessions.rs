@@ -11,7 +11,7 @@ use discourse_rs::AppState;
 use discourse_rs::config::RailsEnv;
 use discourse_rs::session::token::hash_token;
 use http_body_util::BodyExt;
-use serde_json::Value;
+use serde_json::{Value, json};
 use tower::ServiceExt;
 
 const BOOL: i32 = 5;
@@ -1848,5 +1848,170 @@ async fn the_composer_preview_loads_the_renderer_and_settings() {
     assert_eq!(
         html,
         r#"<p><strong>hi</strong> <img src="/images/emoji/twitter/smile.png?v=15" title=":smile:" class="emoji" alt=":smile:" loading="lazy" width="20" height="20"> <a href="https://example.com">https://example.com</a></p>"#
+    );
+}
+
+/// GET /drafts.json: the member's drafts as the reference serializes the
+/// same four (Draft.stream through DraftSerializer, recorded with the
+/// drafts made and rolled back): a reply's (shown under the topic's
+/// author), a long new topic's (excerpt cut, truncated), an edit's (the
+/// post's author) and one on a topic they cannot see (no topic fields).
+#[tokio::test]
+async fn the_drafts_list_matches_the_reference() {
+    let db = TestDb::new().await;
+    let mut client = Client::new(state(db.pool.clone(), config(RailsEnv::Test, &[])).await);
+    client.login("user1", "password").await;
+    let post_id: i32 =
+        sqlx::query_scalar("SELECT id FROM posts WHERE topic_id = 38 AND post_number = 1")
+            .fetch_one(&db.pool)
+            .await
+            .unwrap();
+    assert_eq!(post_id, 42, "the reference's post");
+    let long = "x".repeat(350);
+    let drafts = [
+        (
+            "topic_35",
+            r#"{"reply":"Hello **world** :smile:","action":"reply","reply_to_post_number":null}"#
+                .to_string(),
+        ),
+        (
+            "new_topic_1",
+            format!(r#"{{"reply":"{long}","title":"T","action":"createTopic","categoryId":4}}"#),
+        ),
+        (
+            "topic_38",
+            r#"{"reply":"edit","action":"edit","postId":42}"#.to_string(),
+        ),
+        (
+            "topic_2",
+            r#"{"reply":"staff","action":"reply"}"#.to_string(),
+        ),
+    ];
+    for (key, data) in &drafts {
+        let current = client.get(&format!("/drafts/{key}.json")).await.json()["draft_sequence"]
+            .as_i64()
+            .unwrap();
+        let body = form_urlencoded::Serializer::new(String::new())
+            .append_pair("draft_key", key)
+            .append_pair("sequence", &current.to_string())
+            .append_pair("data", data)
+            .append_pair("owner", "test")
+            .finish();
+        let reply = client
+            .send(
+                Method::POST,
+                "/drafts.json",
+                &[("x-requested-with", "XMLHttpRequest")],
+                &body,
+            )
+            .await;
+        assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    }
+
+    let reply = client.get("/drafts.json").await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    let list = reply.json()["drafts"].as_array().unwrap().clone();
+    let by_key = |key: &str| -> Value {
+        let mut d = list
+            .iter()
+            .find(|d| d["draft_key"] == key)
+            .unwrap_or_else(|| panic!("{key}"))
+            .clone();
+        assert!(d["created_at"].is_string());
+        d.as_object_mut().unwrap().remove("created_at");
+        d
+    };
+    let avatar = "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png";
+    let mut reply_draft = by_key("topic_35");
+    // The reference's user1 has posted to the topic more often.
+    assert!(reply_draft["sequence"].is_i64());
+    reply_draft["sequence"] = json!(3);
+    assert_eq!(
+        reply_draft,
+        json!({"excerpt":"Hello **world** :smile:","draft_key":"topic_35","sequence":3,"draft_username":"user1","avatar_template":avatar,"data":drafts[0].1,"topic_id":35,"username":"user0","username_lower":"user0","name":"User0","user_id":3,"title":"Parity fixture: replies and posters","slug":"parity-fixture-replies-and-posters","category_id":4,"archetype":"regular"})
+    );
+    assert_eq!(
+        by_key("new_topic_1"),
+        json!({"excerpt":format!("{}&hellip;", "x".repeat(300)),"truncated":true,"draft_key":"new_topic_1","sequence":0,"draft_username":"user1","avatar_template":avatar,"data":drafts[1].1,"topic_id":null,"username":"user1","username_lower":"user1","name":"User1","user_id":3,"title":null,"archetype":null})
+    );
+    assert_eq!(
+        by_key("topic_38"),
+        json!({"excerpt":"edit","draft_key":"topic_38","sequence":0,"draft_username":"user1","avatar_template":avatar,"data":drafts[2].1,"topic_id":38,"username":"user1","username_lower":"user1","name":"User1","user_id":3,"title":"Parity fixture: tagged in a subcategory","slug":"parity-fixture-tagged-in-a-subcategory","category_id":34,"archetype":"regular"})
+    );
+    assert_eq!(
+        by_key("topic_2"),
+        json!({"excerpt":"staff","draft_key":"topic_2","sequence":0,"draft_username":"user1","avatar_template":avatar,"data":drafts[3].1,"topic_id":2,"username":"user1","username_lower":"user1","name":"User1","user_id":3,"title":null,"archetype":null})
+    );
+    assert_eq!(
+        client.get("/drafts.json?limit=51").await.status,
+        StatusCode::BAD_REQUEST
+    );
+}
+
+/// The composer's drafts: the New Topic button gains its drafts menu once
+/// the member has a draft, and a new topic posted with its draft's key
+/// (PostCreator's draft_key) takes the draft with it.
+#[tokio::test]
+async fn a_new_topic_takes_its_draft_and_the_drafts_menu_follows_the_count() {
+    let db = TestDb::new().await;
+    let mut client = Client::new(state(db.pool.clone(), config(RailsEnv::Test, &[])).await);
+    client.login("user1", "password").await;
+    let page = client.get("/latest").await.body;
+    assert!(page.contains(r#"<div class="d-combo-button topic-create-button__combo""#));
+    assert!(!page.contains("topic-drafts-menu-trigger"));
+    assert!(page.contains(r#"<div id="draft-status" hidden><span class="draft-error" title="">"#));
+
+    let key = "new_topic_1791297368548";
+    let body = form_urlencoded::Serializer::new(String::new())
+        .append_pair("draft_key", key)
+        .append_pair("sequence", "0")
+        .append_pair(
+            "data",
+            r#"{"reply":"A body long enough to be a post here.","action":"createTopic","title":"A drafted topic title","categoryId":4}"#,
+        )
+        .append_pair("owner", "test")
+        .finish();
+    let reply = client
+        .send(
+            Method::POST,
+            "/drafts.json",
+            &[("x-requested-with", "XMLHttpRequest")],
+            &body,
+        )
+        .await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    let page = client.get("/latest").await.body;
+    assert!(page.contains(r#"<div class="d-combo-button --has-menu topic-create-button__combo""#));
+    assert!(page.contains(r#"<button aria-expanded="false" aria-label="Open the latest drafts menu" class="btn no-text btn-icon fk-d-menu__trigger topic-drafts-menu-trigger d-combo-button-menu btn-primary" title="Open the latest drafts menu" data-identifier="topic-drafts-menu" data-trigger="" type="button" data-draft-count="1""#));
+
+    let body = form_urlencoded::Serializer::new(String::new())
+        .append_pair("raw", "A body long enough to be a post here.")
+        .append_pair("title", "A drafted topic title")
+        .append_pair("category", "4")
+        .append_pair("draft_key", key)
+        .finish();
+    let reply = client
+        .send(
+            Method::POST,
+            "/posts.json",
+            &[("x-requested-with", "XMLHttpRequest")],
+            &body,
+        )
+        .await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    let left: i64 = sqlx::query_scalar(
+        "SELECT COUNT(*) FROM drafts WHERE draft_key = $1 AND user_id = (SELECT id FROM users WHERE username = 'user1')",
+    )
+    .bind(key)
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert_eq!(left, 0);
+    assert!(
+        !client
+            .get("/latest")
+            .await
+            .body
+            .contains("topic-drafts-menu-trigger")
     );
 }

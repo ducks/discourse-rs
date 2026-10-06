@@ -22,7 +22,7 @@ use crate::url::Urls;
 use crate::{AppError, AppState, Unsupported};
 
 /// `create_params` that this slice does not write: refused, not ignored.
-const UNPORTED_CREATE_PARAMS: [&str; 20] = [
+const UNPORTED_CREATE_PARAMS: [&str; 19] = [
     "target_usernames",
     "tags",
     "whisper",
@@ -36,7 +36,6 @@ const UNPORTED_CREATE_PARAMS: [&str; 20] = [
     "auto_track",
     "visible",
     "unlist_topic",
-    "draft_key",
     "locale",
     "topic_custom_fields",
     "meta_data",
@@ -115,6 +114,7 @@ pub async fn create(
         email: None,
         // is_api?: an admin API key (the session middleware checked it).
         advance_draft: !api,
+        draft_key: params::string(&p, "draft_key"),
         first_post_checks: !api,
         from_composer: true,
         ..Default::default()

@@ -252,3 +252,193 @@ pub async fn clear(
     }
     Ok(true)
 }
+
+/// `Draft.stream`: the user's drafts at their key's current sequence (or
+/// past it), newest first, as DraftSerializer writes them. `guardian` is
+/// the user's.
+pub async fn stream(
+    conn: &mut PgConnection,
+    urls: &crate::url::Urls<'_>,
+    guardian: &crate::guardian::Guardian,
+    user_id: i32,
+    offset: i64,
+    limit: i64,
+) -> Result<Vec<serde_json::Value>, AppError> {
+    use serde_json::{Map, Value, json};
+    use std::collections::HashMap;
+
+    let settings = urls.settings;
+    type DraftRow = (String, i64, String, chrono::NaiveDateTime);
+    let drafts: Vec<DraftRow> = sqlx::query_as(
+        "SELECT draft_key, sequence, data, created_at FROM drafts \
+         WHERE user_id = $1 AND sequence >= COALESCE( \
+           (SELECT sequence FROM draft_sequences \
+            WHERE draft_sequences.user_id = drafts.user_id \
+            AND draft_sequences.draft_key = drafts.draft_key), 0) \
+         ORDER BY updated_at DESC, id DESC OFFSET $2 LIMIT $3",
+    )
+    .bind(user_id)
+    .bind(offset)
+    .bind(limit)
+    .fetch_all(&mut *conn)
+    .await?;
+
+    // parsed_data, topic_id and post_id
+    let parsed: Vec<Map<String, Value>> = drafts
+        .iter()
+        .map(|(_, _, data, _)| match serde_json::from_str(data) {
+            Ok(Value::Object(map)) => map,
+            _ => Map::new(),
+        })
+        .collect();
+    let topic_ids: Vec<Option<i32>> = drafts
+        .iter()
+        .map(|(key, ..)| {
+            key.strip_prefix("topic_")
+                .map(|rest| crate::ruby::to_i(rest) as i32)
+        })
+        .collect();
+    let post_ids: Vec<Option<i32>> = parsed
+        .iter()
+        .map(|data| {
+            data.get("postId")
+                .and_then(Value::as_i64)
+                .map(|id| id as i32)
+        })
+        .collect();
+
+    // preload_data: the topics and posts the user may see.
+    let allowed = guardian
+        .listable_or_own_messages(&mut *conn, settings, user_id)
+        .await?;
+    type TopicRow = (
+        i32,
+        String,
+        String,
+        Option<i32>,
+        bool,
+        bool,
+        String,
+        Option<i32>,
+    );
+    let wanted_topics: Vec<i32> = topic_ids.iter().flatten().copied().collect();
+    let topics: HashMap<i32, TopicRow> = sqlx::query_as::<_, TopicRow>(&format!(
+        "SELECT topics.id, topics.title, topics.slug, topics.category_id, topics.closed, \
+                topics.archived, topics.archetype, topics.user_id \
+         FROM topics WHERE topics.id = ANY($1) AND ({allowed})"
+    ))
+    .bind(&wanted_topics)
+    .fetch_all(&mut *conn)
+    .await?
+    .into_iter()
+    .map(|t| (t.0, t))
+    .collect();
+    // Post.secured(guardian) joined to the allowed topics.
+    let post_types: Vec<i32> = guardian.visible_post_types(settings)?;
+    let wanted_posts: Vec<i32> = post_ids.iter().flatten().copied().collect();
+    let posts: HashMap<i32, Option<i32>> = sqlx::query_as::<_, (i32, Option<i32>)>(&format!(
+        "SELECT posts.id, posts.user_id FROM posts JOIN topics ON topics.id = posts.topic_id \
+         WHERE posts.id = ANY($1) AND posts.deleted_at IS NULL AND posts.post_type = ANY($2) \
+         AND ({allowed})"
+    ))
+    .bind(&wanted_posts)
+    .bind(&post_types)
+    .fetch_all(&mut *conn)
+    .await?
+    .into_iter()
+    .collect();
+
+    // display_user: the post's author, else the topic's, else the owner.
+    let display_ids: Vec<i32> = (0..drafts.len())
+        .map(|i| {
+            post_ids[i]
+                .and_then(|id| posts.get(&id).copied().flatten())
+                .or_else(|| {
+                    topic_ids[i]
+                        .and_then(|id| topics.get(&id))
+                        .and_then(|t| t.7)
+                })
+                .unwrap_or(user_id)
+        })
+        .collect();
+    let mut user_ids = display_ids.clone();
+    user_ids.push(user_id);
+    type UserRow = (i32, String, String, Option<String>, Option<i32>);
+    let users: HashMap<i32, UserRow> = sqlx::query_as::<_, UserRow>(
+        "SELECT id, username, username_lower, name, uploaded_avatar_id FROM users WHERE id = ANY($1)",
+    )
+    .bind(&user_ids)
+    .fetch_all(&mut *conn)
+    .await?
+    .into_iter()
+    .map(|u| (u.0, u))
+    .collect();
+    let logo_small_url: Option<String> = match settings.get("logo_small")?.to_i() {
+        0 => None,
+        id => {
+            sqlx::query_scalar("SELECT url FROM uploads WHERE id = $1")
+                .bind(i32::try_from(id).unwrap_or(0))
+                .fetch_optional(&mut *conn)
+                .await?
+        }
+    };
+    let avatar = |u: &UserRow| {
+        crate::avatar::avatar_template(urls, u.0, &u.1, u.4, logo_small_url.as_deref())
+    };
+    let enable_names = settings.get("enable_names")?.truthy();
+    let excerpt_options = crate::excerpt::Options {
+        keep_emoji_images: true,
+        ..Default::default()
+    };
+    let Some(owner) = users.get(&user_id) else {
+        return Ok(Vec::new());
+    };
+
+    let mut out = Vec::with_capacity(drafts.len());
+    for (i, (key, sequence, data, created_at)) in drafts.iter().enumerate() {
+        let topic = topic_ids[i].and_then(|id| topics.get(&id));
+        let display = users.get(&display_ids[i]);
+        // PostItemExcerpt over DraftSerializer#cooked: the draft's reply.
+        let cooked = parsed[i].get("reply").and_then(Value::as_str).unwrap_or("");
+        let mut d = Map::new();
+        d.insert(
+            "excerpt".into(),
+            json!(crate::excerpt::excerpt(cooked, 300, &excerpt_options)),
+        );
+        if cooked.chars().count() > 300 {
+            d.insert("truncated".into(), json!(true));
+        }
+        d.insert(
+            "created_at".into(),
+            json!(crate::topic_list::time_json(*created_at)),
+        );
+        d.insert("draft_key".into(), json!(key));
+        d.insert("sequence".into(), json!(sequence));
+        d.insert("draft_username".into(), json!(owner.1));
+        d.insert("avatar_template".into(), json!(avatar(owner)?));
+        d.insert("data".into(), json!(data));
+        d.insert("topic_id".into(), json!(topic_ids[i]));
+        d.insert("username".into(), json!(display.map(|u| &u.1)));
+        d.insert("username_lower".into(), json!(display.map(|u| &u.2)));
+        if enable_names {
+            d.insert("name".into(), json!(display.and_then(|u| u.3.as_ref())));
+        }
+        d.insert("user_id".into(), json!(user_id));
+        d.insert("title".into(), json!(topic.map(|t| &t.1)));
+        if topic.is_some_and(|t| !t.1.trim().is_empty()) {
+            d.insert("slug".into(), json!(topic.map(|t| &t.2)));
+        }
+        if let Some(category_id) = topic.and_then(|t| t.3) {
+            d.insert("category_id".into(), json!(category_id));
+        }
+        if topic.is_some_and(|t| t.4) {
+            d.insert("closed".into(), json!(true));
+        }
+        d.insert("archetype".into(), json!(topic.map(|t| &t.6)));
+        if topic.is_some_and(|t| t.5) {
+            d.insert("archived".into(), json!(true));
+        }
+        out.push(Value::Object(d));
+    }
+    Ok(out)
+}

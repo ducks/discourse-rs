@@ -386,7 +386,17 @@ Discourse's own clients keep working.
       POST /topics/timings) and marks the posts read. Not yet: the
       topic list's per-row state from the tracking state, an anonymous
       reader's time, dismissing new
-- [ ] The composer: uploads, drafts
+- [x] The composer's drafts: saved as Ember's composer saves them (two
+      seconds after typing stops, at once past fifteen, on minimizing,
+      by beacon when the page is left), restored for a reply or an edit
+      on the topic's key, deleted on discard, kept by save and close,
+      taken by the post (posts#create's draft_key); the draft status
+      line for offline and conflicting saves; GET /drafts
+      (Draft.stream, DraftSerializer) and the drafts menu beside New
+      Topic. Not yet: the drafts page (/my/activity/drafts), the
+      conflict user's avatar, the draft saved toast, multipart bodies
+      (Ember's beacon sends FormData; ours sends a form)
+- [ ] The composer: uploads
 - [ ] The user menu, notifications, bookmarks, messages, preferences
 - [ ] Review queue and topic status for staff
 

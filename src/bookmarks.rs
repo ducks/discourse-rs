@@ -296,31 +296,10 @@ impl Bookmarks<'_> {
     async fn list_queries(&mut self, user_id: i32, search: bool) -> Result<String, BookmarksError> {
         let settings = self.settings;
         let guardian = self.guardian;
-        // Topic.listable_topics.secured(guardian) OR Topic.private_messages_for_user(user):
-        // the categories are the viewer's, the messages the owner's.
-        let secure = guardian
-            .secure_category_ids(&mut *self.conn, settings)
+        // The categories are the viewer's, the messages the owner's.
+        let topics = guardian
+            .listable_or_own_messages(&mut *self.conn, settings, user_id)
             .await?;
-        let read_restricted = if secure.is_empty() {
-            "NOT read_restricted".to_string()
-        } else {
-            format!(
-                "NOT read_restricted OR id IN ({})",
-                secure
-                    .iter()
-                    .map(|id| id.to_string())
-                    .collect::<Vec<_>>()
-                    .join(", ")
-            )
-        };
-        let topics = format!(
-            "topics.deleted_at IS NULL AND (topics.archetype != 'private_message' \
-               AND (topics.category_id IS NULL OR topics.category_id IN (SELECT id FROM categories WHERE {read_restricted})) \
-             OR topics.archetype = 'private_message' \
-               AND (topics.id IN (SELECT topic_id FROM topic_allowed_users WHERE user_id = {user_id}) \
-                 OR topics.id IN (SELECT tg.topic_id FROM topic_allowed_groups tg \
-                     JOIN group_users gu ON gu.user_id = {user_id} AND gu.group_id = tg.group_id)))"
-        );
         // Post.secured(guardian)
         let post_types = guardian
             .visible_post_types(settings)?

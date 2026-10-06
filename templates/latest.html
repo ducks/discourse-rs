@@ -28,8 +28,8 @@
       </ul>
       {%- if chrome.can_create_topic %}
       <div class="navigation-controls">
-        <div class="d-combo-button topic-create-button__combo" role="group" aria-label="New topic and drafts">
-          <button aria-label="New Topic" class="btn btn-icon-text d-combo-button-button btn-primary" id="create-topic" type="button"{% if let Some(h) = heading %} data-category="{{ h.id }}"{% endif %}><svg class="fa d-icon d-icon-far-pen-to-square svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#far-pen-to-square"></use></svg><span class="d-button-label">New Topic</span></button>
+        <div class="d-combo-button{% if !chrome.drafts_menu_trigger.is_empty() %} --has-menu{% endif %} topic-create-button__combo" role="group" aria-label="New topic and drafts">
+          <button aria-label="New Topic" class="btn btn-icon-text d-combo-button-button btn-primary" id="create-topic" type="button"{% if let Some(h) = heading %} data-category="{{ h.id }}"{% endif %}><svg class="fa d-icon d-icon-far-pen-to-square svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#far-pen-to-square"></use></svg><span class="d-button-label">New Topic</span></button>{{ chrome.drafts_menu_trigger|safe }}
         </div>
       </div>
       {%- endif %}
