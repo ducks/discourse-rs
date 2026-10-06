@@ -1,0 +1,28 @@
+{
+  "name": "raw_post_anonymous",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/raw/35/1"
+    },
+    {
+      "method": "GET",
+      "path": "/raw/35/1.json"
+    }
+  ],
+  "started_at": "2026-10-06T20:07:57.262998",
+  "transaction_started_at": "2026-10-06T20:07:56.491235",
+  "responses": [
+    {
+      "status": 200,
+      "body": "First post of a topic with several repliers, long enough to be a real post body for the excerpt."
+    },
+    {
+      "status": 200,
+      "body": "First post of a topic with several repliers, long enough to be a real post body for the excerpt."
+    }
+  ],
+  "changes": {},
+  "jobs": []
+}

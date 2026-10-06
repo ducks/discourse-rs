@@ -1,0 +1,72 @@
+{
+  "name": "flag_hidden_post",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/post_actions.json",
+      "params": {
+        "id": 37,
+        "post_action_type_id": 3
+      }
+    }
+  ],
+  "started_at": "2026-10-06T20:08:27.184928",
+  "transaction_started_at": "2026-10-06T20:08:26.128771",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 119,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "mx9QXNNaQZH42Qld0zFs7ZBVR3E=",
+            "created_at": "2026-10-06T20:08:26.492238",
+            "rotated_at": "2026-10-06T20:08:26.491982",
+            "updated_at": "2026-10-06T20:08:26.492238",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "mx9QXNNaQZH42Qld0zFs7ZBVR3E=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 119,
+            "seen_at": "2026-10-06T20:08:27.194674",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "mx9QXNNaQZH42Qld0zFs7ZBVR3E=",
+            "created_at": "2026-10-06T20:08:26.492238",
+            "rotated_at": "2026-10-06T20:08:26.491982",
+            "updated_at": "2026-10-06T20:08:26.492238",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "mx9QXNNaQZH42Qld0zFs7ZBVR3E=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "setup": [
+    "UPDATE posts SET hidden = TRUE, hidden_at = '2026-10-02 10:00:00', hidden_reason_id = 1 WHERE id IN (37)"
+  ]
+}

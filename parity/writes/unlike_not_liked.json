@@ -1,0 +1,68 @@
+{
+  "name": "unlike_not_liked",
+  "user": "user2",
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/post_actions/36.json",
+      "params": {
+        "post_action_type_id": 2
+      }
+    }
+  ],
+  "started_at": "2026-10-06T20:08:21.205518",
+  "transaction_started_at": "2026-10-06T20:08:20.24479",
+  "responses": [
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 119,
+            "seen_at": null,
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "pRdgJsYVueeSd4ql7n6CHIHmHZ8=",
+            "created_at": "2026-10-06T20:08:20.563056",
+            "rotated_at": "2026-10-06T20:08:20.562758",
+            "updated_at": "2026-10-06T20:08:20.563056",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "pRdgJsYVueeSd4ql7n6CHIHmHZ8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 119,
+            "seen_at": "2026-10-06T20:08:21.238572",
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "pRdgJsYVueeSd4ql7n6CHIHmHZ8=",
+            "created_at": "2026-10-06T20:08:20.563056",
+            "rotated_at": "2026-10-06T20:08:20.562758",
+            "updated_at": "2026-10-06T20:08:20.563056",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "pRdgJsYVueeSd4ql7n6CHIHmHZ8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": []
+}

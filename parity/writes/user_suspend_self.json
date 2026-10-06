@@ -1,0 +1,70 @@
+{
+  "name": "user_suspend_self",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/1/suspend.json",
+      "params": {
+        "reason": "Breaking the rules",
+        "suspend_until": "2027-01-01T00:00:00Z"
+      }
+    }
+  ],
+  "started_at": "2026-10-06T20:09:01.202962",
+  "transaction_started_at": "2026-10-06T20:09:00.125885",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 119,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "ZOtIvzCm8MxlrAdrVNaBHI7BHIk=",
+            "created_at": "2026-10-06T20:09:00.514365",
+            "rotated_at": "2026-10-06T20:09:00.51407",
+            "updated_at": "2026-10-06T20:09:00.514365",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "ZOtIvzCm8MxlrAdrVNaBHI7BHIk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 119,
+            "seen_at": "2026-10-06T20:09:01.241794",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "ZOtIvzCm8MxlrAdrVNaBHI7BHIk=",
+            "created_at": "2026-10-06T20:09:00.514365",
+            "rotated_at": "2026-10-06T20:09:00.51407",
+            "updated_at": "2026-10-06T20:09:00.514365",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "ZOtIvzCm8MxlrAdrVNaBHI7BHIk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": []
+}

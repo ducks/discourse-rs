@@ -1,0 +1,77 @@
+{
+  "name": "edit_locked_post",
+  "user": "user2",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/37.json",
+      "params": {
+        "post": {
+          "raw": "user2 editing their own reply after staff locked it, which is refused."
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-06T20:07:30.025238",
+  "transaction_started_at": "2026-10-06T20:07:23.373673",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 119,
+            "seen_at": null,
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "TU2qw5QmL720UAQY8PgAsTZIAyY=",
+            "created_at": "2026-10-06T20:07:26.097612",
+            "rotated_at": "2026-10-06T20:07:26.096669",
+            "updated_at": "2026-10-06T20:07:26.097612",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "TU2qw5QmL720UAQY8PgAsTZIAyY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 119,
+            "seen_at": "2026-10-06T20:07:30.074047",
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "TU2qw5QmL720UAQY8PgAsTZIAyY=",
+            "created_at": "2026-10-06T20:07:26.097612",
+            "rotated_at": "2026-10-06T20:07:26.096669",
+            "updated_at": "2026-10-06T20:07:26.097612",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "TU2qw5QmL720UAQY8PgAsTZIAyY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "settings": {
+    "tl2_post_edit_time_limit": 525600
+  },
+  "setup": [
+    "UPDATE posts SET locked_by_id = 1 WHERE id = 37"
+  ]
+}

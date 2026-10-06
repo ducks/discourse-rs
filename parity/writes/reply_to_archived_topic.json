@@ -1,0 +1,70 @@
+{
+  "name": "reply_to_archived_topic",
+  "user": "user0",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 41,
+        "raw": "A reply to an archived topic, which a regular user cannot make there."
+      }
+    }
+  ],
+  "started_at": "2026-10-06T20:06:59.382912",
+  "transaction_started_at": "2026-10-06T20:06:51.736899",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "action": "create_post",
+        "errors": [
+          "Something has gone wrong. Perhaps this topic was closed or deleted while you were looking at it?"
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 119,
+            "seen_at": null,
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "FXu2c2BS1dDdvOfhFKbGwfoPmmY=",
+            "created_at": "2026-10-06T20:06:55.330925",
+            "rotated_at": "2026-10-06T20:06:55.329786",
+            "updated_at": "2026-10-06T20:06:55.330925",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "FXu2c2BS1dDdvOfhFKbGwfoPmmY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 119,
+            "seen_at": "2026-10-06T20:06:59.42475",
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "FXu2c2BS1dDdvOfhFKbGwfoPmmY=",
+            "created_at": "2026-10-06T20:06:55.330925",
+            "rotated_at": "2026-10-06T20:06:55.329786",
+            "updated_at": "2026-10-06T20:06:55.330925",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "FXu2c2BS1dDdvOfhFKbGwfoPmmY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": []
+}

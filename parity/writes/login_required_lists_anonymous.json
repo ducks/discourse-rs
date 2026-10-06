@@ -1,0 +1,52 @@
+{
+  "name": "login_required_lists_anonymous",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/latest.json"
+    },
+    {
+      "method": "GET",
+      "path": "/site/basic-info.json"
+    }
+  ],
+  "started_at": "2026-10-06T20:09:41.331634",
+  "transaction_started_at": "2026-10-06T20:09:40.191794",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You need to be logged in to do that."
+        ],
+        "error_type": "not_logged_in"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "logo_url": "http://localhost:3042/images/discourse-logo-sketch.png",
+        "logo_small_url": "http://localhost:3042/images/discourse-logo-sketch-small.png",
+        "apple_touch_icon_url": "http://localhost:3042/uploads/default/optimized/1X/_129430568242d1b7f853bb13ebea28b3f6af4e7_2_180x180.png",
+        "favicon_url": "http://localhost:3042/uploads/default/optimized/1X/_129430568242d1b7f853bb13ebea28b3f6af4e7_2_32x32.png",
+        "title": "Hammer Time",
+        "description": "A time for Hammer",
+        "header_primary_color": "333",
+        "header_background_color": "fff",
+        "login_required": true,
+        "locale": "en",
+        "include_in_discourse_discover": true,
+        "mobile_logo_url": "http://localhost:3042/images/discourse-logo-sketch.png"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "settings": {
+    "login_required": true,
+    "title": "Hammer Time",
+    "site_description": "A time for Hammer",
+    "include_in_discourse_discover": true
+  }
+}

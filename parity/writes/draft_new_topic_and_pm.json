@@ -1,0 +1,254 @@
+{
+  "name": "draft_new_topic_and_pm",
+  "user": "user0",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/drafts.json",
+      "params": {
+        "draft_key": "new_topic",
+        "sequence": 0,
+        "data": "{\"reply\":\"The body of a topic still being written\",\"action\":\"createTopic\",\"title\":\"A draft topic title\",\"categoryId\":4,\"tags\":[],\"composerTime\":3000,\"typingTime\":2000}"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/drafts.json",
+      "params": {
+        "draft_key": "new_private_message",
+        "sequence": 0,
+        "data": "{\"reply\":\"A message still being written\",\"action\":\"privateMessage\",\"title\":\"A draft message title\",\"recipients\":\"user2\",\"archetypeId\":\"private_message\",\"composerTime\":3000,\"typingTime\":2000}"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/drafts.json"
+    }
+  ],
+  "started_at": "2026-10-06T20:08:28.534957",
+  "transaction_started_at": "2026-10-06T20:08:27.461434",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "draft_sequence": 0
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "draft_sequence": 0
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "drafts": [
+          {
+            "excerpt": "A message still being written",
+            "created_at": "2026-10-06T20:08:27.461Z",
+            "draft_key": "new_private_message",
+            "sequence": 0,
+            "draft_username": "user0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+            "data": "{\"reply\":\"A message still being written\",\"action\":\"privateMessage\",\"title\":\"A draft message title\",\"recipients\":\"user2\",\"archetypeId\":\"private_message\",\"composerTime\":3000,\"typingTime\":2000}",
+            "topic_id": null,
+            "username": "user0",
+            "username_lower": "user0",
+            "name": "User0",
+            "user_id": 2,
+            "title": null,
+            "archetype": null
+          },
+          {
+            "excerpt": "The body of a topic still being written",
+            "created_at": "2026-10-06T20:08:27.461Z",
+            "draft_key": "new_topic",
+            "sequence": 0,
+            "draft_username": "user0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+            "data": "{\"reply\":\"The body of a topic still being written\",\"action\":\"createTopic\",\"title\":\"A draft topic title\",\"categoryId\":4,\"tags\":[],\"composerTime\":3000,\"typingTime\":2000}",
+            "topic_id": null,
+            "username": "user0",
+            "username_lower": "user0",
+            "name": "User0",
+            "user_id": 2,
+            "title": null,
+            "archetype": null
+          },
+          {
+            "excerpt": "A draft reply to my message",
+            "created_at": "2026-10-01T11:00:00.000Z",
+            "draft_key": "topic_42",
+            "sequence": 0,
+            "draft_username": "user0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+            "data": "{\"reply\":\"A draft reply to my message\",\"action\":\"reply\"}",
+            "topic_id": 42,
+            "username": "user1",
+            "username_lower": "user1",
+            "name": "User1",
+            "user_id": 2,
+            "title": "Parity fixture: PM user1 to user0",
+            "slug": "parity-fixture-pm-user1-to-user0",
+            "archetype": "private_message"
+          },
+          {
+            "excerpt": "A draft in a message I am not in",
+            "created_at": "2026-10-01T10:00:00.000Z",
+            "draft_key": "topic_43",
+            "sequence": 0,
+            "draft_username": "user0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+            "data": "{\"reply\":\"A draft in a message I am not in\",\"action\":\"reply\"}",
+            "topic_id": 43,
+            "username": "user0",
+            "username_lower": "user0",
+            "name": "User0",
+            "user_id": 2,
+            "title": null,
+            "archetype": null
+          }
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "drafts": {
+      "inserted": [
+        {
+          "id": 1,
+          "data": "{\"reply\":\"The body of a topic still being written\",\"action\":\"createTopic\",\"title\":\"A draft topic title\",\"categoryId\":4,\"tags\":[],\"composerTime\":3000,\"typingTime\":2000}",
+          "owner": null,
+          "user_id": 2,
+          "sequence": 0,
+          "draft_key": "new_topic",
+          "revisions": 1,
+          "created_at": "2026-10-06T20:08:27.461434",
+          "updated_at": "2026-10-06T20:08:27.461434"
+        },
+        {
+          "id": 2,
+          "data": "{\"reply\":\"A message still being written\",\"action\":\"privateMessage\",\"title\":\"A draft message title\",\"recipients\":\"user2\",\"archetypeId\":\"private_message\",\"composerTime\":3000,\"typingTime\":2000}",
+          "owner": null,
+          "user_id": 2,
+          "sequence": 0,
+          "draft_key": "new_private_message",
+          "revisions": 1,
+          "created_at": "2026-10-06T20:08:27.461434",
+          "updated_at": "2026-10-06T20:08:27.461434"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 119,
+            "seen_at": null,
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "bccAx9bKoOt3/xzz2sjuSwJVrbE=",
+            "created_at": "2026-10-06T20:08:27.915145",
+            "rotated_at": "2026-10-06T20:08:27.914842",
+            "updated_at": "2026-10-06T20:08:27.915145",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "bccAx9bKoOt3/xzz2sjuSwJVrbE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 119,
+            "seen_at": "2026-10-06T20:08:28.548763",
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "bccAx9bKoOt3/xzz2sjuSwJVrbE=",
+            "created_at": "2026-10-06T20:08:27.915145",
+            "rotated_at": "2026-10-06T20:08:27.914842",
+            "updated_at": "2026-10-06T20:08:27.915145",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "bccAx9bKoOt3/xzz2sjuSwJVrbE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_stats": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "user_id": 2,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:16.023001",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 2,
+            "likes_given": 1,
+            "topic_count": 2,
+            "bounce_score": 0,
+            "days_visited": 1,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 1,
+            "topics_entered": 0,
+            "first_unread_at": "2026-10-01T18:21:56.278874",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 3,
+            "first_unread_pm_at": "2026-10-01T18:21:56.284939",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 3,
+            "first_post_created_at": "2026-09-30T07:28:28.901913",
+            "reset_bounce_score_after": null
+          },
+          "after": {
+            "user_id": 2,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:16.023001",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 4,
+            "likes_given": 1,
+            "topic_count": 2,
+            "bounce_score": 0,
+            "days_visited": 1,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 1,
+            "topics_entered": 0,
+            "first_unread_at": "2026-10-01T18:21:56.278874",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 3,
+            "first_unread_pm_at": "2026-10-01T18:21:56.284939",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 3,
+            "first_post_created_at": "2026-09-30T07:28:28.901913",
+            "reset_bounce_score_after": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "setup": [
+    "INSERT INTO drafts (id, user_id, draft_key, data, sequence, revisions, owner, created_at, updated_at) VALUES (9501, 2, 'topic_43', '{\"reply\":\"A draft in a message I am not in\",\"action\":\"reply\"}', 0, 1, NULL, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO drafts (id, user_id, draft_key, data, sequence, revisions, owner, created_at, updated_at) VALUES (9502, 2, 'topic_42', '{\"reply\":\"A draft reply to my message\",\"action\":\"reply\"}', 0, 1, NULL, '2026-10-01 11:00:00', '2026-10-01 11:00:00')",
+    "UPDATE user_stats SET draft_count = 2 WHERE user_id = 2"
+  ]
+}

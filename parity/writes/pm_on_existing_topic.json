@@ -1,0 +1,73 @@
+{
+  "name": "pm_on_existing_topic",
+  "user": "user2",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "title": "A private message aimed at an existing topic",
+        "raw": "A private message posted into a regular topic, which has to be refused.",
+        "archetype": "private_message",
+        "target_recipients": "user0"
+      }
+    }
+  ],
+  "started_at": "2026-10-06T20:06:40.429198",
+  "transaction_started_at": "2026-10-06T20:06:32.438726",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "action": "create_post",
+        "errors": [
+          "Sorry, you can't create a PM on an existing topic."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 119,
+            "seen_at": null,
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "WCcNRFtE6LG4o1Rw34q6hB4Iw0Q=",
+            "created_at": "2026-10-06T20:06:36.083966",
+            "rotated_at": "2026-10-06T20:06:36.083126",
+            "updated_at": "2026-10-06T20:06:36.083966",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "WCcNRFtE6LG4o1Rw34q6hB4Iw0Q=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 119,
+            "seen_at": "2026-10-06T20:06:40.506453",
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "WCcNRFtE6LG4o1Rw34q6hB4Iw0Q=",
+            "created_at": "2026-10-06T20:06:36.083966",
+            "rotated_at": "2026-10-06T20:06:36.083126",
+            "updated_at": "2026-10-06T20:06:36.083966",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "WCcNRFtE6LG4o1Rw34q6hB4Iw0Q=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": []
+}
