@@ -10,10 +10,13 @@ use std::collections::HashMap;
 use std::sync::{Arc, LazyLock, Mutex};
 
 use fancy_regex::Regex;
-use markdown_it::parser::inline::{Text, TextSpecial};
+use markdown_it::parser::inline::{InlineRule, InlineState, Text, TextSpecial};
 use markdown_it::plugins::cmark::inline::autolink::Autolink;
 use markdown_it::plugins::html::html_inline::HtmlInline;
 use markdown_it::{MarkdownIt, Node, NodeValue, Renderer};
+
+use super::RenderSettings;
+use super::context::Context;
 
 /// A link the linkify rule made (`markup: "linkify"`, `info: "auto"`).
 /// The onebox rule may add a class and a target after the href.
@@ -153,6 +156,7 @@ struct Match {
 #[derive(Debug)]
 pub struct LinkifyIt {
     schema_search: Regex,
+    schema_at_start: Regex,
     http: Regex,
     relative: Regex,
     mailto: Regex,
@@ -236,11 +240,10 @@ impl LinkifyIt {
             r"(?:{}|(?:(?:(?:{})[.]){{1,4}}{})){}",
             s.ipv6_mail_host, s.domain, s.domain_root, s.host_terminator
         );
+        let schema_search = format!(r"(^|(?!_)(?:[><\x{{ff5c}}]|{}))({schema_names})", s.zpcc);
         Ok(LinkifyIt {
-            schema_search: compile(format!(
-                r"(^|(?!_)(?:[><\x{{ff5c}}]|{}))({schema_names})",
-                s.zpcc
-            ))?,
+            schema_at_start: compile(format!("^{schema_search}"))?,
+            schema_search: compile(schema_search)?,
             http: compile(format!(r"^//{url_host_port}{}", s.path))?,
             relative: compile(format!(
                 r"^(?:localhost|{}|(?:(?:{})[.]){{1,10}}{}){}{}{}",
@@ -259,6 +262,28 @@ impl LinkifyIt {
             ))
             .map_err(|e| format!("linkify: {e}"))?,
         })
+    }
+
+    /// `matchAtStart(text)`: a link with a schema starting the text, as
+    /// its normalized url.
+    fn match_at_start(&self, text: &str) -> Option<String> {
+        let caps = self.schema_at_start.captures(text).ok()??;
+        let whole = caps.get(0)?;
+        let schema = caps.get(2)?.as_str();
+        let len = self.schema_length(text, schema, whole.end());
+        if len == 0 {
+            return None;
+        }
+        let index = caps.get(1).map_or(0, |m| m.end());
+        let raw = &text[index..whole.end() + len];
+        // LinkifyIt#normalize
+        if schema.eq_ignore_ascii_case("mailto:")
+            && !raw.to_ascii_lowercase().starts_with("mailto:")
+        {
+            Some(format!("mailto:{raw}"))
+        } else {
+            Some(raw.to_string())
+        }
     }
 
     /// `testSchemaAt`: how much of the text after a schema is its link.
@@ -456,6 +481,81 @@ fn normalize_link_text(url: &str) -> Result<String, &'static str> {
         return Err("punycode hosts in links");
     }
     Ok(decode(url, KEEP).into_owned())
+}
+
+/// `isSchemeChar`
+fn is_scheme_char(b: u8) -> bool {
+    b.is_ascii_alphanumeric() || matches!(b, b'+' | b'-' | b'.')
+}
+
+/// markdown-it's `linkify` inline rule: at `://`, a schema written just
+/// before it starts a link, taken whole before emphasis, code spans or
+/// anything else can claim part of it (`http://a.com/__init__.py`).
+struct InlineLinkify;
+
+impl InlineRule for InlineLinkify {
+    const MARKER: char = ':';
+
+    fn run(state: &mut InlineState) -> Option<(Node, usize)> {
+        let linkify = state.md.ext.get::<RenderSettings>()?.linkify.clone()?;
+        if state.link_level > 0 {
+            return None;
+        }
+        let pos = state.pos;
+        if !state.src[pos..state.pos_max].starts_with("://") {
+            return None;
+        }
+        // The schema is the end of the pending text: up to ten scheme
+        // characters, starting with a letter.
+        let pending = state.trailing_text_get().as_bytes();
+        let most = pending.len().min(10).min(pos);
+        let proto_len = pending
+            .iter()
+            .rev()
+            .take(most)
+            .take_while(|b| is_scheme_char(**b))
+            .count();
+        if proto_len == 0 || !pending[pending.len() - proto_len].is_ascii_alphabetic() {
+            return None;
+        }
+        let proto_start = pos - proto_len;
+        if state.src.as_bytes()[proto_start..pos] != pending[pending.len() - proto_len..] {
+            return None;
+        }
+        let mut url = linkify.match_at_start(&state.src[proto_start..])?;
+        if url.len() <= proto_len {
+            return None;
+        }
+        url.truncate(url.trim_end_matches('*').len());
+        // The JS matches the rest of the whole source; a nested parse that
+        // ends earlier keeps the link inside it.
+        if proto_start + url.len() > state.pos_max {
+            return None;
+        }
+        let ctx = state.md.ext.get::<Context>()?;
+        if !url.is_ascii() {
+            ctx.refuse("non-ASCII urls in links (punycode and percent-encoding)");
+        }
+        let full_url = state.md.link_formatter.normalize_link(&url);
+        state.md.link_formatter.validate_link(&full_url)?;
+        let content = normalize_link_text(&url).unwrap_or_else(|what| {
+            ctx.refuse(what);
+            url.clone()
+        });
+        state.trailing_text_pop(proto_len);
+        state.pos = proto_start;
+        let mut node = Node::new(Linkified {
+            url: full_url,
+            class: None,
+            target_blank: false,
+        });
+        node.children.push(Node::new(Text { content }));
+        Some((node, url.len()))
+    }
+}
+
+pub fn add(md: &mut MarkdownIt) {
+    md.inline.add_rule::<InlineLinkify>();
 }
 
 /// The text of one node split around its links, or None without any.

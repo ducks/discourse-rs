@@ -497,6 +497,14 @@
   },
   {
     "id": "sample-62",
+    "raw": "_see http://example.com/a_b_\n\nsee http://example.com/*x* end, http://example.com/`code` and https://a.com/__init__.py\n\n**http://example.com/** *http://example.com/x* [text http://inner.com](http://outer.com)",
+    "topic_id": 35,
+    "user_id": 3,
+    "markdown": "<p>_see <a href=\"http://example.com/a_b_\" class=\"inline-onebox-loading\">http://example.com/a_b_</a></p>\n<p>see <a href=\"http://example.com/*x\" class=\"inline-onebox-loading\">http://example.com/*x</a>* end, <a href=\"http://example.com/%60code%60\" class=\"inline-onebox-loading\">http://example.com/`code`</a> and <a href=\"https://a.com/__init__.py\" class=\"inline-onebox-loading\">https://a.com/__init__.py</a></p>\n<p><strong><a href=\"http://example.com/\">http://example.com/</a></strong> <em><a href=\"http://example.com/x\" class=\"inline-onebox-loading\">http://example.com/x</a></em> <a href=\"http://outer.com\">text http://inner.com</a></p>",
+    "cooked": "<p>_see <a href=\"http://example.com/a_b_\" class=\"inline-onebox-loading\" rel=\"noopener nofollow ugc\">http://example.com/a_b_</a></p>\n<p>see <a href=\"http://example.com/*x\" class=\"inline-onebox-loading\" rel=\"noopener nofollow ugc\">http://example.com/*x</a>* end, <a href=\"http://example.com/%60code%60\" class=\"inline-onebox-loading\" rel=\"noopener nofollow ugc\">http://example.com/`code`</a> and <a href=\"https://a.com/__init__.py\" class=\"inline-onebox-loading\" rel=\"noopener nofollow ugc\">https://a.com/__init__.py</a></p>\n<p><strong><a href=\"http://example.com/\" rel=\"noopener nofollow ugc\">http://example.com/</a></strong> <em><a href=\"http://example.com/x\" class=\"inline-onebox-loading\" rel=\"noopener nofollow ugc\">http://example.com/x</a></em> <a href=\"http://outer.com\" rel=\"noopener nofollow ugc\">text http://inner.com</a></p>"
+  },
+  {
+    "id": "sample-63",
     "raw": "An upload that exists: ![image|64x64](upload://qa4V5109J7tySkPok8r3aBAruY1.png) and [a link|attachment](upload://qa4V5109J7tySkPok8r3aBAruY1.png).",
     "topic_id": 35,
     "user_id": 3,
