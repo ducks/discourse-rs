@@ -11,8 +11,7 @@
 pub mod cleanup;
 pub mod cooked_post_processor;
 pub mod helpers;
-pub mod render;
-pub mod sanitizer;
+pub use discourse_markdown::{render, sanitizer};
 
 use std::sync::Arc;
 
@@ -242,8 +241,7 @@ pub async fn markdown(host: &Host, raw: &str, opts: &MarkdownOptions) -> Result<
     let options = options(host, &mut conn, &settings).await?;
     let hashtag_types = options["hashtagTypesInPriorityOrder"].clone();
 
-    let mut render_settings =
-        render::RenderSettings::from_site_settings(&settings, &host.i18n, &host.config)?;
+    let mut render_settings = render_settings(&settings, &host.i18n, &host.config)?;
     render_settings.topic_id = opts.topic_id;
     render_settings.post_id = opts.post_id;
     render_settings.force_quote_link = opts.force_quote_link;
@@ -326,4 +324,100 @@ pub async fn cook(host: &Host, raw: &str, opts: &MarkdownOptions) -> Result<Stri
         opts.omit_nofollow,
     )
     .await
+}
+
+/// `RenderSettings` from the site settings: what PrettyText.buildOptions
+/// reads of them.
+pub fn render_settings(
+    settings: &SiteSettings,
+    i18n: &crate::i18n::I18n,
+    config: &crate::config::Config,
+) -> Result<render::RenderSettings, CookError> {
+    let base_path = config.globals.relative_url_root();
+    // The typographer's quotes are fixed in the crate's rule.
+    if settings.get("markdown_typographer_quotation_marks")?.to_s() != "“|”|‘|’" {
+        return Err(
+            Unsupported("markdown_typographer_quotation_marks other than the default").into(),
+        );
+    }
+    if settings.get("unicode_usernames")?.truthy() {
+        return Err(Unsupported("unicode usernames in mentions").into());
+    }
+    // getURL on the emoji path: the base path in front, or the
+    // external emoji host in its place.
+    if config.globals.cdn_url().is_some() {
+        return Err(Unsupported("emoji images behind a CDN").into());
+    }
+    let emoji_base_path = match settings.get("external_emoji_url")?.presence() {
+        Some(external) => external,
+        None => format!("{base_path}/images/emoji"),
+    };
+    let split = |name: &str| -> Result<Vec<String>, CookError> {
+        Ok(settings
+            .get(name)?
+            .to_s()
+            .split('|')
+            .filter(|s| !s.is_empty())
+            .map(str::to_string)
+            .collect())
+    };
+    let linkify_tlds = if settings.get("enable_markdown_linkify")?.truthy() {
+        Some(split("markdown_linkify_tlds")?)
+    } else {
+        None
+    };
+    let mut avatar_sizes: Vec<i64> = split("avatar_sizes")?
+        .iter()
+        .map(|s| crate::ruby::to_i(s))
+        .collect();
+    avatar_sizes.sort_unstable();
+    Ok(render::RenderSettings {
+        breaks: !settings.get("traditional_markdown_linebreaks")?.truthy(),
+        linkify_tlds,
+        linkify: None,
+        typographer: settings.get("enable_markdown_typographer")?.truthy(),
+        mentions: settings.get("enable_mentions")?.truthy(),
+        emoji: settings.get("enable_emoji")?.truthy(),
+        emoji_shortcuts: settings.get("enable_emoji_shortcuts")?.truthy(),
+        inline_emoji: settings.get("enable_inline_emoji_translation")?.truthy(),
+        emoji_set: settings.get("emoji_set")?.to_s(),
+        emoji_base_path,
+        default_code_lang: settings.get("default_code_lang")?.to_s(),
+        heading_anchor_label: i18n
+            .t("js.post.heading_anchor")
+            .unwrap_or("Heading link")
+            .to_string(),
+        // buildOptions keeps the iframe prefixes with a host and a path.
+        allowed_iframes: split("allowed_iframes")?
+            .into_iter()
+            .filter(|s| s.matches('/').count() >= 3)
+            .collect(),
+        allowed_href_schemes: split("allowed_href_schemes")?,
+        checklist: settings.get("checklist_enabled")?.truthy(),
+        footnotes: settings.get("enable_markdown_footnotes")?.truthy(),
+        poll: settings.get("poll_enabled")?.truthy(),
+        poll_maximum_options: settings.get("poll_maximum_options")?.to_i(),
+        poll_voters_label: i18n
+            .t("js.poll.voters.other")
+            .unwrap_or("voters")
+            .to_string(),
+        local_dates: settings.get("discourse_local_dates_enabled")?.truthy(),
+        local_dates_email_format: settings
+            .get("discourse_local_dates_email_format")?
+            .to_s()
+            .to_string(),
+        local_dates_email_timezone: settings
+            .get("discourse_local_dates_email_timezone")?
+            .to_s()
+            .to_string(),
+        spoiler: settings.get("spoiler_enabled")?.truthy(),
+        policy: settings.get("policy_enabled")?.truthy(),
+        avatar_sizes,
+        base_path: base_path.to_string(),
+        secure_uploads: settings.get("secure_uploads")?.truthy(),
+        topic_id: None,
+        force_quote_link: false,
+        post_id: None,
+    }
+    .compiled()?)
 }

@@ -19,7 +19,7 @@ use regex::Regex;
 
 use super::RenderSettings;
 use super::element::{BlockText, Element};
-use crate::pretty_text::sanitizer::AllowList;
+use crate::sanitizer::AllowList;
 
 static MARKER: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"\[[ xX]?\]").unwrap());
 static RAW_MARKUP: LazyLock<Regex> =

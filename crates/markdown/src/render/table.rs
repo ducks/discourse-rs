@@ -11,7 +11,7 @@
 use markdown_it::plugins::extra::tables::Table;
 use markdown_it::{Node, NodeValue, Renderer};
 
-use crate::pretty_text::sanitizer::AllowList;
+use crate::sanitizer::AllowList;
 
 #[derive(Debug)]
 struct MdTable;

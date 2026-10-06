@@ -5,6 +5,7 @@ mod admin_users;
 mod bookmark_writes;
 mod bookmarks;
 mod bus;
+pub(crate) mod composer;
 mod drafts;
 mod list;
 mod live;
@@ -370,6 +371,11 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/sidebar.js", get(sidebar_js))
         .route("/assets/topic.js", get(topic_js))
         .route("/assets/composer.js", get(composer_js))
+        .route("/assets/markdown.wasm", get(composer::markdown_wasm))
+        .route(
+            "/assets/markdown-settings.json",
+            get(composer::markdown_settings),
+        )
         .nest_service("/uploads", ServeDir::new(public.join("uploads")));
     if let Some(emoji) = config.emoji_dir() {
         router = router.nest_service("/images/emoji", ServeDir::new(emoji));

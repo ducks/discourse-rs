@@ -8,7 +8,7 @@ use super::RenderSettings;
 use super::bbcode::TagInfo;
 use super::context::Context;
 use super::element::{BlockText, Element, RawHtml};
-use crate::pretty_text::sanitizer::AllowList;
+use crate::sanitizer::AllowList;
 
 /// JavaScript's `parseInt(s, 10)`: the leading integer, if there is one.
 pub fn parse_int(s: &str) -> Option<i64> {

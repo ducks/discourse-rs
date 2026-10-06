@@ -17,7 +17,7 @@ use markdown_it::{MarkdownIt, Node, NodeValue, Renderer};
 
 use super::RenderSettings;
 use super::element::{Holder, RawHtml};
-use crate::pretty_text::sanitizer::AllowList;
+use crate::sanitizer::AllowList;
 
 /// `env.footnotes`: the labels defined, and the notes in the order they
 /// were first referenced.

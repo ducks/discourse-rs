@@ -826,7 +826,7 @@ pub fn add(md: &mut MarkdownIt) {
     md.inline.add_rule::<InlineBbcode>();
 }
 
-pub fn allow(list: &mut crate::pretty_text::sanitizer::AllowList, settings: &RenderSettings) {
+pub fn allow(list: &mut crate::sanitizer::AllowList, settings: &RenderSettings) {
     list.allow(&[
         "span.bbcode-b",
         "span.bbcode-i",

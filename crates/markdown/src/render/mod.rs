@@ -19,7 +19,7 @@ mod emoji;
 mod footnotes;
 mod html_img;
 mod link_pipes;
-mod linkify;
+pub mod linkify;
 pub mod local_dates;
 mod md_utils;
 mod newline;
@@ -43,19 +43,21 @@ use markdown_it::{MarkdownIt, Node};
 
 use self::context::{Context, Lookups, Needs};
 use self::linkify::LinkifyIt;
-use super::CookError;
-use super::sanitizer::{AllowList, sanitize};
 use crate::Unsupported;
-use crate::site_settings::SiteSettings;
+use crate::sanitizer::{AllowList, sanitize};
 
 /// What the rules read: `discourse.limitedSiteSettings`, the feature
-/// switches, and the per-cook options.
-#[derive(Debug, Clone)]
+/// switches, and the per-cook options. The server builds it from the site
+/// settings; the composer's preview receives it as JSON.
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct RenderSettings {
     /// `breaks`: a newline inside a paragraph is a `<br>`.
     pub breaks: bool,
-    /// `linkify`, compiled with the site's `markdown_linkify_tlds`.
-    linkify: Option<Arc<LinkifyIt>>,
+    /// `markdown_linkify_tlds` when linkify is on (`enable_markdown_linkify`).
+    pub linkify_tlds: Option<Vec<String>>,
+    /// `linkify`, compiled from linkify_tlds by `compiled`.
+    #[serde(skip)]
+    pub linkify: Option<Arc<LinkifyIt>>,
     pub typographer: bool,
     /// `features.mentions`
     pub mentions: bool,
@@ -110,100 +112,16 @@ pub struct RenderSettings {
 impl MarkdownItExt for RenderSettings {}
 
 impl RenderSettings {
-    pub fn from_site_settings(
-        settings: &SiteSettings,
-        i18n: &crate::i18n::I18n,
-        config: &crate::config::Config,
-    ) -> Result<Self, CookError> {
-        let base_path = config.globals.relative_url_root();
-        // The typographer's quotes are fixed in the crate's rule.
-        if settings.get("markdown_typographer_quotation_marks")?.to_s() != "“|”|‘|’" {
-            return Err(
-                Unsupported("markdown_typographer_quotation_marks other than the default").into(),
-            );
-        }
-        if settings.get("unicode_usernames")?.truthy() {
-            return Err(Unsupported("unicode usernames in mentions").into());
-        }
-        // getURL on the emoji path: the base path in front, or the
-        // external emoji host in its place.
-        if config.globals.cdn_url().is_some() {
-            return Err(Unsupported("emoji images behind a CDN").into());
-        }
-        let emoji_base_path = match settings.get("external_emoji_url")?.presence() {
-            Some(external) => external,
-            None => format!("{base_path}/images/emoji"),
-        };
-        let split = |name: &str| -> Result<Vec<String>, CookError> {
-            Ok(settings
-                .get(name)?
-                .to_s()
-                .split('|')
-                .filter(|s| !s.is_empty())
-                .map(str::to_string)
-                .collect())
-        };
-        let linkify = if settings.get("enable_markdown_linkify")?.truthy() {
-            let tlds = split("markdown_linkify_tlds")?;
-            Some(
-                LinkifyIt::for_tlds(&tlds)
+    /// Compiles linkify from linkify_tlds, as the settings are received.
+    pub fn compiled(mut self) -> Result<Self, Unsupported> {
+        self.linkify = match &self.linkify_tlds {
+            Some(tlds) => Some(
+                LinkifyIt::for_tlds(tlds)
                     .map_err(|_| Unsupported("markdown_linkify_tlds that do not compile"))?,
-            )
-        } else {
-            None
+            ),
+            None => None,
         };
-        let mut avatar_sizes: Vec<i64> = split("avatar_sizes")?
-            .iter()
-            .map(|s| crate::ruby::to_i(s))
-            .collect();
-        avatar_sizes.sort_unstable();
-        Ok(RenderSettings {
-            breaks: !settings.get("traditional_markdown_linebreaks")?.truthy(),
-            linkify,
-            typographer: settings.get("enable_markdown_typographer")?.truthy(),
-            mentions: settings.get("enable_mentions")?.truthy(),
-            emoji: settings.get("enable_emoji")?.truthy(),
-            emoji_shortcuts: settings.get("enable_emoji_shortcuts")?.truthy(),
-            inline_emoji: settings.get("enable_inline_emoji_translation")?.truthy(),
-            emoji_set: settings.get("emoji_set")?.to_s(),
-            emoji_base_path,
-            default_code_lang: settings.get("default_code_lang")?.to_s(),
-            heading_anchor_label: i18n
-                .t("js.post.heading_anchor")
-                .unwrap_or("Heading link")
-                .to_string(),
-            // buildOptions keeps the iframe prefixes with a host and a path.
-            allowed_iframes: split("allowed_iframes")?
-                .into_iter()
-                .filter(|s| s.matches('/').count() >= 3)
-                .collect(),
-            allowed_href_schemes: split("allowed_href_schemes")?,
-            checklist: settings.get("checklist_enabled")?.truthy(),
-            footnotes: settings.get("enable_markdown_footnotes")?.truthy(),
-            poll: settings.get("poll_enabled")?.truthy(),
-            poll_maximum_options: settings.get("poll_maximum_options")?.to_i(),
-            poll_voters_label: i18n
-                .t("js.poll.voters.other")
-                .unwrap_or("voters")
-                .to_string(),
-            local_dates: settings.get("discourse_local_dates_enabled")?.truthy(),
-            local_dates_email_format: settings
-                .get("discourse_local_dates_email_format")?
-                .to_s()
-                .to_string(),
-            local_dates_email_timezone: settings
-                .get("discourse_local_dates_email_timezone")?
-                .to_s()
-                .to_string(),
-            spoiler: settings.get("spoiler_enabled")?.truthy(),
-            policy: settings.get("policy_enabled")?.truthy(),
-            avatar_sizes,
-            base_path: base_path.to_string(),
-            secure_uploads: settings.get("secure_uploads")?.truthy(),
-            topic_id: None,
-            force_quote_link: false,
-            post_id: None,
-        })
+        Ok(self)
     }
 }
 
@@ -271,9 +189,9 @@ pub fn render(
     raw: &str,
     settings: &RenderSettings,
     lookups: Lookups,
-) -> Result<(String, Needs), CookError> {
+) -> Result<(String, Needs), Unsupported> {
     if let Some(what) = table::refuse_glue(raw) {
-        return Err(Unsupported(what).into());
+        return Err(Unsupported(what));
     }
     let md = engine(settings, lookups);
     let ctx = md.ext.get::<Context>().expect("context");
@@ -285,7 +203,7 @@ pub fn render(
     bbcode::pair(&mut root, settings);
     if let Some(linkify) = &settings.linkify {
         if let Some(what) = linkify::run(&mut root, linkify, &md) {
-            return Err(Unsupported(what).into());
+            return Err(Unsupported(what));
         }
         onebox::run(&mut root);
     }
@@ -314,7 +232,7 @@ pub fn render(
         .trim()
         .to_string();
     if let Some(what) = ctx.unsupported() {
-        return Err(Unsupported(what).into());
+        return Err(Unsupported(what));
     }
     Ok((html, ctx.needs()))
 }

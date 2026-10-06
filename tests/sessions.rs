@@ -1765,3 +1765,61 @@ async fn members_get_the_composer_and_raw_posts() {
     assert!(raw.body.starts_with("Reply one from user1"), "{}", raw.body);
     assert_eq!(client.get("/raw/35/99").await.status, StatusCode::NOT_FOUND);
 }
+
+/// The composer's preview: its toggle and where it loads the renderer and
+/// the settings from, which cook as the server does.
+#[tokio::test]
+async fn the_composer_preview_loads_the_renderer_and_settings() {
+    let db = TestDb::new().await;
+    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut client = Client::new(app_state.clone());
+    client.login("user1", "password").await;
+    let page = client.get("/latest").await.body;
+    assert!(page.contains(r#"class="btn no-text btn-icon btn-transparent btn-mini-toggle toggle-preview" title="hide preview""#));
+    let wasm_url = page
+        .split(r#"data-preview-wasm=""#)
+        .nth(1)
+        .and_then(|rest| rest.split('"').next())
+        .expect("the composer names the renderer")
+        .replace("&#x3D;", "=");
+    assert!(
+        wasm_url.starts_with("/assets/markdown.wasm?v="),
+        "{wasm_url}"
+    );
+    assert!(page.contains(r#"data-preview-settings="/assets/markdown-settings.json" data-label-show-preview="show preview" data-label-hide-preview="hide preview""#));
+
+    let wasm = client.get(&wasm_url).await;
+    assert_eq!(wasm.status, StatusCode::OK);
+    assert!(wasm.body.starts_with("\0asm"));
+    assert!(
+        wasm.headers
+            .iter()
+            .any(|(k, v)| k == "content-type" && v == "application/wasm")
+    );
+
+    let settings = client.get("/assets/markdown-settings.json").await;
+    assert_eq!(settings.status, StatusCode::OK);
+    let json: serde_json::Value = serde_json::from_str(&settings.body).unwrap();
+    assert_eq!(json["emoji_set"], "twitter");
+    assert_eq!(json["breaks"], true);
+    assert!(
+        json.get("linkify").is_none(),
+        "compiled where it is received"
+    );
+    // What the preview renders with them is what the post cooks to.
+    let render =
+        serde_json::from_str::<discourse_rs::pretty_text::render::RenderSettings>(&settings.body)
+            .unwrap()
+            .compiled()
+            .unwrap();
+    let (html, _) = discourse_rs::pretty_text::render::render(
+        "**hi** :smile: https://example.com",
+        &render,
+        Default::default(),
+    )
+    .unwrap();
+    assert_eq!(
+        html,
+        r#"<p><strong>hi</strong> <img src="/images/emoji/twitter/smile.png?v=15" title=":smile:" class="emoji" alt=":smile:" loading="lazy" width="20" height="20"> <a href="https://example.com">https://example.com</a></p>"#
+    );
+}

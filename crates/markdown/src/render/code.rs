@@ -7,7 +7,7 @@ use markdown_it::{Node, NodeValue, Renderer};
 
 use super::RenderSettings;
 use super::tight::AfterText;
-use crate::pretty_text::sanitizer::AllowList;
+use crate::sanitizer::AllowList;
 
 /// `TEXT_CODE_CLASSES`
 const TEXT_CODE_CLASSES: [&str; 3] = ["text", "pre", "plain"];

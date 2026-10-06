@@ -20,7 +20,7 @@ use super::RenderSettings;
 use super::bbcode::{data_attributes, parse_tag};
 use super::context::Context;
 use super::element::Element;
-use crate::pretty_text::sanitizer::AllowList;
+use crate::sanitizer::AllowList;
 
 const INVALID: &str = "Invalid date";
 
