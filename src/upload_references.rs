@@ -8,6 +8,7 @@
 
 use sqlx::PgConnection;
 
+use crate::file_store::FileStore;
 use crate::pretty_text::cleanup::{all_elements, attr, element_name, parse, uri_host};
 use crate::pretty_text::helpers::{sha1_from_base62, sha1_from_short_url};
 use crate::site_settings::SiteSettings;
@@ -133,7 +134,7 @@ fn url_path(url: &str) -> Option<String> {
 
 /// `each_upload_url(fragments:)` over cooked html, with the site's
 /// hostname for the short urls and local store's urls.
-pub fn each_upload_url(html: &str, hostname: &str) -> Vec<UploadUrl> {
+pub fn each_upload_url(html: &str, hostname: &str, store: &FileStore) -> Vec<UploadUrl> {
     const SELECTORS: [(&str, &str); 7] = [
         ("a", "href"),
         ("img", "src"),
@@ -191,12 +192,10 @@ pub fn each_upload_url(html: &str, hostname: &str) -> Vec<UploadUrl> {
         if !patterns.contains(&true) {
             continue;
         }
-        // has_been_uploaded? on the local store, or a relative url
+        // has_been_uploaded? on the store, or a relative url
         // (include_local_upload).
         let relative = src.starts_with('/') && !src.starts_with("//");
-        let local = matches!(uri_host(&src), Ok(Some(ref host)) if host == hostname)
-            && url_path(&src).is_some_and(|p| p.starts_with("/uploads/"));
-        if !relative && !local {
+        if !relative && !store.has_been_uploaded(&src) {
             continue;
         }
         let Some(path) = url_path(&unencode(&src)).filter(|p| !p.is_empty()) else {
@@ -284,6 +283,7 @@ pub async fn get_from_url(
 pub async fn post_image_upload(
     conn: &mut PgConnection,
     hostname: &str,
+    store: &FileStore,
     cooked: &str,
 ) -> Result<Option<i32>, AppError> {
     let (marked, others) = {
@@ -342,7 +342,7 @@ pub async fn post_image_upload(
         (marked, others)
     };
     for images in [marked, others] {
-        for found in each_upload_url(&images, hostname) {
+        for found in each_upload_url(&images, hostname, store) {
             if let Some(id) = fetch_from(&mut *conn, &found).await? {
                 return Ok(Some(id));
             }
@@ -365,6 +365,7 @@ pub async fn link_post_uploads(
     conn: &mut PgConnection,
     settings: &SiteSettings,
     hostname: &str,
+    store: &FileStore,
     post_id: i32,
     cooked: &str,
 ) -> Result<(), AppError> {
@@ -373,7 +374,7 @@ pub async fn link_post_uploads(
     }
     let video_thumbnails = settings.get("video_thumbnails_enabled")?.truthy();
     let mut upload_ids: Vec<i32> = Vec::new();
-    for found in each_upload_url(cooked, hostname) {
+    for found in each_upload_url(cooked, hostname, store) {
         let Some(id) = fetch_from(&mut *conn, &found).await? else {
             continue;
         };
@@ -424,7 +425,8 @@ mod tests {
 <p><a href="https://example.com/uploads/default/original/1X/{SHA1}.png">elsewhere</a></p>
 <p><img src="/uploads/default/optimized/1X/{SHA1}_2_690x388.png"></p>"#
         );
-        let found = each_upload_url(&html, "test.localhost");
+        let store = crate::file_store::FileStore::test_local("http://test.localhost");
+        let found = each_upload_url(&html, "test.localhost", &store);
         let short = sha1_from_base62("xyKj1g5mJy4zbB1fLRxTRBXpZhp");
         assert_eq!(
             found,

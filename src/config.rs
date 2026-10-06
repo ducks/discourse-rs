@@ -88,6 +88,17 @@ impl GlobalSettings {
         self.get("s3_cdn_url")
     }
 
+    /// `GlobalSetting.use_s3?`: a bucket and region, and an IAM profile or
+    /// keys.
+    pub fn use_s3(&self) -> bool {
+        let truthy = |name: &str| self.get(name).is_some_and(|v| v == "true");
+        self.get("s3_bucket").is_some()
+            && self.get("s3_region").is_some()
+            && (truthy("s3_use_iam_profile")
+                || (self.get("s3_access_key_id").is_some()
+                    && self.get("s3_secret_access_key").is_some()))
+    }
+
     pub fn relative_url_root(&self) -> &str {
         self.get("relative_url_root").unwrap_or("")
     }

@@ -3,7 +3,7 @@
 //! local FileStore under `optimized/`, and the Upload methods that find and
 //! create them.
 
-use std::path::Path;
+use crate::file_store::FileStore;
 
 use sha1::{Digest, Sha1};
 use sqlx::PgConnection;
@@ -84,7 +84,7 @@ fn decodable(extension: &str) -> bool {
 pub async fn create_thumbnail(
     conn: &mut PgConnection,
     settings: &SiteSettings,
-    public_dir: &Path,
+    store: &FileStore,
     upload: &Upload,
     width: i32,
     height: i32,
@@ -93,7 +93,7 @@ pub async fn create_thumbnail(
     if !settings.get("create_thumbnails")?.truthy() {
         return Ok(None);
     }
-    create_for(conn, settings, public_dir, upload, width, height, crop).await
+    create_for(conn, settings, store, upload, width, height, crop).await
 }
 
 /// `Topic.share_thumbnail_size`, the one `Topic.thumbnail_sizes` has
@@ -107,7 +107,7 @@ const SHARE_THUMBNAIL_SIZE: (i32, i32) = (1024, 1024);
 pub async fn generate_topic_thumbnails(
     conn: &mut PgConnection,
     settings: &SiteSettings,
-    public_dir: &Path,
+    store: &FileStore,
     upload: &Upload,
 ) -> Result<(), CookError> {
     if !settings.get("create_thumbnails")?.truthy() {
@@ -157,7 +157,7 @@ pub async fn generate_topic_thumbnails(
         create_for(
             conn,
             settings,
-            public_dir,
+            store,
             upload,
             target_width,
             target_height,
@@ -186,7 +186,7 @@ pub async fn generate_topic_thumbnails(
 pub async fn create_for(
     conn: &mut PgConnection,
     settings: &SiteSettings,
-    public_dir: &Path,
+    store: &FileStore,
     upload: &Upload,
     width: i32,
     height: i32,
@@ -226,8 +226,8 @@ pub async fn create_for(
     let Some(format) = Format::from_extension(ext) else {
         return Err(Unsupported("thumbnails of SVG or AVIF uploads").into());
     };
-    let original_path = public_dir.join(upload.url.trim_start_matches('/'));
-    let Ok(original) = tokio::fs::read(&original_path).await else {
+    // store.path_for(upload); a remote store would download it.
+    let Some(original) = store.read(&upload.url).await? else {
         tracing::error!(url = %upload.url, "could not find the file in the store");
         return Ok(None);
     };
@@ -261,19 +261,15 @@ pub async fn create_for(
     .bind(VERSION)
     .fetch_one(&mut *conn)
     .await?;
-    // store_optimized_image: get_path_for_optimized_image under the root.
-    let relative = crate::uploads::get_path_for(
-        "optimized",
-        upload.id,
-        sha1,
-        &format!("_{VERSION}_{width}x{height}{extension}"),
-    );
-    let path = crate::uploads::upload_root(public_dir).join(&relative);
-    if let Some(parent) = path.parent() {
-        tokio::fs::create_dir_all(parent).await?;
-    }
-    tokio::fs::write(&path, &bytes).await?;
-    let url = format!("/uploads/default/{relative}");
+    // store_optimized_image, then the url saved.
+    let url = store
+        .store_optimized_image(
+            &bytes,
+            upload.id,
+            sha1,
+            &format!("_{VERSION}_{width}x{height}{extension}"),
+        )
+        .await?;
     sqlx::query(
         "UPDATE optimized_images SET url = $2, updated_at = clock_timestamp() WHERE id = $1",
     )

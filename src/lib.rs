@@ -16,6 +16,7 @@ pub mod drafts;
 pub mod email;
 pub use discourse_markdown::emoji;
 pub mod excerpt;
+pub mod file_store;
 pub mod flags;
 pub mod groups;
 pub mod guardian;

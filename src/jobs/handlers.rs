@@ -254,7 +254,9 @@ async fn process_post(state: &AppState, args: &Value) -> Result<(), AppError> {
         settings: &s,
     }
     .current_hostname()?;
-    let image = crate::upload_references::post_image_upload(&mut conn, &hostname, &html).await?;
+    let store = crate::file_store::FileStore::for_site(&state.config, &s)?;
+    let image =
+        crate::upload_references::post_image_upload(&mut conn, &hostname, &store, &html).await?;
     match image {
         Some(upload_id) => {
             sqlx::query("UPDATE posts SET image_upload_id = $2 WHERE id = $1")
@@ -292,10 +294,7 @@ async fn process_post(state: &AppState, args: &Value) -> Result<(), AppError> {
                     crate::optimized_images::Upload::find(&mut conn, upload_id).await?
                 {
                     crate::optimized_images::generate_topic_thumbnails(
-                        &mut conn,
-                        &s,
-                        &state.config.public_dir,
-                        &upload,
+                        &mut conn, &s, &store, &upload,
                     )
                     .await?;
                 }
@@ -327,7 +326,8 @@ async fn process_post(state: &AppState, args: &Value) -> Result<(), AppError> {
         return Err(Unsupported("granting the first emoji badge").into());
     }
     // @post.link_post_uploads(fragments: @doc)
-    crate::upload_references::link_post_uploads(&mut conn, &s, &hostname, post_id, &html).await?;
+    crate::upload_references::link_post_uploads(&mut conn, &s, &hostname, &store, post_id, &html)
+        .await?;
     if html != post.cooked {
         sqlx::query("UPDATE posts SET cooked = $2 WHERE id = $1")
             .bind(post_id)

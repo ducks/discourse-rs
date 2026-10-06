@@ -345,6 +345,8 @@ fn clean_post_raw_data(raw: &str) -> Result<String, AppError> {
 pub struct BaseUrls<'a> {
     pub base_path: &'a str,
     pub base_url_no_prefix: String,
+    /// The site's store, for `has_been_uploaded?`.
+    pub store: crate::file_store::FileStore,
 }
 
 impl BaseUrls<'_> {
@@ -353,8 +355,7 @@ impl BaseUrls<'_> {
     fn is_local(&self, url: &str) -> bool {
         let bp = self.base_path;
         !url.is_empty()
-            && (url.starts_with(&format!("{bp}/uploads/default"))
-                || url.starts_with(&format!("{}{bp}/uploads/default", self.base_url_no_prefix))
+            && (self.store.has_been_uploaded(url)
                 || ["assets", "plugins", "images"]
                     .iter()
                     .any(|d| url.starts_with(&format!("{bp}/{d}/")))
@@ -436,6 +437,7 @@ mod tests {
         BaseUrls {
             base_path: "",
             base_url_no_prefix: "http://localhost:3000".into(),
+            store: crate::file_store::FileStore::test_local("http://localhost:3000"),
         }
     }
 
