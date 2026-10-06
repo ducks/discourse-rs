@@ -1,0 +1,18 @@
+{
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/session/hp.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/u/activate-account/123%2f%252e.json",
+      "params": {
+        "password_confirmation": "{{responses.0.body.value}}",
+        "challenge": "{{responses.0.body.challenge|reverse}}"
+      }
+    }
+  ],
+  "not_yet": "A token Rails' route constraint rejects (404) answers 422."
+}

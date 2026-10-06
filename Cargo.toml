@@ -54,7 +54,13 @@ kamadak-exif = "0.6.1"
 
 [dev-dependencies]
 http-body-util = "0.1"
+libtest-mimic = "0.8.2"
 tower = { version = "0.5", features = ["util"] }
+
+# Every recorded write case is a test of its own (tests/writes.rs).
+[[test]]
+name = "writes"
+harness = false
 
 # PBKDF2 at 600k iterations (Discourse's password hashing) is unusable
 # unoptimized; keep the crypto fast in debug builds and tests.

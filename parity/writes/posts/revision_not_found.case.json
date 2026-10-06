@@ -1,0 +1,13 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/posts/36/revisions/2.json"
+    },
+    {
+      "method": "GET",
+      "path": "/posts/36/revisions/1.json"
+    }
+  ]
+}

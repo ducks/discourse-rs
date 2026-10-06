@@ -1,0 +1,14 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/39/status",
+      "params": {
+        "status": "visible",
+        "enabled": "true",
+        "until": "2027-01-01T00:00:00Z"
+      }
+    }
+  ]
+}

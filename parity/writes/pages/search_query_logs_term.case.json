@@ -1,0 +1,13 @@
+{
+  "user": "user0",
+  "settings": {
+    "log_search_queries": true
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/search/query.json?term=fixture"
+    }
+  ],
+  "not_yet": "search_logs.crawler is true for a request without a user agent."
+}

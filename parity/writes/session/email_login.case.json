@@ -1,0 +1,14 @@
+{
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/u/email-login.json",
+      "params": {
+        "login": "user1"
+      }
+    }
+  ],
+  "run_jobs": [
+    "critical_user_email"
+  ]
+}

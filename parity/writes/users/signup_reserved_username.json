@@ -1,0 +1,51 @@
+{
+  "name": "signup_reserved_username",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/session/hp.json"
+    },
+    {
+      "method": "POST",
+      "path": "/u.json",
+      "params": {
+        "name": "Reserved Person",
+        "email": "reserved.person@example.com",
+        "password": "a-long-enough-pass-phrase",
+        "username": "Reserved",
+        "password_confirmation": "{{responses.0.body.value}}",
+        "challenge": "{{responses.0.body.challenge|reverse}}"
+      }
+    }
+  ],
+  "started_at": "2026-10-06T20:09:16.205747",
+  "transaction_started_at": "2026-10-06T20:09:15.192345",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "value": "c044768126a8a1a58215237938b480b3",
+        "challenge": "f72745bf5483dc4ba3faa6d23312320c",
+        "expires_in": 3600
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": false,
+        "message": "That username is not allowed."
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "settings": {
+    "reserved_usernames": "a|reserved|b"
+  },
+  "recorded_from": {
+    "case": "67cc8c53277d181cb4863917dcf1e7608414b599f2257caa73116ff2981a812d",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

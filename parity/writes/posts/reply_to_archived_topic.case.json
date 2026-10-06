@@ -1,0 +1,13 @@
+{
+  "user": "user0",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 41,
+        "raw": "A reply to an archived topic, which a regular user cannot make there."
+      }
+    }
+  ]
+}

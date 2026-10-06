@@ -1,0 +1,29 @@
+{
+  "user": "user3",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/4/status",
+      "params": {
+        "status": "closed",
+        "enabled": "true"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/t/4/status",
+      "params": {
+        "status": "visible",
+        "enabled": "false"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/t/42/status",
+      "params": {
+        "status": "closed",
+        "enabled": "true"
+      }
+    }
+  ]
+}

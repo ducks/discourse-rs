@@ -1,0 +1,21 @@
+{
+  "user": "user0",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/session/hp.json"
+    },
+    {
+      "method": "POST",
+      "path": "/u.json",
+      "params": {
+        "name": "Second Account",
+        "email": "second.account@example.com",
+        "password": "a-long-enough-pass-phrase",
+        "username": "secondaccount",
+        "password_confirmation": "{{responses.0.body.value}}",
+        "challenge": "{{responses.0.body.challenge|reverse}}"
+      }
+    }
+  ]
+}

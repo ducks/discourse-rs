@@ -1,0 +1,19 @@
+{
+  "user": "user2",
+  "setup": [
+    "UPDATE post_timings SET msecs = 2147483638 WHERE topic_id = 35 AND post_number = 3 AND user_id = 4"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/topics/timings",
+      "params": {
+        "topic_id": 35,
+        "topic_time": 100,
+        "timings": {
+          "3": 100
+        }
+      }
+    }
+  ]
+}

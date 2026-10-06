@@ -1,0 +1,20 @@
+{
+  "user": "user0",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/user0.json",
+      "params": {
+        "name": "User Zero",
+        "username": "renamedzero",
+        "email": "renamed.zero@example.com",
+        "password": "another-long-pass-phrase",
+        "admin": true,
+        "moderator": true,
+        "trust_level": 4,
+        "approved": true,
+        "active": false
+      }
+    }
+  ]
+}

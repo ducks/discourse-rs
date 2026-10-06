@@ -1,0 +1,15 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/user1.json",
+      "params": {
+        "name": "User One",
+        "location": "Portland",
+        "website": "example.com",
+        "bio_raw": "Hello, I *like* parity."
+      }
+    }
+  ]
+}

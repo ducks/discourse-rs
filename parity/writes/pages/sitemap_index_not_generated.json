@@ -1,0 +1,28 @@
+{
+  "name": "sitemap_index_not_generated",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/sitemap.xml"
+    }
+  ],
+  "started_at": "2026-10-06T20:09:52.419833",
+  "transaction_started_at": "2026-10-06T20:09:51.729243",
+  "responses": [
+    {
+      "status": 200,
+      "body": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<sitemapindex xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n</sitemapindex>\n"
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "setup": [
+    "DELETE FROM sitemaps"
+  ],
+  "recorded_from": {
+    "case": "1883378537b9a4a75d42ba6d52c54683f344c858b218d6e4884ea19642806eac",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

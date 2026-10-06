@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/short_site_description.json",
+      "params": {
+        "short_site_description": "A forum for parity tests"
+      }
+    }
+  ]
+}

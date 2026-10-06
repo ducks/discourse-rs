@@ -1,0 +1,30 @@
+{
+  "user": "user0",
+  "settings": {
+    "max_drafts_per_user": 1
+  },
+  "setup": [
+    "INSERT INTO drafts (id, user_id, draft_key, data, sequence, revisions, owner, created_at, updated_at) VALUES (9501, 2, 'new_topic', '{\"reply\":\"Earlier topic draft\",\"action\":\"createTopic\"}', 0, 1, NULL, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "UPDATE user_stats SET draft_count = 1 WHERE user_id = 2"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/drafts.json",
+      "params": {
+        "draft_key": "topic_35",
+        "sequence": 0,
+        "data": "{\"reply\":\"A second draft over the limit\",\"action\":\"reply\"}"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/drafts.json",
+      "params": {
+        "draft_key": "new_topic",
+        "sequence": 0,
+        "data": "{\"reply\":\"Updating the draft I already have\",\"action\":\"createTopic\"}"
+      }
+    }
+  ]
+}

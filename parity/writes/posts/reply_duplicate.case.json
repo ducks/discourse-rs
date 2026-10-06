@@ -1,0 +1,21 @@
+{
+  "user": "user2",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "A reply user2 sends twice in a row, the second one a duplicate."
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "A reply user2 sends twice in a row, the second one a duplicate."
+      }
+    }
+  ]
+}

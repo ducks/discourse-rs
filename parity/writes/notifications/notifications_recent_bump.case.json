@@ -1,0 +1,9 @@
+{
+  "user": "user0",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/notifications.json?recent=true&bump_last_seen_reviewable=true"
+    }
+  ]
+}

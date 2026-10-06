@@ -1,0 +1,169 @@
+{
+  "name": "incoming_reject_no_date",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/email/handle_mail",
+      "params": {
+        "email_encoded": "RnJvbTogVXNlcjAgPHVzZXIwQGV4YW1wbGUuY29tPg0KVG86IHJlcGxpZXMrMDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWZAZXhhbXBsZS5jb20NCk1lc3NhZ2UtSUQ6IDxyZWplY3Qtbm8tZGF0ZUBtYWlsLmV4YW1wbGUuY29tPg0KU3ViamVjdDogUmU6IFtEaXNjb3Vyc2VdIFtHZW5lcmFsXSBQYXJpdHkgZml4dHVyZTogcmVwbGllcyBhbmQgcG9zdGVycw0KTUlNRS1WZXJzaW9uOiAxLjANCkNvbnRlbnQtVHlwZTogdGV4dC9wbGFpbjsgY2hhcnNldD1VVEYtOA0KQ29udGVudC1UcmFuc2Zlci1FbmNvZGluZzogN2JpdA0KDQpUaGlzIGlzIG15IHJlcGx5IGJ5IGVtYWlsLCBsb25nIGVub3VnaCB0byBiZSBhIHBvc3Qgb24gaXRzIG93bi4NCg=="
+      }
+    }
+  ],
+  "started_at": "2026-10-03T08:12:00.486534",
+  "transaction_started_at": "2026-10-03T08:11:59.264063",
+  "responses": [
+    {
+      "status": 200,
+      "body": "email has been received and is queued for processing"
+    }
+  ],
+  "changes": {
+    "email_logs": {
+      "inserted": [
+        {
+          "id": 1,
+          "raw": null,
+          "bounced": false,
+          "post_id": null,
+          "user_id": null,
+          "topic_id": null,
+          "bounce_key": "574e4239-47f3-0370-29ee-8e7759bc4e8d",
+          "created_at": "2026-10-03T08:12:00.541072",
+          "email_type": "email_reject_invalid_post_specified",
+          "message_id": "b08ba874-0384-4407-8c92-421c3b497880@localhost",
+          "to_address": "user0@example.com",
+          "updated_at": "2026-10-03T08:12:00.541072",
+          "cc_user_ids": null,
+          "cc_addresses": null,
+          "bcc_addresses": null,
+          "smtp_group_id": null,
+          "bounce_error_code": null,
+          "smtp_transaction_response": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 86,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "oX0ewj2gTbcq/16mP9Hk4pDx6wA=",
+            "created_at": "2026-10-03T08:11:59.634522",
+            "rotated_at": "2026-10-03T08:11:59.633498",
+            "updated_at": "2026-10-03T08:11:59.634522",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "oX0ewj2gTbcq/16mP9Hk4pDx6wA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 86,
+            "seen_at": "2026-10-03T08:12:00.493141",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "oX0ewj2gTbcq/16mP9Hk4pDx6wA=",
+            "created_at": "2026-10-03T08:11:59.634522",
+            "rotated_at": "2026-10-03T08:11:59.633498",
+            "updated_at": "2026-10-03T08:11:59.634522",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "oX0ewj2gTbcq/16mP9Hk4pDx6wA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "process_email",
+      {
+        "mail": "From: User0 <user0@example.com>\r\nTo: replies+0123456789abcdef0123456789abcdef@example.com\r\nMessage-ID: <reject-no-date@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nThis is my reply by email, long enough to be a post on its own.\r\n",
+        "retry_on_rate_limit": true,
+        "source": "handle_mail"
+      }
+    ]
+  ],
+  "settings": {
+    "reply_by_email_address": "replies+%{reply_key}@example.com",
+    "manual_polling_enabled": true,
+    "reply_by_email_enabled": true
+  },
+  "setup": [
+    "INSERT INTO post_reply_keys (user_id, post_id, reply_key, created_at, updated_at) VALUES (2, 38, '0123456789abcdef0123456789abcdef', now(), now())"
+  ],
+  "jobs_from_jobs": [],
+  "emails": [
+    {
+      "headers": [
+        [
+          "Return-Path",
+          "replies+verp-574e423947f3037029ee8e7759bc4e8d@example.com"
+        ],
+        [
+          "From",
+          "\"Discourse\" <noreply@unconfigured.discourse.org>"
+        ],
+        [
+          "Reply-To",
+          "\"Discourse\" <noreply@unconfigured.discourse.org>"
+        ],
+        [
+          "To",
+          "user0@example.com"
+        ],
+        [
+          "Message-ID",
+          "<b08ba874-0384-4407-8c92-421c3b497880@localhost>"
+        ],
+        [
+          "Subject",
+          "[Discourse] Email issue -- Posting error"
+        ],
+        [
+          "MIME-Version",
+          "1.0"
+        ],
+        [
+          "Content-Type",
+          "multipart/alternative; boundary=--==_mimepart_6ac0b8d083315_40d4f2875499"
+        ],
+        [
+          "Content-Transfer-Encoding",
+          "7bit"
+        ],
+        [
+          "X-Auto-Response-Suppress",
+          "All"
+        ],
+        [
+          "x-ms-reactions",
+          "disallow"
+        ],
+        [
+          "Auto-Submitted",
+          "auto-generated"
+        ]
+      ],
+      "text": "We're sorry, but your email message to [\"replies+0123456789abcdef0123456789abcdef@example.com\"] (titled Re: [Discourse] [General] Parity fixture: replies and posters) didn't work.\n\nReason:\n\nNo post creation date found. Is the e-mail missing a Date: header?\n\nIf you can correct the problem, please try again.\n",
+      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <p>We’re sorry, but your email message to [“<a href=\"mailto:replies+0123456789abcdef0123456789abcdef@example.com\" style=\"text-decoration:none;font-weight:bold;color:#006699\">replies+0123456789abcdef0123456789abcdef@example.com</a>”] (titled Re: [Discourse] [General] Parity fixture: replies and posters) didn’t work.</p>\n<p>Reason:</p>\n<p>No post creation date found. Is the e-mail missing a Date: header?</p>\n<p>If you can correct the problem, please try again.</p>\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
+    }
+  ],
+  "recorded_from": {
+    "case": "e6d4b68f898c9ad84ebf5b032a72fb4cd564ea9f3ab6e2e3a4eea05f6bdc2569",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

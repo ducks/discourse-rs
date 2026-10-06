@@ -1,0 +1,14 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/52.json",
+      "params": {
+        "post": {
+          "raw": "user1 trying to edit a post that user0 wrote, which is not allowed."
+        }
+      }
+    }
+  ]
+}

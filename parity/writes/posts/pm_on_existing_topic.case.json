@@ -1,0 +1,16 @@
+{
+  "user": "user2",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "title": "A private message aimed at an existing topic",
+        "raw": "A private message posted into a regular topic, which has to be refused.",
+        "archetype": "private_message",
+        "target_recipients": "user0"
+      }
+    }
+  ]
+}

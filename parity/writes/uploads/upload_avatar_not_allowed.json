@@ -1,0 +1,77 @@
+{
+  "name": "upload_avatar_not_allowed",
+  "user": "user2",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/uploads.json",
+      "params": {
+        "upload_type": "avatar",
+        "file": {
+          "fixture": "static.gif"
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-06T20:08:50.945815",
+  "transaction_started_at": "2026-10-06T20:08:49.995023",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "failed": "FAILED"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 119,
+            "seen_at": null,
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "/bB/A7Z+KUNUjRvixa+68or4OqA=",
+            "created_at": "2026-10-06T20:08:50.390079",
+            "rotated_at": "2026-10-06T20:08:50.389015",
+            "updated_at": "2026-10-06T20:08:50.390079",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "/bB/A7Z+KUNUjRvixa+68or4OqA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 119,
+            "seen_at": "2026-10-06T20:08:50.956734",
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "/bB/A7Z+KUNUjRvixa+68or4OqA=",
+            "created_at": "2026-10-06T20:08:50.390079",
+            "rotated_at": "2026-10-06T20:08:50.389015",
+            "updated_at": "2026-10-06T20:08:50.390079",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "/bB/A7Z+KUNUjRvixa+68or4OqA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "settings": {
+    "uploaded_avatars_allowed_groups": "13"
+  },
+  "recorded_from": {
+    "case": "bacab7a365d41f9cb2ab424782db2f9b3242abad80e597e5967292d0aed94994",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

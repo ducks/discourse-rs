@@ -1,0 +1,17 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/user1.json",
+      "params": {
+        "watched_category_ids": [
+          4
+        ],
+        "muted_category_ids": [
+          2
+        ]
+      }
+    }
+  ]
+}

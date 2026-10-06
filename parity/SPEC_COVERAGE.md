@@ -8,7 +8,7 @@ line in the spec.
 
 Classes:
 
-- **covered**: a write case (parity/writes/cases.json) or a golden
+- **covered**: a write case (parity/writes/<area>/<name>.case.json) or a golden
   (`golden:` a parity/cases line) exercises the behaviour. `(new, ...)`
   marks a case added from this inventory, with its replay result.
 - **recordable**: expressible as a write case with the harness as it is

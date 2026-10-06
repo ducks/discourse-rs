@@ -1,0 +1,24 @@
+{
+  "user": null,
+  "settings": {
+    "reserved_usernames": "a|reserved|b"
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/session/hp.json"
+    },
+    {
+      "method": "POST",
+      "path": "/u.json",
+      "params": {
+        "name": "Reserved Person",
+        "email": "reserved.person@example.com",
+        "password": "a-long-enough-pass-phrase",
+        "username": "Reserved",
+        "password_confirmation": "{{responses.0.body.value}}",
+        "challenge": "{{responses.0.body.challenge|reverse}}"
+      }
+    }
+  ]
+}

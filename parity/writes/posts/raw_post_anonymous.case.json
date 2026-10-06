@@ -1,0 +1,14 @@
+{
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/raw/35/1"
+    },
+    {
+      "method": "GET",
+      "path": "/raw/35/1.json"
+    }
+  ],
+  "not_yet": "GET /raw/:topic_id/:post_number.json: \".json\" is read as part of the post number (404)."
+}

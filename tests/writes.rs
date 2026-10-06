@@ -1,7 +1,8 @@
-//! Write requests replayed against Rails' recording (parity/writes, written
-//! by scripts/record-writes): each case runs on a fresh copy of the seed,
-//! and its responses and every row it inserted, updated or deleted must be
-//! what Discourse did.
+//! Write requests replayed against Rails' recording: each case is
+//! parity/writes/<area>/<name>.case.json, recorded by scripts/record-writes
+//! into <name>.json beside it, and is a test of its own (`<area>::<name>`).
+//! It runs on a fresh copy of the seed, and its responses and every row it
+//! inserted, updated or deleted must be what Discourse did.
 //!
 //! Timestamps the case itself wrote (at or after its start) compare as
 //! `<now>`. Ids line up because both sides set every sequence to its
@@ -112,66 +113,6 @@ const PLUGIN_JOBS: [&str; 3] = [
     "Jobs::DiscourseTopicVoting::VoteReclaim",
 ];
 
-/// Cases the port does not do like Rails yet. The list only shrinks.
-const NOT_YET: &[&str] = &[
-    // GET /raw/:topic_id/:post_number.json: ".json" is read as part of
-    // the post number (404).
-    "raw_post_anonymous",
-    // The 404 body carries error_type, Rails' does not.
-    "unlike_not_liked",
-    // Rails answers 204 when the user can no longer see the post; the
-    // port serializes it and touches post_actions.updated_at.
-    "unlike_lost_access",
-    // A topic bookmark is allowed though the first post is hidden.
-    "bookmark_topic_hidden_first_post",
-    // for_private_message: staff may upload any file into a message.
-    "upload_staff_any_file_in_pm",
-    // Unsupported("avatar uploads") before the uploaded_avatars_allowed_groups 422.
-    "upload_avatar_not_allowed",
-    // user_histories keeps a secret setting's values, Rails "[FILTERED]".
-    "setting_secret",
-    // The hidden-setting error comes before the deprecation one.
-    "setting_hard_deprecated",
-    // Validates the params before the user lookup's 404.
-    "user_silence_missing_user",
-    // The re-encoded raw of a mail with undeclared latin1 bytes ends in a
-    // quoted "=0D=" soft break.
-    "incoming_invalid_utf8",
-    // A token Rails' route constraint rejects (404) answers 422.
-    "activate_account_bad_token_format",
-    // Redirects with 303, Rails 302.
-    "email_login_logged_in",
-    // The timezone param of the password reset is not saved.
-    "password_reset_timezone",
-    // Sends the reset mail although enable_local_logins is off (Rails 403).
-    "forgot_password_local_logins_disabled",
-    // The login response's user lacks most of UserSerializer's keys and
-    // its can_* are false.
-    "session_login_timezone",
-    // A wrong TOTP code reports invalid_second_factor_method.
-    "session_login_totp_invalid",
-    // A return_url of "/\evil.com" is passed through, Rails falls back to "/".
-    "session_logout_backslash_return_url",
-    // Invalid list params answer plain text, and topic_ids is not checked.
-    "list_latest_invalid_params",
-    // A category's default_view top is ignored on /none.
-    "list_category_default_view_top",
-    // include_subcategories and parent_category_id are ignored.
-    "categories_subcategory_params",
-    // allow_anonymous_search off is not enforced.
-    "search_anonymous_disabled",
-    // search_logs.crawler is true for a request without a user agent.
-    "search_query_logs_term",
-    // A staff-only tag 404s for an admin.
-    "tags_show_hidden_as_admin",
-    // /tags/c/ 404s on a read-restricted category for an admin.
-    "tags_in_staff_category_as_admin",
-    // An overridden robots.txt lacks the "customized" header for admins.
-    "robots_overridden_as_admin",
-    // /sitemap.xml writes sitemaps rows, Rails only reads them.
-    "sitemap_index_not_generated",
-];
-
 struct Client {
     state: AppState,
     cookies: Vec<(String, String)>,
@@ -250,6 +191,30 @@ impl Client {
     }
 
     async fn login(&mut self, username: &str) {
+        // The case's own database: its user's password is stored with one
+        // PBKDF2 iteration instead of 600k, so logging in costs nothing.
+        // The login's writes come before the case's snapshot either way.
+        let algorithm = "$pbkdf2-sha256$i=1,l=32$";
+        let salt: String = sqlx::query_scalar(
+            "SELECT p.password_salt FROM user_passwords p JOIN users u ON u.id = p.user_id \
+             WHERE u.username_lower = lower($1)",
+        )
+        .bind(username)
+        .fetch_one(&self.state.pool)
+        .await
+        .unwrap_or_else(|e| panic!("{username} has no password: {e}"));
+        let hash =
+            discourse_rs::session::token::hash_password("password", &salt, algorithm).unwrap();
+        sqlx::query(
+            "UPDATE user_passwords SET password_hash = $2, password_algorithm = $3 \
+             WHERE user_id = (SELECT id FROM users WHERE username_lower = lower($1))",
+        )
+        .bind(username)
+        .bind(hash)
+        .bind(algorithm)
+        .execute(&self.state.pool)
+        .await
+        .unwrap();
         let (_, csrf) = self.send(Method::GET, "/session/csrf.json", None).await;
         self.csrf = csrf["csrf"].as_str().map(str::to_string);
         let body = serde_json::json!({ "login": username, "password": "password" });
@@ -1203,84 +1168,113 @@ fn map_encoded(value: &Value, encoded: &[EncodedUpload], key: Option<&str>) -> V
     }
 }
 
-#[tokio::test(flavor = "multi_thread")]
-async fn writes_match_rails() {
+/// A recorded case: its definition (`<area>/<name>.case.json`) and what
+/// Rails did (`<area>/<name>.json`, written by scripts/record-writes).
+struct Case {
+    area: String,
+    name: String,
+    recorded: Value,
+    run_jobs: Vec<String>,
+    /// Why the port does not do it like Rails yet.
+    not_yet: Option<String>,
+}
+
+/// Every case under parity/writes, by area and name.
+fn cases() -> Vec<Case> {
+    let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("parity/writes");
+    let mut out = Vec::new();
+    let mut areas: Vec<_> = std::fs::read_dir(&dir)
+        .unwrap()
+        .filter_map(Result::ok)
+        .filter(|e| e.path().is_dir() && e.file_name() != "files")
+        .collect();
+    areas.sort_by_key(|e| e.file_name());
+    for area in areas {
+        let mut files: Vec<_> = std::fs::read_dir(area.path())
+            .unwrap()
+            .filter_map(Result::ok)
+            .map(|e| e.path())
+            .filter(|p| p.to_string_lossy().ends_with(".case.json"))
+            .collect();
+        files.sort();
+        for path in files {
+            let file = path.file_name().unwrap().to_string_lossy().to_string();
+            let name = file.trim_end_matches(".case.json").to_string();
+            let definition: Value =
+                serde_json::from_str(&std::fs::read_to_string(&path).unwrap()).unwrap();
+            let recording = path.with_file_name(format!("{name}.json"));
+            let recorded: Value = match std::fs::read_to_string(&recording) {
+                Ok(text) => serde_json::from_str(&text).unwrap(),
+                Err(_) => Value::Null,
+            };
+            out.push(Case {
+                area: area.file_name().to_string_lossy().to_string(),
+                name,
+                recorded,
+                run_jobs: definition["run_jobs"]
+                    .as_array()
+                    .map(|a| {
+                        a.iter()
+                            .filter_map(|n| n.as_str().map(str::to_string))
+                            .collect()
+                    })
+                    .unwrap_or_default(),
+                not_yet: definition["not_yet"].as_str().map(str::to_string),
+            });
+        }
+    }
+    out
+}
+
+/// Each case is a test, `<area>::<name>`, so nextest runs them side by
+/// side and reports and filters them one by one (`-E 'test(drafts::)'`).
+/// A case with `not_yet` passes while it still differs and fails once it
+/// matches, so the marker comes off when the port catches up.
+fn main() {
     // A 500's cause is only logged; show it next to the diff.
     let _ = tracing_subscriber::fmt()
         .with_max_level(tracing::Level::ERROR)
         .with_test_writer()
         .try_init();
-    let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("parity/writes");
-    let cases: Vec<Value> =
-        serde_json::from_str(&std::fs::read_to_string(dir.join("cases.json")).unwrap()).unwrap();
-    let only = std::env::var("WRITES_ONLY").ok();
-    // Each case replays on its own database, so they run side by side:
-    // WRITES_JOBS at a time (4 by default; every database holds up to four
-    // connections, and Postgres allows 100).
-    let jobs: usize = std::env::var("WRITES_JOBS")
-        .ok()
-        .and_then(|j| j.parse().ok())
-        .unwrap_or(4)
-        .max(1);
-    let limit = std::sync::Arc::new(tokio::sync::Semaphore::new(jobs));
-    let mut running = tokio::task::JoinSet::new();
-    for (index, case) in cases.iter().enumerate() {
-        let name = case["name"].as_str().unwrap().to_string();
-        if only.as_deref().is_some_and(|o| !name.contains(o)) {
-            continue;
-        }
-        let recorded: Value = serde_json::from_str(
-            &std::fs::read_to_string(dir.join(format!("{name}.json"))).unwrap(),
-        )
-        .unwrap();
-        let run_jobs: Vec<String> = case["run_jobs"]
-            .as_array()
-            .map(|a| {
-                a.iter()
-                    .filter_map(|n| n.as_str().map(str::to_string))
-                    .collect()
+    let mut args = libtest_mimic::Arguments::from_args();
+    // Run as one process (cargo test), every case copies the template
+    // database and holds up to four connections: four at a time.
+    if args.test_threads.is_none() {
+        args.test_threads = Some(4);
+    }
+    let trials = cases()
+        .into_iter()
+        .map(|case| {
+            let label = format!("{}::{}", case.area, case.name);
+            let kind = if case.not_yet.is_some() {
+                "not_yet"
+            } else {
+                ""
+            };
+            libtest_mimic::Trial::test(label, move || {
+                if case.recorded.is_null() {
+                    return Err(format!(
+                        "not recorded: run scripts/record-writes for {}/{}",
+                        case.area, case.name
+                    )
+                    .into());
+                }
+                let diff = tokio::runtime::Builder::new_current_thread()
+                    .enable_all()
+                    .build()
+                    .unwrap()
+                    .block_on(replay(&case.recorded, &case.run_jobs));
+                match (&case.not_yet, diff.is_empty()) {
+                    (None, true) => Ok(()),
+                    (None, false) => Err(diff.join("\n").into()),
+                    (Some(_), false) => Ok(()),
+                    (Some(reason), true) => {
+                        Err(format!("matches Rails now: remove its not_yet ({reason})").into())
+                    }
+                }
             })
-            .unwrap_or_default();
-        let limit = limit.clone();
-        running.spawn(async move {
-            let _slot = limit
-                .acquire_owned()
-                .await
-                .expect("the semaphore stays open");
-            (index, name, replay(&recorded, &run_jobs).await)
-        });
-    }
-    let mut results = Vec::new();
-    while let Some(done) = running.join_next().await {
-        results.push(done.expect("a write case panicked"));
-    }
-    // Reported in the order of cases.json.
-    results.sort_by_key(|(index, _, _)| *index);
-    let mut failing: Vec<String> = Vec::new();
-    let mut report = Vec::new();
-    for (_, name, diff) in results {
-        let name = name.as_str();
-        if !diff.is_empty() {
-            failing.push(name.to_string());
-            if !NOT_YET.contains(&name) || std::env::var("WRITES_DIFF").is_ok() {
-                report.push(format!("{name}\n  {}", diff.join("\n  ")));
-            }
-        }
-    }
-    eprintln!(
-        "{} of {} write cases match Rails",
-        cases.len() - failing.len(),
-        cases.len()
-    );
-    if std::env::var("WRITES_DIFF").is_ok() {
-        eprintln!("{}", report.join("\n"));
-    }
-    if only.is_none() {
-        assert_eq!(
-            failing,
-            NOT_YET,
-            "the cases that differ from Rails changed:\n{}",
-            report.join("\n")
-        );
-    }
+            .with_kind(kind)
+        })
+        .collect();
+    libtest_mimic::run(&args, trials).exit();
 }

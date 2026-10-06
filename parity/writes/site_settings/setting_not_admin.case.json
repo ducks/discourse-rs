@@ -1,0 +1,12 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/title.json",
+      "params": {
+        "title": "Nope"
+      }
+    }
+  ]
+}

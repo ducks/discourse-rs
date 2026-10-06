@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO reviewables (id, type, type_source, status, created_by_id, reviewable_by_moderator, category_id, topic_id, score, potential_spam, target_id, target_type, target_created_by_id, payload, version, latest_score, force_review, potentially_illegal, created_at, updated_at) SELECT 9400 + n, 'ReviewableFlaggedPost', 'core', 0, 3, TRUE, t.category_id, p.topic_id, n, FALSE, p.id, 'Post', p.user_id, '{\"targets_topic\":false}', 0, '2026-10-02 10:00:00'::timestamp + n * interval '1 minute', FALSE, FALSE, '2026-10-02 10:00:00'::timestamp + n * interval '1 minute', '2026-10-02 10:00:00'::timestamp + n * interval '1 minute' FROM (SELECT p.id, p.topic_id, p.user_id, row_number() OVER (ORDER BY p.id) AS n FROM posts p JOIN topics t ON t.id = p.topic_id WHERE p.deleted_at IS NULL AND t.deleted_at IS NULL AND t.archetype = 'regular' AND p.user_id > 0 AND p.id <= 52 ORDER BY p.id LIMIT 11) p JOIN topics t ON t.id = p.topic_id"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/review.json"
+    }
+  ]
+}

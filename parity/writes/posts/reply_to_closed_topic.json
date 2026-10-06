@@ -1,0 +1,75 @@
+{
+  "name": "reply_to_closed_topic",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 37,
+        "raw": "A reply to a closed topic, which a regular user cannot make there."
+      }
+    }
+  ],
+  "started_at": "2026-10-03T08:11:02.348553",
+  "transaction_started_at": "2026-10-03T08:11:01.43437",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "action": "create_post",
+        "errors": [
+          "Something has gone wrong. Perhaps this topic was closed or deleted while you were looking at it?"
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 86,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "ENmD5f01leRw8rUpL+hsIjej+xE=",
+            "created_at": "2026-10-03T08:11:01.769822",
+            "rotated_at": "2026-10-03T08:11:01.769579",
+            "updated_at": "2026-10-03T08:11:01.769822",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "ENmD5f01leRw8rUpL+hsIjej+xE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 86,
+            "seen_at": "2026-10-03T08:11:02.356579",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "ENmD5f01leRw8rUpL+hsIjej+xE=",
+            "created_at": "2026-10-03T08:11:01.769822",
+            "rotated_at": "2026-10-03T08:11:01.769579",
+            "updated_at": "2026-10-03T08:11:01.769822",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "ENmD5f01leRw8rUpL+hsIjej+xE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "recorded_from": {
+    "case": "f373f51dd01755a2a9ad3e875d4d9dbe267cd54f40bc7eb2fa0d39a46c6cf4ba",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

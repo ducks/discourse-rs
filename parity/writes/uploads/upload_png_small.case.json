@@ -1,0 +1,15 @@
+{
+  "user": "user3",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/uploads.json",
+      "params": {
+        "upload_type": "composer",
+        "file": {
+          "fixture": "small.png"
+        }
+      }
+    }
+  ]
+}

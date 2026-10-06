@@ -1,0 +1,38 @@
+{
+  "name": "reply_api_key_unknown",
+  "user": null,
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "A reply from user1 to the replies and posters topic, written for the posting slice."
+      },
+      "headers": {
+        "Api-Key": "no-such-key",
+        "Api-Username": "user1"
+      }
+    }
+  ],
+  "started_at": "2026-10-03T08:12:09.248471",
+  "transaction_started_at": "2026-10-03T08:12:08.256605",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource. The API username or key is invalid."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "recorded_from": {
+    "case": "bc4a8c4c27b8ecda9c5aa984b5f03381e692c62ee349ab00a744e9a3a8097312",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

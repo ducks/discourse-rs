@@ -1,0 +1,27 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35/status",
+      "params": {
+        "enabled": "true"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/t/35/status",
+      "params": {
+        "status": "visible"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/t/35/status",
+      "params": {
+        "status": "title",
+        "enabled": "true"
+      }
+    }
+  ]
+}

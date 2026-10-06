@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/min_post_length.json",
+      "params": {
+        "min_post_length": "0"
+      }
+    }
+  ]
+}

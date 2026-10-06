@@ -1,0 +1,15 @@
+{
+  "user": null,
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/session.json",
+      "params": {
+        "login": "user1",
+        "password": "password",
+        "timezone": "Australia/Melbourne"
+      }
+    }
+  ],
+  "not_yet": "The login response's user lacks most of UserSerializer's keys and its can_* are false."
+}

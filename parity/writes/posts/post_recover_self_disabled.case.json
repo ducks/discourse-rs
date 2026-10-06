@@ -1,0 +1,13 @@
+{
+  "user": "user0",
+  "settings": {
+    "max_post_deletions_per_day": 0
+  },
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/52/recover.json",
+      "params": {}
+    }
+  ]
+}

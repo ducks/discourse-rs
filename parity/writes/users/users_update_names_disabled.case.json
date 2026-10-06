@@ -1,0 +1,16 @@
+{
+  "user": "user0",
+  "settings": {
+    "enable_names": false
+  },
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/user0.json",
+      "params": {
+        "name": "Should Not Apply",
+        "location": "Denver"
+      }
+    }
+  ]
+}

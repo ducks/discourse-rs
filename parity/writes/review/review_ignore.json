@@ -1,0 +1,322 @@
+{
+  "name": "review_ignore",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/review/9301/perform/ignore_and_do_nothing",
+      "params": {
+        "version": 0
+      }
+    }
+  ],
+  "started_at": "2026-10-03T08:12:49.092144",
+  "transaction_started_at": "2026-10-03T08:12:47.886618",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "reviewable_perform_result": {
+          "success": true,
+          "remove_reviewable_ids": [
+            9301
+          ],
+          "version": 1,
+          "reviewable_count": 0,
+          "unseen_reviewable_count": 0
+        }
+      }
+    }
+  ],
+  "changes": {
+    "post_actions": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 9301,
+            "post_id": 52,
+            "user_id": 3,
+            "agreed_at": null,
+            "created_at": "2026-10-02T10:00:00",
+            "deleted_at": null,
+            "updated_at": "2026-10-02T10:00:00",
+            "deferred_at": null,
+            "agreed_by_id": null,
+            "disagreed_at": null,
+            "deleted_by_id": null,
+            "targets_topic": false,
+            "deferred_by_id": null,
+            "disagreed_by_id": null,
+            "related_post_id": null,
+            "staff_took_action": false,
+            "post_action_type_id": 3
+          },
+          "after": {
+            "id": 9301,
+            "post_id": 52,
+            "user_id": 3,
+            "agreed_at": null,
+            "created_at": "2026-10-02T10:00:00",
+            "deleted_at": null,
+            "updated_at": "2026-10-03T08:12:49.131886",
+            "deferred_at": "2026-10-03T08:12:49.131533",
+            "agreed_by_id": null,
+            "disagreed_at": null,
+            "deleted_by_id": null,
+            "targets_topic": false,
+            "deferred_by_id": 1,
+            "disagreed_by_id": null,
+            "related_post_id": null,
+            "staff_took_action": false,
+            "post_action_type_id": 3
+          }
+        }
+      ]
+    },
+    "reviewable_histories": {
+      "inserted": [
+        {
+          "id": 1,
+          "edited": null,
+          "status": 3,
+          "created_at": "2026-10-03T08:12:49.147893",
+          "updated_at": "2026-10-03T08:12:49.147893",
+          "created_by_id": 1,
+          "reviewable_id": 9301,
+          "reviewable_history_type": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "reviewable_scores": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 9301,
+            "score": 3,
+            "reason": null,
+            "status": 0,
+            "context": null,
+            "user_id": 3,
+            "created_at": "2026-10-02T10:00:00",
+            "updated_at": "2026-10-02T10:00:00",
+            "reviewed_at": null,
+            "meta_topic_id": null,
+            "reviewable_id": 9301,
+            "reviewed_by_id": null,
+            "take_action_bonus": 0,
+            "user_accuracy_bonus": 0,
+            "reviewable_score_type": 3
+          },
+          "after": {
+            "id": 9301,
+            "score": 3,
+            "reason": null,
+            "status": 3,
+            "context": null,
+            "user_id": 3,
+            "created_at": "2026-10-02T10:00:00",
+            "updated_at": "2026-10-02T10:00:00",
+            "reviewed_at": "2026-10-03T08:12:49.152727",
+            "meta_topic_id": null,
+            "reviewable_id": 9301,
+            "reviewed_by_id": 1,
+            "take_action_bonus": 0,
+            "user_accuracy_bonus": 0,
+            "reviewable_score_type": 3
+          }
+        }
+      ]
+    },
+    "reviewables": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 9301,
+            "type": "ReviewableFlaggedPost",
+            "score": 3,
+            "status": 0,
+            "payload": {
+              "targets_topic": false
+            },
+            "version": 0,
+            "topic_id": 35,
+            "target_id": 52,
+            "created_at": "2026-10-02T10:00:00",
+            "updated_at": "2026-10-02T10:00:00",
+            "category_id": 4,
+            "target_type": "Post",
+            "type_source": "core",
+            "force_review": false,
+            "latest_score": "2026-10-02T10:00:00",
+            "created_by_id": 3,
+            "reject_reason": null,
+            "potential_spam": false,
+            "potentially_illegal": false,
+            "target_created_by_id": 2,
+            "reviewable_by_group_id": null,
+            "reviewable_by_moderator": true
+          },
+          "after": {
+            "id": 9301,
+            "type": "ReviewableFlaggedPost",
+            "score": 3,
+            "status": 3,
+            "payload": {
+              "targets_topic": false
+            },
+            "version": 1,
+            "topic_id": 35,
+            "target_id": 52,
+            "created_at": "2026-10-02T10:00:00",
+            "updated_at": "2026-10-03T08:12:49.145884",
+            "category_id": 4,
+            "target_type": "Post",
+            "type_source": "core",
+            "force_review": false,
+            "latest_score": "2026-10-02T10:00:00",
+            "created_by_id": 3,
+            "reject_reason": null,
+            "potential_spam": false,
+            "potentially_illegal": false,
+            "target_created_by_id": 2,
+            "reviewable_by_group_id": null,
+            "reviewable_by_moderator": true
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 86,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "xTFCq2Ov8WYnpjWZ161VbIVeIw4=",
+            "created_at": "2026-10-03T08:12:48.238653",
+            "rotated_at": "2026-10-03T08:12:48.238272",
+            "updated_at": "2026-10-03T08:12:48.238653",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "xTFCq2Ov8WYnpjWZ161VbIVeIw4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 86,
+            "seen_at": "2026-10-03T08:12:49.101729",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "xTFCq2Ov8WYnpjWZ161VbIVeIw4=",
+            "created_at": "2026-10-03T08:12:48.238653",
+            "rotated_at": "2026-10-03T08:12:48.238272",
+            "updated_at": "2026-10-03T08:12:48.238653",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "xTFCq2Ov8WYnpjWZ161VbIVeIw4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_stats": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "user_id": 3,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:16.445924",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 1,
+            "topic_count": 1,
+            "bounce_score": 0,
+            "days_visited": 1,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 1,
+            "topics_entered": 0,
+            "first_unread_at": "2026-10-01T15:39:52.00791",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 2,
+            "first_unread_pm_at": "2026-10-01T15:39:51.342717",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 4,
+            "first_post_created_at": "2026-09-30T07:28:29.079439",
+            "reset_bounce_score_after": null
+          },
+          "after": {
+            "user_id": 3,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:16.445924",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 1,
+            "topic_count": 1,
+            "bounce_score": 0,
+            "days_visited": 1,
+            "flags_agreed": 0,
+            "flags_ignored": 1,
+            "likes_received": 1,
+            "topics_entered": 0,
+            "first_unread_at": "2026-10-01T15:39:52.00791",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 2,
+            "first_unread_pm_at": "2026-10-01T15:39:51.342717",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 4,
+            "first_post_created_at": "2026-09-30T07:28:29.079439",
+            "reset_bounce_score_after": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "notify_reviewable",
+      {
+        "reviewable_id": 9301,
+        "performing_username": "admin",
+        "updated_reviewable_ids": [
+          9301
+        ]
+      }
+    ]
+  ],
+  "setup": [
+    "INSERT INTO post_actions (id, post_id, user_id, post_action_type_id, created_at, updated_at, staff_took_action, targets_topic) VALUES (9301, 52, 3, 3, '2026-10-02 10:00:00', '2026-10-02 10:00:00', FALSE, FALSE)",
+    "UPDATE posts SET off_topic_count = 1 WHERE id = 52",
+    "INSERT INTO reviewables (id, type, type_source, status, created_by_id, reviewable_by_moderator, category_id, topic_id, score, potential_spam, target_id, target_type, target_created_by_id, payload, version, latest_score, force_review, potentially_illegal, created_at, updated_at) VALUES (9301, 'ReviewableFlaggedPost', 'core', 0, 3, TRUE, 4, 35, 3, FALSE, 52, 'Post', 2, '{\"targets_topic\":false}', 0, '2026-10-02 10:00:00', FALSE, FALSE, '2026-10-02 10:00:00', '2026-10-02 10:00:00')",
+    "INSERT INTO reviewable_scores (id, reviewable_id, user_id, reviewable_score_type, status, score, take_action_bonus, user_accuracy_bonus, created_at, updated_at) VALUES (9301, 9301, 3, 3, 0, 3, 0, 0, '2026-10-02 10:00:00', '2026-10-02 10:00:00')",
+    "INSERT INTO reviewable_histories (id, reviewable_id, reviewable_history_type, status, created_by_id, created_at, updated_at) VALUES (9301, 9301, 0, 0, 3, '2026-10-02 10:00:00', '2026-10-02 10:00:00')",
+    "UPDATE topics SET reviewable_score = 3 WHERE id = 35"
+  ],
+  "recorded_from": {
+    "case": "8db10b81daa4ba591e01301441daaaa36d0f51486175687a8d8b7908c4062f71",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

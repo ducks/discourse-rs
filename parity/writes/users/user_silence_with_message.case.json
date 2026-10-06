@@ -1,0 +1,14 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/4/silence.json",
+      "params": {
+        "reason": "Spamming",
+        "silenced_till": "2027-01-01T00:00:00Z",
+        "message": "Please stop posting links to your shop."
+      }
+    }
+  ]
+}

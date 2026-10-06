@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/suggested_topics.json",
+      "params": {
+        "suggested_topics": "1,000"
+      }
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "name": "timings_anonymous",
+  "user": null,
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/topics/timings",
+      "params": {
+        "topic_id": 35,
+        "topic_time": 3000,
+        "timings": {
+          "1": 3000
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-03T15:06:35.602376",
+  "transaction_started_at": "2026-10-03T15:06:34.716811",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You need to be logged in to do that."
+        ],
+        "error_type": "not_logged_in"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "recorded_from": {
+    "case": "3af1c2f6659ae3b8efd855854bebac2b96d338ebd069936e2d62e818eddbd137",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

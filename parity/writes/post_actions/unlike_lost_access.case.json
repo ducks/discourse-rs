@@ -1,0 +1,17 @@
+{
+  "user": "user0",
+  "setup": [
+    "INSERT INTO post_actions (id, post_id, user_id, post_action_type_id, created_at, updated_at, staff_took_action, targets_topic) VALUES (9311, 2, 2, 2, now(), now(), FALSE, FALSE)",
+    "UPDATE posts SET like_count = 1 WHERE id = 2"
+  ],
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/post_actions/2.json",
+      "params": {
+        "post_action_type_id": 2
+      }
+    }
+  ],
+  "not_yet": "Rails answers 204 when the user can no longer see the post; the port serializes it and touches post_actions.updated_at."
+}

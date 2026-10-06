@@ -1,0 +1,17 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/uploads.json",
+      "params": {
+        "upload_type": "composer",
+        "for_private_message": "true",
+        "file": {
+          "fixture": "notes.txt"
+        }
+      }
+    }
+  ],
+  "not_yet": "for_private_message: staff may upload any file into a message."
+}

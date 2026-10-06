@@ -1,0 +1,13 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/bookmarks/3.json",
+      "params": {
+        "name": "Renamed bookmark",
+        "reminder_at": "2031-06-01T09:00:00Z"
+      }
+    }
+  ]
+}

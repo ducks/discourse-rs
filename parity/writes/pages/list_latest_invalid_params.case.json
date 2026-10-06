@@ -1,0 +1,18 @@
+{
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/latest.json?page=-1"
+    },
+    {
+      "method": "GET",
+      "path": "/latest.json?topic_ids%5B1%5D=haxx"
+    },
+    {
+      "method": "GET",
+      "path": "/top.json?period=decadely"
+    }
+  ],
+  "not_yet": "Invalid list params answer plain text, and topic_ids is not checked."
+}

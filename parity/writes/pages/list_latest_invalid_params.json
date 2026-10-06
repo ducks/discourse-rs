@@ -1,0 +1,56 @@
+{
+  "name": "list_latest_invalid_params",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/latest.json?page=-1"
+    },
+    {
+      "method": "GET",
+      "path": "/latest.json?topic_ids%5B1%5D=haxx"
+    },
+    {
+      "method": "GET",
+      "path": "/top.json?period=decadely"
+    }
+  ],
+  "started_at": "2026-10-06T20:09:42.299903",
+  "transaction_started_at": "2026-10-06T20:09:41.608201",
+  "responses": [
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: page"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: topic_ids"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Invalid period. Valid periods are all, yearly, quarterly, monthly, weekly, daily"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "recorded_from": {
+    "case": "6bff514c86fc19f3a35280f6d8a59352916e552146d5a21905d4356612bb4e30",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

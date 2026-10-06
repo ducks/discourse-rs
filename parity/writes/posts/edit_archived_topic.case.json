@@ -1,0 +1,17 @@
+{
+  "user": "user0",
+  "setup": [
+    "UPDATE posts SET created_at = now() WHERE id = 46"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/46.json",
+      "params": {
+        "post": {
+          "raw": "user0 editing the first post of an archived topic, which is refused."
+        }
+      }
+    }
+  ]
+}

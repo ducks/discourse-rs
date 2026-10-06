@@ -1,0 +1,73 @@
+{
+  "name": "setting_hidden",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/generate_topic_og_image.json",
+      "params": {
+        "generate_topic_og_image": "true"
+      }
+    }
+  ],
+  "started_at": "2026-10-03T14:33:37.699753",
+  "transaction_started_at": "2026-10-03T14:33:31.985205",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "You are not allowed to change hidden settings: generate_topic_og_image"
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 86,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "SAZn7AeSsFiwqsliGhYwcCdsaro=",
+            "created_at": "2026-10-03T14:33:34.146941",
+            "rotated_at": "2026-10-03T14:33:34.146096",
+            "updated_at": "2026-10-03T14:33:34.146941",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "SAZn7AeSsFiwqsliGhYwcCdsaro=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 86,
+            "seen_at": "2026-10-03T14:33:37.716866",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "SAZn7AeSsFiwqsliGhYwcCdsaro=",
+            "created_at": "2026-10-03T14:33:34.146941",
+            "rotated_at": "2026-10-03T14:33:34.146096",
+            "updated_at": "2026-10-03T14:33:34.146941",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "SAZn7AeSsFiwqsliGhYwcCdsaro=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "recorded_from": {
+    "case": "d124b8d472567fc0aeda279c6f86f28ac090cdb75cef1967ab4d5422ebc34e53",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

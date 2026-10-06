@@ -1,0 +1,14 @@
+{
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/categories.json?include_subcategories=true"
+    },
+    {
+      "method": "GET",
+      "path": "/categories.json?parent_category_id=4"
+    }
+  ],
+  "not_yet": "include_subcategories and parent_category_id are ignored."
+}

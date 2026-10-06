@@ -1,0 +1,19 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO user_second_factors (id, user_id, method, data, enabled, name, created_at, updated_at) VALUES (9301, 3, 1, 'JBSWY3DPEHPK3PXP', true, 'parity', now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/session.json",
+      "params": {
+        "login": "user1",
+        "password": "password",
+        "second_factor_token": "00000000",
+        "second_factor_method": 1
+      }
+    }
+  ],
+  "not_yet": "A wrong TOTP code reports invalid_second_factor_method."
+}

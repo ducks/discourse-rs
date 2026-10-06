@@ -15,7 +15,7 @@ require "json"
 require "fileutils"
 
 cases_file, out, files_dir = ARGV
-abort "usage: record_writes.rb <cases.json> <dir> [files-dir]" if cases_file.blank? || out.blank?
+abort "usage: record_writes.rb <cases json array> <dir> [files-dir]" if cases_file.blank? || out.blank?
 FileUtils.mkdir_p(out)
 
 ENQUEUED = []

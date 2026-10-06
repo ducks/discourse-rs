@@ -1,0 +1,11 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/9999/silence.json",
+      "params": {}
+    }
+  ],
+  "not_yet": "Validates the params before the user lookup's 404."
+}

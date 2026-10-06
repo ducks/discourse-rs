@@ -1,0 +1,200 @@
+{
+  "name": "incoming_reject_inactive_user",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/email/handle_mail",
+      "params": {
+        "email_encoded": "RGF0ZTogVGh1LCAwMSBPY3QgMjAyNiAxMDowMDowMCArMDAwMA0KRnJvbTogVXNlcjAgPHVzZXIwQGV4YW1wbGUuY29tPg0KVG86IHJlcGxpZXMrMDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWZAZXhhbXBsZS5jb20NCk1lc3NhZ2UtSUQ6IDxyZWplY3QtaW5hY3RpdmVAbWFpbC5leGFtcGxlLmNvbT4NClN1YmplY3Q6IFJlOiBbRGlzY291cnNlXSBbR2VuZXJhbF0gUGFyaXR5IGZpeHR1cmU6IHJlcGxpZXMgYW5kIHBvc3RlcnMNCk1JTUUtVmVyc2lvbjogMS4wDQpDb250ZW50LVR5cGU6IHRleHQvcGxhaW47IGNoYXJzZXQ9VVRGLTgNCkNvbnRlbnQtVHJhbnNmZXItRW5jb2Rpbmc6IDdiaXQNCg0KVGhpcyBpcyBteSByZXBseSBieSBlbWFpbCwgbG9uZyBlbm91Z2ggdG8gYmUgYSBwb3N0IG9uIGl0cyBvd24uDQo="
+      }
+    }
+  ],
+  "started_at": "2026-10-03T08:11:49.82685",
+  "transaction_started_at": "2026-10-03T08:11:48.624349",
+  "responses": [
+    {
+      "status": 200,
+      "body": "email has been received and is queued for processing"
+    }
+  ],
+  "changes": {
+    "email_logs": {
+      "inserted": [
+        {
+          "id": 1,
+          "raw": null,
+          "bounced": false,
+          "post_id": null,
+          "user_id": null,
+          "topic_id": null,
+          "bounce_key": "fd3b5756-c41f-7401-47e4-53323858f21a",
+          "created_at": "2026-10-03T08:11:49.888597",
+          "email_type": "email_reject_inactive_user",
+          "message_id": "ed43e162-2ee2-4eb4-a098-c8e9f5787a14@localhost",
+          "to_address": "user0@example.com",
+          "updated_at": "2026-10-03T08:11:49.888597",
+          "cc_user_ids": null,
+          "cc_addresses": null,
+          "bcc_addresses": null,
+          "smtp_group_id": null,
+          "bounce_error_code": null,
+          "smtp_transaction_response": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "incoming_emails": {
+      "inserted": [
+        {
+          "id": 1,
+          "raw": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+0123456789abcdef0123456789abcdef@example.com\r\nMessage-ID: <reject-inactive@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nThis is my reply by email, long enough to be a post on its own.\r\n",
+          "error": "Email::Receiver::InactiveUserError",
+          "post_id": null,
+          "subject": "Re: [Discourse] [General] Parity fixture: replies and posters",
+          "user_id": 2,
+          "imap_uid": null,
+          "topic_id": null,
+          "imap_sync": null,
+          "is_bounce": false,
+          "created_at": "2026-10-03T08:11:49.846011",
+          "message_id": "reject-inactive@mail.example.com",
+          "updated_at": "2026-10-03T08:11:49.891794",
+          "created_via": 1,
+          "cc_addresses": "",
+          "from_address": "user0@example.com",
+          "imap_missing": false,
+          "to_addresses": "replies+0123456789abcdef0123456789abcdef@example.com",
+          "imap_group_id": null,
+          "imap_uid_validity": null,
+          "is_auto_generated": false,
+          "rejection_message": "We're sorry, but your email message to [\"replies+0123456789abcdef0123456789abcdef@example.com\"] (titled Re: [Discourse] [General] Parity fixture: replies and posters) didn't work.\n\nYour account associated with this email address is not activated. Please activate your account before sending emails in.\n"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 86,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "cYu8FUwbQi5Oepgt79Bng245Tco=",
+            "created_at": "2026-10-03T08:11:48.965544",
+            "rotated_at": "2026-10-03T08:11:48.964042",
+            "updated_at": "2026-10-03T08:11:48.965544",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "cYu8FUwbQi5Oepgt79Bng245Tco=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 86,
+            "seen_at": "2026-10-03T08:11:49.832742",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "cYu8FUwbQi5Oepgt79Bng245Tco=",
+            "created_at": "2026-10-03T08:11:48.965544",
+            "rotated_at": "2026-10-03T08:11:48.964042",
+            "updated_at": "2026-10-03T08:11:48.965544",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "cYu8FUwbQi5Oepgt79Bng245Tco=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "process_email",
+      {
+        "mail": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+0123456789abcdef0123456789abcdef@example.com\r\nMessage-ID: <reject-inactive@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nThis is my reply by email, long enough to be a post on its own.\r\n",
+        "retry_on_rate_limit": true,
+        "source": "handle_mail"
+      }
+    ]
+  ],
+  "settings": {
+    "reply_by_email_address": "replies+%{reply_key}@example.com",
+    "manual_polling_enabled": true,
+    "reply_by_email_enabled": true
+  },
+  "setup": [
+    "INSERT INTO post_reply_keys (user_id, post_id, reply_key, created_at, updated_at) VALUES (2, 38, '0123456789abcdef0123456789abcdef', now(), now())",
+    "UPDATE users SET active = FALSE WHERE id = 2"
+  ],
+  "jobs_from_jobs": [],
+  "emails": [
+    {
+      "headers": [
+        [
+          "Return-Path",
+          "replies+verp-fd3b5756c41f740147e453323858f21a@example.com"
+        ],
+        [
+          "From",
+          "\"Discourse\" <noreply@unconfigured.discourse.org>"
+        ],
+        [
+          "Reply-To",
+          "\"Discourse\" <noreply@unconfigured.discourse.org>"
+        ],
+        [
+          "To",
+          "user0@example.com"
+        ],
+        [
+          "Message-ID",
+          "<ed43e162-2ee2-4eb4-a098-c8e9f5787a14@localhost>"
+        ],
+        [
+          "Subject",
+          "[Discourse] Email issue -- Inactive User"
+        ],
+        [
+          "MIME-Version",
+          "1.0"
+        ],
+        [
+          "Content-Type",
+          "multipart/alternative; boundary=--==_mimepart_6ac0b8c5d7ed8_40d4f287477"
+        ],
+        [
+          "Content-Transfer-Encoding",
+          "7bit"
+        ],
+        [
+          "X-Auto-Response-Suppress",
+          "All"
+        ],
+        [
+          "x-ms-reactions",
+          "disallow"
+        ],
+        [
+          "Auto-Submitted",
+          "auto-generated"
+        ]
+      ],
+      "text": "We're sorry, but your email message to [\"replies+0123456789abcdef0123456789abcdef@example.com\"] (titled Re: [Discourse] [General] Parity fixture: replies and posters) didn't work.\n\nYour account associated with this email address is not activated. Please activate your account before sending emails in.\n",
+      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <p>We’re sorry, but your email message to [“<a href=\"mailto:replies+0123456789abcdef0123456789abcdef@example.com\" style=\"text-decoration:none;font-weight:bold;color:#006699\">replies+0123456789abcdef0123456789abcdef@example.com</a>”] (titled Re: [Discourse] [General] Parity fixture: replies and posters) didn’t work.</p>\n<p>Your account associated with this email address is not activated. Please activate your account before sending emails in.</p>\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
+    }
+  ],
+  "recorded_from": {
+    "case": "1893b4a37b77214fd9dafb4a916812838d84b5139a370a34200a128c85082f67",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

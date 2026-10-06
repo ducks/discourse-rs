@@ -1,0 +1,15 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/t/4/timings",
+      "params": {
+        "topic_time": 5000,
+        "timings": {
+          "1": 2000
+        }
+      }
+    }
+  ]
+}

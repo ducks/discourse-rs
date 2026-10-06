@@ -1,0 +1,23 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/36.json",
+      "params": {
+        "post": {
+          "raw": "Reply one from user1, edited for the posting slice so it has a revision.",
+          "edit_reason": "fixing it up"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/posts/36/revisions/2.json"
+    },
+    {
+      "method": "GET",
+      "path": "/posts/36/revisions/latest.json"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "user": "user0",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A new topic user0 tries to start in the staff category",
+        "category": 3,
+        "raw": "The first post of a topic in a category user0 is not allowed to post in."
+      }
+    }
+  ]
+}

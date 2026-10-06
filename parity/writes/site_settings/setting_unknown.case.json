@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/no_such_setting.json",
+      "params": {
+        "no_such_setting": "x"
+      }
+    }
+  ]
+}

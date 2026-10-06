@@ -1,0 +1,34 @@
+{
+  "name": "bookmark_anonymous",
+  "user": null,
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/bookmarks.json",
+      "params": {
+        "bookmarkable_id": 37,
+        "bookmarkable_type": "Post"
+      }
+    }
+  ],
+  "started_at": "2026-10-03T16:27:28.421845",
+  "transaction_started_at": "2026-10-03T16:27:27.511695",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You need to be logged in to do that."
+        ],
+        "error_type": "not_logged_in"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "recorded_from": {
+    "case": "83f5bb83400eb719ce9c9c84e0e3cfb3b7b41d86f6dce7823183b3e1daea5417",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

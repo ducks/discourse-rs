@@ -1,0 +1,13 @@
+{
+  "user": "user2",
+  "settings": {
+    "delete_all_posts_and_topics_allowed_groups": "1|2|12"
+  },
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/t/35.json",
+      "params": {}
+    }
+  ]
+}

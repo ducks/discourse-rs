@@ -1,0 +1,18 @@
+{
+  "user": "user1",
+  "settings": {
+    "authorized_extensions": "jpg|jpeg|png|gif|heic|heif|webp|avif|svg|txt"
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/uploads.json",
+      "params": {
+        "upload_type": "composer",
+        "file": {
+          "fixture": "notes.txt"
+        }
+      }
+    }
+  ]
+}

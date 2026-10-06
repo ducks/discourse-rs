@@ -1,0 +1,14 @@
+{
+  "user": "user0",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/drafts.json",
+      "params": {
+        "draft_key": "topic_35",
+        "sequence": 0,
+        "data": "{\"reply\":\"An edited reply\",\"action\":\"edit\",\"postId\":52,\"originalText\":\"Reply from user0 mentioning @user1 so a mention notification exists.\"}"
+      }
+    }
+  ]
+}

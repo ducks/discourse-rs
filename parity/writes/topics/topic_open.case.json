@@ -1,0 +1,16 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE topics SET closed = TRUE WHERE id = 35"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35/status",
+      "params": {
+        "status": "closed",
+        "enabled": "false"
+      }
+    }
+  ]
+}

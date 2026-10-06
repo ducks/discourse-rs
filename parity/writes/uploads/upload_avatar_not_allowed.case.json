@@ -1,0 +1,19 @@
+{
+  "user": "user2",
+  "settings": {
+    "uploaded_avatars_allowed_groups": "13"
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/uploads.json",
+      "params": {
+        "upload_type": "avatar",
+        "file": {
+          "fixture": "static.gif"
+        }
+      }
+    }
+  ],
+  "not_yet": "Unsupported(\"avatar uploads\") before the uploaded_avatars_allowed_groups 422."
+}

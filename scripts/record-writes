@@ -1,27 +1,70 @@
 #!/usr/bin/env bash
-# Record what Discourse does for the write requests in parity/writes/cases.json
-# into parity/writes/<case>.json, on the reference agent, without changing it
-# (scripts/record_writes.rb). tests/writes.rs replays them on the seed.
+# Record what Discourse does for the write cases (parity/writes/<area>/
+# <name>.case.json) into <name>.json beside each, on the reference agent,
+# without changing it (scripts/record_writes.rb rolls every case back).
+# tests/writes.rs replays them on the seed. Run `make reset-reference` first.
 #
-# Usage: scripts/record-writes <agent-name>
+# Each recording is stamped with what it was recorded from: its case (less
+# `not_yet`), the seed and the Discourse commit. Only cases without a
+# recording, or whose stamp no longer matches, are recorded unless asked.
 #
-# WRITES_ONLY=<text> records only the cases whose names contain it, as
-# tests/writes.rs replays only those.
+# Usage: scripts/record-writes <agent-name>            # new or stale cases
+#        scripts/record-writes <agent-name> <regex>    # cases whose area/name matches
+#        scripts/record-writes <agent-name> --all      # every case
 set -euo pipefail
 
-if [ $# -ne 1 ]; then
-  echo "usage: $0 <agent-name>" >&2
+if [ $# -lt 1 ] || [ $# -gt 2 ]; then
+  echo "usage: $0 <agent-name> [<regex> | --all]" >&2
   exit 64
 fi
 
 agent="$1"
+only="${2:-}"
 root="$(cd "$(dirname "$0")/.." && pwd)"
 dest="$root/parity/writes"
+seed=$(sha256sum "$root/seed/fresh_install.sql" | cut -d' ' -f1)
+commit=$(sed -n 's/^commit=//p' "$root/vendor/discourse/DISCOURSE_REF")
 
-dv copy "$root/scripts/record_writes.rb" "$agent:/tmp/record_writes.rb" > /dev/null
+case_hash() {
+  jq -cS 'del(.not_yet)' "$1" | sha256sum | cut -d' ' -f1
+}
+
+# The cases to record, as "area/name", and why.
+selected=()
+for definition in "$dest"/*/*.case.json; do
+  area=$(basename "$(dirname "$definition")")
+  name=$(basename "$definition" .case.json)
+  recording="$dest/$area/$name.json"
+  why=""
+  if [ "$only" = "--all" ]; then
+    why="all"
+  elif [ -n "$only" ]; then
+    [[ "$area/$name" =~ $only ]] && why="asked"
+  elif [ ! -f "$recording" ]; then
+    why="new"
+  else
+    stamp=$(jq -c '.recorded_from // {}' "$recording")
+    want=$(jq -cn --arg c "$(case_hash "$definition")" --arg s "$seed" --arg d "$commit" \
+      '{case: $c, seed: $s, discourse: $d}')
+    [ "$(jq -cS . <<<"$stamp")" != "$(jq -cS . <<<"$want")" ] && why="stale"
+  fi
+  if [ -n "$why" ]; then
+    selected+=("$area/$name")
+    echo "$area/$name: $why"
+  fi
+done
+if [ ${#selected[@]} -eq 0 ]; then
+  echo "every recording is current"
+  exit 0
+fi
+
 cases="$(mktemp)"
 trap 'rm -f "$cases"' EXIT
-jq --arg only "${WRITES_ONLY:-}" '[.[] | select(.name | test($only))]' "$dest/cases.json" > "$cases"
+for entry in "${selected[@]}"; do
+  jq --arg name "${entry#*/}" '{name: $name} + del(.not_yet)' "$dest/$entry.case.json"
+done | jq -s . > "$cases"
+
+dv copy "$root/scripts/record_writes.rb" "$agent:/tmp/record_writes.rb" > /dev/null
 dv copy "$cases" "$agent:/tmp/write_cases.json" > /dev/null
 # The files cases upload (parity/writes/files).
 dv run --name "$agent" -- rm -rf /tmp/write-files
@@ -31,7 +74,13 @@ for f in "$dest"/files/*; do
 done
 dv run --name "$agent" -- rm -rf /tmp/write-record
 dv run --name "$agent" -- bin/rails runner /tmp/record_writes.rb /tmp/write_cases.json /tmp/write-record /tmp/write-files
-for f in $(jq -r '.[].name' "$cases"); do
-  dv copy "$agent:/tmp/write-record/$f.json" "$dest/$f.json" > /dev/null
+for entry in "${selected[@]}"; do
+  area="${entry%%/*}"
+  name="${entry#*/}"
+  recorded="$(mktemp)"
+  dv copy "$agent:/tmp/write-record/$name.json" "$recorded" > /dev/null
+  jq --arg c "$(case_hash "$dest/$entry.case.json")" --arg s "$seed" --arg d "$commit" \
+    '. + {recorded_from: {case: $c, seed: $s, discourse: $d}}' "$recorded" > "$dest/$entry.json"
+  rm -f "$recorded"
 done
-echo "wrote $dest"
+echo "recorded ${#selected[@]} case(s) under $dest"

@@ -1,0 +1,75 @@
+{
+  "name": "bookmark_duplicate",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/bookmarks.json",
+      "params": {
+        "bookmarkable_id": 52,
+        "bookmarkable_type": "Post"
+      }
+    }
+  ],
+  "started_at": "2026-10-03T16:27:16.889732",
+  "transaction_started_at": "2026-10-03T16:27:15.714056",
+  "responses": [
+    {
+      "status": 400,
+      "body": {
+        "failed": "FAILED",
+        "errors": [
+          "You cannot bookmark the same Post twice."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 86,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "3AcD43WpX9UnW/QYzdlS8ebwh9E=",
+            "created_at": "2026-10-03T16:27:16.274981",
+            "rotated_at": "2026-10-03T16:27:16.274712",
+            "updated_at": "2026-10-03T16:27:16.274981",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "3AcD43WpX9UnW/QYzdlS8ebwh9E=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 86,
+            "seen_at": "2026-10-03T16:27:16.897291",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "3AcD43WpX9UnW/QYzdlS8ebwh9E=",
+            "created_at": "2026-10-03T16:27:16.274981",
+            "rotated_at": "2026-10-03T16:27:16.274712",
+            "updated_at": "2026-10-03T16:27:16.274981",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "3AcD43WpX9UnW/QYzdlS8ebwh9E=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "recorded_from": {
+    "case": "6b1c6a524faead9a4edab519c37cce032ae52d1e46a06194e47de66e1e4e1404",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

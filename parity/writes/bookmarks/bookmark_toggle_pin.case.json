@@ -1,0 +1,10 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/bookmarks/1/toggle_pin.json",
+      "params": {}
+    }
+  ]
+}

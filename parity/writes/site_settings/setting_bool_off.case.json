@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/allow_user_locale.json",
+      "params": {
+        "allow_user_locale": "false"
+      }
+    }
+  ]
+}
