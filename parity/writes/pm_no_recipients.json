@@ -1,0 +1,72 @@
+{
+  "name": "pm_no_recipients",
+  "user": "user2",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A private message addressed to nobody at all",
+        "raw": "This private message names no recipients, which has to be refused.",
+        "archetype": "private_message",
+        "target_recipients": ""
+      }
+    }
+  ],
+  "started_at": "2026-10-06T20:06:28.914551",
+  "transaction_started_at": "2026-10-06T20:06:17.854219",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "action": "create_post",
+        "errors": [
+          "You must select a valid user."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 119,
+            "seen_at": null,
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "TP8bO+54lAIUU9Vwc/UpmelRK58=",
+            "created_at": "2026-10-06T20:06:22.258761",
+            "rotated_at": "2026-10-06T20:06:22.257732",
+            "updated_at": "2026-10-06T20:06:22.258761",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "TP8bO+54lAIUU9Vwc/UpmelRK58=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 119,
+            "seen_at": "2026-10-06T20:06:28.970308",
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "TP8bO+54lAIUU9Vwc/UpmelRK58=",
+            "created_at": "2026-10-06T20:06:22.258761",
+            "rotated_at": "2026-10-06T20:06:22.257732",
+            "updated_at": "2026-10-06T20:06:22.258761",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "TP8bO+54lAIUU9Vwc/UpmelRK58=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": []
+}

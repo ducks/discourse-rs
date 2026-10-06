@@ -1,0 +1,23 @@
+{
+  "name": "sitemap_index_not_generated",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/sitemap.xml"
+    }
+  ],
+  "started_at": "2026-10-06T20:09:52.419833",
+  "transaction_started_at": "2026-10-06T20:09:51.729243",
+  "responses": [
+    {
+      "status": 200,
+      "body": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<sitemapindex xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n</sitemapindex>\n"
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "setup": [
+    "DELETE FROM sitemaps"
+  ]
+}

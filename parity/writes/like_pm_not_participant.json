@@ -1,0 +1,87 @@
+{
+  "name": "like_pm_not_participant",
+  "user": "user0",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/post_actions.json",
+      "params": {
+        "id": 50,
+        "post_action_type_id": 2
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/post_actions.json",
+      "params": {
+        "id": -1,
+        "post_action_type_id": 2
+      }
+    }
+  ],
+  "started_at": "2026-10-06T20:08:25.849943",
+  "transaction_started_at": "2026-10-06T20:08:24.514842",
+  "responses": [
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    },
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 119,
+            "seen_at": null,
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "CntI7DjJ7UcdwtvRQ7+jeUAn3+E=",
+            "created_at": "2026-10-06T20:08:24.976721",
+            "rotated_at": "2026-10-06T20:08:24.976435",
+            "updated_at": "2026-10-06T20:08:24.976721",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "CntI7DjJ7UcdwtvRQ7+jeUAn3+E=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 119,
+            "seen_at": "2026-10-06T20:08:25.859355",
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "CntI7DjJ7UcdwtvRQ7+jeUAn3+E=",
+            "created_at": "2026-10-06T20:08:24.976721",
+            "rotated_at": "2026-10-06T20:08:24.976435",
+            "updated_at": "2026-10-06T20:08:24.976721",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "CntI7DjJ7UcdwtvRQ7+jeUAn3+E=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": []
+}

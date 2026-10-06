@@ -1,0 +1,368 @@
+{
+  "name": "bookmarks_list_hidden_posts",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/u/user1/bookmarks.json"
+    },
+    {
+      "method": "GET",
+      "path": "/u/user1/bookmarks.json?q=Parity%20fixture"
+    }
+  ],
+  "started_at": "2026-10-06T20:08:45.084037",
+  "transaction_started_at": "2026-10-06T20:08:44.114908",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "user_bookmark_list": {
+          "bookmarks": [
+            {
+              "id": 4,
+              "created_at": "2026-10-01T22:32:02.419Z",
+              "updated_at": "2026-10-01T22:32:02.429Z",
+              "name": "Parity fixture: pinned, in a PM",
+              "reminder_at": null,
+              "pinned": true,
+              "title": "Parity fixture: PM user1 to user0",
+              "fancy_title": "Parity fixture: PM user1 to user0",
+              "excerpt": "A reply from user0 inside the private message, long enough too.",
+              "bookmarkable_id": 49,
+              "bookmarkable_type": "Post",
+              "bookmarkable_url": "http://localhost:3042/t/parity-fixture-pm-user1-to-user0/42/2",
+              "topic_id": 42,
+              "linked_post_number": 2,
+              "deleted": false,
+              "hidden": false,
+              "category_id": null,
+              "closed": false,
+              "archived": false,
+              "archetype": "private_message",
+              "highest_post_number": 2,
+              "bumped_at": "2026-10-01T15:39:51.295Z",
+              "slug": "parity-fixture-pm-user1-to-user0",
+              "user": {
+                "id": 2,
+                "username": "user0",
+                "name": "User0",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png"
+              }
+            },
+            {
+              "id": 3,
+              "created_at": "2026-10-01T22:32:02.391Z",
+              "updated_at": "2026-10-01T22:32:02.391Z",
+              "name": "Parity fixture: with a reminder",
+              "reminder_at": "2031-01-15T09:30:00.000Z",
+              "reminder_at_ics_start": "20310115T093000Z",
+              "reminder_at_ics_end": "20310115T103000Z",
+              "pinned": null,
+              "title": "Parity fixture: replies and posters",
+              "fancy_title": "Parity fixture: replies and posters",
+              "excerpt": "Reply one from user1, also long enough to pass the minimum length check.",
+              "bookmarkable_id": 36,
+              "bookmarkable_type": "Post",
+              "bookmarkable_url": "http://localhost:3042/t/parity-fixture-replies-and-posters/35/2",
+              "tags": [
+                {
+                  "id": 2,
+                  "name": "guide",
+                  "slug": "guide"
+                }
+              ],
+              "tags_descriptions": {},
+              "topic_id": 35,
+              "linked_post_number": 2,
+              "deleted": false,
+              "hidden": false,
+              "category_id": 4,
+              "closed": false,
+              "archived": false,
+              "archetype": "regular",
+              "highest_post_number": 5,
+              "bumped_at": "2026-10-01T15:39:51.834Z",
+              "slug": "parity-fixture-replies-and-posters",
+              "user": {
+                "id": 3,
+                "username": "user1",
+                "name": "User1",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png"
+              }
+            },
+            {
+              "id": 5,
+              "created_at": "2026-10-01T22:32:02.441Z",
+              "updated_at": "2026-10-01T22:32:02.468Z",
+              "name": "Parity fixture: reminder sent",
+              "reminder_at": null,
+              "pinned": null,
+              "title": "Parity fixture: replies and posters",
+              "fancy_title": "Parity fixture: replies and posters",
+              "bookmarkable_id": 52,
+              "bookmarkable_type": "Post",
+              "bookmarkable_url": "http://localhost:3042/t/parity-fixture-replies-and-posters/35/5",
+              "tags": [
+                {
+                  "id": 2,
+                  "name": "guide",
+                  "slug": "guide"
+                }
+              ],
+              "tags_descriptions": {},
+              "topic_id": 35,
+              "linked_post_number": 5,
+              "deleted": false,
+              "hidden": true,
+              "category_id": 4,
+              "closed": false,
+              "archived": false,
+              "archetype": "regular",
+              "highest_post_number": 5,
+              "bumped_at": "2026-10-01T15:39:51.834Z",
+              "slug": "parity-fixture-replies-and-posters",
+              "user": {
+                "id": 2,
+                "username": "user0",
+                "name": "User0",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png"
+              }
+            },
+            {
+              "id": 1,
+              "created_at": "2026-10-01T13:42:34.774Z",
+              "updated_at": "2026-10-01T13:42:34.774Z",
+              "name": null,
+              "reminder_at": null,
+              "pinned": null,
+              "title": "Parity fixture: pinned and closed",
+              "fancy_title": "Parity fixture: pinned and closed",
+              "excerpt": "A pinned, closed topic in Site Feedback with an excerpt that should be shown in the list.",
+              "bookmarkable_id": 40,
+              "bookmarkable_type": "Post",
+              "bookmarkable_url": "http://localhost:3042/t/parity-fixture-pinned-and-closed/37/1",
+              "tags": [],
+              "tags_descriptions": {},
+              "topic_id": 37,
+              "linked_post_number": 1,
+              "deleted": false,
+              "hidden": false,
+              "category_id": 2,
+              "closed": true,
+              "archived": false,
+              "archetype": "regular",
+              "highest_post_number": 1,
+              "bumped_at": "2026-09-30T07:28:29.358Z",
+              "slug": "parity-fixture-pinned-and-closed",
+              "user": {
+                "id": 1,
+                "username": "admin",
+                "name": "Admin",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "user_bookmark_list": {
+          "bookmarks": [
+            {
+              "id": 4,
+              "created_at": "2026-10-01T22:32:02.419Z",
+              "updated_at": "2026-10-01T22:32:02.429Z",
+              "name": "Parity fixture: pinned, in a PM",
+              "reminder_at": null,
+              "pinned": true,
+              "title": "Parity fixture: PM user1 to user0",
+              "fancy_title": "Parity fixture: PM user1 to user0",
+              "excerpt": "A reply from user0 inside the private message, long enough too.",
+              "bookmarkable_id": 49,
+              "bookmarkable_type": "Post",
+              "bookmarkable_url": "http://localhost:3042/t/parity-fixture-pm-user1-to-user0/42/2",
+              "topic_id": 42,
+              "linked_post_number": 2,
+              "deleted": false,
+              "hidden": false,
+              "category_id": null,
+              "closed": false,
+              "archived": false,
+              "archetype": "private_message",
+              "highest_post_number": 2,
+              "bumped_at": "2026-10-01T15:39:51.295Z",
+              "slug": "parity-fixture-pm-user1-to-user0",
+              "user": {
+                "id": 2,
+                "username": "user0",
+                "name": "User0",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png"
+              }
+            },
+            {
+              "id": 3,
+              "created_at": "2026-10-01T22:32:02.391Z",
+              "updated_at": "2026-10-01T22:32:02.391Z",
+              "name": "Parity fixture: with a reminder",
+              "reminder_at": "2031-01-15T09:30:00.000Z",
+              "reminder_at_ics_start": "20310115T093000Z",
+              "reminder_at_ics_end": "20310115T103000Z",
+              "pinned": null,
+              "title": "Parity fixture: replies and posters",
+              "fancy_title": "Parity fixture: replies and posters",
+              "excerpt": "Reply one from user1, also long enough to pass the minimum length check.",
+              "bookmarkable_id": 36,
+              "bookmarkable_type": "Post",
+              "bookmarkable_url": "http://localhost:3042/t/parity-fixture-replies-and-posters/35/2",
+              "tags": [
+                {
+                  "id": 2,
+                  "name": "guide",
+                  "slug": "guide"
+                }
+              ],
+              "tags_descriptions": {},
+              "topic_id": 35,
+              "linked_post_number": 2,
+              "deleted": false,
+              "hidden": false,
+              "category_id": 4,
+              "closed": false,
+              "archived": false,
+              "archetype": "regular",
+              "highest_post_number": 5,
+              "bumped_at": "2026-10-01T15:39:51.834Z",
+              "slug": "parity-fixture-replies-and-posters",
+              "user": {
+                "id": 3,
+                "username": "user1",
+                "name": "User1",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png"
+              }
+            },
+            {
+              "id": 5,
+              "created_at": "2026-10-01T22:32:02.441Z",
+              "updated_at": "2026-10-01T22:32:02.468Z",
+              "name": "Parity fixture: reminder sent",
+              "reminder_at": null,
+              "pinned": null,
+              "title": "Parity fixture: replies and posters",
+              "fancy_title": "Parity fixture: replies and posters",
+              "bookmarkable_id": 52,
+              "bookmarkable_type": "Post",
+              "bookmarkable_url": "http://localhost:3042/t/parity-fixture-replies-and-posters/35/5",
+              "tags": [
+                {
+                  "id": 2,
+                  "name": "guide",
+                  "slug": "guide"
+                }
+              ],
+              "tags_descriptions": {},
+              "topic_id": 35,
+              "linked_post_number": 5,
+              "deleted": false,
+              "hidden": true,
+              "category_id": 4,
+              "closed": false,
+              "archived": false,
+              "archetype": "regular",
+              "highest_post_number": 5,
+              "bumped_at": "2026-10-01T15:39:51.834Z",
+              "slug": "parity-fixture-replies-and-posters",
+              "user": {
+                "id": 2,
+                "username": "user0",
+                "name": "User0",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png"
+              }
+            },
+            {
+              "id": 1,
+              "created_at": "2026-10-01T13:42:34.774Z",
+              "updated_at": "2026-10-01T13:42:34.774Z",
+              "name": null,
+              "reminder_at": null,
+              "pinned": null,
+              "title": "Parity fixture: pinned and closed",
+              "fancy_title": "Parity fixture: pinned and closed",
+              "excerpt": "A pinned, closed topic in Site Feedback with an excerpt that should be shown in the list.",
+              "bookmarkable_id": 40,
+              "bookmarkable_type": "Post",
+              "bookmarkable_url": "http://localhost:3042/t/parity-fixture-pinned-and-closed/37/1",
+              "tags": [],
+              "tags_descriptions": {},
+              "topic_id": 37,
+              "linked_post_number": 1,
+              "deleted": false,
+              "hidden": false,
+              "category_id": 2,
+              "closed": true,
+              "archived": false,
+              "archetype": "regular",
+              "highest_post_number": 1,
+              "bumped_at": "2026-09-30T07:28:29.358Z",
+              "slug": "parity-fixture-pinned-and-closed",
+              "user": {
+                "id": 1,
+                "username": "admin",
+                "name": "Admin",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 119,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "Vn88KscZC2mVDo6rvmIoOTkHcBo=",
+            "created_at": "2026-10-06T20:08:44.515143",
+            "rotated_at": "2026-10-06T20:08:44.514882",
+            "updated_at": "2026-10-06T20:08:44.515143",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "Vn88KscZC2mVDo6rvmIoOTkHcBo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 119,
+            "seen_at": "2026-10-06T20:08:45.096975",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "Vn88KscZC2mVDo6rvmIoOTkHcBo=",
+            "created_at": "2026-10-06T20:08:44.515143",
+            "rotated_at": "2026-10-06T20:08:44.514882",
+            "updated_at": "2026-10-06T20:08:44.515143",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "Vn88KscZC2mVDo6rvmIoOTkHcBo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "setup": [
+    "UPDATE posts SET hidden = TRUE, hidden_at = '2026-10-02 10:00:00', hidden_reason_id = 1 WHERE id IN (35, 52)"
+  ]
+}

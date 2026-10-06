@@ -2782,6 +2782,1696 @@
     ]
   },
   {
+    "name": "new_topic_restricted_category",
+    "user": "user0",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/posts.json",
+        "params": {
+          "title": "A new topic user0 tries to start in the staff category",
+          "category": 3,
+          "raw": "The first post of a topic in a category user0 is not allowed to post in."
+        }
+      }
+    ]
+  },
+  {
+    "name": "new_topic_no_category",
+    "user": "user0",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/posts.json",
+        "params": {
+          "title": "A new topic from user0 without any category given",
+          "raw": "The first post of a topic that names no category while uncategorized topics are off."
+        }
+      }
+    ]
+  },
+  {
+    "name": "pm_no_recipients",
+    "user": "user2",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/posts.json",
+        "params": {
+          "title": "A private message addressed to nobody at all",
+          "raw": "This private message names no recipients, which has to be refused.",
+          "archetype": "private_message",
+          "target_recipients": ""
+        }
+      }
+    ]
+  },
+  {
+    "name": "pm_on_existing_topic",
+    "user": "user2",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/posts.json",
+        "params": {
+          "topic_id": 35,
+          "title": "A private message aimed at an existing topic",
+          "raw": "A private message posted into a regular topic, which has to be refused.",
+          "archetype": "private_message",
+          "target_recipients": "user0"
+        }
+      }
+    ]
+  },
+  {
+    "name": "reply_duplicate",
+    "user": "user2",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/posts.json",
+        "params": {
+          "topic_id": 35,
+          "raw": "A reply user2 sends twice in a row, the second one a duplicate."
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/posts.json",
+        "params": {
+          "topic_id": 35,
+          "raw": "A reply user2 sends twice in a row, the second one a duplicate."
+        }
+      }
+    ]
+  },
+  {
+    "name": "reply_to_archived_topic",
+    "user": "user0",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/posts.json",
+        "params": {
+          "topic_id": 41,
+          "raw": "A reply to an archived topic, which a regular user cannot make there."
+        }
+      }
+    ]
+  },
+  {
+    "name": "edit_too_late",
+    "user": "user0",
+    "settings": {
+      "post_edit_time_limit": 5
+    },
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/posts/52.json",
+        "params": {
+          "post": {
+            "raw": "user0 editing an old reply after the edit time limit has passed."
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "edit_archived_topic",
+    "user": "user0",
+    "setup": [
+      "UPDATE posts SET created_at = now() WHERE id = 46"
+    ],
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/posts/46.json",
+        "params": {
+          "post": {
+            "raw": "user0 editing the first post of an archived topic, which is refused."
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "edit_locked_post",
+    "user": "user2",
+    "settings": {
+      "tl2_post_edit_time_limit": 525600
+    },
+    "setup": [
+      "UPDATE posts SET locked_by_id = 1 WHERE id = 37"
+    ],
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/posts/37.json",
+        "params": {
+          "post": {
+            "raw": "user2 editing their own reply after staff locked it, which is refused."
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "edit_wiki",
+    "user": "user0",
+    "setup": [
+      "UPDATE posts SET wiki = TRUE WHERE id = 37"
+    ],
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/posts/37.json",
+        "params": {
+          "post": {
+            "raw": "Reply two from user2, made a wiki, and edited by user0 who may edit wikis.",
+            "edit_reason": "wiki edit"
+          }
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/posts/37/revisions/latest.json"
+      }
+    ]
+  },
+  {
+    "name": "post_delete_first_post",
+    "user": "admin",
+    "requests": [
+      {
+        "method": "DELETE",
+        "path": "/posts/35.json",
+        "params": {}
+      }
+    ]
+  },
+  {
+    "name": "post_delete_self_disabled",
+    "user": "user0",
+    "settings": {
+      "max_post_deletions_per_day": 0
+    },
+    "requests": [
+      {
+        "method": "DELETE",
+        "path": "/posts/52.json",
+        "params": {}
+      }
+    ]
+  },
+  {
+    "name": "post_delete_allowed_group",
+    "user": "user2",
+    "settings": {
+      "delete_all_posts_and_topics_allowed_groups": "1|2|12"
+    },
+    "requests": [
+      {
+        "method": "DELETE",
+        "path": "/posts/52.json",
+        "params": {}
+      }
+    ]
+  },
+  {
+    "name": "post_recover_self_disabled",
+    "user": "user0",
+    "settings": {
+      "max_post_deletions_per_day": 0
+    },
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/posts/52/recover.json",
+        "params": {}
+      }
+    ]
+  },
+  {
+    "name": "revision_history_private",
+    "user": "user2",
+    "settings": {
+      "edit_history_visible_to_public": false
+    },
+    "setup": [
+      "INSERT INTO post_revisions (id, user_id, post_id, modifications, number, created_at, updated_at, hidden) VALUES (9401, 3, 36, E'---\\nraw:\\n- An earlier text of reply one from user1\\n- A later text of reply one from user1\\n', 2, now(), now(), FALSE)",
+      "UPDATE posts SET version = 2, public_version = 2 WHERE id = 36"
+    ],
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/posts/36/revisions/2.json"
+      },
+      {
+        "method": "GET",
+        "path": "/posts/36/revisions/latest.json"
+      }
+    ]
+  },
+  {
+    "name": "raw_post_anonymous",
+    "user": null,
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/raw/35/1"
+      },
+      {
+        "method": "GET",
+        "path": "/raw/35/1.json"
+      }
+    ]
+  },
+  {
+    "name": "raw_hidden_post",
+    "user": "user0",
+    "setup": [
+      "UPDATE posts SET hidden = TRUE, hidden_at = now(), hidden_reason_id = 1 WHERE id = 37"
+    ],
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/raw/35/3"
+      },
+      {
+        "method": "GET",
+        "path": "/raw/35/2"
+      }
+    ]
+  },
+  {
+    "name": "topic_status_bad_params",
+    "user": "admin",
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/t/35/status",
+        "params": {
+          "enabled": "true"
+        }
+      },
+      {
+        "method": "PUT",
+        "path": "/t/35/status",
+        "params": {
+          "status": "visible"
+        }
+      },
+      {
+        "method": "PUT",
+        "path": "/t/35/status",
+        "params": {
+          "status": "title",
+          "enabled": "true"
+        }
+      }
+    ]
+  },
+  {
+    "name": "topic_close_enabled_variants",
+    "user": "admin",
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/t/35/status",
+        "params": {
+          "status": "closed",
+          "enabled": "t"
+        }
+      },
+      {
+        "method": "PUT",
+        "path": "/t/35/status",
+        "params": {
+          "status": "closed",
+          "enabled": "0"
+        }
+      },
+      {
+        "method": "PUT",
+        "path": "/t/35/status",
+        "params": {
+          "status": "closed",
+          "enabled": "1"
+        }
+      }
+    ]
+  },
+  {
+    "name": "topic_close_already_closed",
+    "user": "admin",
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/t/37/status",
+        "params": {
+          "status": "closed",
+          "enabled": "true"
+        }
+      }
+    ]
+  },
+  {
+    "name": "topic_unpin_globally_tl4",
+    "user": "user3",
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/t/5/status",
+        "params": {
+          "status": "pinned_globally",
+          "enabled": "false"
+        }
+      }
+    ]
+  },
+  {
+    "name": "topic_relist_with_until",
+    "user": "admin",
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/t/39/status",
+        "params": {
+          "status": "visible",
+          "enabled": "true",
+          "until": "2027-01-01T00:00:00Z"
+        }
+      }
+    ]
+  },
+  {
+    "name": "topic_status_tl4_forbidden",
+    "user": "user3",
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/t/4/status",
+        "params": {
+          "status": "closed",
+          "enabled": "true"
+        }
+      },
+      {
+        "method": "PUT",
+        "path": "/t/4/status",
+        "params": {
+          "status": "visible",
+          "enabled": "false"
+        }
+      },
+      {
+        "method": "PUT",
+        "path": "/t/42/status",
+        "params": {
+          "status": "closed",
+          "enabled": "true"
+        }
+      }
+    ]
+  },
+  {
+    "name": "topic_delete_own_old",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "DELETE",
+        "path": "/t/38.json",
+        "params": {}
+      }
+    ]
+  },
+  {
+    "name": "topic_delete_own_fresh",
+    "user": "user1",
+    "setup": [
+      "UPDATE topics SET created_at = now() - interval '1 hour' WHERE id = 38"
+    ],
+    "requests": [
+      {
+        "method": "DELETE",
+        "path": "/t/38.json",
+        "params": {}
+      }
+    ]
+  },
+  {
+    "name": "topic_delete_allowed_group",
+    "user": "user2",
+    "settings": {
+      "delete_all_posts_and_topics_allowed_groups": "1|2|12"
+    },
+    "requests": [
+      {
+        "method": "DELETE",
+        "path": "/t/35.json",
+        "params": {}
+      }
+    ]
+  },
+  {
+    "name": "topic_delete_pm_outsider",
+    "user": "user0",
+    "requests": [
+      {
+        "method": "DELETE",
+        "path": "/t/43.json",
+        "params": {}
+      }
+    ]
+  },
+  {
+    "name": "timings_restricted_topic",
+    "user": "user1",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/t/4/timings",
+        "params": {
+          "topic_time": 5000,
+          "timings": {
+            "1": 2000
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "timings_pm_outsider",
+    "user": "user2",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/topics/timings",
+        "params": {
+          "topic_id": 42,
+          "topic_time": 4000,
+          "timings": {
+            "1": 2000,
+            "2": 2000
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "timings_msecs_cap",
+    "user": "user2",
+    "setup": [
+      "UPDATE post_timings SET msecs = 2147483638 WHERE topic_id = 35 AND post_number = 3 AND user_id = 4"
+    ],
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/topics/timings",
+        "params": {
+          "topic_id": 35,
+          "topic_time": 100,
+          "timings": {
+            "3": 100
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "unlike_not_liked",
+    "user": "user2",
+    "requests": [
+      {
+        "method": "DELETE",
+        "path": "/post_actions/36.json",
+        "params": {
+          "post_action_type_id": 2
+        }
+      }
+    ]
+  },
+  {
+    "name": "unlike_after_window",
+    "user": "user0",
+    "requests": [
+      {
+        "method": "DELETE",
+        "path": "/post_actions/36.json",
+        "params": {
+          "post_action_type_id": 2
+        }
+      }
+    ]
+  },
+  {
+    "name": "unlike_lost_access",
+    "user": "user0",
+    "setup": [
+      "INSERT INTO post_actions (id, post_id, user_id, post_action_type_id, created_at, updated_at, staff_took_action, targets_topic) VALUES (9311, 2, 2, 2, now(), now(), FALSE, FALSE)",
+      "UPDATE posts SET like_count = 1 WHERE id = 2"
+    ],
+    "requests": [
+      {
+        "method": "DELETE",
+        "path": "/post_actions/2.json",
+        "params": {
+          "post_action_type_id": 2
+        }
+      }
+    ]
+  },
+  {
+    "name": "like_pm_not_participant",
+    "user": "user0",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/post_actions.json",
+        "params": {
+          "id": 50,
+          "post_action_type_id": 2
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/post_actions.json",
+        "params": {
+          "id": -1,
+          "post_action_type_id": 2
+        }
+      }
+    ]
+  },
+  {
+    "name": "flag_hidden_post",
+    "user": "admin",
+    "setup": [
+      "UPDATE posts SET hidden = TRUE, hidden_at = '2026-10-02 10:00:00', hidden_reason_id = 1 WHERE id IN (37)"
+    ],
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/post_actions.json",
+        "params": {
+          "id": 37,
+          "post_action_type_id": 3
+        }
+      }
+    ]
+  },
+  {
+    "name": "draft_new_topic_and_pm",
+    "user": "user0",
+    "setup": [
+      "INSERT INTO drafts (id, user_id, draft_key, data, sequence, revisions, owner, created_at, updated_at) VALUES (9501, 2, 'topic_43', '{\"reply\":\"A draft in a message I am not in\",\"action\":\"reply\"}', 0, 1, NULL, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+      "INSERT INTO drafts (id, user_id, draft_key, data, sequence, revisions, owner, created_at, updated_at) VALUES (9502, 2, 'topic_42', '{\"reply\":\"A draft reply to my message\",\"action\":\"reply\"}', 0, 1, NULL, '2026-10-01 11:00:00', '2026-10-01 11:00:00')",
+      "UPDATE user_stats SET draft_count = 2 WHERE user_id = 2"
+    ],
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/drafts.json",
+        "params": {
+          "draft_key": "new_topic",
+          "sequence": 0,
+          "data": "{\"reply\":\"The body of a topic still being written\",\"action\":\"createTopic\",\"title\":\"A draft topic title\",\"categoryId\":4,\"tags\":[],\"composerTime\":3000,\"typingTime\":2000}"
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/drafts.json",
+        "params": {
+          "draft_key": "new_private_message",
+          "sequence": 0,
+          "data": "{\"reply\":\"A message still being written\",\"action\":\"privateMessage\",\"title\":\"A draft message title\",\"recipients\":\"user2\",\"archetypeId\":\"private_message\",\"composerTime\":3000,\"typingTime\":2000}"
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/drafts.json"
+      }
+    ]
+  },
+  {
+    "name": "draft_too_long",
+    "user": "user0",
+    "settings": {
+      "max_draft_length": 500
+    },
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/drafts.json",
+        "params": {
+          "draft_key": "topic_35",
+          "sequence": 0,
+          "data": "{\"reply\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"action\":\"reply\"}"
+        }
+      }
+    ]
+  },
+  {
+    "name": "draft_too_many",
+    "user": "user0",
+    "settings": {
+      "max_drafts_per_user": 1
+    },
+    "setup": [
+      "INSERT INTO drafts (id, user_id, draft_key, data, sequence, revisions, owner, created_at, updated_at) VALUES (9501, 2, 'new_topic', '{\"reply\":\"Earlier topic draft\",\"action\":\"createTopic\"}', 0, 1, NULL, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+      "UPDATE user_stats SET draft_count = 1 WHERE user_id = 2"
+    ],
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/drafts.json",
+        "params": {
+          "draft_key": "topic_35",
+          "sequence": 0,
+          "data": "{\"reply\":\"A second draft over the limit\",\"action\":\"reply\"}"
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/drafts.json",
+        "params": {
+          "draft_key": "new_topic",
+          "sequence": 0,
+          "data": "{\"reply\":\"Updating the draft I already have\",\"action\":\"createTopic\"}"
+        }
+      }
+    ]
+  },
+  {
+    "name": "draft_stale_sequence_no_draft",
+    "user": "user0",
+    "setup": [
+      "INSERT INTO draft_sequences (id, user_id, draft_key, sequence) VALUES (9501, 2, 'topic_35', 1)"
+    ],
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/drafts.json",
+        "params": {
+          "draft_key": "topic_35",
+          "sequence": 0,
+          "data": "{\"reply\":\"A draft from a stale composer\",\"action\":\"reply\"}",
+          "owner": "abcdefg"
+        }
+      }
+    ]
+  },
+  {
+    "name": "draft_edit_conflict_hidden_post",
+    "user": "user0",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/drafts.json",
+        "params": {
+          "draft_key": "topic_43",
+          "sequence": 0,
+          "data": "{\"reply\":\"An edit of a post I cannot see\",\"action\":\"edit\",\"postId\":50,\"originalText\":\"wrong text to trigger conflict\"}"
+        }
+      }
+    ]
+  },
+  {
+    "name": "bookmark_pm_not_participant",
+    "user": "user0",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/bookmarks.json",
+        "params": {
+          "bookmarkable_id": 50,
+          "bookmarkable_type": "Post"
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/bookmarks.json",
+        "params": {
+          "bookmarkable_id": 43,
+          "bookmarkable_type": "Topic"
+        }
+      }
+    ]
+  },
+  {
+    "name": "bookmark_topic_hidden_first_post",
+    "user": "user2",
+    "setup": [
+      "UPDATE posts SET hidden = TRUE, hidden_at = '2026-10-02 10:00:00', hidden_reason_id = 1 WHERE id IN (35)"
+    ],
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/bookmarks.json",
+        "params": {
+          "bookmarkable_id": 35,
+          "bookmarkable_type": "Topic"
+        }
+      }
+    ]
+  },
+  {
+    "name": "bookmark_user_auto_delete_default",
+    "user": "user0",
+    "setup": [
+      "UPDATE user_options SET bookmark_auto_delete_preference = 1 WHERE user_id = 2"
+    ],
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/bookmarks.json",
+        "params": {
+          "bookmarkable_id": 37,
+          "bookmarkable_type": "Post",
+          "reminder_at": "2031-03-01T09:00:00Z"
+        }
+      }
+    ]
+  },
+  {
+    "name": "bookmark_edit_other",
+    "user": "user0",
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/bookmarks/6.json",
+        "params": {
+          "name": "Not my bookmark"
+        }
+      },
+      {
+        "method": "PUT",
+        "path": "/bookmarks/7/toggle_pin.json",
+        "params": {}
+      },
+      {
+        "method": "PUT",
+        "path": "/bookmarks/9999.json",
+        "params": {
+          "name": "No such bookmark"
+        }
+      }
+    ]
+  },
+  {
+    "name": "notifications_recent_bump",
+    "user": "user0",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/notifications.json?recent=true&bump_last_seen_reviewable=true"
+      }
+    ]
+  },
+  {
+    "name": "notifications_read_other",
+    "user": "user0",
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/notifications/mark-read.json",
+        "params": {
+          "id": 45
+        }
+      }
+    ]
+  },
+  {
+    "name": "notifications_filtered_badge_and_topic",
+    "user": "user0",
+    "setup": [
+      "UPDATE badges SET enabled = FALSE WHERE id = 1",
+      "INSERT INTO notifications (id, user_id, notification_type, data, read, topic_id, post_number, high_priority, created_at, updated_at) VALUES (9601, 2, 6, '{\"topic_title\":\"Parity fixture: PM admin to user1 and user2\",\"original_post_id\":50,\"original_post_type\":1,\"original_username\":\"admin\",\"revision_number\":null,\"display_username\":\"admin\",\"display_name\":\"Admin\"}', FALSE, 43, 1, TRUE, '2026-10-02 10:00:00', '2026-10-02 10:00:00')"
+    ],
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/notifications.json"
+      },
+      {
+        "method": "GET",
+        "path": "/notifications.json?recent=true&silent=true"
+      }
+    ]
+  },
+  {
+    "name": "bookmarks_list_hidden_posts",
+    "user": "user1",
+    "setup": [
+      "UPDATE posts SET hidden = TRUE, hidden_at = '2026-10-02 10:00:00', hidden_reason_id = 1 WHERE id IN (35, 52)"
+    ],
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/u/user1/bookmarks.json"
+      },
+      {
+        "method": "GET",
+        "path": "/u/user1/bookmarks.json?q=Parity%20fixture"
+      }
+    ]
+  },
+  {
+    "name": "upload_too_large",
+    "user": "user2",
+    "settings": {
+      "authorized_extensions": "jpg|jpeg|png|gif|heic|heif|webp|avif|svg|txt",
+      "max_attachment_size_kb": 1
+    },
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/uploads.json",
+        "params": {
+          "upload_type": "composer",
+          "file": {
+            "fixture": "large.txt"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "upload_staff_any_file_in_pm",
+    "user": "admin",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/uploads.json",
+        "params": {
+          "upload_type": "composer",
+          "for_private_message": "true",
+          "file": {
+            "fixture": "notes.txt"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "upload_staff_extension",
+    "user": "admin",
+    "settings": {
+      "authorized_extensions_for_staff": "txt"
+    },
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/uploads.json",
+        "params": {
+          "upload_type": "composer",
+          "file": {
+            "fixture": "notes.txt"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "upload_avatar_not_allowed",
+    "user": "user2",
+    "settings": {
+      "uploaded_avatars_allowed_groups": "13"
+    },
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/uploads.json",
+        "params": {
+          "upload_type": "avatar",
+          "file": {
+            "fixture": "static.gif"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "review_unknown_action",
+    "user": "admin",
+    "setup": [
+      "INSERT INTO post_actions (id, post_id, user_id, post_action_type_id, created_at, updated_at, staff_took_action, targets_topic) VALUES (9301, 52, 3, 3, '2026-10-02 10:00:00', '2026-10-02 10:00:00', FALSE, FALSE)",
+      "UPDATE posts SET off_topic_count = 1 WHERE id = 52",
+      "INSERT INTO reviewables (id, type, type_source, status, created_by_id, reviewable_by_moderator, category_id, topic_id, score, potential_spam, target_id, target_type, target_created_by_id, payload, version, latest_score, force_review, potentially_illegal, created_at, updated_at) VALUES (9301, 'ReviewableFlaggedPost', 'core', 0, 3, TRUE, 4, 35, 3, FALSE, 52, 'Post', 2, '{\"targets_topic\":false}', 0, '2026-10-02 10:00:00', FALSE, FALSE, '2026-10-02 10:00:00', '2026-10-02 10:00:00')",
+      "INSERT INTO reviewable_scores (id, reviewable_id, user_id, reviewable_score_type, status, score, take_action_bonus, user_accuracy_bonus, created_at, updated_at) VALUES (9301, 9301, 3, 3, 0, 3, 0, 0, '2026-10-02 10:00:00', '2026-10-02 10:00:00')",
+      "INSERT INTO reviewable_histories (id, reviewable_id, reviewable_history_type, status, created_by_id, created_at, updated_at) VALUES (9301, 9301, 0, 0, 3, '2026-10-02 10:00:00', '2026-10-02 10:00:00')",
+      "UPDATE topics SET reviewable_score = 3 WHERE id = 35"
+    ],
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/review/9301/perform/nope",
+        "params": {
+          "version": "0"
+        }
+      }
+    ]
+  },
+  {
+    "name": "review_already_reviewed",
+    "user": "admin",
+    "setup": [
+      "INSERT INTO post_actions (id, post_id, user_id, post_action_type_id, created_at, updated_at, staff_took_action, targets_topic) VALUES (9301, 52, 3, 3, '2026-10-02 10:00:00', '2026-10-02 10:00:00', FALSE, FALSE)",
+      "UPDATE posts SET off_topic_count = 1 WHERE id = 52",
+      "INSERT INTO reviewables (id, type, type_source, status, created_by_id, reviewable_by_moderator, category_id, topic_id, score, potential_spam, target_id, target_type, target_created_by_id, payload, version, latest_score, force_review, potentially_illegal, created_at, updated_at) VALUES (9301, 'ReviewableFlaggedPost', 'core', 0, 3, TRUE, 4, 35, 3, FALSE, 52, 'Post', 2, '{\"targets_topic\":false}', 0, '2026-10-02 10:00:00', FALSE, FALSE, '2026-10-02 10:00:00', '2026-10-02 10:00:00')",
+      "INSERT INTO reviewable_scores (id, reviewable_id, user_id, reviewable_score_type, status, score, take_action_bonus, user_accuracy_bonus, created_at, updated_at) VALUES (9301, 9301, 3, 3, 0, 3, 0, 0, '2026-10-02 10:00:00', '2026-10-02 10:00:00')",
+      "INSERT INTO reviewable_histories (id, reviewable_id, reviewable_history_type, status, created_by_id, created_at, updated_at) VALUES (9301, 9301, 0, 0, 3, '2026-10-02 10:00:00', '2026-10-02 10:00:00')",
+      "UPDATE topics SET reviewable_score = 3 WHERE id = 35",
+      "UPDATE reviewables SET status = 1 WHERE id = 9301"
+    ],
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/review/9301/perform/agree_and_keep",
+        "params": {
+          "version": "0"
+        }
+      }
+    ]
+  },
+  {
+    "name": "setting_secret",
+    "user": "admin",
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/admin/site_settings/discord_secret.json",
+        "params": {
+          "discord_secret": "parity-discord-secret"
+        }
+      }
+    ]
+  },
+  {
+    "name": "setting_enum",
+    "user": "admin",
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/admin/site_settings/forwarded_emails_behaviour.json",
+        "params": {
+          "forwarded_emails_behaviour": "quote"
+        }
+      }
+    ]
+  },
+  {
+    "name": "setting_hard_deprecated",
+    "user": "admin",
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/admin/site_settings/allow_duplicate_topic_titles.json",
+        "params": {
+          "allow_duplicate_topic_titles": "true"
+        }
+      }
+    ]
+  },
+  {
+    "name": "setting_integer_delimited",
+    "user": "admin",
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/admin/site_settings/suggested_topics.json",
+        "params": {
+          "suggested_topics": "1,000"
+        }
+      }
+    ]
+  },
+  {
+    "name": "user_suspend_self",
+    "user": "admin",
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/admin/users/1/suspend.json",
+        "params": {
+          "reason": "Breaking the rules",
+          "suspend_until": "2027-01-01T00:00:00Z"
+        }
+      }
+    ]
+  },
+  {
+    "name": "user_suspend_as_moderator",
+    "user": "user3",
+    "setup": [
+      "UPDATE users SET moderator = TRUE WHERE id = 5",
+      "INSERT INTO group_users (group_id, user_id, created_at, updated_at) VALUES (2, 5, '2026-10-01 10:00:00', '2026-10-01 10:00:00'), (3, 5, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+      "UPDATE groups SET user_count = user_count + 1 WHERE id IN (2, 3)"
+    ],
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/admin/users/4/suspend.json",
+        "params": {
+          "reason": "Breaking the rules",
+          "suspend_until": "2027-01-01T00:00:00Z"
+        }
+      }
+    ]
+  },
+  {
+    "name": "user_unsuspend_staff_as_moderator",
+    "user": "user3",
+    "setup": [
+      "UPDATE users SET moderator = TRUE WHERE id = 5",
+      "INSERT INTO group_users (group_id, user_id, created_at, updated_at) VALUES (2, 5, '2026-10-01 10:00:00', '2026-10-01 10:00:00'), (3, 5, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+      "UPDATE groups SET user_count = user_count + 1 WHERE id IN (2, 3)",
+      "UPDATE users SET suspended_at = '2026-10-01 10:00:00', suspended_till = '2027-01-01 00:00:00' WHERE id = 1"
+    ],
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/admin/users/1/unsuspend.json",
+        "params": {}
+      }
+    ]
+  },
+  {
+    "name": "user_silence_with_message",
+    "user": "admin",
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/admin/users/4/silence.json",
+        "params": {
+          "reason": "Spamming",
+          "silenced_till": "2027-01-01T00:00:00Z",
+          "message": "Please stop posting links to your shop."
+        }
+      }
+    ]
+  },
+  {
+    "name": "user_silence_admin_as_moderator",
+    "user": "user3",
+    "setup": [
+      "UPDATE users SET moderator = TRUE WHERE id = 5",
+      "INSERT INTO group_users (group_id, user_id, created_at, updated_at) VALUES (2, 5, '2026-10-01 10:00:00', '2026-10-01 10:00:00'), (3, 5, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+      "UPDATE groups SET user_count = user_count + 1 WHERE id IN (2, 3)"
+    ],
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/admin/users/1/silence.json",
+        "params": {
+          "reason": "Spamming",
+          "silenced_till": "2027-01-01T00:00:00Z"
+        }
+      }
+    ]
+  },
+  {
+    "name": "user_silence_missing_user",
+    "user": "admin",
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/admin/users/9999/silence.json",
+        "params": {}
+      }
+    ]
+  },
+  {
+    "name": "incoming_deprecated_email_param",
+    "user": "admin",
+    "settings": {
+      "reply_by_email_address": "replies+%{reply_key}@example.com",
+      "manual_polling_enabled": true,
+      "reply_by_email_enabled": true
+    },
+    "setup": [
+      "INSERT INTO post_reply_keys (user_id, post_id, reply_key, created_at, updated_at) VALUES (2, 38, '0123456789abcdef0123456789abcdef', now(), now())"
+    ],
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/admin/email/handle_mail",
+        "params": {
+          "email": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+0123456789abcdef0123456789abcdef@example.com\r\nMessage-ID: <deprecated-param-1@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nThis reply came in through the deprecated email parameter, long enough to post.\r"
+        }
+      }
+    ],
+    "run_jobs": [
+      "process_email"
+    ]
+  },
+  {
+    "name": "incoming_invalid_utf8",
+    "user": "admin",
+    "settings": {
+      "reply_by_email_address": "replies+%{reply_key}@example.com",
+      "manual_polling_enabled": true,
+      "reply_by_email_enabled": true
+    },
+    "setup": [
+      "INSERT INTO post_reply_keys (user_id, post_id, reply_key, created_at, updated_at) VALUES (2, 38, '0123456789abcdef0123456789abcdef', now(), now())"
+    ],
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/admin/email/handle_mail",
+        "params": {
+          "email_encoded": "RGF0ZTogVGh1LCAwMSBPY3QgMjAyNiAxMDowMDowMCArMDAwMA0KRnJvbTogVXNlcjAgPHVzZXIwQGV4YW1wbGUuY29tPg0KVG86IHJlcGxpZXMrMDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWZAZXhhbXBsZS5jb20NCk1lc3NhZ2UtSUQ6IDxsYXRpbjEtYnl0ZXMtMUBtYWlsLmV4YW1wbGUuY29tPg0KU3ViamVjdDogUmU6IFtEaXNjb3Vyc2VdIFtHZW5lcmFsXSBQYXJpdHkgZml4dHVyZTogcmVwbGllcyBhbmQgcG9zdGVycw0KTUlNRS1WZXJzaW9uOiAxLjANCkNvbnRlbnQtVHlwZTogdGV4dC9wbGFpbjsgY2hhcnNldD1VVEYtOA0KQ29udGVudC1UcmFuc2Zlci1FbmNvZGluZzogOGJpdA0KDQpBIGNhZukgYXUgbGFpdCB3aGlsZSByZXBseWluZyBieSBlbWFpbCwgbG9uZyBlbm91Z2ggdG8gYmUgYSBwb3N0Lg0K"
+        }
+      }
+    ],
+    "run_jobs": [
+      "process_email"
+    ]
+  },
+  {
+    "name": "signup_reserved_username",
+    "user": null,
+    "settings": {
+      "reserved_usernames": "a|reserved|b"
+    },
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/session/hp.json"
+      },
+      {
+        "method": "POST",
+        "path": "/u.json",
+        "params": {
+          "name": "Reserved Person",
+          "email": "reserved.person@example.com",
+          "password": "a-long-enough-pass-phrase",
+          "username": "Reserved",
+          "password_confirmation": "{{responses.0.body.value}}",
+          "challenge": "{{responses.0.body.challenge|reverse}}"
+        }
+      }
+    ]
+  },
+  {
+    "name": "signup_ignores_protected_fields",
+    "user": null,
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/session/hp.json"
+      },
+      {
+        "method": "POST",
+        "path": "/u.json",
+        "params": {
+          "name": "Sneaky Person",
+          "email": "sneaky.person@example.com",
+          "password": "a-long-enough-pass-phrase",
+          "username": "sneakyperson",
+          "title": "Moderator",
+          "active": true,
+          "approved": true,
+          "staged": true,
+          "admin": true,
+          "trust_level": 4,
+          "password_confirmation": "{{responses.0.body.value}}",
+          "challenge": "{{responses.0.body.challenge|reverse}}"
+        }
+      }
+    ]
+  },
+  {
+    "name": "signup_logged_in",
+    "user": "user0",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/session/hp.json"
+      },
+      {
+        "method": "POST",
+        "path": "/u.json",
+        "params": {
+          "name": "Second Account",
+          "email": "second.account@example.com",
+          "password": "a-long-enough-pass-phrase",
+          "username": "secondaccount",
+          "password_confirmation": "{{responses.0.body.value}}",
+          "challenge": "{{responses.0.body.challenge|reverse}}"
+        }
+      }
+    ]
+  },
+  {
+    "name": "activate_account_unknown_token",
+    "user": null,
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/session/hp.json"
+      },
+      {
+        "method": "PUT",
+        "path": "/u/activate-account/123abc.json",
+        "params": {
+          "password_confirmation": "{{responses.0.body.value}}",
+          "challenge": "{{responses.0.body.challenge|reverse}}"
+        }
+      }
+    ]
+  },
+  {
+    "name": "activate_account_bad_token_format",
+    "user": null,
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/session/hp.json"
+      },
+      {
+        "method": "PUT",
+        "path": "/u/activate-account/123%2f%252e.json",
+        "params": {
+          "password_confirmation": "{{responses.0.body.value}}",
+          "challenge": "{{responses.0.body.challenge|reverse}}"
+        }
+      }
+    ]
+  },
+  {
+    "name": "email_login_disabled",
+    "user": null,
+    "settings": {
+      "enable_local_logins_via_email": false
+    },
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/u/email-login.json",
+        "params": {
+          "login": "user0"
+        }
+      }
+    ]
+  },
+  {
+    "name": "email_login_logged_in",
+    "user": "user0",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/u/email-login.json",
+        "params": {
+          "login": "user0@example.com"
+        }
+      }
+    ]
+  },
+  {
+    "name": "password_reset_timezone",
+    "user": null,
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/session/forgot_password.json",
+        "params": {
+          "login": "user1@example.com"
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/session/password-reset-code/verify.json",
+        "params": {
+          "code": "{{jobs.send_email_login_code.code}}"
+        }
+      },
+      {
+        "method": "PUT",
+        "path": "/u/password-reset/{{responses.1.body.redirect_url|last_segment}}.json",
+        "params": {
+          "password": "a-brand-new-pass-phrase",
+          "timezone": "America/Chicago"
+        }
+      }
+    ]
+  },
+  {
+    "name": "password_reset_associated_accounts",
+    "user": null,
+    "settings": {
+      "delete_associated_accounts_on_password_reset": true
+    },
+    "setup": [
+      "INSERT INTO user_associated_accounts (id, provider_name, provider_uid, user_id, last_used, info, credentials, extra, created_at, updated_at) VALUES (9301, 'facebook', 'example1', 3, now(), '{}', '{}', '{}', now(), now())",
+      "INSERT INTO user_associated_accounts (id, provider_name, provider_uid, user_id, last_used, info, credentials, extra, created_at, updated_at) VALUES (9302, 'facebook', 'example2', 4, now(), '{}', '{}', '{}', now(), now())"
+    ],
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/session/forgot_password.json",
+        "params": {
+          "login": "user1@example.com"
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/session/password-reset-code/verify.json",
+        "params": {
+          "code": "{{jobs.send_email_login_code.code}}"
+        }
+      },
+      {
+        "method": "PUT",
+        "path": "/u/password-reset/{{responses.1.body.redirect_url|last_segment}}.json",
+        "params": {
+          "password": "a-brand-new-pass-phrase"
+        }
+      }
+    ]
+  },
+  {
+    "name": "password_reset_code_reuse",
+    "user": null,
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/session/forgot_password.json",
+        "params": {
+          "login": "user1@example.com"
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/session/password-reset-code/verify.json",
+        "params": {
+          "code": "{{jobs.send_email_login_code.code}}"
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/session/password-reset-code/verify.json",
+        "params": {
+          "code": "{{jobs.send_email_login_code.code}}"
+        }
+      }
+    ]
+  },
+  {
+    "name": "forgot_password_local_logins_disabled",
+    "user": null,
+    "settings": {
+      "enable_local_logins": false
+    },
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/session/forgot_password.json",
+        "params": {
+          "login": "user1@example.com"
+        }
+      }
+    ]
+  },
+  {
+    "name": "session_login_timezone",
+    "user": null,
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/session.json",
+        "params": {
+          "login": "user1",
+          "password": "password",
+          "timezone": "Australia/Melbourne"
+        }
+      }
+    ]
+  },
+  {
+    "name": "session_login_inactive",
+    "user": null,
+    "setup": [
+      "UPDATE users SET active = false WHERE id = 3"
+    ],
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/session.json",
+        "params": {
+          "login": "user1",
+          "password": "password"
+        }
+      }
+    ]
+  },
+  {
+    "name": "session_login_not_approved",
+    "user": null,
+    "settings": {
+      "must_approve_users": true
+    },
+    "setup": [
+      "UPDATE users SET approved = FALSE WHERE id = 2"
+    ],
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/session.json",
+        "params": {
+          "login": "user0@example.com",
+          "password": "password"
+        }
+      }
+    ]
+  },
+  {
+    "name": "session_login_totp_invalid",
+    "user": null,
+    "setup": [
+      "INSERT INTO user_second_factors (id, user_id, method, data, enabled, name, created_at, updated_at) VALUES (9301, 3, 1, 'JBSWY3DPEHPK3PXP', true, 'parity', now(), now())"
+    ],
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/session.json",
+        "params": {
+          "login": "user1",
+          "password": "password",
+          "second_factor_token": "00000000",
+          "second_factor_method": 1
+        }
+      }
+    ]
+  },
+  {
+    "name": "session_logout_backslash_return_url",
+    "user": "user0",
+    "requests": [
+      {
+        "method": "DELETE",
+        "path": "/session/user0.json",
+        "params": {
+          "return_url": "/\\evil.com"
+        }
+      }
+    ]
+  },
+  {
+    "name": "users_update_ignores_protected_fields",
+    "user": "user0",
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/u/user0.json",
+        "params": {
+          "name": "User Zero",
+          "username": "renamedzero",
+          "email": "renamed.zero@example.com",
+          "password": "another-long-pass-phrase",
+          "admin": true,
+          "moderator": true,
+          "trust_level": 4,
+          "approved": true,
+          "active": false
+        }
+      }
+    ]
+  },
+  {
+    "name": "users_update_names_disabled",
+    "user": "user0",
+    "settings": {
+      "enable_names": false
+    },
+    "requests": [
+      {
+        "method": "PUT",
+        "path": "/u/user0.json",
+        "params": {
+          "name": "Should Not Apply",
+          "location": "Denver"
+        }
+      }
+    ]
+  },
+  {
+    "name": "login_required_lists_anonymous",
+    "user": null,
+    "settings": {
+      "login_required": true,
+      "title": "Hammer Time",
+      "site_description": "A time for Hammer",
+      "include_in_discourse_discover": true
+    },
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/latest.json"
+      },
+      {
+        "method": "GET",
+        "path": "/site/basic-info.json"
+      }
+    ]
+  },
+  {
+    "name": "list_latest_invalid_params",
+    "user": null,
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/latest.json?page=-1"
+      },
+      {
+        "method": "GET",
+        "path": "/latest.json?topic_ids%5B1%5D=haxx"
+      },
+      {
+        "method": "GET",
+        "path": "/top.json?period=decadely"
+      }
+    ]
+  },
+  {
+    "name": "list_category_default_view_top",
+    "user": null,
+    "setup": [
+      "UPDATE categories SET default_view = 'top', default_top_period = 'monthly' WHERE id = 4"
+    ],
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/c/general/4.json"
+      },
+      {
+        "method": "GET",
+        "path": "/c/general/4/none.json"
+      }
+    ]
+  },
+  {
+    "name": "categories_subcategory_params",
+    "user": null,
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/categories.json?include_subcategories=true"
+      },
+      {
+        "method": "GET",
+        "path": "/categories.json?parent_category_id=4"
+      }
+    ]
+  },
+  {
+    "name": "search_anonymous_disabled",
+    "user": null,
+    "settings": {
+      "allow_anonymous_search": false
+    },
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/search/query.json?term=fixture"
+      },
+      {
+        "method": "GET",
+        "path": "/search.json?q=fixture"
+      }
+    ]
+  },
+  {
+    "name": "search_query_logs_term",
+    "user": "user0",
+    "settings": {
+      "log_search_queries": true
+    },
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/search/query.json?term=fixture"
+      }
+    ]
+  },
+  {
+    "name": "tags_show_hidden_as_admin",
+    "user": "admin",
+    "setup": [
+      "INSERT INTO tag_groups (id, name, created_at, updated_at, parent_tag_id, one_per_topic) VALUES (9601, 'Staff only tags', '2026-10-01 10:00:00', '2026-10-01 10:00:00', NULL, FALSE)",
+      "INSERT INTO tag_group_permissions (id, tag_group_id, group_id, permission_type, created_at, updated_at) VALUES (9601, 9601, 3, 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+      "INSERT INTO tag_group_memberships (id, tag_id, tag_group_id, created_at, updated_at) VALUES (9601, 2, 9601, '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+    ],
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/tag/guide/2.json"
+      },
+      {
+        "method": "GET",
+        "path": "/tags.json"
+      }
+    ]
+  },
+  {
+    "name": "tags_in_staff_category_as_admin",
+    "user": "admin",
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/tags/c/staff/3/howto.json"
+      }
+    ]
+  },
+  {
+    "name": "robots_overridden_as_admin",
+    "user": "admin",
+    "settings": {
+      "overridden_robots_txt": "User-agent: *\nDisallow: /private/"
+    },
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/robots.txt"
+      }
+    ]
+  },
+  {
+    "name": "sitemap_index_not_generated",
+    "user": null,
+    "setup": [
+      "DELETE FROM sitemaps"
+    ],
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/sitemap.xml"
+      }
+    ]
+  },
+  {
     "name": "post_with_attachment",
     "user": "user3",
     "settings": {

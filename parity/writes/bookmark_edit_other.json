@@ -1,0 +1,99 @@
+{
+  "name": "bookmark_edit_other",
+  "user": "user0",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/bookmarks/6.json",
+      "params": {
+        "name": "Not my bookmark"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/bookmarks/7/toggle_pin.json",
+      "params": {}
+    },
+    {
+      "method": "PUT",
+      "path": "/bookmarks/9999.json",
+      "params": {
+        "name": "No such bookmark"
+      }
+    }
+  ],
+  "started_at": "2026-10-06T20:08:39.657096",
+  "transaction_started_at": "2026-10-06T20:08:38.811561",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    },
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 119,
+            "seen_at": null,
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "Tq2RCJxkQMKkGOpTx4m8tX0KAus=",
+            "created_at": "2026-10-06T20:08:39.181291",
+            "rotated_at": "2026-10-06T20:08:39.180747",
+            "updated_at": "2026-10-06T20:08:39.181291",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "Tq2RCJxkQMKkGOpTx4m8tX0KAus=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 119,
+            "seen_at": "2026-10-06T20:08:39.663573",
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "Tq2RCJxkQMKkGOpTx4m8tX0KAus=",
+            "created_at": "2026-10-06T20:08:39.181291",
+            "rotated_at": "2026-10-06T20:08:39.180747",
+            "updated_at": "2026-10-06T20:08:39.181291",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "Tq2RCJxkQMKkGOpTx4m8tX0KAus=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": []
+}

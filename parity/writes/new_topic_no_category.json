@@ -1,0 +1,70 @@
+{
+  "name": "new_topic_no_category",
+  "user": "user0",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A new topic from user0 without any category given",
+        "raw": "The first post of a topic that names no category while uncategorized topics are off."
+      }
+    }
+  ],
+  "started_at": "2026-10-06T20:06:04.808907",
+  "transaction_started_at": "2026-10-06T20:05:48.919255",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "action": "create_post",
+        "errors": [
+          "Category can't be blank"
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 119,
+            "seen_at": null,
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "CNl6dyPLwSpClpB/riXFHXH4SEo=",
+            "created_at": "2026-10-06T20:05:58.869652",
+            "rotated_at": "2026-10-06T20:05:58.868467",
+            "updated_at": "2026-10-06T20:05:58.869652",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "CNl6dyPLwSpClpB/riXFHXH4SEo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 119,
+            "seen_at": "2026-10-06T20:06:04.932494",
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "CNl6dyPLwSpClpB/riXFHXH4SEo=",
+            "created_at": "2026-10-06T20:05:58.869652",
+            "rotated_at": "2026-10-06T20:05:58.868467",
+            "updated_at": "2026-10-06T20:05:58.869652",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "CNl6dyPLwSpClpB/riXFHXH4SEo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": []
+}
