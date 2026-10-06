@@ -53,6 +53,12 @@ async fn respond(
             Ok((StatusCode::OK, Json(post)).into_response())
         }
         Outcome::NotFound => Ok(super::topics::not_found_response(state, false)),
+        Outcome::ResultNotFound => Ok((
+            StatusCode::NOT_FOUND,
+            Json(json!({"errors": [state.i18n.t("not_found").unwrap_or("not_found")]})),
+        )
+            .into_response()),
+        Outcome::NoContent => Ok(StatusCode::NO_CONTENT.into_response()),
         Outcome::Forbidden(key) => Ok((
             StatusCode::FORBIDDEN,
             Json(json!({"errors": [state.i18n.t(key).unwrap_or(key)]})),

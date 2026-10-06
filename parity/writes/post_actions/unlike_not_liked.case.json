@@ -8,6 +8,5 @@
         "post_action_type_id": 2
       }
     }
-  ],
-  "not_yet": "The 404 body carries error_type, Rails' does not."
+  ]
 }
