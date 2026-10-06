@@ -141,11 +141,26 @@ pub async fn create(
             let topic = crate::topic_guardian::TopicCtx::load(&mut *conn, s, guardian, id).await?;
             match topic {
                 Some(t) if !t.trashed() => {
-                    let secure = guardian.secure_category_ids(&mut *conn, s).await?;
-                    if !guardian.can_see_topic(s, &t, true, &secure)? {
+                    // can_see_post?(topic.first_post): no undeleted first
+                    // post, or one hidden from the viewer, refuses too.
+                    let first_post: Option<i32> = sqlx::query_scalar(
+                        "SELECT id FROM posts WHERE topic_id = $1 AND post_number = 1 \
+                           AND deleted_at IS NULL",
+                    )
+                    .bind(t.id)
+                    .fetch_optional(&mut *conn)
+                    .await?;
+                    let Some(first_post) = first_post else {
                         return Ok(Outcome::Forbidden);
+                    };
+                    match crate::posting::revisions::find_post(
+                        &mut *conn, ctx, guardian, first_post,
+                    )
+                    .await?
+                    {
+                        Some(access) if access.can_see_topic => t.id,
+                        _ => return Ok(Outcome::Forbidden),
                     }
-                    t.id
                 }
                 _ => return Ok(Outcome::Forbidden),
             }
