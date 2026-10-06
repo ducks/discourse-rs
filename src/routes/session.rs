@@ -92,6 +92,44 @@ fn parse_form(headers: &HeaderMap, body: &Bytes) -> Vec<(String, String)> {
         .collect()
 }
 
+/// SessionController#destroy keeps a return_url that `URI()` parses as a
+/// relative reference with no scheme or host and a path from "/": RFC 3986
+/// characters only, so a backslash (which browsers read as a slash) fails.
+/// Rails would also keep "///host" (an empty authority); that is refused.
+fn local_return_url(url: &str) -> bool {
+    fn pchar(c: u8) -> bool {
+        c.is_ascii_alphanumeric() || b"-._~!$&'()*+,;=:@".contains(&c)
+    }
+    fn valid(part: &str, extra: &[u8]) -> bool {
+        let bytes = part.as_bytes();
+        let mut i = 0;
+        while i < bytes.len() {
+            let c = bytes[i];
+            if c == b'%' {
+                if !(i + 2 < bytes.len()
+                    && bytes[i + 1].is_ascii_hexdigit()
+                    && bytes[i + 2].is_ascii_hexdigit())
+                {
+                    return false;
+                }
+                i += 3;
+            } else if pchar(c) || extra.contains(&c) {
+                i += 1;
+            } else {
+                return false;
+            }
+        }
+        true
+    }
+    let (rest, fragment) = url.split_once('#').unwrap_or((url, ""));
+    let (path, query) = rest.split_once('?').unwrap_or((rest, ""));
+    path.starts_with('/')
+        && !path.starts_with("//")
+        && valid(path, b"/")
+        && valid(query, b"/?")
+        && valid(fragment, b"/?")
+}
+
 fn param<'a>(form: &'a [(String, String)], name: &str) -> Option<&'a str> {
     form.iter()
         .find(|(k, _)| k == name)
@@ -483,11 +521,17 @@ pub async fn destroy(
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
     let base_path = state.config.globals.relative_url_root();
     let return_url = param(&form, "return_url")
-        .filter(|u| u.starts_with('/') && !u.starts_with("//"))
+        .filter(|u| local_return_url(u))
         .map(str::to_string);
-    let redirect_url = return_url
-        .or_else(|| settings.get("logout_redirect").ok()?.presence())
-        .unwrap_or_else(|| format!("{base_path}/"));
+    let mut redirect_url = return_url.or_else(|| settings.get("logout_redirect").ok()?.presence());
+    if redirect_url.is_none() && settings.get("login_required")?.truthy() {
+        if settings.get("enable_discourse_connect")?.truthy() {
+            redirect_url = Some(format!("{base_path}/login-required"));
+        } else if !settings.get("enable_local_logins")?.truthy() {
+            return Err(Unsupported("logout with only external logins").into());
+        }
+    }
+    let redirect_url = redirect_url.unwrap_or_else(|| format!("{base_path}/"));
     if let Some(session) = &incoming.session {
         if settings.get("log_out_strict")?.truthy() {
             sqlx::query("DELETE FROM user_auth_tokens WHERE user_id = $1")
@@ -558,4 +602,29 @@ pub async fn current(
         HeaderValue::from_str(&session.user.username)?,
     );
     Ok(response)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::local_return_url;
+
+    #[test]
+    fn return_urls_must_be_local_paths() {
+        for ok in ["/", "/t/hello/1", "/latest?order=x#top", "/a%20b", "/a:b@c"] {
+            assert!(local_return_url(ok), "{ok}");
+        }
+        for bad in [
+            "/\\evil.com",
+            "//evil.com",
+            "///evil.com",
+            "http://evil.com/",
+            "evil.com",
+            "/a b",
+            "/%zz",
+            "/caf\u{e9}",
+            "",
+        ] {
+            assert!(!local_return_url(bad), "{bad}");
+        }
+    }
 }
