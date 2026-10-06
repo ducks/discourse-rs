@@ -23,6 +23,32 @@ use crate::{AppError, Unsupported};
 /// `UserHistory.actions[:change_site_setting]`
 const CHANGE_SITE_SETTING: i32 = 3;
 
+/// `SiteSettings::DeprecatedSettings::SETTINGS`: old name, new name and
+/// whether the old one still overrides the new.
+const DEPRECATED: &[(&str, &str, bool)] = &[
+    ("min_first_post_typing_time", "fast_typing_threshold", false),
+    (
+        "twitter_summary_large_image",
+        "x_summary_large_image",
+        false,
+    ),
+    (
+        "external_system_avatars_enabled",
+        "external_system_avatars_url",
+        false,
+    ),
+    (
+        "allow_duplicate_topic_titles",
+        "duplicate_topic_titles",
+        false,
+    ),
+    (
+        "allow_duplicate_topic_titles_category",
+        "duplicate_topic_titles",
+        false,
+    ),
+];
+
 /// Settings whose `site_setting_changed` handlers (config/initializers
 /// /014-track-setting-changes.rb) write more than caches.
 const CHANGE_HANDLERS_WRITE: &[&str] = &[
@@ -105,6 +131,19 @@ pub async fn update(
             "No setting named '{name}' exists"
         )));
     };
+    // settings_are_not_deprecated: a hard deprecation (no override) refuses.
+    if let Some((_, new_name, override_)) = DEPRECATED.iter().find(|(old, _, _)| *old == name) {
+        if *override_ {
+            return Err(Unsupported("overriding deprecated settings").into());
+        }
+        let message = i18n
+            .t_with(
+                "errors.site_settings.site_settings_are_deprecated",
+                &[("old_names", name), ("new_names", new_name)],
+            )
+            .unwrap_or_default();
+        return Ok(Outcome::Invalid(message));
+    }
     if def.plugin.is_some() {
         return Err(Unsupported("plugin settings").into());
     }

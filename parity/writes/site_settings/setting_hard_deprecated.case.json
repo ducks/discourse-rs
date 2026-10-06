@@ -8,6 +8,5 @@
         "allow_duplicate_topic_titles": "true"
       }
     }
-  ],
-  "not_yet": "The hidden-setting error comes before the deprecation one."
+  ]
 }
