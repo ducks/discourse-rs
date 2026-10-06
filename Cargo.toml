@@ -46,6 +46,11 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 lettre = { version = "0.11", default-features = false, features = ["smtp-transport", "builder", "tokio1", "tokio1-rustls-tls", "hostname"] }
 mail-parser = "0.11"
+image = { version = "0.25.10", default-features = false, features = ["png", "jpeg", "gif", "webp"] }
+fast_image_resize = { version = "6.1.0", features = ["image"] }
+oxipng = { version = "10.2.1", default-features = false }
+imagequant = { version = "4.4.1", default-features = false }
+kamadak-exif = "0.6.1"
 
 [dev-dependencies]
 http-body-util = "0.1"
@@ -62,4 +67,17 @@ opt-level = 3
 [profile.dev.package.aes-gcm]
 opt-level = 3
 [profile.dev.package.aes]
+opt-level = 3
+# Image work (src/images.rs) is slow unoptimized; tests run it.
+[profile.dev.package.oxipng]
+opt-level = 3
+[profile.dev.package.imagequant]
+opt-level = 3
+[profile.dev.package.fast_image_resize]
+opt-level = 3
+[profile.dev.package.image]
+opt-level = 3
+[profile.dev.package.zune-jpeg]
+opt-level = 3
+[profile.dev.package.png]
 opt-level = 3

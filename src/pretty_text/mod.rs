@@ -33,6 +33,8 @@ pub enum CookError {
     Setting(SettingError),
     Url(UrlError),
     Unsupported(Unsupported),
+    /// Reading or writing a stored file (thumbnails).
+    Io(std::io::Error),
 }
 
 impl std::fmt::Display for CookError {
@@ -42,10 +44,17 @@ impl std::fmt::Display for CookError {
             CookError::Setting(e) => e.fmt(f),
             CookError::Url(e) => e.fmt(f),
             CookError::Unsupported(e) => e.fmt(f),
+            CookError::Io(e) => write!(f, "cooking: {e}"),
         }
     }
 }
 impl std::error::Error for CookError {}
+
+impl From<std::io::Error> for CookError {
+    fn from(e: std::io::Error) -> Self {
+        CookError::Io(e)
+    }
+}
 
 impl From<sqlx::Error> for CookError {
     fn from(e: sqlx::Error) -> Self {

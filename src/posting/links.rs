@@ -271,7 +271,7 @@ fn parse_url(url: &str) -> Option<Parsed<'_>> {
 }
 
 /// Site paths Rails' router recognizes, the users ones apart.
-const RECOGNIZED: [&str; 16] = [
+const RECOGNIZED: [&str; 17] = [
     "/c/",
     "/tag/",
     "/tags",
@@ -288,6 +288,9 @@ const RECOGNIZED: [&str; 16] = [
     "/guidelines",
     "/tos",
     "/privacy",
+    // uploads#show_short and uploads#show: links to uploads the store
+    // does not have a row for.
+    "/uploads/",
 ];
 
 /// `File.extname(path)[1..10].downcase`, None without an extension.
@@ -375,15 +378,18 @@ pub async fn extract_from(
             continue;
         }
         seen.push(url.clone());
-        if url.contains("/uploads/") {
-            return Err(Unsupported("links to uploads").into());
-        }
         let bp = site.base_path;
         let on_site = parsed.host.is_none()
             || (parsed.host == Some(site.hostname) && parsed.path.starts_with(bp));
         let mut internal = false;
         let mut target: Option<TopicTarget> = None;
-        if on_site {
+        // A link to an upload is stored with the upload's url, as the
+        // cooked post shows it (UrlHelper.cook_url: unchanged on the local
+        // store without a CDN, which the post processor requires).
+        let upload = crate::upload_references::get_from_url(&mut *conn, &url).await?;
+        if upload.is_some() {
+            internal = true;
+        } else if on_site {
             let path = parsed.path.strip_prefix(bp).unwrap_or(parsed.path);
             if parsed
                 .query
@@ -408,11 +414,13 @@ pub async fn extract_from(
         if parsed.host.is_some_and(|h| h.len() > MAX_DOMAIN_LENGTH) {
             continue;
         }
-        // A visible topic's link is stored as its canonical URL.
-        let url = target
-            .as_ref()
-            .and_then(|t| t.url.clone())
-            .unwrap_or_else(|| url.clone());
+        // A visible topic's link is stored as its canonical URL, an
+        // upload's as the upload's.
+        let url = match (&upload, &target) {
+            (Some((_, upload_url)), _) => upload_url.clone(),
+            (None, Some(t)) if t.url.is_some() => t.url.clone().unwrap_or_default(),
+            _ => url.clone(),
+        };
         let url: String = url.chars().take(MAX_URL_LENGTH).collect();
         let domain = parsed.host.unwrap_or(site.hostname);
         let (link_topic_id, link_post_id) = match &target {

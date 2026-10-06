@@ -110,7 +110,9 @@ pub struct Analysis {
     pub attachments: usize,
     pub links: Vec<String>,
     pub has_oneboxes: bool,
-    pub has_uploads: bool,
+    /// An upload shown as video or audio, which the post processor would
+    /// optimize (post_process_videos is not ported).
+    pub has_upload_media: bool,
     pub has_quotes: bool,
 }
 
@@ -214,11 +216,10 @@ fn walk(node: &Handle, bp: &str, stripped: bool, a: &mut Analysis, mentions: &mu
         }
     }
     let cooked_src = attr(node, "src").unwrap_or_default();
-    if cooked_src.contains("/uploads/") || attr(node, "data-orig-src").is_some() {
-        a.has_uploads = true;
-    }
-    if attr(node, "href").is_some_and(|h| h.contains("/uploads/")) {
-        a.has_uploads = true;
+    if (cooked_src.contains("/uploads/") || attr(node, "data-orig-src").is_some())
+        && element_name(node) != Some("img")
+    {
+        a.has_upload_media = true;
     }
 }
 
