@@ -856,6 +856,14 @@ pub async fn perform_account_activation(
     body: Bytes,
 ) -> Result<Response, AppError> {
     let token = token.strip_suffix(".json").unwrap_or(&token).to_string();
+    // The route's `constraints: { token: /[0-9a-f]+/ }`: no route otherwise.
+    if token.is_empty()
+        || !token
+            .bytes()
+            .all(|b| matches!(b, b'0'..=b'9' | b'a'..=b'f'))
+    {
+        return Ok(super::topics::not_found_response(&state, false));
+    }
     let p = params::parse(uri.query(), &headers, &body);
     if !csrf_ok(&state, &headers, &form_pairs(&p), uri.path(), "PUT") {
         return Ok(bad_csrf());
