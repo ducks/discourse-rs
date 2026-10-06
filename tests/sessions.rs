@@ -589,6 +589,8 @@ async fn pages_carry_the_viewer_and_the_logout_form_works() {
     // The avatar button, with the avatar Rails shows user1 (the reference's
     // header).
     assert!(reply.body.contains(r#"id="toggle-current-user""#));
+    // A member's sidebar comes from their own sections, not ported yet.
+    assert!(!reply.body.contains(r#"id="d-sidebar""#));
     assert!(
         reply
             .body

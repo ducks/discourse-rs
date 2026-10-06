@@ -1,0 +1,425 @@
+/*
+ * The sidebar, ported from base/sidebar.scss, sidebar-section.scss,
+ * sidebar-section-link.scss, sidebar-custom-section.scss,
+ * sidebar-more-section-links.scss, sidebar-footer.scss, the sidebar rules
+ * of discourse.scss and header.scss, float-kit/d-menu.scss, and the
+ * sidebar of the uc-modernize-foundation-theme upcoming change.
+ */
+
+/* sidebar.scss */
+:root {
+  --d-sidebar-vertical-gap: var(--space-half);
+  --sidebar-section-wrapper-padding: var(--main-outlet-padding-top)
+    var(--space-2) var(--space-4);
+  --d-sidebar-row-height: 2.2em;
+  --d-sidebar-animation-time: 0.25s;
+  --d-sidebar-animation-ease: ease-in-out;
+  --d-sidebar-background: var(--token-color-surface);
+  --d-sidebar-footer-fade: rgb(from var(--token-color-surface) r g b / 1);
+  --d-sidebar-header-color: var(--token-color-text-subtle);
+  --d-sidebar-header-icon-color: var(--token-color-text-subtle);
+  --d-sidebar-header-font-weight: var(--token-font-weight-semibold);
+  --d-sidebar-section-border-color: var(--token-color-border-default);
+  --d-sidebar-border-color: var(--token-color-border-default);
+  --d-sidebar-link-color: var(--token-color-text-subtle);
+  --d-sidebar-link-icon-color: var(--token-color-icon-subtle);
+  --d-sidebar-link-badge-color: var(--token-color-text-subtle);
+  --d-sidebar-prefix-background: var(--token-color-surface-pressed);
+  --d-sidebar-prefix-color: var(--d-sidebar-link-color);
+  --d-sidebar-suffix-color: var(--token-color-background-accent-subtle);
+  --d-sidebar-highlight-background: var(--token-color-surface-hovered);
+  --d-sidebar-highlight-color: var(--token-color-text-default);
+  --d-sidebar-highlight-prefix-background: var(--token-color-surface-pressed);
+  --d-sidebar-highlight-prefix-color: var(--d-sidebar-link-color);
+  --d-sidebar-highlight-suffix-color: var(--d-sidebar-suffix-color);
+  --d-sidebar-highlight-hover-background: var(--token-color-surface-pressed);
+  --d-sidebar-highlight-hover-icon: var(--d-sidebar-link-color);
+  --d-sidebar-active-background: var(--token-color-surface-selected);
+  --d-sidebar-active-color: var(--token-color-text-default);
+  --d-sidebar-active-icon-color: var(--token-color-icon-default);
+  --d-sidebar-active-prefix-background: var(--token-color-surface-hovered);
+  --d-sidebar-active-suffix-color: var(--d-sidebar-suffix-color);
+  --d-sidebar-active-font-weight: var(--token-font-weight-semibold);
+  --d-sidebar-width: 17em;
+  --d-sidebar-row-horizontal-padding: var(--space-1);
+}
+
+.sidebar-row {
+  box-sizing: border-box;
+  height: var(--d-sidebar-row-height);
+  padding: 0 var(--d-sidebar-row-horizontal-padding);
+  align-items: center;
+  gap: var(--d-sidebar-section-link-prefix-margin-right);
+}
+
+.sidebar-wrapper {
+  --1dvh: 1dvh;
+  cursor: default;
+  user-select: none;
+  display: flex;
+  grid-area: sidebar;
+  position: sticky;
+  top: var(--main-outlet-offset);
+  background: var(--d-sidebar-background);
+  height: calc(var(--composer-vh, 1dvh) * 100 - var(--main-outlet-offset, 0px));
+  align-self: start;
+  overflow-y: auto;
+}
+
+.sidebar-wrapper .sidebar-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0;
+  border-right: 1px solid var(--d-sidebar-border-color);
+  overflow-x: hidden;
+  height: calc(100% - var(--composer-height, 0px));
+}
+
+html:not(.composer-has-preview) .sidebar-wrapper .sidebar-container {
+  height: 100%;
+}
+
+.sidebar-wrapper .sidebar-sections {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  flex: 1;
+  padding: var(--sidebar-section-wrapper-padding);
+  overflow-x: hidden;
+  overflow-y: auto;
+  --scrollbarBg: transparent;
+  --scrollbarThumbBg: var(--token-color-surface-hovered);
+  --scrollbarWidth: var(--space-2);
+  scrollbar-color: transparent var(--scrollbarBg);
+  transition: scrollbar-color 0.25s ease-in-out;
+  transition-delay: 0.5s;
+}
+
+.sidebar-wrapper .sidebar-sections:hover {
+  scrollbar-color: var(--scrollbarThumbBg) var(--scrollbarBg);
+  transition-delay: 0s;
+}
+
+.sidebar-wrapper .sidebar-sections > .sidebar-section-wrapper:last-child {
+  border-bottom: 0;
+}
+
+/* sidebar-section.scss */
+.sidebar-section-wrapper {
+  padding-block: var(--space-1);
+  border-bottom: 1px solid var(--d-sidebar-section-border-color);
+  position: relative;
+}
+
+.sidebar-section-wrapper:first-child {
+  padding-top: 0;
+}
+
+.sidebar-section-wrapper .sidebar-section-header-wrapper {
+  display: flex;
+  border-radius: var(--d-border-radius);
+  padding-right: var(--d-sidebar-row-horizontal-padding);
+}
+
+.sidebar-section-wrapper .sidebar-section-header-wrapper:focus-within {
+  background: var(--d-sidebar-highlight-background);
+}
+
+.sidebar-section-wrapper .sidebar-section-header {
+  flex: 1 1 auto;
+  align-items: center;
+  min-width: 0;
+  padding: 0;
+  font-size: var(--font-down-2-rem);
+  color: var(--d-sidebar-header-color);
+  font-weight: var(--d-sidebar-header-font-weight);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  gap: var(--d-sidebar-section-link-prefix-margin-right);
+}
+
+.sidebar-section-wrapper .sidebar-section-header.sidebar-section-header-collapsable {
+  justify-content: flex-start;
+}
+
+.sidebar-section-wrapper .sidebar-section-header-text {
+  line-height: normal;
+  margin-right: var(--space);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.sidebar-section-wrapper .sidebar-section-header-caret {
+  display: flex;
+  flex: 0 0 auto;
+  width: var(--d-sidebar-section-link-prefix-width);
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-section-wrapper .sidebar-section-header-caret .d-icon {
+  color: var(--d-sidebar-header-icon-color);
+}
+
+.sidebar-section-wrapper .sidebar-section-content {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--d-sidebar-vertical-gap);
+}
+
+/* sidebar-section-link.scss */
+:root {
+  --d-sidebar-section-link-prefix-margin-right: var(--space-2);
+  --d-sidebar-section-link-prefix-width: var(--space-6);
+  --d-sidebar-section-link-icon-size: 1em;
+  --d-sidebar-section-link-emoji-size: 1em;
+}
+
+.sidebar-section-link-wrapper {
+  display: flex;
+  align-items: center;
+  position: relative;
+  scroll-margin-block: var(--space-6);
+}
+
+.sidebar-section-link-wrapper[data-list-item-name="all-categories"],
+.sidebar-section-link-wrapper[data-list-item-name="all-tags"] {
+  font-size: var(--font-down-1-rem);
+}
+
+.sidebar-section-link-wrapper .sidebar-section-link {
+  display: inline-flex;
+  width: 100%;
+  align-items: center;
+  color: var(--d-sidebar-link-color);
+  border-radius: var(--token-radius-normal);
+  gap: var(--d-sidebar-section-link-prefix-margin-right);
+}
+
+.sidebar-section-link-wrapper .sidebar-section-link:focus-visible,
+.sidebar-section-link-wrapper .sidebar-section-link:hover {
+  background: var(--d-sidebar-highlight-background);
+  color: var(--d-sidebar-highlight-color);
+  outline: none;
+}
+
+.sidebar-section-link-wrapper .sidebar-section-link.active {
+  background: var(--d-sidebar-active-background);
+  color: var(--d-sidebar-active-color);
+  font-weight: var(--d-sidebar-active-font-weight);
+}
+
+.sidebar-section-link-wrapper .sidebar-section-link.active .sidebar-section-link-prefix.icon {
+  color: var(--d-sidebar-active-color);
+}
+
+.sidebar-section-link-wrapper .sidebar-section-link .sidebar-section-link-content-text {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  min-width: 0;
+  flex: 0 1 auto;
+}
+
+.sidebar-section-link-wrapper .--link-button {
+  border: none;
+  background: inherit;
+}
+
+.sidebar-section-link-wrapper .sidebar-section-link-prefix {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: var(--d-sidebar-section-link-prefix-width);
+}
+
+.sidebar-section-link-wrapper .sidebar-section-link-prefix.icon,
+.sidebar-section-link-wrapper .sidebar-section-link-prefix.square,
+.sidebar-section-link-wrapper .sidebar-section-link-prefix.emoji {
+  position: relative;
+  color: var(--d-sidebar-link-icon-color);
+}
+
+.sidebar-section-link-wrapper .sidebar-section-link-prefix.icon svg,
+.sidebar-section-link-wrapper .sidebar-section-link-prefix.square svg,
+.sidebar-section-link-wrapper .sidebar-section-link-prefix.emoji svg {
+  font-size: var(--d-sidebar-section-link-icon-size);
+}
+
+.sidebar-section-link-wrapper .sidebar-section-link-prefix .prefix-badge {
+  position: absolute;
+  background-color: transparent;
+  border-radius: var(--token-radius-full);
+  padding: 2px 2px 3px;
+  color: var(--d-sidebar-link-color);
+  height: 0.5rem;
+  width: 0.5rem;
+  top: -0.2em;
+  right: 0;
+  margin-right: -0.2em;
+}
+
+.sidebar-section-link-wrapper .sidebar-section-link-prefix.emoji img {
+  width: var(--d-sidebar-section-link-emoji-size);
+  height: var(--d-sidebar-section-link-emoji-size);
+}
+
+.sidebar-section-link-wrapper .sidebar-section-link-prefix .prefix-square {
+  width: 0.8em;
+  height: 0.8em;
+}
+
+/* sidebar-custom-section.scss */
+.sidebar-custom-sections .sidebar-section[data-section-name="community"] .sidebar-section-link-prefix.icon {
+  cursor: pointer;
+}
+
+.sidebar-custom-sections a {
+  -webkit-touch-callout: none !important;
+  user-select: none;
+  cursor: pointer;
+}
+
+/* sidebar-more-section-links.scss and float-kit/d-menu.scss: the More
+   menu, inline under its trigger as DMenu places it. */
+.sidebar-more-section-trigger {
+  justify-content: flex-start;
+}
+
+.sidebar-more-section-trigger .d-icon {
+  color: var(--d-sidebar-link-icon-color);
+}
+
+.fk-d-menu {
+  width: max-content;
+  position: absolute;
+  top: 0;
+  max-width: 600px;
+  display: flex;
+  padding: 0;
+  z-index: 1001;
+}
+
+.fk-d-menu__inner-content {
+  display: flex;
+  border-radius: var(--d-border-radius);
+  background-color: var(--secondary);
+  border: 1px solid var(--content-border-color);
+  box-shadow: var(--shadow-dropdown);
+  overscroll-behavior: contain;
+  overflow: auto;
+}
+
+.dropdown-menu {
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--d-sidebar-vertical-gap);
+  padding: var(--space-1);
+  margin: 0;
+  list-style: none;
+}
+
+/* floating-ui's bottom placement, 10px below the trigger and centered */
+.sidebar-more-section-content {
+  top: calc(100% + 10px);
+  left: 50%;
+  translate: -50% 0;
+}
+
+.sidebar-more-section-content .sidebar-row {
+  padding: 0.65rem var(--space-4);
+}
+
+/* sidebar-footer.scss */
+.sidebar-footer-wrapper {
+  box-sizing: border-box;
+  background: var(--d-sidebar-background);
+  width: 100%;
+  position: sticky;
+  bottom: 0;
+  padding-inline: var(--space-2);
+}
+
+.sidebar-footer-wrapper .sidebar-footer-container {
+  display: flex;
+  align-items: stretch;
+  position: relative;
+  padding: var(--space-2) 0;
+  padding-bottom: max(env(safe-area-inset-bottom), 0.5em);
+}
+
+.sidebar-footer-wrapper .sidebar-footer-container::before {
+  position: absolute;
+  content: "";
+  display: block;
+  height: 1.5em;
+  top: -1.5em;
+  left: -0.5em;
+  right: -0.5em;
+  width: calc(100% + 0.5em);
+  pointer-events: none;
+  background: linear-gradient(to bottom, transparent, var(--d-sidebar-footer-fade));
+}
+
+.sidebar-footer-wrapper .sidebar-footer-actions {
+  margin-left: auto;
+}
+
+/* discourse.scss: the grid's sidebar column */
+body.has-sidebar-page .wrap {
+  max-width: calc(var(--d-sidebar-width) + var(--d-max-width));
+}
+
+body.has-sidebar-page #main-outlet-wrapper {
+  grid-template-columns: var(--d-sidebar-width) minmax(0, 1fr);
+  gap: 0 var(--d-main-content-gap);
+}
+
+/* header.scss */
+.header-sidebar-toggle button {
+  margin-right: 1em;
+  box-sizing: content-box;
+  display: flex;
+  justify-content: center;
+  width: 2.2857em;
+  height: 2.2857em;
+  padding: 0.2143em;
+}
+
+.header-sidebar-toggle button .d-icon {
+  font-size: var(--font-up-4);
+  line-height: var(--line-height-large);
+  display: inline-block;
+  color: var(--header_primary-low-mid);
+}
+
+/* uc-modernize-foundation-theme: header.scss and sidebar.scss */
+:where(.uc-modernize-foundation-theme) .header-sidebar-toggle button {
+  width: 2em;
+  height: 2em;
+}
+
+:where(.uc-modernize-foundation-theme) .header-sidebar-toggle button .d-icon {
+  font-size: var(--font-up-3);
+}
+
+:where(.uc-modernize-foundation-theme) {
+  --d-sidebar-active-background: var(--token-color-surface-hovered);
+  --d-sidebar-active-color: var(--token-color-text-default);
+  --d-sidebar-link-color: var(--token-color-text-subtle);
+  --d-sidebar-link-icon-color: var(--token-color-text-subtle);
+  --d-sidebar-active-font-weight: 600;
+}
+
+/* Ember leaves a hidden sidebar, a collapsed section and a closed menu out
+   of the DOM; here they are hidden. */
+.sidebar-wrapper [hidden] {
+  display: none;
+}

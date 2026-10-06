@@ -50,6 +50,13 @@
           <header class="d-header">
             <div class="wrap">
               <div class="contents">
+                {%- if !chrome.sidebar.is_empty() %}
+                <span class="header-sidebar-toggle">
+                  <button aria-controls="d-sidebar" aria-expanded="true" class="btn btn-flat btn-sidebar-toggle no-text btn-icon" title="Sidebar" type="button">
+                    <svg class="fa d-icon d-icon-bars svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#bars"></use></svg>
+                  </button>
+                </span>
+                {%- endif %}
                 <div class="home-logo-wrapper-outlet">
                   <div class="title">
                     <a href="{{ base_path }}/">
@@ -99,6 +106,12 @@
         </div>
         <p id="page-error" class="page-error" role="alert" hidden></p>
         <div id="main-outlet-wrapper" class="wrap" role="main">
+          {%- if !chrome.sidebar.is_empty() %}
+          {{ chrome.sidebar|safe }}
+          {#- Applies the stored hidden and collapsed state before the page
+              paints, then handles the toggles. -#}
+          <script src="{{ base_path }}/assets/sidebar.js"></script>
+          {%- endif %}
           <div id="main-outlet">
             {% block content %}{% endblock %}
           </div>
