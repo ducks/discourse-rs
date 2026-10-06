@@ -61,8 +61,8 @@ how often a backup trips them.
       `mute_all_categories_by_default`), shared drafts category
 - [ ] `tags_listed_by_group`
 - [ ] Profiles: bios (PrettyText.excerpt), suspended/silenced users, user
-      status, featured topics, letter avatars (`/letter_avatar_proxy` is a
-      proxy to avatars.discourse.org; serve or generate them)
+      status, featured topics, generated letter avatars (`/letter_avatar`,
+      for sites that turn the proxy off)
 - [ ] Search: advanced filters (`in:`, `status:`, `category:`, `#`, `@`,
       `tags:`, `before:`/`after:`, `order:`), search contexts, `search_for_id`,
       rate limits, pg headlines

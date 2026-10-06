@@ -29,6 +29,7 @@ mod stylesheets;
 mod tags;
 mod topic_status;
 mod topics;
+mod user_avatars;
 mod user_menu;
 mod user_update;
 mod users;
@@ -332,6 +333,10 @@ pub fn router(state: &AppState) -> Router<AppState> {
         )
         .route("/assets/color_definitions_dark.css", get(stylesheets::dark))
         .route("/fonts/{file}", get(stylesheets::font))
+        .route(
+            "/letter_avatar_proxy/{version}/letter/{letter}/{color}/{size}",
+            get(user_avatars::show_proxy_letter),
+        )
         .route("/assets/htmx.min.js", get(htmx))
         .route("/assets/htmx-ext-sse.js", get(htmx_sse))
         .nest_service("/uploads", ServeDir::new(public.join("uploads")));

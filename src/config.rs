@@ -18,8 +18,16 @@ pub struct Config {
     /// discourse-emojis gem serve the stock images and emoji a backup
     /// doesn't carry. Optional.
     pub discourse_src: Option<std::path::PathBuf>,
+    /// Rails' `tmp/` (TMP_DIR): caches like the letter avatar proxy's.
+    pub tmp_dir: std::path::PathBuf,
+    /// Where `/letter_avatar_proxy` fetches from (LETTER_AVATAR_CDN), so
+    /// tests can stand in for the CDN.
+    pub letter_avatar_cdn: String,
     pub globals: GlobalSettings,
 }
+
+/// The CDN `UserAvatarsController#show_proxy_letter` proxies.
+pub const LETTER_AVATAR_CDN: &str = "https://avatars.discourse-cdn.com";
 
 /// `Rails.env`. Changes URL generation the same way it does in Discourse, so
 /// discourse-rs can be diffed against a development Rails (e.g. dv).
@@ -163,6 +171,11 @@ impl Config {
             discourse_src: var("DISCOURSE_SRC")
                 .filter(|s| !s.is_empty())
                 .map(Into::into),
+            tmp_dir: var("TMP_DIR").unwrap_or("tmp").into(),
+            letter_avatar_cdn: var("LETTER_AVATAR_CDN")
+                .unwrap_or(LETTER_AVATAR_CDN)
+                .trim_end_matches('/')
+                .to_string(),
             globals,
         })
     }
