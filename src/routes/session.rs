@@ -162,6 +162,7 @@ pub(super) fn viewer_state(
             username: user.username.clone(),
             csrf_token: masked,
             avatar_url,
+            trust_level: user.trust_level,
         }),
         set_cookie: session.set_cookie(state, settings)?,
     })

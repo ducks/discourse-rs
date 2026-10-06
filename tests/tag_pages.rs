@@ -282,7 +282,7 @@ async fn tag_pages_render_html() {
     assert!(html.contains(
         r#"<h1 class="tag-heading"><a href="/tag/howto/1" class="discourse-tag">howto</a></h1>"#
     ));
-    assert!(html.contains(r#"href="/t/parity-fixture-liked-and-archived/41""#));
+    assert!(html.contains(r#"href="/t/parity-fixture-liked-and-archived/41/1""#));
     assert!(!html.contains("welcome-to-discourse"));
 
     let (_, _, html) = get(&db.pool, "/tags/c/general/4/howto/1").await;

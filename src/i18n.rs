@@ -84,6 +84,18 @@ impl I18n {
         Some(out)
     }
 
+    /// `I18n.t(key, count: n, **args)` in English: the `one` form for 1,
+    /// `other` otherwise, `%{count}` filled with `n` unless given.
+    pub fn t_count(&self, key: &str, count: i64, args: &[(&str, &str)]) -> Option<String> {
+        let form = if count == 1 { "one" } else { "other" };
+        let count = count.to_string();
+        let mut all: Vec<(&str, &str)> = args.to_vec();
+        if !all.iter().any(|(k, _)| *k == "count") {
+            all.push(("count", &count));
+        }
+        self.t_with(&format!("{key}.{form}"), &all)
+    }
+
     pub fn len(&self) -> usize {
         self.strings.len()
     }

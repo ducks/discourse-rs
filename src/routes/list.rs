@@ -337,7 +337,8 @@ pub async fn latest(
     site.load_chrome(&state, &settings).await?;
     site.viewer = vs.viewer.clone();
     site.bus_position = bus_position;
-    let mut page = crate::html::latest_page(&mut conn, site, &json).await?;
+    let mut page =
+        crate::html::latest_page(&mut conn, site, &json, &state.i18n, &settings, false).await?;
     page.nav = crate::html::nav_items(
         &state.i18n,
         &settings,
@@ -522,7 +523,8 @@ pub async fn category(
     site.load_chrome(&state, &settings).await?;
     site.viewer = vs.viewer.clone();
     site.bus_position = bus_position;
-    let mut page = crate::html::latest_page(&mut conn, site, &doc).await?;
+    let mut page =
+        crate::html::latest_page(&mut conn, site, &doc, &state.i18n, &settings, true).await?;
     page.heading = Some(
         crate::html::category_heading(&mut conn, &base_path, &category, params.page.is_none())
             .await?,
@@ -873,7 +875,8 @@ async fn front_list(
     site.load_chrome(&state, &settings).await?;
     site.viewer = vs.viewer.clone();
     site.bus_position = bus_position;
-    let mut page = crate::html::latest_page(&mut conn, site, &doc).await?;
+    let mut page =
+        crate::html::latest_page(&mut conn, site, &doc, &state.i18n, &settings, false).await?;
     if matches!(kind, ListKind::Latest | ListKind::New | ListKind::Unread) {
         page.live_filter = kind.name().to_string();
         page.live_since = live_since;

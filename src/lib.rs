@@ -52,6 +52,7 @@ pub mod system_message;
 pub mod tags;
 pub mod topic_guardian;
 pub mod topic_list;
+pub mod topic_list_view;
 pub mod topic_query;
 pub mod topic_status;
 pub mod topic_tracking_state;

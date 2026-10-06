@@ -1,19 +1,8 @@
 /* Styles of the pages not ported to Discourse's look yet (static/css has the
    ported ones); each goes as its page is ported. */
 :root { --muted: #777; --line: #e9e9e9; }
-table.topic-list { width: 100%; border-collapse: collapse; }
-.topic-list th { text-align: left; color: var(--muted); font-weight: 400; font-size: .85rem; padding: .5rem .5rem; border-bottom: 3px solid var(--line); }
-.topic-list td { padding: .75rem .5rem; border-bottom: 1px solid var(--line); vertical-align: top; }
-.topic-list .num, .topic-list th.replies, .topic-list th.views { text-align: right; width: 5rem; }
-.topic-list .activity, .topic-list th.activity { text-align: right; width: 7rem; white-space: nowrap; }
-.topic-list .posters { width: 14rem; color: var(--muted); font-size: .85rem; }
-.topic-list .title { color: var(--primary); font-size: 1.05rem; }
-.topic-list .closed .title, .topic-list-item.closed .title { color: var(--muted); }
-.topic-status { margin-right: .25rem; }
-.link-bottom-line { margin-top: .2rem; font-size: .85rem; }
 .badge-wrapper { display: inline-flex; align-items: center; gap: .35rem; color: var(--primary); }
 .badge-category-bg { display: inline-block; width: .6rem; height: .6rem; }
-.discourse-tag { color: var(--muted); }
 .excerpt { margin: .35rem 0 0; color: #555; font-size: .9rem; }
 .more-topics, .topic-pagination { margin: 1rem 0; display: flex; gap: 1rem; }
 #topic-title h1 { font-size: 1.6rem; margin: 0 0 .25rem; }
