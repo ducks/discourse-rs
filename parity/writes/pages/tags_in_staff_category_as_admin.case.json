@@ -5,6 +5,5 @@
       "method": "GET",
       "path": "/tags/c/staff/3/howto.json"
     }
-  ],
-  "not_yet": "/tags/c/ 404s on a read-restricted category for an admin."
+  ]
 }
