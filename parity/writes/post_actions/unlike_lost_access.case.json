@@ -12,6 +12,5 @@
         "post_action_type_id": 2
       }
     }
-  ],
-  "not_yet": "Rails answers 204 when the user can no longer see the post; the port serializes it and touches post_actions.updated_at."
+  ]
 }

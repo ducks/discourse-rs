@@ -22,6 +22,10 @@ pub enum Outcome {
     Done,
     /// `Discourse::NotFound`
     NotFound,
+    /// `render_json_error(result)` for a not_found result: no error_type.
+    ResultNotFound,
+    /// Done, but the post is out of the user's sight: `head :no_content`.
+    NoContent,
     /// `render_json_error(result)` for a forbidden result: the message.
     Forbidden(&'static str),
 }
@@ -322,7 +326,7 @@ pub async fn unlike(
     .fetch_optional(&mut *tx)
     .await?;
     let Some((post_id, author, topic_id, post_number, post_deleted)) = post else {
-        return Ok(Outcome::NotFound);
+        return Ok(Outcome::ResultNotFound);
     };
     if post_deleted {
         return Err(Unsupported("unliking a deleted post as staff").into());
@@ -341,7 +345,7 @@ pub async fn unlike(
     .fetch_optional(&mut *tx)
     .await?;
     let Some((action_id, action_user, action_created_at, action_deleted)) = action else {
-        return Ok(Outcome::NotFound);
+        return Ok(Outcome::ResultNotFound);
     };
     if action_deleted {
         return Err(Unsupported("undoing a like already removed, as staff").into());
@@ -357,7 +361,7 @@ pub async fn unlike(
     }
     // remove_act!: trash!, then save's update_counters.
     sqlx::query(
-        "UPDATE post_actions SET deleted_at = clock_timestamp(), deleted_by_id = $2, updated_at = clock_timestamp() \
+        "UPDATE post_actions SET deleted_at = clock_timestamp(), deleted_by_id = $2 \
          WHERE id = $1",
     )
     .bind(action_id)
@@ -426,5 +430,13 @@ pub async fn unlike(
     }
     publish_like_change(ctx, &mut tx, post_id, "unliked", user.id).await?;
     tx.commit().await?;
+    // The destroyer never checked visibility; the controller does after.
+    let mut conn = pool.acquire().await?;
+    if find_post(&mut conn, ctx, guardian, post_id)
+        .await?
+        .is_none()
+    {
+        return Ok(Outcome::NoContent);
+    }
     Ok(Outcome::Done)
 }
