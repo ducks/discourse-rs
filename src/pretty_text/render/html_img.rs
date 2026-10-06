@@ -5,10 +5,11 @@
 //! chain); four spaces of indent make the line code instead.
 
 use markdown_it::parser::block::{BlockRule, BlockState};
-use markdown_it::parser::inline::{InlineRoot, Text};
 use markdown_it::plugins::cmark::block::paragraph::Paragraph;
 use markdown_it::plugins::html::html_block::HtmlBlockScanner;
-use markdown_it::{MarkdownIt, Node, NodeValue};
+use markdown_it::{MarkdownIt, Node};
+
+use super::untrimmed;
 
 /// `/^<img.*\\?>\s*$/i`: the tag and nothing after it but space.
 fn is_img_line(line: &str) -> bool {
@@ -56,34 +57,11 @@ impl BlockRule for HtmlImgScanner {
             content.push_str(text);
             next_line += 1;
         }
-        let trailing = content[content.trim_end_matches([' ', '\t']).len()..].to_string();
+        // Untrimmed: the space after the last tag stays (`<img ...> </p>`).
         let mut node = Node::new(Paragraph);
-        node.children
-            .push(Node::new(InlineRoot::new(content, mapping)));
-        if !trailing.is_empty() {
-            node.children.push(Node::new(Trailing(trailing)));
-        }
+        node.children = untrimmed::inline(content, mapping);
         Some((node, next_line - start_line))
     }
-}
-
-/// The space after the last tag. JS does not trim the block's content, so
-/// it stays as text (`<img ...> </p>`, and in a tight item `... </li>`);
-/// the crate's inline parser trims every content. It is a node beside the
-/// content rather than a mark on the paragraph, which a tight list drops.
-#[derive(Debug)]
-pub struct Trailing(String);
-
-impl NodeValue for Trailing {}
-
-/// Turns each kept trailing space into the text it is in JS.
-pub fn restore_trailing(root: &mut Node) {
-    root.walk_mut(|node, _| {
-        if let Some(Trailing(space)) = node.cast::<Trailing>() {
-            let content = space.clone();
-            node.replace(Text { content });
-        }
-    });
 }
 
 pub fn add(md: &mut MarkdownIt) {

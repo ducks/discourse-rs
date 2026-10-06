@@ -591,6 +591,27 @@
     "result": {}
   },
   {
+    "method": "avatar_template",
+    "args": [
+      null
+    ],
+    "result": ""
+  },
+  {
+    "method": "lookup_primary_user_group",
+    "args": [
+      null
+    ],
+    "result": ""
+  },
+  {
+    "method": "format_username",
+    "args": [
+      null
+    ],
+    "result": null
+  },
+  {
     "method": "lookup_upload_urls",
     "args": [
       [

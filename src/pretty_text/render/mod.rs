@@ -28,6 +28,7 @@ mod text_join;
 mod text_post_process;
 mod tight;
 mod typographer;
+mod untrimmed;
 mod uploads;
 
 use std::sync::Arc;
@@ -255,7 +256,7 @@ pub fn render(
     let md = engine(settings, lookups);
     let ctx = md.ext.get::<Context>().expect("context");
     let mut root: Node = md.parse(raw);
-    html_img::restore_trailing(&mut root);
+    untrimmed::restore(&mut root);
     element::seal_inline_code(&mut root);
     footnotes::tail(&mut root);
     bbcode::pair(&mut root, settings);

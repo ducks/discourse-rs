@@ -17,7 +17,7 @@ use markdown_it::plugins::html::html_block::HtmlBlock;
 use markdown_it::{MarkdownIt, Node};
 
 use super::element::RawHtml;
-use super::html_img;
+use super::untrimmed;
 
 /// The block follows a tight item's text: no newline before it.
 #[derive(Debug, Default)]
@@ -34,7 +34,7 @@ impl CoreRule for MarkAfterText {
                 let block = &node.children[i];
                 let before = &node.children[i - 1];
                 if (block.is::<CodeFence>() || block.is::<HtmlBlock>())
-                    && (before.is::<InlineRoot>() || before.is::<html_img::Trailing>())
+                    && (before.is::<InlineRoot>() || before.is::<untrimmed::Pad>())
                 {
                     node.children[i].ext.insert(AfterText);
                 }
