@@ -94,6 +94,58 @@ fn errors(status: StatusCode, messages: Vec<String>) -> Response {
     (status, Json(json!({ "errors": messages }))).into_response()
 }
 
+/// POST /uploads/lookup-urls: per short url of an upload that exists, its
+/// url and short path (`PrettyText::Helpers.lookup_upload_urls`), for the
+/// composer's preview. Secure uploads, which would need a permission check
+/// here, are refused while cooking already.
+pub async fn lookup_urls(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    uri: axum::http::Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    let p = crate::params::parse(uri.query(), &headers, &body);
+    let form: Vec<(String, String)> = p
+        .iter()
+        .filter_map(|(k, v)| crate::params::scalar(v).map(|v| (k.clone(), v)))
+        .collect();
+    if !csrf_ok(&state, &headers, &form, uri.path(), "POST") {
+        return Ok(bad_csrf());
+    }
+    if guardian.user_id().is_none() {
+        return Ok(super::login_required::not_logged_in(&state, uri.path()));
+    }
+    let short_urls = match p.get("short_urls") {
+        Some(serde_json::Value::Array(urls)) => serde_json::Value::Array(urls.clone()),
+        _ => serde_json::Value::Array(Vec::new()),
+    };
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let host = crate::pretty_text::Host::from_state(&state);
+    let found = crate::pretty_text::helpers::Helpers {
+        host: &host,
+        conn: &mut conn,
+        settings: &settings,
+    }
+    .upload_urls(&short_urls)
+    .await?;
+    let uploads: Vec<serde_json::Value> = found
+        .as_object()
+        .into_iter()
+        .flatten()
+        .map(|(short_url, paths)| {
+            json!({
+                "short_url": short_url,
+                "url": paths["url"],
+                "short_path": paths["short_path"],
+            })
+        })
+        .collect();
+    Ok(Json(uploads).into_response())
+}
+
 /// POST /uploads.json
 pub async fn create(
     State(state): State<AppState>,
@@ -156,13 +208,14 @@ pub async fn create(
         upload_type: &upload_type,
         filename,
         bytes,
+        pasted: form.get("pasted") == Some("true"),
     };
     let outcome = uploads::create(
         &mut conn,
         &settings,
         &state.i18n,
         &urls,
-        &state.config.public_dir,
+        &crate::file_store::FileStore::for_site(&state.config, &settings)?,
         &up,
     )
     .await?;

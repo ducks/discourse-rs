@@ -9,3 +9,5 @@ backups/
 !vendor/discourse-emojis/dist/
 bench/
 /tmp/
+# PUBLIC_DIR's default: the local store's uploads from a dev server.
+/public/

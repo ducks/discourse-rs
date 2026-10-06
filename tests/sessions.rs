@@ -2015,3 +2015,94 @@ async fn a_new_topic_takes_its_draft_and_the_drafts_menu_follows_the_count() {
             .contains("topic-drafts-menu-trigger")
     );
 }
+
+/// `Upload.base62_sha1`
+fn base62(sha1: &str) -> String {
+    const DIGITS: &[u8] = b"0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    let mut n: Vec<u8> = (0..sha1.len() / 2)
+        .map(|i| u8::from_str_radix(&sha1[2 * i..2 * i + 2], 16).unwrap())
+        .collect();
+    let mut out = Vec::new();
+    while n.iter().any(|b| *b != 0) {
+        let mut rem = 0u32;
+        for b in n.iter_mut() {
+            let acc = (rem << 8) | u32::from(*b);
+            *b = (acc / 62) as u8;
+            rem = acc % 62;
+        }
+        out.push(DIGITS[rem as usize]);
+    }
+    out.reverse();
+    String::from_utf8(out).unwrap()
+}
+
+/// The composer's uploads: the toolbar button, the file picker with the
+/// extensions a member may send, the progress line; none of them when
+/// nothing may be uploaded. POST /uploads/lookup-urls answers the
+/// preview's upload:// urls with the ones that exist, for members only.
+#[tokio::test]
+async fn the_composer_uploads_and_resolves_short_urls() {
+    let db = TestDb::new().await;
+    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut client = Client::new(app_state.clone());
+    client.login("user1", "password").await;
+    let page = client.get("/latest").await.body;
+    assert!(page.contains(r#"<button class="btn no-text btn-icon toolbar__button upload" data-action="upload" tabindex="-1" title="Upload" type="button">"#), "{page}");
+    assert!(page.contains(r#"<div class="pick-files-button"><input accept=".jpg,.jpeg,.png,.gif,.heic,.heif,.webp,.avif,.svg,.jxl" id="file-uploader" multiple type="file"></div>"#));
+    assert!(page.contains(r#"<div id="file-uploading" hidden><div class="spinner small"></div><span></span><a href id="cancel-file-upload">"#));
+    assert!(page.contains(r#"data-label-uploading-filename="Uploading: %{filename}…""#));
+
+    let sha1 = "e9d71f5ee7c92d6dc9e92ffdad17b8bd49418f98";
+    sqlx::query(
+        "INSERT INTO uploads (user_id, original_filename, filesize, sha1, url, extension, created_at, updated_at) \
+         VALUES (3, 'a.png', 10, $1, $2, 'png', now(), now())",
+    )
+    .bind(sha1)
+    .bind(format!("/uploads/default/original/1X/{sha1}.png"))
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let short = format!("upload://{}.png", base62(sha1));
+    let unknown = format!(
+        "upload://{}.png",
+        base62("0000000000000000000000000000000000000001")
+    );
+    let body = form_urlencoded::Serializer::new(String::new())
+        .append_pair("short_urls[]", &short)
+        .append_pair("short_urls[]", &unknown)
+        .finish();
+    let reply = client
+        .send(
+            Method::POST,
+            "/uploads/lookup-urls",
+            &[("x-requested-with", "XMLHttpRequest")],
+            &body,
+        )
+        .await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    assert_eq!(
+        reply.json(),
+        json!([{
+            "short_url": short,
+            "url": format!("/uploads/default/original/1X/{sha1}.png"),
+            "short_path": format!("/uploads/short-url/{}.png", base62(sha1)),
+        }])
+    );
+
+    let mut anon = Client::new(app_state.clone());
+    anon.fetch_csrf().await;
+    let reply = anon
+        .send(
+            Method::POST,
+            "/uploads/lookup-urls",
+            &[("x-requested-with", "XMLHttpRequest")],
+            &body,
+        )
+        .await;
+    assert_eq!(reply.status, StatusCode::FORBIDDEN, "{}", reply.body);
+
+    set_setting(&db.pool, "authorized_extensions", 8, "").await;
+    let page = client.get("/latest").await.body;
+    assert!(!page.contains("file-uploader"));
+    assert!(!page.contains("toolbar__button upload"));
+}

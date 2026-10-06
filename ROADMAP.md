@@ -156,9 +156,14 @@ Logged-in readers, no writes yet.
       post processor's html steps (quote marks, local urls, user ids off
       links, nofollow); every post of the seed and the Faker backup gets
       the column Rails writes
+- [x] Post processor, images: uploads sized, thumbnailed and given
+      lightboxes (`convert_to_link!`, `OptimizedImage.create_for` in Rust),
+      the post's and topic's image, topic thumbnails, upload references,
+      the first post's excerpt after processing
 - [ ] Post processor, the rest: oneboxes (network fetches, the onebox
-      engines), images (sizes, optimized images, lightboxes), optimized
-      videos; and its writes (post/topic image, badges, upload links)
+      engines), images from other sites sized over HTTP, hotlinked media,
+      optimized videos, badges, a category description synced from its
+      definition
 - [x] Posting, editing, revisions: replies, regular topics, raw and
       edit-reason edits, revision diffs; the 14 cases in parity/writes
       write the rows Rails writes (tests/writes.rs). Refused for now:
@@ -396,7 +401,14 @@ Discourse's own clients keep working.
       Topic. Not yet: the drafts page (/my/activity/drafts), the
       conflict user's avatar, the draft saved toast, multipart bodies
       (Ember's beacon sends FormData; ours sends a form)
-- [ ] The composer: uploads
+- [x] The composer's uploads: the toolbar button and the file picker (the
+      member's authorized extensions), paste and drop, the "Uploading:
+      name…" placeholders and their numbering, the progress line with
+      cancel, getUploadMarkdown's image, media and attachment markdown,
+      and the preview's upload:// urls resolved (POST
+      /uploads/lookup-urls). Not yet: checking extensions and sizes
+      before sending (the server's errors are shown), simultaneous_uploads,
+      grids of consecutive images, rich text paste, video thumbnails
 - [ ] The user menu, notifications, bookmarks, messages, preferences
 - [ ] Review queue and topic status for staff
 

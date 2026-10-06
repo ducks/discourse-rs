@@ -319,6 +319,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/users/email-login", post(accounts::email_login))
         .route("/users/email-login.json", post(accounts::email_login))
         .route("/uploads.json", post(uploads::create))
+        .route("/uploads/lookup-urls", post(uploads::lookup_urls))
         .route("/review", get(review::page))
         .route("/review.json", get(review::index))
         .route(
@@ -386,6 +387,8 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/assets/markdown-settings.json",
             get(composer::markdown_settings),
         )
+        // The local store's files (FileStore::Local): what nginx serves in a
+        // Rails deployment. A remote store's urls point elsewhere.
         .nest_service("/uploads", ServeDir::new(public.join("uploads")));
     if let Some(emoji) = config.emoji_dir() {
         router = router.nest_service("/images/emoji", ServeDir::new(emoji));

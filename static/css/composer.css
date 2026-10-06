@@ -1279,7 +1279,15 @@ body.has-sidebar-page #reply-control:not(.fullscreen).hide-preview {
 /* Where Ember leaves things out of the DOM (the reply composer's title
    and category) or floats them (the select-kit body, placed by
    floating-ui), here they are hidden or placed under their header. */
-#reply-control [hidden] {
+#reply-control [hidden],
+#reply-control #file-uploading[hidden] {
+  display: none;
+}
+
+/* components/pick-files-button.scss */
+
+/* pick-files-button.scss:1 */
+.pick-files-button input[type="file"] {
   display: none;
 }
 

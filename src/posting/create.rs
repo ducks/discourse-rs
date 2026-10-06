@@ -396,8 +396,8 @@ pub async fn create(
     .await?;
     let base_path = ctx.config.globals.relative_url_root().to_string();
     let analysis = validate::analyze(&cooked, &base_path)?;
-    if analysis.has_uploads {
-        return Err(Unsupported("posts with uploads").into());
+    if analysis.has_upload_media {
+        return Err(Unsupported("posts with uploaded video or audio").into());
     }
     if analysis.has_quotes {
         return Err(Unsupported("posts with quotes (QuotedPost)").into());
@@ -831,6 +831,16 @@ pub async fn create(
         &[TopicUserAttr::Bookmarked(bookmarked)],
     )
     .await?;
+    // @post.link_post_uploads
+    crate::upload_references::link_post_uploads(
+        &mut tx,
+        s,
+        &urls.current_hostname()?,
+        &crate::file_store::FileStore::for_site(ctx.config, s)?,
+        post_id,
+        &cooked,
+    )
+    .await?;
     // DraftSequence.next!(user, draft_key) when the composer asked
     // (advance_draft).
     if args.advance_draft {
@@ -972,6 +982,7 @@ pub async fn create(
         &BaseUrls {
             base_path: &base_path,
             base_url_no_prefix: urls.base_url_no_prefix()?,
+            store: crate::file_store::FileStore::for_site(urls.config, s)?,
         },
         &PostIndex {
             post_id,

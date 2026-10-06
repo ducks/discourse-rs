@@ -130,7 +130,7 @@ fn elements(root: &Handle, out: &mut Vec<Handle>) {
     }
 }
 
-pub(super) fn all_elements(dom: &RcDom) -> Vec<Handle> {
+pub(crate) fn all_elements(dom: &RcDom) -> Vec<Handle> {
     let mut out = Vec::new();
     elements(&fragment_root(dom), &mut out);
     out
@@ -151,13 +151,13 @@ pub(crate) fn text(node: &Handle) -> String {
     out
 }
 
-fn new_text(content: &str) -> Handle {
+pub(crate) fn new_text(content: &str) -> Handle {
     Node::new(NodeData::Text {
         contents: RefCell::new(content.into()),
     })
 }
 
-fn new_element(tag: &str, attrs: &[(&str, &str)]) -> Handle {
+pub(crate) fn new_element(tag: &str, attrs: &[(&str, &str)]) -> Handle {
     Node::new(NodeData::Element {
         name: QualName::new(None, ns!(html), LocalName::from(tag)),
         attrs: RefCell::new(
@@ -174,13 +174,13 @@ fn new_element(tag: &str, attrs: &[(&str, &str)]) -> Handle {
     })
 }
 
-fn append(parent: &Handle, child: Handle) {
+pub(crate) fn append(parent: &Handle, child: Handle) {
     child.parent.set(Some(Rc::downgrade(parent)));
     parent.children.borrow_mut().push(child);
 }
 
 /// Puts `new` where `old` is in its parent.
-fn replace(old: &Handle, new: Handle) {
+pub(crate) fn replace(old: &Handle, new: Handle) {
     let Some(parent) = old.parent.take().and_then(|p| p.upgrade()) else {
         return;
     };
@@ -222,7 +222,7 @@ pub(super) fn encode_component(s: &str) -> String {
 
 /// The host Ruby's `URI()` finds in an encoded href: None without an
 /// authority, Err where the parser raises.
-pub(super) fn uri_host(href: &str) -> Result<Option<String>, ()> {
+pub(crate) fn uri_host(href: &str) -> Result<Option<String>, ()> {
     // A second `#`, or brackets outside an IPv6 host, are not RFC 3986.
     if href.matches('#').count() > 1 {
         return Err(());

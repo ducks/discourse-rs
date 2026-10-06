@@ -4470,5 +4470,135 @@
         "path": "/sitemap.xml"
       }
     ]
+  },
+  {
+    "name": "post_with_attachment",
+    "user": "user3",
+    "settings": {
+      "authorized_extensions": "jpg|jpeg|png|gif|heic|heif|webp|avif|svg|txt"
+    },
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/uploads.json",
+        "params": {
+          "upload_type": "composer",
+          "file": {
+            "fixture": "notes.txt"
+          }
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/posts.json",
+        "params": {
+          "raw": "Attached: [notes.txt|attachment](upload://70eZocIam32y7fMFWvRhxrWUpxI.txt) (48 Bytes)",
+          "topic_id": 35
+        }
+      }
+    ]
+  },
+  {
+    "name": "upload_jpeg",
+    "user": "user3",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/uploads.json",
+        "params": {
+          "upload_type": "composer",
+          "file": {
+            "fixture": "photo.jpg"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "upload_png_to_jpeg",
+    "user": "user3",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/uploads.json",
+        "params": {
+          "upload_type": "composer",
+          "file": {
+            "fixture": "photo.png"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "upload_png_small",
+    "user": "user3",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/uploads.json",
+        "params": {
+          "upload_type": "composer",
+          "file": {
+            "fixture": "small.png"
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "post_with_image",
+    "user": "user3",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/uploads.json",
+        "params": {
+          "upload_type": "composer",
+          "file": {
+            "fixture": "photo.jpg"
+          }
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/posts.json",
+        "params": {
+          "raw": "A photo:\n\n![photo|690x388]({{responses.0.body.short_url}})",
+          "topic_id": 35
+        }
+      }
+    ],
+    "run_jobs": [
+      "process_post"
+    ]
+  },
+  {
+    "name": "topic_with_image",
+    "user": "user3",
+    "requests": [
+      {
+        "method": "POST",
+        "path": "/uploads.json",
+        "params": {
+          "upload_type": "composer",
+          "file": {
+            "fixture": "photo.jpg"
+          }
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/posts.json",
+        "params": {
+          "title": "A topic opening with a photo of noise",
+          "raw": "![photo|690x388]({{responses.0.body.short_url}})\n\nThe photo above is plasma noise, for the thumbnails.",
+          "category": 4
+        }
+      }
+    ],
+    "run_jobs": [
+      "process_post"
+    ]
   }
 ]

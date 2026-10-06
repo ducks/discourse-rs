@@ -105,16 +105,89 @@ fn row(list: &ListContext, c: &ChooserCategory, category: &ListCategory) -> Stri
 }
 
 /// The toolbar's buttons: the ones whose action is a markdown edit.
-fn toolbar(list: &ListContext) -> String {
-    let mut out = String::new();
-    for (class, icon_name, title) in [
+/// What the composer offers for uploads (`allowUpload`): the toolbar
+/// button's icon (`uploadIcon`) and the file picker's accepted extensions,
+/// None when every extension is allowed.
+pub struct UploadUi {
+    pub icon: &'static str,
+    pub accept: Option<String>,
+}
+
+impl UploadUi {
+    /// `authorizedExtensions`, `authorizesAllExtensions` and
+    /// `allowsAttachments` from the extension settings, for staff or not;
+    /// None when nothing may be uploaded (`authorizesOneOrMoreExtensions`).
+    pub fn for_user(authorized: &str, for_staff: &str, staff: bool) -> Option<UploadUi> {
+        // extensionsToArray
+        let to_array = |exts: &str| -> Vec<String> {
+            exts.to_lowercase()
+                .chars()
+                .filter(|c| !c.is_whitespace() && *c != '.')
+                .collect::<String>()
+                .split('|')
+                .filter(|e| !e.contains('*'))
+                .map(str::to_string)
+                .collect()
+        };
+        let all = authorized.contains('*') || (staff && for_staff.contains('*'));
+        let mut extensions = to_array(authorized);
+        if staff {
+            extensions.extend(to_array(for_staff));
+        }
+        let extensions: Vec<String> = extensions.into_iter().filter(|e| !e.is_empty()).collect();
+        if !all && extensions.is_empty() {
+            return None;
+        }
+        let is_image = |e: &str| {
+            matches!(
+                e,
+                "png"
+                    | "webp"
+                    | "jpg"
+                    | "jpeg"
+                    | "gif"
+                    | "svg"
+                    | "ico"
+                    | "heic"
+                    | "heif"
+                    | "avif"
+                    | "jxl"
+            )
+        };
+        let images = extensions.iter().filter(|e| is_image(e)).count();
+        let allows_attachments = all || extensions.len() > images;
+        Some(UploadUi {
+            icon: if allows_attachments {
+                "upload"
+            } else {
+                "far-image"
+            },
+            accept: (!all).then(|| {
+                extensions
+                    .iter()
+                    .map(|e| format!(".{e}"))
+                    .collect::<Vec<_>>()
+                    .join(",")
+            }),
+        })
+    }
+}
+
+fn toolbar(list: &ListContext, upload: Option<&UploadUi>) -> String {
+    let mut buttons = vec![
         ("bold", "bold", "composer.bold_title"),
         ("italic", "italic", "composer.italic_title"),
         ("link", "link", "composer.link_title"),
         ("blockquote", "quote-right", "composer.blockquote_title"),
         ("code", "code", "composer.code_title"),
-        ("list", "list", "composer.ulist_title"),
-    ] {
+    ];
+    // extraButtons: upload at the end of the insertions.
+    if let Some(upload) = upload {
+        buttons.push(("upload", upload.icon, "upload"));
+    }
+    buttons.push(("list", "list", "composer.ulist_title"));
+    let mut out = String::new();
+    for (class, icon_name, title) in buttons {
         out.push_str(&format!(
             "<button class=\"btn no-text btn-icon toolbar__button {class}\" data-action=\"{class}\" tabindex=\"-1\" title=\"{}\" type=\"button\">{}<span aria-hidden=\"true\">&#8203;</span></button>",
             escape(&t(list, title)),
@@ -133,6 +206,7 @@ pub fn render(
     allowed: &[ChooserCategory],
     default_category: Option<i64>,
     preview: Option<(&str, &str)>,
+    upload: Option<&UploadUi>,
 ) -> String {
     let control = |class: &str, icon_name: &str, title: &str| {
         format!(
@@ -203,6 +277,50 @@ pub fn render(
         "<div id=\"draft-status\" hidden><span class=\"draft-error\" title=\"\">{}</span></div>",
         icon("triangle-exclamation", None)
     );
+    // DPickFilesButton's input (`#file-uploader`), the uploads' progress
+    // line (`#file-uploading`), and the placeholder texts composer.js
+    // writes while a file uploads.
+    let (pick_files, file_uploading, upload_data) = match upload {
+        Some(upload) => (
+            format!(
+                "<div class=\"pick-files-button\"><input{} id=\"file-uploader\" multiple type=\"file\"></div>",
+                upload
+                    .accept
+                    .as_deref()
+                    .map(|a| format!(" accept=\"{}\"", escape(a)))
+                    .unwrap_or_default()
+            ),
+            format!(
+                "<div id=\"file-uploading\" hidden><div class=\"spinner small\"></div><span></span><a href id=\"cancel-file-upload\">{}</a></div>",
+                icon("xmark", None)
+            ),
+            format!(
+                " data-label-uploading=\"{}\" data-label-processing=\"{}\" data-label-uploading-filename=\"{}\" data-label-processing-filename=\"{}\" data-label-clipboard=\"{}\" data-label-pasted-image=\"{}\"",
+                escape(&t(list, "upload_selector.uploading")),
+                escape(&t(list, "upload_selector.processing")),
+                escape(&t(list, "uploading_filename")),
+                escape(&t(list, "processing_filename")),
+                escape(&t(list, "clipboard")),
+                escape(&t(list, "upload_selector.default_image_alt_text")),
+            ) + &format!(
+                // I18n.toHumanSize's units, for an attachment's size.
+                " data-size-units=\"{}\"",
+                escape(
+                    &serde_json::json!({
+                        "byte_one": t(list, "number.human.storage_units.units.byte.one"),
+                        "byte_other": t(list, "number.human.storage_units.units.byte.other"),
+                        "kb": t(list, "number.human.storage_units.units.kb"),
+                        "mb": t(list, "number.human.storage_units.units.mb"),
+                        "gb": t(list, "number.human.storage_units.units.gb"),
+                        "tb": t(list, "number.human.storage_units.units.tb"),
+                        "format": t(list, "number.human.storage_units.format"),
+                    })
+                    .to_string()
+                )
+            ),
+        ),
+        None => (String::new(), String::new(), String::new()),
+    };
     let preview_data = match preview {
         Some((wasm, settings)) => format!(
             " data-preview-wasm=\"{}\" data-preview-settings=\"{}\" data-label-show-preview=\"{}\" data-label-hide-preview=\"{}\"",
@@ -214,7 +332,7 @@ pub fn render(
         None => String::new(),
     };
     format!(
-        "<div id=\"reply-control\" class=\"closed hide-preview\"{preview_data}{draft_data} data-base-path=\"{}\" data-default-category=\"{}\" data-action-reply=\"{}\" data-action-create-topic=\"{}\" data-action-edit=\"{}\" data-submit-reply=\"{}\" data-submit-create-topic=\"{}\" data-submit-edit=\"{}\" data-label-reply-to-topic=\"{}\" data-label-fullscreen=\"{}\" data-label-exit-fullscreen=\"{}\" data-text-bold=\"{}\" data-text-italic=\"{}\" data-text-link=\"{}\" data-text-blockquote=\"{}\" data-text-code=\"{}\" data-text-list=\"{}\"><div class=\"d-resize-separator grippie\" aria-label=\"{}\" aria-orientation=\"horizontal\" role=\"separator\" tabindex=\"0\"></div><div class=\"reply-area with-category\" role=\"dialog\"><div class=\"reply-to\"><div class=\"composer-action-title\"><span aria-level=\"1\" class=\"action-title\" role=\"heading\"><button class=\"btn btn-icon-text composer-actions-trigger btn-flat btn-icon-text composer-actions\" tabindex=\"-1\" type=\"button\"></button></span></div><div class=\"composer-controls\">{}{}{}</div></div><div class=\"toolbar-visible wmd-controls\"><div class=\"d-editor\"><div class=\"d-editor-container --markdown-editor-enabled\"><div class=\"d-editor-textarea-column\"><div class=\"composer-fields\"><div class=\"title-and-category\" hidden><div class=\"title-input\"><input aria-label=\"{title}\" autocomplete=\"off\" id=\"reply-title\" placeholder=\"{title}\" type=\"text\"></div><div class=\"category-input\">{chooser}</div></div></div><div class=\"d-editor-textarea-wrapper\"><div class=\"d-overflow-controls d-editor-button-bar__wrap\"><div class=\"d-overflow-controls__content d-editor-button-bar\" role=\"toolbar\">{}</div></div><textarea aria-label=\"{body}\" autocomplete=\"off\" class=\"d-editor-input --markdown-monospace\" placeholder=\"{body}\"></textarea></div></div><div class=\"d-editor-preview-wrapper\"><div class=\"d-editor-preview\"></div></div></div></div></div><div class=\"submit-panel\"><div class=\"save-or-cancel\"><button class=\"btn btn-icon-text btn-primary create\" type=\"button\"></button><button class=\"btn discard-button btn-transparent\" title=\"{discard}\" type=\"button\"><span class=\"d-button-label\">{discard}</span></button></div>{draft_status}<p class=\"composer-error\" role=\"alert\" hidden></p></div></div></div>",
+        "<div id=\"reply-control\" class=\"closed hide-preview\"{preview_data}{draft_data}{upload_data} data-base-path=\"{}\" data-default-category=\"{}\" data-action-reply=\"{}\" data-action-create-topic=\"{}\" data-action-edit=\"{}\" data-submit-reply=\"{}\" data-submit-create-topic=\"{}\" data-submit-edit=\"{}\" data-label-reply-to-topic=\"{}\" data-label-fullscreen=\"{}\" data-label-exit-fullscreen=\"{}\" data-text-bold=\"{}\" data-text-italic=\"{}\" data-text-link=\"{}\" data-text-blockquote=\"{}\" data-text-code=\"{}\" data-text-list=\"{}\"><div class=\"d-resize-separator grippie\" aria-label=\"{}\" aria-orientation=\"horizontal\" role=\"separator\" tabindex=\"0\"></div><div class=\"reply-area with-category\" role=\"dialog\"><div class=\"reply-to\"><div class=\"composer-action-title\"><span aria-level=\"1\" class=\"action-title\" role=\"heading\"><button class=\"btn btn-icon-text composer-actions-trigger btn-flat btn-icon-text composer-actions\" tabindex=\"-1\" type=\"button\"></button></span></div><div class=\"composer-controls\">{}{}{}</div></div><div class=\"toolbar-visible wmd-controls\"><div class=\"d-editor\"><div class=\"d-editor-container --markdown-editor-enabled\"><div class=\"d-editor-textarea-column\"><div class=\"composer-fields\"><div class=\"title-and-category\" hidden><div class=\"title-input\"><input aria-label=\"{title}\" autocomplete=\"off\" id=\"reply-title\" placeholder=\"{title}\" type=\"text\"></div><div class=\"category-input\">{chooser}</div></div></div><div class=\"d-editor-textarea-wrapper\"><div class=\"d-overflow-controls d-editor-button-bar__wrap\"><div class=\"d-overflow-controls__content d-editor-button-bar\" role=\"toolbar\">{}</div></div><textarea aria-label=\"{body}\" autocomplete=\"off\" class=\"d-editor-input --markdown-monospace\" placeholder=\"{body}\"></textarea></div></div><div class=\"d-editor-preview-wrapper\"><div class=\"d-editor-preview\"></div></div></div></div>{pick_files}</div><div class=\"submit-panel\"><div class=\"save-or-cancel\"><button class=\"btn btn-icon-text btn-primary create\" type=\"button\"></button><button class=\"btn discard-button btn-transparent\" title=\"{discard}\" type=\"button\"><span class=\"d-button-label\">{discard}</span></button></div>{file_uploading}{draft_status}<p class=\"composer-error\" role=\"alert\" hidden></p></div></div></div>",
         escape(list.base_path),
         selected.map(|c| c.id.to_string()).unwrap_or_default(),
         escape(&action(
@@ -257,7 +375,7 @@ pub fn render(
             "xmark",
             "composer.save_and_close"
         ),
-        toolbar(list),
+        toolbar(list, upload),
         title = escape(&t(list, "composer.title_or_link_placeholder")),
         body = escape(&t(list, "composer.reply_placeholder")),
         discard = escape(&t(list, "composer.discard")),
