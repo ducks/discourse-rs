@@ -44,6 +44,7 @@ pub mod read_tracking;
 pub mod review;
 pub mod review_list;
 pub mod reviewables;
+pub mod roles;
 pub mod routes;
 pub mod ruby;
 pub mod schema;

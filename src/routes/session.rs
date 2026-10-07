@@ -284,7 +284,7 @@ pub async fn create(
         .fetch_optional(&mut *conn)
         .await?
     };
-    let Some(user) = user else {
+    let Some(mut user) = user else {
         return Ok(invalid_credentials(&state));
     };
     let Some(check) = token::confirm_password(&mut conn, user.id, password).await? else {
@@ -413,6 +413,9 @@ pub async fn create(
             .bind(user.id)
             .execute(&mut *conn)
             .await?;
+    }
+    if crate::roles::bootstrap_first_admin(&mut conn, &state.i18n, user.id).await? {
+        user.moderator = true;
     }
     token::enforce_session_count_limit(
         &mut conn,

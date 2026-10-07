@@ -25,6 +25,23 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         "critical_user_email" => user_email(state, &job.args, true).await,
         "send_system_message" => send_system_message(state, &job.args).await,
         "send_email_login_code" => send_email_login_code(state, &job.args).await,
+        // Fires user_added_to_group / user_removed_from_group, which core
+        // only hands to web hooks (none are ported).
+        "publish_group_membership_updates" => {
+            let hooks: bool =
+                match sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM web_hooks WHERE active)")
+                    .fetch_one(&state.pool)
+                    .await
+                {
+                    Ok(hooks) => hooks,
+                    Err(e) => return Err(AppError::from(e).into()),
+                };
+            if hooks {
+                Err(Unsupported("web hooks for group membership").into())
+            } else {
+                Ok(())
+            }
+        }
         // UserAuthToken.is_suspicious compares the login's location with the
         // user's earlier ones, through MaxMind's databases; without them
         // (no license key to download them) no login is suspicious.
