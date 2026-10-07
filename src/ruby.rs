@@ -54,9 +54,22 @@ pub fn is_blank(s: &str) -> bool {
     s.chars().all(char::is_whitespace)
 }
 
+/// `String#strip`: ASCII whitespace (vertical tab included) and NUL only,
+/// so a no-break space stays.
+pub fn strip(s: &str) -> &str {
+    s.trim_matches(|c| matches!(c, ' ' | '\t' | '\n' | '\x0b' | '\x0c' | '\r' | '\0'))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn strip_keeps_no_break_spaces() {
+        assert_eq!(strip(" \t\n\x0b\x0c\r\0a b\0 \n"), "a b");
+        assert_eq!(strip("a\u{a0}"), "a\u{a0}");
+        assert_eq!(strip("\u{a0} a \u{2003}"), "\u{a0} a \u{2003}");
+    }
 
     #[test]
     fn to_i_matches_ruby() {

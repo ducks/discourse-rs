@@ -63,7 +63,7 @@ pub fn excerpt(html: &str, max_length: usize, options: &Options) -> String {
         start_hashtag_icon: false,
     };
     let _ = parser.walk_children(&dom.document);
-    let mut out = parser.excerpt.trim().to_string();
+    let mut out = crate::ruby::strip(&parser.excerpt).to_string();
     if options.keep_onebox_source || options.keep_onebox_body {
         out = collapse_newlines(&out);
     }
@@ -497,6 +497,25 @@ mod tests {
         assert_eq!(plain("<p>one</p>\n<p>two</p>", 300), "one \ntwo");
         assert_eq!(plain("", 300), "");
         assert_eq!(plain("<p>a &amp; b &lt; c</p>", 300), "a &amp; b &lt; c");
+    }
+
+    #[test]
+    fn keeps_no_break_spaces_at_the_ends() {
+        // Rails' excerpt.strip leaves U+00A0 (values from PrettyText.excerpt).
+        assert_eq!(
+            plain("<p>No it doesn’t.&nbsp;</p>", 300),
+            "No it doesn’t.\u{a0}"
+        );
+        assert_eq!(plain("<p>&nbsp;lead</p>", 300), "\u{a0}lead");
+        let emoji = "<img src=\"/images/emoji/twitter/wink.png?v=15\" title=\":wink:\" class=\"emoji\" alt=\":wink:\" loading=\"lazy\" width=\"20\" height=\"20\">";
+        let options = Options {
+            keep_emoji_images: true,
+            ..Default::default()
+        };
+        assert_eq!(
+            excerpt(&format!("<p>wink {emoji} &nbsp;</p>"), 300, &options),
+            format!("wink {emoji} \u{a0}")
+        );
     }
 
     #[test]
