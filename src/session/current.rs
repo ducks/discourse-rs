@@ -293,30 +293,32 @@ pub async fn layer(
                 header::HeaderName::from_static("x-requested-with"),
                 "XMLHttpRequest",
             );
-        let refused = |key: &str| {
-            if path.starts_with("/admin/") {
-                crate::routes::not_found_response(&state, false)
-            } else if json {
-                crate::routes::invalid_access_at(&state, key, &path)
-            } else {
+        let refused_key =
+            match super::api_key::resolve(&mut conn, &headers, &ip, &method, &path).await? {
+                super::api_key::Resolved::User(user) => Err(user),
+                super::api_key::Resolved::Invalid => Ok("invalid_api_credentials"),
+                super::api_key::Resolved::Refused => Ok("invalid_access"),
+            };
+        let guardian = match refused_key {
+            Err(user) => crate::guardian::Guardian::for_user(&mut conn, &user).await?,
+            Ok(_) if path.starts_with("/admin/") => {
+                return Ok(crate::routes::not_found_response(&state));
+            }
+            Ok(key) if json => {
+                drop(conn);
+                return crate::routes::invalid_access_at(&state, key, &method, &path).await;
+            }
+            Ok(key) => {
                 let text = state
                     .i18n
                     .t(key)
                     .unwrap_or("You are not permitted to view the requested resource.");
-                axum::response::IntoResponse::into_response((
+                return Ok(axum::response::IntoResponse::into_response((
                     axum::http::StatusCode::FORBIDDEN,
                     text.to_string(),
-                ))
+                )));
             }
         };
-        let guardian =
-            match super::api_key::resolve(&mut conn, &headers, &ip, &method, &path).await? {
-                super::api_key::Resolved::User(user) => {
-                    crate::guardian::Guardian::for_user(&mut conn, &user).await?
-                }
-                super::api_key::Resolved::Invalid => return Ok(refused("invalid_api_credentials")),
-                super::api_key::Resolved::Refused => return Ok(refused("invalid_access")),
-            };
         let cleared = match guardian.user_id() {
             Some(user_id) => {
                 let settings =

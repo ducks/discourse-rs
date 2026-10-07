@@ -29,10 +29,7 @@ pub async fn index(
     Query(params): Query<Params>,
 ) -> Result<Response, AppError> {
     if guardian.is_anonymous() {
-        return Ok(super::login_required::not_logged_in(
-            &state,
-            "/notifications",
-        ));
+        return Ok(super::login_required::not_logged_in(&state));
     }
     let mut conn = state.pool.acquire().await?;
     let settings =
@@ -53,7 +50,7 @@ pub async fn index(
                     .fetch_optional(&mut *conn)
                     .await?;
             let Some((id, username)) = row else {
-                return Ok(super::topics::not_found_response(&state, false));
+                return Ok(super::topics::not_found_response(&state));
             };
             if !guardian.is_me(id) && !guardian.is_admin() {
                 return Ok(super::search::invalid_access(&state));

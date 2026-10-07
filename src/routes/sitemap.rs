@@ -177,7 +177,7 @@ fn xml(body: String, content_type: &'static str) -> Response {
 pub async fn index(State(state): State<AppState>) -> Result<Response, AppError> {
     let mut conn = state.pool.acquire().await?;
     let Some(ctx) = context(&state, &mut conn).await? else {
-        return Ok(super::topics::not_found_response(&state, false));
+        return Ok(super::topics::not_found_response(&state));
     };
     let rows: Vec<(String, NaiveDateTime)> = sqlx::query_as(
         "SELECT name, last_posted_at FROM sitemaps WHERE enabled = TRUE AND name <> $1 ORDER BY id",
@@ -228,19 +228,19 @@ pub async fn page(
 ) -> Result<Response, AppError> {
     let mut conn = state.pool.acquire().await?;
     let Some(ctx) = context(&state, &mut conn).await? else {
-        return Ok(super::topics::not_found_response(&state, false));
+        return Ok(super::topics::not_found_response(&state));
     };
     let Some(page) = page.strip_suffix(".xml") else {
-        return Ok(super::topics::not_found_response(&state, false));
+        return Ok(super::topics::not_found_response(&state));
     };
     if page == RECENT {
         return recent(state, conn, ctx).await;
     }
     let Ok(number) = page.parse::<i64>() else {
-        return Ok(super::topics::not_found_response(&state, false));
+        return Ok(super::topics::not_found_response(&state));
     };
     if number < 1 || number.to_string() != page {
-        return Ok(super::topics::not_found_response(&state, false));
+        return Ok(super::topics::not_found_response(&state));
     }
     let exists: bool = sqlx::query_scalar(
         "SELECT EXISTS (SELECT 1 FROM sitemaps WHERE enabled = TRUE AND name = $1)",
@@ -249,7 +249,7 @@ pub async fn page(
     .fetch_one(&mut *conn)
     .await?;
     if !exists {
-        return Ok(super::topics::not_found_response(&state, false));
+        return Ok(super::topics::not_found_response(&state));
     }
     let page_size = ctx.settings.get("sitemap_page_size")?.to_i().max(1);
     let topics: Vec<UrlRow> = sqlx::query_as(&format!(
@@ -293,7 +293,7 @@ async fn recent(
 pub async fn news(State(state): State<AppState>) -> Result<Response, AppError> {
     let mut conn = state.pool.acquire().await?;
     let Some(ctx) = context(&state, &mut conn).await? else {
-        return Ok(super::topics::not_found_response(&state, false));
+        return Ok(super::topics::not_found_response(&state));
     };
     let page_size = ctx.settings.get("sitemap_page_size")?.to_i().max(1);
     touch(&mut conn, NEWS, page_size).await?;

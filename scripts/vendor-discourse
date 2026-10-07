@@ -17,6 +17,9 @@ FILES=(
   config/locales/client.en.yml
   lib/common_passwords/10-char-common-passwords.txt
   vendor/assets/svg-icons/discourse-additional.svg
+  vendor/assets/svg-icons/fontawesome/solid.svg
+  vendor/assets/svg-icons/fontawesome/regular.svg
+  vendor/assets/svg-icons/fontawesome/brands.svg
 )
 
 if [ $# -lt 1 ]; then

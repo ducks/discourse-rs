@@ -32,7 +32,7 @@ pub async fn handle_mail(
     }
     // Admin routes are behind AdminConstraint: anyone else gets no route.
     if !guardian.is_admin() {
-        return Ok(super::topics::not_found_response(&state, false));
+        return Ok(super::topics::not_found_response(&state));
     }
     let encoded = params::string(&p, "email_encoded").filter(|e| !e.is_empty());
     let plain = params::string(&p, "email").filter(|e| !e.is_empty());

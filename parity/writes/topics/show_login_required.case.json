@@ -32,6 +32,5 @@
         "X-Requested-With": ""
       }
     }
-  ],
-  "not_yet": "extras.html is empty: build_not_found_page is not ported."
+  ]
 }

@@ -198,7 +198,7 @@ async fn respond(
     if settings.get("hide_user_profiles_from_public")?.truthy() {
         return Ok((noindex, invalid_access(&state)).into_response());
     }
-    let not_found = || (noindex, super::topics::not_found_response(&state, false)).into_response();
+    let not_found = || (noindex, super::topics::not_found_response(&state)).into_response();
     let Some(user) = User::find_active(&mut conn, &username).await? else {
         return Ok(not_found());
     };
@@ -303,7 +303,7 @@ pub async fn actions(
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
     let Some(user) = User::find_active(&mut conn, username).await? else {
-        return Ok(super::topics::not_found_response(&state, false));
+        return Ok(super::topics::not_found_response(&state));
     };
     let offset = params
         .offset
@@ -333,7 +333,7 @@ pub async fn actions(
         || settings.get("hide_user_activity_tab")?.truthy()
         || action_types.iter().any(|t| PRIVATE_TYPES.contains(t))
     {
-        return Ok(super::topics::not_found_response(&state, false));
+        return Ok(super::topics::not_found_response(&state));
     }
     if action_types.is_empty() {
         action_types = PUBLIC_TYPES.to_vec();
@@ -506,7 +506,7 @@ async fn posts_feed(
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
-    let not_found = || super::topics::not_found_response(state, false);
+    let not_found = || super::topics::not_found_response(state);
     let Some(user) = User::find_active(&mut conn, username).await? else {
         return Ok(not_found());
     };

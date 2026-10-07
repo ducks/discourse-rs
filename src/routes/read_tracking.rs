@@ -59,7 +59,7 @@ async fn record(
     }
     // requires_login
     if guardian.is_anonymous() {
-        return Ok(super::login_required::not_logged_in(&state, uri.path()));
+        return Ok(super::login_required::not_logged_in(&state));
     }
     let int = |key: &str| {
         p.get(key)
@@ -102,7 +102,7 @@ async fn record(
             _ => false,
         };
     if !visible {
-        return Ok(super::topics::not_found_response(&state, false));
+        return Ok(super::topics::not_found_response(&state));
     }
     let notifications_read = read_tracking::process_timings(
         &state.bus, &mut tx, &settings, &guardian, topic_id, topic_time, timings,
@@ -129,7 +129,7 @@ pub async fn mark_read(
         return Ok(bad_csrf());
     }
     let Some(user_id) = guardian.user_id() else {
-        return Ok(super::login_required::not_logged_in(&state, uri.path()));
+        return Ok(super::login_required::not_logged_in(&state));
     };
     let id = p
         .get("id")

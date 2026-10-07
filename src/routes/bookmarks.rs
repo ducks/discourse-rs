@@ -3,7 +3,7 @@
 
 use axum::Json;
 use axum::extract::{Path, Query, State};
-use axum::http::{StatusCode, Uri, header};
+use axum::http::{StatusCode, header};
 use axum::response::{IntoResponse, Response};
 use serde::Deserialize;
 use serde_json::json;
@@ -36,10 +36,9 @@ pub async fn index(
     AuthGuardian(guardian): AuthGuardian,
     Path(username): Path<String>,
     Query(params): Query<Params>,
-    uri: Uri,
 ) -> Result<Response, AppError> {
     let Some(viewer) = guardian.user() else {
-        return Ok(super::login_required::not_logged_in(&state, uri.path()));
+        return Ok(super::login_required::not_logged_in(&state));
     };
     let mut conn = state.pool.acquire().await?;
     let settings =
@@ -58,7 +57,7 @@ pub async fn index(
             .await?
     };
     let Some(user_id) = user_id else {
-        return Ok(super::topics::not_found_response(&state, false));
+        return Ok(super::topics::not_found_response(&state));
     };
     // can_see_bookmarks?
     if !guardian.is_me(user_id) && !guardian.is_admin() {
@@ -122,10 +121,9 @@ pub async fn user_menu(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
     Path(username): Path<String>,
-    uri: Uri,
 ) -> Result<Response, AppError> {
     let Some(viewer) = guardian.user() else {
-        return Ok(super::login_required::not_logged_in(&state, uri.path()));
+        return Ok(super::login_required::not_logged_in(&state));
     };
     // username_equals_to?
     if viewer.username.to_lowercase() != username.to_lowercase() {

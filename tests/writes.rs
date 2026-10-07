@@ -411,10 +411,23 @@ fn unrandom(s: &str) -> String {
     static UUID: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
         regex::Regex::new(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}").unwrap()
     });
+    // An entrypoint script: Rails' asset digest and per-request CSP nonce
+    // (the port sets no CSP).
+    static ASSET: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
+        regex::Regex::new(r#"(/assets/js/[a-z-]+?)(-[0-9a-f]{8})?\.js"#).unwrap()
+    });
+    static NONCE: std::sync::LazyLock<regex::Regex> =
+        std::sync::LazyLock::new(|| regex::Regex::new(r#" nonce="[^"]*""#).unwrap());
     if HEX32.is_match(s) {
         return "<hex>".into();
     }
-    let s = KEY.replace_all(s, "<key>");
+    let s = if s.contains("data-discourse-entrypoint=") {
+        let s = ASSET.replace_all(s, "$1.js");
+        NONCE.replace_all(&s, "").into_owned()
+    } else {
+        s.to_string()
+    };
+    let s = KEY.replace_all(&s, "<key>");
     let s = UUID.replace_all(&s, "<uuid>");
     BOUNDARY.replace_all(&s, "boundary=<boundary>").into_owned()
 }

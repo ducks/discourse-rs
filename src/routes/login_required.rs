@@ -75,7 +75,23 @@ pub async fn gate(
 
     let json = path.ends_with(".json");
     if json || request.method() != axum::http::Method::GET {
-        return Ok(not_logged_in(&state, &path));
+        // topics#show adds the not-found page, as 403 forbids it.
+        if request.method() == axum::http::Method::GET
+            && let Some(slug) = crate::not_found_page::topic_show_slug(&path)
+        {
+            let anonymous = crate::guardian::Guardian::anonymous();
+            let extras =
+                super::topics::not_found_extras(&state, &anonymous, &slug, true, None).await?;
+            let mut response = not_logged_in(&state);
+            let body = serde_json::json!({
+                "errors": [state.i18n.t("not_logged_in").unwrap_or("You need to be logged in to do that.")],
+                "error_type": "not_logged_in",
+                "extras": extras,
+            });
+            *response.body_mut() = Body::from(body.to_string());
+            return Ok(response);
+        }
+        return Ok(not_logged_in(&state));
     }
     let headers: HeaderMap = request.extract_parts().await?;
     let uri: Uri = request.uri().clone();
@@ -136,9 +152,9 @@ pub(super) fn redirect_to_login(
         .into_response())
 }
 
-/// `rescue_discourse_actions(:not_logged_in, 403)`; topics#show adds the
-/// not-found extras.
-pub(super) fn not_logged_in(state: &AppState, path: &str) -> Response {
+/// `rescue_discourse_actions(:not_logged_in, 403)`. (topics#show's extras
+/// are added by the login_required gate, the one place it raises this.)
+pub(super) fn not_logged_in(state: &AppState) -> Response {
     let i18n = &state.i18n;
     let mut body = serde_json::Map::new();
     body.insert(
@@ -148,16 +164,6 @@ pub(super) fn not_logged_in(state: &AppState, path: &str) -> Response {
             .unwrap_or("You need to be logged in to do that.")]),
     );
     body.insert("error_type".into(), json!("not_logged_in"));
-    if path.starts_with("/t/") {
-        body.insert(
-            "extras".into(),
-            json!({
-                "title": i18n.t("page_not_found.page_title").unwrap_or("Page Not Found"),
-                "html": "",
-                "group": null,
-            }),
-        );
-    }
     (
         StatusCode::FORBIDDEN,
         [(header::CACHE_CONTROL, "no-cache, no-store")],

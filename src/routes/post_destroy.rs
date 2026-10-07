@@ -45,7 +45,7 @@ fn front(
         return Front::Stop(bad_csrf());
     }
     if guardian.is_anonymous() {
-        return Front::Stop(super::login_required::not_logged_in(state, uri.path()));
+        return Front::Stop(super::login_required::not_logged_in(state));
     }
     Front::Params(p)
 }
@@ -59,7 +59,7 @@ fn respond(state: &AppState, outcome: Outcome) -> Response {
     match outcome {
         // render body: nil
         Outcome::Done => StatusCode::OK.into_response(),
-        Outcome::NotFound => super::topics::not_found_response(state, false),
+        Outcome::NotFound => super::topics::not_found_response(state),
         Outcome::Forbidden => super::search::invalid_access(state),
     }
 }
@@ -107,7 +107,7 @@ pub async fn destroy_post(
         bus: &state.bus,
     };
     let Some(access) = find_post(&mut conn, &ctx, &guardian, id_of(&id)).await? else {
-        return Ok(super::topics::not_found_response(&state, false));
+        return Ok(super::topics::not_found_response(&state));
     };
     drop(conn);
     let context = p.get("context").and_then(params::scalar);
@@ -149,7 +149,7 @@ pub async fn recover_post(
         bus: &state.bus,
     };
     let Some(access) = find_post_with_deleted(&mut tx, &ctx, &guardian, post_id).await? else {
-        return Ok(super::topics::not_found_response(&state, false));
+        return Ok(super::topics::not_found_response(&state));
     };
     let outcome = post_destroyer::recover_post(&mut tx, &ctx, &guardian, &access).await?;
     if !matches!(outcome, Outcome::Done) {

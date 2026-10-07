@@ -86,6 +86,9 @@ const SIDEBAR_JS: &str = include_str!("../../static/js/sidebar.js");
 const TOPIC_JS: &str = include_str!("../../static/js/topic.js");
 const COMPOSER_JS: &str = include_str!("../../static/js/composer.js");
 const SCREEN_TRACK_JS: &str = include_str!("../../static/js/screen-track.js");
+/// Discourse's frontend/discourse/scripts/js/onpopstate-handler.js (GPL-2.0),
+/// which the not-found page loads.
+const ONPOPSTATE_HANDLER_JS: &str = include_str!("../../static/js/onpopstate-handler.js");
 
 async fn htmx() -> impl IntoResponse {
     (
@@ -119,6 +122,13 @@ async fn screen_track_js() -> impl IntoResponse {
     (
         [(header::CONTENT_TYPE, "text/javascript; charset=utf-8")],
         SCREEN_TRACK_JS,
+    )
+}
+
+async fn onpopstate_handler_js() -> impl IntoResponse {
+    (
+        [(header::CONTENT_TYPE, "text/javascript; charset=utf-8")],
+        ONPOPSTATE_HANDLER_JS,
     )
 }
 
@@ -383,6 +393,10 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/topic.js", get(topic_js))
         .route("/assets/composer.js", get(composer_js))
         .route("/assets/screen-track.js", get(screen_track_js))
+        .route(
+            "/assets/js/onpopstate-handler.js",
+            get(onpopstate_handler_js),
+        )
         .route("/assets/markdown.wasm", get(composer::markdown_wasm))
         .route(
             "/assets/markdown-settings.json",

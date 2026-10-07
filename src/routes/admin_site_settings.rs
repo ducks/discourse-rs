@@ -36,7 +36,7 @@ pub async fn update(
         return Ok(bad_csrf());
     }
     if !guardian.is_admin() {
-        return Ok(super::topics::not_found_response(&state, false));
+        return Ok(super::topics::not_found_response(&state));
     }
     let id = id.strip_suffix(".json").unwrap_or(&id).to_string();
     if id == "bulk_update" {

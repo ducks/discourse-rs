@@ -30,7 +30,7 @@ pub async fn personal(
         "private-messages-unread" => PmList::Unread,
         "private-messages-new" => PmList::New,
         "private-messages-warnings" => PmList::Warnings,
-        _ => return Ok(super::topics::not_found_response(&state, false)),
+        _ => return Ok(super::topics::not_found_response(&state)),
     };
     respond(state, guardian, username, list, &params).await
 }
@@ -47,7 +47,7 @@ pub async fn group(
         Some((name, "archive")) => (name, GroupView::Archive),
         Some((name, "new")) => (name, GroupView::New),
         Some((name, "unread")) => (name, GroupView::Unread),
-        Some(_) => return Ok(super::topics::not_found_response(&state, false)),
+        Some(_) => return Ok(super::topics::not_found_response(&state)),
         None => (rest, GroupView::Inbox),
     };
     let mut conn = state.pool.acquire().await?;
@@ -58,7 +58,7 @@ pub async fn group(
             .await?;
     drop(conn);
     let Some((id, name)) = row else {
-        return Ok(super::topics::not_found_response(&state, false));
+        return Ok(super::topics::not_found_response(&state));
     };
     respond(
         state,
@@ -79,7 +79,7 @@ async fn respond(
 ) -> Result<Response, AppError> {
     // ensure_logged_in
     if guardian.is_anonymous() {
-        return Ok(super::login_required::not_logged_in(&state, "/topics"));
+        return Ok(super::login_required::not_logged_in(&state));
     }
     let mut conn = state.pool.acquire().await?;
     let settings =
@@ -92,7 +92,7 @@ async fn respond(
             .await?;
     let owner = match target {
         Some((id, active)) if active || guardian.is_staff() => id,
-        _ => return Ok(super::topics::not_found_response(&state, false)),
+        _ => return Ok(super::topics::not_found_response(&state)),
     };
     let me = guardian.is_me(owner);
     // The access check per action.
@@ -105,7 +105,7 @@ async fn respond(
         }
         PmList::Unread | PmList::New => {
             if !me {
-                return Ok(super::topics::not_found_response(&state, false));
+                return Ok(super::topics::not_found_response(&state));
             }
         }
         PmList::Warnings => {
@@ -115,7 +115,7 @@ async fn respond(
         }
         PmList::Group { id, view, .. } => {
             if matches!(view, GroupView::New | GroupView::Unread) && !me {
-                return Ok(super::topics::not_found_response(&state, false));
+                return Ok(super::topics::not_found_response(&state));
             }
             // can_see_group_messages?
             let moderators = crate::guardian::auto_groups::MODERATORS as i32;
@@ -130,7 +130,7 @@ async fn respond(
                     .fetch_one(&mut *conn)
                     .await?);
             if !allowed {
-                return Ok(super::topics::not_found_response(&state, false));
+                return Ok(super::topics::not_found_response(&state));
             }
         }
     }
