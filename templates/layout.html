@@ -6,6 +6,12 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    {%- if !chrome.favicon_url.is_empty() %}
+    <link rel="icon" type="{{ chrome.favicon_type }}" href="{{ chrome.favicon_url }}">
+    {%- endif %}
+    {%- if !chrome.apple_touch_icon_url.is_empty() %}
+    <link rel="apple-touch-icon" type="image/png" href="{{ chrome.apple_touch_icon_url }}">
+    {%- endif %}
     <title>{% block title %}{{ site_title }}{% endblock %}</title>
     <meta name="description" content="{{ crawler.description }}">
     {% if !crawler.canonical.is_empty() %}<link rel="canonical" href="{{ crawler.canonical }}">{% endif %}
