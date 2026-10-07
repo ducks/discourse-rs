@@ -1,32 +1,32 @@
 #!/usr/bin/env bash
-# Compare the port with Rails on a restored backup: the JSON of every list,
+# Compare the port with Rails on a forum's real data: the JSON of every list,
 # category, tag, topic (with its pages), user profile, summary and activity,
 # and a few searches, anonymously and as an admin, from the port and from a
-# dv agent holding the same data, diffed with `parity live`.
+# dv agent, diffed with `parity live`.
 #
-# The port runs on a throwaway copy of the database. The agent must hold the
-# same data (restore the same backup into it); its first admin gets the
-# password "password" (the seed's hash and salt) on both sides so the run
-# can log in, and its Rails runs without Sidekiq (scripts/reference-env) so
-# nothing changes under the run. The copy is dropped at the end; the agent
-# is left running.
+# The data is the agent's own (restore a backup into it first): its Rails
+# runs without Sidekiq (scripts/reference-env) so nothing changes under the
+# run, its first admin gets the password "password" (the seed's hash and
+# salt) so the run can log in, and then its database is copied into a
+# throwaway one the port runs on, so both sides hold the same rows. The
+# copy is dropped at the end; the agent is left running.
 #
-# Usage: scripts/parity-backup <dbname> <agent> [public-dir]
-#   e.g. scripts/parity-backup rs_meta rs-meta backups/rs_meta
-# Writes the run to tmp/parity-backup/<dbname>/: cases, the full report
-# (report.txt) and a summary (summary.txt, also printed). PARITY_DELAY_MS
-# (default 600) paces requests to Rails, whose anonymous search is rate
-# limited; PARITY_ONLY runs only the cases whose request contains it.
-# Runs inside shell.nix; builds target/debug.
+# Usage: scripts/parity-backup <agent> [public-dir]
+#   e.g. scripts/parity-backup rs-meta backups/rs_meta
+# public-dir holds the backup's uploads. Writes the run to
+# tmp/parity-backup/<agent>/: cases, the full report (report.txt) and a
+# summary (summary.txt, also printed). PARITY_DELAY_MS (default 600) paces
+# requests to Rails, whose anonymous search is rate limited; PARITY_ONLY
+# runs only the cases whose request contains it. Runs inside shell.nix;
+# builds target/debug.
 set -euo pipefail
 
-if [ $# -lt 2 ]; then
-  echo "usage: $0 <dbname> <agent> [public-dir]" >&2
+if [ $# -lt 1 ]; then
+  echo "usage: $0 <agent> [public-dir]" >&2
   exit 64
 fi
-source_db="$1"
-agent="$2"
-public_dir="${3:-public}"
+agent="$1"
+public_dir="${2:-public}"
 root="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$root"
 
@@ -36,7 +36,7 @@ copy="parity_backup_$$"
 copy_url="postgresql://localhost:5442/$copy?$host"
 port=8096
 rs="http://127.0.0.1:$port"
-out="tmp/parity-backup/$source_db"
+out="tmp/parity-backup/$agent"
 server_pid=""
 
 cleanup() {
@@ -49,6 +49,7 @@ cleanup() {
 trap cleanup EXIT
 
 rails_sql() { dv run --name "$agent" -- psql -At -v ON_ERROR_STOP=1 discourse_development -c "$1"; }
+q() { psql -At "$copy_url" -c "$1"; }
 
 dv start "$agent" > /dev/null
 scripts/reference-env "$agent" > /dev/null
@@ -58,30 +59,21 @@ for _ in $(seq 100); do
   sleep 3
 done
 
-psql -q "$admin_url" -c "CREATE DATABASE \"$copy\" TEMPLATE \"$source_db\""
-q() { psql -At "$copy_url" -c "$1"; }
-
-# The same data on both sides, or every difference is noise.
-counts="SELECT (SELECT count(*) FROM topics) || ' topics, ' || (SELECT count(*) FROM posts) || ' posts, ' || (SELECT count(*) FROM users) || ' users'"
-ours="$(q "$counts")"
-theirs="$(rails_sql "$counts")"
-if [ "$ours" != "$theirs" ]; then
-  echo "$source_db has $ours but $agent has $theirs: restore the same backup into both" >&2
-  exit 1
-fi
-
 # The seed's user1 has the password "password": its hash and salt, on the
-# first admin of both databases.
+# agent's first admin.
 read -r hash salt algorithm < <(psql -At -F ' ' \
   "postgresql://localhost:5442/discourse_rs_test?$host" \
   -c "SELECT password_hash, password_salt, password_algorithm FROM user_passwords p
       JOIN users u ON u.id = p.user_id WHERE u.username = 'user1'")
-admin="$(q "SELECT username FROM users WHERE admin AND id > 0 ORDER BY id LIMIT 1")"
-set_password="DELETE FROM user_passwords WHERE user_id = (SELECT id FROM users WHERE username = '$admin');
+admin="$(rails_sql "SELECT username FROM users WHERE admin AND id > 0 ORDER BY id LIMIT 1")"
+rails_sql "DELETE FROM user_passwords WHERE user_id = (SELECT id FROM users WHERE username = '$admin');
 INSERT INTO user_passwords (user_id, password_hash, password_salt, password_algorithm, created_at, updated_at)
-SELECT id, '$hash', '$salt', '$algorithm', now(), now() FROM users WHERE username = '$admin';"
-psql -q "$copy_url" -c "$set_password"
-rails_sql "$set_password" > /dev/null
+SELECT id, '$hash', '$salt', '$algorithm', now(), now() FROM users WHERE username = '$admin';" > /dev/null
+
+# The agent's database, as it is now, for the port.
+psql -q "$admin_url" -c "CREATE DATABASE \"$copy\""
+dv run --name "$agent" -- pg_dump --no-owner --no-privileges discourse_development |
+  psql -q -v ON_ERROR_STOP=1 "$copy_url" > /dev/null
 
 # The cases: every page there is, each kind with the ignores parity/cases
 # gives the same kind (plugin keys the port does not serve), plus the
