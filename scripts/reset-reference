@@ -37,6 +37,30 @@ trap 'rm -f "$script"' EXIT
   # references the theme tables; Discourse rebuilds it.
   echo "TRUNCATE $tables CASCADE;"
   cat "$seed"
+  # The seed sets every sequence, those of the tables it leaves out too
+  # (auth tokens, search logs...), whose rows stay: put each sequence past
+  # its column's largest id, or the next insert there is a duplicate key.
+  cat <<'SQL'
+DO $$
+DECLARE r record; largest bigint; last bigint;
+BEGIN
+  FOR r IN
+    SELECT s.oid::regclass AS seq, d.refobjid::regclass AS tbl, a.attname AS col
+    FROM pg_class s
+    JOIN pg_namespace n ON n.oid = s.relnamespace AND n.nspname = 'public'
+    JOIN pg_depend d ON d.objid = s.oid AND d.classid = 'pg_class'::regclass AND d.deptype IN ('a', 'i')
+    JOIN pg_attribute a ON a.attrelid = d.refobjid AND a.attnum = d.refobjsubid
+    WHERE s.relkind = 'S'
+  LOOP
+    EXECUTE format('SELECT max(%I)::bigint FROM %s', r.col, r.tbl) INTO largest;
+    EXECUTE format('SELECT last_value FROM %s', r.seq) INTO last;
+    IF largest > last THEN
+      PERFORM setval(r.seq, largest);
+    END IF;
+  END LOOP;
+END
+$$;
+SQL
 } > "$script"
 dv copy "$script" "$agent:/tmp/reset-reference.sql" > /dev/null
 dv run --name "$agent" -- psql -q -v ON_ERROR_STOP=1 --single-transaction \
