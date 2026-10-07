@@ -446,8 +446,14 @@ early slices need not wait for milestone 5. Done so far: changing plain
 site settings, suspending and silencing (milestone 4), `handle_mail` and
 API keys for posting, and grant_moderation! for the first admin's login.
 
-- [ ] Site settings: the list (`GET /admin/site_settings`, by category and
-      filter), and the setting types milestone 4 refuses
+- [x] Site settings: the list (`GET /admin/site_settings`, by category,
+      plugin and names): every visible setting, core and bundled plugins'
+      (and the agent settings discourse-ai registers from Ruby), with its
+      labels from the locale, value and default, type details and the
+      default theme; enum classes and choices expressions recorded from
+      Rails (scripts/record-setting-enums), the database-backed ones
+      computed. Measured against Rails: all 1542 settings of the reference
+- [ ] Site settings: the setting types milestone 4 refuses
 - [ ] Users: the lists and filters, the admin view of a user, granting and
       revoking admin and moderation, trust levels and their locks,
       approving, activating and deactivating, logging out, deleting,

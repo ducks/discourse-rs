@@ -257,6 +257,8 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/sitemap.xml", get(sitemap::index))
         .route("/sitemap_{page}", get(sitemap::page))
         .route("/news.xml", get(sitemap::news))
+        .route("/admin/site_settings", get(admin_site_settings::index))
+        .route("/admin/site_settings.json", get(admin_site_settings::index))
         .route(
             "/admin/site_settings/{id}",
             put(admin_site_settings::update),

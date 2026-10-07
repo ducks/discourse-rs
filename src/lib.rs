@@ -1,4 +1,5 @@
 pub mod accounts;
+pub mod admin_site_settings;
 pub mod avatar;
 pub mod bookmark_manager;
 pub mod bookmarks;
@@ -51,6 +52,7 @@ pub mod schema;
 pub mod search;
 pub mod second_factor;
 pub mod session;
+pub mod setting_enums;
 pub mod sidebar;
 pub mod signup;
 pub mod site;

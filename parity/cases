@@ -348,3 +348,8 @@ GET /u/admin/user-menu-bookmarks.json as=admin
 GET /u/user0/user-menu-bookmarks.json as=user0
 GET /u/user1/user-menu-bookmarks.json as=admin
 GET /u/user1/user-menu-bookmarks.json
+
+# admin/site_settings#index: SiteSetting.all_settings and the default theme.
+GET /admin/site_settings.json as=admin
+GET /admin/site_settings.json?categories[]=required as=admin
+GET /admin/site_settings.json?plugin=chat as=admin

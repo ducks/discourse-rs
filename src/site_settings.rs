@@ -117,7 +117,7 @@ impl DataType {
             .map(|(t, _)| *t)
     }
 
-    fn from_name(name: &str) -> Option<DataType> {
+    pub(crate) fn from_name(name: &str) -> Option<DataType> {
         Self::ALL.iter().find(|(_, n)| *n == name).map(|(t, _)| *t)
     }
 }
@@ -260,21 +260,21 @@ pub struct Definition {
     pub themeable: bool,
     /// The plugin whose settings.yml declares it; None for core's.
     pub plugin: Option<String>,
-    locale_defaults: HashMap<String, Value>,
+    pub(crate) locale_defaults: HashMap<String, Value>,
     /// `upcoming_change: {status: ...}`; the setting's value is then decided
     /// by UpcomingChanges.enabled? rather than read directly.
-    upcoming_change: Option<ChangeStatus>,
+    pub(crate) upcoming_change: Option<ChangeStatus>,
     /// `upcoming_change.body_class`: the change adds a body CSS class, so the
     /// client is told about it (upcoming_changes_with_css).
     change_body_class: bool,
-    depends_on: Vec<String>,
+    pub(crate) depends_on: Vec<String>,
     /// `depends_on_values`: per dependency, the values that count as met.
-    depends_on_values: HashMap<String, Vec<String>>,
+    pub(crate) depends_on_values: HashMap<String, Vec<String>>,
     /// `mandatory_values`: entries a list setting always carries.
-    mandatory_values: Option<String>,
+    pub(crate) mandatory_values: Option<String>,
     /// `upcoming_change_default_override`: the upcoming change and the
     /// default this setting takes while that change is enabled.
-    default_override: Option<(String, Value)>,
+    pub(crate) default_override: Option<(String, Value)>,
     /// An upcoming change of a plugin only takes effect while the plugin
     /// is enabled, unless it opts out (`requires_plugin_enabled: false`).
     change_requires_plugin: bool,
@@ -332,11 +332,48 @@ pub struct Definitions {
 }
 
 impl Definitions {
-    /// Core's settings, then each bundled plugin's.
+    /// Core's settings, then each bundled plugin's, then those plugins
+    /// register from Ruby (recorded, crate::setting_enums).
     pub fn vendored() -> Result<Self, String> {
         let mut defs = Self::parse(SITE_SETTINGS_YML)?;
         defs.add_plugins(PLUGIN_SETTINGS_YML)?;
+        defs.add_dynamic(crate::setting_enums::dynamic_settings())?;
         Ok(defs)
+    }
+
+    /// Settings a plugin registers with `SiteSetting.setting` from Ruby,
+    /// as recorded: each is declared as its options would be in YAML.
+    pub fn add_dynamic(&mut self, settings: &[serde_json::Value]) -> Result<(), String> {
+        for s in settings {
+            let name = s["name"]
+                .as_str()
+                .ok_or("a dynamic setting without a name")?;
+            let category = s["category"].as_str().unwrap_or("uncategorized");
+            let mut entry = serde_json::Map::new();
+            for key in [
+                "default",
+                "type",
+                "enum",
+                "area",
+                "depends_on",
+                "depends_behavior",
+            ] {
+                if !s[key].is_null() {
+                    entry.insert(key.into(), s[key].clone());
+                }
+            }
+            let entry: Yaml = serde_yaml_ng::to_value(serde_json::Value::Object(entry))
+                .map_err(|e| format!("dynamic setting {name}: {e}"))?;
+            let mut def = parse_definition(category, name, &entry)
+                .map_err(|e| format!("dynamic setting {name}: {e}"))?;
+            def.plugin = s["plugin"].as_str().map(str::to_string);
+            if self.index.contains_key(name) {
+                return Err(format!("dynamic setting {name} is declared in YAML too"));
+            }
+            self.index.insert(name.to_string(), self.list.len());
+            self.list.push(def);
+        }
+        Ok(())
     }
 
     pub fn parse(src: &str) -> Result<Self, String> {
@@ -418,6 +455,15 @@ impl Definitions {
         };
         match self.plugin_enabled_settings.get(plugin) {
             Some(Some(setting)) => values.get(setting).is_some_and(Value::truthy),
+            _ => true,
+        }
+    }
+
+    /// `Plugin::Instance#enabled?` for a bundled plugin: its
+    /// `enabled_site_setting` is on, or it names none.
+    pub fn plugin_enabled(&self, plugin: &str, settings: &SiteSettings) -> bool {
+        match self.plugin_enabled_settings.get(plugin) {
+            Some(Some(setting)) => settings.get(setting).is_ok_and(Value::truthy),
             _ => true,
         }
     }
@@ -945,7 +991,7 @@ fn upcoming_change_enabled(
 }
 
 /// TypeSupervisor#to_rb_value with the row's data_type as override.
-fn to_rb_value(
+pub(crate) fn to_rb_value(
     defs: &Definitions,
     name: &str,
     data_type: i32,

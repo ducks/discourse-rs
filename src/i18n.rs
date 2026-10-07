@@ -73,6 +73,39 @@ impl I18n {
         self.strings.get(key).map(String::as_str)
     }
 
+    /// `I18n.t(key)` for a key holding a hash: its strings, nested as in
+    /// the locale file. None when nothing is under the key.
+    pub fn subtree(&self, key: &str) -> Option<serde_json::Value> {
+        let prefix = format!("{key}.");
+        let mut root = serde_json::Map::new();
+        for (k, v) in &self.strings {
+            let Some(rest) = k.strip_prefix(&prefix) else {
+                continue;
+            };
+            let mut node = &mut root;
+            let mut parts = rest.split('.').peekable();
+            while let Some(part) = parts.next() {
+                if parts.peek().is_none() {
+                    node.insert(part.to_string(), serde_json::Value::String(v.clone()));
+                } else {
+                    node = node
+                        .entry(part.to_string())
+                        .or_insert_with(|| serde_json::Value::Object(Default::default()))
+                        .as_object_mut()?;
+                }
+            }
+        }
+        (!root.is_empty()).then_some(serde_json::Value::Object(root))
+    }
+
+    /// The keys under a prefix.
+    pub fn keys_with_prefix<'a>(&'a self, prefix: &'a str) -> impl Iterator<Item = &'a str> {
+        self.strings
+            .keys()
+            .filter(move |k| k.starts_with(prefix))
+            .map(String::as_str)
+    }
+
     /// `I18n.t(key, **args)`: every `%{name}` must have an argument.
     pub fn t_with(&self, key: &str, args: &[(&str, &str)]) -> Option<String> {
         let raw = self.t(key)?;
