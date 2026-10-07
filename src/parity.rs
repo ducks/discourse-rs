@@ -291,7 +291,27 @@ fn normalize_json(body: &str, ignore: &[String]) -> Result<Value, String> {
             .collect();
         remove_path(&mut value, &segments);
     }
+    unscript(&mut value);
     Ok(value)
+}
+
+/// Entrypoint script tags in HTML strings without Rails' asset digest and
+/// per-request CSP nonce (the port sets no CSP).
+fn unscript(value: &mut Value) {
+    static ASSET: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
+        regex::Regex::new(r#"(/assets/js/[a-z-]+?)(-[0-9a-f]{8})?\.js"#).expect("valid regex")
+    });
+    static NONCE: std::sync::LazyLock<regex::Regex> =
+        std::sync::LazyLock::new(|| regex::Regex::new(r#" nonce="[^"]*""#).expect("valid regex"));
+    match value {
+        Value::String(s) if s.contains("data-discourse-entrypoint=") => {
+            let replaced = ASSET.replace_all(s, "$1.js");
+            *s = NONCE.replace_all(&replaced, "").into_owned();
+        }
+        Value::Array(items) => items.iter_mut().for_each(unscript),
+        Value::Object(map) => map.values_mut().for_each(unscript),
+        _ => {}
+    }
 }
 
 fn remove_path(value: &mut Value, segments: &[String]) {
