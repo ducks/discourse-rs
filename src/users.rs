@@ -1273,15 +1273,21 @@ impl Users<'_> {
             top_categories = entries.into_iter().map(|(_, v)| v).collect();
         }
 
+        // The badges' topics join the summary's under the one root key, as
+        // AMS's merge_association does: appended, the first of each id kept.
+        for topic in side.topics.drain(..) {
+            let id = topic["id"].as_i64().unwrap_or(0) as i32;
+            if !topic_ids.contains(&id) {
+                topic_ids.push(id);
+                topics.push(topic);
+            }
+        }
         let mut out = Map::new();
         out.insert("topics".into(), Value::Array(topics));
         if !side.badges.is_empty() {
             out.insert("badges".into(), Value::Array(side.badges.clone()));
             out.insert("badge_types".into(), Value::Array(side.badge_types.clone()));
             out.insert("users".into(), Value::Array(side.users.clone()));
-            if !side.topics.is_empty() {
-                out.insert("topics".into(), Value::Array(side.topics.clone()));
-            }
         }
         let mut s = Map::new();
         s.insert("likes_given".into(), json!(user.likes_given.unwrap_or(0)));
