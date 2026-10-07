@@ -1,0 +1,174 @@
+#!/usr/bin/env bash
+# Compare the port with Rails on a restored backup: the JSON of every list,
+# category, tag, topic (with its pages), user profile, summary and activity,
+# and a few searches, anonymously and as an admin, from the port and from a
+# dv agent holding the same data, diffed with `parity live`.
+#
+# The port runs on a throwaway copy of the database. The agent must hold the
+# same data (restore the same backup into it); its first admin gets the
+# password "password" (the seed's hash and salt) on both sides so the run
+# can log in, and its Rails runs without Sidekiq (scripts/reference-env) so
+# nothing changes under the run. The copy is dropped at the end; the agent
+# is left running.
+#
+# Usage: scripts/parity-backup <dbname> <agent> [public-dir]
+#   e.g. scripts/parity-backup rs_meta rs-meta backups/rs_meta
+# Writes the run to tmp/parity-backup/<dbname>/: cases, the full report
+# (report.txt) and a summary (summary.txt, also printed). PARITY_DELAY_MS
+# (default 600) paces requests to Rails, whose anonymous search is rate
+# limited; PARITY_ONLY runs only the cases whose request contains it.
+# Runs inside shell.nix; builds target/debug.
+set -euo pipefail
+
+if [ $# -lt 2 ]; then
+  echo "usage: $0 <dbname> <agent> [public-dir]" >&2
+  exit 64
+fi
+source_db="$1"
+agent="$2"
+public_dir="${3:-public}"
+root="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$root"
+
+host="host=$root/.nix-postgres"
+admin_url="postgresql://localhost:5442/postgres?$host"
+copy="parity_backup_$$"
+copy_url="postgresql://localhost:5442/$copy?$host"
+port=8096
+rs="http://127.0.0.1:$port"
+out="tmp/parity-backup/$source_db"
+server_pid=""
+
+cleanup() {
+  if [ -n "$server_pid" ]; then
+    kill "$server_pid" 2>/dev/null || true
+    wait "$server_pid" 2>/dev/null || true
+  fi
+  psql -q "$admin_url" -c "DROP DATABASE IF EXISTS \"$copy\" WITH (FORCE)" || true
+}
+trap cleanup EXIT
+
+rails_sql() { dv run --name "$agent" -- psql -At -v ON_ERROR_STOP=1 discourse_development -c "$1"; }
+
+dv start "$agent" > /dev/null
+scripts/reference-env "$agent" > /dev/null
+rails="http://$(docker port "$agent" 3000 | head -1)"
+for _ in $(seq 100); do
+  curl -sf -o /dev/null "$rails/srv/status" && break
+  sleep 3
+done
+
+psql -q "$admin_url" -c "CREATE DATABASE \"$copy\" TEMPLATE \"$source_db\""
+q() { psql -At "$copy_url" -c "$1"; }
+
+# The same data on both sides, or every difference is noise.
+counts="SELECT (SELECT count(*) FROM topics) || ' topics, ' || (SELECT count(*) FROM posts) || ' posts, ' || (SELECT count(*) FROM users) || ' users'"
+ours="$(q "$counts")"
+theirs="$(rails_sql "$counts")"
+if [ "$ours" != "$theirs" ]; then
+  echo "$source_db has $ours but $agent has $theirs: restore the same backup into both" >&2
+  exit 1
+fi
+
+# The seed's user1 has the password "password": its hash and salt, on the
+# first admin of both databases.
+read -r hash salt algorithm < <(psql -At -F ' ' \
+  "postgresql://localhost:5442/discourse_rs_test?$host" \
+  -c "SELECT password_hash, password_salt, password_algorithm FROM user_passwords p
+      JOIN users u ON u.id = p.user_id WHERE u.username = 'user1'")
+admin="$(q "SELECT username FROM users WHERE admin AND id > 0 ORDER BY id LIMIT 1")"
+set_password="DELETE FROM user_passwords WHERE user_id = (SELECT id FROM users WHERE username = '$admin');
+INSERT INTO user_passwords (user_id, password_hash, password_salt, password_algorithm, created_at, updated_at)
+SELECT id, '$hash', '$salt', '$algorithm', now(), now() FROM users WHERE username = '$admin';"
+psql -q "$copy_url" -c "$set_password"
+rails_sql "$set_password" > /dev/null
+
+# The cases: every page there is, each kind with the ignores parity/cases
+# gives the same kind (plugin keys the port does not serve), plus the
+# suggested topics, which Rails picks at random.
+mkdir -p "$out"
+ignores="$out/ignores.tsv"
+grep '^GET' parity/cases | awk '{
+  p = $2; sub(/\?.*/, "", p)
+  if (p ~ /^\/t\//) f = "t"
+  else if (p ~ /^\/u\/[^\/]+\/summary/) f = "usum"
+  else if (p ~ /^\/u\/[^\/]+\/activity/) f = "uact"
+  else if (p ~ /^\/u\/[^\/]+(\.json)?$/) f = "u"
+  else if (p ~ /^\/(latest|top|hot|c\/|tag\/)/) f = "list"
+  else if (p ~ /^\/categories/) f = "cats"
+  else if (p ~ /^\/tags/) f = "tags"
+  else if (p ~ /^\/search/) f = "search"
+  else next
+  for (i = 3; i <= NF; i++) if ($i ~ /^ignore=/) {
+    n = split(substr($i, 8), a, ",")
+    for (j = 1; j <= n; j++) print f "\t" a[j]
+  }
+}
+END { print "t\t/suggested_topics" }' | sort -u |
+  awk -F'\t' '{ a[$1] = a[$1] (a[$1] ? "," : "") $2 } END { for (k in a) print k "\t" a[k] }' > "$ignores"
+
+{
+  echo "list /latest.json"; echo "list /top.json"; echo "list /hot.json"
+  echo "cats /categories.json"; echo "tags /tags.json"
+  q "SELECT 'list /latest.json?page=' || g FROM generate_series(1, (SELECT count(*) FROM topics) / 30 + 1) g"
+  q "SELECT 'list /c/' || slug || '/' || id || '.json' FROM categories"
+  q "SELECT 'list /tag/' || name || '.json' FROM tags"
+  q "SELECT 't /t/' || slug || '/' || id || '.json' FROM topics WHERE archetype = 'regular'"
+  q "SELECT 't /t/' || slug || '/' || id || '.json?page=' || g FROM topics, generate_series(2, (posts_count - 1) / 20 + 1) g
+     WHERE archetype = 'regular' AND posts_count > 20"
+  q "SELECT 'u /u/' || username || '.json' FROM users WHERE id > 0"
+  q "SELECT 'usum /u/' || username || '/summary.json' FROM users WHERE id > 0"
+  q "SELECT 'uact /u/' || username || '/activity.json' FROM users WHERE id > 0"
+  for term in the a test discourse; do echo "search /search.json?q=$term"; done
+} | while read -r kind path; do
+  ignore="$(awk -F'\t' -v k="$kind" '$1 == k { print "ignore=" $2 }' "$ignores")"
+  echo "GET $path $ignore"
+  echo "GET $path as=$admin $ignore"
+done > "$out/cases"
+
+cargo build -q --bins
+env RAILS_ENV=development UNICORN_PORT=3000 DISCOURSE_RS_JOBS=off BIND_ADDR="127.0.0.1:$port" \
+  PUBLIC_DIR="$public_dir" DATABASE_URL="$copy_url" RUST_LOG=warn \
+  target/debug/discourse-rs > "$out/server.log" 2>&1 &
+server_pid=$!
+for _ in $(seq 50); do
+  curl -sf -o /dev/null "$rs/srv/status" && break
+  sleep 0.2
+done
+if ! kill -0 "$server_pid" 2>/dev/null; then
+  echo "the port did not start (is $port in use?):" >&2
+  tail -3 "$out/server.log" >&2
+  exit 1
+fi
+
+echo "comparing $(wc -l < "$out/cases") requests: $rails (Rails, $agent) vs $rs ($copy)"
+target/debug/parity --cases "$out/cases" --delay-ms "${PARITY_DELAY_MS:-600}" ${PARITY_ONLY:+--only "$PARITY_ONLY"} \
+  live --rails "$rails" --rs "$rs" > "$out/report.txt" || true
+
+# The summary: totals, mismatches by kind of page and viewer, and the JSON
+# keys on changed lines of the diffs, to see which fields differ most.
+{
+  tail -1 "$out/report.txt"
+  echo
+  echo "mismatches by page and viewer:"
+  awk -v admin="as=$admin" '$1 == "MISMATCH" {
+    p = $3; sub(/\?.*/, "", p)
+    if (p ~ /^\/t\//) k = "topic"
+    else if (p ~ /\/summary/) k = "user summary"
+    else if (p ~ /\/activity/) k = "user activity"
+    else if (p ~ /^\/u\//) k = "user"
+    else if (p ~ /^\/search/) k = "search"
+    else k = "list"
+    print k ", " ($4 == admin ? "admin" : "anonymous")
+  }' "$out/report.txt" | sort | uniq -c | sort -rn
+  echo
+  echo "keys on changed lines (top 30):"
+  sed -n 's/^    [-+] *"\([^"]*\)":.*/\1/p' "$out/report.txt" | sort | uniq -c | sort -rn | head -30
+  echo
+  echo "status or content type differs:"
+  awk '$1 == "MISMATCH" { label = $0; shown = 0 }
+       /^    (status|content-type):/ && !shown { print label; print; shown = 1 }' "$out/report.txt" | head -40
+} > "$out/summary.txt"
+cat "$out/summary.txt"
+echo
+echo "full report: $out/report.txt"
