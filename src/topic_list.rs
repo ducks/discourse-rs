@@ -862,8 +862,10 @@ impl TopicListSerializer<'_> {
         if self.settings.get("tags_sort_alphabetically")?.truthy() {
             return Ok("t.name ASC".to_string());
         }
+        // `tags.sort_by { count }.reverse`: equal counts come out in the
+        // reverse of the association's (topic_tags) order.
         let column = self.guardian.tag_count_column(self.settings)?;
-        Ok(format!("t.{column} DESC, t.id DESC"))
+        Ok(format!("t.{column} DESC, tt.id DESC"))
     }
 
     pub(crate) async fn image_url(&mut self, t: &TopicRow) -> Result<Value, TopicListError> {

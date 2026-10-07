@@ -734,6 +734,73 @@ impl TopicQuery<'_> {
         })
     }
 
+    /// `unread_results` / `new_results` as `list_suggested_for` runs them
+    /// for a logged-in user: unordered default_results, `suggested_ordering`
+    /// (the topic's category first, then bumped_at), and the builder's
+    /// exclusions (the topic, those already suggested, unlisted ones)
+    /// applied before the limit. Unread uses `max_age` days on bumped_at.
+    pub async fn suggested(
+        &mut self,
+        filter: Filter,
+        topic_category_id: Option<i32>,
+        exclude: &[i32],
+        max_age_days: i64,
+        per_page: i64,
+    ) -> Result<Vec<TopicRow>, TopicQueryError> {
+        if self.guardian.is_anonymous() {
+            return Err(Unsupported("suggested unread or new for anonymous").into());
+        }
+        self.check_unported_filters()?;
+        self.filter = filter.clone();
+        self.category = self.category_scope().await?;
+        self.tags = self.tag_scope().await?;
+        self.user = self.user_scope().await?;
+        let category_first = topic_category_id
+            .map(|id| format!("CASE WHEN topics.category_id = {id} THEN 0 ELSE 1 END, "))
+            .unwrap_or_default();
+        let excluded = exclude
+            .iter()
+            .map(|id| id.to_string())
+            .collect::<Vec<_>>()
+            .join(",");
+        let builder = format!("topics.id <> ALL(ARRAY[{excluded}]::int[]) AND topics.visible");
+        // apply_max_age_limit: the later of first_unread_at and max_age
+        // days ago.
+        let max_age = crate::clock::now_naive() - chrono::Duration::days(max_age_days);
+        let since = self
+            .user
+            .first_unread_at
+            .map_or(max_age, |t| t.max(max_age));
+        let unread = format!(
+            "{} AND topics.bumped_at >= '{}'",
+            self.unread_filter(),
+            sql_time(since)
+        );
+        let new = format!(
+            "{} AND {} AND dismissed_topic_users.id IS NULL",
+            self.new_filter(),
+            self.remove_muted_clause()?
+        );
+        let own_first = "CASE WHEN topics.user_id = tu.user_id THEN 1 ELSE 2 END, ";
+        let (clause, order) = match filter {
+            Filter::Unread => (
+                format!("{unread} AND {builder}"),
+                format!("{own_first}{category_first}topics.bumped_at DESC"),
+            ),
+            // new_and_unread_results, with unified new.
+            Filter::New if self.user.unified_new => (
+                format!("(({new}) OR ({unread})) AND {builder}"),
+                format!("{own_first}{category_first}topics.bumped_at DESC"),
+            ),
+            Filter::New => (
+                format!("{new} AND {builder}"),
+                format!("{category_first}topics.bumped_at DESC"),
+            ),
+            _ => return Err(Unsupported("suggested topics from other lists").into()),
+        };
+        self.fetch(&clause, &order, per_page, 0).await
+    }
+
     async fn fetch(
         &mut self,
         extra_where: &str,

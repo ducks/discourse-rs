@@ -20,7 +20,7 @@ use crate::post_actions::{self, ActOpts, ActionTypes, TakenAction};
 use crate::site_settings::{SettingError, SiteSettings};
 use crate::topic_guardian::{PostCtx, TopicCtx};
 use crate::topic_list::{self, Mode, TopicListError, TopicListSerializer, time_json};
-use crate::topic_query::{TOPIC_COLUMNS, TopicRow};
+use crate::topic_query::{Filter, TOPIC_COLUMNS, TopicQuery, TopicRow};
 use crate::url::{UrlError, Urls};
 
 /// `TopicView::CHUNK_SIZE`
@@ -71,6 +71,17 @@ impl From<UrlError> for TopicViewError {
 impl From<Unsupported> for TopicViewError {
     fn from(e: Unsupported) -> Self {
         TopicViewError::Unsupported(e)
+    }
+}
+
+impl From<crate::topic_query::TopicQueryError> for TopicViewError {
+    fn from(e: crate::topic_query::TopicQueryError) -> Self {
+        use crate::topic_query::TopicQueryError as E;
+        match e {
+            E::Db(e) => TopicViewError::Db(e),
+            E::Setting(e) => TopicViewError::Setting(e),
+            E::Unsupported(e) => TopicViewError::Unsupported(e),
+        }
     }
 }
 
@@ -2014,39 +2025,122 @@ impl TopicView<'_> {
         }
         Ok(Value::Array(out))
     }
-    /// A deterministic stand-in for `random_suggested`: the same filters
-    /// (open, unarchived, visible, readable, not a definition, not this
-    /// topic), same-category first, then by bumped_at; capped at
-    /// `suggested_topics`. Never matches Rails' random pick.
+    /// `list_suggested_for` on a regular topic through SuggestedTopicsBuilder:
+    /// for a user, unread topics (spliced in at high priority) then new
+    /// ones, then the random fill, up to `suggested_topics`.
     async fn suggested_topics(&mut self, topic: &TopicRow) -> Result<Value, TopicViewError> {
         let limit = self.settings.get("suggested_topics")?.to_i();
+        if self.settings.get("limit_suggested_to_category")?.truthy() {
+            return Err(Unsupported("limit_suggested_to_category").into());
+        }
+        // Category.topic_ids: the definition topics, never suggested.
+        let definitions: Vec<i32> =
+            sqlx::query_scalar("SELECT topic_id FROM categories WHERE topic_id IS NOT NULL")
+                .fetch_all(&mut *self.conn)
+                .await?;
+        let mut builder = Suggested {
+            results: Vec::new(),
+            excluded: vec![topic.id],
+            category_id: topic.category_id,
+            definitions,
+        };
+        if self.guardian.is_authenticated() {
+            let max_age = self
+                .settings
+                .get("suggested_topics_unread_max_days_old")?
+                .to_i();
+            let mut query = TopicQuery {
+                conn: &mut *self.conn,
+                settings: self.settings,
+                guardian: self.guardian,
+                options: Default::default(),
+                filter: Default::default(),
+                category: Default::default(),
+                tags: Default::default(),
+                user: Default::default(),
+            };
+            let unified_new = self
+                .guardian
+                .upcoming_change_enabled(&mut *query.conn, self.settings, "enable_unified_new")
+                .await?;
+            if unified_new {
+                // new_and_unread_results, added at the default priority.
+                let rows = query
+                    .suggested(
+                        Filter::New,
+                        topic.category_id,
+                        &builder.excluded,
+                        max_age,
+                        limit - builder.results.len() as i64,
+                    )
+                    .await?;
+                builder.add(rows, false);
+            } else {
+                let unread = query
+                    .suggested(
+                        Filter::Unread,
+                        topic.category_id,
+                        &builder.excluded,
+                        max_age,
+                        limit - builder.results.len() as i64,
+                    )
+                    .await?;
+                builder.add(unread, true);
+            }
+            if !unified_new && (builder.results.len() as i64) < limit {
+                let same_category = builder
+                    .results
+                    .iter()
+                    .filter(|t| t.category_id == topic.category_id)
+                    .count() as i64;
+                let new = query
+                    .suggested(
+                        Filter::New,
+                        topic.category_id,
+                        &builder.excluded,
+                        max_age,
+                        limit - same_category,
+                    )
+                    .await?;
+                builder.add(new, false);
+            }
+        }
+        let left = limit - builder.results.len() as i64;
+        if left > 0 {
+            let random = self
+                .random_suggested(topic, &builder.excluded, left)
+                .await?;
+            builder.add(random, false);
+        }
+        builder.results.truncate(limit.max(0) as usize);
+        self.suggested_items(&builder.results).await
+    }
+
+    /// A deterministic stand-in for `random_suggested`: the same filters
+    /// (open, unarchived, visible, readable, not a definition, not one
+    /// already suggested), same-category first, then by bumped_at. Never
+    /// matches Rails' random pick, and does not remove the user's muted
+    /// topics as Rails does.
+    async fn random_suggested(
+        &mut self,
+        topic: &TopicRow,
+        excluded: &[i32],
+        count: i64,
+    ) -> Result<Vec<TopicRow>, TopicViewError> {
         let sql = format!(
             "SELECT {TOPIC_COLUMNS} FROM topics LEFT OUTER JOIN categories ON categories.id = topics.category_id \
              WHERE topics.deleted_at IS NULL AND topics.visible AND NOT topics.closed AND NOT topics.archived \
-               AND topics.archetype <> 'private_message' AND topics.id <> $1 \
+               AND topics.archetype <> 'private_message' AND NOT (topics.id = ANY($1)) \
                AND (categories.id IS NULL OR NOT categories.read_restricted) \
                AND COALESCE(categories.topic_id, 0) <> topics.id \
              ORDER BY CASE WHEN topics.category_id = $2 THEN 0 ELSE 1 END, topics.bumped_at DESC LIMIT $3"
         );
-        let rows: Vec<TopicRow> = sqlx::query_as(&sql)
-            .bind(topic.id)
+        Ok(sqlx::query_as(&sql)
+            .bind(excluded)
             .bind(topic.category_id)
-            .bind(limit)
+            .bind(count)
             .fetch_all(&mut *self.conn)
-            .await?;
-        let tagging = self.settings.get("tagging_enabled")?.truthy();
-        let mut serializer = self.list_serializer();
-        let lookup = serializer.user_lookup(&rows).await?;
-        let mut out = Vec::with_capacity(rows.len());
-        for row in &rows {
-            let posters = topic_list::posters_summary(row, &lookup, serializer.i18n);
-            out.push(
-                serializer
-                    .serialize_topic(row, &posters, tagging, Mode::Suggested)
-                    .await?,
-            );
-        }
-        Ok(Value::Array(out))
+            .await?)
     }
 }
 
@@ -2142,5 +2236,45 @@ mod tests {
         assert_eq!(lookup.len(), 301);
         assert_eq!(lookup[0], [1, 600]);
         assert_eq!(lookup.last().unwrap(), &[600, 1]);
+    }
+}
+
+/// SuggestedTopicsBuilder: the results so far and what they exclude.
+struct Suggested {
+    results: Vec<TopicRow>,
+    excluded: Vec<i32>,
+    category_id: Option<i32>,
+    /// Category.topic_ids
+    definitions: Vec<i32>,
+}
+
+impl Suggested {
+    /// `add_results`: definition topics and repeats out; at high priority
+    /// the topic's category goes in before the first other-category
+    /// result, the rest at the end.
+    fn add(&mut self, rows: Vec<TopicRow>, high: bool) {
+        let mut fresh = Vec::new();
+        for row in rows {
+            if self.definitions.contains(&row.id) || self.excluded.contains(&row.id) {
+                continue;
+            }
+            self.excluded.push(row.id);
+            fresh.push(row);
+        }
+        match self.category_id {
+            Some(category_id) if high => {
+                let (same, other): (Vec<TopicRow>, Vec<TopicRow>) = fresh
+                    .into_iter()
+                    .partition(|r| r.category_id == Some(category_id));
+                let at = self
+                    .results
+                    .iter()
+                    .position(|r| r.category_id != Some(category_id))
+                    .unwrap_or(self.results.len());
+                self.results.splice(at..at, same);
+                self.results.extend(other);
+            }
+            _ => self.results.extend(fresh),
+        }
     }
 }
