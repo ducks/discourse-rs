@@ -440,3 +440,35 @@ pub fn render_settings(
     }
     .compiled()?)
 }
+
+/// `PrettyText.extract_mentions`: the usernames of the cooked HTML's
+/// `.mention` and `.mention-group` elements whose text starts with "@",
+/// normalized, without repeats.
+pub fn extract_mentions(cooked: &str) -> Result<Vec<String>, crate::Unsupported> {
+    let dom = cleanup::parse(cooked);
+    let mut out: Vec<String> = Vec::new();
+    for e in cleanup::all_elements(&dom) {
+        if !(cleanup::has_class(&e, "mention") || cleanup::has_class(&e, "mention-group")) {
+            continue;
+        }
+        let text = cleanup::text(&e);
+        if let Some(name) = text.strip_prefix('@') {
+            let name = crate::accounts::normalize_username(name)?;
+            if !out.contains(&name) {
+                out.push(name);
+            }
+        }
+    }
+    Ok(out)
+}
+
+#[cfg(test)]
+mod mention_tests {
+    use super::extract_mentions;
+
+    #[test]
+    fn mentions_come_from_mention_elements() {
+        let cooked = r#"<p>Hi <a class="mention" href="/u/User1">@User1</a>, <a class="mention-group" href="/g/staff">@staff</a> and <span class="mention">@user1</span>; not <span class="mention">bob</span> or @carol</p>"#;
+        assert_eq!(extract_mentions(cooked).unwrap(), vec!["user1", "staff"]);
+    }
+}
