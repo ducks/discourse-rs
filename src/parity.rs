@@ -300,9 +300,30 @@ fn normalize_json(body: &str, ignore: &[String]) -> Result<Value, String> {
 /// in one order on both sides: a topic view's participants (by post count,
 /// post_counts_by_user leaves ties unordered) and allowed_users (an
 /// unordered association), ties and the latter by id; each post's
-/// link_counts (`ORDER BY reflection, clicks DESC`), ties by url.
+/// link_counts (`ORDER BY reflection, clicks DESC`), ties by url; a user
+/// summary's user lists (UserSummary#user_counts sorts by count) and
+/// top_categories (by post and topic count), ties by id.
 pub fn unorder(body: &mut Value) {
     let id = |v: &Value| v["id"].as_i64().unwrap_or(0);
+    let count = |v: &Value, key: &str| v[key].as_i64().unwrap_or(0);
+    if let Some(summary) = body.get_mut("user_summary") {
+        for key in [
+            "most_liked_by_users",
+            "most_liked_users",
+            "most_replied_to_users",
+        ] {
+            if let Some(users) = summary.get_mut(key).and_then(Value::as_array_mut) {
+                users.sort_by_key(|u| (-count(u, "count"), id(u)));
+            }
+        }
+        if let Some(categories) = summary
+            .get_mut("top_categories")
+            .and_then(Value::as_array_mut)
+        {
+            categories
+                .sort_by_key(|c| (-(count(c, "post_count") + count(c, "topic_count")), id(c)));
+        }
+    }
     if let Some(details) = body.get_mut("details") {
         if let Some(participants) = details
             .get_mut("participants")
@@ -625,6 +646,16 @@ mod tests {
                "post_stream": {"posts": [{"link_counts": []}]}}"#,
         );
         assert!(compare(&case(&[]), &rails, &more, NAMES).is_err());
+
+        let rails = json(
+            r#"{"user_summary": {"most_liked_by_users": [{"id": 66, "count": 2}, {"id": 55, "count": 2}, {"id": 7, "count": 5}],
+                "top_categories": [{"id": 4, "post_count": 1, "topic_count": 1}, {"id": 3, "post_count": 2, "topic_count": 0}]}}"#,
+        );
+        let rs = json(
+            r#"{"user_summary": {"most_liked_by_users": [{"id": 7, "count": 5}, {"id": 55, "count": 2}, {"id": 66, "count": 2}],
+                "top_categories": [{"id": 3, "post_count": 2, "topic_count": 0}, {"id": 4, "post_count": 1, "topic_count": 1}]}}"#,
+        );
+        assert!(compare(&case(&[]), &rails, &rs, NAMES).is_ok());
     }
 }
 
