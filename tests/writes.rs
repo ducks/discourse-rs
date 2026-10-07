@@ -78,26 +78,6 @@ const PLUGIN_CATEGORY_FIELDS: [&str; 12] = [
     "sort_topics_by_event_start_date",
 ];
 
-/// The topic view details whose order Rails leaves to the database:
-/// participants by post count with ties unordered (post_counts_by_user
-/// sorts by count only), and allowed_users (an unordered association).
-/// Ties go by id, on both sides.
-fn unorder_topic_details(details: &mut Value) {
-    let id = |v: &Value| v["id"].as_i64().unwrap_or(0);
-    if let Some(participants) = details
-        .get_mut("participants")
-        .and_then(Value::as_array_mut)
-    {
-        participants.sort_by_key(|p| (-p["post_count"].as_i64().unwrap_or(0), id(p)));
-    }
-    if let Some(users) = details
-        .get_mut("allowed_users")
-        .and_then(Value::as_array_mut)
-    {
-        users.sort_by_key(id);
-    }
-}
-
 /// A category's `custom_fields` holding only plugin fields.
 fn only_plugin_category_fields(value: &Value) -> bool {
     value.as_object().is_some_and(|fields| {
@@ -1040,12 +1020,7 @@ async fn replay(case: &Value, run_jobs: &[String]) -> Vec<String> {
             {
                 undrift_user(user);
             }
-            if let Some(details) = response["body"]
-                .as_object_mut()
-                .and_then(|b| b.get_mut("details"))
-            {
-                unorder_topic_details(details);
-            }
+            discourse_rs::parity::unorder(&mut response["body"]);
         }
     }
     if let Ok(dir) = std::env::var("WRITES_DUMP") {
