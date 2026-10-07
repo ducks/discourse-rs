@@ -161,6 +161,24 @@ pub async fn generate(
     .bind(&hashed)
     .execute(&mut *conn)
     .await?;
+    // A staff login is checked for an unusual location (impersonation,
+    // which skips it, is not ported).
+    let staff: bool = sqlx::query_scalar("SELECT admin OR moderator FROM users WHERE id = $1")
+        .bind(user_id)
+        .fetch_one(&mut *conn)
+        .await?;
+    if staff {
+        crate::jobs::enqueue(
+            &mut *conn,
+            "suspicious_login",
+            serde_json::json!({
+                "user_id": user_id,
+                "client_ip": client_ip,
+                "user_agent": user_agent,
+            }),
+        )
+        .await?;
+    }
     Ok((row, unhashed))
 }
 

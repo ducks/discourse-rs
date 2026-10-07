@@ -25,6 +25,16 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         "critical_user_email" => user_email(state, &job.args, true).await,
         "send_system_message" => send_system_message(state, &job.args).await,
         "send_email_login_code" => send_email_login_code(state, &job.args).await,
+        // UserAuthToken.is_suspicious compares the login's location with the
+        // user's earlier ones, through MaxMind's databases; without them
+        // (no license key to download them) no login is suspicious.
+        "suspicious_login" => {
+            if std::env::var("DISCOURSE_MAXMIND_LICENSE_KEY").is_ok_and(|k| !k.is_empty()) {
+                Err(Unsupported("suspicious logins by location (MaxMind)").into())
+            } else {
+                Ok(())
+            }
+        }
         "process_email" => process_email(state, &job.args).await,
         other => {
             return Err(JobError::Unported(format!(
