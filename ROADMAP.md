@@ -1,8 +1,10 @@
 # Roadmap
 
-Where discourse-rs is going and in what order. Each slice is a branch
-merged `--no-ff` to main, measured against Rails with the parity harness
-(see README: Parity). Update this file in the same commit as the slice.
+Where discourse-rs is going and in what order. The goal is full parity:
+every route Rails serves, admin included, answering as Rails answers.
+Each slice is a branch merged `--no-ff` to main, measured against Rails
+with the parity harness (see README: Parity). Update this file in the same
+commit as the slice.
 
 The port refuses rather than guesses: a request that needs a behavior not
 ported yet gets an explicit `Unsupported(...)` 500 naming it. The list of
@@ -69,6 +71,10 @@ how often a backup trips them.
 - [ ] Plugin-added keys (solved, voting, reactions, ...) through the plugin
       protocol (milestone 5) instead of parity ignore lists
 - [ ] Topics without a stored slug (`Slug.for`)
+- [ ] RSS feeds (`.rss` for the lists, categories, tags, topics, a
+      user's posts and activity)
+- [ ] Multisite: several forums from one process, by hostname
+      (RailsMultisite)
 
 ## Milestone 3: sessions
 
@@ -431,10 +437,41 @@ write endpoints. The design and its open decisions are in PLUGINS.md.
 - [ ] Hosted plugins: the same API over HTTP with a scoped key, events
       as signed webhooks
 
+## Milestone 6: admin
+
+Everything under `/admin` (Rails' admin namespace is about 30% of its
+routes), JSON first and measured as the rest is, then its pages in the
+client (milestone 4.5). Ordered by what running a forum needs first; the
+early slices need not wait for milestone 5. Done so far: changing plain
+site settings, suspending and silencing (milestone 4), `handle_mail` and
+API keys for posting, and grant_moderation! for the first admin's login.
+
+- [ ] Site settings: the list (`GET /admin/site_settings`, by category and
+      filter), and the setting types milestone 4 refuses
+- [ ] Users: the lists and filters, the admin view of a user, granting and
+      revoking admin and moderation, trust levels and their locks,
+      approving, activating and deactivating, logging out, deleting,
+      anonymizing and merging, impersonating, penalties on several users
+- [ ] Groups: creating, editing and deleting, members and owners in bulk,
+      automatic membership by email domain
+- [ ] Logs: staff actions, screened emails, IPs and URLs, search logs,
+      email logs (sent, skipped, bounced, received, rejected)
+- [ ] Backups: creating, listing, downloading and restoring through the
+      app (scripts/restore-backup restores today), read-only mode
+- [ ] Badges: creating, editing and deleting, groupings, granting and
+      revoking, badge SQL, and the BadgeGranter jobs that award them
+- [ ] Watched words, permalinks, embeddable hosts, user fields, form
+      templates, custom flags, custom emoji
+- [ ] API keys and their scopes, web hooks and their deliveries (the
+      events core sends to them)
+- [ ] Email: the settings test, previews, templates and email style
+- [ ] Dashboard, reports and problem checks, admin notices
+- [ ] Customize: themes and components, color schemes, site texts
+      (translation overrides), sidebar defaults; the `/admin/config` pages
+
 ## Not planned
 
 - Running Discourse migrations: Discourse owns the schema; re-vendor
   `structure.sql` and re-snapshot instead
 - Plugins with the host's permissions: native code in the process, or a
   subprocess with its own database connection (PLUGINS.md decision 3)
-- Feature parity with admin (`/admin/...`)
