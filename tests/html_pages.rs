@@ -131,9 +131,10 @@ async fn html_requests_without_a_slug_redirect() {
     let db = TestDb::new().await;
     let (status, _, _) = get(&db.pool, "/t/35").await;
     assert_eq!(status, StatusCode::MOVED_PERMANENTLY);
+    // A browser gets the not-found page (tests/not_found_page.rs).
     let (status, _, body) = get(&db.pool, "/t/999999").await;
     assert_eq!(status, StatusCode::NOT_FOUND);
-    assert!(body.contains("not_found"));
+    assert!(body.contains(r#"<div class="page-not-found">"#));
 }
 
 #[tokio::test]

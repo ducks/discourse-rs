@@ -128,7 +128,7 @@
               paints, then handles the toggles. -#}
           <script src="{{ base_path }}/assets/sidebar.js"></script>
           {%- endif %}
-          <div id="main-outlet">
+          <div id="main-outlet"{% block main_outlet_attrs %}{% endblock %}>
             {% block content %}{% endblock %}
           </div>
         </div>

@@ -1,0 +1,7 @@
+{% extends "layout.html" %}
+{% block title %}{{ page_title }} - {{ site_title }}{% endblock %}
+{% block head %}
+    <meta id="discourse-error" data-discourse-error="true">
+{% endblock %}
+{%- block main_outlet_attrs %} class="wrap not-found-container"{% endblock %}
+{% block content %}{{ html|safe }}{% endblock %}

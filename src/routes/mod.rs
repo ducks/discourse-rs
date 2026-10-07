@@ -11,6 +11,7 @@ mod list;
 mod live;
 mod login_required;
 mod messages;
+mod not_found;
 mod notifications;
 mod post_actions;
 mod post_destroy;
@@ -59,6 +60,7 @@ const DISCOURSE_CSS: &str = concat!(
     include_str!("../../static/css/topic.css"),
     include_str!("../../static/css/composer.css"),
     include_str!("../../static/css/menus.css"),
+    include_str!("../../static/css/not-found.css"),
 );
 
 async fn discourse_css() -> impl IntoResponse {
@@ -416,6 +418,10 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route_layer(axum::middleware::from_fn_with_state(
             state.clone(),
             login_required::gate,
+        ))
+        .route_layer(axum::middleware::from_fn_with_state(
+            state.clone(),
+            not_found::html_errors,
         ))
 }
 
