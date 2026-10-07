@@ -279,11 +279,34 @@ pub async fn layer(
     {
         let mut conn = state.pool.acquire().await?;
         let ip = remote_ip(&headers, peer);
+        // Rails renders the InvalidAccess message as plain text unless the
+        // request is JSON or XHR.
+        let header_has = |name: header::HeaderName, needle: &str| {
+            headers
+                .get(name)
+                .and_then(|v| v.to_str().ok())
+                .is_some_and(|v| v.contains(needle))
+        };
+        let json = path.ends_with(".json")
+            || header_has(header::ACCEPT, "application/json")
+            || header_has(
+                header::HeaderName::from_static("x-requested-with"),
+                "XMLHttpRequest",
+            );
         let refused = |key: &str| {
             if path.starts_with("/admin/") {
                 crate::routes::not_found_response(&state, false)
+            } else if json {
+                crate::routes::invalid_access_at(&state, key, &path)
             } else {
-                crate::routes::invalid_access_with(&state, key)
+                let text = state
+                    .i18n
+                    .t(key)
+                    .unwrap_or("You are not permitted to view the requested resource.");
+                axum::response::IntoResponse::into_response((
+                    axum::http::StatusCode::FORBIDDEN,
+                    text.to_string(),
+                ))
             }
         };
         let guardian =

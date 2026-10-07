@@ -60,11 +60,11 @@ pub async fn gate(
     if !settings.get("login_required")?.truthy() {
         return Ok(next.run(request).await);
     }
-    // A logged-in user passes.
+    // A current user passes, by session or API key.
     if request
         .extensions()
         .get::<crate::session::current::Incoming>()
-        .is_some_and(|i| i.session.is_some())
+        .is_some_and(|i| i.session.is_some() || i.guardian.user_id().is_some())
     {
         return Ok(next.run(request).await);
     }

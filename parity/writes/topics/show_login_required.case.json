@@ -33,5 +33,5 @@
       }
     }
   ],
-  "not_yet": "An invalid API key on a non-JSON request answers JSON, Rails the plain message."
+  "not_yet": "extras.html is empty: build_not_found_page is not ported."
 }
