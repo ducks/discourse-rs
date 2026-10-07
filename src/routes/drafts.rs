@@ -55,7 +55,7 @@ fn front(
     }
     guardian
         .user_id()
-        .ok_or_else(|| Box::new(super::login_required::not_logged_in(state, uri.path())))
+        .ok_or_else(|| Box::new(super::login_required::not_logged_in(state)))
 }
 
 /// POST /drafts
@@ -76,7 +76,7 @@ pub async fn create(
         .and_then(params::scalar)
         .filter(|k| !k.trim().is_empty())
     else {
-        return Ok(super::topics::not_found_response(&state, false));
+        return Ok(super::topics::not_found_response(&state));
     };
     let mut tx = state.pool.begin().await?;
     let s = SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
@@ -261,7 +261,7 @@ pub async fn index(
     uri: Uri,
 ) -> Result<Response, AppError> {
     let Some(user_id) = guardian.user_id() else {
-        return Ok(super::login_required::not_logged_in(&state, uri.path()));
+        return Ok(super::login_required::not_logged_in(&state));
     };
     let query = params::parse_query(uri.query().unwrap_or_default());
     // fetch_limit_from_params(default: nil, max: INDEX_LIMIT); Draft.stream
@@ -305,11 +305,11 @@ pub async fn show(
     uri: Uri,
 ) -> Result<Response, AppError> {
     let Some(user_id) = guardian.user_id() else {
-        return Ok(super::login_required::not_logged_in(&state, uri.path()));
+        return Ok(super::login_required::not_logged_in(&state));
     };
     let key = id.strip_suffix(".json").unwrap_or(&id);
     if key.trim().is_empty() {
-        return Ok(super::topics::not_found_response(&state, false));
+        return Ok(super::topics::not_found_response(&state));
     }
     if params::parse_query(uri.query().unwrap_or_default()).contains_key("sequence") {
         return Err(Unsupported("reading a draft at a given sequence").into());

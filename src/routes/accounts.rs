@@ -50,7 +50,7 @@ pub async fn email_login(
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
     if !settings.get("enable_local_logins_via_email")?.truthy() {
-        return Ok(super::topics::not_found_response(&state, false));
+        return Ok(super::topics::not_found_response(&state));
     }
     if guardian.is_authenticated() {
         // redirect_to path("/"): a 302 to the absolute URL.
@@ -281,7 +281,7 @@ pub async fn redeem_password_reset_code(
         .upcoming_change_enabled(&mut conn, &settings, "enable_local_logins_via_code")
         .await?
     {
-        return Ok(super::topics::not_found_response(&state, false));
+        return Ok(super::topics::not_found_response(&state));
     }
     let invalid = || {
         (
@@ -868,7 +868,7 @@ pub async fn perform_account_activation(
             .bytes()
             .all(|b| matches!(b, b'0'..=b'9' | b'a'..=b'f'))
     {
-        return Ok(super::topics::not_found_response(&state, false));
+        return Ok(super::topics::not_found_response(&state));
     }
     let p = params::parse(uri.query(), &headers, &body);
     if !csrf_ok(&state, &headers, &form_pairs(&p), uri.path(), "PUT") {
@@ -887,7 +887,7 @@ pub async fn perform_account_activation(
     }
     if guardian.is_authenticated() {
         tx.commit().await?;
-        return Ok(super::topics::not_found_response(&state, false));
+        return Ok(super::topics::not_found_response(&state));
     }
     let Some(user_id) =
         confirm_email_token(&mut tx, &settings, &token, token_scopes::SIGNUP).await?

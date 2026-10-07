@@ -52,7 +52,7 @@ async fn respond(
                     .await?;
             Ok((StatusCode::OK, Json(post)).into_response())
         }
-        Outcome::NotFound => Ok(super::topics::not_found_response(state, false)),
+        Outcome::NotFound => Ok(super::topics::not_found_response(state)),
         Outcome::ResultNotFound => Ok((
             StatusCode::NOT_FOUND,
             Json(json!({"errors": [state.i18n.t("not_found").unwrap_or("not_found")]})),
@@ -82,7 +82,7 @@ async fn front(
         return Ok(Err(bad_csrf()));
     }
     if guardian.is_anonymous() {
-        return Ok(Err(super::login_required::not_logged_in(state, uri.path())));
+        return Ok(Err(super::login_required::not_logged_in(state)));
     }
     let Some(type_id) = action_type(&p) else {
         return Ok(Err(super::accounts::param_missing("post_action_type_id")));

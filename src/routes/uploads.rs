@@ -114,7 +114,7 @@ pub async fn lookup_urls(
         return Ok(bad_csrf());
     }
     if guardian.user_id().is_none() {
-        return Ok(super::login_required::not_logged_in(&state, uri.path()));
+        return Ok(super::login_required::not_logged_in(&state));
     }
     let short_urls = match p.get("short_urls") {
         Some(serde_json::Value::Array(urls)) => serde_json::Value::Array(urls.clone()),
@@ -159,7 +159,7 @@ pub async fn create(
         return Ok(bad_csrf());
     }
     let Some(user_id) = guardian.user_id() else {
-        return Ok(super::login_required::not_logged_in(&state, &path));
+        return Ok(super::login_required::not_logged_in(&state));
     };
     let upload_type = match form.get("upload_type").filter(|t| !t.trim().is_empty()) {
         Some(t) => t,

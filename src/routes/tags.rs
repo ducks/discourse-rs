@@ -222,7 +222,7 @@ async fn show_list(
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
-    let not_found = || super::topics::not_found_response(&state, false);
+    let not_found = || super::topics::not_found_response(&state);
     // ensure_tags_enabled
     if !settings.get("tagging_enabled")?.truthy() {
         return Ok(not_found());
@@ -534,7 +534,7 @@ async fn index_response(
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
     if !settings.get("tagging_enabled")?.truthy() {
-        return Ok(super::topics::not_found_response(&state, false));
+        return Ok(super::topics::not_found_response(&state));
     }
     if settings.get("tags_listed_by_group")?.truthy() {
         return Err(Unsupported("tags_listed_by_group").into());

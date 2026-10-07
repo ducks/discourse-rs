@@ -78,29 +78,31 @@ pub(crate) fn invalid_access_with(state: &AppState, message_key: &str) -> Respon
 }
 
 /// `invalid_access_with` raised inside a controller, which for topics#show
-/// adds the not-found extras (its HTML is not ported).
-pub(crate) fn invalid_access_at(state: &AppState, message_key: &str, path: &str) -> Response {
-    if !path.starts_with("/t/") {
-        return invalid_access_with(state, message_key);
-    }
-    let i18n = &state.i18n;
-    let text = i18n
+/// adds the not-found page (403, no current user) as extras.
+pub(crate) async fn invalid_access_at(
+    state: &AppState,
+    message_key: &str,
+    method: &axum::http::Method,
+    path: &str,
+) -> Result<Response, crate::AppError> {
+    let slug = match crate::not_found_page::topic_show_slug(path) {
+        Some(slug) if method == axum::http::Method::GET => slug,
+        _ => return Ok(invalid_access_with(state, message_key)),
+    };
+    let anonymous = crate::guardian::Guardian::anonymous();
+    // The API key refusal names its message (custom_message).
+    let custom = (message_key == "invalid_api_credentials").then_some(message_key);
+    let extras = super::topics::not_found_extras(state, &anonymous, &slug, true, custom).await?;
+    let text = state
+        .i18n
         .t(message_key)
         .unwrap_or("You are not permitted to view the requested resource.");
-    (
+    Ok((
         StatusCode::FORBIDDEN,
         [(header::CACHE_CONTROL, "no-cache, no-store")],
-        Json(json!({
-            "errors": [text],
-            "error_type": "invalid_access",
-            "extras": {
-                "title": i18n.t("page_not_found.page_title").unwrap_or("Page Not Found"),
-                "html": "",
-                "group": null,
-            },
-        })),
+        Json(json!({"errors": [text], "error_type": "invalid_access", "extras": extras})),
     )
-        .into_response()
+        .into_response())
 }
 
 /// The peer address when the server was started with connect info.
@@ -226,7 +228,7 @@ async fn ensure_can_search(
         Some(uri) if !accepts_json => {
             super::login_required::redirect_to_login(state, &settings, headers, uri)?
         }
-        _ => super::login_required::not_logged_in(state, "/search"),
+        _ => super::login_required::not_logged_in(state),
     }))
 }
 

@@ -40,11 +40,11 @@ pub async fn update(
     }
     // requires_login
     if guardian.is_anonymous() {
-        return Ok(super::login_required::not_logged_in(&state, uri.path()));
+        return Ok(super::login_required::not_logged_in(&state));
     }
     let mut tx = state.pool.begin().await?;
     let Some(target) = user_updater::find_target(&mut tx, &guardian, &username).await? else {
-        return Ok(super::topics::not_found_response(&state, false));
+        return Ok(super::topics::not_found_response(&state));
     };
     // guardian.ensure_can_edit!(user)
     if !user_updater::can_edit_user(&guardian, &target) {
@@ -69,7 +69,7 @@ pub async fn update(
 
     // json_result(user, serializer: UserSerializer)
     let Some(user) = User::find_by_id(&mut tx, target.id).await? else {
-        return Ok(super::topics::not_found_response(&state, false));
+        return Ok(super::topics::not_found_response(&state));
     };
     let urls = Urls {
         config: &state.config,

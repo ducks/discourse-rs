@@ -44,7 +44,7 @@ pub async fn show(
     headers: HeaderMap,
 ) -> Result<Response, AppError> {
     let Some(user) = guardian.user().cloned() else {
-        return Ok(super::login_required::not_logged_in(&state, "/user-menu"));
+        return Ok(super::login_required::not_logged_in(&state));
     };
     let mut conn = state.pool.acquire().await?;
     let settings =

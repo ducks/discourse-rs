@@ -109,30 +109,66 @@ fn split_format(segment: &str) -> (String, bool) {
     }
 }
 
-/// `render_json_error I18n.t(:not_found)`; `extras` only for topics#show.
-pub(crate) fn not_found_response(state: &AppState, with_extras: bool) -> Response {
-    let i18n = &state.i18n;
-    let mut body = serde_json::Map::new();
-    body.insert(
-        "errors".into(),
-        json!([i18n
-            .t("not_found")
-            .unwrap_or("The requested URL or resource could not be found.")]),
-    );
-    body.insert("error_type".into(), json!("not_found"));
-    if with_extras {
-        // build_not_found_page's HTML isn't ported.
-        body.insert(
-            "extras".into(),
-            json!({
-                "title": i18n.t("page_not_found.page_title").unwrap_or("Page Not Found"),
-                "html": "",
-                "group": null,
-            }),
-        );
-    }
-    let body = serde_json::Value::Object(body);
-    (StatusCode::NOT_FOUND, Json(body)).into_response()
+/// `render_json_error I18n.t(:not_found)`.
+pub(crate) fn not_found_response(state: &AppState) -> Response {
+    let text = state
+        .i18n
+        .t("not_found")
+        .unwrap_or("The requested URL or resource could not be found.");
+    (
+        StatusCode::NOT_FOUND,
+        Json(json!({"errors": [text], "error_type": "not_found"})),
+    )
+        .into_response()
+}
+
+/// topics#show's `extras` on an error response: the not-found page
+/// (build_not_found_page), for `slug` (params[:slug] || params[:id]).
+pub(crate) async fn not_found_extras(
+    state: &AppState,
+    guardian: &Guardian,
+    slug: &str,
+    forbidden: bool,
+    custom_message: Option<&str>,
+) -> Result<serde_json::Value, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let urls = Urls {
+        config: &state.config,
+        settings: &settings,
+    };
+    let page = crate::not_found_page::NotFound {
+        forbidden,
+        custom_message,
+        slug,
+        guardian,
+    };
+    let html =
+        crate::not_found_page::build(&mut conn, &settings, &state.i18n, &urls, &page).await?;
+    Ok(json!({
+        "title": state.i18n.t("page_not_found.page_title").unwrap_or("Page Not Found"),
+        "html": html,
+        "group": null,
+    }))
+}
+
+/// topics#show's 404: not_found with the extras.
+async fn topic_not_found(
+    state: &AppState,
+    guardian: &Guardian,
+    slug: &str,
+) -> Result<Response, AppError> {
+    let text = state
+        .i18n
+        .t("not_found")
+        .unwrap_or("The requested URL or resource could not be found.");
+    let extras = not_found_extras(state, guardian, slug, false, None).await?;
+    Ok((
+        StatusCode::NOT_FOUND,
+        Json(json!({"errors": [text], "error_type": "not_found", "extras": extras})),
+    )
+        .into_response())
 }
 
 /// Rails `redirect_to` a path: absolute with the request's host and scheme.
@@ -177,6 +213,8 @@ async fn show(
         guardian,
     } = incoming;
     let slug = slug.or(params.slug.as_deref());
+    // build_not_found_page searches for params[:slug] || params[:id].
+    let page_slug = slug.filter(|s| !s.is_empty()).unwrap_or(id).to_string();
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
@@ -186,7 +224,7 @@ async fn show(
     // Discourse::InvalidParameters for non-scalar ids can't happen here.
     let page = crate::ruby::to_i(params.page.as_deref().unwrap_or(""));
     if page < 0 {
-        return Ok(not_found_response(state, true));
+        return topic_not_found(state, guardian, &page_slug).await;
     }
 
     // A slug in the id position (`/t/my-topic`, or `123abc`) redirects to
@@ -205,7 +243,7 @@ async fn show(
                     headers,
                     canonical(&base_path, &slug, id, None, page, format),
                 ),
-                None => not_found_response(state, true),
+                None => topic_not_found(state, guardian, &page_slug).await?,
             });
         }
     };
@@ -232,7 +270,7 @@ async fn show(
     };
     let rendered = match view.render(topic_id).await {
         Ok(r) => r,
-        Err(TopicViewError::NotFound) => return Ok(not_found_response(state, true)),
+        Err(TopicViewError::NotFound) => return topic_not_found(state, guardian, &page_slug).await,
         Err(e) => return Err(e.into()),
     };
 

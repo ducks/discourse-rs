@@ -70,11 +70,11 @@ async fn update(
     }
     // requires_login
     if guardian.is_anonymous() {
-        return Ok(super::login_required::not_logged_in(&state, uri.path()));
+        return Ok(super::login_required::not_logged_in(&state));
     }
     // :topic_id is constrained to digits.
     if topic_id.is_empty() || !topic_id.bytes().all(|b| b.is_ascii_digit()) {
-        return Ok(super::topics::not_found_response(&state, false));
+        return Ok(super::topics::not_found_response(&state));
     }
     let present = |key: &str| {
         p.get(key)

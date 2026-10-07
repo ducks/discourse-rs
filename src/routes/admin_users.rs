@@ -64,7 +64,7 @@ async fn handle(
     }
     // The admin namespace is routed for staff only.
     if !guardian.is_staff() {
-        return Ok(super::topics::not_found_response(&state, false));
+        return Ok(super::topics::not_found_response(&state));
     }
     let user_id = crate::ruby::to_i(user_id.strip_suffix(".json").unwrap_or(&user_id)) as i32;
     let mut conn = state.pool.acquire().await?;
@@ -75,7 +75,7 @@ async fn handle(
         .fetch_one(&mut *conn)
         .await?;
     if !exists {
-        return Ok(super::topics::not_found_response(&state, false));
+        return Ok(super::topics::not_found_response(&state));
     }
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
@@ -125,7 +125,7 @@ async fn handle(
     };
     Ok(match outcome {
         Outcome::Done(body) => (StatusCode::OK, Json(body)).into_response(),
-        Outcome::NotFound => super::topics::not_found_response(&state, false),
+        Outcome::NotFound => super::topics::not_found_response(&state),
         Outcome::Forbidden => super::search::invalid_access(&state),
         Outcome::Invalid(errors) => (
             StatusCode::BAD_REQUEST,

@@ -45,7 +45,7 @@ pub async fn perform(
     }
     // requires_login
     if guardian.is_anonymous() {
-        return Ok(super::login_required::not_logged_in(&state, uri.path()));
+        return Ok(super::login_required::not_logged_in(&state));
     }
     // :reviewable_id is constrained to digits.
     let Some(reviewable_id) = reviewable_id
@@ -53,7 +53,7 @@ pub async fn perform(
         .ok()
         .filter(|_| reviewable_id.bytes().all(|b| b.is_ascii_digit()))
     else {
-        return Ok(super::topics::not_found_response(&state, false));
+        return Ok(super::topics::not_found_response(&state));
     };
     // version_required
     let Some(version) = p
@@ -87,7 +87,7 @@ pub async fn perform(
             tx.commit().await?;
             (StatusCode::OK, Json(result)).into_response()
         }
-        Outcome::NotFound => super::topics::not_found_response(&state, false),
+        Outcome::NotFound => super::topics::not_found_response(&state),
         Outcome::Forbidden => super::search::invalid_access(&state),
         Outcome::Conflict => json_error(&state, StatusCode::CONFLICT, "reviewables.conflict"),
     })
@@ -103,7 +103,7 @@ pub async fn index(
 ) -> Result<Response, AppError> {
     // requires_login
     if guardian.is_anonymous() {
-        return Ok(super::login_required::not_logged_in(&state, uri.path()));
+        return Ok(super::login_required::not_logged_in(&state));
     }
     let mut tx = state.pool.begin().await?;
     let settings =

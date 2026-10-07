@@ -52,7 +52,7 @@ async fn handle(
     }
     // requires_login
     let Some(user_id) = guardian.user_id() else {
-        return Ok(super::login_required::not_logged_in(&state, uri.path()));
+        return Ok(super::login_required::not_logged_in(&state));
     };
     let text = |k: &str| p.get(k).and_then(params::scalar);
     let (name, reminder_at, preference) = (
@@ -126,7 +126,7 @@ async fn handle(
             Json(json!({ "failed": "FAILED", "errors": errors })),
         )
             .into_response(),
-        Outcome::NotFound => super::topics::not_found_response(&state, false),
+        Outcome::NotFound => super::topics::not_found_response(&state),
         Outcome::Forbidden => super::search::invalid_access(&state),
     })
 }

@@ -68,7 +68,7 @@ pub async fn create(
         return Ok(bad_csrf());
     }
     if guardian.is_anonymous() {
-        return Ok(super::login_required::not_logged_in(&state, uri.path()));
+        return Ok(super::login_required::not_logged_in(&state));
     }
     if let Some(key) = UNPORTED_CREATE_PARAMS.iter().find(|k| p.contains_key(**k)) {
         tracing::warn!(param = key, "posts#create param not ported");
@@ -200,7 +200,7 @@ pub async fn update(
         return Ok(bad_csrf());
     }
     if guardian.is_anonymous() {
-        return Ok(super::login_required::not_logged_in(&state, uri.path()));
+        return Ok(super::login_required::not_logged_in(&state));
     }
     let Some(Value::Object(post_params)) = p.get("post").filter(|v| match v {
         Value::Object(m) => !m.is_empty(),
@@ -225,7 +225,7 @@ pub async fn update(
         }
     }
     let Ok(post_id) = id.parse::<i32>() else {
-        return Ok(super::topics::not_found_response(&state, false));
+        return Ok(super::topics::not_found_response(&state));
     };
     let mut conn = state.pool.acquire().await?;
     let settings =
@@ -245,13 +245,13 @@ pub async fn update(
     .fetch_optional(&mut *conn)
     .await?;
     let Some((author, deleted, created_at)) = exists else {
-        return Ok(super::topics::not_found_response(&state, false));
+        return Ok(super::topics::not_found_response(&state));
     };
     if deleted {
         if guardian.is_staff() {
             return Err(Unsupported("editing deleted posts").into());
         }
-        return Ok(super::topics::not_found_response(&state, false));
+        return Ok(super::topics::not_found_response(&state));
     }
     // can_edit?: the visibility the guardian needs, without the 404.
     let can_edit = match revisions::find_post(&mut conn, &ctx, &guardian, post_id).await? {
@@ -319,10 +319,10 @@ pub async fn revision(
         Which::Number(revision.to_string())
     } else {
         // The route's `revision: /\d+/` constraint: no route matches.
-        return Ok(super::topics::not_found_response(&state, false));
+        return Ok(super::topics::not_found_response(&state));
     };
     let Ok(post_id) = id.parse::<i32>() else {
-        return Ok(super::topics::not_found_response(&state, false));
+        return Ok(super::topics::not_found_response(&state));
     };
     let mut conn = state.pool.acquire().await?;
     let settings =
@@ -338,7 +338,7 @@ pub async fn revision(
     Ok(
         match revisions::show(&mut conn, &ctx, &guardian, post_id, which).await? {
             RevisionResult::Found(json) => (StatusCode::OK, Json(json)).into_response(),
-            RevisionResult::NotFound => super::topics::not_found_response(&state, false),
+            RevisionResult::NotFound => super::topics::not_found_response(&state),
             RevisionResult::InvalidRevision => {
                 super::search::invalid_parameters(&state, "revision")
             }
@@ -363,7 +363,7 @@ pub async fn raw(
         topic_id.parse::<i32>(),
         strip_format(&post_number).parse::<i32>(),
     ) else {
-        return Ok(super::topics::not_found_response(&state, false));
+        return Ok(super::topics::not_found_response(&state));
     };
     let mut conn = state.pool.acquire().await?;
     let settings =
@@ -390,7 +390,7 @@ pub async fn raw(
         None => false,
     };
     if !visible {
-        return Ok(super::topics::not_found_response(&state, false));
+        return Ok(super::topics::not_found_response(&state));
     }
     let raw: String = sqlx::query_scalar("SELECT raw FROM posts WHERE id = $1")
         .bind(post_id)

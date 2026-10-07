@@ -13,6 +13,5 @@
       "method": "GET",
       "path": "/t/made-up-topic-slug/5014217323220164041.json"
     }
-  ],
-  "not_yet": "extras.html is empty: build_not_found_page (popular and recent topics, search form) is not ported."
+  ]
 }

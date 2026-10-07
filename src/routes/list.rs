@@ -490,7 +490,7 @@ pub async fn category(
     // set_category: missing or unreadable -> 404, before any redirect.
     let category = Category::find_by_slug_path_with_id(&mut conn, &slug_path, max_nesting).await?;
     let Some(category) = category else {
-        return Ok(super::topics::not_found_response(&state, false));
+        return Ok(super::topics::not_found_response(&state));
     };
     if category.read_restricted
         && !guardian
@@ -498,7 +498,7 @@ pub async fn category(
             .await?
             .contains(&category.id)
     {
-        return Ok(super::topics::not_found_response(&state, false));
+        return Ok(super::topics::not_found_response(&state));
     }
     // slugs_do_not_match: a wrong slug path redirects, query string kept.
     let real_slug = category.full_slug(&mut conn).await?;
@@ -1007,9 +1007,9 @@ fn ensure_logged_in(
         return None;
     }
     Some(if json {
-        super::login_required::not_logged_in(state, "/")
+        super::login_required::not_logged_in(state)
     } else {
-        super::topics::not_found_response(state, false)
+        super::topics::not_found_response(state)
     })
 }
 
