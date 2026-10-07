@@ -302,7 +302,8 @@ fn normalize_json(body: &str, ignore: &[String]) -> Result<Value, String> {
 /// unordered association), ties and the latter by id; each post's
 /// link_counts (`ORDER BY reflection, clicks DESC`), ties by url; a user
 /// summary's user lists (UserSummary#user_counts sorts by count) and
-/// top_categories (by post and topic count), ties by id.
+/// top_categories (by post and topic count), ties by id, less the entries
+/// tied at the cut when a list is full.
 pub fn unorder(body: &mut Value) {
     let id = |v: &Value| v["id"].as_i64().unwrap_or(0);
     let count = |v: &Value, key: &str| v[key].as_i64().unwrap_or(0);
@@ -314,12 +315,15 @@ pub fn unorder(body: &mut Value) {
         ] {
             if let Some(users) = summary.get_mut(key).and_then(Value::as_array_mut) {
                 users.sort_by_key(|u| (-count(u, "count"), id(u)));
+                drop_ties_at_limit(users, |u| count(u, "count"));
             }
         }
         if let Some(categories) = summary
             .get_mut("top_categories")
             .and_then(Value::as_array_mut)
         {
+            // Picked by post count, then sorted by posts and topics.
+            drop_ties_at_limit(categories, |c| count(c, "post_count"));
             categories
                 .sort_by_key(|c| (-(count(c, "post_count") + count(c, "topic_count")), id(c)));
         }
@@ -356,6 +360,22 @@ pub fn unorder(body: &mut Value) {
             });
         }
     }
+}
+
+/// UserSummary::MAX_SUMMARY_RESULTS: the summary lists' LIMIT.
+const SUMMARY_LIMIT: usize = 6;
+
+/// A full list was cut by `ORDER BY <key> DESC LIMIT 6`: which of the
+/// entries tied with the last one made it is up to the database, so they
+/// are left out on both sides.
+fn drop_ties_at_limit(list: &mut Vec<Value>, key: impl Fn(&Value) -> i64) {
+    if list.len() < SUMMARY_LIMIT {
+        return;
+    }
+    let Some(last) = list.iter().map(&key).min() else {
+        return;
+    };
+    list.retain(|v| key(v) > last);
 }
 
 /// Entrypoint script tags in HTML strings without Rails' asset digest and
@@ -656,6 +676,21 @@ mod tests {
                 "top_categories": [{"id": 3, "post_count": 2, "topic_count": 0}, {"id": 4, "post_count": 1, "topic_count": 1}]}}"#,
         );
         assert!(compare(&case(&[]), &rails, &rs, NAMES).is_ok());
+
+        // A full list's last tie is whichever users the database returned.
+        let full = |tail: [i64; 2]| {
+            json(&format!(
+                r#"{{"user_summary": {{"most_liked_users": [{{"id": 1, "count": 5}}, {{"id": 2, "count": 4}},
+                    {{"id": 3, "count": 4}}, {{"id": 4, "count": 3}}, {{"id": {}, "count": 2}}, {{"id": {}, "count": 2}}]}}}}"#,
+                tail[0], tail[1]
+            ))
+        };
+        assert!(compare(&case(&[]), &full([5, 6]), &full([7, 8]), NAMES).is_ok());
+        let above_the_cut = json(
+            r#"{"user_summary": {"most_liked_users": [{"id": 1, "count": 5}, {"id": 9, "count": 4},
+                {"id": 3, "count": 4}, {"id": 4, "count": 3}, {"id": 5, "count": 2}, {"id": 6, "count": 2}]}}"#,
+        );
+        assert!(compare(&case(&[]), &full([5, 6]), &above_the_cut, NAMES).is_err());
     }
 }
 
