@@ -1664,6 +1664,10 @@ impl TopicView<'_> {
                 json!(g.can_view_edit_history(s, &ctx, can_see_post)?),
             );
             p.insert("wiki".into(), json!(post.wiki));
+            // The first post of the ToS, guidelines and privacy topics.
+            if post.post_number == 1 && viewer.ctx.static_doc {
+                p.insert("static_doc".into(), json!(true));
+            }
             if let Some(code) = &post.action_code {
                 p.insert("action_code".into(), json!(code));
                 let fields: Vec<(String, Option<String>)> = sqlx::query_as(
