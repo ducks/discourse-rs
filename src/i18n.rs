@@ -17,6 +17,8 @@ const CLIENT_EN_YML: &str = include_str!("../vendor/discourse/config/locales/cli
 /// One YAML document per bundled plugin (scripts/vendor-discourse).
 const PLUGIN_CLIENT_EN_YML: &str =
     include_str!("../vendor/discourse/config/locales/plugin_client.en.yml");
+const PLUGIN_SERVER_EN_YML: &str =
+    include_str!("../vendor/discourse/config/locales/plugin_server.en.yml");
 
 #[derive(Debug)]
 pub struct I18n {
@@ -27,18 +29,23 @@ impl I18n {
     /// server.en.yml plus client.en.yml (whose keys sit under `js.`), the
     /// latter for texts the HTML pages need, e.g. `js.action_codes.*`, then
     /// the bundled plugins' client translations, which cooking reads
-    /// (`js.poll.*`). Later files win, as in Rails' load path.
+    /// (`js.poll.*`), and their server ones (their settings' descriptions,
+    /// badge names). Later files win, as in Rails' load path.
     pub fn vendored() -> Result<Self, String> {
         let mut i18n = Self::parse(SERVER_EN_YML)?;
         let client =
             Self::parse(CLIENT_EN_YML).map_err(|e| e.replace("server.en.yml", "client.en.yml"))?;
         i18n.strings.extend(client.strings);
-        for document in serde_yaml_ng::Deserializer::from_str(PLUGIN_CLIENT_EN_YML) {
-            let root: Yaml = serde::Deserialize::deserialize(document)
-                .map_err(|e| format!("plugin_client.en.yml: {e}"))?;
-            let plugin = Self::from_yaml(root)
-                .map_err(|e| e.replace("server.en.yml", "plugin_client.en.yml"))?;
-            i18n.strings.extend(plugin.strings);
+        for (name, src) in [
+            ("plugin_client.en.yml", PLUGIN_CLIENT_EN_YML),
+            ("plugin_server.en.yml", PLUGIN_SERVER_EN_YML),
+        ] {
+            for document in serde_yaml_ng::Deserializer::from_str(src) {
+                let root: Yaml = serde::Deserialize::deserialize(document)
+                    .map_err(|e| format!("{name}: {e}"))?;
+                let plugin = Self::from_yaml(root).map_err(|e| e.replace("server.en.yml", name))?;
+                i18n.strings.extend(plugin.strings);
+            }
         }
         Ok(i18n)
     }
