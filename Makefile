@@ -1,4 +1,4 @@
-.PHONY: help version-bump release build test parity-test clean clippy fmt fmt-check lint install-hooks \
+.PHONY: help version-bump release release-push build test parity-test clean clippy fmt fmt-check lint install-hooks \
 	db-load db-test parity parity-check parity-record vendor-discourse snapshot-dv reset-reference \
 	record-pretty-text \
 	bench bench-startup release-build install
@@ -31,6 +31,7 @@ help:
 	@echo "Usage:"
 	@echo "  make release                       - Auto-version and release (recommended)"
 	@echo "  make release VERSION=20260125.0.0  - Release with specific version"
+	@echo "  make release-push                  - Push main and its release tag (after a failed push)"
 	@echo "  make build                         - Build release binary"
 	@echo "  make test                          - Run tests (needs make db-test once)"
 	@echo "  make parity-test                   - Run the Rails comparison tests (slow)"
@@ -85,14 +86,16 @@ release: version-bump
 	@git merge --no-ff release/v$(VERSION) -m "Merge branch 'release/v$(VERSION)'"
 	@echo "Creating tag v$(VERSION) on main..."
 	@git tag -a v$(VERSION) -m "Release v$(VERSION)"
-	@echo "Pushing to origin..."
-	@git push origin main
-	@git push origin v$(VERSION)
-	@echo ""
-	@echo "Released v$(VERSION)"
-	@echo "  - Merged release/v$(VERSION) into main"
-	@echo "  - Tagged v$(VERSION)"
-	@echo "  - Pushed to GitHub"
+	@$(MAKE) --no-print-directory release-push
+
+# Push main and the release tag on it. Run on its own after a release whose
+# push failed: rerunning `make release` would cut another version.
+release-push:
+	@tag=$$(git describe --tags --exact-match main 2>/dev/null) || \
+		{ echo "main is not on a tag; nothing to push (run make release)"; exit 1; }; \
+	echo "Pushing main and $$tag to origin..."; \
+	git push origin main && git push origin "$$tag" && \
+	echo "Released $$tag"
 
 # Build release binary
 build:
