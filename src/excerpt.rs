@@ -25,6 +25,9 @@ pub struct Options {
     pub remap_emoji: bool,
     pub image_mode: ImageMode,
     pub plain_hashtags: bool,
+    /// `options[:post]`'s url (Post#excerpt passes the post), for the poll
+    /// plugin's link.
+    pub post_url: Option<String>,
 }
 
 /// `IMAGE_MODES`: the default (no option) shows `[alt]`.
@@ -168,6 +171,28 @@ impl Parser {
                 // The fragment parser wraps everything in an <html> root.
                 if tag == "html" {
                     return self.walk_children(node);
+                }
+                // The bundled plugins' reduce_excerpt handlers. spoiler-alert:
+                // `.spoiler` removed.
+                if has_class(&attrs, "spoiler") {
+                    return Ok(());
+                }
+                // poll: `div.poll` replaced by a link to the post, or by the
+                // word alone without one (poll.poll in server.en.yml).
+                if tag == "div" && has_class(&attrs, "poll") {
+                    let replacement = match &self.options.post_url {
+                        Some(url) => format!("<a href='{}'>poll</a>", html_escape(url)),
+                        None => "poll".to_string(),
+                    };
+                    return self.walk_children(&parse(&replacement).document);
+                }
+                // discourse-local-dates: the date's text with " (UTC)" after.
+                if has_class(&attrs, "discourse-local-date") {
+                    if self.start_element(&tag, &attrs)? {
+                        let text = format!("{} (UTC)", text_content(node));
+                        self.characters(&text, true, true, true)?;
+                    }
+                    return self.end_element(&tag);
                 }
                 // strip_image_wrapping / strip_oneboxed_media
                 if (tag == "div" && class_includes(&attrs, "meta") && inside_lightbox(node))
@@ -465,8 +490,13 @@ fn inside_lightbox(node: &Handle) -> bool {
     false
 }
 
-/// `Nokogiri::HTML5.fragment(html).text`: every text node concatenated.
-pub fn fragment_text(html: &str) -> String {
+/// Nokogiri's `.css(".name")`: `name` is one of the element's classes.
+fn has_class(attrs: &Attrs, class: &str) -> bool {
+    attr(attrs, "class").is_some_and(|c| c.split_ascii_whitespace().any(|c| c == class))
+}
+
+/// A node's `content`: every text node under it concatenated.
+fn text_content(node: &Handle) -> String {
     fn collect(node: &Handle, out: &mut String) {
         match &node.data {
             NodeData::Text { contents } => out.push_str(&contents.borrow()),
@@ -478,8 +508,13 @@ pub fn fragment_text(html: &str) -> String {
         }
     }
     let mut out = String::new();
-    collect(&parse(html).document, &mut out);
+    collect(node, &mut out);
     out
+}
+
+/// `Nokogiri::HTML5.fragment(html).text`: every text node concatenated.
+pub fn fragment_text(html: &str) -> String {
+    text_content(&parse(html).document)
 }
 
 #[cfg(test)]
@@ -515,6 +550,39 @@ mod tests {
         assert_eq!(
             excerpt(&format!("<p>wink {emoji} &nbsp;</p>"), 300, &options),
             format!("wink {emoji} \u{a0}")
+        );
+    }
+
+    #[test]
+    fn bundled_plugins_reduce_excerpts() {
+        // Values from Rails' PrettyText.excerpt with the plugins loaded.
+        assert_eq!(
+            plain(
+                "<p>before</p>\n<div class=\"spoiler\">\n<p>hidden <a href=\"https://example.com\">link</a></p>\n</div>\n<p>after</p>",
+                300
+            ),
+            "before \n\nafter"
+        );
+        assert_eq!(
+            plain("<p>a <span class=\"spoiler\">secret</span> b</p>", 300),
+            "a  b"
+        );
+        let poll = "<p>before</p>\n<div class=\"poll\" data-poll-status=\"open\" data-poll-name=\"poll\">\n<div class=\"poll-container\">\n<ul>\n<li data-poll-option-id=\"a\">Yes</li>\n</ul>\n</div>\n</div>\n<p>after</p>";
+        assert_eq!(plain(poll, 300), "before \npoll\nafter");
+        let with_post = Options {
+            post_url: Some("/t/a-poll-topic/12/3".into()),
+            ..Default::default()
+        };
+        assert_eq!(
+            excerpt(poll, 300, &with_post),
+            "before \n<a href=\"/t/a-poll-topic/12/3\">poll</a>\nafter"
+        );
+        assert_eq!(
+            plain(
+                "<p>at <span data-date=\"2026-10-07\" data-time=\"10:00:00\" class=\"discourse-local-date\" data-timezone=\"UTC\" data-email-preview=\"2026-10-07T10:00:00Z UTC\">2026-10-07T10:00:00Z</span> ok</p>",
+                300
+            ),
+            "at 2026-10-07T10:00:00Z (UTC) ok"
         );
     }
 
