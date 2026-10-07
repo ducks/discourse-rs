@@ -2116,30 +2116,25 @@ impl TopicView<'_> {
         self.suggested_items(&builder.results).await
     }
 
-    /// A deterministic stand-in for `random_suggested`: the same filters
-    /// (open, unarchived, visible, readable, not a definition, not one
-    /// already suggested), same-category first, then by bumped_at. Never
-    /// matches Rails' random pick, and does not remove the user's muted
-    /// topics as Rails does.
+    /// `random_suggested`, through TopicQuery's stand-in for it.
     async fn random_suggested(
         &mut self,
         topic: &TopicRow,
         excluded: &[i32],
         count: i64,
     ) -> Result<Vec<TopicRow>, TopicViewError> {
-        let sql = format!(
-            "SELECT {TOPIC_COLUMNS} FROM topics LEFT OUTER JOIN categories ON categories.id = topics.category_id \
-             WHERE topics.deleted_at IS NULL AND topics.visible AND NOT topics.closed AND NOT topics.archived \
-               AND topics.archetype <> 'private_message' AND NOT (topics.id = ANY($1)) \
-               AND (categories.id IS NULL OR NOT categories.read_restricted) \
-               AND COALESCE(categories.topic_id, 0) <> topics.id \
-             ORDER BY CASE WHEN topics.category_id = $2 THEN 0 ELSE 1 END, topics.bumped_at DESC LIMIT $3"
-        );
-        Ok(sqlx::query_as(&sql)
-            .bind(excluded)
-            .bind(topic.category_id)
-            .bind(count)
-            .fetch_all(&mut *self.conn)
+        let mut query = TopicQuery {
+            conn: &mut *self.conn,
+            settings: self.settings,
+            guardian: self.guardian,
+            options: Default::default(),
+            filter: Default::default(),
+            category: Default::default(),
+            tags: Default::default(),
+            user: Default::default(),
+        };
+        Ok(query
+            .random_suggested(topic.category_id, excluded, count)
             .await?)
     }
 }

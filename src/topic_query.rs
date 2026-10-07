@@ -801,6 +801,53 @@ impl TopicQuery<'_> {
         self.fetch(&clause, &order, per_page, 0).await
     }
 
+    /// A deterministic stand-in for `random_suggested`: default_results
+    /// (with remove_muted) of open, unarchived, visible topics not
+    /// excluded, the topic's category first, then by bumped_at. Never
+    /// matches Rails' random pick.
+    ///
+    /// The candidates are RandomTopicSelector's: its global cache is filled
+    /// anonymously (public categories only), its cache for the topic's
+    /// category as the system user (that category and its subcategories,
+    /// restricted or not), both from topics younger than
+    /// suggested_topics_max_days_old.
+    pub async fn random_suggested(
+        &mut self,
+        topic_category_id: Option<i32>,
+        exclude: &[i32],
+        count: i64,
+    ) -> Result<Vec<TopicRow>, TopicQueryError> {
+        self.check_unported_filters()?;
+        self.filter = Filter::Latest;
+        self.options.no_definitions = true;
+        self.category = self.category_scope().await?;
+        self.tags = self.tag_scope().await?;
+        self.user = self.user_scope().await?;
+        let excluded = exclude
+            .iter()
+            .map(|id| id.to_string())
+            .collect::<Vec<_>>()
+            .join(",");
+        let max_age = crate::clock::now_naive()
+            - chrono::Duration::days(self.settings.get("suggested_topics_max_days_old")?.to_i());
+        let category = topic_category_id.unwrap_or(-1);
+        let clause = format!(
+            "topics.id <> ALL(ARRAY[{excluded}]::int[]) AND topics.visible \
+             AND NOT topics.closed AND NOT topics.archived \
+             AND topics.created_at > '{}' \
+             AND (categories.id IS NULL OR NOT categories.read_restricted \
+                  OR categories.id IN (WITH RECURSIVE own(id) AS ( \
+                    SELECT id FROM categories WHERE id = {category} \
+                    UNION SELECT c.id FROM categories c JOIN own ON c.parent_category_id = own.id) \
+                  SELECT id FROM own))",
+            sql_time(max_age)
+        );
+        let order = format!(
+            "CASE WHEN topics.category_id = {category} THEN 0 ELSE 1 END, topics.bumped_at DESC"
+        );
+        self.fetch(&clause, &order, count, 0).await
+    }
+
     async fn fetch(
         &mut self,
         extra_where: &str,
