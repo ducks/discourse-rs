@@ -1,0 +1,25 @@
+{
+  "name": "show_page_over_range",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/t/parity-fixture-replies-and-posters/35.json?page=2"
+    }
+  ],
+  "started_at": "2026-10-07T05:10:57.676159",
+  "transaction_started_at": "2026-10-07T05:10:57.078664",
+  "responses": [
+    {
+      "status": 301,
+      "body": ""
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "recorded_from": {
+    "case": "e4b927b0d17430a1b6c7ac31bbb1e47c88ae39a4bc6d9c05a8755fb87ae8b66c",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

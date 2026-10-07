@@ -1,0 +1,19 @@
+{
+  "user": null,
+  "settings": {
+    "login_required": true
+  },
+  "setup": [
+    "INSERT INTO api_keys (id, user_id, created_by_id, created_at, updated_at, description, key_hash, truncated_key, scope_mode) VALUES (9701, 2, 1, now(), now(), 'topic reader', encode(sha256(convert_to('topic-reader-key-9701', 'UTF8')), 'hex'), 'topi', 0)"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/t/parity-fixture-replies-and-posters/35.json",
+      "headers": {
+        "Api-Key": "topic-reader-key-9701"
+      }
+    }
+  ],
+  "not_yet": "login_required refuses a request authenticated by API key."
+}

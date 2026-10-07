@@ -38,7 +38,7 @@ Scenarios per action (an `it` marked (xN) counts N).
 | TopicsController#status | 14 | 1 | 0 | 14 |
 | TopicsController#destroy | 5 | 1 | 0 | 6 |
 | TopicsController#timings | 5 | 1 | 1 | 0 |
-| TopicsController#show | 31 | 48 | 33 | 89 |
+| TopicsController#show | 79 | 0 | 33 | 89 |
 | ListController#private_messages* | 5 | 13 | 0 | 6 |
 | PostActionsController#destroy | 5 | 2 | 0 | 0 |
 | PostActionsController#create | 9 | 2 | 0 | 8 |
@@ -96,7 +96,7 @@ Scenarios per action (an `it` marked (xN) counts N).
 | SitemapController | 6 | 4 | 0 | 0 |
 | UserAvatarsController#show_proxy_letter | 0 | 1 | 1 | 0 |
 | StylesheetsController (color definitions) | 0 | 0 | 4 | 10 |
-| **All (67 sections)** | **308** | **389** | **207** | **514** |
+| **All (67 sections)** | **356** | **341** | **207** | **514** |
 
 ## Cases added from this inventory
 
@@ -366,33 +366,33 @@ its own branch (`git log --merges --grep fix/`), so all 94 match.
 | 3277 | topic not allowed (detailed_404 on) -> 403 | out-of-scope | Unsupported("detailed_404") |
 | 3300 | allowed to a group > descriptive error with group name | out-of-scope | detailed_404 + custom group HTML |
 | 3310 | renders canonicals (HTML, Cache-Control) | needs-harness | header/HTML-structure assertions |
-| 3318 | 301 even if slug param does not match (/t/:id.json?slug=x, /t/:slug.json) | recordable | show_slug_param_mismatch (GET; port ignores ?slug=) |
+| 3318 | 301 even if slug param does not match (/t/:id.json?slug=x, /t/:slug.json) | covered | show_slug_param_mismatch (GET; port ignores ?slug=) |
 | 3338 | shows a topic correctly | covered | golden: GET /t/parity-fixture-replies-and-posters/35.json |
-| 3343 | PM tag descriptions hidden from viewer who can't see PM tags | recordable | show_pm_tags_hidden (settings tagging/pm_tags_allowed_for_groups, setup topic_tags on 42, user0) |
-| 3359 | tags restricted to inaccessible categories hidden | recordable | show_restricted_tags (setup category_tags tag->cat 3 on topic 38) |
+| 3343 | PM tag descriptions hidden from viewer who can't see PM tags | covered | show_pm_tags_hidden (settings tagging/pm_tags_allowed_for_groups, setup topic_tags on 42, user0) |
+| 3359 | tags restricted to inaccessible categories hidden | covered | show_restricted_tags (setup category_tags tag->cat 3 on topic 38) |
 | 3392 | links from hidden posts not exposed | out-of-scope | Unsupported("topic links with clicks"), hidden posts |
 | 3433 | link_counts from unlisted topics hidden | out-of-scope | post link counts (README Unsupported) |
 | 3476 | hidden post link counts hidden | out-of-scope | hidden posts, link counts |
 | 3535 | blank-slug topic | out-of-scope | Unsupported("topics without a stored slug (Slug.for)") |
-| 3544 | over-range page redirects to last page | recordable | show_page_over_range (GET 35.json?page=2) |
+| 3544 | over-range page redirects to last page | covered | show_page_over_range (GET 35.json?page=2) |
 | 3549 | over-range page to last multi-page page | needs-harness | 25 fabricated posts |
 | 3558 | viewer-visible count for last page (whispers) | needs-harness | 20+ fabricated posts and a whisper |
-| 3574 | slug in id param redirects | recordable | show_slug_only (GET /t/parity-fixture-replies-and-posters) |
-| 3579 | slug with a number in front | recordable | show_numeric_slug (setup UPDATE topics slug) |
+| 3574 | slug in id param redirects | covered | show_slug_only (GET /t/parity-fixture-replies-and-posters) |
+| 3579 | slug with a number in front | covered | show_numeric_slug (setup UPDATE topics slug) |
 | 3588 | /t/:id/summary with id[] array -> 400 | out-of-scope | topics#summary route not served |
 | 3594 | /t/:id/summary nested id -> 400 | out-of-scope | topics#summary route not served |
-| 3600 | keeps post_number query param when redirecting | recordable | show_slug_redirect_params (port drops ?post_number=) |
-| 3605 | keeps page when redirecting | recordable | show_slug_redirect_params |
-| 3611 | page param as array | recordable | show_slug_redirect_params |
-| 3617 | scrubs invalid query params | recordable | show_slug_redirect_params |
+| 3600 | keeps post_number query param when redirecting | covered | show_slug_redirect_params (port drops ?post_number=) |
+| 3605 | keeps page when redirecting | covered | show_slug_redirect_params |
+| 3611 | page param as array | covered | show_slug_redirect_params |
+| 3617 | scrubs invalid query params | covered | show_slug_redirect_params |
 | 3623 | nested_replies_default serves topic route | out-of-scope | nested replies view not ported |
 | 3632 | crawlers not redirected to nested view | out-of-scope | nested replies |
 | 3642 | PMs not redirected to nested view | out-of-scope | nested replies |
 | 3654 | embed_mode on nested topics | out-of-scope | nested replies / embed mode |
 | 3663 | embed class_name on nested topics | out-of-scope | nested replies / embed mode |
-| 3672 | invalid slug without id -> 404 | recordable | show_not_found_variants (GET /t/nope-nope.json) |
-| 3678 | slug and id match nothing -> 404 | recordable | show_not_found_variants |
-| 3683 | id beyond postgres int -> 404 | recordable | show_not_found_variants |
+| 3672 | invalid slug without id -> 404 | covered | show_not_found_variants (GET /t/nope-nope.json) |
+| 3678 | slug and id match nothing -> 404 | covered | show_not_found_variants |
+| 3683 | id beyond postgres int -> 404 | covered | show_not_found_variants |
 | 3689 | print=false is not print mode | covered | golden: GET /t/.../35.json (port ignores print) |
 | 3696 | no N+1 with primary/flair groups | needs-harness | query counting |
 | 3741 | no N+1 loading mentioned users | needs-harness | query counting |
@@ -403,14 +403,14 @@ its own branch (`git log --merges --grep fix/`), so all 94 match.
 | 3884 | redirect keeps modifier-registered param | needs-harness | plugin modifier |
 | 3909 | nil-slug topic exists, unknown id -> 404 | covered | golden: GET /t/999999.json |
 | 3954 | detailed_404 off > anonymous (x9, HTML) | covered | golden: GET /t/42.json, /t/999999.json (JSON, not HTML) |
-| 3954 | detailed_404 off > anonymous login required (x9, HTML 302) | recordable | show_login_required |
-| 3954 | detailed_404 off > anonymous login required json (x9, 403) | recordable | show_login_required |
+| 3954 | detailed_404 off > anonymous login required (x9, HTML 302) | covered | show_login_required |
+| 3954 | detailed_404 off > anonymous login required json (x9, 403) | covered | show_login_required |
 | 3954 | detailed_404 off > normal user (x9) | covered | golden: GET /t/about-the-staff-category/2.json as=user1, /t/40 as=user1, /t/43 as=user0 |
 | 3954 | detailed_404 off > allowed user (x9) | covered | golden: GET /t/42.json as=user1, /t/2.json as=admin |
 | 3954 | detailed_404 off > moderator (x9) | out-of-scope | Unsupported("viewing deleted topics as staff") |
 | 3954 | detailed_404 off > admin (x9) | out-of-scope | Unsupported("viewing deleted topics as staff") |
 | 3954 | detailed_404 on > anonymous/normal/allowed/moderator/admin (x45) | out-of-scope | Unsupported("detailed_404") |
-| 3954 | detailed_404 on > anonymous login required (x9, 302) | recordable | show_login_required (login check precedes detailed_404) |
+| 3954 | detailed_404 on > anonymous login required (x9, 302) | covered | show_login_required (login check precedes detailed_404) |
 | 4184 | does not record a topic view | needs-harness | Rails view tracking is deferred (Scheduler::Defer) |
 | 4188 | records incoming link for invalid post_number | needs-harness | deferred IncomingLink |
 | 4195 | records incoming links | needs-harness | deferred IncomingLink |
@@ -431,11 +431,11 @@ its own branch (`git log --merges --grep fix/`), so all 94 match.
 | 4481 | show filters > filter_top_level_replies | out-of-scope | filter params not ported |
 | 4516 | show filters > filter_upwards_post_id | out-of-scope | filter params not ported |
 | 4532 | show filters > max_reply_history | out-of-scope | filter params not ported |
-| 4554 | login required > logged in shows topic | recordable | show_login_required_member (user0, setting login_required) |
-| 4563 | login required > anon browser redirected to login | recordable | show_login_required |
-| 4568 | login required > anon json 403 | recordable | show_login_required |
-| 4573 | login required > valid API key shows topic | recordable | show_login_required_api_key (setup api_keys row with key_hash) |
-| 4580 | login required > invalid API key 403 (json, html) | recordable | show_login_required (HTTP_API_KEY: bad header) |
+| 4554 | login required > logged in shows topic | covered | show_login_required_member (user0, setting login_required) |
+| 4563 | login required > anon browser redirected to login | covered | show_login_required |
+| 4568 | login required > anon json 403 | covered | show_login_required |
+| 4573 | login required > valid API key shows topic | covered | show_login_required_api_key (setup api_keys row with key_hash) |
+| 4580 | login required > invalid API key 403 (json, html) | covered | show_login_required (HTTP_API_KEY: bad header) |
 | 4591 | X-Robots-Tag for unlisted | needs-harness | response headers not compared |
 | 4597 | no X-Robots-Tag for normal | needs-harness | response headers not compared |
 | 4603 | X-Robots-Tag when allow_index_in_robots_txt off | needs-harness | response headers not compared |
@@ -443,13 +443,13 @@ its own branch (`git log --merges --grep fix/`), so all 94 match.
 | 4616 | very long referer | needs-harness | deferred IncomingLink |
 | 4635 | enable_user_status off > no mentions | covered | golden: GET /t/.../35.json (no mentioned_users key) |
 | 4647 | enable_user_status > mentions with status | out-of-scope | Unsupported("user status on BasicUserSerializer") |
-| 4668 | enable_user_status > empty mentioned_users without mentions | recordable | show_user_status_no_mentions (setting only; port omits mentioned_users) |
-| 4679 | enable_user_status > unknown user mentioned -> empty | recordable | show_user_status_no_mentions |
+| 4668 | enable_user_status > empty mentioned_users without mentions | covered | show_user_status_no_mentions (setting only; port omits mentioned_users) |
+| 4679 | enable_user_status > unknown user mentioned -> empty | covered | show_user_status_no_mentions |
 | 4693 | escaped fragment off > app layout | needs-harness | HTML layout assertions |
 | 4709 | escaped fragment on > app layout without param | needs-harness | HTML layout assertions |
 | 4718 | escaped fragment on > crawler layout | needs-harness | HTML layout assertions |
 | 4737 | clear_notifications via cookie (subfolder) | needs-harness | subfolder + cookie |
-| 4755 | clear_notifications via header | recordable | show_clear_notifications_header (Discourse-Clear-Notifications header, marks a seeded notification read) |
+| 4755 | clear_notifications via header | covered | show_clear_notifications_header (Discourse-Clear-Notifications header, marks a seeded notification read) |
 | 4771 | no read only header by default | needs-harness | response headers not compared |
 | 4777 | readonly header when site read only | needs-harness | readonly mode + headers |
 | 4786 | image-only topic meta description | needs-harness | HTML meta assertion, upload fixture |

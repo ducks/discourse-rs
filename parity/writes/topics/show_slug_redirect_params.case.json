@@ -1,0 +1,21 @@
+{
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/t/parity-fixture-replies-and-posters?post_number=42"
+    },
+    {
+      "method": "GET",
+      "path": "/t/parity-fixture-replies-and-posters?post_number=42&page=123"
+    },
+    {
+      "method": "GET",
+      "path": "/t/parity-fixture-replies-and-posters?post_number=42&page%5B%5D=2"
+    },
+    {
+      "method": "GET",
+      "path": "/t/parity-fixture-replies-and-posters?silly_param=hehe"
+    }
+  ]
+}

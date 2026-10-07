@@ -1,0 +1,28 @@
+{
+  "name": "show_numeric_slug",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/t/37-reasons-discourse-is-awesome"
+    }
+  ],
+  "started_at": "2026-10-07T05:10:56.872538",
+  "transaction_started_at": "2026-10-07T05:10:56.109803",
+  "responses": [
+    {
+      "status": 301,
+      "body": ""
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "setup": [
+    "UPDATE topics SET slug = '37-reasons-discourse-is-awesome' WHERE id = 35"
+  ],
+  "recorded_from": {
+    "case": "5ff8c0981eda237bdc6ab57e6ec313807895925d1264e6f9ad4954933f1ae569",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

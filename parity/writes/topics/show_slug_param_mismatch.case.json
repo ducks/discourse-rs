@@ -1,0 +1,18 @@
+{
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/t/39.json?slug=parity-fixture-unlisted-topic"
+    },
+    {
+      "method": "GET",
+      "path": "/t/35.json?slug=just-guessing"
+    },
+    {
+      "method": "GET",
+      "path": "/t/parity-fixture-replies-and-posters.json"
+    }
+  ],
+  "not_yet": "/t/:id.json?slug=<wrong> is served, Rails 301s to the canonical URL."
+}
