@@ -8,6 +8,5 @@
       "method": "GET",
       "path": "/t/parity-fixture-replies-and-posters/35.json"
     }
-  ],
-  "not_yet": "enable_user_status: posts lack mentioned_users."
+  ]
 }

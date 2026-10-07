@@ -1360,6 +1360,41 @@ impl TopicView<'_> {
         let groups = crate::groups::load(&mut *self.conn, &group_ids).await?;
         let user = |id: Option<i32>| id.and_then(|id| users.iter().find(|u| u.id == id));
 
+        // TopicView#mentioned_users, serialized with enable_user_status: each
+        // post's mentions in order, the unknown ones left out.
+        let mut mentioned: HashMap<i32, Vec<i32>> = HashMap::new();
+        if self.settings.get("enable_user_status")?.truthy() {
+            let mut by_post = Vec::with_capacity(posts.len());
+            for post in posts {
+                by_post.push((post.id, crate::pretty_text::extract_mentions(&post.cooked)?));
+            }
+            let usernames: Vec<&String> = by_post.iter().flat_map(|(_, m)| m).collect();
+            let found: Vec<(i32, String)> = sqlx::query_as(
+                "SELECT id, username_lower FROM users WHERE username_lower = ANY($1)",
+            )
+            .bind(&usernames)
+            .fetch_all(&mut *self.conn)
+            .await?;
+            let ids: Vec<i32> = found.iter().map(|(id, _)| *id).collect();
+            let with_status: bool = sqlx::query_scalar(
+                "SELECT EXISTS (SELECT 1 FROM user_statuses WHERE user_id = ANY($1) \
+                 AND (ends_at IS NULL OR ends_at > now()))",
+            )
+            .bind(&ids)
+            .fetch_one(&mut *self.conn)
+            .await?;
+            if with_status {
+                return Err(Unsupported("user status on mentioned users").into());
+            }
+            for (post_id, names) in by_post {
+                let users = names
+                    .iter()
+                    .filter_map(|n| found.iter().find(|(_, u)| u == n).map(|(id, _)| *id))
+                    .collect();
+                mentioned.insert(post_id, users);
+            }
+        }
+
         let mut out = Vec::with_capacity(posts.len());
         for post in posts {
             let u = user(post.user_id);
@@ -1682,6 +1717,13 @@ impl TopicView<'_> {
             }
             if u.is_some_and(|u| u.suspended_till.is_some()) {
                 return Err(Unsupported("user_suspended").into());
+            }
+            if let Some(ids) = mentioned.get(&post.id) {
+                let mut users = Vec::with_capacity(ids.len());
+                for id in ids {
+                    users.push(self.basic_user(*id, logo_small_url.as_deref()).await?);
+                }
+                p.insert("mentioned_users".into(), Value::Array(users));
             }
             p.insert(
                 "post_url".into(),
