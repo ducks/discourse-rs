@@ -715,11 +715,9 @@ impl SiteSettings {
         let mut values: HashMap<String, Value> = defs
             .iter()
             .map(|d| {
-                let default = if db_locale == DEFAULT_LOCALE {
-                    None
-                } else {
-                    d.locale_defaults.get(&db_locale)
-                };
+                // DefaultsProvider: a locale default (`en` too) overrides the
+                // plain one for that locale.
+                let default = d.locale_defaults.get(&db_locale);
                 (d.name.clone(), default.unwrap_or(&d.default).clone())
             })
             .collect();
@@ -998,6 +996,10 @@ basic:
     default: 20
     locale_default:
       ja: 8
+  trim_spaces:
+    default: false
+    locale_default:
+      en: true
   max_size:
     default: 150_000
   quoted_digits:
@@ -1118,6 +1120,15 @@ basic:
         let s = resolve(&[("default_locale", 1, Some("ja"))], &[]);
         assert_eq!(s.get("min_post_length").unwrap(), &Value::Int(8));
         assert_eq!(s.get("default_locale").unwrap(), &Value::Str("ja".into()));
+    }
+
+    #[test]
+    fn an_en_locale_default_applies_to_english_sites() {
+        // title_remove_extraneous_space: false, but true for en.
+        let s = resolve(&[], &[]);
+        assert_eq!(s.get("trim_spaces").unwrap(), &Value::Bool(true));
+        let s = resolve(&[("default_locale", 1, Some("ja"))], &[]);
+        assert_eq!(s.get("trim_spaces").unwrap(), &Value::Bool(false));
     }
 
     #[test]
