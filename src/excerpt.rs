@@ -158,8 +158,27 @@ impl Parser {
     fn walk(&mut self, node: &Handle) -> Result<(), Done> {
         match &node.data {
             NodeData::Text { contents } => {
+                // Rails walks doc.to_html with libxml2's SAX parser, which
+                // hands each entity the serializer wrote (&amp; &lt; &gt;
+                // &nbsp;) to `characters` on its own. Where a text node is
+                // cut depends on it: a piece that starts at the limit still
+                // gives its first character.
                 let text = contents.borrow().to_string();
-                self.characters(&text, true, true, true)
+                let mut start = 0;
+                for (i, c) in text.char_indices() {
+                    if matches!(c, '&' | '<' | '>' | '\u{a0}') {
+                        if start < i {
+                            self.characters(&text[start..i], true, true, true)?;
+                        }
+                        let end = i + c.len_utf8();
+                        self.characters(&text[i..end], true, true, true)?;
+                        start = end;
+                    }
+                }
+                if start < text.len() {
+                    self.characters(&text[start..], true, true, true)?;
+                }
+                Ok(())
             }
             NodeData::Element { name, attrs, .. } => {
                 let tag = name.local.to_string();
@@ -584,6 +603,17 @@ mod tests {
             ),
             "at 2026-10-07T10:00:00Z (UTC) ok"
         );
+    }
+
+    #[test]
+    fn cuts_where_rails_sax_pieces_fall() {
+        // An escaped character is a piece of its own, and a piece starting
+        // at the limit still gives one character (values from Rails).
+        assert_eq!(plain("<p>abcd</p>", 2), "ab&hellip;");
+        assert_eq!(plain("<p>ab&lt;cd</p>", 2), "ab&lt;&hellip;");
+        assert_eq!(plain("<p>ab&amp;cd</p>", 2), "ab&amp;&hellip;");
+        assert_eq!(plain("<p>ab&nbsp;cd</p>", 2), "ab\u{a0}&hellip;");
+        assert_eq!(plain("<p>ab&gt;cd</p>", 3), "ab&gt;c&hellip;");
     }
 
     #[test]
