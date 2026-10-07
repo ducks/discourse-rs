@@ -681,7 +681,7 @@ dependencies = [
 
 [[package]]
 name = "discourse-rs"
-version = "20261007.0.1"
+version = "20261007.0.2"
 dependencies = [
  "aes-gcm",
  "askama",
