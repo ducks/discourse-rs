@@ -109,14 +109,40 @@ fn parse_path(path: &str, with_category: bool) -> Result<TagPath, Unsupported> {
 /// `tags[]` from the query string, which TagsController#tag_params
 /// prefers over the tag in the path (prefixed with it only on the
 /// name-based routes, by TopicQueryParams).
-fn query_tags(raw_query: Option<&str>) -> Vec<String> {
+///
+/// `Array(params[:tags]).map(&:to_s)`: a hash (`tags[0]=nada`) becomes its
+/// pairs as Ruby prints them, `["0", "nada"]`, a tag nothing carries.
+fn query_tags(raw_query: Option<&str>) -> Result<Vec<String>, Unsupported> {
     let Some(q) = raw_query else {
-        return Vec::new();
+        return Ok(Vec::new());
     };
-    form_urlencoded::parse(q.as_bytes())
-        .filter(|(k, _)| k == "tags[]" || k == "tags")
-        .map(|(_, v)| v.into_owned())
-        .collect()
+    let mut out = Vec::new();
+    for (k, v) in form_urlencoded::parse(q.as_bytes()) {
+        if k == "tags[]" || k == "tags" {
+            out.push(v.into_owned());
+        } else if let Some(key) = k.strip_prefix("tags[").and_then(|k| k.strip_suffix(']')) {
+            if [key, &v]
+                .iter()
+                .any(|s| s.contains(['"', '\\']) || !s.is_ascii())
+            {
+                return Err(Unsupported(
+                    "tag hash params that Ruby's inspect would escape",
+                ));
+            }
+            out.push(format!("[\"{key}\", \"{v}\"]"));
+        }
+    }
+    Ok(out)
+}
+
+/// `request.format.json?` for a path without `.json`: an Accept header
+/// that leads with JSON (a browser's leads with text/html).
+fn accepts_json(headers: &HeaderMap) -> bool {
+    headers
+        .get(header::ACCEPT)
+        .and_then(|v| v.to_str().ok())
+        .and_then(|v| v.split(',').next())
+        .is_some_and(|first| first.trim().starts_with("application/json"))
 }
 
 /// `construct_url_with(:next, list_opts)`: the request's tag route with
@@ -213,6 +239,9 @@ async fn show_list(
     headers: HeaderMap,
     uri: axum::http::Uri,
 ) -> Result<Response, AppError> {
+    // respond_to: an Accept that leads with JSON gets JSON without `.json`.
+    let mut path = path;
+    path.json |= accepts_json(&headers);
     // Before the page's data is read (crate::bus::page_position).
     let bus_position = if path.json {
         String::new()
@@ -323,7 +352,7 @@ async fn show_list(
     };
     // tag_params: query tags[] win over the path tag, except that the
     // name-based routes prepend it (TopicQueryParams).
-    let mut tags = query_tags(raw_query.as_deref());
+    let mut tags = query_tags(raw_query.as_deref())?;
     if tags.is_empty() {
         tags.push(tag_name.clone());
     } else if matches!(path.tag, TagRef::Name(_)) {
