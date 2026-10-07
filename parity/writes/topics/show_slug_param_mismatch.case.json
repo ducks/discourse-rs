@@ -13,6 +13,5 @@
       "method": "GET",
       "path": "/t/parity-fixture-replies-and-posters.json"
     }
-  ],
-  "not_yet": "/t/:id.json?slug=<wrong> is served, Rails 301s to the canonical URL."
+  ]
 }
