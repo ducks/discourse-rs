@@ -77,3 +77,24 @@ async fn json_and_xhr_requests_keep_the_json_error() {
         );
     }
 }
+
+#[tokio::test]
+async fn login_only_pages_are_not_found_for_anonymous_browsers() {
+    // Rails rescues NotLoggedIn on a page request as not found; JSON and
+    // XHR requests keep the 403.
+    let db = TestDb::new().await;
+    for path in ["/read", "/new", "/drafts", "/notifications", "/review"] {
+        let (status, content_type, body) = get(&db.pool, path, false).await;
+        assert_eq!(status, StatusCode::NOT_FOUND, "{path}");
+        assert!(
+            content_type.starts_with("text/html"),
+            "{path}: {content_type}"
+        );
+        assert!(body.contains("<title>Page Not Found - "), "{path}");
+
+        let (status, _, body) = get(&db.pool, path, true).await;
+        assert_eq!(status, StatusCode::FORBIDDEN, "{path}");
+        let json: serde_json::Value = serde_json::from_str(&body).unwrap();
+        assert_eq!(json["error_type"], "not_logged_in", "{path}");
+    }
+}

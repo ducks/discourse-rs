@@ -478,7 +478,7 @@ pub async fn category(
     if slug_path.contains("/l/") || slug_path.ends_with("/all") {
         return Err(crate::Unsupported("unknown category list filter").into());
     }
-    if let Some(response) = ensure_logged_in(&state, &guardian, kind, json) {
+    if let Some(response) = ensure_logged_in(&state, &guardian, kind) {
         return Ok(response);
     }
     let mut conn = state.pool.acquire().await?;
@@ -903,7 +903,7 @@ async fn front_list(
         crate::bus::page_position(&state.bus).await?
     };
     let live_since = crate::clock::now().timestamp_millis().to_string();
-    if let Some(response) = ensure_logged_in(&state, &guardian, kind, json) {
+    if let Some(response) = ensure_logged_in(&state, &guardian, kind) {
         return Ok(response);
     }
     let list_path = format!(
@@ -994,23 +994,14 @@ async fn list_crawler(
     Ok(crawler)
 }
 
-/// ListController's `ensure_logged_in` for the login-only filters: an
-/// HTML GET renders the not-found page, JSON gets the 403 `not_logged_in`
-/// body.
-fn ensure_logged_in(
-    state: &AppState,
-    guardian: &Guardian,
-    kind: ListKind,
-    json: bool,
-) -> Option<Response> {
+/// ListController's `ensure_logged_in` for the login-only filters: the 403
+/// `not_logged_in` body, which a page request gets as the not-found page
+/// (not_found::html_errors).
+fn ensure_logged_in(state: &AppState, guardian: &Guardian, kind: ListKind) -> Option<Response> {
     if !kind.requires_login() || guardian.is_authenticated() {
         return None;
     }
-    Some(if json {
-        super::login_required::not_logged_in(state)
-    } else {
-        super::topics::not_found_response(state)
-    })
+    Some(super::login_required::not_logged_in(state))
 }
 
 /// GET /unread, /new, /unseen, /read, /posted, /bookmarks (.json): the
