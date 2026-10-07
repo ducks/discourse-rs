@@ -317,13 +317,29 @@ pub async fn layer(
                 super::api_key::Resolved::Invalid => return Ok(refused("invalid_api_credentials")),
                 super::api_key::Resolved::Refused => return Ok(refused("invalid_access")),
             };
+        let cleared = match guardian.user_id() {
+            Some(user_id) => {
+                let settings =
+                    SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals)
+                        .await?;
+                clear_notifications(&state, &mut conn, &settings, user_id, &headers).await?
+            }
+            None => false,
+        };
         drop(conn);
         request.extensions_mut().insert(Incoming {
             had_token_cookie: false,
             session: None,
             guardian,
         });
-        return Ok(next.run(request).await);
+        let mut response = next.run(request).await;
+        if cleared {
+            response.headers_mut().append(
+                header::SET_COOKIE,
+                HeaderValue::from_static(DELETE_CN_COOKIE),
+            );
+        }
+        return Ok(response);
     }
     // A request without the cookie has no session to resolve, rotate or
     // clear, so it never touches the pool here.
@@ -341,8 +357,21 @@ pub async fn layer(
         };
         (anonymous, None)
     };
+    let cleared = match (&settings, incoming.guardian.user_id()) {
+        (Some(settings), Some(user_id)) => {
+            let mut conn = state.pool.acquire().await?;
+            clear_notifications(&state, &mut conn, settings, user_id, &headers).await?
+        }
+        _ => false,
+    };
     request.extensions_mut().insert(incoming.clone());
     let mut response = next.run(request).await;
+    if cleared {
+        response.headers_mut().append(
+            header::SET_COOKIE,
+            HeaderValue::from_static(DELETE_CN_COOKIE),
+        );
+    }
 
     let Some(settings) = settings else {
         return Ok(response);
@@ -398,6 +427,46 @@ pub async fn layer(
         None => {}
     }
     Ok(response)
+}
+
+/// `cookies.delete("cn")`
+const DELETE_CN_COOKIE: &str = "cn=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+
+/// ApplicationController#clear_notifications, a before_action for every
+/// signed-in request: the ids in the Discourse-Clear-Notifications header
+/// and the `cn` cookie are marked read and the counts republished. True
+/// when the cookie was there to delete. (Read-only mode is not ported.)
+async fn clear_notifications(
+    state: &AppState,
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    user_id: i32,
+    headers: &HeaderMap,
+) -> Result<bool, AppError> {
+    let header_ids = headers
+        .get("discourse-clear-notifications")
+        .and_then(|v| v.to_str().ok())
+        .unwrap_or("");
+    let cookie_ids = cookie(headers, "cn");
+    let ids = match &cookie_ids {
+        Some(c) if !header_ids.trim().is_empty() => format!("{header_ids},{c}"),
+        Some(c) => c.to_string(),
+        None => header_ids.to_string(),
+    };
+    if ids.trim().is_empty() {
+        return Ok(false);
+    }
+    let ids: Vec<i64> = ids.split(',').map(crate::ruby::to_i).collect();
+    // Notification.read
+    sqlx::query(
+        "UPDATE notifications SET read = TRUE WHERE id = ANY($1) AND user_id = $2 AND NOT read",
+    )
+    .bind(&ids)
+    .bind(user_id)
+    .execute(&mut *conn)
+    .await?;
+    crate::bus::publish_notifications_state(&state.bus, conn, settings, user_id).await?;
+    Ok(cookie_ids.is_some())
 }
 
 /// `should_update_last_seen?`: browser navigations always, XHR only with
