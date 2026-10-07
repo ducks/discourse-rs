@@ -232,14 +232,23 @@ pub struct Bookmarks<'a> {
 }
 
 impl Bookmarks<'_> {
-    /// `UserBookmarkList#load`: `BookmarkQuery#list_all` for `user_id`'s
-    /// bookmarks as the guardian may see them.
-    pub async fn load(
-        &mut self,
-        user_id: i32,
-        q: &ListQuery<'_>,
-    ) -> Result<BookmarkList, BookmarksError> {
-        let per_page = q.per_page.unwrap_or(PER_PAGE).min(PER_PAGE);
+    /// `BookmarkQuery#count_all`: how many of `user_id`'s bookmarks the
+    /// guardian may see.
+    pub async fn count_all(&mut self, user_id: i32) -> Result<i64, BookmarksError> {
+        self.refuse_plugin_types(user_id).await?;
+        let union = self.list_queries(user_id, false).await?;
+        Ok(
+            sqlx::query_scalar(&format!("SELECT COUNT(*) FROM ({union}) AS bookmarks"))
+                .bind(i64::from(user_id))
+                .bind("")
+                .bind("")
+                .fetch_one(&mut *self.conn)
+                .await?,
+        )
+    }
+
+    /// Bookmarks of plugin-registered types (chat messages) are not ported.
+    async fn refuse_plugin_types(&mut self, user_id: i32) -> Result<(), BookmarksError> {
         let plugin_types: bool = sqlx::query_scalar(
             "SELECT EXISTS (SELECT 1 FROM bookmarks WHERE user_id = $1 \
              AND bookmarkable_type NOT IN ('Post', 'Topic'))",
@@ -250,6 +259,18 @@ impl Bookmarks<'_> {
         if plugin_types {
             return Err(Unsupported("bookmarks of plugin-registered types (chat messages)").into());
         }
+        Ok(())
+    }
+
+    /// `UserBookmarkList#load`: `BookmarkQuery#list_all` for `user_id`'s
+    /// bookmarks as the guardian may see them.
+    pub async fn load(
+        &mut self,
+        user_id: i32,
+        q: &ListQuery<'_>,
+    ) -> Result<BookmarkList, BookmarksError> {
+        let per_page = q.per_page.unwrap_or(PER_PAGE).min(PER_PAGE);
+        self.refuse_plugin_types(user_id).await?;
 
         let search = q.search_term.filter(|t| !crate::ruby::is_blank(t));
         let union = self.list_queries(user_id, search.is_some()).await?;
