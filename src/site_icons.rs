@@ -204,3 +204,114 @@ pub async fn site_url(
         None => Ok(String::new()),
     }
 }
+
+/// `MiniMime.lookup_by_filename(url)&.content_type || "image/png"`.
+pub fn mime_type(url: &str) -> &'static str {
+    let path = url.split(['?', '#']).next().unwrap_or(url);
+    match path
+        .rsplit('.')
+        .next()
+        .map(str::to_ascii_lowercase)
+        .as_deref()
+    {
+        Some("ico") => "image/vnd.microsoft.icon",
+        Some("svg") => "image/svg+xml",
+        Some("jpg" | "jpeg") => "image/jpeg",
+        Some("gif") => "image/gif",
+        Some("webp") => "image/webp",
+        _ => "image/png",
+    }
+}
+
+/// `SiteIconManager.ensure_optimized!`, as far as it matters here: Rails
+/// makes each sized icon's optimized copy at boot, and the seed's rows
+/// for them point at files only the reference has. A row whose file is
+/// missing from the public directory gets it made again from the
+/// original (looked up there, then in the Discourse checkout). Making a
+/// copy that has no row is not ported. The number of files written.
+pub async fn ensure_optimized(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    config: &crate::config::Config,
+) -> Result<usize, crate::AppError> {
+    let public = &config.public_dir;
+    let base_path = config.globals.relative_url_root();
+    let mut written = 0;
+    for icon in ICONS {
+        let Some((width, height)) = icon.size else {
+            continue;
+        };
+        let mut original = None;
+        for name in icon.settings {
+            if let Some(upload) = setting_upload(conn, settings, name).await? {
+                original = Some(upload);
+                break;
+            }
+        }
+        if original.is_none() && icon.fallback_to_sketch {
+            original = find_upload(conn, SKETCH_LOGO_ID).await?;
+        }
+        let Some(original) = original else {
+            continue;
+        };
+        let optimized: Option<String> = sqlx::query_scalar(
+            "SELECT url FROM optimized_images \
+             WHERE upload_id = $1 AND width = $2 AND height = $3 ORDER BY id LIMIT 1",
+        )
+        .bind(original.id)
+        .bind(width)
+        .bind(height)
+        .fetch_optional(&mut *conn)
+        .await?;
+        let Some(url) = optimized else {
+            continue;
+        };
+        let relative = |u: &str| -> Option<String> {
+            let u = u.strip_prefix(base_path).unwrap_or(u);
+            (u.starts_with('/') && !u.starts_with("//"))
+                .then(|| u.trim_start_matches('/').to_string())
+        };
+        let Some(target) = relative(&url).map(|p| public.join(p)) else {
+            continue;
+        };
+        if target.exists() {
+            continue;
+        }
+        let Some(source) = relative(&original.url) else {
+            continue;
+        };
+        let candidates = std::iter::once(public.join(&source)).chain(
+            config
+                .discourse_src
+                .iter()
+                .map(|src| src.join("public").join(&source)),
+        );
+        let Some(bytes) = candidates.filter_map(|p| std::fs::read(p).ok()).next() else {
+            tracing::warn!(url = %original.url, "site icon original not found");
+            continue;
+        };
+        let Some(format) = std::path::Path::new(&source)
+            .extension()
+            .and_then(|e| e.to_str())
+            .and_then(crate::images::Format::from_extension)
+        else {
+            continue;
+        };
+        let quality = settings.get("image_quality")?.to_i().clamp(1, 100) as u8;
+        let (w, h) = (width as u32, height as u32);
+        let resized = tokio::task::spawn_blocking(move || {
+            crate::images::thumbnail(&bytes, format, w, h, false, quality)
+        })
+        .await
+        .map_err(std::io::Error::other)?;
+        let Some(resized) = resized else {
+            continue;
+        };
+        if let Some(dir) = target.parent() {
+            tokio::fs::create_dir_all(dir).await?;
+        }
+        tokio::fs::write(&target, resized).await?;
+        written += 1;
+    }
+    Ok(written)
+}

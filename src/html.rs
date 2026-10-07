@@ -127,6 +127,12 @@ pub struct Chrome {
     /// The header's logo (`SiteSetting.site_logo_url`), empty for the site
     /// title as text.
     pub logo_url: String,
+    /// `SiteSetting.site_favicon_url` and its type (MiniMime by filename),
+    /// empty for no icon link (layouts/_head).
+    pub favicon_url: String,
+    pub favicon_type: &'static str,
+    /// `SiteSetting.site_apple_touch_icon_url`, absolute.
+    pub apple_touch_icon_url: String,
     /// The body's classes: `uc-<name>` for each enabled upcoming change
     /// with CSS (ApplicationController#upcomingChangeBodyClasses).
     pub body_classes: String,
@@ -224,6 +230,10 @@ impl Site {
             settings,
         };
         self.chrome.logo_url = crate::site_icons::site_url(&mut conn, &urls, "logo").await?;
+        self.chrome.favicon_url = crate::site_icons::site_url(&mut conn, &urls, "favicon").await?;
+        self.chrome.favicon_type = crate::site_icons::mime_type(&self.chrome.favicon_url);
+        self.chrome.apple_touch_icon_url =
+            crate::site_icons::site_url(&mut conn, &urls, "apple_touch_icon").await?;
         let mut classes = Vec::new();
         for name in state.site_setting_defs.upcoming_changes_with_css() {
             if settings.get(name)?.truthy() {

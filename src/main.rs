@@ -79,6 +79,22 @@ async fn run() -> Result<(), Box<dyn Error>> {
         mailer,
         bus,
     };
+    // SiteIconManager.ensure_optimized! at boot: the sized icons' files.
+    {
+        let mut conn = state.pool.acquire().await?;
+        let settings = discourse_rs::site_settings::SiteSettings::load(
+            &mut conn,
+            &state.site_setting_defs,
+            &state.config.globals,
+        )
+        .await?;
+        match discourse_rs::site_icons::ensure_optimized(&mut conn, &settings, &state.config).await
+        {
+            Ok(0) => {}
+            Ok(n) => tracing::info!(files = n, "made the site icons' optimized copies"),
+            Err(e) => tracing::error!("site icons: {e}"),
+        }
+    }
     // A worker beside the web server unless DISCOURSE_RS_JOBS=off, which
     // leaves the queue to a separate process.
     let worker = match std::env::var("DISCOURSE_RS_JOBS").as_deref() {
