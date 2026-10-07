@@ -34,17 +34,14 @@ struct NotFoundPage {
     html: String,
 }
 
-/// `show_json_errors`: format json or XHR.
-fn shows_json_errors(path: &str, headers: &HeaderMap) -> bool {
-    let has = |name: &str, needle: &str| {
-        headers
-            .get(name)
-            .and_then(|v| v.to_str().ok())
-            .is_some_and(|v| v.contains(needle))
-    };
+/// `show_json_errors?`: format json (the `.json` path, or as the Accept
+/// header decides it) or XHR.
+fn shows_json_errors(path: &str, query: Option<&str>, headers: &HeaderMap) -> bool {
     path.ends_with(".json")
-        || has("x-requested-with", "XMLHttpRequest")
-        || has(header::ACCEPT.as_str(), "application/json")
+        || headers
+            .get("x-requested-with")
+            .is_some_and(|v| v == "XMLHttpRequest")
+        || super::wants_json(query, headers)
 }
 
 pub async fn html_errors(
@@ -53,7 +50,11 @@ pub async fn html_errors(
     next: Next,
 ) -> Result<Response, AppError> {
     let wants_page = request.method() == Method::GET
-        && !shows_json_errors(request.uri().path(), request.headers());
+        && !shows_json_errors(
+            request.uri().path(),
+            request.uri().query(),
+            request.headers(),
+        );
     if !wants_page {
         return Ok(next.run(request).await);
     }
@@ -70,7 +71,12 @@ pub async fn html_errors(
             .headers()
             .get(header::CONTENT_TYPE)
             .is_some_and(|v| v.as_bytes().starts_with(b"application/json"));
-    if !json_not_found {
+    // NotLoggedIn on a page request is rescued as not found.
+    let not_logged_in = response
+        .extensions()
+        .get::<super::login_required::NotLoggedIn>()
+        .is_some();
+    if !json_not_found && !not_logged_in {
         return Ok(response);
     }
     let base_path = state.config.globals.relative_url_root().to_string();
@@ -132,9 +138,15 @@ mod tests {
     #[test]
     fn json_errors_for_json_and_xhr() {
         let mut headers = HeaderMap::new();
-        assert!(!shows_json_errors("/t/nope", &headers));
-        assert!(shows_json_errors("/t/nope.json", &headers));
+        assert!(!shows_json_errors("/t/nope", None, &headers));
+        assert!(shows_json_errors("/t/nope.json", None, &headers));
+        assert!(shows_json_errors("/t/nope", Some("format=json"), &headers));
+        // A browser-like Accept naming JSON is still a page request.
+        headers.insert(header::ACCEPT, "application/json, */*".parse().unwrap());
+        assert!(!shows_json_errors("/t/nope", None, &headers));
+        headers.insert(header::ACCEPT, "application/json".parse().unwrap());
+        assert!(shows_json_errors("/t/nope", None, &headers));
         headers.insert("x-requested-with", "XMLHttpRequest".parse().unwrap());
-        assert!(shows_json_errors("/t/nope", &headers));
+        assert!(shows_json_errors("/t/nope", None, &headers));
     }
 }

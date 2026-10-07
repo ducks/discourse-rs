@@ -132,7 +132,13 @@ pub async fn index(
     )
 }
 
-/// GET /review: the Ember app's page.
-pub async fn page() -> Result<Response, AppError> {
+/// GET /review: the Ember app's page, behind requires_login.
+pub async fn page(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+) -> Result<Response, AppError> {
+    if guardian.is_anonymous() {
+        return Ok(super::login_required::not_logged_in(&state));
+    }
     Err(Unsupported("the review page (HTML)").into())
 }

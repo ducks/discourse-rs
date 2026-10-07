@@ -152,6 +152,12 @@ pub(super) fn redirect_to_login(
         .into_response())
 }
 
+/// Marks a `not_logged_in` response, which a page request (a GET that is
+/// neither JSON nor XHR) gets as the not-found page instead
+/// (not_found::html_errors), as Rails rescues NotLoggedIn.
+#[derive(Clone, Copy)]
+pub(super) struct NotLoggedIn;
+
 /// `rescue_discourse_actions(:not_logged_in, 403)`. (topics#show's extras
 /// are added by the login_required gate, the one place it raises this.)
 pub(super) fn not_logged_in(state: &AppState) -> Response {
@@ -164,12 +170,14 @@ pub(super) fn not_logged_in(state: &AppState) -> Response {
             .unwrap_or("You need to be logged in to do that.")]),
     );
     body.insert("error_type".into(), json!("not_logged_in"));
-    (
+    let mut response = (
         StatusCode::FORBIDDEN,
         [(header::CACHE_CONTROL, "no-cache, no-store")],
         Json(serde_json::Value::Object(body)),
     )
-        .into_response()
+        .into_response();
+    response.extensions_mut().insert(NotLoggedIn);
+    response
 }
 
 #[derive(Template)]

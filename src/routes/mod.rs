@@ -539,7 +539,7 @@ fn json_twin_page(path: &str) -> bool {
 /// ActionDispatch's `formats`: the format param first, then the Accept
 /// header when valid (`valid_accept_header`), its types by q, the first
 /// kept on ties.
-fn wants_json(query: Option<&str>, headers: &axum::http::HeaderMap) -> bool {
+pub(super) fn wants_json(query: Option<&str>, headers: &axum::http::HeaderMap) -> bool {
     if let Some(format) = query
         .into_iter()
         .flat_map(|q| q.split('&'))
