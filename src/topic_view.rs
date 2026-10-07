@@ -2215,30 +2215,6 @@ impl TopicView<'_> {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn timeline_lookup_samples_days() {
-        assert_eq!(
-            timeline_lookup(&[(1, 0), (2, 0), (3, 0), (4, 0)], 300),
-            vec![[1, 0]]
-        );
-        assert_eq!(
-            timeline_lookup(&[(1, 5), (2, 5), (3, 2), (4, 0)], 300),
-            vec![[1, 5], [3, 2], [4, 0]]
-        );
-        assert!(timeline_lookup(&[], 300).is_empty());
-        // 600 posts sampled every 2, last index always considered.
-        let stream: Vec<(i32, i32)> = (0..600).map(|i| (i, 600 - i)).collect();
-        let lookup = timeline_lookup(&stream, 300);
-        assert_eq!(lookup.len(), 301);
-        assert_eq!(lookup[0], [1, 600]);
-        assert_eq!(lookup.last().unwrap(), &[600, 1]);
-    }
-}
-
 /// SuggestedTopicsBuilder: the results so far and what they exclude.
 struct Suggested {
     results: Vec<TopicRow>,
@@ -2276,5 +2252,29 @@ impl Suggested {
             }
             _ => self.results.extend(fresh),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn timeline_lookup_samples_days() {
+        assert_eq!(
+            timeline_lookup(&[(1, 0), (2, 0), (3, 0), (4, 0)], 300),
+            vec![[1, 0]]
+        );
+        assert_eq!(
+            timeline_lookup(&[(1, 5), (2, 5), (3, 2), (4, 0)], 300),
+            vec![[1, 5], [3, 2], [4, 0]]
+        );
+        assert!(timeline_lookup(&[], 300).is_empty());
+        // 600 posts sampled every 2, last index always considered.
+        let stream: Vec<(i32, i32)> = (0..600).map(|i| (i, 600 - i)).collect();
+        let lookup = timeline_lookup(&stream, 300);
+        assert_eq!(lookup.len(), 301);
+        assert_eq!(lookup[0], [1, 600]);
+        assert_eq!(lookup.last().unwrap(), &[600, 1]);
     }
 }
