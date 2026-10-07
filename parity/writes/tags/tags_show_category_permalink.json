@@ -1,0 +1,36 @@
+{
+  "name": "tags_show_category_permalink",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/tags/c/old-category/howto.json"
+    }
+  ],
+  "started_at": "2026-10-07T07:36:42.664323",
+  "transaction_started_at": "2026-10-07T07:36:37.615446",
+  "responses": [
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "settings": {
+    "tagging_enabled": true
+  },
+  "setup": [
+    "INSERT INTO permalinks (id, url, category_id, created_at, updated_at) VALUES (9811, 'c/old-category', 3, '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "recorded_from": {
+    "case": "32544f26822841d824f2d6484bf1799876c96338ebc598ba8eed0b51fe4919d4",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "user": "user0",
+  "settings": {
+    "tagging_enabled": true
+  },
+  "setup": [
+    "INSERT INTO tags (id, name, description, public_topic_count, staff_topic_count, pm_topic_count, created_at, updated_at) VALUES (9801, 'test', 'some description', 0, 0, 0, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO tags (id, name, public_topic_count, staff_topic_count, pm_topic_count, created_at, updated_at) VALUES (9802, 'topic-test', 1, 1, 5, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO tags (id, name, public_topic_count, staff_topic_count, pm_topic_count, created_at, updated_at) VALUES (9803, 'pm-only', 0, 0, 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO tags (id, name, target_tag_id, public_topic_count, staff_topic_count, pm_topic_count, created_at, updated_at) VALUES (9804, 'synonym', 9802, 0, 0, 0, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO tags (id, name, public_topic_count, staff_topic_count, created_at, updated_at) VALUES (9805, 'secret', 1, 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO category_tags (id, category_id, tag_id, created_at, updated_at) VALUES (9801, 3, 9805, '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/tags.json"
+    }
+  ]
+}

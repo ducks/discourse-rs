@@ -1,0 +1,15 @@
+{
+  "user": null,
+  "settings": {
+    "tagging_enabled": true
+  },
+  "setup": [
+    "INSERT INTO permalinks (id, url, category_id, created_at, updated_at) VALUES (9811, 'c/old-category', 3, '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/tags/c/old-category/howto.json"
+    }
+  ]
+}

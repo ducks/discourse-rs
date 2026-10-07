@@ -1,0 +1,20 @@
+{
+  "user": null,
+  "settings": {
+    "tagging_enabled": true
+  },
+  "setup": [
+    "INSERT INTO tags (id, name, slug, public_topic_count, staff_topic_count, created_at, updated_at) VALUES (9811, 'node.js', 'node-js', 1, 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO topic_tags (id, topic_id, tag_id, created_at, updated_at) VALUES (9811, 35, 9811, '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/tag/node-js/9811.json"
+    },
+    {
+      "method": "GET",
+      "path": "/tag/node%2Ejs.json"
+    }
+  ]
+}

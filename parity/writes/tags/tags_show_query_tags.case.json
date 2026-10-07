@@ -1,0 +1,20 @@
+{
+  "user": null,
+  "settings": {
+    "tagging_enabled": true
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/tag/howto.json?match_all_tags=true&tags%5B%5D=guide"
+    },
+    {
+      "method": "GET",
+      "path": "/tag/howto.json?match_all_tags=true&tags%5B%5D=howto&tags%5B%5D=guide"
+    },
+    {
+      "method": "GET",
+      "path": "/tag/howto.json?tags%5B0%5D=nada"
+    }
+  ]
+}

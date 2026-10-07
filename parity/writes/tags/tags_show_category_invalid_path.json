@@ -1,0 +1,155 @@
+{
+  "name": "tags_show_category_invalid_path",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/tags/c/general/4/somerandomstring/howto.json?per_page=1"
+    },
+    {
+      "method": "GET",
+      "path": "/tags/c/general/4/howto.json?per_page=1"
+    }
+  ],
+  "started_at": "2026-10-07T07:36:36.725771",
+  "transaction_started_at": "2026-10-07T07:36:33.640278",
+  "responses": [
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "users": [
+          {
+            "id": 2,
+            "username": "user0",
+            "name": "User0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+            "trust_level": 1
+          },
+          {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "admin": true,
+            "moderator": true,
+            "trust_level": 4
+          }
+        ],
+        "primary_groups": [],
+        "flair_groups": [],
+        "topic_list": {
+          "can_create_topic": false,
+          "filter": "latest",
+          "more_topics_url": "/tags/c/general/4/howto?match_all_tags=true&page=1&per_page=1&tags%5B%5D=howto",
+          "per_page": 1,
+          "top_tags": [
+            {
+              "id": 2,
+              "name": "guide",
+              "slug": "guide"
+            },
+            {
+              "id": 1,
+              "name": "howto",
+              "slug": "howto"
+            }
+          ],
+          "tags": [
+            {
+              "id": 1,
+              "name": "howto",
+              "slug": "howto",
+              "topic_count": 2,
+              "staff": false,
+              "description": null,
+              "description_cooked": null
+            }
+          ],
+          "topics": [
+            {
+              "fancy_title": "Parity fixture: liked and archived",
+              "id": 41,
+              "title": "Parity fixture: liked and archived",
+              "slug": "parity-fixture-liked-and-archived",
+              "posts_count": 1,
+              "reply_count": 0,
+              "highest_post_number": 1,
+              "image_url": null,
+              "created_at": "2026-09-30T07:28:30.067Z",
+              "last_posted_at": "2026-09-30T07:28:30.163Z",
+              "bumped": true,
+              "bumped_at": "2026-09-30T07:28:30.163Z",
+              "archetype": "regular",
+              "unseen": false,
+              "pinned": false,
+              "unpinned": null,
+              "visible": true,
+              "closed": false,
+              "archived": true,
+              "bookmarked": null,
+              "liked": null,
+              "tags": [
+                {
+                  "id": 2,
+                  "name": "guide",
+                  "slug": "guide"
+                },
+                {
+                  "id": 1,
+                  "name": "howto",
+                  "slug": "howto"
+                }
+              ],
+              "tags_descriptions": {},
+              "views": 0,
+              "like_count": 1,
+              "has_summary": false,
+              "last_poster_username": "user0",
+              "category_id": 4,
+              "op_like_count": 1,
+              "pinned_globally": false,
+              "featured_link": null,
+              "has_accepted_answer": false,
+              "can_vote": false,
+              "posters": [
+                {
+                  "extras": "latest",
+                  "description": "Original Poster, Most Recent Poster",
+                  "user_id": 2,
+                  "primary_group_id": null,
+                  "flair_group_id": null
+                },
+                {
+                  "extras": null,
+                  "description": "Recent Poster",
+                  "user_id": 1,
+                  "primary_group_id": null,
+                  "flair_group_id": null
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "settings": {
+    "tagging_enabled": true
+  },
+  "recorded_from": {
+    "case": "cd6252e064a3ff051b3c9ed8bd8c84ce2b149e95d39723bfe353e54feb3eeacd",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

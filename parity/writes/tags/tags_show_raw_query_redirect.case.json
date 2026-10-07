@@ -1,0 +1,16 @@
+{
+  "user": null,
+  "settings": {
+    "tagging_enabled": true
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/tag/howto?encoded=first%20value&duplicate=one&duplicate=two&path=%2Ffoo%2fbar",
+      "headers": {
+        "Accept": "text/html",
+        "X-Requested-With": ""
+      }
+    }
+  ]
+}

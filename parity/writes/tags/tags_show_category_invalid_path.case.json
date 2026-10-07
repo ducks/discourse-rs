@@ -1,0 +1,16 @@
+{
+  "user": null,
+  "settings": {
+    "tagging_enabled": true
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/tags/c/general/4/somerandomstring/howto.json?per_page=1"
+    },
+    {
+      "method": "GET",
+      "path": "/tags/c/general/4/howto.json?per_page=1"
+    }
+  ]
+}

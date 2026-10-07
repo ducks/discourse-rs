@@ -1,0 +1,112 @@
+{
+  "name": "tags_index_public_only",
+  "user": "user0",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/tags.json"
+    }
+  ],
+  "started_at": "2026-10-07T07:36:15.519646",
+  "transaction_started_at": "2026-10-07T07:36:08.016996",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "tags": [
+          {
+            "id": 1,
+            "text": "howto",
+            "name": "howto",
+            "slug": "howto",
+            "description": null,
+            "count": 2,
+            "pm_only": false,
+            "target_tag": null
+          },
+          {
+            "id": 2,
+            "text": "guide",
+            "name": "guide",
+            "slug": "guide",
+            "description": null,
+            "count": 2,
+            "pm_only": false,
+            "target_tag": null
+          },
+          {
+            "id": 9802,
+            "text": "topic-test",
+            "name": "topic-test",
+            "slug": "9802-tag",
+            "description": null,
+            "count": 1,
+            "pm_only": false,
+            "target_tag": null
+          }
+        ],
+        "extras": {
+          "categories": []
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 119,
+            "seen_at": null,
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "wDEluZkjk4iuXJlBl+WQg0dtxOY=",
+            "created_at": "2026-10-07T07:36:11.309009",
+            "rotated_at": "2026-10-07T07:36:11.30161",
+            "updated_at": "2026-10-07T07:36:11.309009",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "wDEluZkjk4iuXJlBl+WQg0dtxOY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 119,
+            "seen_at": "2026-10-07T07:36:15.557901",
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "wDEluZkjk4iuXJlBl+WQg0dtxOY=",
+            "created_at": "2026-10-07T07:36:11.309009",
+            "rotated_at": "2026-10-07T07:36:11.30161",
+            "updated_at": "2026-10-07T07:36:11.309009",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "wDEluZkjk4iuXJlBl+WQg0dtxOY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "settings": {
+    "tagging_enabled": true
+  },
+  "setup": [
+    "INSERT INTO tags (id, name, description, public_topic_count, staff_topic_count, pm_topic_count, created_at, updated_at) VALUES (9801, 'test', 'some description', 0, 0, 0, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO tags (id, name, public_topic_count, staff_topic_count, pm_topic_count, created_at, updated_at) VALUES (9802, 'topic-test', 1, 1, 5, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO tags (id, name, public_topic_count, staff_topic_count, pm_topic_count, created_at, updated_at) VALUES (9803, 'pm-only', 0, 0, 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO tags (id, name, target_tag_id, public_topic_count, staff_topic_count, pm_topic_count, created_at, updated_at) VALUES (9804, 'synonym', 9802, 0, 0, 0, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "UPDATE tags SET public_topic_count = 2, staff_topic_count = 2 WHERE id = 9804"
+  ],
+  "recorded_from": {
+    "case": "357b5dc6d954fda001fd6d45172b4858e8e536235e5bf63ffd2ea8d16aa50492",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

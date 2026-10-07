@@ -1,0 +1,12 @@
+{
+  "user": null,
+  "settings": {
+    "tagging_enabled": true
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/tags/c/general/sub-general/howto.json"
+    }
+  ]
+}

@@ -1,0 +1,130 @@
+{
+  "name": "tags_index_category_pm_only_user",
+  "user": "user0",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/tags.json"
+    }
+  ],
+  "started_at": "2026-10-07T07:34:19.29533",
+  "transaction_started_at": "2026-10-07T07:34:12.907019",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "tags": [
+          {
+            "id": 1,
+            "text": "howto",
+            "name": "howto",
+            "slug": "howto",
+            "description": null,
+            "count": 2,
+            "pm_only": false,
+            "target_tag": null
+          },
+          {
+            "id": 2,
+            "text": "guide",
+            "name": "guide",
+            "slug": "guide",
+            "description": null,
+            "count": 2,
+            "pm_only": false,
+            "target_tag": null
+          },
+          {
+            "id": 9802,
+            "text": "topic-test",
+            "name": "topic-test",
+            "slug": "9802-tag",
+            "description": null,
+            "count": 1,
+            "pm_only": false,
+            "target_tag": null
+          }
+        ],
+        "extras": {
+          "categories": [
+            {
+              "id": 4,
+              "tags": [
+                {
+                  "id": 9802,
+                  "text": "topic-test",
+                  "name": "topic-test",
+                  "slug": "9802-tag",
+                  "description": null,
+                  "count": 1,
+                  "pm_only": false,
+                  "target_tag": null
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 119,
+            "seen_at": null,
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "92nvm7w5vWzYqlW6NoWOTzj34xE=",
+            "created_at": "2026-10-07T07:34:15.045933",
+            "rotated_at": "2026-10-07T07:34:15.040836",
+            "updated_at": "2026-10-07T07:34:15.045933",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "92nvm7w5vWzYqlW6NoWOTzj34xE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 119,
+            "seen_at": "2026-10-07T07:34:19.324531",
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "92nvm7w5vWzYqlW6NoWOTzj34xE=",
+            "created_at": "2026-10-07T07:34:15.045933",
+            "rotated_at": "2026-10-07T07:34:15.040836",
+            "updated_at": "2026-10-07T07:34:15.045933",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "92nvm7w5vWzYqlW6NoWOTzj34xE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "settings": {
+    "tagging_enabled": true,
+    "tags_listed_by_group": false
+  },
+  "setup": [
+    "INSERT INTO tags (id, name, description, public_topic_count, staff_topic_count, pm_topic_count, created_at, updated_at) VALUES (9801, 'test', 'some description', 0, 0, 0, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO tags (id, name, public_topic_count, staff_topic_count, pm_topic_count, created_at, updated_at) VALUES (9802, 'topic-test', 1, 1, 5, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO tags (id, name, public_topic_count, staff_topic_count, pm_topic_count, created_at, updated_at) VALUES (9803, 'pm-only', 0, 0, 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO tags (id, name, target_tag_id, public_topic_count, staff_topic_count, pm_topic_count, created_at, updated_at) VALUES (9804, 'synonym', 9802, 0, 0, 0, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO category_tags (id, category_id, tag_id, created_at, updated_at) VALUES (9802, 4, 9802, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO category_tags (id, category_id, tag_id, created_at, updated_at) VALUES (9803, 4, 9803, '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "recorded_from": {
+    "case": "8db34f7f5658bbf3f48af66775ae697e7860e3fd1300d12c9e38b9c813f57c27",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

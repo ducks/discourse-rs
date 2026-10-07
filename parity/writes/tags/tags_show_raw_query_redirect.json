@@ -1,0 +1,32 @@
+{
+  "name": "tags_show_raw_query_redirect",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/tag/howto?encoded=first%20value&duplicate=one&duplicate=two&path=%2Ffoo%2fbar",
+      "headers": {
+        "Accept": "text/html",
+        "X-Requested-With": ""
+      }
+    }
+  ],
+  "started_at": "2026-10-07T07:37:23.079542",
+  "transaction_started_at": "2026-10-07T07:37:22.124455",
+  "responses": [
+    {
+      "status": 301,
+      "body": ""
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "settings": {
+    "tagging_enabled": true
+  },
+  "recorded_from": {
+    "case": "4121fcf30655dbae939cf1b7e2a59fb84e44ccaf3e053d5a31e074d2dbde8d96",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
