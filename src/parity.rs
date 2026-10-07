@@ -292,7 +292,49 @@ fn normalize_json(body: &str, ignore: &[String]) -> Result<Value, String> {
         remove_path(&mut value, &segments);
     }
     unscript(&mut value);
+    unorder(&mut value);
     Ok(value)
+}
+
+/// A response body's arrays whose order Rails leaves to the database, put
+/// in one order on both sides: a topic view's participants (by post count,
+/// post_counts_by_user leaves ties unordered) and allowed_users (an
+/// unordered association), ties and the latter by id; each post's
+/// link_counts (`ORDER BY reflection, clicks DESC`), ties by url.
+pub fn unorder(body: &mut Value) {
+    let id = |v: &Value| v["id"].as_i64().unwrap_or(0);
+    if let Some(details) = body.get_mut("details") {
+        if let Some(participants) = details
+            .get_mut("participants")
+            .and_then(Value::as_array_mut)
+        {
+            participants.sort_by_key(|p| (-p["post_count"].as_i64().unwrap_or(0), id(p)));
+        }
+        if let Some(users) = details
+            .get_mut("allowed_users")
+            .and_then(Value::as_array_mut)
+        {
+            users.sort_by_key(id);
+        }
+    }
+    let posts = body
+        .get_mut("post_stream")
+        .and_then(|s| s.get_mut("posts"))
+        .and_then(Value::as_array_mut);
+    for post in posts.into_iter().flatten() {
+        if let Some(links) = post.get_mut("link_counts").and_then(Value::as_array_mut) {
+            links.sort_by(|a, b| {
+                let key = |l: &Value| {
+                    (
+                        l["reflection"].as_bool().unwrap_or(false),
+                        -l["clicks"].as_i64().unwrap_or(0),
+                        l["url"].as_str().unwrap_or("").to_string(),
+                    )
+                };
+                key(a).cmp(&key(b))
+            });
+        }
+    }
 }
 
 /// Entrypoint script tags in HTML strings without Rails' asset digest and
@@ -554,6 +596,35 @@ mod tests {
     fn non_json_bodies_under_a_json_type_are_reported() {
         let err = compare(&case(&[]), &json("{}"), &json("<html>"), NAMES).unwrap_err();
         assert!(err.contains("rs body is not JSON"), "{err}");
+    }
+
+    #[test]
+    fn orders_rails_leaves_undefined_compare_equal() {
+        let rails = json(
+            r#"{"details": {"participants": [{"id": 9, "post_count": 1}, {"id": 2, "post_count": 3}, {"id": 4, "post_count": 1}],
+                "allowed_users": [{"id": 3}, {"id": 2}]},
+               "post_stream": {"posts": [{"link_counts": [
+                 {"url": "/b", "reflection": false, "clicks": 0},
+                 {"url": "/a", "reflection": false, "clicks": 0},
+                 {"url": "/r", "reflection": true, "clicks": 5}]}]}}"#,
+        );
+        let rs = json(
+            r#"{"details": {"participants": [{"id": 2, "post_count": 3}, {"id": 4, "post_count": 1}, {"id": 9, "post_count": 1}],
+                "allowed_users": [{"id": 2}, {"id": 3}]},
+               "post_stream": {"posts": [{"link_counts": [
+                 {"url": "/a", "reflection": false, "clicks": 0},
+                 {"url": "/b", "reflection": false, "clicks": 0},
+                 {"url": "/r", "reflection": true, "clicks": 5}]}]}}"#,
+        );
+        assert!(compare(&case(&[]), &rails, &rs, NAMES).is_ok());
+
+        // A count that differs still does.
+        let more = json(
+            r#"{"details": {"participants": [{"id": 2, "post_count": 3}, {"id": 4, "post_count": 2}, {"id": 9, "post_count": 1}],
+                "allowed_users": [{"id": 2}, {"id": 3}]},
+               "post_stream": {"posts": [{"link_counts": []}]}}"#,
+        );
+        assert!(compare(&case(&[]), &rails, &more, NAMES).is_err());
     }
 }
 
