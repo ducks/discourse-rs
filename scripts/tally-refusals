@@ -111,6 +111,10 @@ awk '/^== / { url = $2 " " $3; next }
 total=$(wc -l < "$work/results")
 failed=$(awk '$2 >= 500' "$work/results" | wc -l)
 echo "requests: $total, 5xx: $failed ($(cut -f2 "$work/refusals" | sort -u | wc -l) refused as not ported)"
+# The status mix, so a crawl that mostly 404s or redirects is not taken
+# for a clean one.
+echo "statuses: $(cut -d" " -f2 "$work/results" | sort | uniq -c | sort -rn | awk '{printf "%s %s, ", $2, $1}' | sed 's/, $//')"
+awk '$2 >= 400 && $2 < 500' "$work/results" | head -30
 echo
 echo "URLs  reason"
 cut -f1 "$work/refusals" | sort | uniq -c | sort -rn
