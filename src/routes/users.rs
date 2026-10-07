@@ -584,7 +584,13 @@ async fn posts_feed(
             json!(crate::excerpt::excerpt(
                 &cooked,
                 max_length,
-                &crate::excerpt::Options::default()
+                &crate::excerpt::Options {
+                    post_url: post_url
+                        .as_ref()
+                        .and_then(Value::as_str)
+                        .map(str::to_string),
+                    ..Default::default()
+                }
             )),
         );
         post.insert("truncated".into(), json!(true));
