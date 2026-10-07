@@ -78,6 +78,26 @@ const PLUGIN_CATEGORY_FIELDS: [&str; 12] = [
     "sort_topics_by_event_start_date",
 ];
 
+/// The topic view details whose order Rails leaves to the database:
+/// participants by post count with ties unordered (post_counts_by_user
+/// sorts by count only), and allowed_users (an unordered association).
+/// Ties go by id, on both sides.
+fn unorder_topic_details(details: &mut Value) {
+    let id = |v: &Value| v["id"].as_i64().unwrap_or(0);
+    if let Some(participants) = details
+        .get_mut("participants")
+        .and_then(Value::as_array_mut)
+    {
+        participants.sort_by_key(|p| (-p["post_count"].as_i64().unwrap_or(0), id(p)));
+    }
+    if let Some(users) = details
+        .get_mut("allowed_users")
+        .and_then(Value::as_array_mut)
+    {
+        users.sort_by_key(id);
+    }
+}
+
 /// A category's `custom_fields` holding only plugin fields.
 fn only_plugin_category_fields(value: &Value) -> bool {
     value.as_object().is_some_and(|fields| {
@@ -477,6 +497,15 @@ fn normalize(value: &Value, started: NaiveDateTime) -> Value {
             map.iter()
                 .filter(|(k, _)| !PLUGIN_KEYS.contains(&k.as_str()))
                 .filter(|(k, v)| !(k.as_str() == "custom_fields" && only_plugin_category_fields(v)))
+                // The reference's poll and post-voting plugins register
+                // NewPostManager handlers, which turn queued posts on for
+                // every topic view; empty, they say nothing.
+                .filter(|(k, v)| {
+                    !matches!(
+                        (k.as_str(), v),
+                        ("pending_posts", Value::Array(a)) if a.is_empty()
+                    ) && !(k.as_str() == "queued_posts_count" && v.as_i64() == Some(0))
+                })
                 .map(|(k, v)| match (k.as_str(), v) {
                     // A session token: random on every run.
                     ("auth_token", Value::String(_)) => {
@@ -997,6 +1026,12 @@ async fn replay(case: &Value, run_jobs: &[String]) -> Vec<String> {
                 .and_then(|b| b.get_mut("user"))
             {
                 undrift_user(user);
+            }
+            if let Some(details) = response["body"]
+                .as_object_mut()
+                .and_then(|b| b.get_mut("details"))
+            {
+                unorder_topic_details(details);
             }
         }
     }

@@ -13,6 +13,5 @@
       "method": "GET",
       "path": "/t/parity-fixture-pm-user1-to-user0/42.json"
     }
-  ],
-  "not_yet": "details.allowed_users order differs; pending_posts missing for the viewer."
+  ]
 }

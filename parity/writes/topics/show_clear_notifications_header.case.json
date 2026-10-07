@@ -9,5 +9,5 @@
       }
     }
   ],
-  "not_yet": "The Discourse-Clear-Notifications header is ignored."
+  "not_yet": "The Discourse-Clear-Notifications header is ignored; Suggested topics for a user ignore new and unread first."
 }
