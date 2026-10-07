@@ -38,7 +38,7 @@ const BACKGROUND_TABLES: [&str; 3] = ["scheduler_stats", "top_topics", "user_aut
 const UNORDERED_INSERTS: [&str; 2] = ["sidebar_section_links", "upload_references"];
 
 /// Keys plugins add to the post and topic serializers on the reference.
-const PLUGIN_KEYS: [&str; 12] = [
+const PLUGIN_KEYS: [&str; 19] = [
     "has_accepted_answer",
     "event",
     "calendar_details",
@@ -51,6 +51,13 @@ const PLUGIN_KEYS: [&str; 12] = [
     "reaction_users_count",
     "current_user_used_main_reaction",
     "can_vote",
+    "vote_count",
+    "user_voted",
+    "valid_reactions",
+    "can_create_shared_issue",
+    "shared_issue_visible",
+    "discourse_zendesk_plugin_zendesk_id",
+    "discourse_zendesk_plugin_zendesk_url",
 ];
 
 /// Category custom fields the reference's plugins preload

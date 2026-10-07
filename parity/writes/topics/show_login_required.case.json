@@ -1,0 +1,37 @@
+{
+  "user": null,
+  "settings": {
+    "login_required": true
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/t/parity-fixture-replies-and-posters/35",
+      "headers": {
+        "Accept": "text/html",
+        "X-Requested-With": ""
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/t/parity-fixture-replies-and-posters/35.json"
+    },
+    {
+      "method": "GET",
+      "path": "/t/parity-fixture-replies-and-posters/35.json",
+      "headers": {
+        "Api-Key": "bad"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/t/parity-fixture-replies-and-posters/35.html",
+      "headers": {
+        "Api-Key": "bad",
+        "Accept": "text/html",
+        "X-Requested-With": ""
+      }
+    }
+  ],
+  "not_yet": "An invalid API key on a non-JSON request answers JSON, Rails the plain message."
+}

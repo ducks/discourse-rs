@@ -1,0 +1,13 @@
+{
+  "user": "user0",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/t/35.json",
+      "headers": {
+        "Discourse-Clear-Notifications": "2828,100,39"
+      }
+    }
+  ],
+  "not_yet": "The Discourse-Clear-Notifications header is ignored."
+}

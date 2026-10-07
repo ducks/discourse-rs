@@ -1,0 +1,9 @@
+{
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/t/parity-fixture-replies-and-posters/35.json?page=2"
+    }
+  ]
+}

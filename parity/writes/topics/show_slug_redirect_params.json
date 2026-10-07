@@ -1,0 +1,49 @@
+{
+  "name": "show_slug_redirect_params",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/t/parity-fixture-replies-and-posters?post_number=42"
+    },
+    {
+      "method": "GET",
+      "path": "/t/parity-fixture-replies-and-posters?post_number=42&page=123"
+    },
+    {
+      "method": "GET",
+      "path": "/t/parity-fixture-replies-and-posters?post_number=42&page%5B%5D=2"
+    },
+    {
+      "method": "GET",
+      "path": "/t/parity-fixture-replies-and-posters?silly_param=hehe"
+    }
+  ],
+  "started_at": "2026-10-07T05:11:03.920169",
+  "transaction_started_at": "2026-10-07T05:11:03.273311",
+  "responses": [
+    {
+      "status": 301,
+      "body": ""
+    },
+    {
+      "status": 301,
+      "body": ""
+    },
+    {
+      "status": 301,
+      "body": ""
+    },
+    {
+      "status": 301,
+      "body": ""
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "recorded_from": {
+    "case": "12a435616a962ad8b26e8cd8bc2c18d70c9339727cb3ac84dadfe12c306f6660",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
