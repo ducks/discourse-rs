@@ -240,6 +240,7 @@ GET /u/user1.json as=user0 ignore=/user/can_chat_user,/user/accepted_answers,/us
 GET /u/admin.json as=user0 ignore=/user/can_chat_user,/user/accepted_answers,/user/profile_view_count
 GET /u/user0.json as=user1 ignore=/user/can_chat_user,/user/accepted_answers,/user/profile_view_count
 GET /u/user0/summary.json as=user1 ignore=/user_summary/solved_count,/topics/*/has_accepted_answer,/topics/*/can_have_answer
+GET /u/user1/summary.json as=user1 ignore=/user_summary/solved_count,/topics/*/has_accepted_answer,/topics/*/can_have_answer
 GET /u/user0/summary.json as=admin ignore=/user_summary/solved_count,/topics/*/has_accepted_answer,/topics/*/can_have_answer
 GET /user_actions.json?username=user0 as=user1
 

@@ -22,6 +22,7 @@ pub enum UsersError {
     Unsupported(Unsupported),
     TopicList(TopicListError),
     Avatar(AvatarError),
+    Bookmarks(crate::bookmarks::BookmarksError),
 }
 
 impl std::fmt::Display for UsersError {
@@ -32,6 +33,7 @@ impl std::fmt::Display for UsersError {
             UsersError::Unsupported(e) => e.fmt(f),
             UsersError::TopicList(e) => e.fmt(f),
             UsersError::Avatar(e) => e.fmt(f),
+            UsersError::Bookmarks(e) => e.fmt(f),
         }
     }
 }
@@ -75,6 +77,12 @@ impl From<TopicListError> for UsersError {
 impl From<AvatarError> for UsersError {
     fn from(e: AvatarError) -> Self {
         UsersError::Avatar(e)
+    }
+}
+
+impl From<crate::bookmarks::BookmarksError> for UsersError {
+    fn from(e: crate::bookmarks::BookmarksError) -> Self {
+        UsersError::Bookmarks(e)
     }
 }
 
@@ -1323,6 +1331,19 @@ impl Users<'_> {
             "recent_time_read".into(),
             json!(self.recent_time_read(user.id).await?),
         );
+        // For the user themself.
+        if self.guardian.user_id() == Some(user.id) {
+            let count = crate::bookmarks::Bookmarks {
+                conn: &mut *self.conn,
+                settings: self.settings,
+                i18n: self.i18n,
+                guardian: self.guardian,
+                urls: self.urls,
+            }
+            .count_all(user.id)
+            .await?;
+            s.insert("bookmark_count".into(), json!(count));
+        }
         s.insert("can_see_summary_stats".into(), json!(true));
         s.insert(
             "can_see_user_actions".into(),
