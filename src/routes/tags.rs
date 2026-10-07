@@ -135,16 +135,6 @@ fn query_tags(raw_query: Option<&str>) -> Result<Vec<String>, Unsupported> {
     Ok(out)
 }
 
-/// `request.format.json?` for a path without `.json`: an Accept header
-/// that leads with JSON (a browser's leads with text/html).
-fn accepts_json(headers: &HeaderMap) -> bool {
-    headers
-        .get(header::ACCEPT)
-        .and_then(|v| v.to_str().ok())
-        .and_then(|v| v.split(',').next())
-        .is_some_and(|first| first.trim().starts_with("application/json"))
-}
-
 /// `construct_url_with(:next, list_opts)`: the request's tag route with
 /// the list options as query params, sorted, `.json` dropped.
 pub(super) fn next_url(
@@ -239,9 +229,6 @@ async fn show_list(
     headers: HeaderMap,
     uri: axum::http::Uri,
 ) -> Result<Response, AppError> {
-    // respond_to: an Accept that leads with JSON gets JSON without `.json`.
-    let mut path = path;
-    path.json |= accepts_json(&headers);
     // Before the page's data is read (crate::bus::page_position).
     let bus_position = if path.json {
         String::new()

@@ -106,13 +106,15 @@ pub struct AppState {
 }
 
 pub fn app(state: AppState) -> Router {
-    // The method override must run before routing (a POST becomes a
-    // DELETE), and the session is resolved before anything else, so both
+    // The method override and the request format must run before routing
+    // (a POST becomes a DELETE, an Accept-led JSON request its `.json`
+    // route), and the session is resolved before anything else, so they
     // wrap the routed app from the outside.
     let routed = routes::router(&state).with_state(state.clone());
     Router::new()
         .fallback_service(routed)
         .layer(axum::middleware::from_fn(routes::method_override))
+        .layer(axum::middleware::from_fn(routes::request_format))
         .layer(axum::middleware::from_fn_with_state(
             state,
             session::current::layer,

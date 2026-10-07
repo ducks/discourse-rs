@@ -187,6 +187,12 @@ GET /new.json
 GET /read
 GET /bookmarks
 
+# request.format from the Accept header (the harness sends an XHR with a
+# JSON Accept): extensionless pages answer as their .json twins.
+GET /latest ignore=/topic_list/topics/*/has_accepted_answer,/topic_list/topics/*/can_vote
+GET /categories ignore=/category_list/categories/*/custom_fields,/category_list/categories/*/topics/*/has_accepted_answer
+GET /u/user1/summary ignore=/user_summary/solved_count,/topics/*/has_accepted_answer,/topics/*/can_have_answer,/user_summary/top_categories
+
 # topics#show for a logged-in user. pending_posts/queued_posts_count are
 # ignored because a third-party plugin's NewPostManager handler turns
 # queued posts on for the reference; the port only knows core's reasons.
