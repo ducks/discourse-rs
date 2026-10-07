@@ -77,6 +77,32 @@ pub(crate) fn invalid_access_with(state: &AppState, message_key: &str) -> Respon
         .into_response()
 }
 
+/// `invalid_access_with` raised inside a controller, which for topics#show
+/// adds the not-found extras (its HTML is not ported).
+pub(crate) fn invalid_access_at(state: &AppState, message_key: &str, path: &str) -> Response {
+    if !path.starts_with("/t/") {
+        return invalid_access_with(state, message_key);
+    }
+    let i18n = &state.i18n;
+    let text = i18n
+        .t(message_key)
+        .unwrap_or("You are not permitted to view the requested resource.");
+    (
+        StatusCode::FORBIDDEN,
+        [(header::CACHE_CONTROL, "no-cache, no-store")],
+        Json(json!({
+            "errors": [text],
+            "error_type": "invalid_access",
+            "extras": {
+                "title": i18n.t("page_not_found.page_title").unwrap_or("Page Not Found"),
+                "html": "",
+                "group": null,
+            },
+        })),
+    )
+        .into_response()
+}
+
 /// The peer address when the server was started with connect info.
 pub struct Peer(pub Option<SocketAddr>);
 
