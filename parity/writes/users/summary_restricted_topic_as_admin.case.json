@@ -1,0 +1,16 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE topics SET category_id = 3 WHERE id = 41"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/u/user0/summary.json"
+    },
+    {
+      "method": "GET",
+      "path": "/user_actions.json?username=user0&filter=4,5"
+    }
+  ]
+}

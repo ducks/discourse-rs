@@ -38,8 +38,9 @@ const BACKGROUND_TABLES: [&str; 3] = ["scheduler_stats", "top_topics", "user_aut
 const UNORDERED_INSERTS: [&str; 2] = ["sidebar_section_links", "upload_references"];
 
 /// Keys plugins add to the post and topic serializers on the reference.
-const PLUGIN_KEYS: [&str; 19] = [
+const PLUGIN_KEYS: [&str; 20] = [
     "has_accepted_answer",
+    "solved_count",
     "event",
     "calendar_details",
     "accepted_answer",
