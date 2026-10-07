@@ -1079,7 +1079,19 @@ impl Users<'_> {
 
     /// users#summary: `{topics, [badges, badge_types, users], user_summary}`.
     pub async fn summary(&mut self, user: &User) -> Result<Value, UsersError> {
-        let secured = "topics.deleted_at IS NULL AND (topics.category_id IS NULL OR topics.category_id IN (SELECT id FROM categories WHERE NOT read_restricted))";
+        // Topic.secured(guardian): the viewer's secure categories too.
+        let secure = self
+            .guardian
+            .secure_category_ids(&mut *self.conn, self.settings)
+            .await?
+            .iter()
+            .map(|id| id.to_string())
+            .collect::<Vec<_>>()
+            .join(",");
+        let secured = format!(
+            "topics.deleted_at IS NULL AND (topics.category_id IS NULL OR topics.category_id IN \
+             (SELECT id FROM categories WHERE NOT read_restricted OR id = ANY(ARRAY[{secure}]::int[])))"
+        );
         let listable_visible = "topics.deleted_at IS NULL AND topics.archetype != 'private_message' AND topics.visible = TRUE";
         let post_query = format!(
             "FROM posts JOIN topics ON topics.deleted_at IS NULL AND topics.id = posts.topic_id \
@@ -1441,7 +1453,7 @@ impl Users<'_> {
         Ok(out)
     }
 
-    /// `UserAction.stream` + UserActionSerializer for an anonymous reader.
+    /// `UserAction.stream` + UserActionSerializer.
     pub async fn actions(
         &mut self,
         user: &User,
@@ -1477,9 +1489,24 @@ impl Users<'_> {
              AND (NOT COALESCE(p.hidden, p2.hidden, false)) \
              AND (COALESCE(p.post_type, p2.post_type) IN (1, 2, 3)) \
              AND (t.visible) AND (t.archetype <> 'private_message') \
-             AND ((c.read_restricted IS NULL OR NOT c.read_restricted)) \
              AND (a.user_id = $1)",
         );
+        // filter_categories: admins see every category, others their
+        // secure ones besides the open.
+        if !self.guardian.is_admin() {
+            let secure = self
+                .guardian
+                .secure_category_ids(&mut *self.conn, self.settings)
+                .await?
+                .iter()
+                .map(|id| id.to_string())
+                .collect::<Vec<_>>()
+                .join(",");
+            sql.push_str(&format!(
+                " AND (c.read_restricted IS NULL OR NOT c.read_restricted \
+                 OR c.id = ANY(ARRAY[{secure}]::int[]))"
+            ));
+        }
         if !action_types.is_empty() {
             sql.push_str(" AND (a.action_type = ANY($4))");
         }
