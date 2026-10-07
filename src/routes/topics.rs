@@ -19,6 +19,8 @@ use crate::{AppError, AppState};
 #[derive(Deserialize, Default)]
 pub struct ShowParams {
     page: Option<String>,
+    /// `?slug=`: params[:slug] when the path has none (path params win).
+    slug: Option<String>,
 }
 
 /// `/t/:id` and `/t/:slug` (the id route also catches a bare slug).
@@ -174,6 +176,7 @@ async fn show(
         uri,
         guardian,
     } = incoming;
+    let slug = slug.or(params.slug.as_deref());
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
