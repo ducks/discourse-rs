@@ -2169,9 +2169,14 @@ pub fn timeline_lookup(stream: &[(i32, i32)], max_values: usize) -> Vec<[i64; 2]
 impl TopicView<'_> {
     /// `TopicLink.counts_for` for one visible (non-hidden) source post, as
     /// PostSerializer#link_counts shapes it: links whose target topic is
-    /// visible and readable, external links always, `ORDER BY reflection,
-    /// clicks DESC`.
+    /// visible and in a category the viewer may read (`secure_category`),
+    /// not muted by a logged-in viewer, external links always, `ORDER BY
+    /// reflection, clicks DESC`.
     async fn link_counts(&mut self, post_id: i32) -> Result<Vec<Value>, TopicViewError> {
+        let secure = self
+            .guardian
+            .secure_category_ids(&mut *self.conn, self.settings)
+            .await?;
         #[derive(sqlx::FromRow)]
         struct Link {
             url: String,
@@ -2186,16 +2191,20 @@ impl TopicView<'_> {
              LEFT JOIN topics t ON t.id = l.link_topic_id \
              LEFT JOIN categories c ON c.id = t.category_id \
              LEFT JOIN posts target_posts ON l.link_post_id = target_posts.id \
+             LEFT JOIN topic_users tu ON t.id = tu.topic_id AND tu.user_id = $3 \
              WHERE l.post_id = $1 \
                AND t.deleted_at IS NULL \
                AND (t.id IS NULL OR t.visible = true) \
                AND (l.internal = false OR t.id IS NOT NULL) \
                AND (l.link_post_id IS NULL OR (target_posts.id IS NOT NULL AND target_posts.deleted_at IS NULL)) \
                AND COALESCE(t.archetype, 'regular') <> 'private_message' \
-               AND (c.id IS NULL OR NOT c.read_restricted) \
+               AND ($3::int IS NULL OR COALESCE(tu.notification_level, 1) > 0) \
+               AND (NOT COALESCE(c.read_restricted, false) OR c.id = ANY($2)) \
              ORDER BY l.reflection ASC, l.clicks DESC",
         )
         .bind(post_id)
+        .bind(&secure)
+        .bind(self.guardian.user_id())
         .fetch_all(&mut *self.conn)
         .await?;
         Ok(links
