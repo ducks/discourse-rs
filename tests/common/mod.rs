@@ -35,18 +35,21 @@ impl TestDb {
         TestDb::create(&[]).await
     }
 
-    /// A copy whose database clock can be pinned (`pin_clock`): `now()` and
-    /// `clock_timestamp()` resolve to functions in a `test_clock` schema,
-    /// searched before pg_catalog, that answer the pinned time when there
-    /// is one.
+    /// A copy whose database clock can be pinned (`pin_clock`) or shifted
+    /// (`shift_clock`): `now()` and `clock_timestamp()` resolve to functions
+    /// in a `test_clock` schema, searched before pg_catalog, that answer the
+    /// pinned time when there is one, else the real one shifted.
     pub async fn with_clock() -> TestDb {
         TestDb::create(&[
             "CREATE SCHEMA test_clock",
             "CREATE TABLE test_clock.pinned (at timestamptz NOT NULL)",
+            "CREATE TABLE test_clock.shifted (by interval NOT NULL)",
             "CREATE FUNCTION test_clock.now() RETURNS timestamptz LANGUAGE sql STABLE AS \
-             'SELECT COALESCE((SELECT at FROM test_clock.pinned LIMIT 1), pg_catalog.now())'",
+             'SELECT COALESCE((SELECT at FROM test_clock.pinned LIMIT 1), \
+                              pg_catalog.now() + COALESCE((SELECT by FROM test_clock.shifted LIMIT 1), interval ''0''))'",
             "CREATE FUNCTION test_clock.clock_timestamp() RETURNS timestamptz LANGUAGE sql VOLATILE AS \
-             'SELECT COALESCE((SELECT at FROM test_clock.pinned LIMIT 1), pg_catalog.clock_timestamp())'",
+             'SELECT COALESCE((SELECT at FROM test_clock.pinned LIMIT 1), \
+                              pg_catalog.clock_timestamp() + COALESCE((SELECT by FROM test_clock.shifted LIMIT 1), interval ''0''))'",
             r#"ALTER DATABASE "{db}" SET search_path = test_clock, pg_catalog, "$user", public"#,
         ])
         .await
@@ -118,6 +121,21 @@ impl TestDb {
                 .await
                 .expect("pinning the database clock");
         }
+    }
+
+    /// Shifts both clocks by `by`, still running: a write case replays as
+    /// if from when Rails recorded it, with time passing as it did there.
+    pub async fn shift_clock(&self, by: chrono::Duration) {
+        discourse_rs::clock::shift(Some(by));
+        sqlx::query("DELETE FROM test_clock.shifted")
+            .execute(&self.pool)
+            .await
+            .expect("unshifting the database clock");
+        sqlx::query("INSERT INTO test_clock.shifted (by) VALUES (make_interval(secs => $1))")
+            .bind(by.num_microseconds().unwrap_or(0) as f64 / 1_000_000.0)
+            .execute(&self.pool)
+            .await
+            .expect("shifting the database clock");
     }
 }
 

@@ -850,7 +850,12 @@ async fn apply_settings(pool: &PgPool, state: &AppState, case: &Value) {
 }
 
 async fn replay(case: &Value, run_jobs: &[String]) -> Vec<String> {
-    let db = TestDb::new().await;
+    let db = TestDb::with_clock().await;
+    // The case runs from when Rails ran it, so what counts from now (days
+    // ago, new topic windows) answers as it did then.
+    if let Some(started) = case["started_at"].as_str().and_then(timestamp) {
+        db.shift_clock(started.and_utc() - chrono::Utc::now()).await;
+    }
     // A public dir of the case's own, for the files uploads store.
     let public = std::env::temp_dir().join(format!(
         "discourse-rs-writes-{}-{}",
