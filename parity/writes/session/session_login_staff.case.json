@@ -1,0 +1,16 @@
+{
+  "user": null,
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/session.json",
+      "params": {
+        "login": "admin",
+        "password": "password"
+      }
+    }
+  ],
+  "run_jobs": [
+    "suspicious_login"
+  ]
+}

@@ -881,6 +881,12 @@ async fn replay(case: &Value, run_jobs: &[String]) -> Vec<String> {
             .await
             .unwrap_or_else(|e| panic!("setup {sql}: {e}"));
     }
+    // The recorder drops what the login and setup enqueued (ENQUEUED.clear),
+    // such as a staff login's suspicious_login.
+    sqlx::query("DELETE FROM discourse_rs.jobs")
+        .execute(&db.pool)
+        .await
+        .unwrap();
 
     let tables = tables(&db.pool).await;
     let mut before_sums = HashMap::new();
