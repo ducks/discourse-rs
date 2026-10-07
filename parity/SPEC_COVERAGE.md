@@ -87,8 +87,8 @@ Scenarios per action (an `it` marked (xN) counts N).
 | CategoriesController#index | 4 | 9 | 5 | 12 |
 | SearchController#query | 3 | 12 | 8 | 5 |
 | SearchController#show | 8 | 8 | 5 | 5 |
-| TagsController#index | 3 | 19 | 1 | 9 |
-| TagsController#show (+ show in category) | 6 | 14 | 0 | 9 |
+| TagsController#index | 22 | 0 | 1 | 9 |
+| TagsController#show (+ show in category) | 20 | 0 | 0 | 9 |
 | SiteController#site | 0 | 0 | 0 | 1 |
 | SiteController#basic_info | 2 | 0 | 0 | 0 |
 | RobotsTxtController#builder | 1 | 1 | 0 | 0 |
@@ -96,7 +96,7 @@ Scenarios per action (an `it` marked (xN) counts N).
 | SitemapController | 6 | 4 | 0 | 0 |
 | UserAvatarsController#show_proxy_letter | 0 | 1 | 1 | 0 |
 | StylesheetsController (color definitions) | 0 | 0 | 4 | 10 |
-| **All (67 sections)** | **356** | **341** | **207** | **514** |
+| **All (67 sections)** | **389** | **308** | **207** | **514** |
 
 ## Cases added from this inventory
 
@@ -1618,30 +1618,30 @@ its own branch (`git log --merges --grep fix/`), so all 94 match.
 
 | Line | Scenario | Class | Case / note |
 |---|---|---|---|
-| 34 | retrieves all tags but synonyms as staff (x2 via shared examples) | recordable | setup synonym + pm-only tag rows; admin GET /tags.json (listed_by_group=false variant; the true variant is out-of-scope) |
-| 68 | no pm_count when user cannot tag PMs (x2) | recordable | settings display_personal_messages_tag_counts=true, admin |
-| 86 | pm_count when allowed (x2) | recordable | settings pm_tags_allowed_for_groups=1 + display_personal_messages_tag_counts |
-| 114 | tags restricted to unseen category not listed (x2) | recordable | setup category_tags (cat 3, new tag) as moderator; seed has no moderator-only user, user0 works |
+| 34 | retrieves all tags but synonyms as staff (x2 via shared examples) | covered | parity/writes/tags |
+| 68 | no pm_count when user cannot tag PMs (x2) | covered | parity/writes/tags |
+| 86 | pm_count when allowed (x2) | covered | parity/writes/tags |
+| 114 | tags restricted to unseen category not listed (x2) | covered | parity/writes/tags |
 | 128 | non-staff only sees tags used in public topics (x2) | covered | golden: GET /tags.json as=user1 |
-| 164 | pm tags enabled > topic and pm counts | recordable | settings + setup pm tag on topic 42 |
+| 164 | pm tags enabled > topic and pm counts | covered | parity/writes/tags |
 | 177 | pm tags enabled > other users' PM tag list 404 | out-of-scope | /u/:username/messages/tags not routed (other action) |
-| 191 | pm tags disabled > pm-only tags shown to admins | recordable | setup pm-only tag |
-| 205 | pm tags disabled > hidden from regular users | recordable | as above, user0 |
+| 191 | pm tags disabled > pm-only tags shown to admins | covered | parity/writes/tags |
+| 205 | pm tags disabled > hidden from regular users | covered | parity/writes/tags |
 | 222 | listed_by_group > restricted category tags hidden | out-of-scope | Unsupported("tags_listed_by_group") src/routes/tags.rs:528 |
 | 234 | listed_by_group > pm-only hidden from groups | out-of-scope | same marker |
 | 245 | listed_by_group > pm-only shown to admins | out-of-scope | same marker |
 | 259 | listed_by_group > works for tags in groups | out-of-scope | same marker |
 | 277 | listed_by_group > no N+1 | out-of-scope | same marker |
-| 324 | not grouped > pm-only hidden from category tag lists | recordable | setup category_tags + pm-only tag |
-| 335 | not grouped > pm-only shown in category lists to admins | recordable | as above, admin |
-| 349 | not grouped > tags and category tags for admin | recordable | setup category_tags (cat 4, tag 1), admin |
+| 324 | not grouped > pm-only hidden from category tag lists | covered | parity/writes/tags |
+| 335 | not grouped > pm-only shown in category lists to admins | covered | parity/writes/tags |
+| 349 | not grouped > tags and category tags for admin | covered | parity/writes/tags |
 | 386 | not grouped > no N+1 with category tags | needs-harness | SQL query counting |
 | 453 | hidden tags > returned to admins | covered | tags_show_hidden_as_admin (new) |
-| 460 | hidden tags > not returned to anon | recordable | same setup, anon GET /tags.json |
-| 466 | hidden tags > not returned to regular user | recordable | same setup, user0 |
-| 476 | hidden + restricted to category > admins | recordable | setup + category_tags |
-| 485 | hidden + restricted to category > anon | recordable | as above |
-| 491 | hidden + restricted to category > regular user | recordable | as above |
+| 460 | hidden tags > not returned to anon | covered | parity/writes/tags |
+| 466 | hidden tags > not returned to regular user | covered | parity/writes/tags |
+| 476 | hidden + restricted to category > admins | covered | parity/writes/tags |
+| 485 | hidden + restricted to category > anon | covered | parity/writes/tags |
+| 491 | hidden + restricted to category > regular user | covered | parity/writes/tags |
 | 502 | hidden + listed by group > admins | out-of-scope | Unsupported("tags_listed_by_group") |
 | 511 | hidden + listed by group > anon | out-of-scope | same marker |
 | 517 | hidden + listed by group > regular user | out-of-scope | same marker |
@@ -1653,34 +1653,34 @@ its own branch (`git log --merges --grep fix/`), so all 94 match.
 | Line | Scenario | Class | Case / note |
 |---|---|---|---|
 | 532 | returns requested tag in topic list | covered | golden: GET /tag/howto.json |
-| 543 | period tag names by id URL and encoded legacy URL | recordable | setup tag 'node.js' + topic_tags |
+| 543 | period tag names by id URL and encoded legacy URL | covered | parity/writes/tags |
 | 560 | intersections with encoded period names | out-of-scope | /tags/intersection not routed |
 | 574 | tag info for encoded period name | out-of-scope | /tag/:name/info is #info, not routed |
-| 583 | invalid tag `/tag/%2ftest%2f` 404 | recordable | anon GET `/tag/%2ftest%2f.json` |
-| 588 | synonyms redirect (l/top.json?period=daily) | recordable | setup synonym tag (target_tag_id=1), `/tag/syn/l/top.json?period=daily` 301 |
-| 595 | raw query strings preserved in redirects | recordable | `/tag/howto?encoded=...` 301 (HTML route, harness sends Accept JSON) |
-| 608 | tag synonym of itself no loop | recordable | setup UPDATE tags SET target_tag_id=id |
+| 583 | invalid tag `/tag/%2ftest%2f` 404 | covered | parity/writes/tags |
+| 588 | synonyms redirect (l/top.json?period=daily) | covered | parity/writes/tags |
+| 595 | raw query strings preserved in redirects | covered | parity/writes/tags |
+| 608 | tag synonym of itself no loop | covered | parity/writes/tags |
 | 615 | staff-only tags 404 for anon, 200 for admin | covered | tags_show_hidden_as_admin (new) |
-| 630 | additional tags in query params | recordable | `/tag/howto.json?match_all_tags=true&tags[]=guide` |
-| 641 | duplicate tags in query params | recordable | `...&tags[]=howto&tags[]=guide` |
+| 630 | additional tags in query params | covered | parity/writes/tags |
+| 641 | duplicate tags in query params | covered | parity/writes/tags |
 | 652 | tag description in meta description | out-of-scope | HTML |
 | 663 | default meta description | out-of-scope | HTML |
-| 673 | special tag none | recordable | settings pm_tags_allowed_for_groups="1,2,3" (pipe-separated) as admin, `/tag/none.json` (anon variant covered by golden /tag/none.json?per_page=2) |
+| 673 | special tag none | covered | parity/writes/tags |
 | 682 | numeric tag names via /tag/:tag_name | out-of-scope | Unsupported("/tag/:tag_id without .json") src/routes/tags.rs:70 (HTML route) |
-| 691 | numeric tag names with filters | recordable | setup tag '6309', `/tag/6309/l/latest.json` |
+| 691 | numeric tag names with filters | covered | parity/writes/tags |
 | 700 | missing numeric /tag/:tag_id 404 | covered | golden: GET /tag/99.json |
-| 705 | numeric-named slug route redirect | recordable | setup numeric tag, `/tag/not-the-slug/<name>` 301 |
+| 705 | numeric-named slug route redirect | covered | parity/writes/tags |
 | 718 | edit path redirect | out-of-scope | /tag/:slug/:id/edit not served (unknown /tag/ route marker src/routes/tags.rs:98) |
 | 725 | edit tab redirect | out-of-scope | same marker |
 | 732 | edit page no redirect | out-of-scope | same marker |
 | 739 | id-only edit redirect | out-of-scope | same marker |
-| 753 | in category > no restricted name leak via permalink | recordable | setup permalinks row to cat 3, anon `/tags/c/old-category/howto.json` 404 |
+| 753 | in category > no restricted name leak via permalink | covered | parity/writes/tags |
 | 764 | in category > topic inside category | covered | golden: GET /tags/c/general/4/howto.json |
 | 773 | in category > next topic URL | covered | golden: GET /tags/c/general/4/none/howto/1.json?per_page=1 |
-| 781 | in category > invalid category path 404 | recordable | `/tags/c/general/4/somerandomstring/howto.json` |
+| 781 | in category > invalid category path 404 | covered | parity/writes/tags |
 | 787 | in category > restricted category 404 | covered | tags_in_staff_category_as_admin (new) |
-| 802 | in subcategory > topic inside subcategory | recordable | `/tags/c/general/sub-general/howto.json` (no-id path) |
-| 812 | invalid tag parameter ignored | recordable | `/tag/howto.json?tags[0]=nada` |
+| 802 | in subcategory > topic inside subcategory | covered | parity/writes/tags |
+| 812 | invalid tag parameter ignored | covered | parity/writes/tags |
 
 ## SiteController#site
 
