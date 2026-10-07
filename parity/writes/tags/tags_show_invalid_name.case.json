@@ -1,0 +1,12 @@
+{
+  "user": null,
+  "settings": {
+    "tagging_enabled": true
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/tag/%2ftest%2f.json"
+    }
+  ]
+}

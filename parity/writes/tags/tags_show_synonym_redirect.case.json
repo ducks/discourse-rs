@@ -1,0 +1,19 @@
+{
+  "user": null,
+  "settings": {
+    "tagging_enabled": true
+  },
+  "setup": [
+    "INSERT INTO tags (id, name, slug, target_tag_id, created_at, updated_at) VALUES (9812, 'syn', 'syn', 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/tag/syn/l/top.json?period=daily"
+    },
+    {
+      "method": "GET",
+      "path": "/tag/syn/l/top.json?encoded=first%20value&duplicate=one&duplicate=two&path=%2Ffoo%2fbar"
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "name": "tags_show_self_synonym",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/tag/howto/l/top.json?period=daily"
+    }
+  ],
+  "started_at": "2026-10-07T07:37:30.982581",
+  "transaction_started_at": "2026-10-07T07:37:24.563281",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "topic_list": {
+          "can_create_topic": false,
+          "filter": "top",
+          "for_period": "daily",
+          "per_page": 30,
+          "top_tags": [
+            {
+              "id": 2,
+              "name": "guide",
+              "slug": "guide"
+            }
+          ],
+          "tags": [
+            {
+              "id": 1,
+              "name": "howto",
+              "slug": "howto",
+              "topic_count": 2,
+              "staff": false,
+              "description": null,
+              "description_cooked": null
+            }
+          ],
+          "topics": []
+        }
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "settings": {
+    "tagging_enabled": true
+  },
+  "setup": [
+    "UPDATE tags SET target_tag_id = id WHERE id = 1"
+  ],
+  "recorded_from": {
+    "case": "a5a3571edf6e62e441133c4174a0914e72d1b5c61b4cf5a6cea0c23fbaa10061",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

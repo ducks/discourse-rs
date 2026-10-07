@@ -1,0 +1,61 @@
+{
+  "name": "tags_index_hidden_category_anon",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/tags.json"
+    }
+  ],
+  "started_at": "2026-10-07T07:34:59.278382",
+  "transaction_started_at": "2026-10-07T07:34:53.374324",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "tags": [
+          {
+            "id": 1,
+            "text": "howto",
+            "name": "howto",
+            "slug": "howto",
+            "description": null,
+            "count": 2,
+            "pm_only": false,
+            "target_tag": null
+          },
+          {
+            "id": 2,
+            "text": "guide",
+            "name": "guide",
+            "slug": "guide",
+            "description": null,
+            "count": 2,
+            "pm_only": false,
+            "target_tag": null
+          }
+        ],
+        "extras": {
+          "categories": []
+        }
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "settings": {
+    "tagging_enabled": true
+  },
+  "setup": [
+    "INSERT INTO tags (id, name, public_topic_count, staff_topic_count, created_at, updated_at) VALUES (9806, 'staff1', 0, 0, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO tag_groups (id, name, created_at, updated_at) VALUES (9801, 'Staff Tags', '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO tag_group_memberships (id, tag_id, tag_group_id, created_at, updated_at) VALUES (9801, 9806, 9801, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO tag_group_permissions (id, tag_group_id, group_id, permission_type, created_at, updated_at) VALUES (9801, 9801, 3, 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO category_tags (id, category_id, tag_id, created_at, updated_at) VALUES (9805, 4, 9806, '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "recorded_from": {
+    "case": "96c98af3f1d7f7cbcbd5e54f948cc19f90517c9f5dd322ace3694ae6c6af9689",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

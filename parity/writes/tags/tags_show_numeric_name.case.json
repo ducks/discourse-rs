@@ -1,0 +1,24 @@
+{
+  "user": null,
+  "settings": {
+    "tagging_enabled": true
+  },
+  "setup": [
+    "INSERT INTO tags (id, name, slug, public_topic_count, staff_topic_count, created_at, updated_at) VALUES (9813, '6309', '', 1, 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO topic_tags (id, topic_id, tag_id, created_at, updated_at) VALUES (9813, 35, 9813, '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/tag/6309/l/latest.json"
+    },
+    {
+      "method": "GET",
+      "path": "/tag/9999999.json"
+    },
+    {
+      "method": "GET",
+      "path": "/tag/not-the-slug/6309"
+    }
+  ]
+}

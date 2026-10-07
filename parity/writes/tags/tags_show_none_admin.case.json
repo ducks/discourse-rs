@@ -1,0 +1,13 @@
+{
+  "user": "admin",
+  "settings": {
+    "tagging_enabled": true,
+    "pm_tags_allowed_for_groups": "1|2|3"
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/tag/none.json"
+    }
+  ]
+}

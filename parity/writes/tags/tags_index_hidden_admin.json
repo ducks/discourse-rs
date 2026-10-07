@@ -1,0 +1,111 @@
+{
+  "name": "tags_index_hidden_admin",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/tags.json"
+    }
+  ],
+  "started_at": "2026-10-07T07:34:36.659035",
+  "transaction_started_at": "2026-10-07T07:34:28.907752",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "tags": [
+          {
+            "id": 1,
+            "text": "howto",
+            "name": "howto",
+            "slug": "howto",
+            "description": null,
+            "count": 2,
+            "pm_only": false,
+            "target_tag": null
+          },
+          {
+            "id": 2,
+            "text": "guide",
+            "name": "guide",
+            "slug": "guide",
+            "description": null,
+            "count": 2,
+            "pm_only": false,
+            "target_tag": null
+          },
+          {
+            "id": 9806,
+            "text": "staff1",
+            "name": "staff1",
+            "slug": "9806-tag",
+            "description": null,
+            "count": 0,
+            "pm_only": false,
+            "target_tag": null
+          }
+        ],
+        "extras": {
+          "categories": []
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 119,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "LRrapNCjj43+YdxEmvKsbLGPdfw=",
+            "created_at": "2026-10-07T07:34:31.675084",
+            "rotated_at": "2026-10-07T07:34:31.667454",
+            "updated_at": "2026-10-07T07:34:31.675084",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "LRrapNCjj43+YdxEmvKsbLGPdfw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 119,
+            "seen_at": "2026-10-07T07:34:36.699313",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "LRrapNCjj43+YdxEmvKsbLGPdfw=",
+            "created_at": "2026-10-07T07:34:31.675084",
+            "rotated_at": "2026-10-07T07:34:31.667454",
+            "updated_at": "2026-10-07T07:34:31.675084",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "LRrapNCjj43+YdxEmvKsbLGPdfw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "settings": {
+    "tagging_enabled": true
+  },
+  "setup": [
+    "INSERT INTO tags (id, name, public_topic_count, staff_topic_count, created_at, updated_at) VALUES (9806, 'staff1', 0, 0, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO tag_groups (id, name, created_at, updated_at) VALUES (9801, 'Staff Tags', '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO tag_group_memberships (id, tag_id, tag_group_id, created_at, updated_at) VALUES (9801, 9806, 9801, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO tag_group_permissions (id, tag_group_id, group_id, permission_type, created_at, updated_at) VALUES (9801, 9801, 3, 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "recorded_from": {
+    "case": "32967710cd3d1a88c93bfc92fdc0ddc31a84bc5df3289757da68ab12092c3069",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
