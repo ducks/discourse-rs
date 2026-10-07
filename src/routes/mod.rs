@@ -473,3 +473,182 @@ pub async fn method_override(
     next.run(axum::extract::Request::from_parts(parts, Body::from(bytes)))
         .await
 }
+
+/// `request.format` for a path without an extension, as ActionDispatch
+/// decides it: `?format=json`, or a valid Accept header (an XHR's, or one
+/// that is not browser-like: no `*/*` beside other types) whose preferred
+/// type is JSON. The port tells JSON by the `.json` suffix, so such a GET
+/// goes to the path's `.json` twin, for the pages whose controllers then
+/// answer JSON (/search, /login and the /my redirects stay HTML; so does
+/// the front page, whose JSON is the homepage list's, not ported).
+pub async fn request_format(
+    mut request: axum::extract::Request,
+    next: axum::middleware::Next,
+) -> axum::response::Response {
+    use axum::http::Method;
+    if (request.method() == Method::GET || request.method() == Method::HEAD)
+        && json_twin_page(request.uri().path())
+        && wants_json(request.uri().query(), request.headers())
+    {
+        let uri = request.uri();
+        let rewritten = match uri.query() {
+            Some(q) => format!("{}.json?{q}", uri.path()),
+            None => format!("{}.json", uri.path()),
+        };
+        if let Ok(uri) = rewritten.parse() {
+            *request.uri_mut() = uri;
+        }
+    }
+    next.run(request).await
+}
+
+/// The pages Rails answers as JSON when asked to: the topic lists, the
+/// categories and tags, topics, user pages, drafts, notifications and the
+/// review queue.
+fn json_twin_page(path: &str) -> bool {
+    let Some(rest) = path.strip_prefix('/') else {
+        return false;
+    };
+    let first = rest.split('/').next().unwrap_or("");
+    let last = rest.rsplit('/').next().unwrap_or("");
+    !rest.is_empty()
+        && !last.contains('.')
+        && matches!(
+            first,
+            "latest"
+                | "top"
+                | "hot"
+                | "new"
+                | "unread"
+                | "unseen"
+                | "read"
+                | "posted"
+                | "bookmarks"
+                | "categories"
+                | "c"
+                | "tags"
+                | "tag"
+                | "t"
+                | "u"
+                | "drafts"
+                | "notifications"
+                | "review"
+        )
+}
+
+/// ActionDispatch's `formats`: the format param first, then the Accept
+/// header when valid (`valid_accept_header`), its types by q, the first
+/// kept on ties.
+fn wants_json(query: Option<&str>, headers: &axum::http::HeaderMap) -> bool {
+    if let Some(format) = query
+        .into_iter()
+        .flat_map(|q| q.split('&'))
+        .find_map(|p| p.strip_prefix("format="))
+    {
+        return format == "json";
+    }
+    let Some(accept) = headers
+        .get(axum::http::header::ACCEPT)
+        .and_then(|v| v.to_str().ok())
+        .filter(|a| !a.trim().is_empty())
+    else {
+        return false;
+    };
+    let xhr = headers
+        .get("x-requested-with")
+        .is_some_and(|v| v == "XMLHttpRequest");
+    // BROWSER_LIKE_ACCEPTS: `*/*` alongside other types.
+    static BROWSER_LIKE: std::sync::OnceLock<regex::Regex> = std::sync::OnceLock::new();
+    let browser_like = BROWSER_LIKE
+        .get_or_init(|| regex::Regex::new(r",\s*\*/\*|\*/\*\s*,").unwrap())
+        .is_match(accept);
+    if !xhr && browser_like {
+        return false;
+    }
+    let mut types: Vec<(f32, &str)> = accept
+        .split(',')
+        .map(|entry| {
+            let mut parts = entry.split(';');
+            let mime = parts.next().unwrap_or("").trim();
+            let q = parts
+                .filter_map(|p| p.trim().strip_prefix("q="))
+                .find_map(|q| q.parse::<f32>().ok())
+                .unwrap_or(1.0);
+            (q, mime)
+        })
+        .collect();
+    types.sort_by(|a, b| b.0.total_cmp(&a.0));
+    types
+        .first()
+        .is_some_and(|(_, mime)| *mime == "application/json")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use axum::http::{HeaderMap, HeaderValue, header};
+
+    fn headers(accept: &str, xhr: bool) -> HeaderMap {
+        let mut h = HeaderMap::new();
+        h.insert(header::ACCEPT, HeaderValue::from_str(accept).unwrap());
+        if xhr {
+            h.insert(
+                "x-requested-with",
+                HeaderValue::from_static("XMLHttpRequest"),
+            );
+        }
+        h
+    }
+
+    #[test]
+    fn json_from_accept_as_actiondispatch_decides() {
+        // As the reference answered /latest for each.
+        let ember = "application/json, text/javascript, */*; q=0.01";
+        assert!(wants_json(None, &headers(ember, true)));
+        assert!(wants_json(None, &headers("application/json", false)));
+        // Browser-like (*/* beside other types) and not an XHR: HTML.
+        assert!(!wants_json(None, &headers("application/json, */*", false)));
+        assert!(!wants_json(
+            None,
+            &headers("text/html,application/xhtml+xml,*/*;q=0.8", false)
+        ));
+        // q orders the types.
+        assert!(!wants_json(
+            None,
+            &headers("application/json;q=0.5, text/html", false)
+        ));
+        // The format param wins over the header.
+        assert!(wants_json(
+            Some("page=2&format=json"),
+            &headers("text/html", false)
+        ));
+        assert!(!wants_json(
+            Some("format=html"),
+            &headers("application/json", false)
+        ));
+        assert!(!wants_json(None, &HeaderMap::new()));
+    }
+
+    #[test]
+    fn json_twins_are_the_pages_rails_answers_as_json() {
+        for path in [
+            "/latest",
+            "/c/general/4/l/top",
+            "/t/welcome/5",
+            "/u/user1/summary",
+            "/tag/guide",
+        ] {
+            assert!(json_twin_page(path), "{path}");
+        }
+        for path in [
+            "/",
+            "/search",
+            "/login",
+            "/my/messages",
+            "/latest.json",
+            "/uploads/x.png",
+        ] {
+            assert!(!json_twin_page(path), "{path}");
+        }
+    }
+}
