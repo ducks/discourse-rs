@@ -1,0 +1,1388 @@
+{
+  "name": "grant_moderation",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/2/grant_moderation.json"
+    }
+  ],
+  "started_at": "2026-10-08T05:49:45.281598",
+  "transaction_started_at": "2026-10-08T05:49:44.352512",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "id": 2,
+        "username": "user0",
+        "name": "User0",
+        "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+        "active": true,
+        "admin": false,
+        "moderator": true,
+        "last_seen_at": "2026-10-01T22:32:51.475Z",
+        "last_emailed_at": null,
+        "created_at": "2026-07-25T05:59:15.831Z",
+        "last_seen_age": 544613.896358297,
+        "last_emailed_age": null,
+        "created_at_age": 6479429.540547871,
+        "trust_level": 1,
+        "manual_locked_trust_level": null,
+        "title": null,
+        "time_read": 0,
+        "staged": false,
+        "can_be_deleted": true,
+        "days_visited": 1,
+        "posts_read_count": 3,
+        "topics_entered": 0,
+        "post_count": 4,
+        "can_send_activation_email": true,
+        "can_activate": false,
+        "can_deactivate": false,
+        "can_change_trust_level": true,
+        "ip_address": "172.17.0.1",
+        "registration_ip_address": null,
+        "include_ip": null,
+        "can_grant_admin": true,
+        "can_revoke_admin": false,
+        "can_grant_moderation": false,
+        "can_revoke_moderation": true,
+        "can_impersonate": true,
+        "like_count": 1,
+        "like_given_count": 1,
+        "topic_count": 2,
+        "post_edits_count": null,
+        "flags_given_count": 0,
+        "flags_received_count": 0,
+        "private_topics_count": 1,
+        "can_delete_all_posts": true,
+        "can_be_anonymized": false,
+        "can_be_merged": false,
+        "full_suspend_reason": null,
+        "full_silence_reason": null,
+        "penalty_counts": {
+          "silenced": 0,
+          "suspended": 0
+        },
+        "next_penalty": "2026-10-09T05:49:45.388Z",
+        "primary_group_id": null,
+        "badge_count": 3,
+        "warnings_received_count": 0,
+        "bounce_score": 0.0,
+        "reset_bounce_score_after": null,
+        "can_view_action_logs": true,
+        "can_disable_second_factor": true,
+        "can_delete_sso_record": false,
+        "api_key_count": 0,
+        "external_ids": {},
+        "latest_export": null,
+        "upcoming_changes_stats": [
+          {
+            "name": "ai_bot_enable_docked_composer",
+            "humanized_name": "AI bot enable docked composer",
+            "description": "Enable the docked chat-style composer for AI bot conversations instead of the standard floating composer.",
+            "enabled": false,
+            "specific_groups": [],
+            "reason": "enabled_for_no_one"
+          },
+          {
+            "name": "boards_enabled",
+            "humanized_name": "Boards enabled",
+            "description": "Organize topics, and lightweight standalone “floater” cards, into configurable, drag-and-drop kanban-style boards and columns, all with a purpose built management UI and per-board access control",
+            "enabled": false,
+            "specific_groups": [],
+            "reason": "enabled_for_no_one"
+          },
+          {
+            "name": "chat_pinned_messages",
+            "humanized_name": "Chat pinned messages",
+            "description": "Enable pinned messages in chat channels.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "composer_media_optimization_image_convert_enabled",
+            "humanized_name": "Composer media optimization image convert enabled",
+            "description": "Enables client-side conversion of JXL, HEIC, and animated GIF images before upload. JXL and HEIC are converted to JPEG, animated GIFs larger than the threshold are converted to animated WEBP.",
+            "enabled": false,
+            "specific_groups": [],
+            "reason": "enabled_for_no_one"
+          },
+          {
+            "name": "dashboard_improvements",
+            "humanized_name": "Dashboard improvements",
+            "description": "Enables the redesigned admin dashboard that lets you pin custom reports and includes improved site traffic, engagement, and other analytics tied to community success and value.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "enable_ai_bot_starred_conversations",
+            "humanized_name": "Enable AI bot starred conversations",
+            "description": "Allow users to star AI bot conversations and show them in a Starred sidebar section.",
+            "enabled": false,
+            "specific_groups": [],
+            "reason": "enabled_for_no_one"
+          },
+          {
+            "name": "enable_category_hashtag_cards",
+            "humanized_name": "Enable category hashtag cards",
+            "description": "Shows a floating category card when a category hashtag is clicked if the user has permission to view that category.",
+            "enabled": false,
+            "specific_groups": [],
+            "reason": "enabled_for_no_one"
+          },
+          {
+            "name": "enable_composer_redesign",
+            "humanized_name": "Enable composer redesign",
+            "description": "Enable the redesigned composer.",
+            "enabled": false,
+            "specific_groups": [],
+            "reason": "enabled_for_no_one"
+          },
+          {
+            "name": "enable_composer_toolbar_customization",
+            "humanized_name": "Enable composer toolbar customization",
+            "description": "Let members choose which buttons appear in their composer toolbar, from their interface preferences.",
+            "enabled": false,
+            "specific_groups": [],
+            "reason": "enabled_for_no_one"
+          },
+          {
+            "name": "enable_discourse_reactions_by_default",
+            "humanized_name": "Enable Discourse reactions by default",
+            "description": "Changes the default value for the <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=discourse_reactions_enabled\" data-setting-name=\"discourse_reactions_enabled\" data-setting-category=\"discourse_reactions\" data-setting-plugin=\"discourse-reactions\">Discourse reactions enabled</a> setting from disabled to enabled when this upcoming change is enabled.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "enable_discourse_workflows",
+            "humanized_name": "Enable Discourse workflows",
+            "description": "Enable the discourse-workflows plugin.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "enable_events_category_type_setup",
+            "humanized_name": "Enable events category type setup",
+            "description": "Enables the Events category type option during category creation setup.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "enable_generated_llms_txt",
+            "humanized_name": "Enable generated LLMs TXT",
+            "description": "Generates a concise /llms.txt when no custom file is uploaded. The document describes public discovery routes, the preferred Discourse MCP interface, and responsible agent access. To tune automated access, configure <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=slow_down_crawler_user_agents\" data-setting-name=\"slow_down_crawler_user_agents\" data-setting-category=\"security\">Slow down crawler user agents</a> and <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=slow_down_crawler_rate\" data-setting-name=\"slow_down_crawler_rate\" data-setting-category=\"security\">Slow down crawler rate</a>.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "enable_horizon_high_context_topic_cards",
+            "humanized_name": "Enable Horizon high context topic cards",
+            "description": "Shows richer topic cards in the Horizon theme, including topic excerpts, tags, and plugin extended information.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "enable_ideas_category_type_setup",
+            "humanized_name": "Enable ideas category type setup",
+            "description": "Enables the Ideas category type option during category creation setup.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "enable_improved_event_reminders",
+            "humanized_name": "Enable improved event reminders",
+            "description": "Lets members choose whether event reminders are sent as personal messages, notifications, or not at all.",
+            "enabled": false,
+            "specific_groups": [],
+            "reason": "enabled_for_no_one"
+          },
+          {
+            "name": "enable_invite_modal_with_roles",
+            "humanized_name": "Enable invite modal with roles",
+            "description": "Enables a redesigned invite flow that lets admins invite someone directly as an admin. The invitee becomes a moderator on signup and an admin once the inviter confirms via email.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "enable_local_logins_via_code",
+            "humanized_name": "Enable local logins via code",
+            "description": "Allow members to sign up, accept invitations, and log in with one-time email codes (OTPs), without requiring a password.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "enable_markdown_endpoints",
+            "humanized_name": "Enable markdown endpoints",
+            "description": "Serve supported topics and topic lists as Markdown through .md URLs and requests with an Accept: text/markdown header. Normal visibility and profile privacy rules always apply.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "enable_new_chat_reactions_popup",
+            "humanized_name": "Enable new chat reactions popup",
+            "description": "Enable the redesigned reactions popup on chat messages, showing who reacted with infinite scroll and a native mobile experience.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "enable_new_checkbox_style",
+            "humanized_name": "Enable new checkbox style",
+            "description": "Enable the redesigned checkbox style for FormKit checkboxes.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "enable_new_defaults_for_trust_level_3_requirements",
+            "humanized_name": "Enable new defaults for trust level 3 requirements",
+            "description": "We have updated the TL3 default requirements so they’re more reasonable for members of large, active communities. If you have previously overridden these settings, this upcoming change will have no effect.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "enable_new_post_reactions_menu",
+            "humanized_name": "Enable new post reactions menu",
+            "description": "Enable the redesigned post likes and reactions menu, with infinite scroll and a native mobile experience.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "enable_new_post_reply_count_position",
+            "humanized_name": "Enable new post reply count position",
+            "description": "Move the post reactions summary before the reply count in the post controls.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "enable_simplified_category_creation",
+            "humanized_name": "Enable simplified category creation",
+            "description": "Enables a simplified category creation flow with fewer options and a cleaner interface.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "enable_solved_shared_issues",
+            "humanized_name": "Enable solved shared issues",
+            "description": "Adds a “Me too” button to unsolved topics in support categories, letting members signal they’re experiencing the same issue and opt-in to notifications about the topic's solution.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "enable_support_category_type_setup",
+            "humanized_name": "Enable support category type setup",
+            "description": "Enables the Support category type option during category creation setup.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "enable_unified_new",
+            "humanized_name": "Enable unified new",
+            "description": "Replace the separate New and Unread lists with a single unified New list that makes it easier for members to distinguish between new topics and topics with new replies. When enabled, the /new route shows a combined view with subtabs for Topics (new topics) and Replies (tracked topics with new replies), and the unread option is removed from the top menu.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "floating_dismiss_topics_on_mobile",
+            "humanized_name": "Floating dismiss topics on mobile",
+            "description": "Shows a floating 'Dismiss...' button on mobile for the topic list for easier access and to free up space in the top of the topic list",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "granular_anonymous_and_logged_in_groups_permissions",
+            "humanized_name": "Granular anonymous and logged in groups permissions",
+            "description": "Makes group-based site setting permissions treat 'everyone' as 'all logged-in users', and enables the new 'anonymous_users' and 'logged_in_users' pseudogroups so admins can explicitly target anonymous visitors and authenticated users.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "improved_crawler_detection",
+            "humanized_name": "Improved crawler detection",
+            "description": "Enables improved crawler tracking which can better detect likely crawlers and ensure traffic reporting is more accurate.",
+            "enabled": false,
+            "specific_groups": [],
+            "reason": "enabled_for_no_one"
+          },
+          {
+            "name": "modernize_foundation_theme",
+            "humanized_name": "Modernize Foundation theme",
+            "description": "This change introduces design modifcations to the Foundation theme in Discourse.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "prioritize_recently_used_tags",
+            "humanized_name": "Prioritize recently used tags",
+            "description": "When adding tags while creating or editing a topic, show the tags the member has recently used on their own topics at the top of the list, before the most popular tags of the forum.",
+            "enabled": false,
+            "specific_groups": [],
+            "reason": "enabled_for_no_one"
+          },
+          {
+            "name": "remove_and_replace_uncategorized",
+            "humanized_name": "Remove and replace uncategorized",
+            "description": "Replaces the special Uncategorized category with a standard category of the same name, and migrates all topics over to it.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "rename_faq_to_guidelines",
+            "humanized_name": "Rename FAQ to guidelines",
+            "description": "This change renames the FAQ page to Guidelines. The FAQ page will still be available at /faq. The <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=faq_url\" data-setting-name=\"faq_url\" data-setting-area=\"legal\" data-setting-category=\"legal\">FAQ URL</a> setting works as before.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "reporting_improvements",
+            "humanized_name": "Reporting improvements",
+            "description": "Improvements to navigation, design, and usability for Discourse's admin reports.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "sidebar_user_navigation",
+            "humanized_name": "Sidebar user navigation",
+            "description": "Moves the navigation for user pages — profile, activity, notifications, messages, invites and preferences — out of the horizontal tab bars and into a dedicated sidebar panel, the way the admin area works. On mobile the panel is served from the hamburger menu.",
+            "enabled": false,
+            "specific_groups": [],
+            "reason": "enabled_for_no_one"
+          },
+          {
+            "name": "update_pending_users_reminder_default",
+            "humanized_name": "Update pending users reminder default",
+            "description": "We are updating the default for the <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=pending_users_reminder_delay_minutes\" data-setting-name=\"pending_users_reminder_delay_minutes\" data-setting-area=\"login\" data-setting-category=\"login\">Pending users reminder delay minutes</a> setting to 30 minutes so that staff are promptly notified when a new member is waiting for approval. If you have previously changed this setting, this change will have no effect.",
+            "enabled": false,
+            "specific_groups": [],
+            "reason": "enabled_for_no_one"
+          },
+          {
+            "name": "voice_enabled",
+            "humanized_name": "Voice enabled",
+            "description": "Voice brings integrated voice and video rooms to Discourse, with screen sharing, background blur, noise suppression, live subtitles, direct calls, room chat, and group-based permissions. Members can keep browsing while they talk, with no external app required.",
+            "enabled": false,
+            "specific_groups": [],
+            "reason": "enabled_for_no_one"
+          }
+        ],
+        "single_sign_on_record": null,
+        "approved_by": {
+          "id": -1,
+          "username": "system",
+          "name": "system",
+          "avatar_template": "/images/discourse-logo-sketch-small.png"
+        },
+        "suspended_by": null,
+        "silenced_by": null,
+        "tl3_requirements": {
+          "time_period": 100,
+          "requirements_met": false,
+          "requirements_lost": true,
+          "trust_level_locked": false,
+          "on_grace_period": false,
+          "days_visited": 0,
+          "min_days_visited": 50,
+          "num_topics_replied_to": 0,
+          "min_topics_replied_to": 10,
+          "topics_viewed": 0,
+          "min_topics_viewed": 3,
+          "posts_read": 0,
+          "min_posts_read": 5,
+          "topics_viewed_all_time": 0,
+          "min_topics_viewed_all_time": 200,
+          "posts_read_all_time": 0,
+          "min_posts_read_all_time": 500,
+          "num_flagged_posts": 0,
+          "max_flagged_posts": 5,
+          "num_flagged_by_users": 0,
+          "max_flagged_by_users": 5,
+          "num_likes_given": 1,
+          "min_likes_given": 30,
+          "num_likes_received": 1,
+          "min_likes_received": 20,
+          "num_likes_received_days": 1,
+          "min_likes_received_days": 7,
+          "num_likes_received_users": 1,
+          "min_likes_received_users": 5,
+          "penalty_counts": {
+            "silenced": 0,
+            "suspended": 0,
+            "total": 0
+          }
+        },
+        "groups": [
+          {
+            "id": 2,
+            "automatic": true,
+            "name": "moderators",
+            "display_name": "moderators",
+            "user_count": 2,
+            "mentionable_level": 0,
+            "messageable_level": 99,
+            "visibility_level": 1,
+            "primary_group": false,
+            "title": null,
+            "grant_trust_level": null,
+            "incoming_email": null,
+            "has_messages": false,
+            "flair_url": null,
+            "flair_bg_color": null,
+            "flair_color": null,
+            "bio_raw": null,
+            "bio_cooked": "Responsible for responding to flags, moderating discussions, and helping members with their accounts",
+            "bio_excerpt": "Responsible for responding to flags, moderating discussions, and helping members with their accounts",
+            "public_admission": false,
+            "public_exit": false,
+            "allow_membership_requests": false,
+            "full_name": "Moderators",
+            "default_notification_level": 2,
+            "membership_request_template": null,
+            "members_visibility_level": 0,
+            "can_see_members": true,
+            "can_admin_group": true,
+            "publish_read_state": false
+          },
+          {
+            "id": 3,
+            "automatic": true,
+            "name": "staff",
+            "display_name": "staff",
+            "user_count": 2,
+            "mentionable_level": 0,
+            "messageable_level": 0,
+            "visibility_level": 1,
+            "primary_group": false,
+            "title": null,
+            "grant_trust_level": null,
+            "incoming_email": null,
+            "has_messages": false,
+            "flair_url": null,
+            "flair_bg_color": null,
+            "flair_color": null,
+            "bio_raw": null,
+            "bio_cooked": "Automatic group including admins and moderators",
+            "bio_excerpt": "Automatic group including admins and moderators",
+            "public_admission": false,
+            "public_exit": false,
+            "allow_membership_requests": false,
+            "full_name": "Staff",
+            "default_notification_level": 3,
+            "membership_request_template": null,
+            "members_visibility_level": 0,
+            "can_see_members": true,
+            "can_admin_group": true,
+            "publish_read_state": false
+          },
+          {
+            "id": 10,
+            "automatic": true,
+            "name": "trust_level_0",
+            "display_name": "trust_level_0",
+            "user_count": 5,
+            "mentionable_level": 0,
+            "messageable_level": 0,
+            "visibility_level": 1,
+            "primary_group": false,
+            "title": null,
+            "grant_trust_level": null,
+            "incoming_email": null,
+            "has_messages": false,
+            "flair_url": null,
+            "flair_bg_color": null,
+            "flair_color": null,
+            "bio_raw": null,
+            "bio_cooked": "New members with limited abilities, who are learning community norms and functionality",
+            "bio_excerpt": "New members with limited abilities, who are learning community norms and functionality",
+            "public_admission": false,
+            "public_exit": false,
+            "allow_membership_requests": false,
+            "full_name": "Trust level 0",
+            "default_notification_level": 3,
+            "membership_request_template": null,
+            "members_visibility_level": 0,
+            "can_see_members": true,
+            "can_admin_group": true,
+            "publish_read_state": false
+          },
+          {
+            "id": 11,
+            "automatic": true,
+            "name": "trust_level_1",
+            "display_name": "trust_level_1",
+            "user_count": 5,
+            "mentionable_level": 0,
+            "messageable_level": 0,
+            "visibility_level": 1,
+            "primary_group": false,
+            "title": null,
+            "grant_trust_level": null,
+            "incoming_email": null,
+            "has_messages": false,
+            "flair_url": null,
+            "flair_bg_color": null,
+            "flair_color": null,
+            "bio_raw": null,
+            "bio_cooked": "Members with more trust, who have shown initial engagement by reading and can now access more functions. All members of this group are also members of the trust_level_0 group.",
+            "bio_excerpt": "Members with more trust, who have shown initial engagement by reading and can now access more functions. All members of this group are also members of the trust_level_0 group.",
+            "public_admission": false,
+            "public_exit": false,
+            "allow_membership_requests": false,
+            "full_name": "Trust level 1",
+            "default_notification_level": 3,
+            "membership_request_template": null,
+            "members_visibility_level": 0,
+            "can_see_members": true,
+            "can_admin_group": true,
+            "publish_read_state": false
+          }
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "group_users": {
+      "inserted": [
+        {
+          "id": 68,
+          "owner": false,
+          "user_id": 2,
+          "group_id": 2,
+          "created_at": "2026-10-08T05:49:44.352512",
+          "updated_at": "2026-10-08T05:49:44.352512",
+          "first_unread_pm_at": "2026-10-08T05:49:44.352512",
+          "notification_level": 2
+        },
+        {
+          "id": 69,
+          "owner": false,
+          "user_id": 2,
+          "group_id": 3,
+          "created_at": "2026-10-08T05:49:44.352512",
+          "updated_at": "2026-10-08T05:49:44.352512",
+          "first_unread_pm_at": "2026-10-08T05:49:44.352512",
+          "notification_level": 2
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "groups": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 2,
+            "name": "moderators",
+            "title": null,
+            "bio_raw": null,
+            "imap_ssl": null,
+            "automatic": true,
+            "full_name": "Moderators",
+            "imap_port": null,
+            "smtp_port": null,
+            "bio_cooked": null,
+            "created_at": "2026-07-25T05:58:06.795937",
+            "flair_icon": null,
+            "updated_at": "2026-07-25T05:58:06.80035",
+            "user_count": 1,
+            "flair_color": null,
+            "imap_server": null,
+            "public_exit": false,
+            "smtp_server": null,
+            "has_messages": false,
+            "imap_enabled": false,
+            "smtp_enabled": false,
+            "imap_last_uid": 0,
+            "primary_group": false,
+            "smtp_ssl_mode": 0,
+            "email_password": null,
+            "email_username": null,
+            "flair_bg_color": null,
+            "incoming_email": null,
+            "flair_upload_id": null,
+            "imap_last_error": null,
+            "imap_new_emails": null,
+            "imap_old_emails": null,
+            "imap_updated_at": null,
+            "smtp_updated_at": null,
+            "assignable_level": 0,
+            "email_from_alias": null,
+            "public_admission": false,
+            "visibility_level": 1,
+            "grant_trust_level": null,
+            "imap_mailbox_name": "",
+            "imap_uid_validity": 0,
+            "mentionable_level": 0,
+            "messageable_level": 99,
+            "imap_updated_by_id": null,
+            "publish_read_state": false,
+            "smtp_updated_by_id": null,
+            "members_visibility_level": 0,
+            "allow_membership_requests": false,
+            "default_notification_level": 2,
+            "membership_request_template": null,
+            "allow_unknown_sender_topic_replies": false,
+            "automatic_membership_email_domains": null
+          },
+          "after": {
+            "id": 2,
+            "name": "moderators",
+            "title": null,
+            "bio_raw": null,
+            "imap_ssl": null,
+            "automatic": true,
+            "full_name": "Moderators",
+            "imap_port": null,
+            "smtp_port": null,
+            "bio_cooked": null,
+            "created_at": "2026-07-25T05:58:06.795937",
+            "flair_icon": null,
+            "updated_at": "2026-07-25T05:58:06.80035",
+            "user_count": 2,
+            "flair_color": null,
+            "imap_server": null,
+            "public_exit": false,
+            "smtp_server": null,
+            "has_messages": false,
+            "imap_enabled": false,
+            "smtp_enabled": false,
+            "imap_last_uid": 0,
+            "primary_group": false,
+            "smtp_ssl_mode": 0,
+            "email_password": null,
+            "email_username": null,
+            "flair_bg_color": null,
+            "incoming_email": null,
+            "flair_upload_id": null,
+            "imap_last_error": null,
+            "imap_new_emails": null,
+            "imap_old_emails": null,
+            "imap_updated_at": null,
+            "smtp_updated_at": null,
+            "assignable_level": 0,
+            "email_from_alias": null,
+            "public_admission": false,
+            "visibility_level": 1,
+            "grant_trust_level": null,
+            "imap_mailbox_name": "",
+            "imap_uid_validity": 0,
+            "mentionable_level": 0,
+            "messageable_level": 99,
+            "imap_updated_by_id": null,
+            "publish_read_state": false,
+            "smtp_updated_by_id": null,
+            "members_visibility_level": 0,
+            "allow_membership_requests": false,
+            "default_notification_level": 2,
+            "membership_request_template": null,
+            "allow_unknown_sender_topic_replies": false,
+            "automatic_membership_email_domains": null
+          }
+        },
+        {
+          "before": {
+            "id": 3,
+            "name": "staff",
+            "title": null,
+            "bio_raw": null,
+            "imap_ssl": null,
+            "automatic": true,
+            "full_name": "Staff",
+            "imap_port": null,
+            "smtp_port": null,
+            "bio_cooked": null,
+            "created_at": "2026-07-25T05:58:06.806819",
+            "flair_icon": null,
+            "updated_at": "2026-07-25T05:58:06.809333",
+            "user_count": 1,
+            "flair_color": null,
+            "imap_server": null,
+            "public_exit": false,
+            "smtp_server": null,
+            "has_messages": false,
+            "imap_enabled": false,
+            "smtp_enabled": false,
+            "imap_last_uid": 0,
+            "primary_group": false,
+            "smtp_ssl_mode": 0,
+            "email_password": null,
+            "email_username": null,
+            "flair_bg_color": null,
+            "incoming_email": null,
+            "flair_upload_id": null,
+            "imap_last_error": null,
+            "imap_new_emails": null,
+            "imap_old_emails": null,
+            "imap_updated_at": null,
+            "smtp_updated_at": null,
+            "assignable_level": 0,
+            "email_from_alias": null,
+            "public_admission": false,
+            "visibility_level": 1,
+            "grant_trust_level": null,
+            "imap_mailbox_name": "",
+            "imap_uid_validity": 0,
+            "mentionable_level": 0,
+            "messageable_level": 0,
+            "imap_updated_by_id": null,
+            "publish_read_state": false,
+            "smtp_updated_by_id": null,
+            "members_visibility_level": 0,
+            "allow_membership_requests": false,
+            "default_notification_level": 3,
+            "membership_request_template": null,
+            "allow_unknown_sender_topic_replies": false,
+            "automatic_membership_email_domains": null
+          },
+          "after": {
+            "id": 3,
+            "name": "staff",
+            "title": null,
+            "bio_raw": null,
+            "imap_ssl": null,
+            "automatic": true,
+            "full_name": "Staff",
+            "imap_port": null,
+            "smtp_port": null,
+            "bio_cooked": null,
+            "created_at": "2026-07-25T05:58:06.806819",
+            "flair_icon": null,
+            "updated_at": "2026-07-25T05:58:06.809333",
+            "user_count": 2,
+            "flair_color": null,
+            "imap_server": null,
+            "public_exit": false,
+            "smtp_server": null,
+            "has_messages": false,
+            "imap_enabled": false,
+            "smtp_enabled": false,
+            "imap_last_uid": 0,
+            "primary_group": false,
+            "smtp_ssl_mode": 0,
+            "email_password": null,
+            "email_username": null,
+            "flair_bg_color": null,
+            "incoming_email": null,
+            "flair_upload_id": null,
+            "imap_last_error": null,
+            "imap_new_emails": null,
+            "imap_old_emails": null,
+            "imap_updated_at": null,
+            "smtp_updated_at": null,
+            "assignable_level": 0,
+            "email_from_alias": null,
+            "public_admission": false,
+            "visibility_level": 1,
+            "grant_trust_level": null,
+            "imap_mailbox_name": "",
+            "imap_uid_validity": 0,
+            "mentionable_level": 0,
+            "messageable_level": 0,
+            "imap_updated_by_id": null,
+            "publish_read_state": false,
+            "smtp_updated_by_id": null,
+            "members_visibility_level": 0,
+            "allow_membership_requests": false,
+            "default_notification_level": 3,
+            "membership_request_template": null,
+            "allow_unknown_sender_topic_replies": false,
+            "automatic_membership_email_domains": null
+          }
+        }
+      ]
+    },
+    "post_search_data": {
+      "inserted": [
+        {
+          "locale": "en",
+          "post_id": 53,
+          "version": 5,
+          "raw_data": "You've been granted moderator status by a fellow staff member. As a moderator, you now have access to the admin interface . With great power comes great responsibility. If you're new to moderating, please refer to the https://meta.discourse.org/t/discourse-moderation-guide/63116 Moderation Guide .",
+          "search_data": "'/t/discourse-moderation-guide/63116':48 'access':25 'admin':28 'come':33 'congratul':1A 'discours':47 'discourse.org':47 'fellow':16 'grant':5A,11 'great':31,34 'guid':50 'interfac':29 'member':18 'meta':47 'meta.discourse.org':47 'meta.discourse.org/t/discourse-moderation-guide/63116':46 'moder':6A,12,21,41,49 'new':39 'org':47 'pleas':42 'power':32 're':38 'refer':43 'respons':35 'staff':17 'status':7A,13 've':3A,9",
+          "private_message": true
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_stats": {
+      "inserted": [
+        {
+          "id": 52,
+          "post_id": 53,
+          "created_at": "2026-10-08T05:49:46.759643",
+          "updated_at": "2026-10-08T05:49:46.759643",
+          "drafts_saved": 0,
+          "writing_device": null,
+          "composer_version": null,
+          "typing_duration_msecs": 0,
+          "writing_device_user_agent": null,
+          "composer_open_duration_msecs": 0
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_timings": {
+      "inserted": [
+        {
+          "msecs": 5000,
+          "user_id": -1,
+          "topic_id": 45,
+          "post_number": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "posts": {
+      "inserted": [
+        {
+          "id": 53,
+          "raw": "You’ve been granted moderator status by a fellow staff member.\n\nAs a moderator, you now have access to the <a href='http://localhost:3042/admin' target='_blank'>admin interface</a>.\n\nWith great power comes great responsibility. If you’re new to moderating, please refer to the [Moderation Guide](https://meta.discourse.org/t/discourse-moderation-guide/63116).",
+          "wiki": false,
+          "reads": 1,
+          "score": null,
+          "cooked": "<p>You’ve been granted moderator status by a fellow staff member.</p>\n<p>As a moderator, you now have access to the <a href=\"http://localhost:3042/admin\" target=\"_blank\" rel=\"noopener\">admin interface</a>.</p>\n<p>With great power comes great responsibility. If you’re new to moderating, please refer to the <a href=\"https://meta.discourse.org/t/discourse-moderation-guide/63116\">Moderation Guide</a>.</p>",
+          "hidden": false,
+          "locale": null,
+          "user_id": -1,
+          "version": 1,
+          "baked_at": "2026-10-08T05:49:46.708796",
+          "topic_id": 45,
+          "hidden_at": null,
+          "post_type": 1,
+          "raw_email": null,
+          "via_email": false,
+          "created_at": "2026-10-08T05:49:46.708832",
+          "deleted_at": null,
+          "like_count": 0,
+          "like_score": 0,
+          "self_edits": 0,
+          "sort_order": 1,
+          "spam_count": 0,
+          "updated_at": "2026-10-08T05:49:46.708832",
+          "word_count": 58,
+          "action_code": null,
+          "cook_method": 1,
+          "edit_reason": null,
+          "post_number": 1,
+          "quote_count": 0,
+          "reply_count": 0,
+          "locked_by_id": null,
+          "percent_rank": 1,
+          "reply_quoted": false,
+          "user_deleted": false,
+          "baked_version": 2,
+          "deleted_by_id": null,
+          "illegal_count": 0,
+          "qa_vote_count": 0,
+          "bookmark_count": 0,
+          "last_editor_id": -1,
+          "public_version": 1,
+          "image_upload_id": null,
+          "last_version_at": "2026-10-08T05:49:46.757925",
+          "off_topic_count": 0,
+          "hidden_reason_id": null,
+          "reply_to_user_id": null,
+          "notify_user_count": 0,
+          "inappropriate_count": 0,
+          "incoming_link_count": 0,
+          "outbound_message_id": null,
+          "reply_to_post_number": null,
+          "notify_moderators_count": 0
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_allowed_users": {
+      "inserted": [
+        {
+          "id": 9,
+          "user_id": 2,
+          "topic_id": 45,
+          "created_at": "2026-10-08T05:49:46.675432",
+          "updated_at": "2026-10-08T05:49:46.675432"
+        },
+        {
+          "id": 10,
+          "user_id": -1,
+          "topic_id": 45,
+          "created_at": "2026-10-08T05:49:46.676874",
+          "updated_at": "2026-10-08T05:49:46.676874"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_links": {
+      "inserted": [
+        {
+          "id": 20,
+          "url": "http://localhost:3042/admin",
+          "quote": false,
+          "title": null,
+          "clicks": 0,
+          "domain": "localhost",
+          "post_id": 53,
+          "user_id": -1,
+          "internal": false,
+          "topic_id": 45,
+          "extension": null,
+          "crawled_at": null,
+          "created_at": "2026-10-08T05:49:46.767657",
+          "reflection": false,
+          "updated_at": "2026-10-08T05:49:46.767657",
+          "link_post_id": null,
+          "link_topic_id": null
+        },
+        {
+          "id": 21,
+          "url": "https://meta.discourse.org/t/discourse-moderation-guide/63116",
+          "quote": false,
+          "title": null,
+          "clicks": 0,
+          "domain": "meta.discourse.org",
+          "post_id": 53,
+          "user_id": -1,
+          "internal": false,
+          "topic_id": 45,
+          "extension": null,
+          "crawled_at": null,
+          "created_at": "2026-10-08T05:49:46.768831",
+          "reflection": false,
+          "updated_at": "2026-10-08T05:49:46.768831",
+          "link_post_id": null,
+          "link_topic_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_search_data": {
+      "inserted": [
+        {
+          "locale": "en",
+          "version": 4,
+          "raw_data": "Congratulations, you've been granted moderator status! You've been granted moderator status by a fellow staff member. As a moderator, you now have access to the admin interface . With great power comes great responsibility. If you're new to moderating, pl",
+          "topic_id": 45,
+          "search_data": "'access':25B 'admin':28B 'come':33B 'congratul':1A 'fellow':16B 'grant':5A,11B 'great':31B,34B 'interfac':29B 'member':18B 'moder':6A,12B,21B,41B 'new':39B 'pl':42B 'power':32B 're':38B 'respons':35B 'staff':17B 'status':7A,13B 've':3A,9B"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_users": {
+      "inserted": [
+        {
+          "id": 56,
+          "liked": false,
+          "posted": false,
+          "user_id": 2,
+          "topic_id": 45,
+          "bookmarked": false,
+          "last_posted_at": null,
+          "last_visited_at": "2026-10-08T05:49:46.692712",
+          "first_visited_at": "2026-10-08T05:49:46.692712",
+          "cleared_pinned_at": null,
+          "notification_level": 3,
+          "total_msecs_viewed": 0,
+          "last_read_post_number": null,
+          "notifications_reason_id": 2,
+          "last_emailed_post_number": null,
+          "notifications_changed_at": "2026-10-08T05:49:46.692141"
+        },
+        {
+          "id": 55,
+          "liked": false,
+          "posted": true,
+          "user_id": -1,
+          "topic_id": 45,
+          "bookmarked": false,
+          "last_posted_at": "2026-10-08T05:49:46.771755",
+          "last_visited_at": "2026-10-08T05:49:46.685148",
+          "first_visited_at": "2026-10-08T05:49:46.685148",
+          "cleared_pinned_at": null,
+          "notification_level": 3,
+          "total_msecs_viewed": 0,
+          "last_read_post_number": 1,
+          "notifications_reason_id": 1,
+          "last_emailed_post_number": null,
+          "notifications_changed_at": "2026-10-08T05:49:46.683653"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topics": {
+      "inserted": [
+        {
+          "id": 45,
+          "slug": "congratulations-you-ve-been-granted-moderator-status",
+          "score": null,
+          "title": "Congratulations, you’ve been granted moderator status!",
+          "views": 0,
+          "closed": false,
+          "locale": null,
+          "excerpt": "You’ve been granted moderator status by a fellow staff member. \nAs a moderator, you now have access to the admin interface. \nWith great power comes great responsibility. If you’re new to moderating, please refer to the M&hellip;",
+          "subtype": "system_message",
+          "user_id": -1,
+          "visible": true,
+          "archived": false,
+          "archetype": "private_message",
+          "bumped_at": "2026-10-08T05:49:46.708832",
+          "pinned_at": null,
+          "created_at": "2026-10-08T05:49:46.671429",
+          "deleted_at": null,
+          "like_count": 0,
+          "spam_count": 0,
+          "updated_at": "2026-10-08T05:49:46.77512",
+          "word_count": 58,
+          "category_id": null,
+          "external_id": null,
+          "fancy_title": "Congratulations, you’ve been granted moderator status!",
+          "has_summary": false,
+          "posts_count": 1,
+          "reply_count": 0,
+          "percent_rank": 1,
+          "pinned_until": null,
+          "deleted_by_id": null,
+          "featured_link": null,
+          "bannered_until": null,
+          "last_posted_at": "2026-10-08T05:49:46.708832",
+          "image_upload_id": null,
+          "pinned_globally": false,
+          "reviewable_score": 0,
+          "featured_user1_id": null,
+          "featured_user2_id": null,
+          "featured_user3_id": null,
+          "featured_user4_id": null,
+          "last_post_user_id": -1,
+          "participant_count": 1,
+          "slow_mode_seconds": 0,
+          "og_image_upload_id": null,
+          "highest_post_number": 1,
+          "incoming_link_count": 0,
+          "visibility_reason_id": null,
+          "moderator_posts_count": 0,
+          "notify_moderators_count": 0,
+          "highest_staff_post_number": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_actions": {
+      "inserted": [
+        {
+          "id": 65,
+          "user_id": -1,
+          "created_at": "2026-10-08T05:49:46.671429",
+          "updated_at": "2026-10-08T05:49:46.702303",
+          "action_type": 12,
+          "acting_user_id": -1,
+          "target_post_id": -1,
+          "target_user_id": null,
+          "target_topic_id": 45
+        },
+        {
+          "id": 66,
+          "user_id": 2,
+          "created_at": "2026-10-08T05:49:46.671429",
+          "updated_at": "2026-10-08T05:49:46.705698",
+          "action_type": 13,
+          "acting_user_id": -1,
+          "target_post_id": -1,
+          "target_user_id": null,
+          "target_topic_id": 45
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_archived_messages": {
+      "inserted": [
+        {
+          "id": 2,
+          "user_id": -1,
+          "topic_id": 45,
+          "created_at": "2026-10-08T05:49:46.823533",
+          "updated_at": "2026-10-08T05:49:46.823533"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 135,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "R9+yzj57yaER5s39duOiB2iO0tY=",
+            "created_at": "2026-10-08T05:49:44.676026",
+            "rotated_at": "2026-10-08T05:49:44.675805",
+            "updated_at": "2026-10-08T05:49:44.676026",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "R9+yzj57yaER5s39duOiB2iO0tY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 135,
+            "seen_at": "2026-10-08T05:49:45.286845",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "R9+yzj57yaER5s39duOiB2iO0tY=",
+            "created_at": "2026-10-08T05:49:44.676026",
+            "rotated_at": "2026-10-08T05:49:44.675805",
+            "updated_at": "2026-10-08T05:49:44.676026",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "R9+yzj57yaER5s39duOiB2iO0tY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 34,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-08T05:49:45.367409",
+          "ip_address": null,
+          "updated_at": "2026-10-08T05:49:45.367409",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": 2
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "users": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 2,
+            "name": "User0",
+            "admin": false,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": false,
+            "username": "user0",
+            "moderator": false,
+            "created_at": "2026-07-25T05:59:15.831079",
+            "flag_level": 0,
+            "ip_address": "172.17.0.1",
+            "updated_at": "2026-10-01T15:39:52.016889",
+            "approved_at": null,
+            "trust_level": 1,
+            "last_seen_at": "2026-10-01T22:32:51.475256",
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": "2026-10-01T06:40:59.592885",
+            "silenced_till": null,
+            "approved_by_id": null,
+            "flair_group_id": null,
+            "last_posted_at": "2026-10-01T15:39:51.834549",
+            "suspended_till": null,
+            "username_lower": "user0",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": "2026-10-01T15:44:57.254251",
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          },
+          "after": {
+            "id": 2,
+            "name": "User0",
+            "admin": false,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": true,
+            "username": "user0",
+            "moderator": true,
+            "created_at": "2026-07-25T05:59:15.831079",
+            "flag_level": 0,
+            "ip_address": "172.17.0.1",
+            "updated_at": "2026-10-08T05:49:45.340434",
+            "approved_at": "2026-10-08T05:49:45.338241",
+            "trust_level": 1,
+            "last_seen_at": "2026-10-01T22:32:51.475256",
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": "2026-10-01T06:40:59.592885",
+            "silenced_till": null,
+            "approved_by_id": -1,
+            "flair_group_id": null,
+            "last_posted_at": "2026-10-01T15:39:51.834549",
+            "suspended_till": null,
+            "username_lower": "user0",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": "2026-10-01T15:44:57.254251",
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "publish_group_membership_updates",
+      {
+        "user_ids": [
+          2
+        ],
+        "group_id": 2,
+        "type": "add"
+      }
+    ],
+    [
+      "publish_group_membership_updates",
+      {
+        "user_ids": [
+          2
+        ],
+        "group_id": 3,
+        "type": "add"
+      }
+    ],
+    [
+      "send_system_message",
+      {
+        "user_id": 2,
+        "message_type": "welcome_staff",
+        "message_options": {
+          "role": "moderator"
+        }
+      }
+    ]
+  ],
+  "jobs_from_jobs": [
+    [
+      "bot_input",
+      {
+        "user_id": 2,
+        "topic_id": 45,
+        "input": "topic_notification_level_changed"
+      }
+    ],
+    [
+      "crawl_topic_link",
+      {
+        "topic_link_id": 20
+      }
+    ],
+    [
+      "crawl_topic_link",
+      {
+        "topic_link_id": 21
+      }
+    ],
+    [
+      "post_alert",
+      {
+        "post_id": 53,
+        "new_record": true,
+        "options": null
+      }
+    ],
+    [
+      "feature_topic_users",
+      {
+        "topic_id": 45
+      }
+    ],
+    [
+      "process_post",
+      {
+        "bypass_bump": false,
+        "cooking_options": null,
+        "new_post": true,
+        "post_id": 53,
+        "skip_pull_hotlinked_images": false
+      }
+    ],
+    [
+      "post_update_topic_tracking_state",
+      {
+        "post_id": 53
+      }
+    ]
+  ],
+  "recorded_from": {
+    "case": "6dc8490cbf4a3a34436d728441d5c12fe6821abada1bceff34dbd99ee141d6a9",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

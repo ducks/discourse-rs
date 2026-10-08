@@ -267,6 +267,30 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/admin/users/list.json", get(admin_users::index))
         .route("/admin/users/list/{query}", get(admin_users::index))
         .route("/admin/users/{user_id}", get(admin_users::show))
+        .route(
+            "/admin/users/{user_id}/grant_moderation",
+            put(admin_users::grant_moderation),
+        )
+        .route(
+            "/admin/users/{user_id}/revoke_moderation",
+            put(admin_users::revoke_moderation),
+        )
+        .route(
+            "/admin/users/{user_id}/revoke_admin",
+            put(admin_users::revoke_admin),
+        )
+        .route(
+            "/admin/users/{user_id}/grant_moderation.json",
+            put(admin_users::grant_moderation),
+        )
+        .route(
+            "/admin/users/{user_id}/revoke_moderation.json",
+            put(admin_users::revoke_moderation),
+        )
+        .route(
+            "/admin/users/{user_id}/revoke_admin.json",
+            put(admin_users::revoke_admin),
+        )
         .route("/admin/users/{user_id}/suspend", put(admin_users::suspend))
         .route(
             "/admin/users/{user_id}/suspend.json",
