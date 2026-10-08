@@ -328,7 +328,12 @@
   // open({mode, topicId, replyTo, replyToUsername, postId, postNumber,
   // category, draftKey, draftSequence}): to reply, create a topic or edit
   // a post; a draft key from the drafts menu resumes that draft.
+  // A closed composer holds only its grippie, as Ember renders the reply
+  // area once the composer is visible.
+  var replyArea = control.querySelector(".reply-area");
+
   function open(opts) {
+    replyArea.hidden = false;
     if (state && state.mode === opts.mode && control.classList.contains("draft")) {
       expand();
       return;
@@ -405,6 +410,7 @@
     draftTimer = null;
     control.classList.remove("open", "draft", "fullscreen");
     control.classList.add("closed");
+    replyArea.hidden = true;
     document.body.classList.remove("fullscreen-composer");
     state = null;
   }
@@ -565,8 +571,13 @@
     return renderer;
   }
 
+  // isPreviewVisible: the stored choice, for those whose editor has a
+  // preview (allowPreview: markdown mode, not the rich editor's).
   function previewShown() {
-    return (getItem("composer.showPreview") || "true") === "true";
+    return (
+      data.allowPreview !== "false" &&
+      (getItem("composer.showPreview") || "true") === "true"
+    );
   }
 
   function updatePreview() {
@@ -602,6 +613,7 @@
     var shown = previewShown();
     control.classList.toggle("show-preview", shown);
     control.classList.toggle("hide-preview", !shown);
+    previewToggle.hidden = data.allowPreview === "false";
     previewToggle.classList.toggle("active", !shown);
     previewToggle.title = shown ? data.labelHidePreview : data.labelShowPreview;
   }

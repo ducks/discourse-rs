@@ -353,11 +353,25 @@ impl Site {
             crate::routes::composer::MARKDOWN_WASM_VERSION
         );
         let render_settings = format!("{}/assets/markdown-settings.json", self.base_path);
+        // allowPreview: not for the rich editor (composition_mode 1).
+        let allow_preview = match guardian.user_id() {
+            Some(uid) => {
+                let mode: Option<i32> = sqlx::query_scalar(
+                    "SELECT composition_mode FROM user_options WHERE user_id = $1",
+                )
+                .bind(uid)
+                .fetch_optional(&mut *conn)
+                .await?;
+                mode != Some(1)
+            }
+            None => false,
+        };
         Ok(crate::composer_view::render(
             &list,
             &chooser,
             default_category,
             Some((&wasm, &render_settings)),
+            allow_preview,
             crate::composer_view::UploadUi::for_user(
                 &settings.get("authorized_extensions")?.to_s(),
                 &settings.get("authorized_extensions_for_staff")?.to_s(),
