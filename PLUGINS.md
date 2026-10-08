@@ -278,12 +278,66 @@ it.
    the manifest (Shopify Functions). It makes N+1 impossible, but the
    manifest grows into a query language and cannot express a lookup
    that depends on an earlier one.
-6. **Open: the runtime.** The goal is that anyone can write a plugin.
-   WASI components keep "any language" in principle, but Ruby and
-   Python each ship an interpreter per plugin and the author needs a
-   component toolchain. An embedded scripting language (Lua) is a text
-   file a self-hoster edits and reloads, with the same sandbox and the
-   same host functions, at the cost of one language. Decision 5 is the
-   same either way, which is why this can wait. Also open: whether an
-   API call runs as the user whose request triggered the hook or as a
-   system identity limited by the plugin's scopes.
+6. **The runtime, by who writes the plugin (2026-10-08).** Discourse's
+   bundled plugins (solved, reactions, topic voting, chat... the ones
+   its core repository ships, 14 of them enabled by default) are ported
+   as Rust modules in this repository (src/plugins/), each on when its
+   enabled setting is, the way Discourse treats them: core code with an
+   on/off switch. Third-party plugins, written by self-hosters, come
+   later through a sandboxed runtime over the same phases (below): an
+   embedded Luau was tried end to end on the branch
+   `spike/plugin-runtime` (has_accepted_answer and solved's posters
+   matching Rails, about 0.4 ms a list), with hosted plugins over HTTP
+   for those that need the network. Still open for that runtime: Luau
+   or Lua 5.4, and whether an API call runs as the triggering user or a
+   scoped system identity.
+
+## Rewriting core values: lifecycle phases (2026-10-08)
+
+Rails plugins change what core computes by monkey patching: prepending
+over core methods, often private ones, and writing their memoized state
+(discourse-solved's posters patch calls a private `descriptions_by_id`
+with an `ids:` keyword through an alias and appends to
+`@descriptions_by_id`). Nothing says what core may change underneath
+it, two patches on one method depend on load order, and a refactor
+breaks it silently. Here a plugin, bundled or not, changes core values
+only at the lifecycle phases of core's pipelines, each with a defined
+payload, in the same order everywhere:
+
+- before query: filters and ordering for what will be loaded;
+- after load: the loaded records; the plugin may load what it needs for
+  the page and ask for related records (users) to be loaded too;
+- before serialize: the inputs core derives its computed values from,
+  as data (for the topic list's posters: the candidate user ids in
+  order, their descriptions, whether the last poster keeps their
+  place), which core then turns into the values;
+- after serialize: keys added to each serialized record, after core's.
+
+Core guarantees what runs between phases (the user lookup comes after
+after load, so a plugin's extra posters are side-loaded). For bundled
+plugins the phases are plain Rust functions core calls
+(src/plugins/mod.rs) and the compiler holds the contract: change the
+poster inputs and solved stops compiling instead of drifting.
+
+Write pipelines take the same shape (before: change or refuse; after:
+the event), permission checks are points where core asks and a plugin
+allows, denies or abstains, and registries (notification types, icons,
+hashtag sources) are declarations.
+
+An inventory of the default-on plugins (plugin.rb and every prepended
+extension; an override is a method calling `super`) found about nine
+places they override core behaviour: solved's posters and post moving,
+voting's hot list, reactions' notification types, previous-notification
+decision and topic view post loading, chat's two category-delete checks
+and narrative-bot's post permission. Everything else adds keys, events,
+registries or routes.
+
+For the third-party runtime (from the spike and a scan of all 46
+bundled plugins): reads as SQL under per-plugin Postgres roles with
+column grants from the manifest (secret columns refused), the plugin's
+own tables, columns and custom fields written directly, everything else
+through the API plus a plugin-only part of it (notify, publish, cook,
+enqueue, act as its bot user), and core's permission checks as a read
+function. Auth providers belong in core as configuration; plugins that
+need the network (discourse-ai, chat-integration, rss-polling...) are
+hosted.

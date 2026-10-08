@@ -19,7 +19,7 @@ use crate::i18n::I18n;
 use crate::post_actions::{self, ActOpts, ActionTypes, TakenAction};
 use crate::site_settings::{SettingError, SiteSettings};
 use crate::topic_guardian::{PostCtx, TopicCtx};
-use crate::topic_list::{self, Mode, TopicListError, TopicListSerializer, time_json};
+use crate::topic_list::{Mode, TopicListError, TopicListSerializer, time_json};
 use crate::topic_query::{Filter, TOPIC_COLUMNS, TopicQuery, TopicRow};
 use crate::url::{UrlError, Urls};
 
@@ -81,6 +81,16 @@ impl From<crate::topic_query::TopicQueryError> for TopicViewError {
             E::Db(e) => TopicViewError::Db(e),
             E::Setting(e) => TopicViewError::Setting(e),
             E::Unsupported(e) => TopicViewError::Unsupported(e),
+        }
+    }
+}
+
+impl From<crate::plugins::PluginError> for TopicViewError {
+    fn from(e: crate::plugins::PluginError) -> Self {
+        match e {
+            crate::plugins::PluginError::Db(e) => TopicViewError::Db(e),
+            crate::plugins::PluginError::Setting(e) => TopicViewError::Setting(e),
+            crate::plugins::PluginError::Unsupported(e) => TopicViewError::Unsupported(e),
         }
     }
 }
@@ -295,7 +305,10 @@ impl TopicView<'_> {
 
         let mut out = Map::new();
         let post_ids: Vec<i32> = posts.iter().map(|p| p.id).collect();
-        let serialized_posts = self.serialize_posts(&topic, &slug, &posts, &viewer).await?;
+        let solved = self.solved_view(&topic, extra.deleted_at.is_some()).await?;
+        let serialized_posts = self
+            .serialize_posts(&topic, &slug, &posts, &viewer, solved.as_ref())
+            .await?;
         out.insert(
             "post_stream".into(),
             json!({"posts": serialized_posts, "stream": stream.iter().map(|(id, _)| *id).collect::<Vec<_>>()}),
@@ -536,6 +549,10 @@ impl TopicView<'_> {
                 }))
                 .collect::<Vec<_>>()),
         );
+        if let Some(solved) = &solved {
+            self.solved_topic_keys(solved, &slug, &viewer, &mut out)
+                .await?;
+        }
 
         Ok(Rendered {
             json: Value::Object(out),
@@ -676,7 +693,7 @@ impl TopicView<'_> {
             .fetch_optional(&mut *self.conn)
             .await?
             .ok_or(TopicViewError::NotFound)?;
-        let (topic, _) = self.find_topic(post.topic_id).await?;
+        let (topic, topic_extra) = self.find_topic(post.topic_id).await?;
         let mut viewer = self.load_viewer(topic.id).await?;
         if with_viewer_actions {
             viewer.taken =
@@ -690,8 +707,17 @@ impl TopicView<'_> {
             .bind(post_id)
             .fetch_one(&mut *self.conn)
             .await?;
+        let solved = self
+            .solved_view(&topic, topic_extra.deleted_at.is_some())
+            .await?;
         let mut serialized = self
-            .serialize_posts(&topic, &slug, std::slice::from_ref(&post), &viewer)
+            .serialize_posts(
+                &topic,
+                &slug,
+                std::slice::from_ref(&post),
+                &viewer,
+                solved.as_ref(),
+            )
             .await?;
         let Some(Value::Object(mut p)) = serialized.pop() else {
             return Err(TopicViewError::NotFound);
@@ -1350,6 +1376,7 @@ impl TopicView<'_> {
         slug: &str,
         posts: &[PostRow],
         viewer: &Viewer,
+        solved: Option<&crate::plugins::solved::TopicView>,
     ) -> Result<Vec<Value>, TopicViewError> {
         let logo_small_url = self.list_serializer().logo_small_url().await?;
         let enable_names = self.settings.get("enable_names")?.truthy();
@@ -1756,9 +1783,203 @@ impl TopicView<'_> {
                     post.post_number
                 )),
             );
+            // discourse-solved's post keys.
+            if let Some(solved) = solved {
+                solved.post_keys(g, post.id, post.post_number, post.post_type == 4, &mut p);
+            }
             out.push(Value::Object(p));
         }
         Ok(out)
+    }
+
+    /// discourse-solved's state for the topic, when it's on.
+    async fn solved_view(
+        &mut self,
+        topic: &TopicRow,
+        deleted: bool,
+    ) -> Result<Option<crate::plugins::solved::TopicView>, TopicViewError> {
+        if !crate::plugins::solved::enabled(self.settings)? {
+            return Ok(None);
+        }
+        let facts = crate::plugins::solved::TopicFacts {
+            id: topic.id,
+            user_id: topic.user_id,
+            category_id: topic.category_id,
+            archetype: topic.archetype.clone(),
+            closed: topic.closed,
+            archived: topic.archived,
+            deleted,
+        };
+        Ok(Some(
+            crate::plugins::solved::TopicView::load(
+                &mut *self.conn,
+                self.settings,
+                self.guardian,
+                facts,
+            )
+            .await?,
+        ))
+    }
+
+    /// discourse-solved's topic view keys: `accepted_answers` (while the
+    /// topic has answers), `has_accepted_answer`, then the shared issue
+    /// keys.
+    async fn solved_topic_keys(
+        &mut self,
+        solved: &crate::plugins::solved::TopicView,
+        slug: &str,
+        viewer: &Viewer,
+        out: &mut Map<String, Value>,
+    ) -> Result<(), TopicViewError> {
+        if !solved.answers.is_empty() {
+            let answers = self.accepted_answers(solved, slug, viewer).await?;
+            out.insert(
+                "accepted_answers".into(),
+                if answers.is_empty() {
+                    Value::Null
+                } else {
+                    Value::Array(answers)
+                },
+            );
+        }
+        out.insert(
+            "has_accepted_answer".into(),
+            json!(!solved.answers.is_empty()),
+        );
+        solved
+            .shared_issue_keys(&mut *self.conn, self.settings, self.guardian, out)
+            .await?;
+        Ok(())
+    }
+
+    /// AcceptedAnswersHelper.serialize: the answer posts the viewer can
+    /// see (deleted ones are gone), oldest first, each an
+    /// AcceptedAnswerSerializer (BasicPostSerializer, its post number,
+    /// topic and url, and who accepted it).
+    async fn accepted_answers(
+        &mut self,
+        solved: &crate::plugins::solved::TopicView,
+        slug: &str,
+        viewer: &Viewer,
+    ) -> Result<Vec<Value>, TopicViewError> {
+        let ids: Vec<i64> = solved.answers.iter().map(|a| a.answer_post_id).collect();
+        let sql = format!(
+            "{} WHERE id = ANY($1) AND deleted_at IS NULL",
+            Self::POST_SQL
+        );
+        let posts: Vec<PostRow> = sqlx::query_as(&sql)
+            .bind(&ids)
+            .fetch_all(&mut *self.conn)
+            .await?;
+        let mut visible: Vec<(&crate::plugins::solved::Answer, PostRow)> = Vec::new();
+        for answer in &solved.answers {
+            let Some(post) = posts
+                .iter()
+                .find(|p| i64::from(p.id) == answer.answer_post_id)
+            else {
+                continue;
+            };
+            let ctx = self.post_ctx(post).await?;
+            if self
+                .guardian
+                .can_see_post(self.settings, &ctx, viewer.can_see)?
+            {
+                visible.push((answer, post.clone()));
+            }
+        }
+        visible.sort_by_key(|(_, post)| post.created_at);
+
+        let s = self.settings;
+        let names = s.get("enable_names")?.truthy() && s.get("display_name_on_posts")?.truthy();
+        let show_accepter = s.get("show_who_marked_solved")?.truthy();
+        let quote = s.get("solved_quote_length")?.to_i() > 0;
+        let logo_small_url = self.list_serializer().logo_small_url().await?;
+        let mut out = Vec::with_capacity(visible.len());
+        for (answer, post) in visible {
+            // answer_user: the post's author, else the system user.
+            let author = self.post_user(post.user_id.unwrap_or(-1)).await?;
+            let mut a = Map::new();
+            a.insert("id".into(), json!(post.id));
+            if names {
+                a.insert(
+                    "name".into(),
+                    json!(author.as_ref().and_then(|u| u.name.clone())),
+                );
+            }
+            a.insert(
+                "username".into(),
+                json!(author.as_ref().map(|u| u.username.clone())),
+            );
+            let avatar = match &author {
+                Some(u) => Some(self.avatar(u, logo_small_url.as_deref())?),
+                None => None,
+            };
+            a.insert("avatar_template".into(), json!(avatar));
+            a.insert("created_at".into(), json!(time_json(post.created_at)));
+            let cooked_hidden = post.hidden && !self.guardian.is_staff();
+            if quote {
+                let cooked = if cooked_hidden {
+                    let mine = self.guardian.user_id().is_some()
+                        && self.guardian.user_id() == post.user_id;
+                    if mine {
+                        self.i18n
+                            .t_with("flagging.you_must_edit", &[("path", "/my/messages")])
+                    } else {
+                        self.i18n.t("flagging.user_must_edit").map(str::to_string)
+                    }
+                } else {
+                    Some(post.cooked.clone())
+                };
+                a.insert("cooked".into(), json!(cooked));
+            }
+            if cooked_hidden {
+                a.insert("cooked_hidden".into(), json!(true));
+            }
+            a.insert("post_number".into(), json!(post.post_number));
+            a.insert("topic_id".into(), json!(post.topic_id));
+            a.insert(
+                "url".into(),
+                json!(format!("/t/{slug}/{}/{}", post.topic_id, post.post_number)),
+            );
+            if show_accepter {
+                // accepter_user: who accepted, else the topic's author, else
+                // the system user.
+                let accepter = match self.post_user(answer.accepter_user_id as i32).await? {
+                    Some(u) => Some(u),
+                    None => match solved.topic.user_id {
+                        Some(id) => self.post_user(id).await?,
+                        None => None,
+                    },
+                };
+                let accepter = match accepter {
+                    Some(u) => Some(u),
+                    None => self.post_user(-1).await?,
+                };
+                if names {
+                    a.insert(
+                        "accepter_name".into(),
+                        json!(accepter.as_ref().and_then(|u| u.name.clone())),
+                    );
+                }
+                a.insert(
+                    "accepter_username".into(),
+                    json!(accepter.as_ref().map(|u| u.username.clone())),
+                );
+            }
+            out.push(Value::Object(a));
+        }
+        Ok(out)
+    }
+
+    /// A user's PostUser row, when they exist.
+    async fn post_user(&mut self, id: i32) -> Result<Option<PostUser>, TopicViewError> {
+        Ok(sqlx::query_as(
+            "SELECT id, username, name, uploaded_avatar_id, primary_group_id, flair_group_id, admin, moderator, \
+                    trust_level, title, suspended_till FROM users WHERE id = $1",
+        )
+        .bind(id)
+        .fetch_optional(&mut *self.conn)
+        .await?)
     }
 
     /// `details.allowed_users`: the PM's direct members (those only
@@ -2027,7 +2248,7 @@ impl TopicView<'_> {
         let lookup = serializer.user_lookup(rows).await?;
         let mut out = Vec::with_capacity(rows.len());
         for row in rows {
-            let posters = topic_list::posters_summary(row, &lookup, serializer.i18n);
+            let posters = serializer.posters(row, &lookup);
             out.push(
                 serializer
                     .serialize_topic(row, &posters, tagging, Mode::Suggested)

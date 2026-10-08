@@ -910,6 +910,16 @@ impl Private<'_> {
             "hidden_composer_toolbar_buttons".into(),
             json!(o.hidden_composer_toolbar_buttons),
         );
+        // discourse-solved's user option.
+        if crate::plugins::solved::enabled(s)? {
+            let notify: Option<bool> =
+                sqlx::query_scalar("SELECT notify_on_solved FROM user_options WHERE user_id = $1")
+                    .bind(uid)
+                    .fetch_optional(&mut *self.conn)
+                    .await?
+                    .flatten();
+            o_out.insert("notify_on_solved".into(), json!(notify));
+        }
         Ok(Value::Object(o_out))
     }
 }

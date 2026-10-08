@@ -42,6 +42,7 @@ pub mod optimized_images;
 pub mod owned_schema;
 pub mod params;
 pub mod parity;
+pub mod plugins;
 pub mod pm_lists;
 pub mod post_actions;
 pub mod post_destroyer;
