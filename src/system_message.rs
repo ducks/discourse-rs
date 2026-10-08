@@ -166,6 +166,14 @@ pub async fn create(
         // raise StandardError, creator.errors.full_messages
         _ => return Err(Unsupported("a system message PostCreator refused").into()),
     };
+    if message_type == "tl2_promotion_message"
+        && ctx
+            .settings
+            .get("discourse_narrative_bot_enabled")?
+            .truthy()
+    {
+        narrative_advanced_invite(pool, ctx, &recipient).await?;
+    }
     // UserArchivedMessage.create!(user: site_contact_user, topic:)
     sqlx::query(
         "INSERT INTO user_archived_messages (user_id, topic_id, created_at, updated_at) \
@@ -176,4 +184,60 @@ pub async fn create(
     .execute(pool)
     .await?;
     Ok(post_id)
+}
+
+/// discourse-narrative-bot's `system_message_sent` hook: after the trust
+/// level 2 promotion message, discobot invites the user to the advanced
+/// tutorial in a message of its own.
+async fn narrative_advanced_invite(
+    pool: &PgPool,
+    ctx: &Ctx<'_>,
+    recipient: &Recipient,
+) -> Result<(), AppError> {
+    if ctx.settings.get("default_locale")?.to_s() != "en" {
+        return Err(Unsupported("discobot's messages in locales other than English").into());
+    }
+    let t = |key: &str, args: &[(&str, &str)]| {
+        ctx.i18n
+            .t_with(&format!("discourse_narrative_bot.{key}"), args)
+            .ok_or(Unsupported("discobot messages without a translation"))
+    };
+    let mut conn = pool.acquire().await?;
+    let discobot: SessionUser = sqlx::query_as(&format!(
+        "SELECT {SESSION_USER_COLUMNS} FROM users WHERE users.id = -2"
+    ))
+    .fetch_one(&mut *conn)
+    .await?;
+    let guardian = Guardian::for_user(&mut conn, &discobot).await?;
+    drop(conn);
+    let reset_trigger = format!(
+        "{} {}",
+        t("track_selector.reset_trigger", &[])?,
+        t("advanced_user_narrative.reset_trigger", &[])?
+    );
+    let raw = t(
+        "tl2_promotion_message.text_body_template",
+        &[
+            ("discobot_username", &discobot.username.to_lowercase()),
+            ("reset_trigger", &reset_trigger),
+        ],
+    )?;
+    let outcome = create::create(
+        pool,
+        ctx,
+        &guardian,
+        NewPost {
+            raw,
+            title: Some(t("tl2_promotion_message.subject_template", &[])?),
+            pm_recipients: Some(vec![recipient.username.to_lowercase()]),
+            skip_validations: true,
+            ..Default::default()
+        },
+    )
+    .await?;
+    match outcome {
+        Outcome::Created { .. } => Ok(()),
+        // PostCreator.create! raises
+        _ => Err(Unsupported("discobot's message refused by PostCreator").into()),
+    }
 }

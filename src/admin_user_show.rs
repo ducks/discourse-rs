@@ -47,6 +47,8 @@ pub struct ShowOptions {
     /// `include_silence_reason`, `similar_users_count` and `include_ip:
     /// guardian.can_see_ip?`
     pub show: bool,
+    /// AdminDetailedUserSerializer, else AdminUserSerializer (trust_level).
+    pub detailed: bool,
 }
 
 pub async fn show(
@@ -89,20 +91,26 @@ pub async fn show(
     .fetch_one(&mut *conn)
     .await?;
 
-    for (sql, what) in [
+    for (sql, what, detailed_only) in [
         (
             "SELECT EXISTS (SELECT 1 FROM user_custom_fields WHERE user_id = $1 AND name LIKE 'user_field_%')",
             "user fields on the admin view of a user",
+            true,
         ),
         (
             "SELECT EXISTS (SELECT 1 FROM single_sign_on_records WHERE user_id = $1)",
             "DiscourseConnect records on the admin view of a user",
+            false,
         ),
         (
             "SELECT EXISTS (SELECT 1 FROM user_exports WHERE user_id = $1 AND created_at > now() - interval '2 days')",
             "a recent user export on the admin view of a user",
+            true,
         ),
     ] {
+        if detailed_only && !options.detailed {
+            continue;
+        }
         let found: bool = sqlx::query_scalar(sql)
             .bind(user_id)
             .fetch_one(&mut *conn)
@@ -158,7 +166,7 @@ pub async fn show(
     )
     .await?;
     // AdminDetailedUserSerializer#include_name?: for admins.
-    if !guardian.is_admin() {
+    if options.detailed && !guardian.is_admin() {
         u.remove("name");
     } else {
         u.insert("name".into(), json!(r.name));
@@ -227,6 +235,10 @@ pub async fn show(
         || (guardian.is_moderator() && s.get("moderators_view_sso_details")?.truthy());
     if can_check_sso {
         u.insert("single_sign_on_record".into(), Value::Null);
+    }
+
+    if !options.detailed {
+        return Ok(Some(Value::Object(u)));
     }
 
     // AdminDetailedUserSerializer
@@ -460,6 +472,27 @@ pub async fn show(
     Ok(Some(Value::Object(u)))
 }
 
+/// `TrustLevel3Requirements#requirements_met?` and `#requirements_lost?`
+/// for Promotion.
+pub(crate) async fn tl3_met_lost(
+    conn: &mut PgConnection,
+    s: &SiteSettings,
+    user_id: i32,
+) -> Result<(bool, bool), AppError> {
+    let r: Row = sqlx::query_as(&format!("{} WHERE users.id = $1", admin_users::ROW_SELECT))
+        .bind(user_id)
+        .fetch_one(&mut *conn)
+        .await?;
+    let now = crate::clock::now_naive();
+    let suspended = r.suspended_till.is_some_and(|t| t > now);
+    let silenced = r.silenced_till.is_some_and(|t| t > now);
+    let penalties = penalty_counts(conn, user_id, silenced, suspended).await?;
+    let req = tl3_requirements(conn, s, &r, silenced, suspended, penalties).await?;
+    Ok((
+        req["requirements_met"] == true,
+        req["requirements_lost"] == true,
+    ))
+}
 /// `suspend_record` / `silenced_record`: the latest such log, its acting
 /// user and details.
 async fn latest_penalty(

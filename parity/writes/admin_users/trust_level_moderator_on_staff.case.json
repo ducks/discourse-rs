@@ -1,0 +1,29 @@
+{
+  "user": "user2",
+  "setup": [
+    "UPDATE users SET moderator = TRUE WHERE id = 4"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/1/trust_level.json",
+      "params": {
+        "level": 2
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/users/1/trust_level_lock.json",
+      "params": {
+        "locked": "true"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/users/2/trust_level.json",
+      "params": {
+        "level": "0"
+      }
+    }
+  ]
+}

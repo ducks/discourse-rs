@@ -291,6 +291,22 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/admin/users/{user_id}/revoke_admin.json",
             put(admin_users::revoke_admin),
         )
+        .route(
+            "/admin/users/{user_id}/trust_level",
+            put(admin_users::trust_level),
+        )
+        .route(
+            "/admin/users/{user_id}/trust_level.json",
+            put(admin_users::trust_level),
+        )
+        .route(
+            "/admin/users/{user_id}/trust_level_lock",
+            put(admin_users::trust_level_lock),
+        )
+        .route(
+            "/admin/users/{user_id}/trust_level_lock.json",
+            put(admin_users::trust_level_lock),
+        )
         .route("/admin/users/{user_id}/suspend", put(admin_users::suspend))
         .route(
             "/admin/users/{user_id}/suspend.json",

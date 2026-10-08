@@ -1,0 +1,15 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE users SET manual_locked_trust_level = 2 WHERE id = 3"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/3/trust_level_lock.json",
+      "params": {
+        "locked": "false"
+      }
+    }
+  ]
+}

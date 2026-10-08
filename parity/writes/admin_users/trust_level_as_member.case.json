@@ -1,0 +1,12 @@
+{
+  "user": "user0",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/3/trust_level.json",
+      "params": {
+        "level": 0
+      }
+    }
+  ]
+}

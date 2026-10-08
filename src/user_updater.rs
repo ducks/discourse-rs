@@ -460,15 +460,36 @@ async fn user_after_save(
     user: &Target,
     name: Option<&str>,
 ) -> Result<(), AppError> {
+    after_save(
+        conn,
+        s,
+        user.id,
+        user.admin && user.active,
+        &user.username_lower,
+        name,
+    )
+    .await
+}
+
+/// User's after_save callbacks on any save; `active_admin` for the login
+/// hint.
+pub(crate) async fn after_save(
+    conn: &mut PgConnection,
+    s: &SiteSettings,
+    user_id: i32,
+    active_admin: bool,
+    username_lower: &str,
+    name: Option<&str>,
+) -> Result<(), AppError> {
     // clear_global_notice_if_needed
-    if user.admin && user.active && s.get("has_login_hint")?.truthy() {
+    if active_admin && s.get("has_login_hint")?.truthy() {
         return Err(Unsupported("clearing the login hint").into());
     }
     // refresh_avatar
     let attempted: Option<bool> = sqlx::query_scalar(
         "SELECT last_gravatar_download_attempt IS NOT NULL FROM user_avatars WHERE user_id = $1",
     )
-    .bind(user.id)
+    .bind(user_id)
     .fetch_optional(&mut *conn)
     .await?;
     match attempted {
@@ -478,7 +499,7 @@ async fn user_after_save(
         }
         Some(_) => {}
     }
-    crate::posting::search_index::index_user(conn, s, user.id, &user.username_lower, name).await
+    crate::posting::search_index::index_user(conn, s, user_id, username_lower, name).await
 }
 
 /// `CategoryUser.batch_set(user, level, category_ids)`
