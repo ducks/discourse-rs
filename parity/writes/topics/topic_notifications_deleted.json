@@ -1,0 +1,74 @@
+{
+  "name": "topic_notifications_deleted",
+  "user": "user0",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/t/40/notifications",
+      "params": {
+        "notification_level": "3"
+      }
+    }
+  ],
+  "started_at": "2026-10-08T16:40:39.712903",
+  "transaction_started_at": "2026-10-08T16:40:37.455479",
+  "responses": [
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 278,
+            "seen_at": null,
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "0oaBHbPvju+H3hETgb5XkMTtDdo=",
+            "created_at": "2026-10-08T16:40:38.005856",
+            "rotated_at": "2026-10-08T16:40:37.998052",
+            "updated_at": "2026-10-08T16:40:38.005856",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "0oaBHbPvju+H3hETgb5XkMTtDdo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 278,
+            "seen_at": "2026-10-08T16:40:39.728065",
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "0oaBHbPvju+H3hETgb5XkMTtDdo=",
+            "created_at": "2026-10-08T16:40:38.005856",
+            "rotated_at": "2026-10-08T16:40:37.998052",
+            "updated_at": "2026-10-08T16:40:38.005856",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "0oaBHbPvju+H3hETgb5XkMTtDdo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "recorded_from": {
+    "case": "5ed39d973bb034e56e5e67fc8212320217e06efbeaf2fd635b556e89905415fb",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

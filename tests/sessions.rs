@@ -1758,6 +1758,14 @@ async fn members_get_the_topic_controls() {
     assert!(page.contains(
         r#"<span class="text">You will receive notifications because you created this topic.</span>"#
     ));
+    // The level menu: each option posts its level, the current selected,
+    // and carries the reason it shows once chosen (the reason cleared).
+    assert!(page.contains(
+        r#"<button class="btn no-text notifications-tracking-btn -selected" data-level-id="3" data-level-name="watching""#
+    ));
+    assert!(page.contains(
+        r#"data-reason="You will see a count of new replies because you &lt;a href&#x3D;&quot;/u/user0/preferences/notifications&quot;&gt;read this topic&lt;/a&gt;." hx-post="/t/35/notifications" hx-vals='{"notification_level": 2}'"#
+    ));
     // This topic counts as read; the others are new.
     assert!(page.contains(r#"There are <a href="/new?subset=topics">3 new</a> topics remaining,"#));
 

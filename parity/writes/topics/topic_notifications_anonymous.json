@@ -1,0 +1,33 @@
+{
+  "name": "topic_notifications_anonymous",
+  "user": null,
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/t/35/notifications",
+      "params": {
+        "notification_level": "0"
+      }
+    }
+  ],
+  "started_at": "2026-10-08T16:40:36.780339",
+  "transaction_started_at": "2026-10-08T16:40:35.023696",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You need to be logged in to do that."
+        ],
+        "error_type": "not_logged_in"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "recorded_from": {
+    "case": "aa994ad7de44da76bba3b8d0378a915b563be7d5e239ccdf5dd6382935068e40",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
