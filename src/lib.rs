@@ -7,6 +7,7 @@ pub mod bookmark_manager;
 pub mod bookmarks;
 pub mod bus;
 pub mod categories;
+pub mod categories_view;
 pub mod category;
 pub mod category_badge;
 pub mod category_list;

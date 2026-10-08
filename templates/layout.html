@@ -137,6 +137,9 @@
           <div id="main-outlet"{% block main_outlet_attrs %}{% endblock %}>
             {% block content %}{% endblock %}
           </div>
+          {%- if chrome.powered_by %}
+          <a class="powered-by-discourse" href="https://discourse.org/powered-by" target="_blank"><span class="powered-by-discourse__content"><span class="powered-by-discourse__logo"><svg class="fa d-icon d-icon-fab-discourse svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#fab-discourse"></use></svg></span><span>Powered by Discourse</span></span></a>
+          {%- endif %}
         </div>
       </div>
       {%- if !chrome.composer.is_empty() %}

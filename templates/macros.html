@@ -14,3 +14,32 @@
 <div hidden hx-ext="sse" sse-connect="{{ base_path }}/live?position={{ bus_position }}{{ params }}" sse-swap="post,list,header"></div>
 {% endif %}
 {% endmacro %}
+
+{#- The list controls (discovery navigation): the breadcrumbs, the nav pills and
+    the new topic button; category_id preselects the composer category. -#}
+{% macro list_controls(nav, breadcrumbs, chrome, category_id, admin_controls) %}
+<div class="list-controls">
+  <div class="container">
+    <section class="navigation-container">
+      {{ breadcrumbs|safe }}
+      <ul class="nav nav-pills" id="navigation-bar">
+        {%- for item in nav %}
+        <li class="{% if item.active %}active {% endif %}{% if item.has_icon %}has-icon {% endif %}{{ item.name }} nav-item_{{ item.name }}" title="{{ item.title }}">
+          <a{% if item.active %} aria-current="page"{% endif %} class="{% if item.active %}active{% endif %}" href="{{ item.href }}">{{ item.label }}</a>
+        </li>
+        {%- endfor %}
+      </ul>
+      {%- if chrome.can_create_topic || !admin_controls.is_empty() %}
+      <div class="navigation-controls">
+        {{ admin_controls|safe }}
+        {%- if chrome.can_create_topic %}
+        <div class="d-combo-button{% if !chrome.drafts_menu_trigger.is_empty() %} --has-menu{% endif %} topic-create-button__combo" role="group" aria-label="New topic and drafts">
+          <button aria-label="New Topic" class="btn btn-icon-text d-combo-button-button btn-primary" id="create-topic" type="button"{% if let Some(id) = category_id %} data-category="{{ id }}"{% endif %}><svg class="fa d-icon d-icon-far-pen-to-square svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#far-pen-to-square"></use></svg><span class="d-button-label">New Topic</span></button>{{ chrome.drafts_menu_trigger|safe }}
+        </div>
+        {%- endif %}
+      </div>
+      {%- endif %}
+    </section>
+  </div>
+</div>
+{% endmacro %}

@@ -288,6 +288,17 @@ fn slug_for(cx: &ListContext, category: &ListCategory, depth: u32) -> String {
 
 /// `categoryBadgeHTML` with the default renderer, linked.
 pub fn category_badge(cx: &ListContext, category: &ListCategory) -> String {
+    category_badge_html(cx, category, true, false)
+}
+
+/// `categoryBadgeHTML`, linked or (`link: false`) a plain span; with
+/// `hide_parent` the parent keeps its colors but not its class and id.
+pub fn category_badge_html(
+    cx: &ListContext,
+    category: &ListCategory,
+    link: bool,
+    hide_parent: bool,
+) -> String {
     if category.id == cx.settings.uncategorized_category_id
         && cx.settings.suppress_uncategorized_badge
     {
@@ -316,7 +327,7 @@ pub fn category_badge(cx: &ListContext, category: &ListCategory) -> String {
         classes.push_str(" restricted");
     }
     let mut data = format!("data-category-id=\"{}\"", category.id);
-    if let Some(p) = parent {
+    if let Some(p) = parent.filter(|_| !hide_parent) {
         classes.push_str(" --has-parent");
         data.push_str(&format!(" data-parent-category-id=\"{}\"", p.id));
     }
@@ -339,10 +350,17 @@ pub fn category_badge(cx: &ListContext, category: &ListCategory) -> String {
     } else {
         ""
     };
-    format!(
-        "<a class=\"badge-category__wrapper \" style=\"{style}\" href=\"{url}\"><span {data} data-drop-close=\"true\" class=\"{classes}\">{inner}<span class=\"badge-category__name\"{dir}>{}</span></span></a>",
+    let badge = format!(
+        "<span {data} data-drop-close=\"true\" class=\"{classes}\">{inner}<span class=\"badge-category__name\"{dir}>{}</span></span>",
         escape(&category.name)
-    )
+    );
+    if link {
+        format!(
+            "<a class=\"badge-category__wrapper \" style=\"{style}\" href=\"{url}\">{badge}</a>"
+        )
+    } else {
+        format!("<span class=\"badge-category__wrapper\" style=\"{style}\">{badge}</span>")
+    }
 }
 
 /// `renderTags` in list mode, with `defaultRenderTag`.
