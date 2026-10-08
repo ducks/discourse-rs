@@ -1,0 +1,561 @@
+{
+  "name": "email_logs",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/email-logs/sent.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/email-logs/sent.json",
+      "params": {
+        "user": "USER",
+        "type": "user_",
+        "offset": "1"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/email-logs/sent.json",
+      "params": {
+        "address": "b@example",
+        "smtp_transaction_response": "250"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/email-logs/sent.json",
+      "params": {
+        "reply_key": "4f0b2c1d"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/email-logs/sent.json",
+      "params": {
+        "reply_key": "4f0b2c1d9e8a4b7c8d6e5f4a3b2c1d0e"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/email-logs/bounced.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/email-logs/skipped.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/email-logs/skipped.json",
+      "params": {
+        "address": "user1"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/email-logs/received.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/email-logs/received.json",
+      "params": {
+        "to": "x@example",
+        "subject": "re"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/email-logs/rejected.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/email-logs/rejected.json",
+      "params": {
+        "error": "bad",
+        "from": "stranger"
+      }
+    }
+  ],
+  "started_at": "2026-10-08T07:33:23.365738",
+  "transaction_started_at": "2026-10-08T07:33:20.649554",
+  "responses": [
+    {
+      "status": 200,
+      "body": [
+        {
+          "id": 9704,
+          "to_address": "nobody@example.com",
+          "email_type": "signup",
+          "user_id": null,
+          "created_at": "2026-10-05T13:00:00.000Z",
+          "cc_addresses": null,
+          "post_id": null,
+          "bounced": false,
+          "has_bounce_key": false,
+          "smtp_transaction_response": null,
+          "user": null
+        },
+        {
+          "id": 9703,
+          "to_address": "user1@example.com",
+          "email_type": "user_posted",
+          "user_id": 3,
+          "created_at": "2026-10-05T12:00:00.000Z",
+          "cc_addresses": null,
+          "post_id": 45,
+          "bounced": false,
+          "has_bounce_key": false,
+          "smtp_transaction_response": null,
+          "user": {
+            "id": 3,
+            "username": "user1",
+            "name": "User1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png"
+          }
+        },
+        {
+          "id": 9702,
+          "to_address": "user1@example.com",
+          "email_type": "digest",
+          "user_id": 3,
+          "created_at": "2026-10-05T11:00:00.000Z",
+          "cc_addresses": null,
+          "post_id": null,
+          "bounced": true,
+          "has_bounce_key": true,
+          "smtp_transaction_response": "550 Mailbox unavailable",
+          "user": {
+            "id": 3,
+            "username": "user1",
+            "name": "User1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png"
+          }
+        },
+        {
+          "id": 9701,
+          "to_address": "user0@example.com",
+          "email_type": "user_replied",
+          "user_id": 2,
+          "created_at": "2026-10-05T10:00:00.000Z",
+          "post_url": "/t/parity-fixture-replies-and-posters/35/2",
+          "post_description": "Parity fixture: replies and posters #2",
+          "cc_addresses": [
+            "a@example.com",
+            "b@example.com"
+          ],
+          "post_id": 36,
+          "reply_key": "4f0b2c1d9e8a4b7c8d6e5f4a3b2c1d0e",
+          "bounced": false,
+          "has_bounce_key": false,
+          "smtp_transaction_response": "250 OK",
+          "user": {
+            "id": 2,
+            "username": "user0",
+            "name": "User0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png"
+          }
+        }
+      ]
+    },
+    {
+      "status": 200,
+      "body": [
+        {
+          "id": 9701,
+          "to_address": "user0@example.com",
+          "email_type": "user_replied",
+          "user_id": 2,
+          "created_at": "2026-10-05T10:00:00.000Z",
+          "post_url": "/t/parity-fixture-replies-and-posters/35/2",
+          "post_description": "Parity fixture: replies and posters #2",
+          "cc_addresses": [
+            "a@example.com",
+            "b@example.com"
+          ],
+          "post_id": 36,
+          "reply_key": "4f0b2c1d9e8a4b7c8d6e5f4a3b2c1d0e",
+          "bounced": false,
+          "has_bounce_key": false,
+          "smtp_transaction_response": "250 OK",
+          "user": {
+            "id": 2,
+            "username": "user0",
+            "name": "User0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png"
+          }
+        }
+      ]
+    },
+    {
+      "status": 200,
+      "body": [
+        {
+          "id": 9701,
+          "to_address": "user0@example.com",
+          "email_type": "user_replied",
+          "user_id": 2,
+          "created_at": "2026-10-05T10:00:00.000Z",
+          "post_url": "/t/parity-fixture-replies-and-posters/35/2",
+          "post_description": "Parity fixture: replies and posters #2",
+          "cc_addresses": [
+            "a@example.com",
+            "b@example.com"
+          ],
+          "post_id": 36,
+          "reply_key": "4f0b2c1d9e8a4b7c8d6e5f4a3b2c1d0e",
+          "bounced": false,
+          "has_bounce_key": false,
+          "smtp_transaction_response": "250 OK",
+          "user": {
+            "id": 2,
+            "username": "user0",
+            "name": "User0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png"
+          }
+        }
+      ]
+    },
+    {
+      "status": 200,
+      "body": [
+        {
+          "id": 9701,
+          "to_address": "user0@example.com",
+          "email_type": "user_replied",
+          "user_id": 2,
+          "created_at": "2026-10-05T10:00:00.000Z",
+          "post_url": "/t/parity-fixture-replies-and-posters/35/2",
+          "post_description": "Parity fixture: replies and posters #2",
+          "cc_addresses": [
+            "a@example.com",
+            "b@example.com"
+          ],
+          "post_id": 36,
+          "reply_key": "4f0b2c1d9e8a4b7c8d6e5f4a3b2c1d0e",
+          "bounced": false,
+          "has_bounce_key": false,
+          "smtp_transaction_response": "250 OK",
+          "user": {
+            "id": 2,
+            "username": "user0",
+            "name": "User0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png"
+          }
+        }
+      ]
+    },
+    {
+      "status": 200,
+      "body": [
+        {
+          "id": 9701,
+          "to_address": "user0@example.com",
+          "email_type": "user_replied",
+          "user_id": 2,
+          "created_at": "2026-10-05T10:00:00.000Z",
+          "post_url": "/t/parity-fixture-replies-and-posters/35/2",
+          "post_description": "Parity fixture: replies and posters #2",
+          "cc_addresses": [
+            "a@example.com",
+            "b@example.com"
+          ],
+          "post_id": 36,
+          "reply_key": "4f0b2c1d9e8a4b7c8d6e5f4a3b2c1d0e",
+          "bounced": false,
+          "has_bounce_key": false,
+          "smtp_transaction_response": "250 OK",
+          "user": {
+            "id": 2,
+            "username": "user0",
+            "name": "User0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png"
+          }
+        }
+      ]
+    },
+    {
+      "status": 200,
+      "body": [
+        {
+          "id": 9702,
+          "to_address": "user1@example.com",
+          "email_type": "digest",
+          "user_id": 3,
+          "created_at": "2026-10-05T11:00:00.000Z",
+          "cc_addresses": null,
+          "post_id": null,
+          "bounced": true,
+          "has_bounce_key": true,
+          "smtp_transaction_response": "550 Mailbox unavailable",
+          "user": {
+            "id": 3,
+            "username": "user1",
+            "name": "User1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png"
+          }
+        }
+      ]
+    },
+    {
+      "status": 200,
+      "body": [
+        {
+          "id": 4,
+          "to_address": "user2@example.com",
+          "email_type": "user_replied",
+          "user_id": 4,
+          "created_at": "2026-10-04T12:00:00.000Z",
+          "skipped_reason": "post was deleted by the author",
+          "user": {
+            "id": 4,
+            "username": "user2",
+            "name": "User2",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png"
+          }
+        },
+        {
+          "id": 3,
+          "to_address": "user0@example.com",
+          "email_type": "digest",
+          "user_id": 2,
+          "created_at": "2026-10-04T11:00:00.000Z",
+          "skipped_reason": "too many digests",
+          "user": {
+            "id": 2,
+            "username": "user0",
+            "name": "User0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png"
+          }
+        },
+        {
+          "id": 2,
+          "to_address": "user1@example.com",
+          "email_type": "user_mentioned",
+          "user_id": 3,
+          "created_at": "2026-10-04T10:00:00.000Z",
+          "post_url": "/t/parity-fixture-replies-and-posters/35/5",
+          "post_description": "Parity fixture: replies and posters #5",
+          "skipped_reason": "User was seen recently",
+          "user": {
+            "id": 3,
+            "username": "user1",
+            "name": "User1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png"
+          }
+        }
+      ]
+    },
+    {
+      "status": 200,
+      "body": [
+        {
+          "id": 2,
+          "to_address": "user1@example.com",
+          "email_type": "user_mentioned",
+          "user_id": 3,
+          "created_at": "2026-10-04T10:00:00.000Z",
+          "post_url": "/t/parity-fixture-replies-and-posters/35/5",
+          "post_description": "Parity fixture: replies and posters #5",
+          "skipped_reason": "User was seen recently",
+          "user": {
+            "id": 3,
+            "username": "user1",
+            "name": "User1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png"
+          }
+        }
+      ]
+    },
+    {
+      "status": 200,
+      "body": [
+        {
+          "id": 9804,
+          "created_at": "2026-10-03T13:00:00.000Z",
+          "from_address": "bounce@example.com",
+          "to_addresses": [
+            "replies@example.com"
+          ],
+          "cc_addresses": null,
+          "subject": "Bounce",
+          "error": "Email::Receiver::BouncedEmailError",
+          "user": null
+        },
+        {
+          "id": 9803,
+          "created_at": "2026-10-03T12:00:00.000Z",
+          "from_address": "mailer-daemon@example.com",
+          "to_addresses": [
+            "replies@example.com"
+          ],
+          "cc_addresses": null,
+          "subject": "Undeliverable",
+          "error": "Unrecognized Error",
+          "user": null
+        },
+        {
+          "id": 9802,
+          "created_at": "2026-10-03T11:00:00.000Z",
+          "from_address": "stranger@example.com",
+          "to_addresses": [
+            "replies@example.com"
+          ],
+          "cc_addresses": null,
+          "subject": "Spam",
+          "error": "Email::Receiver::BadDestinationAddress",
+          "user": null
+        },
+        {
+          "id": 9801,
+          "created_at": "2026-10-03T10:00:00.000Z",
+          "from_address": "user0@example.com",
+          "to_addresses": [
+            "replies@example.com",
+            "x@example.com"
+          ],
+          "cc_addresses": [
+            "c@example.com"
+          ],
+          "subject": "Re: fixture",
+          "post_url": "/t/parity-fixture-replies-and-posters/35/3",
+          "user": {
+            "id": 2,
+            "username": "user0",
+            "name": "User0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png"
+          }
+        }
+      ]
+    },
+    {
+      "status": 200,
+      "body": [
+        {
+          "id": 9801,
+          "created_at": "2026-10-03T10:00:00.000Z",
+          "from_address": "user0@example.com",
+          "to_addresses": [
+            "replies@example.com",
+            "x@example.com"
+          ],
+          "cc_addresses": [
+            "c@example.com"
+          ],
+          "subject": "Re: fixture",
+          "post_url": "/t/parity-fixture-replies-and-posters/35/3",
+          "user": {
+            "id": 2,
+            "username": "user0",
+            "name": "User0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png"
+          }
+        }
+      ]
+    },
+    {
+      "status": 200,
+      "body": [
+        {
+          "id": 9803,
+          "created_at": "2026-10-03T12:00:00.000Z",
+          "from_address": "mailer-daemon@example.com",
+          "to_addresses": [
+            "replies@example.com"
+          ],
+          "cc_addresses": null,
+          "subject": "Undeliverable",
+          "error": "Unrecognized Error",
+          "user": null
+        },
+        {
+          "id": 9802,
+          "created_at": "2026-10-03T11:00:00.000Z",
+          "from_address": "stranger@example.com",
+          "to_addresses": [
+            "replies@example.com"
+          ],
+          "cc_addresses": null,
+          "subject": "Spam",
+          "error": "Email::Receiver::BadDestinationAddress",
+          "user": null
+        }
+      ]
+    },
+    {
+      "status": 200,
+      "body": [
+        {
+          "id": 9802,
+          "created_at": "2026-10-03T11:00:00.000Z",
+          "from_address": "stranger@example.com",
+          "to_addresses": [
+            "replies@example.com"
+          ],
+          "cc_addresses": null,
+          "subject": "Spam",
+          "error": "Email::Receiver::BadDestinationAddress",
+          "user": null
+        }
+      ]
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 135,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "trrkxoYWeobw3ThMGbR61/INBts=",
+            "created_at": "2026-10-08T07:33:21.865435",
+            "rotated_at": "2026-10-08T07:33:21.861202",
+            "updated_at": "2026-10-08T07:33:21.865435",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "trrkxoYWeobw3ThMGbR61/INBts=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 135,
+            "seen_at": "2026-10-08T07:33:23.378096",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "trrkxoYWeobw3ThMGbR61/INBts=",
+            "created_at": "2026-10-08T07:33:21.865435",
+            "rotated_at": "2026-10-08T07:33:21.861202",
+            "updated_at": "2026-10-08T07:33:21.865435",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "trrkxoYWeobw3ThMGbR61/INBts=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "setup": [
+    "DELETE FROM email_logs",
+    "DELETE FROM skipped_email_logs",
+    "DELETE FROM incoming_emails",
+    "DELETE FROM post_reply_keys",
+    "INSERT INTO email_logs (id, to_address, email_type, user_id, created_at, updated_at, post_id, bounce_key, bounced, cc_addresses, smtp_transaction_response) VALUES (9701, 'user0@example.com', 'user_replied', 2, '2026-10-05 10:00:00', '2026-10-05 10:00:00', 36, NULL, FALSE, 'a@example.com;b@example.com', '250 OK'), (9702, 'user1@example.com', 'digest', 3, '2026-10-05 11:00:00', '2026-10-05 11:00:00', NULL, 'b4a1e1a4-3d9e-4f1c-9a52-0b0c6c1e7a11', TRUE, NULL, '550 Mailbox unavailable'), (9703, 'user1@example.com', 'user_posted', 3, '2026-10-05 12:00:00', '2026-10-05 12:00:00', 45, NULL, FALSE, '', NULL), (9704, 'nobody@example.com', 'signup', NULL, '2026-10-05 13:00:00', '2026-10-05 13:00:00', NULL, NULL, FALSE, NULL, NULL)",
+    "INSERT INTO post_reply_keys (user_id, post_id, reply_key, created_at, updated_at) VALUES (2, 36, '4f0b2c1d-9e8a-4b7c-8d6e-5f4a3b2c1d0e', now(), now())",
+    "INSERT INTO skipped_email_logs (email_type, to_address, user_id, post_id, reason_type, custom_reason, created_at, updated_at) VALUES ('user_mentioned', 'user1@example.com', 3, 52, 9, NULL, '2026-10-04 10:00:00', '2026-10-04 10:00:00'), ('digest', 'user0@example.com', 2, NULL, 1, 'too many digests', '2026-10-04 11:00:00', '2026-10-04 11:00:00'), ('user_replied', 'user2@example.com', 4, 45, 13, NULL, '2026-10-04 12:00:00', '2026-10-04 12:00:00')",
+    "INSERT INTO incoming_emails (id, user_id, message_id, from_address, to_addresses, cc_addresses, subject, error, post_id, topic_id, is_bounce, created_at, updated_at) VALUES (9801, 2, 'a@mail', 'user0@example.com', 'replies@example.com;x@example.com', 'c@example.com', 'Re: fixture', NULL, 37, 35, FALSE, '2026-10-03 10:00:00', '2026-10-03 10:00:00'), (9802, NULL, 'b@mail', 'stranger@example.com', 'replies@example.com', NULL, 'Spam', 'Email::Receiver::BadDestinationAddress', NULL, NULL, FALSE, '2026-10-03 11:00:00', '2026-10-03 11:00:00'), (9803, NULL, 'c@mail', 'mailer-daemon@example.com', 'replies@example.com', NULL, 'Undeliverable', '', NULL, NULL, FALSE, '2026-10-03 12:00:00', '2026-10-03 12:00:00'), (9804, NULL, 'd@mail', 'bounce@example.com', 'replies@example.com', NULL, 'Bounce', 'Email::Receiver::BouncedEmailError', NULL, NULL, TRUE, '2026-10-03 13:00:00', '2026-10-03 13:00:00')"
+  ],
+  "recorded_from": {
+    "case": "e2d94753f0ad7fa652ae76c7488c8e0587937941b257c681526fd697f86d0d02",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

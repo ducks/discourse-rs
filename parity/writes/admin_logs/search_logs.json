@@ -1,0 +1,207 @@
+{
+  "name": "search_logs",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/logs/search_logs.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/logs/search_logs.json",
+      "params": {
+        "period": "weekly",
+        "search_type": "full_page"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/logs/search_logs.json",
+      "params": {
+        "period": "monthly",
+        "search_type": "non_staff_only"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/logs/search_logs.json",
+      "params": {
+        "period": "quarterly",
+        "search_type": "header"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/logs/search_logs.json",
+      "params": {
+        "period": "daily",
+        "search_type": "click_through_only"
+      }
+    }
+  ],
+  "started_at": "2026-10-08T07:31:13.793041",
+  "transaction_started_at": "2026-10-08T07:31:10.61661",
+  "responses": [
+    {
+      "status": 200,
+      "body": [
+        {
+          "term": "parity",
+          "searches": 3,
+          "ctr": 66.7
+        },
+        {
+          "term": "fixture",
+          "searches": 3,
+          "ctr": 33.4
+        },
+        {
+          "term": "solo",
+          "searches": 1,
+          "ctr": 100.0
+        },
+        {
+          "term": "apple",
+          "searches": 1,
+          "ctr": 0
+        },
+        {
+          "term": "zebra",
+          "searches": 1,
+          "ctr": 0
+        }
+      ]
+    },
+    {
+      "status": 200,
+      "body": [
+        {
+          "term": "fixture",
+          "searches": 2,
+          "ctr": 50.0
+        },
+        {
+          "term": "parity",
+          "searches": 1,
+          "ctr": 100.0
+        },
+        {
+          "term": "solo",
+          "searches": 1,
+          "ctr": 100.0
+        }
+      ]
+    },
+    {
+      "status": 200,
+      "body": [
+        {
+          "term": "parity",
+          "searches": 2,
+          "ctr": 100.0
+        },
+        {
+          "term": "fixture",
+          "searches": 1,
+          "ctr": 100.0
+        },
+        {
+          "term": "solo",
+          "searches": 1,
+          "ctr": 100.0
+        },
+        {
+          "term": "apple",
+          "searches": 1,
+          "ctr": 0
+        },
+        {
+          "term": "zebra",
+          "searches": 1,
+          "ctr": 0
+        }
+      ]
+    },
+    {
+      "status": 200,
+      "body": [
+        {
+          "term": "parity",
+          "searches": 2,
+          "ctr": 50.0
+        },
+        {
+          "term": "apple",
+          "searches": 1,
+          "ctr": 0
+        },
+        {
+          "term": "fixture",
+          "searches": 1,
+          "ctr": 0
+        },
+        {
+          "term": "zebra",
+          "searches": 1,
+          "ctr": 0
+        }
+      ]
+    },
+    {
+      "status": 200,
+      "body": []
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 135,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "RRhACekKPNA/pmX6xv9DZ/YW+Zo=",
+            "created_at": "2026-10-08T07:31:12.042832",
+            "rotated_at": "2026-10-08T07:31:12.036566",
+            "updated_at": "2026-10-08T07:31:12.042832",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "RRhACekKPNA/pmX6xv9DZ/YW+Zo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 135,
+            "seen_at": "2026-10-08T07:31:13.801819",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "RRhACekKPNA/pmX6xv9DZ/YW+Zo=",
+            "created_at": "2026-10-08T07:31:12.042832",
+            "rotated_at": "2026-10-08T07:31:12.036566",
+            "updated_at": "2026-10-08T07:31:12.042832",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "RRhACekKPNA/pmX6xv9DZ/YW+Zo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "setup": [
+    "DELETE FROM search_logs",
+    "INSERT INTO search_logs (term, user_id, search_type, search_result_id, created_at) VALUES ('Fixture', 1, 1, NULL, '2026-10-05 10:00:00'), ('fixture', 2, 2, 35, '2026-10-05 11:00:00'), ('fixture', NULL, 2, NULL, '2026-10-06 11:00:00'), ('parity', 3, 1, NULL, '2026-08-01 11:00:00'), ('parity', 3, 1, 36, '2026-10-01 11:00:00'), ('parity', 4, 2, 37, '2026-10-02 11:00:00'), ('zebra', 2, 1, NULL, '2026-10-07 11:00:00'), ('apple', 2, 1, NULL, '2026-10-07 12:00:00'), ('solo', 3, 2, 9, '2026-10-07 13:00:00')"
+  ],
+  "recorded_from": {
+    "case": "3f9fe4d4097aeaaf7541555f19caf97089f9abaa3131d0c4b5eb94c13336a2c8",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

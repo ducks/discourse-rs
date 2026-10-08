@@ -469,10 +469,10 @@ API keys for posting, and grant_moderation! for the first admin's login.
       deleting, anonymizing and merging, impersonating, penalties on several users
 - [ ] Groups: creating, editing and deleting, members and owners in bulk,
       automatic membership by email domain
-- [x] Logs: staff actions, screened emails, IPs and URLs, measured
+- [x] Logs: staff actions, screened emails, IPs and URLs, search logs,
+      email logs (sent, skipped, bounced, received, rejected), measured
       against Rails
-- [ ] Logs: search logs, email logs
-      (sent, skipped, bounced, received, rejected)
+- [ ] Logs: a search term's details, incoming email details
 - [ ] Backups: creating, listing, downloading and restoring through the
       app (scripts/restore-backup restores today), read-only mode
 - [ ] Badges: creating, editing and deleting, groupings, granting and
