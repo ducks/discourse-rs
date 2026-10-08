@@ -1,0 +1,350 @@
+{
+  "name": "current_user_limit_reached",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/session/current.json",
+      "params": {}
+    }
+  ],
+  "started_at": "2026-10-08T19:38:32.59873",
+  "transaction_started_at": "2026-10-08T19:38:31.511089",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "current_user": {
+          "id": 3,
+          "username": "user1",
+          "name": "User1",
+          "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+          "unread_notifications": 5,
+          "unread_high_priority_notifications": 4,
+          "all_unread_notifications_count": 9,
+          "read_first_notification": false,
+          "admin": false,
+          "notification_channel_position": null,
+          "do_not_disturb_channel_position": 0,
+          "moderator": false,
+          "staff": false,
+          "whisperer": false,
+          "title": null,
+          "any_posts": true,
+          "trust_level": 2,
+          "can_send_private_email_messages": false,
+          "can_send_private_messages": true,
+          "can_upload_avatar": true,
+          "can_edit": true,
+          "can_invite_to_forum": true,
+          "can_post_anonymously": false,
+          "can_ignore_users": true,
+          "can_edit_tags": false,
+          "can_delete_all_posts_and_topics": false,
+          "custom_fields": {},
+          "muted_category_ids": [
+            2
+          ],
+          "indirectly_muted_category_ids": [],
+          "regular_category_ids": [],
+          "tracked_category_ids": [],
+          "watched_first_post_category_ids": [],
+          "watched_category_ids": [],
+          "watched_tags": [],
+          "watching_first_post_tags": [],
+          "tracked_tags": [],
+          "muted_tags": [],
+          "regular_tags": [],
+          "dismissed_banner_key": null,
+          "is_anonymous": false,
+          "reviewable_count": 0,
+          "unseen_reviewable_count": 0,
+          "new_personal_messages_notifications_count": 3,
+          "read_faq": false,
+          "previous_visit_at": "2026-10-01T15:50:01.377Z",
+          "seen_notification_id": 0,
+          "flair_group_id": null,
+          "can_create_topic": true,
+          "can_set_topic_timer": false,
+          "link_posting_access": "full",
+          "top_category_ids": [],
+          "groups": [
+            {
+              "id": 10,
+              "name": "trust_level_0",
+              "has_messages": false
+            },
+            {
+              "id": 11,
+              "name": "trust_level_1",
+              "has_messages": false
+            },
+            {
+              "id": 12,
+              "name": "trust_level_2",
+              "has_messages": false
+            }
+          ],
+          "needs_required_fields_check": false,
+          "second_factor_enabled": false,
+          "ignored_users": [],
+          "do_not_disturb_until": null,
+          "can_review": false,
+          "draft_count": 0,
+          "pending_posts_count": 0,
+          "grouped_unread_notifications": {
+            "6": 3,
+            "12": 3,
+            "24": 1,
+            "1": 1,
+            "5": 1
+          },
+          "display_sidebar_tags": true,
+          "sidebar_tags": [],
+          "sidebar_category_ids": [
+            2,
+            4
+          ],
+          "sidebar_sections": [
+            {
+              "id": 1,
+              "title": "Community",
+              "links": [
+                {
+                  "id": 1,
+                  "name": "Topics",
+                  "value": "/latest",
+                  "icon": "layer-group",
+                  "external": false,
+                  "segment": "primary",
+                  "locale": null
+                },
+                {
+                  "id": 2,
+                  "name": "My posts",
+                  "value": "/my/activity",
+                  "icon": "user",
+                  "external": false,
+                  "segment": "primary",
+                  "locale": null
+                },
+                {
+                  "id": 3,
+                  "name": "My messages",
+                  "value": "/my/messages",
+                  "icon": "inbox",
+                  "external": false,
+                  "segment": "primary",
+                  "locale": null
+                },
+                {
+                  "id": 4,
+                  "name": "Review",
+                  "value": "/review",
+                  "icon": "flag",
+                  "external": false,
+                  "segment": "primary",
+                  "locale": null
+                },
+                {
+                  "id": 5,
+                  "name": "Admin",
+                  "value": "/admin",
+                  "icon": "wrench",
+                  "external": false,
+                  "segment": "primary",
+                  "locale": null
+                },
+                {
+                  "id": 6,
+                  "name": "Invite",
+                  "value": "/new-invite",
+                  "icon": "paper-plane",
+                  "external": false,
+                  "segment": "primary",
+                  "locale": null
+                },
+                {
+                  "id": 7,
+                  "name": "Users",
+                  "value": "/u",
+                  "icon": "users",
+                  "external": false,
+                  "segment": "secondary",
+                  "locale": null
+                },
+                {
+                  "id": 8,
+                  "name": "About",
+                  "value": "/about",
+                  "icon": "circle-info",
+                  "external": false,
+                  "segment": "secondary",
+                  "locale": null
+                },
+                {
+                  "id": 9,
+                  "name": "FAQ",
+                  "value": "/faq",
+                  "icon": "circle-question",
+                  "external": false,
+                  "segment": "secondary",
+                  "locale": null
+                },
+                {
+                  "id": 10,
+                  "name": "Groups",
+                  "value": "/g",
+                  "icon": "user-group",
+                  "external": false,
+                  "segment": "secondary",
+                  "locale": null
+                },
+                {
+                  "id": 11,
+                  "name": "Badges",
+                  "value": "/badges",
+                  "icon": "certificate",
+                  "external": false,
+                  "segment": "secondary",
+                  "locale": null
+                },
+                {
+                  "id": 12,
+                  "name": "Filter",
+                  "value": "/filter",
+                  "icon": "filter",
+                  "external": false,
+                  "segment": "secondary",
+                  "locale": null
+                }
+              ],
+              "slug": "community",
+              "public": true,
+              "section_type": "community",
+              "locale": null
+            }
+          ],
+          "unified_new_enabled": true,
+          "can_view_raw_email": false,
+          "login_method": "local",
+          "can_localize_content": false,
+          "is_impersonating": false,
+          "impersonation_expires_at": null,
+          "can_chat": true,
+          "can_direct_message": true,
+          "has_chat_enabled": true,
+          "has_joinable_public_channels": false,
+          "chat_drafts": [],
+          "can_use_templates": false,
+          "votes_exceeded": true,
+          "votes_count": 1,
+          "votes_left": 0,
+          "vote_limit": 1,
+          "can_create_poll": true,
+          "user_option": {
+            "mailing_list_mode": false,
+            "external_links_in_new_tab": false,
+            "enable_quoting": true,
+            "enable_smart_lists": true,
+            "enable_markdown_monospace_font": true,
+            "dynamic_favicon": false,
+            "automatically_unpin_topics": true,
+            "likes_notifications_disabled": false,
+            "hide_profile_and_presence": false,
+            "hide_profile": false,
+            "hide_presence": false,
+            "title_count_mode": "notifications",
+            "timezone": null,
+            "skip_new_user_tips": false,
+            "default_calendar": "none_selected",
+            "bookmark_auto_delete_preference": 3,
+            "notify_on_linked_posts": true,
+            "should_be_redirected_to_top": false,
+            "treat_as_new_topic_start_date": "2026-07-25T05:59:16.250Z",
+            "sidebar_link_to_filtered_list": false,
+            "sidebar_show_count_of_new_items": false,
+            "composition_mode": 1,
+            "interface_color_mode": 1,
+            "show_original_content": false,
+            "send_shortcut": "enter",
+            "automatically_translate": true,
+            "understood_languages": [],
+            "hidden_composer_toolbar_buttons": [],
+            "show_thread_title_prompts": true,
+            "chat_channel_list_filter": "all",
+            "chat_channel_list_sort": "alphabetical",
+            "chat_channel_list_sort_starred": "alphabetical",
+            "chat_channel_list_sort_dms": "priority",
+            "chat_channel_list_filter_starred": "all",
+            "chat_channel_list_filter_dms": "all",
+            "chat_announce_new_messages": true,
+            "chat_new_message_sound": false,
+            "chat_header_indicator_preference": "all_new",
+            "chat_separate_sidebar_mode": "default",
+            "chat_send_shortcut": "enter",
+            "chat_quick_reaction_type": "frequent",
+            "chat_quick_reactions_custom": null
+          }
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 291,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "GPmlSCRMkluMgsh2s6TiPZW5yJM=",
+            "created_at": "2026-10-08T19:38:32.030231",
+            "rotated_at": "2026-10-08T19:38:32.029957",
+            "updated_at": "2026-10-08T19:38:32.030231",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "GPmlSCRMkluMgsh2s6TiPZW5yJM=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 291,
+            "seen_at": "2026-10-08T19:38:32.605674",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "GPmlSCRMkluMgsh2s6TiPZW5yJM=",
+            "created_at": "2026-10-08T19:38:32.030231",
+            "rotated_at": "2026-10-08T19:38:32.029957",
+            "updated_at": "2026-10-08T19:38:32.030231",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "GPmlSCRMkluMgsh2s6TiPZW5yJM=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "settings": {
+    "topic_voting_enable_vote_limits": "true",
+    "topic_voting_tl2_vote_limit": "1"
+  },
+  "setup": [
+    "INSERT INTO topic_voting_category_settings (category_id, created_at, updated_at) VALUES (4, now(), now())",
+    "INSERT INTO topic_voting_votes (topic_id, user_id, archive, created_at, updated_at) VALUES (35, 3, false, now(), now()), (35, 4, false, now(), now()), (39, 4, false, now(), now()), (41, 3, true, now(), now())",
+    "INSERT INTO topic_voting_topic_vote_count (topic_id, votes_count, created_at, updated_at) VALUES (35, 2, now(), now()), (39, 1, now(), now()), (41, 1, now(), now()) ON CONFLICT (topic_id) DO UPDATE SET votes_count = EXCLUDED.votes_count"
+  ],
+  "recorded_from": {
+    "case": "e3aaf4ae623dec8372cbb43d00f559522965d5255ff37c6e64101300e723b498",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

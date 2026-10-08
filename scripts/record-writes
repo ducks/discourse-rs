@@ -5,7 +5,7 @@
 # tests/writes.rs replays them on the seed. Run `make reset-reference` first.
 #
 # Each recording is stamped with what it was recorded from: its case (less
-# `not_yet`), the seed and the Discourse commit. Only cases without a
+# `not_yet` and `ignore`), the seed and the Discourse commit. Only cases without a
 # recording, or whose stamp no longer matches, are recorded unless asked.
 #
 # Usage: scripts/record-writes <agent-name>            # new or stale cases
@@ -26,7 +26,7 @@ seed=$(sha256sum "$root/seed/fresh_install.sql" | cut -d' ' -f1)
 commit=$(sed -n 's/^commit=//p' "$root/vendor/discourse/DISCOURSE_REF")
 
 case_hash() {
-  jq -cS 'del(.not_yet)' "$1" | sha256sum | cut -d' ' -f1
+  jq -cS 'del(.not_yet, .ignore)' "$1" | sha256sum | cut -d' ' -f1
 }
 
 # The cases to record, as "area/name", and why.
@@ -61,7 +61,7 @@ fi
 cases="$(mktemp)"
 trap 'rm -f "$cases"' EXIT
 for entry in "${selected[@]}"; do
-  jq --arg name "${entry#*/}" '{name: $name} + del(.not_yet)' "$dest/$entry.case.json"
+  jq --arg name "${entry#*/}" '{name: $name} + del(.not_yet, .ignore)' "$dest/$entry.case.json"
 done | jq -s . > "$cases"
 
 dv copy "$root/scripts/record_writes.rb" "$agent:/tmp/record_writes.rb" > /dev/null

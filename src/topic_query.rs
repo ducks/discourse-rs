@@ -718,6 +718,16 @@ impl TopicQuery<'_> {
             Filter::Hot => Some("topic_hot_scores.score DESC".to_string()),
             _ => None,
         };
+        // discourse-topic-voting's results filter callback reorders the
+        // latest and unseen lists (TopicQuery.results_filter_callbacks).
+        if self.options.order.as_deref() == Some("votes")
+            && matches!(self.filter, Filter::Latest | Filter::Unseen)
+            && crate::plugins::topic_voting::enabled(self.settings)?
+        {
+            return Ok(crate::plugins::topic_voting::votes_order(
+                self.options.ascending,
+            ));
+        }
         if let Some(block) = &block
             && self.options.order.is_none()
         {

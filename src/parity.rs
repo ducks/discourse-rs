@@ -284,12 +284,7 @@ fn is_json(media: &str) -> bool {
 fn normalize_json(body: &str, ignore: &[String]) -> Result<Value, String> {
     let mut value: Value = serde_json::from_str(body).map_err(|e| e.to_string())?;
     for ptr in ignore {
-        let segments: Vec<String> = ptr
-            .split('/')
-            .skip(1)
-            .map(|s| s.replace("~1", "/").replace("~0", "~"))
-            .collect();
-        remove_path(&mut value, &segments);
+        ignore_path(&mut value, ptr);
     }
     unscript(&mut value);
     unorder(&mut value);
@@ -403,6 +398,16 @@ fn unscript(value: &mut Value) {
         Value::Object(map) => map.values_mut().for_each(unscript),
         _ => {}
     }
+}
+
+/// Removes what a JSON pointer names, `*` matching any key or index.
+pub fn ignore_path(value: &mut Value, ptr: &str) {
+    let segments: Vec<String> = ptr
+        .split('/')
+        .skip(1)
+        .map(|s| s.replace("~1", "/").replace("~0", "~"))
+        .collect();
+    remove_path(value, &segments);
 }
 
 fn remove_path(value: &mut Value, segments: &[String]) {

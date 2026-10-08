@@ -109,6 +109,12 @@ def clear_redis_state
   end
 end
 
+# Plugins' in-process caches of rows a case's setup inserts (and the
+# rollback removes): topic-voting's voting categories.
+def reset_plugin_caches
+  Category.reset_voting_cache if Category.respond_to?(:reset_voting_cache)
+end
+
 def checksums
   (TABLES.keys - BACKGROUND_TABLES).to_h do |t|
     [t, db.select_value("SELECT md5(COALESCE(string_agg(x::text, '|' ORDER BY x::text), '')) FROM #{db.quote_table_name(t)} x")]
@@ -188,6 +194,7 @@ cases.each do |c|
     (c["settings"] || {}).each { |name, value| SiteSetting.set(name, value) }
     # `setup`: SQL for fixture rows a case needs (a reply key), run the same way.
     (c["setup"] || []).each { |sql| db.execute(sql) }
+    reset_plugin_caches if c["setup"]
     ENQUEUED.clear
     before_sums = checksums
     before_rows = before_sums.keys.to_h { |t| [t, rows(t)] }
@@ -257,5 +264,6 @@ cases.each do |c|
     clear_redis_state
     pool.unpin_connection!
     SiteSetting.refresh! if c["settings"]
+    reset_plugin_caches if c["setup"]
   end
 end

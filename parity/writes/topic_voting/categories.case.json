@@ -1,0 +1,14 @@
+{
+  "setup": [
+    "INSERT INTO topic_voting_category_settings (category_id, created_at, updated_at) VALUES (4, now(), now())",
+    "INSERT INTO topic_voting_votes (topic_id, user_id, archive, created_at, updated_at) VALUES (35, 3, false, now(), now()), (35, 4, false, now(), now()), (39, 4, false, now(), now()), (41, 3, true, now(), now())",
+    "INSERT INTO topic_voting_topic_vote_count (topic_id, votes_count, created_at, updated_at) VALUES (35, 2, now(), now()), (39, 1, now(), now()), (41, 1, now(), now()) ON CONFLICT (topic_id) DO UPDATE SET votes_count = EXCLUDED.votes_count"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/categories.json",
+      "params": {}
+    }
+  ]
+}

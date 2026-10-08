@@ -431,6 +431,12 @@ impl Categories<'_> {
             "navigate_to_first_post_after_read".into(),
             json!(c.navigate_to_first_post_after_read),
         );
+        // discourse-topic-voting: `can_vote` on a voting category.
+        if crate::plugins::topic_voting::enabled(self.settings)?
+            && crate::plugins::topic_voting::category_votes(&mut *self.conn, c.id).await?
+        {
+            out.insert("can_vote".into(), json!(true));
+        }
         Ok(out)
     }
 

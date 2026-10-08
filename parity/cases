@@ -17,55 +17,55 @@ GET /site/basic-info.json
 #   categories/*/custom_fields: plugin-registered category custom fields
 GET /site.json ignore=/filters,/anonymous_list_filters,/homepage_choices,/top_menu_items,/anonymous_top_menu_items,/markdown_additional_options,/hashtag_configurations,/hashtag_icons,/access_control,/categories/*/custom_fields
 
-# list#latest (anonymous). Ignored: can_vote (topic-voting plugin)
-GET /latest.json ignore=/topic_list/topics/*/can_vote
-GET /latest.json?page=1&per_page=2 ignore=/topic_list/topics/*/can_vote
+# list#latest (anonymous).
+GET /latest.json
+GET /latest.json?page=1&per_page=2
 # order=views would tie (all 0) and Discourse has no tiebreaker.
-GET /latest.json?order=created&ascending=true ignore=/topic_list/topics/*/can_vote
+GET /latest.json?order=created&ascending=true
 
 # topics#show (anonymous). Ignored: suggested_topics (random in Discourse),
-# message_bus_last_id (Redis), and plugin keys from reactions,
-# topic-voting and zendesk.
-GET /t/parity-fixture-replies-and-posters/35.json ignore=/timeline_lookup,/suggested_topics,/message_bus_last_id,/valid_reactions,/can_vote,/vote_count,/user_voted,/discourse_zendesk_plugin_zendesk_id,/discourse_zendesk_plugin_zendesk_url,/post_stream/posts/*/reactions,/post_stream/posts/*/current_user_reaction,/post_stream/posts/*/reaction_users_count,/post_stream/posts/*/current_user_used_main_reaction,/post_stream/posts/*/can_vote
-GET /t/35.json ignore=/timeline_lookup,/suggested_topics,/message_bus_last_id,/valid_reactions,/can_vote,/vote_count,/user_voted,/discourse_zendesk_plugin_zendesk_id,/discourse_zendesk_plugin_zendesk_url,/post_stream/posts/*/reactions,/post_stream/posts/*/current_user_reaction,/post_stream/posts/*/reaction_users_count,/post_stream/posts/*/current_user_used_main_reaction,/post_stream/posts/*/can_vote
-GET /t/parity-fixture-pinned-and-closed/37.json ignore=/timeline_lookup,/suggested_topics,/message_bus_last_id,/valid_reactions,/can_vote,/vote_count,/user_voted,/discourse_zendesk_plugin_zendesk_id,/discourse_zendesk_plugin_zendesk_url,/post_stream/posts/*/reactions,/post_stream/posts/*/current_user_reaction,/post_stream/posts/*/reaction_users_count,/post_stream/posts/*/current_user_used_main_reaction,/post_stream/posts/*/can_vote
+# message_bus_last_id (Redis), and plugin keys from reactions and
+# zendesk.
+GET /t/parity-fixture-replies-and-posters/35.json ignore=/timeline_lookup,/suggested_topics,/message_bus_last_id,/valid_reactions,/discourse_zendesk_plugin_zendesk_id,/discourse_zendesk_plugin_zendesk_url,/post_stream/posts/*/reactions,/post_stream/posts/*/current_user_reaction,/post_stream/posts/*/reaction_users_count,/post_stream/posts/*/current_user_used_main_reaction
+GET /t/35.json ignore=/timeline_lookup,/suggested_topics,/message_bus_last_id,/valid_reactions,/discourse_zendesk_plugin_zendesk_id,/discourse_zendesk_plugin_zendesk_url,/post_stream/posts/*/reactions,/post_stream/posts/*/current_user_reaction,/post_stream/posts/*/reaction_users_count,/post_stream/posts/*/current_user_used_main_reaction
+GET /t/parity-fixture-pinned-and-closed/37.json ignore=/timeline_lookup,/suggested_topics,/message_bus_last_id,/valid_reactions,/discourse_zendesk_plugin_zendesk_id,/discourse_zendesk_plugin_zendesk_url,/post_stream/posts/*/reactions,/post_stream/posts/*/current_user_reaction,/post_stream/posts/*/reaction_users_count,/post_stream/posts/*/current_user_used_main_reaction
 # timeline_lookup carries days-ago per post and drifts at UTC midnight.
-GET /t/parity-fixture-replies-and-posters/35/3.json ignore=/timeline_lookup,/suggested_topics,/message_bus_last_id,/valid_reactions,/can_vote,/vote_count,/user_voted,/discourse_zendesk_plugin_zendesk_id,/discourse_zendesk_plugin_zendesk_url,/post_stream/posts/*/reactions,/post_stream/posts/*/current_user_reaction,/post_stream/posts/*/reaction_users_count,/post_stream/posts/*/current_user_used_main_reaction,/post_stream/posts/*/can_vote
-GET /t/welcome-to-discourse/5.json ignore=/timeline_lookup,/suggested_topics,/message_bus_last_id,/valid_reactions,/can_vote,/vote_count,/user_voted,/discourse_zendesk_plugin_zendesk_id,/discourse_zendesk_plugin_zendesk_url,/post_stream/posts/*/reactions,/post_stream/posts/*/current_user_reaction,/post_stream/posts/*/reaction_users_count,/post_stream/posts/*/current_user_used_main_reaction,/post_stream/posts/*/can_vote
+GET /t/parity-fixture-replies-and-posters/35/3.json ignore=/timeline_lookup,/suggested_topics,/message_bus_last_id,/valid_reactions,/discourse_zendesk_plugin_zendesk_id,/discourse_zendesk_plugin_zendesk_url,/post_stream/posts/*/reactions,/post_stream/posts/*/current_user_reaction,/post_stream/posts/*/reaction_users_count,/post_stream/posts/*/current_user_used_main_reaction
+GET /t/welcome-to-discourse/5.json ignore=/timeline_lookup,/suggested_topics,/message_bus_last_id,/valid_reactions,/discourse_zendesk_plugin_zendesk_id,/discourse_zendesk_plugin_zendesk_url,/post_stream/posts/*/reactions,/post_stream/posts/*/current_user_reaction,/post_stream/posts/*/reaction_users_count,/post_stream/posts/*/current_user_used_main_reaction
 # 404 body: the rendered not-found page HTML isn't ported
 GET /t/999999.json ignore=/timeline_lookup
 
 # list#category_default / category_latest (anonymous)
-GET /c/general/4.json ignore=/topic_list/topics/*/can_vote
-GET /c/general/sub-general/34.json ignore=/topic_list/topics/*/can_vote
-GET /c/general/4/l/latest.json?per_page=2 ignore=/topic_list/topics/*/can_vote
-GET /c/site-feedback/2.json?page=1&per_page=1 ignore=/topic_list/topics/*/can_vote
+GET /c/general/4.json
+GET /c/general/sub-general/34.json
+GET /c/general/4/l/latest.json?per_page=2
+GET /c/site-feedback/2.json?page=1&per_page=1
 GET /c/staff/3.json
 
 # categories#index (anonymous). Ignored: custom_fields (plugins)
 GET /categories.json ignore=/category_list/categories/*/custom_fields
-GET /c/general/4/none.json ignore=/topic_list/topics/*/can_vote
-GET /c/general/4/none/l/latest.json?per_page=1 ignore=/topic_list/topics/*/can_vote
+GET /c/general/4/none.json
+GET /c/general/4/none/l/latest.json?per_page=1
 
 # list#top / list#hot (anonymous), front page and category
-GET /top.json ignore=/topic_list/topics/*/can_vote
-GET /top.json?period=all ignore=/topic_list/topics/*/can_vote
-GET /top.json?period=weekly ignore=/topic_list/topics/*/can_vote
+GET /top.json
+GET /top.json?period=all
+GET /top.json?period=weekly
 # /hot.json unpaged would tie every zero-score topic; Discourse has no tiebreaker.
-GET /hot.json?per_page=3 ignore=/topic_list/topics/*/can_vote
-GET /c/general/4/l/top.json ignore=/topic_list/topics/*/can_vote
-GET /c/general/4/l/hot.json ignore=/topic_list/topics/*/can_vote
-GET /c/general/4/none/l/hot.json ignore=/topic_list/topics/*/can_vote
+GET /hot.json?per_page=3
+GET /c/general/4/l/top.json
+GET /c/general/4/l/hot.json
+GET /c/general/4/none/l/hot.json
 
 # tags#show (anonymous): legacy name, canonical slug/id, id-only, in a category, filters, none, 404
-GET /tag/howto.json ignore=/topic_list/topics/*/can_vote
-GET /tag/guide.json?per_page=1 ignore=/topic_list/topics/*/can_vote
-GET /tag/howto/1.json ignore=/topic_list/topics/*/can_vote
-GET /tag/1.json ignore=/topic_list/topics/*/can_vote
-GET /tag/howto/1/l/top.json ignore=/topic_list/topics/*/can_vote
-GET /tags/c/general/4/none/howto/1.json?per_page=1 ignore=/topic_list/topics/*/can_vote
-GET /tags/c/general/4/howto.json ignore=/topic_list/topics/*/can_vote
-GET /tag/none.json?per_page=2 ignore=/topic_list/topics/*/can_vote
+GET /tag/howto.json
+GET /tag/guide.json?per_page=1
+GET /tag/howto/1.json
+GET /tag/1.json
+GET /tag/howto/1/l/top.json
+GET /tags/c/general/4/none/howto/1.json?per_page=1
+GET /tags/c/general/4/howto.json
+GET /tag/none.json?per_page=2
 GET /tag/nope.json
 GET /tag/99.json
 
@@ -113,10 +113,10 @@ GET /u/admin/summary.json ignore=/user_summary/top_categories
 
 # posts#user_posts_feed: a user's latest public posts, PostSerializer with
 # add_excerpt.
-GET /u/user0/activity.json ignore=/*/current_user_reaction,/*/current_user_used_main_reaction,/*/reaction_users_count,/*/reactions,/*/event,/*/calendar_details,/*/can_vote
-GET /u/user0/activity.json as=user1 ignore=/*/current_user_reaction,/*/current_user_used_main_reaction,/*/reaction_users_count,/*/reactions,/*/event,/*/calendar_details,/*/can_vote
-GET /u/user0/activity.json as=admin ignore=/*/current_user_reaction,/*/current_user_used_main_reaction,/*/reaction_users_count,/*/reactions,/*/event,/*/calendar_details,/*/can_vote
-GET /u/admin/activity.json ignore=/*/current_user_reaction,/*/current_user_used_main_reaction,/*/reaction_users_count,/*/reactions,/*/event,/*/calendar_details,/*/can_vote
+GET /u/user0/activity.json ignore=/*/current_user_reaction,/*/current_user_used_main_reaction,/*/reaction_users_count,/*/reactions,/*/event,/*/calendar_details
+GET /u/user0/activity.json as=user1 ignore=/*/current_user_reaction,/*/current_user_used_main_reaction,/*/reaction_users_count,/*/reactions,/*/event,/*/calendar_details
+GET /u/user0/activity.json as=admin ignore=/*/current_user_reaction,/*/current_user_used_main_reaction,/*/reaction_users_count,/*/reactions,/*/event,/*/calendar_details
+GET /u/admin/activity.json ignore=/*/current_user_reaction,/*/current_user_used_main_reaction,/*/reaction_users_count,/*/reactions,/*/event,/*/calendar_details
 GET /u/user0/summary.json
 # user_actions#index
 GET /user_actions.json?username=user1
@@ -150,36 +150,36 @@ POST /session body=login=user1&password=password&second_factor_token=123456 igno
 # logged-in /session/current.json. Plugin keys ignored (chat, templates,
 # voting, poll); custom_fields carry plugin-registered fields;
 # treat_as_new_topic_start_date and previous_visit_at move with time.
-GET /session/current.json as=user1 ignore=/current_user/can_chat,/current_user/can_direct_message,/current_user/has_chat_enabled,/current_user/needs_channel_retention_reminder,/current_user/has_joinable_public_channels,/current_user/chat_drafts,/current_user/can_use_templates,/current_user/votes_exceeded,/current_user/votes_count,/current_user/votes_left,/current_user/vote_limit,/current_user/can_create_poll,/current_user/custom_fields,/current_user/user_option/show_thread_title_prompts,/current_user/user_option/chat_channel_list_filter,/current_user/user_option/chat_channel_list_sort,/current_user/user_option/chat_channel_list_sort_starred,/current_user/user_option/chat_channel_list_sort_dms,/current_user/user_option/chat_channel_list_filter_starred,/current_user/user_option/chat_channel_list_filter_dms,/current_user/user_option/chat_announce_new_messages,/current_user/user_option/chat_new_message_sound,/current_user/user_option/chat_header_indicator_preference,/current_user/user_option/chat_separate_sidebar_mode,/current_user/user_option/chat_send_shortcut,/current_user/user_option/chat_quick_reaction_type,/current_user/user_option/chat_quick_reactions_custom,/current_user/user_option/treat_as_new_topic_start_date,/current_user/previous_visit_at
-GET /session/current.json as=user0 ignore=/current_user/can_chat,/current_user/can_direct_message,/current_user/has_chat_enabled,/current_user/needs_channel_retention_reminder,/current_user/has_joinable_public_channels,/current_user/chat_drafts,/current_user/can_use_templates,/current_user/votes_exceeded,/current_user/votes_count,/current_user/votes_left,/current_user/vote_limit,/current_user/can_create_poll,/current_user/custom_fields,/current_user/user_option/show_thread_title_prompts,/current_user/user_option/chat_channel_list_filter,/current_user/user_option/chat_channel_list_sort,/current_user/user_option/chat_channel_list_sort_starred,/current_user/user_option/chat_channel_list_sort_dms,/current_user/user_option/chat_channel_list_filter_starred,/current_user/user_option/chat_channel_list_filter_dms,/current_user/user_option/chat_announce_new_messages,/current_user/user_option/chat_new_message_sound,/current_user/user_option/chat_header_indicator_preference,/current_user/user_option/chat_separate_sidebar_mode,/current_user/user_option/chat_send_shortcut,/current_user/user_option/chat_quick_reaction_type,/current_user/user_option/chat_quick_reactions_custom,/current_user/user_option/treat_as_new_topic_start_date,/current_user/previous_visit_at
+GET /session/current.json as=user1 ignore=/current_user/can_chat,/current_user/can_direct_message,/current_user/has_chat_enabled,/current_user/needs_channel_retention_reminder,/current_user/has_joinable_public_channels,/current_user/chat_drafts,/current_user/can_use_templates,/current_user/can_create_poll,/current_user/custom_fields,/current_user/user_option/show_thread_title_prompts,/current_user/user_option/chat_channel_list_filter,/current_user/user_option/chat_channel_list_sort,/current_user/user_option/chat_channel_list_sort_starred,/current_user/user_option/chat_channel_list_sort_dms,/current_user/user_option/chat_channel_list_filter_starred,/current_user/user_option/chat_channel_list_filter_dms,/current_user/user_option/chat_announce_new_messages,/current_user/user_option/chat_new_message_sound,/current_user/user_option/chat_header_indicator_preference,/current_user/user_option/chat_separate_sidebar_mode,/current_user/user_option/chat_send_shortcut,/current_user/user_option/chat_quick_reaction_type,/current_user/user_option/chat_quick_reactions_custom,/current_user/user_option/treat_as_new_topic_start_date,/current_user/previous_visit_at
+GET /session/current.json as=user0 ignore=/current_user/can_chat,/current_user/can_direct_message,/current_user/has_chat_enabled,/current_user/needs_channel_retention_reminder,/current_user/has_joinable_public_channels,/current_user/chat_drafts,/current_user/can_use_templates,/current_user/can_create_poll,/current_user/custom_fields,/current_user/user_option/show_thread_title_prompts,/current_user/user_option/chat_channel_list_filter,/current_user/user_option/chat_channel_list_sort,/current_user/user_option/chat_channel_list_sort_starred,/current_user/user_option/chat_channel_list_sort_dms,/current_user/user_option/chat_channel_list_filter_starred,/current_user/user_option/chat_channel_list_filter_dms,/current_user/user_option/chat_announce_new_messages,/current_user/user_option/chat_new_message_sound,/current_user/user_option/chat_header_indicator_preference,/current_user/user_option/chat_separate_sidebar_mode,/current_user/user_option/chat_send_shortcut,/current_user/user_option/chat_quick_reaction_type,/current_user/user_option/chat_quick_reactions_custom,/current_user/user_option/treat_as_new_topic_start_date,/current_user/previous_visit_at
 # has_unseen_features is redis state (the new-features feed fetched after a staff login).
-GET /session/current.json as=admin ignore=/current_user/can_chat,/current_user/can_direct_message,/current_user/has_chat_enabled,/current_user/needs_channel_retention_reminder,/current_user/has_joinable_public_channels,/current_user/chat_drafts,/current_user/can_use_templates,/current_user/votes_exceeded,/current_user/votes_count,/current_user/votes_left,/current_user/vote_limit,/current_user/can_create_poll,/current_user/custom_fields,/current_user/user_option/show_thread_title_prompts,/current_user/user_option/chat_channel_list_filter,/current_user/user_option/chat_channel_list_sort,/current_user/user_option/chat_channel_list_sort_starred,/current_user/user_option/chat_channel_list_sort_dms,/current_user/user_option/chat_channel_list_filter_starred,/current_user/user_option/chat_channel_list_filter_dms,/current_user/user_option/chat_announce_new_messages,/current_user/user_option/chat_new_message_sound,/current_user/user_option/chat_header_indicator_preference,/current_user/user_option/chat_separate_sidebar_mode,/current_user/user_option/chat_send_shortcut,/current_user/user_option/chat_quick_reaction_type,/current_user/user_option/chat_quick_reactions_custom,/current_user/user_option/treat_as_new_topic_start_date,/current_user/previous_visit_at,/current_user/has_unseen_features
+GET /session/current.json as=admin ignore=/current_user/can_chat,/current_user/can_direct_message,/current_user/has_chat_enabled,/current_user/needs_channel_retention_reminder,/current_user/has_joinable_public_channels,/current_user/chat_drafts,/current_user/can_use_templates,/current_user/can_create_poll,/current_user/custom_fields,/current_user/user_option/show_thread_title_prompts,/current_user/user_option/chat_channel_list_filter,/current_user/user_option/chat_channel_list_sort,/current_user/user_option/chat_channel_list_sort_starred,/current_user/user_option/chat_channel_list_sort_dms,/current_user/user_option/chat_channel_list_filter_starred,/current_user/user_option/chat_channel_list_filter_dms,/current_user/user_option/chat_announce_new_messages,/current_user/user_option/chat_new_message_sound,/current_user/user_option/chat_header_indicator_preference,/current_user/user_option/chat_separate_sidebar_mode,/current_user/user_option/chat_send_shortcut,/current_user/user_option/chat_quick_reaction_type,/current_user/user_option/chat_quick_reactions_custom,/current_user/user_option/treat_as_new_topic_start_date,/current_user/previous_visit_at,/current_user/has_unseen_features
 
 # Topic lists for a logged-in user. user1 (TL2) tracks 35 with unread
 # posts, watches 38, cleared the pin on and bookmarked 37, muted topic
 # 41 and the Site Feedback category, dismissed 36; admin sees the
 # unlisted topic 39 and the Staff category. See scripts/fixtures/topics.rb.
-GET /latest.json as=user1 ignore=/topic_list/topics/*/can_vote
-GET /latest.json as=user0 ignore=/topic_list/topics/*/can_vote
-GET /latest.json as=admin ignore=/topic_list/topics/*/can_vote
-GET /c/general/4.json as=user1 ignore=/topic_list/topics/*/can_vote
-GET /c/site-feedback/2.json as=user1 ignore=/topic_list/topics/*/can_vote
-GET /c/staff/3.json as=admin ignore=/topic_list/topics/*/can_vote
+GET /latest.json as=user1
+GET /latest.json as=user0
+GET /latest.json as=admin
+GET /c/general/4.json as=user1
+GET /c/site-feedback/2.json as=user1
+GET /c/staff/3.json as=admin
 GET /c/staff/3.json as=user1
-GET /top.json as=user1 ignore=/topic_list/topics/*/can_vote
-GET /hot.json?per_page=3 as=user1 ignore=/topic_list/topics/*/can_vote
-GET /tag/howto.json as=user1 ignore=/topic_list/topics/*/can_vote
-GET /tag/guide.json as=admin ignore=/topic_list/topics/*/can_vote
-GET /unread.json as=user1 ignore=/topic_list/topics/*/can_vote
-GET /unread.json as=user0 ignore=/topic_list/topics/*/can_vote
-GET /new.json as=user1 ignore=/topic_list/topics/*/can_vote
-GET /new.json as=admin ignore=/topic_list/topics/*/can_vote
-GET /unseen.json as=user1 ignore=/topic_list/topics/*/can_vote
-GET /read.json as=user1 ignore=/topic_list/topics/*/can_vote
-GET /posted.json as=user1 ignore=/topic_list/topics/*/can_vote
-GET /bookmarks.json as=user1 ignore=/topic_list/topics/*/can_vote
-GET /c/general/4/l/unread.json as=user1 ignore=/topic_list/topics/*/can_vote
-GET /c/general/4/l/new.json as=user1 ignore=/topic_list/topics/*/can_vote
+GET /top.json as=user1
+GET /hot.json?per_page=3 as=user1
+GET /tag/howto.json as=user1
+GET /tag/guide.json as=admin
+GET /unread.json as=user1
+GET /unread.json as=user0
+GET /new.json as=user1
+GET /new.json as=admin
+GET /unseen.json as=user1
+GET /read.json as=user1
+GET /posted.json as=user1
+GET /bookmarks.json as=user1
+GET /c/general/4/l/unread.json as=user1
+GET /c/general/4/l/new.json as=user1
 GET /unread.json
 GET /new.json
 GET /read
@@ -187,7 +187,7 @@ GET /bookmarks
 
 # request.format from the Accept header (the harness sends an XHR with a
 # JSON Accept): extensionless pages answer as their .json twins.
-GET /latest ignore=/topic_list/topics/*/can_vote
+GET /latest
 GET /categories ignore=/category_list/categories/*/custom_fields
 GET /u/user1/summary ignore=/user_summary/top_categories
 
@@ -195,16 +195,16 @@ GET /u/user1/summary ignore=/user_summary/top_categories
 # ignored because a third-party plugin's NewPostManager handler turns
 # queued posts on for the reference; the port only knows core's reasons.
 # The reviewable_* post keys are ignored too (plugin reviewable types).
-GET /t/parity-fixture-replies-and-posters/35.json as=user1 ignore=/bookmarks,/timeline_lookup,/suggested_topics,/message_bus_last_id,/valid_reactions,/can_vote,/vote_count,/user_voted,/discourse_zendesk_plugin_zendesk_id,/discourse_zendesk_plugin_zendesk_url,/post_stream/posts/*/reactions,/post_stream/posts/*/current_user_reaction,/post_stream/posts/*/reaction_users_count,/post_stream/posts/*/current_user_used_main_reaction,/post_stream/posts/*/can_vote,/pending_posts,/queued_posts_count,/post_stream/posts/*/reviewable_id,/post_stream/posts/*/reviewable_score_count,/post_stream/posts/*/reviewable_score_pending_count
-GET /t/parity-fixture-replies-and-posters/35.json as=user0 ignore=/timeline_lookup,/suggested_topics,/message_bus_last_id,/valid_reactions,/can_vote,/vote_count,/user_voted,/discourse_zendesk_plugin_zendesk_id,/discourse_zendesk_plugin_zendesk_url,/post_stream/posts/*/reactions,/post_stream/posts/*/current_user_reaction,/post_stream/posts/*/reaction_users_count,/post_stream/posts/*/current_user_used_main_reaction,/post_stream/posts/*/can_vote,/pending_posts,/queued_posts_count,/post_stream/posts/*/reviewable_id,/post_stream/posts/*/reviewable_score_count,/post_stream/posts/*/reviewable_score_pending_count
-GET /t/parity-fixture-replies-and-posters/35.json as=admin ignore=/timeline_lookup,/suggested_topics,/message_bus_last_id,/valid_reactions,/can_vote,/vote_count,/user_voted,/discourse_zendesk_plugin_zendesk_id,/discourse_zendesk_plugin_zendesk_url,/post_stream/posts/*/reactions,/post_stream/posts/*/current_user_reaction,/post_stream/posts/*/reaction_users_count,/post_stream/posts/*/current_user_used_main_reaction,/post_stream/posts/*/can_vote,/pending_posts,/queued_posts_count,/post_stream/posts/*/reviewable_id,/post_stream/posts/*/reviewable_score_count,/post_stream/posts/*/reviewable_score_pending_count
-GET /t/parity-fixture-liked-and-archived/41.json as=user1 ignore=/timeline_lookup,/suggested_topics,/message_bus_last_id,/valid_reactions,/can_vote,/vote_count,/user_voted,/discourse_zendesk_plugin_zendesk_id,/discourse_zendesk_plugin_zendesk_url,/post_stream/posts/*/reactions,/post_stream/posts/*/current_user_reaction,/post_stream/posts/*/reaction_users_count,/post_stream/posts/*/current_user_used_main_reaction,/post_stream/posts/*/can_vote,/pending_posts,/queued_posts_count,/post_stream/posts/*/reviewable_id,/post_stream/posts/*/reviewable_score_count,/post_stream/posts/*/reviewable_score_pending_count
-GET /t/parity-fixture-liked-and-archived/41.json as=user0 ignore=/timeline_lookup,/suggested_topics,/message_bus_last_id,/valid_reactions,/can_vote,/vote_count,/user_voted,/discourse_zendesk_plugin_zendesk_id,/discourse_zendesk_plugin_zendesk_url,/post_stream/posts/*/reactions,/post_stream/posts/*/current_user_reaction,/post_stream/posts/*/reaction_users_count,/post_stream/posts/*/current_user_used_main_reaction,/post_stream/posts/*/can_vote,/pending_posts,/queued_posts_count,/post_stream/posts/*/reviewable_id,/post_stream/posts/*/reviewable_score_count,/post_stream/posts/*/reviewable_score_pending_count
-GET /t/parity-fixture-liked-and-archived/41.json as=admin ignore=/timeline_lookup,/suggested_topics,/message_bus_last_id,/valid_reactions,/can_vote,/vote_count,/user_voted,/discourse_zendesk_plugin_zendesk_id,/discourse_zendesk_plugin_zendesk_url,/post_stream/posts/*/reactions,/post_stream/posts/*/current_user_reaction,/post_stream/posts/*/reaction_users_count,/post_stream/posts/*/current_user_used_main_reaction,/post_stream/posts/*/can_vote,/pending_posts,/queued_posts_count,/post_stream/posts/*/reviewable_id,/post_stream/posts/*/reviewable_score_count,/post_stream/posts/*/reviewable_score_pending_count
-GET /t/parity-fixture-pinned-and-closed/37.json as=user1 ignore=/timeline_lookup,/suggested_topics,/message_bus_last_id,/valid_reactions,/can_vote,/vote_count,/user_voted,/discourse_zendesk_plugin_zendesk_id,/discourse_zendesk_plugin_zendesk_url,/post_stream/posts/*/reactions,/post_stream/posts/*/current_user_reaction,/post_stream/posts/*/reaction_users_count,/post_stream/posts/*/current_user_used_main_reaction,/post_stream/posts/*/can_vote,/pending_posts,/queued_posts_count,/post_stream/posts/*/reviewable_id,/post_stream/posts/*/reviewable_score_count,/post_stream/posts/*/reviewable_score_pending_count
-GET /t/parity-fixture-unlisted-topic/39.json as=user1 ignore=/timeline_lookup,/suggested_topics,/message_bus_last_id,/valid_reactions,/can_vote,/vote_count,/user_voted,/discourse_zendesk_plugin_zendesk_id,/discourse_zendesk_plugin_zendesk_url,/post_stream/posts/*/reactions,/post_stream/posts/*/current_user_reaction,/post_stream/posts/*/reaction_users_count,/post_stream/posts/*/current_user_used_main_reaction,/post_stream/posts/*/can_vote,/pending_posts,/queued_posts_count,/post_stream/posts/*/reviewable_id,/post_stream/posts/*/reviewable_score_count,/post_stream/posts/*/reviewable_score_pending_count
-GET /t/about-the-staff-category/2.json as=admin ignore=/timeline_lookup,/suggested_topics,/message_bus_last_id,/valid_reactions,/can_vote,/vote_count,/user_voted,/discourse_zendesk_plugin_zendesk_id,/discourse_zendesk_plugin_zendesk_url,/post_stream/posts/*/reactions,/post_stream/posts/*/current_user_reaction,/post_stream/posts/*/reaction_users_count,/post_stream/posts/*/current_user_used_main_reaction,/post_stream/posts/*/can_vote,/pending_posts,/queued_posts_count,/post_stream/posts/*/reviewable_id,/post_stream/posts/*/reviewable_score_count,/post_stream/posts/*/reviewable_score_pending_count
-GET /t/guidelines/4.json as=admin ignore=/timeline_lookup,/suggested_topics,/message_bus_last_id,/valid_reactions,/can_vote,/vote_count,/user_voted,/discourse_zendesk_plugin_zendesk_id,/discourse_zendesk_plugin_zendesk_url,/post_stream/posts/*/reactions,/post_stream/posts/*/current_user_reaction,/post_stream/posts/*/reaction_users_count,/post_stream/posts/*/current_user_used_main_reaction,/post_stream/posts/*/can_vote,/pending_posts,/queued_posts_count,/post_stream/posts/*/reviewable_id,/post_stream/posts/*/reviewable_score_count,/post_stream/posts/*/reviewable_score_pending_count
+GET /t/parity-fixture-replies-and-posters/35.json as=user1 ignore=/bookmarks,/timeline_lookup,/suggested_topics,/message_bus_last_id,/valid_reactions,/discourse_zendesk_plugin_zendesk_id,/discourse_zendesk_plugin_zendesk_url,/post_stream/posts/*/reactions,/post_stream/posts/*/current_user_reaction,/post_stream/posts/*/reaction_users_count,/post_stream/posts/*/current_user_used_main_reaction,/pending_posts,/queued_posts_count,/post_stream/posts/*/reviewable_id,/post_stream/posts/*/reviewable_score_count,/post_stream/posts/*/reviewable_score_pending_count
+GET /t/parity-fixture-replies-and-posters/35.json as=user0 ignore=/timeline_lookup,/suggested_topics,/message_bus_last_id,/valid_reactions,/discourse_zendesk_plugin_zendesk_id,/discourse_zendesk_plugin_zendesk_url,/post_stream/posts/*/reactions,/post_stream/posts/*/current_user_reaction,/post_stream/posts/*/reaction_users_count,/post_stream/posts/*/current_user_used_main_reaction,/pending_posts,/queued_posts_count,/post_stream/posts/*/reviewable_id,/post_stream/posts/*/reviewable_score_count,/post_stream/posts/*/reviewable_score_pending_count
+GET /t/parity-fixture-replies-and-posters/35.json as=admin ignore=/timeline_lookup,/suggested_topics,/message_bus_last_id,/valid_reactions,/discourse_zendesk_plugin_zendesk_id,/discourse_zendesk_plugin_zendesk_url,/post_stream/posts/*/reactions,/post_stream/posts/*/current_user_reaction,/post_stream/posts/*/reaction_users_count,/post_stream/posts/*/current_user_used_main_reaction,/pending_posts,/queued_posts_count,/post_stream/posts/*/reviewable_id,/post_stream/posts/*/reviewable_score_count,/post_stream/posts/*/reviewable_score_pending_count
+GET /t/parity-fixture-liked-and-archived/41.json as=user1 ignore=/timeline_lookup,/suggested_topics,/message_bus_last_id,/valid_reactions,/discourse_zendesk_plugin_zendesk_id,/discourse_zendesk_plugin_zendesk_url,/post_stream/posts/*/reactions,/post_stream/posts/*/current_user_reaction,/post_stream/posts/*/reaction_users_count,/post_stream/posts/*/current_user_used_main_reaction,/pending_posts,/queued_posts_count,/post_stream/posts/*/reviewable_id,/post_stream/posts/*/reviewable_score_count,/post_stream/posts/*/reviewable_score_pending_count
+GET /t/parity-fixture-liked-and-archived/41.json as=user0 ignore=/timeline_lookup,/suggested_topics,/message_bus_last_id,/valid_reactions,/discourse_zendesk_plugin_zendesk_id,/discourse_zendesk_plugin_zendesk_url,/post_stream/posts/*/reactions,/post_stream/posts/*/current_user_reaction,/post_stream/posts/*/reaction_users_count,/post_stream/posts/*/current_user_used_main_reaction,/pending_posts,/queued_posts_count,/post_stream/posts/*/reviewable_id,/post_stream/posts/*/reviewable_score_count,/post_stream/posts/*/reviewable_score_pending_count
+GET /t/parity-fixture-liked-and-archived/41.json as=admin ignore=/timeline_lookup,/suggested_topics,/message_bus_last_id,/valid_reactions,/discourse_zendesk_plugin_zendesk_id,/discourse_zendesk_plugin_zendesk_url,/post_stream/posts/*/reactions,/post_stream/posts/*/current_user_reaction,/post_stream/posts/*/reaction_users_count,/post_stream/posts/*/current_user_used_main_reaction,/pending_posts,/queued_posts_count,/post_stream/posts/*/reviewable_id,/post_stream/posts/*/reviewable_score_count,/post_stream/posts/*/reviewable_score_pending_count
+GET /t/parity-fixture-pinned-and-closed/37.json as=user1 ignore=/timeline_lookup,/suggested_topics,/message_bus_last_id,/valid_reactions,/discourse_zendesk_plugin_zendesk_id,/discourse_zendesk_plugin_zendesk_url,/post_stream/posts/*/reactions,/post_stream/posts/*/current_user_reaction,/post_stream/posts/*/reaction_users_count,/post_stream/posts/*/current_user_used_main_reaction,/pending_posts,/queued_posts_count,/post_stream/posts/*/reviewable_id,/post_stream/posts/*/reviewable_score_count,/post_stream/posts/*/reviewable_score_pending_count
+GET /t/parity-fixture-unlisted-topic/39.json as=user1 ignore=/timeline_lookup,/suggested_topics,/message_bus_last_id,/valid_reactions,/discourse_zendesk_plugin_zendesk_id,/discourse_zendesk_plugin_zendesk_url,/post_stream/posts/*/reactions,/post_stream/posts/*/current_user_reaction,/post_stream/posts/*/reaction_users_count,/post_stream/posts/*/current_user_used_main_reaction,/pending_posts,/queued_posts_count,/post_stream/posts/*/reviewable_id,/post_stream/posts/*/reviewable_score_count,/post_stream/posts/*/reviewable_score_pending_count
+GET /t/about-the-staff-category/2.json as=admin ignore=/timeline_lookup,/suggested_topics,/message_bus_last_id,/valid_reactions,/discourse_zendesk_plugin_zendesk_id,/discourse_zendesk_plugin_zendesk_url,/post_stream/posts/*/reactions,/post_stream/posts/*/current_user_reaction,/post_stream/posts/*/reaction_users_count,/post_stream/posts/*/current_user_used_main_reaction,/pending_posts,/queued_posts_count,/post_stream/posts/*/reviewable_id,/post_stream/posts/*/reviewable_score_count,/post_stream/posts/*/reviewable_score_pending_count
+GET /t/guidelines/4.json as=admin ignore=/timeline_lookup,/suggested_topics,/message_bus_last_id,/valid_reactions,/discourse_zendesk_plugin_zendesk_id,/discourse_zendesk_plugin_zendesk_url,/post_stream/posts/*/reactions,/post_stream/posts/*/current_user_reaction,/post_stream/posts/*/reaction_users_count,/post_stream/posts/*/current_user_used_main_reaction,/pending_posts,/queued_posts_count,/post_stream/posts/*/reviewable_id,/post_stream/posts/*/reviewable_score_count,/post_stream/posts/*/reviewable_score_pending_count
 GET /t/about-the-staff-category/2.json as=user1 ignore=/timeline_lookup
 GET /t/parity-fixture-deleted-topic/40.json as=user1 ignore=/timeline_lookup
 
@@ -293,14 +293,14 @@ GET /topics/private-messages/user1.json
 # details.allowed_users comes back in Postgres plan order on the
 # reference (no ORDER BY), so its order is ignored; tests/messages.rs
 # checks the membership.
-GET /t/parity-fixture-pm-user1-to-user0/42.json as=user1 ignore=/timeline_lookup,/message_bus_last_id,/valid_reactions,/can_vote,/vote_count,/user_voted,/discourse_zendesk_plugin_zendesk_id,/discourse_zendesk_plugin_zendesk_url,/post_stream/posts/*/reactions,/post_stream/posts/*/current_user_reaction,/post_stream/posts/*/reaction_users_count,/post_stream/posts/*/current_user_used_main_reaction,/post_stream/posts/*/can_vote,/pending_posts,/queued_posts_count,/post_stream/posts/*/reviewable_id,/post_stream/posts/*/reviewable_score_count,/post_stream/posts/*/reviewable_score_pending_count,/details/allowed_users
-GET /t/parity-fixture-pm-user1-to-user0/42.json as=user0 ignore=/timeline_lookup,/message_bus_last_id,/valid_reactions,/can_vote,/vote_count,/user_voted,/discourse_zendesk_plugin_zendesk_id,/discourse_zendesk_plugin_zendesk_url,/post_stream/posts/*/reactions,/post_stream/posts/*/current_user_reaction,/post_stream/posts/*/reaction_users_count,/post_stream/posts/*/current_user_used_main_reaction,/post_stream/posts/*/can_vote,/pending_posts,/queued_posts_count,/post_stream/posts/*/reviewable_id,/post_stream/posts/*/reviewable_score_count,/post_stream/posts/*/reviewable_score_pending_count,/details/allowed_users
-GET /t/parity-fixture-pm-user1-to-user0/42.json as=admin ignore=/timeline_lookup,/message_bus_last_id,/valid_reactions,/can_vote,/vote_count,/user_voted,/discourse_zendesk_plugin_zendesk_id,/discourse_zendesk_plugin_zendesk_url,/post_stream/posts/*/reactions,/post_stream/posts/*/current_user_reaction,/post_stream/posts/*/reaction_users_count,/post_stream/posts/*/current_user_used_main_reaction,/post_stream/posts/*/can_vote,/pending_posts,/queued_posts_count,/post_stream/posts/*/reviewable_id,/post_stream/posts/*/reviewable_score_count,/post_stream/posts/*/reviewable_score_pending_count,/details/allowed_users
-GET /t/parity-fixture-pm-admin-to-user1-and-user2/43.json as=user1 ignore=/timeline_lookup,/message_bus_last_id,/valid_reactions,/can_vote,/vote_count,/user_voted,/discourse_zendesk_plugin_zendesk_id,/discourse_zendesk_plugin_zendesk_url,/post_stream/posts/*/reactions,/post_stream/posts/*/current_user_reaction,/post_stream/posts/*/reaction_users_count,/post_stream/posts/*/current_user_used_main_reaction,/post_stream/posts/*/can_vote,/pending_posts,/queued_posts_count,/post_stream/posts/*/reviewable_id,/post_stream/posts/*/reviewable_score_count,/post_stream/posts/*/reviewable_score_pending_count,/details/allowed_users
+GET /t/parity-fixture-pm-user1-to-user0/42.json as=user1 ignore=/timeline_lookup,/message_bus_last_id,/valid_reactions,/discourse_zendesk_plugin_zendesk_id,/discourse_zendesk_plugin_zendesk_url,/post_stream/posts/*/reactions,/post_stream/posts/*/current_user_reaction,/post_stream/posts/*/reaction_users_count,/post_stream/posts/*/current_user_used_main_reaction,/pending_posts,/queued_posts_count,/post_stream/posts/*/reviewable_id,/post_stream/posts/*/reviewable_score_count,/post_stream/posts/*/reviewable_score_pending_count,/details/allowed_users
+GET /t/parity-fixture-pm-user1-to-user0/42.json as=user0 ignore=/timeline_lookup,/message_bus_last_id,/valid_reactions,/discourse_zendesk_plugin_zendesk_id,/discourse_zendesk_plugin_zendesk_url,/post_stream/posts/*/reactions,/post_stream/posts/*/current_user_reaction,/post_stream/posts/*/reaction_users_count,/post_stream/posts/*/current_user_used_main_reaction,/pending_posts,/queued_posts_count,/post_stream/posts/*/reviewable_id,/post_stream/posts/*/reviewable_score_count,/post_stream/posts/*/reviewable_score_pending_count,/details/allowed_users
+GET /t/parity-fixture-pm-user1-to-user0/42.json as=admin ignore=/timeline_lookup,/message_bus_last_id,/valid_reactions,/discourse_zendesk_plugin_zendesk_id,/discourse_zendesk_plugin_zendesk_url,/post_stream/posts/*/reactions,/post_stream/posts/*/current_user_reaction,/post_stream/posts/*/reaction_users_count,/post_stream/posts/*/current_user_used_main_reaction,/pending_posts,/queued_posts_count,/post_stream/posts/*/reviewable_id,/post_stream/posts/*/reviewable_score_count,/post_stream/posts/*/reviewable_score_pending_count,/details/allowed_users
+GET /t/parity-fixture-pm-admin-to-user1-and-user2/43.json as=user1 ignore=/timeline_lookup,/message_bus_last_id,/valid_reactions,/discourse_zendesk_plugin_zendesk_id,/discourse_zendesk_plugin_zendesk_url,/post_stream/posts/*/reactions,/post_stream/posts/*/current_user_reaction,/post_stream/posts/*/reaction_users_count,/post_stream/posts/*/current_user_used_main_reaction,/pending_posts,/queued_posts_count,/post_stream/posts/*/reviewable_id,/post_stream/posts/*/reviewable_score_count,/post_stream/posts/*/reviewable_score_pending_count,/details/allowed_users
 GET /t/parity-fixture-pm-admin-to-user1-and-user2/43.json as=user0 ignore=/timeline_lookup
-GET /t/parity-fixture-pm-user2-to-user1-archived/44.json as=user1 ignore=/timeline_lookup,/message_bus_last_id,/valid_reactions,/can_vote,/vote_count,/user_voted,/discourse_zendesk_plugin_zendesk_id,/discourse_zendesk_plugin_zendesk_url,/post_stream/posts/*/reactions,/post_stream/posts/*/current_user_reaction,/post_stream/posts/*/reaction_users_count,/post_stream/posts/*/current_user_used_main_reaction,/post_stream/posts/*/can_vote,/pending_posts,/queued_posts_count,/post_stream/posts/*/reviewable_id,/post_stream/posts/*/reviewable_score_count,/post_stream/posts/*/reviewable_score_pending_count,/details/allowed_users
-GET /t/parity-fixture-pm-user2-to-user1-archived/44.json as=admin ignore=/timeline_lookup,/message_bus_last_id,/valid_reactions,/can_vote,/vote_count,/user_voted,/discourse_zendesk_plugin_zendesk_id,/discourse_zendesk_plugin_zendesk_url,/post_stream/posts/*/reactions,/post_stream/posts/*/current_user_reaction,/post_stream/posts/*/reaction_users_count,/post_stream/posts/*/current_user_used_main_reaction,/post_stream/posts/*/can_vote,/pending_posts,/queued_posts_count,/post_stream/posts/*/reviewable_id,/post_stream/posts/*/reviewable_score_count,/post_stream/posts/*/reviewable_score_pending_count,/details/allowed_users
-GET /t/downloading-remote-images-disabled/36.json as=admin ignore=/timeline_lookup,/message_bus_last_id,/valid_reactions,/can_vote,/vote_count,/user_voted,/discourse_zendesk_plugin_zendesk_id,/discourse_zendesk_plugin_zendesk_url,/post_stream/posts/*/reactions,/post_stream/posts/*/current_user_reaction,/post_stream/posts/*/reaction_users_count,/post_stream/posts/*/current_user_used_main_reaction,/post_stream/posts/*/can_vote,/pending_posts,/queued_posts_count,/post_stream/posts/*/reviewable_id,/post_stream/posts/*/reviewable_score_count,/post_stream/posts/*/reviewable_score_pending_count,/details/allowed_users
+GET /t/parity-fixture-pm-user2-to-user1-archived/44.json as=user1 ignore=/timeline_lookup,/message_bus_last_id,/valid_reactions,/discourse_zendesk_plugin_zendesk_id,/discourse_zendesk_plugin_zendesk_url,/post_stream/posts/*/reactions,/post_stream/posts/*/current_user_reaction,/post_stream/posts/*/reaction_users_count,/post_stream/posts/*/current_user_used_main_reaction,/pending_posts,/queued_posts_count,/post_stream/posts/*/reviewable_id,/post_stream/posts/*/reviewable_score_count,/post_stream/posts/*/reviewable_score_pending_count,/details/allowed_users
+GET /t/parity-fixture-pm-user2-to-user1-archived/44.json as=admin ignore=/timeline_lookup,/message_bus_last_id,/valid_reactions,/discourse_zendesk_plugin_zendesk_id,/discourse_zendesk_plugin_zendesk_url,/post_stream/posts/*/reactions,/post_stream/posts/*/current_user_reaction,/post_stream/posts/*/reaction_users_count,/post_stream/posts/*/current_user_used_main_reaction,/pending_posts,/queued_posts_count,/post_stream/posts/*/reviewable_id,/post_stream/posts/*/reviewable_score_count,/post_stream/posts/*/reviewable_score_pending_count,/details/allowed_users
+GET /t/downloading-remote-images-disabled/36.json as=admin ignore=/timeline_lookup,/message_bus_last_id,/valid_reactions,/discourse_zendesk_plugin_zendesk_id,/discourse_zendesk_plugin_zendesk_url,/post_stream/posts/*/reactions,/post_stream/posts/*/current_user_reaction,/post_stream/posts/*/reaction_users_count,/post_stream/posts/*/current_user_used_main_reaction,/pending_posts,/queued_posts_count,/post_stream/posts/*/reviewable_id,/post_stream/posts/*/reviewable_score_count,/post_stream/posts/*/reviewable_score_pending_count,/details/allowed_users
 GET /t/downloading-remote-images-disabled/36.json as=user1 ignore=/timeline_lookup
 GET /t/parity-fixture-pm-user1-to-user0/42.json ignore=/timeline_lookup
 
