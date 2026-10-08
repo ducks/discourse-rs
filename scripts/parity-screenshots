@@ -1,0 +1,266 @@
+#!/usr/bin/env bash
+# Screenshot each page of a page list on the reference (Rails) and on the
+# port, diff them pixel by pixel, and write an HTML report, worst first.
+# A report, not a gate: diffs don't fail the run unless --fail-above is
+# given; a page that fails to load is reported with its error.
+#
+# Both sides need the same data: the reference is the rs-parity dv agent
+# (seed/fresh_install.sql), the port runs on a db-load of that snapshot
+# with the reference's environment:
+#
+#   nix-shell --run 'scripts/db-load --force discourse_rs_screens'
+#   make reset-reference AGENT=rs-parity     # browsing changes its database
+#   nix-shell --run 'cargo build --release'
+#   env $(grep -v '^#' parity/environment) BIND_ADDR=127.0.0.1:8095 \
+#     DATABASE_URL="postgresql://localhost:5442/discourse_rs_screens?host=$PGDATA" \
+#     DISCOURSE_SRC=~/discourse/discourse DISCOURSE_RS_JOBS=off \
+#     target/release/discourse-rs &
+#
+# From a git worktree, PGDATA must be the main checkout's .nix-postgres
+# (shell.nix points it at the worktree, where no Postgres runs).
+#   scripts/parity-screenshots http://127.0.0.1:8095 /tmp/screens
+#   xdg-open /tmp/screens/index.html
+#
+# Usage: scripts/parity-screenshots [--reference URL] [--pages FILE]
+#          [--width PX] [--fail-above PCT] <our-url> <out-dir>
+# Defaults: --reference http://127.0.0.1:3042, --pages parity/screens/pages,
+# --width 1280. The page list format is described at its top.
+set -euo pipefail
+
+root="$(cd "$(dirname "$0")/.." && pwd)"
+reference="http://127.0.0.1:3042"
+pages="$root/parity/screens/pages"
+width=1280
+fail_above=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --reference) reference="$2"; shift 2 ;;
+    --pages) pages="$2"; shift 2 ;;
+    --width) width="$2"; shift 2 ;;
+    --fail-above) fail_above="$2"; shift 2 ;;
+    -*) echo "unknown option $1" >&2; exit 64 ;;
+    *) break ;;
+  esac
+done
+if [ $# -ne 2 ]; then
+  echo "usage: $0 [--reference URL] [--pages FILE] [--width PX] [--fail-above PCT] <our-url> <out-dir>" >&2
+  exit 64
+fi
+ours="$1"
+out="$2"
+mkdir -p "$out"
+
+exec nix-shell -p "python3.withPackages (ps: [ ps.playwright ps.pillow ps.numpy ])" playwright-driver.browsers --run "
+  export PLAYWRIGHT_BROWSERS_PATH=\$(nix-build '<nixpkgs>' -A playwright-driver.browsers --no-out-link)
+  python3 - $(printf '%q ' "$reference" "$ours" "$pages" "$out" "$width" "$fail_above")
+" <<'PYTHON'
+import html
+import json
+import re
+import sys
+from pathlib import Path
+
+import numpy as np
+from PIL import Image
+from playwright.sync_api import sync_playwright
+
+reference, ours, pages_file, out, width, fail_above = sys.argv[1:]
+out = Path(out)
+width = int(width)
+fail_above = float(fail_above) if fail_above else None
+
+HEIGHT = 900
+CRAWLER_UA = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
+# The reference's development extras, and anything that moves.
+BASE_CSS = """
+.profiler-results, .dev-tools-toolbar, #dev-tools-toolbar { display: none !important; }
+*, *::before, *::after {
+  animation: none !important; transition: none !important; caret-color: transparent !important;
+}
+"""
+# A channel differing by more than this counts the pixel as changed
+# (antialiasing and color rounding stay under it).
+CHANNEL_THRESHOLD = 24
+
+
+def parse_pages(path):
+    pages = []
+    for number, line in enumerate(Path(path).read_text().splitlines(), 1):
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        path, *options = line.split()
+        page = {"path": path, "as": None, "ua": None, "mask": [], "wait": 1500}
+        for option in options:
+            key, _, value = option.partition("=")
+            if key == "as":
+                page["as"] = value
+            elif key == "ua":
+                if value != "crawler":
+                    sys.exit(f"{pages_file}:{number}: ua= takes only crawler")
+                page["ua"] = CRAWLER_UA
+            elif key == "mask":
+                page["mask"] = [s for s in value.split(",") if s]
+            elif key == "wait":
+                page["wait"] = int(value)
+            else:
+                sys.exit(f"{pages_file}:{number}: unknown option {option}")
+        pages.append(page)
+    return pages
+
+
+def slug(page):
+    name = page["path"].strip("/") or "root"
+    if page["as"]:
+        name += f"--as-{page['as']}"
+    if page["ua"]:
+        name += "--crawler"
+    return re.sub(r"[^A-Za-z0-9._-]+", "_", name)
+
+
+def log_in(context, base, username):
+    """CSRF from /session/csrf, then POST /session, on the context's cookies."""
+    headers = {"X-Requested-With": "XMLHttpRequest", "Accept": "application/json"}
+    csrf = context.request.get(f"{base}/session/csrf.json", headers=headers).json()["csrf"]
+    response = context.request.post(
+        f"{base}/session.json",
+        form={"login": username, "password": "password"},
+        headers={**headers, "X-CSRF-Token": csrf},
+    )
+    body = response.json() if response.ok else {}
+    if not response.ok or "error" in body:
+        raise RuntimeError(f"login as {username} on {base}: {response.status} {body}")
+
+
+def capture(browser, base, page, path):
+    context = browser.new_context(
+        viewport={"width": width, "height": HEIGHT},
+        user_agent=page["ua"],
+        reduced_motion="reduce",
+    )
+    try:
+        if page["as"]:
+            log_in(context, base, page["as"])
+        tab = context.new_page()
+        response = tab.goto(base + page["path"], wait_until="load")
+        tab.evaluate("document.fonts.ready")
+        tab.wait_for_timeout(page["wait"])
+        css = BASE_CSS + "".join(
+            f"{selector} {{ visibility: hidden !important; }}\n" for selector in page["mask"]
+        )
+        tab.add_style_tag(content=css)
+        tab.wait_for_timeout(100)
+        tab.screenshot(path=str(path), full_page=True, animations="disabled")
+        return {"status": response.status if response else None, "error": None}
+    except Exception as e:  # reported on the page's row
+        return {"status": None, "error": f"{type(e).__name__}: {e}".splitlines()[0]}
+    finally:
+        context.close()
+
+
+def compare(a_path, b_path, diff_path):
+    a = Image.open(a_path).convert("RGB")
+    b = Image.open(b_path).convert("RGB")
+    w, h = max(a.width, b.width), max(a.height, b.height)
+    # Pad both to the larger size; the padding counts as changed.
+    canvas_a = Image.new("RGB", (w, h), (255, 0, 255))
+    canvas_b = Image.new("RGB", (w, h), (0, 255, 255))
+    canvas_a.paste(a, (0, 0))
+    canvas_b.paste(b, (0, 0))
+    pa = np.asarray(canvas_a, dtype=np.int16)
+    pb = np.asarray(canvas_b, dtype=np.int16)
+    changed = (np.abs(pa - pb) > CHANNEL_THRESHOLD).any(axis=2)
+    # Ours faded to grey, the changed pixels in red.
+    grey = np.asarray(canvas_b.convert("L"), dtype=np.float32)
+    faded = (255 - (255 - grey) * 0.3).astype(np.uint8)
+    diff = np.stack([faded, faded, faded], axis=2)
+    diff[changed] = (230, 0, 0)
+    Image.fromarray(diff).save(diff_path)
+    return {
+        "diff_pct": round(float(changed.mean()) * 100, 2),
+        "reference_size": [a.width, a.height],
+        "ours_size": [b.width, b.height],
+        "size_mismatch": (a.width, a.height) != (b.width, b.height),
+    }
+
+
+def report(results):
+    rows = []
+    for r in results:
+        name = r["slug"]
+        notes = []
+        if r.get("size_mismatch"):
+            notes.append(
+                "size {}x{} vs {}x{}".format(*r["reference_size"], *r["ours_size"])
+            )
+        for side in ("reference", "ours"):
+            if r[side]["error"]:
+                notes.append(f"{side}: {r[side]['error']}")
+            elif r[side]["status"] and r[side]["status"] >= 400:
+                notes.append(f"{side}: HTTP {r[side]['status']}")
+        score = "error" if r["diff_pct"] is None else f"{r['diff_pct']:.2f}%"
+        cells = "".join(
+            f'<td><a href="{name}/{img}.png"><img src="{name}/{img}.png" loading="lazy"></a></td>'
+            if (out / name / f"{img}.png").exists()
+            else "<td>missing</td>"
+            for img in ("reference", "ours", "diff")
+        )
+        rows.append(
+            f"<tr><th><code>{html.escape(r['label'])}</code><br>{score}"
+            f"<br><small>{html.escape('; '.join(notes))}</small></th>{cells}</tr>"
+        )
+    (out / "index.html").write_text(
+        "<!doctype html><meta charset=utf-8><title>Parity screenshots</title>\n"
+        "<style>body{font:14px system-ui;margin:16px} table{border-collapse:collapse}"
+        "td,th{border:1px solid #ccc;padding:6px;vertical-align:top;text-align:left}"
+        "th{width:220px} img{width:360px;display:block}</style>\n"
+        f"<p>reference {html.escape(reference)} vs ours {html.escape(ours)}, worst first</p>\n"
+        "<table><tr><th>page</th><th>reference</th><th>ours</th><th>diff</th></tr>\n"
+        + "\n".join(rows)
+        + "\n</table>\n"
+    )
+
+
+pages = parse_pages(pages_file)
+results = []
+with sync_playwright() as p:
+    browser = p.chromium.launch()
+    for page in pages:
+        name = slug(page)
+        directory = out / name
+        directory.mkdir(parents=True, exist_ok=True)
+        label = " ".join(
+            [page["path"]]
+            + ([f"as={page['as']}"] if page["as"] else [])
+            + (["ua=crawler"] if page["ua"] else [])
+        )
+        result = {
+            "slug": name,
+            "label": label,
+            "reference": capture(browser, reference, page, directory / "reference.png"),
+            "ours": capture(browser, ours, page, directory / "ours.png"),
+            "diff_pct": None,
+        }
+        if not result["reference"]["error"] and not result["ours"]["error"]:
+            result.update(
+                compare(directory / "reference.png", directory / "ours.png", directory / "diff.png")
+            )
+        results.append(result)
+    browser.close()
+
+results.sort(key=lambda r: -1 if r["diff_pct"] is None else -r["diff_pct"])
+(out / "summary.json").write_text(json.dumps(results, indent=1) + "\n")
+report(results)
+
+print(f"{'diff':>8}  {'ref':>4} {'ours':>4}  page")
+for r in results:
+    score = "error" if r["diff_pct"] is None else f"{r['diff_pct']:.2f}%"
+    statuses = [str(r[s]["status"] or "-") for s in ("reference", "ours")]
+    print(f"{score:>8}  {statuses[0]:>4} {statuses[1]:>4}  {r['label']}")
+print(f"report: {out / 'index.html'}", file=sys.stderr)
+
+if fail_above is not None and any(
+    r["diff_pct"] is None or r["diff_pct"] > fail_above for r in results
+):
+    sys.exit(1)
+PYTHON
