@@ -276,6 +276,9 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/admin/logs/screened_emails/{id}",
             delete(admin_logs::destroy_screened_email),
         )
+        .route("/admin/email-logs/{kind}", get(admin_logs::email_logs))
+        .route("/admin/logs/search_logs", get(admin_logs::search_logs))
+        .route("/admin/logs/search_logs.json", get(admin_logs::search_logs))
         .route("/admin/logs/screened_urls", get(admin_logs::screened_urls))
         .route(
             "/admin/logs/screened_urls.json",

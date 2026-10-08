@@ -318,3 +318,79 @@ async fn screened_ip_write(
         },
     )
 }
+
+/// GET /admin/logs/search_logs(.json): staff.
+pub async fn search_logs(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    uri: Uri,
+    headers: HeaderMap,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    if let Some(r) = staff_only(&state, &guardian) {
+        return Ok(r);
+    }
+    let p = crate::params::parse(uri.query(), &headers, &body);
+    let period = crate::params::string(&p, "period").unwrap_or_else(|| "all".into());
+    let search_type = crate::params::string(&p, "search_type").unwrap_or_else(|| "all".into());
+    let mut conn = state.pool.acquire().await?;
+    Ok(Json(crate::search_logs::trending(&mut conn, &period, &search_type).await?).into_response())
+}
+
+/// GET /admin/email-logs/{sent,bounced,skipped,received,rejected}(.json):
+/// admins (AdminConstraint, others 404).
+pub async fn email_logs(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(kind): Path<String>,
+    uri: Uri,
+    headers: HeaderMap,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    use crate::email_logs::List;
+    let which = match kind.strip_suffix(".json").unwrap_or(&kind) {
+        "sent" => List::Sent,
+        "bounced" => List::Bounced,
+        "skipped" => List::Skipped,
+        "received" => List::Received,
+        "rejected" => List::Rejected,
+        _ => return Ok(super::topics::not_found_response(&state)),
+    };
+    if !guardian.is_admin() {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    let p = crate::params::parse(uri.query(), &headers, &body);
+    let get = |k: &str| crate::params::string(&p, k);
+    let filters = crate::email_logs::Filters {
+        offset: get("offset"),
+        user: get("user"),
+        address: get("address"),
+        email_type: get("type"),
+        smtp_transaction_response: get("smtp_transaction_response"),
+        reply_key: get("reply_key"),
+        from: get("from"),
+        to: get("to"),
+        subject: get("subject"),
+        error: get("error"),
+    };
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let urls = crate::url::Urls {
+        config: &state.config,
+        settings: &settings,
+    };
+    let user_cx = crate::admin_user_show::Context {
+        settings: &settings,
+        defs: &state.site_setting_defs,
+        i18n: &state.i18n,
+        urls: &urls,
+        globals: &state.config.globals,
+        development: state.config.rails_env == crate::config::RailsEnv::Development,
+    };
+    let cx = crate::email_logs::Context {
+        user_cx: &user_cx,
+        i18n: &state.i18n,
+    };
+    Ok(Json(crate::email_logs::list(&mut conn, &cx, which, &filters).await?).into_response())
+}

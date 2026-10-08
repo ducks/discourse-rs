@@ -1,0 +1,45 @@
+{
+  "user": "admin",
+  "setup": [
+    "DELETE FROM search_logs",
+    "INSERT INTO search_logs (term, user_id, search_type, search_result_id, created_at) VALUES ('Fixture', 1, 1, NULL, '2026-10-05 10:00:00'), ('fixture', 2, 2, 35, '2026-10-05 11:00:00'), ('fixture', NULL, 2, NULL, '2026-10-06 11:00:00'), ('parity', 3, 1, NULL, '2026-08-01 11:00:00'), ('parity', 3, 1, 36, '2026-10-01 11:00:00'), ('parity', 4, 2, 37, '2026-10-02 11:00:00'), ('zebra', 2, 1, NULL, '2026-10-07 11:00:00'), ('apple', 2, 1, NULL, '2026-10-07 12:00:00'), ('solo', 3, 2, 9, '2026-10-07 13:00:00')"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/logs/search_logs.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/logs/search_logs.json",
+      "params": {
+        "period": "weekly",
+        "search_type": "full_page"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/logs/search_logs.json",
+      "params": {
+        "period": "monthly",
+        "search_type": "non_staff_only"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/logs/search_logs.json",
+      "params": {
+        "period": "quarterly",
+        "search_type": "header"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/logs/search_logs.json",
+      "params": {
+        "period": "daily",
+        "search_type": "click_through_only"
+      }
+    }
+  ]
+}
