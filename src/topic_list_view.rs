@@ -560,11 +560,12 @@ fn row_for(cx: &ListContext, topic: &Value, users: &[Value], suggested: bool) ->
         classes.push(format!("category-{}", slug_for(cx, c, 3).replace('/', "-")));
     }
     let unread_posts = topic["unread_posts"].as_i64().unwrap_or(0);
+    // Topic#visited: >= for deleted posts at the end of the topic.
+    let visited = topic["last_read_post_number"]
+        .as_i64()
+        .is_some_and(|read| read >= highest);
     for (on, class) in [
-        (
-            topic["last_read_post_number"].is_number() && cx.member_trust_level.is_some(),
-            "visited",
-        ),
+        (visited, "visited"),
         (excerpt.is_some(), "has-excerpt"),
         (expand_pinned && excerpt.is_some(), "excerpt-expanded"),
         (flag("unseen"), "unseen-topic"),
@@ -589,18 +590,33 @@ fn row_for(cx: &ListContext, topic: &Value, users: &[Value], suggested: bool) ->
     let statuses = topic_statuses(cx, topic);
 
     // TopicLink: to the first unread post.
-    let last_read = topic["last_read_post_number"].as_i64().unwrap_or(0);
-    let last_unread_url =
-        if last_read >= highest && category.is_some_and(|c| c.navigate_to_first_post_after_read) {
+    // Without a last read post, Ember's `undefined + 1` is NaN, which no
+    // post number follows.
+    let last_unread_url = match topic["last_read_post_number"].as_i64() {
+        Some(last_read)
+            if last_read >= highest
+                && category.is_some_and(|c| c.navigate_to_first_post_after_read) =>
+        {
             url_for(1)
-        } else {
-            url_for((last_read + 1).min(highest))
-        };
+        }
+        Some(last_read) => url_for((last_read + 1).min(highest)),
+        None => url.clone(),
+    };
     let title_html = emoji_unescape(s(&topic["fancy_title"]), &cx.settings, base);
     let title_html = if cx.settings.support_mixed_text_direction {
         format!("<span dir=\"auto\">{title_html}</span>")
     } else {
         title_html
+    };
+
+    // TopicLink: a visited topic says so to screen readers.
+    let read_suffix = if visited {
+        format!(
+            "<span class=\"sr-only\">&nbsp;{}</span>",
+            escape(&t(cx, "topic.sr_read"))
+        )
+    } else {
+        String::new()
     };
 
     // TopicPostBadges, for a member.
@@ -654,7 +670,7 @@ fn row_for(cx: &ListContext, topic: &Value, users: &[Value], suggested: bool) ->
     };
 
     let topic_cell = format!(
-        "<td class=\"main-link topic-list-data\" colspan=\"1\"><span aria-level=\"2\" class=\"link-top-line\" role=\"heading\"><span class=\"topic-statuses\">{statuses}</span><a class=\"title raw-link raw-topic-link\" data-topic-id=\"{id}\" href=\"{last_unread_url}\">{title_html}</a>{badges}</span><div class=\"link-bottom-line\">{badge}{tags}</div>{excerpt_html}</td>"
+        "<td class=\"main-link topic-list-data\" colspan=\"1\"><span aria-level=\"2\" class=\"link-top-line\" role=\"heading\"><span class=\"topic-statuses\">{statuses}</span><a class=\"title raw-link raw-topic-link\" data-topic-id=\"{id}\" href=\"{last_unread_url}\">{title_html}{read_suffix}</a>{badges}</span><div class=\"link-bottom-line\">{badge}{tags}</div>{excerpt_html}</td>"
     );
 
     // PostersCell: each poster's avatar, linked.
@@ -832,6 +848,33 @@ pub fn topic_statuses(cx: &ListContext, topic: &Value) -> String {
             "<span class=\"topic-status --unpinned\" title=\"{}\">{}</span>",
             t(cx, "topic_statuses.unpinned.help"),
             icon("thumbtack", Some("unpinned"))
+        ));
+    }
+    // Topic#invisible, with visibilityReasonTranslated (a reason id of 0
+    // is falsy there, so it goes unexplained).
+    if topic["visible"] == false {
+        const REASONS: [&str; 6] = [
+            "op_flag_threshold_reached",
+            "op_unhidden",
+            "embedded_topic",
+            "manually_unlisted",
+            "manually_relisted",
+            "bulk_action",
+        ];
+        let reason = topic["visibility_reason_id"]
+            .as_i64()
+            .filter(|id| *id != 0)
+            .and_then(|id| REASONS.get(usize::try_from(id).ok()?))
+            .map(|key| t(cx, &format!("topic_statuses.visibility_reasons.{key}")))
+            .unwrap_or_default();
+        statuses.push_str(&format!(
+            "<span class=\"topic-status --invisible\" title=\"{}\">{}</span>",
+            escape(&t_with(
+                cx,
+                "topic_statuses.unlisted.help",
+                &[("unlistedReason", &reason)]
+            )),
+            icon("far-eye-slash", None)
         ));
     }
     statuses

@@ -62,6 +62,14 @@ pub struct Viewer {
     pub name: Option<String>,
     /// No previous visit: the welcome banner greets a new member.
     pub first_visit: bool,
+    pub staff: bool,
+}
+
+impl Viewer {
+    /// `User#canManageTopic`: staff or a leader (trust level 4).
+    pub fn can_manage_topic(&self) -> bool {
+        self.staff || self.trust_level >= 4
+    }
 }
 
 /// The viewer block for a page, plus the `_forum_session` cookie to set
@@ -1323,6 +1331,13 @@ pub fn notification_verb(notification_type: i64) -> &'static str {
 }
 
 impl LatestPage {
+    /// The discovery controller's `canBulkSelect`: topic managers, or the
+    /// new and unread lists while they have topics to dismiss.
+    pub fn bulk_select(&self) -> bool {
+        self.viewer.as_ref().is_some_and(Viewer::can_manage_topic)
+            || (matches!(self.live_filter.as_str(), "new" | "unread") && !self.rows.is_empty())
+    }
+
     /// The category the new topic button starts in, on a category's list.
     pub fn heading_id(&self) -> Option<i32> {
         self.heading.as_ref().map(|h| h.id)
