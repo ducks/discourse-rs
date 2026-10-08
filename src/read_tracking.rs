@@ -304,7 +304,7 @@ async fn update_last_read(
         }
         if before != after {
             crate::bus::publish_notification_level_change(
-                bus, &mut *conn, user_id, topic_id, after,
+                bus, &mut *conn, user_id, topic_id, after, None,
             )
             .await?;
         }
@@ -355,8 +355,10 @@ async fn update_last_read(
     .bind(new_status)
     .execute(&mut *conn)
     .await?;
-    crate::bus::publish_notification_level_change(bus, &mut *conn, user_id, topic_id, new_status)
-        .await?;
+    crate::bus::publish_notification_level_change(
+        bus, &mut *conn, user_id, topic_id, new_status, None,
+    )
+    .await?;
     Ok(())
 }
 

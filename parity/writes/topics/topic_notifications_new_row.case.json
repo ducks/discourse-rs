@@ -1,0 +1,6 @@
+{
+  "user": "user2",
+  "requests": [
+    { "method": "POST", "path": "/t/41/notifications", "params": { "notification_level": "2" } }
+  ]
+}

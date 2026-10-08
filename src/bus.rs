@@ -357,18 +357,24 @@ async fn basic_user(
 }
 
 /// `TopicUser.notification_level_change`: the user's own notification
-/// level for a topic, on the topic's channel to them alone.
+/// level for a topic, on the topic's channel to them alone, with the
+/// reason when one is given.
 pub async fn publish_notification_level_change(
     bus: &pg_bus::Bus,
     conn: &mut PgConnection,
     user_id: i32,
     topic_id: i32,
     notification_level: i32,
+    reason_id: Option<i32>,
 ) -> Result<(), AppError> {
+    let mut message = json!({ "notification_level_change": notification_level });
+    if let Some(reason) = reason_id {
+        message["notifications_reason_id"] = json!(reason);
+    }
     bus.publish(
         conn,
         &topic_channel(topic_id),
-        &json!({ "notification_level_change": notification_level }),
+        &message,
         Some(&[user_tag(user_id)]),
     )
     .await?;

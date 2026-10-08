@@ -1698,8 +1698,66 @@ pub fn footer_buttons(cx: &PostContext, view: &Value) -> String {
         String::new()
     };
     format!(
-        "<div aria-label=\"{}\" id=\"topic-footer-buttons\" role=\"region\"><div class=\"topic-footer-main-buttons\"><div class=\"topic-footer-main-buttons__actions\">{actions}</div>{reply}</div>{notifications}</div>",
-        escape(&t(l, "topic.footer_buttons.region_label"))
+        "<div aria-label=\"{}\" id=\"topic-footer-buttons\" role=\"region\"><div class=\"topic-footer-main-buttons\"><div class=\"topic-footer-main-buttons__actions\">{actions}</div>{reply}</div>{notifications}</div>{}",
+        escape(&t(l, "topic.footer_buttons.region_label")),
+        notifications_menu(cx, view)
+    )
+}
+
+/// TopicNotificationsButton#reasonText: the level's reason with the
+/// reason id when it has a translation, else the level's own.
+fn reason_text(cx: &PostContext, level: i64, reason: Option<i64>) -> String {
+    let l = cx.list;
+    let mut key = format!("topic.notifications.reasons.{level}");
+    if let Some(reason) = reason {
+        let with_reason = format!("{key}_{reason}");
+        if l.i18n.t(&format!("js.{with_reason}")).is_some() {
+            key = with_reason;
+        }
+    }
+    t_with(
+        l,
+        &key,
+        &[
+            ("username", &cx.viewer.unwrap_or_default().to_lowercase()),
+            ("basePath", l.base_path),
+        ],
+    )
+}
+
+/// NotificationsTracking's menu content, once for the page: the topic
+/// levels with their descriptions, the current one selected. Each posts
+/// to /t/:id/notifications; static/js/topic.js floats it under the
+/// trigger that opened it (Ember's DMenu portal) and, on success, sets the
+/// level as TopicDetails#updateNotifications does (the reason cleared),
+/// from the option's title, tooltip and reason.
+fn notifications_menu(cx: &PostContext, view: &Value) -> String {
+    let l = cx.list;
+    let current = view["details"]["notification_level"].as_i64().unwrap_or(1);
+    let suffix = if view["archetype"] == "private_message" {
+        "_pm"
+    } else {
+        ""
+    };
+    let url = format!("{}/t/{}/notifications", l.base_path, cx.topic.id);
+    let title = |key: &str| t(l, &format!("topic.notifications.{key}{suffix}.title"));
+    let items: String = [(3, "watching"), (2, "tracking"), (1, "regular"), (0, "muted")]
+        .iter()
+        .map(|(level, key)| {
+            format!(
+                "<li class=\"dropdown-menu__item\"><button class=\"btn no-text notifications-tracking-btn{}\" data-level-id=\"{level}\" data-level-name=\"{key}\" data-title=\"{}\" data-tooltip=\"{}\" data-reason=\"{}\" hx-post=\"{url}\" hx-vals='{{\"notification_level\": {level}}}' hx-swap=\"none\" type=\"button\"><div class=\"notifications-tracking-btn__icons\">{}</div><div class=\"notifications-tracking-btn__texts\"><span class=\"notifications-tracking-btn__label\">{}</span><span class=\"notifications-tracking-btn__description\">{}</span></div></button></li>",
+                if *level == current { " -selected" } else { "" },
+                escape(&title(key)),
+                escape(&t_with(l, "notifications_tracking.tooltip", &[("level", &title(key))])),
+                escape(&reason_text(cx, *level, None)),
+                d_icon(&format!("d-{key}"), None),
+                escape(&title(key)),
+                escape(&t(l, &format!("topic.notifications.{key}{suffix}.description"))),
+            )
+        })
+        .collect();
+    format!(
+        "<div class=\"fk-d-menu notifications-tracking-content -animated\" data-content=\"\" data-identifier=\"notifications-tracking\" role=\"dialog\" data-strategy=\"absolute\" data-placement=\"bottom-start\" hidden><div class=\"fk-d-menu__inner-content\"><ul class=\"dropdown-menu\">{items}</ul></div></div>"
     )
 }
 
@@ -1722,8 +1780,9 @@ fn footer_button(
 }
 
 /// TopicNotificationsButton: the notifications tracking trigger, and when
-/// `expanded` its caret, full title and reason. The level menu is not
-/// ported, nor the reason's stale and mailing list mode variants.
+/// `expanded` its caret, full title and reason; the menu it opens is
+/// notifications_menu. The reason's stale and mailing list mode variants
+/// are not ported.
 fn notifications_button(cx: &PostContext, view: &Value, expanded: bool) -> String {
     let l = cx.list;
     let details = &view["details"];
@@ -1749,7 +1808,8 @@ fn notifications_button(cx: &PostContext, view: &Value, expanded: bool) -> Strin
     );
     if expanded {
         trigger.push_str(&format!(
-            "<span class=\"d-button-label\">{}</span>{}",
+            // The template's whitespace leaves a space after the title.
+            "<span class=\"d-button-label\">{} </span>{}",
             escape(&title),
             icon("angle-down", Some("notifications-tracking-btn__caret"))
         ));
@@ -1758,22 +1818,7 @@ fn notifications_button(cx: &PostContext, view: &Value, expanded: bool) -> Strin
     if !expanded {
         return format!("<div class=\"topic-notifications-button\">{trigger}</div>");
     }
-    // reasonText: the level's reason when it has a translation.
-    let mut reason_key = format!("topic.notifications.reasons.{level}");
-    if let Some(reason) = details["notifications_reason_id"].as_i64() {
-        let with_reason = format!("{reason_key}_{reason}");
-        if l.i18n.t(&format!("js.{with_reason}")).is_some() {
-            reason_key = with_reason;
-        }
-    }
-    let reason = t_with(
-        l,
-        &reason_key,
-        &[
-            ("username", &cx.viewer.unwrap_or_default().to_lowercase()),
-            ("basePath", l.base_path),
-        ],
-    );
+    let reason = reason_text(cx, level, details["notifications_reason_id"].as_i64());
     format!(
         "<div class=\"topic-notifications-button\"><p class=\"reason\">{trigger}<span class=\"text\">{reason}</span></p></div>"
     )

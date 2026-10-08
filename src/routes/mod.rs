@@ -31,6 +31,7 @@ mod sitemap;
 mod srv;
 mod stylesheets;
 mod tags;
+mod topic_notifications;
 mod topic_status;
 mod topics;
 mod user_avatars;
@@ -54,6 +55,7 @@ const DISCOURSE_CSS: &str = concat!(
     include_str!("../../static/vendor/normalize.css"),
     include_str!("../../static/css/foundation.css"),
     include_str!("../../static/css/buttons.css"),
+    include_str!("../../static/css/d-icon.css"),
     include_str!("../../static/css/header.css"),
     include_str!("../../static/css/navs.css"),
     include_str!("../../static/css/welcome-banner.css"),
@@ -218,6 +220,11 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/topics/timings", post(read_tracking::timings))
         .route("/topics/timings.json", post(read_tracking::timings))
         .route("/t/{slug}/timings", post(read_tracking::topic_timings))
+        // TopicsController#set_notifications; {slug} holds the topic id.
+        .route(
+            "/t/{slug}/notifications",
+            post(topic_notifications::set_notifications),
+        )
         .route("/topics/{kind}/{username}", get(messages::personal))
         .route(
             "/topics/private-messages-group/{username}/{*rest}",

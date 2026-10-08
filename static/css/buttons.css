@@ -116,6 +116,11 @@ svg > use {
   transition: var(--d-button-transition);
 }
 
+.btn .d-button-label + .d-icon {
+  margin-left: 0.45em;
+  margin-right: 0;
+}
+
 .btn.no-text .d-icon {
   margin-right: 0;
 }
