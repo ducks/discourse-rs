@@ -643,6 +643,7 @@ async fn categories_response(
         config: &state.config,
         settings: &settings,
     };
+    let has_parent = params.parent_category_id.is_some();
     let doc = crate::category_list::CategoryList {
         secure_ids: Vec::new(),
         conn: &mut conn,
@@ -678,6 +679,77 @@ async fn categories_response(
     .await?;
     site.bus_position = bus_position;
     let mut page = crate::html::categories_page(&mut conn, &state.i18n, site, &doc).await?;
+    let base_path = state.config.globals.relative_url_root();
+    let style = settings.get("desktop_category_page_style")?.to_s();
+    let created_order = style == "categories_and_latest_topics_created_date";
+    if (style == "categories_and_latest_topics" || created_order) && !has_parent {
+        // CategoriesController#fetch_topic_list: latest, topics_per_page.
+        let latest_params = ListParams {
+            per_page: Some(
+                topics_per_page(&mut conn, &settings, &guardian)
+                    .await?
+                    .to_string(),
+            ),
+            order: created_order.then(|| "created".to_string()),
+            ..Default::default()
+        };
+        let latest = match list_document(
+            &state,
+            &guardian,
+            &latest_params,
+            None,
+            false,
+            ListKind::Latest,
+            &format!("{base_path}/latest"),
+        )
+        .await?
+        {
+            Ok((latest, _)) => latest,
+            Err(message) => return Ok(invalid_list_params(&state, &message, false)),
+        };
+        let categories = crate::topic_list_view::categories(&mut conn).await?;
+        let cx = crate::topic_list_view::ListContext {
+            i18n: &state.i18n,
+            base_path,
+            now: crate::clock::now(),
+            categories: &categories,
+            expand_all_pinned: false,
+            member_trust_level: page.viewer.as_ref().map(|v| v.trust_level),
+            settings: crate::topic_list_view::ListSettings::load(&settings)?,
+        };
+        // The viewer's muted categories (Category#notification_level 0).
+        let muted: Vec<i64> = match guardian.user_id() {
+            Some(uid) => sqlx::query_scalar(
+                "SELECT category_id::int8 FROM category_users WHERE user_id = $1 AND notification_level = 0",
+            )
+            .bind(uid)
+            .fetch_all(&mut *conn)
+            .await?,
+            None => Vec::new(),
+        };
+        page.main = crate::categories_view::render(&cx, &doc, &latest, &muted)?;
+        page.nav = crate::html::nav_items(
+            &state.i18n,
+            &settings,
+            base_path,
+            "categories",
+            page.chrome.tracking.as_ref(),
+        )?;
+        page.breadcrumbs = crate::html::breadcrumbs(&state.i18n, &settings)?;
+        // DNavigation's showCategoryAdmin: the new category button (with
+        // fixed_category_positions, Rails' admin dropdown, not drawn).
+        if doc["category_list"]["can_create_category"] == true
+            && !settings.get("fixed_category_positions")?.truthy()
+        {
+            page.admin_controls = format!(
+                "<button class=\"btn btn-icon-text btn-default\" id=\"create-category\" type=\"button\">{}<span class=\"d-button-label\">{}</span></button>",
+                crate::topic_list_view::icon("plus", None),
+                state.i18n.t("js.category.create").unwrap_or_default()
+            );
+        }
+        // discovery/categories.gjs: bodyClass "categories-list"
+        page.chrome.body_classes.push_str(" categories-list");
+    }
     page.banner = crate::html::welcome_banner(
         &state.i18n,
         &settings,
@@ -1052,4 +1124,25 @@ pub async fn user_list(
         (!json).then_some(uri),
     )
     .await
+}
+
+/// `CategoriesController#topics_per_page`: categories_topics when set,
+/// else one and a half times the visible top-level categories, 5 to 100.
+async fn topics_per_page(
+    conn: &mut sqlx::PgConnection,
+    settings: &SiteSettings,
+    guardian: &Guardian,
+) -> Result<i64, AppError> {
+    let set = settings.get("categories_topics")?.to_i();
+    if set > 0 {
+        return Ok(set);
+    }
+    let allowed = guardian.allowed_category_ids(&mut *conn, settings).await?;
+    let count: i64 = sqlx::query_scalar(
+        "SELECT COUNT(*) FROM categories WHERE parent_category_id IS NULL AND id = ANY($1)",
+    )
+    .bind(&allowed)
+    .fetch_one(&mut *conn)
+    .await?;
+    Ok(((count as f64 * 1.5) as i64).clamp(5, 100))
 }

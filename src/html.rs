@@ -156,6 +156,10 @@ pub struct Chrome {
     /// What the page's live updates keep counted besides the stream's own
     /// parameters (`&sidebar=<Active key>`, `&nav=<active pill>`), encoded.
     pub live_params: String,
+    /// PoweredByDiscourse below the content: enable_powered_by_discourse,
+    /// less the pages that hide the application footer (a list with more
+    /// to load, a topic not loaded to its end).
+    pub powered_by: bool,
 }
 
 impl Chrome {
@@ -243,6 +247,7 @@ impl Site {
                 classes.push(format!("uc-{}", name.replace('_', "-")));
             }
         }
+        self.chrome.powered_by = settings.get("enable_powered_by_discourse")?.truthy();
         self.chrome.can_signup = !settings.get("invite_only")?.truthy()
             && settings.get("allow_new_registrations")?.truthy()
             && !settings.get("enable_discourse_connect")?.truthy();
@@ -398,6 +403,9 @@ pub struct LatestPage {
     pub banner: String,
     /// The category and tag drops (breadcrumbs), empty where not drawn.
     pub breadcrumbs: String,
+    /// Staff controls beside the new topic button (the categories page's
+    /// new category button).
+    pub admin_controls: String,
 }
 
 /// A navigation pill, as NavItem renders it.
@@ -746,6 +754,11 @@ pub async fn latest_page(
                 .collect()
         })
         .unwrap_or_default();
+    // Discovery topics hides the footer while the list can load more.
+    let mut site = site;
+    if list["topic_list"]["more_topics_url"].is_string() {
+        site.chrome.powered_by = false;
+    }
     Ok(LatestPage {
         site_title: site.site_title,
         viewer: site.viewer,
@@ -763,6 +776,7 @@ pub async fn latest_page(
         nav: Vec::new(),
         banner: String::new(),
         breadcrumbs: String::new(),
+        admin_controls: String::new(),
         more_url: list["topic_list"]["more_topics_url"]
             .as_str()
             .map(str::to_string),
@@ -841,6 +855,11 @@ pub async fn topic_page(
         }
     };
 
+    // topic.gjs hides the footer until the post stream is loaded to its end.
+    let mut site = site;
+    if page < last_page {
+        site.chrome.powered_by = false;
+    }
     Ok(TopicPage {
         site_title: site.site_title,
         viewer: site.viewer,
@@ -987,6 +1006,12 @@ pub struct CategoriesPage {
     pub chrome: Chrome,
     pub categories: Vec<CategoryIndexItem>,
     pub banner: String,
+    /// The categories-and-latest view (categories_view), empty for the page
+    /// styles not ported, which keep the plain table.
+    pub main: String,
+    pub nav: Vec<NavItem>,
+    pub breadcrumbs: String,
+    pub admin_controls: String,
 }
 
 /// The categories index from the /categories.json document
@@ -1053,6 +1078,10 @@ pub async fn categories_page(
         crawler: Crawler::default(),
         categories: items,
         banner: String::new(),
+        main: String::new(),
+        nav: Vec::new(),
+        breadcrumbs: String::new(),
+        admin_controls: String::new(),
     })
 }
 
@@ -1276,5 +1305,19 @@ pub fn notification_verb(notification_type: i64) -> &'static str {
         17 => "posted a new topic,",
         24 => "Reminder:",
         _ => "in",
+    }
+}
+
+impl LatestPage {
+    /// The category the new topic button starts in, on a category's list.
+    pub fn heading_id(&self) -> Option<i32> {
+        self.heading.as_ref().map(|h| h.id)
+    }
+}
+
+impl CategoriesPage {
+    /// No category preselected on the categories page.
+    pub fn heading_id(&self) -> Option<i32> {
+        None
     }
 }

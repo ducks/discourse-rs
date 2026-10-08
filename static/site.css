@@ -4,18 +4,18 @@
 .badge-wrapper { display: inline-flex; align-items: center; gap: .35rem; color: var(--primary); }
 .badge-category-bg { display: inline-block; width: .6rem; height: .6rem; }
 .excerpt { margin: .35rem 0 0; color: #555; font-size: .9rem; }
-.more-topics, .topic-pagination { margin: 1rem 0; display: flex; gap: 1rem; }
+.list-container > .more-topics, .search-page .more-topics, .topic-pagination { margin: 1rem 0; display: flex; gap: 1rem; }
 .category-heading { font-size: 1.4rem; margin: 0 0 .75rem; }
 .category-heading a { color: var(--primary); }
-.subcategories { margin: 0 0 1rem; font-size: .9rem; }
+.category-heading + .subcategories, .legacy-category-list .subcategories { margin: 0 0 1rem; font-size: .9rem; }
 .subcategory .description { color: var(--muted); }
-table.category-list { width: 100%; border-collapse: collapse; }
-.category-list th { text-align: left; color: var(--muted); font-weight: 400; font-size: .85rem; padding: .5rem; border-bottom: 3px solid var(--line); }
-.category-list td { padding: .75rem .5rem; border-bottom: 1px solid var(--line); vertical-align: top; }
-.category-list td.category { border-left: 6px solid; padding-left: .75rem; }
-.category-list h3 { margin: 0 0 .25rem; font-size: 1.05rem; }
-.category-list h3 a { color: var(--primary); }
-.category-description { color: #555; font-size: .9rem; }
-.category-list td.topics { width: 5rem; text-align: right; }
-.category-list td.latest { width: 40%; font-size: .9rem; }
+table.legacy-category-list { width: 100%; border-collapse: collapse; }
+.legacy-category-list th { text-align: left; color: var(--muted); font-weight: 400; font-size: .85rem; padding: .5rem; border-bottom: 3px solid var(--line); }
+.legacy-category-list td { padding: .75rem .5rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+.legacy-category-list td.category { border-left: 6px solid; padding-left: .75rem; }
+.legacy-category-list h3 { margin: 0 0 .25rem; font-size: 1.05rem; }
+.legacy-category-list h3 a { color: var(--primary); }
+.legacy-category-list .category-description { color: #555; font-size: .9rem; }
+.legacy-category-list td.topics { width: 5rem; text-align: right; }
+.legacy-category-list td.latest { width: 40%; font-size: .9rem; }
 .featured-topic time { color: var(--muted); font-size: .8rem; margin-left: .35rem; }

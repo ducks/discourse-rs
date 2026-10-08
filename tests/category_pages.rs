@@ -161,9 +161,9 @@ async fn categories_index_lists_top_level_categories_with_featured_topics() {
     let (status, _, html) = get(&db.pool, "/categories").await;
     assert_eq!(status, StatusCode::OK);
     assert!(html.contains("<title>Categories - Discourse</title>"));
-    assert!(html.contains(r#"<h3><a href="/c/general/4">General</a></h3>"#));
-    assert!(html.contains(r#"<a href="/c/general/sub-general/34">Sub General</a>"#));
-    assert!(html.contains(
-        r#"class="featured-topic"><a href="/t/welcome-to-discourse/5">Welcome to Discourse! 👋</a>"#
-    ));
+    // Categories and latest topics, as Ember renders them.
+    assert!(html.contains(r#"<h3><a class="category-title-link" href="/c/general/4">"#));
+    assert!(html.contains(r#"href="/c/general/sub-general/34""#));
+    assert!(html.contains(r#"<a href="/t/welcome-to-discourse/5" class="title" data-topic-id="5">Welcome to Discourse! "#));
+    assert!(html.contains(r#"<a class="btn btn-default pull-right" href="/latest">More</a>"#));
 }

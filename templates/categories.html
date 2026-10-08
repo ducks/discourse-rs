@@ -1,8 +1,28 @@
 {% extends "layout.html" %}
+{% import "macros.html" as m %}
 {% block title %}Categories - {{ site_title }}{% endblock %}
 {% block content %}
 {{ banner|safe }}
-<table class="category-list">
+{% if !main.is_empty() %}
+{% if !nav.is_empty() %}{% call m::list_controls(nav, breadcrumbs, chrome, self.heading_id(), admin_controls) %}{% endif %}
+<div class="container list-container --categories">
+  <div class="row full-width"><div id="header-list-area"></div></div>
+  <div class="row full-width"><div id="list-area"><div class="contents">{{ main|safe }}</div></div></div>
+</div>
+{#- CategoriesOnly#toggleShowMuted -#}
+<script>
+  document.querySelectorAll(".muted-categories-link").forEach((link) => {
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+      const table = link.nextElementSibling;
+      table.classList.toggle("hidden");
+      const use = link.querySelector("use");
+      if (use) use.setAttribute("href", table.classList.contains("hidden") ? "#plus" : "#minus");
+    });
+  });
+</script>
+{% else %}
+<table class="category-list legacy-category-list">
   <thead>
     <tr>
       <th class="category">Category</th>
@@ -30,4 +50,5 @@
     {% endfor %}
   </tbody>
 </table>
+{% endif %}
 {% endblock %}

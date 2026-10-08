@@ -1,0 +1,83 @@
+/*
+ * The "Powered by Discourse" link below the content, ported from
+ * components/powered-by-discourse.scss.
+ */
+
+.powered-by-discourse {
+  grid-area: below-content;
+  justify-self: start;
+  font-size: var(--font-down-1);
+  letter-spacing: 0.2px;
+  padding: 2px;
+  background: var(--secondary);
+  border-radius: 0.75em;
+  transition: all 0.25s ease-in-out;
+  margin-bottom: 0.45em;
+  color: var(--primary-medium);
+}
+
+.admin-area .powered-by-discourse,
+.has-full-page-chat .powered-by-discourse,
+.static-login .powered-by-discourse,
+.invite-page .powered-by-discourse,
+.account-created-page .powered-by-discourse,
+.admin-invite-page .powered-by-discourse,
+.activate-account-page .powered-by-discourse {
+  display: none !important;
+}
+
+.powered-by-discourse:visited {
+  color: var(--primary-medium);
+}
+
+.powered-by-discourse__content {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  color: currentcolor;
+  background: var(--secondary);
+  border-radius: 0.62em;
+  padding: 0.25em 0.65em 0.25em 0.5em;
+}
+
+.powered-by-discourse .d-icon {
+  position: relative;
+  top: 0.05em;
+}
+
+.discourse-no-touch .powered-by-discourse:hover {
+  color: var(--primary-high);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .discourse-no-touch .powered-by-discourse:hover {
+    background: linear-gradient(
+      45deg,
+      var(--secondary),
+      var(--secondary),
+      var(--secondary),
+      var(--secondary),
+      var(--secondary),
+      #d0232b,
+      #f15d22,
+      #fff9ae,
+      #00a94f,
+      #00aeef
+    );
+    background-size: 300%;
+    animation: d-rainbow-shimmer 0.5s;
+    animation-fill-mode: forwards;
+    animation-timing-function: ease-in-out;
+    animation-delay: 0.15s;
+  }
+}
+
+@keyframes d-rainbow-shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  100% {
+    background-position: 100% 50%;
+  }
+}
