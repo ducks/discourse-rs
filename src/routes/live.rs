@@ -443,6 +443,9 @@ async fn render_post(
         created_by_id: topic_ctx.user_id.map(i64::from),
         archived: topic_ctx.archived,
         can_create_post,
+        deleted: topic_ctx.deleted_at.is_some(),
+        can_delete: guardian.can_delete_topic(settings, &topic_ctx)?,
+        can_recover: guardian.can_recover_topic(&topic_ctx),
         op_map: String::new(),
     };
     // The post shown above it, for its reply-to tab and time gap.
@@ -475,6 +478,9 @@ async fn render_post(
         settings: &post_settings,
         topic: &topic,
         viewer: guardian.user().map(|u| u.username.as_str()),
+        staff: guardian.is_staff(),
+        can_send_pms: guardian.is_authenticated()
+            && guardian.can_send_private_messages(settings)?,
     };
     let html = if append {
         crate::post_view::post(&cx, &post, prev)

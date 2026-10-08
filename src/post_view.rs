@@ -40,11 +40,24 @@ pub struct PostSettings {
     pub read_time_word_count: i64,
     pub show_topic_map_in_topics_without_replies: bool,
     pub show_bottom_topic_map: bool,
+    /// `post_menu`: the menu's buttons, in order.
+    pub post_menu: Vec<String>,
+    /// `post_menu_hidden_items`: the buttons behind show more.
+    pub post_menu_hidden_items: Vec<String>,
 }
 
 impl PostSettings {
     pub fn load(settings: &SiteSettings) -> Result<PostSettings, SettingError> {
         let flag = |name: &str| -> Result<bool, SettingError> { Ok(settings.get(name)?.truthy()) };
+        let list = |name: &str| -> Result<Vec<String>, SettingError> {
+            Ok(settings
+                .get(name)?
+                .to_s()
+                .split('|')
+                .filter(|s| !s.is_empty())
+                .map(str::to_string)
+                .collect())
+        };
         let mut sizes: Vec<i64> = settings
             .get("avatar_sizes")?
             .to_s()
@@ -77,6 +90,8 @@ impl PostSettings {
                 "show_topic_map_in_topics_without_replies",
             )?,
             show_bottom_topic_map: flag("show_bottom_topic_map")?,
+            post_menu: list("post_menu")?,
+            post_menu_hidden_items: list("post_menu_hidden_items")?,
         })
     }
 }
@@ -90,6 +105,12 @@ pub struct TopicInfo {
     pub archived: bool,
     /// `details.can_create_post`: the reply button.
     pub can_create_post: bool,
+    /// The topic is deleted (`topic.deleted`).
+    pub deleted: bool,
+    /// `details.can_delete` and `details.can_recover`, for the first
+    /// post's delete button.
+    pub can_delete: bool,
+    pub can_recover: bool,
     /// The first post's topic map, rendered (empty when it has none).
     pub op_map: String,
 }
@@ -103,6 +124,9 @@ impl TopicInfo {
             created_by_id: view["details"]["created_by"]["id"].as_i64(),
             archived: view["archived"] == true,
             can_create_post: view["details"]["can_create_post"] == true,
+            deleted: view["deleted_at"].is_string(),
+            can_delete: view["details"]["can_delete"] == true,
+            can_recover: view["details"]["can_recover"] == true,
             op_map: String::new(),
         }
     }
@@ -121,6 +145,10 @@ pub struct PostContext<'a> {
     pub topic: &'a TopicInfo,
     /// The viewer's username, for a member.
     pub viewer: Option<&'a str>,
+    /// The viewer is staff.
+    pub staff: bool,
+    /// The viewer can send private messages (canSendPms).
+    pub can_send_pms: bool,
 }
 
 fn s(v: &Value) -> &str {
@@ -149,6 +177,10 @@ fn d_icon(name: &str, extra: Option<&str>) -> String {
         "d-unliked" => "far-heart",
         "d-post-share" | "d-topic-share" => "arrow-up-from-bracket",
         "topic.closed" => "lock",
+        "d-muted" => "discourse-bell-slash",
+        "d-regular" => "far-bell",
+        "d-tracking" => "bell",
+        "d-watching" => "discourse-bell-exclamation",
         "topic.opened" => "unlock",
         other => other,
     };
@@ -808,81 +840,210 @@ fn poster_name(cx: &PostContext, p: &Value) -> String {
     out
 }
 
-/// post/menu with the ported buttons in post_menu order.
+/// post/menu.gjs: the `post_menu` buttons in order, show more before the
+/// last. While collapsed, the `post_menu_hidden_items` the post would
+/// draw hide behind show more when there are two or more (counting the
+/// configured ones first, as availableCollapsedButtons does). The read
+/// indicator, share, admin and translation buttons are not drawn; admin
+/// still counts toward collapsing for those who would see it.
 fn menu(cx: &PostContext, p: &Value) -> String {
-    let mut actions = String::new();
-    actions.push_str(&like_button(cx, p));
-    actions.push_str(&button(
-        "btn no-text btn-icon post-action-menu__copy-link btn-flat",
-        &t(cx.list, "post.controls.copy_title"),
-        &t(cx.list, "post.controls.copy_title"),
-        "link",
-        &format!(" data-share-url=\"{}\"", escape(&share_url(cx, number(p)))),
-    ));
-    // Edit and bookmark, in post_menu order. Each is in
-    // post_menu_hidden_items: an edit unless the post is the viewer's, a
-    // bookmark unless it is set. Two or more of those collapse behind show
-    // more; one stays.
-    let can_edit = cx.viewer.is_some() && p["can_edit"] == true;
-    let edit = can_edit.then(|| {
-        button(
-            "btn no-text btn-icon post-action-menu__edit edit btn-flat",
-            &t(cx.list, "post.controls.edit"),
-            &t(cx.list, "post.controls.edit"),
-            "pencil",
-            &format!(
-                " data-post-id=\"{}\" data-post-number=\"{}\"",
-                p["id"],
-                number(p)
-            ),
-        )
-    });
-    let bookmark = cx.viewer.is_some().then(|| bookmark_button(cx, p));
-    let collapsible = [
-        edit.is_some() && p["yours"] != true,
-        bookmark.is_some() && p["bookmark_id"].is_null(),
-    ];
-    let collapsed = collapsible.iter().filter(|c| **c).count() > 1;
-    for (html, collapses) in [edit, bookmark].into_iter().zip(collapsible) {
-        if let Some(html) = html {
-            if collapsed && collapses {
-                actions.push_str(&html.replacen("<button ", "<button hidden ", 1));
-            } else {
-                actions.push_str(&html);
-            }
-        }
+    let member = cx.viewer.is_some();
+    let can_edit = member && p["can_edit"] == true;
+    let wiki = p["wiki"] == true && can_edit;
+    let mut configured: Vec<&str> = cx
+        .settings
+        .post_menu
+        .iter()
+        .map(|key| match (wiki, key.as_str()) {
+            (true, "edit") => "reply",
+            (true, "reply") => "edit",
+            (_, key) => key,
+        })
+        .collect();
+    if !configured.is_empty() && !configured.contains(&"showMore") {
+        configured.insert(configured.len() - 1, "showMore");
     }
-    if collapsed {
-        actions.push_str(&button(
-            "btn no-text btn-icon post-action-menu__show-more show-more-actions btn-flat",
-            &t(cx.list, "show_more"),
-            &t(cx.list, "show_more"),
-            "ellipsis",
-            "",
-        ));
-    }
-    if cx.topic.can_create_post && cx.viewer.is_some() {
-        let username = s(&p["username"]);
-        actions.push_str(&format!(
-            "<button aria-label=\"{}\" class=\"btn btn-icon-text post-action-menu__reply reply create fade-out btn-flat\" data-post-number=\"{}\" data-username=\"{}\" title=\"{}\" type=\"button\">{}<span class=\"d-button-label\">{}</span></button>",
-            escape(&t_with(
-                cx.list,
-                "post.sr_reply_to",
-                &[
-                    ("post_number", &number(p).to_string()),
-                    ("username", username)
-                ]
+    let bookmarked = !p["bookmark_id"].is_null() || p["bookmarked"] == true;
+    let hidden_items: Vec<&str> = cx
+        .settings
+        .post_menu_hidden_items
+        .iter()
+        .map(String::as_str)
+        .filter(|k| !(bookmarked && *k == "bookmark"))
+        .collect();
+
+    // Each configured button: whether it collapses (EditButton.hidden is
+    // false for one's own editable post and wikis), and its HTML when it
+    // renders.
+    let mut buttons: Vec<(&str, bool, Option<String>)> = Vec::new();
+    for key in &configured {
+        let hideable = hidden_items.contains(key)
+            && !(*key == "edit" && (wiki || (can_edit && p["yours"] == true)));
+        let html = match *key {
+            "like" => Some(like_button(cx, p)).filter(|h| !h.is_empty()),
+            "copyLink" => Some(button(
+                "btn no-text btn-icon post-action-menu__copy-link btn-flat",
+                &t(cx.list, "post.controls.copy_title"),
+                &t(cx.list, "post.controls.copy_title"),
+                "link",
+                &format!(" data-share-url=\"{}\"", escape(&share_url(cx, number(p)))),
             )),
-            number(p),
-            escape(username),
-            escape(&t(cx.list, "post.controls.reply")),
-            icon("reply", None),
-            escape(&t(cx.list, "topic.reply.title"))
-        ));
+            "flag" => (member && can_flag(cx, p) && p["hidden"] != true).then(|| flag_button(cx)),
+            "edit" => can_edit.then(|| {
+                button(
+                    "btn no-text btn-icon post-action-menu__edit edit btn-flat",
+                    &t(cx.list, "post.controls.edit"),
+                    &t(cx.list, "post.controls.edit"),
+                    "pencil",
+                    &format!(
+                        " data-post-id=\"{}\" data-post-number=\"{}\"",
+                        p["id"],
+                        number(p)
+                    ),
+                )
+            }),
+            "bookmark" => member.then(|| bookmark_button(cx, p)),
+            "delete" => delete_button(cx, p),
+            // Drawn only as a count toward collapsing (not ported).
+            "admin" => (member && (cx.staff || p["can_wiki"] == true)).then(String::new),
+            "reply" => (cx.topic.can_create_post && member).then(|| reply_button(cx, p)),
+            _ => None,
+        };
+        buttons.push((key, hideable, html));
+    }
+    let available = buttons
+        .iter()
+        .filter(|(key, hideable, _)| *key != "showMore" && *hideable)
+        .count();
+    let collapsing = |hideable: bool, html: &Option<String>| hideable && html.is_some();
+    let renderable = buttons
+        .iter()
+        .filter(|(_, hideable, html)| collapsing(*hideable, html))
+        .count();
+    let collapsed = available > 1 && renderable > 1;
+
+    let mut actions = String::new();
+    for (key, hideable, html) in &buttons {
+        if *key == "showMore" {
+            if collapsed {
+                actions.push_str(&button(
+                    "btn no-text btn-icon post-action-menu__show-more show-more-actions btn-flat",
+                    &t(cx.list, "show_more"),
+                    &t(cx.list, "show_more"),
+                    "ellipsis",
+                    "",
+                ));
+            }
+            continue;
+        }
+        let Some(html) = html else { continue };
+        if collapsed && *hideable {
+            actions.push_str(&html.replacen("<button ", "<button hidden ", 1));
+        } else {
+            actions.push_str(html);
+        }
     }
     format!(
         "<nav class=\"post-controls {}\" role=\"none\"><div class=\"actions\">{actions}</div></nav><div class=\"small-user-list  who-read\"><span aria-atomic=\"true\" aria-live=\"polite\" class=\"small-user-list-content\" role=\"list\"></span></div>",
         if collapsed { "collapsed" } else { "expanded" }
+    )
+}
+
+/// Post#canFlag: the topic stands and some flag type (any action but a
+/// like, Site#flagTypes) can act.
+fn can_flag(cx: &PostContext, p: &Value) -> bool {
+    !cx.topic.deleted
+        && p["actions_summary"].as_array().is_some_and(|a| {
+            a.iter()
+                .any(|x| x["id"].as_i64() != Some(LIKE) && x["can_act"] == true)
+        })
+}
+
+/// post/menu/buttons/flag (the flag modal is not ported).
+fn flag_button(cx: &PostContext) -> String {
+    button(
+        "btn no-text btn-icon post-action-menu__flag create-flag btn-flat",
+        &t(cx.list, "post.controls.flag"),
+        &t(cx.list, "post.controls.flag"),
+        "flag",
+        "",
+    )
+}
+
+/// post/menu/buttons/delete: PostMenuDeleteButton.modeFor. Deleting a
+/// reply posts to DELETE /posts/:id; the topic and recover modes, and the
+/// modal for one's own first post, are not wired.
+fn delete_button(cx: &PostContext, p: &Value) -> Option<String> {
+    cx.viewer?;
+    let first = number(p) == 1;
+    let deleted = !p["deleted_at"].is_null();
+    let user_deleted = p["user_deleted"] == true;
+    let can_recover_topic = first && (deleted || user_deleted) && cx.topic.can_recover;
+    let can_delete_topic = first && !deleted && cx.topic.can_delete;
+    let can_delete = p["can_delete"] == true && !deleted && (cx.staff || !user_deleted);
+    let can_recover = !can_recover_topic && p["can_recover"] == true && deleted;
+    let show_flag_delete = !can_delete && p["yours"] == true && can_flag(cx, p) && !cx.staff;
+    let base = cx.list.base_path;
+    let id = &p["id"];
+    let (recover, title, attrs) = if can_recover_topic {
+        (true, "topic.actions.recover", String::new())
+    } else if can_delete_topic {
+        (false, "post.controls.delete_topic", String::new())
+    } else if can_recover {
+        (true, "post.controls.undelete", String::new())
+    } else if can_delete {
+        (
+            false,
+            "post.controls.delete",
+            format!(
+                " hx-delete=\"{base}/posts/{id}\" hx-swap=\"none\" hx-on::after-request=\"refreshPost(event, '{base}/live/post/{id}')\""
+            ),
+        )
+    } else if show_flag_delete {
+        (
+            false,
+            "post.controls.delete_topic_disallowed",
+            String::new(),
+        )
+    } else {
+        return None;
+    };
+    let title = t(cx.list, title);
+    Some(button(
+        if recover {
+            "btn no-text btn-icon post-action-menu__recover recover btn-flat"
+        } else {
+            "btn no-text btn-icon post-action-menu__delete delete btn-flat"
+        },
+        &title,
+        &title,
+        if recover {
+            "arrow-rotate-left"
+        } else {
+            "trash-can"
+        },
+        &attrs,
+    ))
+}
+
+/// post/menu/buttons/reply
+fn reply_button(cx: &PostContext, p: &Value) -> String {
+    let username = s(&p["username"]);
+    format!(
+        "<button aria-label=\"{}\" class=\"btn btn-icon-text post-action-menu__reply reply create fade-out btn-flat\" data-post-number=\"{}\" data-username=\"{}\" title=\"{}\" type=\"button\">{}<span class=\"d-button-label\">{}</span></button>",
+        escape(&t_with(
+            cx.list,
+            "post.sr_reply_to",
+            &[
+                ("post_number", &number(p).to_string()),
+                ("username", username)
+            ]
+        )),
+        number(p),
+        escape(username),
+        escape(&t(cx.list, "post.controls.reply")),
+        icon("reply", None),
+        escape(&t(cx.list, "topic.reply.title"))
     )
 }
 
@@ -1403,6 +1564,9 @@ pub fn timeline(cx: &PostContext, view: &Value) -> String {
             icon("reply", None)
         ));
     }
+    if cx.viewer.is_some() {
+        footer.push_str(&notifications_button(cx, view, false));
+    }
     let controls = if cx.viewer.is_some() {
         "<div class=\"timeline-controls\"></div>"
     } else {
@@ -1495,6 +1659,25 @@ pub fn footer_buttons(cx: &PostContext, view: &Value) -> String {
         icon(icon_name, None),
         escape(&label)
     ));
+    let private_message = view["archetype"] == "private_message";
+    if view["details"]["can_flag_topic"] == true && !private_message {
+        actions.push_str(&footer_button(
+            cx,
+            "flag",
+            "flag-topic",
+            "flag",
+            "topic.flag_topic.title",
+            "topic.flag_topic.help",
+        ));
+    }
+    actions.push_str(&footer_button(
+        cx,
+        "defer",
+        "defer-topic",
+        "circle",
+        "topic.defer.title",
+        "topic.defer.help",
+    ));
     let reply = if cx.topic.can_create_post {
         format!(
             "<button class=\"btn btn-icon-text btn-primary create topic-footer-button\" title=\"{}\" type=\"button\">{}<span class=\"d-button-label\">{reply_label}</span></button>",
@@ -1504,23 +1687,113 @@ pub fn footer_buttons(cx: &PostContext, view: &Value) -> String {
     } else {
         String::new()
     };
+    // showNotificationsButton: PMs only for those who can send them.
+    let notifications = if !private_message || cx.can_send_pms {
+        notifications_button(cx, view, true).replacen(
+            "class=\"topic-notifications-button\"",
+            "class=\"topic-notifications-button notifications-button-footer\"",
+            1,
+        )
+    } else {
+        String::new()
+    };
     format!(
-        "<div aria-label=\"{}\" id=\"topic-footer-buttons\" role=\"region\"><div class=\"topic-footer-main-buttons\"><div class=\"topic-footer-main-buttons__actions\">{actions}</div>{reply}</div></div>",
+        "<div aria-label=\"{}\" id=\"topic-footer-buttons\" role=\"region\"><div class=\"topic-footer-main-buttons\"><div class=\"topic-footer-main-buttons__actions\">{actions}</div>{reply}</div>{notifications}</div>",
         escape(&t(l, "topic.footer_buttons.region_label"))
     )
 }
 
-/// more-topics: the suggested topics and the browse-more line. New and
-/// unread counts come from topic tracking, not ported, so the line reads
-/// as it does for an anonymous reader.
-pub fn more_topics(cx: &PostContext, view: &Value) -> String {
+/// A registered topic footer button (instance-initializers/
+/// topic-footer-buttons): flag's modal and defer are not wired yet.
+fn footer_button(
+    cx: &PostContext,
+    id: &str,
+    class: &str,
+    icon_name: &str,
+    label: &str,
+    title: &str,
+) -> String {
+    let label = escape(&t(cx.list, label));
+    format!(
+        "<button aria-label=\"{label}\" class=\"btn btn-icon-text btn-default topic-footer-button {class}\" id=\"topic-footer-button-{id}\" title=\"{}\" type=\"button\">{}<span class=\"d-button-label\">{label}</span></button>",
+        escape(&t(cx.list, title)),
+        icon(icon_name, None)
+    )
+}
+
+/// TopicNotificationsButton: the notifications tracking trigger, and when
+/// `expanded` its caret, full title and reason. The level menu is not
+/// ported, nor the reason's stale and mailing list mode variants.
+fn notifications_button(cx: &PostContext, view: &Value, expanded: bool) -> String {
+    let l = cx.list;
+    let details = &view["details"];
+    let level = details["notification_level"].as_i64().unwrap_or(1);
+    let key = match level {
+        0 => "muted",
+        2 => "tracking",
+        3 => "watching",
+        _ => "regular",
+    };
+    let suffix = if view["archetype"] == "private_message" {
+        "_pm"
+    } else {
+        ""
+    };
+    let title = t(l, &format!("topic.notifications.{key}{suffix}.title"));
+    let tooltip = t_with(l, "notifications_tracking.tooltip", &[("level", &title)]);
+    let mut trigger = format!(
+        "<button class=\"btn btn-default {} fk-d-menu__trigger notifications-tracking-trigger btn-default btn-icon notifications-tracking-trigger-btn topic-notifications-tracking\" title=\"{}\" aria-expanded=\"false\" data-identifier=\"notifications-tracking\" data-trigger=\"\" data-level-id=\"{level}\" data-level-name=\"{key}\" type=\"button\">{}",
+        if expanded { "btn-icon-text" } else { "no-text" },
+        escape(&tooltip),
+        d_icon(&format!("d-{key}"), None)
+    );
+    if expanded {
+        trigger.push_str(&format!(
+            "<span class=\"d-button-label\">{}</span>{}",
+            escape(&title),
+            icon("angle-down", Some("notifications-tracking-btn__caret"))
+        ));
+    }
+    trigger.push_str("</button>");
+    if !expanded {
+        return format!("<div class=\"topic-notifications-button\">{trigger}</div>");
+    }
+    // reasonText: the level's reason when it has a translation.
+    let mut reason_key = format!("topic.notifications.reasons.{level}");
+    if let Some(reason) = details["notifications_reason_id"].as_i64() {
+        let with_reason = format!("{reason_key}_{reason}");
+        if l.i18n.t(&format!("js.{with_reason}")).is_some() {
+            reason_key = with_reason;
+        }
+    }
+    let reason = t_with(
+        l,
+        &reason_key,
+        &[
+            ("username", &cx.viewer.unwrap_or_default().to_lowercase()),
+            ("basePath", l.base_path),
+        ],
+    );
+    format!(
+        "<div class=\"topic-notifications-button\"><p class=\"reason\">{trigger}<span class=\"text\">{reason}</span></p></div>"
+    )
+}
+
+/// more-topics: the suggested topics and BrowseMore's line, with the
+/// member's new and unread counts (`topic.read_more_MF`). Private
+/// messages' line (pm topic tracking) is not ported.
+pub fn more_topics(
+    cx: &PostContext,
+    view: &Value,
+    tracking: Option<&crate::topic_tracking_report::Tracking>,
+) -> Result<String, crate::message_format::ParseError> {
     let l = cx.list;
     let suggested = view["suggested_topics"]
         .as_array()
         .cloned()
         .unwrap_or_default();
     if suggested.is_empty() {
-        return "<div class=\"more-topics__container\"></div>".to_string();
+        return Ok("<div class=\"more-topics__container\"></div>".to_string());
     }
     let rows: String = suggested
         .iter()
@@ -1531,26 +1804,67 @@ pub fn more_topics(cx: &PostContext, view: &Value) -> String {
         .as_i64()
         .filter(|id| *id != l.settings.uncategorized_category_id)
         .and_then(|id| l.categories.get(&id));
-    let browse_more = match category {
-        Some(c) => t_with(
-            l,
-            "topic.read_more_in_category",
+    use crate::topic_tracking_report::Kind;
+    let (unread, new) = tracking
+        .filter(|_| view["archetype"] != "private_message")
+        .map(|t| {
+            (
+                t.count(Kind::Unread, None, None),
+                t.count(Kind::New, None, None),
+            )
+        })
+        .unwrap_or((0, 0));
+    let unified_new = tracking.is_some_and(|t| t.unified_new);
+    let category_link = category.map(|c| crate::topic_list_view::category_badge(l, c));
+    let browse_more = if unread + new > 0 {
+        use crate::message_format::{Arg, format};
+        let message = l.i18n.t("js.topic.read_more_MF").unwrap_or_default();
+        let (unread_url, new_url) = if unified_new {
+            (
+                format!("{base}/new?subset=replies"),
+                format!("{base}/new?subset=topics"),
+            )
+        } else {
+            (format!("{base}/unread"), format!("{base}/new"))
+        };
+        format(
+            message,
             &[
+                ("HAS_UNREAD_AND_NEW", Arg::Bool(unread > 0 && new > 0)),
+                ("UNREAD", Arg::Num(unread)),
+                ("NEW", Arg::Num(new)),
+                ("HAS_CATEGORY", Arg::Bool(category.is_some())),
                 (
                     "categoryLink",
-                    &crate::topic_list_view::category_badge(l, c),
+                    Arg::Str(category_link.as_deref().unwrap_or("")),
                 ),
-                ("latestLink", &format!("{base}/latest")),
+                ("basePath", Arg::Str(base)),
+                ("unreadUrl", Arg::Str(&unread_url)),
+                ("newUrl", Arg::Str(&new_url)),
             ],
-        ),
-        None => t_with(
-            l,
-            "topic.read_more",
-            &[
-                ("categoryLink", &format!("{base}/categories")),
-                ("latestLink", &format!("{base}/latest")),
-            ],
-        ),
+        )?
+    } else {
+        match category {
+            Some(c) => t_with(
+                l,
+                "topic.read_more_in_category",
+                &[
+                    (
+                        "categoryLink",
+                        &crate::topic_list_view::category_badge(l, c),
+                    ),
+                    ("latestLink", &format!("{base}/latest")),
+                ],
+            ),
+            None => t_with(
+                l,
+                "topic.read_more",
+                &[
+                    ("categoryLink", &format!("{base}/categories")),
+                    ("latestLink", &format!("{base}/latest")),
+                ],
+            ),
+        }
     };
     let th = |class: &str, label: &str| {
         format!(
@@ -1558,7 +1872,7 @@ pub fn more_topics(cx: &PostContext, view: &Value) -> String {
             class.split(' ').next().unwrap_or("")
         )
     };
-    format!(
+    Ok(format!(
         "<div class=\"more-topics__container\"><div class=\"more-topics__lists single-list\"><div aria-labelledby=\"suggested-topics-title\" class=\"more-topics__list\" id=\"suggested-topics\" role=\"complementary\"><h3 class=\"more-topics__list-title\" id=\"suggested-topics-title\">{}</h3><div class=\"topics\"><table class=\"topic-list\"><caption class=\"sr-only\">{}</caption><thead class=\"topic-list-header --has-tabs\"><tr>{}{}{}{}</tr></thead><tbody class=\"topic-list-body\">{rows}</tbody></table></div></div></div><h3 class=\"more-topics__browse-more\">{browse_more}</h3></div>",
         escape(&t(l, "suggested_topics.title")),
         escape(&t(l, "sr_topic_list_caption")),
@@ -1566,7 +1880,7 @@ pub fn more_topics(cx: &PostContext, view: &Value) -> String {
         th("posts num", "Replies"),
         th("views num", "Views"),
         th("activity num", "Activity"),
-    )
+    ))
 }
 
 #[cfg(test)]
@@ -1632,6 +1946,14 @@ mod tests {
             read_time_word_count: 500,
             show_topic_map_in_topics_without_replies: true,
             show_bottom_topic_map: true,
+            post_menu: "read|like|copyLink|flag|edit|bookmark|delete|admin|reply"
+                .split('|')
+                .map(str::to_string)
+                .collect(),
+            post_menu_hidden_items: "flag|bookmark|edit|delete|admin"
+                .split('|')
+                .map(str::to_string)
+                .collect(),
         };
         let topic = TopicInfo {
             id: 9,
@@ -1639,6 +1961,9 @@ mod tests {
             created_by_id: Some(1),
             archived: false,
             can_create_post: false,
+            deleted: false,
+            can_delete: false,
+            can_recover: false,
             op_map: String::new(),
         };
         let cx = PostContext {
@@ -1646,6 +1971,8 @@ mod tests {
             settings: &settings,
             topic: &topic,
             viewer: None,
+            staff: false,
+            can_send_pms: false,
         };
         check(&stream(&cx, posts));
     }
@@ -1778,6 +2105,14 @@ mod tests {
             read_time_word_count: 500,
             show_topic_map_in_topics_without_replies: true,
             show_bottom_topic_map: true,
+            post_menu: "read|like|copyLink|flag|edit|bookmark|delete|admin|reply"
+                .split('|')
+                .map(str::to_string)
+                .collect(),
+            post_menu_hidden_items: "flag|bookmark|edit|delete|admin"
+                .split('|')
+                .map(str::to_string)
+                .collect(),
         };
         let topic = TopicInfo {
             id: 9,
@@ -1785,6 +2120,9 @@ mod tests {
             created_by_id: Some(1),
             archived: false,
             can_create_post: false,
+            deleted: false,
+            can_delete: false,
+            can_recover: false,
             op_map: String::new(),
         };
         let cx = PostContext {
@@ -1792,6 +2130,8 @@ mod tests {
             settings: &settings,
             topic: &topic,
             viewer: None,
+            staff: false,
+            can_send_pms: false,
         };
         let participants: Vec<Value> = (0..7)
             .map(|i| {

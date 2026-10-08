@@ -113,6 +113,18 @@ impl Tracking {
             .count() as i64
     }
 
+    /// `updateSeen`: the topic is read through `highest_seen`.
+    pub fn update_seen(&mut self, topic_id: i32, highest_seen: i32) {
+        if highest_seen == 0 {
+            return;
+        }
+        if let Some(state) = self.states.iter_mut().find(|s| s.topic_id == topic_id)
+            && state.last_read_post_number.is_none_or(|n| n < highest_seen)
+        {
+            state.last_read_post_number = Some(highest_seen);
+        }
+    }
+
     /// `lookupCount` for the `new` and `unread` nav items, unscoped.
     pub fn lookup(&self, filter: &str) -> i64 {
         match filter {

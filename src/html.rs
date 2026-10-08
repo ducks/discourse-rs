@@ -16,6 +16,7 @@ pub enum HtmlError {
     Db(sqlx::Error),
     Setting(SettingError),
     Template(askama::Error),
+    MessageFormat(crate::message_format::ParseError),
 }
 
 impl std::fmt::Display for HtmlError {
@@ -24,11 +25,18 @@ impl std::fmt::Display for HtmlError {
             HtmlError::Db(e) => write!(f, "rendering page: {e}"),
             HtmlError::Setting(e) => e.fmt(f),
             HtmlError::Template(e) => write!(f, "rendering template: {e}"),
+            HtmlError::MessageFormat(e) => e.fmt(f),
         }
     }
 }
 
 impl std::error::Error for HtmlError {}
+
+impl From<crate::message_format::ParseError> for HtmlError {
+    fn from(e: crate::message_format::ParseError) -> Self {
+        HtmlError::MessageFormat(e)
+    }
+}
 
 impl From<sqlx::Error> for HtmlError {
     fn from(e: sqlx::Error) -> Self {
@@ -63,6 +71,8 @@ pub struct Viewer {
     /// No previous visit: the welcome banner greets a new member.
     pub first_visit: bool,
     pub staff: bool,
+    /// `currentUser.can_send_private_messages`
+    pub can_send_private_messages: bool,
 }
 
 impl Viewer {
@@ -832,6 +842,11 @@ pub async fn topic_page(
     let title_html = crate::post_view::topic_title(&list, view, &topic_url);
     let post_settings = crate::post_view::PostSettings::load(settings)?;
     let viewer = site.viewer.as_ref().map(|v| v.username.as_str());
+    let staff = site.viewer.as_ref().is_some_and(|v| v.staff);
+    let can_send_pms = site
+        .viewer
+        .as_ref()
+        .is_some_and(|v| v.can_send_private_messages);
     let mut topic = crate::post_view::TopicInfo::from_view(view);
     // The first post's topic map, rendered before the posts that carry it.
     if crate::post_view::shows_op_map(view, &post_settings) {
@@ -840,6 +855,8 @@ pub async fn topic_page(
             settings: &post_settings,
             topic: &topic,
             viewer,
+            staff,
+            can_send_pms,
         };
         topic.op_map = crate::post_view::topic_map(&cx, view, "--op");
     }
@@ -848,6 +865,8 @@ pub async fn topic_page(
         settings: &post_settings,
         topic: &topic,
         viewer,
+        staff,
+        can_send_pms,
     };
     let posts = view["post_stream"]["posts"]
         .as_array()
@@ -859,8 +878,28 @@ pub async fn topic_page(
         String::new()
     };
     let timeline = crate::post_view::timeline(&cx, view);
-    let footer_buttons = crate::post_view::footer_buttons(&cx, view);
-    let more_topics = crate::post_view::more_topics(&cx, view);
+    let mut footer_buttons = crate::post_view::footer_buttons(&cx, view);
+    // discourse-presence's topic-above-footer-buttons connector, for
+    // members: the replying avatars (shown live, not ported) over room
+    // kept for them.
+    if viewer.is_some() && settings.get("presence_enabled")?.truthy() {
+        footer_buttons.insert_str(
+            0,
+            "<span><div class=\"topic-above-footer-buttons-outlet presence\" style=\"--avatar-min-height: 24px\"></div></span>",
+        );
+    }
+    // The counts after screen-track marks this topic read through the
+    // posts the page shows (TopicTrackingState#updateSeen).
+    let tracking = site.chrome.tracking.as_ref().map(|t| {
+        let mut t = t.clone();
+        let highest_seen = view["post_stream"]["posts"]
+            .as_array()
+            .and_then(|p| p.iter().filter_map(|p| p["post_number"].as_i64()).max())
+            .unwrap_or(0);
+        t.update_seen(id as i32, highest_seen as i32);
+        t
+    });
+    let more_topics = crate::post_view::more_topics(&cx, view, tracking.as_ref())?;
 
     let stream_len = view["post_stream"]["stream"]
         .as_array()

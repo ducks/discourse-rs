@@ -1893,6 +1893,30 @@ html.anon #topic-footer-buttons {
 #topic-footer-buttons .topic-footer-main-buttons .create {
   align-self: flex-start;
 }
+/* topic-footer.scss:71 */
+#topic-footer-buttons .pinned-button .text,
+#topic-footer-buttons .topic-notifications-button .text {
+  color: var(--primary-high);
+}
+/* topic-footer.scss:83 */
+#topic-footer-buttons .pinned-button .reason,
+#topic-footer-buttons .topic-notifications-button .reason {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  margin: 0;
+}
+/* topic-footer.scss:89 */
+#topic-footer-buttons .pinned-button .reason details,
+#topic-footer-buttons .pinned-button .reason button,
+#topic-footer-buttons .topic-notifications-button .reason details,
+#topic-footer-buttons .topic-notifications-button .reason button {
+  flex-shrink: 0;
+}
+/* select-kit/topic-notifications-button.scss */
+.topic-notifications-button {
+  display: contents;
+}
 /* topic-footer.scss:125 */
 .container.posts .topic-navigation {
   --border-offset: -1px;
@@ -2212,4 +2236,10 @@ html.anon #topic-footer-buttons {
   display: inline-block;
   color: var(--primary-med-or-secondary-med);
   margin-top: var(--space-2);
+}
+
+/* Ember leaves the post menu's collapsed buttons out of the DOM until
+   show more; here they are hidden. */
+.post-controls .actions > [hidden] {
+  display: none;
 }

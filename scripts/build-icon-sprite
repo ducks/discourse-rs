@@ -26,6 +26,7 @@ ICONS=(
   list-ul
   clock-rotate-left
   clock
+  arrow-rotate-left
   tag
   keyboard
   users
@@ -72,6 +73,9 @@ ICONS=(
   discourse-expand
   discourse-compress
   discourse-bookmark-clock
+  discourse-bell-exclamation
+  discourse-bell-slash
+  far-bell
   minus
   xmark
   bold
@@ -119,7 +123,7 @@ out="$root/static/vendor/icons.svg"
     # Discourse's own icons (discourse-*), from its vendored sprite.
     if [[ $file == discourse-* ]]; then
       tr -d '\n' < "$root/vendor/discourse/vendor/assets/svg-icons/discourse-additional.svg" \
-        | grep -o "<symbol id=\"$file\"[^>]*>.*" | sed 's|</symbol>.*|</symbol>|' | sed "s/^/  /"
+        | grep -o "<symbol id=[\"']$file[\"'][^>]*>.*" | sed 's|</symbol>.*|</symbol>|' | sed "s/^/  /"
       continue
     fi
     # Discourse names the regular style's icons far-<name>.

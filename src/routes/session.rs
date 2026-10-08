@@ -219,6 +219,7 @@ pub(super) fn viewer_state(
             name: user.name.clone(),
             first_visit: user.previous_visit_at.is_none(),
             staff: user.admin || user.moderator,
+            can_send_private_messages: guardian.can_send_private_messages(settings)?,
         }),
         set_cookie: session.set_cookie(state, settings)?,
     })
