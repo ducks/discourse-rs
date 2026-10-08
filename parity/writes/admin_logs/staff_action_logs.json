@@ -1,0 +1,3277 @@
+{
+  "name": "staff_action_logs",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/logs/staff_action_logs.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/logs/staff_action_logs.json",
+      "params": {
+        "limit": "3",
+        "page": "1"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/logs/staff_action_logs.json",
+      "params": {
+        "action_name": "change_site_setting",
+        "acting_user": "Admin"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/logs/staff_action_logs.json",
+      "params": {
+        "action_id": "122",
+        "target_user": "nobody"
+      }
+    }
+  ],
+  "started_at": "2026-10-08T07:05:32.838124",
+  "transaction_started_at": "2026-10-08T07:05:30.092488",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "staff_action_logs": [
+          {
+            "action_name": "grant_moderation",
+            "details": null,
+            "context": null,
+            "ip_address": null,
+            "email": null,
+            "created_at": "2026-10-01T10:58:56.174Z",
+            "subject": null,
+            "previous_value": null,
+            "new_value": null,
+            "topic_id": null,
+            "post_id": null,
+            "category_id": null,
+            "action": 34,
+            "custom_type": null,
+            "id": 73,
+            "acting_user": {
+              "id": -1,
+              "username": "system",
+              "name": "system",
+              "avatar_template": "/images/discourse-logo-sketch-small.png"
+            },
+            "target_user": {
+              "id": 1,
+              "username": "admin",
+              "name": "Admin",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png"
+            }
+          },
+          {
+            "action_name": "topic_archived",
+            "details": null,
+            "context": null,
+            "ip_address": null,
+            "email": null,
+            "created_at": "2026-09-30T07:28:30.481Z",
+            "subject": null,
+            "previous_value": null,
+            "new_value": null,
+            "topic_id": 41,
+            "post_id": null,
+            "category_id": null,
+            "action": 93,
+            "custom_type": null,
+            "id": 72,
+            "acting_user": {
+              "id": 1,
+              "username": "admin",
+              "name": "Admin",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png"
+            },
+            "target_user": null
+          },
+          {
+            "action_name": "delete_topic",
+            "details": "id: 40\ncreated_at: 2026-09-30 07:28:29 UTC\nuser: user2 (User2)\ntitle: Parity fixture: deleted topic\nraw: This topic is deleted and must not appear anywhere.",
+            "context": null,
+            "ip_address": null,
+            "email": null,
+            "created_at": "2026-09-30T07:28:29.934Z",
+            "subject": null,
+            "previous_value": null,
+            "new_value": null,
+            "topic_id": 40,
+            "post_id": null,
+            "category_id": null,
+            "action": 18,
+            "custom_type": null,
+            "id": 71,
+            "acting_user": {
+              "id": 1,
+              "username": "admin",
+              "name": "Admin",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png"
+            },
+            "target_user": null
+          },
+          {
+            "action_name": "topic_closed",
+            "details": null,
+            "context": null,
+            "ip_address": null,
+            "email": null,
+            "created_at": "2026-09-30T07:28:29.474Z",
+            "subject": null,
+            "previous_value": null,
+            "new_value": null,
+            "topic_id": 37,
+            "post_id": null,
+            "category_id": null,
+            "action": 91,
+            "custom_type": null,
+            "id": 70,
+            "acting_user": {
+              "id": 1,
+              "username": "admin",
+              "name": "Admin",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png"
+            },
+            "target_user": null
+          },
+          {
+            "action_name": "change_site_setting",
+            "details": "Remote images download was disabled because there wasn't enough disk space available.",
+            "context": null,
+            "ip_address": null,
+            "email": null,
+            "created_at": "2026-09-30T07:28:29.148Z",
+            "subject": "download_remote_images_to_local",
+            "previous_value": "true",
+            "new_value": "false",
+            "topic_id": null,
+            "post_id": null,
+            "category_id": null,
+            "action": 3,
+            "custom_type": null,
+            "id": 69,
+            "acting_user": {
+              "id": -1,
+              "username": "system",
+              "name": "system",
+              "avatar_template": "/images/discourse-logo-sketch-small.png"
+            },
+            "target_user": null
+          },
+          {
+            "action_name": "upcoming_change_toggled",
+            "details": null,
+            "context": "This upcoming change reached 'Permanent' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
+            "ip_address": null,
+            "email": null,
+            "created_at": "2026-09-30T06:20:39.322Z",
+            "subject": "reporting_improvements",
+            "previous_value": "false",
+            "new_value": "true",
+            "topic_id": null,
+            "post_id": null,
+            "category_id": null,
+            "action": 122,
+            "custom_type": null,
+            "id": 67,
+            "acting_user": {
+              "id": -1,
+              "username": "system",
+              "name": "system",
+              "avatar_template": "/images/discourse-logo-sketch-small.png"
+            },
+            "target_user": null
+          },
+          {
+            "action_name": "upcoming_change_toggled",
+            "details": null,
+            "context": "This upcoming change reached 'Stable' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
+            "ip_address": null,
+            "email": null,
+            "created_at": "2026-09-30T06:20:39.250Z",
+            "subject": "rename_faq_to_guidelines",
+            "previous_value": "false",
+            "new_value": "true",
+            "topic_id": null,
+            "post_id": null,
+            "category_id": null,
+            "action": 122,
+            "custom_type": null,
+            "id": 66,
+            "acting_user": {
+              "id": -1,
+              "username": "system",
+              "name": "system",
+              "avatar_template": "/images/discourse-logo-sketch-small.png"
+            },
+            "target_user": null
+          },
+          {
+            "action_name": "upcoming_change_toggled",
+            "details": null,
+            "context": "This upcoming change reached 'Stable' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
+            "ip_address": null,
+            "email": null,
+            "created_at": "2026-09-30T06:20:39.134Z",
+            "subject": "remove_and_replace_uncategorized",
+            "previous_value": "false",
+            "new_value": "true",
+            "topic_id": null,
+            "post_id": null,
+            "category_id": null,
+            "action": 122,
+            "custom_type": null,
+            "id": 65,
+            "acting_user": {
+              "id": -1,
+              "username": "system",
+              "name": "system",
+              "avatar_template": "/images/discourse-logo-sketch-small.png"
+            },
+            "target_user": null
+          },
+          {
+            "action_name": "upcoming_change_toggled",
+            "details": null,
+            "context": "This upcoming change reached 'Beta' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
+            "ip_address": null,
+            "email": null,
+            "created_at": "2026-09-30T06:20:39.077Z",
+            "subject": "modernize_foundation_theme",
+            "previous_value": "false",
+            "new_value": "true",
+            "topic_id": null,
+            "post_id": null,
+            "category_id": null,
+            "action": 122,
+            "custom_type": null,
+            "id": 64,
+            "acting_user": {
+              "id": -1,
+              "username": "system",
+              "name": "system",
+              "avatar_template": "/images/discourse-logo-sketch-small.png"
+            },
+            "target_user": null
+          },
+          {
+            "action_name": "upcoming_change_available",
+            "details": "Reporting improvements",
+            "context": null,
+            "ip_address": null,
+            "email": null,
+            "created_at": "2026-09-30T06:20:39.033Z",
+            "subject": "reporting_improvements",
+            "previous_value": null,
+            "new_value": null,
+            "topic_id": null,
+            "post_id": null,
+            "category_id": null,
+            "action": 124,
+            "custom_type": null,
+            "id": 63,
+            "acting_user": {
+              "id": -1,
+              "username": "system",
+              "name": "system",
+              "avatar_template": "/images/discourse-logo-sketch-small.png"
+            },
+            "target_user": null
+          },
+          {
+            "action_name": "upcoming_change_available",
+            "details": "Rename FAQ to guidelines",
+            "context": null,
+            "ip_address": null,
+            "email": null,
+            "created_at": "2026-09-30T06:20:39.025Z",
+            "subject": "rename_faq_to_guidelines",
+            "previous_value": null,
+            "new_value": null,
+            "topic_id": null,
+            "post_id": null,
+            "category_id": null,
+            "action": 124,
+            "custom_type": null,
+            "id": 62,
+            "acting_user": {
+              "id": -1,
+              "username": "system",
+              "name": "system",
+              "avatar_template": "/images/discourse-logo-sketch-small.png"
+            },
+            "target_user": null
+          },
+          {
+            "action_name": "upcoming_change_available",
+            "details": "Remove and replace uncategorized",
+            "context": null,
+            "ip_address": null,
+            "email": null,
+            "created_at": "2026-09-30T06:20:39.017Z",
+            "subject": "remove_and_replace_uncategorized",
+            "previous_value": null,
+            "new_value": null,
+            "topic_id": null,
+            "post_id": null,
+            "category_id": null,
+            "action": 124,
+            "custom_type": null,
+            "id": 61,
+            "acting_user": {
+              "id": -1,
+              "username": "system",
+              "name": "system",
+              "avatar_template": "/images/discourse-logo-sketch-small.png"
+            },
+            "target_user": null
+          },
+          {
+            "action_name": "upcoming_change_available",
+            "details": "Modernize Foundation theme",
+            "context": null,
+            "ip_address": null,
+            "email": null,
+            "created_at": "2026-09-30T06:20:39.010Z",
+            "subject": "modernize_foundation_theme",
+            "previous_value": null,
+            "new_value": null,
+            "topic_id": null,
+            "post_id": null,
+            "category_id": null,
+            "action": 124,
+            "custom_type": null,
+            "id": 60,
+            "acting_user": {
+              "id": -1,
+              "username": "system",
+              "name": "system",
+              "avatar_template": "/images/discourse-logo-sketch-small.png"
+            },
+            "target_user": null
+          },
+          {
+            "action_name": "upcoming_change_available",
+            "details": "Granular anonymous and logged in groups permissions",
+            "context": null,
+            "ip_address": null,
+            "email": null,
+            "created_at": "2026-09-30T06:20:39.000Z",
+            "subject": "granular_anonymous_and_logged_in_groups_permissions",
+            "previous_value": null,
+            "new_value": null,
+            "topic_id": null,
+            "post_id": null,
+            "category_id": null,
+            "action": 124,
+            "custom_type": null,
+            "id": 59,
+            "acting_user": {
+              "id": -1,
+              "username": "system",
+              "name": "system",
+              "avatar_template": "/images/discourse-logo-sketch-small.png"
+            },
+            "target_user": null
+          },
+          {
+            "action_name": "upcoming_change_available",
+            "details": "Floating dismiss topics on mobile",
+            "context": null,
+            "ip_address": null,
+            "email": null,
+            "created_at": "2026-09-30T06:20:38.992Z",
+            "subject": "floating_dismiss_topics_on_mobile",
+            "previous_value": null,
+            "new_value": null,
+            "topic_id": null,
+            "post_id": null,
+            "category_id": null,
+            "action": 124,
+            "custom_type": null,
+            "id": 58,
+            "acting_user": {
+              "id": -1,
+              "username": "system",
+              "name": "system",
+              "avatar_template": "/images/discourse-logo-sketch-small.png"
+            },
+            "target_user": null
+          },
+          {
+            "action_name": "upcoming_change_toggled",
+            "details": null,
+            "context": "This upcoming change reached 'Beta' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
+            "ip_address": null,
+            "email": null,
+            "created_at": "2026-09-30T06:20:38.987Z",
+            "subject": "granular_anonymous_and_logged_in_groups_permissions",
+            "previous_value": "false",
+            "new_value": "true",
+            "topic_id": null,
+            "post_id": null,
+            "category_id": null,
+            "action": 122,
+            "custom_type": null,
+            "id": 57,
+            "acting_user": {
+              "id": -1,
+              "username": "system",
+              "name": "system",
+              "avatar_template": "/images/discourse-logo-sketch-small.png"
+            },
+            "target_user": null
+          },
+          {
+            "action_name": "upcoming_change_available",
+            "details": "Enable composer redesign",
+            "context": null,
+            "ip_address": null,
+            "email": null,
+            "created_at": "2026-09-30T06:20:38.983Z",
+            "subject": "enable_composer_redesign",
+            "previous_value": null,
+            "new_value": null,
+            "topic_id": null,
+            "post_id": null,
+            "category_id": null,
+            "action": 124,
+            "custom_type": null,
+            "id": 56,
+            "acting_user": {
+              "id": -1,
+              "username": "system",
+              "name": "system",
+              "avatar_template": "/images/discourse-logo-sketch-small.png"
+            },
+            "target_user": null
+          },
+          {
+            "action_name": "upcoming_change_available",
+            "details": "Composer media optimization image convert enabled",
+            "context": null,
+            "ip_address": null,
+            "email": null,
+            "created_at": "2026-09-30T06:20:38.973Z",
+            "subject": "composer_media_optimization_image_convert_enabled",
+            "previous_value": null,
+            "new_value": null,
+            "topic_id": null,
+            "post_id": null,
+            "category_id": null,
+            "action": 124,
+            "custom_type": null,
+            "id": 55,
+            "acting_user": {
+              "id": -1,
+              "username": "system",
+              "name": "system",
+              "avatar_template": "/images/discourse-logo-sketch-small.png"
+            },
+            "target_user": null
+          },
+          {
+            "action_name": "upcoming_change_available",
+            "details": "Boards enabled",
+            "context": null,
+            "ip_address": null,
+            "email": null,
+            "created_at": "2026-09-30T06:20:38.966Z",
+            "subject": "boards_enabled",
+            "previous_value": null,
+            "new_value": null,
+            "topic_id": null,
+            "post_id": null,
+            "category_id": null,
+            "action": 124,
+            "custom_type": null,
+            "id": 54,
+            "acting_user": {
+              "id": -1,
+              "username": "system",
+              "name": "system",
+              "avatar_template": "/images/discourse-logo-sketch-small.png"
+            },
+            "target_user": null
+          },
+          {
+            "action_name": "upcoming_change_toggled",
+            "details": null,
+            "context": "This upcoming change reached 'Permanent' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
+            "ip_address": null,
+            "email": null,
+            "created_at": "2026-09-30T06:20:38.861Z",
+            "subject": "floating_dismiss_topics_on_mobile",
+            "previous_value": "false",
+            "new_value": "true",
+            "topic_id": null,
+            "post_id": null,
+            "category_id": null,
+            "action": 122,
+            "custom_type": null,
+            "id": 53,
+            "acting_user": {
+              "id": -1,
+              "username": "system",
+              "name": "system",
+              "avatar_template": "/images/discourse-logo-sketch-small.png"
+            },
+            "target_user": null
+          },
+          {
+            "action_name": "upcoming_change_toggled",
+            "details": null,
+            "context": "This upcoming change reached 'Stable' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
+            "ip_address": null,
+            "email": null,
+            "created_at": "2026-09-30T06:20:38.785Z",
+            "subject": "enable_unified_new",
+            "previous_value": "false",
+            "new_value": "true",
+            "topic_id": null,
+            "post_id": null,
+            "category_id": null,
+            "action": 122,
+            "custom_type": null,
+            "id": 52,
+            "acting_user": {
+              "id": -1,
+              "username": "system",
+              "name": "system",
+              "avatar_template": "/images/discourse-logo-sketch-small.png"
+            },
+            "target_user": null
+          },
+          {
+            "action_name": "upcoming_change_toggled",
+            "details": null,
+            "context": "This upcoming change reached 'Permanent' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
+            "ip_address": null,
+            "email": null,
+            "created_at": "2026-09-30T06:20:38.733Z",
+            "subject": "enable_support_category_type_setup",
+            "previous_value": "false",
+            "new_value": "true",
+            "topic_id": null,
+            "post_id": null,
+            "category_id": null,
+            "action": 122,
+            "custom_type": null,
+            "id": 51,
+            "acting_user": {
+              "id": -1,
+              "username": "system",
+              "name": "system",
+              "avatar_template": "/images/discourse-logo-sketch-small.png"
+            },
+            "target_user": null
+          },
+          {
+            "action_name": "upcoming_change_toggled",
+            "details": null,
+            "context": "This upcoming change reached 'Stable' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
+            "ip_address": null,
+            "email": null,
+            "created_at": "2026-09-30T06:20:38.674Z",
+            "subject": "enable_solved_shared_issues",
+            "previous_value": "false",
+            "new_value": "true",
+            "topic_id": null,
+            "post_id": null,
+            "category_id": null,
+            "action": 122,
+            "custom_type": null,
+            "id": 50,
+            "acting_user": {
+              "id": -1,
+              "username": "system",
+              "name": "system",
+              "avatar_template": "/images/discourse-logo-sketch-small.png"
+            },
+            "target_user": null
+          },
+          {
+            "action_name": "upcoming_change_toggled",
+            "details": null,
+            "context": "This upcoming change reached 'Permanent' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
+            "ip_address": null,
+            "email": null,
+            "created_at": "2026-09-30T06:20:38.614Z",
+            "subject": "enable_simplified_category_creation",
+            "previous_value": "false",
+            "new_value": "true",
+            "topic_id": null,
+            "post_id": null,
+            "category_id": null,
+            "action": 122,
+            "custom_type": null,
+            "id": 49,
+            "acting_user": {
+              "id": -1,
+              "username": "system",
+              "name": "system",
+              "avatar_template": "/images/discourse-logo-sketch-small.png"
+            },
+            "target_user": null
+          },
+          {
+            "action_name": "upcoming_change_toggled",
+            "details": null,
+            "context": "This upcoming change reached 'Permanent' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
+            "ip_address": null,
+            "email": null,
+            "created_at": "2026-09-30T06:20:38.551Z",
+            "subject": "enable_new_post_reply_count_position",
+            "previous_value": "false",
+            "new_value": "true",
+            "topic_id": null,
+            "post_id": null,
+            "category_id": null,
+            "action": 122,
+            "custom_type": null,
+            "id": 48,
+            "acting_user": {
+              "id": -1,
+              "username": "system",
+              "name": "system",
+              "avatar_template": "/images/discourse-logo-sketch-small.png"
+            },
+            "target_user": null
+          },
+          {
+            "action_name": "upcoming_change_toggled",
+            "details": null,
+            "context": "This upcoming change reached 'Permanent' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
+            "ip_address": null,
+            "email": null,
+            "created_at": "2026-09-30T06:20:38.490Z",
+            "subject": "enable_new_post_reactions_menu",
+            "previous_value": "false",
+            "new_value": "true",
+            "topic_id": null,
+            "post_id": null,
+            "category_id": null,
+            "action": 122,
+            "custom_type": null,
+            "id": 47,
+            "acting_user": {
+              "id": -1,
+              "username": "system",
+              "name": "system",
+              "avatar_template": "/images/discourse-logo-sketch-small.png"
+            },
+            "target_user": null
+          },
+          {
+            "action_name": "upcoming_change_toggled",
+            "details": null,
+            "context": "This upcoming change reached 'Permanent' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
+            "ip_address": null,
+            "email": null,
+            "created_at": "2026-09-30T06:20:38.428Z",
+            "subject": "enable_new_defaults_for_trust_level_3_requirements",
+            "previous_value": "false",
+            "new_value": "true",
+            "topic_id": null,
+            "post_id": null,
+            "category_id": null,
+            "action": 122,
+            "custom_type": null,
+            "id": 46,
+            "acting_user": {
+              "id": -1,
+              "username": "system",
+              "name": "system",
+              "avatar_template": "/images/discourse-logo-sketch-small.png"
+            },
+            "target_user": null
+          },
+          {
+            "action_name": "upcoming_change_toggled",
+            "details": null,
+            "context": "This upcoming change reached 'Permanent' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
+            "ip_address": null,
+            "email": null,
+            "created_at": "2026-09-30T06:20:38.375Z",
+            "subject": "enable_new_checkbox_style",
+            "previous_value": "false",
+            "new_value": "true",
+            "topic_id": null,
+            "post_id": null,
+            "category_id": null,
+            "action": 122,
+            "custom_type": null,
+            "id": 45,
+            "acting_user": {
+              "id": -1,
+              "username": "system",
+              "name": "system",
+              "avatar_template": "/images/discourse-logo-sketch-small.png"
+            },
+            "target_user": null
+          },
+          {
+            "action_name": "upcoming_change_toggled",
+            "details": null,
+            "context": "This upcoming change reached 'Permanent' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
+            "ip_address": null,
+            "email": null,
+            "created_at": "2026-09-30T06:20:38.307Z",
+            "subject": "enable_new_chat_reactions_popup",
+            "previous_value": "false",
+            "new_value": "true",
+            "topic_id": null,
+            "post_id": null,
+            "category_id": null,
+            "action": 122,
+            "custom_type": null,
+            "id": 44,
+            "acting_user": {
+              "id": -1,
+              "username": "system",
+              "name": "system",
+              "avatar_template": "/images/discourse-logo-sketch-small.png"
+            },
+            "target_user": null
+          },
+          {
+            "action_name": "upcoming_change_toggled",
+            "details": null,
+            "context": "This upcoming change reached 'Beta' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
+            "ip_address": null,
+            "email": null,
+            "created_at": "2026-09-30T06:20:38.245Z",
+            "subject": "enable_markdown_endpoints",
+            "previous_value": "false",
+            "new_value": "true",
+            "topic_id": null,
+            "post_id": null,
+            "category_id": null,
+            "action": 122,
+            "custom_type": null,
+            "id": 43,
+            "acting_user": {
+              "id": -1,
+              "username": "system",
+              "name": "system",
+              "avatar_template": "/images/discourse-logo-sketch-small.png"
+            },
+            "target_user": null
+          },
+          {
+            "action_name": "upcoming_change_toggled",
+            "details": null,
+            "context": "This upcoming change reached 'Beta' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
+            "ip_address": null,
+            "email": null,
+            "created_at": "2026-09-30T06:20:38.161Z",
+            "subject": "enable_local_logins_via_code",
+            "previous_value": "false",
+            "new_value": "true",
+            "topic_id": null,
+            "post_id": null,
+            "category_id": null,
+            "action": 122,
+            "custom_type": null,
+            "id": 42,
+            "acting_user": {
+              "id": -1,
+              "username": "system",
+              "name": "system",
+              "avatar_template": "/images/discourse-logo-sketch-small.png"
+            },
+            "target_user": null
+          },
+          {
+            "action_name": "upcoming_change_toggled",
+            "details": null,
+            "context": "This upcoming change reached 'Stable' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
+            "ip_address": null,
+            "email": null,
+            "created_at": "2026-09-30T06:20:38.105Z",
+            "subject": "enable_invite_modal_with_roles",
+            "previous_value": "false",
+            "new_value": "true",
+            "topic_id": null,
+            "post_id": null,
+            "category_id": null,
+            "action": 122,
+            "custom_type": null,
+            "id": 41,
+            "acting_user": {
+              "id": -1,
+              "username": "system",
+              "name": "system",
+              "avatar_template": "/images/discourse-logo-sketch-small.png"
+            },
+            "target_user": null
+          },
+          {
+            "action_name": "upcoming_change_toggled",
+            "details": null,
+            "context": "This upcoming change reached 'Permanent' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
+            "ip_address": null,
+            "email": null,
+            "created_at": "2026-09-30T06:20:38.053Z",
+            "subject": "enable_ideas_category_type_setup",
+            "previous_value": "false",
+            "new_value": "true",
+            "topic_id": null,
+            "post_id": null,
+            "category_id": null,
+            "action": 122,
+            "custom_type": null,
+            "id": 40,
+            "acting_user": {
+              "id": -1,
+              "username": "system",
+              "name": "system",
+              "avatar_template": "/images/discourse-logo-sketch-small.png"
+            },
+            "target_user": null
+          },
+          {
+            "action_name": "upcoming_change_toggled",
+            "details": null,
+            "context": "This upcoming change reached 'Beta' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
+            "ip_address": null,
+            "email": null,
+            "created_at": "2026-09-30T06:20:37.993Z",
+            "subject": "enable_generated_llms_txt",
+            "previous_value": "false",
+            "new_value": "true",
+            "topic_id": null,
+            "post_id": null,
+            "category_id": null,
+            "action": 122,
+            "custom_type": null,
+            "id": 39,
+            "acting_user": {
+              "id": -1,
+              "username": "system",
+              "name": "system",
+              "avatar_template": "/images/discourse-logo-sketch-small.png"
+            },
+            "target_user": null
+          },
+          {
+            "action_name": "upcoming_change_toggled",
+            "details": null,
+            "context": "This upcoming change reached 'Permanent' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
+            "ip_address": null,
+            "email": null,
+            "created_at": "2026-09-30T06:20:37.900Z",
+            "subject": "enable_events_category_type_setup",
+            "previous_value": "false",
+            "new_value": "true",
+            "topic_id": null,
+            "post_id": null,
+            "category_id": null,
+            "action": 122,
+            "custom_type": null,
+            "id": 38,
+            "acting_user": {
+              "id": -1,
+              "username": "system",
+              "name": "system",
+              "avatar_template": "/images/discourse-logo-sketch-small.png"
+            },
+            "target_user": null
+          },
+          {
+            "action_name": "upcoming_change_toggled",
+            "details": null,
+            "context": "This upcoming change reached 'Beta' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
+            "ip_address": null,
+            "email": null,
+            "created_at": "2026-09-30T06:20:37.761Z",
+            "subject": "enable_discourse_workflows",
+            "previous_value": "false",
+            "new_value": "true",
+            "topic_id": null,
+            "post_id": null,
+            "category_id": null,
+            "action": 122,
+            "custom_type": null,
+            "id": 37,
+            "acting_user": {
+              "id": -1,
+              "username": "system",
+              "name": "system",
+              "avatar_template": "/images/discourse-logo-sketch-small.png"
+            },
+            "target_user": null
+          },
+          {
+            "action_name": "upcoming_change_toggled",
+            "details": null,
+            "context": "This upcoming change reached 'Permanent' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
+            "ip_address": null,
+            "email": null,
+            "created_at": "2026-09-30T06:20:37.679Z",
+            "subject": "enable_discourse_reactions_by_default",
+            "previous_value": "false",
+            "new_value": "true",
+            "topic_id": null,
+            "post_id": null,
+            "category_id": null,
+            "action": 122,
+            "custom_type": null,
+            "id": 36,
+            "acting_user": {
+              "id": -1,
+              "username": "system",
+              "name": "system",
+              "avatar_template": "/images/discourse-logo-sketch-small.png"
+            },
+            "target_user": null
+          },
+          {
+            "action_name": "upcoming_change_toggled",
+            "details": null,
+            "context": "This upcoming change reached 'Stable' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
+            "ip_address": null,
+            "email": null,
+            "created_at": "2026-09-30T06:20:37.608Z",
+            "subject": "dashboard_improvements",
+            "previous_value": "false",
+            "new_value": "true",
+            "topic_id": null,
+            "post_id": null,
+            "category_id": null,
+            "action": 122,
+            "custom_type": null,
+            "id": 35,
+            "acting_user": {
+              "id": -1,
+              "username": "system",
+              "name": "system",
+              "avatar_template": "/images/discourse-logo-sketch-small.png"
+            },
+            "target_user": null
+          },
+          {
+            "action_name": "upcoming_change_toggled",
+            "details": null,
+            "context": "This upcoming change reached 'Stable' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
+            "ip_address": null,
+            "email": null,
+            "created_at": "2026-09-30T06:20:37.513Z",
+            "subject": "chat_pinned_messages",
+            "previous_value": "false",
+            "new_value": "true",
+            "topic_id": null,
+            "post_id": null,
+            "category_id": null,
+            "action": 122,
+            "custom_type": null,
+            "id": 34,
+            "acting_user": {
+              "id": -1,
+              "username": "system",
+              "name": "system",
+              "avatar_template": "/images/discourse-logo-sketch-small.png"
+            },
+            "target_user": null
+          },
+          {
+            "action_name": "change_theme_site_setting",
+            "details": null,
+            "context": null,
+            "ip_address": null,
+            "email": null,
+            "created_at": "2026-07-25T05:58:20.816Z",
+            "subject": "Horizon: search_experience",
+            "previous_value": null,
+            "new_value": "search_field",
+            "topic_id": null,
+            "post_id": null,
+            "category_id": null,
+            "action": 120,
+            "custom_type": null,
+            "id": 2,
+            "acting_user": {
+              "id": -1,
+              "username": "system",
+              "name": "system",
+              "avatar_template": "/images/discourse-logo-sketch-small.png"
+            },
+            "target_user": null
+          },
+          {
+            "action_name": "change_theme_site_setting",
+            "details": null,
+            "context": null,
+            "ip_address": null,
+            "email": null,
+            "created_at": "2026-07-25T05:58:20.805Z",
+            "subject": "Horizon: enable_welcome_banner",
+            "previous_value": null,
+            "new_value": "t",
+            "topic_id": null,
+            "post_id": null,
+            "category_id": null,
+            "action": 120,
+            "custom_type": null,
+            "id": 1,
+            "acting_user": {
+              "id": -1,
+              "username": "system",
+              "name": "system",
+              "avatar_template": "/images/discourse-logo-sketch-small.png"
+            },
+            "target_user": null
+          }
+        ],
+        "total_rows_staff_action_logs": 41,
+        "load_more_staff_action_logs": "/admin/logs/staff_action_logs?page=1&page_size=200",
+        "extras": {
+          "user_history_actions": [
+            {
+              "id": "activate_user",
+              "action_id": 43
+            },
+            {
+              "id": "add_email",
+              "action_id": 88
+            },
+            {
+              "id": "admin_onboarding_completed",
+              "action_id": 129
+            },
+            {
+              "id": "admin_onboarding_dismissed",
+              "action_id": 130
+            },
+            {
+              "id": "admin_onboarding_step_completed",
+              "action_id": 128
+            },
+            {
+              "id": "anonymize_user",
+              "action_id": 24
+            },
+            {
+              "id": "api_key_create",
+              "action_id": 80
+            },
+            {
+              "id": "api_key_destroy",
+              "action_id": 82
+            },
+            {
+              "id": "api_key_update",
+              "action_id": 81
+            },
+            {
+              "id": "approve_user",
+              "action_id": 69
+            },
+            {
+              "id": "backup_create",
+              "action_id": 36
+            },
+            {
+              "id": "backup_destroy",
+              "action_id": 46
+            },
+            {
+              "id": "backup_download",
+              "action_id": 45
+            },
+            {
+              "id": "change_access_control_list_permissions",
+              "action_id": 127
+            },
+            {
+              "id": "change_badge",
+              "action_id": 58
+            },
+            {
+              "id": "change_category_settings",
+              "action_id": 26
+            },
+            {
+              "id": "change_name",
+              "action_id": 48
+            },
+            {
+              "id": "change_readonly_mode",
+              "action_id": 44
+            },
+            {
+              "id": "change_site_setting",
+              "action_id": 3
+            },
+            {
+              "id": "change_site_setting_groups",
+              "action_id": 123
+            },
+            {
+              "id": "change_site_text",
+              "action_id": 29
+            },
+            {
+              "id": "change_theme",
+              "action_id": 4
+            },
+            {
+              "id": "change_theme_setting",
+              "action_id": 77
+            },
+            {
+              "id": "change_theme_site_setting",
+              "action_id": 120
+            },
+            {
+              "id": "change_title",
+              "action_id": 84
+            },
+            {
+              "id": "change_trust_level",
+              "action_id": 2
+            },
+            {
+              "id": "change_username",
+              "action_id": 21
+            },
+            {
+              "id": "chat_auto_remove_membership",
+              "action_id": 23
+            },
+            {
+              "id": "chat_channel_status_change",
+              "action_id": 23
+            },
+            {
+              "id": "check_email",
+              "action_id": 16
+            },
+            {
+              "id": "check_personal_message",
+              "action_id": 51
+            },
+            {
+              "id": "create_badge",
+              "action_id": 57
+            },
+            {
+              "id": "create_category",
+              "action_id": 28
+            },
+            {
+              "id": "create_flag",
+              "action_id": 23
+            },
+            {
+              "id": "create_group",
+              "action_id": 132
+            },
+            {
+              "id": "create_public_sidebar_section",
+              "action_id": 101
+            },
+            {
+              "id": "create_watched_word_group",
+              "action_id": 105
+            },
+            {
+              "id": "custom_emoji_create",
+              "action_id": 112
+            },
+            {
+              "id": "custom_emoji_destroy",
+              "action_id": 113
+            },
+            {
+              "id": "custom_staff",
+              "action_id": 23
+            },
+            {
+              "id": "deactivate_user",
+              "action_id": 39
+            },
+            {
+              "id": "delete_associated_accounts",
+              "action_id": 119
+            },
+            {
+              "id": "delete_badge",
+              "action_id": 59
+            },
+            {
+              "id": "delete_category",
+              "action_id": 27
+            },
+            {
+              "id": "delete_flag",
+              "action_id": 23
+            },
+            {
+              "id": "delete_group",
+              "action_id": 99
+            },
+            {
+              "id": "delete_post",
+              "action_id": 17
+            },
+            {
+              "id": "delete_post_permanently",
+              "action_id": 114
+            },
+            {
+              "id": "delete_theme",
+              "action_id": 5
+            },
+            {
+              "id": "delete_topic",
+              "action_id": 18
+            },
+            {
+              "id": "delete_topic_permanently",
+              "action_id": 115
+            },
+            {
+              "id": "delete_user",
+              "action_id": 1
+            },
+            {
+              "id": "delete_watched_word_group",
+              "action_id": 107
+            },
+            {
+              "id": "deleted_tag",
+              "action_id": 23
+            },
+            {
+              "id": "deleted_unused_tags",
+              "action_id": 23
+            },
+            {
+              "id": "destroy_email",
+              "action_id": 90
+            },
+            {
+              "id": "destroy_public_sidebar_section",
+              "action_id": 103
+            },
+            {
+              "id": "disable_theme_component",
+              "action_id": 78
+            },
+            {
+              "id": "disabled_second_factor",
+              "action_id": 52
+            },
+            {
+              "id": "embeddable_host_create",
+              "action_id": 73
+            },
+            {
+              "id": "embeddable_host_destroy",
+              "action_id": 75
+            },
+            {
+              "id": "embeddable_host_update",
+              "action_id": 74
+            },
+            {
+              "id": "enable_theme_component",
+              "action_id": 79
+            },
+            {
+              "id": "entity_export",
+              "action_id": 66
+            },
+            {
+              "id": "grant_admin",
+              "action_id": 32
+            },
+            {
+              "id": "grant_badge",
+              "action_id": 13
+            },
+            {
+              "id": "grant_moderation",
+              "action_id": 34
+            },
+            {
+              "id": "impersonate",
+              "action_id": 19
+            },
+            {
+              "id": "lock_trust_level",
+              "action_id": 41
+            },
+            {
+              "id": "merge_user",
+              "action_id": 65
+            },
+            {
+              "id": "override_upload_secure_status",
+              "action_id": 85
+            },
+            {
+              "id": "page_published",
+              "action_id": 86
+            },
+            {
+              "id": "page_unpublished",
+              "action_id": 87
+            },
+            {
+              "id": "permanently_delete_post_revisions",
+              "action_id": 100
+            },
+            {
+              "id": "poll_closed",
+              "action_id": 23
+            },
+            {
+              "id": "poll_opened",
+              "action_id": 23
+            },
+            {
+              "id": "post_approved",
+              "action_id": 56
+            },
+            {
+              "id": "post_edit",
+              "action_id": 53
+            },
+            {
+              "id": "post_locked",
+              "action_id": 49
+            },
+            {
+              "id": "post_rejected",
+              "action_id": 64
+            },
+            {
+              "id": "post_staff_note_create",
+              "action_id": 95
+            },
+            {
+              "id": "post_staff_note_destroy",
+              "action_id": 96
+            },
+            {
+              "id": "post_unlocked",
+              "action_id": 50
+            },
+            {
+              "id": "recover_post",
+              "action_id": 126
+            },
+            {
+              "id": "recover_topic",
+              "action_id": 55
+            },
+            {
+              "id": "removed_avatar",
+              "action_id": 131
+            },
+            {
+              "id": "removed_silence_user",
+              "action_id": 60
+            },
+            {
+              "id": "removed_suspend_user",
+              "action_id": 61
+            },
+            {
+              "id": "removed_unsilence_user",
+              "action_id": 62
+            },
+            {
+              "id": "removed_unsuspend_user",
+              "action_id": 63
+            },
+            {
+              "id": "renamed_tag",
+              "action_id": 23
+            },
+            {
+              "id": "reset_bounce_score",
+              "action_id": 104
+            },
+            {
+              "id": "reviewed_post",
+              "action_id": 25
+            },
+            {
+              "id": "revoke_admin",
+              "action_id": 33
+            },
+            {
+              "id": "revoke_badge",
+              "action_id": 14
+            },
+            {
+              "id": "revoke_email",
+              "action_id": 38
+            },
+            {
+              "id": "revoke_moderation",
+              "action_id": 35
+            },
+            {
+              "id": "revoke_title",
+              "action_id": 83
+            },
+            {
+              "id": "roll_up",
+              "action_id": 20
+            },
+            {
+              "id": "silence_user",
+              "action_id": 30
+            },
+            {
+              "id": "stop_impersonating",
+              "action_id": 121
+            },
+            {
+              "id": "suspend_user",
+              "action_id": 10
+            },
+            {
+              "id": "tag_group_change",
+              "action_id": 118
+            },
+            {
+              "id": "tag_group_create",
+              "action_id": 116
+            },
+            {
+              "id": "tag_group_destroy",
+              "action_id": 117
+            },
+            {
+              "id": "toggle_flag",
+              "action_id": 23
+            },
+            {
+              "id": "topic_archived",
+              "action_id": 93
+            },
+            {
+              "id": "topic_closed",
+              "action_id": 91
+            },
+            {
+              "id": "topic_opened",
+              "action_id": 92
+            },
+            {
+              "id": "topic_published",
+              "action_id": 54
+            },
+            {
+              "id": "topic_slow_mode_removed",
+              "action_id": 111
+            },
+            {
+              "id": "topic_slow_mode_set",
+              "action_id": 110
+            },
+            {
+              "id": "topic_timestamps_changed",
+              "action_id": 68
+            },
+            {
+              "id": "topic_unarchived",
+              "action_id": 94
+            },
+            {
+              "id": "unlock_trust_level",
+              "action_id": 42
+            },
+            {
+              "id": "unsilence_user",
+              "action_id": 31
+            },
+            {
+              "id": "unsuspend_user",
+              "action_id": 11
+            },
+            {
+              "id": "upcoming_change_available",
+              "action_id": 124
+            },
+            {
+              "id": "upcoming_change_toggled",
+              "action_id": 122
+            },
+            {
+              "id": "update_directory_columns",
+              "action_id": 23
+            },
+            {
+              "id": "update_email",
+              "action_id": 89
+            },
+            {
+              "id": "update_flag",
+              "action_id": 23
+            },
+            {
+              "id": "update_public_sidebar_section",
+              "action_id": 102
+            },
+            {
+              "id": "update_watched_word_group",
+              "action_id": 106
+            },
+            {
+              "id": "watched_word_create",
+              "action_id": 97
+            },
+            {
+              "id": "watched_word_destroy",
+              "action_id": 98
+            },
+            {
+              "id": "web_hook_create",
+              "action_id": 70
+            },
+            {
+              "id": "web_hook_deactivate",
+              "action_id": 76
+            },
+            {
+              "id": "web_hook_destroy",
+              "action_id": 72
+            },
+            {
+              "id": "web_hook_update",
+              "action_id": 71
+            }
+          ]
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "staff_action_logs": [
+          {
+            "action_name": "topic_closed",
+            "details": null,
+            "context": null,
+            "ip_address": null,
+            "email": null,
+            "created_at": "2026-09-30T07:28:29.474Z",
+            "subject": null,
+            "previous_value": null,
+            "new_value": null,
+            "topic_id": 37,
+            "post_id": null,
+            "category_id": null,
+            "action": 91,
+            "custom_type": null,
+            "id": 70,
+            "acting_user": {
+              "id": 1,
+              "username": "admin",
+              "name": "Admin",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png"
+            },
+            "target_user": null
+          },
+          {
+            "action_name": "change_site_setting",
+            "details": "Remote images download was disabled because there wasn't enough disk space available.",
+            "context": null,
+            "ip_address": null,
+            "email": null,
+            "created_at": "2026-09-30T07:28:29.148Z",
+            "subject": "download_remote_images_to_local",
+            "previous_value": "true",
+            "new_value": "false",
+            "topic_id": null,
+            "post_id": null,
+            "category_id": null,
+            "action": 3,
+            "custom_type": null,
+            "id": 69,
+            "acting_user": {
+              "id": -1,
+              "username": "system",
+              "name": "system",
+              "avatar_template": "/images/discourse-logo-sketch-small.png"
+            },
+            "target_user": null
+          },
+          {
+            "action_name": "upcoming_change_toggled",
+            "details": null,
+            "context": "This upcoming change reached 'Permanent' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
+            "ip_address": null,
+            "email": null,
+            "created_at": "2026-09-30T06:20:39.322Z",
+            "subject": "reporting_improvements",
+            "previous_value": "false",
+            "new_value": "true",
+            "topic_id": null,
+            "post_id": null,
+            "category_id": null,
+            "action": 122,
+            "custom_type": null,
+            "id": 67,
+            "acting_user": {
+              "id": -1,
+              "username": "system",
+              "name": "system",
+              "avatar_template": "/images/discourse-logo-sketch-small.png"
+            },
+            "target_user": null
+          }
+        ],
+        "total_rows_staff_action_logs": 41,
+        "load_more_staff_action_logs": "/admin/logs/staff_action_logs?page=2&page_size=3",
+        "extras": {
+          "user_history_actions": [
+            {
+              "id": "activate_user",
+              "action_id": 43
+            },
+            {
+              "id": "add_email",
+              "action_id": 88
+            },
+            {
+              "id": "admin_onboarding_completed",
+              "action_id": 129
+            },
+            {
+              "id": "admin_onboarding_dismissed",
+              "action_id": 130
+            },
+            {
+              "id": "admin_onboarding_step_completed",
+              "action_id": 128
+            },
+            {
+              "id": "anonymize_user",
+              "action_id": 24
+            },
+            {
+              "id": "api_key_create",
+              "action_id": 80
+            },
+            {
+              "id": "api_key_destroy",
+              "action_id": 82
+            },
+            {
+              "id": "api_key_update",
+              "action_id": 81
+            },
+            {
+              "id": "approve_user",
+              "action_id": 69
+            },
+            {
+              "id": "backup_create",
+              "action_id": 36
+            },
+            {
+              "id": "backup_destroy",
+              "action_id": 46
+            },
+            {
+              "id": "backup_download",
+              "action_id": 45
+            },
+            {
+              "id": "change_access_control_list_permissions",
+              "action_id": 127
+            },
+            {
+              "id": "change_badge",
+              "action_id": 58
+            },
+            {
+              "id": "change_category_settings",
+              "action_id": 26
+            },
+            {
+              "id": "change_name",
+              "action_id": 48
+            },
+            {
+              "id": "change_readonly_mode",
+              "action_id": 44
+            },
+            {
+              "id": "change_site_setting",
+              "action_id": 3
+            },
+            {
+              "id": "change_site_setting_groups",
+              "action_id": 123
+            },
+            {
+              "id": "change_site_text",
+              "action_id": 29
+            },
+            {
+              "id": "change_theme",
+              "action_id": 4
+            },
+            {
+              "id": "change_theme_setting",
+              "action_id": 77
+            },
+            {
+              "id": "change_theme_site_setting",
+              "action_id": 120
+            },
+            {
+              "id": "change_title",
+              "action_id": 84
+            },
+            {
+              "id": "change_trust_level",
+              "action_id": 2
+            },
+            {
+              "id": "change_username",
+              "action_id": 21
+            },
+            {
+              "id": "chat_auto_remove_membership",
+              "action_id": 23
+            },
+            {
+              "id": "chat_channel_status_change",
+              "action_id": 23
+            },
+            {
+              "id": "check_email",
+              "action_id": 16
+            },
+            {
+              "id": "check_personal_message",
+              "action_id": 51
+            },
+            {
+              "id": "create_badge",
+              "action_id": 57
+            },
+            {
+              "id": "create_category",
+              "action_id": 28
+            },
+            {
+              "id": "create_flag",
+              "action_id": 23
+            },
+            {
+              "id": "create_group",
+              "action_id": 132
+            },
+            {
+              "id": "create_public_sidebar_section",
+              "action_id": 101
+            },
+            {
+              "id": "create_watched_word_group",
+              "action_id": 105
+            },
+            {
+              "id": "custom_emoji_create",
+              "action_id": 112
+            },
+            {
+              "id": "custom_emoji_destroy",
+              "action_id": 113
+            },
+            {
+              "id": "custom_staff",
+              "action_id": 23
+            },
+            {
+              "id": "deactivate_user",
+              "action_id": 39
+            },
+            {
+              "id": "delete_associated_accounts",
+              "action_id": 119
+            },
+            {
+              "id": "delete_badge",
+              "action_id": 59
+            },
+            {
+              "id": "delete_category",
+              "action_id": 27
+            },
+            {
+              "id": "delete_flag",
+              "action_id": 23
+            },
+            {
+              "id": "delete_group",
+              "action_id": 99
+            },
+            {
+              "id": "delete_post",
+              "action_id": 17
+            },
+            {
+              "id": "delete_post_permanently",
+              "action_id": 114
+            },
+            {
+              "id": "delete_theme",
+              "action_id": 5
+            },
+            {
+              "id": "delete_topic",
+              "action_id": 18
+            },
+            {
+              "id": "delete_topic_permanently",
+              "action_id": 115
+            },
+            {
+              "id": "delete_user",
+              "action_id": 1
+            },
+            {
+              "id": "delete_watched_word_group",
+              "action_id": 107
+            },
+            {
+              "id": "deleted_tag",
+              "action_id": 23
+            },
+            {
+              "id": "deleted_unused_tags",
+              "action_id": 23
+            },
+            {
+              "id": "destroy_email",
+              "action_id": 90
+            },
+            {
+              "id": "destroy_public_sidebar_section",
+              "action_id": 103
+            },
+            {
+              "id": "disable_theme_component",
+              "action_id": 78
+            },
+            {
+              "id": "disabled_second_factor",
+              "action_id": 52
+            },
+            {
+              "id": "embeddable_host_create",
+              "action_id": 73
+            },
+            {
+              "id": "embeddable_host_destroy",
+              "action_id": 75
+            },
+            {
+              "id": "embeddable_host_update",
+              "action_id": 74
+            },
+            {
+              "id": "enable_theme_component",
+              "action_id": 79
+            },
+            {
+              "id": "entity_export",
+              "action_id": 66
+            },
+            {
+              "id": "grant_admin",
+              "action_id": 32
+            },
+            {
+              "id": "grant_badge",
+              "action_id": 13
+            },
+            {
+              "id": "grant_moderation",
+              "action_id": 34
+            },
+            {
+              "id": "impersonate",
+              "action_id": 19
+            },
+            {
+              "id": "lock_trust_level",
+              "action_id": 41
+            },
+            {
+              "id": "merge_user",
+              "action_id": 65
+            },
+            {
+              "id": "override_upload_secure_status",
+              "action_id": 85
+            },
+            {
+              "id": "page_published",
+              "action_id": 86
+            },
+            {
+              "id": "page_unpublished",
+              "action_id": 87
+            },
+            {
+              "id": "permanently_delete_post_revisions",
+              "action_id": 100
+            },
+            {
+              "id": "poll_closed",
+              "action_id": 23
+            },
+            {
+              "id": "poll_opened",
+              "action_id": 23
+            },
+            {
+              "id": "post_approved",
+              "action_id": 56
+            },
+            {
+              "id": "post_edit",
+              "action_id": 53
+            },
+            {
+              "id": "post_locked",
+              "action_id": 49
+            },
+            {
+              "id": "post_rejected",
+              "action_id": 64
+            },
+            {
+              "id": "post_staff_note_create",
+              "action_id": 95
+            },
+            {
+              "id": "post_staff_note_destroy",
+              "action_id": 96
+            },
+            {
+              "id": "post_unlocked",
+              "action_id": 50
+            },
+            {
+              "id": "recover_post",
+              "action_id": 126
+            },
+            {
+              "id": "recover_topic",
+              "action_id": 55
+            },
+            {
+              "id": "removed_avatar",
+              "action_id": 131
+            },
+            {
+              "id": "removed_silence_user",
+              "action_id": 60
+            },
+            {
+              "id": "removed_suspend_user",
+              "action_id": 61
+            },
+            {
+              "id": "removed_unsilence_user",
+              "action_id": 62
+            },
+            {
+              "id": "removed_unsuspend_user",
+              "action_id": 63
+            },
+            {
+              "id": "renamed_tag",
+              "action_id": 23
+            },
+            {
+              "id": "reset_bounce_score",
+              "action_id": 104
+            },
+            {
+              "id": "reviewed_post",
+              "action_id": 25
+            },
+            {
+              "id": "revoke_admin",
+              "action_id": 33
+            },
+            {
+              "id": "revoke_badge",
+              "action_id": 14
+            },
+            {
+              "id": "revoke_email",
+              "action_id": 38
+            },
+            {
+              "id": "revoke_moderation",
+              "action_id": 35
+            },
+            {
+              "id": "revoke_title",
+              "action_id": 83
+            },
+            {
+              "id": "roll_up",
+              "action_id": 20
+            },
+            {
+              "id": "silence_user",
+              "action_id": 30
+            },
+            {
+              "id": "stop_impersonating",
+              "action_id": 121
+            },
+            {
+              "id": "suspend_user",
+              "action_id": 10
+            },
+            {
+              "id": "tag_group_change",
+              "action_id": 118
+            },
+            {
+              "id": "tag_group_create",
+              "action_id": 116
+            },
+            {
+              "id": "tag_group_destroy",
+              "action_id": 117
+            },
+            {
+              "id": "toggle_flag",
+              "action_id": 23
+            },
+            {
+              "id": "topic_archived",
+              "action_id": 93
+            },
+            {
+              "id": "topic_closed",
+              "action_id": 91
+            },
+            {
+              "id": "topic_opened",
+              "action_id": 92
+            },
+            {
+              "id": "topic_published",
+              "action_id": 54
+            },
+            {
+              "id": "topic_slow_mode_removed",
+              "action_id": 111
+            },
+            {
+              "id": "topic_slow_mode_set",
+              "action_id": 110
+            },
+            {
+              "id": "topic_timestamps_changed",
+              "action_id": 68
+            },
+            {
+              "id": "topic_unarchived",
+              "action_id": 94
+            },
+            {
+              "id": "unlock_trust_level",
+              "action_id": 42
+            },
+            {
+              "id": "unsilence_user",
+              "action_id": 31
+            },
+            {
+              "id": "unsuspend_user",
+              "action_id": 11
+            },
+            {
+              "id": "upcoming_change_available",
+              "action_id": 124
+            },
+            {
+              "id": "upcoming_change_toggled",
+              "action_id": 122
+            },
+            {
+              "id": "update_directory_columns",
+              "action_id": 23
+            },
+            {
+              "id": "update_email",
+              "action_id": 89
+            },
+            {
+              "id": "update_flag",
+              "action_id": 23
+            },
+            {
+              "id": "update_public_sidebar_section",
+              "action_id": 102
+            },
+            {
+              "id": "update_watched_word_group",
+              "action_id": 106
+            },
+            {
+              "id": "watched_word_create",
+              "action_id": 97
+            },
+            {
+              "id": "watched_word_destroy",
+              "action_id": 98
+            },
+            {
+              "id": "web_hook_create",
+              "action_id": 70
+            },
+            {
+              "id": "web_hook_deactivate",
+              "action_id": 76
+            },
+            {
+              "id": "web_hook_destroy",
+              "action_id": 72
+            },
+            {
+              "id": "web_hook_update",
+              "action_id": 71
+            }
+          ]
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "staff_action_logs": [],
+        "total_rows_staff_action_logs": 0,
+        "load_more_staff_action_logs": "/admin/logs/staff_action_logs?acting_user=Admin&action_name=change_site_setting&page=1&page_size=200",
+        "extras": {
+          "user_history_actions": [
+            {
+              "id": "activate_user",
+              "action_id": 43
+            },
+            {
+              "id": "add_email",
+              "action_id": 88
+            },
+            {
+              "id": "admin_onboarding_completed",
+              "action_id": 129
+            },
+            {
+              "id": "admin_onboarding_dismissed",
+              "action_id": 130
+            },
+            {
+              "id": "admin_onboarding_step_completed",
+              "action_id": 128
+            },
+            {
+              "id": "anonymize_user",
+              "action_id": 24
+            },
+            {
+              "id": "api_key_create",
+              "action_id": 80
+            },
+            {
+              "id": "api_key_destroy",
+              "action_id": 82
+            },
+            {
+              "id": "api_key_update",
+              "action_id": 81
+            },
+            {
+              "id": "approve_user",
+              "action_id": 69
+            },
+            {
+              "id": "backup_create",
+              "action_id": 36
+            },
+            {
+              "id": "backup_destroy",
+              "action_id": 46
+            },
+            {
+              "id": "backup_download",
+              "action_id": 45
+            },
+            {
+              "id": "change_access_control_list_permissions",
+              "action_id": 127
+            },
+            {
+              "id": "change_badge",
+              "action_id": 58
+            },
+            {
+              "id": "change_category_settings",
+              "action_id": 26
+            },
+            {
+              "id": "change_name",
+              "action_id": 48
+            },
+            {
+              "id": "change_readonly_mode",
+              "action_id": 44
+            },
+            {
+              "id": "change_site_setting",
+              "action_id": 3
+            },
+            {
+              "id": "change_site_setting_groups",
+              "action_id": 123
+            },
+            {
+              "id": "change_site_text",
+              "action_id": 29
+            },
+            {
+              "id": "change_theme",
+              "action_id": 4
+            },
+            {
+              "id": "change_theme_setting",
+              "action_id": 77
+            },
+            {
+              "id": "change_theme_site_setting",
+              "action_id": 120
+            },
+            {
+              "id": "change_title",
+              "action_id": 84
+            },
+            {
+              "id": "change_trust_level",
+              "action_id": 2
+            },
+            {
+              "id": "change_username",
+              "action_id": 21
+            },
+            {
+              "id": "chat_auto_remove_membership",
+              "action_id": 23
+            },
+            {
+              "id": "chat_channel_status_change",
+              "action_id": 23
+            },
+            {
+              "id": "check_email",
+              "action_id": 16
+            },
+            {
+              "id": "check_personal_message",
+              "action_id": 51
+            },
+            {
+              "id": "create_badge",
+              "action_id": 57
+            },
+            {
+              "id": "create_category",
+              "action_id": 28
+            },
+            {
+              "id": "create_flag",
+              "action_id": 23
+            },
+            {
+              "id": "create_group",
+              "action_id": 132
+            },
+            {
+              "id": "create_public_sidebar_section",
+              "action_id": 101
+            },
+            {
+              "id": "create_watched_word_group",
+              "action_id": 105
+            },
+            {
+              "id": "custom_emoji_create",
+              "action_id": 112
+            },
+            {
+              "id": "custom_emoji_destroy",
+              "action_id": 113
+            },
+            {
+              "id": "custom_staff",
+              "action_id": 23
+            },
+            {
+              "id": "deactivate_user",
+              "action_id": 39
+            },
+            {
+              "id": "delete_associated_accounts",
+              "action_id": 119
+            },
+            {
+              "id": "delete_badge",
+              "action_id": 59
+            },
+            {
+              "id": "delete_category",
+              "action_id": 27
+            },
+            {
+              "id": "delete_flag",
+              "action_id": 23
+            },
+            {
+              "id": "delete_group",
+              "action_id": 99
+            },
+            {
+              "id": "delete_post",
+              "action_id": 17
+            },
+            {
+              "id": "delete_post_permanently",
+              "action_id": 114
+            },
+            {
+              "id": "delete_theme",
+              "action_id": 5
+            },
+            {
+              "id": "delete_topic",
+              "action_id": 18
+            },
+            {
+              "id": "delete_topic_permanently",
+              "action_id": 115
+            },
+            {
+              "id": "delete_user",
+              "action_id": 1
+            },
+            {
+              "id": "delete_watched_word_group",
+              "action_id": 107
+            },
+            {
+              "id": "deleted_tag",
+              "action_id": 23
+            },
+            {
+              "id": "deleted_unused_tags",
+              "action_id": 23
+            },
+            {
+              "id": "destroy_email",
+              "action_id": 90
+            },
+            {
+              "id": "destroy_public_sidebar_section",
+              "action_id": 103
+            },
+            {
+              "id": "disable_theme_component",
+              "action_id": 78
+            },
+            {
+              "id": "disabled_second_factor",
+              "action_id": 52
+            },
+            {
+              "id": "embeddable_host_create",
+              "action_id": 73
+            },
+            {
+              "id": "embeddable_host_destroy",
+              "action_id": 75
+            },
+            {
+              "id": "embeddable_host_update",
+              "action_id": 74
+            },
+            {
+              "id": "enable_theme_component",
+              "action_id": 79
+            },
+            {
+              "id": "entity_export",
+              "action_id": 66
+            },
+            {
+              "id": "grant_admin",
+              "action_id": 32
+            },
+            {
+              "id": "grant_badge",
+              "action_id": 13
+            },
+            {
+              "id": "grant_moderation",
+              "action_id": 34
+            },
+            {
+              "id": "impersonate",
+              "action_id": 19
+            },
+            {
+              "id": "lock_trust_level",
+              "action_id": 41
+            },
+            {
+              "id": "merge_user",
+              "action_id": 65
+            },
+            {
+              "id": "override_upload_secure_status",
+              "action_id": 85
+            },
+            {
+              "id": "page_published",
+              "action_id": 86
+            },
+            {
+              "id": "page_unpublished",
+              "action_id": 87
+            },
+            {
+              "id": "permanently_delete_post_revisions",
+              "action_id": 100
+            },
+            {
+              "id": "poll_closed",
+              "action_id": 23
+            },
+            {
+              "id": "poll_opened",
+              "action_id": 23
+            },
+            {
+              "id": "post_approved",
+              "action_id": 56
+            },
+            {
+              "id": "post_edit",
+              "action_id": 53
+            },
+            {
+              "id": "post_locked",
+              "action_id": 49
+            },
+            {
+              "id": "post_rejected",
+              "action_id": 64
+            },
+            {
+              "id": "post_staff_note_create",
+              "action_id": 95
+            },
+            {
+              "id": "post_staff_note_destroy",
+              "action_id": 96
+            },
+            {
+              "id": "post_unlocked",
+              "action_id": 50
+            },
+            {
+              "id": "recover_post",
+              "action_id": 126
+            },
+            {
+              "id": "recover_topic",
+              "action_id": 55
+            },
+            {
+              "id": "removed_avatar",
+              "action_id": 131
+            },
+            {
+              "id": "removed_silence_user",
+              "action_id": 60
+            },
+            {
+              "id": "removed_suspend_user",
+              "action_id": 61
+            },
+            {
+              "id": "removed_unsilence_user",
+              "action_id": 62
+            },
+            {
+              "id": "removed_unsuspend_user",
+              "action_id": 63
+            },
+            {
+              "id": "renamed_tag",
+              "action_id": 23
+            },
+            {
+              "id": "reset_bounce_score",
+              "action_id": 104
+            },
+            {
+              "id": "reviewed_post",
+              "action_id": 25
+            },
+            {
+              "id": "revoke_admin",
+              "action_id": 33
+            },
+            {
+              "id": "revoke_badge",
+              "action_id": 14
+            },
+            {
+              "id": "revoke_email",
+              "action_id": 38
+            },
+            {
+              "id": "revoke_moderation",
+              "action_id": 35
+            },
+            {
+              "id": "revoke_title",
+              "action_id": 83
+            },
+            {
+              "id": "roll_up",
+              "action_id": 20
+            },
+            {
+              "id": "silence_user",
+              "action_id": 30
+            },
+            {
+              "id": "stop_impersonating",
+              "action_id": 121
+            },
+            {
+              "id": "suspend_user",
+              "action_id": 10
+            },
+            {
+              "id": "tag_group_change",
+              "action_id": 118
+            },
+            {
+              "id": "tag_group_create",
+              "action_id": 116
+            },
+            {
+              "id": "tag_group_destroy",
+              "action_id": 117
+            },
+            {
+              "id": "toggle_flag",
+              "action_id": 23
+            },
+            {
+              "id": "topic_archived",
+              "action_id": 93
+            },
+            {
+              "id": "topic_closed",
+              "action_id": 91
+            },
+            {
+              "id": "topic_opened",
+              "action_id": 92
+            },
+            {
+              "id": "topic_published",
+              "action_id": 54
+            },
+            {
+              "id": "topic_slow_mode_removed",
+              "action_id": 111
+            },
+            {
+              "id": "topic_slow_mode_set",
+              "action_id": 110
+            },
+            {
+              "id": "topic_timestamps_changed",
+              "action_id": 68
+            },
+            {
+              "id": "topic_unarchived",
+              "action_id": 94
+            },
+            {
+              "id": "unlock_trust_level",
+              "action_id": 42
+            },
+            {
+              "id": "unsilence_user",
+              "action_id": 31
+            },
+            {
+              "id": "unsuspend_user",
+              "action_id": 11
+            },
+            {
+              "id": "upcoming_change_available",
+              "action_id": 124
+            },
+            {
+              "id": "upcoming_change_toggled",
+              "action_id": 122
+            },
+            {
+              "id": "update_directory_columns",
+              "action_id": 23
+            },
+            {
+              "id": "update_email",
+              "action_id": 89
+            },
+            {
+              "id": "update_flag",
+              "action_id": 23
+            },
+            {
+              "id": "update_public_sidebar_section",
+              "action_id": 102
+            },
+            {
+              "id": "update_watched_word_group",
+              "action_id": 106
+            },
+            {
+              "id": "watched_word_create",
+              "action_id": 97
+            },
+            {
+              "id": "watched_word_destroy",
+              "action_id": 98
+            },
+            {
+              "id": "web_hook_create",
+              "action_id": 70
+            },
+            {
+              "id": "web_hook_deactivate",
+              "action_id": 76
+            },
+            {
+              "id": "web_hook_destroy",
+              "action_id": 72
+            },
+            {
+              "id": "web_hook_update",
+              "action_id": 71
+            }
+          ]
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "staff_action_logs": [],
+        "total_rows_staff_action_logs": 0,
+        "load_more_staff_action_logs": "/admin/logs/staff_action_logs?action_id=122&page=1&page_size=200&target_user=nobody",
+        "extras": {
+          "user_history_actions": [
+            {
+              "id": "activate_user",
+              "action_id": 43
+            },
+            {
+              "id": "add_email",
+              "action_id": 88
+            },
+            {
+              "id": "admin_onboarding_completed",
+              "action_id": 129
+            },
+            {
+              "id": "admin_onboarding_dismissed",
+              "action_id": 130
+            },
+            {
+              "id": "admin_onboarding_step_completed",
+              "action_id": 128
+            },
+            {
+              "id": "anonymize_user",
+              "action_id": 24
+            },
+            {
+              "id": "api_key_create",
+              "action_id": 80
+            },
+            {
+              "id": "api_key_destroy",
+              "action_id": 82
+            },
+            {
+              "id": "api_key_update",
+              "action_id": 81
+            },
+            {
+              "id": "approve_user",
+              "action_id": 69
+            },
+            {
+              "id": "backup_create",
+              "action_id": 36
+            },
+            {
+              "id": "backup_destroy",
+              "action_id": 46
+            },
+            {
+              "id": "backup_download",
+              "action_id": 45
+            },
+            {
+              "id": "change_access_control_list_permissions",
+              "action_id": 127
+            },
+            {
+              "id": "change_badge",
+              "action_id": 58
+            },
+            {
+              "id": "change_category_settings",
+              "action_id": 26
+            },
+            {
+              "id": "change_name",
+              "action_id": 48
+            },
+            {
+              "id": "change_readonly_mode",
+              "action_id": 44
+            },
+            {
+              "id": "change_site_setting",
+              "action_id": 3
+            },
+            {
+              "id": "change_site_setting_groups",
+              "action_id": 123
+            },
+            {
+              "id": "change_site_text",
+              "action_id": 29
+            },
+            {
+              "id": "change_theme",
+              "action_id": 4
+            },
+            {
+              "id": "change_theme_setting",
+              "action_id": 77
+            },
+            {
+              "id": "change_theme_site_setting",
+              "action_id": 120
+            },
+            {
+              "id": "change_title",
+              "action_id": 84
+            },
+            {
+              "id": "change_trust_level",
+              "action_id": 2
+            },
+            {
+              "id": "change_username",
+              "action_id": 21
+            },
+            {
+              "id": "chat_auto_remove_membership",
+              "action_id": 23
+            },
+            {
+              "id": "chat_channel_status_change",
+              "action_id": 23
+            },
+            {
+              "id": "check_email",
+              "action_id": 16
+            },
+            {
+              "id": "check_personal_message",
+              "action_id": 51
+            },
+            {
+              "id": "create_badge",
+              "action_id": 57
+            },
+            {
+              "id": "create_category",
+              "action_id": 28
+            },
+            {
+              "id": "create_flag",
+              "action_id": 23
+            },
+            {
+              "id": "create_group",
+              "action_id": 132
+            },
+            {
+              "id": "create_public_sidebar_section",
+              "action_id": 101
+            },
+            {
+              "id": "create_watched_word_group",
+              "action_id": 105
+            },
+            {
+              "id": "custom_emoji_create",
+              "action_id": 112
+            },
+            {
+              "id": "custom_emoji_destroy",
+              "action_id": 113
+            },
+            {
+              "id": "custom_staff",
+              "action_id": 23
+            },
+            {
+              "id": "deactivate_user",
+              "action_id": 39
+            },
+            {
+              "id": "delete_associated_accounts",
+              "action_id": 119
+            },
+            {
+              "id": "delete_badge",
+              "action_id": 59
+            },
+            {
+              "id": "delete_category",
+              "action_id": 27
+            },
+            {
+              "id": "delete_flag",
+              "action_id": 23
+            },
+            {
+              "id": "delete_group",
+              "action_id": 99
+            },
+            {
+              "id": "delete_post",
+              "action_id": 17
+            },
+            {
+              "id": "delete_post_permanently",
+              "action_id": 114
+            },
+            {
+              "id": "delete_theme",
+              "action_id": 5
+            },
+            {
+              "id": "delete_topic",
+              "action_id": 18
+            },
+            {
+              "id": "delete_topic_permanently",
+              "action_id": 115
+            },
+            {
+              "id": "delete_user",
+              "action_id": 1
+            },
+            {
+              "id": "delete_watched_word_group",
+              "action_id": 107
+            },
+            {
+              "id": "deleted_tag",
+              "action_id": 23
+            },
+            {
+              "id": "deleted_unused_tags",
+              "action_id": 23
+            },
+            {
+              "id": "destroy_email",
+              "action_id": 90
+            },
+            {
+              "id": "destroy_public_sidebar_section",
+              "action_id": 103
+            },
+            {
+              "id": "disable_theme_component",
+              "action_id": 78
+            },
+            {
+              "id": "disabled_second_factor",
+              "action_id": 52
+            },
+            {
+              "id": "embeddable_host_create",
+              "action_id": 73
+            },
+            {
+              "id": "embeddable_host_destroy",
+              "action_id": 75
+            },
+            {
+              "id": "embeddable_host_update",
+              "action_id": 74
+            },
+            {
+              "id": "enable_theme_component",
+              "action_id": 79
+            },
+            {
+              "id": "entity_export",
+              "action_id": 66
+            },
+            {
+              "id": "grant_admin",
+              "action_id": 32
+            },
+            {
+              "id": "grant_badge",
+              "action_id": 13
+            },
+            {
+              "id": "grant_moderation",
+              "action_id": 34
+            },
+            {
+              "id": "impersonate",
+              "action_id": 19
+            },
+            {
+              "id": "lock_trust_level",
+              "action_id": 41
+            },
+            {
+              "id": "merge_user",
+              "action_id": 65
+            },
+            {
+              "id": "override_upload_secure_status",
+              "action_id": 85
+            },
+            {
+              "id": "page_published",
+              "action_id": 86
+            },
+            {
+              "id": "page_unpublished",
+              "action_id": 87
+            },
+            {
+              "id": "permanently_delete_post_revisions",
+              "action_id": 100
+            },
+            {
+              "id": "poll_closed",
+              "action_id": 23
+            },
+            {
+              "id": "poll_opened",
+              "action_id": 23
+            },
+            {
+              "id": "post_approved",
+              "action_id": 56
+            },
+            {
+              "id": "post_edit",
+              "action_id": 53
+            },
+            {
+              "id": "post_locked",
+              "action_id": 49
+            },
+            {
+              "id": "post_rejected",
+              "action_id": 64
+            },
+            {
+              "id": "post_staff_note_create",
+              "action_id": 95
+            },
+            {
+              "id": "post_staff_note_destroy",
+              "action_id": 96
+            },
+            {
+              "id": "post_unlocked",
+              "action_id": 50
+            },
+            {
+              "id": "recover_post",
+              "action_id": 126
+            },
+            {
+              "id": "recover_topic",
+              "action_id": 55
+            },
+            {
+              "id": "removed_avatar",
+              "action_id": 131
+            },
+            {
+              "id": "removed_silence_user",
+              "action_id": 60
+            },
+            {
+              "id": "removed_suspend_user",
+              "action_id": 61
+            },
+            {
+              "id": "removed_unsilence_user",
+              "action_id": 62
+            },
+            {
+              "id": "removed_unsuspend_user",
+              "action_id": 63
+            },
+            {
+              "id": "renamed_tag",
+              "action_id": 23
+            },
+            {
+              "id": "reset_bounce_score",
+              "action_id": 104
+            },
+            {
+              "id": "reviewed_post",
+              "action_id": 25
+            },
+            {
+              "id": "revoke_admin",
+              "action_id": 33
+            },
+            {
+              "id": "revoke_badge",
+              "action_id": 14
+            },
+            {
+              "id": "revoke_email",
+              "action_id": 38
+            },
+            {
+              "id": "revoke_moderation",
+              "action_id": 35
+            },
+            {
+              "id": "revoke_title",
+              "action_id": 83
+            },
+            {
+              "id": "roll_up",
+              "action_id": 20
+            },
+            {
+              "id": "silence_user",
+              "action_id": 30
+            },
+            {
+              "id": "stop_impersonating",
+              "action_id": 121
+            },
+            {
+              "id": "suspend_user",
+              "action_id": 10
+            },
+            {
+              "id": "tag_group_change",
+              "action_id": 118
+            },
+            {
+              "id": "tag_group_create",
+              "action_id": 116
+            },
+            {
+              "id": "tag_group_destroy",
+              "action_id": 117
+            },
+            {
+              "id": "toggle_flag",
+              "action_id": 23
+            },
+            {
+              "id": "topic_archived",
+              "action_id": 93
+            },
+            {
+              "id": "topic_closed",
+              "action_id": 91
+            },
+            {
+              "id": "topic_opened",
+              "action_id": 92
+            },
+            {
+              "id": "topic_published",
+              "action_id": 54
+            },
+            {
+              "id": "topic_slow_mode_removed",
+              "action_id": 111
+            },
+            {
+              "id": "topic_slow_mode_set",
+              "action_id": 110
+            },
+            {
+              "id": "topic_timestamps_changed",
+              "action_id": 68
+            },
+            {
+              "id": "topic_unarchived",
+              "action_id": 94
+            },
+            {
+              "id": "unlock_trust_level",
+              "action_id": 42
+            },
+            {
+              "id": "unsilence_user",
+              "action_id": 31
+            },
+            {
+              "id": "unsuspend_user",
+              "action_id": 11
+            },
+            {
+              "id": "upcoming_change_available",
+              "action_id": 124
+            },
+            {
+              "id": "upcoming_change_toggled",
+              "action_id": 122
+            },
+            {
+              "id": "update_directory_columns",
+              "action_id": 23
+            },
+            {
+              "id": "update_email",
+              "action_id": 89
+            },
+            {
+              "id": "update_flag",
+              "action_id": 23
+            },
+            {
+              "id": "update_public_sidebar_section",
+              "action_id": 102
+            },
+            {
+              "id": "update_watched_word_group",
+              "action_id": 106
+            },
+            {
+              "id": "watched_word_create",
+              "action_id": 97
+            },
+            {
+              "id": "watched_word_destroy",
+              "action_id": 98
+            },
+            {
+              "id": "web_hook_create",
+              "action_id": 70
+            },
+            {
+              "id": "web_hook_deactivate",
+              "action_id": 76
+            },
+            {
+              "id": "web_hook_destroy",
+              "action_id": 72
+            },
+            {
+              "id": "web_hook_update",
+              "action_id": 71
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 135,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "ki9p/lMyeFi9AQAAuPLmXaAm1QA=",
+            "created_at": "2026-10-08T07:05:31.328296",
+            "rotated_at": "2026-10-08T07:05:31.322725",
+            "updated_at": "2026-10-08T07:05:31.328296",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "ki9p/lMyeFi9AQAAuPLmXaAm1QA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 135,
+            "seen_at": "2026-10-08T07:05:32.850333",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "ki9p/lMyeFi9AQAAuPLmXaAm1QA=",
+            "created_at": "2026-10-08T07:05:31.328296",
+            "rotated_at": "2026-10-08T07:05:31.322725",
+            "updated_at": "2026-10-08T07:05:31.328296",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "ki9p/lMyeFi9AQAAuPLmXaAm1QA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "recorded_from": {
+    "case": "9be36ee783de84ff7b411aeb6546b2039aedc5cd68dce9bb8d13812cbc6f0482",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

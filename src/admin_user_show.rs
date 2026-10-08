@@ -511,7 +511,7 @@ async fn latest_penalty(
 }
 
 /// BasicUserSerializer embedded as an object, null for nobody.
-async fn basic_user(
+pub(crate) async fn basic_user(
     conn: &mut PgConnection,
     cx: &Context<'_>,
     user_id: Option<i32>,

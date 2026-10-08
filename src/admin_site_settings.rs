@@ -425,21 +425,6 @@ fn type_name(def: &Definition) -> String {
     .into()
 }
 
-/// `CGI.escape`
-fn cgi_escape(s: &str) -> String {
-    let mut out = String::new();
-    for b in s.bytes() {
-        match b {
-            b' ' => out.push('+'),
-            b'a'..=b'z' | b'A'..=b'Z' | b'0'..=b'9' | b'_' | b'.' | b'-' | b'~' => {
-                out.push(b as char)
-            }
-            _ => out.push_str(&format!("%{b:02X}")),
-        }
-    }
-    out
-}
-
 /// LabelFormatter.humanized_name
 pub fn humanized_name(setting: &str) -> String {
     const ACRONYMS: &[&str] = &[
@@ -603,7 +588,7 @@ fn filter_href(cx: &Context<'_>, filter: &str) -> String {
     format!(
         "{}/admin/site_settings/category/all_results?filter={}",
         cx.base_path,
-        cgi_escape(filter)
+        crate::ruby::cgi_escape(filter)
     )
 }
 
