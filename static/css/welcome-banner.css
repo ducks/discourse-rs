@@ -1,0 +1,205 @@
+/*
+ * The welcome banner and its search input, ported from
+ * components/welcome-banner.scss, the input rules of base/search-menu.scss
+ * (.search-input-wrapper, .search-input, .searching), and the welcome
+ * banner of the uc-modernize-foundation-theme upcoming change.
+ * Breakpoints: sm 40rem, md 48rem.
+ */
+
+/* welcome-banner.scss */
+:root {
+  --d-welcome-banner-text-alignment: center;
+  --d-welcome-banner-header-size: var(--font-up-6);
+  --d-welcome-banner-padding-top: var(--space-6);
+  --d-welcome-banner-padding-right: 0;
+  --d-welcome-banner-padding-bottom: var(--space-12);
+  --d-welcome-banner-padding-left: 0;
+  --d-welcome-banner-title-margin-bottom: var(--space-4);
+}
+
+.welcome-banner {
+  border-radius: var(--d-border-radius-large);
+}
+
+.welcome-banner__wrap {
+  box-sizing: border-box;
+  position: relative;
+  padding: var(--d-welcome-banner-padding-top)
+    var(--d-welcome-banner-padding-right)
+    var(--d-welcome-banner-padding-bottom);
+}
+
+.--with-bg-img .welcome-banner__wrap {
+  --d-welcome-banner-padding-right: var(--space-4);
+  --d-welcome-banner-padding-left: var(--space-4);
+  border-radius: var(--d-border-radius);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  margin-bottom: var(--space-2);
+}
+
+.welcome-banner__wrap .search-menu {
+  display: flex;
+  position: relative;
+  margin-inline: auto;
+  max-width: 600px;
+}
+
+.welcome-banner__wrap .search-menu .search-menu-container {
+  width: 100%;
+  min-width: 0;
+}
+
+.welcome-banner__wrap .search-input .search-term__input {
+  min-width: 0;
+  flex: 1 1;
+}
+
+.welcome-banner__wrap .btn.search-icon {
+  z-index: 2;
+  background: transparent;
+  line-height: 1;
+  color: var(--primary-medium);
+  height: 100%;
+  position: absolute;
+  left: calc(1rem - 0.65em);
+}
+
+.discourse-no-touch .welcome-banner__wrap .btn.search-icon:hover {
+  background: transparent;
+  color: var(--primary);
+}
+
+.discourse-no-touch .welcome-banner__wrap .btn.search-icon:hover .d-icon {
+  color: currentcolor;
+}
+
+.welcome-banner__wrap .btn.search-icon + .search-menu-container .search-input {
+  padding-left: var(--space-8);
+}
+
+@media (width < 48rem) {
+  .welcome-banner__wrap {
+    --d-welcome-banner-padding-top: var(--space-4);
+    --d-welcome-banner-padding-right: 8px;
+    --d-welcome-banner-padding-bottom: var(--space-5);
+    margin-top: var(--space-2);
+  }
+}
+
+@media (width < 40rem) {
+  .welcome-banner {
+    display: none;
+  }
+
+  .welcome-banner__wrap {
+    margin-top: 0;
+  }
+}
+
+.welcome-banner__title {
+  font-size: var(--font-up-6);
+  line-height: var(--line-height-medium);
+  font-family: var(--heading-font-family);
+  font-weight: var(--heading-font-weight);
+  margin-bottom: var(--d-welcome-banner-title-margin-bottom);
+  text-align: var(--d-welcome-banner-text-alignment);
+  margin-inline: auto;
+  max-width: 70ch;
+}
+
+@media (width < 48rem) {
+  .welcome-banner__title {
+    font-size: var(--font-up-4);
+  }
+}
+
+@media (width < 40rem) {
+  .welcome-banner__title {
+    font-size: var(--font-up-1);
+  }
+}
+
+.welcome-banner__subheader {
+  font-size: var(--font-up-1-rem);
+  font-weight: normal;
+  margin: 0;
+  padding: 0.25rem 0;
+}
+
+/* uc-modernize-foundation-theme/welcome-banner.scss */
+:where(.uc-modernize-foundation-theme) .welcome-banner__wrap .search-menu {
+  align-items: center;
+  margin-inline: var(--welcome-banner-search-menu-margin-inline);
+}
+
+:where(.uc-modernize-foundation-theme) .welcome-banner__subheader {
+  font-size: var(--font-0-rem);
+}
+
+:where(.uc-modernize-foundation-theme) .welcome-banner__title {
+  font-size: var(--font-up-5);
+  font-weight: 500;
+  text-align: var(--welcome-banner-text-align);
+}
+
+/* search-menu.scss */
+.search-menu .search-input-wrapper,
+.search-menu-container .search-input-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.search-menu .search-input,
+.search-menu-container .search-input {
+  position: relative;
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  background: var(--d-input-bg-color);
+  border: var(--d-input-border);
+  border-radius: var(--d-input-border-radius);
+  padding: var(--space-1) 0;
+}
+
+.search-menu .search-input input.search-term__input,
+.search-menu-container .search-input input.search-term__input {
+  background: none;
+  border: 0;
+  margin-bottom: 0;
+  width: auto;
+  flex-grow: 1;
+}
+
+.search-menu .search-input input.search-term__input:focus,
+.search-menu-container .search-input input.search-term__input:focus {
+  outline: none;
+}
+
+.search-menu .search-input:focus-within,
+.search-menu-container .search-input:focus-within {
+  border-color: var(--d-input-focused-color);
+  outline: 2px solid var(--d-input-focused-color);
+  outline-offset: -2px;
+}
+
+.search-menu.menu-panel-results,
+.search-menu-container.menu-panel-results {
+  position: relative;
+}
+
+.searching {
+  display: flex;
+  align-items: center;
+}
+
+.searching .show-advanced-search .d-icon {
+  color: var(--primary-medium);
+}
+
+.searching .show-advanced-search:focus .d-icon,
+.searching .show-advanced-search:hover .d-icon {
+  color: var(--primary-high);
+}

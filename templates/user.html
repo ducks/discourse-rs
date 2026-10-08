@@ -1,43 +1,5 @@
 {% extends "layout.html" %}
 {% block title %}Profile - {{ username }} - {{ site_title }}{% endblock %}
 {% block content %}
-<div class="user-crawler">
-  <h2 class="username">{{ username }}</h2>
-  {% if let Some(n) = name %}<div class="full-name">{{ n }}</div>{% endif %}
-  {% if let Some(t) = title %}<div class="user-title">{{ t }}</div>{% endif %}
-  <div class="user-meta">Joined <time datetime="{{ joined }}">{{ joined }}</time>{% if let Some(p) = last_posted %}, last post <time datetime="{{ p }}">{{ p }}</time>{% endif %}</div>
-</div>
-{% if hidden %}
-<p class="profile-hidden">This profile is hidden.</p>
-{% else %}
-{% if !stats.is_empty() %}
-<dl class="user-stats">
-  {% for (label, value) in stats %}<div><dt>{{ label }}</dt><dd>{{ value }}</dd></div>{% endfor %}
-</dl>
-{% endif %}
-{% if !badges.is_empty() %}
-<div class="user-badges">
-  <h3>Badges</h3>
-  {% for b in badges %}<div class="badge"><span class="badge-name">{{ b.name }}</span> <span class="badge-description">{{ b.description|safe }}</span></div>{% endfor %}
-</div>
-{% endif %}
-{% if !top_categories.is_empty() %}
-<div class="user-top-categories">
-  <h3>Top categories</h3>
-  {% for c in top_categories %}<div><a href="{{ c.url }}">{{ c.name }}</a> <span class="count">{{ c.count }}</span></div>{% endfor %}
-</div>
-{% endif %}
-{% if !activity.is_empty() %}
-<div class="user-activity">
-  <h3>Activity</h3>
-  {% for a in activity %}
-  <div class="user-action">
-    <span class="action-kind">{{ a.kind }}</span> <a href="{{ a.url }}">{{ a.title }}</a>
-    <time datetime="{{ a.created_at }}">{{ a.created_at }}</time>
-    {% if !a.excerpt.is_empty() %}<p class="excerpt">{{ a.excerpt|safe }}</p>{% endif %}
-  </div>
-  {% endfor %}
-</div>
-{% endif %}
-{% endif %}
+{{ main|safe }}
 {% endblock %}

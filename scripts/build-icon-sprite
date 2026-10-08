@@ -76,6 +76,13 @@ ICONS=(
   code
   angle-up
   angles-left
+  bars-staggered
+  gear
+  angles-down
+  angles-up
+  location-dot
+  globe
+  sliders
 )
 
 root="$(cd "$(dirname "$0")/.." && pwd)"

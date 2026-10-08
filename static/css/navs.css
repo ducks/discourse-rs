@@ -10,6 +10,29 @@
   background: var(--d-content-background);
 }
 
+.category-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--nav-space) 0;
+  /* unstyled-list */
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.category-breadcrumb > li {
+  display: flex;
+  margin-right: 0.5em;
+  margin-bottom: 0;
+}
+
+@media (width >= 40rem) {
+  .category-breadcrumb .select-kit {
+    align-self: stretch;
+    height: 100%;
+  }
+}
+
 .navigation-container {
   width: calc(100% - var(--nav-horizontal-padding) * 2);
   font-size: var(--d-nav-font-size);

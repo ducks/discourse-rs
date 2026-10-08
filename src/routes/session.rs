@@ -216,6 +216,8 @@ pub(super) fn viewer_state(
             csrf_token: masked,
             avatar_url,
             trust_level: user.trust_level,
+            name: user.name.clone(),
+            first_visit: user.previous_visit_at.is_none(),
         }),
         set_cookie: session.set_cookie(state, settings)?,
     })

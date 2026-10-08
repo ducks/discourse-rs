@@ -59,6 +59,9 @@ pub struct Viewer {
     pub avatar_url: String,
     /// For the topic list's new-topic dot (`trust_level > 0`).
     pub trust_level: i32,
+    pub name: Option<String>,
+    /// No previous visit: the welcome banner greets a new member.
+    pub first_visit: bool,
 }
 
 /// The viewer block for a page, plus the `_forum_session` cookie to set
@@ -391,6 +394,10 @@ pub struct LatestPage {
     pub live_since: String,
     /// The navigation pills (`top_menu`); empty where the page has none.
     pub nav: Vec<NavItem>,
+    /// The welcome banner (welcome_banner), empty where it is off.
+    pub banner: String,
+    /// The category and tag drops (breadcrumbs), empty where not drawn.
+    pub breadcrumbs: String,
 }
 
 /// A navigation pill, as NavItem renders it.
@@ -404,6 +411,155 @@ pub struct NavItem {
     pub active: bool,
     /// `hasIcon`: the unread pill.
     pub has_icon: bool,
+}
+
+/// BreadCrumbs for a list with no category or tag: the category drop and,
+/// with tagging, the tag drop, closed (their select-kit headers).
+pub fn breadcrumbs(i18n: &I18n, settings: &SiteSettings) -> Result<String, SettingError> {
+    use crate::topic_list_view::{escape, icon};
+    let t = |key: &str| i18n.t(&format!("js.{key}")).unwrap_or_default().to_string();
+    let drop = |kind: &str, extra_class: &str, label: &str| {
+        let label = escape(label);
+        let aria = escape(
+            &i18n
+                .t_with("js.select_kit.filter_by", &[("name", &label)])
+                .unwrap_or_default(),
+        );
+        format!(
+            "<li><details class=\"select-kit single-select combobox combo-box {kind}-drop{extra_class}\">\
+             <summary aria-label=\"{aria}\" name=\"{aria}\" data-name=\"{label}\" data-value=\"\" tabindex=\"0\" \
+             class=\"select-kit-header single-select-header combo-box-header {kind}-drop-header\">\
+             <div class=\"select-kit-header-wrapper\"><div class=\"select-kit-selected-name selected-name choice\" data-name=\"{label}\" title=\"{label}\">\
+             <span class=\"name\">{label}</span></div>{}</div></summary><div class=\"select-kit-body\"></div></details></li>",
+            icon("angle-right", Some("angle-icon"))
+        )
+    };
+    let mut out = String::from("<ol class=\"category-breadcrumb\">");
+    out.push_str(&drop(
+        "category",
+        " category-breadcrumb__category-selector",
+        &t("categories.categories_label"),
+    ));
+    if settings.get("tagging_enabled")?.truthy() {
+        out.push_str(&drop("tag", " tag_all", &t("tagging.selector_tags")));
+    }
+    out.push_str("</ol>");
+    Ok(out)
+}
+
+/// The WelcomeBanner component for a discovery list (`filter`: latest,
+/// categories...), above the topic content: empty where the settings keep
+/// it off this page.
+pub fn welcome_banner(
+    i18n: &I18n,
+    settings: &SiteSettings,
+    viewer: Option<&Viewer>,
+    base_path: &str,
+    filter: &str,
+) -> Result<String, crate::AppError> {
+    use crate::topic_list_view::escape;
+    if !settings.get("enable_welcome_banner")?.truthy() {
+        return Ok(String::new());
+    }
+    if settings.get("welcome_banner_location")?.to_s() != "above_topic_content" {
+        return Err(crate::Unsupported("the welcome banner below the site header").into());
+    }
+    let top_menu = settings.get("top_menu")?.to_s();
+    let shown = match settings
+        .get("welcome_banner_page_visibility")?
+        .to_s()
+        .as_ref()
+    {
+        "top_menu_pages" => top_menu.split('|').any(|item| item == filter),
+        "homepage" => top_menu.split('|').next() == Some(filter),
+        "discovery" | "all_pages" => true,
+        _ => false,
+    };
+    if !shown {
+        return Ok(String::new());
+    }
+    let t = |key: &str| i18n.t(&format!("js.{key}")).unwrap_or_default().to_string();
+    let site_name = settings.get("title")?.to_s();
+    let (header, member) = match viewer {
+        None => (
+            i18n.t_with(
+                "js.welcome_banner.header.anonymous_members",
+                &[("site_name", &escape(&site_name))],
+            ),
+            "anonymous_members",
+        ),
+        Some(v) => {
+            // prioritizeNameFallback
+            let prioritize_name = settings.get("enable_names")?.truthy()
+                && !settings.get("prioritize_username_in_ux")?.truthy();
+            let display = match v
+                .name
+                .as_deref()
+                .filter(|n| prioritize_name && !n.trim().is_empty())
+            {
+                Some(name) => name,
+                None => v.username.as_str(),
+            };
+            let key = if v.first_visit {
+                "js.welcome_banner.header.new_members"
+            } else {
+                "js.welcome_banner.header.logged_in_members"
+            };
+            (
+                i18n.t_with(
+                    key,
+                    &[
+                        ("site_name", &escape(&site_name)),
+                        ("preferred_display_name", &escape(display)),
+                    ],
+                ),
+                "logged_in_members",
+            )
+        }
+    };
+    let subheader = t(&format!("welcome_banner.subheader.{member}"));
+    let image = settings.get("welcome_banner_image")?.to_s();
+    let text_color = settings.get("welcome_banner_text_color")?.to_s();
+    let (bg_class, bg_style, color_style) = if image.is_empty() {
+        (String::new(), String::new(), String::new())
+    } else {
+        (
+            " --with-bg-img".to_string(),
+            format!(" style=\"background-image:url({});\"", escape(&image)),
+            if text_color.is_empty() {
+                String::new()
+            } else {
+                format!(" style=\"color:{};\"", escape(&text_color))
+            },
+        )
+    };
+    let advanced = escape(&t("search.open_advanced"));
+    let placeholder = escape(&t("welcome_banner.search_placeholder"));
+    let icon = |name: &str| crate::topic_list_view::icon(name, None);
+    let mut out = format!(
+        "<div class=\"welcome-banner --location-above-topic-content{bg_class}\">\
+         <div class=\"custom-search-banner-wrap welcome-banner__wrap\"{bg_style}>\
+         <div class=\"welcome-banner__title\"{color_style}>{}",
+        header.unwrap_or_default()
+    );
+    if !subheader.is_empty() {
+        out.push_str(&format!(
+            "<p class=\"welcome-banner__subheader\">{subheader}</p>"
+        ));
+    }
+    out.push_str(&format!(
+        "</div><div class=\"search-menu welcome-banner__search-menu\">\
+         <a class=\"btn no-text btn-icon search-icon\" href=\"{base_path}/search?expanded=true\" title=\"{advanced}\">{}<span aria-hidden=\"true\">\u{200b}</span></a>\
+         <div class=\"search-menu-container menu-panel-results\"><div class=\"search-input-wrapper\">\
+         <div class=\"search-input search-input--welcome-banner\">\
+         <input aria-label=\"{}\" autocomplete=\"off\" class=\"search-term__input\" enterkeyhint=\"search\" id=\"welcome-banner-search-input\" placeholder=\"{placeholder}\" value=\"\" type=\"search\">\
+         <div class=\"searching\"><button class=\"btn no-text btn-icon show-advanced-search btn-transparent\" title=\"{advanced}\" type=\"button\">{}<span aria-hidden=\"true\">\u{200b}</span></button></div>\
+         </div></div></div></div></div></div>",
+        icon("magnifying-glass"),
+        escape(&t("search.title")),
+        icon("sliders")
+    ));
+    Ok(out)
 }
 
 /// The pills of the top-level lists (NavItem.buildList): `top_menu` in
@@ -605,6 +761,8 @@ pub async fn latest_page(
         live_filter: String::new(),
         live_since: String::new(),
         nav: Vec::new(),
+        banner: String::new(),
+        breadcrumbs: String::new(),
         more_url: list["topic_list"]["more_topics_url"]
             .as_str()
             .map(str::to_string),
@@ -828,6 +986,7 @@ pub struct CategoriesPage {
     pub bus_position: String,
     pub chrome: Chrome,
     pub categories: Vec<CategoryIndexItem>,
+    pub banner: String,
 }
 
 /// The categories index from the /categories.json document
@@ -893,6 +1052,7 @@ pub async fn categories_page(
         base_path: site.base_path,
         crawler: Crawler::default(),
         categories: items,
+        banner: String::new(),
     })
 }
 

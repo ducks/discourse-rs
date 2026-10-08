@@ -1,8 +1,8 @@
 //! `rescue_discourse_actions(:not_found)` for a browser: where a handler
 //! answers the JSON not_found 404 to a request that does not show JSON
 //! errors (not `.json`, not XHR, no JSON Accept), Rails renders the
-//! not-found page instead. It goes in the port's own layout, where Rails
-//! uses the no_ember one, as the port's other pages do.
+//! not-found page instead, in its no_ember layout (templates/no_ember.html);
+//! for NotLoggedIn, rescued with include_ember, in the application one.
 //!
 //! The page searches for the topic route's slug or id; elsewhere for
 //! nothing (Rails takes `params[:slug] || params[:id]` of any route).
@@ -20,9 +20,25 @@ use crate::site_settings::SiteSettings;
 use crate::url::Urls;
 use crate::{AppError, AppState};
 
+/// Rails' no_ember layout: NotFound never asks for the Ember one.
 #[derive(Template)]
 #[template(path = "not_found.html")]
 struct NotFoundPage {
+    site_title: String,
+    lang: String,
+    base_path: String,
+    crawler: Crawler,
+    viewer: Option<crate::html::Viewer>,
+    bus_position: String,
+    chrome: Chrome,
+    page_title: String,
+    html: String,
+}
+
+/// NotLoggedIn, rescued with include_ember: the application layout.
+#[derive(Template)]
+#[template(path = "not_found_ember.html")]
+struct EmberNotFoundPage {
     site_title: String,
     lang: String,
     base_path: String,
@@ -110,23 +126,32 @@ pub async fn html_errors(
         .await?;
     let mut crawler = Crawler::for_request(&urls, &uri, None)?;
     crawler.description = String::new();
-    let body = NotFoundPage {
-        site_title: site.site_title,
-        lang: site.lang,
-        base_path: site.base_path,
-        crawler,
-        viewer: site.viewer,
-        bus_position: String::new(),
-        chrome: site.chrome,
-        page_title: state
-            .i18n
-            .t("page_not_found.page_title")
-            .unwrap_or("Page Not Found")
-            .to_string(),
-        html,
+    macro_rules! page {
+        ($t:ident) => {
+            $t {
+                site_title: site.site_title,
+                lang: site.lang,
+                base_path: site.base_path,
+                crawler,
+                viewer: site.viewer,
+                bus_position: String::new(),
+                chrome: site.chrome,
+                page_title: state
+                    .i18n
+                    .t("page_not_found.page_title")
+                    .unwrap_or("Page Not Found")
+                    .to_string(),
+                html,
+            }
+            .render()
+            .map_err(crate::html::HtmlError::from)?
+        };
     }
-    .render()
-    .map_err(crate::html::HtmlError::from)?;
+    let body = if not_logged_in {
+        page!(EmberNotFoundPage)
+    } else {
+        page!(NotFoundPage)
+    };
     let response = (StatusCode::NOT_FOUND, axum::response::Html(body)).into_response();
     Ok(crate::html::with_viewer_headers(response, &vs))
 }
