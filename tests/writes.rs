@@ -38,15 +38,9 @@ const BACKGROUND_TABLES: [&str; 3] = ["scheduler_stats", "top_topics", "user_aut
 const UNORDERED_INSERTS: [&str; 2] = ["sidebar_section_links", "upload_references"];
 
 /// Keys plugins add to the post and topic serializers on the reference.
-const PLUGIN_KEYS: [&str; 20] = [
-    "has_accepted_answer",
-    "solved_count",
+const PLUGIN_KEYS: [&str; 12] = [
     "event",
     "calendar_details",
-    "accepted_answer",
-    "can_accept_answer",
-    "can_unaccept_answer",
-    "topic_accepted_answer",
     "reactions",
     "current_user_reaction",
     "reaction_users_count",
@@ -55,8 +49,6 @@ const PLUGIN_KEYS: [&str; 20] = [
     "vote_count",
     "user_voted",
     "valid_reactions",
-    "can_create_shared_issue",
-    "shared_issue_visible",
     "discourse_zendesk_plugin_zendesk_id",
     "discourse_zendesk_plugin_zendesk_url",
 ];
@@ -91,9 +83,8 @@ fn only_plugin_category_fields(value: &Value) -> bool {
 
 /// Keys plugins add to the user serializer and its user_option on the
 /// reference (chat, discourse-solved, discourse-calendar).
-const PLUGIN_USER_KEYS: [&str; 21] = [
+const PLUGIN_USER_KEYS: [&str; 19] = [
     "can_chat_user",
-    "accepted_answers",
     "chat_enabled",
     "ignore_channel_wide_mention",
     "show_thread_title_prompts",
@@ -112,7 +103,6 @@ const PLUGIN_USER_KEYS: [&str; 21] = [
     "chat_quick_reaction_type",
     "chat_quick_reactions_custom",
     "event_reminder_preference",
-    "notify_on_solved",
 ];
 
 /// User serializer keys that follow what the reference does in the

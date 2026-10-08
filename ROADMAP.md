@@ -424,15 +424,20 @@ Discourse's own clients keep working.
 After writes (moved 2026-10-01, was 3.5): the plugin API is mostly the
 write endpoints. The design and its open decisions are in PLUGINS.md.
 
-- [ ] Decide the runtime: WASI components or an embedded scripting
-      language (PLUGINS.md decision 6)
+- [x] Decide the runtime (PLUGINS.md decision 6, 2026-10-08): bundled
+      plugins are Rust in src/plugins/ on lifecycle phases; third-party
+      plugins a sandboxed runtime later (Luau spike on
+      spike/plugin-runtime)
+- [ ] The bundled plugins, default-on first: solved (read side done:
+      topic list, topic view, posts, users; accepting answers next),
+      reactions, topic voting, presence, templates, narrative-bot, chat,
+      poll's voting
 - [ ] Tier 0: `plugin.toml` with settings, preloaded custom fields,
       assets, i18n, the tables the plugin owns; `discourse-rs plugins`
 - [ ] The host functions: keyed batch reads of the plugin's own tables,
       and the Discourse JSON API in-process under manifest scopes
-- [ ] `serialize`, `html`, `modify` batched per response, with
-      discourse-solved's read side as the first plugin and its parity
-      ignores deleted; the voting plugin second
+- [ ] The third-party runtime on the same phases: `serialize`, `html`,
+      `modify` batched per response
 - [ ] `route` with core's session and CSRF, `event`, `job`; the failure
       policy
 - [ ] Hosted plugins: the same API over HTTP with a scoped key, events

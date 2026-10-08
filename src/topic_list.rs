@@ -167,6 +167,8 @@ pub struct Prefetched {
     allowed_groups: HashMap<i32, Vec<(i32, String)>>,
     /// `participants_summary` per private message, set by `serialize`.
     participants: HashMap<i32, Vec<Poster>>,
+    /// The bundled plugins' after-load data for the page.
+    plugins: crate::plugins::TopicListData,
 }
 
 /// The topic_users columns the list item reads (`user_data`).
@@ -210,7 +212,7 @@ impl TopicListSerializer<'_> {
         let mut topics: Vec<Value> = Vec::with_capacity(list.topics.len());
         let mut any_poster = false;
         for topic in &list.topics {
-            let posters = posters_summary(topic, &lookup, self.i18n);
+            let posters = self.posters(topic, &lookup);
             for poster in &posters {
                 any_poster = true;
                 if !seen_users.contains(&poster.user.id) {
@@ -347,7 +349,61 @@ impl TopicListSerializer<'_> {
                 ids.extend(allowed.iter().copied());
             }
         }
+        // topic_list_preload_user_ids
+        ids.extend(self.prefetched.plugins.user_ids());
         self.user_lookup_for(&ids).await
+    }
+
+    /// TopicPostersSummary for a topic of the prefetched page: core's
+    /// inputs, rewritten by the plugins (before serialize), then built.
+    pub(crate) fn posters(&self, t: &TopicRow, lookup: &HashMap<i32, LookupUser>) -> Vec<Poster> {
+        let mut inputs = poster_inputs(t, self.i18n);
+        crate::plugins::topic_list_before_serialize(
+            &self.prefetched.plugins,
+            self.i18n,
+            t.id,
+            t.last_post_user_id,
+            &mut inputs,
+        );
+        posters_from(t, lookup, &inputs, self.i18n)
+    }
+
+    /// The bundled plugins' keys on a topic (after serialize), where Rails
+    /// puts them: after the serializer's own attributes.
+    async fn plugin_keys(
+        &mut self,
+        t: &TopicRow,
+        out: &mut Map<String, Value>,
+    ) -> Result<(), TopicListError> {
+        if !crate::plugins::solved::enabled(self.settings)? {
+            return Ok(());
+        }
+        let answered = match &self.prefetched.plugins.solved {
+            Some(data) if self.prefetched.topic_ids.contains(&t.id) => {
+                data.answered.contains(&t.id)
+            }
+            _ => crate::plugins::solved::answered_topics(&mut *self.conn, &[t.id])
+                .await?
+                .contains(&t.id),
+        };
+        let facts = crate::plugins::solved::TopicFacts {
+            id: t.id,
+            user_id: t.user_id,
+            category_id: t.category_id,
+            archetype: t.archetype.clone(),
+            closed: t.closed,
+            archived: t.archived,
+            deleted: false,
+        };
+        crate::plugins::solved::topic_list_keys(
+            &mut *self.conn,
+            self.settings,
+            &facts,
+            answered,
+            out,
+        )
+        .await?;
+        Ok(())
     }
 
     /// UserLookup for an explicit id list.
@@ -528,6 +584,7 @@ impl TopicListSerializer<'_> {
         }
         // can_see_tags?: tagging on, and PMs only for PM taggers.
         if mode == Mode::Reviewable {
+            self.plugin_keys(t, &mut out).await?;
             return Ok(Value::Object(out));
         }
         if mode != Mode::Listable
@@ -543,6 +600,7 @@ impl TopicListSerializer<'_> {
         }
         if matches!(mode, Mode::SearchItem { .. }) {
             out.insert("category_id".into(), json!(t.category_id));
+            self.plugin_keys(t, &mut out).await?;
             return Ok(Value::Object(out));
         }
         if mode == Mode::Suggested {
@@ -590,6 +648,7 @@ impl TopicListSerializer<'_> {
                 .unwrap_or_default();
             out.insert("participant_groups".into(), json!(groups));
         }
+        self.plugin_keys(t, &mut out).await?;
         let poster_json = |p: &Poster| {
             json!({
                 "extras": p.extras,
@@ -625,6 +684,7 @@ impl TopicListSerializer<'_> {
         t: &TopicRow,
         posters: &[Poster],
     ) -> Result<Value, TopicListError> {
+        self.plugin_keys(t, &mut out).await?;
         let logo_small_url = self.logo_small_url().await?;
         let last = posters.iter().find(|p| p.user.id == t.last_post_user_id);
         let last_poster = match last {
@@ -672,6 +732,7 @@ impl TopicListSerializer<'_> {
             }
         }
         out.insert("op_like_count".into(), self.op_like_count(t.id).await?);
+        self.plugin_keys(t, &mut out).await?;
         let logo_small_url = self.logo_small_url().await?;
         let group_ids: Vec<i32> = posters
             .iter()
@@ -808,6 +869,10 @@ impl TopicListSerializer<'_> {
                 .treat_as_new_topic_start_date(&mut *self.conn, self.settings)
                 .await?;
         }
+        // The plugins' after load (TopicList#load_topics' preloads).
+        p.plugins =
+            crate::plugins::topic_list_after_load(&mut *self.conn, self.settings, &topic_ids)
+                .await?;
         self.prefetched = p;
         Ok(())
     }
@@ -1050,16 +1115,39 @@ pub(crate) struct Poster {
     pub(crate) description: Option<String>,
 }
 
-/// `TopicPostersSummary#summary`: up to five posters from author, last
-/// poster and featured users, the last poster shuffled to the back.
+/// `TopicPostersSummary#summary` with core's inputs only, outside a
+/// prefetched page (the serializer's `posters` runs the plugins).
 pub(crate) fn posters_summary(
     t: &TopicRow,
     lookup: &HashMap<i32, LookupUser>,
     i18n: &I18n,
 ) -> Vec<Poster> {
+    posters_from(t, lookup, &poster_inputs(t, i18n), i18n)
+}
+
+/// TopicPostersSummary's inputs: `user_ids` (author, last poster, the
+/// featured users), `descriptions_by_id` from them, and
+/// `last_poster_is_topic_creator?`.
+pub(crate) fn poster_inputs(t: &TopicRow, i18n: &I18n) -> crate::plugins::PosterInputs {
     let mut user_ids: Vec<Option<i32>> = vec![t.user_id, Some(t.last_post_user_id)];
     user_ids.extend(featured_user_ids(t).into_iter().map(Some));
+    crate::plugins::PosterInputs {
+        descriptions: descriptions_by_id(t, &user_ids, i18n),
+        user_ids,
+        last_poster_stays: t.user_id == Some(t.last_post_user_id),
+    }
+}
 
+/// `TopicPostersSummary#summary` from its inputs: up to five posters in
+/// user_ids order, the last poster moved to the back unless they stay,
+/// each with their joined descriptions and the latest/single extras.
+pub(crate) fn posters_from(
+    t: &TopicRow,
+    lookup: &HashMap<i32, LookupUser>,
+    inputs: &crate::plugins::PosterInputs,
+    i18n: &I18n,
+) -> Vec<Poster> {
+    let user_ids = &inputs.user_ids;
     let mut top: Vec<&LookupUser> = Vec::new();
     for id in user_ids.iter().flatten() {
         if let Some(u) = lookup.get(id)
@@ -1071,7 +1159,7 @@ pub(crate) fn posters_summary(
     top.truncate(5);
 
     // shuffle_last_poster_to_back_in
-    if t.user_id != Some(t.last_post_user_id) {
+    if !inputs.last_poster_stays {
         top.retain(|u| u.id != t.last_post_user_id);
         if let Some(last) = lookup.get(&t.last_post_user_id) {
             top.push(last);
@@ -1083,7 +1171,7 @@ pub(crate) fn posters_summary(
     sorted_uniq.dedup();
     let single = sorted_uniq.len() == 1;
 
-    let descriptions = descriptions_by_id(t, &user_ids, i18n);
+    let joiner = i18n.t("poster_description_joiner").unwrap_or(", ");
     top.into_iter()
         .map(|u| {
             let is_last = u.id == t.last_post_user_id;
@@ -1097,7 +1185,13 @@ pub(crate) fn posters_summary(
             Poster {
                 user: u.clone(),
                 extras,
-                description: Some(descriptions.get(&u.id).cloned().unwrap_or_default()),
+                description: Some(
+                    inputs
+                        .descriptions
+                        .get(&u.id)
+                        .map(|d| d.join(joiner))
+                        .unwrap_or_default(),
+                ),
             }
         })
         .collect()
@@ -1126,15 +1220,18 @@ fn featured_user_ids(t: &TopicRow) -> Vec<i32> {
 }
 
 /// `descriptions_by_id`: the first id is the original poster, the second the
-/// most recent poster, later ones frequent or recent posters, joined with
-/// ", ". Stops at the first nil.
-fn descriptions_by_id(t: &TopicRow, user_ids: &[Option<i32>], i18n: &I18n) -> HashMap<i32, String> {
+/// most recent poster, later ones frequent or recent posters (each user's,
+/// joined when the posters are built). Stops at the first nil.
+fn descriptions_by_id(
+    t: &TopicRow,
+    user_ids: &[Option<i32>],
+    i18n: &I18n,
+) -> HashMap<i32, Vec<String>> {
     let recent: Vec<i32> = [t.featured_user3_id, t.featured_user4_id]
         .into_iter()
         .flatten()
         .collect();
-    let joiner = i18n.t("poster_description_joiner").unwrap_or(", ");
-    let mut parts: HashMap<i32, Vec<&str>> = HashMap::new();
+    let mut parts: HashMap<i32, Vec<String>> = HashMap::new();
     let mut order: Vec<i32> = Vec::new();
     for (i, id) in user_ids.iter().enumerate() {
         let Some(id) = id else { break };
@@ -1150,12 +1247,19 @@ fn descriptions_by_id(t: &TopicRow, user_ids: &[Option<i32>], i18n: &I18n) -> Ha
         parts
             .entry(*id)
             .or_default()
-            .push(i18n.t(key).unwrap_or(key));
+            .push(i18n.t(key).unwrap_or(key).to_string());
     }
     parts
-        .into_iter()
-        .map(|(id, p)| (id, p.join(joiner)))
-        .collect()
+}
+
+impl From<crate::plugins::PluginError> for TopicListError {
+    fn from(e: crate::plugins::PluginError) -> Self {
+        match e {
+            crate::plugins::PluginError::Db(e) => TopicListError::Db(e),
+            crate::plugins::PluginError::Setting(e) => TopicListError::Setting(e),
+            crate::plugins::PluginError::Unsupported(e) => TopicListError::Unsupported(e),
+        }
+    }
 }
 
 impl From<crate::guardian::GuardianError> for TopicListError {

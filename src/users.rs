@@ -68,6 +68,16 @@ impl From<Unsupported> for UsersError {
     }
 }
 
+impl From<crate::plugins::PluginError> for UsersError {
+    fn from(e: crate::plugins::PluginError) -> Self {
+        match e {
+            crate::plugins::PluginError::Db(e) => UsersError::Db(e),
+            crate::plugins::PluginError::Setting(e) => UsersError::Setting(e),
+            crate::plugins::PluginError::Unsupported(e) => UsersError::Unsupported(e),
+        }
+    }
+}
+
 impl From<TopicListError> for UsersError {
     fn from(e: TopicListError) -> Self {
         UsersError::TopicList(e)
@@ -746,6 +756,13 @@ impl Users<'_> {
                 self.private().group_users(user.id).await?,
             );
         }
+        // discourse-solved's user card key.
+        if crate::plugins::solved::enabled(self.settings)? {
+            u.insert(
+                "accepted_answers".into(),
+                json!(crate::plugins::solved::solved_count(&mut *self.conn, user.id).await?),
+            );
+        }
         if can_edit {
             u.insert(
                 "user_option".into(),
@@ -1295,6 +1312,38 @@ impl Users<'_> {
 
         // The badges' topics join the summary's under the one root key, as
         // AMS's merge_association does: appended, the first of each id kept.
+        // discourse-solved's keys on the summary's topics
+        // (UserSummarySerializer::TopicSerializer), not on badges' topics.
+        if crate::plugins::solved::enabled(self.settings)? {
+            let ids: Vec<i32> = topics
+                .iter()
+                .filter_map(|t| t["id"].as_i64().map(|id| id as i32))
+                .collect();
+            let answered = crate::plugins::solved::answered_topics(&mut *self.conn, &ids).await?;
+            let facts: Vec<crate::plugins::solved::TopicFacts> = sqlx::query_as(
+                "SELECT id, user_id, category_id, archetype, closed, archived, \
+                        deleted_at IS NOT NULL AS deleted FROM topics WHERE id = ANY($1)",
+            )
+            .bind(&ids)
+            .fetch_all(&mut *self.conn)
+            .await?;
+            for topic in topics.iter_mut() {
+                let id = topic["id"].as_i64().unwrap_or(0) as i32;
+                let (Some(f), Some(map)) =
+                    (facts.iter().find(|f| f.id == id), topic.as_object_mut())
+                else {
+                    continue;
+                };
+                crate::plugins::solved::topic_list_keys(
+                    &mut *self.conn,
+                    self.settings,
+                    f,
+                    answered.contains(&id),
+                    map,
+                )
+                .await?;
+            }
+        }
         for topic in side.topics.drain(..) {
             let id = topic["id"].as_i64().unwrap_or(0) as i32;
             if !topic_ids.contains(&id) {
@@ -1365,6 +1414,13 @@ impl Users<'_> {
             s.insert("badges".into(), Value::Array(b));
         }
         s.insert("top_categories".into(), Value::Array(top_categories));
+        // discourse-solved's summary key.
+        if crate::plugins::solved::enabled(self.settings)? {
+            s.insert(
+                "solved_count".into(),
+                json!(crate::plugins::solved::solved_count(&mut *self.conn, user.id).await?),
+            );
+        }
         out.insert("user_summary".into(), Value::Object(s));
         Ok(Value::Object(out))
     }
