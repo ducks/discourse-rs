@@ -28,6 +28,7 @@ pub(crate) use topics::not_found_response;
 mod session;
 mod site;
 mod sitemap;
+mod solved;
 mod srv;
 mod stylesheets;
 mod tags;
@@ -227,6 +228,11 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/t/{slug}/timings.json",
             delete(read_tracking::destroy_timings),
         )
+        // discourse-solved's AnswerController.
+        .route("/solution/accept", post(solved::accept))
+        .route("/solution/accept.json", post(solved::accept))
+        .route("/solution/unaccept", post(solved::unaccept))
+        .route("/solution/unaccept.json", post(solved::unaccept))
         // TopicsController#set_notifications; {slug} holds the topic id.
         .route(
             "/t/{slug}/notifications",

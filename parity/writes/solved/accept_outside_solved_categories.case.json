@@ -1,0 +1,6 @@
+{
+  "user": "admin",
+  "requests": [
+    { "method": "POST", "path": "/solution/accept", "params": { "id": "36" } }
+  ]
+}

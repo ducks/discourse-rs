@@ -1,0 +1,7 @@
+{
+  "user": "user0",
+  "settings": { "allow_solved_on_all_topics": "true" },
+  "requests": [
+    { "method": "POST", "path": "/solution/accept", "params": { "id": "36" } }
+  ]
+}
