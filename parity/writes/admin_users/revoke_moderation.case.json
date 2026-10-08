@@ -1,0 +1,9 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE users SET moderator = TRUE WHERE id = 2",
+    "INSERT INTO group_users (group_id, user_id, created_at, updated_at) VALUES (2, 2, '2026-10-01 10:00:00', '2026-10-01 10:00:00'), (3, 2, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "UPDATE groups SET user_count = user_count + 1 WHERE id IN (2, 3)"
+  ],
+  "requests": [{ "method": "PUT", "path": "/admin/users/2/revoke_moderation.json" }]
+}

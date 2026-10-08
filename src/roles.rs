@@ -62,9 +62,7 @@ pub async fn bootstrap_first_admin(
 }
 
 /// `grant_moderation!` for a user who is not a moderator yet.
-/// enqueue_staff_welcome_message sends nothing to the singular admin, the
-/// one user bootstrap_first_admin grants it to.
-async fn grant_moderation(
+pub async fn grant_moderation(
     conn: &mut PgConnection,
     i18n: &I18n,
     user_id: i32,
@@ -99,6 +97,27 @@ async fn grant_moderation(
     .bind(user_id)
     .execute(&mut *conn)
     .await?;
+
+    // enqueue_staff_welcome_message(:moderator): none for the singular
+    // admin (no other human admin).
+    let singular: bool = sqlx::query_scalar(
+        "SELECT NOT EXISTS (SELECT 1 FROM users WHERE admin AND id > 0 AND id <> $1)",
+    )
+    .bind(user_id)
+    .fetch_one(&mut *conn)
+    .await?;
+    if !singular {
+        crate::jobs::enqueue(
+            &mut *conn,
+            "send_system_message",
+            json!({
+                "user_id": user_id,
+                "message_type": "welcome_staff",
+                "message_options": { "role": "moderator" },
+            }),
+        )
+        .await?;
+    }
 
     // set_default_notification_levels(:moderators), and :staff.
     let defaults: bool = sqlx::query_scalar(
@@ -222,3 +241,58 @@ pub async fn refresh_staff_groups(conn: &mut PgConnection, i18n: &I18n) -> Resul
     }
     Ok(())
 }
+
+/// `revoke_moderation!` / `revoke_admin!`: set_permission to false, the
+/// staff groups refreshed in the same transaction.
+pub async fn revoke(
+    conn: &mut PgConnection,
+    i18n: &I18n,
+    user_id: i32,
+    permission: Permission,
+) -> Result<(), AppError> {
+    let column = match permission {
+        Permission::Admin => "admin",
+        Permission::Moderator => "moderator",
+    };
+    let mut tx = conn.begin().await?;
+    sqlx::query(&format!(
+        "UPDATE users SET {column} = FALSE, updated_at = clock_timestamp() WHERE id = $1 AND {column}"
+    ))
+    .bind(user_id)
+    .execute(&mut *tx)
+    .await?;
+    refresh_staff_groups(&mut tx, i18n).await?;
+    tx.commit().await?;
+    Ok(())
+}
+
+#[derive(Clone, Copy)]
+pub enum Permission {
+    Admin,
+    Moderator,
+}
+
+/// StaffActionLogger's grant and revoke logs (`log_grant_moderation`,
+/// `log_revoke_moderation`, `log_revoke_admin`).
+pub async fn log(
+    conn: &mut PgConnection,
+    acting_user_id: i32,
+    target_user_id: i32,
+    action: i32,
+) -> Result<(), AppError> {
+    sqlx::query(
+        "INSERT INTO user_histories (action, acting_user_id, target_user_id, admin_only, created_at, updated_at) \
+         VALUES ($1, $2, $3, TRUE, clock_timestamp(), clock_timestamp())",
+    )
+    .bind(action)
+    .bind(acting_user_id)
+    .bind(target_user_id)
+    .execute(&mut *conn)
+    .await?;
+    Ok(())
+}
+
+/// UserHistory.actions
+pub const REVOKE_ADMIN: i32 = 33;
+pub const REVOKE_MODERATION: i32 = 35;
+pub const LOG_GRANT_MODERATION: i32 = GRANT_MODERATION;

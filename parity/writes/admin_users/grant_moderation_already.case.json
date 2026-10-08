@@ -1,0 +1,4 @@
+{
+  "user": "admin",
+  "requests": [{ "method": "PUT", "path": "/admin/users/1/grant_moderation.json" }]
+}

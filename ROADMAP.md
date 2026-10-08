@@ -458,7 +458,9 @@ API keys for posting, and grant_moderation! for the first admin's login.
       against Rails
 - [x] Users: the admin view of a user (`GET /admin/users/:id`), measured
       against Rails
-- [ ] Users: granting and revoking admin and moderation, trust levels and their locks,
+- [x] Users: granting and revoking moderation, revoking admin (granting
+      admin's confirmation flow is next)
+- [ ] Users: granting admin (its second factor or email confirmation), trust levels and their locks,
       approving, activating and deactivating, logging out, deleting,
       anonymizing and merging, impersonating, penalties on several users
 - [ ] Groups: creating, editing and deleting, members and owners in bulk,

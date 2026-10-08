@@ -41,11 +41,20 @@ pub struct Context<'a> {
 }
 
 /// The user's detailed admin view, None for an unknown id.
+/// The options #show renders with; the role actions render without them.
+#[derive(Clone, Copy)]
+pub struct ShowOptions {
+    /// `include_silence_reason`, `similar_users_count` and `include_ip:
+    /// guardian.can_see_ip?`
+    pub show: bool,
+}
+
 pub async fn show(
     conn: &mut PgConnection,
     cx: &Context<'_>,
     guardian: &Guardian,
     user_id: i32,
+    options: ShowOptions,
 ) -> Result<Option<Value>, AppError> {
     let s = cx.settings;
     let row: Option<Row> =
@@ -135,7 +144,7 @@ pub async fn show(
     let opts = EntryOptions {
         emails_desired: false,
         can_be_suspended: false,
-        silence_reason: Some(first_line(&full_silence_reason)),
+        silence_reason: options.show.then(|| first_line(&full_silence_reason)),
         suspend_reason: None,
     };
     let mut u = admin_users::entry(
@@ -205,7 +214,15 @@ pub async fn show(
             json!(x.registration_ip_address),
         );
     }
-    u.insert("include_ip".into(), json!(can_see_ip));
+    // include_ip: the option, null without it.
+    u.insert(
+        "include_ip".into(),
+        if options.show {
+            json!(can_see_ip)
+        } else {
+            Value::Null
+        },
+    );
     let can_check_sso = guardian.is_admin()
         || (guardian.is_moderator() && s.get("moderators_view_sso_details")?.truthy());
     if can_check_sso {
@@ -395,7 +412,9 @@ pub async fn show(
             .fetch_one(&mut *conn)
             .await?,
         };
-    u.insert("similar_users_count".into(), json!(similar));
+    if options.show {
+        u.insert("similar_users_count".into(), json!(similar));
+    }
     // include_latest_export?: can_export_entity?("user_archive", id).
     if guardian.is_admin() || guardian.is_moderator() {
         u.insert("latest_export".into(), Value::Null);

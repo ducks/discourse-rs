@@ -301,7 +301,194 @@ pub async fn show(
         development: state.config.rails_env == crate::config::RailsEnv::Development,
     };
     Ok(
-        match crate::admin_user_show::show(&mut conn, &cx, &guardian, id).await? {
+        match crate::admin_user_show::show(
+            &mut conn,
+            &cx,
+            &guardian,
+            id,
+            crate::admin_user_show::ShowOptions { show: true },
+        )
+        .await?
+        {
+            Some(user) => Json(user).into_response(),
+            None => super::topics::not_found_response(&state),
+        },
+    )
+}
+
+/// Which role a route grants or revokes.
+#[derive(Clone, Copy)]
+enum RoleChange {
+    GrantModeration,
+    RevokeModeration,
+    RevokeAdmin,
+}
+
+/// PUT /admin/users/:id/grant_moderation
+pub async fn grant_moderation(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(user_id): Path<String>,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    change_role(
+        state,
+        guardian,
+        user_id,
+        headers,
+        uri,
+        body,
+        RoleChange::GrantModeration,
+    )
+    .await
+}
+
+/// PUT /admin/users/:id/revoke_moderation
+pub async fn revoke_moderation(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(user_id): Path<String>,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    change_role(
+        state,
+        guardian,
+        user_id,
+        headers,
+        uri,
+        body,
+        RoleChange::RevokeModeration,
+    )
+    .await
+}
+
+/// PUT /admin/users/:id/revoke_admin
+pub async fn revoke_admin(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(user_id): Path<String>,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    change_role(
+        state,
+        guardian,
+        user_id,
+        headers,
+        uri,
+        body,
+        RoleChange::RevokeAdmin,
+    )
+    .await
+}
+
+/// Admin::UsersController#grant_moderation, #revoke_moderation and
+/// #revoke_admin: for admins (AdminConstraint), the guardian's check, the
+/// change, the staff log, then the user's AdminDetailedUserSerializer.
+async fn change_role(
+    state: AppState,
+    guardian: crate::guardian::Guardian,
+    user_id: String,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+    change: RoleChange,
+) -> Result<Response, AppError> {
+    let p = params::parse(uri.query(), &headers, &body);
+    if !csrf_ok(&state, &headers, &form_pairs(&p), uri.path(), "PUT") {
+        return Ok(bad_csrf());
+    }
+    if !guardian.is_admin() {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    let Ok(user_id) = user_id
+        .strip_suffix(".json")
+        .unwrap_or(&user_id)
+        .parse::<i32>()
+    else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    let mut conn = state.pool.acquire().await?;
+    let target: Option<(bool, bool)> =
+        sqlx::query_as("SELECT admin, moderator FROM users WHERE id = $1")
+            .bind(user_id)
+            .fetch_optional(&mut *conn)
+            .await?;
+    let Some((admin, moderator)) = target else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    // can_administer?: a real user; can_administer_user?: not oneself.
+    let administer = user_id > 0;
+    let allowed = match change {
+        RoleChange::GrantModeration => administer && !moderator,
+        RoleChange::RevokeModeration => administer && moderator,
+        RoleChange::RevokeAdmin => administer && guardian.user_id() != Some(user_id) && admin,
+    };
+    if !allowed {
+        return Ok(super::search::invalid_access(&state));
+    }
+    let acting = guardian.user_id().unwrap_or_default();
+    match change {
+        RoleChange::GrantModeration => {
+            crate::roles::grant_moderation(&mut conn, &state.i18n, user_id).await?;
+            crate::roles::log(
+                &mut conn,
+                acting,
+                user_id,
+                crate::roles::LOG_GRANT_MODERATION,
+            )
+            .await?;
+        }
+        RoleChange::RevokeModeration => {
+            crate::roles::revoke(
+                &mut conn,
+                &state.i18n,
+                user_id,
+                crate::roles::Permission::Moderator,
+            )
+            .await?;
+            crate::roles::log(&mut conn, acting, user_id, crate::roles::REVOKE_MODERATION).await?;
+        }
+        RoleChange::RevokeAdmin => {
+            crate::roles::revoke(
+                &mut conn,
+                &state.i18n,
+                user_id,
+                crate::roles::Permission::Admin,
+            )
+            .await?;
+            crate::roles::log(&mut conn, acting, user_id, crate::roles::REVOKE_ADMIN).await?;
+        }
+    }
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let urls = crate::url::Urls {
+        config: &state.config,
+        settings: &settings,
+    };
+    let cx = crate::admin_user_show::Context {
+        settings: &settings,
+        defs: &state.site_setting_defs,
+        i18n: &state.i18n,
+        urls: &urls,
+        globals: &state.config.globals,
+        development: state.config.rails_env == crate::config::RailsEnv::Development,
+    };
+    Ok(
+        match crate::admin_user_show::show(
+            &mut conn,
+            &cx,
+            &guardian,
+            user_id,
+            crate::admin_user_show::ShowOptions { show: false },
+        )
+        .await?
+        {
             Some(user) => Json(user).into_response(),
             None => super::topics::not_found_response(&state),
         },
