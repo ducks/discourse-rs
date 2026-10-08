@@ -342,7 +342,14 @@ impl TopicView<'_> {
             out.insert("tags".into(), tags);
             out.insert("tags_descriptions".into(), descriptions);
         }
-        let fancy_title = crate::topic_query::fancy_title(&topic)?;
+        let fancy_title = crate::topic_query::fancy_title(
+            &mut *self.conn,
+            self.settings,
+            topic.id,
+            &topic.title,
+            topic.fancy_title.as_deref(),
+        )
+        .await?;
         out.insert("fancy_title".into(), json!(fancy_title));
         out.insert("id".into(), json!(topic.id));
         out.insert("title".into(), json!(topic.title));

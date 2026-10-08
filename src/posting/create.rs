@@ -1068,10 +1068,7 @@ async fn create_topic(
     let slug = slug_for(&plan.title, &s.get("default_locale")?.to_s())?;
     let fancy_title = crate::posting::text::fancy_title(
         &plan.title,
-        crate::posting::text::EmojiEscape {
-            shortcuts: s.get("enable_emoji")?.truthy() && s.get("enable_emoji_shortcuts")?.truthy(),
-            inline: s.get("enable_inline_emoji_translation")?.truthy(),
-        },
+        crate::posting::text::EmojiEscape::from_settings(s)?,
     )?;
     let (topic_id, created_at): (i32, NaiveDateTime) = sqlx::query_as(
         "INSERT INTO topics (title, fancy_title, slug, user_id, last_post_user_id, visible, category_id, \

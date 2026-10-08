@@ -177,7 +177,14 @@ async fn topics_partial(
             t(title_key)
         ));
         for row in rows {
-            let fancy = crate::topic_query::fancy_title(row)?;
+            let fancy = crate::topic_query::fancy_title(
+                &mut *conn,
+                settings,
+                row.id,
+                &row.title,
+                row.fancy_title.as_deref(),
+            )
+            .await?;
             let badge = match row.category_id {
                 Some(id) => {
                     crate::category_badge::html_for(&mut *conn, settings, base_path, id).await?
