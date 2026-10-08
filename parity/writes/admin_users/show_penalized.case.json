@@ -1,0 +1,9 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE users SET suspended_at = '2026-10-01 10:00:00', suspended_till = '2099-01-01 00:00:00', silenced_till = '2099-01-01 00:00:00' WHERE id = 2",
+    "INSERT INTO user_histories (action, acting_user_id, target_user_id, details, admin_only, created_at, updated_at) VALUES (10, 1, 2, 'repeated spam\nsee the log', FALSE, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO user_histories (action, acting_user_id, target_user_id, details, admin_only, created_at, updated_at) VALUES (30, 1, 2, 'cool off', FALSE, '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "requests": [{ "method": "GET", "path": "/admin/users/2.json" }]
+}

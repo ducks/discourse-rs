@@ -369,3 +369,11 @@ GET /admin/users/list.json?filter=user as=admin ignore=/*/last_seen_age,/*/last_
 GET /admin/users/list.json?filter=user0,user2 as=admin ignore=/*/last_seen_age,/*/last_emailed_age,/*/created_at_age
 GET /admin/users/list.json?email=user1@example.com as=admin ignore=/*/last_seen_age,/*/last_emailed_age,/*/created_at_age
 GET /admin/users/list.json?filter=127.0.0.1 as=admin ignore=/*/last_seen_age,/*/last_emailed_age,/*/created_at_age
+
+# admin/users#show: AdminDetailedUserSerializer. The ages and next_penalty
+# count from the request's time.
+GET /admin/users/1.json as=admin ignore=/last_seen_age,/last_emailed_age,/created_at_age,/next_penalty
+GET /admin/users/2.json as=admin ignore=/last_seen_age,/last_emailed_age,/created_at_age,/next_penalty
+GET /admin/users/3.json as=admin ignore=/last_seen_age,/last_emailed_age,/created_at_age,/next_penalty
+GET /admin/users/4.json as=admin ignore=/last_seen_age,/last_emailed_age,/created_at_age,/next_penalty
+GET /admin/users/5.json as=admin ignore=/last_seen_age,/last_emailed_age,/created_at_age,/next_penalty

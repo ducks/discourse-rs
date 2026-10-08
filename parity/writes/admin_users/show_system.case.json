@@ -1,0 +1,4 @@
+{
+  "user": "admin",
+  "requests": [{ "method": "GET", "path": "/admin/users/-1.json" }]
+}
