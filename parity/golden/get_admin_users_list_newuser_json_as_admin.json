@@ -1,0 +1,8 @@
+{
+  "request": "GET /admin/users/list/newuser.json as=admin",
+  "source": "http://127.0.0.1:3042",
+  "recorded_at": "2026-10-08T05:28:30.418307123+00:00",
+  "status": 200,
+  "content_type": "application/json; charset=utf-8",
+  "body": "[]"
+}

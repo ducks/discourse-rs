@@ -1,0 +1,8 @@
+{
+  "request": "GET /admin/users/list/staff.json as=admin",
+  "source": "http://127.0.0.1:3042",
+  "recorded_at": "2026-10-08T05:28:30.255153285+00:00",
+  "status": 200,
+  "content_type": "application/json; charset=utf-8",
+  "body": "[{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"email\":\"admin@example.com\",\"secondary_emails\":[],\"active\":true,\"admin\":true,\"moderator\":true,\"last_seen_at\":\"2026-10-01T22:32:51.276Z\",\"last_emailed_at\":null,\"created_at\":\"2026-07-25T05:59:14.988Z\",\"last_seen_age\":543338.9740089379,\"last_emailed_age\":null,\"created_at_age\":6478155.262152079,\"trust_level\":4,\"manual_locked_trust_level\":null,\"title\":null,\"time_read\":0,\"staged\":false,\"can_be_deleted\":false,\"can_be_suspended\":false,\"silence_reason\":null,\"suspend_reason\":null,\"days_visited\":1,\"posts_read_count\":6,\"topics_entered\":0,\"post_count\":1}]"
+}
