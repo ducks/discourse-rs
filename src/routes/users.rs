@@ -248,11 +248,6 @@ async fn respond(
     } else {
         None
     };
-    let actions = if visible && !settings.get("hide_user_activity_tab")?.truthy() {
-        users.actions(&user, PUBLIC_TYPES, 0, 30, None).await?
-    } else {
-        Vec::new()
-    };
     let vs = super::session::viewer_state(&state, &headers, &settings, &guardian)?;
     let mut site = crate::html::Site::from_settings(&settings, base_path)?;
     site.viewer = vs.viewer.clone();
@@ -260,13 +255,16 @@ async fn respond(
         .await?;
     site.bus_position = bus_position;
     let mut page = profile_page(
+        &mut conn,
         site,
+        &state.i18n,
+        &guardian,
         &user,
         &show_doc,
         summary_doc.as_ref(),
-        &actions,
         &settings,
-    )?;
+    )
+    .await?;
     // crawlable_meta_data(title: username, image: the 45px avatar)
     let avatar = show_doc["user"]["avatar_template"]
         .as_str()
@@ -374,104 +372,41 @@ pub struct ProfilePage {
     pub bus_position: String,
     pub chrome: Chrome,
     pub username: String,
-    pub name: Option<String>,
-    pub title: Option<String>,
-    pub hidden: bool,
-    pub joined: String,
-    pub last_posted: Option<String>,
-    pub stats: Vec<(String, String)>,
-    pub badges: Vec<BadgeItem>,
-    pub top_categories: Vec<CategoryCount>,
-    pub activity: Vec<ActivityItem>,
+    /// The `.user-main` container (crate::user_profile_view).
+    pub main: String,
 }
 
-pub struct BadgeItem {
-    pub name: String,
-    pub description: String,
-}
-
-pub struct CategoryCount {
-    pub name: String,
-    pub url: String,
-    pub count: i64,
-}
-
-pub struct ActivityItem {
-    pub kind: String,
-    pub title: String,
-    pub url: String,
-    pub excerpt: String,
-    pub created_at: String,
-}
-
-fn profile_page(
+#[allow(clippy::too_many_arguments)]
+async fn profile_page(
+    conn: &mut sqlx::PgConnection,
     site: crate::html::Site,
+    i18n: &crate::i18n::I18n,
+    guardian: &crate::guardian::Guardian,
     user: &User,
     show: &Value,
     summary: Option<&Value>,
-    actions: &[Value],
     settings: &SiteSettings,
 ) -> Result<ProfilePage, AppError> {
-    let base = site.base_path.clone();
-    let u = &show["user"];
-    let hidden = u["profile_hidden"] == json!(true);
-    let mut stats = Vec::new();
-    let mut badges = Vec::new();
-    let mut top_categories = Vec::new();
-    if let Some(s) = summary {
-        let us = &s["user_summary"];
-        for (label, key) in [
-            ("Topics created", "topic_count"),
-            ("Posts created", "post_count"),
-            ("Likes given", "likes_given"),
-            ("Likes received", "likes_received"),
-            ("Days visited", "days_visited"),
-        ] {
-            stats.push((label.to_string(), us[key].to_string()));
-        }
-        for c in us["top_categories"].as_array().into_iter().flatten() {
-            let id = c["id"].as_i64().unwrap_or(0);
-            let slug = c["slug"].as_str().unwrap_or("");
-            top_categories.push(CategoryCount {
-                name: c["name"].as_str().unwrap_or("").to_string(),
-                url: format!("{base}/c/{slug}/{id}"),
-                count: c["topic_count"].as_i64().unwrap_or(0)
-                    + c["post_count"].as_i64().unwrap_or(0),
-            });
-        }
-        for b in s["badges"].as_array().into_iter().flatten() {
-            badges.push(BadgeItem {
-                name: b["name"].as_str().unwrap_or("").to_string(),
-                description: b["description"].as_str().unwrap_or("").to_string(),
-            });
-        }
-    }
-    let activity = actions
-        .iter()
-        .map(|a| {
-            let kind = match a["action_type"].as_i64() {
-                Some(1) => "liked",
-                Some(4) => "created",
-                Some(5) => "replied",
-                _ => "activity",
-            };
-            let slug = a["slug"].as_str().unwrap_or("topic");
-            let topic_id = a["topic_id"].as_i64().unwrap_or(0);
-            let post_number = a["post_number"].as_i64().unwrap_or(1);
-            let mut url = format!("{base}/t/{slug}/{topic_id}");
-            if post_number > 1 {
-                url.push_str(&format!("/{post_number}"));
-            }
-            ActivityItem {
-                kind: kind.to_string(),
-                title: a["title"].as_str().unwrap_or("").to_string(),
-                url,
-                excerpt: a["excerpt"].as_str().unwrap_or("").to_string(),
-                created_at: a["created_at"].as_str().unwrap_or("").to_string(),
-            }
-        })
-        .collect();
-    let _ = settings;
+    let categories = crate::topic_list_view::categories(conn).await?;
+    let cx = crate::topic_list_view::ListContext {
+        i18n,
+        base_path: &site.base_path,
+        now: crate::clock::now(),
+        categories: &categories,
+        expand_all_pinned: false,
+        member_trust_level: site.viewer.as_ref().map(|v| v.trust_level),
+        settings: crate::topic_list_view::ListSettings::load(settings)?,
+    };
+    let viewer = crate::user_profile_view::Viewer {
+        id: guardian.user_id(),
+        admin: guardian.is_admin(),
+        staff: guardian.is_staff(),
+    };
+    let profile_settings = crate::user_profile_view::ProfileSettings {
+        enable_badges: settings.get("enable_badges")?.truthy(),
+        hide_user_activity_tab: settings.get("hide_user_activity_tab")?.truthy(),
+    };
+    let main = crate::user_profile_view::render(&cx, &profile_settings, &viewer, show, summary);
     Ok(ProfilePage {
         site_title: site.site_title,
         viewer: site.viewer,
@@ -481,15 +416,7 @@ fn profile_page(
         base_path: site.base_path,
         crawler: Crawler::default(),
         username: user.username.clone(),
-        name: u["name"].as_str().map(str::to_string),
-        title: user.title.clone(),
-        hidden,
-        joined: crate::topic_list::time_json(user.created_at),
-        last_posted: user.last_posted_at.map(crate::topic_list::time_json),
-        stats,
-        badges,
-        top_categories,
-        activity,
+        main,
     })
 }
 

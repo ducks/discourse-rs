@@ -102,7 +102,9 @@ async fn hidden_profiles_follow_the_anonymous_rules() {
     assert!(json["user"].get("trust_level").is_none());
     let (status, _, html) = get(&db.pool, "/u/user0").await;
     assert_eq!(status, StatusCode::OK);
-    assert!(html.contains("This profile is hidden."));
+    assert!(html.contains(
+        r#"<p class="user-profile-hidden">This user&#x27;s public profile is hidden.</p>"#
+    ));
     set_setting(&db.pool, "hide_new_user_profiles", BOOL, "f").await;
     let (_, _, body) = get(&db.pool, "/u/user0.json").await;
     let json: Value = serde_json::from_str(&body).unwrap();
@@ -159,12 +161,15 @@ async fn profile_page_renders_summary_and_activity() {
     assert_eq!(status, StatusCode::OK);
     assert!(noindex(&headers));
     assert!(html.contains("<title>Profile - user1 - Discourse</title>"));
-    assert!(html.contains(r#"<h2 class="username">user1</h2>"#));
-    assert!(html.contains("<dt>Topics created</dt><dd>1</dd>"));
-    assert!(html.contains(r#"<span class="badge-name">Member</span>"#));
-    assert!(html.contains(r#"<a href="/c/sub-general/34">Sub General</a>"#));
-    assert!(html.contains(r#"<span class="action-kind">replied</span> <a href="/t/parity-fixture-replies-and-posters/35/2">"#));
-    assert!(html.contains(r#"<span class="action-kind">liked</span>"#));
+    // The Ember profile: the names, the summary's stats, top replies,
+    // top categories and badge cards.
+    assert!(html.contains(r#"<div class="username user-profile-names__primary">user1 "#));
+    assert!(html.contains(
+        r#"<li class="stats-topic-count linked-stat"><a href="/u/user1/activity/topics">"#
+    ));
+    assert!(html.contains(r#"<a href="/t/parity-fixture-replies-and-posters/35/2">"#));
+    assert!(html.contains(r#"href="/c/general/sub-general/34""#));
+    assert!(html.contains(r#"data-badge-slug="member""#));
 
     // The other tails render the same page; /users is an alias.
     for path in [
@@ -176,7 +181,7 @@ async fn profile_page_renders_summary_and_activity() {
         let (status, _, html) = get(&db.pool, path).await;
         assert_eq!(status, StatusCode::OK, "{path}");
         assert!(
-            html.contains(r#"<h2 class="username">user1</h2>"#),
+            html.contains(r#"<div class="username user-profile-names__primary">user1 "#),
             "{path}"
         );
     }

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+{% import "macros.html" as m %}
+<html lang="{{ lang }}">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {%- if !chrome.favicon_url.is_empty() %}
+    <link rel="icon" type="{{ chrome.favicon_type }}" href="{{ chrome.favicon_url }}">
+    {%- endif %}
+    {%- if !chrome.apple_touch_icon_url.is_empty() %}
+    <link rel="apple-touch-icon" type="image/png" href="{{ chrome.apple_touch_icon_url }}">
+    {%- endif %}
+    <title>{% block title %}{{ site_title }}{% endblock %}</title>
+    <meta name="description" content="{{ crawler.description }}">
+    {% if !crawler.canonical.is_empty() %}<link rel="canonical" href="{{ crawler.canonical }}">{% endif %}
+    {% if !crawler.title.is_empty() %}
+    <meta property="og:site_name" content="{{ site_title }}">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary">
+    {% if let Some(image) = crawler.image %}
+    <meta name="twitter:image" content="{{ image }}">
+    <meta property="og:image" content="{{ image }}">
+    {% endif %}
+    <meta property="og:url" content="{{ crawler.url }}">
+    <meta name="twitter:url" content="{{ crawler.url }}">
+    <meta property="og:title" content="{{ crawler.title }}">
+    <meta name="twitter:title" content="{{ crawler.title }}">
+    {% if !crawler.og_description.is_empty() %}
+    <meta property="og:description" content="{{ crawler.og_description }}">
+    <meta name="twitter:description" content="{{ crawler.og_description }}">
+    {% endif %}
+    {% endif %}
+    {% if let Some(v) = viewer %}
+    <meta name="csrf-param" content="authenticity_token" />
+    <meta name="csrf-token" content="{{ v.csrf_token }}" />
+    {% endif %}
+    {% if !bus_position.is_empty() %}
+    <meta name="bus-position" content="{{ bus_position }}">
+    {% endif %}
+    {% block head %}{% endblock %}
+    <link rel="stylesheet" href="{{ base_path }}/assets/color_definitions_light.css">
+    <link rel="stylesheet" href="{{ base_path }}/assets/discourse.css">
+    {#- Styles of the pages not ported to Discourse's look yet. -#}
+    <link rel="stylesheet" href="{{ base_path }}/assets/site.css">
+  </head>
+  {#- Rails' no_ember layout, for its server-rendered pages (the error
+      pages): app/views/layouts/no_ember.html.erb with
+      application/_header.html.erb. -#}
+  <body class="no-ember">
+    {{ crate::routes::ICONS_SVG|safe }}
+    <section id="main">
+      <header class="d-header">
+        <div class="wrap">
+          <div class="contents clearfix">
+            <div class="title">
+              <a href="{{ base_path }}/">
+                {%- if chrome.logo_url.is_empty() -%}
+                <h2 id="site-text-logo">{{ site_title }}</h2>
+                {%- else -%}
+                <picture><img src="{{ chrome.logo_url }}" alt="{{ site_title }}" id="site-logo"></picture>
+                {%- endif -%}
+              </a>
+            </div>
+            <div class="panel clearfix">
+              {%- if viewer.is_none() %}
+              <span class="header-buttons">
+                <span class="auth-buttons">
+                  {%- if chrome.can_signup %}
+                  <a href="{{ base_path }}/signup" class="btn btn-text btn-primary btn-small sign-up-button">Sign Up</a>
+                  {%- endif %}
+                  <a href="{{ base_path }}/login" class="btn btn-icon-text btn-primary btn-small login-button"><svg class="fa d-icon d-icon-user svg-icon svg-string" xmlns="http://www.w3.org/2000/svg"><use href="#user"></use></svg>Log In</a>
+                </span>
+              </span>
+              {%- endif %}
+            </div>
+          </div>
+        </div>
+      </header>
+      <div id="main-outlet"{% block main_outlet_attrs %} class="wrap"{% endblock %}>
+        {% block content %}{% endblock %}
+      </div>
+    </section>
+  </body>
+</html>

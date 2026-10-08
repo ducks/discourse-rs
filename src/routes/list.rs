@@ -369,6 +369,14 @@ pub async fn latest(
     site.bus_position = bus_position;
     let mut page =
         crate::html::latest_page(&mut conn, site, &json, &state.i18n, &settings, false).await?;
+    page.banner = crate::html::welcome_banner(
+        &state.i18n,
+        &settings,
+        page.viewer.as_ref(),
+        base_path,
+        "latest",
+    )?;
+    page.breadcrumbs = crate::html::breadcrumbs(&state.i18n, &settings)?;
     page.nav = crate::html::nav_items(
         &state.i18n,
         &settings,
@@ -670,6 +678,13 @@ async fn categories_response(
     .await?;
     site.bus_position = bus_position;
     let mut page = crate::html::categories_page(&mut conn, &state.i18n, site, &doc).await?;
+    page.banner = crate::html::welcome_banner(
+        &state.i18n,
+        &settings,
+        page.viewer.as_ref(),
+        state.config.globals.relative_url_root(),
+        "categories",
+    )?;
     let uri = uri.unwrap_or_default();
     page.crawler = list_crawler(&mut conn, &state, &settings, &uri, None, None).await?;
     let body = page.render().map_err(crate::html::HtmlError::from)?;
@@ -934,6 +949,14 @@ async fn front_list(
     site.bus_position = bus_position;
     let mut page =
         crate::html::latest_page(&mut conn, site, &doc, &state.i18n, &settings, false).await?;
+    page.banner = crate::html::welcome_banner(
+        &state.i18n,
+        &settings,
+        page.viewer.as_ref(),
+        state.config.globals.relative_url_root(),
+        kind.name(),
+    )?;
+    page.breadcrumbs = crate::html::breadcrumbs(&state.i18n, &settings)?;
     if matches!(kind, ListKind::Latest | ListKind::New | ListKind::Unread) {
         page.live_filter = kind.name().to_string();
         page.live_since = live_since;

@@ -2,6 +2,7 @@
 {% import "macros.html" as m %}
 {% block title %}{% if let Some(h) = heading %}{{ h.name }}{% else if let Some(t) = tag %}Topics tagged {{ t.name }}{% else %}Latest topics{% endif %} - {{ site_title }}{% endblock %}
 {% block content %}
+{{ banner|safe }}
 {% if let Some(h) = heading %}
 <h1 class="category-heading">
   {% if let Some(p) = h.parent %}<a href="{{ p.url }}">{{ p.name }}</a> &rsaquo; {% endif %}<a href="{{ h.url }}">{{ h.name }}</a>
@@ -19,6 +20,7 @@
 <div class="list-controls">
   <div class="container">
     <section class="navigation-container">
+      {{ breadcrumbs|safe }}
       <ul class="nav nav-pills" id="navigation-bar">
         {%- for item in nav %}
         <li class="{% if item.active %}active {% endif %}{% if item.has_icon %}has-icon {% endif %}{{ item.name }} nav-item_{{ item.name }}" title="{{ item.title }}">
