@@ -626,7 +626,7 @@ pub async fn password_reset_update(
 
 /// `EmailToken.confirm(token, scope:)`: an unconfirmed, unexpired token of
 /// the scope (or none) confirmed, its user activated; the user's id.
-pub(super) async fn confirm_email_token(
+pub(crate) async fn confirm_email_token(
     conn: &mut sqlx::PgConnection,
     settings: &SiteSettings,
     token: &str,

@@ -1,0 +1,13 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO user_auth_tokens (id, user_id, auth_token, prev_auth_token, rotated_at, created_at, updated_at) VALUES (9401, 2, 'token-a', 'token-a', now(), now(), now()), (9402, 2, 'token-b', 'token-b', now(), now(), now())",
+    "INSERT INTO push_subscriptions (user_id, data, created_at, updated_at) VALUES (2, '{\"endpoint\":\"https://push.example.com/x\"}', now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/users/2/log_out.json"
+    }
+  ]
+}

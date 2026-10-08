@@ -48,6 +48,7 @@ pub mod promotion;
 pub mod read_tracking;
 pub mod review;
 pub mod review_list;
+pub mod reviewable_user;
 pub mod reviewables;
 pub mod roles;
 pub mod routes;

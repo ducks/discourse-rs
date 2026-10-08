@@ -463,9 +463,10 @@ API keys for posting, and grant_moderation! for the first admin's login.
       admin's confirmation flow is next)
 - [x] Users: trust levels and their locks (`Promotion`), measured against
       Rails; the badge grant queue waits for badges
+- [x] Users: approving, activating, deactivating and logging out,
+      measured against Rails
 - [ ] Users: granting admin (its second factor or email confirmation),
-      approving, activating and deactivating, logging out, deleting,
-      anonymizing and merging, impersonating, penalties on several users
+      deleting, anonymizing and merging, impersonating, penalties on several users
 - [ ] Groups: creating, editing and deleting, members and owners in bulk,
       automatic membership by email domain
 - [ ] Logs: staff actions, screened emails, IPs and URLs, search logs,

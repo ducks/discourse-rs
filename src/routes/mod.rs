@@ -307,6 +307,32 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/admin/users/{user_id}/trust_level_lock.json",
             put(admin_users::trust_level_lock),
         )
+        .route("/admin/users/{user_id}/log_out", post(admin_users::log_out))
+        .route(
+            "/admin/users/{user_id}/log_out.json",
+            post(admin_users::log_out),
+        )
+        .route(
+            "/admin/users/{user_id}/activate",
+            put(admin_users::activate),
+        )
+        .route(
+            "/admin/users/{user_id}/activate.json",
+            put(admin_users::activate),
+        )
+        .route(
+            "/admin/users/{user_id}/deactivate",
+            put(admin_users::deactivate),
+        )
+        .route(
+            "/admin/users/{user_id}/deactivate.json",
+            put(admin_users::deactivate),
+        )
+        .route("/admin/users/{user_id}/approve", put(admin_users::approve))
+        .route(
+            "/admin/users/{user_id}/approve.json",
+            put(admin_users::approve),
+        )
         .route("/admin/users/{user_id}/suspend", put(admin_users::suspend))
         .route(
             "/admin/users/{user_id}/suspend.json",

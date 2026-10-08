@@ -1,0 +1,71 @@
+{
+  "name": "activate_already_active",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/4/activate.json"
+    }
+  ],
+  "started_at": "2026-10-08T06:52:54.53048",
+  "transaction_started_at": "2026-10-08T06:52:51.819376",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 135,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "spj9utNJRVUuKJNNdB+0hTpzADg=",
+            "created_at": "2026-10-08T06:52:53.052732",
+            "rotated_at": "2026-10-08T06:52:53.047645",
+            "updated_at": "2026-10-08T06:52:53.052732",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "spj9utNJRVUuKJNNdB+0hTpzADg=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 135,
+            "seen_at": "2026-10-08T06:52:54.537712",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "spj9utNJRVUuKJNNdB+0hTpzADg=",
+            "created_at": "2026-10-08T06:52:53.052732",
+            "rotated_at": "2026-10-08T06:52:53.047645",
+            "updated_at": "2026-10-08T06:52:53.052732",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "spj9utNJRVUuKJNNdB+0hTpzADg=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "recorded_from": {
+    "case": "ce38e7788d0c7096479b5352b293abdf0be4a746a42f3d7d596a2fb6622b0cef",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
