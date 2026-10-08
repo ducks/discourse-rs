@@ -1,0 +1,6 @@
+{
+  "user": "user1",
+  "requests": [
+    { "method": "DELETE", "path": "/t/6/timings.json", "params": { "last": "1" } }
+  ]
+}

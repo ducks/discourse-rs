@@ -446,6 +446,7 @@ async fn render_post(
         deleted: topic_ctx.deleted_at.is_some(),
         can_delete: guardian.can_delete_topic(settings, &topic_ctx)?,
         can_recover: guardian.can_recover_topic(&topic_ctx),
+        defer_to: String::new(),
         op_map: String::new(),
     };
     // The post shown above it, for its reply-to tab and time gap.

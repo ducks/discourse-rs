@@ -1,0 +1,5 @@
+{
+  "requests": [
+    { "method": "DELETE", "path": "/t/35/timings.json", "params": { "last": "1" } }
+  ]
+}

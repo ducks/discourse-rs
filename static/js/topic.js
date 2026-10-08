@@ -96,6 +96,38 @@
         closeTrackingMenu();
       }
     }
+    // Mark unread (deferTopic): stop timing the page, unread its last
+    // post, then go home (or to the message's inbox).
+    var defer = event.target.closest("[data-defer-url]");
+    if (defer) {
+      document.dispatchEvent(new Event("screen-track:stop"));
+      var headers = {};
+      try {
+        headers = JSON.parse(document.body.getAttribute("hx-headers") || "{}");
+      } catch (e) {
+        // No token: the server refuses the request.
+      }
+      fetch(defer.dataset.deferUrl, {
+        method: "DELETE",
+        headers: headers,
+        credentials: "same-origin",
+      }).then(function (r) {
+        if (r.ok) {
+          location.href = defer.dataset.deferTo;
+          return;
+        }
+        // popupAjaxError: the error the server gave.
+        return r
+          .json()
+          .then(function (body) {
+            window.alert((body.errors || [r.statusText]).join("\n"));
+          })
+          .catch(function () {
+            window.alert(r.statusText);
+          });
+      });
+      return;
+    }
     // A post's copy link, and the footer's share: the URL, absolute.
     var copy = event.target.closest(
       ".post-action-menu__copy-link, .share-and-invite"

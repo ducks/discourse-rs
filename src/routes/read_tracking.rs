@@ -116,6 +116,79 @@ async fn record(
     Ok(StatusCode::OK.into_response())
 }
 
+/// DELETE /t/:topic_id/timings (TopicsController#destroy_timings): Mark
+/// unread. With `last=1` the topic's last post is unread again, else the
+/// whole topic; the user's latest notification on it is unread again.
+/// Messages' read state isn't published (PrivateMessageTopicTrackingState
+/// is not ported), as with timings.
+pub async fn destroy_timings(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(topic_id): Path<String>,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    let p = params::parse(uri.query(), &headers, &body);
+    if !csrf_ok(&state, &headers, &form_pairs(&p), uri.path(), "DELETE") {
+        return Ok(bad_csrf());
+    }
+    // requires_login
+    let Some(user_id) = guardian.user_id() else {
+        return Ok(super::login_required::not_logged_in(&state));
+    };
+    let topic_id = topic_id.strip_suffix(".json").unwrap_or(&topic_id);
+    // :topic_id is constrained to digits.
+    if topic_id.is_empty() || !topic_id.bytes().all(|b| b.is_ascii_digit()) {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    let topic_id = crate::ruby::to_i(topic_id) as i32;
+    let last = p
+        .get("last")
+        .and_then(params::scalar)
+        .is_some_and(|v| v == "1");
+
+    let mut tx = state.pool.begin().await?;
+    let settings =
+        SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
+    // find_visible_topic_from_topic_id: Topic.find_by, then can_see?.
+    let visible =
+        match crate::topic_guardian::TopicCtx::load(&mut tx, &settings, &guardian, topic_id).await?
+        {
+            Some(topic) if !topic.trashed() => {
+                let secure = guardian.secure_category_ids(&mut tx, &settings).await?;
+                guardian.can_see_topic(&settings, &topic, true, &secure)?
+            }
+            _ => false,
+        };
+    if !visible {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    if last {
+        let whisperer = guardian.is_whisperer(&settings)?;
+        read_tracking::destroy_last_for(&mut tx, user_id, whisperer, topic_id).await?;
+    } else {
+        read_tracking::destroy_for(&mut tx, user_id, &[topic_id]).await?;
+    }
+    // The latest notification on the topic, unread again: update! saves
+    // (and publishes the notification state) only when it was read.
+    let unread_again = sqlx::query(
+        "UPDATE notifications SET read = false, updated_at = clock_timestamp()          WHERE id = (SELECT id FROM notifications WHERE user_id = $1 AND topic_id = $2                      ORDER BY created_at DESC LIMIT 1) AND read",
+    )
+    .bind(user_id)
+    .bind(topic_id)
+    .execute(&mut *tx)
+    .await?
+    .rows_affected()
+        > 0;
+    if unread_again {
+        crate::bus::publish_notifications_state(&state.bus, &mut tx, &settings, user_id).await?;
+    }
+    tx.commit().await?;
+    // render body: nil
+    Ok(StatusCode::OK.into_response())
+}
+
 /// PUT /notifications/mark-read
 pub async fn mark_read(
     State(state): State<AppState>,

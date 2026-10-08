@@ -226,10 +226,26 @@
     }
   }
 
-  setInterval(tick, 1000);
+  var interval = setInterval(tick, 1000);
+  var stopped = false;
   // stop(): what was read goes out when the page is left.
   window.addEventListener("pagehide", function () {
+    if (stopped) {
+      return;
+    }
     tick();
     flush();
+  });
+  // reset() then stop(), as Mark unread does before it unreads the topic:
+  // nothing more is timed or sent.
+  document.addEventListener("screen-track:stop", function () {
+    stopped = true;
+    clearInterval(interval);
+    timings.clear();
+    totalTimings.clear();
+    topicTime = 0;
+    onScreen.clear();
+    readPosts.clear();
+    consolidated.length = 0;
   });
 })();

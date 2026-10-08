@@ -1753,7 +1753,10 @@ async fn members_get_the_topic_controls() {
 
     // The footer.
     assert!(page.contains(r#"id="topic-footer-button-flag""#));
-    assert!(page.contains(r#"id="topic-footer-button-defer""#));
+    // Mark unread unreads the last post, then goes home.
+    assert!(page.contains(
+        r#"id="topic-footer-button-defer" title="Mark topic as unread" data-defer-url="/t/35/timings.json?last=1" data-defer-to="/""#
+    ));
     assert!(page.contains(r#"data-level-id="3" data-level-name="watching""#));
     assert!(page.contains(
         r#"<span class="text">You will receive notifications because you created this topic.</span>"#
