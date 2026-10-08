@@ -1,0 +1,12 @@
+# Site settings scripts/parity-screenshots sets on the reference first.
+#
+# Discourse bundles these plugins enabled by default. In discourse-rs they
+# are plugins (PLUGINS.md, ROADMAP.md milestone 5), not core, so their UI
+# is off on both sides and the screenshots measure core. A plugin comes
+# off this list when it runs on the plugin protocol.
+chat_enabled=false
+presence_enabled=false
+discourse_reactions_enabled=false
+solved_enabled=false
+topic_voting_enabled=false
+discourse_templates_enabled=false
