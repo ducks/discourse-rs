@@ -137,6 +137,17 @@ snapshot its database, write its env to `parity/environment`, then
 Live comparison needs both sides on the same database and configuration:
 run discourse-rs against a `make db-load` of the snapshot with
 `env $(grep -v ^# parity/environment) cargo run`.
+## Screenshots
+
+`scripts/parity-screenshots <our-url> <out-dir>` screenshots each page in
+`parity/screens/pages` (optionally logged in) on the reference and the port,
+diffs them pixel by pixel and writes `<out-dir>/index.html`, worst first, with
+`summary.json`. The port runs on a db-load of the snapshot with the
+reference's environment and `DISCOURSE_SRC` for the stock images; the script
+header has the commands. It is a report: diffs fail the run only with
+`--fail-above PCT`. Logging in on the reference saves drafts and timings, so
+`make reset-reference` before the next recording.
+
 ## Bench
 
 `make bench TARGETS="rs=URL rails=URL"` and `make bench-startup` compare the

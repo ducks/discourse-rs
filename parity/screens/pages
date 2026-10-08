@@ -1,0 +1,30 @@
+# Pages scripts/parity-screenshots captures on the reference and the port.
+# One per line: <path> [as=<user>] [ua=crawler] [mask=<selector>,...] [wait=<ms>]
+#   as=      log in first (password "password", the seed's)
+#   ua=      crawler: a Googlebot user agent. Rails then serves its unstyled
+#            crawler layout; the port serves every agent the same page, so
+#            only use it to track the crawler layout itself.
+#   mask=    selectors (comma separated, no spaces) hidden with
+#            visibility: hidden on both sides, for content that differs by
+#            the clock
+#   wait=    extra milliseconds after load (default 1500)
+
+# Anonymous
+/latest
+/categories
+/c/general/4
+/c/general/sub-general/34
+/t/parity-fixture-replies-and-posters/35
+/t/parity-fixture-liked-and-archived/41
+/u/admin
+/u/user1
+/tags
+/tag/guide
+/search?q=fixture
+/t/999999
+
+# Logged in
+/latest as=admin
+/categories as=admin
+/t/parity-fixture-replies-and-posters/35 as=user0
+/u/user0 as=user0
