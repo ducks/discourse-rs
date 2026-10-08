@@ -1,0 +1,187 @@
+{
+  "name": "screened_ip_create",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/logs/screened_ip_addresses.json",
+      "params": {
+        "ip_address": "203.0.113.5",
+        "action_name": "block"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/logs/screened_ip_addresses.json",
+      "params": {
+        "ip_address": "198.51.*.*"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/logs/screened_ip_addresses.json",
+      "params": {
+        "ip_address": "203.0.113.5",
+        "action_name": "block"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/logs/screened_ip_addresses.json",
+      "params": {
+        "ip_address": "nonsense"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/logs/screened_ip_addresses.json",
+      "params": {
+        "ip_address": "203.0.113.6",
+        "action_name": "explode"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/logs/screened_ip_addresses.json",
+      "params": {
+        "action_name": "block"
+      }
+    }
+  ],
+  "started_at": "2026-10-08T07:20:48.408652",
+  "transaction_started_at": "2026-10-08T07:20:47.303405",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "screened_ip_address": {
+          "id": 6,
+          "ip_address": "203.0.113.5",
+          "action_name": "block",
+          "match_count": 0,
+          "last_match_at": null,
+          "created_at": "2026-10-08T07:20:48.422Z"
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "screened_ip_address": {
+          "id": 7,
+          "ip_address": "198.51.0.0/16",
+          "action_name": "block",
+          "match_count": 0,
+          "last_match_at": null,
+          "created_at": "2026-10-08T07:20:48.445Z"
+        }
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Ip address is already included in an existing rule"
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Ip address is invalid",
+          "Ip address can't be blank"
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: action_name"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "param is missing or the value is empty or invalid: ip_address"
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "screened_ip_addresses": {
+      "inserted": [
+        {
+          "id": 6,
+          "created_at": "2026-10-08T07:20:48.42263",
+          "ip_address": "203.0.113.5",
+          "updated_at": "2026-10-08T07:20:48.42263",
+          "action_type": 1,
+          "match_count": 0,
+          "last_match_at": null
+        },
+        {
+          "id": 7,
+          "created_at": "2026-10-08T07:20:48.445587",
+          "ip_address": "198.51.0.0/16",
+          "updated_at": "2026-10-08T07:20:48.445587",
+          "action_type": 1,
+          "match_count": 0,
+          "last_match_at": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 135,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "17JferISPBHrv2hE43JJQtir6+Q=",
+            "created_at": "2026-10-08T07:20:47.820599",
+            "rotated_at": "2026-10-08T07:20:47.820348",
+            "updated_at": "2026-10-08T07:20:47.820599",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "17JferISPBHrv2hE43JJQtir6+Q=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 135,
+            "seen_at": "2026-10-08T07:20:48.413835",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "17JferISPBHrv2hE43JJQtir6+Q=",
+            "created_at": "2026-10-08T07:20:47.820599",
+            "rotated_at": "2026-10-08T07:20:47.820348",
+            "updated_at": "2026-10-08T07:20:47.820599",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "17JferISPBHrv2hE43JJQtir6+Q=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "recorded_from": {
+    "case": "0137163e47e389fac13ba7f462f2addf5455518b3a2a3824785db8dd5318d2e9",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

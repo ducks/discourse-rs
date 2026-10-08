@@ -1,0 +1,26 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO screened_ip_addresses (id, ip_address, action_type, match_count, last_match_at, created_at, updated_at) VALUES (9601, '203.0.113.9', 1, 4, now(), now(), now()), (9602, '2001:db8::1', 1, 2, NULL, now(), now()), (9603, '198.51.100.77/24', 3, 0, NULL, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/logs/screened_ip_addresses.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/logs/screened_ip_addresses.json",
+      "params": {
+        "filter": "203.0.*"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/logs/screened_ip_addresses.json",
+      "params": {
+        "filter": "10.1.2.3"
+      }
+    }
+  ]
+}

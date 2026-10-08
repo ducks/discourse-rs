@@ -1,0 +1,84 @@
+{
+  "name": "screened_urls",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/logs/screened_urls.json"
+    }
+  ],
+  "started_at": "2026-10-08T07:24:54.635011",
+  "transaction_started_at": "2026-10-08T07:24:53.588992",
+  "responses": [
+    {
+      "status": 200,
+      "body": [
+        {
+          "domain": "spam.example",
+          "action": "do_nothing",
+          "match_count": 7,
+          "last_match_at": "2026-10-04T08:00:00.000Z",
+          "created_at": "2026-09-28T10:00:00.000Z"
+        },
+        {
+          "domain": "junk.example",
+          "action": "do_nothing",
+          "match_count": 1,
+          "last_match_at": "2026-10-01T10:00:00.000Z",
+          "created_at": "2026-10-01T10:00:00.000Z"
+        }
+      ]
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 135,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "GBn/oOwm1cMwpVTXoCkzY89Z0rM=",
+            "created_at": "2026-10-08T07:24:54.003317",
+            "rotated_at": "2026-10-08T07:24:54.002858",
+            "updated_at": "2026-10-08T07:24:54.003317",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "GBn/oOwm1cMwpVTXoCkzY89Z0rM=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 135,
+            "seen_at": "2026-10-08T07:24:54.682208",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "GBn/oOwm1cMwpVTXoCkzY89Z0rM=",
+            "created_at": "2026-10-08T07:24:54.003317",
+            "rotated_at": "2026-10-08T07:24:54.002858",
+            "updated_at": "2026-10-08T07:24:54.003317",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "GBn/oOwm1cMwpVTXoCkzY89Z0rM=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "setup": [
+    "INSERT INTO screened_urls (url, domain, action_type, match_count, last_match_at, created_at, updated_at) VALUES ('http://spam.example/a', 'spam.example', 2, 2, '2026-10-03 10:00:00', '2026-09-28 10:00:00', now()), ('http://spam.example/b', 'spam.example', 2, 5, '2026-10-04 08:00:00', '2026-09-29 10:00:00', now()), ('http://junk.example/x', 'junk.example', 2, 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00', now())"
+  ],
+  "recorded_from": {
+    "case": "43bb1ff470eae5f4e46e018d71a2cf4fddc8392a8370f430d58fcd5cc83acec5",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

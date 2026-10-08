@@ -1,0 +1,12 @@
+{
+  "user": "user2",
+  "setup": [
+    "UPDATE users SET moderator = TRUE WHERE id = 4"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/logs/screened_emails.json"
+    }
+  ]
+}

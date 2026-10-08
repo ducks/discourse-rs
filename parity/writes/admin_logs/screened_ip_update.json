@@ -1,0 +1,127 @@
+{
+  "name": "screened_ip_update",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/logs/screened_ip_addresses/9601.json",
+      "params": {
+        "ip_address": "203.0.113.9",
+        "action_name": "do_nothing"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/logs/screened_ip_addresses/9601.json",
+      "params": {
+        "ip_address": "203.0.114.*"
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/logs/screened_ip_addresses/9601.json"
+    }
+  ],
+  "started_at": "2026-10-08T07:21:25.821088",
+  "transaction_started_at": "2026-10-08T07:21:22.779013",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "screened_ip_address": {
+          "id": 9601,
+          "ip_address": "203.0.113.9",
+          "action_name": "do_nothing",
+          "match_count": 4,
+          "last_match_at": "2026-10-08T07:21:22.779Z",
+          "created_at": "2026-10-08T07:21:22.779Z"
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "screened_ip_address": {
+          "id": 9601,
+          "ip_address": "203.0.114.0/24",
+          "action_name": "do_nothing",
+          "match_count": 4,
+          "last_match_at": "2026-10-08T07:21:22.779Z",
+          "created_at": "2026-10-08T07:21:22.779Z"
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    }
+  ],
+  "changes": {
+    "screened_ip_addresses": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 9601,
+          "created_at": "2026-10-08T07:21:22.779013",
+          "ip_address": "203.0.113.9",
+          "updated_at": "2026-10-08T07:21:22.779013",
+          "action_type": 1,
+          "match_count": 4,
+          "last_match_at": "2026-10-08T07:21:22.779013"
+        }
+      ],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 135,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "r+gXhSSdi9fzcQ5iDFiTGY5AWaQ=",
+            "created_at": "2026-10-08T07:21:24.084547",
+            "rotated_at": "2026-10-08T07:21:24.07974",
+            "updated_at": "2026-10-08T07:21:24.084547",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "r+gXhSSdi9fzcQ5iDFiTGY5AWaQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 135,
+            "seen_at": "2026-10-08T07:21:25.84695",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "r+gXhSSdi9fzcQ5iDFiTGY5AWaQ=",
+            "created_at": "2026-10-08T07:21:24.084547",
+            "rotated_at": "2026-10-08T07:21:24.07974",
+            "updated_at": "2026-10-08T07:21:24.084547",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "r+gXhSSdi9fzcQ5iDFiTGY5AWaQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "setup": [
+    "INSERT INTO screened_ip_addresses (id, ip_address, action_type, match_count, last_match_at, created_at, updated_at) VALUES (9601, '203.0.113.9', 1, 4, now(), now(), now())"
+  ],
+  "recorded_from": {
+    "case": "01b4162a8c5a1a5bd5661a8b6457b9b90e1b1fbcead42edc45ec21e9ed8e0f7a",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
