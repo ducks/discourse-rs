@@ -56,33 +56,33 @@ pub enum Listed {
 }
 
 #[derive(sqlx::FromRow)]
-struct Row {
-    id: i32,
-    username: String,
-    name: Option<String>,
-    uploaded_avatar_id: Option<i32>,
-    active: bool,
-    admin: bool,
-    moderator: bool,
-    last_seen_at: Option<NaiveDateTime>,
-    last_emailed_at: Option<NaiveDateTime>,
-    created_at: NaiveDateTime,
-    trust_level: i32,
-    manual_locked_trust_level: Option<i32>,
-    title: Option<String>,
-    approved: bool,
-    suspended_at: Option<NaiveDateTime>,
-    suspended_till: Option<NaiveDateTime>,
-    silenced_till: Option<NaiveDateTime>,
-    staged: bool,
-    time_read: Option<i32>,
-    days_visited: Option<i32>,
-    posts_read_count: Option<i32>,
-    topics_entered: Option<i32>,
-    post_count: Option<i32>,
-    topic_count: Option<i32>,
-    first_post_created_at: Option<NaiveDateTime>,
-    second_factor: bool,
+pub(crate) struct Row {
+    pub id: i32,
+    pub username: String,
+    pub name: Option<String>,
+    pub uploaded_avatar_id: Option<i32>,
+    pub active: bool,
+    pub admin: bool,
+    pub moderator: bool,
+    pub last_seen_at: Option<NaiveDateTime>,
+    pub last_emailed_at: Option<NaiveDateTime>,
+    pub created_at: NaiveDateTime,
+    pub trust_level: i32,
+    pub manual_locked_trust_level: Option<i32>,
+    pub title: Option<String>,
+    pub approved: bool,
+    pub suspended_at: Option<NaiveDateTime>,
+    pub suspended_till: Option<NaiveDateTime>,
+    pub silenced_till: Option<NaiveDateTime>,
+    pub staged: bool,
+    pub time_read: Option<i32>,
+    pub days_visited: Option<i32>,
+    pub posts_read_count: Option<i32>,
+    pub topics_entered: Option<i32>,
+    pub post_count: Option<i32>,
+    pub topic_count: Option<i32>,
+    pub first_post_created_at: Option<NaiveDateTime>,
+    pub second_factor: bool,
 }
 
 /// `normalized_order`: lower case, a trailing direction dropped.
@@ -327,16 +327,7 @@ pub async fn list(
 
     let page = (p.page - 1).max(0);
     let sql = format!(
-        "SELECT users.id, users.username, users.name, users.uploaded_avatar_id, users.active, users.admin, \
-                users.moderator, users.last_seen_at, users.last_emailed_at, users.created_at, users.trust_level, \
-                users.manual_locked_trust_level, users.title, users.approved, users.suspended_at, users.suspended_till, \
-                users.silenced_till, users.staged, user_stats.time_read, user_stats.days_visited, \
-                user_stats.posts_read_count, user_stats.topics_entered, user_stats.post_count, user_stats.topic_count, \
-                user_stats.first_post_created_at, \
-                (EXISTS (SELECT 1 FROM user_second_factors f WHERE f.user_id = users.id AND f.method = 1 AND f.enabled) \
-                 OR EXISTS (SELECT 1 FROM user_security_keys k WHERE k.user_id = users.id AND k.enabled AND k.factor_type = 0)) AS second_factor \
-         FROM users LEFT JOIN user_stats ON user_stats.user_id = users.id {joins} \
-         WHERE {wheres} ORDER BY {order} LIMIT 100 OFFSET {offset}",
+        "{ROW_SELECT} {joins} WHERE {wheres} ORDER BY {order} LIMIT 100 OFFSET {offset}",
         offset = page * 100,
         joins = joins.join(" "),
         wheres = if wheres.is_empty() {
@@ -389,124 +380,190 @@ pub async fn list(
         .await?;
     }
 
-    let enable_names = settings.get("enable_names")?.truthy();
-    // The system user's avatar may be the small logo.
-    let logo_small = settings.get("logo_small")?.to_i();
-    let logo_small_url: Option<String> = if logo_small == 0 {
-        None
-    } else {
-        sqlx::query_scalar("SELECT url FROM uploads WHERE id = $1")
-            .bind(i32::try_from(logo_small).unwrap_or(0))
-            .fetch_optional(&mut *conn)
-            .await?
-    };
-    let must_approve = settings.get("must_approve_users")?.truthy();
+    let logo_small_url = logo_small_url(conn, settings).await?;
+    let mut out = Vec::with_capacity(rows.len());
+    for r in &rows {
+        let opts = EntryOptions {
+            emails_desired: p.show_emails,
+            can_be_suspended: true,
+            silence_reason: Some(format_penalty_reason(silence_reasons.get(&r.id))?),
+            suspend_reason: Some(format_penalty_reason(suspend_reasons.get(&r.id))?),
+        };
+        let u = entry(
+            conn,
+            settings,
+            urls,
+            guardian,
+            r,
+            logo_small_url.as_deref(),
+            &opts,
+        )
+        .await?;
+        out.push(Value::Object(u));
+    }
+    Ok(Listed::Users(out))
+}
+
+/// The select of a user's row as AdminUserListSerializer reads it, the
+/// `users` table joined to `user_stats`.
+pub(crate) const ROW_SELECT: &str = "SELECT users.id, users.username, users.name, users.uploaded_avatar_id, \
+    users.active, users.admin, users.moderator, users.last_seen_at, users.last_emailed_at, users.created_at, \
+    users.trust_level, users.manual_locked_trust_level, users.title, users.approved, users.suspended_at, \
+    users.suspended_till, users.silenced_till, users.staged, user_stats.time_read, user_stats.days_visited, \
+    user_stats.posts_read_count, user_stats.topics_entered, user_stats.post_count, user_stats.topic_count, \
+    user_stats.first_post_created_at, \
+    (EXISTS (SELECT 1 FROM user_second_factors f WHERE f.user_id = users.id AND f.method = 1 AND f.enabled) \
+     OR EXISTS (SELECT 1 FROM user_security_keys k WHERE k.user_id = users.id AND k.enabled AND k.factor_type = 0)) AS second_factor \
+    FROM users LEFT JOIN user_stats ON user_stats.user_id = users.id";
+
+/// The serializer options that differ between the list and a user's view.
+pub(crate) struct EntryOptions {
+    /// `emails_desired` (show_emails)
+    pub emails_desired: bool,
+    /// `include_can_be_suspended`
+    pub can_be_suspended: bool,
+    /// `silence_reason` when included
+    pub silence_reason: Option<Value>,
+    /// `suspend_reason` when included
+    pub suspend_reason: Option<Value>,
+}
+
+/// The url of the small logo, the system user's avatar when the site uses
+/// it.
+pub(crate) async fn logo_small_url(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+) -> Result<Option<String>, AppError> {
+    let id = settings.get("logo_small")?.to_i();
+    if id == 0 {
+        return Ok(None);
+    }
+    Ok(sqlx::query_scalar("SELECT url FROM uploads WHERE id = $1")
+        .bind(i32::try_from(id).unwrap_or(0))
+        .fetch_optional(&mut *conn)
+        .await?)
+}
+
+/// AdminUserListSerializer for one user.
+pub(crate) async fn entry(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    urls: &Urls<'_>,
+    guardian: &Guardian,
+    r: &Row,
+    logo_small_url: Option<&str>,
+    opts: &EntryOptions,
+) -> Result<Map<String, Value>, AppError> {
+    let now = crate::clock::now_naive();
     let local_logins = !settings.get("enable_discourse_connect")?.truthy()
         && settings.get("enable_local_logins")?.truthy();
     let can_check_emails = guardian.is_admin()
         || (guardian.is_staff() && settings.get("moderators_view_emails")?.truthy());
     let age = |t: NaiveDateTime| (now - t).num_microseconds().unwrap_or(0) as f64 / 1e6;
-
-    let mut out = Vec::with_capacity(rows.len());
-    for r in &rows {
-        let mut u = Map::new();
-        u.insert("id".into(), json!(r.id));
-        u.insert("username".into(), json!(r.username));
-        if enable_names {
-            u.insert("name".into(), json!(r.name));
-        }
+    let mut u = Map::new();
+    u.insert("id".into(), json!(r.id));
+    u.insert("username".into(), json!(r.username));
+    if settings.get("enable_names")?.truthy() {
+        u.insert("name".into(), json!(r.name));
+    }
+    u.insert(
+        "avatar_template".into(),
+        json!(crate::avatar::avatar_template(
+            urls,
+            r.id,
+            &r.username,
+            r.uploaded_avatar_id,
+            logo_small_url
+        )?),
+    );
+    // include_email?: staff see their own; staged users or with
+    // show_emails, for those who can check emails.
+    if include_email(guardian, r, opts.emails_desired, can_check_emails) {
+        let primary: Option<String> =
+            sqlx::query_scalar("SELECT email FROM user_emails WHERE user_id = $1 AND \"primary\"")
+                .bind(r.id)
+                .fetch_optional(&mut *conn)
+                .await?;
+        let secondary: Vec<String> = sqlx::query_scalar(
+            "SELECT email FROM user_emails WHERE user_id = $1 AND NOT \"primary\" ORDER BY id",
+        )
+        .bind(r.id)
+        .fetch_all(&mut *conn)
+        .await?;
+        u.insert("email".into(), json!(primary));
+        u.insert("secondary_emails".into(), json!(secondary));
+    }
+    u.insert("active".into(), json!(r.active));
+    u.insert("admin".into(), json!(r.admin));
+    u.insert("moderator".into(), json!(r.moderator));
+    u.insert("last_seen_at".into(), json!(r.last_seen_at.map(time_json)));
+    u.insert(
+        "last_emailed_at".into(),
+        json!(r.last_emailed_at.map(time_json)),
+    );
+    u.insert("created_at".into(), json!(time_json(r.created_at)));
+    u.insert("last_seen_age".into(), json!(r.last_seen_at.map(age)));
+    u.insert("last_emailed_age".into(), json!(r.last_emailed_at.map(age)));
+    u.insert("created_at_age".into(), json!(age(r.created_at)));
+    u.insert("trust_level".into(), json!(r.trust_level));
+    u.insert(
+        "manual_locked_trust_level".into(),
+        json!(r.manual_locked_trust_level),
+    );
+    u.insert("title".into(), json!(r.title));
+    if settings.get("must_approve_users")?.truthy() {
+        u.insert("approved".into(), json!(r.approved));
+    }
+    let is_suspended = r.suspended_till.is_some_and(|t| t > now);
+    if is_suspended {
+        u.insert("suspended_at".into(), json!(r.suspended_at.map(time_json)));
         u.insert(
-            "avatar_template".into(),
-            json!(crate::avatar::avatar_template(
-                urls,
-                r.id,
-                &r.username,
-                r.uploaded_avatar_id,
-                logo_small_url.as_deref()
-            )?),
+            "suspended_till".into(),
+            json!(r.suspended_till.map(time_json)),
         );
-        // include_email?: staff see their own; staged users or with
-        // show_emails, for those who can check emails.
-        let email = (guardian.is_staff() && guardian.user_id() == Some(r.id))
-            || ((r.staged || p.show_emails) && can_check_emails);
-        if email {
-            let primary: Option<String> = sqlx::query_scalar(
-                "SELECT email FROM user_emails WHERE user_id = $1 AND \"primary\"",
-            )
-            .bind(r.id)
-            .fetch_optional(&mut *conn)
-            .await?;
-            let secondary: Vec<String> = sqlx::query_scalar(
-                "SELECT email FROM user_emails WHERE user_id = $1 AND NOT \"primary\" ORDER BY id",
-            )
-            .bind(r.id)
-            .fetch_all(&mut *conn)
-            .await?;
-            u.insert("email".into(), json!(primary));
-            u.insert("secondary_emails".into(), json!(secondary));
-        }
-        u.insert("active".into(), json!(r.active));
-        u.insert("admin".into(), json!(r.admin));
-        u.insert("moderator".into(), json!(r.moderator));
-        u.insert("last_seen_at".into(), json!(r.last_seen_at.map(time_json)));
-        u.insert(
-            "last_emailed_at".into(),
-            json!(r.last_emailed_at.map(time_json)),
-        );
-        u.insert("created_at".into(), json!(time_json(r.created_at)));
-        u.insert("last_seen_age".into(), json!(r.last_seen_at.map(age)));
-        u.insert("last_emailed_age".into(), json!(r.last_emailed_at.map(age)));
-        u.insert("created_at_age".into(), json!(age(r.created_at)));
-        u.insert("trust_level".into(), json!(r.trust_level));
-        u.insert(
-            "manual_locked_trust_level".into(),
-            json!(r.manual_locked_trust_level),
-        );
-        u.insert("title".into(), json!(r.title));
-        if must_approve {
-            u.insert("approved".into(), json!(r.approved));
-        }
-        let is_suspended = r.suspended_till.is_some_and(|t| t > now);
-        if is_suspended {
-            u.insert("suspended_at".into(), json!(r.suspended_at.map(time_json)));
-            u.insert(
-                "suspended_till".into(),
-                json!(r.suspended_till.map(time_json)),
-            );
-        }
-        if let Some(till) = r.silenced_till {
-            u.insert("silenced_till".into(), json!(time_json(till)));
-        }
-        u.insert("time_read".into(), json!(r.time_read));
-        u.insert("staged".into(), json!(r.staged));
-        if local_logins && r.second_factor {
-            u.insert("second_factor_enabled".into(), json!(true));
-        }
-        u.insert(
-            "can_be_deleted".into(),
-            json!(can_delete_user(conn, settings, guardian, r).await?),
-        );
+    }
+    if let Some(till) = r.silenced_till {
+        u.insert("silenced_till".into(), json!(time_json(till)));
+    }
+    u.insert("time_read".into(), json!(r.time_read));
+    u.insert("staged".into(), json!(r.staged));
+    if local_logins && r.second_factor {
+        u.insert("second_factor_enabled".into(), json!(true));
+    }
+    u.insert(
+        "can_be_deleted".into(),
+        json!(can_delete_user(conn, settings, guardian, r).await?),
+    );
+    if opts.can_be_suspended {
         let can_unsuspend =
             guardian.is_staff() && (!(r.admin || r.moderator) || guardian.is_admin());
         u.insert(
             "can_be_suspended".into(),
             json!(can_unsuspend && !(r.admin || r.moderator) && !is_suspended),
         );
-        u.insert(
-            "silence_reason".into(),
-            format_penalty_reason(silence_reasons.get(&r.id))?,
-        );
-        u.insert(
-            "suspend_reason".into(),
-            format_penalty_reason(suspend_reasons.get(&r.id))?,
-        );
-        u.insert("days_visited".into(), json!(r.days_visited));
-        u.insert("posts_read_count".into(), json!(r.posts_read_count));
-        u.insert("topics_entered".into(), json!(r.topics_entered));
-        u.insert("post_count".into(), json!(r.post_count));
-        out.push(Value::Object(u));
     }
-    Ok(Listed::Users(out))
+    if let Some(reason) = &opts.silence_reason {
+        u.insert("silence_reason".into(), reason.clone());
+    }
+    if let Some(reason) = &opts.suspend_reason {
+        u.insert("suspend_reason".into(), reason.clone());
+    }
+    u.insert("days_visited".into(), json!(r.days_visited));
+    u.insert("posts_read_count".into(), json!(r.posts_read_count));
+    u.insert("topics_entered".into(), json!(r.topics_entered));
+    u.insert("post_count".into(), json!(r.post_count));
+    Ok(u)
+}
+
+/// AdminUserListSerializer#include_email?
+pub(crate) fn include_email(
+    guardian: &Guardian,
+    r: &Row,
+    emails_desired: bool,
+    can_check_emails: bool,
+) -> bool {
+    (guardian.is_staff() && guardian.user_id() == Some(r.id))
+        || ((r.staged || emails_desired) && can_check_emails)
 }
 
 /// `with_penalty_reason`: the latest reason of a user's current penalty.

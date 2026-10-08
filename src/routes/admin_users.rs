@@ -270,3 +270,40 @@ pub async fn index(
         },
     )
 }
+
+/// GET /admin/users/:id(.json): Admin::UsersController#show, for staff.
+pub async fn show(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(id): Path<String>,
+) -> Result<Response, AppError> {
+    if !guardian.is_staff() {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    let id = id.strip_suffix(".json").unwrap_or(&id);
+    // User.find_by(id:): a non-numeric id finds nobody.
+    let Ok(id) = id.parse::<i32>() else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let urls = crate::url::Urls {
+        config: &state.config,
+        settings: &settings,
+    };
+    let cx = crate::admin_user_show::Context {
+        settings: &settings,
+        defs: &state.site_setting_defs,
+        i18n: &state.i18n,
+        urls: &urls,
+        globals: &state.config.globals,
+        development: state.config.rails_env == crate::config::RailsEnv::Development,
+    };
+    Ok(
+        match crate::admin_user_show::show(&mut conn, &cx, &guardian, id).await? {
+            Some(user) => Json(user).into_response(),
+            None => super::topics::not_found_response(&state),
+        },
+    )
+}

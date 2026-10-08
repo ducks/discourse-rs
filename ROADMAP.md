@@ -456,8 +456,9 @@ API keys for posting, and grant_moderation! for the first admin's login.
 - [ ] Site settings: the setting types milestone 4 refuses
 - [x] Users: the lists and filters (`GET /admin/users/list`), measured
       against Rails
-- [ ] Users: the admin view of a user, granting and
-      revoking admin and moderation, trust levels and their locks,
+- [x] Users: the admin view of a user (`GET /admin/users/:id`), measured
+      against Rails
+- [ ] Users: granting and revoking admin and moderation, trust levels and their locks,
       approving, activating and deactivating, logging out, deleting,
       anonymizing and merging, impersonating, penalties on several users
 - [ ] Groups: creating, editing and deleting, members and owners in bulk,

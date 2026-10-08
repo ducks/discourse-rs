@@ -1,0 +1,532 @@
+{
+  "name": "show_penalized",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/users/2.json"
+    }
+  ],
+  "started_at": "2026-10-08T05:42:22.533706",
+  "transaction_started_at": "2026-10-08T05:42:21.703526",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "id": 2,
+        "username": "user0",
+        "name": "User0",
+        "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+        "active": true,
+        "admin": false,
+        "moderator": false,
+        "last_seen_at": "2026-10-01T22:32:51.475Z",
+        "last_emailed_at": null,
+        "created_at": "2026-07-25T05:59:15.831Z",
+        "last_seen_age": 544171.073184742,
+        "last_emailed_age": null,
+        "created_at_age": 6478986.71737688,
+        "trust_level": 1,
+        "manual_locked_trust_level": null,
+        "title": null,
+        "suspended_at": "2026-10-01T10:00:00.000Z",
+        "suspended_till": "2099-01-01T00:00:00.000Z",
+        "silenced_till": "2099-01-01T00:00:00.000Z",
+        "time_read": 0,
+        "staged": false,
+        "can_be_deleted": true,
+        "silence_reason": "cool off",
+        "days_visited": 1,
+        "posts_read_count": 3,
+        "topics_entered": 0,
+        "post_count": 4,
+        "can_send_activation_email": true,
+        "can_activate": false,
+        "can_deactivate": true,
+        "can_change_trust_level": true,
+        "ip_address": "172.17.0.1",
+        "registration_ip_address": null,
+        "include_ip": true,
+        "can_grant_admin": true,
+        "can_revoke_admin": false,
+        "can_grant_moderation": true,
+        "can_revoke_moderation": false,
+        "can_impersonate": true,
+        "like_count": 1,
+        "like_given_count": 1,
+        "topic_count": 2,
+        "post_edits_count": null,
+        "flags_given_count": 0,
+        "flags_received_count": 0,
+        "private_topics_count": 1,
+        "can_delete_all_posts": true,
+        "can_be_anonymized": true,
+        "can_be_merged": true,
+        "full_suspend_reason": "repeated spam<br>see the log",
+        "full_silence_reason": "cool off",
+        "penalty_counts": {
+          "silenced": 1,
+          "suspended": 1
+        },
+        "next_penalty": "2026-10-15T05:42:22.588Z",
+        "primary_group_id": null,
+        "badge_count": 3,
+        "warnings_received_count": 0,
+        "bounce_score": 0.0,
+        "reset_bounce_score_after": null,
+        "can_view_action_logs": true,
+        "can_disable_second_factor": true,
+        "can_delete_sso_record": false,
+        "api_key_count": 0,
+        "external_ids": {},
+        "similar_users_count": 1,
+        "latest_export": null,
+        "upcoming_changes_stats": [
+          {
+            "name": "ai_bot_enable_docked_composer",
+            "humanized_name": "AI bot enable docked composer",
+            "description": "Enable the docked chat-style composer for AI bot conversations instead of the standard floating composer.",
+            "enabled": false,
+            "specific_groups": [],
+            "reason": "enabled_for_no_one"
+          },
+          {
+            "name": "boards_enabled",
+            "humanized_name": "Boards enabled",
+            "description": "Organize topics, and lightweight standalone “floater” cards, into configurable, drag-and-drop kanban-style boards and columns, all with a purpose built management UI and per-board access control",
+            "enabled": false,
+            "specific_groups": [],
+            "reason": "enabled_for_no_one"
+          },
+          {
+            "name": "chat_pinned_messages",
+            "humanized_name": "Chat pinned messages",
+            "description": "Enable pinned messages in chat channels.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "composer_media_optimization_image_convert_enabled",
+            "humanized_name": "Composer media optimization image convert enabled",
+            "description": "Enables client-side conversion of JXL, HEIC, and animated GIF images before upload. JXL and HEIC are converted to JPEG, animated GIFs larger than the threshold are converted to animated WEBP.",
+            "enabled": false,
+            "specific_groups": [],
+            "reason": "enabled_for_no_one"
+          },
+          {
+            "name": "dashboard_improvements",
+            "humanized_name": "Dashboard improvements",
+            "description": "Enables the redesigned admin dashboard that lets you pin custom reports and includes improved site traffic, engagement, and other analytics tied to community success and value.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "enable_ai_bot_starred_conversations",
+            "humanized_name": "Enable AI bot starred conversations",
+            "description": "Allow users to star AI bot conversations and show them in a Starred sidebar section.",
+            "enabled": false,
+            "specific_groups": [],
+            "reason": "enabled_for_no_one"
+          },
+          {
+            "name": "enable_category_hashtag_cards",
+            "humanized_name": "Enable category hashtag cards",
+            "description": "Shows a floating category card when a category hashtag is clicked if the user has permission to view that category.",
+            "enabled": false,
+            "specific_groups": [],
+            "reason": "enabled_for_no_one"
+          },
+          {
+            "name": "enable_composer_redesign",
+            "humanized_name": "Enable composer redesign",
+            "description": "Enable the redesigned composer.",
+            "enabled": false,
+            "specific_groups": [],
+            "reason": "enabled_for_no_one"
+          },
+          {
+            "name": "enable_composer_toolbar_customization",
+            "humanized_name": "Enable composer toolbar customization",
+            "description": "Let members choose which buttons appear in their composer toolbar, from their interface preferences.",
+            "enabled": false,
+            "specific_groups": [],
+            "reason": "enabled_for_no_one"
+          },
+          {
+            "name": "enable_discourse_reactions_by_default",
+            "humanized_name": "Enable Discourse reactions by default",
+            "description": "Changes the default value for the <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=discourse_reactions_enabled\" data-setting-name=\"discourse_reactions_enabled\" data-setting-category=\"discourse_reactions\" data-setting-plugin=\"discourse-reactions\">Discourse reactions enabled</a> setting from disabled to enabled when this upcoming change is enabled.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "enable_discourse_workflows",
+            "humanized_name": "Enable Discourse workflows",
+            "description": "Enable the discourse-workflows plugin.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "enable_events_category_type_setup",
+            "humanized_name": "Enable events category type setup",
+            "description": "Enables the Events category type option during category creation setup.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "enable_generated_llms_txt",
+            "humanized_name": "Enable generated LLMs TXT",
+            "description": "Generates a concise /llms.txt when no custom file is uploaded. The document describes public discovery routes, the preferred Discourse MCP interface, and responsible agent access. To tune automated access, configure <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=slow_down_crawler_user_agents\" data-setting-name=\"slow_down_crawler_user_agents\" data-setting-category=\"security\">Slow down crawler user agents</a> and <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=slow_down_crawler_rate\" data-setting-name=\"slow_down_crawler_rate\" data-setting-category=\"security\">Slow down crawler rate</a>.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "enable_horizon_high_context_topic_cards",
+            "humanized_name": "Enable Horizon high context topic cards",
+            "description": "Shows richer topic cards in the Horizon theme, including topic excerpts, tags, and plugin extended information.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "enable_ideas_category_type_setup",
+            "humanized_name": "Enable ideas category type setup",
+            "description": "Enables the Ideas category type option during category creation setup.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "enable_improved_event_reminders",
+            "humanized_name": "Enable improved event reminders",
+            "description": "Lets members choose whether event reminders are sent as personal messages, notifications, or not at all.",
+            "enabled": false,
+            "specific_groups": [],
+            "reason": "enabled_for_no_one"
+          },
+          {
+            "name": "enable_invite_modal_with_roles",
+            "humanized_name": "Enable invite modal with roles",
+            "description": "Enables a redesigned invite flow that lets admins invite someone directly as an admin. The invitee becomes a moderator on signup and an admin once the inviter confirms via email.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "enable_local_logins_via_code",
+            "humanized_name": "Enable local logins via code",
+            "description": "Allow members to sign up, accept invitations, and log in with one-time email codes (OTPs), without requiring a password.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "enable_markdown_endpoints",
+            "humanized_name": "Enable markdown endpoints",
+            "description": "Serve supported topics and topic lists as Markdown through .md URLs and requests with an Accept: text/markdown header. Normal visibility and profile privacy rules always apply.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "enable_new_chat_reactions_popup",
+            "humanized_name": "Enable new chat reactions popup",
+            "description": "Enable the redesigned reactions popup on chat messages, showing who reacted with infinite scroll and a native mobile experience.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "enable_new_checkbox_style",
+            "humanized_name": "Enable new checkbox style",
+            "description": "Enable the redesigned checkbox style for FormKit checkboxes.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "enable_new_defaults_for_trust_level_3_requirements",
+            "humanized_name": "Enable new defaults for trust level 3 requirements",
+            "description": "We have updated the TL3 default requirements so they’re more reasonable for members of large, active communities. If you have previously overridden these settings, this upcoming change will have no effect.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "enable_new_post_reactions_menu",
+            "humanized_name": "Enable new post reactions menu",
+            "description": "Enable the redesigned post likes and reactions menu, with infinite scroll and a native mobile experience.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "enable_new_post_reply_count_position",
+            "humanized_name": "Enable new post reply count position",
+            "description": "Move the post reactions summary before the reply count in the post controls.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "enable_simplified_category_creation",
+            "humanized_name": "Enable simplified category creation",
+            "description": "Enables a simplified category creation flow with fewer options and a cleaner interface.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "enable_solved_shared_issues",
+            "humanized_name": "Enable solved shared issues",
+            "description": "Adds a “Me too” button to unsolved topics in support categories, letting members signal they’re experiencing the same issue and opt-in to notifications about the topic's solution.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "enable_support_category_type_setup",
+            "humanized_name": "Enable support category type setup",
+            "description": "Enables the Support category type option during category creation setup.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "enable_unified_new",
+            "humanized_name": "Enable unified new",
+            "description": "Replace the separate New and Unread lists with a single unified New list that makes it easier for members to distinguish between new topics and topics with new replies. When enabled, the /new route shows a combined view with subtabs for Topics (new topics) and Replies (tracked topics with new replies), and the unread option is removed from the top menu.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "floating_dismiss_topics_on_mobile",
+            "humanized_name": "Floating dismiss topics on mobile",
+            "description": "Shows a floating 'Dismiss...' button on mobile for the topic list for easier access and to free up space in the top of the topic list",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "granular_anonymous_and_logged_in_groups_permissions",
+            "humanized_name": "Granular anonymous and logged in groups permissions",
+            "description": "Makes group-based site setting permissions treat 'everyone' as 'all logged-in users', and enables the new 'anonymous_users' and 'logged_in_users' pseudogroups so admins can explicitly target anonymous visitors and authenticated users.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "improved_crawler_detection",
+            "humanized_name": "Improved crawler detection",
+            "description": "Enables improved crawler tracking which can better detect likely crawlers and ensure traffic reporting is more accurate.",
+            "enabled": false,
+            "specific_groups": [],
+            "reason": "enabled_for_no_one"
+          },
+          {
+            "name": "modernize_foundation_theme",
+            "humanized_name": "Modernize Foundation theme",
+            "description": "This change introduces design modifcations to the Foundation theme in Discourse.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "prioritize_recently_used_tags",
+            "humanized_name": "Prioritize recently used tags",
+            "description": "When adding tags while creating or editing a topic, show the tags the member has recently used on their own topics at the top of the list, before the most popular tags of the forum.",
+            "enabled": false,
+            "specific_groups": [],
+            "reason": "enabled_for_no_one"
+          },
+          {
+            "name": "remove_and_replace_uncategorized",
+            "humanized_name": "Remove and replace uncategorized",
+            "description": "Replaces the special Uncategorized category with a standard category of the same name, and migrates all topics over to it.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "rename_faq_to_guidelines",
+            "humanized_name": "Rename FAQ to guidelines",
+            "description": "This change renames the FAQ page to Guidelines. The FAQ page will still be available at /faq. The <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=faq_url\" data-setting-name=\"faq_url\" data-setting-area=\"legal\" data-setting-category=\"legal\">FAQ URL</a> setting works as before.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "reporting_improvements",
+            "humanized_name": "Reporting improvements",
+            "description": "Improvements to navigation, design, and usability for Discourse's admin reports.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "sidebar_user_navigation",
+            "humanized_name": "Sidebar user navigation",
+            "description": "Moves the navigation for user pages — profile, activity, notifications, messages, invites and preferences — out of the horizontal tab bars and into a dedicated sidebar panel, the way the admin area works. On mobile the panel is served from the hamburger menu.",
+            "enabled": false,
+            "specific_groups": [],
+            "reason": "enabled_for_no_one"
+          },
+          {
+            "name": "update_pending_users_reminder_default",
+            "humanized_name": "Update pending users reminder default",
+            "description": "We are updating the default for the <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=pending_users_reminder_delay_minutes\" data-setting-name=\"pending_users_reminder_delay_minutes\" data-setting-area=\"login\" data-setting-category=\"login\">Pending users reminder delay minutes</a> setting to 30 minutes so that staff are promptly notified when a new member is waiting for approval. If you have previously changed this setting, this change will have no effect.",
+            "enabled": false,
+            "specific_groups": [],
+            "reason": "enabled_for_no_one"
+          },
+          {
+            "name": "voice_enabled",
+            "humanized_name": "Voice enabled",
+            "description": "Voice brings integrated voice and video rooms to Discourse, with screen sharing, background blur, noise suppression, live subtitles, direct calls, room chat, and group-based permissions. Members can keep browsing while they talk, with no external app required.",
+            "enabled": false,
+            "specific_groups": [],
+            "reason": "enabled_for_no_one"
+          }
+        ],
+        "single_sign_on_record": null,
+        "approved_by": null,
+        "suspended_by": {
+          "id": 1,
+          "username": "admin",
+          "name": "Admin",
+          "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png"
+        },
+        "silenced_by": {
+          "id": 1,
+          "username": "admin",
+          "name": "Admin",
+          "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png"
+        },
+        "groups": [
+          {
+            "id": 10,
+            "automatic": true,
+            "name": "trust_level_0",
+            "display_name": "trust_level_0",
+            "user_count": 5,
+            "mentionable_level": 0,
+            "messageable_level": 0,
+            "visibility_level": 1,
+            "primary_group": false,
+            "title": null,
+            "grant_trust_level": null,
+            "incoming_email": null,
+            "has_messages": false,
+            "flair_url": null,
+            "flair_bg_color": null,
+            "flair_color": null,
+            "bio_raw": null,
+            "bio_cooked": "New members with limited abilities, who are learning community norms and functionality",
+            "bio_excerpt": "New members with limited abilities, who are learning community norms and functionality",
+            "public_admission": false,
+            "public_exit": false,
+            "allow_membership_requests": false,
+            "full_name": "Trust level 0",
+            "default_notification_level": 3,
+            "membership_request_template": null,
+            "members_visibility_level": 0,
+            "can_see_members": true,
+            "can_admin_group": true,
+            "publish_read_state": false
+          },
+          {
+            "id": 11,
+            "automatic": true,
+            "name": "trust_level_1",
+            "display_name": "trust_level_1",
+            "user_count": 5,
+            "mentionable_level": 0,
+            "messageable_level": 0,
+            "visibility_level": 1,
+            "primary_group": false,
+            "title": null,
+            "grant_trust_level": null,
+            "incoming_email": null,
+            "has_messages": false,
+            "flair_url": null,
+            "flair_bg_color": null,
+            "flair_color": null,
+            "bio_raw": null,
+            "bio_cooked": "Members with more trust, who have shown initial engagement by reading and can now access more functions. All members of this group are also members of the trust_level_0 group.",
+            "bio_excerpt": "Members with more trust, who have shown initial engagement by reading and can now access more functions. All members of this group are also members of the trust_level_0 group.",
+            "public_admission": false,
+            "public_exit": false,
+            "allow_membership_requests": false,
+            "full_name": "Trust level 1",
+            "default_notification_level": 3,
+            "membership_request_template": null,
+            "members_visibility_level": 0,
+            "can_see_members": true,
+            "can_admin_group": true,
+            "publish_read_state": false
+          }
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 135,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "5gw0wmXSMB7jN9g6VPDF7Z/LeDs=",
+            "created_at": "2026-10-08T05:42:22.039681",
+            "rotated_at": "2026-10-08T05:42:22.039439",
+            "updated_at": "2026-10-08T05:42:22.039681",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "5gw0wmXSMB7jN9g6VPDF7Z/LeDs=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 135,
+            "seen_at": "2026-10-08T05:42:22.538431",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "5gw0wmXSMB7jN9g6VPDF7Z/LeDs=",
+            "created_at": "2026-10-08T05:42:22.039681",
+            "rotated_at": "2026-10-08T05:42:22.039439",
+            "updated_at": "2026-10-08T05:42:22.039681",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "5gw0wmXSMB7jN9g6VPDF7Z/LeDs=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "setup": [
+    "UPDATE users SET suspended_at = '2026-10-01 10:00:00', suspended_till = '2099-01-01 00:00:00', silenced_till = '2099-01-01 00:00:00' WHERE id = 2",
+    "INSERT INTO user_histories (action, acting_user_id, target_user_id, details, admin_only, created_at, updated_at) VALUES (10, 1, 2, 'repeated spam\nsee the log', FALSE, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO user_histories (action, acting_user_id, target_user_id, details, admin_only, created_at, updated_at) VALUES (30, 1, 2, 'cool off', FALSE, '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "recorded_from": {
+    "case": "a30736b9f33b56f14184a60c20e2466fb0a3990a3dc9d037bf16d1dd71c48dd6",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
