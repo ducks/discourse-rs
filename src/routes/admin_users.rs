@@ -684,3 +684,327 @@ fn json_error(errors: Vec<String>) -> Response {
     )
         .into_response()
 }
+
+/// What the activation routes do.
+#[derive(Clone, Copy, PartialEq)]
+enum AccountAction {
+    LogOut,
+    Activate,
+    Deactivate,
+    Approve,
+}
+
+/// PUT /admin/users/:id/approve
+pub async fn approve(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(user_id): Path<String>,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    account_route(
+        state,
+        guardian,
+        user_id,
+        headers,
+        uri,
+        body,
+        AccountAction::Approve,
+    )
+    .await
+}
+
+/// POST /admin/users/:id/log_out
+pub async fn log_out(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(user_id): Path<String>,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    account_route(
+        state,
+        guardian,
+        user_id,
+        headers,
+        uri,
+        body,
+        AccountAction::LogOut,
+    )
+    .await
+}
+
+/// PUT /admin/users/:id/activate
+pub async fn activate(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(user_id): Path<String>,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    account_route(
+        state,
+        guardian,
+        user_id,
+        headers,
+        uri,
+        body,
+        AccountAction::Activate,
+    )
+    .await
+}
+
+/// PUT /admin/users/:id/deactivate
+pub async fn deactivate(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(user_id): Path<String>,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    account_route(
+        state,
+        guardian,
+        user_id,
+        headers,
+        uri,
+        body,
+        AccountAction::Deactivate,
+    )
+    .await
+}
+
+/// UserHistory.actions
+const DEACTIVATE_USER: i32 = 39;
+const ACTIVATE_USER: i32 = 43;
+
+/// Admin::UsersController#log_out (admins: AdminConstraint), #activate
+/// and #deactivate (staff: StaffConstraint), each answering
+/// `success_json`.
+async fn account_route(
+    state: AppState,
+    guardian: crate::guardian::Guardian,
+    user_id: String,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+    action: AccountAction,
+) -> Result<Response, AppError> {
+    let method = if action == AccountAction::LogOut {
+        "POST"
+    } else {
+        "PUT"
+    };
+    let p = params::parse(uri.query(), &headers, &body);
+    if !csrf_ok(&state, &headers, &form_pairs(&p), uri.path(), method) {
+        return Ok(bad_csrf());
+    }
+    let allowed = if action == AccountAction::LogOut {
+        guardian.is_admin()
+    } else {
+        guardian.is_staff()
+    };
+    if !allowed {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    let Ok(user_id) = user_id
+        .strip_suffix(".json")
+        .unwrap_or(&user_id)
+        .parse::<i32>()
+    else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    let mut tx = state.pool.begin().await?;
+    #[derive(sqlx::FromRow)]
+    struct Target {
+        username_lower: String,
+        name: Option<String>,
+        admin: bool,
+        moderator: bool,
+        active: bool,
+        approved: bool,
+        email: Option<String>,
+    }
+    let target: Option<Target> = sqlx::query_as(
+        "SELECT username_lower, name, admin, moderator, active, approved, \
+                (SELECT email FROM user_emails WHERE user_id = u.id AND \"primary\") AS email \
+         FROM users u WHERE id = $1",
+    )
+    .bind(user_id)
+    .fetch_optional(&mut *tx)
+    .await?;
+    let Some(target) = target else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    let settings =
+        SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
+    let acting = guardian.user_id().unwrap_or_default();
+    let log = |action: i32, key: &str| {
+        let details = state.i18n.t(key).unwrap_or_default().to_string();
+        (action, details)
+    };
+    let (history, details) = match action {
+        AccountAction::Approve => {
+            if !target.active || target.approved {
+                return Ok(super::search::invalid_access(&state));
+            }
+            let Some(reviewable_id) =
+                crate::reviewable_user::find_or_create(&mut tx, &settings, user_id).await?
+            else {
+                // Rails calls `.reviewable` on the job's nil: a 500.
+                return Err(crate::Unsupported(
+                    "approving a user without must_approve_users (NoMethodError in Rails)",
+                )
+                .into());
+            };
+            let username = guardian
+                .user()
+                .map(|u| u.username.clone())
+                .unwrap_or_default();
+            let performer = crate::reviewable_user::Performer {
+                id: acting,
+                username: &username,
+            };
+            let approved = crate::reviewable_user::approve(
+                &mut tx,
+                &settings,
+                reviewable_id,
+                user_id,
+                &performer,
+            )
+            .await?;
+            if !approved {
+                return Ok(super::search::invalid_access(&state));
+            }
+            tx.commit().await?;
+            return Ok(StatusCode::OK.into_response());
+        }
+        AccountAction::LogOut => {
+            if settings.get("verbose_auth_token_logging")?.truthy() {
+                return Err(crate::Unsupported("verbose auth token logging").into());
+            }
+            sqlx::query("DELETE FROM user_auth_tokens WHERE user_id = $1")
+                .bind(user_id)
+                .execute(&mut *tx)
+                .await?;
+            sqlx::query("DELETE FROM push_subscriptions WHERE user_id = $1")
+                .bind(user_id)
+                .execute(&mut *tx)
+                .await?;
+            // logged_out
+            state
+                .bus
+                .publish(
+                    &mut tx,
+                    &format!("/logout/{user_id}"),
+                    &json!(user_id),
+                    Some(&[crate::bus::user_tag(user_id)]),
+                )
+                .await?;
+            tx.commit().await?;
+            return Ok(Json(json!({ "success": "OK" })).into_response());
+        }
+        AccountAction::Activate => {
+            if target.active {
+                return Ok(super::search::invalid_access(&state));
+            }
+            let Some(email) = target.email.as_deref() else {
+                return Err(crate::Unsupported("activating a user without an email").into());
+            };
+            let valid_hours = settings.get("email_token_valid_hours")?.to_i();
+            let active_token: bool = sqlx::query_scalar(
+                "SELECT EXISTS (SELECT 1 FROM email_tokens WHERE user_id = $1 AND NOT expired \
+                   AND created_at >= now() - make_interval(hours => $2))",
+            )
+            .bind(user_id)
+            .bind(valid_hours as i32)
+            .fetch_one(&mut *tx)
+            .await?;
+            let signup = crate::accounts::token_scopes::SIGNUP;
+            if !active_token {
+                crate::accounts::create_email_token(&mut tx, user_id, email, signup).await?;
+            }
+            // User#activate
+            let token =
+                crate::accounts::create_email_token(&mut tx, user_id, email, signup).await?;
+            super::accounts::confirm_email_token(&mut tx, &settings, &token, signup).await?;
+            log(ACTIVATE_USER, "user.activated_by_staff")
+        }
+        AccountAction::Deactivate => {
+            // can_deactivate? is can_suspend?: staff acting on a regular user.
+            if target.admin || target.moderator {
+                return Ok(super::search::invalid_access(&state));
+            }
+            let reviewable: bool = sqlx::query_scalar(
+                "SELECT EXISTS (SELECT 1 FROM reviewables WHERE type = 'ReviewableUser' \
+                   AND target_type = 'User' AND target_id = $1 AND status = 0)",
+            )
+            .bind(user_id)
+            .fetch_one(&mut *tx)
+            .await?;
+            let shadow: bool = sqlx::query_scalar(
+                "SELECT EXISTS (SELECT 1 FROM anonymous_users WHERE master_user_id = $1 AND active)",
+            )
+            .bind(user_id)
+            .fetch_one(&mut *tx)
+            .await?;
+            if reviewable || shadow {
+                return Err(crate::Unsupported(
+                    "deactivating a user with a pending review or anonymous shadows",
+                )
+                .into());
+            }
+            if target.active {
+                sqlx::query(
+                    "UPDATE users SET active = FALSE, updated_at = clock_timestamp() WHERE id = $1",
+                )
+                .bind(user_id)
+                .execute(&mut *tx)
+                .await?;
+                crate::user_updater::after_save(
+                    &mut tx,
+                    &settings,
+                    user_id,
+                    false,
+                    &target.username_lower,
+                    target.name.as_deref(),
+                )
+                .await?;
+            }
+            log(DEACTIVATE_USER, "user.deactivated_by_staff")
+        }
+    };
+    let context = (action == AccountAction::Deactivate)
+        .then(|| p.get("context").and_then(params::scalar))
+        .flatten();
+    sqlx::query(
+        "INSERT INTO user_histories (action, acting_user_id, target_user_id, details, context, \
+                                     admin_only, created_at, updated_at) \
+         VALUES ($1, $2, $3, $4, $5, FALSE, clock_timestamp(), clock_timestamp())",
+    )
+    .bind(history)
+    .bind(acting)
+    .bind(user_id)
+    .bind(details)
+    .bind(context)
+    .execute(&mut *tx)
+    .await?;
+    if action == AccountAction::Deactivate {
+        // refresh_browser
+        state
+            .bus
+            .publish(
+                &mut tx,
+                "/file-change",
+                &json!(["refresh"]),
+                Some(&[crate::bus::user_tag(user_id)]),
+            )
+            .await?;
+    }
+    tx.commit().await?;
+    Ok(Json(json!({ "success": "OK" })).into_response())
+}

@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE users SET active = FALSE WHERE id = 4"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/4/activate.json"
+    }
+  ]
+}

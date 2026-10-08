@@ -1,0 +1,15 @@
+{
+  "user": "admin",
+  "settings": {
+    "must_approve_users": true
+  },
+  "setup": [
+    "UPDATE users SET approved = FALSE, approved_by_id = NULL, approved_at = NULL WHERE id = 4"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/4/approve.json"
+    }
+  ]
+}

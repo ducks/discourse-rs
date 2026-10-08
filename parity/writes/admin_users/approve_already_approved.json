@@ -1,0 +1,74 @@
+{
+  "name": "approve_already_approved",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/4/approve.json"
+    }
+  ],
+  "started_at": "2026-10-08T06:56:05.989784",
+  "transaction_started_at": "2026-10-08T06:56:03.225289",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 135,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "iVZ3hGKXYukscSjxLtHmz5/A3zw=",
+            "created_at": "2026-10-08T06:56:04.507078",
+            "rotated_at": "2026-10-08T06:56:04.501657",
+            "updated_at": "2026-10-08T06:56:04.507078",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "iVZ3hGKXYukscSjxLtHmz5/A3zw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 135,
+            "seen_at": "2026-10-08T06:56:05.996763",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "iVZ3hGKXYukscSjxLtHmz5/A3zw=",
+            "created_at": "2026-10-08T06:56:04.507078",
+            "rotated_at": "2026-10-08T06:56:04.501657",
+            "updated_at": "2026-10-08T06:56:04.507078",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "iVZ3hGKXYukscSjxLtHmz5/A3zw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "setup": [
+    "UPDATE users SET approved = TRUE, approved_by_id = 1, approved_at = now() WHERE id = 4"
+  ],
+  "recorded_from": {
+    "case": "b5fd6e845c407b78ef29a90b29338e3f78db4ff2aa116893ada0387937da4f8b",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

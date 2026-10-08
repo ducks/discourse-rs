@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE users SET approved = TRUE, approved_by_id = 1, approved_at = now() WHERE id = 4"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/4/approve.json"
+    }
+  ]
+}

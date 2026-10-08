@@ -1,0 +1,9 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/users/9999/log_out.json"
+    }
+  ]
+}

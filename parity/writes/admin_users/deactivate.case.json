@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/4/deactivate.json",
+      "params": {
+        "context": "/admin/users/4/user2"
+      }
+    }
+  ]
+}
