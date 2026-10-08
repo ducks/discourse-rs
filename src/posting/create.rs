@@ -1066,7 +1066,13 @@ async fn create_topic(
     }
     let pm = plan.pm_recipients.is_some();
     let slug = slug_for(&plan.title, &s.get("default_locale")?.to_s())?;
-    let fancy_title = fancy_title(&plan.title)?;
+    let fancy_title = crate::posting::text::fancy_title(
+        &plan.title,
+        crate::posting::text::EmojiEscape {
+            shortcuts: s.get("enable_emoji")?.truthy() && s.get("enable_emoji_shortcuts")?.truthy(),
+            inline: s.get("enable_inline_emoji_translation")?.truthy(),
+        },
+    )?;
     let (topic_id, created_at): (i32, NaiveDateTime) = sqlx::query_as(
         "INSERT INTO topics (title, fancy_title, slug, user_id, last_post_user_id, visible, category_id, \
                              archetype, subtype, bumped_at, created_at, updated_at, slow_mode_seconds) \
@@ -1184,24 +1190,6 @@ async fn create_topic(
     }
     let _ = guardian;
     Ok(topic_id)
-}
-
-/// `Topic.fancy_title(title)` for titles HtmlPrettify and the emoji
-/// unescape leave alone: the title HTML-escaped.
-fn fancy_title(title: &str) -> Result<String, Unsupported> {
-    let prettified = title.contains(['\'', '"', '`', '&', '<', '>'])
-        || title.contains("--")
-        || title.contains("..")
-        || title.contains("(c)")
-        || title.contains("(r)")
-        || title.contains("(tm)")
-        || title.contains("<<")
-        || title.contains(">>")
-        || !title.is_ascii();
-    if prettified {
-        return Err(Unsupported("fancy titles (HtmlPrettify)"));
-    }
-    Ok(title.to_string())
 }
 
 /// `CategoryFeaturedTopic.feature_topics_for(category)`: the system

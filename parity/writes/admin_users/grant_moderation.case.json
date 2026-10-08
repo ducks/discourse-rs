@@ -8,6 +8,5 @@
   ],
   "run_jobs": [
     "send_system_message"
-  ],
-  "not_yet": "The welcome_staff message's title needs a slug transliterated and a fancy title (HtmlPrettify)."
+  ]
 }

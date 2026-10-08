@@ -44,8 +44,9 @@ could put behind Caddy and leave running.
 Behaviors real backups hit that the mirror currently refuses. Roughly by
 how often a backup trips them.
 
-- [ ] Fancy titles (`HtmlPrettify`) for titles without a stored
-      `fancy_title`
+- [ ] Fancy titles for topics without a stored `fancy_title` (computed
+      and written back on read; `HtmlPrettify` is ported, unicode emoji
+      in titles are not)
 - [ ] Hidden and deleted posts (`hidden`, `deleted_at`, staff whispers stay
       hidden)
 - [ ] Topic thumbnails and topic images behind a CDN, secure uploads

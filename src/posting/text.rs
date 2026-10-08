@@ -182,6 +182,130 @@ pub fn word_count(raw: &str) -> i32 {
     count
 }
 
+/// Settings `PrettyText.escape_emoji` passes to `performEmojiEscape`.
+#[derive(Clone, Copy)]
+pub struct EmojiEscape {
+    /// `enable_emoji && enable_emoji_shortcuts`
+    pub shortcuts: bool,
+    /// `enable_inline_emoji_translation`
+    pub inline: bool,
+}
+
+/// `Topic.max_fancy_title_length`
+const MAX_FANCY_TITLE_LENGTH: usize = 400;
+
+/// `Topic.fancy_title(title)`: HTML-escaped, prettified, emoji escaped,
+/// or just escaped when that runs past 400 characters.
+pub fn fancy_title(title: &str, emoji: EmojiEscape) -> Result<String, Unsupported> {
+    let escaped = crate::category_badge::html_escape(title);
+    let fancy = escape_emoji(&crate::html_prettify::render(&escaped), emoji)?;
+    Ok(if fancy.chars().count() > MAX_FANCY_TITLE_LENGTH {
+        escaped
+    } else {
+        fancy
+    })
+}
+
+/// Codepoints `emojiReplacementRegex` can start a match on, widened to
+/// whole blocks.
+fn is_emoji_char(c: char) -> bool {
+    matches!(
+        c as u32,
+        0x200D
+            | 0x203C
+            | 0x2049
+            | 0x20E3
+            | 0x2139
+            | 0x2194..=0x2BFF
+            | 0x3030
+            | 0x303D
+            | 0x3297
+            | 0x3299
+            | 0xFE0F
+            | 0x1F000..=0x1FAFF
+            | 0xE0020..=0xE007F
+    )
+}
+
+/// `:`-prefixed keys of pretty-text's emoji `translations`; the others
+/// can't match `textEmojiRegex`.
+const COLON_TRANSLATIONS: [(&str, &str); 19] = [
+    (":)", "slight_smile"),
+    (":-)", "slight_smile"),
+    (":(", "frowning"),
+    (":-(", "frowning"),
+    (":'(", "cry"),
+    (":'-(", "cry"),
+    (":-'(", "cry"),
+    (":p", "stuck_out_tongue"),
+    (":P", "stuck_out_tongue"),
+    (":-P", "stuck_out_tongue"),
+    (":O", "open_mouth"),
+    (":-O", "open_mouth"),
+    (":D", "smiley"),
+    (":-D", "smiley"),
+    (":|", "expressionless"),
+    (":-|", "expressionless"),
+    (":/", "confused"),
+    (":$", "blush"),
+    (":-$", "blush"),
+];
+
+/// JS `\B` (ASCII word characters) as lookarounds.
+const JS_NOT_BOUNDARY: &str =
+    "(?:(?<=[A-Za-z0-9_])(?=[A-Za-z0-9_])|(?<![A-Za-z0-9_])(?![A-Za-z0-9_]))";
+
+static TEXT_EMOJI: LazyLock<fancy_regex::Regex> = LazyLock::new(|| {
+    fancy_regex::Regex::new(&format!(
+        r"{JS_NOT_BOUNDARY}:[^\s:]+(?::t[0-9])?:?{JS_NOT_BOUNDARY}"
+    ))
+    .unwrap()
+});
+static TEXT_EMOJI_INLINE: LazyLock<fancy_regex::Regex> =
+    LazyLock::new(|| fancy_regex::Regex::new(r":[^\s:]+(?::t[0-9])?:?").unwrap());
+
+/// `PrettyText.escape_emoji` (pretty-text's `performEmojiEscape`): text
+/// shortcuts like `:)` become `:slight_smile:`. Unicode emoji, which it
+/// turns into codes too, aren't ported.
+pub fn escape_emoji(s: &str, opts: EmojiEscape) -> Result<String, Unsupported> {
+    if s.chars().any(is_emoji_char) {
+        return Err(Unsupported("unicode emoji in titles (performEmojiEscape)"));
+    }
+    if !opts.shortcuts {
+        return Ok(s.to_string());
+    }
+    let re = if opts.inline {
+        &*TEXT_EMOJI_INLINE
+    } else {
+        &*TEXT_EMOJI
+    };
+    let mut out = String::with_capacity(s.len());
+    let mut last = 0;
+    for m in re.find_iter(s) {
+        let m = m.map_err(|_| Unsupported("emoji shortcut regex backtracking"))?;
+        let name = COLON_TRANSLATIONS
+            .iter()
+            .find(|(k, _)| *k == m.as_str())
+            .map(|(_, v)| *v);
+        let Some(name) = name else { continue };
+        let before = &s[..m.start()];
+        let replaceable = opts.inline
+            || before
+                .chars()
+                .last()
+                .is_none_or(|c| c.is_whitespace() || ">.,/#!$%^&*;:{}=-_`~()".contains(c));
+        if replaceable {
+            out.push_str(&s[last..m.start()]);
+            out.push(':');
+            out.push_str(name);
+            out.push(':');
+            last = m.end();
+        }
+    }
+    out.push_str(&s[last..]);
+    Ok(out)
+}
+
 /// `Slug.for(title)` with slug_generation_method `ascii`, for titles
 /// without emoji codes, on English sites (other locales have their own
 /// transliteration rules).
