@@ -67,7 +67,6 @@ const DISCOURSE_CSS: &str = concat!(
     include_str!("../../static/css/menus.css"),
     include_str!("../../static/css/not-found.css"),
     include_str!("../../static/css/powered-by.css"),
-    include_str!("../../static/css/presence.css"),
 );
 
 async fn discourse_css() -> impl IntoResponse {

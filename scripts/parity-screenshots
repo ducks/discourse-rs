@@ -26,15 +26,25 @@
 #   scripts/parity-screenshots --summary parity/screens/summary.json \
 #     http://127.0.0.1:8095 /tmp/screens
 #
+# --settings FILE: site settings set on the reference (as admin, through
+# PUT /admin/site_settings) before any page is captured. The default,
+# parity/screens/settings, turns off the bundled plugins whose UI lives
+# behind the plugin protocol (PLUGINS.md), so the diffs measure core. The
+# port draws no plugin UI either way, and its admin API refuses plugin
+# settings until plugins run (ROADMAP.md milestone 5).
+#
 # Usage: scripts/parity-screenshots [--reference URL] [--pages FILE]
-#          [--width PX] [--fail-above PCT] [--summary FILE] <our-url> <out-dir>
+#          [--settings FILE] [--width PX] [--fail-above PCT] [--summary FILE]
+#          <our-url> <out-dir>
 # Defaults: --reference http://127.0.0.1:3042, --pages parity/screens/pages,
-# --width 1280. The page list format is described at its top.
+# --settings parity/screens/settings, --width 1280. The page list format is
+# described at its top.
 set -euo pipefail
 
 root="$(cd "$(dirname "$0")/.." && pwd)"
 reference="http://127.0.0.1:3042"
 pages="$root/parity/screens/pages"
+settings="$root/parity/screens/settings"
 width=1280
 fail_above=""
 summary=""
@@ -42,6 +52,7 @@ while [ $# -gt 0 ]; do
   case "$1" in
     --reference) reference="$2"; shift 2 ;;
     --pages) pages="$2"; shift 2 ;;
+    --settings) settings="$2"; shift 2 ;;
     --width) width="$2"; shift 2 ;;
     --fail-above) fail_above="$2"; shift 2 ;;
     --summary) summary="$(realpath -m "$2")"; shift 2 ;;
@@ -50,7 +61,7 @@ while [ $# -gt 0 ]; do
   esac
 done
 if [ $# -ne 2 ]; then
-  echo "usage: $0 [--reference URL] [--pages FILE] [--width PX] [--fail-above PCT] [--summary FILE] <our-url> <out-dir>" >&2
+  echo "usage: $0 [--reference URL] [--pages FILE] [--settings FILE] [--width PX] [--fail-above PCT] [--summary FILE] <our-url> <out-dir>" >&2
   exit 64
 fi
 ours="$1"
@@ -59,7 +70,7 @@ mkdir -p "$out"
 
 exec nix-shell -p "python3.withPackages (ps: [ ps.playwright ps.pillow ps.numpy ])" playwright-driver.browsers --run "
   export PLAYWRIGHT_BROWSERS_PATH=\$(nix-build '<nixpkgs>' -A playwright-driver.browsers --no-out-link)
-  python3 - $(printf '%q ' "$reference" "$ours" "$pages" "$out" "$width" "$fail_above" "$summary")
+  python3 - $(printf '%q ' "$reference" "$ours" "$pages" "$out" "$width" "$fail_above" "$summary" "$settings")
 " <<'PYTHON'
 import html
 import json
@@ -71,7 +82,7 @@ import numpy as np
 from PIL import Image
 from playwright.sync_api import sync_playwright
 
-reference, ours, pages_file, out, width, fail_above, summary = sys.argv[1:]
+reference, ours, pages_file, out, width, fail_above, summary, settings_file = sys.argv[1:]
 out = Path(out)
 width = int(width)
 fail_above = float(fail_above) if fail_above else None
@@ -236,10 +247,47 @@ def report(results):
     )
 
 
+def parse_settings(path):
+    """`name=value` a line; `#` comments."""
+    settings = []
+    for line in Path(path).read_text().splitlines():
+        line = line.split("#", 1)[0].strip()
+        if line:
+            name, _, value = line.partition("=")
+            settings.append((name.strip(), value.strip()))
+    return settings
+
+
+def apply_settings(browser, base, settings):
+    """PUT /admin/site_settings/:name as admin, the login cached for the run."""
+    session = SESSIONS.get((base, "admin"))
+    context = browser.new_context(storage_state=session)
+    try:
+        if session is None:
+            log_in(context, base, "admin")
+            SESSIONS[(base, "admin")] = context.storage_state()
+        headers = {"X-Requested-With": "XMLHttpRequest", "Accept": "application/json"}
+        csrf = context.request.get(f"{base}/session/csrf.json", headers=headers).json()["csrf"]
+        for name, value in settings:
+            response = context.request.put(
+                f"{base}/admin/site_settings/{name}.json",
+                form={name: value},
+                headers={**headers, "X-CSRF-Token": csrf},
+            )
+            if not response.ok:
+                raise RuntimeError(
+                    f"setting {name}={value} on {base}: {response.status} {response.text()[:200]}"
+                )
+    finally:
+        context.close()
+
+
 pages = parse_pages(pages_file)
+settings = parse_settings(settings_file) if Path(settings_file).exists() else []
 results = []
 with sync_playwright() as p:
     browser = p.chromium.launch()
+    apply_settings(browser, reference, settings)
     for page in pages:
         name = slug(page)
         directory = out / name

@@ -148,7 +148,11 @@ header has the commands. It is a report: diffs fail the run only with
 `--fail-above PCT`. `--summary parity/screens/summary.json` refreshes the committed
 baseline: each page's score, statuses and sizes, a page a line, so a diff
 shows which pages moved. Logging in on the reference saves drafts and timings, so
-`make reset-reference` before the next recording.
+`make reset-reference` before the next recording. Before capturing, the
+script applies `parity/screens/settings` to the reference: it turns off the
+bundled plugins Discourse enables by default (chat, reactions, solved,
+voting, presence, templates), which here are plugins (PLUGINS.md), so the
+scores measure core.
 
 ## Bench
 

@@ -1758,7 +1758,6 @@ async fn members_get_the_topic_controls() {
     assert!(page.contains(
         r#"<span class="text">You will receive notifications because you created this topic.</span>"#
     ));
-    assert!(page.contains(r#"<div class="topic-above-footer-buttons-outlet presence""#));
     // This topic counts as read; the others are new.
     assert!(page.contains(r#"There are <a href="/new?subset=topics">3 new</a> topics remaining,"#));
 

@@ -878,16 +878,7 @@ pub async fn topic_page(
         String::new()
     };
     let timeline = crate::post_view::timeline(&cx, view);
-    let mut footer_buttons = crate::post_view::footer_buttons(&cx, view);
-    // discourse-presence's topic-above-footer-buttons connector, for
-    // members: the replying avatars (shown live, not ported) over room
-    // kept for them.
-    if viewer.is_some() && settings.get("presence_enabled")?.truthy() {
-        footer_buttons.insert_str(
-            0,
-            "<span><div class=\"topic-above-footer-buttons-outlet presence\" style=\"--avatar-min-height: 24px\"></div></span>",
-        );
-    }
+    let footer_buttons = crate::post_view::footer_buttons(&cx, view);
     // The counts after screen-track marks this topic read through the
     // posts the page shows (TopicTrackingState#updateSeen).
     let tracking = site.chrome.tracking.as_ref().map(|t| {
