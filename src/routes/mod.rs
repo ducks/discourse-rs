@@ -264,6 +264,35 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/admin/site_settings/{id}",
             put(admin_site_settings::update),
         )
+        .route(
+            "/admin/logs/screened_emails",
+            get(admin_logs::screened_emails),
+        )
+        .route(
+            "/admin/logs/screened_emails.json",
+            get(admin_logs::screened_emails),
+        )
+        .route(
+            "/admin/logs/screened_emails/{id}",
+            delete(admin_logs::destroy_screened_email),
+        )
+        .route("/admin/logs/screened_urls", get(admin_logs::screened_urls))
+        .route(
+            "/admin/logs/screened_urls.json",
+            get(admin_logs::screened_urls),
+        )
+        .route(
+            "/admin/logs/screened_ip_addresses",
+            get(admin_logs::screened_ip_addresses).post(admin_logs::create_screened_ip),
+        )
+        .route(
+            "/admin/logs/screened_ip_addresses.json",
+            get(admin_logs::screened_ip_addresses).post(admin_logs::create_screened_ip),
+        )
+        .route(
+            "/admin/logs/screened_ip_addresses/{id}",
+            put(admin_logs::update_screened_ip).delete(admin_logs::destroy_screened_ip),
+        )
         .route("/admin/logs", get(admin_logs::staff_action_logs))
         .route("/admin/logs.json", get(admin_logs::staff_action_logs))
         .route(

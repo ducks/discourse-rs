@@ -1,0 +1,50 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/logs/screened_ip_addresses.json",
+      "params": {
+        "ip_address": "203.0.113.5",
+        "action_name": "block"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/logs/screened_ip_addresses.json",
+      "params": {
+        "ip_address": "198.51.*.*"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/logs/screened_ip_addresses.json",
+      "params": {
+        "ip_address": "203.0.113.5",
+        "action_name": "block"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/logs/screened_ip_addresses.json",
+      "params": {
+        "ip_address": "nonsense"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/logs/screened_ip_addresses.json",
+      "params": {
+        "ip_address": "203.0.113.6",
+        "action_name": "explode"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/logs/screened_ip_addresses.json",
+      "params": {
+        "action_name": "block"
+      }
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO screened_urls (url, domain, action_type, match_count, last_match_at, created_at, updated_at) VALUES ('http://spam.example/a', 'spam.example', 2, 2, '2026-10-03 10:00:00', '2026-09-28 10:00:00', now()), ('http://spam.example/b', 'spam.example', 2, 5, '2026-10-04 08:00:00', '2026-09-29 10:00:00', now()), ('http://junk.example/x', 'junk.example', 2, 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00', now())"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/logs/screened_urls.json"
+    }
+  ]
+}

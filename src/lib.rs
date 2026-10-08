@@ -54,6 +54,7 @@ pub mod roles;
 pub mod routes;
 pub mod ruby;
 pub mod schema;
+pub mod screened;
 pub mod search;
 pub mod second_factor;
 pub mod session;

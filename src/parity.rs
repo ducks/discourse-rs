@@ -303,10 +303,18 @@ fn normalize_json(body: &str, ignore: &[String]) -> Result<Value, String> {
 /// link_counts (`ORDER BY reflection, clicks DESC`), ties by url; a user
 /// summary's user lists (UserSummary#user_counts sorts by count) and
 /// top_categories (by post and topic count), ties by id, less the entries
-/// tied at the cut when a list is full.
+/// tied at the cut when a list is full; the screened IPs (by match count),
+/// ties by id.
 pub fn unorder(body: &mut Value) {
     let id = |v: &Value| v["id"].as_i64().unwrap_or(0);
     let count = |v: &Value, key: &str| v[key].as_i64().unwrap_or(0);
+    if let Some(items) = body.as_array_mut()
+        && items
+            .iter()
+            .all(|i| i.get("ip_address").is_some() && i.get("action_name").is_some())
+    {
+        items.sort_by_key(|i| (-count(i, "match_count"), id(i)));
+    }
     if let Some(summary) = body.get_mut("user_summary") {
         for key in [
             "most_liked_by_users",
