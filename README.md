@@ -87,6 +87,9 @@ the jobs it enqueues in turn are measured the same way.
 A case can turn settings on (`settings`, set with `SiteSetting.set` inside
 the transaction) and add fixture rows (`setup`, SQL run on both sides
 before the snapshot), as the reply-by-email cases do for their reply key.
+`ignore` lists JSON pointers into the recording (`*` for any key or index)
+left out on both sides, for what Rails leaves to chance, such as a topic's
+random suggested topics.
 
 Incoming mail has two corpora of its own: the email_reply_trimmer gem's
 tests (`parity/email_reply_trimmer`, `tests/reply_trimmer.rs`), and sample

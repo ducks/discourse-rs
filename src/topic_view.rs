@@ -306,8 +306,9 @@ impl TopicView<'_> {
         let mut out = Map::new();
         let post_ids: Vec<i32> = posts.iter().map(|p| p.id).collect();
         let solved = self.solved_view(&topic, extra.deleted_at.is_some()).await?;
+        let can_vote = self.topic_can_vote(&topic).await?;
         let serialized_posts = self
-            .serialize_posts(&topic, &slug, &posts, &viewer, solved.as_ref())
+            .serialize_posts(&topic, &slug, &posts, &viewer, solved.as_ref(), can_vote)
             .await?;
         out.insert(
             "post_stream".into(),
@@ -553,6 +554,16 @@ impl TopicView<'_> {
             self.solved_topic_keys(solved, &slug, &viewer, &mut out)
                 .await?;
         }
+        if let Some(can_vote) = can_vote {
+            crate::plugins::topic_voting::topic_view_keys(
+                &mut *self.conn,
+                self.guardian,
+                topic.id,
+                can_vote,
+                &mut out,
+            )
+            .await?;
+        }
 
         Ok(Rendered {
             json: Value::Object(out),
@@ -710,6 +721,7 @@ impl TopicView<'_> {
         let solved = self
             .solved_view(&topic, topic_extra.deleted_at.is_some())
             .await?;
+        let can_vote = self.topic_can_vote(&topic).await?;
         let mut serialized = self
             .serialize_posts(
                 &topic,
@@ -717,6 +729,7 @@ impl TopicView<'_> {
                 std::slice::from_ref(&post),
                 &viewer,
                 solved.as_ref(),
+                can_vote,
             )
             .await?;
         let Some(Value::Object(mut p)) = serialized.pop() else {
@@ -1377,6 +1390,7 @@ impl TopicView<'_> {
         posts: &[PostRow],
         viewer: &Viewer,
         solved: Option<&crate::plugins::solved::TopicView>,
+        can_vote: Option<bool>,
     ) -> Result<Vec<Value>, TopicViewError> {
         let logo_small_url = self.list_serializer().logo_small_url().await?;
         let enable_names = self.settings.get("enable_names")?.truthy();
@@ -1787,6 +1801,10 @@ impl TopicView<'_> {
             if let Some(solved) = solved {
                 solved.post_keys(g, post.id, post.post_number, post.post_type == 4, &mut p);
             }
+            // discourse-topic-voting's, on the first post.
+            if let Some(can_vote) = can_vote.filter(|_| post.post_number == 1) {
+                p.insert("can_vote".into(), json!(can_vote));
+            }
             out.push(Value::Object(p));
         }
         Ok(out)
@@ -1817,6 +1835,20 @@ impl TopicView<'_> {
     }
 
     /// discourse-solved's state for the topic, when it's on.
+    /// discourse-topic-voting's `Topic#can_vote?`, None with the plugin
+    /// off.
+    async fn topic_can_vote(&mut self, topic: &TopicRow) -> Result<Option<bool>, TopicViewError> {
+        if !crate::plugins::topic_voting::enabled(self.settings)? {
+            return Ok(None);
+        }
+        let categories = crate::plugins::topic_voting::Categories::load(&mut *self.conn).await?;
+        Ok(Some(categories.can_vote(
+            topic.id,
+            &topic.archetype,
+            topic.category_id,
+        )))
+    }
+
     async fn solved_view(
         &mut self,
         topic: &TopicRow,

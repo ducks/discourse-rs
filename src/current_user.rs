@@ -861,6 +861,16 @@ pub async fn serialize(
         "user_option".into(),
         user_option(conn, settings, &row.new_since, row.created_at, uid).await?,
     );
+    if crate::plugins::topic_voting::enabled(settings)? {
+        crate::plugins::topic_voting::current_user_keys(
+            conn,
+            settings,
+            uid,
+            user.trust_level,
+            &mut out,
+        )
+        .await?;
+    }
     Ok(Value::Object(out))
 }
 

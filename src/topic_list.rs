@@ -373,6 +373,33 @@ impl TopicListSerializer<'_> {
     async fn plugin_keys(
         &mut self,
         t: &TopicRow,
+        mode: Mode,
+        out: &mut Map<String, Value>,
+    ) -> Result<(), TopicListError> {
+        self.solved_keys(t, out).await?;
+        // topic-voting's keys are TopicListItemSerializer's only.
+        if mode == Mode::ListItem && crate::plugins::topic_voting::enabled(self.settings)? {
+            let loaded;
+            let data = match &self.prefetched.plugins.topic_voting {
+                Some(data) if self.prefetched.topic_ids.contains(&t.id) => data,
+                _ => {
+                    loaded = crate::plugins::topic_voting::TopicListData::load(
+                        &mut *self.conn,
+                        &[t.id],
+                        self.guardian.user_id(),
+                    )
+                    .await?;
+                    &loaded
+                }
+            };
+            data.list_item_keys(self.guardian, t.id, &t.archetype, t.category_id, out);
+        }
+        Ok(())
+    }
+
+    async fn solved_keys(
+        &mut self,
+        t: &TopicRow,
         out: &mut Map<String, Value>,
     ) -> Result<(), TopicListError> {
         if !crate::plugins::solved::enabled(self.settings)? {
@@ -584,7 +611,7 @@ impl TopicListSerializer<'_> {
         }
         // can_see_tags?: tagging on, and PMs only for PM taggers.
         if mode == Mode::Reviewable {
-            self.plugin_keys(t, &mut out).await?;
+            self.plugin_keys(t, mode, &mut out).await?;
             return Ok(Value::Object(out));
         }
         if mode != Mode::Listable
@@ -600,7 +627,7 @@ impl TopicListSerializer<'_> {
         }
         if matches!(mode, Mode::SearchItem { .. }) {
             out.insert("category_id".into(), json!(t.category_id));
-            self.plugin_keys(t, &mut out).await?;
+            self.plugin_keys(t, mode, &mut out).await?;
             return Ok(Value::Object(out));
         }
         if mode == Mode::Suggested {
@@ -648,7 +675,7 @@ impl TopicListSerializer<'_> {
                 .unwrap_or_default();
             out.insert("participant_groups".into(), json!(groups));
         }
-        self.plugin_keys(t, &mut out).await?;
+        self.plugin_keys(t, mode, &mut out).await?;
         let poster_json = |p: &Poster| {
             json!({
                 "extras": p.extras,
@@ -684,7 +711,7 @@ impl TopicListSerializer<'_> {
         t: &TopicRow,
         posters: &[Poster],
     ) -> Result<Value, TopicListError> {
-        self.plugin_keys(t, &mut out).await?;
+        self.plugin_keys(t, Mode::Listable, &mut out).await?;
         let logo_small_url = self.logo_small_url().await?;
         let last = posters.iter().find(|p| p.user.id == t.last_post_user_id);
         let last_poster = match last {
@@ -732,7 +759,7 @@ impl TopicListSerializer<'_> {
             }
         }
         out.insert("op_like_count".into(), self.op_like_count(t.id).await?);
-        self.plugin_keys(t, &mut out).await?;
+        self.plugin_keys(t, Mode::Suggested, &mut out).await?;
         let logo_small_url = self.logo_small_url().await?;
         let group_ids: Vec<i32> = posters
             .iter()
@@ -870,9 +897,13 @@ impl TopicListSerializer<'_> {
                 .await?;
         }
         // The plugins' after load (TopicList#load_topics' preloads).
-        p.plugins =
-            crate::plugins::topic_list_after_load(&mut *self.conn, self.settings, &topic_ids)
-                .await?;
+        p.plugins = crate::plugins::topic_list_after_load(
+            &mut *self.conn,
+            self.settings,
+            &topic_ids,
+            self.guardian.user_id(),
+        )
+        .await?;
         self.prefetched = p;
         Ok(())
     }

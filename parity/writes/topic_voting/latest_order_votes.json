@@ -1,0 +1,316 @@
+{
+  "name": "latest_order_votes",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/latest.json?order=votes",
+      "params": {}
+    }
+  ],
+  "started_at": "2026-10-08T19:38:38.437259",
+  "transaction_started_at": "2026-10-08T19:38:37.422555",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "users": [
+          {
+            "id": 2,
+            "username": "user0",
+            "name": "User0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+            "trust_level": 1
+          },
+          {
+            "id": 3,
+            "username": "user1",
+            "name": "User1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+            "trust_level": 2
+          },
+          {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "admin": true,
+            "moderator": true,
+            "trust_level": 4
+          },
+          {
+            "id": 4,
+            "username": "user2",
+            "name": "User2",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+            "trust_level": 2
+          },
+          {
+            "id": -1,
+            "username": "system",
+            "name": "system",
+            "avatar_template": "/images/discourse-logo-sketch-small.png",
+            "admin": true,
+            "moderator": true,
+            "trust_level": 4
+          }
+        ],
+        "primary_groups": [],
+        "flair_groups": [],
+        "topic_list": {
+          "can_create_topic": true,
+          "filter": "latest",
+          "per_page": 30,
+          "top_tags": [
+            {
+              "id": 2,
+              "name": "guide",
+              "slug": "guide"
+            },
+            {
+              "id": 1,
+              "name": "howto",
+              "slug": "howto"
+            }
+          ],
+          "topics": [
+            {
+              "fancy_title": "Parity fixture: replies and posters",
+              "id": 35,
+              "title": "Parity fixture: replies and posters",
+              "slug": "parity-fixture-replies-and-posters",
+              "posts_count": 5,
+              "reply_count": 0,
+              "highest_post_number": 5,
+              "image_url": null,
+              "created_at": "2026-09-30T07:28:28.864Z",
+              "last_posted_at": "2026-10-01T15:39:51.834Z",
+              "bumped": true,
+              "bumped_at": "2026-10-01T15:39:51.834Z",
+              "archetype": "regular",
+              "unseen": false,
+              "last_read_post_number": 2,
+              "unread": 0,
+              "new_posts": 3,
+              "unread_posts": 3,
+              "pinned": false,
+              "unpinned": null,
+              "visible": true,
+              "closed": false,
+              "archived": false,
+              "notification_level": 2,
+              "bookmarked": true,
+              "liked": false,
+              "tags": [
+                {
+                  "id": 2,
+                  "name": "guide",
+                  "slug": "guide"
+                }
+              ],
+              "tags_descriptions": {},
+              "views": 0,
+              "like_count": 1,
+              "has_summary": false,
+              "last_poster_username": "user0",
+              "category_id": 4,
+              "op_like_count": 0,
+              "pinned_globally": false,
+              "featured_link": null,
+              "has_accepted_answer": false,
+              "vote_count": 2,
+              "can_vote": true,
+              "user_voted": true,
+              "posters": [
+                {
+                  "extras": "latest",
+                  "description": "Original Poster, Most Recent Poster",
+                  "user_id": 2,
+                  "primary_group_id": null,
+                  "flair_group_id": null
+                },
+                {
+                  "extras": null,
+                  "description": "Frequent Poster",
+                  "user_id": 3,
+                  "primary_group_id": null,
+                  "flair_group_id": null
+                },
+                {
+                  "extras": null,
+                  "description": "Recent Poster",
+                  "user_id": 1,
+                  "primary_group_id": null,
+                  "flair_group_id": null
+                },
+                {
+                  "extras": null,
+                  "description": "Recent Poster",
+                  "user_id": 4,
+                  "primary_group_id": null,
+                  "flair_group_id": null
+                }
+              ]
+            },
+            {
+              "fancy_title": "Parity fixture: tagged in a subcategory",
+              "id": 38,
+              "title": "Parity fixture: tagged in a subcategory",
+              "slug": "parity-fixture-tagged-in-a-subcategory",
+              "posts_count": 1,
+              "reply_count": 0,
+              "highest_post_number": 1,
+              "image_url": null,
+              "created_at": "2026-09-30T07:28:29.543Z",
+              "last_posted_at": "2026-09-30T07:28:29.580Z",
+              "bumped": true,
+              "bumped_at": "2026-09-30T07:28:29.580Z",
+              "archetype": "regular",
+              "unseen": false,
+              "last_read_post_number": 1,
+              "unread": 0,
+              "new_posts": 0,
+              "unread_posts": 0,
+              "pinned": false,
+              "unpinned": null,
+              "visible": true,
+              "closed": false,
+              "archived": false,
+              "notification_level": 3,
+              "bookmarked": false,
+              "liked": false,
+              "tags": [
+                {
+                  "id": 1,
+                  "name": "howto",
+                  "slug": "howto"
+                }
+              ],
+              "tags_descriptions": {},
+              "views": 0,
+              "like_count": 0,
+              "has_summary": false,
+              "last_poster_username": "user1",
+              "category_id": 34,
+              "op_like_count": 0,
+              "pinned_globally": false,
+              "featured_link": null,
+              "has_accepted_answer": false,
+              "can_vote": false,
+              "posters": [
+                {
+                  "extras": "latest single",
+                  "description": "Original Poster, Most Recent Poster",
+                  "user_id": 3,
+                  "primary_group_id": null,
+                  "flair_group_id": null
+                }
+              ]
+            },
+            {
+              "fancy_title": "Welcome to Discourse! :wave:",
+              "id": 5,
+              "title": "Welcome to Discourse! :wave:",
+              "slug": "welcome-to-discourse",
+              "posts_count": 1,
+              "reply_count": 0,
+              "highest_post_number": 1,
+              "image_url": null,
+              "created_at": "2026-07-25T05:58:28.320Z",
+              "last_posted_at": "2026-07-25T05:58:28.405Z",
+              "bumped": true,
+              "bumped_at": "2026-07-25T05:58:28.405Z",
+              "archetype": "regular",
+              "unseen": false,
+              "pinned": true,
+              "unpinned": null,
+              "excerpt": "We are so glad you joined us. \nHere are some things you can do to get started: \n:speaking_head: Introduce yourself by adding your picture and information about yourself and your interests to your profile. What is one thi&hellip;",
+              "visible": true,
+              "closed": false,
+              "archived": false,
+              "bookmarked": null,
+              "liked": null,
+              "unicode_title": "Welcome to Discourse! 👋",
+              "tags": [],
+              "tags_descriptions": {},
+              "views": 0,
+              "like_count": 0,
+              "has_summary": false,
+              "last_poster_username": "system",
+              "category_id": 4,
+              "op_like_count": 0,
+              "pinned_globally": true,
+              "featured_link": null,
+              "has_accepted_answer": false,
+              "vote_count": 0,
+              "can_vote": true,
+              "user_voted": false,
+              "posters": [
+                {
+                  "extras": "latest single",
+                  "description": "Original Poster, Most Recent Poster",
+                  "user_id": -1,
+                  "primary_group_id": null,
+                  "flair_group_id": null
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 291,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "V8rC34SLRo663hu9NUZoJoYMp94=",
+            "created_at": "2026-10-08T19:38:37.772496",
+            "rotated_at": "2026-10-08T19:38:37.772244",
+            "updated_at": "2026-10-08T19:38:37.772496",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "V8rC34SLRo663hu9NUZoJoYMp94=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 291,
+            "seen_at": "2026-10-08T19:38:38.444234",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "V8rC34SLRo663hu9NUZoJoYMp94=",
+            "created_at": "2026-10-08T19:38:37.772496",
+            "rotated_at": "2026-10-08T19:38:37.772244",
+            "updated_at": "2026-10-08T19:38:37.772496",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "V8rC34SLRo663hu9NUZoJoYMp94=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "setup": [
+    "INSERT INTO topic_voting_category_settings (category_id, created_at, updated_at) VALUES (4, now(), now())",
+    "INSERT INTO topic_voting_votes (topic_id, user_id, archive, created_at, updated_at) VALUES (35, 3, false, now(), now()), (35, 4, false, now(), now()), (39, 4, false, now(), now()), (41, 3, true, now(), now())",
+    "INSERT INTO topic_voting_topic_vote_count (topic_id, votes_count, created_at, updated_at) VALUES (35, 2, now(), now()), (39, 1, now(), now()), (41, 1, now(), now()) ON CONFLICT (topic_id) DO UPDATE SET votes_count = EXCLUDED.votes_count"
+  ],
+  "recorded_from": {
+    "case": "c02199f49fdc04c20094475687cd4a41d653930addeae528bdbb1188b0824cd6",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

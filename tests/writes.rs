@@ -38,16 +38,13 @@ const BACKGROUND_TABLES: [&str; 3] = ["scheduler_stats", "top_topics", "user_aut
 const UNORDERED_INSERTS: [&str; 2] = ["sidebar_section_links", "upload_references"];
 
 /// Keys plugins add to the post and topic serializers on the reference.
-const PLUGIN_KEYS: [&str; 12] = [
+const PLUGIN_KEYS: [&str; 9] = [
     "event",
     "calendar_details",
     "reactions",
     "current_user_reaction",
     "reaction_users_count",
     "current_user_used_main_reaction",
-    "can_vote",
-    "vote_count",
-    "user_voted",
     "valid_reactions",
     "discourse_zendesk_plugin_zendesk_id",
     "discourse_zendesk_plugin_zendesk_url",
@@ -105,6 +102,19 @@ const PLUGIN_USER_KEYS: [&str; 19] = [
     "event_reminder_preference",
 ];
 
+/// Keys the reference's unported plugins add to CurrentUserSerializer
+/// (chat, discourse-templates, poll).
+const PLUGIN_CURRENT_USER_KEYS: [&str; 8] = [
+    "can_chat",
+    "can_direct_message",
+    "has_chat_enabled",
+    "needs_channel_retention_reminder",
+    "has_joinable_public_channels",
+    "chat_drafts",
+    "can_use_templates",
+    "can_create_poll",
+];
+
 /// User serializer keys that follow what the reference does in the
 /// background between seeding and recording (profile views, other
 /// sessions, badge grants): not compared.
@@ -114,14 +124,17 @@ const DRIFTING_USER_KEYS: [&str; 3] = [
     "featured_user_badge_ids",
 ];
 
-/// A serialized user in a response, less plugin and drifting keys, with
-/// `sidebar_category_ids` (plucked without ORDER BY) sorted.
+/// A serialized user (or current user) in a response, less plugin and
+/// drifting keys, with `sidebar_category_ids` (plucked without ORDER BY)
+/// sorted.
 fn undrift_user(user: &mut Value) {
     let Some(map) = user.as_object_mut() else {
         return;
     };
     map.retain(|k, _| {
-        !PLUGIN_USER_KEYS.contains(&k.as_str()) && !DRIFTING_USER_KEYS.contains(&k.as_str())
+        !PLUGIN_USER_KEYS.contains(&k.as_str())
+            && !PLUGIN_CURRENT_USER_KEYS.contains(&k.as_str())
+            && !DRIFTING_USER_KEYS.contains(&k.as_str())
     });
     if let Some(Value::Object(options)) = map.get_mut("user_option") {
         options.retain(|k, _| !PLUGIN_USER_KEYS.contains(&k.as_str()));
@@ -868,7 +881,7 @@ async fn apply_settings(pool: &PgPool, state: &AppState, case: &Value) {
     }
 }
 
-async fn replay(case: &Value, run_jobs: &[String]) -> Vec<String> {
+async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<String> {
     let db = TestDb::with_clock().await;
     // The case runs from when Rails ran it, so what counts from now (days
     // ago, new topic windows) answers as it did then.
@@ -1044,12 +1057,16 @@ async fn replay(case: &Value, run_jobs: &[String]) -> Vec<String> {
         }
     }
     for doc in [&mut rails, &mut ours] {
+        for ptr in ignore {
+            discourse_rs::parity::ignore_path(doc, ptr);
+        }
         for response in doc["responses"].as_array_mut().into_iter().flatten() {
-            if let Some(user) = response["body"]
-                .as_object_mut()
-                .and_then(|b| b.get_mut("user"))
-            {
-                undrift_user(user);
+            if let Some(body) = response["body"].as_object_mut() {
+                for key in ["user", "current_user"] {
+                    if let Some(user) = body.get_mut(key) {
+                        undrift_user(user);
+                    }
+                }
             }
             discourse_rs::parity::unorder(&mut response["body"]);
         }
@@ -1272,6 +1289,9 @@ struct Case {
     run_jobs: Vec<String>,
     /// Why the port does not do it like Rails yet.
     not_yet: Option<String>,
+    /// JSON pointers into the recording left out of the comparison on
+    /// both sides (Rails' random suggested topics).
+    ignore: Vec<String>,
 }
 
 /// Every case under parity/writes, by area and name.
@@ -1315,6 +1335,14 @@ fn cases() -> Vec<Case> {
                     })
                     .unwrap_or_default(),
                 not_yet: definition["not_yet"].as_str().map(str::to_string),
+                ignore: definition["ignore"]
+                    .as_array()
+                    .map(|a| {
+                        a.iter()
+                            .filter_map(|p| p.as_str().map(str::to_string))
+                            .collect()
+                    })
+                    .unwrap_or_default(),
             });
         }
     }
@@ -1358,7 +1386,7 @@ fn main() {
                     .enable_all()
                     .build()
                     .unwrap()
-                    .block_on(replay(&case.recorded, &case.run_jobs));
+                    .block_on(replay(&case.recorded, &case.run_jobs, &case.ignore));
                 match (&case.not_yet, diff.is_empty()) {
                     (None, true) => Ok(()),
                     (None, false) => Err(diff.join("\n").into()),

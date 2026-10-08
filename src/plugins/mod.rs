@@ -15,6 +15,7 @@
 //! - after serialize: the keys plugins add to each topic.
 
 pub mod solved;
+pub mod topic_voting;
 
 use std::collections::HashMap;
 
@@ -75,6 +76,7 @@ pub struct PosterInputs {
 #[derive(Debug, Default)]
 pub struct TopicListData {
     pub solved: Option<solved::TopicListData>,
+    pub topic_voting: Option<topic_voting::TopicListData>,
 }
 
 impl TopicListData {
@@ -94,10 +96,15 @@ pub async fn topic_list_after_load(
     conn: &mut sqlx::PgConnection,
     settings: &SiteSettings,
     topic_ids: &[i32],
+    user_id: Option<i32>,
 ) -> Result<TopicListData, PluginError> {
     let mut data = TopicListData::default();
     if !topic_ids.is_empty() && solved::enabled(settings)? {
         data.solved = Some(solved::TopicListData::load(conn, topic_ids).await?);
+    }
+    if !topic_ids.is_empty() && topic_voting::enabled(settings)? {
+        data.topic_voting =
+            Some(topic_voting::TopicListData::load(conn, topic_ids, user_id).await?);
     }
     Ok(data)
 }
