@@ -12,6 +12,7 @@ members = ["crates/markdown"]
 discourse-markdown = { path = "crates/markdown" }
 aes-gcm = "0.10"
 askama = "0.14"
+unicode-normalization = "0.1"
 axum = { version = "0.8", features = ["multipart"] }
 base64 = "0.22"
 chrono = { version = "0.4", default-features = false, features = ["std"] }

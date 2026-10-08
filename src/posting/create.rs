@@ -1065,7 +1065,7 @@ async fn create_topic(
         return Err(Unsupported("slug_generation_method other than ascii").into());
     }
     let pm = plan.pm_recipients.is_some();
-    let slug = slug_for(&plan.title)?;
+    let slug = slug_for(&plan.title, &s.get("default_locale")?.to_s())?;
     let fancy_title = fancy_title(&plan.title)?;
     let (topic_id, created_at): (i32, NaiveDateTime) = sqlx::query_as(
         "INSERT INTO topics (title, fancy_title, slug, user_id, last_post_user_id, visible, category_id, \
