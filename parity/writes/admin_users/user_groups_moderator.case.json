@@ -1,0 +1,12 @@
+{
+  "user": "user2",
+  "setup": [
+    "UPDATE users SET moderator = TRUE WHERE id = 4",
+    "INSERT INTO groups (id, name, created_at, updated_at) VALUES (9001, 'testers', '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO group_users (group_id, user_id, created_at, updated_at) VALUES (9001, 2, '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "requests": [
+    {"method": "POST", "path": "/admin/users/2/groups.json", "params": {"group_id": 9001}},
+    {"method": "PUT", "path": "/admin/users/2/primary_group.json", "params": {"primary_group_id": 9001}}
+  ]
+}

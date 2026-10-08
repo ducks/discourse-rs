@@ -1008,3 +1008,253 @@ async fn account_route(
     tx.commit().await?;
     Ok(Json(json!({ "success": "OK" })).into_response())
 }
+
+/// POST /admin/users/:id/groups: Admin::UsersController#add_group.
+pub async fn add_group(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(user_id): Path<String>,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    let p = params::parse(uri.query(), &headers, &body);
+    let group_id = params::string(&p, "group_id").unwrap_or_default();
+    membership(state, guardian, user_id, group_id, headers, uri, p, "POST").await
+}
+
+/// DELETE /admin/users/:id/groups/:group_id: #remove_group.
+pub async fn remove_group(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path((user_id, group_id)): Path<(String, String)>,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    let p = params::parse(uri.query(), &headers, &body);
+    let group_id = group_id
+        .strip_suffix(".json")
+        .unwrap_or(&group_id)
+        .to_string();
+    membership(
+        state, guardian, user_id, group_id, headers, uri, p, "DELETE",
+    )
+    .await
+}
+
+/// Admins (AdminConstraint) adding a user to a group or removing them:
+/// `Group.find(params[:group_id].to_i)`, automatic groups refused with
+/// can_not_modify_automatic, then GroupManager and the group log; no body.
+#[allow(clippy::too_many_arguments)]
+async fn membership(
+    state: AppState,
+    guardian: crate::guardian::Guardian,
+    user_id: String,
+    group_id: String,
+    headers: HeaderMap,
+    uri: Uri,
+    p: Map<String, Value>,
+    method: &str,
+) -> Result<Response, AppError> {
+    if !csrf_ok(&state, &headers, &form_pairs(&p), uri.path(), method) {
+        return Ok(bad_csrf());
+    }
+    if !guardian.is_admin() {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    let Ok(user_id) = user_id
+        .strip_suffix(".json")
+        .unwrap_or(&user_id)
+        .parse::<i32>()
+    else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    let mut tx = state.pool.begin().await?;
+    let exists: bool = sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM users WHERE id = $1)")
+        .bind(user_id)
+        .fetch_one(&mut *tx)
+        .await?;
+    let group = crate::group_manager::find(&mut tx, crate::ruby::to_i(&group_id) as i32).await?;
+    let (true, Some(group)) = (exists, group) else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    if group.automatic {
+        let message = state
+            .i18n
+            .t("groups.errors.can_not_modify_automatic")
+            .unwrap_or_default();
+        return Ok(json_error(vec![message.to_string()]));
+    }
+    let acting = guardian.user_id().unwrap_or_default();
+    if method == "POST" {
+        let settings =
+            SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
+        let host = Host::from_state(&state);
+        let cx = crate::promotion::Ctx {
+            settings: &settings,
+            i18n: &state.i18n,
+            host: &host,
+        };
+        crate::group_manager::add(&mut tx, &cx, &group, user_id, acting).await?;
+    } else {
+        crate::group_manager::remove(&mut tx, &group, user_id, acting).await?;
+    }
+    tx.commit().await?;
+    Ok(StatusCode::OK.into_response())
+}
+
+/// PUT /admin/users/:id/primary_group: staff setting a user's primary
+/// group to one they belong to (`can_change_primary_group?`), or none.
+pub async fn primary_group(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(user_id): Path<String>,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    let p = params::parse(uri.query(), &headers, &body);
+    if !csrf_ok(&state, &headers, &form_pairs(&p), uri.path(), "PUT") {
+        return Ok(bad_csrf());
+    }
+    if !guardian.is_staff() {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    let Ok(user_id) = user_id
+        .strip_suffix(".json")
+        .unwrap_or(&user_id)
+        .parse::<i32>()
+    else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    let mut tx = state.pool.begin().await?;
+    #[derive(sqlx::FromRow)]
+    struct Target {
+        username_lower: String,
+        name: Option<String>,
+        admin: bool,
+        active: bool,
+        primary_group_id: Option<i32>,
+        flair_group_id: Option<i32>,
+        title: Option<String>,
+    }
+    let target: Option<Target> = sqlx::query_as(
+        "SELECT username_lower, name, admin, active, primary_group_id, flair_group_id, title \
+         FROM users WHERE id = $1",
+    )
+    .bind(user_id)
+    .fetch_optional(&mut *tx)
+    .await?;
+    let Some(t) = target else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    let settings =
+        SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
+    let mut new_primary = t.primary_group_id;
+    match params::string(&p, "primary_group_id").filter(|v| !crate::ruby::is_blank(v)) {
+        None => new_primary = None,
+        Some(id) => {
+            let id = crate::ruby::to_i(&id) as i32;
+            let group: Option<(bool, i32)> =
+                sqlx::query_as("SELECT automatic, visibility_level FROM groups WHERE id = $1")
+                    .bind(id)
+                    .fetch_optional(&mut *tx)
+                    .await?;
+            let Some((automatic, visibility)) = group else {
+                return Ok(super::topics::not_found_response(&state));
+            };
+            // can_edit_group?: not automatic, and an admin or (with
+            // moderators_manage_groups) a moderator who can see it.
+            if !guardian.is_admin() && visibility == 4 {
+                return Err(crate::Unsupported("moderators and owner-only visible groups").into());
+            }
+            let can_admin = guardian.is_admin()
+                || (settings.get("moderators_manage_groups")?.truthy()
+                    && guardian.is_moderator()
+                    && id != 1);
+            if automatic || !can_admin {
+                return Ok(super::search::invalid_access(&state));
+            }
+            let member: bool = sqlx::query_scalar(
+                "SELECT EXISTS (SELECT 1 FROM group_users WHERE group_id = $1 AND user_id = $2)",
+            )
+            .bind(id)
+            .bind(user_id)
+            .fetch_one(&mut *tx)
+            .await?;
+            if member {
+                new_primary = Some(id);
+            }
+        }
+    }
+    if new_primary != t.primary_group_id {
+        // match_primary_group_changes: the old primary group's title and
+        // flair follow to the new one.
+        let old_title_matches: bool = sqlx::query_scalar(
+            "SELECT EXISTS (SELECT 1 FROM groups WHERE id = $1 AND title IS NOT DISTINCT FROM $2)",
+        )
+        .bind(t.primary_group_id)
+        .bind(&t.title)
+        .fetch_one(&mut *tx)
+        .await?;
+        let mut title = t.title.clone();
+        if old_title_matches {
+            title = match new_primary {
+                Some(id) => {
+                    sqlx::query_scalar("SELECT title FROM groups WHERE id = $1")
+                        .bind(id)
+                        .fetch_one(&mut *tx)
+                        .await?
+                }
+                None => None,
+            };
+        }
+        let flair = if t.flair_group_id == t.primary_group_id {
+            new_primary
+        } else {
+            t.flair_group_id
+        };
+        if title != t.title {
+            // check_if_title_is_badged_granted
+            let title_badges: bool = sqlx::query_scalar(
+                "SELECT EXISTS (SELECT 1 FROM user_badges ub JOIN badges b ON b.id = ub.badge_id \
+                 WHERE ub.user_id = $1 AND b.allow_title)",
+            )
+            .bind(user_id)
+            .fetch_one(&mut *tx)
+            .await?;
+            if title_badges {
+                return Err(crate::Unsupported("titles granted by badges").into());
+            }
+            sqlx::query(
+                "UPDATE user_profiles SET granted_title_badge_id = NULL \
+                 WHERE user_id = $1 AND granted_title_badge_id IS NOT NULL",
+            )
+            .bind(user_id)
+            .execute(&mut *tx)
+            .await?;
+        }
+        sqlx::query(
+            "UPDATE users SET primary_group_id = $2, title = $3, flair_group_id = $4, \
+                              updated_at = clock_timestamp() WHERE id = $1",
+        )
+        .bind(user_id)
+        .bind(new_primary)
+        .bind(&title)
+        .bind(flair)
+        .execute(&mut *tx)
+        .await?;
+        crate::user_updater::after_save(
+            &mut tx,
+            &settings,
+            user_id,
+            t.admin && t.active,
+            &t.username_lower,
+            t.name.as_deref(),
+        )
+        .await?;
+    }
+    tx.commit().await?;
+    Ok(StatusCode::OK.into_response())
+}

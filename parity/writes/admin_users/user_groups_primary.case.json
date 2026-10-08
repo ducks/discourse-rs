@@ -1,0 +1,14 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO groups (id, name, title, created_at, updated_at) VALUES (9001, 'helpers', 'Helper', '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO groups (id, name, title, primary_group, flair_icon, created_at, updated_at) VALUES (9002, 'titled', 'Tester', TRUE, 'bug', '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "requests": [
+    {"method": "POST", "path": "/admin/users/2/groups.json", "params": {"group_id": 9002}},
+    {"method": "POST", "path": "/admin/users/2/groups.json", "params": {"group_id": 9001}},
+    {"method": "PUT", "path": "/admin/users/2/primary_group.json", "params": {"primary_group_id": 9001}},
+    {"method": "POST", "path": "/admin/users/3/groups.json", "params": {"group_id": 9001}},
+    {"method": "POST", "path": "/admin/users/3/groups.json", "params": {"group_id": 9002}}
+  ]
+}

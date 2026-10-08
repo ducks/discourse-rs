@@ -23,6 +23,7 @@ pub use discourse_markdown::emoji;
 pub mod excerpt;
 pub mod file_store;
 pub mod flags;
+pub mod group_manager;
 pub mod groups;
 pub mod guardian;
 pub mod html;

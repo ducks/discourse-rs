@@ -371,6 +371,26 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/admin/users/{user_id}/deactivate.json",
             put(admin_users::deactivate),
         )
+        .route(
+            "/admin/users/{user_id}/groups",
+            post(admin_users::add_group),
+        )
+        .route(
+            "/admin/users/{user_id}/groups/{group_id}",
+            delete(admin_users::remove_group),
+        )
+        .route(
+            "/admin/users/{user_id}/primary_group",
+            put(admin_users::primary_group),
+        )
+        .route(
+            "/admin/users/{user_id}/groups.json",
+            post(admin_users::add_group),
+        )
+        .route(
+            "/admin/users/{user_id}/primary_group.json",
+            put(admin_users::primary_group),
+        )
         .route("/admin/users/{user_id}/approve", put(admin_users::approve))
         .route(
             "/admin/users/{user_id}/approve.json",
