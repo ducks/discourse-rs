@@ -28,6 +28,7 @@
 /categories as=admin
 /categories as=user1
 /t/parity-fixture-replies-and-posters/35 as=user0 wait=4000
+/t/parity-fixture-liked-and-archived/41 as=admin wait=4000
 /u/user0 as=user0
 /u/user0/summary as=user0
 /u/user0/activity/replies as=user0

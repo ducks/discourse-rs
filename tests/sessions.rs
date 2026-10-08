@@ -1724,6 +1724,55 @@ async fn members_get_their_own_sidebar() {
     ));
 }
 
+/// A member's topic: the post menu collapses its hidden items behind show
+/// more, the footer has flag, defer and the notification level with its
+/// reason, and the browse-more line counts what is left to read.
+#[tokio::test]
+async fn members_get_the_topic_controls() {
+    let db = TestDb::new().await;
+    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut client = Client::new(app_state.clone());
+    client.login("user0", "password").await;
+    let page = client
+        .get("/t/parity-fixture-replies-and-posters/35")
+        .await
+        .body;
+
+    // post_menu_hidden_items: flag, bookmark and (their own reply's)
+    // delete hide behind show more; their own first post offers the
+    // delete-topic-disallowed button.
+    assert!(page.contains(r#"<nav class="post-controls collapsed" role="none">"#));
+    assert!(page.contains(
+        r#"class="btn no-text btn-icon post-action-menu__show-more show-more-actions btn-flat""#
+    ));
+    assert!(page.contains(r#"<button hidden aria-label="privately flag this post for attention or send a personal message about it" class="btn no-text btn-icon post-action-menu__flag create-flag btn-flat""#));
+    assert!(page.contains(
+        r#"<button hidden aria-label="you don&#x27;t have permission to delete this topic""#
+    ));
+    assert!(page.contains(r#"<button hidden aria-label="delete this post" class="btn no-text btn-icon post-action-menu__delete delete btn-flat" hx-delete="/posts/52""#));
+
+    // The footer.
+    assert!(page.contains(r#"id="topic-footer-button-flag""#));
+    assert!(page.contains(r#"id="topic-footer-button-defer""#));
+    assert!(page.contains(r#"data-level-id="3" data-level-name="watching""#));
+    assert!(page.contains(
+        r#"<span class="text">You will receive notifications because you created this topic.</span>"#
+    ));
+    assert!(page.contains(r#"<div class="topic-above-footer-buttons-outlet presence""#));
+    // This topic counts as read; the others are new.
+    assert!(page.contains(r#"There are <a href="/new?subset=topics">3 new</a> topics remaining,"#));
+
+    // Anonymous readers keep the plain line and no controls.
+    let mut anon = Client::new(app_state.clone());
+    let page = anon
+        .get("/t/parity-fixture-replies-and-posters/35")
+        .await
+        .body;
+    assert!(!page.contains("post-action-menu__show-more"));
+    assert!(!page.contains("notifications-tracking-trigger"));
+    assert!(page.contains("Want to read more?"));
+}
+
 /// One's own profile opens the activity stream (user/index); its filters
 /// load their user actions, and others' profiles keep the summary.
 #[tokio::test]
