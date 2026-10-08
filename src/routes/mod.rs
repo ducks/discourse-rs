@@ -219,7 +219,14 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/notifications/read.json", put(read_tracking::mark_read))
         .route("/topics/timings", post(read_tracking::timings))
         .route("/topics/timings.json", post(read_tracking::timings))
-        .route("/t/{slug}/timings", post(read_tracking::topic_timings))
+        .route(
+            "/t/{slug}/timings",
+            post(read_tracking::topic_timings).delete(read_tracking::destroy_timings),
+        )
+        .route(
+            "/t/{slug}/timings.json",
+            delete(read_tracking::destroy_timings),
+        )
         // TopicsController#set_notifications; {slug} holds the topic id.
         .route(
             "/t/{slug}/notifications",

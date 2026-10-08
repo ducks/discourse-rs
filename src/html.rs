@@ -815,6 +815,51 @@ pub async fn latest_page(
     })
 }
 
+/// User#pmPath for Mark unread: a message the viewer is on goes to their
+/// inbox, one they see through a group to that group's (the first of the
+/// message's groups they are in); anything else to the home page.
+async fn defer_to(
+    conn: &mut PgConnection,
+    view: &Value,
+    base: &str,
+    viewer: Option<&str>,
+) -> Result<String, HtmlError> {
+    let home = format!("{base}/");
+    let Some(username) = viewer.filter(|_| view["archetype"] == "private_message") else {
+        return Ok(home);
+    };
+    let lower = username.to_lowercase();
+    let details = &view["details"];
+    let groups = details["allowed_groups"].as_array();
+    let direct = details["allowed_users"].as_array().is_some_and(|users| {
+        users.iter().any(|u| {
+            u["username"]
+                .as_str()
+                .is_some_and(|n| n.eq_ignore_ascii_case(username))
+        })
+    });
+    let Some(groups) = groups.filter(|_| !direct) else {
+        return Ok(format!("{base}/u/{lower}/messages"));
+    };
+    let member_of: Vec<i32> = sqlx::query_scalar(
+        "SELECT gu.group_id FROM group_users gu JOIN users u ON u.id = gu.user_id \
+         WHERE u.username_lower = $1",
+    )
+    .bind(&lower)
+    .fetch_all(&mut *conn)
+    .await?;
+    Ok(groups
+        .iter()
+        .find(|g| {
+            g["id"]
+                .as_i64()
+                .is_some_and(|id| member_of.contains(&(id as i32)))
+        })
+        .and_then(|g| g["name"].as_str())
+        .map(|name| format!("{base}/u/{lower}/messages/group/{name}"))
+        .unwrap_or(home))
+}
+
 /// The topic page from the /t/:id.json document.
 pub async fn topic_page(
     conn: &mut PgConnection,
@@ -848,6 +893,7 @@ pub async fn topic_page(
         .as_ref()
         .is_some_and(|v| v.can_send_private_messages);
     let mut topic = crate::post_view::TopicInfo::from_view(view);
+    topic.defer_to = defer_to(conn, view, &base, viewer).await?;
     // The first post's topic map, rendered before the posts that carry it.
     if crate::post_view::shows_op_map(view, &post_settings) {
         let cx = crate::post_view::PostContext {

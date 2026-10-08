@@ -111,6 +111,9 @@ pub struct TopicInfo {
     /// post's delete button.
     pub can_delete: bool,
     pub can_recover: bool,
+    /// Where Mark unread goes after (deferTopic): the home page, or for a
+    /// message the viewer's inbox (User#pmPath).
+    pub defer_to: String,
     /// The first post's topic map, rendered (empty when it has none).
     pub op_map: String,
 }
@@ -127,6 +130,7 @@ impl TopicInfo {
             deleted: view["deleted_at"].is_string(),
             can_delete: view["details"]["can_delete"] == true,
             can_recover: view["details"]["can_recover"] == true,
+            defer_to: "/".to_string(),
             op_map: String::new(),
         }
     }
@@ -1670,14 +1674,26 @@ pub fn footer_buttons(cx: &PostContext, view: &Value) -> String {
             "topic.flag_topic.help",
         ));
     }
-    actions.push_str(&footer_button(
-        cx,
-        "defer",
-        "defer-topic",
-        "circle",
-        "topic.defer.title",
-        "topic.defer.help",
-    ));
+    actions.push_str(
+        &footer_button(
+            cx,
+            "defer",
+            "defer-topic",
+            "circle",
+            "topic.defer.title",
+            "topic.defer.help",
+        )
+        .replacen(
+            " type=\"button\">",
+            &format!(
+                " data-defer-url=\"{}/t/{}/timings.json?last=1\" data-defer-to=\"{}\" type=\"button\">",
+                l.base_path,
+                cx.topic.id,
+                escape(&cx.topic.defer_to)
+            ),
+            1,
+        ),
+    );
     let reply = if cx.topic.can_create_post {
         format!(
             "<button class=\"btn btn-icon-text btn-primary create topic-footer-button\" title=\"{}\" type=\"button\">{}<span class=\"d-button-label\">{reply_label}</span></button>",
@@ -1762,7 +1778,8 @@ fn notifications_menu(cx: &PostContext, view: &Value) -> String {
 }
 
 /// A registered topic footer button (instance-initializers/
-/// topic-footer-buttons): flag's modal and defer are not wired yet.
+/// topic-footer-buttons). Flag's modal is not ported; defer is wired in
+/// static/js/topic.js.
 fn footer_button(
     cx: &PostContext,
     id: &str,
@@ -2009,6 +2026,7 @@ mod tests {
             deleted: false,
             can_delete: false,
             can_recover: false,
+            defer_to: "/".to_string(),
             op_map: String::new(),
         };
         let cx = PostContext {
@@ -2168,6 +2186,7 @@ mod tests {
             deleted: false,
             can_delete: false,
             can_recover: false,
+            defer_to: "/".to_string(),
             op_map: String::new(),
         };
         let cx = PostContext {

@@ -435,3 +435,163 @@ pub async fn mark_read(
 pub fn success() -> serde_json::Value {
     json!({ "success": "OK" })
 }
+
+/// `PostTiming.destroy_last_for`: the topic's last post unread again. Its
+/// timings go, the topic user's last read post steps back one (none when
+/// that leaves nothing read), the last post loses a read when a timing
+/// went, and the user's first unread moves to the topic's update time.
+pub async fn destroy_last_for(
+    conn: &mut PgConnection,
+    user_id: i32,
+    whisperer: bool,
+    topic_id: i32,
+) -> Result<(), AppError> {
+    let (highest, highest_staff, updated_at, archetype): (i32, i32, chrono::NaiveDateTime, String) =
+        sqlx::query_as(
+            "SELECT highest_post_number, highest_staff_post_number, updated_at, archetype \
+             FROM topics WHERE id = $1",
+        )
+        .bind(topic_id)
+        .fetch_one(&mut *conn)
+        .await?;
+    let post_number = if whisperer { highest_staff } else { highest };
+    let last_read = post_number - 1;
+    let destroyed = sqlx::query(
+        "DELETE FROM post_timings WHERE topic_id = $1 AND user_id = $2 AND post_number > $3",
+    )
+    .bind(topic_id)
+    .bind(user_id)
+    .bind(last_read)
+    .execute(&mut *conn)
+    .await?
+    .rows_affected();
+    sqlx::query(
+        "UPDATE topic_users SET last_read_post_number = $3 WHERE user_id = $1 AND topic_id = $2",
+    )
+    .bind(user_id)
+    .bind(topic_id)
+    .bind(Some(last_read).filter(|n| *n >= 1))
+    .execute(&mut *conn)
+    .await?;
+    if destroyed > 0 {
+        // decrement!(:reads): update_counters, no timestamps.
+        sqlx::query(
+            "UPDATE posts SET reads = COALESCE(reads, 0) - 1 WHERE topic_id = $1 AND post_number = $2",
+        )
+        .bind(topic_id)
+        .bind(post_number)
+        .execute(&mut *conn)
+        .await?;
+    }
+    if archetype == "private_message" {
+        set_minimum_first_unread_pm(conn, topic_id, user_id, updated_at).await
+    } else {
+        set_minimum_first_unread(conn, user_id, updated_at).await
+    }
+}
+
+/// `PostTiming.destroy_for`: the topics unread entirely. Their timings
+/// and topic users go, every post loses a read, and the first unread
+/// moves to the earliest update of the listable ones (and of each
+/// message).
+pub async fn destroy_for(
+    conn: &mut PgConnection,
+    user_id: i32,
+    topic_ids: &[i32],
+) -> Result<(), AppError> {
+    sqlx::query("DELETE FROM post_timings WHERE user_id = $1 AND topic_id = ANY($2)")
+        .bind(user_id)
+        .bind(topic_ids)
+        .execute(&mut *conn)
+        .await?;
+    sqlx::query("DELETE FROM topic_users WHERE user_id = $1 AND topic_id = ANY($2)")
+        .bind(user_id)
+        .bind(topic_ids)
+        .execute(&mut *conn)
+        .await?;
+    sqlx::query("UPDATE posts SET reads = reads - 1 WHERE topic_id = ANY($1)")
+        .bind(topic_ids)
+        .execute(&mut *conn)
+        .await?;
+    // Topic.listable_topics: not messages (deleted ones are out of the
+    // default scope).
+    let listable: Option<chrono::NaiveDateTime> = sqlx::query_scalar(
+        "SELECT min(updated_at) FROM topics WHERE id = ANY($1) AND deleted_at IS NULL \
+         AND archetype <> 'private_message'",
+    )
+    .bind(topic_ids)
+    .fetch_one(&mut *conn)
+    .await?;
+    if let Some(date) = listable {
+        set_minimum_first_unread(conn, user_id, date).await?;
+    }
+    let messages: Vec<(i32, chrono::NaiveDateTime)> = sqlx::query_as(
+        "SELECT id, updated_at FROM topics WHERE id = ANY($1) AND deleted_at IS NULL \
+         AND archetype = 'private_message' ORDER BY id",
+    )
+    .bind(topic_ids)
+    .fetch_all(&mut *conn)
+    .await?;
+    for (topic_id, date) in messages {
+        set_minimum_first_unread_pm(conn, topic_id, user_id, date).await?;
+    }
+    Ok(())
+}
+
+/// `PostTiming.set_minimum_first_unread!`
+async fn set_minimum_first_unread(
+    conn: &mut PgConnection,
+    user_id: i32,
+    date: chrono::NaiveDateTime,
+) -> Result<(), AppError> {
+    sqlx::query(
+        "UPDATE user_stats SET first_unread_at = $1 WHERE first_unread_at > $1 AND user_id = $2",
+    )
+    .bind(date)
+    .bind(user_id)
+    .execute(&mut *conn)
+    .await?;
+    Ok(())
+}
+
+/// `PostTiming.set_minimum_first_unread_pm!`: the user's own, or, for a
+/// message they see through a group, each such group membership's.
+async fn set_minimum_first_unread_pm(
+    conn: &mut PgConnection,
+    topic_id: i32,
+    user_id: i32,
+    date: chrono::NaiveDateTime,
+) -> Result<(), AppError> {
+    let allowed: bool = sqlx::query_scalar(
+        "SELECT EXISTS (SELECT 1 FROM topic_allowed_users WHERE topic_id = $1 AND user_id = $2)",
+    )
+    .bind(topic_id)
+    .bind(user_id)
+    .fetch_one(&mut *conn)
+    .await?;
+    if allowed {
+        sqlx::query(
+            "UPDATE user_stats SET first_unread_pm_at = $1 \
+             WHERE first_unread_pm_at > $1 AND user_id = $2",
+        )
+        .bind(date)
+        .bind(user_id)
+        .execute(&mut *conn)
+        .await?;
+    } else {
+        sqlx::query(
+            "UPDATE group_users gu SET first_unread_pm_at = $1 \
+             FROM (SELECT gu2.user_id, gu2.group_id FROM group_users gu2 \
+                   INNER JOIN topic_allowed_groups tag \
+                     ON tag.group_id = gu2.group_id AND tag.topic_id = $3 \
+                   WHERE gu2.user_id = $2) y \
+             WHERE gu.user_id = y.user_id AND gu.group_id = y.group_id",
+        )
+        .bind(date)
+        .bind(user_id)
+        .bind(topic_id)
+        .execute(&mut *conn)
+        .await?;
+    }
+    Ok(())
+}

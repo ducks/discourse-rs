@@ -1,0 +1,33 @@
+{
+  "name": "topic_defer_anonymous",
+  "user": null,
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/t/35/timings.json",
+      "params": {
+        "last": "1"
+      }
+    }
+  ],
+  "started_at": "2026-10-08T17:07:44.150196",
+  "transaction_started_at": "2026-10-08T17:07:42.525775",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You need to be logged in to do that."
+        ],
+        "error_type": "not_logged_in"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "recorded_from": {
+    "case": "416ed43e0944cc55530938cbd31070e76546b39349f4249cef7323c57da48b34",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
