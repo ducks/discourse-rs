@@ -145,7 +145,9 @@ diffs them pixel by pixel and writes `<out-dir>/index.html`, worst first, with
 `summary.json`. The port runs on a db-load of the snapshot with the
 reference's environment and `DISCOURSE_SRC` for the stock images; the script
 header has the commands. It is a report: diffs fail the run only with
-`--fail-above PCT`. Logging in on the reference saves drafts and timings, so
+`--fail-above PCT`. `--summary parity/screens/summary.json` refreshes the committed
+baseline: each page's score, statuses and sizes, a page a line, so a diff
+shows which pages moved. Logging in on the reference saves drafts and timings, so
 `make reset-reference` before the next recording.
 
 ## Bench

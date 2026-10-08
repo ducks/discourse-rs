@@ -21,8 +21,13 @@
 #   scripts/parity-screenshots http://127.0.0.1:8095 /tmp/screens
 #   xdg-open /tmp/screens/index.html
 #
+# --summary FILE also writes the scores in page-list order, a page a line;
+# parity/screens/summary.json is that, committed as the baseline:
+#   scripts/parity-screenshots --summary parity/screens/summary.json \
+#     http://127.0.0.1:8095 /tmp/screens
+#
 # Usage: scripts/parity-screenshots [--reference URL] [--pages FILE]
-#          [--width PX] [--fail-above PCT] <our-url> <out-dir>
+#          [--width PX] [--fail-above PCT] [--summary FILE] <our-url> <out-dir>
 # Defaults: --reference http://127.0.0.1:3042, --pages parity/screens/pages,
 # --width 1280. The page list format is described at its top.
 set -euo pipefail
@@ -32,18 +37,20 @@ reference="http://127.0.0.1:3042"
 pages="$root/parity/screens/pages"
 width=1280
 fail_above=""
+summary=""
 while [ $# -gt 0 ]; do
   case "$1" in
     --reference) reference="$2"; shift 2 ;;
     --pages) pages="$2"; shift 2 ;;
     --width) width="$2"; shift 2 ;;
     --fail-above) fail_above="$2"; shift 2 ;;
+    --summary) summary="$(realpath -m "$2")"; shift 2 ;;
     -*) echo "unknown option $1" >&2; exit 64 ;;
     *) break ;;
   esac
 done
 if [ $# -ne 2 ]; then
-  echo "usage: $0 [--reference URL] [--pages FILE] [--width PX] [--fail-above PCT] <our-url> <out-dir>" >&2
+  echo "usage: $0 [--reference URL] [--pages FILE] [--width PX] [--fail-above PCT] [--summary FILE] <our-url> <out-dir>" >&2
   exit 64
 fi
 ours="$1"
@@ -52,7 +59,7 @@ mkdir -p "$out"
 
 exec nix-shell -p "python3.withPackages (ps: [ ps.playwright ps.pillow ps.numpy ])" playwright-driver.browsers --run "
   export PLAYWRIGHT_BROWSERS_PATH=\$(nix-build '<nixpkgs>' -A playwright-driver.browsers --no-out-link)
-  python3 - $(printf '%q ' "$reference" "$ours" "$pages" "$out" "$width" "$fail_above")
+  python3 - $(printf '%q ' "$reference" "$ours" "$pages" "$out" "$width" "$fail_above" "$summary")
 " <<'PYTHON'
 import html
 import json
@@ -64,7 +71,7 @@ import numpy as np
 from PIL import Image
 from playwright.sync_api import sync_playwright
 
-reference, ours, pages_file, out, width, fail_above = sys.argv[1:]
+reference, ours, pages_file, out, width, fail_above, summary = sys.argv[1:]
 out = Path(out)
 width = int(width)
 fail_above = float(fail_above) if fail_above else None
@@ -247,6 +254,21 @@ with sync_playwright() as p:
             )
         results.append(result)
     browser.close()
+
+if summary:
+    # In page-list order, a page a line, so a committed copy diffs by page.
+    lines = [
+        json.dumps(
+            {
+                "page": r["label"],
+                "diff_pct": r["diff_pct"],
+                "status": [r["reference"]["status"], r["ours"]["status"]],
+                "size": [r.get("reference_size"), r.get("ours_size")],
+            }
+        )
+        for r in results
+    ]
+    Path(summary).write_text("[\n" + ",\n".join(lines) + "\n]\n")
 
 results.sort(key=lambda r: -1 if r["diff_pct"] is None else -r["diff_pct"])
 (out / "summary.json").write_text(json.dumps(results, indent=1) + "\n")
