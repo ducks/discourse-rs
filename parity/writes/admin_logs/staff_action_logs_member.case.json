@@ -1,0 +1,9 @@
+{
+  "user": "user0",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/logs/staff_action_logs.json"
+    }
+  ]
+}

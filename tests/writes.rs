@@ -873,6 +873,12 @@ async fn replay(case: &Value, run_jobs: &[String]) -> Vec<String> {
     let app_state = state(db.pool.clone(), config).await;
     reset_sequences(&db.pool).await;
     align_sequences(&db.pool, case).await;
+    // From before the login and setup, as the recorder's transaction
+    // (and so their now()) starts before both.
+    let started: NaiveDateTime = sqlx::query_scalar("SELECT clock_timestamp()::timestamp")
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
     let mut client = Client {
         state: app_state,
         cookies: Vec::new(),
@@ -906,11 +912,6 @@ async fn replay(case: &Value, run_jobs: &[String]) -> Vec<String> {
         before_sums.insert(table.clone(), checksum(&db.pool, table).await);
         before_rows.insert(table.clone(), table_rows(&db.pool, table).await);
     }
-    let started: NaiveDateTime = sqlx::query_scalar("SELECT clock_timestamp()::timestamp")
-        .fetch_one(&db.pool)
-        .await
-        .unwrap();
-
     let mut responses = Vec::new();
     for request in case["requests"].as_array().unwrap() {
         let method = Method::from_bytes(request["method"].as_str().unwrap().as_bytes()).unwrap();

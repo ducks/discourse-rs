@@ -1,5 +1,6 @@
 mod accounts;
 mod admin_email;
+mod admin_logs;
 mod admin_site_settings;
 mod admin_users;
 mod bookmark_writes;
@@ -262,6 +263,16 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route(
             "/admin/site_settings/{id}",
             put(admin_site_settings::update),
+        )
+        .route("/admin/logs", get(admin_logs::staff_action_logs))
+        .route("/admin/logs.json", get(admin_logs::staff_action_logs))
+        .route(
+            "/admin/logs/staff_action_logs",
+            get(admin_logs::staff_action_logs),
+        )
+        .route(
+            "/admin/logs/staff_action_logs.json",
+            get(admin_logs::staff_action_logs),
         )
         .route("/admin/users/list", get(admin_users::index))
         .route("/admin/users/list.json", get(admin_users::index))

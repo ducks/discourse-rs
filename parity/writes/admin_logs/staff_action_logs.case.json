@@ -1,0 +1,33 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/logs/staff_action_logs.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/logs/staff_action_logs.json",
+      "params": {
+        "limit": "3",
+        "page": "1"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/logs/staff_action_logs.json",
+      "params": {
+        "action_name": "change_site_setting",
+        "acting_user": "Admin"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/logs/staff_action_logs.json",
+      "params": {
+        "action_id": "122",
+        "target_user": "nobody"
+      }
+    }
+  ]
+}
