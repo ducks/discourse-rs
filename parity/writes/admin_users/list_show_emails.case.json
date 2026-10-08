@@ -1,0 +1,9 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/users/list/active.json?show_emails=true"
+    }
+  ]
+}

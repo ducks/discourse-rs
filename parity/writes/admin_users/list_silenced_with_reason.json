@@ -1,0 +1,100 @@
+{
+  "name": "list_silenced_with_reason",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/users/list/silenced.json"
+    }
+  ],
+  "started_at": "2026-10-08T05:29:30.184472",
+  "transaction_started_at": "2026-10-08T05:29:27.520778",
+  "responses": [
+    {
+      "status": 200,
+      "body": [
+        {
+          "id": 2,
+          "username": "user0",
+          "name": "User0",
+          "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+          "active": true,
+          "admin": false,
+          "moderator": false,
+          "last_seen_at": "2026-10-01T22:32:51.475Z",
+          "last_emailed_at": null,
+          "created_at": "2026-07-25T05:59:15.831Z",
+          "last_seen_age": 543398.737920324,
+          "last_emailed_age": null,
+          "created_at_age": 6478214.382118984,
+          "trust_level": 1,
+          "manual_locked_trust_level": null,
+          "title": null,
+          "silenced_till": "2099-01-01T00:00:00.000Z",
+          "time_read": 0,
+          "staged": false,
+          "can_be_deleted": true,
+          "can_be_suspended": true,
+          "silence_reason": "spamming links",
+          "suspend_reason": null,
+          "days_visited": 1,
+          "posts_read_count": 3,
+          "topics_entered": 0,
+          "post_count": 1
+        }
+      ]
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 132,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "qFfbybzlxwZ/ELW77kwEmK9ctgU=",
+            "created_at": "2026-10-08T05:29:28.719762",
+            "rotated_at": "2026-10-08T05:29:28.714947",
+            "updated_at": "2026-10-08T05:29:28.719762",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "qFfbybzlxwZ/ELW77kwEmK9ctgU=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 132,
+            "seen_at": "2026-10-08T05:29:30.192291",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "qFfbybzlxwZ/ELW77kwEmK9ctgU=",
+            "created_at": "2026-10-08T05:29:28.719762",
+            "rotated_at": "2026-10-08T05:29:28.714947",
+            "updated_at": "2026-10-08T05:29:28.719762",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "qFfbybzlxwZ/ELW77kwEmK9ctgU=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "setup": [
+    "UPDATE users SET silenced_till = '2099-01-01 00:00:00' WHERE id = 2",
+    "INSERT INTO user_histories (action, acting_user_id, target_user_id, details, admin_only, created_at, updated_at) VALUES (30, 1, 2, 'spamming links\nsecond line', FALSE, '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "recorded_from": {
+    "case": "44cbb951b6190ac08ae1d31fe6a97d00e08ab3360b98618160ea45508d0ebeaa",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -454,7 +454,9 @@ API keys for posting, and grant_moderation! for the first admin's login.
       Rails (scripts/record-setting-enums), the database-backed ones
       computed. Measured against Rails: all 1542 settings of the reference
 - [ ] Site settings: the setting types milestone 4 refuses
-- [ ] Users: the lists and filters, the admin view of a user, granting and
+- [x] Users: the lists and filters (`GET /admin/users/list`), measured
+      against Rails
+- [ ] Users: the admin view of a user, granting and
       revoking admin and moderation, trust levels and their locks,
       approving, activating and deactivating, logging out, deleting,
       anonymizing and merging, impersonating, penalties on several users

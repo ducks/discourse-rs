@@ -353,3 +353,19 @@ GET /u/user1/user-menu-bookmarks.json
 GET /admin/site_settings.json as=admin
 GET /admin/site_settings.json?categories[]=required as=admin
 GET /admin/site_settings.json?plugin=chat as=admin
+
+# admin/users#index: AdminUserIndexQuery through AdminUserListSerializer.
+# The ages are Time.now less a time, so they differ by the request's
+# timing.
+GET /admin/users/list.json as=admin ignore=/*/last_seen_age,/*/last_emailed_age,/*/created_at_age
+GET /admin/users/list/active.json as=admin ignore=/*/last_seen_age,/*/last_emailed_age,/*/created_at_age
+GET /admin/users/list/staff.json as=admin ignore=/*/last_seen_age,/*/last_emailed_age,/*/created_at_age
+GET /admin/users/list/staff.json?account_type=all as=admin ignore=/*/last_seen_age,/*/last_emailed_age,/*/created_at_age
+GET /admin/users/list/new.json?order=username&asc=true as=admin ignore=/*/last_seen_age,/*/last_emailed_age,/*/created_at_age
+GET /admin/users/list.json?order=created as=admin ignore=/*/last_seen_age,/*/last_emailed_age,/*/created_at_age
+GET /admin/users/list/newuser.json as=admin ignore=/*/last_seen_age,/*/last_emailed_age,/*/created_at_age
+GET /admin/users/list/pending.json as=admin ignore=/*/last_seen_age,/*/last_emailed_age,/*/created_at_age
+GET /admin/users/list.json?filter=user as=admin ignore=/*/last_seen_age,/*/last_emailed_age,/*/created_at_age
+GET /admin/users/list.json?filter=user0,user2 as=admin ignore=/*/last_seen_age,/*/last_emailed_age,/*/created_at_age
+GET /admin/users/list.json?email=user1@example.com as=admin ignore=/*/last_seen_age,/*/last_emailed_age,/*/created_at_age
+GET /admin/users/list.json?filter=127.0.0.1 as=admin ignore=/*/last_seen_age,/*/last_emailed_age,/*/created_at_age

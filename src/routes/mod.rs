@@ -263,6 +263,9 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/admin/site_settings/{id}",
             put(admin_site_settings::update),
         )
+        .route("/admin/users/list", get(admin_users::index))
+        .route("/admin/users/list.json", get(admin_users::index))
+        .route("/admin/users/list/{query}", get(admin_users::index))
         .route("/admin/users/{user_id}/suspend", put(admin_users::suspend))
         .route(
             "/admin/users/{user_id}/suspend.json",

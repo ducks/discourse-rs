@@ -505,6 +505,11 @@ fn normalize(value: &Value, started: NaiveDateTime) -> Value {
                     ("auth_token", Value::String(_)) => {
                         (k.clone(), Value::String("<auth_token>".into()))
                     }
+                    // AdminUserListSerializer's ages: Time.now less a time,
+                    // so they move with the request's timing.
+                    ("last_seen_age" | "last_emailed_age" | "created_at_age", Value::Number(_)) => {
+                        (k.clone(), Value::String("<age>".into()))
+                    }
                     // post_revisions.modifications: Rails reads any YAML,
                     // so the port's is compared as what it holds.
                     ("modifications", Value::String(yaml)) => {

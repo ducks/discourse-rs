@@ -1,5 +1,6 @@
 pub mod accounts;
 pub mod admin_site_settings;
+pub mod admin_users;
 pub mod avatar;
 pub mod bookmark_manager;
 pub mod bookmarks;

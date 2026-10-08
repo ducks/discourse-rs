@@ -218,3 +218,55 @@ pub async fn unsilence(
     )
     .await
 }
+
+/// GET /admin/users/list(/:query)(.json): Admin::UsersController#index,
+/// for staff (StaffConstraint).
+pub async fn index(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    path: Option<Path<String>>,
+    uri: Uri,
+) -> Result<Response, AppError> {
+    if !guardian.is_staff() {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    let q: Vec<(String, String)> = form_urlencoded::parse(uri.query().unwrap_or("").as_bytes())
+        .into_owned()
+        .collect();
+    let get = |k: &str| q.iter().find(|(key, _)| key == k).map(|(_, v)| v.clone());
+    let p = crate::admin_users::ListParams {
+        query: path.map(|Path(s)| s.strip_suffix(".json").unwrap_or(&s).to_string()),
+        order: get("order"),
+        asc: get("asc").is_some_and(|v| !v.is_empty()),
+        page: get("page").map(|v| crate::ruby::to_i(&v)).unwrap_or(0),
+        show_emails: get("show_emails").as_deref() == Some("true"),
+        email: get("email"),
+        filter: get("filter"),
+        ip: get("ip"),
+        same_ip_user_id: get("same_ip_user_id"),
+        ip_type: get("ip_type"),
+        exclude: get("exclude"),
+        account_type: get("account_type"),
+        activation: get("activation"),
+    };
+    if get("stats").as_deref() == Some("false") {
+        return Err(crate::Unsupported("admin user lists without stats").into());
+    }
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let urls = crate::url::Urls {
+        config: &state.config,
+        settings: &settings,
+    };
+    Ok(
+        match crate::admin_users::list(&mut conn, &settings, &urls, &guardian, &p, uri.path())
+            .await?
+        {
+            crate::admin_users::Listed::Users(users) => Json(Value::Array(users)).into_response(),
+            crate::admin_users::Listed::InvalidFilter => {
+                super::search::invalid_parameters(&state, "filter")
+            }
+        },
+    )
+}
