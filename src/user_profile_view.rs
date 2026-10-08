@@ -1,6 +1,7 @@
 //! The user profile as the Ember app renders it (templates/user.gjs,
 //! user/collapsed-info.gjs, components/user-nav.gjs, user/summary.gjs and
-//! the summary components), from the users#show and users#summary
+//! the summary components, user-activity.gjs and the user stream's
+//! PostList), from the users#show, users#summary and user_actions
 //! documents.
 //!
 //! Not drawn yet: the staff counters, the profile background, user fields,
@@ -18,6 +19,65 @@ pub struct Viewer {
     pub id: Option<i32>,
     pub admin: bool,
     pub staff: bool,
+    /// `currentUser.can_send_private_messages`
+    pub can_send_private_messages: bool,
+    /// `currentUser.draft_count`
+    pub draft_count: i64,
+}
+
+/// The routed tab and what it shows.
+pub enum Tab<'a> {
+    /// `user.summary`; None where the viewer may not see it.
+    Summary(Option<&'a Value>),
+    /// `userActivity.*`: the filter and the user stream, collapsed
+    /// (UserAction.collapseStream).
+    Activity {
+        filter: ActivityFilter,
+        stream: &'a [Value],
+    },
+}
+
+/// The activity sub-navigation's stream routes.
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum ActivityFilter {
+    All,
+    Topics,
+    Replies,
+    LikesGiven,
+}
+
+impl ActivityFilter {
+    /// `/u/:username/activity/<path>`
+    pub fn from_path(path: &str) -> Option<ActivityFilter> {
+        Some(match path {
+            "" => ActivityFilter::All,
+            "topics" => ActivityFilter::Topics,
+            "replies" => ActivityFilter::Replies,
+            "likes-given" => ActivityFilter::LikesGiven,
+            _ => return None,
+        })
+    }
+
+    /// UserStream#filterParam: the user_actions types the stream loads.
+    pub fn action_types(self) -> &'static [i32] {
+        match self {
+            ActivityFilter::All => &[4, 5],
+            ActivityFilter::Topics => &[4],
+            // TYPES.posts: the replies route's own posts.
+            ActivityFilter::Replies => &[5],
+            ActivityFilter::LikesGiven => &[1],
+        }
+    }
+
+    /// `user-stream` plus the filter's class (UserStream#filterClassName).
+    fn class_name(self) -> &'static str {
+        match self {
+            ActivityFilter::All => "",
+            ActivityFilter::Topics => " filter-4",
+            ActivityFilter::Replies => " filter-5",
+            ActivityFilter::LikesGiven => " filter-1",
+        }
+    }
 }
 
 /// The site settings the profile reads.
@@ -113,7 +173,8 @@ fn duration(cx: &ListContext, seconds: i64, format: &str) -> String {
 }
 
 /// `dAgeWithTooltip(date, format="medium")`: relativeAgeMedium unwrapped.
-fn age_medium(cx: &ListContext, at: DateTime<Utc>) -> String {
+/// `relativeAge(format: "medium")`; `leave_ago` is "medium-with-ago".
+fn age_medium(cx: &ListContext, at: DateTime<Utc>, leave_ago: bool) -> String {
     let distance = ((cx.now - at).num_milliseconds() as f64 / 1000.0).round() as i64;
     let text = if distance < 60 {
         t(cx, "now")
@@ -135,12 +196,22 @@ fn age_medium(cx: &ListContext, at: DateTime<Utc>) -> String {
             129_600..=525_599 => ("x_months", (minutes as f64 / 43200.0).round() as i64),
             _ => ("x_years", (minutes as f64 / 525_600.0).round() as i64),
         };
-        t_count(cx, &format!("dates.medium.{unit}"), count, &[])
+        let scope = if leave_ago {
+            "medium_with_ago"
+        } else {
+            "medium"
+        };
+        t_count(cx, &format!("dates.{scope}.{unit}"), count, &[])
     };
     format!(
-        "<span class=\"relative-date date\" title=\"{}\" data-time=\"{}\" data-format=\"medium\">{}</span>",
+        "<span class=\"relative-date date\" title=\"{}\" data-time=\"{}\" data-format=\"{}\">{}</span>",
         escape(&long_date(cx, at)),
         at.timestamp_millis(),
+        if leave_ago {
+            "medium-with-ago"
+        } else {
+            "medium"
+        },
         escape(&text)
     )
 }
@@ -181,7 +252,7 @@ pub fn render(
     settings: &ProfileSettings,
     viewer: &Viewer,
     show: &Value,
-    summary: Option<&Value>,
+    tab: &Tab,
 ) -> String {
     let u = &show["user"];
     let base = cx.base_path;
@@ -189,8 +260,10 @@ pub fn render(
     let name = u["name"].as_str().filter(|n| !n.trim().is_empty());
     let viewing_self = viewer.id.is_some() && viewer.id == u["id"].as_i64().map(|i| i as i32);
     let hidden = u["profile_hidden"] == true;
-    // collapsedInfo on the summary route: hidden profiles and one's own.
-    let collapsed = hidden || viewing_self;
+    // collapsedInfo: hidden profiles, one's own, and every route but the
+    // summary.
+    let on_summary = matches!(tab, Tab::Summary(_));
+    let collapsed = hidden || viewing_self || !on_summary;
     let name_first = cx.settings.prioritize_name && name.is_some();
     let user_path = format!("{base}/u/{}", escape(&username.to_lowercase()));
 
@@ -332,7 +405,7 @@ pub fn render(
          <div class=\"d-overflow-controls --owned-scroller horizontal-overflow-nav__controls\">\
          <ul class=\"nav-pills action-list main-nav nav user-nav\" data-d-scroll-axis=\"horizontal\">",
     );
-    let tab = |class: &str, href: &str, icon_name: &str, label: &str, current: bool| {
+    let nav_item = |class: &str, href: &str, icon_name: &str, label: &str, current: bool| {
         format!(
             "<li{} class=\"{class}\"><a class=\"{}\" href=\"{href}\">{} <span>{}</span></a></li>",
             if current {
@@ -346,25 +419,25 @@ pub fn render(
         )
     };
     if !hidden {
-        out.push_str(&tab(
+        out.push_str(&nav_item(
             "user-nav__summary",
             &format!("{user_path}/summary"),
             "user",
             &t(cx, "user.summary.title"),
-            true,
+            on_summary,
         ));
         if viewing_self || viewer.admin || !settings.hide_user_activity_tab {
-            out.push_str(&tab(
+            out.push_str(&nav_item(
                 "user-nav__activity",
                 &format!("{user_path}/activity"),
                 "bars-staggered",
                 &t(cx, "user.activity_stream"),
-                false,
+                !on_summary,
             ));
         }
     }
     if viewing_self || viewer.admin {
-        out.push_str(&tab(
+        out.push_str(&nav_item(
             "user-nav__notifications",
             &format!("{user_path}/notifications"),
             "bell",
@@ -372,8 +445,17 @@ pub fn render(
             false,
         ));
     }
+    if viewer.can_send_private_messages && (viewing_self || viewer.admin) {
+        out.push_str(&nav_item(
+            "user-nav__personal-messages",
+            &format!("{user_path}/messages"),
+            "envelope",
+            &t(cx, "user.private_messages"),
+            false,
+        ));
+    }
     if settings.enable_badges && u["badge_count"].as_i64().unwrap_or(0) > 0 {
-        out.push_str(&tab(
+        out.push_str(&nav_item(
             "user-nav__badges",
             &format!("{user_path}/badges"),
             "certificate",
@@ -382,7 +464,7 @@ pub fn render(
         ));
     }
     if u["can_edit"] == true {
-        out.push_str(&tab(
+        out.push_str(&nav_item(
             "user-nav__preferences",
             &format!("{user_path}/preferences"),
             "gear",
@@ -397,12 +479,393 @@ pub fn render(
             "<p class=\"user-profile-hidden\">{}</p>",
             escape(&t(cx, "user.profile_hidden"))
         ));
-    } else if let Some(summary) = summary {
-        out.push_str(&summary_content(
-            cx, settings, &user_path, username, summary,
-        ));
+    } else {
+        match tab {
+            Tab::Summary(Some(summary)) => out.push_str(&summary_content(
+                cx, settings, &user_path, username, summary,
+            )),
+            Tab::Summary(None) => {}
+            Tab::Activity { filter, stream } => out.push_str(&activity_content(
+                cx,
+                viewer,
+                viewing_self,
+                &user_path,
+                *filter,
+                stream,
+                u["pending_posts_count"].as_i64().unwrap_or(0),
+            )),
+        }
     }
     out.push_str("</div></div></section></div>");
+    out
+}
+
+/// `user-activity.gjs`: the secondary navigation, then the user stream
+/// (`user/stream.gjs`).
+fn activity_content(
+    cx: &ListContext,
+    viewer: &Viewer,
+    viewing_self: bool,
+    user_path: &str,
+    filter: ActivityFilter,
+    stream: &[Value],
+    pending_posts_count: i64,
+) -> String {
+    let mut out = String::from(
+        "<div class=\"user-navigation user-navigation-secondary\">\
+         <nav aria-label=\"User secondary - activity\" class=\"horizontal-overflow-nav\">\
+         <div class=\"d-overflow-controls --owned-scroller horizontal-overflow-nav__controls\">\
+         <ul class=\"nav-pills action-list\" data-d-scroll-axis=\"horizontal\">",
+    );
+    let item = |class: &str, path: &str, icon_name: &str, label: &str, title: Option<&str>| {
+        let current = ActivityFilter::from_path(path) == Some(filter);
+        format!(
+            "<li{} class=\"{class}\"{}><a class=\"{}\" href=\"{user_path}/activity{}{path}\">{} <span>{}</span></a></li>",
+            if current {
+                " aria-current=\"location\""
+            } else {
+                ""
+            },
+            title
+                .map(|t| format!(" title=\"{}\"", escape(t)))
+                .unwrap_or_default(),
+            if current { "active" } else { "" },
+            if path.is_empty() { "" } else { "/" },
+            icon(icon_name, None),
+            escape(label)
+        )
+    };
+    out.push_str(&item(
+        "user-nav__activity-all",
+        "",
+        "bars-staggered",
+        &t(cx, "user.filters.all"),
+        None,
+    ));
+    out.push_str(&item(
+        "user-nav__activity-topics",
+        "topics",
+        "list-ul",
+        &t(cx, "user_action_groups.4"),
+        None,
+    ));
+    out.push_str(&item(
+        "user-nav__activity-replies",
+        "replies",
+        "reply",
+        &t(cx, "user_action_groups.5"),
+        None,
+    ));
+    if viewing_self {
+        out.push_str(&item(
+            "user-nav__activity-read",
+            "read",
+            "clock-rotate-left",
+            &t(cx, "user.read"),
+            Some(&t(cx, "user.read_help")),
+        ));
+        let drafts = if viewer.draft_count > 0 {
+            t_count(cx, "drafts.label_with_count", viewer.draft_count, &[])
+        } else {
+            t(cx, "drafts.label")
+        };
+        out.push_str(&item(
+            "user-nav__activity-drafts",
+            "drafts",
+            "pencil",
+            &drafts,
+            None,
+        ));
+    }
+    if pending_posts_count > 0 {
+        out.push_str(&item(
+            "user-nav__activity-pending",
+            "pending",
+            "clock",
+            &t_count(
+                cx,
+                "pending_posts.label_with_count",
+                pending_posts_count,
+                &[],
+            ),
+            None,
+        ));
+    }
+    out.push_str(&item(
+        "user-nav__activity-likes",
+        "likes-given",
+        "heart",
+        &t(cx, "user_action_groups.1"),
+        None,
+    ));
+    if viewing_self || viewer.admin {
+        out.push_str(&item(
+            "user-nav__activity-bookmarks",
+            "bookmarks",
+            "bookmark",
+            &t(cx, "user_action_groups.3"),
+            None,
+        ));
+    }
+    out.push_str(
+        "</ul></div></nav></div><section class=\"user-content\" id=\"user-content\"><div>",
+    );
+
+    let items = collapse_stream(stream);
+    if items.is_empty() {
+        // The route's emptyState (DEmptyState, text only).
+        let (title, body) = match filter {
+            ActivityFilter::All | ActivityFilter::Topics => {
+                (t(cx, "user_activity.no_activity_title"), String::new())
+            }
+            ActivityFilter::Replies if viewing_self => (
+                t(cx, "user_activity.no_replies_title"),
+                t_with(
+                    cx,
+                    "user_activity.no_replies_body",
+                    &[("searchUrl", &format!("{}/search", cx.base_path))],
+                ),
+            ),
+            ActivityFilter::Replies => (
+                t_with(
+                    cx,
+                    "user_activity.no_replies_title_others",
+                    &[("username", user_path.rsplit('/').next().unwrap_or(""))],
+                ),
+                String::new(),
+            ),
+            ActivityFilter::LikesGiven => (
+                if viewing_self {
+                    t(cx, "user_activity.no_likes_title")
+                } else {
+                    t_with(
+                        cx,
+                        "user_activity.no_likes_title_others",
+                        &[("username", user_path.rsplit('/').next().unwrap_or(""))],
+                    )
+                },
+                t_with(
+                    cx,
+                    "user_activity.no_likes_body",
+                    &[("heartIcon", &icon("heart", None))],
+                ),
+            ),
+        };
+        out.push_str(&format!(
+            "<div class=\"empty-state__container --text-only\"><div class=\"empty-state\"><div class=\"empty-state__title\" data-test-title>{}</div>",
+            escape(&title)
+        ));
+        if !body.is_empty() {
+            out.push_str(&format!(
+                "<div class=\"empty-state__body\"><p data-test-body>{body}</p></div>"
+            ));
+        }
+        out.push_str("</div></div>");
+    }
+
+    // PostList
+    out.push_str(&format!(
+        "<div class=\"post-list user-stream{}\">",
+        filter.class_name()
+    ));
+    if items.is_empty() {
+        out.push_str(&format!(
+            "<div class=\"post-list__empty-text\">{}</div>",
+            escape(&t(cx, "post_list.empty"))
+        ));
+    }
+    for item in &items {
+        out.push_str(&stream_item(cx, item));
+    }
+    out.push_str("</div></div></section>");
+    out
+}
+
+/// A collapsed user action with its likes, stars, edits and bookmarks
+/// (UserAction#children), each the acting users' actions.
+struct StreamItem<'a> {
+    action: &'a Value,
+    children: Vec<(&'static str, Vec<&'a Value>)>,
+}
+
+/// `UserAction.collapseStream`: one item per post; likes, edits and
+/// bookmarks of it gather under the first as children.
+fn collapse_stream(stream: &[Value]) -> Vec<StreamItem<'_>> {
+    // likes_given, likes_received, edits, bookmarks
+    const TO_COLLAPSE: [i64; 4] = [1, 2, 11, 3];
+    let mut items: Vec<StreamItem> = Vec::new();
+    let mut seen: Vec<(i64, i64)> = Vec::new();
+    for action in stream {
+        let key = (
+            action["topic_id"].as_i64().unwrap_or(0),
+            action["post_number"].as_i64().unwrap_or(0),
+        );
+        let action_type = action["action_type"].as_i64().unwrap_or(0);
+        let bucket = match action_type {
+            1 | 2 => Some("heart"),
+            11 => Some("pencil"),
+            3 => Some("bookmark"),
+            _ => None,
+        };
+        let pos = match seen.iter().position(|k| *k == key) {
+            Some(pos) => pos,
+            None => {
+                seen.push(key);
+                items.push(StreamItem {
+                    action,
+                    // likes, stars, edits, bookmarks, in that order.
+                    children: vec![
+                        ("heart", Vec::new()),
+                        ("star", Vec::new()),
+                        ("pencil", Vec::new()),
+                        ("bookmark", Vec::new()),
+                    ],
+                });
+                items.len() - 1
+            }
+        };
+        // A later uncollapsed action only lends the item its action_type
+        // and description, neither of which the item draws.
+        if TO_COLLAPSE.contains(&action_type)
+            && let Some(group) = items[pos].children.iter_mut().find(|g| Some(g.0) == bucket)
+        {
+            group.1.push(action);
+        }
+    }
+    for item in &mut items {
+        item.children.retain(|(_, actions)| !actions.is_empty());
+    }
+    items
+}
+
+/// PostListItem, with UserStream's blocks.
+fn stream_item(cx: &ListContext, item: &StreamItem) -> String {
+    let a = item.action;
+    let base = cx.base_path;
+    let username = s(&a["username"]);
+    let user_href = format!("{base}/u/{}", escape(&username.to_lowercase()));
+    let mut out = String::from(
+        "<div class=\"post-list-item user-stream-item\"><div class=\"post-list-item__header info\">",
+    );
+    let u = escape(username);
+    out.push_str(&format!(
+        "<a class=\"avatar-link\" data-user-card=\"{u}\" href=\"{user_href}\"><div class=\"avatar-wrapper\">{}</div></a>",
+        avatar(cx, s(&a["avatar_template"]), 48).replacen(
+            "class=\"avatar\"",
+            &format!("class=\"avatar actor\" title=\"{u}\""),
+            1
+        )
+    ));
+    // PostListItemDetails
+    let title = s(&a["title"]);
+    let title_html = crate::topic_list_view::emoji_unescape(&escape(title), &cx.settings, base);
+    let post_number = a["post_number"].as_i64().unwrap_or(0);
+    let slug = a["slug"]
+        .as_str()
+        .filter(|s| !s.is_empty())
+        .unwrap_or("topic");
+    let mut url = format!("{base}/t/{slug}/{}", a["topic_id"].as_i64().unwrap_or(0));
+    if post_number > 1 {
+        url.push_str(&format!("/{post_number}"));
+    }
+    let aria = if post_number > 0 && !title.is_empty() {
+        t_with(
+            cx,
+            "post_list.aria_post_number",
+            &[("title", title), ("postNumber", &post_number.to_string())],
+        )
+    } else {
+        title.to_string()
+    };
+    out.push_str(&format!(
+        "<div class=\"post-list-item__details\"><div class=\"stream-topic-title\"><span class=\"topic-statuses\">{}</span><span class=\"title\"><a aria-label=\"{}\" href=\"{}\">{title_html}</a></span></div><div class=\"post-list-item__metadata\">",
+        crate::topic_list_view::topic_statuses(cx, a),
+        escape(&aria),
+        escape(&url)
+    ));
+    if let Some(category) = a["category_id"]
+        .as_i64()
+        .and_then(|id| cx.categories.get(&id))
+    {
+        out.push_str(&format!(
+            "<span class=\"category stream-post-category\">{}</span>",
+            category_badge(cx, category)
+        ));
+    }
+    if let Some(at) = date(&a["created_at"]) {
+        out.push_str(&format!(
+            // The template's whitespace spaces the date from the bullet.
+            "<span class=\"time\"> {} </span>",
+            age_medium(cx, at, true)
+        ));
+    }
+    out.push_str("</div></div>");
+    if a["truncated"] == true {
+        out.push_str(&format!(
+            "<button class=\"btn no-text btn-icon btn-transparent expand-item\" title=\"{}\" type=\"button\">{}</button>",
+            escape(&t(cx, "post.expand_collapse")),
+            icon("chevron-down", None)
+        ));
+    }
+    out.push_str("<span></span></div>");
+    // PostActionDescription (no createdAt from the stream: `when` is empty).
+    if let Some(code) = a["action_code"].as_str().filter(|c| !c.is_empty()) {
+        let who = a["action_code_who"]
+            .as_str()
+            .map(|u| {
+                format!(
+                    "<a class=\"mention\" href=\"{base}/u/{}\">@{}</a>",
+                    uri_component(u),
+                    escape(u)
+                )
+            })
+            .unwrap_or_default();
+        out.push_str(&format!(
+            "<p class=\"excerpt\">{}</p>",
+            t_with(
+                cx,
+                &format!("action_codes.{code}"),
+                &[
+                    ("who", &who),
+                    ("when", ""),
+                    ("path", s(&a["action_code_path"]))
+                ]
+            )
+        ));
+    }
+    for (icon_name, actions) in &item.children {
+        out.push_str(&format!(
+            "<div class=\"user-stream-item-actions\">{}",
+            icon(icon_name, Some("icon"))
+        ));
+        for child in actions {
+            let acting = s(&child["acting_username"]);
+            out.push_str(&format!(
+                "<a class=\"avatar-link\" data-user-card=\"{u}\" href=\"{base}/u/{}\"><div class=\"avatar-wrapper\">{}</div></a>",
+                escape(&acting.to_lowercase()),
+                avatar(cx, s(&child["acting_avatar_template"]), 24)
+                    .replacen("class=\"avatar\"", "class=\"avatar actor\"", 1),
+                u = escape(acting)
+            ));
+            if let Some(reason) = child["edit_reason"].as_str().filter(|r| !r.is_empty()) {
+                out.push_str(&format!(
+                    " &mdash; <span class=\"edit-reason\">{}</span>",
+                    escape(reason)
+                ));
+            }
+        }
+        out.push_str("</div>");
+    }
+    out.push_str(&format!(
+        "<div class=\"excerpt\"{} data-topic-id=\"{}\" data-user-id=\"{}\"><div class=\"cooked\">{}</div></div></div>",
+        a["post_id"]
+            .as_i64()
+            .map(|id| format!(" data-post-id=\"{id}\""))
+            .unwrap_or_default(),
+        a["topic_id"].as_i64().unwrap_or(0),
+        a["user_id"].as_i64().unwrap_or(0),
+        s(&a["excerpt"])
+    ));
     out
 }
 
@@ -418,7 +881,7 @@ fn collapsed_info(cx: &ListContext, u: &Value, viewer: &Viewer) -> String {
             out.push_str(&format!(
                 "<div><dt class=\"{class}\">{}</dt><dd class=\"{class}\">{}</dd></div>",
                 escape(&t(cx, label)),
-                age_medium(cx, at)
+                age_medium(cx, at, false)
             ));
         }
     }

@@ -139,15 +139,23 @@ def log_in(context, base, username):
         raise RuntimeError(f"login as {username} on {base}: {response.status} {body}")
 
 
+# (base, username) -> the logged-in context's storage state. One login per
+# user and site: Rails rate limits logins from one IP.
+SESSIONS = {}
+
+
 def capture(browser, base, page, path):
+    session = SESSIONS.get((base, page["as"])) if page["as"] else None
     context = browser.new_context(
         viewport={"width": width, "height": HEIGHT},
         user_agent=page["ua"],
         reduced_motion="reduce",
+        storage_state=session,
     )
     try:
-        if page["as"]:
+        if page["as"] and session is None:
             log_in(context, base, page["as"])
+            SESSIONS[(base, page["as"])] = context.storage_state()
         tab = context.new_page()
         response = tab.goto(base + page["path"], wait_until="load")
         tab.evaluate("document.fonts.ready")

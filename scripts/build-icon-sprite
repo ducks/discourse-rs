@@ -23,6 +23,9 @@ ICONS=(
   ellipsis-vertical
   list
   list-check
+  list-ul
+  clock-rotate-left
+  clock
   tag
   keyboard
   users

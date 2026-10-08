@@ -15,6 +15,7 @@ use crate::html::Crawler;
 use crate::session::current::AuthGuardian;
 use crate::site_settings::SiteSettings;
 use crate::url::Urls;
+use crate::user_profile_view::{ActivityFilter, Tab};
 use crate::users::{PRIVATE_TYPES, PUBLIC_TYPES, User, Users};
 use crate::{AppError, AppState, Unsupported};
 
@@ -49,6 +50,9 @@ fn invalid_access(state: &AppState) -> Response {
 enum Action {
     Show,
     Summary,
+    /// The HTML of a user stream route (`/activity`, `/activity/replies`
+    /// ...): users#show, drawn as that tab.
+    Activity(ActivityFilter),
 }
 
 /// Where `/u/:username(/...)` goes.
@@ -80,6 +84,15 @@ fn route(username: &str, rest: Option<&str>) -> Result<Routed, Unsupported> {
             Action::Show
         }
         "activity" if json => return Ok(Routed::PostsFeed(username)),
+        "activity" if !json => Action::Activity(ActivityFilter::All),
+        r if !json
+            && let Some(filter) = r
+                .strip_prefix("activity/")
+                .and_then(ActivityFilter::from_path)
+                .filter(|f| *f != ActivityFilter::Topics) =>
+        {
+            Action::Activity(filter)
+        }
         "activity" => Action::Show,
         r if r.starts_with("activity/")
             || r.starts_with("notifications/")
@@ -217,7 +230,7 @@ async fn respond(
         auth_token: auth_token.as_deref(),
     };
     let doc = match action {
-        Action::Show => {
+        Action::Show | Action::Activity(_) => {
             let doc = users.show(&user).await?;
             // Viewing one's own profile isn't tracked.
             if params.skip_track_visit.is_none() && !guardian.is_me(user.id) {
@@ -239,19 +252,53 @@ async fn respond(
     // The HTML profile draws on the show document, the summary and the
     // public activity stream.
     let show_doc = match action {
-        Action::Show => doc,
+        Action::Show | Action::Activity(_) => doc,
         Action::Summary => users.show(&user).await?,
     };
+    // user/index: one's own profile opens the activity stream, others
+    // view_user_route.
+    let filter = match action {
+        Action::Summary => None,
+        Action::Activity(filter) => Some(filter),
+        Action::Show if guardian.is_me(user.id) => Some(ActivityFilter::All),
+        Action::Show => match settings.get("view_user_route")?.to_s().as_str() {
+            "summary" => None,
+            "activity" => Some(ActivityFilter::All),
+            _ => return Err(Unsupported("view_user_route other than summary or activity").into()),
+        },
+    };
     let visible = user.visible_to(&settings, &guardian)?;
-    let summary_doc = if visible {
+    let summary_doc = if visible && filter.is_none() {
         Some(users.summary(&user).await?)
     } else {
         None
     };
+    // The stream's first page (UserStream#findItems: offset 0, the
+    // default limit); routes user_actions refuses show nothing.
+    let stream = match filter {
+        Some(filter) if visible && !settings.get("hide_user_activity_tab")?.truthy() => {
+            users
+                .actions(&user, filter.action_types(), 0, 30, None)
+                .await?
+        }
+        _ => Vec::new(),
+    };
+    let tab = match filter {
+        None => Tab::Summary(summary_doc.as_ref()),
+        Some(filter) => Tab::Activity {
+            filter,
+            stream: &stream,
+        },
+    };
+    let active = if filter == Some(ActivityFilter::All) && guardian.is_me(user.id) {
+        crate::sidebar::Active::MyPosts
+    } else {
+        crate::sidebar::Active::None
+    };
     let vs = super::session::viewer_state(&state, &headers, &settings, &guardian)?;
     let mut site = crate::html::Site::from_settings(&settings, base_path)?;
     site.viewer = vs.viewer.clone();
-    site.load_chrome(&state, &settings, &guardian, crate::sidebar::Active::None)
+    site.load_chrome(&state, &settings, &guardian, active)
         .await?;
     site.bus_position = bus_position;
     let mut page = profile_page(
@@ -261,10 +308,17 @@ async fn respond(
         &guardian,
         &user,
         &show_doc,
-        summary_doc.as_ref(),
+        &tab,
         &settings,
     )
     .await?;
+    // The tab template's bodyClass.
+    if show_doc["user"]["profile_hidden"] != true {
+        page.chrome.body_classes.push_str(match filter {
+            None => " user-summary-page",
+            Some(_) => " user-activity-page",
+        });
+    }
     // crawlable_meta_data(title: username, image: the 45px avatar)
     let avatar = show_doc["user"]["avatar_template"]
         .as_str()
@@ -384,7 +438,7 @@ async fn profile_page(
     guardian: &crate::guardian::Guardian,
     user: &User,
     show: &Value,
-    summary: Option<&Value>,
+    tab: &Tab<'_>,
     settings: &SiteSettings,
 ) -> Result<ProfilePage, AppError> {
     let categories = crate::topic_list_view::categories(conn).await?;
@@ -397,16 +451,30 @@ async fn profile_page(
         member_trust_level: site.viewer.as_ref().map(|v| v.trust_level),
         settings: crate::topic_list_view::ListSettings::load(settings)?,
     };
+    let draft_count: i64 = match guardian.user_id() {
+        Some(id) => {
+            sqlx::query_scalar::<_, i32>("SELECT draft_count FROM user_stats WHERE user_id = $1")
+                .bind(id)
+                .fetch_optional(&mut *conn)
+                .await?
+                .map(i64::from)
+                .unwrap_or(0)
+        }
+        None => 0,
+    };
     let viewer = crate::user_profile_view::Viewer {
         id: guardian.user_id(),
         admin: guardian.is_admin(),
         staff: guardian.is_staff(),
+        can_send_private_messages: guardian.is_authenticated()
+            && guardian.can_send_private_messages(settings)?,
+        draft_count,
     };
     let profile_settings = crate::user_profile_view::ProfileSettings {
         enable_badges: settings.get("enable_badges")?.truthy(),
         hide_user_activity_tab: settings.get("hide_user_activity_tab")?.truthy(),
     };
-    let main = crate::user_profile_view::render(&cx, &profile_settings, &viewer, show, summary);
+    let main = crate::user_profile_view::render(&cx, &profile_settings, &viewer, show, tab);
     Ok(ProfilePage {
         site_title: site.site_title,
         viewer: site.viewer,

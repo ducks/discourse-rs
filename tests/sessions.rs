@@ -1724,6 +1724,72 @@ async fn members_get_their_own_sidebar() {
     ));
 }
 
+/// One's own profile opens the activity stream (user/index); its filters
+/// load their user actions, and others' profiles keep the summary.
+#[tokio::test]
+async fn own_profile_opens_the_activity_stream() {
+    let db = TestDb::new().await;
+    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut client = Client::new(app_state.clone());
+    client.login("user0", "password").await;
+
+    let page = client.get("/u/user0").await.body;
+    assert!(page.contains(" user-activity-page\""));
+    assert!(page.contains(
+        r#"<li aria-current="page" class="user-nav__activity"><a class="active" href="/u/user0/activity">"#
+    ));
+    assert!(page.contains(
+        r#"<li class="user-nav__personal-messages"><a class="" href="/u/user0/messages">"#
+    ));
+    assert!(page.contains(
+        r#"<li aria-current="location" class="user-nav__activity-all"><a class="active" href="/u/user0/activity">"#
+    ));
+    assert!(page.contains(r#"class="user-nav__activity-drafts""#));
+    // My posts is the current sidebar link.
+    assert!(page.contains(
+        r#"<a class="active sidebar-section-link sidebar-row" title="My recent topic activity" data-link-name="my-posts""#
+    ));
+    // Topics and replies, newest first, linked to the post.
+    assert!(page.contains(r#"<div class="post-list user-stream">"#));
+    assert!(page.contains(
+        r#"<a aria-label="Parity fixture: replies and posters - post #5" href="/t/parity-fixture-replies-and-posters/35/5">"#
+    ));
+    assert!(page.contains(
+        r#"<div class="excerpt" data-post-id="52" data-topic-id="35" data-user-id="2">"#
+    ));
+    assert!(page.contains(r#"<span class="topic-status --archived""#));
+    // The collapsed summary (no about panel) and no summary stats.
+    assert!(page.contains(r#"<section class="collapsed-info about no-background">"#));
+    assert!(!page.contains("stats-section"));
+
+    // Replies are the user's own posts (TYPES.posts), not responses.
+    let page = client.get("/u/user0/activity/replies").await.body;
+    assert!(page.contains(r#"<div class="post-list user-stream filter-5">"#));
+    assert!(page.contains("Reply from user0 mentioning"));
+    assert!(!page.contains("Reply one from user1"));
+
+    // Likes collapse onto the liked post, with the liker under a heart.
+    let page = client.get("/u/user0/activity/likes-given").await.body;
+    assert!(page.contains(r#"<div class="post-list user-stream filter-1">"#));
+    assert!(
+        page.contains(
+            r#"<div class="user-stream-item-actions"><svg class="fa d-icon d-icon-heart "#
+        )
+    );
+    assert!(page.contains(r#"<a class="avatar-link" data-user-card="user0" href="/u/user0"><div class="avatar-wrapper"><img alt="" width="24" height="24""#));
+
+    // Another member's profile: the summary, no Messages or Drafts.
+    let page = client.get("/u/user1").await.body;
+    assert!(page.contains(" user-summary-page\""));
+    assert!(!page.contains("user-nav__personal-messages"));
+    let page = client.get("/u/user1/activity").await.body;
+    assert!(page.contains(r#"class="post-list user-stream""#));
+    assert!(!page.contains("user-nav__activity-drafts"));
+    assert!(!page.contains(
+        r#"class="active sidebar-section-link sidebar-row" title="My recent topic activity""#
+    ));
+}
+
 /// How a live update replaces a post on the page: the post's wrapper, or
 /// the first post's main row, which keeps its topic map.
 fn post_swap(post_number: i32) -> String {
