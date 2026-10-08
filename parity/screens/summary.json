@@ -1,0 +1,18 @@
+[
+{"page": "/latest", "diff_pct": 5.33, "status": [200, 200], "size": [[1280, 904], [1280, 900]]},
+{"page": "/categories", "diff_pct": 14.12, "status": [200, 200], "size": [[1280, 1000], [1280, 900]]},
+{"page": "/c/general/4", "diff_pct": 4.65, "status": [200, 200], "size": [[1280, 900], [1280, 900]]},
+{"page": "/c/general/sub-general/34", "diff_pct": 1.47, "status": [200, 200], "size": [[1280, 900], [1280, 900]]},
+{"page": "/t/parity-fixture-replies-and-posters/35", "diff_pct": 2.89, "status": [200, 200], "size": [[1280, 1509], [1280, 1473]]},
+{"page": "/t/parity-fixture-liked-and-archived/41", "diff_pct": 7.1, "status": [200, 200], "size": [[1280, 971], [1280, 926]]},
+{"page": "/u/admin", "diff_pct": 46.82, "status": [200, 200], "size": [[1280, 1682], [1280, 955]]},
+{"page": "/u/user1", "diff_pct": 40.18, "status": [200, 200], "size": [[1280, 1431], [1280, 913]]},
+{"page": "/tags", "diff_pct": 0.72, "status": [200, 200], "size": [[1280, 900], [1280, 900]]},
+{"page": "/tag/guide", "diff_pct": 1.63, "status": [200, 200], "size": [[1280, 900], [1280, 900]]},
+{"page": "/search?q=fixture", "diff_pct": 6.2, "status": [200, 200], "size": [[1280, 900], [1280, 900]]},
+{"page": "/t/999999", "diff_pct": 15.65, "status": [404, 404], "size": [[1280, 939], [1280, 927]]},
+{"page": "/latest as=admin", "diff_pct": 25.41, "status": [200, 200], "size": [[1280, 1122], [1280, 900]]},
+{"page": "/categories as=admin", "diff_pct": 24.07, "status": [200, 200], "size": [[1280, 1107], [1280, 900]]},
+{"page": "/t/parity-fixture-replies-and-posters/35 as=user0", "diff_pct": 12.3, "status": [200, 200], "size": [[1280, 1686], [1280, 1543]]},
+{"page": "/u/user0 as=user0", "diff_pct": 7.47, "status": [200, 200], "size": [[1280, 900], [1280, 917]]}
+]
