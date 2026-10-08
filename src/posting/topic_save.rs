@@ -32,5 +32,5 @@ pub async fn reassigned_slug(
     if s.get("slug_generation_method")?.to_s() != "ascii" {
         return Err(Unsupported("slug_generation_method other than ascii").into());
     }
-    Ok(slug_for(&title)?)
+    Ok(slug_for(&title, &s.get("default_locale")?.to_s())?)
 }

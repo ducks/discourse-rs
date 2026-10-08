@@ -183,17 +183,20 @@ pub fn word_count(raw: &str) -> i32 {
 }
 
 /// `Slug.for(title)` with slug_generation_method `ascii`, for titles
-/// `String#parameterize` keeps as they are (ASCII without emoji codes).
-pub fn slug_for(title: &str) -> Result<String, Unsupported> {
-    if !title.is_ascii() {
+/// without emoji codes, on English sites (other locales have their own
+/// transliteration rules).
+pub fn slug_for(title: &str, locale: &str) -> Result<String, Unsupported> {
+    if !title.is_ascii() && locale != "en" {
         return Err(Unsupported(
-            "slugs for non-ASCII titles (I18n transliteration)",
+            "slugs for non-ASCII titles in locales other than English (I18n transliteration)",
         ));
     }
     if crate::emoji::has_emoji_code(title) {
         return Err(Unsupported("slugs for titles with emoji codes"));
     }
-    // tr("'", "").parameterize
+    // tr("'", "").parameterize: transliterated, then everything but
+    // letters, digits, dashes and underscores a separator.
+    let title = transliterate(title);
     let mut s = String::new();
     for c in title.chars().filter(|&c| c != '\'') {
         if c.is_ascii_alphanumeric() || c == '_' || c == '-' {
@@ -217,6 +220,225 @@ pub fn slug_for(title: &str) -> Result<String, Unsupported> {
     }
     Ok(slug)
 }
+
+/// `ActiveSupport::Inflector.transliterate` on an English site: NFC, then
+/// each non-ASCII character by I18n's default approximations with
+/// Discourse's `transliterate.en.yml` rule over them, else `?`.
+pub fn transliterate(s: &str) -> String {
+    use unicode_normalization::UnicodeNormalization;
+    s.nfc()
+        .flat_map(|c| -> Vec<char> {
+            if c.is_ascii() {
+                return vec![c];
+            }
+            match c {
+                // config/locales/transliterate.en.yml
+                'ț' | 'Ț' => return vec!['t'],
+                'ș' | 'Ș' => return vec!['s'],
+                _ => {}
+            }
+            match APPROXIMATIONS.iter().find(|(from, _)| *from == c) {
+                Some((_, to)) => to.chars().collect(),
+                None => vec!['?'],
+            }
+        })
+        .collect()
+}
+
+/// I18n::Backend::Transliterator::HashTransliterator::DEFAULT_APPROXIMATIONS
+const APPROXIMATIONS: &[(char, &str)] = &[
+    ('À', "A"),
+    ('Á', "A"),
+    ('Â', "A"),
+    ('Ã', "A"),
+    ('Ä', "A"),
+    ('Å', "A"),
+    ('Æ', "AE"),
+    ('Ç', "C"),
+    ('È', "E"),
+    ('É', "E"),
+    ('Ê', "E"),
+    ('Ë', "E"),
+    ('Ì', "I"),
+    ('Í', "I"),
+    ('Î', "I"),
+    ('Ï', "I"),
+    ('Ð', "D"),
+    ('Ñ', "N"),
+    ('Ò', "O"),
+    ('Ó', "O"),
+    ('Ô', "O"),
+    ('Õ', "O"),
+    ('Ö', "O"),
+    ('×', "x"),
+    ('Ø', "O"),
+    ('Ù', "U"),
+    ('Ú', "U"),
+    ('Û', "U"),
+    ('Ü', "U"),
+    ('Ý', "Y"),
+    ('Þ', "Th"),
+    ('ß', "ss"),
+    ('ẞ', "SS"),
+    ('à', "a"),
+    ('á', "a"),
+    ('â', "a"),
+    ('ã', "a"),
+    ('ä', "a"),
+    ('å', "a"),
+    ('æ', "ae"),
+    ('ç', "c"),
+    ('è', "e"),
+    ('é', "e"),
+    ('ê', "e"),
+    ('ë', "e"),
+    ('ì', "i"),
+    ('í', "i"),
+    ('î', "i"),
+    ('ï', "i"),
+    ('ð', "d"),
+    ('ñ', "n"),
+    ('ò', "o"),
+    ('ó', "o"),
+    ('ô', "o"),
+    ('õ', "o"),
+    ('ö', "o"),
+    ('ø', "o"),
+    ('ù', "u"),
+    ('ú', "u"),
+    ('û', "u"),
+    ('ü', "u"),
+    ('ý', "y"),
+    ('þ', "th"),
+    ('ÿ', "y"),
+    ('Ā', "A"),
+    ('ā', "a"),
+    ('Ă', "A"),
+    ('ă', "a"),
+    ('Ą', "A"),
+    ('ą', "a"),
+    ('Ć', "C"),
+    ('ć', "c"),
+    ('Ĉ', "C"),
+    ('ĉ', "c"),
+    ('Ċ', "C"),
+    ('ċ', "c"),
+    ('Č', "C"),
+    ('č', "c"),
+    ('Ď', "D"),
+    ('ď', "d"),
+    ('Đ', "D"),
+    ('đ', "d"),
+    ('Ē', "E"),
+    ('ē', "e"),
+    ('Ĕ', "E"),
+    ('ĕ', "e"),
+    ('Ė', "E"),
+    ('ė', "e"),
+    ('Ę', "E"),
+    ('ę', "e"),
+    ('Ě', "E"),
+    ('ě', "e"),
+    ('Ĝ', "G"),
+    ('ĝ', "g"),
+    ('Ğ', "G"),
+    ('ğ', "g"),
+    ('Ġ', "G"),
+    ('ġ', "g"),
+    ('Ģ', "G"),
+    ('ģ', "g"),
+    ('Ĥ', "H"),
+    ('ĥ', "h"),
+    ('Ħ', "H"),
+    ('ħ', "h"),
+    ('Ĩ', "I"),
+    ('ĩ', "i"),
+    ('Ī', "I"),
+    ('ī', "i"),
+    ('Ĭ', "I"),
+    ('ĭ', "i"),
+    ('Į', "I"),
+    ('į', "i"),
+    ('İ', "I"),
+    ('ı', "i"),
+    ('Ĳ', "IJ"),
+    ('ĳ', "ij"),
+    ('Ĵ', "J"),
+    ('ĵ', "j"),
+    ('Ķ', "K"),
+    ('ķ', "k"),
+    ('ĸ', "k"),
+    ('Ĺ', "L"),
+    ('ĺ', "l"),
+    ('Ļ', "L"),
+    ('ļ', "l"),
+    ('Ľ', "L"),
+    ('ľ', "l"),
+    ('Ŀ', "L"),
+    ('ŀ', "l"),
+    ('Ł', "L"),
+    ('ł', "l"),
+    ('Ń', "N"),
+    ('ń', "n"),
+    ('Ņ', "N"),
+    ('ņ', "n"),
+    ('Ň', "N"),
+    ('ň', "n"),
+    ('ŉ', "'n"),
+    ('Ŋ', "NG"),
+    ('ŋ', "ng"),
+    ('Ō', "O"),
+    ('ō', "o"),
+    ('Ŏ', "O"),
+    ('ŏ', "o"),
+    ('Ő', "O"),
+    ('ő', "o"),
+    ('Œ', "OE"),
+    ('œ', "oe"),
+    ('Ŕ', "R"),
+    ('ŕ', "r"),
+    ('Ŗ', "R"),
+    ('ŗ', "r"),
+    ('Ř', "R"),
+    ('ř', "r"),
+    ('Ś', "S"),
+    ('ś', "s"),
+    ('Ŝ', "S"),
+    ('ŝ', "s"),
+    ('Ş', "S"),
+    ('ş', "s"),
+    ('Š', "S"),
+    ('š', "s"),
+    ('Ţ', "T"),
+    ('ţ', "t"),
+    ('Ť', "T"),
+    ('ť', "t"),
+    ('Ŧ', "T"),
+    ('ŧ', "t"),
+    ('Ũ', "U"),
+    ('ũ', "u"),
+    ('Ū', "U"),
+    ('ū', "u"),
+    ('Ŭ', "U"),
+    ('ŭ', "u"),
+    ('Ů', "U"),
+    ('ů', "u"),
+    ('Ű', "U"),
+    ('ű', "u"),
+    ('Ų', "U"),
+    ('ų', "u"),
+    ('Ŵ', "W"),
+    ('ŵ', "w"),
+    ('Ŷ', "Y"),
+    ('ŷ', "y"),
+    ('Ÿ', "Y"),
+    ('Ź', "Z"),
+    ('ź', "z"),
+    ('Ż', "Z"),
+    ('ż', "z"),
+    ('Ž', "Z"),
+    ('ž', "z"),
+];
 
 #[cfg(test)]
 mod tests {
@@ -243,11 +465,32 @@ mod tests {
     #[test]
     fn slugs() {
         assert_eq!(
-            slug_for("A new topic from user1 for the posting slice").unwrap(),
+            slug_for("A new topic from user1 for the posting slice", "en").unwrap(),
             "a-new-topic-from-user1-for-the-posting-slice"
         );
-        assert_eq!(slug_for("Don't stop: me_now!").unwrap(), "dont-stop-me-now");
-        assert_eq!(slug_for("12345").unwrap(), "topic");
+        assert_eq!(
+            slug_for("Don't stop: me_now!", "en").unwrap(),
+            "dont-stop-me-now"
+        );
+        assert_eq!(slug_for("12345", "en").unwrap(), "topic");
+        // Values from Rails' Slug.for.
+        assert_eq!(
+            slug_for(
+                "Congratulations, you’ve been granted moderator status!",
+                "en"
+            )
+            .unwrap(),
+            "congratulations-you-ve-been-granted-moderator-status"
+        );
+        assert_eq!(
+            slug_for("Crème brûlée à Zürich", "en").unwrap(),
+            "creme-brulee-a-zurich"
+        );
+        assert_eq!(
+            slug_for("Ștefan’s café — naïve", "en").unwrap(),
+            "stefan-s-cafe-naive"
+        );
+        assert!(slug_for("Crème brûlée", "fr").is_err());
     }
 
     #[test]
