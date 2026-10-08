@@ -1,0 +1,16 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE users SET manual_locked_trust_level = 1 WHERE id = 2",
+    "UPDATE user_stats SET topics_entered = 50, posts_read_count = 500, time_read = 100000, days_visited = 100, likes_received = 100, likes_given = 100 WHERE user_id = 2"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/2/trust_level_lock.json",
+      "params": {
+        "locked": "false"
+      }
+    }
+  ]
+}

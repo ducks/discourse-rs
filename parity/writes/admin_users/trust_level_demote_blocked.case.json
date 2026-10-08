@@ -1,0 +1,15 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE user_stats SET topics_entered = 50, posts_read_count = 500, time_read = 100000 WHERE user_id = 3"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/3/trust_level.json",
+      "params": {
+        "level": 0
+      }
+    }
+  ]
+}

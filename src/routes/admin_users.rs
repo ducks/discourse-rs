@@ -306,7 +306,10 @@ pub async fn show(
             &cx,
             &guardian,
             id,
-            crate::admin_user_show::ShowOptions { show: true },
+            crate::admin_user_show::ShowOptions {
+                show: true,
+                detailed: true,
+            },
         )
         .await?
         {
@@ -485,7 +488,10 @@ async fn change_role(
             &cx,
             &guardian,
             user_id,
-            crate::admin_user_show::ShowOptions { show: false },
+            crate::admin_user_show::ShowOptions {
+                show: false,
+                detailed: true,
+            },
         )
         .await?
         {
@@ -493,4 +499,188 @@ async fn change_role(
             None => super::topics::not_found_response(&state),
         },
     )
+}
+
+/// What the trust level routes act on.
+#[derive(Clone, Copy)]
+enum TrustLevelAction {
+    Change,
+    Lock,
+}
+
+/// PUT /admin/users/:id/trust_level
+pub async fn trust_level(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(user_id): Path<String>,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    trust_level_route(
+        state,
+        guardian,
+        user_id,
+        headers,
+        uri,
+        body,
+        TrustLevelAction::Change,
+    )
+    .await
+}
+
+/// PUT /admin/users/:id/trust_level_lock
+pub async fn trust_level_lock(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(user_id): Path<String>,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    trust_level_route(
+        state,
+        guardian,
+        user_id,
+        headers,
+        uri,
+        body,
+        TrustLevelAction::Lock,
+    )
+    .await
+}
+
+/// Admin::UsersController#trust_level and #trust_level_lock: for staff
+/// (StaffConstraint), guardian.can_change_trust_level?, then the change
+/// (AdminUserSerializer) or the lock and a recalculation (no body).
+async fn trust_level_route(
+    state: AppState,
+    guardian: crate::guardian::Guardian,
+    user_id: String,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+    action: TrustLevelAction,
+) -> Result<Response, AppError> {
+    let p = params::parse(uri.query(), &headers, &body);
+    if !csrf_ok(&state, &headers, &form_pairs(&p), uri.path(), "PUT") {
+        return Ok(bad_csrf());
+    }
+    if !guardian.is_staff() {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    let Ok(user_id) = user_id
+        .strip_suffix(".json")
+        .unwrap_or(&user_id)
+        .parse::<i32>()
+    else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    let mut tx = state.pool.begin().await?;
+    let target: Option<(bool, bool, Option<i32>)> = sqlx::query_as(
+        "SELECT admin, moderator, manual_locked_trust_level FROM users WHERE id = $1",
+    )
+    .bind(user_id)
+    .fetch_optional(&mut *tx)
+    .await?;
+    let Some((admin, moderator, lock)) = target else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    let settings =
+        SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
+    let can_change = guardian.is_admin()
+        || (guardian.is_moderator()
+            && settings.get("moderators_change_trust_levels")?.truthy()
+            && !(admin || moderator));
+    let host = Host::from_state(&state);
+    let cx = crate::promotion::Ctx {
+        settings: &settings,
+        i18n: &state.i18n,
+        host: &host,
+    };
+    let acting = guardian.user_id().unwrap_or_default();
+    let s = &settings;
+    match action {
+        TrustLevelAction::Change => {
+            // The action rescues the guardian's InvalidAccess into a 422.
+            if !can_change {
+                return Ok(json_error(vec!["can_change_trust_level? failed".into()]));
+            }
+            let level = p
+                .get("level")
+                .and_then(params::scalar)
+                .map_or(0, |l| crate::ruby::to_i(&l)) as i32;
+            if lock.is_none() {
+                let lock_it = if (0..=2).contains(&level) {
+                    crate::promotion::tl_met(&mut tx, s, user_id, level + 1).await? == Some(true)
+                } else {
+                    level == 3 && crate::promotion::tl3_lost(&mut tx, s, user_id).await?
+                };
+                if lock_it {
+                    crate::promotion::save_lock(&mut tx, s, user_id, Some(level)).await?;
+                }
+            }
+            if let Err(message) =
+                crate::promotion::change_trust_level(&mut tx, &cx, user_id, level, Some(acting))
+                    .await?
+            {
+                return Ok(json_error(vec![message]));
+            }
+        }
+        TrustLevelAction::Lock => {
+            if !can_change {
+                return Ok(super::search::invalid_access(&state));
+            }
+            let locked = p.get("locked").and_then(params::scalar).unwrap_or_default();
+            if !locked.contains("true") && !locked.contains("false") {
+                return Ok(json_error(vec![
+                    "Translation missing: en.errors.invalid_boolean".into(),
+                ]));
+            }
+            let trust_level: i32 =
+                sqlx::query_scalar("SELECT trust_level FROM users WHERE id = $1")
+                    .bind(user_id)
+                    .fetch_one(&mut *tx)
+                    .await?;
+            let new_lock = (locked == "true").then_some(trust_level);
+            crate::promotion::save_lock(&mut tx, s, user_id, new_lock).await?;
+            crate::promotion::log_lock(&mut tx, acting, user_id, new_lock.is_some()).await?;
+            crate::promotion::recalculate(&mut tx, &cx, user_id, Some(acting)).await?;
+            tx.commit().await?;
+            return Ok(StatusCode::OK.into_response());
+        }
+    }
+    let urls = crate::url::Urls {
+        config: &state.config,
+        settings: &settings,
+    };
+    let show_cx = crate::admin_user_show::Context {
+        settings: &settings,
+        defs: &state.site_setting_defs,
+        i18n: &state.i18n,
+        urls: &urls,
+        globals: &state.config.globals,
+        development: state.config.rails_env == crate::config::RailsEnv::Development,
+    };
+    let user = crate::admin_user_show::show(
+        &mut tx,
+        &show_cx,
+        &guardian,
+        user_id,
+        crate::admin_user_show::ShowOptions {
+            show: false,
+            detailed: false,
+        },
+    )
+    .await?;
+    tx.commit().await?;
+    Ok(Json(json!({ "admin_user": user })).into_response())
+}
+
+fn json_error(errors: Vec<String>) -> Response {
+    (
+        StatusCode::UNPROCESSABLE_ENTITY,
+        Json(json!({ "errors": errors })),
+    )
+        .into_response()
 }
