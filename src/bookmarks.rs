@@ -86,6 +86,12 @@ impl From<GuardianError> for BookmarksError {
     }
 }
 
+impl From<crate::topic_query::TopicQueryError> for BookmarksError {
+    fn from(e: crate::topic_query::TopicQueryError) -> Self {
+        TopicListError::from(e).into()
+    }
+}
+
 impl From<TopicListError> for BookmarksError {
     fn from(e: TopicListError) -> Self {
         match e {
@@ -548,16 +554,18 @@ impl Bookmarks<'_> {
         }
         out.insert("pinned".into(), json!(row.pinned));
         out.insert("title".into(), json!(b.title));
-        // LocalizedFancyTopicTitleMixin: only a stored fancy_title is
-        // served; computing one is HtmlPrettify.
-        match b.fancy_title.as_deref() {
-            Some(f) if !f.is_empty() => out.insert("fancy_title".into(), json!(f)),
-            _ => {
-                return Err(
-                    Unsupported("computing fancy_title (HtmlPrettify + emoji unescape)").into(),
-                );
-            }
-        };
+        // LocalizedFancyTopicTitleMixin: left out when blank.
+        let fancy = crate::topic_query::fancy_title(
+            &mut *self.conn,
+            self.settings,
+            b.topic_id,
+            &b.title,
+            b.fancy_title.as_deref(),
+        )
+        .await?;
+        if !fancy.is_empty() {
+            out.insert("fancy_title".into(), json!(fancy));
+        }
         // PostItemExcerpt
         let can_see_post = self.can_see_post(b, secure).await?;
         if can_see_post {

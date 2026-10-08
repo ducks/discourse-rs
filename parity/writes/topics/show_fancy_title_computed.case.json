@@ -1,0 +1,12 @@
+{
+  "user": null,
+  "setup": [
+    "UPDATE topics SET title = 'Parity fixture: \"replies\" -- and posters... :)', fancy_title = NULL WHERE id = 35"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/t/35.json"
+    }
+  ]
+}

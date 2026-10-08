@@ -191,6 +191,17 @@ pub struct EmojiEscape {
     pub inline: bool,
 }
 
+impl EmojiEscape {
+    pub fn from_settings(
+        s: &crate::site_settings::SiteSettings,
+    ) -> Result<Self, crate::site_settings::SettingError> {
+        Ok(Self {
+            shortcuts: s.get("enable_emoji")?.truthy() && s.get("enable_emoji_shortcuts")?.truthy(),
+            inline: s.get("enable_inline_emoji_translation")?.truthy(),
+        })
+    }
+}
+
 /// `Topic.max_fancy_title_length`
 const MAX_FANCY_TITLE_LENGTH: usize = 400;
 

@@ -202,8 +202,8 @@ system), Emoji unicode lookup from the discourse-emojis gem, TopicView
 (paged and near-post chunks, timeline lookup, participants, flags summary).
 
 Behaviors the port hits but hasn't implemented return an explicit 500
-(`Unsupported`) rather than a guess: watched words, fancy titles computed on
-read, unicode emoji in titles, post link counts, hidden posts, topic timers, thumbnails,
+(`Unsupported`) rather than a guess: watched words, unicode emoji in
+titles, post link counts, hidden posts, topic timers, thumbnails,
 user fields, enabled auth providers, user-selectable color schemes, group
 flair uploads, S3 CDN.
 

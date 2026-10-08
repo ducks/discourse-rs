@@ -962,82 +962,32 @@ mod tests {
     }
 }
 
-/// `Topic#fancy_title`: the stored column, else `Topic.fancy_title(title)`
-/// computed on read. Only the trivial case is ported: a title with nothing
-/// for HtmlPrettify (quotes, dashes, ellipses, backticks, entities) or the
-/// emoji unescape to rewrite comes back HTML-escaped, which for such titles
-/// is the title itself.
-pub fn fancy_title(t: &TopicRow) -> Result<String, Unsupported> {
-    if let Some(f) = &t.fancy_title {
-        return Ok(f.clone());
+/// `Topic#fancy_title`: the title HTML-escaped when title_fancy_entities
+/// is off, else the stored column, else `Topic.fancy_title(title)`
+/// computed and written back so later reads find it.
+pub async fn fancy_title(
+    conn: &mut PgConnection,
+    settings: &crate::site_settings::SiteSettings,
+    topic_id: i32,
+    title: &str,
+    stored: Option<&str>,
+) -> Result<String, TopicQueryError> {
+    if !settings.get("title_fancy_entities")?.truthy() {
+        return Ok(crate::category_badge::html_escape(title));
     }
-    let plain = t.title.chars().all(|c| {
-        c.is_alphanumeric() && c.is_ascii()
-            || " ,.:;!?()/_[]{}%#@+=*$^|~".contains(c)
-            || c.is_alphabetic()
-    });
-    if !plain || crate::emoji::has_emoji_code(&t.title) {
-        return Err(Unsupported(
-            "computing fancy_title (HtmlPrettify + emoji unescape)",
-        ));
+    if let Some(f) = stored {
+        return Ok(f.to_string());
     }
-    Ok(t.title.clone())
-}
-
-#[cfg(test)]
-mod fancy_title_tests {
-    use super::*;
-    use chrono::NaiveDateTime;
-
-    fn row(title: &str, fancy: Option<&str>) -> TopicRow {
-        let t = NaiveDateTime::parse_from_str("2026-01-01 00:00:00", "%Y-%m-%d %H:%M:%S").unwrap();
-        TopicRow {
-            id: 1,
-            title: title.into(),
-            fancy_title: fancy.map(str::to_string),
-            slug: None,
-            posts_count: 0,
-            reply_count: 0,
-            highest_post_number: 0,
-            highest_staff_post_number: 0,
-            image_upload_id: None,
-            created_at: t,
-            last_posted_at: None,
-            bumped_at: t,
-            archetype: "regular".into(),
-            pinned_at: None,
-            pinned_globally: false,
-            excerpt: None,
-            visible: true,
-            closed: false,
-            archived: false,
-            views: 0,
-            like_count: 0,
-            has_summary: false,
-            user_id: None,
-            last_post_user_id: 1,
-            featured_user1_id: None,
-            featured_user2_id: None,
-            featured_user3_id: None,
-            featured_user4_id: None,
-            category_id: None,
-            featured_link: None,
-            visibility_reason_id: None,
-            subtype: None,
-        }
-    }
-
-    #[test]
-    fn stored_or_trivially_computed() {
-        assert_eq!(fancy_title(&row("x", Some("stored"))).unwrap(), "stored");
-        assert_eq!(
-            fancy_title(&row("Parity fixture: unlisted topic", None)).unwrap(),
-            "Parity fixture: unlisted topic"
-        );
-        assert!(fancy_title(&row("it's \"quoted\"", None)).is_err());
-        assert!(fancy_title(&row("dash -- dash", None)).is_err());
-        assert!(fancy_title(&row("Hi :wave:", None)).is_err());
-    }
+    let fancy = crate::posting::text::fancy_title(
+        title,
+        crate::posting::text::EmojiEscape::from_settings(settings)?,
+    )?;
+    sqlx::query("UPDATE topics SET fancy_title = $2 WHERE id = $1")
+        .bind(topic_id)
+        .bind(&fancy)
+        .execute(&mut *conn)
+        .await?;
+    Ok(fancy)
 }
 
 /// What a category adds to the query.

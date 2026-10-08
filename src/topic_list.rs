@@ -86,6 +86,17 @@ impl From<Unsupported> for TopicListError {
     }
 }
 
+impl From<crate::topic_query::TopicQueryError> for TopicListError {
+    fn from(e: crate::topic_query::TopicQueryError) -> Self {
+        use crate::topic_query::TopicQueryError as E;
+        match e {
+            E::Db(e) => TopicListError::Db(e),
+            E::Setting(e) => TopicListError::Setting(e),
+            E::Unsupported(e) => TopicListError::Unsupported(e),
+        }
+    }
+}
+
 impl From<AvatarError> for TopicListError {
     fn from(e: AvatarError) -> Self {
         match e {
@@ -435,7 +446,14 @@ impl TopicListSerializer<'_> {
             t.highest_post_number
         };
         let mut out = Map::new();
-        let fancy_title = crate::topic_query::fancy_title(t)?;
+        let fancy_title = crate::topic_query::fancy_title(
+            &mut *self.conn,
+            self.settings,
+            t.id,
+            &t.title,
+            t.fancy_title.as_deref(),
+        )
+        .await?;
         out.insert("fancy_title".into(), json!(fancy_title));
         out.insert("id".into(), json!(t.id));
         out.insert("title".into(), json!(t.title));
