@@ -26,7 +26,7 @@
     <caption class="sr-only">Topic list, column headers with buttons are sortable.</caption>
     <thead class="topic-list-header">
       <tr>
-        <th class="topic-list-data default" data-sort-order="default" scope="col"><span>Topic</span></th>
+        <th class="topic-list-data default" data-sort-order="default" scope="col">{% if bulk_select() %}<button class="btn-transparent bulk-select no-text" title="toggle bulk selection of topics"><svg class="fa d-icon d-icon-list-check svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#list-check"></use></svg></button> {% endif %}<span>Topic</span></th>
         <th aria-label="Posters" class="topic-list-data posters" data-sort-order="posters" scope="col"><span class="sr-only">Posters</span></th>
         <th class="topic-list-data posts sortable num" data-sort-order="posts" scope="col"><button>Replies</button></th>
         <th class="topic-list-data views sortable num" data-sort-order="views" scope="col"><button>Views</button></th>

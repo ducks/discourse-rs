@@ -348,3 +348,49 @@ img.emoji {
 :where(.uc-modernize-foundation-theme) .topic-list-header .topic-list-data:first-of-type {
   font-size: var(--d-topic-list-data-font-size);
 }
+
+/* _topic-list.scss: visited topics */
+.topic-list-item.visited,
+.latest-topic-list-item.visited,
+.category-topic-link.visited {
+  background-color: var(--topic-list-item-background-color--visited);
+}
+
+.topic-list-item.visited a.title:not(.badge-notification),
+.latest-topic-list-item.visited a.title:not(.badge-notification),
+.category-topic-link.visited a.title:not(.badge-notification) {
+  color: var(--title-color--read);
+  font-weight: var(--topic-title-font-weight--visited);
+}
+
+/* badges.scss: unread posts and the new topic dot */
+.badge-notification.unread-posts {
+  background-color: var(--tertiary-med-or-tertiary);
+  color: var(--secondary);
+  font-weight: normal;
+}
+
+.badge-notification.new-topic,
+.badge-notification.new-replies {
+  background-color: transparent;
+  padding-left: 0.15em;
+}
+
+.badge-notification.new-topic::before,
+.badge-notification.new-replies::before {
+  content: "";
+  background: var(--tertiary-med-or-tertiary);
+  display: inline-block;
+  height: 8px;
+  width: 8px;
+  border-radius: 50%;
+}
+
+/* The staff bulk select toggle in the Topic column header. */
+@media (width >= 40rem) {
+  .topic-list button.bulk-select {
+    padding: 0;
+    margin-right: var(--space-2);
+    line-height: var(--line-height-large);
+  }
+}

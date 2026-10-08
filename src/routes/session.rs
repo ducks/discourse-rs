@@ -218,6 +218,7 @@ pub(super) fn viewer_state(
             trust_level: user.trust_level,
             name: user.name.clone(),
             first_visit: user.previous_visit_at.is_none(),
+            staff: user.admin || user.moderator,
         }),
         set_cookie: session.set_cookie(state, settings)?,
     })

@@ -216,6 +216,8 @@ struct Link {
     title: Option<String>,
     content: String,
     prefix: Prefix,
+    /// `@prefixBadge`: an icon over the prefix (a restricted category's lock).
+    prefix_badge: Option<&'static str>,
     active: bool,
     /// `@badgeText`
     badge: Option<String>,
@@ -238,7 +240,6 @@ enum Prefix {
     Square {
         colors: Vec<String>,
         color: Option<String>,
-        badge: Option<&'static str>,
     },
 }
 
@@ -362,7 +363,7 @@ fn link_html(link: &Link, cx: &Context) -> String {
         .unwrap_or_default();
     format!(
         "{li}{a}{}<span class=\"sidebar-section-link-content-text\">{}</span>{badge}{suffix}</a></li>",
-        prefix_html(&link.prefix, cx),
+        prefix_html(&link.prefix, link.prefix_badge, cx),
         link.content
     )
 }
@@ -391,24 +392,23 @@ fn style(color: &Option<String>) -> String {
 }
 
 /// SectionLinkPrefix
-fn prefix_html(prefix: &Prefix, cx: &Context) -> String {
+fn prefix_html(prefix: &Prefix, badge: Option<&str>, cx: &Context) -> String {
+    let badge = badge
+        .map(|b| icon(b, Some("prefix-badge")))
+        .unwrap_or_default();
     match prefix {
         Prefix::None => String::new(),
         Prefix::Icon { name, color } => format!(
-            "<span class=\"sidebar-section-link-prefix icon\"{}>{}</span>",
+            "<span class=\"sidebar-section-link-prefix icon\"{}>{}{badge}</span>",
             style(color),
             icon(name, Some("prefix-icon"))
         ),
         Prefix::Emoji { name, color } => format!(
-            "<span class=\"sidebar-section-link-prefix emoji\"{}>{}</span>",
+            "<span class=\"sidebar-section-link-prefix emoji\"{}>{}{badge}</span>",
             style(color),
             emoji_html(name, cx)
         ),
-        Prefix::Square {
-            colors,
-            color,
-            badge,
-        } => {
+        Prefix::Square { colors, color } => {
             let mut stops: Vec<String> = colors
                 .iter()
                 .filter_map(|c| hex_color(c).map(|c| format!("{c} 50%")))
@@ -416,9 +416,6 @@ fn prefix_html(prefix: &Prefix, cx: &Context) -> String {
             if stops.len() == 1 {
                 stops.push(stops[0].clone());
             }
-            let badge = badge
-                .map(|b| icon(b, Some("prefix-badge")))
-                .unwrap_or_default();
             format!(
                 "<span class=\"sidebar-section-link-prefix square\"{}><span class=\"prefix-square\" style=\"background: linear-gradient(90deg, {})\"></span>{badge}</span>",
                 style(color),
@@ -797,6 +794,7 @@ fn more_links(links: &[Link], cx: &Context) -> String {
                 name: "ellipsis-vertical".into(),
                 color: None
             },
+            None,
             cx
         ),
         escape(&cx.t("sidebar.more"))
@@ -950,10 +948,6 @@ fn category_links(site: &Value, cx: &Context) -> Result<Vec<(i64, Link)>, Settin
                         None => vec![color.clone()],
                     },
                     color: prefix_color,
-                    badge: category["read_restricted"]
-                        .as_bool()
-                        .unwrap_or(false)
-                        .then_some("lock"),
                 }
             }
         };
@@ -963,6 +957,11 @@ fn category_links(site: &Value, cx: &Context) -> Result<Vec<(i64, Link)>, Settin
             href: href.clone(),
             content: escape(category["name"].as_str().unwrap_or("")),
             prefix,
+            // `category.restricted` is the lock icon.
+            prefix_badge: category["read_restricted"]
+                .as_bool()
+                .unwrap_or(false)
+                .then_some("lock"),
             active: *cx.active == Active::Category(id as i32),
             ..Default::default()
         };
