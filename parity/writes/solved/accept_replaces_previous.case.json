@@ -1,0 +1,11 @@
+{
+  "user": "admin",
+  "settings": { "allow_solved_on_all_topics": "true" },
+  "setup": [
+    "INSERT INTO discourse_solved_solved_topics (topic_id, created_at, updated_at) VALUES (35, now(), now())",
+    "INSERT INTO discourse_solved_topic_answers (solved_topic_id, answer_post_id, accepter_user_id, created_at, updated_at) SELECT id, 36, 2, now(), now() FROM discourse_solved_solved_topics WHERE topic_id = 35"
+  ],
+  "requests": [
+    { "method": "POST", "path": "/solution/accept", "params": { "id": "37" } }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "user": "admin",
+  "settings": { "allow_solved_on_all_topics": "true" },
+  "setup": [
+    "INSERT INTO category_custom_fields (category_id, name, value, created_at, updated_at) VALUES (4, 'notify_on_staff_accept_solved', 'true', now(), now())"
+  ],
+  "requests": [
+    { "method": "POST", "path": "/solution/accept", "params": { "id": "36" } }
+  ]
+}

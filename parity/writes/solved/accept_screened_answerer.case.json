@@ -1,0 +1,10 @@
+{
+  "user": "user0",
+  "settings": { "allow_solved_on_all_topics": "true" },
+  "setup": [
+    "INSERT INTO muted_users (user_id, muted_user_id, created_at, updated_at) VALUES (3, 2, now(), now())"
+  ],
+  "requests": [
+    { "method": "POST", "path": "/solution/accept", "params": { "id": "36" } }
+  ]
+}

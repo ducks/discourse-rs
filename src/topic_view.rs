@@ -1792,6 +1792,30 @@ impl TopicView<'_> {
         Ok(out)
     }
 
+    /// `AcceptedAnswersHelper.serialize(topic, guardian)` on its own (the
+    /// answer endpoints' response and live update): the answers, or null
+    /// when there are none the viewer can see.
+    pub async fn solved_accepted_answers(
+        &mut self,
+        topic_id: i32,
+    ) -> Result<Value, TopicViewError> {
+        let (topic, extra) = self.find_topic(topic_id).await?;
+        let viewer = self.load_viewer(topic.id).await?;
+        let Some(solved) = self.solved_view(&topic, extra.deleted_at.is_some()).await? else {
+            return Ok(Value::Null);
+        };
+        if solved.answers.is_empty() {
+            return Ok(Value::Null);
+        }
+        let slug = topic.slug.clone().unwrap_or_default();
+        let answers = self.accepted_answers(&solved, &slug, &viewer).await?;
+        Ok(if answers.is_empty() {
+            Value::Null
+        } else {
+            Value::Array(answers)
+        })
+    }
+
     /// discourse-solved's state for the topic, when it's on.
     async fn solved_view(
         &mut self,
@@ -1863,10 +1887,8 @@ impl TopicView<'_> {
         viewer: &Viewer,
     ) -> Result<Vec<Value>, TopicViewError> {
         let ids: Vec<i64> = solved.answers.iter().map(|a| a.answer_post_id).collect();
-        let sql = format!(
-            "{} WHERE id = ANY($1) AND deleted_at IS NULL",
-            Self::POST_SQL
-        );
+        // TopicAnswer#post is with_deleted: can_see_post decides.
+        let sql = format!("{} WHERE id = ANY($1)", Self::POST_SQL);
         let posts: Vec<PostRow> = sqlx::query_as(&sql)
             .bind(&ids)
             .fetch_all(&mut *self.conn)

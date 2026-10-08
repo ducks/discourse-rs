@@ -736,9 +736,32 @@ async fn align_sequences(pool: &PgPool, case: &Value) {
                 .await
                 .unwrap_or(None);
         if let Some(sequence) = sequence {
+            // Rows the case's setup inserted into this table take ids
+            // before the first new one: those the recording shows deleted
+            // or updated (setup ran inside its transaction) from where the
+            // sequence stands now.
+            let inserted_by_setup = case["setup"].as_array().is_some_and(|setup| {
+                setup.iter().filter_map(Value::as_str).any(|sql| {
+                    sql.to_ascii_lowercase()
+                        .starts_with(&format!("insert into {table} "))
+                })
+            });
+            let (last, called): (i64, bool) =
+                sqlx::query_as(&format!("SELECT last_value, is_called FROM {sequence}"))
+                    .fetch_one(pool)
+                    .await
+                    .unwrap();
+            let next = if called { last + 1 } else { last };
+            let setup_rows = ["deleted", "updated"]
+                .iter()
+                .flat_map(|k| change[*k].as_array().into_iter().flatten())
+                .filter_map(|r| r["id"].as_i64().or_else(|| r["before"]["id"].as_i64()))
+                .filter(|id| inserted_by_setup && *id >= next && *id < first)
+                .collect::<std::collections::BTreeSet<_>>()
+                .len() as i64;
             sqlx::query("SELECT setval($1, GREATEST($2, 1), $2 > 0)")
                 .bind(&sequence)
-                .bind(first - 1)
+                .bind(first - 1 - setup_rows)
                 .execute(pool)
                 .await
                 .unwrap();

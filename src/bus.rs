@@ -196,6 +196,21 @@ async fn topic_audience(
     Ok(Some(None))
 }
 
+/// `MessageBus.publish("/topic/:id", message,
+/// topic.secure_audience_publish_messages)`.
+pub async fn publish_to_topic(
+    bus: &pg_bus::Bus,
+    conn: &mut PgConnection,
+    topic_id: i32,
+    message: &Value,
+) -> Result<(), AppError> {
+    if let Some(tags) = topic_audience(conn, topic_id).await? {
+        bus.publish(conn, &topic_channel(topic_id), message, tags.as_deref())
+            .await?;
+    }
+    Ok(())
+}
+
 fn audience(tags: Vec<String>) -> Option<Option<Vec<String>>> {
     if tags.is_empty() {
         None

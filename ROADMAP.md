@@ -428,8 +428,10 @@ write endpoints. The design and its open decisions are in PLUGINS.md.
       plugins are Rust in src/plugins/ on lifecycle phases; third-party
       plugins a sandboxed runtime later (Luau spike on
       spike/plugin-runtime)
-- [ ] The bundled plugins, default-on first: solved (read side done:
-      topic list, topic view, posts, users; accepting answers next),
+- [ ] The bundled plugins, default-on first: solved (topic list, topic
+      view, posts, users, accepting and unaccepting answers; left: auto
+      close timers, web hooks, crawler schema markup, the by_user list,
+      shared issues' writes, search filters and the admin dashboard),
       reactions, topic voting, presence, templates, narrative-bot, chat,
       poll's voting
 - [ ] Tier 0: `plugin.toml` with settings, preloaded custom fields,

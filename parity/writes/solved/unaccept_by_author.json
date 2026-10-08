@@ -1,0 +1,105 @@
+{
+  "name": "unaccept_by_author",
+  "user": "user0",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/solution/unaccept",
+      "params": {
+        "id": "36"
+      }
+    }
+  ],
+  "started_at": "2026-10-08T19:11:11.960554",
+  "transaction_started_at": "2026-10-08T19:11:11.060992",
+  "responses": [
+    {
+      "status": 200,
+      "body": null
+    }
+  ],
+  "changes": {
+    "discourse_solved_solved_topics": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 1,
+          "topic_id": 35,
+          "created_at": "2026-10-08T19:11:11.060992",
+          "updated_at": "2026-10-08T19:11:11.060992",
+          "answer_post_id": null,
+          "topic_timer_id": null,
+          "accepter_user_id": null
+        }
+      ],
+      "updated": []
+    },
+    "discourse_solved_topic_answers": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 1,
+          "created_at": "2026-10-08T19:11:11.060992",
+          "updated_at": "2026-10-08T19:11:11.060992",
+          "answer_post_id": 36,
+          "solved_topic_id": 1,
+          "accepter_user_id": 2
+        }
+      ],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 291,
+            "seen_at": null,
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "YBHbrULx8cQb9c2Rw9fOgSCdqdg=",
+            "created_at": "2026-10-08T19:11:11.413739",
+            "rotated_at": "2026-10-08T19:11:11.412622",
+            "updated_at": "2026-10-08T19:11:11.413739",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "YBHbrULx8cQb9c2Rw9fOgSCdqdg=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 291,
+            "seen_at": "2026-10-08T19:11:11.967956",
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "YBHbrULx8cQb9c2Rw9fOgSCdqdg=",
+            "created_at": "2026-10-08T19:11:11.413739",
+            "rotated_at": "2026-10-08T19:11:11.412622",
+            "updated_at": "2026-10-08T19:11:11.413739",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "YBHbrULx8cQb9c2Rw9fOgSCdqdg=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "settings": {
+    "allow_solved_on_all_topics": "true"
+  },
+  "setup": [
+    "INSERT INTO discourse_solved_solved_topics (topic_id, created_at, updated_at) VALUES (35, now(), now())",
+    "INSERT INTO discourse_solved_topic_answers (solved_topic_id, answer_post_id, accepter_user_id, created_at, updated_at) SELECT id, 36, 2, now(), now() FROM discourse_solved_solved_topics WHERE topic_id = 35"
+  ],
+  "recorded_from": {
+    "case": "7ed67c1fb22a8aba633dc1354346b5e99e9f92c1b2213a3e50b8e38277cfb353",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -1,8 +1,10 @@
-//! discourse-solved, read side: what it adds to the topic list, the topic
-//! view, posts and users, on the tables Rails' plugin created
+//! discourse-solved: what it adds to the topic list, the topic view,
+//! posts and users, on the tables Rails' plugin created
 //! (`discourse_solved_solved_topics`, `discourse_solved_topic_answers`,
 //! `discourse_solved_shared_issues`) and the category custom fields it
-//! reads. Accepting and unaccepting answers are not ported yet.
+//! reads; accepting and unaccepting answers are in `answers`.
+
+pub mod answers;
 
 use std::collections::{HashMap, HashSet};
 
@@ -106,7 +108,7 @@ impl TopicFacts {
 }
 
 /// `category.custom_fields[name] == "true"` (CategoryExtension).
-async fn category_field(
+pub(crate) async fn category_field(
     conn: &mut PgConnection,
     category_id: Option<i32>,
     name: &str,
@@ -249,6 +251,9 @@ pub struct TopicView {
     /// The author may accept on their open topic.
     author_accepts: bool,
     staff: bool,
+    /// The solved row's topic timer (auto close).
+    pub(crate) solved_id: Option<i64>,
+    pub(crate) topic_timer_id: Option<i32>,
 }
 
 impl TopicView {
@@ -258,11 +263,14 @@ impl TopicView {
         guardian: &Guardian,
         topic: TopicFacts,
     ) -> Result<Self, PluginError> {
-        let solved_id: Option<i64> =
-            sqlx::query_scalar("SELECT id FROM discourse_solved_solved_topics WHERE topic_id = $1")
-                .bind(topic.id)
-                .fetch_optional(&mut *conn)
-                .await?;
+        let solved: Option<(i64, Option<i32>)> = sqlx::query_as(
+            "SELECT id, topic_timer_id FROM discourse_solved_solved_topics WHERE topic_id = $1",
+        )
+        .bind(topic.id)
+        .fetch_optional(&mut *conn)
+        .await?;
+        let solved_id = solved.map(|s| s.0);
+        let topic_timer_id = solved.and_then(|s| s.1);
         let answers: Vec<Answer> =
             match solved_id {
                 Some(id) => sqlx::query_as(
@@ -296,11 +304,13 @@ impl TopicView {
             accepts_any,
             author_accepts,
             staff,
+            solved_id,
+            topic_timer_id,
         })
     }
 
     /// `can_accept_answer?(topic, post)`, for a post the viewer sees.
-    fn can_accept(&self, guardian: &Guardian, post_number: i32, whisper: bool) -> bool {
+    pub(crate) fn can_accept(&self, guardian: &Guardian, post_number: i32, whisper: bool) -> bool {
         guardian.is_authenticated()
             && post_number > 1
             && !whisper
@@ -308,7 +318,7 @@ impl TopicView {
             && (self.accepts_any || self.author_accepts)
     }
 
-    fn accepted(&self, post_id: i32) -> bool {
+    pub(crate) fn accepted(&self, post_id: i32) -> bool {
         self.answers
             .iter()
             .any(|a| a.answer_post_id == i64::from(post_id))

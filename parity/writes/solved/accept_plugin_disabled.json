@@ -1,0 +1,78 @@
+{
+  "name": "accept_plugin_disabled",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/solution/accept",
+      "params": {
+        "id": "36"
+      }
+    }
+  ],
+  "started_at": "2026-10-08T19:11:05.540922",
+  "transaction_started_at": "2026-10-08T19:11:04.526149",
+  "responses": [
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 291,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "ieEm875u8t/U4sFkkd2L7i2fLjY=",
+            "created_at": "2026-10-08T19:11:04.890532",
+            "rotated_at": "2026-10-08T19:11:04.890138",
+            "updated_at": "2026-10-08T19:11:04.890532",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "ieEm875u8t/U4sFkkd2L7i2fLjY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 291,
+            "seen_at": "2026-10-08T19:11:05.553985",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "ieEm875u8t/U4sFkkd2L7i2fLjY=",
+            "created_at": "2026-10-08T19:11:04.890532",
+            "rotated_at": "2026-10-08T19:11:04.890138",
+            "updated_at": "2026-10-08T19:11:04.890532",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "ieEm875u8t/U4sFkkd2L7i2fLjY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "settings": {
+    "allow_solved_on_all_topics": "true",
+    "solved_enabled": "false"
+  },
+  "recorded_from": {
+    "case": "e199fe34985a2b2b306fa2cae7ca6211175905141681a71e95d390bfadadeb24",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
