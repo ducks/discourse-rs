@@ -503,6 +503,13 @@ form {
   top: 0;
 }
 
+/* discourse.scss:650 */
+.avatar-wrapper {
+  background-color: var(--secondary);
+  display: inline-block;
+  border-radius: 50%;
+}
+
 /* upcoming-changes/uc-modernize-foundation-theme/variables.scss */
 :where(.uc-modernize-foundation-theme) {
   --webkit-font-smoothing: antialiased;

@@ -28,6 +28,8 @@ pub enum Active {
     Tag(String),
     /// tags (the tag index)
     Tags,
+    /// userActivity.index for the current user: My posts.
+    MyPosts,
 }
 
 impl Active {
@@ -40,6 +42,7 @@ impl Active {
             Active::Categories => "categories".into(),
             Active::Tag(name) => format!("tag:{name}"),
             Active::Tags => "tags".into(),
+            Active::MyPosts => "my-posts".into(),
         }
     }
 
@@ -51,6 +54,7 @@ impl Active {
                 "discovery" => Active::Discovery,
                 "categories" => Active::Categories,
                 "tags" => Active::Tags,
+                "my-posts" => Active::MyPosts,
                 _ => Active::None,
             },
         }
@@ -681,6 +685,8 @@ fn member_link(
         "/my/activity" => {
             let has_draft = m.draft_count > 0;
             link.link_name = Some("my-posts".into());
+            // currentWhen: the activity index (and drafts, not drawn yet).
+            link.active = *cx.active == Active::MyPosts;
             if has_draft {
                 link.href = format!("{user_path}/activity/drafts");
                 link.title = title("my_posts.title_drafts");

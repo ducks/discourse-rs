@@ -1,0 +1,264 @@
+/*
+ * The activity tab: the secondary user navigation and the user stream,
+ * ported from base/new-user.scss (.user-navigation-secondary, the empty
+ * state margin), components/empty-states.scss (the text-only state),
+ * components/user-stream-item.scss, components/user-stream.scss and
+ * components/post-list.scss, in that (components/_index.scss) order.
+ * Breakpoints from lib/breakpoints.scss: sm 40rem.
+ */
+
+/* new-user.scss */
+.new-user-wrapper .user-navigation-secondary {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  gap: 0 0.5em;
+  font-size: var(--font-down-1);
+}
+
+.new-user-wrapper .user-navigation-secondary .nav-pills {
+  flex: 1 1 auto;
+  justify-content: flex-start;
+  height: 100%;
+}
+
+.new-user-wrapper .user-navigation-secondary .nav-pills li {
+  flex: 1 0 auto;
+}
+
+.new-user-wrapper .user-navigation-secondary .nav-pills li a span {
+  text-overflow: unset;
+}
+
+.new-user-wrapper .empty-state {
+  margin: 1em 0;
+}
+
+/* empty-states.scss */
+.empty-state__container.--text-only .empty-state__title {
+  font-family: var(--heading-font-family);
+  font-weight: var(--heading-font-weight);
+  font-size: var(--font-up-1);
+}
+
+/* user-stream-item.scss */
+.user-stream .item,
+.user-stream .user-stream-item {
+  background: var(--d-content-background, var(--secondary));
+  border-bottom: 1px solid var(--content-border-color);
+  padding: 1em 0.53em;
+  list-style: none;
+}
+
+.user-stream .item.moderator-action,
+.user-stream .user-stream-item.moderator-action {
+  background-color: var(--highlight-bg);
+}
+
+.user-stream .item.deleted,
+.user-stream .user-stream-item.deleted {
+  background-color: var(--danger-low-mid);
+}
+
+.user-stream .item.hidden,
+.user-stream .user-stream-item.hidden {
+  display: block;
+  opacity: 0.4;
+}
+
+.user-stream .user-stream-item .post-list-item__header,
+.user-stream .user-stream-item .user-stream-item__header {
+  display: flex;
+  align-items: flex-start;
+}
+
+.user-stream .user-stream-item .post-list-item__details,
+.user-stream .user-stream-item .user-stream-item__details {
+  flex-grow: 1;
+  min-width: 0;
+  margin-right: var(--space-2);
+}
+
+.user-stream .user-stream-item .post-list-item__details .badge-category__wrapper,
+.user-stream .user-stream-item .user-stream-item__details .badge-category__wrapper {
+  width: auto;
+  max-width: 100%;
+}
+
+.user-stream .user-stream-item .post-list-item__metadata,
+.user-stream .user-stream-item .user-stream-item__metadata {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 0 0.5em;
+}
+
+.user-stream .user-stream-item .post-list-item__metadata .category,
+.user-stream .user-stream-item .user-stream-item__metadata .category {
+  overflow: hidden;
+}
+
+.user-stream .user-stream-item .post-list-item__metadata span + span::before,
+.user-stream .user-stream-item .user-stream-item__metadata span + span::before {
+  content: "•";
+  color: var(--primary-medium);
+}
+
+.user-stream .stream-topic-title {
+  overflow-wrap: anywhere;
+}
+
+.user-stream .type,
+.user-stream span.name {
+  color: var(--primary);
+}
+
+.user-stream .relative-date,
+.user-stream .delete-info,
+.user-stream .draft-type {
+  line-height: var(--line-height-small);
+  color: var(--primary-medium);
+  font-size: var(--font-down-2);
+  padding-top: unset !important;
+  margin-right: 0.5rem;
+}
+
+.user-stream .expand-item,
+.user-stream .collapse-item {
+  margin-right: 0.5em;
+  margin-left: 0.25em;
+  line-height: var(--line-height-small);
+  padding-top: 3px;
+  color: var(--primary-medium);
+}
+
+.user-stream .avatar-link {
+  margin-right: 0.5em;
+}
+
+.user-stream .name {
+  font-size: var(--font-0);
+  max-width: 400px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.user-stream .edit-reason {
+  background-color: var(--highlight-bg);
+  padding: 3px 5px 5px 5px;
+}
+
+.user-stream .excerpt {
+  margin: 1em 0 0 0;
+  font-size: var(--font-0);
+  overflow-wrap: break-word;
+  color: var(--primary);
+}
+
+.user-stream .excerpt:empty {
+  display: none;
+}
+
+.user-stream .excerpt .emoji.only-emoji {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+}
+
+@media (width >= 40rem) {
+  .user-stream .user-stream-item .excerpt,
+  .user-stream .user-stream-item-actions {
+    margin: 0.75em 0 0 3.5em;
+  }
+}
+
+.user-stream-item-actions {
+  margin-top: 8px;
+}
+
+.user-stream-item-actions .avatar-link {
+  float: none;
+  margin-right: 3px;
+}
+
+.user-stream-item-actions .fa {
+  width: 15px;
+  display: inline-block;
+  color: var(--primary);
+}
+
+.user-stream-item-actions .fa.d-icon-heart {
+  color: var(--love);
+}
+
+/* user-stream.scss */
+.user-stream {
+  margin: 0;
+}
+
+/* post-list.scss */
+.post-list {
+  margin: 0;
+}
+
+.post-list .post-list-item {
+  background: var(--d-content-background, var(--secondary));
+  border-bottom: 1px solid var(--content-border-color);
+  padding: 1em 0.53em;
+  list-style: none;
+}
+
+.post-list .post-list-item__header {
+  display: flex;
+  align-items: flex-start;
+}
+
+.post-list .post-list-item__details {
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.post-list .post-list-item__details .badge-category__wrapper {
+  width: 100%;
+}
+
+.post-list .post-list-item .expand-item,
+.post-list .post-list-item .collapse-item {
+  padding: 0;
+  margin-right: 0.75rem;
+  margin-top: 0.15rem;
+}
+
+.post-list .post-list-item .stream-topic-title {
+  overflow-wrap: anywhere;
+}
+
+.post-list .post-list-item .relative-date {
+  line-height: var(--line-height-small);
+  color: var(--primary-medium);
+  font-size: var(--font-down-2);
+  padding-top: 5px;
+}
+
+.post-list .avatar-link {
+  margin-right: 0.5em;
+}
+
+.post-list .excerpt {
+  margin: 1em 0 0 0;
+  font-size: var(--font-0);
+  overflow-wrap: break-word;
+  color: var(--primary);
+}
+
+.post-list .excerpt:empty {
+  display: none;
+}
+
+.post-list .excerpt .emoji.only-emoji {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+}

@@ -4,7 +4,7 @@
 {"page": "/c/general/4", "diff_pct": 4.59, "status": [200, 200], "size": [[1280, 900], [1280, 900]]},
 {"page": "/c/general/sub-general/34", "diff_pct": 1.41, "status": [200, 200], "size": [[1280, 900], [1280, 900]]},
 {"page": "/t/parity-fixture-replies-and-posters/35", "diff_pct": 0.33, "status": [200, 200], "size": [[1280, 1509], [1280, 1509]]},
-{"page": "/t/parity-fixture-liked-and-archived/41", "diff_pct": 3.4, "status": [200, 200], "size": [[1280, 971], [1280, 963]]},
+{"page": "/t/parity-fixture-liked-and-archived/41", "diff_pct": 3.43, "status": [200, 200], "size": [[1280, 971], [1280, 963]]},
 {"page": "/u/admin", "diff_pct": 0.7, "status": [200, 200], "size": [[1280, 1682], [1280, 1682]]},
 {"page": "/u/user1", "diff_pct": 0.82, "status": [200, 200], "size": [[1280, 1431], [1280, 1431]]},
 {"page": "/tags", "diff_pct": 0.66, "status": [200, 200], "size": [[1280, 900], [1280, 900]]},
@@ -15,6 +15,9 @@
 {"page": "/categories as=admin", "diff_pct": 5.17, "status": [200, 200], "size": [[1280, 1107], [1280, 1080]]},
 {"page": "/categories as=user1", "diff_pct": 1.24, "status": [200, 200], "size": [[1280, 900], [1280, 900]]},
 {"page": "/t/parity-fixture-replies-and-posters/35 as=user0", "diff_pct": 8.11, "status": [200, 200], "size": [[1280, 1686], [1280, 1583]]},
-{"page": "/u/user0 as=user0", "diff_pct": 33.96, "status": [200, 200], "size": [[1280, 900], [1280, 1297]]},
-{"page": "/u/user0/summary as=user0", "diff_pct": 0.96, "status": [200, 200], "size": [[1280, 1297], [1280, 1297]]}
+{"page": "/u/user0 as=user0", "diff_pct": 0.73, "status": [200, 200], "size": [[1280, 900], [1280, 900]]},
+{"page": "/u/user0/summary as=user0", "diff_pct": 0.64, "status": [200, 200], "size": [[1280, 1297], [1280, 1297]]},
+{"page": "/u/user0/activity/replies as=user0", "diff_pct": 0.76, "status": [200, 200], "size": [[1280, 900], [1280, 900]]},
+{"page": "/u/user0/activity/likes-given as=user0", "diff_pct": 0.79, "status": [200, 200], "size": [[1280, 900], [1280, 900]]},
+{"page": "/u/user1/activity as=user0", "diff_pct": 1.97, "status": [200, 200], "size": [[1280, 900], [1280, 900]]}
 ]
