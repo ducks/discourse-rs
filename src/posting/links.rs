@@ -389,8 +389,13 @@ pub async fn extract_from(
         let upload = crate::upload_references::get_from_url(&mut *conn, &url).await?;
         if upload.is_some() {
             internal = true;
-        } else if on_site {
-            let path = parsed.path.strip_prefix(bp).unwrap_or(parsed.path);
+        } else if on_site
+            && let path = parsed.path.strip_prefix(bp).unwrap_or(parsed.path)
+            // Admin routes sit behind StaffConstraint, which recognize_path
+            // (no current user) never satisfies: an ordinary link.
+            && path != "/admin"
+            && !path.starts_with("/admin/")
+        {
             if parsed
                 .query
                 .is_some_and(|q| q.split('&').any(|p| p == "silent=true"))

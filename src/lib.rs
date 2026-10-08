@@ -25,6 +25,7 @@ pub mod flags;
 pub mod groups;
 pub mod guardian;
 pub mod html;
+pub mod html_prettify;
 pub mod i18n;
 pub mod images;
 pub mod jobs;

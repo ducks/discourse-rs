@@ -1,0 +1,291 @@
+{
+  "settings": {
+    "enable_emoji": true,
+    "enable_emoji_shortcuts": true,
+    "enable_inline_emoji_translation": false
+  },
+  "prettify": [
+    {
+      "html": "html_prettify",
+      "rendered": "html_prettify"
+    },
+    {
+      "html": "correctly prettifies html",
+      "rendered": "correctly prettifies html"
+    },
+    {
+      "html": "<p>All's well!</p>",
+      "rendered": "<p>All&rsquo;s well!</p>"
+    },
+    {
+      "html": "<p>All&rsquo;s well!</p>",
+      "rendered": "<p>All&rsquo;s well!</p>"
+    },
+    {
+      "html": "<p>Eatin' Lunch'.</p>",
+      "rendered": "<p>Eatin&rsquo; Lunch&rsquo;.</p>"
+    },
+    {
+      "html": "<p>Eatin&rsquo; Lunch&rsquo;.</p>",
+      "rendered": "<p>Eatin&rsquo; Lunch&rsquo;.</p>"
+    },
+    {
+      "html": "<p>a 1/4. is a fraction but not 1/4/2000</p>",
+      "rendered": "<p>a &frac14;. is a fraction but not 1/4/2000</p>"
+    },
+    {
+      "html": "<p>a &frac14;. is a fraction but not 1/4/2000</p>",
+      "rendered": "<p>a &frac14;. is a fraction but not 1/4/2000</p>"
+    },
+    {
+      "html": "<p>Well that'll be the day</p>",
+      "rendered": "<p>Well that&rsquo;ll be the day</p>"
+    },
+    {
+      "html": "<p>Well that&rsquo;ll be the day</p>",
+      "rendered": "<p>Well that&rsquo;ll be the day</p>"
+    },
+    {
+      "html": "<p>\"Quoted text\"</p>",
+      "rendered": "<p>&ldquo;Quoted text&rdquo;</p>"
+    },
+    {
+      "html": "<p>&ldquo;Quoted text&rdquo;</p>",
+      "rendered": "<p>&ldquo;Quoted text&rdquo;</p>"
+    },
+    {
+      "html": "<p>I've been meaning to tell you ..</p>",
+      "rendered": "<p>I&rsquo;ve been meaning to tell you ..</p>"
+    },
+    {
+      "html": "<p>I&rsquo;ve been meaning to tell you ..</p>",
+      "rendered": "<p>I&rsquo;ve been meaning to tell you ..</p>"
+    },
+    {
+      "html": "<p>single `backticks` in HTML should be preserved</p>",
+      "rendered": "<p>single `backticks` in HTML should be preserved</p>"
+    },
+    {
+      "html": "<p>double hyphen -- ndash --- mdash</p>",
+      "rendered": "<p>double hyphen &ndash; ndash &mdash; mdash</p>"
+    },
+    {
+      "html": "<p>double hyphen &ndash; ndash &mdash; mdash</p>",
+      "rendered": "<p>double hyphen &ndash; ndash &mdash; mdash</p>"
+    },
+    {
+      "html": "a long time ago...",
+      "rendered": "a long time ago&hellip;"
+    },
+    {
+      "html": "a long time ago&hellip;",
+      "rendered": "a long time ago&hellip;"
+    },
+    {
+      "html": "is 'this a mistake'?",
+      "rendered": "is &lsquo;this a mistake&rsquo;?"
+    },
+    {
+      "html": "is &lsquo;this a mistake&rsquo;?",
+      "rendered": "is &lsquo;this a mistake&rsquo;?"
+    },
+    {
+      "html": "'that went well'",
+      "rendered": "&lsquo;that went well&rsquo;"
+    },
+    {
+      "html": "&lsquo;that went well&rsquo;",
+      "rendered": "&lsquo;that went well&rsquo;"
+    },
+    {
+      "html": "\"that went well\"",
+      "rendered": "&ldquo;that went well&rdquo;"
+    },
+    {
+      "html": "&ldquo;that went well&rdquo;",
+      "rendered": "&ldquo;that went well&rdquo;"
+    },
+    {
+      "html": "src=\"test.png\"&gt; yay",
+      "rendered": "src=&ldquo;test.png&rdquo;&gt; yay"
+    },
+    {
+      "html": "src=&ldquo;test.png&rdquo;&gt; yay",
+      "rendered": "src=&ldquo;test.png&rdquo;&gt; yay"
+    },
+    {
+      "html": "\\\\mnt\\c",
+      "rendered": "\\\\mnt\\c"
+    },
+    {
+      "html": "<img src=\"test.png\"> yay",
+      "rendered": "<img src=\"test.png\"> yay"
+    },
+    {
+      "html": "&lt;img src=&ldquo;test.png&rdquo;&gt; yay",
+      "rendered": "&lt;img src=&ldquo;test.png&rdquo;&gt; yay"
+    }
+  ],
+  "fancy_title": [
+    {
+      "title": "Congratulations, you’ve been granted moderator status!",
+      "fancy": "Congratulations, you’ve been granted moderator status!"
+    },
+    {
+      "title": "Don't stop -- believing --- now",
+      "fancy": "Don&rsquo;t stop &ndash; believing &mdash; now"
+    },
+    {
+      "title": "\"Quoted\" title and 'single' quotes",
+      "fancy": "&ldquo;Quoted&rdquo; title and &lsquo;single&rsquo; quotes"
+    },
+    {
+      "title": "It's the '90s ... and 1/2 of 3/4 cups",
+      "fancy": "It&rsquo;s the &rsquo;90s &hellip; and &frac12; of &frac34; cups"
+    },
+    {
+      "title": "Wait. . . what? 1/4, done",
+      "fancy": "Wait&hellip; what? &frac14;, done"
+    },
+    {
+      "title": "Tom & Jerry <script> fun",
+      "fancy": "Tom &amp; Jerry &lt;script&gt; fun"
+    },
+    {
+      "title": "rock 'n' roll",
+      "fancy": "rock &lsquo;n&rsquo; roll"
+    },
+    {
+      "title": "\"'Hello' she said\"",
+      "fancy": "&ldquo;&lsquo;Hello&rsquo; she said&rdquo;"
+    },
+    {
+      "title": "'\"Hi\" there'",
+      "fancy": "&lsquo;&ldquo;Hi&rdquo; there&rsquo;"
+    },
+    {
+      "title": "He said \"yes.\" Then left",
+      "fancy": "He said &ldquo;yes.&rdquo; Then left"
+    },
+    {
+      "title": "café's crème 'brûlée'",
+      "fancy": "café&rsquo;s crème &lsquo;brûlée&rsquo;"
+    },
+    {
+      "title": "x'y \"z\" end'",
+      "fancy": "x&rsquo;y &ldquo;z&rdquo; end&rsquo;"
+    },
+    {
+      "title": "'.' and \".\"",
+      "fancy": "&rsquo;.&rsquo; and &ldquo;.&rdquo;"
+    },
+    {
+      "title": "``backticks'' here",
+      "fancy": "&ldquo;backticks&rdquo; here"
+    },
+    {
+      "title": "Smile :) and :D ok :P",
+      "fancy": "Smile :slight_smile: and :D ok :P"
+    },
+    {
+      "title": "emoji 🎉 party",
+      "fancy": "emoji :tada: party"
+    },
+    {
+      "title": "price is $5--$10",
+      "fancy": "price is $5&ndash;$10"
+    },
+    {
+      "title": "a--'b' and =\"c\"",
+      "fancy": "a&ndash;&lsquo;b&rsquo; and =&ldquo;c&rdquo;"
+    },
+    {
+      "title": "Copyright (c) 2024 (tm)",
+      "fancy": "Copyright (c) 2024 (tm)"
+    },
+    {
+      "title": "ends with quote'",
+      "fancy": "ends with quote&rsquo;"
+    },
+    {
+      "title": "‘already’ fancy “quotes”",
+      "fancy": "‘already’ fancy “quotes”"
+    },
+    {
+      "title": "tab\tsep 'x'",
+      "fancy": "tab\tsep &lsquo;x&rsquo;"
+    },
+    {
+      "title": "word 'nbsp'",
+      "fancy": "word &rsquo;nbsp&rsquo;"
+    },
+    {
+      "title": "over 400 ............................................................................................................................................................................................................................................................................................................................................................................................................................................",
+      "fancy": "over 400 ............................................................................................................................................................................................................................................................................................................................................................................................................................................"
+    },
+    {
+      "title": "Smile :) and :-( or :/ and :D",
+      "fancy": "Smile :slight_smile: and :frowning: or :confused: and :D"
+    },
+    {
+      "title": ":) at start",
+      "fancy": ":slight_smile: at start"
+    },
+    {
+      "title": "x:)",
+      "fancy": "x:)"
+    },
+    {
+      "title": "a (:) b",
+      "fancy": "a (:slight_smile: b"
+    },
+    {
+      "title": "foo :P",
+      "fancy": "foo :P"
+    },
+    {
+      "title": "Re: something :-)",
+      "fancy": "Re: something :slight_smile:"
+    },
+    {
+      "title": "Granted moderator: you’ve got it",
+      "fancy": "Granted moderator: you’ve got it"
+    },
+    {
+      "title": "html <b>bold</b> & \"quote\"",
+      "fancy": "html &lt;b&gt;bold&lt;/b&gt; &amp; &ldquo;quote&rdquo;"
+    },
+    {
+      "title": "3/4/2020 vs 3/4",
+      "fancy": "3/4/2020 vs &frac34;"
+    },
+    {
+      "title": "Can’t — won’t … ok",
+      "fancy": "Can’t — won’t … ok"
+    },
+    {
+      "title": "Is it 10°C or 50£?",
+      "fancy": "Is it 10°C or 50£?"
+    },
+    {
+      "title": "¿Qué pasa?",
+      "fancy": "¿Qué pasa?"
+    },
+    {
+      "title": "the 1990s and the 90's",
+      "fancy": "the 1990s and the 90&rsquo;s"
+    },
+    {
+      "title": "end's 's'",
+      "fancy": "end&rsquo;s &lsquo;s&rsquo;"
+    },
+    {
+      "title": "it's :'( sad",
+      "fancy": "it&rsquo;s :&rsquo;( sad"
+    },
+    {
+      "title": "\"'nested'\" and '\"x\"'",
+      "fancy": "&ldquo;&lsquo;nested&rsquo;&rdquo; and &lsquo;&ldquo;x&rdquo;&rsquo;"
+    }
+  ]
+}
