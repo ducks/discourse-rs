@@ -79,6 +79,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
     tracing::info!(mailer = ?mailer, "outgoing mail");
     let state = AppState {
         pool,
+        anonymous_cache: Arc::new(discourse_rs::anonymous_cache::Cache::new(&config)),
         config,
         site_setting_defs: Arc::new(site_setting_defs),
         i18n: Arc::new(i18n),

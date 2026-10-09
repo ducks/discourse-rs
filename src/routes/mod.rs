@@ -61,6 +61,16 @@ async fn asset(uri: axum::http::Uri, headers: axum::http::HeaderMap) -> axum::re
     crate::assets::serve(name, uri.query(), &headers)
 }
 
+/// A route Rails caches for anonymous visitors (`discourse_expires_in
+/// 1.minute`): the response carries the duration for crate::anonymous_cache.
+macro_rules! cached {
+    ($route:expr) => {
+        $route.layer(axum::middleware::from_fn(
+            crate::anonymous_cache::expires_in_one_minute,
+        ))
+    };
+}
+
 pub fn router(state: &AppState) -> Router<AppState> {
     let config = &state.config;
     let public = &config.public_dir;
@@ -79,34 +89,34 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/live", get(live::page))
         .route("/user-menu", get(user_menu::show))
         .route("/live/post/{id}", get(live::post))
-        .route("/", get(list::latest))
-        .route("/latest", get(list::latest))
-        .route("/latest.json", get(list::latest_json))
-        .route("/top", get(list::top))
-        .route("/top.json", get(list::top_json))
+        .route("/", cached!(get(list::latest)))
+        .route("/latest", cached!(get(list::latest)))
+        .route("/latest.json", cached!(get(list::latest_json)))
+        .route("/top", cached!(get(list::top)))
+        .route("/top.json", cached!(get(list::top_json)))
         .route("/top/{period}", get(list::top_period_redirect))
-        .route("/hot", get(list::hot))
-        .route("/hot.json", get(list::hot_json))
+        .route("/hot", cached!(get(list::hot)))
+        .route("/hot.json", cached!(get(list::hot_json)))
         // discourse-topic-voting's filter.
-        .route("/votes", get(list::user_list))
-        .route("/votes.json", get(list::user_list))
-        .route("/unread", get(list::user_list))
-        .route("/unread.json", get(list::user_list))
-        .route("/new", get(list::user_list))
-        .route("/new.json", get(list::user_list))
-        .route("/unseen", get(list::user_list))
-        .route("/unseen.json", get(list::user_list))
-        .route("/read", get(list::user_list))
-        .route("/read.json", get(list::user_list))
-        .route("/posted", get(list::user_list))
-        .route("/posted.json", get(list::user_list))
+        .route("/votes", cached!(get(list::user_list)))
+        .route("/votes.json", cached!(get(list::user_list)))
+        .route("/unread", cached!(get(list::user_list)))
+        .route("/unread.json", cached!(get(list::user_list)))
+        .route("/new", cached!(get(list::user_list)))
+        .route("/new.json", cached!(get(list::user_list)))
+        .route("/unseen", cached!(get(list::user_list)))
+        .route("/unseen.json", cached!(get(list::user_list)))
+        .route("/read", cached!(get(list::user_list)))
+        .route("/read.json", cached!(get(list::user_list)))
+        .route("/posted", cached!(get(list::user_list)))
+        .route("/posted.json", cached!(get(list::user_list)))
         .route(
             "/bookmarks",
-            get(list::user_list).post(bookmark_writes::create),
+            cached!(get(list::user_list)).post(bookmark_writes::create),
         )
         .route(
             "/bookmarks.json",
-            get(list::user_list).post(bookmark_writes::create),
+            cached!(get(list::user_list)).post(bookmark_writes::create),
         )
         .route(
             "/bookmarks/{id}",
@@ -162,7 +172,10 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/voting/unvote.json", post(topic_voting::unvote))
         .route("/voting/who", get(topic_voting::who))
         .route("/voting/who.json", get(topic_voting::who))
-        .route("/topics/voted-by/{username}", get(topic_voting::voted_by))
+        .route(
+            "/topics/voted-by/{username}",
+            cached!(get(topic_voting::voted_by)),
+        )
         // TopicsController#set_notifications; {slug} holds the topic id.
         .route(
             "/t/{slug}/notifications",
@@ -175,10 +188,13 @@ pub fn router(state: &AppState) -> Router<AppState> {
         )
         .route(
             "/t/{id}",
-            get(topics::show_by_id).delete(post_destroy::destroy_topic),
+            cached!(get(topics::show_by_id)).delete(post_destroy::destroy_topic),
         )
-        .route("/t/{slug}/{id}", get(topics::show_with_slug))
-        .route("/t/{slug}/{id}/{post_number}", get(topics::show_post))
+        .route("/t/{slug}/{id}", cached!(get(topics::show_with_slug)))
+        .route(
+            "/t/{slug}/{id}/{post_number}",
+            cached!(get(topics::show_post)),
+        )
         // TopicsController#status; {slug} holds the topic id here.
         .route("/t/{slug}/status", put(topic_status::status))
         .route("/t/{slug}/{id}/status", put(topic_status::status_with_slug))
@@ -207,7 +223,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         )
         .route("/users/{username}/{*rest}", get(users::show_with_tail))
         .route("/user_actions.json", get(users::actions))
-        .route("/c/{*path}", get(list::category))
+        .route("/c/{*path}", cached!(get(list::category)))
         .route("/robots.txt", get(robots::index))
         .route("/robots-builder.json", get(robots::builder))
         .route("/sitemap.xml", get(sitemap::index))
@@ -453,16 +469,16 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/login",
             get(login_required::show_login).post(session::enter),
         )
-        .route("/search", get(search::show))
-        .route("/search.json", get(search::show_json))
-        .route("/search/query", get(search::query))
-        .route("/search/query.json", get(search::query))
-        .route("/tag/{*path}", get(tags::show))
+        .route("/search", cached!(get(search::show)))
+        .route("/search.json", cached!(get(search::show_json)))
+        .route("/search/query", cached!(get(search::query)))
+        .route("/search/query.json", cached!(get(search::query)))
+        .route("/tag/{*path}", cached!(get(tags::show)))
         .route("/tags", get(tags::index))
         .route("/tags.json", get(tags::index_json))
-        .route("/tags/c/{*path}", get(tags::show_in_category))
-        .route("/categories", get(list::categories))
-        .route("/categories.json", get(list::categories_json))
+        .route("/tags/c/{*path}", cached!(get(tags::show_in_category)))
+        .route("/categories", cached!(get(list::categories)))
+        .route("/categories.json", cached!(get(list::categories_json)))
         .route("/site", get(site::site))
         .route("/site.json", get(site::site))
         .route("/site/basic-info", get(site::basic_info))
