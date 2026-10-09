@@ -114,6 +114,8 @@ async fn topic_page_shows_subcategory_breadcrumbs_and_likes() {
         r#"<li><a href='/tag/howto/1'  data-tag-name=howto class='discourse-tag simple'>howto</a>"#
     ));
 
+    // Core's like button, where discourse-reactions doesn't replace it.
+    common::set_setting(&db.pool, "discourse_reactions_enabled", 5, "f").await;
     let (_, _, html) = get(&db.pool, "/t/parity-fixture-liked-and-archived/41").await;
     // The like count, and the like button an anonymous reader may press
     // (it asks them to log in), disabled in an archived topic.
@@ -124,6 +126,33 @@ async fn topic_page_shows_subcategory_breadcrumbs_and_likes() {
         "{html}"
     );
     assert!(html.contains(r#"title="like this post" type="button" disabled>"#));
+}
+
+#[tokio::test]
+async fn topic_page_shows_reactions_in_place_of_the_like_button() {
+    let db = TestDb::new().await;
+    let (_, _, html) = get(&db.pool, "/t/parity-fixture-liked-and-archived/41").await;
+    // The liked post's summary: the like as the main reaction.
+    assert!(
+        html.contains(
+            r#"<nav class="post-controls expanded" role="none"><div class="reactions-actions-summary"><div class="discourse-reactions-actions has-reactions" id="discourse-reactions-actions-46-left""#
+        ),
+        "{html}"
+    );
+    assert!(html.contains(
+        r#"<button aria-expanded="false" aria-haspopup="dialog" aria-label="1 reaction" class="discourse-reactions-counter only-like" id="discourse-reactions-counter-46-left" type="button""#
+    ));
+    assert!(html.contains(
+        r#"<span class="discourse-reactions-list-emoji" id="discourse-reactions-list-emoji-46-heart"><img width="20" height="20" src="/images/emoji/twitter/heart.png?v=15" title="heart" alt="heart" class="emoji"></span>"#
+    ));
+    // The button: no reacting in an archived topic (no
+    // can-toggle-reaction), titled for an anonymous reader.
+    assert!(html.contains(
+        r#"<div class="discourse-reactions-reaction-button" title="Please sign up or log in to like this post"><button class="btn no-text btn-icon btn-toggle-reaction-like btn-flat btn-icon no-text reaction-button" title="Please sign up or log in to like this post" type="button">"#
+    ));
+    assert!(html.contains(r#"class="discourse-reactions-actions has-reactions" id="discourse-reactions-actions-46-right""#));
+    assert!(!html.contains("post-action-menu__like"));
+    assert!(html.contains("/assets/discourse-reactions.js"));
 }
 
 #[tokio::test]

@@ -24,5 +24,6 @@
 {"page": "/u/user0/activity/replies as=user0", "diff_pct": 0.14, "status": [200, 200], "size": [[1280, 900], [1280, 900]]},
 {"page": "/u/user0/activity/likes-given as=user0", "diff_pct": 0.17, "status": [200, 200], "size": [[1280, 900], [1280, 900]]},
 {"page": "/u/user1/activity as=user0", "diff_pct": 1.04, "status": [200, 200], "size": [[1280, 900], [1280, 900]]},
-{"page": "/u/user1/activity/votes as=user1", "diff_pct": 0.84, "status": [200, 200], "size": [[1280, 900], [1280, 900]]}
+{"page": "/u/user1/activity/votes as=user1", "diff_pct": 0.84, "status": [200, 200], "size": [[1280, 900], [1280, 900]]},
+{"page": "/u/user1/activity/reactions as=user1", "diff_pct": 0.64, "status": [200, 200], "size": [[1280, 900], [1280, 900]]}
 ]

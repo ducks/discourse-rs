@@ -44,6 +44,8 @@ pub struct PostSettings {
     pub post_menu: Vec<String>,
     /// `post_menu_hidden_items`: the buttons behind show more.
     pub post_menu_hidden_items: Vec<String>,
+    /// discourse-reactions' settings, when it is on.
+    pub reactions: Option<crate::plugins::reactions::view::ReactionsUi>,
 }
 
 impl PostSettings {
@@ -92,6 +94,7 @@ impl PostSettings {
             show_bottom_topic_map: flag("show_bottom_topic_map")?,
             post_menu: list("post_menu")?,
             post_menu_hidden_items: list("post_menu_hidden_items")?,
+            reactions: crate::plugins::reactions::view::ReactionsUi::load(settings)?,
         })
     }
 }
@@ -103,6 +106,7 @@ pub struct TopicInfo {
     /// `details.created_by.id`
     pub created_by_id: Option<i64>,
     pub archived: bool,
+    pub closed: bool,
     /// `details.can_create_post`: the reply button.
     pub can_create_post: bool,
     /// The topic is deleted (`topic.deleted`).
@@ -126,6 +130,7 @@ impl TopicInfo {
             slug: view["slug"].as_str().unwrap_or("").to_string(),
             created_by_id: view["details"]["created_by"]["id"].as_i64(),
             archived: view["archived"] == true,
+            closed: view["closed"] == true,
             can_create_post: view["details"]["can_create_post"] == true,
             deleted: view["deleted_at"].is_string(),
             can_delete: view["details"]["can_delete"] == true,
@@ -885,12 +890,32 @@ fn menu(cx: &PostContext, p: &Value) -> String {
     // Each configured button: whether it collapses (EditButton.hidden is
     // false for one's own editable post and wikis), and its HTML when it
     // renders.
+    let reactions =
+        cx.settings
+            .reactions
+            .as_ref()
+            .map(|ui| crate::plugins::reactions::view::PostReactions {
+                list: cx.list,
+                ui,
+                post: p,
+                member,
+                topic_archived: cx.topic.archived,
+                topic_closed: cx.topic.closed,
+                avatar_size: cx.settings.avatar_size_24,
+            });
     let mut buttons: Vec<(&str, bool, Option<String>)> = Vec::new();
     for key in &configured {
         let hideable = hidden_items.contains(key)
             && !(*key == "edit" && (wiki || (can_edit && p["yours"] == true)));
         let html = match *key {
-            "like" => Some(like_button(cx, p)).filter(|h| !h.is_empty()),
+            "like" => match reactions.as_ref() {
+                // discourse-reactions' button in the like button's place.
+                Some(r) => {
+                    let (count, show_like) = like_state(cx, p);
+                    Some(r.button(show_like, count)).filter(|h| !h.is_empty())
+                }
+                None => Some(like_button(cx, p)).filter(|h| !h.is_empty()),
+            },
             "copyLink" => Some(button(
                 "btn no-text btn-icon post-action-menu__copy-link btn-flat",
                 &t(cx.list, "post.controls.copy_title"),
@@ -953,8 +978,10 @@ fn menu(cx: &PostContext, p: &Value) -> String {
             actions.push_str(html);
         }
     }
+    // discourse-reactions' summary: extra controls, before the buttons.
+    let extra = reactions.as_ref().map(|r| r.summary()).unwrap_or_default();
     format!(
-        "<nav class=\"post-controls {}\" role=\"none\"><div class=\"actions\">{actions}</div></nav><div class=\"small-user-list  who-read\"><span aria-atomic=\"true\" aria-live=\"polite\" class=\"small-user-list-content\" role=\"list\"></span></div>",
+        "<nav class=\"post-controls {}\" role=\"none\">{extra}<div class=\"actions\">{actions}</div></nav><div class=\"small-user-list  who-read\"><span aria-atomic=\"true\" aria-live=\"polite\" class=\"small-user-list-content\" role=\"list\"></span></div>",
         if collapsed { "collapsed" } else { "expanded" }
     )
 }
@@ -1071,19 +1098,34 @@ fn button(class: &str, label: &str, title: &str, icon_name: &str, attrs: &str) -
     )
 }
 
+/// The post's like count, and whether its like button shows
+/// (`post.showLike`).
+fn like_state(cx: &PostContext, p: &Value) -> (i64, bool) {
+    let like = p["actions_summary"]
+        .as_array()
+        .and_then(|a| a.iter().find(|x| x["id"].as_i64() == Some(LIKE)));
+    let count = like.and_then(|l| l["count"].as_i64()).unwrap_or(0);
+    let flag = |key: &str| like.is_some_and(|l| l[key] == true);
+    let yours = p["yours"] == true;
+    let show_like = cx.viewer.is_none()
+        || (cx.topic.archived && !yours)
+        || flag("acted")
+        || flag("can_act")
+        || flag("can_undo");
+    (count, show_like)
+}
+
 /// post/menu/buttons/like: the like count and the toggle. A member's
 /// like posts to /post_actions and comes back over the live stream.
 fn like_button(cx: &PostContext, p: &Value) -> String {
     let like = p["actions_summary"]
         .as_array()
         .and_then(|a| a.iter().find(|x| x["id"].as_i64() == Some(LIKE)));
-    let count = like.and_then(|l| l["count"].as_i64()).unwrap_or(0);
     let acted = like.is_some_and(|l| l["acted"] == true);
     let can_act = like.is_some_and(|l| l["can_act"] == true);
     let can_undo = like.is_some_and(|l| l["can_undo"] == true);
     let yours = p["yours"] == true;
-    let show_like =
-        cx.viewer.is_none() || (cx.topic.archived && !yours) || acted || can_act || can_undo;
+    let (count, show_like) = like_state(cx, p);
     if !show_like && count == 0 {
         return String::new();
     }
@@ -2022,12 +2064,14 @@ mod tests {
                 .split('|')
                 .map(str::to_string)
                 .collect(),
+            reactions: None,
         };
         let topic = TopicInfo {
             id: 9,
             slug: "t".into(),
             created_by_id: Some(1),
             archived: false,
+            closed: false,
             can_create_post: false,
             deleted: false,
             can_delete: false,
@@ -2182,12 +2226,14 @@ mod tests {
                 .split('|')
                 .map(str::to_string)
                 .collect(),
+            reactions: None,
         };
         let topic = TopicInfo {
             id: 9,
             slug: "t".into(),
             created_by_id: Some(1),
             archived: false,
+            closed: false,
             can_create_post: false,
             deleted: false,
             can_delete: false,

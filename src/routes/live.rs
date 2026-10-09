@@ -442,6 +442,7 @@ async fn render_post(
         slug: post["topic_slug"].as_str().unwrap_or_default().to_string(),
         created_by_id: topic_ctx.user_id.map(i64::from),
         archived: topic_ctx.archived,
+        closed: topic_ctx.closed,
         can_create_post,
         deleted: topic_ctx.deleted_at.is_some(),
         can_delete: guardian.can_delete_topic(settings, &topic_ctx)?,

@@ -299,8 +299,39 @@ async fn respond(
             .cloned()
             .unwrap_or_default();
     }
+    // discourse-reactions' reactions tab: its route's first page of
+    // CustomReactionsController#reactions_given, with the same checks.
+    let mut reactions = Vec::new();
+    if filter == Some(ActivityFilter::Reactions) {
+        if !crate::plugins::reactions::enabled(&settings)? {
+            return Ok(super::topics::not_found_response(&state));
+        }
+        if guardian.is_anonymous() {
+            return Err(Unsupported("discourse-reactions' activity tab, anonymously").into());
+        }
+        let sees_private = guardian.is_me(user.id) || guardian.is_admin();
+        if !visible || (!sees_private && settings.get("hide_user_activity_tab")?.truthy()) {
+            return Ok(super::topics::not_found_response(&state));
+        }
+        let urls = crate::url::Urls {
+            config: &state.config,
+            settings: &settings,
+        };
+        let mut reader = crate::plugins::reactions::users::Reader {
+            conn: &mut *users.conn,
+            settings: &settings,
+            urls: &urls,
+            guardian: &guardian,
+        };
+        reactions = reader
+            .reactions_given(user.id, None)
+            .await?
+            .as_array()
+            .cloned()
+            .unwrap_or_default();
+    }
     let stream = match filter {
-        Some(ActivityFilter::Votes) => Vec::new(),
+        Some(ActivityFilter::Votes | ActivityFilter::Reactions) => Vec::new(),
         Some(filter) if visible && !settings.get("hide_user_activity_tab")?.truthy() => {
             users
                 .actions(&user, filter.action_types(), 0, 30, None)
@@ -314,6 +345,7 @@ async fn respond(
             filter,
             stream: &stream,
             topics: &voted_topics,
+            reactions: &reactions,
         },
     };
     let active = if filter == Some(ActivityFilter::All) && guardian.is_me(user.id) {
@@ -508,6 +540,7 @@ async fn profile_page(
         hide_user_activity_tab: settings.get("hide_user_activity_tab")?.truthy(),
         show_votes: crate::plugins::topic_voting::enabled(settings)?
             && settings.get("topic_voting_show_votes_on_profile")?.truthy(),
+        reactions: crate::plugins::reactions::view::ReactionsUi::load(settings)?,
     };
     let main = crate::user_profile_view::render(&cx, &profile_settings, &viewer, show, tab);
     Ok(ProfilePage {
