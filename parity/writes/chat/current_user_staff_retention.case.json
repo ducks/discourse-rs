@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "settings": {
+    "chat_channel_retention_days": "30"
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/session/current.json"
+    }
+  ]
+}

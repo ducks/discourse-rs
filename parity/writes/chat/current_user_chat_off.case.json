@@ -1,0 +1,12 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE user_options SET chat_enabled = FALSE WHERE user_id = 3"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/session/current.json"
+    }
+  ]
+}

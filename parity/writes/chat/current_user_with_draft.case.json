@@ -1,0 +1,12 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO chat_drafts (user_id, chat_channel_id, data, created_at, updated_at) VALUES (3, 2, '{\"message\":\"hello\"}', now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/session/current.json"
+    }
+  ]
+}

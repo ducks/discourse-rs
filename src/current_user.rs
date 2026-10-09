@@ -783,6 +783,19 @@ pub async fn serialize(
         ),
     );
     if g.is_staff() {
+        // DiscourseUpdates.has_unseen_features?: false until the background
+        // job has cached the latest feature's date, and the job is queued
+        // (once a minute) to do so. The job itself, reading the feed, is not
+        // ported, so nothing is ever cached and it stays false.
+        if crate::owned_schema::cached_get(&mut *conn, "latest_new_feature_created_at")
+            .await?
+            .is_some()
+        {
+            return Err(Unsupported("unseen new features").into());
+        }
+        if crate::owned_schema::set_once(&mut *conn, "refresh_latest_new_feature_lock", 60).await? {
+            crate::jobs::enqueue(&mut *conn, "refresh_latest_new_feature", json!({})).await?;
+        }
         out.insert("has_unseen_features".into(), json!(false));
         let last_visited: Option<Option<String>> = sqlx::query_scalar(
             "SELECT value FROM user_custom_fields WHERE user_id = $1 AND name = 'last_visited_upcoming_changes_at' ORDER BY id LIMIT 1",
@@ -856,6 +869,11 @@ pub async fn serialize(
         if (theme == -1 || theme == -2) && !custom_themes {
             out.insert("can_run_design_wizard".into(), json!(true));
         }
+    }
+    // chat's keys.
+    if crate::plugins::chat::enabled(settings)? {
+        let guardian = crate::guardian::Guardian::for_user(&mut *conn, user).await?;
+        crate::plugins::chat::current_user_keys(&mut *conn, settings, &guardian, &mut out).await?;
     }
     out.insert(
         "user_option".into(),
@@ -1221,7 +1239,7 @@ async fn user_option(
         .get(o.default_calendar as usize)
         .copied()
         .unwrap_or("none_selected");
-    Ok(json!({
+    let mut option = json!({
         "mailing_list_mode": o.mailing_list_mode,
         "external_links_in_new_tab": o.external_links_in_new_tab,
         "enable_quoting": o.enable_quoting,
@@ -1250,7 +1268,14 @@ async fn user_option(
         "automatically_translate": o.automatically_translate,
         "understood_languages": o.understood_languages,
         "hidden_composer_toolbar_buttons": o.hidden_composer_toolbar_buttons,
-    }))
+    });
+    // chat's keys.
+    if crate::plugins::chat::enabled(settings)?
+        && let Value::Object(map) = &mut option
+    {
+        crate::plugins::chat::current_user_option_keys(conn, uid, map).await?;
+    }
+    Ok(option)
 }
 
 /// `can_send_private_messages`

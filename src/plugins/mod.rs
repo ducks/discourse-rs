@@ -17,6 +17,7 @@
 //! Core's events (DiscourseEvent) reach the plugins listening through the
 //! functions here, called where Rails triggers them.
 
+pub mod chat;
 pub mod reactions;
 pub mod solved;
 pub mod topic_voting;

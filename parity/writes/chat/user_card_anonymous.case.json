@@ -1,0 +1,8 @@
+{
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/u/user2.json"
+    }
+  ]
+}

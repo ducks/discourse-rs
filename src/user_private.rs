@@ -910,6 +910,10 @@ impl Private<'_> {
             "hidden_composer_toolbar_buttons".into(),
             json!(o.hidden_composer_toolbar_buttons),
         );
+        // chat's user options.
+        if crate::plugins::chat::enabled(s)? {
+            crate::plugins::chat::user_option_keys(&mut *self.conn, uid, &mut o_out).await?;
+        }
         // discourse-solved's user option.
         if crate::plugins::solved::enabled(s)? {
             let notify: Option<bool> =

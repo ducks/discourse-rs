@@ -23,6 +23,8 @@ pub enum UsersError {
     TopicList(TopicListError),
     Avatar(AvatarError),
     Bookmarks(crate::bookmarks::BookmarksError),
+    /// A plugin's error (chat's keys).
+    App(crate::AppError),
 }
 
 impl std::fmt::Display for UsersError {
@@ -34,11 +36,18 @@ impl std::fmt::Display for UsersError {
             UsersError::TopicList(e) => e.fmt(f),
             UsersError::Avatar(e) => e.fmt(f),
             UsersError::Bookmarks(e) => e.fmt(f),
+            UsersError::App(e) => e.fmt(f),
         }
     }
 }
 
 impl std::error::Error for UsersError {}
+
+impl From<crate::AppError> for UsersError {
+    fn from(e: crate::AppError) -> Self {
+        UsersError::App(e)
+    }
+}
 
 impl From<sqlx::Error> for UsersError {
     fn from(e: sqlx::Error) -> Self {
@@ -417,6 +426,20 @@ impl Users<'_> {
                 "can_send_private_message_to_user".into(),
                 json!(can_pm_user),
             );
+            if crate::plugins::chat::enabled(self.settings)? {
+                u.insert(
+                    "can_chat_user".into(),
+                    json!(
+                        crate::plugins::chat::can_chat_user(
+                            &mut *self.conn,
+                            self.settings,
+                            g,
+                            user.id
+                        )
+                        .await?
+                    ),
+                );
+            }
             out.insert("user".into(), Value::Object(u));
             return Ok(Value::Object(out));
         }
@@ -549,6 +572,16 @@ impl Users<'_> {
             u.insert(
                 "pending_posts_count".into(),
                 json!(self.private().pending_posts_count(user.id).await?),
+            );
+        }
+        // chat's UserCardSerializer key.
+        if crate::plugins::chat::enabled(self.settings)? {
+            u.insert(
+                "can_chat_user".into(),
+                json!(
+                    crate::plugins::chat::can_chat_user(&mut *self.conn, self.settings, g, user.id)
+                        .await?
+                ),
             );
         }
         if user.featured_topic_id.is_some() {

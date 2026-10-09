@@ -1,0 +1,12 @@
+{
+  "user": "user1",
+  "settings": {
+    "chat_enabled": "false"
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/session/current.json"
+    }
+  ]
+}

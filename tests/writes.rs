@@ -75,40 +75,11 @@ fn only_plugin_category_fields(value: &Value) -> bool {
 
 /// Keys plugins add to the user serializer and its user_option on the
 /// reference (chat, discourse-solved, discourse-calendar).
-const PLUGIN_USER_KEYS: [&str; 19] = [
-    "can_chat_user",
-    "chat_enabled",
-    "ignore_channel_wide_mention",
-    "show_thread_title_prompts",
-    "chat_announce_new_messages",
-    "chat_channel_list_filter",
-    "chat_channel_list_sort",
-    "chat_channel_list_sort_starred",
-    "chat_channel_list_sort_dms",
-    "chat_channel_list_filter_starred",
-    "chat_channel_list_filter_dms",
-    "chat_new_message_sound",
-    "chat_email_frequency",
-    "chat_header_indicator_preference",
-    "chat_separate_sidebar_mode",
-    "chat_send_shortcut",
-    "chat_quick_reaction_type",
-    "chat_quick_reactions_custom",
-    "event_reminder_preference",
-];
+const PLUGIN_USER_KEYS: [&str; 1] = ["event_reminder_preference"];
 
 /// Keys the reference's unported plugins add to CurrentUserSerializer
 /// (chat, discourse-templates, poll).
-const PLUGIN_CURRENT_USER_KEYS: [&str; 8] = [
-    "can_chat",
-    "can_direct_message",
-    "has_chat_enabled",
-    "needs_channel_retention_reminder",
-    "has_joinable_public_channels",
-    "chat_drafts",
-    "can_use_templates",
-    "can_create_poll",
-];
+const PLUGIN_CURRENT_USER_KEYS: [&str; 2] = ["can_use_templates", "can_create_poll"];
 
 /// User serializer keys that follow what the reference does in the
 /// background between seeding and recording (profile views, other
@@ -141,6 +112,12 @@ fn undrift_user(user: &mut Value) {
 
 /// Jobs plugins enqueue on the reference (discourse-narrative-bot).
 const PLUGIN_JOBS: [&str; 1] = ["bot_input"];
+
+/// Jobs queued at most once a minute through a Redis lock the recorder's
+/// cases share, so whether a recording shows one depends on the case
+/// recorded before it: a staff current user's refresh_latest_new_feature
+/// (DiscourseUpdates.has_unseen_features?).
+const THROTTLED_JOBS: [&str; 1] = ["refresh_latest_new_feature"];
 
 struct Client {
     state: AppState,
@@ -1037,7 +1014,11 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
     }
     let mut ours = serde_json::json!({
         "responses": responses,
-        "jobs": from_requests.into_iter().map(|(_, _, j)| j).collect::<Vec<_>>(),
+        "jobs": from_requests
+            .into_iter()
+            .map(|(_, _, j)| j)
+            .filter(|j| !THROTTLED_JOBS.contains(&j[0].as_str().unwrap_or("")))
+            .collect::<Vec<_>>(),
         "changes": changes(&db.pool, &tables, &before_sums, &before_rows).await,
     });
     if !run_jobs.is_empty() {
@@ -1074,7 +1055,10 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
         jobs.as_array()
             .into_iter()
             .flatten()
-            .filter(|j| !PLUGIN_JOBS.contains(&j[0].as_str().unwrap_or("")))
+            .filter(|j| {
+                let name = j[0].as_str().unwrap_or("");
+                !PLUGIN_JOBS.contains(&name) && !THROTTLED_JOBS.contains(&name)
+            })
             .cloned()
             .collect()
     };
