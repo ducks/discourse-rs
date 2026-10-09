@@ -18,13 +18,16 @@
 #
 # From a git worktree, PGDATA must be the main checkout's .nix-postgres
 # (shell.nix points it at the worktree, where no Postgres runs).
-#   scripts/parity-screenshots http://127.0.0.1:8095 /tmp/screens
-#   xdg-open /tmp/screens/index.html
+#   scripts/parity-screenshots http://127.0.0.1:8095
+#   xdg-open parity/screens/out/index.html
+#
+# The report goes to parity/screens/out (gitignored, replaced on each run)
+# unless an out-dir is given.
 #
 # --summary FILE also writes the scores in page-list order, a page a line;
 # parity/screens/summary.json is that, committed as the baseline:
 #   scripts/parity-screenshots --summary parity/screens/summary.json \
-#     http://127.0.0.1:8095 /tmp/screens
+#     http://127.0.0.1:8095
 #
 # --settings FILE: site settings set on the reference (as admin, through
 # PUT /admin/site_settings) before any page is captured. The default,
@@ -44,7 +47,7 @@
 # Usage: scripts/parity-screenshots [--reference URL] [--pages FILE]
 #          [--settings FILE] [--setup FILE] [--agent NAME] [--db NAME]
 #          [--width PX] [--fail-above PCT] [--summary FILE]
-#          <our-url> <out-dir>
+#          <our-url> [<out-dir>]
 # Defaults: --reference http://127.0.0.1:3042, --pages parity/screens/pages,
 # --settings parity/screens/settings, --width 1280. The page list format is
 # described at its top.
@@ -75,12 +78,19 @@ while [ $# -gt 0 ]; do
     *) break ;;
   esac
 done
-if [ $# -ne 2 ]; then
-  echo "usage: $0 [--reference URL] [--pages FILE] [--settings FILE] [--width PX] [--fail-above PCT] [--summary FILE] <our-url> <out-dir>" >&2
+if [ $# -lt 1 ] || [ $# -gt 2 ]; then
+  echo "usage: $0 [--reference URL] [--pages FILE] [--settings FILE] [--width PX] [--fail-above PCT] [--summary FILE] <our-url> [<out-dir>]" >&2
   exit 64
 fi
 ours="$1"
-out="$2"
+if [ $# -eq 2 ]; then
+  out="$2"
+else
+  # The default report is only ever the latest run: pages dropped from the
+  # list don't linger.
+  out="$root/parity/screens/out"
+  rm -rf "$out"
+fi
 mkdir -p "$out"
 
 if [ -f "$setup" ]; then
