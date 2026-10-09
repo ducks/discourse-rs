@@ -1,0 +1,235 @@
+/* float-kit toasts (d-toasts.scss, d-default-toast.scss) and select-kit's
+   dropdown-select-box.scss, as Rails compiles them into common.css. */
+
+@keyframes d-toast-opening {
+  from {
+    transform: translateY(var(--transform-y, 10px));
+  }
+}
+.fk-d-toasts {
+  --transform-y: 0;
+  position: fixed;
+  top: calc(var(--header-offset) + .33rem);
+  right: 5px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 5px 0;
+  flex: 1 1 auto;
+}
+.mobile-view .fk-d-toasts {
+  left: 5px;
+}
+.fk-d-toasts .fk-d-toast {
+  box-sizing: border-box;
+  opacity: 1;
+  transition: opacity .5s;
+  border-radius: var(--d-border-radius);
+  overflow: hidden;
+  background-color: var(--secondary);
+  border: 1px solid var(--content-border-color);
+  box-shadow: var(--shadow-dropdown);
+  overflow-wrap: break-word;
+  display: flex;
+  animation: d-toast-opening .3s ease-in-out;
+  will-change: transform;
+}
+.desktop-view .fk-d-toasts .fk-d-toast {
+  margin-left: auto;
+}
+.fk-d-toasts .fk-d-toast:hover {
+  border-color: var(--primary-300);
+}
+.fk-d-toasts .fk-d-toast.-fade-out {
+  opacity: 0;
+}
+.fk-d-toasts .fk-d-toast+.d-toast {
+  margin-top: .25rem;
+}
+@media(prefers-reduced-motion: no-preference) {
+  .fk-d-toasts {
+    --transform-y: 2vh;
+  }
+}
+.fk-d-default-toast {
+  display: flex;
+  flex: 1 1 auto;
+  padding: .5rem;
+}
+.fk-d-default-toast__close-container {
+  width: calc(40px - .5rem);
+  height: 2.3em;
+}
+.fk-d-default-toast__icon-container {
+  flex: 1 0 auto;
+  display: flex;
+  width: calc(40px - .5rem);
+  height: 2.3em;
+  align-items: center;
+  justify-content: center;
+}
+.fk-d-default-toast__icon-container.alert-success {
+  background-color: var(--success-low);
+  color: var(--primary);
+}
+.fk-d-default-toast__icon-container.alert-error {
+  background-color: var(--danger-low);
+  color: var(--primary);
+}
+.fk-d-default-toast__icon-container.alert-warning {
+  background-color: var(--highlight-bg);
+  color: var(--primary);
+}
+.fk-d-default-toast__icon-container.alert-info {
+  background-color: var(--tertiary-low);
+  color: var(--primary);
+}
+.fk-d-default-toast__icon-container.alert-info.clickable {
+  color: var(--tertiary);
+  z-index: 1;
+}
+.-success .fk-d-default-toast__icon-container .d-icon {
+  color: var(--success);
+}
+.-error .fk-d-default-toast__icon-container .d-icon {
+  color: var(--danger);
+}
+.-warning .fk-d-default-toast__icon-container .d-icon {
+  color: var(--highlight);
+}
+.-info .fk-d-default-toast__icon-container .d-icon {
+  color: var(--tertiary);
+}
+.fk-d-default-toast__main-container {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 2.3em;
+}
+.fk-d-default-toast__progress-bar {
+  width: 100%;
+  height: 5px;
+  top: 0;
+  left: 0;
+  position: absolute;
+  background-color: var(--success);
+  transform-origin: 0 0;
+}
+.fk-d-default-toast:has(.fk-d-default-toast__progress-bar) {
+  padding-top: 15px;
+}
+.fk-d-default-toast__texts {
+  min-height: inherit;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+}
+.fk-d-default-toast__actions {
+  display: flex;
+  flex-wrap: wrap;
+  padding-top: 1rem;
+  margin-bottom: -0.5rem;
+}
+.fk-d-default-toast__actions .btn,
+.fk-d-default-toast__actions .d-modal.json-schema-editor-modal .je-ready button,
+.d-modal.json-schema-editor-modal .je-ready .fk-d-default-toast__actions button,
+.fk-d-default-toast__actions .d-modal.json-schema-editor-modal .je-ready .json-editor-btn-add,
+.d-modal.json-schema-editor-modal .je-ready .fk-d-default-toast__actions .json-editor-btn-add {
+  margin-right: .5rem;
+  margin-bottom: .5rem;
+}
+.fk-d-default-toast__title {
+  display: flex;
+  font-weight: 700;
+}
+.fk-d-default-toast__message {
+  display: flex;
+  color: var(--primary-high);
+}
+.select-kit.single-select.dropdown-select-box {
+  display: inline-flex;
+  min-width: auto;
+  border: none;
+  white-space: nowrap;
+}
+.select-kit.single-select.dropdown-select-box .select-kit-body {
+  border: 1px solid var(--content-border-color);
+  background-clip: padding-box;
+  box-shadow: var(--shadow-dropdown);
+  border-radius: var(--d-border-radius);
+}
+.select-kit.single-select.dropdown-select-box .select-kit-row {
+  margin: 0;
+}
+.select-kit.single-select.dropdown-select-box .select-kit-row .icons {
+  display: flex;
+  align-self: flex-start;
+  margin-right: .5em;
+}
+.select-kit.single-select.dropdown-select-box .select-kit-row .icons .d-icon {
+  flex: 0 0 100%;
+  overflow: hidden;
+  font-size: var(--font-up-2);
+  margin-right: 0;
+}
+.select-kit.single-select.dropdown-select-box .select-kit-row .texts {
+  line-height: var(--line-height-medium);
+  flex: 1 1 0%;
+  align-items: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: column;
+}
+.select-kit.single-select.dropdown-select-box .select-kit-row .texts .name {
+  flex: 1 1 auto;
+  font-weight: bold;
+  font-size: var(--font-0);
+  color: var(--primary);
+  padding: 0;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+@media(width < 40rem) {
+  .select-kit.single-select.dropdown-select-box .select-kit-row .texts .name {
+    font-weight: normal;
+  }
+}
+.select-kit.single-select.dropdown-select-box .select-kit-row .texts .desc {
+  flex: 1 1 auto;
+  font-size: var(--font-down-1);
+  font-weight: normal;
+  color: var(--primary-medium);
+  white-space: normal;
+}
+@media(width < 40rem) {
+  .select-kit.single-select.dropdown-select-box .select-kit-row .svg-icon-title {
+    width: auto;
+    height: auto;
+  }
+}
+.select-kit.single-select.dropdown-select-box .select-kit-collection {
+  padding: 0;
+  max-height: 100%;
+}
+@media(width < 40rem) {
+  .select-kit.single-select.dropdown-select-box .select-kit-collection {
+    overflow-y: auto;
+  }
+}
+.select-kit.single-select.dropdown-select-box .select-kit-header {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-direction: row;
+  border-radius: var(--d-button-border-radius);
+}
+.select-kit.single-select.dropdown-select-box .select-kit-header .d-icon+.d-icon {
+  margin-left: .25em;
+}
+.select-kit.single-select.dropdown-select-box .select-kit-header.is-focused {
+  outline-style: auto;
+  outline-color: var(--tertiary);
+}

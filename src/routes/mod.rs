@@ -92,6 +92,10 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/live", get(live::page))
         .route("/user-menu", get(user_menu::show))
         .route("/live/post/{id}", get(live::post))
+        .route(
+            "/live/chat/{channel_id}/{message_id}",
+            get(chat_pages::live_message),
+        )
         .route("/", cached!(get(list::latest)))
         .route("/latest", cached!(get(list::latest)))
         .route("/latest.json", cached!(get(list::latest_json)))

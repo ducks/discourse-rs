@@ -30,6 +30,7 @@ const DISCOURSE_CSS: &str = concat!(
     include_str!("../static/css/user.css"),
     include_str!("../static/css/user-stream.css"),
     include_str!("../static/css/composer.css"),
+    include_str!("../static/css/kit.css"),
     include_str!("../static/css/menus.css"),
     include_str!("../static/css/filter-controls.css"),
     include_str!("../static/css/not-found.css"),

@@ -597,3 +597,145 @@ async fn membership_controls_follow_the_membership() {
     );
     assert!(!channel.contains("chat-composer__wrapper"));
 }
+
+#[tokio::test]
+async fn a_channel_page_carries_the_message_actions() {
+    let db = TestDb::new().await;
+    chat_messages(&db).await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Client::logged_in(st.clone(), "user1").await;
+    let html = user1.page("/chat/c/general/2").await;
+    // The toolbar's template, with the channel's permissions for chat.js.
+    assert!(html.contains("<template class=\"chat-message-actions-template\" data-viewer-id=\"3\" data-staff=\"false\" data-can-modify=\"true\" data-following=\"true\" data-can-moderate=\"false\" data-can-delete-self=\"true\" data-can-delete-others=\"false\""), "{html}");
+    assert!(html.contains("data-quick-defaults=\"+1|heart|tada\""));
+    assert!(html.contains(
+        "<li aria-checked=\"false\" role=\"menuitemradio\" data-name=\"Edit\" data-value=\"edit\""
+    ));
+    assert!(html.contains("<template class=\"chat-toast-template\">"));
+    // What the actions read of each message.
+    assert!(html.contains("data-user-id=\"2\" data-username=\"user0\""));
+    assert!(html.contains("data-message=\"Hello **world**\""));
+    assert!(html.contains("data-bookmark-name=\"later\""));
+
+    // A silenced member can't interact: no toolbar.
+    sqlx::query("UPDATE users SET silenced_till = now() + interval '1 day' WHERE id = 3")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let html = user1.page("/chat/c/general/2").await;
+    assert!(html.contains("data-id=\"1\""));
+    assert!(!html.contains("chat-message-actions-template"));
+}
+
+#[tokio::test]
+async fn deleted_messages_collapse_to_the_last_of_their_run() {
+    let db = TestDb::new().await;
+    chat_messages(&db).await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut admin = Client::logged_in(st, "admin").await;
+    let html = admin.page("/chat/c/general/2").await;
+    assert!(html.contains("<div class=\"chat-message-text -deleted\"><button class=\"btn btn-flat chat-message-expand\" type=\"button\"><span class=\"d-button-label\">A message was deleted. [view]</span></button></div></div><template class=\"chat-message-expanded\" data-id=\"4\">"), "{html}");
+    // Expanded, it is drawn whole.
+    assert!(html.contains("<div class=\"chat-cooked\"><p>gone</p></div>"));
+
+    // Two in a row: only the last shows, counting both.
+    sqlx::query("UPDATE chat_messages SET deleted_at = now(), deleted_by_id = 1 WHERE id = 5")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let html = admin.page("/chat/c/general/2").await;
+    assert_eq!(html.matches("chat-message-expand\"").count(), 1, "{html}");
+    assert!(html.contains("2 messages were deleted. [view all]"));
+    assert!(html.contains("<template class=\"chat-message-expanded\" data-id=\"4\">"));
+    assert!(html.contains("<template class=\"chat-message-expanded\" data-id=\"5\">"));
+}
+
+#[tokio::test]
+async fn a_draft_comes_back_with_its_reply_or_edit() {
+    let db = TestDb::new().await;
+    chat_messages(&db).await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Client::logged_in(st, "user1").await;
+    let draft = |data: &str| {
+        format!(
+            "INSERT INTO chat_drafts (user_id, chat_channel_id, data, created_at, updated_at) VALUES (3, 2, '{data}', now(), now())"
+        )
+    };
+    sqlx::query(&draft(
+        r#"{"message":"half","replyToMsg":{"id":1,"excerpt":"Hello :heart:","user":{"id":2,"avatar_template":"/a/{size}.png","username":"user0"}}}"#,
+    ))
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let html = user1.page("/chat/c/general/2").await;
+    assert!(
+        html.contains(
+            "<div class=\"chat-composer-message-details\" data-action=\"reply\" data-id=\"1\""
+        ),
+        "{html}"
+    );
+    assert!(html.contains("<span class=\"chat-reply__username\">user0</span><span class=\"chat-reply__excerpt\">Hello <img"));
+    assert!(html.contains(">half</textarea>"));
+
+    sqlx::query("DELETE FROM chat_drafts")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    sqlx::query(&draft(
+        r#"{"message":"/me waves more","editing":true,"id":5,"excerpt":"/me waves"}"#,
+    ))
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let html = user1.page("/chat/c/general/2").await;
+    assert!(
+        html.contains(
+            "<div class=\"chat-composer-message-details\" data-action=\"edit\" data-id=\"5\""
+        ),
+        "{html}"
+    );
+    assert!(html.contains("<div class=\"chat-user-avatar is-online\" data-username=\"user1\">"));
+    assert!(html.contains(">/me waves more</textarea>"));
+
+    // What Rails stores of a hash (Ruby's inspect) the client can't read:
+    // no draft.
+    sqlx::query("DELETE FROM chat_drafts")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    sqlx::query(&draft(r#"{message: "x"}"#))
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let html = user1.page("/chat/c/general/2").await;
+    assert!(!html.contains("chat-composer-message-details\" data-action=\"reply"));
+    assert!(html.contains("type=\"text\"></textarea>"), "{html}");
+}
+
+#[tokio::test]
+async fn a_live_chat_message_is_drawn_for_its_viewer() {
+    let db = TestDb::new().await;
+    chat_messages(&db).await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Client::logged_in(st.clone(), "user1").await;
+    // After user1's own message, admin's shows its author.
+    let html = user1.page("/live/chat/2/3?previous=2").await;
+    assert!(
+        html.starts_with(
+            "<div class=\"chat-message-container -persisted -processed\" data-id=\"3\""
+        ),
+        "{html}"
+    );
+    // user0's /me after user1's own: the author shows.
+    let html = user1.page("/live/chat/2/5?previous=1").await;
+    assert!(html.contains("data-id=\"5\""));
+    // Another's deleted message, a channel they can't see, nothing there.
+    assert_eq!(user1.head("/live/chat/2/4").await.0, 404);
+    assert_eq!(user1.head("/live/chat/1/3").await.0, 404);
+    assert_eq!(user1.head("/live/chat/2/99").await.0, 404);
+    // Its author sees their deleted message, expanded.
+    let mut user0 = Client::logged_in(st, "user0").await;
+    let html = user0.page("/live/chat/2/4?previous=3").await;
+    assert!(html.contains("-deleted"), "{html}");
+    assert!(html.contains("<p>gone</p>"));
+}

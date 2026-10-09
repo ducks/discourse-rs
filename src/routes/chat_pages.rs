@@ -390,3 +390,43 @@ pub async fn disabled(
     )
     .await
 }
+
+#[derive(serde::Deserialize, Default)]
+pub struct LiveMessageParams {
+    previous: Option<String>,
+}
+
+/// GET /live/chat/:channel_id/:message_id: a message as the viewer's
+/// channel page draws it, after `previous`, for chat.js to swap in when
+/// the channel's bus tells of it.
+pub async fn live_message(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path((channel_id, message_id)): Path<(String, String)>,
+    axum::extract::Query(params): axum::extract::Query<LiveMessageParams>,
+) -> Result<Response, AppError> {
+    let (Ok(channel_id), Ok(message_id)) = (channel_id.parse::<i64>(), message_id.parse::<i64>())
+    else {
+        return Ok(StatusCode::NOT_FOUND.into_response());
+    };
+    let mut conn = state.pool.acquire().await?;
+    let settings = match gate(&state, &mut conn, &guardian, false).await? {
+        Ok(settings) => settings,
+        Err(_) => return Ok(StatusCode::NOT_FOUND.into_response()),
+    };
+    let previous = params.previous.and_then(|p| p.parse::<i64>().ok());
+    let html = context(&state, &mut conn, &settings, &guardian)
+        .message_fragment(channel_id, message_id, previous)
+        .await?;
+    Ok(match html {
+        Some(html) => (
+            [
+                (header::CONTENT_TYPE, "text/html; charset=utf-8"),
+                (header::CACHE_CONTROL, "no-cache, no-store"),
+            ],
+            html,
+        )
+            .into_response(),
+        None => StatusCode::NOT_FOUND.into_response(),
+    })
+}
