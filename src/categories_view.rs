@@ -407,7 +407,12 @@ fn latest_item(cx: &ListContext, topic: &Value, users: &[&Value]) -> String {
     // dTopicLink
     let title_html =
         crate::topic_list_view::emoji_unescape(s(&topic["fancy_title"]), &cx.settings, base);
-    let tags = tags_html(cx, topic, s(&topic["title"]));
+    let tags = tags_html(
+        cx,
+        topic,
+        s(&topic["title"]),
+        &crate::topic_list_view::tags_callbacks(cx, topic),
+    );
     let category_link = category.map(|c| category_badge(cx, c)).unwrap_or_default();
 
     // ItemRepliesCell

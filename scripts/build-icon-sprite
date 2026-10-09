@@ -5,7 +5,8 @@
 # integrity first. Icons are CC BY 4.0 (static/vendor/fontawesome-LICENSE.txt).
 #
 # Usage: scripts/build-icon-sprite
-#   The icons are listed below as "name" or "name=fontawesome-file".
+#   The icons are listed below as "name" or "name=fontawesome-file";
+#   plugin-<name> is a bundled plugin's icon, from its vendored sprite.
 set -euo pipefail
 
 VERSION=7.3.1
@@ -93,6 +94,11 @@ ICONS=(
   sliders
   plus
   fab-discourse
+  check-to-slot
+  toggle-on
+  toggle-off
+  plugin-vote-up
+  plugin-vote-up-filled
 )
 
 root="$(cd "$(dirname "$0")/.." && pwd)"
@@ -114,7 +120,8 @@ out="$root/static/vendor/icons.svg"
   echo "<!-- Font Awesome Free $VERSION by @fontawesome - https://fontawesome.com"
   echo "     License - https://fontawesome.com/license/free (Icons: CC BY 4.0)"
   echo "     Copyright 2026 Fonticons, Inc. The discourse-* icons are Discourse's"
-  echo "     (vendor/discourse/vendor/assets/svg-icons, GPL-2.0). Built by"
+  echo "     (vendor/discourse/vendor/assets/svg-icons, GPL-2.0), and so are the"
+  echo "     bundled plugins' (vendor/discourse/plugins/*/svg-icons). Built by"
   echo "     scripts/build-icon-sprite. -->"
   echo '<svg xmlns="http://www.w3.org/2000/svg" style="display: none">'
   for icon in "${ICONS[@]}"; do
@@ -124,6 +131,12 @@ out="$root/static/vendor/icons.svg"
     if [[ $file == discourse-* ]]; then
       tr -d '\n' < "$root/vendor/discourse/vendor/assets/svg-icons/discourse-additional.svg" \
         | grep -o "<symbol id=[\"']$file[\"'][^>]*>.*" | sed 's|</symbol>.*|</symbol>|' | sed "s/^/  /"
+      continue
+    fi
+    # A bundled plugin's own icons, from its vendored svg-icons sprite.
+    if [[ $file == plugin-* ]]; then
+      cat "$root"/vendor/discourse/plugins/*/svg-icons/*.svg | tr -d '\n' \
+        | grep -o "<symbol id=[\"']${file#plugin-}[\"'][^>]*>.*" | sed 's|</symbol>.*|</symbol>|' | sed "s/^/  /"
       continue
     fi
     # Discourse names the regular style's icons far-<name>.
