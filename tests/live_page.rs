@@ -242,3 +242,29 @@ async fn earlier_pages_change_posts_without_appending() {
         "{html}"
     );
 }
+
+#[tokio::test(flavor = "multi_thread")]
+async fn the_stream_stays_uncompressed_for_a_browser_that_accepts_compression() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let (post_id, _) = a_reply(&st).await;
+    let from = st.bus.now().await.unwrap();
+    let response = discourse_rs::app(st.clone())
+        .oneshot(
+            Request::get(format!("/live?topic={TOPIC}&tail=1&position={from}"))
+                .header(header::HOST, "test.localhost")
+                .header(header::ACCEPT_ENCODING, "br, gzip")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    assert!(response.headers().get(header::CONTENT_ENCODING).is_none());
+    // Each event arrives as it is published, not buffered by a compressor.
+    let mut body = response.into_body();
+    let mut buffer = String::new();
+    publish(&st, post_id, "revised").await;
+    let html = next_sse_event(&mut body, &mut buffer, "post").await;
+    assert!(html.contains("topic-post"));
+}

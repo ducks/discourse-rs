@@ -138,7 +138,28 @@ pub fn app(state: AppState) -> Router {
             state,
             session::current::layer,
         ))
+        .layer(compression())
         .layer(TraceLayer::new_for_http())
+}
+
+/// Responses compressed for browsers that accept it (nginx's role in front
+/// of Discourse): gzip or brotli at level 5, a fast setting for responses
+/// compressed on every request. tower-http's default predicate leaves out
+/// small bodies, images and the live stream (text/event-stream, which must
+/// flush as it goes); fonts arrive compressed already.
+fn compression() -> tower_http::compression::CompressionLayer<
+    tower_http::compression::predicate::And<
+        tower_http::compression::DefaultPredicate,
+        tower_http::compression::predicate::NotForContentType,
+    >,
+> {
+    use tower_http::compression::predicate::{NotForContentType, Predicate};
+    tower_http::compression::CompressionLayer::new()
+        .quality(tower_http::CompressionLevel::Precise(5))
+        .compress_when(
+            tower_http::compression::DefaultPredicate::new()
+                .and(NotForContentType::const_new("font/")),
+        )
 }
 
 pub use discourse_markdown::Unsupported;
