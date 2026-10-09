@@ -285,3 +285,30 @@ async fn topic_page_has_its_map_timeline_footer_and_suggestions() {
         discourse_rs::assets::url("", "topic.js")
     )));
 }
+
+/// What a browser gets that accepts compression.
+async fn get_compressed(pool: &PgPool, path: &str) -> axum::response::Response {
+    let app = discourse_rs::app(state(pool.clone(), config(RailsEnv::Test, &[])).await);
+    app.oneshot(
+        Request::get(path)
+            .header(header::HOST, "test.localhost")
+            .header(header::ACCEPT_ENCODING, "br, gzip")
+            .body(Body::empty())
+            .unwrap(),
+    )
+    .await
+    .unwrap()
+}
+
+#[tokio::test]
+async fn pages_and_assets_compress_for_browsers_that_accept_it() {
+    let db = TestDb::new().await;
+    for path in ["/latest", "/latest.json", "/assets/discourse.css"] {
+        let response = get_compressed(&db.pool, path).await;
+        assert_eq!(response.status(), StatusCode::OK, "{path}");
+        assert_eq!(response.headers()[header::CONTENT_ENCODING], "br", "{path}");
+    }
+    // Small bodies stay as they are.
+    let response = get_compressed(&db.pool, "/srv/status").await;
+    assert!(response.headers().get(header::CONTENT_ENCODING).is_none());
+}
