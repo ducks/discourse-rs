@@ -366,6 +366,7 @@ pub async fn latest(
     let mut site = crate::html::Site::from_settings(&settings, base_path)?;
     site.viewer = vs.viewer.clone();
     site.load_chrome(
+        &mut conn,
         &state,
         &settings,
         &guardian,
@@ -571,6 +572,7 @@ pub async fn category(
     let mut site = crate::html::Site::from_settings(&settings, &base_path)?;
     site.viewer = vs.viewer.clone();
     site.load_chrome(
+        &mut conn,
         &state,
         &settings,
         &guardian,
@@ -722,6 +724,7 @@ async fn categories_response(
         crate::html::Site::from_settings(&settings, state.config.globals.relative_url_root())?;
     site.viewer = vs.viewer.clone();
     site.load_chrome(
+        &mut conn,
         &state,
         &settings,
         &guardian,
@@ -744,6 +747,9 @@ async fn categories_response(
             order: created_order.then(|| "created".to_string()),
             ..Default::default()
         };
+        // list_document takes its own connection: this one is put back
+        // meanwhile.
+        drop(conn);
         let latest = match list_document(
             &state,
             &guardian,
@@ -758,6 +764,7 @@ async fn categories_response(
             Ok((latest, _)) => latest,
             Err(message) => return Ok(invalid_list_params(&state, &message, false)),
         };
+        conn = state.pool.acquire().await?;
         let categories = crate::topic_list_view::categories(&mut conn).await?;
         let cx = crate::topic_list_view::ListContext {
             i18n: &state.i18n,
@@ -1067,6 +1074,7 @@ async fn front_list(
         crate::html::Site::from_settings(&settings, state.config.globals.relative_url_root())?;
     site.viewer = vs.viewer.clone();
     site.load_chrome(
+        &mut conn,
         &state,
         &settings,
         &guardian,

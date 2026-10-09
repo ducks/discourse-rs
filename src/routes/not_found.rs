@@ -117,13 +117,18 @@ pub async fn html_errors(
     };
     let html =
         crate::not_found_page::build(&mut conn, &settings, &state.i18n, &urls, &page).await?;
-    drop(conn);
 
     let vs = super::session::viewer_state(&state, &headers, &settings, &guardian)?;
     let mut site = crate::html::Site::from_settings(&settings, &base_path)?;
     site.viewer = vs.viewer.clone();
-    site.load_chrome(&state, &settings, &guardian, crate::sidebar::Active::None)
-        .await?;
+    site.load_chrome(
+        &mut conn,
+        &state,
+        &settings,
+        &guardian,
+        crate::sidebar::Active::None,
+    )
+    .await?;
     let mut crawler = Crawler::for_request(&urls, &uri, None)?;
     crawler.description = String::new();
     macro_rules! page {

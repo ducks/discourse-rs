@@ -209,7 +209,9 @@ pub async fn login_page(
 ) -> Result<Response, AppError> {
     let base_path = state.config.globals.relative_url_root().to_string();
     let mut site = crate::html::Site::from_settings(settings, &base_path)?;
+    let mut conn = state.pool.acquire().await?;
     site.load_chrome(
+        &mut conn,
         state,
         settings,
         &crate::guardian::Guardian::anonymous(),

@@ -312,3 +312,46 @@ async fn pages_and_assets_compress_for_browsers_that_accept_it() {
     let response = get_compressed(&db.pool, "/srv/status").await;
     assert!(response.headers().get(header::CONTENT_ENCODING).is_none());
 }
+
+/// A handler that holds a connection while asking for another starves
+/// once requests outnumber the pool, and every page hung at 16 concurrent
+/// requests when the page chrome did so. Each page here is served from a
+/// pool of one connection: a second checkout times out into a 500.
+#[tokio::test]
+async fn pages_take_one_connection_at_a_time() {
+    let db = TestDb::new().await;
+    let one = sqlx::postgres::PgPoolOptions::new()
+        .max_connections(1)
+        .acquire_timeout(std::time::Duration::from_secs(2))
+        .connect_with((*db.pool.connect_options()).clone())
+        .await
+        .unwrap();
+    let st = common::state_with_bus_on(db.pool.clone(), one, config(RailsEnv::Test, &[])).await;
+    for path in [
+        "/latest",
+        "/categories",
+        "/c/general/4",
+        "/c/general/sub-general/34",
+        "/t/parity-fixture-replies-and-posters/35",
+        "/t/999999",
+        "/u/user1/summary",
+        "/tags",
+        "/tag/guide",
+        "/search?q=fixture",
+    ] {
+        let response = discourse_rs::app(st.clone())
+            .oneshot(
+                Request::get(path)
+                    .header(header::HOST, "test.localhost")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_ne!(
+            response.status(),
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "{path} took a second connection"
+        );
+    }
+}

@@ -324,7 +324,7 @@ async fn respond(
     let vs = super::session::viewer_state(&state, &headers, &settings, &guardian)?;
     let mut site = crate::html::Site::from_settings(&settings, base_path)?;
     site.viewer = vs.viewer.clone();
-    site.load_chrome(&state, &settings, &guardian, active)
+    site.load_chrome(&mut conn, &state, &settings, &guardian, active)
         .await?;
     site.bus_position = bus_position;
     let mut page = profile_page(

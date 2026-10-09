@@ -31,8 +31,16 @@ async fn run() -> Result<(), Box<dyn Error>> {
     let site_setting_defs = Definitions::vendored()?;
     let i18n = I18n::vendored()?;
     tracing::info!(settings = site_setting_defs.len(), env = ?config.rails_env, "loaded site setting definitions");
+    // GlobalSetting db_pool's role: DISCOURSE_DB_POOL, else 10.
+    let pool_size = std::env::var("DISCOURSE_DB_POOL")
+        .ok()
+        .and_then(|v| v.parse().ok())
+        .unwrap_or(10);
+    // A request waits up to 5 s for a connection, ActiveRecord's
+    // checkout_timeout, rather than sqlx's 30.
     let pool = PgPoolOptions::new()
-        .max_connections(10)
+        .max_connections(pool_size)
+        .acquire_timeout(std::time::Duration::from_secs(5))
         .connect(&config.database_url)
         .await?;
 
