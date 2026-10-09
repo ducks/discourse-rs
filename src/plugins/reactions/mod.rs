@@ -20,6 +20,7 @@ use sqlx::PgConnection;
 use crate::site_settings::{SettingError, SiteSettings};
 
 pub mod toggle;
+pub mod users;
 
 /// `PostActionType::LIKE_POST_ACTION_ID`
 const LIKE: i32 = 2;

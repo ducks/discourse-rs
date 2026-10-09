@@ -1,0 +1,114 @@
+{
+  "name": "users_list_paged",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/discourse-reactions/posts/35/reactions-users-list.json",
+      "params": {
+        "limit": "2",
+        "page": "1"
+      }
+    }
+  ],
+  "started_at": "2026-10-09T12:25:59.086183",
+  "transaction_started_at": "2026-10-09T12:25:57.998868",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "users": [
+          {
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "id": 1,
+            "reaction": "laughing"
+          },
+          {
+            "username": "user2",
+            "name": "User2",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+            "id": 4,
+            "reaction": "clap"
+          }
+        ],
+        "total_rows": 4
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 317,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "u+Uzw32B8FB9QpqOXKzwY5REjcE=",
+            "created_at": "2026-10-09T12:25:58.364282",
+            "rotated_at": "2026-10-09T12:25:58.364026",
+            "updated_at": "2026-10-09T12:25:58.364282",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "u+Uzw32B8FB9QpqOXKzwY5REjcE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 317,
+            "seen_at": "2026-10-09T12:25:59.095344",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "u+Uzw32B8FB9QpqOXKzwY5REjcE=",
+            "created_at": "2026-10-09T12:25:58.364282",
+            "rotated_at": "2026-10-09T12:25:58.364026",
+            "updated_at": "2026-10-09T12:25:58.364282",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "u+Uzw32B8FB9QpqOXKzwY5REjcE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO discourse_reactions_reactions (post_id, reaction_type, reaction_value, reaction_users_count, created_at, updated_at) SELECT 35, 0, 'clap', 0, now() - interval '60 minutes', now() - interval '60 minutes' WHERE NOT EXISTS (SELECT 1 FROM discourse_reactions_reactions WHERE post_id = 35 AND reaction_value = 'clap')",
+    "UPDATE discourse_reactions_reactions SET reaction_users_count = reaction_users_count + 1 WHERE post_id = 35 AND reaction_value = 'clap'",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) SELECT id, 3, 35, now() - interval '60 minutes', now() - interval '60 minutes' FROM discourse_reactions_reactions WHERE post_id = 35 AND reaction_value = 'clap'",
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (35, 3, 2, now() - interval '60 minutes', now() - interval '60 minutes')",
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (35, 4, 2, now() - interval '50 minutes', now() - interval '50 minutes')",
+    "INSERT INTO discourse_reactions_reactions (post_id, reaction_type, reaction_value, reaction_users_count, created_at, updated_at) SELECT 35, 0, '-1', 0, now() - interval '40 minutes', now() - interval '40 minutes' WHERE NOT EXISTS (SELECT 1 FROM discourse_reactions_reactions WHERE post_id = 35 AND reaction_value = '-1')",
+    "UPDATE discourse_reactions_reactions SET reaction_users_count = reaction_users_count + 1 WHERE post_id = 35 AND reaction_value = '-1'",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) SELECT id, 5, 35, now() - interval '40 minutes', now() - interval '40 minutes' FROM discourse_reactions_reactions WHERE post_id = 35 AND reaction_value = '-1'",
+    "INSERT INTO discourse_reactions_reactions (post_id, reaction_type, reaction_value, reaction_users_count, created_at, updated_at) SELECT 35, 0, 'laughing', 0, now() - interval '30 minutes', now() - interval '30 minutes' WHERE NOT EXISTS (SELECT 1 FROM discourse_reactions_reactions WHERE post_id = 35 AND reaction_value = 'laughing')",
+    "UPDATE discourse_reactions_reactions SET reaction_users_count = reaction_users_count + 1 WHERE post_id = 35 AND reaction_value = 'laughing'",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) SELECT id, 1, 35, now() - interval '30 minutes', now() - interval '30 minutes' FROM discourse_reactions_reactions WHERE post_id = 35 AND reaction_value = 'laughing'",
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (35, 1, 2, now() - interval '30 minutes', now() - interval '30 minutes')",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) SELECT id, 4, 35, now() - interval '5 minutes', now() - interval '5 minutes' FROM discourse_reactions_reactions WHERE post_id = 35 AND reaction_value = 'clap'",
+    "UPDATE discourse_reactions_reactions SET reaction_users_count = reaction_users_count + 1 WHERE post_id = 35 AND reaction_value = 'clap'",
+    "INSERT INTO discourse_reactions_reactions (post_id, reaction_type, reaction_value, reaction_users_count, created_at, updated_at) SELECT 52, 0, 'hugs', 0, now() - interval '20 minutes', now() - interval '20 minutes' WHERE NOT EXISTS (SELECT 1 FROM discourse_reactions_reactions WHERE post_id = 52 AND reaction_value = 'hugs')",
+    "UPDATE discourse_reactions_reactions SET reaction_users_count = reaction_users_count + 1 WHERE post_id = 52 AND reaction_value = 'hugs'",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) SELECT id, 3, 52, now() - interval '20 minutes', now() - interval '20 minutes' FROM discourse_reactions_reactions WHERE post_id = 52 AND reaction_value = 'hugs'",
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (52, 3, 2, now() - interval '20 minutes', now() - interval '20 minutes')",
+    "INSERT INTO discourse_reactions_reactions (post_id, reaction_type, reaction_value, reaction_users_count, created_at, updated_at) SELECT 36, 0, 'laughing', 0, now() - interval '15 minutes', now() - interval '15 minutes' WHERE NOT EXISTS (SELECT 1 FROM discourse_reactions_reactions WHERE post_id = 36 AND reaction_value = 'laughing')",
+    "UPDATE discourse_reactions_reactions SET reaction_users_count = reaction_users_count + 1 WHERE post_id = 36 AND reaction_value = 'laughing'",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) SELECT id, 5, 36, now() - interval '15 minutes', now() - interval '15 minutes' FROM discourse_reactions_reactions WHERE post_id = 36 AND reaction_value = 'laughing'",
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (36, 5, 2, now() - interval '15 minutes', now() - interval '15 minutes')",
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (37, 2, 2, now() - interval '10 minutes', now() - interval '10 minutes')"
+  ],
+  "recorded_from": {
+    "case": "e82c3a64892a5cf7c82731570d3f321004b0f46cde9d8b71fe2972a7b8cd5c22",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

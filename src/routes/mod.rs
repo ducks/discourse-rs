@@ -175,6 +175,38 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/discourse-reactions/posts/{post_id}/custom-reactions/{reaction}/toggle.json",
             put(reactions::toggle),
         )
+        .route(
+            "/discourse-reactions/posts/reactions",
+            get(reactions::reactions_given),
+        )
+        .route(
+            "/discourse-reactions/posts/reactions.json",
+            get(reactions::reactions_given),
+        )
+        .route(
+            "/discourse-reactions/posts/reactions-received",
+            get(reactions::reactions_received),
+        )
+        .route(
+            "/discourse-reactions/posts/reactions-received.json",
+            get(reactions::reactions_received),
+        )
+        .route(
+            "/discourse-reactions/posts/{id}/reactions-users",
+            get(reactions::post_reactions_users),
+        )
+        .route(
+            "/discourse-reactions/posts/{id}/reactions-users.json",
+            get(reactions::post_reactions_users),
+        )
+        .route(
+            "/discourse-reactions/posts/{id}/reactions-users-list",
+            get(reactions::reactions_users_list),
+        )
+        .route(
+            "/discourse-reactions/posts/{id}/reactions-users-list.json",
+            get(reactions::reactions_users_list),
+        )
         // discourse-topic-voting's VotesController.
         .route("/voting/vote", post(topic_voting::vote))
         .route("/voting/vote.json", post(topic_voting::vote))

@@ -367,8 +367,12 @@ async fn reset_sequences(pool: &PgPool) {
     }
 }
 
-/// A value that reads as a timestamp, in to_jsonb's or JSON's format.
+/// A value that reads as a timestamp, in to_jsonb's or JSON's format, or
+/// as Ruby's Time#to_s writes it.
 fn timestamp(s: &str) -> Option<NaiveDateTime> {
+    if let Some(t) = s.strip_suffix(" UTC") {
+        return NaiveDateTime::parse_from_str(t, "%Y-%m-%d %H:%M:%S").ok();
+    }
     let s = s.strip_suffix('Z').unwrap_or(s);
     NaiveDateTime::parse_from_str(s, "%Y-%m-%dT%H:%M:%S%.f").ok()
 }
@@ -477,6 +481,12 @@ fn normalize(value: &Value, started: NaiveDateTime) -> Value {
     match value {
         Value::String(s) => match timestamp(s) {
             Some(t) if t >= started => Value::String("<now>".into()),
+            // A setup's `now() - interval ...`: how long before the case
+            // began, to the minute, as setup takes its own time on each side.
+            Some(t) if started - t < chrono::Duration::days(1) => {
+                let minutes = ((started - t).num_seconds() as f64 / 60.0).round();
+                Value::String(format!("<now-{minutes}m>"))
+            }
             _ => Value::String(today(&unrandom(s), started.date())),
         },
         Value::Array(items) => Value::Array(items.iter().map(|v| normalize(v, started)).collect()),
