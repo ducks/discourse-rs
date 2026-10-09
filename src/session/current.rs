@@ -321,14 +321,14 @@ pub async fn layer(
                 )));
             }
         };
-        let cleared = match guardian.user_id() {
-            Some(user_id) => {
+        let cleared = match (guardian.user_id(), ClearNotifications::from(&headers)) {
+            (Some(user_id), Some(clear)) => {
                 let settings =
                     SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals)
                         .await?;
-                clear_notifications(&state, &mut conn, &settings, user_id, &headers).await?
+                clear.run(&state, &mut conn, &settings, user_id).await?
             }
-            None => false,
+            _ => false,
         };
         drop(conn);
         request.extensions_mut().insert(Incoming {
@@ -361,10 +361,15 @@ pub async fn layer(
         };
         (anonymous, None)
     };
-    let cleared = match (&settings, incoming.guardian.user_id()) {
-        (Some(settings), Some(user_id)) => {
+    // A connection only when the request names notifications to clear.
+    let cleared = match (
+        &settings,
+        incoming.guardian.user_id(),
+        ClearNotifications::from(&headers),
+    ) {
+        (Some(settings), Some(user_id), Some(clear)) => {
             let mut conn = state.pool.acquire().await?;
-            clear_notifications(&state, &mut conn, settings, user_id, &headers).await?
+            clear.run(&state, &mut conn, settings, user_id).await?
         }
         _ => false,
     };
@@ -438,39 +443,54 @@ const DELETE_CN_COOKIE: &str = "cn=; path=/; max-age=0; expires=Thu, 01 Jan 1970
 
 /// ApplicationController#clear_notifications, a before_action for every
 /// signed-in request: the ids in the Discourse-Clear-Notifications header
-/// and the `cn` cookie are marked read and the counts republished. True
-/// when the cookie was there to delete. (Read-only mode is not ported.)
-async fn clear_notifications(
-    state: &AppState,
-    conn: &mut PgConnection,
-    settings: &SiteSettings,
-    user_id: i32,
-    headers: &HeaderMap,
-) -> Result<bool, AppError> {
-    let header_ids = headers
-        .get("discourse-clear-notifications")
-        .and_then(|v| v.to_str().ok())
-        .unwrap_or("");
-    let cookie_ids = cookie(headers, "cn");
-    let ids = match &cookie_ids {
-        Some(c) if !header_ids.trim().is_empty() => format!("{header_ids},{c}"),
-        Some(c) => c.to_string(),
-        None => header_ids.to_string(),
-    };
-    if ids.trim().is_empty() {
-        return Ok(false);
+/// and the `cn` cookie are marked read and the counts republished. (Read-only
+/// mode is not ported.) Most requests name none, and take no connection.
+struct ClearNotifications {
+    ids: Vec<i64>,
+    /// From the cookie, which the response then deletes.
+    from_cookie: bool,
+}
+
+impl ClearNotifications {
+    fn from(headers: &HeaderMap) -> Option<ClearNotifications> {
+        let header_ids = headers
+            .get("discourse-clear-notifications")
+            .and_then(|v| v.to_str().ok())
+            .unwrap_or("");
+        let cookie_ids = cookie(headers, "cn");
+        let ids = match &cookie_ids {
+            Some(c) if !header_ids.trim().is_empty() => format!("{header_ids},{c}"),
+            Some(c) => c.to_string(),
+            None => header_ids.to_string(),
+        };
+        if ids.trim().is_empty() {
+            return None;
+        }
+        Some(ClearNotifications {
+            ids: ids.split(',').map(crate::ruby::to_i).collect(),
+            from_cookie: cookie_ids.is_some(),
+        })
     }
-    let ids: Vec<i64> = ids.split(',').map(crate::ruby::to_i).collect();
-    // Notification.read
-    sqlx::query(
-        "UPDATE notifications SET read = TRUE WHERE id = ANY($1) AND user_id = $2 AND NOT read",
-    )
-    .bind(&ids)
-    .bind(user_id)
-    .execute(&mut *conn)
-    .await?;
-    crate::bus::publish_notifications_state(&state.bus, conn, settings, user_id).await?;
-    Ok(cookie_ids.is_some())
+
+    /// Marks them read and publishes the user's notification state; true
+    /// when the cookie is to be deleted.
+    async fn run(
+        self,
+        state: &AppState,
+        conn: &mut PgConnection,
+        settings: &SiteSettings,
+        user_id: i32,
+    ) -> Result<bool, AppError> {
+        sqlx::query(
+            "UPDATE notifications SET read = TRUE WHERE id = ANY($1) AND user_id = $2 AND NOT read",
+        )
+        .bind(&self.ids)
+        .bind(user_id)
+        .execute(&mut *conn)
+        .await?;
+        crate::bus::publish_notifications_state(&state.bus, conn, settings, user_id).await?;
+        Ok(self.from_cookie)
+    }
 }
 
 /// `should_update_last_seen?`: browser navigations always, XHR only with
