@@ -554,6 +554,12 @@ impl TopicView<'_> {
             self.solved_topic_keys(solved, &slug, &viewer, &mut out)
                 .await?;
         }
+        if crate::plugins::reactions::enabled(self.settings)? {
+            out.insert(
+                "valid_reactions".into(),
+                crate::plugins::reactions::Reactions::load(self.settings)?.valid_json(),
+            );
+        }
         if let Some(can_vote) = can_vote {
             crate::plugins::topic_voting::topic_view_keys(
                 &mut *self.conn,
@@ -1454,6 +1460,49 @@ impl TopicView<'_> {
             }
         }
 
+        // discourse-reactions' preload_post_reactions for the page, with the
+        // viewer's likes and whether they may still undo them.
+        let reactions = if crate::plugins::reactions::enabled(self.settings)? {
+            let settings = crate::plugins::reactions::Reactions::load(self.settings)?;
+            let ids: Vec<i32> = posts.iter().map(|p| p.id).collect();
+            // post.post_actions, whatever the page loaded for itself.
+            let rows: Vec<(i32, i32, chrono::NaiveDateTime)> = match self.guardian.user_id() {
+                Some(uid) => {
+                    sqlx::query_as(
+                        "SELECT post_id, user_id, created_at FROM post_actions \
+                         WHERE post_id = ANY($1) AND user_id = $2 AND post_action_type_id = 2 \
+                           AND deleted_at IS NULL",
+                    )
+                    .bind(&ids)
+                    .bind(uid)
+                    .fetch_all(&mut *self.conn)
+                    .await?
+                }
+                None => Vec::new(),
+            };
+            let mut likes = HashMap::new();
+            for (post_id, user_id, created_at) in rows {
+                let can_undo = self.guardian.can_delete_post_action(
+                    self.settings,
+                    &viewer.ctx,
+                    user_id,
+                    created_at,
+                )?;
+                likes.insert(post_id, crate::plugins::reactions::ViewerLike { can_undo });
+            }
+            Some(
+                crate::plugins::reactions::PostsData::load(
+                    &mut *self.conn,
+                    &settings,
+                    &ids,
+                    self.guardian.user_id(),
+                    &likes,
+                )
+                .await?,
+            )
+        } else {
+            None
+        };
         let mut out = Vec::with_capacity(posts.len());
         for post in posts {
             let u = user(post.user_id);
@@ -1797,6 +1846,10 @@ impl TopicView<'_> {
                     post.post_number
                 )),
             );
+            // discourse-reactions' post keys.
+            if let Some(reactions) = &reactions {
+                reactions.post_keys(post.id, &mut p);
+            }
             // discourse-solved's post keys.
             if let Some(solved) = solved {
                 solved.post_keys(g, post.id, post.post_number, post.post_type == 4, &mut p);

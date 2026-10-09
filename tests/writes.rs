@@ -38,14 +38,9 @@ const BACKGROUND_TABLES: [&str; 3] = ["scheduler_stats", "top_topics", "user_aut
 const UNORDERED_INSERTS: [&str; 2] = ["sidebar_section_links", "upload_references"];
 
 /// Keys plugins add to the post and topic serializers on the reference.
-const PLUGIN_KEYS: [&str; 9] = [
+const PLUGIN_KEYS: [&str; 4] = [
     "event",
     "calendar_details",
-    "reactions",
-    "current_user_reaction",
-    "reaction_users_count",
-    "current_user_used_main_reaction",
-    "valid_reactions",
     "discourse_zendesk_plugin_zendesk_id",
     "discourse_zendesk_plugin_zendesk_url",
 ];

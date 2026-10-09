@@ -1593,6 +1593,19 @@ impl Users<'_> {
         if !self.settings.get("enable_mentions")?.truthy() {
             sql.push_str(&format!(" AND (a.action_type <> {MENTION})"));
         }
+        // discourse-reactions' user_action_stream_builder modifier: likes
+        // that are a reaction's shadow aren't listed.
+        if crate::plugins::reactions::enabled(self.settings)? {
+            sql = sql.replacen(
+                " WHERE (t.deleted_at IS NULL)",
+                &format!(
+                    "{} WHERE (t.deleted_at IS NULL)",
+                    crate::plugins::reactions::STREAM_JOIN
+                ),
+                1,
+            );
+            sql.push_str(crate::plugins::reactions::STREAM_WHERE);
+        }
         sql.push_str(" ORDER BY a.created_at DESC OFFSET $2 LIMIT $3");
         let rows: Vec<ActionRow> = sqlx::query_as(&sql)
             .bind(user.id)
