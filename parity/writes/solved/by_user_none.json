@@ -1,0 +1,35 @@
+{
+  "name": "by_user_none",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/solution/by_user.json?username=user1"
+    }
+  ],
+  "started_at": "2026-10-09T14:34:47.272878",
+  "transaction_started_at": "2026-10-09T14:34:46.341533",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "user_solved_posts": []
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO discourse_solved_solved_topics (topic_id, answer_post_id, accepter_user_id, created_at, updated_at) VALUES (35, 37, 2, now() - interval '2 hours', now() - interval '2 hours')",
+    "INSERT INTO discourse_solved_topic_answers (solved_topic_id, answer_post_id, accepter_user_id, created_at, updated_at) SELECT id, 37, 2, now() - interval '2 hours', now() - interval '2 hours' FROM discourse_solved_solved_topics WHERE topic_id = 35",
+    "INSERT INTO discourse_solved_topic_answers (solved_topic_id, answer_post_id, accepter_user_id, created_at, updated_at) SELECT id, 38, 2, now() - interval '90 minutes', now() - interval '90 minutes' FROM discourse_solved_solved_topics WHERE topic_id = 35",
+    "INSERT INTO discourse_solved_solved_topics (topic_id, answer_post_id, accepter_user_id, created_at, updated_at) VALUES (41, 47, 2, now() - interval '1 hour', now() - interval '1 hour')",
+    "INSERT INTO discourse_solved_topic_answers (solved_topic_id, answer_post_id, accepter_user_id, created_at, updated_at) SELECT id, 47, 2, now() - interval '1 hour', now() - interval '1 hour' FROM discourse_solved_solved_topics WHERE topic_id = 41"
+  ],
+  "recorded_from": {
+    "case": "9fe2cfe78b8a010c513a1ff4a32f8c799e5a355ece05ac6bd28b310bbf7e73f9",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

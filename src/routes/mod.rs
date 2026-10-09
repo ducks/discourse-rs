@@ -158,6 +158,8 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/solution/accept.json", post(solved::accept))
         .route("/solution/unaccept", post(solved::unaccept))
         .route("/solution/unaccept.json", post(solved::unaccept))
+        .route("/solution/by_user", get(solved::by_user))
+        .route("/solution/by_user.json", get(solved::by_user))
         .route(
             "/category/{category_id}/notifications",
             post(category_notifications::set_notifications),

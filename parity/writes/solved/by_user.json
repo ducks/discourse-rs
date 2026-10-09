@@ -1,0 +1,56 @@
+{
+  "name": "by_user",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/solution/by_user.json?username=user2"
+    }
+  ],
+  "started_at": "2026-10-09T14:34:46.096004",
+  "transaction_started_at": "2026-10-09T14:34:45.36088",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "user_solved_posts": [
+          {
+            "excerpt": "Reply two from user2, also long enough to pass the minimum length check.",
+            "created_at": "2026-09-30T07:28:29.179Z",
+            "archived": false,
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+            "category_id": 4,
+            "closed": false,
+            "cooked": "<p>Reply two from user2, also long enough to pass the minimum length check.</p>",
+            "name": "User2",
+            "post_id": 37,
+            "post_number": 3,
+            "post_type": 1,
+            "raw": "Reply two from user2, also long enough to pass the minimum length check.",
+            "slug": "parity-fixture-replies-and-posters",
+            "topic_id": 35,
+            "topic_title": "Parity fixture: replies and posters",
+            "url": "http://localhost:3042/t/parity-fixture-replies-and-posters/35/3",
+            "user_id": 4,
+            "username": "user2"
+          }
+        ]
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO discourse_solved_solved_topics (topic_id, answer_post_id, accepter_user_id, created_at, updated_at) VALUES (35, 37, 2, now() - interval '2 hours', now() - interval '2 hours')",
+    "INSERT INTO discourse_solved_topic_answers (solved_topic_id, answer_post_id, accepter_user_id, created_at, updated_at) SELECT id, 37, 2, now() - interval '2 hours', now() - interval '2 hours' FROM discourse_solved_solved_topics WHERE topic_id = 35",
+    "INSERT INTO discourse_solved_topic_answers (solved_topic_id, answer_post_id, accepter_user_id, created_at, updated_at) SELECT id, 38, 2, now() - interval '90 minutes', now() - interval '90 minutes' FROM discourse_solved_solved_topics WHERE topic_id = 35",
+    "INSERT INTO discourse_solved_solved_topics (topic_id, answer_post_id, accepter_user_id, created_at, updated_at) VALUES (41, 47, 2, now() - interval '1 hour', now() - interval '1 hour')",
+    "INSERT INTO discourse_solved_topic_answers (solved_topic_id, answer_post_id, accepter_user_id, created_at, updated_at) SELECT id, 47, 2, now() - interval '1 hour', now() - interval '1 hour' FROM discourse_solved_solved_topics WHERE topic_id = 41"
+  ],
+  "recorded_from": {
+    "case": "9a0ed80e4ad7ff484b21941d7dc4de1d62723946bafadb8925d4db1843eaff12",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
