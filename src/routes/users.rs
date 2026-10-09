@@ -275,7 +275,32 @@ async fn respond(
     };
     // The stream's first page (UserStream#findItems: offset 0, the
     // default limit); routes user_actions refuses show nothing.
+    let show_votes = crate::plugins::topic_voting::enabled(&settings)?
+        && settings.get("topic_voting_show_votes_on_profile")?.truthy();
+    // discourse-topic-voting's votes tab: ListController#voted_by's first
+    // page, which 404s while the tab is off.
+    let mut voted_topics = Vec::new();
+    if filter == Some(ActivityFilter::Votes) {
+        if !show_votes {
+            return Ok(super::topics::not_found_response(&state));
+        }
+        let doc = super::topic_voting::voted_by_list(
+            &state,
+            &mut *users.conn,
+            &settings,
+            &guardian,
+            user.id,
+            crate::topic_query::Options::default(),
+            String::new(),
+        )
+        .await?;
+        voted_topics = doc["topic_list"]["topics"]
+            .as_array()
+            .cloned()
+            .unwrap_or_default();
+    }
     let stream = match filter {
+        Some(ActivityFilter::Votes) => Vec::new(),
         Some(filter) if visible && !settings.get("hide_user_activity_tab")?.truthy() => {
             users
                 .actions(&user, filter.action_types(), 0, 30, None)
@@ -288,6 +313,7 @@ async fn respond(
         Some(filter) => Tab::Activity {
             filter,
             stream: &stream,
+            topics: &voted_topics,
         },
     };
     let active = if filter == Some(ActivityFilter::All) && guardian.is_me(user.id) {
@@ -473,6 +499,8 @@ async fn profile_page(
     let profile_settings = crate::user_profile_view::ProfileSettings {
         enable_badges: settings.get("enable_badges")?.truthy(),
         hide_user_activity_tab: settings.get("hide_user_activity_tab")?.truthy(),
+        show_votes: crate::plugins::topic_voting::enabled(settings)?
+            && settings.get("topic_voting_show_votes_on_profile")?.truthy(),
     };
     let main = crate::user_profile_view::render(&cx, &profile_settings, &viewer, show, tab);
     Ok(ProfilePage {

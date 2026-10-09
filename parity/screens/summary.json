@@ -5,7 +5,7 @@
 {"page": "/c/general/sub-general/34", "diff_pct": 1.31, "status": [200, 200], "size": [[1280, 900], [1280, 900]]},
 {"page": "/c/general/4/none", "diff_pct": 0.68, "status": [200, 200], "size": [[1280, 900], [1280, 900]]},
 {"page": "/c/general/4 as=user1", "diff_pct": 0.71, "status": [200, 200], "size": [[1280, 900], [1280, 900]]},
-{"page": "/t/parity-fixture-replies-and-posters/35", "diff_pct": 0.42, "status": [200, 200], "size": [[1280, 1514], [1280, 1514]]},
+{"page": "/t/parity-fixture-replies-and-posters/35", "diff_pct": 0.4, "status": [200, 200], "size": [[1280, 1514], [1280, 1514]]},
 {"page": "/t/parity-fixture-liked-and-archived/41", "diff_pct": 0.39, "status": [200, 200], "size": [[1280, 967], [1280, 967]]},
 {"page": "/u/admin", "diff_pct": 0.7, "status": [200, 200], "size": [[1280, 1682], [1280, 1682]]},
 {"page": "/u/user1", "diff_pct": 0.84, "status": [200, 200], "size": [[1280, 1431], [1280, 1431]]},
@@ -19,9 +19,10 @@
 {"page": "/t/parity-fixture-replies-and-posters/35 as=user0", "diff_pct": 0.24, "status": [200, 200], "size": [[1280, 1633], [1280, 1633]]},
 {"page": "/t/parity-fixture-replies-and-posters/35 as=user1", "diff_pct": 2.03, "status": [200, 200], "size": [[1280, 1634], [1280, 1635]]},
 {"page": "/t/parity-fixture-liked-and-archived/41 as=admin", "diff_pct": 6.95, "status": [200, 200], "size": [[1280, 1066], [1280, 1032]]},
-{"page": "/u/user0 as=user0", "diff_pct": 0.46, "status": [200, 200], "size": [[1280, 900], [1280, 900]]},
+{"page": "/u/user0 as=user0", "diff_pct": 0.14, "status": [200, 200], "size": [[1280, 900], [1280, 900]]},
 {"page": "/u/user0/summary as=user0", "diff_pct": 0.48, "status": [200, 200], "size": [[1280, 1297], [1280, 1297]]},
-{"page": "/u/user0/activity/replies as=user0", "diff_pct": 0.47, "status": [200, 200], "size": [[1280, 900], [1280, 900]]},
-{"page": "/u/user0/activity/likes-given as=user0", "diff_pct": 0.52, "status": [200, 200], "size": [[1280, 900], [1280, 900]]},
-{"page": "/u/user1/activity as=user0", "diff_pct": 1.22, "status": [200, 200], "size": [[1280, 900], [1280, 900]]}
+{"page": "/u/user0/activity/replies as=user0", "diff_pct": 0.14, "status": [200, 200], "size": [[1280, 900], [1280, 900]]},
+{"page": "/u/user0/activity/likes-given as=user0", "diff_pct": 0.17, "status": [200, 200], "size": [[1280, 900], [1280, 900]]},
+{"page": "/u/user1/activity as=user0", "diff_pct": 1.04, "status": [200, 200], "size": [[1280, 900], [1280, 900]]},
+{"page": "/u/user1/activity/votes as=user1", "diff_pct": 0.84, "status": [200, 200], "size": [[1280, 900], [1280, 900]]}
 ]

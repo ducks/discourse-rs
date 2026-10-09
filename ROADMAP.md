@@ -432,11 +432,12 @@ write endpoints. The design and its open decisions are in PLUGINS.md.
       view, posts, users, accepting and unaccepting answers; left: auto
       close timers, web hooks, crawler schema markup, the by_user list,
       shared issues' writes, search filters and the admin dashboard),
-      topic voting (list item, topic view, first post, category and
-      current user keys, `order=votes`; left: voting and unvoting, the
-      my_votes state, a voting category's hot list, the voted_by and votes
-      lists, `votes` in the top menu, the Ideas category type, search
-      filters, vote release and reclaim, and the UI), reactions, presence,
+      topic voting (done but for what core doesn't port yet: the votes
+      RSS feed, search's min_vote_count: and order:votes, /filter's votes
+      filters, the release and reclaim hooks on topic recovery, category
+      edits and merges, the category editor's voting toggle, the docked
+      header's vote box, and an anonymous vote cast after login; web hooks
+      and discourse-workflows triggers are refused), reactions, presence,
       templates, narrative-bot, chat, poll's voting
 - [ ] Tier 0: `plugin.toml` with settings, preloaded custom fields,
       assets, i18n, the tables the plugin owns; `discourse-rs plugins`

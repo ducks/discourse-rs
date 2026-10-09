@@ -49,6 +49,17 @@ pub async fn show(
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let votes_released = state
+        .i18n
+        .t(
+            if settings.get("topic_voting_enable_vote_limits")?.truthy() {
+                "js.topic_voting.notification_label.vote_released"
+            } else {
+                "js.topic_voting.notification_label.voting_closed"
+            },
+        )
+        .unwrap_or_default()
+        .to_string();
     let query = notifications::Query {
         recent: true,
         silent: false,
@@ -70,7 +81,11 @@ pub async fn show(
     let base_path = state.config.globals.relative_url_root().to_string();
     let items = doc["notifications"]
         .as_array()
-        .map(|list| list.iter().map(|n| menu_item(&base_path, n)).collect())
+        .map(|list| {
+            list.iter()
+                .map(|n| menu_item(&base_path, n, &votes_released))
+                .collect()
+        })
         .unwrap_or_default();
     // Logging out is in the menu, as in the Ember client's profile tab.
     let vs = super::session::viewer_state(&state, &headers, &settings, &guardian)?;
@@ -98,13 +113,20 @@ pub async fn show(
     Ok(crate::html::with_viewer_headers(response, &vs))
 }
 
+/// `Notification.types[:votes_released]` (discourse-topic-voting)
+const VOTES_RELEASED: i64 = 26;
+
 /// One notification as the menu shows it: who, what, where, and the link.
-fn menu_item(base_path: &str, n: &Value) -> MenuItem {
+/// `votes_released` is discourse-topic-voting's label for its type's
+/// notifications, in the actor's place.
+fn menu_item(base_path: &str, n: &Value, votes_released: &str) -> MenuItem {
     let data = &n["data"];
     let text = |v: &Value| v.as_str().unwrap_or_default().to_string();
     // A bookmark reminder is the member's own: no actor, as Discourse shows it.
     let actor = if n["notification_type"] == 24 {
         String::new()
+    } else if n["notification_type"] == VOTES_RELEASED {
+        votes_released.to_string()
     } else {
         data["display_username"]
             .as_str()
