@@ -1,0 +1,33 @@
+{
+  "name": "set_notifications_anonymous",
+  "user": null,
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/category/4/notifications",
+      "params": {
+        "notification_level": "3"
+      }
+    }
+  ],
+  "started_at": "2026-10-09T08:02:18.855781",
+  "transaction_started_at": "2026-10-09T08:02:17.356657",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You need to be logged in to do that."
+        ],
+        "error_type": "not_logged_in"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "recorded_from": {
+    "case": "2e7b27e93bda98ce68d4a39ca872b3b6352ddf3ec9305cb43ea76229a8c84e97",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

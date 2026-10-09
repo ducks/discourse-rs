@@ -125,6 +125,34 @@ impl Tracking {
         }
     }
 
+    /// `lookupCount` for the `new` and `unread` nav items in a category
+    /// (with its subcategories unless `no_subcategories`).
+    pub fn lookup_in(&self, filter: &str, category_id: i32, no_subcategories: bool) -> i64 {
+        let count = |kind: Kind| {
+            if no_subcategories {
+                self.states
+                    .iter()
+                    .filter(|t| t.category_id == category_id)
+                    .filter(|t| match kind {
+                        Kind::New => {
+                            t.is_new() && !self.muted_category_ids.contains(&t.category_id)
+                        }
+                        Kind::Unread => t.is_unread(),
+                        Kind::NewAndUnread => t.is_new() || t.is_unread(),
+                    })
+                    .count() as i64
+            } else {
+                self.count(kind, Some(category_id), None)
+            }
+        };
+        match filter {
+            "new" if self.unified_new => count(Kind::New) + count(Kind::Unread),
+            "new" => count(Kind::New),
+            "unread" => count(Kind::Unread),
+            _ => 0,
+        }
+    }
+
     /// `lookupCount` for the `new` and `unread` nav items, unscoped.
     pub fn lookup(&self, filter: &str) -> i64 {
         match filter {

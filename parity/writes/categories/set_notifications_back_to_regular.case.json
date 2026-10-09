@@ -1,0 +1,19 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/category/4/notifications",
+      "params": {
+        "notification_level": "3"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/category/4/notifications",
+      "params": {
+        "notification_level": "1"
+      }
+    }
+  ]
+}

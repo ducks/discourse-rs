@@ -28,6 +28,7 @@
 {% if live %}{{ footer_buttons|safe }}{% endif %}
 {% if live %}<br>{{ more_topics|safe }}{% endif %}
 </div>
+<script src="{{ base_path }}/assets/tracking-menu.js"></script>
 <script src="{{ base_path }}/assets/topic.js"></script>
 {% if title_html.contains("title-voting") %}<script src="{{ base_path }}/assets/topic-voting.js"></script>{% endif %}
 {% if viewer.is_some() %}<script src="{{ base_path }}/assets/screen-track.js" defer></script>{% endif %}

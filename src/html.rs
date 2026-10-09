@@ -450,6 +450,12 @@ pub struct LatestPage {
     /// Staff controls beside the new topic button (the categories page's
     /// new category button).
     pub admin_controls: String,
+    /// After the new topic button on a category's list: the member's
+    /// notification level in it (category_notifications); it also marks
+    /// the navigation as a category's, in place of the heading.
+    pub category_controls: String,
+    /// A category's list: the category navigation instead of the heading.
+    pub category_nav: bool,
 }
 
 /// A navigation pill, as NavItem renders it.
@@ -497,6 +503,287 @@ pub fn breadcrumbs(i18n: &I18n, settings: &SiteSettings) -> Result<String, Setti
     }
     out.push_str("</ol>");
     Ok(out)
+}
+
+/// A select-kit drop in the breadcrumbs: its header, showing `label` (a
+/// name, or a category badge), with the selection's `value`.
+fn breadcrumb_drop(
+    i18n: &I18n,
+    kind: &str,
+    classes: &str,
+    name: &str,
+    label: &str,
+    value: Option<i64>,
+    li_style: Option<&str>,
+) -> String {
+    use crate::topic_list_view::{escape, icon};
+    let name = escape(name);
+    let aria = escape(
+        &i18n
+            .t_with("js.select_kit.filter_by", &[("name", &name)])
+            .unwrap_or_default(),
+    );
+    let (summary_value, choice_value) = match value {
+        Some(v) => (v.to_string(), format!(" data-value=\"{v}\"")),
+        None => (String::new(), String::new()),
+    };
+    let li = match li_style {
+        Some(style) => format!("<li style=\"{style}\">"),
+        None => "<li>".to_string(),
+    };
+    format!(
+        "{li}<details class=\"select-kit single-select combobox combo-box {kind}-drop{classes}\">\
+         <summary aria-label=\"{aria}\" name=\"{aria}\" data-name=\"{name}\" data-value=\"{summary_value}\" tabindex=\"0\" \
+         class=\"select-kit-header single-select-header combo-box-header {kind}-drop-header\">\
+         <div class=\"select-kit-header-wrapper\"><div class=\"select-kit-selected-name selected-name choice\" data-name=\"{name}\"{choice_value} title=\"{name}\">\
+         <span class=\"name\">{label}</span></div>{}</div></summary><div class=\"select-kit-body\"></div></details></li>",
+        icon("angle-right", Some("angle-icon"))
+    )
+}
+
+/// BreadCrumbs on a category's list: a drop per level of the category's
+/// ancestry (its own selected), then one for its subcategories when it
+/// has any (`no subcategories` on its /none list), then the tag drop.
+pub fn category_breadcrumbs(
+    list: &crate::topic_list_view::ListContext,
+    settings: &SiteSettings,
+    category_id: i64,
+    no_subcategories: bool,
+) -> Result<String, SettingError> {
+    use crate::topic_list_view::{category_badge_html, escape};
+    let i18n = list.i18n;
+    let t = |key: &str| i18n.t(&format!("js.{key}")).unwrap_or_default().to_string();
+    // category.ancestors: from the top level down to the category.
+    let mut ancestors = Vec::new();
+    let mut at = list.categories.get(&category_id);
+    while let Some(c) = at {
+        ancestors.insert(0, c);
+        at = c.parent_id.and_then(|id| list.categories.get(&id));
+    }
+    let has_children = |id: i64| list.categories.values().any(|c| c.parent_id == Some(id));
+    let mut out = String::from("<ol class=\"category-breadcrumb\">");
+    let parents = std::iter::once(None).chain(ancestors.iter().map(|c| Some(*c)));
+    let selected = ancestors
+        .iter()
+        .map(|c| Some(*c))
+        .chain(std::iter::once(None));
+    for (parent, category) in parents.zip(selected) {
+        if parent.is_some_and(|p| !has_children(p.id)) {
+            continue;
+        }
+        let side = if parent.is_some() {
+            " category-breadcrumb__subcategory-selector"
+        } else {
+            " category-breadcrumb__category-selector"
+        };
+        out.push_str(&match category {
+            Some(c) => {
+                let badge = category_badge_html(list, c, false, true);
+                // categoryVariables
+                let mut style = format!(
+                    "--category-badge-color: #{};--category-badge-text-color: #{};",
+                    c.color, c.text_color
+                );
+                if let Some(p) = c.parent_id.and_then(|id| list.categories.get(&id)) {
+                    style.push_str(&format!(
+                        "--parent-category-badge-color: #{};--parent-category-badge-text-color: #{};",
+                        p.color, p.text_color
+                    ));
+                }
+                breadcrumb_drop(
+                    i18n,
+                    "category",
+                    &format!(" has-selection{side}"),
+                    &c.name,
+                    &badge,
+                    Some(c.id),
+                    Some(&style),
+                )
+            }
+            None if no_subcategories => {
+                let label = t("categories.no_subcategories");
+                breadcrumb_drop(
+                    i18n,
+                    "category",
+                    &format!(" has-selection{side}"),
+                    &label,
+                    &escape(&label),
+                    None,
+                    None,
+                )
+            }
+            None => {
+                let label = if parent.is_some() {
+                    t("categories.subcategories_label")
+                } else {
+                    t("categories.categories_label")
+                };
+                breadcrumb_drop(i18n, "category", side, &label, &escape(&label), None, None)
+            }
+        });
+    }
+    if settings.get("tagging_enabled")?.truthy() {
+        let label = t("tagging.selector_tags");
+        out.push_str(&breadcrumb_drop(
+            i18n,
+            "tag",
+            " tag_all",
+            &label,
+            &escape(&label),
+            None,
+            None,
+        ));
+    }
+    out.push_str("</ol>");
+    Ok(out)
+}
+
+/// NavItem.buildList for a category's list: the top menu's filters but
+/// `categories`, each at the category's path (`/none` kept), counted in
+/// the category; then the plugins' items (discourse-topic-voting's Votes
+/// and My Votes on a voting category, before Top).
+#[allow(clippy::too_many_arguments)]
+pub fn category_nav_items(
+    i18n: &I18n,
+    settings: &SiteSettings,
+    category_path: &str,
+    category_id: i32,
+    no_subcategories: bool,
+    active: &str,
+    tracking: Option<&crate::topic_tracking_report::Tracking>,
+    can_vote: bool,
+) -> Result<Vec<NavItem>, SettingError> {
+    let mut items: Vec<NavItem> = nav_items(i18n, settings, "", active, tracking)?
+        .into_iter()
+        .filter(|item| item.name != "categories")
+        .map(|mut item| {
+            item.href = format!("{category_path}/l/{}", item.name);
+            item.label =
+                category_nav_label(i18n, &item.name, tracking, category_id, no_subcategories);
+            item
+        })
+        .collect();
+    if can_vote && !no_subcategories {
+        if let Some(hot) = items.iter_mut().find(|i| i.name == "hot") {
+            hot.title = i18n
+                .t("js.topic_voting.hot_nav_help")
+                .unwrap_or_default()
+                .to_string();
+        }
+        let mut voting = vec![("votes", "order=votes")];
+        if tracking.is_some() {
+            voting.push(("my_votes", "state=my_votes"));
+        }
+        for (name, param) in voting {
+            let item = NavItem {
+                name: name.to_string(),
+                label: i18n
+                    .t(&format!("js.filters.{name}.title"))
+                    .unwrap_or(name)
+                    .to_string(),
+                title: i18n
+                    .t(&format!("js.filters.{name}.help"))
+                    .unwrap_or_default()
+                    .to_string(),
+                href: format!("{category_path}/l/latest?{param}"),
+                active: false,
+                has_icon: false,
+            };
+            match items.iter().position(|i| i.name == "top") {
+                Some(at) => items.insert(at, item),
+                None => items.push(item),
+            }
+        }
+    }
+    Ok(items)
+}
+
+/// NavItem#displayName within a category (`lookupCount` with the
+/// category, and noSubcategories on its /none list).
+fn category_nav_label(
+    i18n: &I18n,
+    name: &str,
+    tracking: Option<&crate::topic_tracking_report::Tracking>,
+    category_id: i32,
+    no_subcategories: bool,
+) -> String {
+    let count = tracking
+        .map(|t| t.lookup_in(name, category_id, no_subcategories))
+        .unwrap_or(0);
+    let title = || {
+        i18n.t(&format!("js.filters.{name}.title"))
+            .unwrap_or(name)
+            .to_string()
+    };
+    if count > 0 {
+        i18n.t_count(&format!("js.filters.{name}.title_with_count"), count, &[])
+            .unwrap_or_else(title)
+    } else {
+        title()
+    }
+}
+
+/// CategoryNotificationsTracking for a member: the trigger showing their
+/// level in the category, and its menu (hidden until opened), each level
+/// saved to /category/:id/notifications.
+pub fn category_notifications(
+    i18n: &I18n,
+    base_path: &str,
+    category_id: i64,
+    level: i64,
+) -> String {
+    use crate::post_view::d_icon;
+    use crate::topic_list_view::escape;
+    const LEVELS: [(i64, &str, &str); 5] = [
+        (3, "watching", "d-watching"),
+        (2, "tracking", "d-tracking"),
+        (4, "watching_first_post", "d-watching-first"),
+        (1, "regular", "d-regular"),
+        (0, "muted", "d-muted"),
+    ];
+    let t = |key: &str| i18n.t(&format!("js.{key}")).unwrap_or_default().to_string();
+    let title = |key: &str| t(&format!("category.notifications.{key}.title"));
+    let (_, key, icon_name) = LEVELS
+        .iter()
+        .find(|(l, _, _)| *l == level)
+        .copied()
+        .unwrap_or(LEVELS[3]);
+    let tooltip = i18n
+        .t_with(
+            "js.notifications_tracking.tooltip",
+            &[("level", &title(key))],
+        )
+        .unwrap_or_default();
+    let url = format!("{base_path}/category/{category_id}/notifications");
+    let items: String = LEVELS
+        .iter()
+        .map(|(l, key, icon_name)| {
+            format!(
+                "<li class=\"dropdown-menu__item\"><button class=\"btn no-text notifications-tracking-btn{}\" data-level-id=\"{l}\" \
+                 data-level-name=\"{key}\" data-title=\"{}\" data-tooltip=\"{}\" hx-post=\"{url}\" hx-vals='{{\"notification_level\": {l}}}' \
+                 hx-swap=\"none\" type=\"button\"><div class=\"notifications-tracking-btn__icons\">{}</div><div class=\"notifications-tracking-btn__texts\">\
+                 <span class=\"notifications-tracking-btn__label\">{}</span><span class=\"notifications-tracking-btn__description\">{}</span></div></button></li>",
+                if *l == level { " -selected" } else { "" },
+                escape(&title(key)),
+                escape(&i18n
+                    .t_with("js.notifications_tracking.tooltip", &[("level", &title(key))])
+                    .unwrap_or_default()),
+                d_icon(icon_name, None),
+                escape(&title(key)),
+                escape(&t(&format!("category.notifications.{key}.description"))),
+            )
+        })
+        .collect();
+    format!(
+        "<button class=\"btn btn-default no-text fk-d-menu__trigger notifications-tracking-trigger btn-default btn-icon \
+         notifications-tracking-trigger-btn category-notifications-tracking\" title=\"{}\" aria-expanded=\"false\" \
+         data-identifier=\"notifications-tracking\" data-trigger=\"\" data-level-id=\"{level}\" data-level-name=\"{key}\">{}</button>\
+         <div class=\"fk-d-menu notifications-tracking-content -animated\" data-content=\"\" data-identifier=\"notifications-tracking\" \
+         role=\"dialog\" data-strategy=\"absolute\" data-placement=\"bottom-end\" hidden><div class=\"fk-d-menu__inner-content\">\
+         <ul class=\"dropdown-menu\">{items}</ul></div></div>",
+        escape(&tooltip),
+        d_icon(icon_name, None)
+    )
 }
 
 /// The WelcomeBanner component for a discovery list (`filter`: latest,
@@ -821,6 +1108,8 @@ pub async fn latest_page(
         banner: String::new(),
         breadcrumbs: String::new(),
         admin_controls: String::new(),
+        category_controls: String::new(),
+        category_nav: false,
         more_url: list["topic_list"]["more_topics_url"]
             .as_str()
             .map(str::to_string),
@@ -1149,6 +1438,12 @@ pub struct CategoriesPage {
     pub nav: Vec<NavItem>,
     pub breadcrumbs: String,
     pub admin_controls: String,
+    /// After the new topic button on a category's list: the member's
+    /// notification level in it (category_notifications); it also marks
+    /// the navigation as a category's, in place of the heading.
+    pub category_controls: String,
+    /// A category's list: the category navigation instead of the heading.
+    pub category_nav: bool,
 }
 
 /// The categories index from the /categories.json document
@@ -1219,6 +1514,8 @@ pub async fn categories_page(
         nav: Vec::new(),
         breadcrumbs: String::new(),
         admin_controls: String::new(),
+        category_controls: String::new(),
+        category_nav: false,
     })
 }
 

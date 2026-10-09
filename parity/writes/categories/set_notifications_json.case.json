@@ -1,0 +1,12 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/category/4/notifications.json",
+      "params": {
+        "notification_level": "2"
+      }
+    }
+  ]
+}

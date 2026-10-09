@@ -25,6 +25,7 @@ mod uploads;
 pub(crate) use search::invalid_access_at;
 pub(crate) use sitemap::regenerate_sitemaps;
 pub(crate) use topics::not_found_response;
+mod category_notifications;
 mod session;
 mod site;
 mod sitemap;
@@ -99,6 +100,7 @@ const HTMX_SSE: &str = include_str!("../../static/vendor/htmx-ext-sse.js");
 const SIDEBAR_JS: &str = include_str!("../../static/js/sidebar.js");
 const TOPIC_JS: &str = include_str!("../../static/js/topic.js");
 const TOPIC_VOTING_JS: &str = include_str!("../../static/js/topic-voting.js");
+const TRACKING_MENU_JS: &str = include_str!("../../static/js/tracking-menu.js");
 const COMPOSER_JS: &str = include_str!("../../static/js/composer.js");
 const SCREEN_TRACK_JS: &str = include_str!("../../static/js/screen-track.js");
 /// Discourse's frontend/discourse/scripts/js/onpopstate-handler.js (GPL-2.0),
@@ -116,6 +118,13 @@ async fn sidebar_js() -> impl IntoResponse {
     (
         [(header::CONTENT_TYPE, "text/javascript; charset=utf-8")],
         SIDEBAR_JS,
+    )
+}
+
+async fn tracking_menu_js() -> impl IntoResponse {
+    (
+        [(header::CONTENT_TYPE, "text/javascript; charset=utf-8")],
+        TRACKING_MENU_JS,
     )
 }
 
@@ -247,6 +256,14 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/solution/accept.json", post(solved::accept))
         .route("/solution/unaccept", post(solved::unaccept))
         .route("/solution/unaccept.json", post(solved::unaccept))
+        .route(
+            "/category/{category_id}/notifications",
+            post(category_notifications::set_notifications),
+        )
+        .route(
+            "/category/{category_id}/notifications.json",
+            post(category_notifications::set_notifications),
+        )
         // discourse-topic-voting's VotesController.
         .route("/voting/vote", post(topic_voting::vote))
         .route("/voting/vote.json", post(topic_voting::vote))
@@ -576,6 +593,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/sidebar.js", get(sidebar_js))
         .route("/assets/topic.js", get(topic_js))
         .route("/assets/topic-voting.js", get(topic_voting_js))
+        .route("/assets/tracking-menu.js", get(tracking_menu_js))
         .route("/assets/composer.js", get(composer_js))
         .route("/assets/screen-track.js", get(screen_track_js))
         .route(

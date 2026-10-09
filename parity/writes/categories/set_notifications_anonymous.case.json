@@ -1,0 +1,11 @@
+{
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/category/4/notifications",
+      "params": {
+        "notification_level": "3"
+      }
+    }
+  ]
+}

@@ -4,7 +4,7 @@
 {% block content %}
 {{ banner|safe }}
 {% if !main.is_empty() %}
-{% if !nav.is_empty() %}{% call m::list_controls(nav, breadcrumbs, chrome, self.heading_id(), admin_controls) %}{% endif %}
+{% if !nav.is_empty() %}{% call m::list_controls(nav, breadcrumbs, chrome, self.heading_id(), admin_controls, category_controls, category_nav) %}{% endif %}
 <div class="container list-container --categories">
   <div class="row full-width"><div id="header-list-area"></div></div>
   <div class="row full-width"><div id="list-area"><div class="contents">{{ main|safe }}</div></div></div>
