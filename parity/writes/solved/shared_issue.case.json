@@ -1,0 +1,15 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO category_custom_fields (category_id, name, value, created_at, updated_at) VALUES (4, 'enable_accepted_answers', 'true', now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/solution/shared_issue.json",
+      "params": {
+        "topic_id": 35
+      }
+    }
+  ]
+}

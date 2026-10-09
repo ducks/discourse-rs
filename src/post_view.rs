@@ -46,6 +46,8 @@ pub struct PostSettings {
     pub post_menu_hidden_items: Vec<String>,
     /// discourse-reactions' settings, when it is on.
     pub reactions: Option<crate::plugins::reactions::view::ReactionsUi>,
+    /// discourse-solved's settings, when it is on.
+    pub solved: Option<crate::plugins::solved::view::SolvedUi>,
 }
 
 impl PostSettings {
@@ -95,6 +97,7 @@ impl PostSettings {
             post_menu: list("post_menu")?,
             post_menu_hidden_items: list("post_menu_hidden_items")?,
             reactions: crate::plugins::reactions::view::ReactionsUi::load(settings)?,
+            solved: crate::plugins::solved::view::SolvedUi::load(settings)?,
         })
     }
 }
@@ -105,6 +108,12 @@ pub struct TopicInfo {
     pub slug: String,
     /// `details.created_by.id`
     pub created_by_id: Option<i64>,
+    /// `details.created_by.username`
+    pub created_by_username: Option<String>,
+    /// discourse-solved's `accepted_answers`, for the first post.
+    pub accepted_answers: Vec<Value>,
+    /// discourse-solved's shared issue state, for the first post.
+    pub shared_issue: crate::plugins::solved::view::SharedIssue,
     pub archived: bool,
     pub closed: bool,
     /// `details.can_create_post`: the reply button.
@@ -129,6 +138,14 @@ impl TopicInfo {
             id: view["id"].as_i64().unwrap_or(0),
             slug: view["slug"].as_str().unwrap_or("").to_string(),
             created_by_id: view["details"]["created_by"]["id"].as_i64(),
+            created_by_username: view["details"]["created_by"]["username"]
+                .as_str()
+                .map(str::to_string),
+            accepted_answers: view["accepted_answers"]
+                .as_array()
+                .cloned()
+                .unwrap_or_default(),
+            shared_issue: crate::plugins::solved::view::SharedIssue::from_view(view),
             archived: view["archived"] == true,
             closed: view["closed"] == true,
             can_create_post: view["details"]["can_create_post"] == true,
@@ -244,7 +261,7 @@ fn relative_age_medium(cx: &PostContext, at: DateTime<Utc>, wrap_on: bool) -> St
 }
 
 /// The tiny auto-updating date span.
-fn tiny_date(cx: &PostContext, at: DateTime<Utc>) -> String {
+pub(crate) fn tiny_date(cx: &PostContext, at: DateTime<Utc>) -> String {
     format!(
         "<span class=\"relative-date\" title=\"{}\" data-time=\"{}\" data-format=\"tiny\">{}</span>",
         escape(&long_date(cx.list, at)),
@@ -268,7 +285,7 @@ fn user_path(cx: &PostContext, username: &str) -> String {
 
 /// DUserLink's anchor attributes: no link to a profile hidden from
 /// anonymous visitors.
-fn user_link_attrs(cx: &PostContext, username: &str, aria_hidden: bool) -> String {
+pub(crate) fn user_link_attrs(cx: &PostContext, username: &str, aria_hidden: bool) -> String {
     let hidden = cx.settings.hide_user_profiles_from_public && cx.viewer.is_none();
     let mut out = String::new();
     if hidden {
@@ -298,7 +315,7 @@ fn user_link_attrs(cx: &PostContext, username: &str, aria_hidden: bool) -> Strin
     out
 }
 
-fn avatar_img(template: &str, size: i64, extra: &str) -> String {
+pub(crate) fn avatar_img(template: &str, size: i64, extra: &str) -> String {
     format!(
         "<img alt=\"\" width=\"{size}\" height=\"{size}\" src=\"{}\" class=\"avatar\"{extra}>",
         escape(&template.replace("{size}", &size.to_string()))
@@ -502,10 +519,19 @@ pub fn main_row(cx: &PostContext, p: &Value, prev: Option<Prev>) -> String {
         "post__regular regular post__contents contents post__contents--avoid-tab avoid-tab"
     };
     format!(
-        "<div class=\"post__row row\">{}<div class=\"post__body topic-body clearfix\">{}<div class=\"{contents_class}\"><div class=\"cooked\">{}<div class=\"cooked-selection-barrier\" aria-hidden=\"true\"><br></div></div><section aria-label=\"{}\" class=\"post__menu-area post-menu-area clearfix\" role=\"group\">{}</section></div><section class=\"post__actions post-actions\">{}</section></div></div>",
+        "<div class=\"post__row row\">{}<div class=\"post__body topic-body clearfix\">{}<div class=\"{contents_class}\"><div class=\"cooked\">{}<div class=\"cooked-selection-barrier\" aria-hidden=\"true\"><br></div></div>{}<section aria-label=\"{}\" class=\"post__menu-area post-menu-area clearfix\" role=\"group\">{}</section></div><section class=\"post__actions post-actions\">{}</section></div></div>",
         avatar(cx, p),
         meta_data(cx, p, &reply_tab),
         s(&p["cooked"]),
+        // The post-content-cooked-html outlet: discourse-solved's accepted
+        // answers under the first post.
+        match cx.settings.solved.as_ref() {
+            Some(ui) if p["post_number"] == 1 => {
+                crate::plugins::solved::view::accepted_answers(cx, ui, &cx.topic.accepted_answers)
+                    + &crate::plugins::solved::view::shared_issue_button(cx, ui, p)
+            }
+            _ => String::new(),
+        },
         escape(&t(cx.list, "post.controls.menu_label")),
         menu(cx, p),
         actions_summary(cx, p),
@@ -878,6 +904,26 @@ fn menu(cx: &PostContext, p: &Value) -> String {
     if !configured.is_empty() && !configured.contains(&"showMore") {
         configured.insert(configured.len() - 1, "showMore");
     }
+    // discourse-solved's button: first, or when it collapses, among the
+    // collapsed ones (after the second-to-last hidden item, before the
+    // last).
+    let solved = cx
+        .settings
+        .solved
+        .as_ref()
+        .and_then(|ui| crate::plugins::solved::view::button(cx, ui, p));
+    if let Some(button) = solved.as_ref() {
+        let at = if button.collapsed {
+            cx.settings
+                .post_menu_hidden_items
+                .last()
+                .and_then(|last| configured.iter().position(|k| k == last))
+                .unwrap_or(configured.len().saturating_sub(1))
+        } else {
+            0
+        };
+        configured.insert(at, "solved");
+    }
     let bookmarked = !p["bookmark_id"].is_null() || p["bookmarked"] == true;
     let hidden_items: Vec<&str> = cx
         .settings
@@ -905,8 +951,12 @@ fn menu(cx: &PostContext, p: &Value) -> String {
             });
     let mut buttons: Vec<(&str, bool, Option<String>)> = Vec::new();
     for key in &configured {
-        let hideable = hidden_items.contains(key)
-            && !(*key == "edit" && (wiki || (can_edit && p["yours"] == true)));
+        let hideable = if *key == "solved" {
+            solved.as_ref().is_some_and(|b| b.collapsed)
+        } else {
+            hidden_items.contains(key)
+                && !(*key == "edit" && (wiki || (can_edit && p["yours"] == true)))
+        };
         let html = match *key {
             "like" => match reactions.as_ref() {
                 // discourse-reactions' button in the like button's place.
@@ -942,6 +992,7 @@ fn menu(cx: &PostContext, p: &Value) -> String {
             // Drawn only as a count toward collapsing (not ported).
             "admin" => (member && (cx.staff || p["can_wiki"] == true)).then(String::new),
             "reply" => (cx.topic.can_create_post && member).then(|| reply_button(cx, p)),
+            "solved" => solved.as_ref().map(|b| b.html.clone()),
             _ => None,
         };
         buttons.push((key, hideable, html));
@@ -1564,6 +1615,37 @@ fn timeline_date(cx: &PostContext, at: DateTime<Utc>) -> String {
 /// The docked timeline (components/topic-timeline) as it first renders,
 /// at the first post; static/js/topic.js moves it as the page scrolls.
 /// The stream's post ids and the timeline lookup ride along for that.
+/// discourse-solved's topic-navigation outlet (NoAnswer): for the topic's
+/// author, a week on without an answer while others' replies could be
+/// one, the popup asking them to mark it (TopicNavigationPopup), shown
+/// by static/js/discourse-solved.js unless dismissed within the week.
+fn no_answer(cx: &PostContext, view: &Value) -> String {
+    if cx.settings.solved.is_none() {
+        return String::new();
+    }
+    let week_old =
+        date(&view["created_at"]).is_some_and(|at| cx.list.now - at > chrono::Duration::days(7));
+    let own = cx.viewer.is_some() && cx.viewer == cx.topic.created_by_username.as_deref();
+    let acceptable = view["post_stream"]["posts"]
+        .as_array()
+        .is_some_and(|posts| {
+            posts
+                .iter()
+                .any(|p| p["username"].as_str() != cx.viewer && p["can_accept_answer"] == true)
+        });
+    let popup = if own && week_old && acceptable && cx.topic.accepted_answers.is_empty() {
+        format!(
+            "<div class=\"topic-navigation-popup\" data-popup-id=\"solved-notice\" data-dismiss-duration=\"604800000\" hidden><button class=\"btn no-text btn-icon close btn-flat\" type=\"button\">{}<span aria-hidden=\"true\">&#8203;</span></button><h2>{}</h2><p>{}</p></div>",
+            d_icon("xmark", None),
+            escape(&t(cx.list, "solved.no_answer.title")),
+            escape(&t(cx.list, "solved.no_answer.description"))
+        )
+    } else {
+        String::new()
+    };
+    format!("<div class=\"topic-navigation-outlet no-answer\">{popup}</div>")
+}
+
 pub fn timeline(cx: &PostContext, view: &Value) -> String {
     let base = cx.list.base_path;
     let url = format!("{base}/t/{}/{}", cx.topic.slug, cx.topic.id);
@@ -1639,7 +1721,8 @@ pub fn timeline(cx: &PostContext, view: &Value) -> String {
         .collect();
     let lookup_json = serde_json::to_string(&labels).unwrap_or_default();
     format!(
-        "<div class=\"with-timeline topic-navigation\"><div class=\"timeline-container\" data-topic-url=\"{}\" data-chunk-size=\"{}\" data-stream=\"{}\" data-lookup=\"{}\" data-replies-format=\"{}\"><div class=\"topic-timeline\">{controls}<div class=\"timeline-scrollarea-wrapper\"><div class=\"timeline-date-wrapper\"><a class=\"start-date\" href=\"{}/1\" title=\"{}\"><span>{}</span></a></div><div class=\"timeline-scrollarea\" style=\"height: 300px\"><div class=\"timeline-padding\" style=\"height: 0px\"></div><div class=\"timeline-scroller\" style=\"height: 50px\"><div class=\"timeline-handle\"></div><div class=\"timeline-scroller-content\"><div class=\"timeline-replies\">{}</div>{ago}</div></div><div class=\"timeline-padding\" style=\"height: 250px\"></div></div><div class=\"timeline-date-wrapper\"><a class=\"now-date\" href=\"{}/{}\"><span>{now_date}</span></a></div></div><div class=\"timeline-footer-controls\">{footer}</div></div></div></div>",
+        "<div class=\"with-timeline topic-navigation\">{}<div class=\"timeline-container\" data-topic-url=\"{}\" data-chunk-size=\"{}\" data-stream=\"{}\" data-lookup=\"{}\" data-replies-format=\"{}\"><div class=\"topic-timeline\">{controls}<div class=\"timeline-scrollarea-wrapper\"><div class=\"timeline-date-wrapper\"><a class=\"start-date\" href=\"{}/1\" title=\"{}\"><span>{}</span></a></div><div class=\"timeline-scrollarea\" style=\"height: 300px\"><div class=\"timeline-padding\" style=\"height: 0px\"></div><div class=\"timeline-scroller\" style=\"height: 50px\"><div class=\"timeline-handle\"></div><div class=\"timeline-scroller-content\"><div class=\"timeline-replies\">{}</div>{ago}</div></div><div class=\"timeline-padding\" style=\"height: 250px\"></div></div><div class=\"timeline-date-wrapper\"><a class=\"now-date\" href=\"{}/{}\"><span>{now_date}</span></a></div></div><div class=\"timeline-footer-controls\">{footer}</div></div></div></div>",
+        no_answer(cx, view),
         escape(&url),
         view["chunk_size"].as_i64().unwrap_or(20),
         escape(&stream_json),
@@ -2065,11 +2148,15 @@ mod tests {
                 .map(str::to_string)
                 .collect(),
             reactions: None,
+            solved: None,
         };
         let topic = TopicInfo {
             id: 9,
             slug: "t".into(),
             created_by_id: Some(1),
+            created_by_username: None,
+            accepted_answers: Vec::new(),
+            shared_issue: Default::default(),
             archived: false,
             closed: false,
             can_create_post: false,
@@ -2227,11 +2314,15 @@ mod tests {
                 .map(str::to_string)
                 .collect(),
             reactions: None,
+            solved: None,
         };
         let topic = TopicInfo {
             id: 9,
             slug: "t".into(),
             created_by_id: Some(1),
+            created_by_username: None,
+            accepted_answers: Vec::new(),
+            shared_issue: Default::default(),
             archived: false,
             closed: false,
             can_create_post: false,

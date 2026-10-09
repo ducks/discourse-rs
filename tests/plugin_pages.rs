@@ -1,6 +1,8 @@
-//! discourse-reactions on the server-rendered pages for a member: the
-//! reaction controls in the post menu, with what the browser side reads to
-//! draw the picker and the users menu, and the activity Reactions tab.
+//! The bundled plugins' UI on the server-rendered pages. discourse-reactions:
+//! the reaction controls in the post menu, with what the browser side reads
+//! to draw the picker and the users menu, and the activity Reactions tab.
+//! discourse-solved: the solved status, the accepted answers under the
+//! first post, the Solved button, "Me too" and the activity Solved tab.
 
 mod common;
 
@@ -200,4 +202,107 @@ async fn the_activity_reactions_tab_lists_the_users_reactions() {
             "<span class=\"title\"><a href=\"/t/parity-fixture-replies-and-posters/35\">"
         )
     );
+}
+
+/// General takes accepted answers; user0, topic 35's author, accepted
+/// user2's reply (post 37).
+async fn solved(db: &TestDb) {
+    for sql in [
+        "INSERT INTO category_custom_fields (category_id, name, value, created_at, updated_at) \
+         VALUES (4, 'enable_accepted_answers', 'true', now(), now())",
+        "INSERT INTO discourse_solved_solved_topics (topic_id, answer_post_id, accepter_user_id, created_at, updated_at) \
+         VALUES (35, 37, 2, now(), now())",
+        "INSERT INTO discourse_solved_topic_answers (solved_topic_id, answer_post_id, accepter_user_id, created_at, updated_at) \
+         SELECT id, 37, 2, now(), now() FROM discourse_solved_solved_topics WHERE topic_id = 35",
+    ] {
+        sqlx::query(sql).execute(&db.pool).await.unwrap();
+    }
+}
+
+#[tokio::test]
+async fn a_solved_topic_shows_its_answer() {
+    let db = TestDb::new().await;
+    solved(&db).await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut anonymous = Client {
+        state: st.clone(),
+        cookies: Vec::new(),
+        csrf: None,
+    };
+    let html = anonymous
+        .page("/t/parity-fixture-replies-and-posters/35")
+        .await;
+    // The title's status, after the core ones.
+    assert!(html.contains(
+        "<span class=\"topic-statuses\"><span class=\"topic-status --solved\" title=\"This topic has a solution\">"
+    ), "{html}");
+    // The accordion under the first post, its one answer expanded.
+    assert!(html.contains("<aside class=\"d-post-accordion accepted-answers\""));
+    assert!(html.contains(
+        "<div class=\"quote d-post-accordion-item d-post-accordion-item--has-content\" data-expanded=\"\" data-overflowing=\"true\" data-post=\"3\" data-topic=\"35\" data-username=\"user2\" style=\"--max-lines-displayed: 8\">"
+    ));
+    assert!(html.contains(
+        "<blockquote class=\"d-post-accordion-item__content\" id=\"post-accordion-item-35-3\">"
+    ));
+    // The answer's menu: the solution, not a button, for a reader.
+    assert!(html.contains(
+        "<span class=\"extra-buttons\"><span class=\"accepted-text\" title=\"This is the accepted solution to this topic\">"
+    ));
+    assert!(html.contains("/assets/discourse-solved.js"));
+
+    // The topic's author unaccepts from the answer's menu, and the other
+    // replies' Solved buttons collapse behind show more, labelled for them.
+    let mut user0 = Client::logged_in(st.clone(), "user0").await;
+    let html = user0.page("/t/parity-fixture-replies-and-posters/35").await;
+    assert!(html.contains(
+        "<span class=\"extra-buttons\"><button class=\"btn btn-icon-text post-action-menu__solved-accepted accepted fade-out btn-flat\" title=\"Unselect if this reply no longer solves the problem\" type=\"button\">"
+    ));
+    assert!(html.contains(
+        "<button hidden class=\"btn btn-icon-text post-action-menu__solved-unaccepted unaccepted btn-flat\" title=\"Select if this reply solves the problem\" type=\"button\">"
+    ));
+
+    // The list marks it solved.
+    let html = anonymous.page("/latest").await;
+    assert!(
+        html.contains("status-solved\" data-topic-id=\"35\""),
+        "{html}"
+    );
+}
+
+#[tokio::test]
+async fn an_unsolved_topic_offers_me_too() {
+    let db = TestDb::new().await;
+    sqlx::query(
+        "INSERT INTO category_custom_fields (category_id, name, value, created_at, updated_at) \
+         VALUES (4, 'enable_accepted_answers', 'true', now(), now())",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Client::logged_in(st, "user1").await;
+    let html = user1.page("/t/parity-fixture-replies-and-posters/35").await;
+    assert!(html.contains(
+        "<div class=\"solved-shared-issue-row\"><button class=\"btn btn-icon-text btn-default post-action-menu__solved-shared-issue\" title=\"I am also experiencing this issue\" type=\"button\">"
+    ), "{html}");
+    // Not on a reply: user1 may not accept answers here.
+    assert!(!html.contains("post-action-menu__solved-unaccepted"));
+    assert!(!html.contains("accepted-answers"));
+}
+
+#[tokio::test]
+async fn the_activity_solved_tab_lists_the_users_answers() {
+    let db = TestDb::new().await;
+    solved(&db).await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user0 = Client::logged_in(st, "user0").await;
+    let html = user0.page("/u/user2/activity/solved").await;
+    assert!(html.contains(
+        "<li aria-current=\"location\" class=\"user-activity-bottom-outlet solved-list\"><a class=\"active\" href=\"/u/user2/activity/solved\">"
+    ), "{html}");
+    assert!(html.contains("<a aria-label=\"Parity fixture: replies and posters - post #3\" href=\"http://test.localhost/t/parity-fixture-replies-and-posters/35/3\">"));
+    let html = user0.page("/u/user0/activity/solved").await;
+    assert!(html.contains("You haven’t solved any topics yet"));
+    let html = user0.page("/u/user2/summary").await;
+    assert!(html.contains("<li class=\"user-summary-stat-outlet solved-count linked-stat\"><a href=\"/u/user2/activity/solved\">"));
 }

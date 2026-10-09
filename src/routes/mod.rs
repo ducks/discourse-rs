@@ -158,6 +158,10 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/solution/accept.json", post(solved::accept))
         .route("/solution/unaccept", post(solved::unaccept))
         .route("/solution/unaccept.json", post(solved::unaccept))
+        .route("/solution/by_user", get(solved::by_user))
+        .route("/solution/shared_issue", post(solved::shared_issue))
+        .route("/solution/shared_issue.json", post(solved::shared_issue))
+        .route("/solution/by_user.json", get(solved::by_user))
         .route(
             "/category/{category_id}/notifications",
             post(category_notifications::set_notifications),
@@ -543,6 +547,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/topic.js", get(asset))
         .route("/assets/topic-voting.js", get(asset))
         .route("/assets/discourse-reactions.js", get(asset))
+        .route("/assets/discourse-solved.js", get(asset))
         .route("/assets/tracking-menu.js", get(asset))
         .route("/assets/composer.js", get(asset))
         .route("/assets/screen-track.js", get(asset))

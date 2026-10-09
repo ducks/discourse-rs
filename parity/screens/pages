@@ -39,3 +39,6 @@
 /u/user1/activity as=user0
 /u/user1/activity/votes as=user1
 /u/user1/activity/reactions as=user1
+/u/user2/activity/solved as=user0
+/u/user0/activity/solved as=user0
+/u/user2/summary as=user0

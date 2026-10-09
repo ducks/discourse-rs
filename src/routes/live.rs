@@ -68,6 +68,8 @@ pub struct Params {
     nav: Option<String>,
     /// The page's sidebar (`Active::key`): a member's counts on its links.
     sidebar: Option<String>,
+    /// The topic page's posts, `<first>-<last>` post numbers.
+    posts: Option<String>,
 }
 
 /// GET /live
@@ -146,6 +148,10 @@ pub async fn page(
         subscription,
         topic_channel: topic_id.map(crate::bus::topic_channel),
         tail: params.tail.as_deref() == Some("1"),
+        posts: params.posts.as_deref().and_then(|r| {
+            let (first, last) = r.split_once('-')?;
+            Some((first.parse().ok()?, last.parse().ok()?))
+        }),
         user_id,
         lists,
         since,
@@ -197,6 +203,8 @@ struct Live {
     topic_channel: Option<String>,
     /// New posts are appended (the topic's last page).
     tail: bool,
+    /// The page's posts, by post number.
+    posts: Option<(i32, i32)>,
     user_id: Option<i32>,
     lists: bool,
     since: Option<NaiveDateTime>,
@@ -352,6 +360,69 @@ async fn post_fragment(live: &Live, message: &Message) -> Result<Option<String>,
     if kind == "stats" {
         return Ok(None);
     }
+    // discourse-solved's accepted answers changed: the first post's
+    // accordion and every post's Solved button with them, as Ember redraws
+    // the topic's posts (setAcceptedSolutions).
+    // Its shared issues counted again: the first post's "Me too".
+    if kind == "accepted_solution" || kind == "unaccepted_solution" || kind == "shared_issue" {
+        let Some((first, last)) = live.posts else {
+            return Ok(None);
+        };
+        let (first, last) = if kind == "shared_issue" {
+            if first > 1 {
+                return Ok(None);
+            }
+            (1, 1)
+        } else {
+            (first, last)
+        };
+        let topic_id = live
+            .topic_channel
+            .as_deref()
+            .and_then(|c| c.rsplit('/').next())
+            .and_then(|id| id.parse::<i32>().ok())
+            .unwrap_or(0);
+        let ids: Vec<i32> = {
+            let mut conn = live.state.pool.acquire().await?;
+            sqlx::query_scalar(
+                "SELECT id FROM posts WHERE topic_id = $1 AND post_number BETWEEN $2 AND $3 \
+                 AND deleted_at IS NULL ORDER BY post_number",
+            )
+            .bind(topic_id)
+            .bind(first)
+            .bind(last)
+            .fetch_all(&mut *conn)
+            .await?
+        };
+        let mut html = String::new();
+        // The title's solved status (SolvedStatus), as the accepted answers
+        // now have it.
+        if kind != "shared_issue" {
+            html.push_str(
+                r#"<div hx-swap-oob="delete:#topic-title .topic-status.--solved"></div>"#,
+            );
+            if data["accepted_answers"]
+                .as_array()
+                .is_some_and(|a| !a.is_empty())
+            {
+                html.push_str(&format!(
+                    r#"<span hx-swap-oob="beforeend:#topic-title h1 .topic-statuses"><span class="topic-status --solved" title="{}">{}</span></span>"#,
+                    crate::topic_list_view::escape(
+                        live.state.i18n.t("js.topic_statuses.solved.help").unwrap_or_default()
+                    ),
+                    crate::topic_list_view::icon("far-square-check", None)
+                ));
+            }
+        }
+        for id in ids {
+            if let Some(post) =
+                render_post(&live.state, &live.settings, &live.guardian, id, false).await?
+            {
+                html.push_str(&post);
+            }
+        }
+        return Ok(Some(html).filter(|h| !h.is_empty()));
+    }
     let (Some(post_id), Some(post_number)) = (data["id"].as_i64(), data["post_number"].as_i64())
     else {
         return Ok(None);
@@ -425,6 +496,17 @@ async fn render_post(
         .await?;
     let base = state.config.globals.relative_url_root();
     let topic_id = post["topic_id"].as_i64().unwrap_or(0) as i32;
+    // discourse-solved's accepted answers, which the first post shows.
+    let accepted_answers = if post["post_number"] == 1 && crate::plugins::solved::enabled(settings)?
+    {
+        view.solved_accepted_answers(topic_id)
+            .await?
+            .as_array()
+            .cloned()
+            .unwrap_or_default()
+    } else {
+        Vec::new()
+    };
     let Some(topic_ctx) =
         crate::topic_guardian::TopicCtx::load(&mut conn, settings, guardian, topic_id).await?
     else {
@@ -437,10 +519,42 @@ async fn render_post(
             .await?;
         guardian.can_create_post_on_topic(settings, &topic_ctx, anywhere)?
     };
+    // discourse-solved's shared issue state, which the first post shows.
+    let shared_issue = if post["post_number"] == 1 && crate::plugins::solved::enabled(settings)? {
+        let facts = crate::plugins::solved::TopicFacts {
+            id: topic_id,
+            user_id: topic_ctx.user_id,
+            category_id: topic_ctx.category_id,
+            archetype: topic_ctx.archetype.clone(),
+            closed: topic_ctx.closed,
+            archived: topic_ctx.archived,
+            deleted: topic_ctx.deleted_at.is_some(),
+        };
+        let solved =
+            crate::plugins::solved::TopicView::load(&mut conn, settings, guardian, facts).await?;
+        let mut keys = serde_json::Map::new();
+        solved
+            .shared_issue_keys(&mut conn, settings, guardian, &mut keys)
+            .await?;
+        crate::plugins::solved::view::SharedIssue::from_view(&Value::Object(keys))
+    } else {
+        Default::default()
+    };
     let topic = crate::post_view::TopicInfo {
         id: i64::from(topic_id),
         slug: post["topic_slug"].as_str().unwrap_or_default().to_string(),
         created_by_id: topic_ctx.user_id.map(i64::from),
+        created_by_username: match topic_ctx.user_id {
+            Some(id) => {
+                sqlx::query_scalar("SELECT username FROM users WHERE id = $1")
+                    .bind(id)
+                    .fetch_optional(&mut *conn)
+                    .await?
+            }
+            None => None,
+        },
+        accepted_answers,
+        shared_issue,
         archived: topic_ctx.archived,
         closed: topic_ctx.closed,
         can_create_post,

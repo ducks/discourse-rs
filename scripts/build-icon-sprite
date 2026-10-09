@@ -99,6 +99,12 @@ ICONS=(
   toggle-on
   toggle-off
   far-face-smile
+  far-square-check
+  square-check
+  check
+  chevron-up
+  far-square
+  hand
   plugin-vote-up
   plugin-vote-up-filled
 )

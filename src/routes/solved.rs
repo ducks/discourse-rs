@@ -138,3 +138,134 @@ async fn run(
     tx.commit().await?;
     Ok((StatusCode::OK, Json(accepted_answers)).into_response())
 }
+
+/// GET /solution/by_user(.json): SolvedTopicsController#by_user.
+pub async fn by_user(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    let p = params::parse(uri.query(), &headers, &body);
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    // requires_plugin
+    if !crate::plugins::solved::enabled(&settings)? {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    let scalar = |key: &str| p.get(key).and_then(params::scalar);
+    let Some(username) = scalar("username").filter(|u| !u.is_empty()) else {
+        return Ok(super::accounts::param_missing("username"));
+    };
+    // fetch_user_from_params(include_inactive: staff, or show_inactive_accounts
+    // for a member): the viewer themself, else an active user unless
+    // inactive ones are included.
+    let username_lower = username.to_lowercase();
+    let username_lower = username_lower
+        .strip_suffix(".json")
+        .unwrap_or(&username_lower)
+        .to_string();
+    let include_inactive = guardian.is_staff()
+        || (guardian.is_authenticated() && settings.get("show_inactive_accounts")?.truthy());
+    let user_id: Option<i32> = sqlx::query_scalar(
+        "SELECT id FROM users WHERE username_lower = $1 AND (active OR $2 OR id = $3) LIMIT 1",
+    )
+    .bind(&username_lower)
+    .bind(include_inactive)
+    .bind(guardian.user_id().unwrap_or(0))
+    .fetch_optional(&mut *conn)
+    .await?;
+    let Some(user) = (match user_id {
+        Some(id) => crate::users::User::find_by_id(&mut conn, id).await?,
+        None => None,
+    }) else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    // public_can_see_profiles?, can_see_profile?, can_see_user_actions?
+    let public =
+        guardian.is_authenticated() || !settings.get("hide_user_profiles_from_public")?.truthy();
+    let sees_private =
+        guardian.is_authenticated() && (guardian.is_me(user.id) || guardian.is_admin());
+    if !public
+        || !user.visible_to(&settings, &guardian)?
+        || (!sees_private && settings.get("hide_user_activity_tab")?.truthy())
+    {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    let offset = scalar("offset")
+        .map(|v| crate::ruby::to_i(&v))
+        .unwrap_or(0)
+        .max(0);
+    let limit = scalar("limit").map(|v| crate::ruby::to_i(&v)).unwrap_or(30);
+    if limit < 0 {
+        return Err(crate::Unsupported("a negative by_user limit").into());
+    }
+    let host = crate::pretty_text::Host::from_state(&state);
+    let ctx = crate::posting::Ctx {
+        host: &host,
+        settings: &settings,
+        config: &state.config,
+        i18n: &state.i18n,
+        bus: &state.bus,
+    };
+    let urls = Urls {
+        config: &state.config,
+        settings: &settings,
+    };
+    let body = crate::plugins::solved::by_user::by_user(
+        &mut conn, &ctx, &urls, &guardian, user.id, offset, limit,
+    )
+    .await?;
+    Ok(Json(body).into_response())
+}
+
+/// POST /solution/shared_issue(.json): SharedIssueController#create.
+pub async fn shared_issue(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    use crate::plugins::solved::shared_issue::{Outcome, toggle};
+    let p = params::parse(uri.query(), &headers, &body);
+    if !csrf_ok(&state, &headers, &form_pairs(&p), uri.path(), "POST") {
+        return Ok(bad_csrf());
+    }
+    let mut tx = state.pool.begin().await?;
+    let settings =
+        SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
+    // requires_plugin, requires_login
+    if !crate::plugins::solved::enabled(&settings)? {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    if guardian.is_anonymous() {
+        return Ok(super::login_required::not_logged_in(&state));
+    }
+    // The contract: `topic_id`, an integer, present.
+    let topic_id = p
+        .get("topic_id")
+        .and_then(params::scalar)
+        .filter(|v| !v.trim().is_empty() && v.trim().parse::<i64>().is_ok())
+        .map(|v| crate::ruby::to_i(&v) as i32);
+    let Some(topic_id) = topic_id else {
+        return Ok((
+            StatusCode::BAD_REQUEST,
+            Json(json!({ "failed": "FAILED", "errors": ["Topic can't be blank"] })),
+        )
+            .into_response());
+    };
+    match toggle(&mut tx, &state.bus, &settings, &guardian, topic_id).await? {
+        Outcome::Done { count, created } => {
+            tx.commit().await?;
+            Ok(
+                Json(json!({ "count": count, "user_created_shared_issue": created }))
+                    .into_response(),
+            )
+        }
+        Outcome::NotFound => Ok(super::topics::not_found_response(&state)),
+        Outcome::Forbidden => Ok(super::search::invalid_access(&state)),
+    }
+}
