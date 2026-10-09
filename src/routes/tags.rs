@@ -247,8 +247,12 @@ async fn show_list(
         None | Some("latest") => ListKind::Latest,
         Some("top") => ListKind::Top,
         Some("hot") => ListKind::Hot,
+        // discourse-topic-voting's (TagsController#show_votes).
+        Some("votes") => ListKind::Votes,
         Some(_) => {
-            return Err(Unsupported("tag list filters other than latest, top and hot").into());
+            return Err(
+                Unsupported("tag list filters other than latest, top, hot and votes").into(),
+            );
         }
     };
     let base_path = state.config.globals.relative_url_root().to_string();

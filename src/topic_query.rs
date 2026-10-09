@@ -80,6 +80,8 @@ pub struct Options {
     pub tags: Vec<String>,
     /// `options[:no_tags]`: only untagged topics (`/tag/none`).
     pub no_tags: bool,
+    /// `options[:state]`
+    pub state: Option<String>,
 }
 
 #[derive(Debug)]
@@ -188,6 +190,11 @@ pub enum Filter {
     Posted,
     /// `list_bookmarks`, logged in only
     Bookmarks,
+    /// discourse-topic-voting's `list_votes`
+    Votes,
+    /// discourse-topic-voting's `list_voted_by(user)`: the topics the user
+    /// holds an active vote on (`create_list(:user_topics)`).
+    VotedBy(i32),
 }
 
 impl Filter {
@@ -203,13 +210,18 @@ impl Filter {
             Filter::Read => "read",
             Filter::Posted => "posted",
             Filter::Bookmarks => "bookmarks",
+            Filter::Votes => "votes",
+            Filter::VotedBy(_) => "user_topics",
         }
     }
 
     /// `Discourse.filters - Discourse.anonymous_filters`: ListController's
     /// `ensure_logged_in` lists.
     pub fn requires_login(&self) -> bool {
-        !matches!(self, Filter::Latest | Filter::Top(_) | Filter::Hot)
+        !matches!(
+            self,
+            Filter::Latest | Filter::Top(_) | Filter::Hot | Filter::Votes | Filter::VotedBy(_)
+        )
     }
 
     /// `create_list(..., unordered: true)`: the list brings its own order
@@ -219,6 +231,7 @@ impl Filter {
             self,
             Filter::Top(_)
                 | Filter::Hot
+                | Filter::Votes
                 | Filter::Unread
                 | Filter::New
                 | Filter::Unseen
@@ -273,7 +286,7 @@ impl TopicQuery<'_> {
         self.user = self.user_scope().await?;
         let per_page = self.per_page();
         let topics = match &self.filter {
-            Filter::Top(_) | Filter::Unseen => {
+            Filter::Top(_) | Filter::Unseen | Filter::Votes => {
                 let order = self.order_clause()?;
                 self.fetch("TRUE", &order, per_page, self.options.page * per_page)
                     .await?
@@ -314,9 +327,11 @@ impl TopicQuery<'_> {
                 )
                 .await?
             }
-            Filter::Latest | Filter::Hot | Filter::Posted | Filter::Bookmarks => {
-                self.prioritize_pinned_topics().await?
-            }
+            Filter::Latest
+            | Filter::Hot
+            | Filter::Posted
+            | Filter::Bookmarks
+            | Filter::VotedBy(_) => self.prioritize_pinned_topics().await?,
         };
         Ok(TopicList {
             filter: self.filter.name(),
@@ -341,6 +356,16 @@ impl TopicQuery<'_> {
             && s.get("default_tags_muted")?.presence().is_some()
         {
             return Err(Unsupported("default_tags_muted in topic lists").into());
+        }
+        // Core's state filter (notification levels, watching_first_post).
+        if let Some(state) = self.options.state.as_deref()
+            && self.user_id().is_some()
+            && matches!(
+                state,
+                "muted" | "regular" | "tracking" | "watching" | "watching_first_post"
+            )
+        {
+            return Err(Unsupported("the state list filter").into());
         }
         if s.get("shared_drafts_category")?.presence().is_some() {
             return Err(Unsupported("shared_drafts_category in topic lists").into());
@@ -411,12 +436,16 @@ impl TopicQuery<'_> {
                 order = Some((sort_order, ascending.unwrap_or(false)));
             }
         }
+        let voting_hot = self.filter == Filter::Hot
+            && crate::plugins::topic_voting::enabled(self.settings)?
+            && crate::plugins::topic_voting::category_votes(&mut *self.conn, category_id).await?;
         Ok(CategoryScope {
             clauses,
             order,
             pinned_clause: Some(format!(
                 "topics.category_id = {category_id} AND pinned_at IS NOT NULL"
             )),
+            voting_hot,
         })
     }
 
@@ -531,7 +560,7 @@ impl TopicQuery<'_> {
             Filter::Top(_) => {
                 joins.push_str(" INNER JOIN top_topics ON top_topics.topic_id = topics.id")
             }
-            Filter::Hot => {
+            Filter::Hot if !self.category.voting_hot => {
                 joins.push_str(" JOIN topic_hot_scores ON topics.id = topic_hot_scores.topic_id")
             }
             _ => {}
@@ -580,7 +609,24 @@ impl TopicQuery<'_> {
             }
             Filter::Posted => clauses.push("tu.posted".to_string()),
             Filter::Bookmarks => clauses.push("tu.bookmarked".to_string()),
+            Filter::VotedBy(user_id) => clauses.push(format!(
+                "topics.id IN (SELECT topic_id FROM topic_voting_votes WHERE user_id = {user_id} AND NOT archive)"
+            )),
             _ => {}
+        }
+        // discourse-topic-voting's results filter callback: state=my_votes
+        // keeps the user's active votes on the lists it runs for.
+        if let Some(uid) = self.user_id()
+            && self.options.state.as_deref() == Some("my_votes")
+            && matches!(
+                self.filter,
+                Filter::Latest | Filter::Unseen | Filter::Unread | Filter::New
+            )
+            && crate::plugins::topic_voting::enabled(self.settings)?
+        {
+            clauses.push(format!(
+                "topics.id IN (SELECT topic_id FROM topic_voting_votes WHERE user_id = {uid} AND NOT archive)"
+            ));
         }
         // New applies remove_muted inside its own (possibly OR'd) clause.
         if self.filter.removes_muted() && self.filter != Filter::New {
@@ -715,7 +761,14 @@ impl TopicQuery<'_> {
             Filter::Top(period) => Some(format!(
                 "COALESCE(top_topics.{period}_score, 0) DESC, topics.bumped_at DESC"
             )),
+            // discourse-topic-voting's list_hot for a voting category.
+            Filter::Hot if self.category.voting_hot => Some(format!(
+                "{} DESC, COALESCE((SELECT votes_count FROM topic_voting_topic_vote_count v \
+                 WHERE v.topic_id = topics.id), 0) DESC, topics.bumped_at DESC",
+                crate::plugins::topic_voting::TRENDING_SCORE_SQL
+            )),
             Filter::Hot => Some("topic_hot_scores.score DESC".to_string()),
+            Filter::Votes => Some(crate::plugins::topic_voting::votes_order(false)),
             _ => None,
         };
         // discourse-topic-voting's results filter callback reorders the
@@ -1008,4 +1061,7 @@ pub struct CategoryScope {
     /// the request gave no order.
     order: Option<(String, bool)>,
     pinned_clause: Option<String>,
+    /// discourse-topic-voting's list_hot: the hot list of a voting
+    /// category ranks by recent votes instead of hot scores.
+    voting_hot: bool,
 }

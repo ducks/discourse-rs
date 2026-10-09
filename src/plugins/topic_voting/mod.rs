@@ -240,6 +240,12 @@ pub async fn current_user_keys(
     Ok(())
 }
 
+/// TopicQueryExtension::TRENDING_SCORE_SQL: each vote weighs less the
+/// older it is, by hours.
+pub const TRENDING_SCORE_SQL: &str = "COALESCE(( \
+    SELECT SUM(1.0 / (EXTRACT(EPOCH FROM (NOW() - tv.created_at)) / 3600.0 + 2.0)) \
+    FROM topic_voting_votes tv WHERE tv.topic_id = topics.id), 0)";
+
 /// The `votes` list order (TopicQuery.results_filter_callbacks): by vote
 /// count, then bump.
 pub fn votes_order(ascending: bool) -> String {

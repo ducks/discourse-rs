@@ -120,6 +120,25 @@ const FILTERS: &[&str] = &[
 /// `Discourse.anonymous_filters`
 const ANONYMOUS_FILTERS: &[&str] = &["latest", "top", "categories", "hot"];
 
+/// What the bundled plugins push onto `Discourse.filters`,
+/// `anonymous_filters`, `top_menu_items` and `anonymous_top_menu_items`
+/// when they load, enabled or not: discourse-topic-voting's `votes`.
+const PLUGIN_FILTERS: &[&str] = &["votes"];
+
+/// `Discourse.filters` with the plugins'.
+fn filters() -> Vec<&'static str> {
+    FILTERS.iter().chain(PLUGIN_FILTERS).copied().collect()
+}
+
+/// `Discourse.anonymous_filters` with the plugins'.
+fn anonymous_filters() -> Vec<&'static str> {
+    ANONYMOUS_FILTERS
+        .iter()
+        .chain(PLUGIN_FILTERS)
+        .copied()
+        .collect()
+}
+
 /// `TopTopic.periods`
 const PERIODS: &[&str] = &["all", "yearly", "quarterly", "monthly", "weekly", "daily"];
 
@@ -300,7 +319,7 @@ impl Site<'_> {
         }
         out.insert("trust_levels".into(), enum_object(TRUST_LEVELS));
         out.insert("groups".into(), self.groups().await?);
-        out.insert("filters".into(), str_list(FILTERS));
+        out.insert("filters".into(), str_list(&filters()));
         out.insert(
             "anonymous_list_filters".into(),
             self.anonymous_list_filters(),
@@ -565,7 +584,7 @@ impl Site<'_> {
     async fn login_required_json(&mut self) -> Result<Value, SiteError> {
         let mut out = Map::new();
         out.insert("periods".into(), str_list(PERIODS));
-        out.insert("filters".into(), str_list(FILTERS));
+        out.insert("filters".into(), str_list(&filters()));
         out.insert(
             "anonymous_list_filters".into(),
             self.anonymous_list_filters(),
@@ -594,10 +613,11 @@ impl Site<'_> {
 
     /// `Discourse.filters & Discourse.anonymous_filters`, in filters order.
     fn anonymous_list_filters(&self) -> Value {
+        let anonymous = anonymous_filters();
         json!(
-            FILTERS
-                .iter()
-                .filter(|f| ANONYMOUS_FILTERS.contains(f))
+            filters()
+                .into_iter()
+                .filter(|f| anonymous.contains(f))
                 .collect::<Vec<_>>()
         )
     }
@@ -619,20 +639,22 @@ impl Site<'_> {
         if !self.truthy("enable_unified_new")? {
             choices.push("unread");
         }
-        for f in FILTERS {
-            if *f != "unread" && !choices.contains(f) {
+        for f in filters() {
+            if f != "unread" && !choices.contains(&f) {
                 choices.push(f);
             }
         }
         Ok(json!(choices))
     }
 
-    /// `Discourse.top_menu_items`: filters + categories.
+    /// `Discourse.top_menu_items`: core's filters + categories, memoized
+    /// before the plugins push theirs onto the end.
     fn top_menu_items(&self) -> Value {
         json!(
             FILTERS
                 .iter()
                 .chain(["categories"].iter())
+                .chain(PLUGIN_FILTERS)
                 .collect::<Vec<_>>()
         )
     }
@@ -644,6 +666,7 @@ impl Site<'_> {
             ANONYMOUS_FILTERS
                 .iter()
                 .chain(["categories", "top"].iter())
+                .chain(PLUGIN_FILTERS)
                 .collect::<Vec<_>>()
         )
     }

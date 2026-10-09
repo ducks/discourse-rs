@@ -1,0 +1,15 @@
+{
+  "user": "user2",
+  "setup": [
+    "INSERT INTO topic_voting_category_settings (category_id, created_at, updated_at) VALUES (4, now(), now())",
+    "INSERT INTO topic_voting_votes (topic_id, user_id, archive, created_at, updated_at) VALUES (41, 3, false, now() - interval '2 hours', now()), (41, 4, false, now() - interval '3 hours', now()), (5, 4, false, now() - interval '100 hours', now()), (35, 3, true, now() - interval '1 hour', now())",
+    "INSERT INTO topic_voting_topic_vote_count (topic_id, votes_count, created_at, updated_at) VALUES (41, 2, now(), now()), (5, 1, now(), now()), (35, 1, now(), now()) ON CONFLICT (topic_id) DO UPDATE SET votes_count = EXCLUDED.votes_count"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/latest.json?state=my_votes",
+      "params": {}
+    }
+  ]
+}

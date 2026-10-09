@@ -1,0 +1,91 @@
+{
+  "name": "latest_my_votes",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/latest.json?state=my_votes",
+      "params": {}
+    }
+  ],
+  "started_at": "2026-10-09T07:12:43.357443",
+  "transaction_started_at": "2026-10-09T07:12:42.459914",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "topic_list": {
+          "can_create_topic": true,
+          "filter": "latest",
+          "per_page": 30,
+          "top_tags": [
+            {
+              "id": 2,
+              "name": "guide",
+              "slug": "guide"
+            },
+            {
+              "id": 1,
+              "name": "howto",
+              "slug": "howto"
+            }
+          ],
+          "topics": []
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 291,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "6gN/GBLczSKk0edyqY2nkQpDFaY=",
+            "created_at": "2026-10-09T07:12:42.814878",
+            "rotated_at": "2026-10-09T07:12:42.814622",
+            "updated_at": "2026-10-09T07:12:42.814878",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "6gN/GBLczSKk0edyqY2nkQpDFaY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 291,
+            "seen_at": "2026-10-09T07:12:43.363676",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "6gN/GBLczSKk0edyqY2nkQpDFaY=",
+            "created_at": "2026-10-09T07:12:42.814878",
+            "rotated_at": "2026-10-09T07:12:42.814622",
+            "updated_at": "2026-10-09T07:12:42.814878",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "6gN/GBLczSKk0edyqY2nkQpDFaY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "setup": [
+    "INSERT INTO topic_voting_category_settings (category_id, created_at, updated_at) VALUES (4, now(), now())",
+    "INSERT INTO topic_voting_votes (topic_id, user_id, archive, created_at, updated_at) VALUES (41, 3, false, now() - interval '2 hours', now()), (41, 4, false, now() - interval '3 hours', now()), (5, 4, false, now() - interval '100 hours', now()), (35, 3, true, now() - interval '1 hour', now())",
+    "INSERT INTO topic_voting_topic_vote_count (topic_id, votes_count, created_at, updated_at) VALUES (41, 2, now(), now()), (5, 1, now(), now()), (35, 1, now(), now()) ON CONFLICT (topic_id) DO UPDATE SET votes_count = EXCLUDED.votes_count"
+  ],
+  "recorded_from": {
+    "case": "69bc4a18305a6d7b3abfcf6d7749d1d9ac5ec8520f099d4551dcf89a2e20870b",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

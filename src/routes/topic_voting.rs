@@ -156,3 +156,79 @@ pub async fn who(
     .await?;
     Ok(respond(&state, outcome))
 }
+
+/// GET /topics/voted-by/:username(.json): ListController#voted_by, the
+/// topics the user holds an active vote on. The HTML page is the profile's
+/// votes tab, not ported yet.
+pub async fn voted_by(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    axum::extract::Path(username): axum::extract::Path<String>,
+    axum::extract::Query(params): axum::extract::Query<super::list::ListParams>,
+) -> Result<Response, AppError> {
+    let Some(username) = username.strip_suffix(".json") else {
+        return Err(crate::Unsupported("the voted_by HTML page").into());
+    };
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    // ensure_discourse_topic_voting
+    if !crate::plugins::topic_voting::enabled(&settings)?
+        || !settings.get("topic_voting_show_votes_on_profile")?.truthy()
+    {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    // fetch_user_from_params(include_inactive: staff)
+    let target: Option<(i32, bool)> =
+        sqlx::query_as("SELECT id, active FROM users WHERE username_lower = $1 LIMIT 1")
+            .bind(username.to_lowercase())
+            .fetch_optional(&mut *conn)
+            .await?;
+    let user_id = match target {
+        Some((id, active)) if active || guardian.is_staff() || guardian.is_me(id) => id,
+        _ => return Ok(super::topics::not_found_response(&state)),
+    };
+    let mut options = match super::list::build_options(&params, &settings)? {
+        Ok(o) => o,
+        Err(message) => return Ok(super::list::invalid_list_params(&state, &message, true)),
+    };
+    options.no_definitions = false;
+    if params.period.is_some() {
+        return Err(crate::Unsupported("period on the voted_by list").into());
+    }
+    let topics = crate::topic_query::TopicQuery {
+        conn: &mut conn,
+        settings: &settings,
+        guardian: &guardian,
+        options: options.clone(),
+        category: Default::default(),
+        tags: Default::default(),
+        filter: Default::default(),
+        user: Default::default(),
+    }
+    .list(crate::topic_query::Filter::VotedBy(user_id))
+    .await?;
+    let urls = Urls {
+        config: &state.config,
+        settings: &settings,
+    };
+    let list_path = format!(
+        "{}/topics/voted-by/{username}",
+        state.config.globals.relative_url_root()
+    );
+    let more = super::list::next_url(&list_path, &params, &options, false);
+    let json = crate::topic_list::TopicListSerializer {
+        conn: &mut conn,
+        settings: &settings,
+        i18n: &state.i18n,
+        guardian: &guardian,
+        urls: &urls,
+        more_topics_url: Some(more),
+        category_id: None,
+        group_id: None,
+        prefetched: Default::default(),
+    }
+    .serialize(&topics)
+    .await?;
+    Ok(Json(json).into_response())
+}

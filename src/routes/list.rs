@@ -93,6 +93,9 @@ fn validated_options(params: &ListParams, settings: &SiteSettings) -> Result<Opt
     if let Some(order) = params.order.as_deref().filter(|o| !o.is_empty()) {
         options.order = Some(order.to_string());
     }
+    if let Some(state) = params.rest.get("state").filter(|s| !s.is_empty()) {
+        options.state = Some(state.clone());
+    }
     if let Some(ascending) = params.ascending.as_deref().filter(|a| !a.is_empty()) {
         options.ascending = match ascending {
             "true" => true,
@@ -125,6 +128,9 @@ pub(super) fn next_url(
         pairs.push(("order", o.clone()));
     }
     pairs.push(("page", (options.page + 1).to_string()));
+    if let Some(state) = &options.state {
+        pairs.push(("state", state.clone()));
+    }
     if let Some(p) = options.per_page.filter(|_| true) {
         pairs.push(("per_page", p.to_string()));
     }
@@ -787,11 +793,13 @@ pub enum ListKind {
     Read,
     Posted,
     Bookmarks,
+    /// discourse-topic-voting's
+    Votes,
 }
 
 impl ListKind {
     /// `Discourse.filters` (`anonymous_filters` first), as route segments.
-    pub const ALL: [(&'static str, ListKind); 9] = [
+    pub const ALL: [(&'static str, ListKind); 10] = [
         ("latest", ListKind::Latest),
         ("top", ListKind::Top),
         ("hot", ListKind::Hot),
@@ -801,6 +809,7 @@ impl ListKind {
         ("read", ListKind::Read),
         ("posted", ListKind::Posted),
         ("bookmarks", ListKind::Bookmarks),
+        ("votes", ListKind::Votes),
     ];
 
     pub fn name(self) -> &'static str {
@@ -830,6 +839,7 @@ impl ListKind {
             ListKind::Read => Filter::Read,
             ListKind::Posted => Filter::Posted,
             ListKind::Bookmarks => Filter::Bookmarks,
+            ListKind::Votes => Filter::Votes,
         }
     }
 
@@ -1099,8 +1109,8 @@ fn ensure_logged_in(state: &AppState, guardian: &Guardian, kind: ListKind) -> Op
     Some(super::login_required::not_logged_in(state))
 }
 
-/// GET /unread, /new, /unseen, /read, /posted, /bookmarks (.json): the
-/// login-only front lists, one handler keyed by the path.
+/// GET /unread, /new, /unseen, /read, /posted, /bookmarks, /votes (.json):
+/// the front lists without their own handler, keyed by the path.
 pub async fn user_list(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
