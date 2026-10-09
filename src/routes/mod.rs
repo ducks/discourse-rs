@@ -43,131 +43,22 @@ mod user_update;
 mod users;
 
 use axum::Router;
-use axum::http::header;
-use axum::response::IntoResponse;
 use axum::routing::{delete, get, post, put};
 use tower_http::services::ServeDir;
 
 use crate::AppState;
 
-const SITE_CSS: &str = include_str!("../../static/site.css");
-
-/// The ported stylesheets (static/css), in the order Discourse's common
-/// stylesheet imports their sources, after normalize.css.
-const DISCOURSE_CSS: &str = concat!(
-    include_str!("../../static/vendor/normalize.css"),
-    include_str!("../../static/css/foundation.css"),
-    include_str!("../../static/css/buttons.css"),
-    include_str!("../../static/css/d-icon.css"),
-    include_str!("../../static/css/header.css"),
-    include_str!("../../static/css/navs.css"),
-    include_str!("../../static/css/welcome-banner.css"),
-    include_str!("../../static/css/topic-list.css"),
-    include_str!("../../static/css/categories.css"),
-    include_str!("../../static/css/sidebar.css"),
-    include_str!("../../static/css/topic.css"),
-    include_str!("../../static/css/user.css"),
-    include_str!("../../static/css/user-stream.css"),
-    include_str!("../../static/css/composer.css"),
-    include_str!("../../static/css/menus.css"),
-    include_str!("../../static/css/not-found.css"),
-    include_str!("../../static/css/powered-by.css"),
-    // The bundled plugins' stylesheets, after core's.
-    include_str!("../../static/css/topic-voting.css"),
-);
-
-async fn discourse_css() -> impl IntoResponse {
-    (
-        [(header::CONTENT_TYPE, "text/css; charset=utf-8")],
-        DISCOURSE_CSS,
-    )
-}
-
 /// The Font Awesome icons the pages use, as a sprite of <symbol>s
 /// (scripts/build-icon-sprite), which the layout includes inline.
 pub const ICONS_SVG: &str = include_str!("../../static/vendor/icons.svg");
 
-async fn site_css() -> impl IntoResponse {
-    (
-        [(header::CONTENT_TYPE, "text/css; charset=utf-8")],
-        SITE_CSS,
-    )
-}
-
-// htmx and its SSE extension, vendored from npm (static/vendor/README).
-const HTMX: &str = include_str!("../../static/vendor/htmx.min.js");
-const HTMX_SSE: &str = include_str!("../../static/vendor/htmx-ext-sse.js");
-const SIDEBAR_JS: &str = include_str!("../../static/js/sidebar.js");
-const TOPIC_JS: &str = include_str!("../../static/js/topic.js");
-const TOPIC_VOTING_JS: &str = include_str!("../../static/js/topic-voting.js");
-const TRACKING_MENU_JS: &str = include_str!("../../static/js/tracking-menu.js");
-const COMPOSER_JS: &str = include_str!("../../static/js/composer.js");
-const SCREEN_TRACK_JS: &str = include_str!("../../static/js/screen-track.js");
-/// Discourse's frontend/discourse/scripts/js/onpopstate-handler.js (GPL-2.0),
-/// which the not-found page loads.
-const ONPOPSTATE_HANDLER_JS: &str = include_str!("../../static/js/onpopstate-handler.js");
-
-async fn htmx() -> impl IntoResponse {
-    (
-        [(header::CONTENT_TYPE, "text/javascript; charset=utf-8")],
-        HTMX,
-    )
-}
-
-async fn sidebar_js() -> impl IntoResponse {
-    (
-        [(header::CONTENT_TYPE, "text/javascript; charset=utf-8")],
-        SIDEBAR_JS,
-    )
-}
-
-async fn tracking_menu_js() -> impl IntoResponse {
-    (
-        [(header::CONTENT_TYPE, "text/javascript; charset=utf-8")],
-        TRACKING_MENU_JS,
-    )
-}
-
-async fn topic_voting_js() -> impl IntoResponse {
-    (
-        [(header::CONTENT_TYPE, "text/javascript; charset=utf-8")],
-        TOPIC_VOTING_JS,
-    )
-}
-
-async fn topic_js() -> impl IntoResponse {
-    (
-        [(header::CONTENT_TYPE, "text/javascript; charset=utf-8")],
-        TOPIC_JS,
-    )
-}
-
-async fn composer_js() -> impl IntoResponse {
-    (
-        [(header::CONTENT_TYPE, "text/javascript; charset=utf-8")],
-        COMPOSER_JS,
-    )
-}
-
-async fn screen_track_js() -> impl IntoResponse {
-    (
-        [(header::CONTENT_TYPE, "text/javascript; charset=utf-8")],
-        SCREEN_TRACK_JS,
-    )
-}
-
-async fn onpopstate_handler_js() -> impl IntoResponse {
-    (
-        [(header::CONTENT_TYPE, "text/javascript; charset=utf-8")],
-        ONPOPSTATE_HANDLER_JS,
-    )
-}
-
-async fn htmx_sse() -> impl IntoResponse {
-    (
-        [(header::CONTENT_TYPE, "text/javascript; charset=utf-8")],
-        HTMX_SSE,
-    )
+/// GET /assets/<name>: the embedded stylesheets and scripts (crate::assets).
+async fn asset(uri: axum::http::Uri, headers: axum::http::HeaderMap) -> axum::response::Response {
+    let name = uri
+        .path()
+        .trim_start_matches('/')
+        .trim_start_matches("assets/");
+    crate::assets::serve(name, uri.query(), &headers)
 }
 
 pub fn router(state: &AppState) -> Router<AppState> {
@@ -576,8 +467,8 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/site.json", get(site::site))
         .route("/site/basic-info", get(site::basic_info))
         .route("/site/basic-info.json", get(site::basic_info))
-        .route("/assets/site.css", get(site_css))
-        .route("/assets/discourse.css", get(discourse_css))
+        .route("/assets/site.css", get(asset))
+        .route("/assets/discourse.css", get(asset))
         .route(
             "/assets/color_definitions_light.css",
             get(stylesheets::light),
@@ -588,18 +479,15 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/letter_avatar_proxy/{version}/letter/{letter}/{color}/{size}",
             get(user_avatars::show_proxy_letter),
         )
-        .route("/assets/htmx.min.js", get(htmx))
-        .route("/assets/htmx-ext-sse.js", get(htmx_sse))
-        .route("/assets/sidebar.js", get(sidebar_js))
-        .route("/assets/topic.js", get(topic_js))
-        .route("/assets/topic-voting.js", get(topic_voting_js))
-        .route("/assets/tracking-menu.js", get(tracking_menu_js))
-        .route("/assets/composer.js", get(composer_js))
-        .route("/assets/screen-track.js", get(screen_track_js))
-        .route(
-            "/assets/js/onpopstate-handler.js",
-            get(onpopstate_handler_js),
-        )
+        .route("/assets/htmx.min.js", get(asset))
+        .route("/assets/htmx-ext-sse.js", get(asset))
+        .route("/assets/sidebar.js", get(asset))
+        .route("/assets/topic.js", get(asset))
+        .route("/assets/topic-voting.js", get(asset))
+        .route("/assets/tracking-menu.js", get(asset))
+        .route("/assets/composer.js", get(asset))
+        .route("/assets/screen-track.js", get(asset))
+        .route("/assets/js/onpopstate-handler.js", get(asset))
         .route("/assets/markdown.wasm", get(composer::markdown_wasm))
         .route(
             "/assets/markdown-settings.json",

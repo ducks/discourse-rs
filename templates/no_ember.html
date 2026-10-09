@@ -39,9 +39,9 @@
     {% endif %}
     {% block head %}{% endblock %}
     <link rel="stylesheet" href="{{ base_path }}/assets/color_definitions_light.css">
-    <link rel="stylesheet" href="{{ base_path }}/assets/discourse.css">
+    <link rel="stylesheet" href="{{ crate::assets::url(base_path, "discourse.css") }}">
     {#- Styles of the pages not ported to Discourse's look yet. -#}
-    <link rel="stylesheet" href="{{ base_path }}/assets/site.css">
+    <link rel="stylesheet" href="{{ crate::assets::url(base_path, "site.css") }}">
   </head>
   {#- Rails' no_ember layout, for its server-rendered pages (the error
       pages): app/views/layouts/no_ember.html.erb with

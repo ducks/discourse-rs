@@ -44,7 +44,7 @@
   <div class="more-topics"><a href="{{ url }}" rel="next">Next page</a></div>
   {% endif %}
 </div>
-{% if !category_controls.is_empty() %}<script src="{{ base_path }}/assets/tracking-menu.js"></script>{% endif %}
+{% if !category_controls.is_empty() %}<script src="{{ crate::assets::url(base_path, "tracking-menu.js") }}"></script>{% endif %}
 {% endblock %}
 {#- The new-or-updated banner and a member's counts arrive on the page's
     stream. -#}

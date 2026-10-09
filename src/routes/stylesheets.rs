@@ -3,7 +3,7 @@
 //! light palette, and its dark scheme when it has one.
 
 use axum::extract::{Path, State};
-use axum::http::{StatusCode, header};
+use axum::http::{HeaderMap, StatusCode, header};
 use axum::response::{IntoResponse, Response};
 
 use crate::color_scheme::ColorScheme;
@@ -34,15 +34,23 @@ async fn scheme_css(
     Ok(Some(css(&colors)))
 }
 
-fn stylesheet(body: Option<String>) -> Response {
+/// The stylesheet, revalidated by its ETag on every use: it follows the
+/// color scheme in the database, so it is never cached for good.
+fn stylesheet(headers: &HeaderMap, body: Option<String>) -> Response {
     match body {
-        Some(body) => ([(header::CONTENT_TYPE, "text/css; charset=utf-8")], body).into_response(),
+        Some(body) => {
+            let digest = crate::assets::digest_of(body.as_bytes());
+            crate::assets::cached(headers, "text/css; charset=utf-8", body, &digest, false)
+        }
         None => StatusCode::NOT_FOUND.into_response(),
     }
 }
 
 /// The light scheme: the default theme's, else the base palette.
-pub async fn light(State(state): State<AppState>) -> Result<Response, AppError> {
+pub async fn light(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+) -> Result<Response, AppError> {
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
@@ -55,12 +63,13 @@ pub async fn light(State(state): State<AppState>) -> Result<Response, AppError> 
             .flatten();
     let body = scheme_css(&mut conn, scheme_id).await?;
     Ok(stylesheet(
+        &headers,
         body.map(|css| css + &font_css(&state, &settings)),
     ))
 }
 
 /// The default theme's dark scheme (`dark_scheme_id`), if it has one.
-pub async fn dark(State(state): State<AppState>) -> Result<Response, AppError> {
+pub async fn dark(State(state): State<AppState>, headers: HeaderMap) -> Result<Response, AppError> {
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
@@ -75,6 +84,7 @@ pub async fn dark(State(state): State<AppState>) -> Result<Response, AppError> {
         Some(id) => {
             let body = scheme_css(&mut conn, Some(id)).await?;
             Ok(stylesheet(
+                &headers,
                 body.map(|css| css + &font_css(&state, &settings)),
             ))
         }

@@ -280,5 +280,8 @@ async fn topic_page_has_its_map_timeline_footer_and_suggestions() {
         "no posters column"
     );
     assert!(html.contains(r#"<h3 class="more-topics__browse-more">Want to read more? Browse other topics in <a class="badge-category__wrapper ""#));
-    assert!(html.contains(r#"<script src="/assets/topic.js"></script>"#));
+    assert!(html.contains(&format!(
+        r#"<script src="{}"></script>"#,
+        discourse_rs::assets::url("", "topic.js")
+    )));
 }

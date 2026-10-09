@@ -1875,7 +1875,10 @@ async fn members_get_the_composer_and_raw_posts() {
     client.login("user1", "password").await;
     let page = client.get("/latest").await.body;
     assert!(page.contains(r#"<div id="reply-control" class="closed hide-preview""#));
-    assert!(page.contains(r#"<script src="/assets/composer.js" defer></script>"#));
+    assert!(page.contains(&format!(
+        r#"<script src="{}" defer></script>"#,
+        discourse_rs::assets::url("", "composer.js")
+    )));
     assert!(page.contains(r#"id="create-topic" type="button">"#));
     // The chooser: the categories user1 may create topics in, the
     // default_composer_category selected.
@@ -1892,7 +1895,10 @@ async fn members_get_the_composer_and_raw_posts() {
     assert!(page.contains(r#"class="btn no-text btn-icon post-action-menu__edit edit btn-flat" data-post-id="36" data-post-number="2""#));
     assert!(page.contains(r#"<section class="topic-area" data-topic-id="35" id="topic">"#));
     // A member's reading is timed (static/js/screen-track.js).
-    assert!(page.contains(r#"<script src="/assets/screen-track.js" defer></script>"#));
+    assert!(page.contains(&format!(
+        r#"<script src="{}" defer></script>"#,
+        discourse_rs::assets::url("", "screen-track.js")
+    )));
     let anon_topic = anon
         .get("/t/parity-fixture-replies-and-posters/35")
         .await

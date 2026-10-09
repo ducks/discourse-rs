@@ -49,7 +49,10 @@ async fn anonymous_pages_have_the_sidebar() {
     assert!(
         html.contains(r#"<nav aria-label="Sidebar" class="sidebar-container" id="d-sidebar">"#)
     );
-    assert!(html.contains(r#"<script src="/assets/sidebar.js"></script>"#));
+    assert!(html.contains(&format!(
+        r#"<script src="{}"></script>"#,
+        discourse_rs::assets::url("", "sidebar.js")
+    )));
 
     // The community section: Topics, active on the latest list, and the
     // secondary links behind More. A member's links are left out.

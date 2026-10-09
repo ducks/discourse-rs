@@ -39,13 +39,13 @@
     {% if !bus_position.is_empty() %}
     <meta name="bus-position" content="{{ bus_position }}">
     {% endif %}
-    <script src="{{ base_path }}/assets/htmx.min.js" defer></script>
-    <script src="{{ base_path }}/assets/htmx-ext-sse.js" defer></script>
+    <script src="{{ crate::assets::url(base_path, "htmx.min.js") }}" defer></script>
+    <script src="{{ crate::assets::url(base_path, "htmx-ext-sse.js") }}" defer></script>
     {% block head %}{% endblock %}
     <link rel="stylesheet" href="{{ base_path }}/assets/color_definitions_light.css">
-    <link rel="stylesheet" href="{{ base_path }}/assets/discourse.css">
+    <link rel="stylesheet" href="{{ crate::assets::url(base_path, "discourse.css") }}">
     {#- Styles of the pages not ported to Discourse's look yet. -#}
-    <link rel="stylesheet" href="{{ base_path }}/assets/site.css">
+    <link rel="stylesheet" href="{{ crate::assets::url(base_path, "site.css") }}">
   </head>
   {#- A member's htmx requests carry their CSRF token, as Rails' client does. -#}
   <body class="{{ chrome.body_classes }}"{% if let Some(v) = viewer %} hx-headers='{"X-CSRF-Token": "{{ v.csrf_token }}", "X-Requested-With": "XMLHttpRequest"}'{% endif %}>
@@ -132,7 +132,7 @@
           {{ chrome.sidebar|safe }}
           {#- Applies the stored hidden and collapsed state before the page
               paints, then handles the toggles. -#}
-          <script src="{{ base_path }}/assets/sidebar.js"></script>
+          <script src="{{ crate::assets::url(base_path, "sidebar.js") }}"></script>
           {%- endif %}
           <div id="main-outlet"{% block main_outlet_attrs %}{% endblock %}>
             {% block content %}{% endblock %}
@@ -144,7 +144,7 @@
       </div>
       {%- if !chrome.composer.is_empty() %}
       {{ chrome.composer|safe }}
-      <script src="{{ base_path }}/assets/composer.js" defer></script>
+      <script src="{{ crate::assets::url(base_path, "composer.js") }}" defer></script>
       {%- endif %}
     </section>
     {#- Pages that follow more (a topic, a list) override this; a member
