@@ -771,7 +771,7 @@ impl Context<'_> {
     }
 
     /// `can_see_category?`
-    async fn can_see_category(&mut self, category_id: i64) -> Result<bool, AppError> {
+    pub(crate) async fn can_see_category(&mut self, category_id: i64) -> Result<bool, AppError> {
         let read_restricted: Option<bool> =
             sqlx::query_scalar("SELECT read_restricted FROM categories WHERE id = $1")
                 .bind(category_id)
@@ -791,7 +791,7 @@ impl Context<'_> {
     }
 
     /// `Chat::BaseChannelMembershipSerializer`
-    async fn membership(
+    pub(crate) async fn membership(
         &mut self,
         channel: &ChannelRow,
         m: &MembershipRow,

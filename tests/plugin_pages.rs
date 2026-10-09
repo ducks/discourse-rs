@@ -563,3 +563,37 @@ async fn the_browser_lists_channels() {
         filtered.contains("data-channel-id=\"1\"") && !filtered.contains("data-channel-id=\"2\"")
     );
 }
+
+#[tokio::test]
+async fn membership_controls_follow_the_membership() {
+    let db = TestDb::new().await;
+    sqlx::query("UPDATE user_chat_channel_memberships SET starred = TRUE WHERE user_id = 3 AND chat_channel_id = 2")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    // user2 was seen before, so their first page doesn't auto-join them.
+    sqlx::query("UPDATE users SET first_seen_at = now() - interval '1 day', last_seen_at = now() - interval '1 day' WHERE id = 4")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Client::logged_in(st.clone(), "user1").await;
+    let html = user1.page("/chat/c/general/2").await;
+    assert!(
+        html.contains("c-navbar__star-channel-button --starred"),
+        "{html}"
+    );
+    assert!(html.contains("data-section-name=\"chat-starred-channels\""));
+    assert!(html.contains("data-last-read=\"0\" data-following=\"true\""));
+    // user2 follows nothing: the browser offers to join, the channel
+    // shows its preview card.
+    let mut user2 = Client::logged_in(st, "user2").await;
+    let browse = user2.page("/chat/browse/open").await;
+    assert!(browse.contains("toggle-channel-membership-button -join btn-primary btn-small chat-channel-card__join-btn"), "{browse}");
+    let channel = user2.page("/chat/c/general/2").await;
+    assert!(
+        channel.contains("<div class=\"chat-channel-preview-card --logged-in\">"),
+        "{channel}"
+    );
+    assert!(!channel.contains("chat-composer__wrapper"));
+}

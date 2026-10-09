@@ -9,6 +9,7 @@
 
 pub mod auto_join;
 pub mod channels;
+pub mod membership;
 pub mod messages;
 pub mod page;
 pub mod view;

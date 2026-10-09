@@ -1,0 +1,9 @@
+{
+  "user": "user2",
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/chat/api/channels/2/memberships/me/follows.json"
+    }
+  ]
+}

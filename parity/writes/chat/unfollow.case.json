@@ -1,0 +1,12 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE user_chat_channel_memberships SET starred = true WHERE user_id = 3 AND chat_channel_id = 2"
+  ],
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/chat/api/channels/2/memberships/me/follows.json"
+    }
+  ]
+}

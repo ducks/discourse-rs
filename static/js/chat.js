@@ -193,7 +193,179 @@
     }
   });
 
-  Discourse.onPage(function () {
+  function basePath() {
+    var page = document.querySelector(".full-page-chat[data-base-path]");
+    return page ? page.dataset.basePath : "";
+  }
+
+  function csrfHeaders() {
+    var headers = {};
+    try {
+      headers = JSON.parse(document.body.getAttribute("hx-headers") || "{}");
+    } catch (e) {
+      // No token: the server refuses the request and says so.
+    }
+    headers["Content-Type"] = "application/x-www-form-urlencoded";
+    headers["X-Requested-With"] = "XMLHttpRequest";
+    return headers;
+  }
+
+  // A chat API request; errors as popupAjaxError shows them.
+  function api(method, path, params) {
+    return fetch(basePath() + "/chat/api" + path, {
+      method: method,
+      credentials: "same-origin",
+      headers: csrfHeaders(),
+      body: params ? new URLSearchParams(params).toString() : undefined,
+    }).then(function (r) {
+      if (r.ok) {
+        return r.json();
+      }
+      return r
+        .json()
+        .catch(function () {
+          return {};
+        })
+        .then(function (body) {
+          window.alert((body.errors || [r.statusText]).join("\n"));
+          throw new Error(r.statusText);
+        });
+    });
+  }
+
+  // The parts of the page a membership change redraws (the chat page,
+  // chat's sidebar sections), from the page as the server now draws it:
+  // what Ember's tracked state redraws in place.
+  function refresh() {
+    return fetch(location.href, { credentials: "same-origin" })
+      .then(function (r) {
+        return r.text();
+      })
+      .then(function (html) {
+        var next = new DOMParser().parseFromString(html, "text/html");
+        var page = document.querySelector(".full-page-chat");
+        var nextPage = next.querySelector(".full-page-chat");
+        if (page && nextPage) {
+          teardown();
+          page.replaceWith(nextPage);
+          setup();
+        }
+        refreshSidebar(next);
+      });
+  }
+
+  function refreshSidebar(next) {
+    var sections = document.querySelector(".sidebar-sections");
+    if (!sections) {
+      return;
+    }
+    var collapsed = {};
+    var old = sections.querySelectorAll(".sidebar-section[data-section-name^='chat-']");
+    old.forEach(function (section) {
+      collapsed[section.dataset.sectionName] = section.classList.contains("sidebar-section--collapsed");
+    });
+    var anchor = old.length ? old[0].previousElementSibling : sections.lastElementChild;
+    old.forEach(function (section) {
+      section.remove();
+    });
+    next.querySelectorAll(".sidebar-sections > .sidebar-section[data-section-name^='chat-']").forEach(function (section) {
+      if (anchor) {
+        anchor.after(section);
+      } else {
+        sections.prepend(section);
+      }
+      anchor = section;
+      if (collapsed[section.dataset.sectionName] && Discourse.setSidebarSectionExpanded) {
+        Discourse.setSidebarSectionExpanded(section, false);
+      }
+    });
+  }
+
+  function cardChannelId(button) {
+    var card = button.closest("[data-channel-id]");
+    if (card) {
+      return card.dataset.channelId;
+    }
+    var channel = document.querySelector(".chat-channel[data-id]");
+    return channel ? channel.dataset.id : null;
+  }
+
+  document.addEventListener("click", function (event) {
+    var button = event.target.closest(
+      ".toggle-channel-membership-button, .c-navbar__star-channel-button"
+    );
+    if (!button || button.disabled) {
+      return;
+    }
+    var id = cardChannelId(button);
+    if (!id) {
+      return;
+    }
+    var request;
+    if (button.classList.contains("c-navbar__star-channel-button")) {
+      // toggleStarred
+      request = api("PUT", "/channels/" + id + "/memberships/me", {
+        starred: !button.classList.contains("--starred"),
+      });
+    } else if (button.classList.contains("-join")) {
+      // followChannel
+      request = api("POST", "/channels/" + id + "/memberships/me");
+    } else {
+      // unfollowChannel
+      request = api("DELETE", "/channels/" + id + "/memberships/me/follows");
+    }
+    button.disabled = true;
+    request.then(refresh).catch(function () {
+      button.disabled = false;
+    });
+  });
+
+  // updateLastReadMessage: the last message whose bottom shows, once the
+  // pane has settled, marks the channel read up to it.
+  function lastVisibleMessage(channel) {
+    var scroller = channel.querySelector(".chat-messages-scroller");
+    if (!scroller) {
+      return null;
+    }
+    var view = scroller.getBoundingClientRect();
+    var found = null;
+    channel.querySelectorAll(".chat-message-container[data-id]").forEach(function (message) {
+      var rect = message.getBoundingClientRect();
+      if (rect.bottom <= view.bottom + 1 && rect.bottom >= view.top) {
+        found = message;
+      }
+    });
+    return found;
+  }
+
+  function markRead(channel) {
+    if (channel.dataset.following !== "true" || document.visibilityState !== "visible") {
+      return;
+    }
+    var message = lastVisibleMessage(channel);
+    if (!message) {
+      return;
+    }
+    var id = Number(message.dataset.id);
+    if (id <= Number(channel.dataset.lastRead || 0)) {
+      return;
+    }
+    channel.dataset.lastRead = String(id);
+    api("PUT", "/channels/" + channel.dataset.id + "/read?message_id=" + id).then(function () {
+      // The sidebar's unread dot goes once the last message is read.
+      return fetch(location.href, { credentials: "same-origin" })
+        .then(function (r) {
+          return r.text();
+        })
+        .then(function (html) {
+          refreshSidebar(new DOMParser().parseFromString(html, "text/html"));
+        });
+    });
+  }
+
+  var cleanup = null;
+
+  function setup() {
     var channel = document.querySelector(".chat-channel[data-id]");
     if (!channel) {
       return;
@@ -202,12 +374,43 @@
     drawSeparators(channel);
     decorateLinks(channel);
     positionSeparators(channel);
+    var timer = null;
+    var scheduleRead = function () {
+      clearTimeout(timer);
+      timer = setTimeout(function () {
+        markRead(channel);
+      }, 1000);
+    };
     var onResize = function () {
       positionSeparators(channel);
+      scheduleRead();
     };
+    var scroller = channel.querySelector(".chat-messages-scroller");
     window.addEventListener("resize", onResize);
-    return function () {
+    document.addEventListener("visibilitychange", scheduleRead);
+    if (scroller) {
+      scroller.addEventListener("scroll", scheduleRead, { passive: true });
+    }
+    scheduleRead();
+    cleanup = function () {
+      clearTimeout(timer);
       window.removeEventListener("resize", onResize);
+      document.removeEventListener("visibilitychange", scheduleRead);
+      if (scroller) {
+        scroller.removeEventListener("scroll", scheduleRead);
+      }
     };
+  }
+
+  function teardown() {
+    if (cleanup) {
+      cleanup();
+      cleanup = null;
+    }
+  }
+
+  Discourse.onPage(function () {
+    setup();
+    return teardown;
   });
 })();

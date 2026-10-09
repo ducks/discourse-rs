@@ -56,9 +56,13 @@ struct View<'a> {
 impl Context<'_> {
     /// The chat page around a route's content (templates/chat.gjs with the
     /// core sidebar).
-    pub fn full_page(content: &str) -> String {
+    /// `chat_view`: mainOutletModifierClasses' chat-view, off for the
+    /// browse and channel info routes.
+    pub fn full_page(content: &str, base_path: &str, chat_view: bool) -> String {
         format!(
-            "<div id=\"chat-progress-bar-container\"></div><div class=\"full-page-chat full-page-chat-sidebar-enabled\"><div class=\"main-chat-outlet chat-view\" id=\"main-chat-outlet\">{content}</div></div>"
+            "<div id=\"chat-progress-bar-container\"></div><div class=\"full-page-chat full-page-chat-sidebar-enabled\" data-base-path=\"{}\"><div class=\"main-chat-outlet{}\" id=\"main-chat-outlet\">{content}</div></div>",
+            escape(base_path),
+            if chat_view { " chat-view" } else { "" }
         )
     }
 
@@ -117,7 +121,7 @@ impl Context<'_> {
             classes.push_str(" is-empty");
         }
         out.push_str(&format!(
-            "<div class=\"{classes}\" data-id=\"{}\" data-label-today=\"{}\" data-label-yesterday=\"{}\" data-label-last-visit=\"{}\" data-format-time=\"{}\" data-format-tiny=\"{}\" data-format-title=\"{}\" data-format-date=\"{}\">",
+            "<div class=\"{classes}\" data-id=\"{}\" data-label-today=\"{}\" data-label-yesterday=\"{}\" data-label-last-visit=\"{}\" data-format-time=\"{}\" data-format-tiny=\"{}\" data-format-title=\"{}\" data-format-date=\"{}\" data-last-read=\"{}\" data-following=\"{}\">",
             channel.id,
             escape(&t("chat.chat_message_separator.today")),
             escape(&t("chat.chat_message_separator.yesterday")),
@@ -127,6 +131,8 @@ impl Context<'_> {
             escape(&t("dates.long_with_year")),
             // moment's LL, in English.
             "MMMM D, YYYY",
+            last_read.unwrap_or(0),
+            following,
         ));
         out.push_str(&channel_status(&channel_json, &t));
         out.push_str(&format!(

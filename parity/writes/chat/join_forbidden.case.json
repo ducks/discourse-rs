@@ -1,0 +1,13 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/chat/api/channels/1/memberships/me.json"
+    },
+    {
+      "method": "POST",
+      "path": "/chat/api/channels/99/memberships/me.json"
+    }
+  ]
+}

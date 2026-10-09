@@ -178,6 +178,30 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/chat/api/channels/{id}/memberships.json",
             get(chat::memberships),
         )
+        .route("/chat/api/channels/read", put(chat::mark_all_read))
+        .route("/chat/api/channels/read.json", put(chat::mark_all_read))
+        .route("/chat/api/channels/{id}/read", put(chat::mark_read))
+        .route("/chat/api/channels/{id}/read.json", put(chat::mark_read))
+        .route(
+            "/chat/api/channels/{id}/memberships/me",
+            post(chat::own_membership)
+                .put(chat::own_membership)
+                .delete(chat::own_membership),
+        )
+        .route(
+            "/chat/api/channels/{id}/memberships/me.json",
+            post(chat::own_membership)
+                .put(chat::own_membership)
+                .delete(chat::own_membership),
+        )
+        .route(
+            "/chat/api/channels/{id}/memberships/me/follows",
+            delete(chat::unfollow),
+        )
+        .route(
+            "/chat/api/channels/{id}/memberships/me/follows.json",
+            delete(chat::unfollow),
+        )
         .route("/chat/api/channels/{id}/messages", get(chat::messages))
         .route("/chat/api/channels/{id}/messages.json", get(chat::messages))
         // discourse-solved's AnswerController.

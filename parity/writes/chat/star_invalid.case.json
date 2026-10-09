@@ -1,0 +1,17 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/chat/api/channels/2/memberships/me.json",
+      "params": {}
+    },
+    {
+      "method": "PUT",
+      "path": "/chat/api/channels/2/memberships/me.json",
+      "params": {
+        "starred": "maybe"
+      }
+    }
+  ]
+}

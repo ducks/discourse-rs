@@ -98,6 +98,9 @@
       });
   }
 
+  // For scripts that redraw sections (chat's, after a membership change).
+  Discourse.setSidebarSectionExpanded = setSectionExpanded;
+
   // Stored state. A section holding the current page stays open
   // (expandWhenActive).
   Discourse.onPage(function () {

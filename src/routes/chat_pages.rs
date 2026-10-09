@@ -96,6 +96,7 @@ async fn render(
     active: Active,
     title: String,
     content: &str,
+    chat_view: bool,
 ) -> Result<Response, AppError> {
     let base_path = state.config.globals.relative_url_root();
     let bus_position = crate::bus::page_position(&state.bus).await?;
@@ -123,7 +124,7 @@ async fn render(
         bus_position: site.bus_position,
         chrome: site.chrome,
         title,
-        main: Context::full_page(content),
+        main: Context::full_page(content, base_path, chat_view),
     };
     let response = Html(page.render().map_err(crate::html::HtmlError::from)?).into_response();
     Ok(crate::html::with_viewer_headers(response, &vs))
@@ -264,6 +265,7 @@ pub async fn browse(
         Active::Chat,
         title,
         &content,
+        false,
     )
     .await
 }
@@ -357,6 +359,7 @@ pub async fn channel(
         Active::ChatChannel(channel.id),
         title,
         &content,
+        true,
     )
     .await
 }
@@ -383,6 +386,7 @@ pub async fn disabled(
         Active::Chat,
         title,
         &content,
+        true,
     )
     .await
 }

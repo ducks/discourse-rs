@@ -305,3 +305,158 @@ pub async fn messages(
     tx.commit().await?;
     Ok(response)
 }
+
+/// A write's request: the CSRF check, then the guard; the transaction,
+/// settings and params, or the response refusing it.
+async fn begin_write(
+    state: &AppState,
+    guardian: &crate::guardian::Guardian,
+    headers: &axum::http::HeaderMap,
+    uri: &Uri,
+    method: &str,
+    body: &[u8],
+) -> Result<
+    Result<
+        (
+            sqlx::Transaction<'static, sqlx::Postgres>,
+            SiteSettings,
+            serde_json::Map<String, serde_json::Value>,
+        ),
+        Response,
+    >,
+    AppError,
+> {
+    let p = params::parse(uri.query(), headers, body);
+    let form: Vec<(String, String)> = p
+        .iter()
+        .filter_map(|(k, v)| params::scalar(v).map(|v| (k.clone(), v)))
+        .collect();
+    if !super::session::csrf_ok(state, headers, &form, uri.path(), method) {
+        return Ok(Err(super::session::bad_csrf()));
+    }
+    let mut tx = state.pool.begin().await?;
+    let settings = match begin(state, &mut tx, guardian).await? {
+        Ok(settings) => settings,
+        Err(refused) => return Ok(Err(refused)),
+    };
+    Ok(Ok((tx, settings, p)))
+}
+
+/// A membership write's outcome as its controller answers it.
+fn membership_response(
+    state: &AppState,
+    outcome: crate::plugins::chat::membership::Outcome,
+) -> Response {
+    use crate::plugins::chat::membership::Outcome;
+    match outcome {
+        Outcome::Done(body) => Json(body).into_response(),
+        Outcome::NotFound => super::topics::not_found_response(state),
+        Outcome::Forbidden => super::search::invalid_access(state),
+        Outcome::Invalid(errors) => (
+            axum::http::StatusCode::BAD_REQUEST,
+            Json(json!({"failed": "FAILED", "errors": errors})),
+        )
+            .into_response(),
+        Outcome::InvalidParameter(name) => super::search::invalid_parameters(state, name),
+    }
+}
+
+/// The channel id a path names (an integer param cast as ActiveModel
+/// casts it; anything else finds no channel).
+fn path_channel_id(id: &str) -> i64 {
+    cast_integer(Some(id.strip_suffix(".json").unwrap_or(id))).unwrap_or(0)
+}
+
+/// POST, PUT and DELETE /chat/api/channels/:channel_id/memberships/me:
+/// ChannelsCurrentUserMembershipController (join, star, leave).
+pub async fn own_membership(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    method: axum::http::Method,
+    headers: axum::http::HeaderMap,
+    Path(id): Path<String>,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    let (mut tx, settings, p) =
+        match begin_write(&state, &guardian, &headers, &uri, method.as_str(), &body).await? {
+            Ok(begun) => begun,
+            Err(refused) => return Ok(refused),
+        };
+    let channel_id = path_channel_id(&id);
+    let mut cx = context(&state, &mut tx, &settings, &guardian);
+    let outcome = match method.as_str() {
+        "POST" => cx.join(channel_id).await?,
+        "PUT" => {
+            let starred = cast_boolean(p.get("starred").and_then(params::scalar).as_deref());
+            cx.star(channel_id, starred).await?
+        }
+        _ => cx.leave(channel_id).await?,
+    };
+    tx.commit().await?;
+    Ok(membership_response(&state, outcome))
+}
+
+/// DELETE /chat/api/channels/:channel_id/memberships/me/follows:
+/// Chat::UnfollowChannel.
+pub async fn unfollow(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    Path(id): Path<String>,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    let (mut tx, settings, _) =
+        match begin_write(&state, &guardian, &headers, &uri, "DELETE", &body).await? {
+            Ok(begun) => begun,
+            Err(refused) => return Ok(refused),
+        };
+    let outcome = context(&state, &mut tx, &settings, &guardian)
+        .unfollow(path_channel_id(&id))
+        .await?;
+    tx.commit().await?;
+    Ok(membership_response(&state, outcome))
+}
+
+/// PUT /chat/api/channels/:channel_id/read: Chat::UpdateUserChannelLastRead.
+pub async fn mark_read(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    Path(id): Path<String>,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    let (mut tx, settings, p) =
+        match begin_write(&state, &guardian, &headers, &uri, "PUT", &body).await? {
+            Ok(begun) => begun,
+            Err(refused) => return Ok(refused),
+        };
+    let message_id = cast_integer(p.get("message_id").and_then(params::scalar).as_deref());
+    let outcome = context(&state, &mut tx, &settings, &guardian)
+        .mark_read(&state.bus, path_channel_id(&id), message_id)
+        .await?;
+    tx.commit().await?;
+    Ok(membership_response(&state, outcome))
+}
+
+/// PUT /chat/api/channels/read: Chat::MarkAllUserChannelsRead.
+pub async fn mark_all_read(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    let (mut tx, settings, _) =
+        match begin_write(&state, &guardian, &headers, &uri, "PUT", &body).await? {
+            Ok(begun) => begun,
+            Err(refused) => return Ok(refused),
+        };
+    let outcome = context(&state, &mut tx, &settings, &guardian)
+        .mark_all_read(&state.bus)
+        .await?;
+    tx.commit().await?;
+    Ok(membership_response(&state, outcome))
+}
