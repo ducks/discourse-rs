@@ -2,6 +2,7 @@ pub mod accounts;
 pub mod admin_site_settings;
 pub mod admin_user_show;
 pub mod admin_users;
+pub mod anonymous_cache;
 pub mod assets;
 pub mod avatar;
 pub mod badge_granter;
@@ -122,6 +123,8 @@ pub struct AppState {
     pub mailer: email::Mailer,
     /// Live updates to browsers (MessageBus's role).
     pub bus: pg_bus::Bus,
+    /// Anonymous responses kept for the actions that allow it.
+    pub anonymous_cache: Arc<anonymous_cache::Cache>,
 }
 
 pub fn app(state: AppState) -> Router {
@@ -135,10 +138,16 @@ pub fn app(state: AppState) -> Router {
         .layer(axum::middleware::from_fn(routes::method_override))
         .layer(axum::middleware::from_fn(routes::request_format))
         .layer(axum::middleware::from_fn_with_state(
-            state,
+            state.clone(),
             session::current::layer,
         ))
         .layer(compression())
+        // Outside compression: a hit runs nothing else and is sent as it
+        // was stored, compressed for the encoding in its key.
+        .layer(axum::middleware::from_fn_with_state(
+            state,
+            anonymous_cache::layer,
+        ))
         .layer(TraceLayer::new_for_http())
 }
 
