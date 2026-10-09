@@ -23,6 +23,39 @@ Caveats that apply to every run:
 - Same box, same Postgres, client and servers all local; keep-alive off so
   each request carries a connection.
 
+## 2026-10-09, fixing what the run above found
+
+Same box, seed and c=2, discourse-rs only, release builds at each step.
+
+Logged-in /srv/status regression: on the same seed database the
+2026-10-01 build (5e1cd1a) serves 4970 req/s logged in and the build
+before the fix 3850, with the same four queries per request. perf under
+load showed half the CPU in malloc and free from SiteSettings::load
+cloning the whole resolved settings map on every cache hit. The map now
+sits behind an Arc (perf/logged-in-floor):
+
+| endpoint, logged in (median of 3) | 2026-10-01 build | before | after |
+|---|---:|---:|---:|
+| /srv/status | 4990 | 3899 | 6550 |
+| /latest.json | 963 | 680 | 963 |
+
+Skipping the connection the session layer took after each logged-in
+response to look for notifications to clear measured within noise.
+
+Caching and compression (perf/asset-caching, perf/compression), Chromium,
+median of five, the page and everything it loads:
+
+| visit | before | after |
+|---|---:|---:|
+| /latest, cold cache: document | 75 KB | 18 KB |
+| /latest, cold cache: total | 772 KB | 497 KB |
+| a topic after /latest, same session: total | about 280 KB | 27 KB |
+
+What is left of a cold visit is mostly the Inter font (344 KB woff2,
+cached for good once fetched). The anonymous /srv/status floor sits
+around 18000 req/s against about 20000 for the 2026-10-01 build; not
+chased further.
+
 ## 2026-10-09, after topic voting
 
 Release binary at ac53196, rustc 1.99, the seed fixtures
