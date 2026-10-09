@@ -182,6 +182,8 @@ pub fn router(state: &AppState) -> Router<AppState> {
         )
         .route("/chat/api/channels/read", put(chat::mark_all_read))
         .route("/chat/api/channels/read.json", put(chat::mark_all_read))
+        .route("/chat/api/channels/{id}/drafts", post(chat::draft))
+        .route("/chat/api/channels/{id}/drafts.json", post(chat::draft))
         .route("/chat/api/channels/{id}/read", put(chat::mark_read))
         .route("/chat/api/channels/{id}/read.json", put(chat::mark_read))
         .route(

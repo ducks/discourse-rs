@@ -1,0 +1,121 @@
+{
+  "name": "draft_cleared",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/chat/api/channels/2/drafts.json",
+      "params": {}
+    },
+    {
+      "method": "POST",
+      "path": "/chat/api/channels/1/drafts.json",
+      "params": {
+        "data": {
+          "message": "x"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/chat/api/channels/99/drafts.json",
+      "params": {
+        "data": {
+          "message": "x"
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-09T21:47:49.679003",
+  "transaction_started_at": "2026-10-09T21:47:48.616997",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "failed": "FAILED"
+      }
+    },
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    }
+  ],
+  "changes": {
+    "chat_drafts": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 1,
+          "data": "{\"message\":\"old\"}",
+          "user_id": 3,
+          "thread_id": null,
+          "created_at": "2026-10-09T21:42:48.616997",
+          "updated_at": "2026-10-09T21:42:48.616997",
+          "chat_channel_id": 2
+        }
+      ],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 429,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "M3Ee++vM19vhv/nJRkOvYb4ZzO4=",
+            "created_at": "2026-10-09T21:47:48.987778",
+            "rotated_at": "2026-10-09T21:47:48.987531",
+            "updated_at": "2026-10-09T21:47:48.987778",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "M3Ee++vM19vhv/nJRkOvYb4ZzO4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 429,
+            "seen_at": "2026-10-09T21:47:49.686902",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "M3Ee++vM19vhv/nJRkOvYb4ZzO4=",
+            "created_at": "2026-10-09T21:47:48.987778",
+            "rotated_at": "2026-10-09T21:47:48.987531",
+            "updated_at": "2026-10-09T21:47:48.987778",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "M3Ee++vM19vhv/nJRkOvYb4ZzO4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO chat_drafts (user_id, chat_channel_id, data, created_at, updated_at) VALUES (3, 2, '{\"message\":\"old\"}', now() - interval '5 minutes', now() - interval '5 minutes')"
+  ],
+  "recorded_from": {
+    "case": "72ec8cf8b44b028d67b4d527c3f68f8d4202a6d174a5e016b20f6cfcd578678b",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

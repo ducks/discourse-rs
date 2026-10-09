@@ -201,7 +201,7 @@ const EMAIL_FREQUENCIES: [&str; 2] = ["never", "when_away"];
 pub(crate) const HEADER_INDICATORS: [&str; 4] =
     ["all_new", "dm_and_mentions", "never", "only_mentions"];
 pub(crate) const SIDEBAR_MODES: [&str; 4] = ["default", "never", "always", "fullscreen"];
-const SEND_SHORTCUTS: [&str; 2] = ["enter", "meta_enter"];
+pub(crate) const SEND_SHORTCUTS: [&str; 2] = ["enter", "meta_enter"];
 const QUICK_REACTION_TYPES: [&str; 2] = ["frequent", "custom"];
 
 /// The keys chat adds to UserOptionSerializer, in their order.

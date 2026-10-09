@@ -358,6 +358,11 @@ fn membership_response(
         )
             .into_response(),
         Outcome::InvalidParameter(name) => super::search::invalid_parameters(state, name),
+        Outcome::Unprocessable => (
+            axum::http::StatusCode::UNPROCESSABLE_ENTITY,
+            Json(json!({"failed": "FAILED"})),
+        )
+            .into_response(),
     }
 }
 
@@ -516,4 +521,26 @@ pub async fn create_message(
             .into_response(),
     };
     Ok(response)
+}
+
+/// POST /chat/api/channels/:channel_id/drafts: Chat::UpsertDraft.
+pub async fn draft(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    Path(id): Path<String>,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    let (mut tx, settings, p) =
+        match begin_write(&state, &guardian, &headers, &uri, "POST", &body).await? {
+            Ok(begun) => begun,
+            Err(refused) => return Ok(refused),
+        };
+    let thread_id = p.get("thread_id").and_then(params::scalar);
+    let outcome = context(&state, &mut tx, &settings, &guardian)
+        .upsert_draft(path_channel_id(&id), p.get("data"), thread_id.as_deref())
+        .await?;
+    tx.commit().await?;
+    Ok(membership_response(&state, outcome))
 }

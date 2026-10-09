@@ -363,6 +363,145 @@
     });
   }
 
+  // ChatComposer: the send button follows hasContent, the draft is saved
+  // two seconds after typing stops (persistDraft), and the send shortcut
+  // (Enter, or Ctrl/Cmd+Enter with meta_enter) or the button sends.
+  function composerParts() {
+    var wrapper = document.querySelector(".chat-composer__wrapper");
+    if (!wrapper) {
+      return null;
+    }
+    return {
+      wrapper: wrapper,
+      composer: wrapper.querySelector(".chat-composer"),
+      input: wrapper.querySelector("#channel-composer"),
+      send: wrapper.querySelector(".chat-composer-button.-send"),
+      channel: document.querySelector(".chat-channel[data-id]"),
+    };
+  }
+
+  function hasContent(parts) {
+    var min = Number(parts.wrapper.dataset.minLength || 1) || 1;
+    return parts.input.value.length >= min;
+  }
+
+  function updateSendState(parts) {
+    var enabled = hasContent(parts) && !parts.input.disabled;
+    parts.composer.classList.toggle("is-send-enabled", enabled);
+    parts.composer.classList.toggle("is-send-disabled", !enabled);
+    parts.send.disabled = !enabled;
+    parts.send.tabIndex = enabled ? 0 : -1;
+  }
+
+  var draftTimer = null;
+
+  function saveDraft(parts) {
+    clearTimeout(draftTimer);
+    parts.composer.classList.remove("is-draft-saved");
+    parts.composer.classList.add("is-draft-unsaved");
+    var channelId = parts.channel.dataset.id;
+    var message = parts.input.value;
+    draftTimer = setTimeout(function () {
+      // toJSONDraft: null for an empty draft, which removes it.
+      var params = message.length ? { "data[message]": message } : undefined;
+      api("POST", "/channels/" + channelId + "/drafts", params)
+        .then(function () {
+          parts.composer.classList.remove("is-draft-unsaved");
+          parts.composer.classList.add("is-draft-saved");
+        })
+        .catch(function () {});
+    }, 2000);
+  }
+
+  function sendMessage(parts) {
+    if (!hasContent(parts) || parts.input.disabled || parts.composer.classList.contains("is-sending")) {
+      return;
+    }
+    clearTimeout(draftTimer);
+    var message = parts.input.value;
+    var stagedId = "staged-" + Date.now() + "-" + Math.floor(Math.random() * 1e6);
+    // The composer empties as the message goes (Ember stages it), and gets
+    // its text back if sending fails.
+    parts.input.value = "";
+    updateSendState(parts);
+    parts.composer.classList.add("is-sending");
+    fetch(basePath() + "/chat/" + parts.channel.dataset.id, {
+      method: "POST",
+      credentials: "same-origin",
+      headers: csrfHeaders(),
+      body: new URLSearchParams({
+        message: message,
+        staged_id: stagedId,
+        client_created_at: new Date().toISOString(),
+      }).toString(),
+    })
+      .then(function (r) {
+        if (r.ok) {
+          // What was typed while it went stays in the composer.
+          var typed = parts.input.value;
+          return refresh().then(function () {
+            var now = composerParts();
+            if (now && typed) {
+              now.input.value = typed;
+            }
+          });
+        }
+        return r
+          .json()
+          .catch(function () {
+            return {};
+          })
+          .then(function (body) {
+            parts.input.value = message + parts.input.value;
+            window.alert((body.errors || [r.statusText]).join("\n"));
+          });
+      })
+      .finally(function () {
+        var now = composerParts();
+        if (now) {
+          now.composer.classList.remove("is-sending");
+          updateSendState(now);
+          now.input.focus();
+        }
+      });
+  }
+
+  document.addEventListener("input", function (event) {
+    if (event.target.id !== "channel-composer") {
+      return;
+    }
+    var parts = composerParts();
+    if (parts) {
+      updateSendState(parts);
+      saveDraft(parts);
+    }
+  });
+
+  document.addEventListener("keydown", function (event) {
+    if (event.target.id !== "channel-composer" || event.key !== "Enter" || event.isComposing) {
+      return;
+    }
+    var parts = composerParts();
+    if (!parts) {
+      return;
+    }
+    var metaEnter = parts.wrapper.dataset.sendShortcut === "meta_enter";
+    var sends = metaEnter ? event.ctrlKey || event.metaKey : !event.shiftKey && !event.ctrlKey && !event.metaKey;
+    if (sends) {
+      event.preventDefault();
+      sendMessage(parts);
+    }
+  });
+
+  document.addEventListener("click", function (event) {
+    if (event.target.closest(".chat-composer-button.-send")) {
+      var parts = composerParts();
+      if (parts) {
+        sendMessage(parts);
+      }
+    }
+  });
+
   var cleanup = null;
 
   function setup() {
@@ -392,7 +531,15 @@
       scroller.addEventListener("scroll", scheduleRead, { passive: true });
     }
     scheduleRead();
+    var parts = composerParts();
+    if (parts) {
+      updateSendState(parts);
+      if (!parts.input.disabled) {
+        parts.input.focus({ preventScroll: true });
+      }
+    }
     cleanup = function () {
+      clearTimeout(draftTimer);
       clearTimeout(timer);
       window.removeEventListener("resize", onResize);
       document.removeEventListener("visibilitychange", scheduleRead);

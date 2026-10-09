@@ -389,7 +389,23 @@ impl Context<'_> {
         };
         let draft = self.draft_message(channel.id).await?;
         let disabled_attr = if disabled { " disabled=\"\"" } else { "" };
-        let mut out = String::from("<div class=\"chat-composer__wrapper\">");
+        // What chat.js sends with: the minimum length (hasContent) and the
+        // member's send shortcut.
+        let shortcut = match self.guardian.user_id() {
+            Some(id) => super::options(&mut *self.conn, id)
+                .await?
+                .and_then(|o| {
+                    super::SEND_SHORTCUTS
+                        .get(usize::try_from(o.send_shortcut).unwrap_or(0))
+                        .copied()
+                })
+                .unwrap_or("enter"),
+            None => "enter",
+        };
+        let mut out = format!(
+            "<div class=\"chat-composer__wrapper\" data-min-length=\"{}\" data-send-shortcut=\"{shortcut}\">",
+            self.settings.get("chat_minimum_message_length")?.to_i()
+        );
         out.push_str(&format!(
             "<div aria-label=\"{}\" class=\"chat-composer is-send-disabled {} is-draft-saved\" role=\"region\"><div class=\"chat-composer__outer-container\"><div class=\"chat-composer__inner-container\">",
             escape(&t("chat.aria_roles.composer")),
@@ -443,7 +459,12 @@ impl Context<'_> {
         let Some(Some(data)) = data else {
             return Ok(String::new());
         };
-        let draft: Value = serde_json::from_str(&data).unwrap_or(Value::Null);
+        // What UpsertDraft stores is Ruby's inspect of the client's hash,
+        // which the client's JSON.parse throws on: such a draft shows as
+        // none here.
+        let Ok(draft) = serde_json::from_str::<Value>(&data) else {
+            return Ok(String::new());
+        };
         let only_text = draft.as_object().is_some_and(|o| {
             o.iter().all(|(k, v)| match k.as_str() {
                 "message" => true,

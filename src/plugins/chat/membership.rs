@@ -20,6 +20,8 @@ pub enum Outcome {
     Invalid(Vec<String>),
     /// Discourse::InvalidParameters for this parameter (400).
     InvalidParameter(&'static str),
+    /// A failed service without its own answer (422, `failed_json`).
+    Unprocessable,
 }
 
 const MEMBERSHIP_COLUMNS: &str = "chat_channel_id, following, muted, notification_level, \
@@ -467,5 +469,75 @@ impl Context<'_> {
         Ok(Outcome::Done(
             json!({ "success": "OK", "updated_memberships": memberships }),
         ))
+    }
+}
+
+impl Context<'_> {
+    /// POST /chat/api/channels/:id/drafts: Chat::UpsertDraft. The contract
+    /// types `data` as a string, so the client's draft object is stored as
+    /// Ruby writes the parameter hash (`{message: "..."}`), as Rails
+    /// stores it; a blank one removes the draft.
+    pub async fn upsert_draft(
+        &mut self,
+        channel_id: i64,
+        data: Option<&Value>,
+        thread_id: Option<&str>,
+    ) -> Result<Outcome, AppError> {
+        let data = match data {
+            None | Some(Value::Null) => String::new(),
+            Some(Value::String(s)) => s.clone(),
+            Some(v) => crate::ruby::inspect_value(v),
+        };
+        let max = self.settings.get("max_chat_draft_length")?.to_i();
+        if data.chars().count() as i64 > max {
+            return Ok(Outcome::Invalid(vec![format!(
+                "Data is too long (maximum is {max} characters)"
+            )]));
+        }
+        let Some(channel) = self.find_channel(channel_id).await? else {
+            return Ok(Outcome::NotFound);
+        };
+        // policy :can_upsert_draft, failing as the service fails (422).
+        if !self.can_join(&channel, None).await? {
+            return Ok(Outcome::Unprocessable);
+        }
+        if thread_id.is_some_and(|t| !t.trim().is_empty()) {
+            return Err(Unsupported("chat thread drafts").into());
+        }
+        let user_id = self.guardian.user_id().unwrap_or(0);
+        let now = crate::clock::now_naive();
+        if crate::ruby::is_blank(&data) {
+            sqlx::query(
+                "DELETE FROM chat_drafts WHERE user_id = $1 AND chat_channel_id = $2 AND thread_id IS NULL",
+            )
+            .bind(user_id)
+            .bind(channel.id)
+            .execute(&mut *self.conn)
+            .await?;
+        } else {
+            let updated = sqlx::query(
+                "UPDATE chat_drafts SET data = $3, updated_at = $4 \
+                 WHERE user_id = $1 AND chat_channel_id = $2 AND thread_id IS NULL",
+            )
+            .bind(user_id)
+            .bind(channel.id)
+            .bind(&data)
+            .bind(now)
+            .execute(&mut *self.conn)
+            .await?;
+            if updated.rows_affected() == 0 {
+                sqlx::query(
+                    "INSERT INTO chat_drafts (user_id, chat_channel_id, data, created_at, updated_at) \
+                     VALUES ($1, $2, $3, $4, $4)",
+                )
+                .bind(user_id)
+                .bind(channel.id)
+                .bind(&data)
+                .bind(now)
+                .execute(&mut *self.conn)
+                .await?;
+            }
+        }
+        Ok(Outcome::Done(json!({ "success": "OK" })))
     }
 }

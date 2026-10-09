@@ -1,0 +1,31 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO chat_drafts (user_id, chat_channel_id, data, created_at, updated_at) VALUES (3, 2, '{\"message\":\"old\"}', now() - interval '5 minutes', now() - interval '5 minutes')"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/chat/api/channels/2/drafts.json",
+      "params": {}
+    },
+    {
+      "method": "POST",
+      "path": "/chat/api/channels/1/drafts.json",
+      "params": {
+        "data": {
+          "message": "x"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/chat/api/channels/99/drafts.json",
+      "params": {
+        "data": {
+          "message": "x"
+        }
+      }
+    }
+  ]
+}

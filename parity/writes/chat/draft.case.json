@@ -1,0 +1,23 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/chat/api/channels/2/drafts.json",
+      "params": {
+        "data": {
+          "message": "half typed"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/chat/api/channels/2/drafts.json",
+      "params": {
+        "data": {
+          "message": "more typed"
+        }
+      }
+    }
+  ]
+}

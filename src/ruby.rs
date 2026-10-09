@@ -75,6 +75,73 @@ pub fn cgi_escape(s: &str) -> String {
     out
 }
 
+/// `String#inspect`: quoted, with `"`, `\` and the control characters
+/// escaped (`#` too before `{`, `$` or `@`).
+pub fn inspect_string(s: &str) -> String {
+    let mut out = String::from("\"");
+    let mut chars = s.chars().peekable();
+    while let Some(c) = chars.next() {
+        match c {
+            '"' => out.push_str("\\\""),
+            '\\' => out.push_str("\\\\"),
+            '\n' => out.push_str("\\n"),
+            '\t' => out.push_str("\\t"),
+            '\r' => out.push_str("\\r"),
+            '\u{1b}' => out.push_str("\\e"),
+            '\u{7}' => out.push_str("\\a"),
+            '\u{8}' => out.push_str("\\b"),
+            '\u{b}' => out.push_str("\\v"),
+            '\u{c}' => out.push_str("\\f"),
+            '#' if matches!(chars.peek(), Some('{' | '$' | '@')) => out.push_str("\\#"),
+            c if (c as u32) < 0x20 || c == '\u{7f}' => {
+                out.push_str(&format!("\\x{:02X}", c as u32));
+            }
+            c => out.push(c),
+        }
+    }
+    out.push('"');
+    out
+}
+
+/// `Hash#inspect` (and `Array#inspect`) of a deep-symbolized parameter
+/// hash, as Ruby 3.4 writes it: `{key: value}`, a key that isn't a plain
+/// symbol quoted (`"a b": 1`).
+pub fn inspect_value(value: &serde_json::Value) -> String {
+    use serde_json::Value;
+    match value {
+        Value::Null => "nil".into(),
+        Value::Bool(b) => b.to_string(),
+        Value::Number(n) => n.to_string(),
+        Value::String(s) => inspect_string(s),
+        Value::Array(items) => format!(
+            "[{}]",
+            items
+                .iter()
+                .map(inspect_value)
+                .collect::<Vec<_>>()
+                .join(", ")
+        ),
+        Value::Object(map) => {
+            if map.is_empty() {
+                return "{}".into();
+            }
+            let pairs: Vec<String> = map
+                .iter()
+                .map(|(k, v)| {
+                    let plain = k
+                        .chars()
+                        .next()
+                        .is_some_and(|c| c.is_ascii_alphabetic() || c == '_')
+                        && k.chars().all(|c| c.is_ascii_alphanumeric() || c == '_');
+                    let key = if plain { k.clone() } else { inspect_string(k) };
+                    format!("{key}: {}", inspect_value(v))
+                })
+                .collect();
+            format!("{{{}}}", pairs.join(", "))
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
