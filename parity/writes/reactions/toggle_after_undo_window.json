@@ -1,0 +1,78 @@
+{
+  "name": "toggle_after_undo_window",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/discourse-reactions/posts/52/custom-reactions/laughing/toggle.json",
+      "params": {}
+    }
+  ],
+  "started_at": "2026-10-09T12:13:45.730958",
+  "transaction_started_at": "2026-10-09T12:13:44.648411",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 317,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "RCvEwt9moijwjGTBwL285sWATzM=",
+            "created_at": "2026-10-09T12:13:45.009001",
+            "rotated_at": "2026-10-09T12:13:45.008736",
+            "updated_at": "2026-10-09T12:13:45.009001",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "RCvEwt9moijwjGTBwL285sWATzM=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 317,
+            "seen_at": "2026-10-09T12:13:45.743662",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "RCvEwt9moijwjGTBwL285sWATzM=",
+            "created_at": "2026-10-09T12:13:45.009001",
+            "rotated_at": "2026-10-09T12:13:45.008736",
+            "updated_at": "2026-10-09T12:13:45.009001",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "RCvEwt9moijwjGTBwL285sWATzM=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO discourse_reactions_reactions (post_id, reaction_type, reaction_value, reaction_users_count, created_at, updated_at) VALUES (52, 0, 'clap', 1, now() - interval '90 minutes', now() - interval '90 minutes')",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) SELECT id, 3, 52, now() - interval '90 minutes', now() - interval '90 minutes' FROM discourse_reactions_reactions WHERE post_id = 52 AND reaction_value = 'clap'",
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (52, 3, 2, now() - interval '90 minutes', now() - interval '90 minutes')"
+  ],
+  "recorded_from": {
+    "case": "00011f0776e91bd3425df48060d6b42d6ea5403e13b4337a6539d432cd117567",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

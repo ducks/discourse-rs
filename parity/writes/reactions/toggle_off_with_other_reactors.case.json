@@ -1,0 +1,23 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO discourse_reactions_reactions (post_id, reaction_type, reaction_value, reaction_users_count, created_at, updated_at) VALUES (52, 0, 'laughing', 1, now() - interval '5 minutes', now() - interval '5 minutes')",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) SELECT id, 4, 52, now() - interval '5 minutes', now() - interval '5 minutes' FROM discourse_reactions_reactions WHERE post_id = 52 AND reaction_value = 'laughing'",
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (52, 4, 2, now() - interval '5 minutes', now() - interval '5 minutes')",
+    "INSERT INTO discourse_reactions_reactions (post_id, reaction_type, reaction_value, reaction_users_count, created_at, updated_at) VALUES (52, 0, 'heart', 1, now() - interval '4 minutes', now() - interval '4 minutes')",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) SELECT id, 5, 52, now() - interval '4 minutes', now() - interval '4 minutes' FROM discourse_reactions_reactions WHERE post_id = 52 AND reaction_value = 'heart'",
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (52, 5, 2, now() - interval '4 minutes', now() - interval '4 minutes')"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/discourse-reactions/posts/52/custom-reactions/clap/toggle.json",
+      "params": {}
+    },
+    {
+      "method": "PUT",
+      "path": "/discourse-reactions/posts/52/custom-reactions/clap/toggle.json",
+      "params": {}
+    }
+  ]
+}

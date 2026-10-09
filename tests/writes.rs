@@ -758,12 +758,18 @@ async fn align_sequences(pool: &PgPool, case: &Value, setup_counts: Option<HashM
         return;
     };
     for (table, change) in changes {
-        let Some(first) = change["inserted"]
+        let Some(smallest) = change["inserted"]
             .as_array()
             .and_then(|rows| rows.iter().filter_map(|r| r["id"].as_i64()).min())
         else {
             continue;
         };
+        // Where the recording's sequence stood when the requests began
+        // (older recordings: the smallest new id, which is off when the
+        // case inserts and deletes rows again).
+        let first = case["next_ids"][table.as_str()]
+            .as_i64()
+            .unwrap_or(smallest);
         let sequence: Option<String> =
             sqlx::query_scalar("SELECT pg_get_serial_sequence($1, 'id')")
                 .bind(format!("public.{table}"))

@@ -1,0 +1,18 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (52, 4, 2, now() - interval '5 minutes', now() - interval '5 minutes')",
+    "UPDATE user_options SET like_notification_frequency = 0 WHERE user_id = 2",
+    "INSERT INTO notifications (notification_type, user_id, topic_id, post_number, data, read, high_priority, created_at, updated_at) VALUES (5, 2, 35, 5, '{\"topic_title\": \"Parity fixture: replies and posters\", \"original_post_id\": 52, \"original_post_type\": 1, \"original_username\": \"user2\", \"revision_number\": null, \"display_username\": \"user2\"}', FALSE, FALSE, now() - interval '5 minutes', now() - interval '5 minutes')"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/post_actions.json",
+      "params": {
+        "id": 52,
+        "post_action_type_id": 2
+      }
+    }
+  ]
+}

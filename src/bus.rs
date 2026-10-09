@@ -211,6 +211,22 @@ pub async fn publish_to_topic(
     Ok(())
 }
 
+/// `MessageBus.publish(channel, message,
+/// topic.secure_audience_publish_messages)` on a channel of the topic's
+/// other than `/topic/:id`.
+pub async fn publish_to_topic_channel(
+    bus: &pg_bus::Bus,
+    conn: &mut PgConnection,
+    topic_id: i32,
+    channel: &str,
+    message: &Value,
+) -> Result<(), AppError> {
+    if let Some(tags) = topic_audience(conn, topic_id).await? {
+        bus.publish(conn, channel, message, tags.as_deref()).await?;
+    }
+    Ok(())
+}
+
 fn audience(tags: Vec<String>) -> Option<Option<Vec<String>>> {
     if tags.is_empty() {
         None

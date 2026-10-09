@@ -1,0 +1,625 @@
+{
+  "name": "toggle_off_with_other_reactors",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/discourse-reactions/posts/52/custom-reactions/clap/toggle.json",
+      "params": {}
+    },
+    {
+      "method": "PUT",
+      "path": "/discourse-reactions/posts/52/custom-reactions/clap/toggle.json",
+      "params": {}
+    }
+  ],
+  "started_at": "2026-10-09T12:14:01.231435",
+  "transaction_started_at": "2026-10-09T12:14:00.080973",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "id": 52,
+        "name": "User0",
+        "username": "user0",
+        "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+        "created_at": "2026-10-01T15:39:51.834Z",
+        "cooked": "<p>Reply from user0 mentioning <a class=\"mention\" href=\"/u/user1\">@user1</a> so a mention notification exists.</p>",
+        "post_number": 5,
+        "post_type": 1,
+        "posts_count": 5,
+        "updated_at": "2026-10-01T15:39:51.834Z",
+        "reply_count": 0,
+        "reply_to_post_number": null,
+        "quote_count": 0,
+        "incoming_link_count": 0,
+        "reads": 1,
+        "readers_count": 0,
+        "score": 0.2,
+        "yours": false,
+        "topic_id": 35,
+        "topic_slug": "parity-fixture-replies-and-posters",
+        "display_username": "User0",
+        "primary_group_name": null,
+        "flair_name": null,
+        "flair_url": null,
+        "flair_bg_color": null,
+        "flair_color": null,
+        "flair_group_id": null,
+        "badges_granted": [],
+        "version": 1,
+        "can_edit": false,
+        "can_delete": false,
+        "can_recover": false,
+        "can_see_hidden_post": false,
+        "can_wiki": false,
+        "user_title": null,
+        "bookmarked": true,
+        "bookmark_reminder_at": null,
+        "bookmark_id": 5,
+        "bookmark_name": "Parity fixture: reminder sent",
+        "bookmark_auto_delete_preference": 3,
+        "actions_summary": [
+          {
+            "id": 2,
+            "can_act": true
+          },
+          {
+            "id": 6,
+            "can_act": true
+          },
+          {
+            "id": 3,
+            "can_act": true
+          },
+          {
+            "id": 4,
+            "can_act": true
+          },
+          {
+            "id": 8,
+            "can_act": true
+          },
+          {
+            "id": 10,
+            "can_act": true
+          },
+          {
+            "id": 7,
+            "can_act": true
+          }
+        ],
+        "moderator": false,
+        "admin": false,
+        "staff": false,
+        "user_id": 2,
+        "hidden": false,
+        "trust_level": 1,
+        "deleted_at": null,
+        "user_deleted": false,
+        "edit_reason": null,
+        "can_view_edit_history": true,
+        "wiki": false,
+        "post_url": "/t/parity-fixture-replies-and-posters/35/5",
+        "reactions": [
+          {
+            "id": "clap",
+            "type": "emoji",
+            "count": 1
+          },
+          {
+            "id": "heart",
+            "type": "emoji",
+            "count": 1
+          },
+          {
+            "id": "laughing",
+            "type": "emoji",
+            "count": 1
+          }
+        ],
+        "current_user_reaction": {
+          "id": "clap",
+          "type": "emoji",
+          "can_undo": true
+        },
+        "reaction_users_count": 3,
+        "current_user_used_main_reaction": false,
+        "can_accept_answer": false,
+        "can_unaccept_answer": false,
+        "accepted_answer": false,
+        "topic_accepted_answer": null
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "id": 52,
+        "name": "User0",
+        "username": "user0",
+        "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+        "created_at": "2026-10-01T15:39:51.834Z",
+        "cooked": "<p>Reply from user0 mentioning <a class=\"mention\" href=\"/u/user1\">@user1</a> so a mention notification exists.</p>",
+        "post_number": 5,
+        "post_type": 1,
+        "posts_count": 5,
+        "updated_at": "2026-10-01T15:39:51.834Z",
+        "reply_count": 0,
+        "reply_to_post_number": null,
+        "quote_count": 0,
+        "incoming_link_count": 0,
+        "reads": 1,
+        "readers_count": 0,
+        "score": 0.2,
+        "yours": false,
+        "topic_id": 35,
+        "topic_slug": "parity-fixture-replies-and-posters",
+        "display_username": "User0",
+        "primary_group_name": null,
+        "flair_name": null,
+        "flair_url": null,
+        "flair_bg_color": null,
+        "flair_color": null,
+        "flair_group_id": null,
+        "badges_granted": [],
+        "version": 1,
+        "can_edit": false,
+        "can_delete": false,
+        "can_recover": false,
+        "can_see_hidden_post": false,
+        "can_wiki": false,
+        "user_title": null,
+        "bookmarked": true,
+        "bookmark_reminder_at": null,
+        "bookmark_id": 5,
+        "bookmark_name": "Parity fixture: reminder sent",
+        "bookmark_auto_delete_preference": 3,
+        "actions_summary": [
+          {
+            "id": 2,
+            "count": 2,
+            "can_act": true
+          },
+          {
+            "id": 6,
+            "can_act": true
+          },
+          {
+            "id": 3,
+            "can_act": true
+          },
+          {
+            "id": 4,
+            "can_act": true
+          },
+          {
+            "id": 8,
+            "can_act": true
+          },
+          {
+            "id": 10,
+            "can_act": true
+          },
+          {
+            "id": 7,
+            "can_act": true
+          }
+        ],
+        "moderator": false,
+        "admin": false,
+        "staff": false,
+        "user_id": 2,
+        "hidden": false,
+        "trust_level": 1,
+        "deleted_at": null,
+        "user_deleted": false,
+        "edit_reason": null,
+        "can_view_edit_history": true,
+        "wiki": false,
+        "post_url": "/t/parity-fixture-replies-and-posters/35/5",
+        "reactions": [
+          {
+            "id": "heart",
+            "type": "emoji",
+            "count": 1
+          },
+          {
+            "id": "laughing",
+            "type": "emoji",
+            "count": 1
+          }
+        ],
+        "current_user_reaction": null,
+        "reaction_users_count": 2,
+        "current_user_used_main_reaction": false,
+        "can_accept_answer": false,
+        "can_unaccept_answer": false,
+        "accepted_answer": false,
+        "topic_accepted_answer": null
+      }
+    }
+  ],
+  "changes": {
+    "discourse_reactions_reactions": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 2,
+          "post_id": 52,
+          "created_at": "2026-10-09T12:10:00.080973",
+          "updated_at": "2026-10-09T12:10:00.080973",
+          "reaction_type": 0,
+          "reaction_value": "heart",
+          "reaction_users_count": 1
+        }
+      ],
+      "updated": []
+    },
+    "given_daily_likes": {
+      "inserted": [
+        {
+          "user_id": 3,
+          "given_date": "2026-10-09",
+          "likes_given": 0,
+          "limit_reached": false
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "notifications": {
+      "inserted": [
+        {
+          "id": 54,
+          "data": "{\"topic_title\":\"Parity fixture: replies and posters\",\"username\":\"user3\",\"display_username\":\"user3\",\"username2\":\"user2\",\"count\":2}",
+          "read": true,
+          "user_id": 2,
+          "topic_id": 35,
+          "created_at": "2026-10-09T12:14:01.49878",
+          "updated_at": "2026-10-09T12:14:01.49878",
+          "post_number": 5,
+          "high_priority": false,
+          "post_action_id": null,
+          "notification_type": 5
+        },
+        {
+          "id": 55,
+          "data": "{\"topic_title\":\"Parity fixture: replies and posters\",\"count\":1,\"username\":\"user2\",\"display_username\":\"user2\",\"display_name\":\"User2\"}",
+          "read": false,
+          "user_id": 2,
+          "topic_id": 35,
+          "created_at": "2026-10-09T12:14:01.521312",
+          "updated_at": "2026-10-09T12:14:01.521312",
+          "post_number": 5,
+          "high_priority": false,
+          "post_action_id": null,
+          "notification_type": 25
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_actions": {
+      "inserted": [
+        {
+          "id": 5,
+          "post_id": 52,
+          "user_id": 3,
+          "agreed_at": null,
+          "created_at": "2026-10-09T12:14:01.262246",
+          "deleted_at": "2026-10-09T12:14:01.464894",
+          "updated_at": "2026-10-09T12:14:01.267485",
+          "deferred_at": null,
+          "agreed_by_id": null,
+          "disagreed_at": null,
+          "deleted_by_id": 3,
+          "targets_topic": false,
+          "deferred_by_id": null,
+          "disagreed_by_id": null,
+          "related_post_id": null,
+          "staff_took_action": false,
+          "post_action_type_id": 2
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "posts": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 52,
+            "raw": "Reply from user0 mentioning @user1 so a mention notification exists.",
+            "wiki": false,
+            "reads": 1,
+            "score": 0.2,
+            "cooked": "<p>Reply from user0 mentioning <a class=\"mention\" href=\"/u/user1\">@user1</a> so a mention notification exists.</p>",
+            "hidden": false,
+            "locale": null,
+            "user_id": 2,
+            "version": 1,
+            "baked_at": "2026-10-01T15:39:51.83451",
+            "topic_id": 35,
+            "hidden_at": null,
+            "post_type": 1,
+            "raw_email": null,
+            "via_email": false,
+            "created_at": "2026-10-01T15:39:51.834549",
+            "deleted_at": null,
+            "like_count": 0,
+            "like_score": 0,
+            "self_edits": 0,
+            "sort_order": 5,
+            "spam_count": 0,
+            "updated_at": "2026-10-01T15:39:51.834549",
+            "word_count": 10,
+            "action_code": null,
+            "cook_method": 1,
+            "edit_reason": null,
+            "post_number": 5,
+            "quote_count": 0,
+            "reply_count": 0,
+            "locked_by_id": null,
+            "percent_rank": 0.25,
+            "reply_quoted": false,
+            "user_deleted": false,
+            "baked_version": 2,
+            "deleted_by_id": null,
+            "illegal_count": 0,
+            "qa_vote_count": 0,
+            "bookmark_count": 0,
+            "last_editor_id": 2,
+            "public_version": 1,
+            "image_upload_id": null,
+            "last_version_at": "2026-10-01T15:39:51.872879",
+            "off_topic_count": 0,
+            "hidden_reason_id": null,
+            "reply_to_user_id": null,
+            "notify_user_count": 0,
+            "inappropriate_count": 0,
+            "incoming_link_count": 0,
+            "outbound_message_id": null,
+            "reply_to_post_number": null,
+            "notify_moderators_count": 0
+          },
+          "after": {
+            "id": 52,
+            "raw": "Reply from user0 mentioning @user1 so a mention notification exists.",
+            "wiki": false,
+            "reads": 1,
+            "score": 0.2,
+            "cooked": "<p>Reply from user0 mentioning <a class=\"mention\" href=\"/u/user1\">@user1</a> so a mention notification exists.</p>",
+            "hidden": false,
+            "locale": null,
+            "user_id": 2,
+            "version": 1,
+            "baked_at": "2026-10-01T15:39:51.83451",
+            "topic_id": 35,
+            "hidden_at": null,
+            "post_type": 1,
+            "raw_email": null,
+            "via_email": false,
+            "created_at": "2026-10-01T15:39:51.834549",
+            "deleted_at": null,
+            "like_count": 2,
+            "like_score": 2,
+            "self_edits": 0,
+            "sort_order": 5,
+            "spam_count": 0,
+            "updated_at": "2026-10-01T15:39:51.834549",
+            "word_count": 10,
+            "action_code": null,
+            "cook_method": 1,
+            "edit_reason": null,
+            "post_number": 5,
+            "quote_count": 0,
+            "reply_count": 0,
+            "locked_by_id": null,
+            "percent_rank": 0.25,
+            "reply_quoted": false,
+            "user_deleted": false,
+            "baked_version": 2,
+            "deleted_by_id": null,
+            "illegal_count": 0,
+            "qa_vote_count": 0,
+            "bookmark_count": 0,
+            "last_editor_id": 2,
+            "public_version": 1,
+            "image_upload_id": null,
+            "last_version_at": "2026-10-01T15:39:51.872879",
+            "off_topic_count": 0,
+            "hidden_reason_id": null,
+            "reply_to_user_id": null,
+            "notify_user_count": 0,
+            "inappropriate_count": 0,
+            "incoming_link_count": 0,
+            "outbound_message_id": null,
+            "reply_to_post_number": null,
+            "notify_moderators_count": 0
+          }
+        }
+      ]
+    },
+    "topics": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 35,
+            "slug": "parity-fixture-replies-and-posters",
+            "score": 3.2,
+            "title": "Parity fixture: replies and posters",
+            "views": 0,
+            "closed": false,
+            "locale": null,
+            "excerpt": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+            "subtype": null,
+            "user_id": 2,
+            "visible": true,
+            "archived": false,
+            "archetype": "regular",
+            "bumped_at": "2026-10-01T15:39:51.834549",
+            "pinned_at": null,
+            "created_at": "2026-09-30T07:28:28.864868",
+            "deleted_at": null,
+            "like_count": 1,
+            "spam_count": 0,
+            "updated_at": "2026-10-01T15:39:52.00791",
+            "word_count": 68,
+            "category_id": 4,
+            "external_id": null,
+            "fancy_title": "Parity fixture: replies and posters",
+            "has_summary": false,
+            "posts_count": 5,
+            "reply_count": 0,
+            "percent_rank": 1,
+            "pinned_until": null,
+            "deleted_by_id": null,
+            "featured_link": null,
+            "bannered_until": null,
+            "last_posted_at": "2026-10-01T15:39:51.834549",
+            "image_upload_id": null,
+            "pinned_globally": false,
+            "reviewable_score": 0,
+            "featured_user1_id": 3,
+            "featured_user2_id": null,
+            "featured_user3_id": 1,
+            "featured_user4_id": 4,
+            "last_post_user_id": 2,
+            "participant_count": 4,
+            "slow_mode_seconds": 0,
+            "og_image_upload_id": null,
+            "highest_post_number": 5,
+            "incoming_link_count": 0,
+            "visibility_reason_id": null,
+            "moderator_posts_count": 0,
+            "notify_moderators_count": 0,
+            "highest_staff_post_number": 5
+          },
+          "after": {
+            "id": 35,
+            "slug": "parity-fixture-replies-and-posters",
+            "score": 3.2,
+            "title": "Parity fixture: replies and posters",
+            "views": 0,
+            "closed": false,
+            "locale": null,
+            "excerpt": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+            "subtype": null,
+            "user_id": 2,
+            "visible": true,
+            "archived": false,
+            "archetype": "regular",
+            "bumped_at": "2026-10-01T15:39:51.834549",
+            "pinned_at": null,
+            "created_at": "2026-09-30T07:28:28.864868",
+            "deleted_at": null,
+            "like_count": 3,
+            "spam_count": 0,
+            "updated_at": "2026-10-01T15:39:52.00791",
+            "word_count": 68,
+            "category_id": 4,
+            "external_id": null,
+            "fancy_title": "Parity fixture: replies and posters",
+            "has_summary": false,
+            "posts_count": 5,
+            "reply_count": 0,
+            "percent_rank": 1,
+            "pinned_until": null,
+            "deleted_by_id": null,
+            "featured_link": null,
+            "bannered_until": null,
+            "last_posted_at": "2026-10-01T15:39:51.834549",
+            "image_upload_id": null,
+            "pinned_globally": false,
+            "reviewable_score": 0,
+            "featured_user1_id": 3,
+            "featured_user2_id": null,
+            "featured_user3_id": 1,
+            "featured_user4_id": 4,
+            "last_post_user_id": 2,
+            "participant_count": 4,
+            "slow_mode_seconds": 0,
+            "og_image_upload_id": null,
+            "highest_post_number": 5,
+            "incoming_link_count": 0,
+            "visibility_reason_id": null,
+            "moderator_posts_count": 0,
+            "notify_moderators_count": 0,
+            "highest_staff_post_number": 5
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 317,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "NLYAN912gfNE54Xy63Cry1/ucsk=",
+            "created_at": "2026-10-09T12:14:00.666509",
+            "rotated_at": "2026-10-09T12:14:00.666252",
+            "updated_at": "2026-10-09T12:14:00.666509",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "NLYAN912gfNE54Xy63Cry1/ucsk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 317,
+            "seen_at": "2026-10-09T12:14:01.239232",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "NLYAN912gfNE54Xy63Cry1/ucsk=",
+            "created_at": "2026-10-09T12:14:00.666509",
+            "rotated_at": "2026-10-09T12:14:00.666252",
+            "updated_at": "2026-10-09T12:14:00.666509",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "NLYAN912gfNE54Xy63Cry1/ucsk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "bot_input",
+      {
+        "user_id": 3,
+        "post_id": 52,
+        "input": "like"
+      }
+    ]
+  ],
+  "next_ids": {
+    "notifications": 53,
+    "post_actions": 5
+  },
+  "setup": [
+    "INSERT INTO discourse_reactions_reactions (post_id, reaction_type, reaction_value, reaction_users_count, created_at, updated_at) VALUES (52, 0, 'laughing', 1, now() - interval '5 minutes', now() - interval '5 minutes')",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) SELECT id, 4, 52, now() - interval '5 minutes', now() - interval '5 minutes' FROM discourse_reactions_reactions WHERE post_id = 52 AND reaction_value = 'laughing'",
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (52, 4, 2, now() - interval '5 minutes', now() - interval '5 minutes')",
+    "INSERT INTO discourse_reactions_reactions (post_id, reaction_type, reaction_value, reaction_users_count, created_at, updated_at) VALUES (52, 0, 'heart', 1, now() - interval '4 minutes', now() - interval '4 minutes')",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) SELECT id, 5, 52, now() - interval '4 minutes', now() - interval '4 minutes' FROM discourse_reactions_reactions WHERE post_id = 52 AND reaction_value = 'heart'",
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (52, 5, 2, now() - interval '4 minutes', now() - interval '4 minutes')"
+  ],
+  "recorded_from": {
+    "case": "b33fca8ba9f427afa96cd9a1f2296455ce1562e8e2d600f12282ff448e0c5ff7",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -26,6 +26,7 @@ pub(crate) use search::invalid_access_at;
 pub(crate) use sitemap::regenerate_sitemaps;
 pub(crate) use topics::not_found_response;
 mod category_notifications;
+mod reactions;
 mod session;
 mod site;
 mod sitemap;
@@ -164,6 +165,15 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route(
             "/category/{category_id}/notifications.json",
             post(category_notifications::set_notifications),
+        )
+        // discourse-reactions' CustomReactionsController.
+        .route(
+            "/discourse-reactions/posts/{post_id}/custom-reactions/{reaction}/toggle",
+            put(reactions::toggle),
+        )
+        .route(
+            "/discourse-reactions/posts/{post_id}/custom-reactions/{reaction}/toggle.json",
+            put(reactions::toggle),
         )
         // discourse-topic-voting's VotesController.
         .route("/voting/vote", post(topic_voting::vote))

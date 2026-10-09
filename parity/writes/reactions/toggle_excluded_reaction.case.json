@@ -1,0 +1,13 @@
+{
+  "user": "user1",
+  "settings": {
+    "discourse_reactions_enabled_reactions": "+1|laughing|-1"
+  },
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/discourse-reactions/posts/52/custom-reactions/-1/toggle.json",
+      "params": {}
+    }
+  ]
+}

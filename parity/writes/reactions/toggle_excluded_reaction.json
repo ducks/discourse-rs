@@ -1,0 +1,224 @@
+{
+  "name": "toggle_excluded_reaction",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/discourse-reactions/posts/52/custom-reactions/-1/toggle.json",
+      "params": {}
+    }
+  ],
+  "started_at": "2026-10-09T12:13:52.350422",
+  "transaction_started_at": "2026-10-09T12:13:51.410781",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "id": 52,
+        "name": "User0",
+        "username": "user0",
+        "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+        "created_at": "2026-10-01T15:39:51.834Z",
+        "cooked": "<p>Reply from user0 mentioning <a class=\"mention\" href=\"/u/user1\">@user1</a> so a mention notification exists.</p>",
+        "post_number": 5,
+        "post_type": 1,
+        "posts_count": 5,
+        "updated_at": "2026-10-01T15:39:51.834Z",
+        "reply_count": 0,
+        "reply_to_post_number": null,
+        "quote_count": 0,
+        "incoming_link_count": 0,
+        "reads": 1,
+        "readers_count": 0,
+        "score": 0.2,
+        "yours": false,
+        "topic_id": 35,
+        "topic_slug": "parity-fixture-replies-and-posters",
+        "display_username": "User0",
+        "primary_group_name": null,
+        "flair_name": null,
+        "flair_url": null,
+        "flair_bg_color": null,
+        "flair_color": null,
+        "flair_group_id": null,
+        "badges_granted": [],
+        "version": 1,
+        "can_edit": false,
+        "can_delete": false,
+        "can_recover": false,
+        "can_see_hidden_post": false,
+        "can_wiki": false,
+        "user_title": null,
+        "bookmarked": true,
+        "bookmark_reminder_at": null,
+        "bookmark_id": 5,
+        "bookmark_name": "Parity fixture: reminder sent",
+        "bookmark_auto_delete_preference": 3,
+        "actions_summary": [
+          {
+            "id": 2,
+            "can_act": true
+          },
+          {
+            "id": 6,
+            "can_act": true
+          },
+          {
+            "id": 3,
+            "can_act": true
+          },
+          {
+            "id": 4,
+            "can_act": true
+          },
+          {
+            "id": 8,
+            "can_act": true
+          },
+          {
+            "id": 10,
+            "can_act": true
+          },
+          {
+            "id": 7,
+            "can_act": true
+          }
+        ],
+        "moderator": false,
+        "admin": false,
+        "staff": false,
+        "user_id": 2,
+        "hidden": false,
+        "trust_level": 1,
+        "deleted_at": null,
+        "user_deleted": false,
+        "edit_reason": null,
+        "can_view_edit_history": true,
+        "wiki": false,
+        "post_url": "/t/parity-fixture-replies-and-posters/35/5",
+        "reactions": [
+          {
+            "id": "-1",
+            "type": "emoji",
+            "count": 1
+          }
+        ],
+        "current_user_reaction": {
+          "id": "-1",
+          "type": "emoji",
+          "can_undo": true
+        },
+        "reaction_users_count": 1,
+        "current_user_used_main_reaction": false,
+        "can_accept_answer": false,
+        "can_unaccept_answer": false,
+        "accepted_answer": false,
+        "topic_accepted_answer": null
+      }
+    }
+  ],
+  "changes": {
+    "discourse_reactions_reaction_users": {
+      "inserted": [
+        {
+          "id": 1,
+          "post_id": 52,
+          "user_id": 3,
+          "created_at": "2026-10-09T12:13:52.384275",
+          "updated_at": "2026-10-09T12:13:52.384275",
+          "reaction_id": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "discourse_reactions_reactions": {
+      "inserted": [
+        {
+          "id": 1,
+          "post_id": 52,
+          "created_at": "2026-10-09T12:13:52.379653",
+          "updated_at": "2026-10-09T12:13:52.379653",
+          "reaction_type": 0,
+          "reaction_value": "-1",
+          "reaction_users_count": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "notifications": {
+      "inserted": [
+        {
+          "id": 53,
+          "data": "{\"topic_title\":\"Parity fixture: replies and posters\",\"original_post_id\":52,\"original_post_type\":1,\"original_username\":\"user1\",\"revision_number\":null,\"display_username\":\"user1\",\"display_name\":\"User1\"}",
+          "read": false,
+          "user_id": 2,
+          "topic_id": 35,
+          "created_at": "2026-10-09T12:13:52.40776",
+          "updated_at": "2026-10-09T12:13:52.40776",
+          "post_number": 5,
+          "high_priority": false,
+          "post_action_id": null,
+          "notification_type": 25
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 317,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "6ydZ42ouCffNaFbpsDedZlTQHGY=",
+            "created_at": "2026-10-09T12:13:51.761068",
+            "rotated_at": "2026-10-09T12:13:51.760728",
+            "updated_at": "2026-10-09T12:13:51.761068",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "6ydZ42ouCffNaFbpsDedZlTQHGY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 317,
+            "seen_at": "2026-10-09T12:13:52.361546",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "6ydZ42ouCffNaFbpsDedZlTQHGY=",
+            "created_at": "2026-10-09T12:13:51.761068",
+            "rotated_at": "2026-10-09T12:13:51.760728",
+            "updated_at": "2026-10-09T12:13:51.761068",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "6ydZ42ouCffNaFbpsDedZlTQHGY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "discourse_reactions_reaction_users": 1,
+    "discourse_reactions_reactions": 1,
+    "notifications": 53
+  },
+  "settings": {
+    "discourse_reactions_enabled_reactions": "+1|laughing|-1"
+  },
+  "recorded_from": {
+    "case": "3713c6a350527368091eb03d1a696688cf0cc2a0a045c9918dd21cd618fe817b",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

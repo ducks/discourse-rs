@@ -1,0 +1,15 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/discourse-reactions/posts/52/custom-reactions/clap/toggle.json",
+      "params": {}
+    },
+    {
+      "method": "PUT",
+      "path": "/discourse-reactions/posts/52/custom-reactions/heart/toggle.json",
+      "params": {}
+    }
+  ]
+}

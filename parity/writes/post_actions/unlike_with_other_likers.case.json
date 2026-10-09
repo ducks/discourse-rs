@@ -1,0 +1,17 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (52, 4, 2, now() - interval '5 minutes', now() - interval '5 minutes')",
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (52, 3, 2, now() - interval '1 minute', now() - interval '1 minute')",
+    "UPDATE posts SET like_count = 2 WHERE id = 52"
+  ],
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/post_actions/52.json",
+      "params": {
+        "post_action_type_id": 2
+      }
+    }
+  ]
+}

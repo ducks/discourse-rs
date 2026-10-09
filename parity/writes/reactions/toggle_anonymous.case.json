@@ -1,0 +1,9 @@
+{
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/discourse-reactions/posts/52/custom-reactions/clap/toggle.json",
+      "params": {}
+    }
+  ]
+}

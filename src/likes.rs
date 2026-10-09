@@ -2,12 +2,11 @@
 //! type, with what a like touches (PostAction#update_counters, the topic
 //! user's liked flag, GivenDailyLike, UserActionManager's LIKE and
 //! WAS_LIKED rows and like counts, PostActionNotifier's liked
-//! notification).
+//! notification and its refresh when a like goes).
 //!
-//! Flags and other action types are refused, as are likes in messages,
-//! anonymous mode and liked notifications that would consolidate. The
-//! like rate limit (RateLimiter, Redis) and the badge queue are not
-//! ported.
+//! Flags and other action types are refused, as are likes in messages and
+//! anonymous mode. The like rate limit (RateLimiter, Redis) and the badge
+//! queue are not ported.
 
 use sqlx::{PgConnection, PgPool};
 
@@ -146,17 +145,34 @@ pub async fn like(
     guardian: &Guardian,
     post_id: i32,
 ) -> Result<Outcome, AppError> {
+    let mut tx = pool.begin().await?;
+    let outcome = create(&mut tx, ctx, guardian, post_id, false).await?;
+    if matches!(outcome, Outcome::Done) {
+        tx.commit().await?;
+    }
+    Ok(outcome)
+}
+
+/// The creator's perform in the caller's transaction. `silent` is the
+/// creator's `silent:`: no liked notification (discourse-reactions'
+/// shadow likes).
+pub(crate) async fn create(
+    tx: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    guardian: &Guardian,
+    post_id: i32,
+    silent: bool,
+) -> Result<Outcome, AppError> {
     let user = guardian
         .user()
         .ok_or(Unsupported("liking anonymously"))?
         .clone();
-    let mut tx = pool.begin().await?;
-    let Some(Target { access }) = target(&mut tx, ctx, guardian, post_id).await? else {
+    let Some(Target { access }) = target(&mut *tx, ctx, guardian, post_id).await? else {
         return Ok(Outcome::NotFound);
     };
     let post = &access.post;
-    let types = ActionTypes::load(&mut tx).await?;
-    let taken = post_actions::taken_actions(&mut tx, &[post.id], Some(user.id)).await?;
+    let types = ActionTypes::load(&mut *tx).await?;
+    let taken = post_actions::taken_actions(&mut *tx, &[post.id], Some(user.id)).await?;
     let taken = taken.get(&post.id);
     let author_missing = match post.user_id {
         Some(id) => {
@@ -244,7 +260,7 @@ pub async fn like(
         .await?;
     }
     // after_save update_counters
-    update_counters(&mut tx, ctx, post.id, user.id, access.topic_id).await?;
+    update_counters(&mut *tx, ctx, post.id, user.id, access.topic_id).await?;
     // UserActionManager.post_action_created: UserAction.log_action! per row.
     for (action_type, user_id) in action_rows(user.id, post.user_id) {
         let inserted = sqlx::query(
@@ -264,22 +280,23 @@ pub async fn like(
         .await?
         .rows_affected();
         if inserted > 0 {
-            update_like_count(&mut tx, user_id, action_type, 1).await?;
+            update_like_count(&mut *tx, user_id, action_type, 1).await?;
         }
     }
     // PostActionNotifier.post_action_created
-    crate::jobs::post_alert::notify_liked(
-        ctx,
-        &mut tx,
-        post.id,
-        user.id,
-        &user.username,
-        action_id,
-    )
-    .await?;
+    if !silent {
+        crate::jobs::post_alert::notify_liked(
+            ctx,
+            &mut *tx,
+            post.id,
+            user.id,
+            &user.username,
+            action_id,
+        )
+        .await?;
+    }
     // notify_subscribers: the like count after this like.
-    publish_like_change(ctx, &mut tx, post.id, "liked", user.id).await?;
-    tx.commit().await?;
+    publish_like_change(ctx, &mut *tx, post.id, "liked", user.id).await?;
     Ok(Outcome::Done)
 }
 
@@ -302,9 +319,87 @@ async fn publish_like_change(
     crate::bus::publish_post_change(ctx, conn, post_id, kind, opts, false).await
 }
 
+/// `PostActionNotifier.refresh_like_notification(post, read)`: a liked
+/// notification for the author naming the likers of the last day, newest
+/// first, when there are any. False when nothing was created.
+async fn refresh_like_notification(
+    conn: &mut PgConnection,
+    post_id: i32,
+    read: bool,
+) -> Result<bool, AppError> {
+    // `post.user_id && post.topic`: a live topic.
+    let post: Option<(i32, i32, i32, String)> = sqlx::query_as(
+        "SELECT p.user_id, p.topic_id, p.post_number, t.title FROM posts p \
+         JOIN topics t ON t.id = p.topic_id AND t.deleted_at IS NULL \
+         WHERE p.id = $1 AND p.user_id IS NOT NULL",
+    )
+    .bind(post_id)
+    .fetch_optional(&mut *conn)
+    .await?;
+    let Some((author, topic_id, post_number, title)) = post else {
+        return Ok(false);
+    };
+    let likers: Vec<String> = sqlx::query_scalar(
+        "SELECT u.username FROM post_actions pa JOIN users u ON u.id = pa.user_id \
+         WHERE pa.post_id = $1 AND pa.post_action_type_id = $2 AND pa.deleted_at IS NULL \
+           AND pa.created_at > now() - interval '1 day' ORDER BY pa.created_at DESC",
+    )
+    .bind(post_id)
+    .bind(LIKE as i32)
+    .fetch_all(&mut *conn)
+    .await?;
+    let Some(first) = likers.first() else {
+        return Ok(false);
+    };
+    let data = serde_json::json!({
+        "topic_title": title,
+        "username": first,
+        "display_username": first,
+        "username2": likers.get(1),
+        "count": likers.len(),
+    });
+    sqlx::query(
+        "INSERT INTO notifications (notification_type, user_id, topic_id, post_number, data, read, \
+                                    high_priority, created_at, updated_at) \
+         VALUES (5, $1, $2, $3, $4, $5, FALSE, clock_timestamp(), clock_timestamp())",
+    )
+    .bind(author)
+    .bind(topic_id)
+    .bind(post_number)
+    .bind(data.to_string())
+    .bind(read)
+    .execute(&mut *conn)
+    .await?;
+    Ok(true)
+}
+
 /// `PostActionDestroyer.new(user, post, like).perform`
 pub async fn unlike(
     pool: &PgPool,
+    ctx: &Ctx<'_>,
+    guardian: &Guardian,
+    post_id: i32,
+) -> Result<Outcome, AppError> {
+    let mut tx = pool.begin().await?;
+    let outcome = destroy(&mut tx, ctx, guardian, post_id).await?;
+    if !matches!(outcome, Outcome::Done) {
+        return Ok(outcome);
+    }
+    tx.commit().await?;
+    // The destroyer never checked visibility; the controller does after.
+    let mut conn = pool.acquire().await?;
+    if find_post(&mut conn, ctx, guardian, post_id)
+        .await?
+        .is_none()
+    {
+        return Ok(Outcome::NoContent);
+    }
+    Ok(Outcome::Done)
+}
+
+/// The destroyer's perform in the caller's transaction.
+pub(crate) async fn destroy(
+    tx: &mut PgConnection,
     ctx: &Ctx<'_>,
     guardian: &Guardian,
     post_id: i32,
@@ -314,7 +409,6 @@ pub async fn unlike(
         .ok_or(Unsupported("unliking anonymously"))?
         .clone();
     let staff = guardian.is_staff();
-    let mut tx = pool.begin().await?;
     // fetch_post_from_params: staff find deleted posts too. The destroyer does
     // not check visibility first.
     let post: Option<(i32, Option<i32>, i32, i32, bool)> = sqlx::query_as(
@@ -333,8 +427,8 @@ pub async fn unlike(
     }
     // `finder.with_deleted` for staff: their removed likes count too, and
     // `first` is the lowest id.
-    let action: Option<(i32, i32, chrono::NaiveDateTime, bool)> = sqlx::query_as(
-        "SELECT id, user_id, created_at, deleted_at IS NOT NULL FROM post_actions \
+    let action: Option<(i32, i32, chrono::NaiveDateTime)> = sqlx::query_as(
+        "SELECT id, user_id, created_at FROM post_actions \
          WHERE user_id = $1 AND post_id = $2 AND post_action_type_id = $3 \
            AND ($4 OR deleted_at IS NULL) ORDER BY id LIMIT 1",
     )
@@ -344,13 +438,12 @@ pub async fn unlike(
     .bind(staff)
     .fetch_optional(&mut *tx)
     .await?;
-    let Some((action_id, action_user, action_created_at, action_deleted)) = action else {
+    // A like staff already removed is removed again, as remove_act! does:
+    // re-dated, and the counts, day's likes and user actions as for any.
+    let Some((action_id, action_user, action_created_at)) = action else {
         return Ok(Outcome::ResultNotFound);
     };
-    if action_deleted {
-        return Err(Unsupported("undoing a like already removed, as staff").into());
-    }
-    let topic = crate::topic_guardian::TopicCtx::load(&mut tx, ctx.settings, guardian, topic_id)
+    let topic = crate::topic_guardian::TopicCtx::load(&mut *tx, ctx.settings, guardian, topic_id)
         .await?
         .ok_or(Unsupported("likes on posts of deleted topics"))?;
     if topic.private_message() {
@@ -368,7 +461,7 @@ pub async fn unlike(
     .bind(user.id)
     .execute(&mut *tx)
     .await?;
-    update_counters(&mut tx, ctx, post_id, user.id, topic_id).await?;
+    update_counters(&mut *tx, ctx, post_id, user.id, topic_id).await?;
     // GivenDailyLike.decrement_for
     sqlx::query(&format!(
         "UPDATE given_daily_likes SET likes_given = likes_given - 1 WHERE user_id = $1 AND given_date = {TODAY}"
@@ -398,7 +491,7 @@ pub async fn unlike(
         .bind(post_id)
         .execute(&mut *tx)
         .await?;
-        update_like_count(&mut tx, user_id, action_type, -1).await?;
+        update_like_count(&mut *tx, user_id, action_type, -1).await?;
     }
     // PostActionNotifier.post_action_deleted: the author's liked
     // notifications on the post go, then refresh_like_notification
@@ -414,29 +507,14 @@ pub async fn unlike(
         .fetch_all(&mut *tx)
         .await?;
         let read = reads.iter().all(|r| *r);
-        let likers: Vec<String> = sqlx::query_scalar(
-            "SELECT u.username FROM post_actions pa JOIN users u ON u.id = pa.user_id \
-             WHERE pa.post_id = $1 AND pa.post_action_type_id = $2 AND pa.deleted_at IS NULL \
-               AND pa.created_at > now() - interval '1 day' ORDER BY pa.created_at DESC",
-        )
-        .bind(post_id)
-        .bind(LIKE as i32)
-        .fetch_all(&mut *tx)
-        .await?;
-        if !likers.is_empty() {
-            let _ = read;
-            return Err(Unsupported("rebuilding the liked notification from other likers").into());
+        let refreshed = refresh_like_notification(&mut *tx, post_id, read).await?;
+        // after_commit refresh_notification_count, for the destroyed and
+        // the created.
+        if refreshed || !reads.is_empty() {
+            crate::bus::publish_notifications_state(ctx.bus, &mut *tx, ctx.settings, author)
+                .await?;
         }
     }
-    publish_like_change(ctx, &mut tx, post_id, "unliked", user.id).await?;
-    tx.commit().await?;
-    // The destroyer never checked visibility; the controller does after.
-    let mut conn = pool.acquire().await?;
-    if find_post(&mut conn, ctx, guardian, post_id)
-        .await?
-        .is_none()
-    {
-        return Ok(Outcome::NoContent);
-    }
+    publish_like_change(ctx, &mut *tx, post_id, "unliked", user.id).await?;
     Ok(Outcome::Done)
 }
