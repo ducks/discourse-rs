@@ -543,6 +543,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         )
         .route("/assets/htmx.min.js", get(asset))
         .route("/assets/htmx-ext-sse.js", get(asset))
+        .route("/assets/page.js", get(asset))
         .route("/assets/sidebar.js", get(asset))
         .route("/assets/topic.js", get(asset))
         .route("/assets/topic-voting.js", get(asset))

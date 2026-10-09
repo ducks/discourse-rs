@@ -12,7 +12,7 @@
   <button class="mark-read" hx-put="{{ base_path }}/notifications/mark-read" hx-swap="none"
           hx-on::after-request="if (event.detail.successful) { htmx.ajax('GET', '{{ base_path }}/user-menu', { target: '#user-menu' }); }">Mark all read</button>
   {% endif %}
-  <form class="user-menu-logout" method="post" action="{{ base_path }}/session/{{ username }}">
+  <form class="user-menu-logout" hx-boost="false" method="post" action="{{ base_path }}/session/{{ username }}">
     <input type="hidden" name="_method" value="delete">
     <input type="hidden" name="authenticity_token" value="{{ csrf_token }}">
     <button type="submit" class="btn btn-flat">Log out</button>

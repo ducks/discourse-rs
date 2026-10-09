@@ -8,6 +8,10 @@
 (function () {
   "use strict";
 
+  if (!Discourse.once("discourse-reactions")) {
+    return;
+  }
+
   var COLLAPSE_DELAY = 500;
   var PAGE_SIZE = 30;
 
@@ -61,9 +65,9 @@
   // The reaction button's click (toggleFromButton) and a picked reaction
   // (toggle): only where the viewer may change their reaction.
   function react(actions, reaction) {
-    if (actions.dataset.loginUrl) {
+    if (actions.dataset.reactionLoginUrl) {
       if (actions.classList.contains("can-toggle-reaction")) {
-        location.href = actions.dataset.loginUrl;
+        location.href = actions.dataset.reactionLoginUrl;
       }
       return;
     }
@@ -415,4 +419,11 @@
     },
     { passive: true }
   );
+  // A page swapped out takes its open picker and menu with it (page.js).
+  Discourse.onPage(function () {
+    return function () {
+      collapsePicker();
+      closeMenu();
+    };
+  });
 })();

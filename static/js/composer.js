@@ -7,9 +7,13 @@
   "use strict";
 
   var control = document.getElementById("reply-control");
-  if (!control) {
+  // Bound once per composer: it stays across pages (hx-preserve, page.js),
+  // and its script tag comes back with each. A page without one drops it;
+  // the next composer is bound afresh and this one's listeners go quiet.
+  if (!control || control.dataset.bound) {
     return;
   }
+  control.dataset.bound = "true";
   var root = document.documentElement;
   var textarea = control.querySelector(".d-editor-input");
   var title = control.querySelector("#reply-title");
@@ -259,7 +263,7 @@
 
   // _beaconSaveDraft
   window.addEventListener("beforeunload", function () {
-    if (!draftTimer || !canSaveDraft()) {
+    if (!control.isConnected || !draftTimer || !canSaveDraft()) {
       return;
     }
     clearTimeout(draftTimer);
@@ -821,6 +825,9 @@
 
   // Openers anywhere on the page.
   document.addEventListener("click", function (event) {
+    if (!control.isConnected) {
+      return;
+    }
     var create = event.target.closest("#create-topic");
     if (create) {
       open({ mode: "create-topic", category: create.dataset.category });
@@ -1302,6 +1309,9 @@
   }
 
   document.addEventListener("click", function (event) {
+    if (!control.isConnected) {
+      return;
+    }
     var trigger = event.target.closest(".topic-drafts-menu-trigger");
     if (trigger) {
       if (draftsMenu) {
@@ -1332,7 +1342,7 @@
     }
   });
   document.addEventListener("keydown", function (event) {
-    if (event.key === "Escape") {
+    if (control.isConnected && event.key === "Escape") {
       closeDraftsMenu();
     }
   });

@@ -312,6 +312,13 @@ Discourse's own clients keep working.
       (static/vendor), no build step. WASM only where it pays, the
       composer preview first. Datastar was the alternative (SSE native,
       signals built in); the server side would be the same
+- [x] Navigation without reloads, as Ember's router gives (2026-10-09):
+      links are boosted (hx-boost) and swap the next page's body in,
+      history included; static/js/page.js runs the page scripts across
+      swaps (listeners once, per-page setup and teardown), brings over
+      the body's attributes, swaps error pages in and leaves non-pages to
+      the browser. What stays across pages is hx-preserve: the composer
+      now, the chat drawer next
 - [x] First slice, the topic page: new, edited, liked, deleted and
       recovered posts arrive live (GET /t/:id/live, on the last page),
       and members reply from a form on the page, the reply coming back

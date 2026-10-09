@@ -44,7 +44,10 @@ async fn anonymous_pages_have_the_sidebar() {
     let db = TestDb::new().await;
     let (status, html) = get(&db.pool, "/latest").await;
     assert_eq!(status, StatusCode::OK);
-    assert!(html.contains(r#"<body class="uc-"#) && html.contains(" has-sidebar-page\""));
+    assert!(
+        html.contains(r#"<body hx-boost="true" class="uc-"#)
+            && html.contains(" has-sidebar-page\"")
+    );
     assert!(html.contains(r#"<span class="header-sidebar-toggle">"#));
     assert!(
         html.contains(r#"<nav aria-label="Sidebar" class="sidebar-container" id="d-sidebar">"#)

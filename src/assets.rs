@@ -57,6 +57,7 @@ const ASSETS: &[(&str, &str, &str)] = &[
         JS,
         include_str!("../static/vendor/htmx-ext-sse.js"),
     ),
+    ("page.js", JS, include_str!("../static/js/page.js")),
     ("sidebar.js", JS, include_str!("../static/js/sidebar.js")),
     ("topic.js", JS, include_str!("../static/js/topic.js")),
     (

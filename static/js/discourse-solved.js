@@ -8,6 +8,10 @@
 (function () {
   "use strict";
 
+  if (!Discourse.once("discourse-solved")) {
+    return;
+  }
+
   function csrfHeaders() {
     var headers = {};
     try {
@@ -215,8 +219,11 @@
     });
   }
 
-  measureAll();
-  showPopups();
-  // Posts redrawn over the live stream bring new accordions.
+  // Each page's accordions and popup (page.js); posts redrawn over the
+  // live stream bring new accordions.
+  Discourse.onPage(function () {
+    measureAll();
+    showPopups();
+  });
   document.body.addEventListener("htmx:oobAfterSwap", measureAll);
 })();

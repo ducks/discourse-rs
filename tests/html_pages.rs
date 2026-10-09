@@ -384,3 +384,16 @@ async fn pages_take_one_connection_at_a_time() {
         );
     }
 }
+
+#[tokio::test]
+async fn links_swap_pages_in() {
+    let db = TestDb::new().await;
+    let (_, _, html) = get(&db.pool, "/latest").await;
+    // The body's links are boosted; page.js, in the head, runs the page
+    // scripts across swaps, and back and forward ask the server again.
+    assert!(html.contains(r#"<body hx-boost="true" class="#));
+    assert!(html.contains(r#"<meta name="htmx-config" content='{"historyCacheSize": 0}'>"#));
+    let page_js = html.find("/assets/page.js").expect("page.js");
+    let htmx = html.find("/assets/htmx.min.js").expect("htmx");
+    assert!(page_js < htmx && htmx < html.find("<body").unwrap());
+}
