@@ -28,7 +28,7 @@ Caveats that apply to every run:
 The production comparison above, rerun for anonymous visitors once
 discourse-rs had Middleware::AnonymousCache (feat/anonymous-cache): rs in
 RAILS_ENV=production, where the cache is on, the rs-prod agent unchanged,
-c=16, 5 s, no Accept-Encoding (\`cached\` and \`uncached\` are Rails'):
+c=16, 5 s, no Accept-Encoding (`cached` and `uncached` are Rails'):
 
 | endpoint | target | req/s | p50 ms | p99 ms | non-2xx |
 |---|---|---:|---:|---:|---:|
