@@ -1,10 +1,15 @@
 // The sidebar's client state, as Ember keeps it: the header button hides
 // the sidebar (discourse_sidebar-hidden), a section header collapses its
 // section (discourse_sidebar-section-<name>-collapsed), and More opens the
-// secondary community links. Runs right after the sidebar is parsed, so the
-// stored state applies before the page paints.
+// secondary community links. Runs right after the sidebar is parsed, and
+// again on each page swapped in (page.js), so the stored state applies
+// before the page paints.
 (function () {
   "use strict";
+
+  if (!Discourse.once("sidebar")) {
+    return;
+  }
 
   var PREFIX = "discourse_";
 
@@ -95,21 +100,23 @@
 
   // Stored state. A section holding the current page stays open
   // (expandWhenActive).
-  if (getItem("sidebar-hidden") === "true") {
-    setSidebarShown(false);
-  }
-  document
-    .querySelectorAll(".sidebar-section[data-section-name]")
-    .forEach(function (section) {
-      var name = section.getAttribute("data-section-name");
-      if (
-        section.querySelector(".sidebar-section-header-collapsable") &&
-        getItem(collapsedKey(name)) === "true" &&
-        !section.querySelector(".sidebar-section-link.active")
-      ) {
-        setSectionExpanded(section, false);
-      }
-    });
+  Discourse.onPage(function () {
+    if (getItem("sidebar-hidden") === "true") {
+      setSidebarShown(false);
+    }
+    document
+      .querySelectorAll(".sidebar-section[data-section-name]")
+      .forEach(function (section) {
+        var name = section.getAttribute("data-section-name");
+        if (
+          section.querySelector(".sidebar-section-header-collapsable") &&
+          getItem(collapsedKey(name)) === "true" &&
+          !section.querySelector(".sidebar-section-link.active")
+        ) {
+          setSectionExpanded(section, false);
+        }
+      });
+  });
 
   document.addEventListener("click", function (event) {
     var toggle = event.target.closest(".btn-sidebar-toggle");

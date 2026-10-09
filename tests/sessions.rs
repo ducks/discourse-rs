@@ -2239,3 +2239,25 @@ async fn the_composer_uploads_and_resolves_short_urls() {
     assert!(!page.contains("file-uploader"));
     assert!(!page.contains("toolbar__button upload"));
 }
+
+#[tokio::test]
+async fn the_composer_stays_across_pages() {
+    let db = TestDb::new().await;
+    let mut client = Client::new(state(db.pool.clone(), config(RailsEnv::Test, &[])).await);
+    let reply = client.login("user1", "password").await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    // hx-preserve keeps it open while pages swap (page.js); the default
+    // category is the one attribute that follows the page.
+    let page = client.get("/latest").await;
+    assert!(page.body.contains(
+        r#"<div id="reply-control" class="closed hide-preview" hx-preserve="true" data-page-attrs="data-default-category""#
+    ), "{}", page.body);
+    // The logout form leaves the page for real.
+    let menu = client.get("/user-menu").await;
+    assert!(
+        menu.body
+            .contains(r#"<form class="user-menu-logout" hx-boost="false" method="post""#),
+        "{}",
+        menu.body
+    );
+}

@@ -5,6 +5,10 @@
 (function () {
   "use strict";
 
+  if (!Discourse.once("topic-voting")) {
+    return;
+  }
+
   var open = null;
 
   function csrfHeaders() {
@@ -283,5 +287,9 @@
     if (event.key === "Escape") {
       close();
     }
+  });
+  // A page swapped out takes its open menu with it (page.js).
+  Discourse.onPage(function () {
+    return close;
   });
 })();

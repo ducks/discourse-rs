@@ -184,7 +184,7 @@ impl PostReactions<'_> {
         // deferAnonymousAction: here, the login page.
         if !self.member {
             attrs.push_str(&format!(
-                " data-login-url=\"{}/login\"",
+                " data-reaction-login-url=\"{}/login\"",
                 self.list.base_path
             ));
         }

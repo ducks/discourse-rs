@@ -6,8 +6,17 @@
 (function () {
   "use strict";
 
-  var trackingMenu = document.querySelector(".notifications-tracking-content");
+  if (!Discourse.once("tracking-menu")) {
+    return;
+  }
+
+  // The page's menu, found again on each page swapped in (page.js).
+  var trackingMenu = null;
   var trackingTrigger = null;
+  Discourse.onPage(function () {
+    trackingMenu = document.querySelector(".notifications-tracking-content");
+    trackingTrigger = null;
+  });
 
   function closeTrackingMenu() {
     if (!trackingTrigger) {

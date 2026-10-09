@@ -39,6 +39,9 @@
     {% if !bus_position.is_empty() %}
     <meta name="bus-position" content="{{ bus_position }}">
     {% endif %}
+    {#- Back and forward ask the server for the page again (page.js). -#}
+    <meta name="htmx-config" content='{"historyCacheSize": 0}'>
+    <script src="{{ crate::assets::url(base_path, "page.js") }}"></script>
     <script src="{{ crate::assets::url(base_path, "htmx.min.js") }}" defer></script>
     <script src="{{ crate::assets::url(base_path, "htmx-ext-sse.js") }}" defer></script>
     {% block head %}{% endblock %}
@@ -47,8 +50,9 @@
     {#- Styles of the pages not ported to Discourse's look yet. -#}
     <link rel="stylesheet" href="{{ crate::assets::url(base_path, "site.css") }}">
   </head>
-  {#- A member's htmx requests carry their CSRF token, as Rails' client does. -#}
-  <body class="{{ chrome.body_classes }}"{% if let Some(v) = viewer %} hx-headers='{"X-CSRF-Token": "{{ v.csrf_token }}", "X-Requested-With": "XMLHttpRequest"}'{% endif %}>
+  {#- A member's htmx requests carry their CSRF token, as Rails' client does;
+      links swap the next page in (page.js). -#}
+  <body hx-boost="true" class="{{ chrome.body_classes }}"{% if let Some(v) = viewer %} hx-headers='{"X-CSRF-Token": "{{ v.csrf_token }}", "X-Requested-With": "XMLHttpRequest"}'{% endif %}>
     {{ crate::routes::ICONS_SVG|safe }}
     <section id="main">
       <div class="discourse-root">
@@ -115,6 +119,9 @@
           // header sets: where sticky content (the sidebar, a post's
           // avatar) starts below the header.
           (function () {
+            if (!Discourse.once("header-offsets")) {
+              return;
+            }
             function setOffsets() {
               var header = document.querySelector(".d-header-wrap");
               var offset = header.getBoundingClientRect().height + "px";
@@ -160,7 +167,7 @@
           htmx.ajax("GET", url, { swap: "none" });
         }
       }
-      document.addEventListener("htmx:responseError", function (event) {
+      if (Discourse.once("page-error")) document.addEventListener("htmx:responseError", function (event) {
         // Forms that show their own errors say so.
         if (event.detail.elt.closest("[data-own-errors]")) { return; }
         var message = "Something went wrong.";
