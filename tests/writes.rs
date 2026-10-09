@@ -350,7 +350,11 @@ fn timestamp(s: &str) -> Option<NaiveDateTime> {
     if let Some(t) = s.strip_suffix(" UTC") {
         return NaiveDateTime::parse_from_str(t, "%Y-%m-%d %H:%M:%S").ok();
     }
-    let s = s.strip_suffix('Z').unwrap_or(s);
+    // Z, or DateTime#iso8601's +00:00.
+    let s = s
+        .strip_suffix('Z')
+        .or_else(|| s.strip_suffix("+00:00"))
+        .unwrap_or(s);
     NaiveDateTime::parse_from_str(s, "%Y-%m-%dT%H:%M:%S%.f").ok()
 }
 

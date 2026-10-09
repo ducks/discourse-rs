@@ -893,7 +893,7 @@ pub async fn serialize(
 }
 
 /// `SpamRule::AutoSilence.should_autosilence?` for a new user.
-async fn autosilence_pending(
+pub(crate) async fn autosilence_pending(
     conn: &mut PgConnection,
     settings: &SiteSettings,
     uid: i32,

@@ -7,6 +7,8 @@
 //! (ChannelFetcher.generate_allowed_channel_ids_sql), and the keys it adds
 //! to users, the current user and their options.
 
+pub mod channels;
+
 use serde_json::{Map, Value, json};
 use sqlx::PgConnection;
 

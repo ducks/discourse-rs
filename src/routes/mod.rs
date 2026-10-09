@@ -26,6 +26,7 @@ pub(crate) use search::invalid_access_at;
 pub(crate) use sitemap::regenerate_sitemaps;
 pub(crate) use topics::not_found_response;
 mod category_notifications;
+mod chat;
 mod reactions;
 mod session;
 mod site;
@@ -153,6 +154,9 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/t/{slug}/timings.json",
             delete(read_tracking::destroy_timings),
         )
+        // chat's Chat::Api controllers.
+        .route("/chat/api/me/channels", get(chat::me_channels))
+        .route("/chat/api/me/channels.json", get(chat::me_channels))
         // discourse-solved's AnswerController.
         .route("/solution/accept", post(solved::accept))
         .route("/solution/accept.json", post(solved::accept))
