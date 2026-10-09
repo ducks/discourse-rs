@@ -141,12 +141,13 @@ pub fn app(state: AppState) -> Router {
             state.clone(),
             session::current::layer,
         ))
-        // Hits skip everything inside, and are compressed like any response.
+        .layer(compression())
+        // Outside compression: a hit runs nothing else and is sent as it
+        // was stored, compressed for the encoding in its key.
         .layer(axum::middleware::from_fn_with_state(
             state,
             anonymous_cache::layer,
         ))
-        .layer(compression())
         .layer(TraceLayer::new_for_http())
 }
 

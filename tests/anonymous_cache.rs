@@ -125,3 +125,51 @@ async fn off_in_development() {
         assert_eq!(get(&st, "/latest.json").await.1, None);
     }
 }
+
+#[tokio::test]
+async fn the_compressed_response_is_kept_per_encoding() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let get_br = |path: &'static str| {
+        let st = st.clone();
+        async move {
+            let response = discourse_rs::app(st)
+                .oneshot(
+                    Request::get(path)
+                        .header(header::HOST, "test.localhost")
+                        .header(header::ACCEPT_ENCODING, "br, gzip")
+                        .body(Body::empty())
+                        .unwrap(),
+                )
+                .await
+                .unwrap();
+            let encoding = response
+                .headers()
+                .get(header::CONTENT_ENCODING)
+                .map(|v| v.to_str().unwrap().to_string());
+            let cached = response
+                .headers()
+                .get("x-discourse-cached")
+                .map(|v| v.to_str().unwrap().to_string());
+            let body = response.into_body().collect().await.unwrap().to_bytes();
+            (encoding, cached, body)
+        }
+    };
+    let (_, first, _) = get_br("/latest").await;
+    assert_eq!(first.as_deref(), Some("skip"));
+    let (encoding, second, stored) = get_br("/latest").await;
+    assert_eq!(
+        (encoding.as_deref(), second.as_deref()),
+        (Some("br"), Some("store"))
+    );
+    let (encoding, third, served) = get_br("/latest").await;
+    assert_eq!(
+        (encoding.as_deref(), third.as_deref()),
+        (Some("br"), Some("true"))
+    );
+    assert_eq!(served, stored);
+    // Without Accept-Encoding the key differs: counted afresh, uncompressed.
+    let (_, cached, body) = get(&st, "/latest").await;
+    assert_eq!(cached.as_deref(), Some("skip"));
+    assert!(body.contains("<html"));
+}

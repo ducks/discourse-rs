@@ -9,7 +9,10 @@
 //! purged early: they expire.
 //!
 //! Rails keeps the entries in Redis; discourse-rs runs as one process and
-//! keeps them in memory, at most `MAX_BYTES` of bodies. The key leaves out
+//! keeps them in memory, at most `MAX_BYTES` of bodies. A body is kept as
+//! it was sent, compressed when the request accepted it, with the encoding
+//! in the key as Rails keys on brotli; a hit compresses nothing. The key
+//! leaves out
 //! the segments for what the port doesn't vary its pages on (mobile and
 //! crawler layouts, old browsers, the anonymous locale, translation);
 //! the theme and color scheme cookies stay in it.
@@ -168,6 +171,17 @@ fn key(request: &Request) -> String {
         h(header::ACCEPT),
         h(header::HOST)
     );
+    // key_has_brotli?, and gzip, which the port negotiates too: the stored
+    // body is the one sent, compressed for that encoding.
+    let encodings = h(header::ACCEPT_ENCODING);
+    let encoding = if encodings.contains("br") {
+        "br"
+    } else if encodings.contains("gzip") {
+        "gzip"
+    } else {
+        ""
+    };
+    key.push_str(&format!("|b={encoding}"));
     for name in [
         "theme_ids",
         "forced_color_mode",
