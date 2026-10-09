@@ -580,6 +580,10 @@ async fn profile_page(
         can_send_private_messages: guardian.is_authenticated()
             && guardian.can_send_private_messages(settings)?,
         draft_count,
+        can_direct_message: crate::plugins::chat::user_can_direct_message(
+            &mut *conn, settings, guardian,
+        )
+        .await?,
     };
     let profile_settings = crate::user_profile_view::ProfileSettings {
         enable_badges: settings.get("enable_badges")?.truthy(),

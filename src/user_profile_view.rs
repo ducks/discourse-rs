@@ -23,6 +23,8 @@ pub struct Viewer {
     pub can_send_private_messages: bool,
     /// `currentUser.draft_count`
     pub draft_count: i64,
+    /// chat's `userCanDirectMessage`, for its Chat button.
+    pub can_direct_message: bool,
 }
 
 /// The routed tab and what it shows.
@@ -409,6 +411,14 @@ pub fn render(
             "<li><button class=\"btn btn-icon-text btn-primary compose-pm\" type=\"button\">{}<span class=\"d-button-label\">{}</span></button></li>",
             icon("envelope", None),
             escape(&t(cx, "user.private_message"))
+        ));
+    }
+    // chat's user-profile-controls connector: ChatDirectMessageButton.
+    if u["can_chat_user"] == true && !viewing_self && viewer.can_direct_message {
+        out.push_str(&format!(
+            "<li class=\"user-card-below-message-button chat-button\"><button class=\"btn btn-icon-text btn-primary chat-direct-message-btn\" type=\"button\">{}<span class=\"d-button-label\">{}</span></button></li>",
+            crate::post_view::d_icon("d-chat", None),
+            escape(&t(cx, "chat.title_capitalized"))
         ));
     }
     if !hidden && viewing_self {

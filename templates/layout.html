@@ -82,6 +82,7 @@
                   {% if let Some(v) = viewer %}
                   <span class="header-buttons"></span>
                   <ul class="icons d-header-icons">
+                    {{- chrome.chat_header_icon|safe }}
                     {#- The avatar opens the user menu, its notifications
                         fetched as HTML, or closes it when it is open. The
                         badge is the unread count, kept current live. -#}

@@ -37,6 +37,7 @@ const DISCOURSE_CSS: &str = concat!(
     include_str!("../static/css/topic-voting.css"),
     include_str!("../static/css/discourse-reactions.css"),
     include_str!("../static/css/discourse-solved.css"),
+    include_str!("../static/css/chat.css"),
 );
 
 const CSS: &str = "text/css; charset=utf-8";

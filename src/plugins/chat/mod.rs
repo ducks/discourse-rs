@@ -9,6 +9,7 @@
 
 pub mod channels;
 pub mod messages;
+pub mod view;
 
 use serde_json::{Map, Value, json};
 use sqlx::PgConnection;
@@ -140,29 +141,29 @@ pub async fn has_joinable_public_channels(
 
 /// The chat columns of user_options.
 #[derive(sqlx::FromRow)]
-struct ChatOptions {
-    chat_enabled: bool,
-    chat_sound: Option<String>,
-    ignore_channel_wide_mention: Option<bool>,
-    show_thread_title_prompts: bool,
-    chat_announce_new_messages: bool,
-    chat_channel_list_filter: i32,
-    chat_channel_list_sort: i32,
-    chat_channel_list_sort_starred: i32,
-    chat_channel_list_sort_dms: i32,
-    chat_channel_list_filter_starred: i32,
-    chat_channel_list_filter_dms: i32,
-    chat_new_message_sound: bool,
-    chat_email_frequency: i32,
-    chat_header_indicator_preference: i32,
-    chat_separate_sidebar_mode: i32,
-    send_shortcut: i32,
-    chat_quick_reaction_type: i32,
-    chat_quick_reactions_custom: Option<String>,
-    dismissed_channel_retention_reminder: Option<bool>,
+pub(crate) struct ChatOptions {
+    pub(crate) chat_enabled: bool,
+    pub(crate) chat_sound: Option<String>,
+    pub(crate) ignore_channel_wide_mention: Option<bool>,
+    pub(crate) show_thread_title_prompts: bool,
+    pub(crate) chat_announce_new_messages: bool,
+    pub(crate) chat_channel_list_filter: i32,
+    pub(crate) chat_channel_list_sort: i32,
+    pub(crate) chat_channel_list_sort_starred: i32,
+    pub(crate) chat_channel_list_sort_dms: i32,
+    pub(crate) chat_channel_list_filter_starred: i32,
+    pub(crate) chat_channel_list_filter_dms: i32,
+    pub(crate) chat_new_message_sound: bool,
+    pub(crate) chat_email_frequency: i32,
+    pub(crate) chat_header_indicator_preference: i32,
+    pub(crate) chat_separate_sidebar_mode: i32,
+    pub(crate) send_shortcut: i32,
+    pub(crate) chat_quick_reaction_type: i32,
+    pub(crate) chat_quick_reactions_custom: Option<String>,
+    pub(crate) dismissed_channel_retention_reminder: Option<bool>,
 }
 
-async fn options(
+pub(crate) async fn options(
     conn: &mut PgConnection,
     user_id: i32,
 ) -> Result<Option<ChatOptions>, sqlx::Error> {
@@ -188,11 +189,12 @@ fn enum_name(names: &[&'static str], value: i32) -> Value {
         .map(|n| json!(n))
         .unwrap_or(Value::Null)
 }
-const LIST_FILTERS: [&str; 4] = ["all", "active", "unread", "mentions"];
-const LIST_SORTS: [&str; 3] = ["alphabetical", "recent_activity", "priority"];
+pub(crate) const LIST_FILTERS: [&str; 4] = ["all", "active", "unread", "mentions"];
+pub(crate) const LIST_SORTS: [&str; 3] = ["alphabetical", "recent_activity", "priority"];
 const EMAIL_FREQUENCIES: [&str; 2] = ["never", "when_away"];
-const HEADER_INDICATORS: [&str; 4] = ["all_new", "dm_and_mentions", "never", "only_mentions"];
-const SIDEBAR_MODES: [&str; 4] = ["default", "never", "always", "fullscreen"];
+pub(crate) const HEADER_INDICATORS: [&str; 4] =
+    ["all_new", "dm_and_mentions", "never", "only_mentions"];
+pub(crate) const SIDEBAR_MODES: [&str; 4] = ["default", "never", "always", "fullscreen"];
 const SEND_SHORTCUTS: [&str; 2] = ["enter", "meta_enter"];
 const QUICK_REACTION_TYPES: [&str; 2] = ["frequent", "custom"];
 
@@ -513,4 +515,23 @@ pub async fn can_chat_user(
     .fetch_one(&mut *conn)
     .await?;
     Ok(!disallowing)
+}
+
+/// The chat service's `userCanDirectMessage`: `userCanChat` (the plugin
+/// on, and has_chat_enabled) and `can_direct_message`.
+pub async fn user_can_direct_message(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    guardian: &Guardian,
+) -> Result<bool, AppError> {
+    let Some(user_id) = guardian.user_id() else {
+        return Ok(false);
+    };
+    if !enabled(settings)? || !can_chat(&mut *conn, settings, guardian).await? {
+        return Ok(false);
+    }
+    let chat_enabled = options(&mut *conn, user_id)
+        .await?
+        .is_some_and(|o| o.chat_enabled);
+    Ok(chat_enabled && can_direct_message(settings, guardian)?)
 }

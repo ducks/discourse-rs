@@ -698,6 +698,7 @@ async fn list_state(live: &Live) -> Result<String, AppError> {
                 active,
                 member: member.as_ref(),
                 emoji_set: &emoji_set,
+                plugin_sections: "",
             },
         )?;
         out.push_str(&links.concat());

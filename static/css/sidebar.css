@@ -485,3 +485,76 @@ body.has-sidebar-page #main-outlet-wrapper {
 .sidebar-wrapper [hidden] {
   display: none;
 }
+
+/* Section header actions and link hover buttons (a plugin section's
+   options, a chat channel's menu): shown on hover. */
+.sidebar-section-wrapper .sidebar-section-header-wrapper .sidebar-section-header-button {
+  font-size: var(--font-down-1);
+  padding-inline: var(--space-1);
+  background: rgba(0,0,0,0);
+  padding: var(--space-1);
+}
+.sidebar-section-wrapper .sidebar-section-header-wrapper .sidebar-section-header-button>* {
+  pointer-events: none;
+}
+.discourse-no-touch .sidebar-section-wrapper .sidebar-section-header-wrapper .sidebar-section-header-button {
+  transition: opacity .25s,background .25s;
+  opacity: 0;
+}
+.discourse-no-touch .sidebar-section-wrapper .sidebar-section-header-wrapper .sidebar-section-header-button:hover .d-icon {
+  color: var(--d-sidebar-highlight-color);
+}
+.discourse-no-touch .sidebar-section-wrapper .sidebar-section-header-wrapper .sidebar-section-header-button:focus {
+  opacity: 1;
+}
+.sidebar-section-wrapper .sidebar-section-header-wrapper .sidebar-section-header-button .d-icon {
+  font-size: var(--font-down-1);
+  color: var(--d-sidebar-header-icon-color);
+  margin: 0;
+}
+.sidebar-section-wrapper .sidebar-section-header-wrapper .sidebar-section-header-button:focus {
+  background-color: var(--token-color-surface-focused);
+}
+.sidebar-section-wrapper:hover .sidebar-section-header-wrapper .sidebar-section-header-button {
+  opacity: 1;
+}
+.sidebar-section-wrapper.sidebar-section--persistent-actions .sidebar-section-header-wrapper .sidebar-section-header-button {
+  opacity: 1;
+}
+.sidebar-section-link-wrapper .sidebar-section-link-hover {
+  margin-left: auto;
+}
+.sidebar-section-link-wrapper .sidebar-section-link-hover .sidebar-section-hover-button {
+  opacity: 0;
+  color: var(--d-sidebar-highlight-color);
+  border: none;
+  height: 100%;
+  padding-inline: var(--space-1);
+}
+.sidebar-section-link-wrapper .sidebar-section-link-hover .sidebar-section-hover-button:focus:hover,
+.discourse-no-touch .sidebar-section-link-wrapper .sidebar-section-link-hover .sidebar-section-hover-button:hover {
+  color: var(--d-sidebar-highlight-color);
+  background: var(--d-sidebar-highlight-hover-background);
+}
+.sidebar-section-link-wrapper .sidebar-section-link-hover .sidebar-section-hover-button:focus:hover svg,
+.discourse-no-touch .sidebar-section-link-wrapper .sidebar-section-link-hover .sidebar-section-hover-button:hover svg {
+  color: var(--d-sidebar-active-icon-color);
+}
+.sidebar-section-link-wrapper .sidebar-section-link-hover .sidebar-section-hover-button svg {
+  font-size: var(--font-down-1);
+  margin: 0;
+  color: var(--d-sidebar-highlight-color);
+}
+.sidebar-section-link-wrapper.--hovering .sidebar-section-hover-button {
+  opacity: 1;
+}
+@media(hover: hover) {
+  .sidebar-section-link-wrapper:hover .sidebar-section-hover-button {
+    opacity: 1;
+  }
+}
+@media(hover: none) {
+  .sidebar-section-link-wrapper .sidebar-section-hover-button {
+    opacity: 1;
+  }
+}

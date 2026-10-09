@@ -306,3 +306,73 @@ async fn the_activity_solved_tab_lists_the_users_answers() {
     let html = user0.page("/u/user2/summary").await;
     assert!(html.contains("<li class=\"user-summary-stat-outlet solved-count linked-stat\"><a href=\"/u/user2/activity/solved\">"));
 }
+
+#[tokio::test]
+async fn a_members_header_and_sidebar_show_chat() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Client::logged_in(st, "user1").await;
+    let html = user1.page("/latest").await;
+    assert!(
+        html.contains("<body hx-boost=\"true\" class=\"chat-enabled "),
+        "{html}"
+    );
+    assert!(html.contains(
+        "<li class=\"header-dropdown-toggle chat-header-icon\"><a class=\"btn no-text icon btn-flat\" href=\"/chat\" tabindex=\"0\" title=\"Chat\"><svg class=\"fa d-icon d-icon-d-chat svg-icon fa-width-auto svg-string\" width=\"1em\" height=\"1em\" aria-hidden=\"true\" xmlns=\"http://www.w3.org/2000/svg\"><use href=\"#comment\"></use></svg></a></li>"
+    ));
+    assert!(html.contains("data-section-name=\"chat-search\""));
+    assert!(html.contains(
+        "<li class=\"sidebar-section-link-wrapper\" data-list-item-name=\"general\"><a class=\"sidebar-section-link sidebar-row channel-2\" title=\"General chat\" data-link-name=\"general\" href=\"/chat/c/general/2\"><span class=\"sidebar-section-link-prefix icon\" style=\"color: #25AAE2\">"
+    ), "{html}");
+    assert!(html.contains("data-sidebar-action-id=\"channelListOptions\""));
+    assert!(html.contains("data-link-name=\"new-chat-dm\" href=\"/chat/new-message\""));
+    // user1 follows General only; the Staff channel is admin's.
+    assert!(!html.contains("/chat/c/staff/1"));
+}
+
+#[tokio::test]
+async fn unread_chat_shows_in_the_sidebar_and_the_header() {
+    let db = TestDb::new().await;
+    sqlx::query(
+        "INSERT INTO chat_messages (chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id) \
+         VALUES (2, 2, now(), now(), 'hi', '<p>hi</p>', 1, 2)",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Client::logged_in(st, "user1").await;
+    let html = user1.page("/latest").await;
+    assert!(html.contains(
+        "<span class=\"sidebar-section-link-content-badge icon unread\"><svg class=\"fa d-icon d-icon-circle"
+    ), "{html}");
+    assert!(html.contains("<div class=\"chat-channel-unread-indicator\"></div></a></li>"));
+}
+
+#[tokio::test]
+async fn chat_is_hidden_from_a_member_who_turned_it_off() {
+    let db = TestDb::new().await;
+    sqlx::query("UPDATE user_options SET chat_enabled = FALSE WHERE user_id = 3")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Client::logged_in(st, "user1").await;
+    let html = user1.page("/latest").await;
+    assert!(!html.contains("chat-header-icon"));
+    assert!(!html.contains("chat-channels"));
+    assert!(!html.contains("chat-enabled"));
+}
+
+#[tokio::test]
+async fn a_profile_offers_to_chat() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Client::logged_in(st, "user1").await;
+    let html = user1.page("/u/user0/summary").await;
+    assert!(html.contains(
+        "<li class=\"user-card-below-message-button chat-button\"><button class=\"btn btn-icon-text btn-primary chat-direct-message-btn\" type=\"button\">"
+    ), "{html}");
+    let own = user1.page("/u/user1/summary").await;
+    assert!(!own.contains("chat-direct-message-btn"));
+}

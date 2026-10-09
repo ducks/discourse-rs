@@ -200,6 +200,7 @@ pub(crate) fn d_icon(name: &str, extra: Option<&str>) -> String {
     }
     let replaced = match name {
         "d-liked" => "heart",
+        "d-chat" => "comment",
         "d-unliked" => "far-heart",
         "d-post-share" | "d-topic-share" => "arrow-up-from-bracket",
         "topic.closed" => "lock",
