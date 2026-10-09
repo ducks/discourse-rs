@@ -23,6 +23,198 @@ Caveats that apply to every run:
 - Same box, same Postgres, client and servers all local; keep-alive off so
   each request carries a connection.
 
+## 2026-10-09, against a production Discourse
+
+The first comparison with Rails in production. The `rs-prod` dv agent runs
+Discourse bf55a44 (the vendored commit) on the seed: RAILS_ENV=production
+with Discourse's official prebuilt assets for that commit
+(`assets:precompile` fetches them), Pitchfork with 8 workers, and nginx
+1.22 in front with Discourse's config/nginx.sample.conf (gzip and brotli,
+static assets, immutable caching), as a standard install serves it.
+discourse-rs is a release build of 5c8b870 serving the same seed directly
+(it compresses and caches its own assets). Same laptop (16 cores,
+powersave governor), keep-alive off, 5 s per row. Rails' anonymous cache
+(AnonymousCache, Redis, 60 s) is on in production: `cached` rows are
+anonymous hits on it, `uncached` rows bypass it with `_bypass_cache`, and
+logged-in requests never use it. discourse-rs has no such cache.
+
+Process (bench-startup's warm-up: 20 requests each to five pages):
+
+| measure | discourse-rs | Discourse (8 workers) |
+|---|---:|---:|
+| start to first 200 | 75 ms | 11.2 s |
+| start to all workers ready | (one process) | 18.7 s |
+| memory idle | 32 MB RSS | 5.1 GB summed RSS, 830 MB PSS (11 processes) |
+| memory after warm-up | 43 MB RSS | 5.1 GB summed RSS, 900 MB PSS |
+
+Pitchfork forks its workers from a preloaded mold, so they share most
+pages: PSS, which splits shared pages between the processes, is the
+fairer figure for Rails.
+
+Requests, anonymous, c=2:
+
+| endpoint | target | req/s | p50 ms | p99 ms | non-2xx |
+|---|---|---:|---:|---:|---:|
+| /srv/status | rs | 17352 | 0.1 | 0.2 | 0 |
+| /srv/status | rails-prod (cached) | 1425 | 1.3 | 2.8 | 0 |
+| /srv/status | rails-prod (uncached) | 1405 | 1.3 | 2.8 | 0 |
+| /site.json | rs | 749 | 2.6 | 4.1 | 0 |
+| /site.json | rails-prod (cached) | 676 | 2.8 | 7.2 | 0 |
+| /site.json | rails-prod (uncached) | 722 | 2.6 | 6.5 | 0 |
+| /latest.json | rs | 1012 | 1.9 | 3.2 | 0 |
+| /latest.json | rails-prod (cached) | 1573 | 1.2 | 2.6 | 0 |
+| /latest.json | rails-prod (uncached) | 81 | 23.8 | 33.1 | 0 |
+| /latest | rs | 248 | 8.1 | 11.6 | 0 |
+| /latest | rails-prod (cached) | 1358 | 1.4 | 2.8 | 0 |
+| /latest | rails-prod (uncached) | 55 | 35.7 | 47.9 | 0 |
+| /c/general/4.json | rs | 739 | 2.6 | 4.3 | 0 |
+| /c/general/4.json | rails-prod (cached) | 1555 | 1.2 | 2.5 | 0 |
+| /c/general/4.json | rails-prod (uncached) | 76 | 25.5 | 34.4 | 0 |
+| /categories.json | rs | 888 | 2.2 | 3.6 | 0 |
+| /categories.json | rails-prod (cached) | 1464 | 1.3 | 2.6 | 0 |
+| /categories.json | rails-prod (uncached) | 122 | 15.8 | 23.7 | 0 |
+| /t/welcome-to-discourse/5.json | rs | 424 | 4.6 | 7.2 | 0 |
+| /t/welcome-to-discourse/5.json | rails-prod (cached) | 1490 | 1.2 | 2.5 | 0 |
+| /t/welcome-to-discourse/5.json | rails-prod (uncached) | 48 | 41.5 | 53.3 | 0 |
+| /t/welcome-to-discourse/5 | rs | 208 | 9.7 | 13.8 | 0 |
+| /t/welcome-to-discourse/5 | rails-prod (cached) | 1344 | 1.4 | 3 | 0 |
+| /t/welcome-to-discourse/5 | rails-prod (uncached) | 37 | 53.2 | 63.3 | 0 |
+| /u/system.json | rs | 2566 | 0.7 | 1.5 | 0 |
+| /u/system.json | rails-prod (cached) | 156 | 12.6 | 19 | 0 |
+| /u/system.json | rails-prod (uncached) | 157 | 12.3 | 17.7 | 0 |
+| /search.json?q=Welcome | rs | 985 | 2 | 3.2 | 0 |
+| /search.json?q=Welcome | rails-prod (cached) | 1585 | 1.2 | 2.5 | 0 |
+| /search.json?q=Welcome | rails-prod (uncached) | 742 | 2.5 | 7.7 | 3702 |
+| /tag/guide.json | rs | 950 | 2.1 | 3.5 | 0 |
+| /tag/guide.json | rails-prod (cached) | 1625 | 1.1 | 2.5 | 0 |
+| /tag/guide.json | rails-prod (uncached) | 76 | 25.8 | 36.2 | 0 |
+
+Requests, logged in as user1, c=2:
+
+| endpoint | target | req/s | p50 ms | p99 ms | non-2xx |
+|---|---|---:|---:|---:|---:|
+| /srv/status | rs (user) | 6464 | 0.3 | 0.5 | 0 |
+| /srv/status | rails-prod (user) | 1174 | 1.5 | 4.2 | 0 |
+| /site.json | rs (user) | 689 | 2.9 | 4.5 | 0 |
+| /site.json | rails-prod (user) | 102 | 19 | 26.5 | 0 |
+| /latest.json | rs (user) | 860 | 2.2 | 3.8 | 0 |
+| /latest.json | rails-prod (user) | 61 | 32 | 40.6 | 0 |
+| /latest | rs (user) | 237 | 8.1 | 13.6 | 0 |
+| /latest | rails-prod (user) | 44 | 44 | 52.7 | 0 |
+| /c/general/4.json | rs (user) | 780 | 2.5 | 4.1 | 0 |
+| /c/general/4.json | rails-prod (user) | 54 | 36.2 | 44.5 | 0 |
+| /categories.json | rs (user) | 701 | 2.8 | 4.3 | 0 |
+| /categories.json | rails-prod (user) | 88 | 22 | 30.8 | 0 |
+| /t/welcome-to-discourse/5.json | rs (user) | 309 | 6.3 | 13.3 | 0 |
+| /t/welcome-to-discourse/5.json | rails-prod (user) | 33 | 58.7 | 66.9 | 0 |
+| /t/welcome-to-discourse/5 | rs (user) | 153 | 12.6 | 21.1 | 0 |
+| /t/welcome-to-discourse/5 | rails-prod (user) | 25 | 77.1 | 91 | 0 |
+| /u/system.json | rs (user) | 1385 | 1.4 | 3.1 | 0 |
+| /u/system.json | rails-prod (user) | 76 | 25.9 | 35.4 | 0 |
+| /search.json?q=Welcome | rs (user) | 799 | 2.4 | 3.8 | 0 |
+| /search.json?q=Welcome | rails-prod (user) | 310 | 6 | 19.2 | 1523 |
+| /tag/guide.json | rs (user) | 735 | 2.6 | 4.4 | 0 |
+| /tag/guide.json | rails-prod (user) | 59 | 33 | 41.3 | 0 |
+| /unread.json | rs (user) | 1009 | 1.9 | 3.2 | 0 |
+| /unread.json | rails-prod (user) | 79 | 24.2 | 40.8 | 0 |
+| /new.json | rs (user) | 915 | 2.1 | 3.5 | 0 |
+| /new.json | rails-prod (user) | 67 | 28.9 | 37.1 | 0 |
+
+Requests, anonymous, c=16:
+
+| endpoint | target | req/s | p50 ms | p99 ms | non-2xx |
+|---|---|---:|---:|---:|---:|
+| /srv/status | rs | 52429 | 0.3 | 0.7 | 0 |
+| /srv/status | rails-prod (cached) | 3164 | 4.9 | 7.2 | 0 |
+| /srv/status | rails-prod (uncached) | 3223 | 4.9 | 6.6 | 0 |
+| /site.json | rs | 2779 | 5.7 | 8 | 0 |
+| /site.json | rails-prod (cached) | 1881 | 8.3 | 13.7 | 0 |
+| /site.json | rails-prod (uncached) | 1964 | 8 | 12.6 | 0 |
+| /latest.json | rs | 3309 | 4.8 | 6.7 | 0 |
+| /latest.json | rails-prod (cached) | 3734 | 4.1 | 6.8 | 0 |
+| /latest.json | rails-prod (uncached) | 226 | 70.7 | 94.9 | 0 |
+| /latest | rs | 990 | 15.9 | 22.2 | 0 |
+| /latest | rails-prod (cached) | 3450 | 4.5 | 6.6 | 0 |
+| /latest | rails-prod (uncached) | 156 | 103.5 | 120.4 | 0 |
+| /c/general/4.json | rs | 2837 | 5.5 | 9.6 | 0 |
+| /c/general/4.json | rails-prod (cached) | 3795 | 4.1 | 6 | 0 |
+| /c/general/4.json | rails-prod (uncached) | 222 | 72.4 | 83.9 | 0 |
+| /categories.json | rs | 3078 | 5.1 | 7.4 | 0 |
+| /categories.json | rails-prod (cached) | 3849 | 4.1 | 5.8 | 0 |
+| /categories.json | rails-prod (uncached) | 367 | 43.3 | 53 | 0 |
+| /t/welcome-to-discourse/5.json | rs | 1585 | 10 | 14.6 | 0 |
+| /t/welcome-to-discourse/5.json | rails-prod (cached) | 3682 | 4.2 | 6.1 | 0 |
+| /t/welcome-to-discourse/5.json | rails-prod (uncached) | 142 | 113.6 | 130.3 | 0 |
+| /t/welcome-to-discourse/5 | rs | 778 | 20.4 | 28.9 | 0 |
+| /t/welcome-to-discourse/5 | rails-prod (cached) | 3281 | 4.6 | 7.9 | 0 |
+| /t/welcome-to-discourse/5 | rails-prod (uncached) | 92 | 174.4 | 219.4 | 0 |
+| /u/system.json | rs | 7457 | 2 | 4.3 | 0 |
+| /u/system.json | rails-prod (cached) | 429 | 36.8 | 48.5 | 0 |
+| /u/system.json | rails-prod (uncached) | 438 | 35.9 | 47.2 | 0 |
+| /search.json?q=Welcome | rs | 3137 | 5 | 7.3 | 0 |
+| /search.json?q=Welcome | rails-prod (cached) | 3764 | 4.1 | 6.6 | 36 |
+| /search.json?q=Welcome | rails-prod (uncached) | 1881 | 8.3 | 14 | 9384 |
+| /tag/guide.json | rs | 2708 | 5.7 | 9 | 0 |
+| /tag/guide.json | rails-prod (cached) | 3881 | 4 | 5.8 | 0 |
+| /tag/guide.json | rails-prod (uncached) | 232 | 68.1 | 85.6 | 0 |
+
+Requests, logged in as user1, c=16:
+
+| endpoint | target | req/s | p50 ms | p99 ms | non-2xx |
+|---|---|---:|---:|---:|---:|
+| /srv/status | rs (user) | 18477 | 0.8 | 2 | 0 |
+| /srv/status | rails-prod (user) | 2597 | 5.9 | 10.4 | 0 |
+| /site.json | rs (user) | 2171 | 6.8 | 13.7 | 0 |
+| /site.json | rails-prod (user) | 295 | 54.4 | 68.7 | 0 |
+| /latest.json | rs (user) | 2426 | 5.9 | 13.8 | 0 |
+| /latest.json | rails-prod (user) | 162 | 98.3 | 122 | 0 |
+| /latest | rs (user) | 730 | 21.4 | 37.6 | 0 |
+| /latest | rails-prod (user) | 124 | 128.4 | 160.6 | 0 |
+| /c/general/4.json | rs (user) | 2239 | 6.7 | 12.3 | 0 |
+| /c/general/4.json | rails-prod (user) | 146 | 109.9 | 139.3 | 0 |
+| /categories.json | rs (user) | 2233 | 6.7 | 11.4 | 0 |
+| /categories.json | rails-prod (user) | 240 | 66.4 | 80.1 | 0 |
+| /t/welcome-to-discourse/5.json | rs (user) | 1040 | 15.2 | 25.6 | 0 |
+| /t/welcome-to-discourse/5.json | rails-prod (user) | 93 | 174.6 | 194.2 | 0 |
+| /t/welcome-to-discourse/5 | rs (user) | 493 | 31.2 | 76.2 | 0 |
+| /t/welcome-to-discourse/5 | rails-prod (user) | 71 | 231.5 | 294.8 | 0 |
+| /u/system.json | rs (user) | 4277 | 3.5 | 8.2 | 0 |
+| /u/system.json | rails-prod (user) | 209 | 75.7 | 98.2 | 0 |
+| /search.json?q=Welcome | rs (user) | 2865 | 5.4 | 7.7 | 0 |
+| /search.json?q=Welcome | rails-prod (user) | 858 | 18.1 | 29 | 4250 |
+| /tag/guide.json | rs (user) | 2248 | 6.4 | 11.5 | 0 |
+| /tag/guide.json | rails-prod (user) | 161 | 97.7 | 156.3 | 0 |
+| /unread.json | rs (user) | 2609 | 5.8 | 10.6 | 0 |
+| /unread.json | rails-prod (user) | 229 | 69.6 | 85.9 | 0 |
+| /new.json | rs (user) | 2706 | 5.4 | 9.4 | 0 |
+| /new.json | rails-prod (user) | 199 | 80.6 | 93.1 | 0 |
+
+Rails rate-limits search (the non-2xx column counts its 429s). The HTML
+rows still compare different work: discourse-rs renders the page, Rails
+serves the Ember shell and the topics follow by XHR.
+
+Page loads in Chromium, cold cache, median of five; for the logged-in
+rows the login page loaded first in the same context, so the assets were
+cached already. "transferred" is bytes over the wire, "decoded" after
+decompression:
+
+| page | target | requests | document | transferred | decoded | DOMContentLoaded ms | content ms |
+|---|---|---:|---:|---:|---:|---:|---:|
+| /latest | rs | 18 | 18 KB | 486 KB | 0.7 MB | 54 | 75 |
+| /c/general/4 | rs | 18 | 18 KB | 486 KB | 0.7 MB | 50 | 72 |
+| /t/parity-fixture-replies-and-posters/35 | rs | 18 | 19 KB | 429 KB | 0.7 MB | 76 | 86 |
+| /categories | rs | 17 | 18 KB | 486 KB | 0.7 MB | 39 | 65 |
+| /u/user1/summary | rs | 13 | 17 KB | 421 KB | 0.7 MB | 42 | 65 |
+| /latest as=user1 | rs | 21 | 20 KB | 101 KB | 0.8 MB | 72 | 86 |
+| /t/parity-fixture-replies-and-posters/35 as=user1 | rs | 22 | 23 KB | 50 KB | 0.8 MB | 92 | 108 |
+| /latest | rails-prod | 83 | 20 KB | 1836 KB | 9.0 MB | 346 | 560 |
+| /c/general/4 | rails-prod | 83 | 20 KB | 1836 KB | 9.0 MB | 349 | 555 |
+| /t/parity-fixture-replies-and-posters/35 | rails-prod | 83 | 21 KB | 1780 KB | 9.0 MB | 348 | 626 |
+| /categories | rails-prod | 83 | 20 KB | 1840 KB | 9.0 MB | 349 | 560 |
+| /u/user1/summary | rails-prod | 80 | 18 KB | 1772 KB | 8.9 MB | 369 | 595 |
+| /latest as=user1 | rails-prod | 86 | 21 KB | 91 KB | 9.0 MB | 424 | 659 |
+| /t/parity-fixture-replies-and-posters/35 as=user1 | rails-prod | 83 | 21 KB | 32 KB | 9.0 MB | 341 | 613 |
+
 ## 2026-10-09, fixing what the run above found
 
 Same box, seed and c=2, discourse-rs only, release builds at each step.
