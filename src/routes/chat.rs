@@ -708,3 +708,23 @@ fn contract_integer(v: &str) -> Option<i64> {
     let v = strip_format(v);
     (!v.trim().is_empty()).then(|| crate::ruby::to_i(v))
 }
+
+/// PUT /chat/:chat_channel_id/:message_id/rebake (Chat::ChatController#rebake).
+pub async fn rebake_message(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    Path((id, message_id)): Path<(String, String)>,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    let (mut tx, settings, _) =
+        match begin_write(&state, &guardian, &headers, &uri, "PUT", &body).await? {
+            Ok(begun) => begun,
+            Err(refused) => return Ok(refused),
+        };
+    let outcome = context(&state, &mut tx, &settings, &guardian)
+        .rebake_message(contract_integer(&id), contract_integer(&message_id))
+        .await?;
+    finish(&state, tx, outcome).await
+}

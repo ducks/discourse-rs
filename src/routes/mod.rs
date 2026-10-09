@@ -221,6 +221,11 @@ pub fn router(state: &AppState) -> Router<AppState> {
             put(chat::restore_message),
         )
         .route("/chat/{id}/react/{message_id}", put(chat::react))
+        .route("/chat/{id}/{message_id}/rebake", put(chat::rebake_message))
+        .route(
+            "/chat/{id}/{message_id}/rebake.json",
+            put(chat::rebake_message),
+        )
         // discourse-solved's AnswerController.
         .route("/solution/accept", post(solved::accept))
         .route("/solution/accept.json", post(solved::accept))

@@ -832,3 +832,58 @@ fn channel_status(channel: &ChannelRow) -> &'static str {
         .copied()
         .unwrap_or("open")
 }
+
+impl Context<'_> {
+    /// Chat::RebakeMessage (PUT /chat/:chat_channel_id/:message_id/rebake):
+    /// the message cooked again by its processing job.
+    pub async fn rebake_message(
+        &mut self,
+        channel_id: Option<i64>,
+        message_id: Option<i64>,
+    ) -> Result<Outcome, AppError> {
+        let mut errors = Vec::new();
+        if message_id.is_none() {
+            errors.push("Message can't be blank".to_string());
+        }
+        if channel_id.is_none() {
+            errors.push("Chat channel can't be blank".to_string());
+        }
+        if !errors.is_empty() {
+            return Ok(Outcome::Invalid(errors));
+        }
+        // model :channel, policy :can_access_channel
+        let sql = format!(
+            "SELECT {} FROM chat_channels WHERE id = $1 AND deleted_at IS NULL",
+            super::channels::CHANNEL_COLUMNS
+        );
+        let channel: Option<ChannelRow> = sqlx::query_as(&sql)
+            .bind(channel_id)
+            .fetch_optional(&mut *self.conn)
+            .await?;
+        let Some(channel) = channel else {
+            return Ok(Outcome::NotFound);
+        };
+        if channel.chatable_type != "Category" {
+            return Err(Unsupported("chat direct messages").into());
+        }
+        if !self.can_join(&channel, None).await? {
+            return Ok(Outcome::Forbidden(None));
+        }
+        // model :message, policy :can_rebake
+        let Some(message) = self.find_message(message_id, channel.id, true).await? else {
+            return Ok(Outcome::NotFound);
+        };
+        if !(self.can_modify(&channel)
+            && (self.guardian.is_staff() || self.guardian.has_trust_level(4)))
+        {
+            return Ok(Outcome::Forbidden(None));
+        }
+        crate::jobs::enqueue(
+            &mut *self.conn,
+            super::create::PROCESS_MESSAGE_JOB,
+            json!({ "chat_message_id": message.id, "invalidate_oneboxes": true }),
+        )
+        .await?;
+        Ok(Outcome::Done(json!({ "success": "OK" })))
+    }
+}
