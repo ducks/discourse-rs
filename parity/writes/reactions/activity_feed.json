@@ -1,0 +1,393 @@
+{
+  "name": "activity_feed",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/u/user0/activity.json",
+      "params": {}
+    }
+  ],
+  "started_at": "2026-10-09T11:45:40.505478",
+  "transaction_started_at": "2026-10-09T11:45:37.267482",
+  "responses": [
+    {
+      "status": 200,
+      "body": [
+        {
+          "id": 52,
+          "name": "User0",
+          "username": "user0",
+          "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+          "created_at": "2026-10-01T15:39:51.834Z",
+          "cooked": "<p>Reply from user0 mentioning <a class=\"mention\" href=\"/u/user1\">@user1</a> so a mention notification exists.</p>",
+          "post_number": 5,
+          "post_type": 1,
+          "posts_count": 5,
+          "updated_at": "2026-10-01T15:39:51.834Z",
+          "reply_count": 0,
+          "reply_to_post_number": null,
+          "quote_count": 0,
+          "incoming_link_count": 0,
+          "reads": 1,
+          "readers_count": 0,
+          "score": 0.2,
+          "yours": false,
+          "topic_id": 35,
+          "topic_slug": "parity-fixture-replies-and-posters",
+          "display_username": "User0",
+          "primary_group_name": null,
+          "flair_name": null,
+          "flair_url": null,
+          "flair_bg_color": null,
+          "flair_color": null,
+          "flair_group_id": null,
+          "badges_granted": [],
+          "version": 1,
+          "can_edit": false,
+          "can_delete": false,
+          "can_recover": false,
+          "can_see_hidden_post": false,
+          "can_wiki": false,
+          "user_title": null,
+          "bookmarked": true,
+          "bookmark_reminder_at": null,
+          "bookmark_id": 5,
+          "bookmark_name": "Parity fixture: reminder sent",
+          "bookmark_auto_delete_preference": 3,
+          "actions_summary": [
+            {
+              "id": 2,
+              "can_act": true
+            },
+            {
+              "id": 6,
+              "can_act": true
+            },
+            {
+              "id": 3,
+              "can_act": true
+            },
+            {
+              "id": 4,
+              "can_act": true
+            },
+            {
+              "id": 8,
+              "can_act": true
+            },
+            {
+              "id": 10,
+              "can_act": true
+            },
+            {
+              "id": 7,
+              "can_act": true
+            }
+          ],
+          "moderator": false,
+          "admin": false,
+          "staff": false,
+          "user_id": 2,
+          "hidden": false,
+          "trust_level": 1,
+          "deleted_at": null,
+          "user_deleted": false,
+          "edit_reason": null,
+          "can_view_edit_history": true,
+          "wiki": false,
+          "excerpt": "Reply from user0 mentioning <a class=\"mention\" href=\"/u/user1\">@user1</a> so a mention notification exists.",
+          "truncated": true,
+          "post_url": "/t/parity-fixture-replies-and-posters/35/5",
+          "reactions": [],
+          "current_user_reaction": null,
+          "reaction_users_count": 0,
+          "current_user_used_main_reaction": false,
+          "can_accept_answer": false,
+          "can_unaccept_answer": false,
+          "accepted_answer": false,
+          "topic_accepted_answer": null
+        },
+        {
+          "id": 46,
+          "name": "User0",
+          "username": "user0",
+          "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+          "created_at": "2026-09-30T07:28:30.163Z",
+          "cooked": "<p>An archived topic whose first post got a like, for like_count and op_like_count.</p>",
+          "post_number": 1,
+          "post_type": 1,
+          "posts_count": 1,
+          "updated_at": "2026-09-30T07:28:30.163Z",
+          "reply_count": 0,
+          "reply_to_post_number": null,
+          "quote_count": 0,
+          "incoming_link_count": 0,
+          "reads": 1,
+          "readers_count": 0,
+          "score": 15.2,
+          "yours": false,
+          "topic_id": 41,
+          "topic_slug": "parity-fixture-liked-and-archived",
+          "display_username": "User0",
+          "primary_group_name": null,
+          "flair_name": null,
+          "flair_url": null,
+          "flair_bg_color": null,
+          "flair_color": null,
+          "flair_group_id": null,
+          "badges_granted": [],
+          "version": 1,
+          "can_edit": false,
+          "can_delete": false,
+          "can_recover": false,
+          "can_see_hidden_post": false,
+          "can_wiki": false,
+          "user_title": null,
+          "bookmarked": false,
+          "actions_summary": [
+            {
+              "id": 2,
+              "count": 1
+            },
+            {
+              "id": 6,
+              "can_act": true
+            },
+            {
+              "id": 3,
+              "can_act": true
+            },
+            {
+              "id": 4,
+              "can_act": true
+            },
+            {
+              "id": 8,
+              "can_act": true
+            },
+            {
+              "id": 10,
+              "can_act": true
+            },
+            {
+              "id": 7,
+              "can_act": true
+            }
+          ],
+          "moderator": false,
+          "admin": false,
+          "staff": false,
+          "user_id": 2,
+          "hidden": false,
+          "trust_level": 1,
+          "deleted_at": null,
+          "user_deleted": false,
+          "edit_reason": null,
+          "can_view_edit_history": true,
+          "wiki": false,
+          "excerpt": "An archived topic whose first post got a like, for like_count and op_like_count.",
+          "truncated": true,
+          "post_url": "/t/parity-fixture-liked-and-archived/41/1",
+          "reactions": [
+            {
+              "id": "heart",
+              "type": "emoji",
+              "count": 1
+            }
+          ],
+          "current_user_reaction": {
+            "id": "heart",
+            "type": "emoji",
+            "can_undo": false
+          },
+          "reaction_users_count": 1,
+          "current_user_used_main_reaction": true,
+          "can_accept_answer": false,
+          "can_unaccept_answer": false,
+          "accepted_answer": false,
+          "topic_accepted_answer": null,
+          "can_vote": false
+        },
+        {
+          "id": 35,
+          "name": "User0",
+          "username": "user0",
+          "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+          "created_at": "2026-09-30T07:28:28.901Z",
+          "cooked": "<p>First post of a topic with several repliers, long enough to be a real post body for the excerpt.</p>",
+          "post_number": 1,
+          "post_type": 1,
+          "posts_count": 5,
+          "updated_at": "2026-09-30T07:28:28.901Z",
+          "reply_count": 0,
+          "reply_to_post_number": null,
+          "quote_count": 0,
+          "incoming_link_count": 0,
+          "reads": 1,
+          "readers_count": 0,
+          "score": 0.2,
+          "yours": false,
+          "topic_id": 35,
+          "topic_slug": "parity-fixture-replies-and-posters",
+          "display_username": "User0",
+          "primary_group_name": null,
+          "flair_name": null,
+          "flair_url": null,
+          "flair_bg_color": null,
+          "flair_color": null,
+          "flair_group_id": null,
+          "badges_granted": [],
+          "version": 1,
+          "can_edit": false,
+          "can_delete": false,
+          "can_recover": false,
+          "can_see_hidden_post": false,
+          "can_wiki": false,
+          "user_title": null,
+          "bookmarked": false,
+          "actions_summary": [
+            {
+              "id": 2,
+              "can_act": true
+            },
+            {
+              "id": 6,
+              "can_act": true
+            },
+            {
+              "id": 3,
+              "can_act": true
+            },
+            {
+              "id": 4,
+              "can_act": true
+            },
+            {
+              "id": 8,
+              "can_act": true
+            },
+            {
+              "id": 10,
+              "can_act": true
+            },
+            {
+              "id": 7,
+              "can_act": true
+            }
+          ],
+          "moderator": false,
+          "admin": false,
+          "staff": false,
+          "user_id": 2,
+          "hidden": false,
+          "trust_level": 1,
+          "deleted_at": null,
+          "user_deleted": false,
+          "edit_reason": null,
+          "can_view_edit_history": true,
+          "wiki": false,
+          "notice": {
+            "type": "new_user"
+          },
+          "excerpt": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+          "truncated": true,
+          "post_url": "/t/parity-fixture-replies-and-posters/35/1",
+          "reactions": [
+            {
+              "id": "clap",
+              "type": "emoji",
+              "count": 1
+            },
+            {
+              "id": "laughing",
+              "type": "emoji",
+              "count": 1
+            }
+          ],
+          "current_user_reaction": {
+            "id": "laughing",
+            "type": "emoji",
+            "can_undo": false
+          },
+          "reaction_users_count": 2,
+          "current_user_used_main_reaction": false,
+          "can_accept_answer": false,
+          "can_unaccept_answer": false,
+          "accepted_answer": false,
+          "topic_accepted_answer": null,
+          "can_vote": false
+        }
+      ]
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 317,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "hHv7kBGRY5DSPM9IjZrpTqFCvkw=",
+            "created_at": "2026-10-09T11:45:38.673145",
+            "rotated_at": "2026-10-09T11:45:38.666435",
+            "updated_at": "2026-10-09T11:45:38.673145",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "hHv7kBGRY5DSPM9IjZrpTqFCvkw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 317,
+            "seen_at": "2026-10-09T11:45:40.51762",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "hHv7kBGRY5DSPM9IjZrpTqFCvkw=",
+            "created_at": "2026-10-09T11:45:38.673145",
+            "rotated_at": "2026-10-09T11:45:38.666435",
+            "updated_at": "2026-10-09T11:45:38.673145",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "hHv7kBGRY5DSPM9IjZrpTqFCvkw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "setup": [
+    "INSERT INTO discourse_reactions_reactions (post_id, reaction_type, reaction_value, reaction_users_count, created_at, updated_at) VALUES (36, 0, '+1', 1, now(), now())",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) SELECT id, 4, 36, now() - interval '90 minutes', now() - interval '90 minutes' FROM discourse_reactions_reactions WHERE post_id = 36 AND reaction_value = '+1'",
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (36, 4, 2, now() - interval '90 minutes', now() - interval '90 minutes')",
+    "INSERT INTO discourse_reactions_reactions (post_id, reaction_type, reaction_value, reaction_users_count, created_at, updated_at) VALUES (36, 0, '-1', 1, now(), now())",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) SELECT id, 1, 36, now() - interval '80 minutes', now() - interval '80 minutes' FROM discourse_reactions_reactions WHERE post_id = 36 AND reaction_value = '-1'",
+    "INSERT INTO discourse_reactions_reactions (post_id, reaction_type, reaction_value, reaction_users_count, created_at, updated_at) VALUES (35, 0, 'laughing', 1, now(), now())",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) SELECT id, 3, 35, now() - interval '70 minutes', now() - interval '70 minutes' FROM discourse_reactions_reactions WHERE post_id = 35 AND reaction_value = 'laughing'",
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (35, 3, 2, now() - interval '70 minutes', now() - interval '70 minutes')",
+    "INSERT INTO discourse_reactions_reactions (post_id, reaction_type, reaction_value, reaction_users_count, created_at, updated_at) VALUES (35, 0, 'clap', 1, now(), now())",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) SELECT id, 4, 35, now() - interval '60 minutes', now() - interval '60 minutes' FROM discourse_reactions_reactions WHERE post_id = 35 AND reaction_value = 'clap'",
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (35, 4, 2, now() - interval '60 minutes', now() - interval '60 minutes')",
+    "INSERT INTO discourse_reactions_reactions (post_id, reaction_type, reaction_value, reaction_users_count, created_at, updated_at) VALUES (37, 0, 'confetti_ball', 1, now(), now())",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) SELECT id, 3, 37, now() - interval '2 minutes', now() - interval '2 minutes' FROM discourse_reactions_reactions WHERE post_id = 37 AND reaction_value = 'confetti_ball'",
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (37, 3, 2, now() - interval '2 minutes', now() - interval '2 minutes')",
+    "INSERT INTO discourse_reactions_reactions (post_id, reaction_type, reaction_value, reaction_users_count, created_at, updated_at) VALUES (37, 0, 'notanemoji', 1, now(), now())",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) SELECT id, 1, 37, now() - interval '50 minutes', now() - interval '50 minutes' FROM discourse_reactions_reactions WHERE post_id = 37 AND reaction_value = 'notanemoji'",
+    "INSERT INTO discourse_reactions_reactions (post_id, reaction_type, reaction_value, reaction_users_count, created_at, updated_at) VALUES (38, 0, 'heart', 1, now(), now())",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) SELECT id, 3, 38, now() - interval '40 minutes', now() - interval '40 minutes' FROM discourse_reactions_reactions WHERE post_id = 38 AND reaction_value = 'heart'",
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (38, 3, 2, now() - interval '40 minutes', now() - interval '40 minutes')"
+  ],
+  "recorded_from": {
+    "case": "8f8a925c802352a5da9b9be05d246139b080efddb58555a6fca8b953c0112a03",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

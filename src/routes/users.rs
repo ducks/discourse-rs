@@ -406,14 +406,21 @@ pub async fn actions(
     if limit < 0 {
         return Err(Unsupported("negative user_actions limit").into());
     }
-    // ensure_user_actions_visible!: hidden profiles and private types 404.
+    // ensure_user_actions_visible!: hidden profiles 404, and so do private
+    // types and a hidden activity tab, except to the user themself and
+    // admins (can_see_user_actions?).
+    let sees_private =
+        guardian.is_authenticated() && (guardian.is_me(user.id) || guardian.is_admin());
     if !user.visible_to(&settings, &guardian)?
-        || settings.get("hide_user_activity_tab")?.truthy()
-        || action_types.iter().any(|t| PRIVATE_TYPES.contains(t))
+        || (!sees_private
+            && (settings.get("hide_user_activity_tab")?.truthy()
+                || action_types.iter().any(|t| PRIVATE_TYPES.contains(t))))
     {
         return Ok(super::topics::not_found_response(&state));
     }
-    if action_types.is_empty() {
+    // No filter: every type for those who see the private ones, else the
+    // public types.
+    if action_types.is_empty() && !sees_private {
         action_types = PUBLIC_TYPES.to_vec();
     }
     let urls = Urls {

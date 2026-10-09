@@ -1,0 +1,36 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO discourse_reactions_reactions (post_id, reaction_type, reaction_value, reaction_users_count, created_at, updated_at) VALUES (36, 0, '+1', 1, now(), now())",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) SELECT id, 4, 36, now() - interval '90 minutes', now() - interval '90 minutes' FROM discourse_reactions_reactions WHERE post_id = 36 AND reaction_value = '+1'",
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (36, 4, 2, now() - interval '90 minutes', now() - interval '90 minutes')",
+    "INSERT INTO discourse_reactions_reactions (post_id, reaction_type, reaction_value, reaction_users_count, created_at, updated_at) VALUES (36, 0, '-1', 1, now(), now())",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) SELECT id, 1, 36, now() - interval '80 minutes', now() - interval '80 minutes' FROM discourse_reactions_reactions WHERE post_id = 36 AND reaction_value = '-1'",
+    "INSERT INTO discourse_reactions_reactions (post_id, reaction_type, reaction_value, reaction_users_count, created_at, updated_at) VALUES (35, 0, 'laughing', 1, now(), now())",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) SELECT id, 3, 35, now() - interval '70 minutes', now() - interval '70 minutes' FROM discourse_reactions_reactions WHERE post_id = 35 AND reaction_value = 'laughing'",
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (35, 3, 2, now() - interval '70 minutes', now() - interval '70 minutes')",
+    "INSERT INTO discourse_reactions_reactions (post_id, reaction_type, reaction_value, reaction_users_count, created_at, updated_at) VALUES (35, 0, 'clap', 1, now(), now())",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) SELECT id, 4, 35, now() - interval '60 minutes', now() - interval '60 minutes' FROM discourse_reactions_reactions WHERE post_id = 35 AND reaction_value = 'clap'",
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (35, 4, 2, now() - interval '60 minutes', now() - interval '60 minutes')",
+    "INSERT INTO discourse_reactions_reactions (post_id, reaction_type, reaction_value, reaction_users_count, created_at, updated_at) VALUES (37, 0, 'confetti_ball', 1, now(), now())",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) SELECT id, 3, 37, now() - interval '2 minutes', now() - interval '2 minutes' FROM discourse_reactions_reactions WHERE post_id = 37 AND reaction_value = 'confetti_ball'",
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (37, 3, 2, now() - interval '2 minutes', now() - interval '2 minutes')",
+    "INSERT INTO discourse_reactions_reactions (post_id, reaction_type, reaction_value, reaction_users_count, created_at, updated_at) VALUES (37, 0, 'notanemoji', 1, now(), now())",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) SELECT id, 1, 37, now() - interval '50 minutes', now() - interval '50 minutes' FROM discourse_reactions_reactions WHERE post_id = 37 AND reaction_value = 'notanemoji'",
+    "INSERT INTO discourse_reactions_reactions (post_id, reaction_type, reaction_value, reaction_users_count, created_at, updated_at) VALUES (38, 0, 'heart', 1, now(), now())",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) SELECT id, 3, 38, now() - interval '40 minutes', now() - interval '40 minutes' FROM discourse_reactions_reactions WHERE post_id = 38 AND reaction_value = 'heart'",
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (38, 3, 2, now() - interval '40 minutes', now() - interval '40 minutes')",
+    "INSERT INTO ignored_users (user_id, ignored_user_id, created_at, updated_at, expiring_at) VALUES (3, 4, now(), now(), now() + interval '1 week')"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/t/35.json",
+      "params": {}
+    }
+  ],
+  "ignore": [
+    "/responses/0/body/suggested_topics"
+  ],
+  "not_yet": "ignored users in topic views (core: TopicView hides their posts)"
+}
