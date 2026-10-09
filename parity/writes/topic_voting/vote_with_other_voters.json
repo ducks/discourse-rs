@@ -1,0 +1,143 @@
+{
+  "name": "vote_with_other_voters",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/voting/vote",
+      "params": {
+        "topic_id": "35"
+      }
+    }
+  ],
+  "started_at": "2026-10-09T06:34:39.467766",
+  "transaction_started_at": "2026-10-09T06:34:38.649063",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "can_vote": true,
+        "vote_limit": 6,
+        "vote_count": 3,
+        "who_voted": [
+          {
+            "id": 3,
+            "username": "user1",
+            "name": "User1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png"
+          },
+          {
+            "id": 5,
+            "username": "user3",
+            "name": "User3",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/ec9cab/{size}.png"
+          },
+          {
+            "id": 4,
+            "username": "user2",
+            "name": "User2",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png"
+          }
+        ],
+        "votes_left": 5,
+        "alert": false
+      }
+    }
+  ],
+  "changes": {
+    "topic_voting_topic_vote_count": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 4,
+            "topic_id": 35,
+            "created_at": "2026-10-09T06:34:38.649063",
+            "updated_at": "2026-10-09T06:34:38.649063",
+            "votes_count": 2
+          },
+          "after": {
+            "id": 4,
+            "topic_id": 35,
+            "created_at": "2026-10-09T06:34:38.649063",
+            "updated_at": "2026-10-09T06:34:38.649063",
+            "votes_count": 3
+          }
+        }
+      ]
+    },
+    "topic_voting_votes": {
+      "inserted": [
+        {
+          "id": 3,
+          "archive": false,
+          "user_id": 3,
+          "topic_id": 35,
+          "created_at": "2026-10-09T06:34:39.48642",
+          "updated_at": "2026-10-09T06:34:39.48642"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 291,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "PKBo5i+wI80GGdQzNHWRSYl38Uc=",
+            "created_at": "2026-10-09T06:34:38.978477",
+            "rotated_at": "2026-10-09T06:34:38.978243",
+            "updated_at": "2026-10-09T06:34:38.978477",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "PKBo5i+wI80GGdQzNHWRSYl38Uc=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 291,
+            "seen_at": "2026-10-09T06:34:39.473699",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "PKBo5i+wI80GGdQzNHWRSYl38Uc=",
+            "created_at": "2026-10-09T06:34:38.978477",
+            "rotated_at": "2026-10-09T06:34:38.978243",
+            "updated_at": "2026-10-09T06:34:38.978477",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "PKBo5i+wI80GGdQzNHWRSYl38Uc=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "Jobs::DiscourseTopicVoting::BackfillBadges",
+      {
+        "topic_id": 35
+      }
+    ]
+  ],
+  "setup": [
+    "INSERT INTO topic_voting_category_settings (category_id, created_at, updated_at) VALUES (4, now(), now())",
+    "INSERT INTO topic_voting_votes (topic_id, user_id, archive, created_at, updated_at) VALUES (35, 4, false, now() - interval '30 hours', now() - interval '30 hours'), (35, 5, false, now() - interval '20 hours', now() - interval '20 hours')",
+    "INSERT INTO topic_voting_topic_vote_count (topic_id, votes_count, created_at, updated_at) VALUES (35, 2, now(), now()) ON CONFLICT (topic_id) DO UPDATE SET votes_count = EXCLUDED.votes_count"
+  ],
+  "recorded_from": {
+    "case": "20438a84a270aace7dd0ce7b8f8acffae2b8bae6cfdac9424715af94a493e3d6",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

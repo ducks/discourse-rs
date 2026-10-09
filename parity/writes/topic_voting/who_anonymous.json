@@ -1,0 +1,34 @@
+{
+  "name": "who_anonymous",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/voting/who.json?topic_id=35",
+      "params": {}
+    }
+  ],
+  "started_at": "2026-10-09T06:34:41.607209",
+  "transaction_started_at": "2026-10-09T06:34:40.864236",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You need to be logged in to do that."
+        ],
+        "error_type": "not_logged_in"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "setup": [
+    "INSERT INTO topic_voting_category_settings (category_id, created_at, updated_at) VALUES (4, now(), now())"
+  ],
+  "recorded_from": {
+    "case": "861cdb37ea47d493e3168f7372e95e0efebaee3537f38afa6ae33628ba3dfdd1",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

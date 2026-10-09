@@ -1,0 +1,22 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO topic_voting_category_settings (category_id, created_at, updated_at) VALUES (4, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/voting/vote",
+      "params": {
+        "topic_id": "35"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/voting/unvote",
+      "params": {
+        "topic_id": "35"
+      }
+    }
+  ]
+}

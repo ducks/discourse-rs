@@ -1,0 +1,123 @@
+{
+  "name": "unvote",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/voting/unvote",
+      "params": {
+        "topic_id": "35"
+      }
+    }
+  ],
+  "started_at": "2026-10-09T06:34:17.510175",
+  "transaction_started_at": "2026-10-09T06:34:16.619393",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "can_vote": true,
+        "vote_limit": 6,
+        "vote_count": 1,
+        "who_voted": [
+          {
+            "id": 4,
+            "username": "user2",
+            "name": "User2",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png"
+          }
+        ],
+        "votes_left": 6
+      }
+    }
+  ],
+  "changes": {
+    "topic_voting_topic_vote_count": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 4,
+            "topic_id": 35,
+            "created_at": "2026-10-09T06:34:16.619393",
+            "updated_at": "2026-10-09T06:34:16.619393",
+            "votes_count": 2
+          },
+          "after": {
+            "id": 4,
+            "topic_id": 35,
+            "created_at": "2026-10-09T06:34:16.619393",
+            "updated_at": "2026-10-09T06:34:16.619393",
+            "votes_count": 1
+          }
+        }
+      ]
+    },
+    "topic_voting_votes": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 1,
+          "archive": false,
+          "user_id": 3,
+          "topic_id": 35,
+          "created_at": "2026-10-08T20:34:16.619393",
+          "updated_at": "2026-10-08T20:34:16.619393"
+        }
+      ],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 291,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "XiOzmVejXneZrswsT/etctt6iWQ=",
+            "created_at": "2026-10-09T06:34:16.96636",
+            "rotated_at": "2026-10-09T06:34:16.966057",
+            "updated_at": "2026-10-09T06:34:16.96636",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "XiOzmVejXneZrswsT/etctt6iWQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 291,
+            "seen_at": "2026-10-09T06:34:17.51653",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "XiOzmVejXneZrswsT/etctt6iWQ=",
+            "created_at": "2026-10-09T06:34:16.96636",
+            "rotated_at": "2026-10-09T06:34:16.966057",
+            "updated_at": "2026-10-09T06:34:16.96636",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "XiOzmVejXneZrswsT/etctt6iWQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "setup": [
+    "INSERT INTO topic_voting_category_settings (category_id, created_at, updated_at) VALUES (4, now(), now())",
+    "INSERT INTO topic_voting_votes (topic_id, user_id, archive, created_at, updated_at) VALUES (35, 3, false, now() - interval '10 hours', now() - interval '10 hours'), (35, 4, false, now() - interval '20 hours', now() - interval '20 hours')",
+    "INSERT INTO topic_voting_topic_vote_count (topic_id, votes_count, created_at, updated_at) VALUES (35, 2, now(), now()) ON CONFLICT (topic_id) DO UPDATE SET votes_count = EXCLUDED.votes_count"
+  ],
+  "recorded_from": {
+    "case": "5f2724d053b3bde52d9986cb427c3c31a5579a83589bd071799439f21f60c6d0",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

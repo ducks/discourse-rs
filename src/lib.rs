@@ -3,6 +3,7 @@ pub mod admin_site_settings;
 pub mod admin_user_show;
 pub mod admin_users;
 pub mod avatar;
+pub mod badge_granter;
 pub mod bookmark_manager;
 pub mod bookmarks;
 pub mod bus;

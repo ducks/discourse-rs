@@ -1,0 +1,13 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO topic_voting_category_settings (category_id, created_at, updated_at) VALUES (4, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/voting/who.json",
+      "params": {}
+    }
+  ]
+}

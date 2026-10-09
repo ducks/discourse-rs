@@ -1,0 +1,75 @@
+{
+  "name": "who_hidden",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/voting/who.json?topic_id=35",
+      "params": {}
+    }
+  ],
+  "started_at": "2026-10-09T06:34:44.146921",
+  "transaction_started_at": "2026-10-09T06:34:43.126287",
+  "responses": [
+    {
+      "status": 200,
+      "body": null
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 291,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "sTAxCrl8QGENfVLjpoZJhfesaq8=",
+            "created_at": "2026-10-09T06:34:43.464014",
+            "rotated_at": "2026-10-09T06:34:43.463786",
+            "updated_at": "2026-10-09T06:34:43.464014",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "sTAxCrl8QGENfVLjpoZJhfesaq8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 291,
+            "seen_at": "2026-10-09T06:34:44.154391",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "sTAxCrl8QGENfVLjpoZJhfesaq8=",
+            "created_at": "2026-10-09T06:34:43.464014",
+            "rotated_at": "2026-10-09T06:34:43.463786",
+            "updated_at": "2026-10-09T06:34:43.464014",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "sTAxCrl8QGENfVLjpoZJhfesaq8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "settings": {
+    "topic_voting_show_who_voted": "false"
+  },
+  "setup": [
+    "INSERT INTO topic_voting_category_settings (category_id, created_at, updated_at) VALUES (4, now(), now())",
+    "INSERT INTO topic_voting_votes (topic_id, user_id, archive, created_at, updated_at) VALUES (35, 4, false, now() - interval '30 hours', now() - interval '30 hours')",
+    "INSERT INTO topic_voting_topic_vote_count (topic_id, votes_count, created_at, updated_at) VALUES (35, 1, now(), now()) ON CONFLICT (topic_id) DO UPDATE SET votes_count = EXCLUDED.votes_count"
+  ],
+  "recorded_from": {
+    "case": "32af5fce7005fa0e64a450722d6ebaa6c575a18c0afddb0e620e667464afa270",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

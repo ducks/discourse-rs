@@ -1,0 +1,74 @@
+{
+  "name": "who_missing_topic_id",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/voting/who.json",
+      "params": {}
+    }
+  ],
+  "started_at": "2026-10-09T06:34:47.676795",
+  "transaction_started_at": "2026-10-09T06:34:46.839346",
+  "responses": [
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "param is missing or the value is empty or invalid: topic_id"
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 291,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "uiMxJry9SI13iPeoeqGAuiz5w+4=",
+            "created_at": "2026-10-09T06:34:47.165461",
+            "rotated_at": "2026-10-09T06:34:47.165214",
+            "updated_at": "2026-10-09T06:34:47.165461",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "uiMxJry9SI13iPeoeqGAuiz5w+4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 291,
+            "seen_at": "2026-10-09T06:34:47.683953",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "uiMxJry9SI13iPeoeqGAuiz5w+4=",
+            "created_at": "2026-10-09T06:34:47.165461",
+            "rotated_at": "2026-10-09T06:34:47.165214",
+            "updated_at": "2026-10-09T06:34:47.165461",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "uiMxJry9SI13iPeoeqGAuiz5w+4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "setup": [
+    "INSERT INTO topic_voting_category_settings (category_id, created_at, updated_at) VALUES (4, now(), now())"
+  ],
+  "recorded_from": {
+    "case": "d9fbf1d3ac24d03ea7b49833d82987568ea995633ee882ed658251c90e566c02",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

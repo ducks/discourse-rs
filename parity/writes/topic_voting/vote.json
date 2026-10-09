@@ -1,0 +1,120 @@
+{
+  "name": "vote",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/voting/vote",
+      "params": {
+        "topic_id": "35"
+      }
+    }
+  ],
+  "started_at": "2026-10-09T06:34:26.612237",
+  "transaction_started_at": "2026-10-09T06:34:25.747505",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "can_vote": true,
+        "vote_limit": 6,
+        "vote_count": 1,
+        "who_voted": [
+          {
+            "id": 3,
+            "username": "user1",
+            "name": "User1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png"
+          }
+        ],
+        "votes_left": 5,
+        "alert": false
+      }
+    }
+  ],
+  "changes": {
+    "topic_voting_topic_vote_count": {
+      "inserted": [
+        {
+          "id": 4,
+          "topic_id": 35,
+          "created_at": "2026-10-09T06:34:25.747505",
+          "updated_at": "2026-10-09T06:34:25.747505",
+          "votes_count": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_voting_votes": {
+      "inserted": [
+        {
+          "id": 1,
+          "archive": false,
+          "user_id": 3,
+          "topic_id": 35,
+          "created_at": "2026-10-09T06:34:26.653722",
+          "updated_at": "2026-10-09T06:34:26.653722"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 291,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "0VMf2tPfYnWo7scgQFxyWYzzQag=",
+            "created_at": "2026-10-09T06:34:26.071945",
+            "rotated_at": "2026-10-09T06:34:26.071714",
+            "updated_at": "2026-10-09T06:34:26.071945",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "0VMf2tPfYnWo7scgQFxyWYzzQag=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 291,
+            "seen_at": "2026-10-09T06:34:26.625731",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "0VMf2tPfYnWo7scgQFxyWYzzQag=",
+            "created_at": "2026-10-09T06:34:26.071945",
+            "rotated_at": "2026-10-09T06:34:26.071714",
+            "updated_at": "2026-10-09T06:34:26.071945",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "0VMf2tPfYnWo7scgQFxyWYzzQag=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "Jobs::DiscourseTopicVoting::BackfillBadges",
+      {
+        "topic_id": 35
+      }
+    ]
+  ],
+  "setup": [
+    "INSERT INTO topic_voting_category_settings (category_id, created_at, updated_at) VALUES (4, now(), now())"
+  ],
+  "recorded_from": {
+    "case": "a0a9d61aebe89929cc25adf0005290ac03c744fed7d53a7dcad0485b5350a75b",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

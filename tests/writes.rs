@@ -731,7 +731,39 @@ fn short(v: &Value) -> String {
 /// The reference keeps writing in the background (admin notices, badge
 /// grants), so a table can be ahead of the seed: each table Rails inserted
 /// into starts where Rails' first new row did.
-async fn align_sequences(pool: &PgPool, case: &Value) {
+/// The rows each table's `INSERT INTO <table>` setup statements take ids
+/// for,
+/// from a rolled-back run of the setup; None when the setup can't run yet
+/// (it needs the login's rows), and the recording's own evidence is used.
+async fn setup_insert_counts(pool: &PgPool, case: &Value) -> Option<HashMap<String, i64>> {
+    let setup = case["setup"].as_array()?;
+    let mut tx = pool.begin().await.ok()?;
+    let mut counts = HashMap::new();
+    for sql in setup.iter().filter_map(Value::as_str) {
+        let rows = sqlx::query(sql)
+            .execute(&mut *tx)
+            .await
+            .ok()?
+            .rows_affected() as i64;
+        let lower = sql.to_ascii_lowercase();
+        let Some(rest) = lower.strip_prefix("insert into ") else {
+            continue;
+        };
+        let table = rest.split_whitespace().next().unwrap_or_default();
+        // Rows given their own ids take none from the sequence.
+        let explicit_id = rest
+            .split_once('(')
+            .and_then(|(_, cols)| cols.split_once(')'))
+            .is_some_and(|(cols, _)| cols.split(',').any(|c| c.trim() == "id"));
+        if !explicit_id {
+            *counts.entry(table.to_string()).or_insert(0) += rows;
+        }
+    }
+    tx.rollback().await.ok()?;
+    Some(counts)
+}
+
+async fn align_sequences(pool: &PgPool, case: &Value, setup_counts: Option<HashMap<String, i64>>) {
     let Some(changes) = case["changes"].as_object() else {
         return;
     };
@@ -750,9 +782,9 @@ async fn align_sequences(pool: &PgPool, case: &Value) {
                 .unwrap_or(None);
         if let Some(sequence) = sequence {
             // Rows the case's setup inserted into this table take ids
-            // before the first new one: those the recording shows deleted
-            // or updated (setup ran inside its transaction) from where the
-            // sequence stands now.
+            // before the first new one: as many as the setup writes, else
+            // (a setup that needs the login) those the recording shows
+            // deleted or updated from where the sequence stands now.
             let inserted_by_setup = case["setup"].as_array().is_some_and(|setup| {
                 setup.iter().filter_map(Value::as_str).any(|sql| {
                     sql.to_ascii_lowercase()
@@ -765,13 +797,16 @@ async fn align_sequences(pool: &PgPool, case: &Value) {
                     .await
                     .unwrap();
             let next = if called { last + 1 } else { last };
-            let setup_rows = ["deleted", "updated"]
-                .iter()
-                .flat_map(|k| change[*k].as_array().into_iter().flatten())
-                .filter_map(|r| r["id"].as_i64().or_else(|| r["before"]["id"].as_i64()))
-                .filter(|id| inserted_by_setup && *id >= next && *id < first)
-                .collect::<std::collections::BTreeSet<_>>()
-                .len() as i64;
+            let setup_rows = match setup_counts.as_ref() {
+                Some(counts) => counts.get(table.as_str()).copied().unwrap_or(0),
+                None => ["deleted", "updated"]
+                    .iter()
+                    .flat_map(|k| change[*k].as_array().into_iter().flatten())
+                    .filter_map(|r| r["id"].as_i64().or_else(|| r["before"]["id"].as_i64()))
+                    .filter(|id| inserted_by_setup && *id >= next && *id < first)
+                    .collect::<std::collections::BTreeSet<_>>()
+                    .len() as i64,
+            };
             sqlx::query("SELECT setval($1, GREATEST($2, 1), $2 > 0)")
                 .bind(&sequence)
                 .bind(first - 1 - setup_rows)
@@ -897,8 +932,11 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
     let mut config = recorded_config();
     config.public_dir = public.clone();
     let app_state = state(db.pool.clone(), config).await;
+    // Counted before the sequences are set: the rolled-back run of the
+    // setup still advances them.
+    let setup_counts = setup_insert_counts(&db.pool, case).await;
     reset_sequences(&db.pool).await;
-    align_sequences(&db.pool, case).await;
+    align_sequences(&db.pool, case, setup_counts).await;
     // From before the login and setup, as the recorder's transaction
     // (and so their now()) starts before both.
     let started: NaiveDateTime = sqlx::query_scalar("SELECT clock_timestamp()::timestamp")
