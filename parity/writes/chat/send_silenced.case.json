@@ -1,0 +1,15 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE users SET silenced_till = now() + interval '1 day' WHERE id = 3"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/chat/2.json",
+      "params": {
+        "message": "hi"
+      }
+    }
+  ]
+}

@@ -332,13 +332,78 @@ impl Context<'_> {
     /// `Chat::Thread.viewable_by_user(user).exists?`, refused while threads
     /// aren't ported: false only when the site has none.
     pub(crate) async fn refuse_threads(&mut self) -> Result<(), AppError> {
-        let any: bool = sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM chat_threads)")
-            .fetch_one(&mut *self.conn)
-            .await?;
+        // A reply in a channel without threading makes a thread too, which
+        // stays hidden: its messages are the channel's. Threads proper (in
+        // a channel with threading, or forced) aren't ported.
+        let any: bool = sqlx::query_scalar(
+            "SELECT EXISTS (SELECT 1 FROM chat_threads JOIN chat_channels ON chat_channels.id = chat_threads.channel_id \
+             WHERE chat_channels.threading_enabled OR chat_threads.force)",
+        )
+        .fetch_one(&mut *self.conn)
+        .await?;
         if any {
             return Err(Unsupported("chat threads").into());
         }
         Ok(())
+    }
+
+    /// `Chat::ThreadUnreadsQuery` (include_read), as TrackingStateReportQuery
+    /// reports it: each of the member's threads (the query filters by
+    /// membership only), up to 500 by last message.
+    pub(crate) async fn thread_tracking(&mut self) -> Result<Map<String, Value>, AppError> {
+        let mut out = Map::new();
+        let Some(user_id) = self.guardian.user_id() else {
+            return Ok(out);
+        };
+        let rows: Vec<(i64, i64, i64, i64, i64)> = sqlx::query_as(
+            "WITH limited_memberships AS ( \
+               SELECT memberships.thread_id, memberships.last_read_message_id, memberships.notification_level, \
+                      chat_threads.channel_id, chat_threads.original_message_id, chat_threads.force, \
+                      chat_channels.threading_enabled, uccm.muted AS channel_muted \
+               FROM user_chat_thread_memberships AS memberships \
+               INNER JOIN chat_threads ON chat_threads.id = memberships.thread_id \
+               INNER JOIN chat_channels ON chat_channels.id = chat_threads.channel_id \
+               INNER JOIN user_chat_channel_memberships AS uccm \
+                 ON uccm.chat_channel_id = chat_channels.id AND uccm.user_id = $1 \
+               WHERE memberships.user_id = $1 \
+               ORDER BY chat_threads.last_message_id DESC NULLS LAST LIMIT 500) \
+             SELECT CASE WHEN lm.notification_level = 2 THEN COALESCE(unread_calc.cnt, 0) ELSE 0 END, \
+                    COALESCE(mention_calc.cnt, 0), \
+                    CASE WHEN lm.notification_level = 3 THEN COALESCE(unread_calc.cnt, 0) ELSE 0 END, \
+                    lm.channel_id, lm.thread_id \
+             FROM limited_memberships lm \
+             LEFT JOIN LATERAL ( \
+               SELECT COUNT(*) AS cnt FROM chat_messages cm \
+               WHERE cm.thread_id = lm.thread_id AND cm.user_id != $1 \
+                 AND cm.id > COALESCE(lm.last_read_message_id, 0) AND cm.deleted_at IS NULL \
+                 AND cm.id != lm.original_message_id AND NOT lm.channel_muted \
+                 AND (lm.threading_enabled OR lm.force) \
+                 AND EXISTS (SELECT 1 FROM chat_messages om WHERE om.id = lm.original_message_id AND om.deleted_at IS NULL) \
+             ) unread_calc ON true \
+             LEFT JOIN LATERAL ( \
+               SELECT COUNT(*) AS cnt FROM notifications n \
+               INNER JOIN chat_messages cm ON cm.id = (n.data::json->>'chat_message_id')::bigint \
+               WHERE n.user_id = $1 AND n.notification_type = 29 AND NOT n.read \
+                 AND cm.thread_id = lm.thread_id AND cm.deleted_at IS NULL \
+                 AND cm.id > COALESCE(lm.last_read_message_id, 0) \
+                 AND lm.threading_enabled AND NOT lm.channel_muted \
+             ) mention_calc ON true",
+        )
+        .bind(user_id)
+        .fetch_all(&mut *self.conn)
+        .await?;
+        for (unread, mention, watched, channel_id, thread_id) in rows {
+            out.insert(
+                thread_id.to_string(),
+                json!({
+                    "channel_id": channel_id,
+                    "mention_count": mention,
+                    "unread_count": unread,
+                    "watched_threads_unread_count": watched,
+                }),
+            );
+        }
+        Ok(out)
     }
 
     /// `Category.post_create_allowed(guardian).where(id: ids).pluck(:id)`

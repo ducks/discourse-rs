@@ -460,3 +460,60 @@ pub async fn mark_all_read(
     tx.commit().await?;
     Ok(membership_response(&state, outcome))
 }
+
+/// POST /chat/:chat_channel_id: Chat::Api::ChannelMessagesController#create
+/// (Chat::CreateMessage).
+pub async fn create_message(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    Path(id): Path<String>,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    use crate::plugins::chat::create::{Outcome, Params};
+    let (mut tx, settings, p) =
+        match begin_write(&state, &guardian, &headers, &uri, "POST", &body).await? {
+            Ok(begun) => begun,
+            Err(refused) => return Ok(refused),
+        };
+    let scalar = |key: &str| p.get(key).and_then(params::scalar);
+    let upload_ids = match p.get("upload_ids") {
+        Some(serde_json::Value::Array(ids)) => ids.iter().filter_map(params::scalar).collect(),
+        Some(v) => params::scalar(v).into_iter().collect(),
+        None => Vec::new(),
+    };
+    let params = Params {
+        chat_channel_id: id.strip_suffix(".json").unwrap_or(&id).to_string(),
+        message: scalar("message"),
+        in_reply_to_id: scalar("in_reply_to_id"),
+        staged_id: scalar("staged_id"),
+        thread_id: scalar("thread_id"),
+        upload_ids,
+        blocks: p.contains_key("blocks"),
+        client_created_at: scalar("client_created_at"),
+    };
+    let host = crate::pretty_text::Host::from_state(&state);
+    let outcome = context(&state, &mut tx, &settings, &guardian)
+        .create_message(&host, &state.bus, params)
+        .await?;
+    let response = match outcome {
+        Outcome::Created(id) => {
+            tx.commit().await?;
+            return Ok(Json(json!({"success": "OK", "message_id": id})).into_response());
+        }
+        Outcome::NotFound => super::topics::not_found_response(&state),
+        Outcome::Forbidden => super::search::invalid_access(&state),
+        Outcome::Invalid(errors) => (
+            axum::http::StatusCode::BAD_REQUEST,
+            Json(json!({"failed": "FAILED", "errors": errors})),
+        )
+            .into_response(),
+        Outcome::Unprocessable(error) => (
+            axum::http::StatusCode::UNPROCESSABLE_ENTITY,
+            Json(json!({"errors": [error]})),
+        )
+            .into_response(),
+    };
+    Ok(response)
+}

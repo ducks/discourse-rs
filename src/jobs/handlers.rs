@@ -62,6 +62,12 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         crate::plugins::chat::auto_join::UPDATE_USER_COUNT_JOB => {
             chat_update_channel_user_count(state, &job.args).await
         }
+        crate::plugins::chat::create::PROCESS_MESSAGE_JOB => {
+            chat_process_message(state, &job.args).await
+        }
+        crate::plugins::chat::create::UPDATE_THREAD_REPLY_COUNT_JOB => {
+            chat_update_thread_reply_count(state, &job.args).await
+        }
         "Jobs::DiscourseTopicVoting::VoteReclaim" => {
             let mut tx = match state.pool.begin().await {
                 Ok(tx) => tx,
@@ -699,5 +705,35 @@ async fn send_system_message(state: &AppState, args: &Value) -> Result<(), AppEr
         post_alert_options,
     )
     .await?;
+    Ok(())
+}
+
+/// Jobs::Chat::ProcessMessage
+async fn chat_process_message(state: &AppState, args: &Value) -> Result<(), AppError> {
+    let mut tx = state.pool.begin().await?;
+    let s = settings(state, &mut tx).await?;
+    crate::plugins::chat::create::process_message(state, &mut tx, &s, args).await?;
+    tx.commit().await?;
+    Ok(())
+}
+
+/// Jobs::Chat::UpdateThreadReplyCount: the thread's replies (its live
+/// messages but the original) counted into replies_count. Rails throttles
+/// it through Redis and enqueues it again on each update, a run that
+/// returns early; here it runs once.
+async fn chat_update_thread_reply_count(state: &AppState, args: &Value) -> Result<(), AppError> {
+    let Some(thread_id) = args["thread_id"].as_i64() else {
+        return Ok(());
+    };
+    let mut tx = state.pool.begin().await?;
+    sqlx::query(
+        "UPDATE chat_threads SET replies_count = (SELECT COUNT(*) FROM chat_messages m \
+           WHERE m.thread_id = chat_threads.id AND m.deleted_at IS NULL AND m.id <> chat_threads.original_message_id), \
+         updated_at = clock_timestamp() WHERE id = $1",
+    )
+    .bind(thread_id)
+    .execute(&mut *tx)
+    .await?;
+    tx.commit().await?;
     Ok(())
 }

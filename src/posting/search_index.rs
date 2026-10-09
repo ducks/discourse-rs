@@ -429,6 +429,49 @@ fn walk(node: &Handle, base: &BaseUrls<'_>, in_lightbox: bool, out: &mut String)
     }
 }
 
+/// Chat's `Chat::MessageSearchData` index version.
+const CHAT_MESSAGE_INDEX_VERSION: i32 = 1;
+
+/// `SearchIndexer.index(chat_message)` through chat's search handler: the
+/// raw message (A) and the scrubbed cooked text (D), into
+/// chat_message_search_data with update_index's raw_data (the prepared
+/// weights joined).
+pub async fn index_chat_message(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    base: &BaseUrls<'_>,
+    message_id: i64,
+    message: &str,
+    cooked: &str,
+) -> Result<(), AppError> {
+    check_unported(settings)?;
+    let default_locale = settings.get("default_locale")?.to_s();
+    let text = scrub(cooked, base);
+    let d: String = text.chars().take(600_001).collect();
+    let weights = [Some(message), None, None, Some(d.as_str())];
+    let (search_data, prepared) = tsvector(conn, settings, None, &weights).await?;
+    let raw_data = prepared
+        .iter()
+        .filter(|d| !d.is_empty())
+        .cloned()
+        .collect::<Vec<_>>()
+        .join(" ");
+    sqlx::query(
+        "INSERT INTO chat_message_search_data (chat_message_id, raw_data, locale, version, search_data) \
+         VALUES ($1, $2, $3, $4, $5::tsvector) \
+         ON CONFLICT (chat_message_id) DO UPDATE SET raw_data = EXCLUDED.raw_data, locale = EXCLUDED.locale, \
+           version = EXCLUDED.version, search_data = EXCLUDED.search_data",
+    )
+    .bind(message_id)
+    .bind(&raw_data)
+    .bind(&default_locale)
+    .bind(CHAT_MESSAGE_INDEX_VERSION)
+    .bind(&search_data)
+    .execute(&mut *conn)
+    .await?;
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

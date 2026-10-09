@@ -1,0 +1,75 @@
+{
+  "name": "send_not_member",
+  "user": "user2",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/chat/2.json",
+      "params": {
+        "message": "hi"
+      }
+    }
+  ],
+  "started_at": "2026-10-09T21:25:45.474959",
+  "transaction_started_at": "2026-10-09T21:25:44.589535",
+  "responses": [
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 429,
+            "seen_at": null,
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "ey6mJytBS36mZeI4F7/7fqr/8vk=",
+            "created_at": "2026-10-09T21:25:44.913748",
+            "rotated_at": "2026-10-09T21:25:44.913521",
+            "updated_at": "2026-10-09T21:25:44.913748",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "ey6mJytBS36mZeI4F7/7fqr/8vk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 429,
+            "seen_at": "2026-10-09T21:25:45.482352",
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "ey6mJytBS36mZeI4F7/7fqr/8vk=",
+            "created_at": "2026-10-09T21:25:44.913748",
+            "rotated_at": "2026-10-09T21:25:44.913521",
+            "updated_at": "2026-10-09T21:25:44.913748",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "ey6mJytBS36mZeI4F7/7fqr/8vk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "66ea723c1ae99b26ed177a2005012408975094e9c21d7f0a0e947796ccb748ed",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

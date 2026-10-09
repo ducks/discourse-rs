@@ -156,6 +156,8 @@ pub fn router(state: &AppState) -> Router<AppState> {
             delete(read_tracking::destroy_timings),
         )
         // chat's Chat::Api controllers.
+        // Chat::Api::ChannelMessagesController#create.
+        .route("/chat/{id}", post(chat::create_message))
         // Full-page chat (Chat::ChatController#respond).
         .route("/chat", get(chat_pages::index))
         .route("/chat/channels", get(chat_pages::index))

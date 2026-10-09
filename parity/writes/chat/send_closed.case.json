@@ -1,0 +1,15 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE chat_channels SET status = 2 WHERE id = 2"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/chat/2.json",
+      "params": {
+        "message": "hi"
+      }
+    }
+  ]
+}

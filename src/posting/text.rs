@@ -575,6 +575,17 @@ const APPROXIMATIONS: &[(char, &str)] = &[
     ('ž', "z"),
 ];
 
+/// `TextCleaner.clean(message, strip_whitespaces:, strip_zero_width_spaces:
+/// true)` as chat's contract cleans a message: whitespace normalized,
+/// stripped, zero width spaces removed.
+pub fn clean_message(message: &str, strip_whitespaces: bool) -> String {
+    let mut text = normalize_whitespaces(message);
+    if strip_whitespaces {
+        text = text.trim_matches(is_ruby_strip).to_string();
+    }
+    text.replace('\u{200b}', "")
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

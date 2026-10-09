@@ -1,0 +1,15 @@
+{
+  "user": "user1",
+  "settings": {
+    "chat_minimum_message_length": "5"
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/chat/2.json",
+      "params": {
+        "message": "hi"
+      }
+    }
+  ]
+}
