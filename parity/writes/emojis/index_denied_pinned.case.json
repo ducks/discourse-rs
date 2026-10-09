@@ -1,0 +1,13 @@
+{
+  "user": "user1",
+  "settings": {
+    "emoji_deny_list": "heart|smile",
+    "emoji_picker_pinned_groups": "flags|symbols"
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/emojis.json"
+    }
+  ]
+}

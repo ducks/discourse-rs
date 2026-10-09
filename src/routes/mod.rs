@@ -8,6 +8,7 @@ mod bookmarks;
 mod bus;
 pub(crate) mod composer;
 mod drafts;
+mod emojis;
 mod list;
 mod live;
 mod login_required;
@@ -602,6 +603,9 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/tags/c/{*path}", cached!(get(tags::show_in_category)))
         .route("/categories", cached!(get(list::categories)))
         .route("/categories.json", cached!(get(list::categories_json)))
+        .route("/emojis.json", get(emojis::index))
+        .route("/emojis/search-aliases", get(emojis::search_aliases))
+        .route("/emojis/search-aliases.json", get(emojis::search_aliases))
         .route("/site", get(site::site))
         .route("/site.json", get(site::site))
         .route("/site/basic-info", get(site::basic_info))

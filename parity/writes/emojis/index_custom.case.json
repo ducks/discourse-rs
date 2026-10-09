@@ -1,0 +1,12 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO custom_emojis (name, upload_id, created_at, updated_at, \"group\", user_id) VALUES ('party_parrot', 34, now(), now(), 'party', 1), ('blob', 35, now(), now(), NULL, 2)"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/emojis.json"
+    }
+  ]
+}
