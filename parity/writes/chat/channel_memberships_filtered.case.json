@@ -1,0 +1,13 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE users SET silenced_till = now() + interval '1 day' WHERE id = 2",
+    "UPDATE user_chat_channel_memberships SET following = false WHERE user_id = 1 AND chat_channel_id = 2"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/chat/api/channels/2/memberships.json"
+    }
+  ]
+}

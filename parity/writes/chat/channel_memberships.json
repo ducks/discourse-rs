@@ -1,0 +1,105 @@
+{
+  "name": "channel_memberships",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/chat/api/channels/2/memberships.json"
+    }
+  ],
+  "started_at": "2026-10-09T17:57:46.718709",
+  "transaction_started_at": "2026-10-09T17:57:43.424683",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "memberships": [
+          {
+            "user": {
+              "id": 1,
+              "username": "admin",
+              "name": "Admin",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+              "can_chat": true,
+              "has_chat_enabled": true
+            }
+          },
+          {
+            "user": {
+              "id": 2,
+              "username": "user0",
+              "name": "User0",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+              "can_chat": true,
+              "has_chat_enabled": true
+            }
+          },
+          {
+            "user": {
+              "id": 3,
+              "username": "user1",
+              "name": "User1",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+              "can_chat": true,
+              "has_chat_enabled": true
+            }
+          }
+        ],
+        "meta": {
+          "total_rows": 3,
+          "load_more_url": "/chat/api/channels/2/memberships?offset=50&limit=50&username="
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 395,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "W0b7WJYLpr/gJAdVRImJLx0kac4=",
+            "created_at": "2026-10-09T17:57:44.789454",
+            "rotated_at": "2026-10-09T17:57:44.780503",
+            "updated_at": "2026-10-09T17:57:44.789454",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "W0b7WJYLpr/gJAdVRImJLx0kac4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 395,
+            "seen_at": "2026-10-09T17:57:46.749339",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "W0b7WJYLpr/gJAdVRImJLx0kac4=",
+            "created_at": "2026-10-09T17:57:44.789454",
+            "rotated_at": "2026-10-09T17:57:44.780503",
+            "updated_at": "2026-10-09T17:57:44.789454",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "W0b7WJYLpr/gJAdVRImJLx0kac4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [],
+  "recorded_from": {
+    "case": "81b243d7c5399a9f819128b6264fc52c7fad843f0df21fd88406eb96e9d158c9",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

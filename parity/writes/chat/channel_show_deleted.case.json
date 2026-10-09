@@ -1,0 +1,12 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE chat_channels SET deleted_at = now() WHERE id = 2"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/chat/api/channels/2.json"
+    }
+  ]
+}

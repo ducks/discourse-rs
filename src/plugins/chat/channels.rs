@@ -51,6 +51,39 @@ pub const STATUSES: [&str; 4] = ["open", "read_only", "closed", "archived"];
 const OPEN: i32 = 0;
 const CLOSED: i32 = 2;
 
+/// secured_public_channel_search's options.
+#[derive(Default)]
+pub struct Search {
+    pub filter: Option<String>,
+    pub status: Option<i32>,
+    /// chatable_type and chatable_id, both given.
+    pub chatable: Option<(String, i64)>,
+    pub include_subcategories: bool,
+    /// Only channels the viewer follows (starred ones, if starred).
+    pub following: bool,
+    pub starred: bool,
+    pub limit: Option<i64>,
+    pub offset: i64,
+}
+
+/// `ActiveRecord::Base.sanitize_sql_like`
+fn sanitize_sql_like(s: &str) -> String {
+    let mut out = String::with_capacity(s.len());
+    for c in s.chars() {
+        if matches!(c, '%' | '_' | '\\') {
+            out.push('\\');
+        }
+        out.push(c);
+    }
+    out
+}
+
+/// `ChannelsMembershipsController::INDEX_LIMIT`
+pub const MEMBERSHIPS_LIMIT: i64 = 50;
+
+/// `Group::AUTO_GROUPS` admins, moderators, staff: `Group::STAFF_GROUPS`.
+const STAFF_GROUP_IDS: [i32; 3] = [1, 2, 3];
+
 /// A row of user_chat_channel_memberships.
 #[derive(sqlx::FromRow, Clone)]
 pub struct MembershipRow {
@@ -78,41 +111,121 @@ pub struct Context<'a> {
     pub i18n: &'a I18n,
     pub guardian: &'a Guardian,
     pub base_path: &'a str,
+    pub config: &'a crate::config::Config,
 }
 
 impl Context<'_> {
-    /// `ChannelFetcher.secured_public_channels(guardian, status: :open,
-    /// following: true)`: the viewer's followed open category channels,
-    /// by name.
-    pub async fn followed_public_channels(
-        &mut self,
-        starred: bool,
-    ) -> Result<Vec<ChannelRow>, AppError> {
+    /// `ChannelFetcher.secured_public_channels`, through
+    /// secured_public_channel_search with filter_on_category_name: the
+    /// category channels the viewer may see, filtered, by name.
+    pub async fn public_channels(&mut self, search: &Search) -> Result<Vec<ChannelRow>, AppError> {
         if !self.settings.get("enable_public_channels")?.truthy() {
             return Ok(Vec::new());
         }
         let allowed = allowed_channel_ids_sql(self.settings, self.guardian, true)?;
-        let Some(user_id) = self.guardian.user_id() else {
-            return Ok(Vec::new());
-        };
-        let sql = format!(
+        let mut sql = format!(
             "SELECT {CHANNEL_COLUMNS} FROM chat_channels \
              LEFT JOIN categories ON categories.id = chat_channels.chatable_id \
                AND chat_channels.chatable_type = 'Category' \
-             INNER JOIN user_chat_channel_memberships \
-               ON user_chat_channel_memberships.chat_channel_id = chat_channels.id \
              WHERE chat_channels.deleted_at IS NULL AND chat_channels.chatable_type = 'Category' \
-               AND chat_channels.id IN ({allowed}) AND chat_channels.status = {OPEN} \
-               AND user_chat_channel_memberships.user_id = $1 AND user_chat_channel_memberships.following \
-               AND ($2 = FALSE OR user_chat_channel_memberships.starred) \
-             ORDER BY LOWER(chat_channels.name) ASC LIMIT $3"
+               AND chat_channels.id IN ({allowed})"
         );
+        if let Some(status) = search.status {
+            sql.push_str(&format!(" AND chat_channels.status = {status}"));
+        }
+        // A chatable the viewer can't see filters nothing.
+        if let Some((chatable_type, chatable_id)) = &search.chatable {
+            if chatable_type != "Category" {
+                return Err(Unsupported("chat channels of chatables other than categories").into());
+            }
+            if self.can_see_category(*chatable_id).await? {
+                let ids: Vec<i64> = if search.include_subcategories {
+                    let nesting = self.settings.get("max_category_nesting")?.to_i();
+                    sqlx::query_scalar(
+                        "WITH RECURSIVE subcategories AS ( \
+                             SELECT $1::int AS id, 1 AS depth \
+                             UNION \
+                             SELECT categories.id, subcategories.depth + 1 \
+                             FROM categories JOIN subcategories ON subcategories.id = categories.parent_category_id \
+                             WHERE subcategories.depth < $2) \
+                         SELECT id::bigint FROM subcategories",
+                    )
+                    .bind(*chatable_id as i32)
+                    .bind(nesting as i32)
+                    .fetch_all(&mut *self.conn)
+                    .await?
+                } else {
+                    vec![*chatable_id]
+                };
+                let ids: Vec<String> = ids.iter().map(|id| id.to_string()).collect();
+                sql.push_str(&format!(
+                    " AND chat_channels.chatable_id IN ({})",
+                    ids.join(", ")
+                ));
+            }
+        }
+        let filter = search
+            .filter
+            .as_deref()
+            .filter(|f| !f.trim().is_empty())
+            .map(str::to_lowercase);
+        let order = if filter.is_some() {
+            sql.push_str(
+                " AND (LOWER(chat_channels.name) = $1 OR LOWER(chat_channels.name) LIKE $2 \
+                   OR LOWER(chat_channels.name) LIKE $3 OR LOWER(chat_channels.slug) = $1 \
+                   OR LOWER(chat_channels.slug) LIKE $2 OR LOWER(chat_channels.slug) LIKE $3 \
+                   OR categories.name ILIKE $3)",
+            );
+            // MATCH_QUALITY_EXACT, _PREFIX, _PARTIAL
+            "CASE WHEN LOWER(chat_channels.name) = $1 OR LOWER(chat_channels.slug) = $1 THEN 1 \
+               WHEN LOWER(chat_channels.name) LIKE $2 OR LOWER(chat_channels.slug) LIKE $2 THEN 2 \
+               ELSE 3 END ASC, chat_channels.name ASC, categories.name ASC"
+        } else {
+            "LOWER(chat_channels.name) ASC"
+        };
+        if search.following {
+            sql.push_str(
+                " AND EXISTS (SELECT 1 FROM user_chat_channel_memberships m \
+                   WHERE m.chat_channel_id = chat_channels.id AND m.user_id = $4 AND m.following \
+                   AND ($5 = FALSE OR m.starred))",
+            );
+        }
+        let limit = search
+            .limit
+            .unwrap_or(MAX_PUBLIC_CHANNEL_RESULTS)
+            .clamp(1, MAX_PUBLIC_CHANNEL_RESULTS);
+        sql.push_str(&format!(
+            " ORDER BY {order} LIMIT {limit} OFFSET {}",
+            search.offset.max(0)
+        ));
+        let term = filter.unwrap_or_default();
+        let like = sanitize_sql_like(&term);
         Ok(sqlx::query_as(&sql)
-            .bind(user_id)
-            .bind(starred)
-            .bind(MAX_PUBLIC_CHANNEL_RESULTS)
+            .bind(&term)
+            .bind(format!("{like}%"))
+            .bind(format!("%{like}%"))
+            .bind(self.guardian.user_id().unwrap_or(0))
+            .bind(search.starred)
             .fetch_all(&mut *self.conn)
             .await?)
+    }
+
+    /// `secured_public_channels(guardian, status: :open, following: true)`:
+    /// the viewer's followed open category channels.
+    pub async fn followed_public_channels(
+        &mut self,
+        starred: bool,
+    ) -> Result<Vec<ChannelRow>, AppError> {
+        if self.guardian.user_id().is_none() {
+            return Ok(Vec::new());
+        }
+        self.public_channels(&Search {
+            status: Some(OPEN),
+            following: true,
+            starred,
+            ..Search::default()
+        })
+        .await
     }
 
     /// `Chat::ChannelMembershipManager.all_for_user`
@@ -310,6 +423,197 @@ impl Context<'_> {
             json!({"count": 0, "last_message_id": null, "users": []}),
         );
         Ok(Value::Object(out))
+    }
+
+    /// GET /chat/api/channels: Chat::Api::ChannelsController#index, the
+    /// channels serialized with the viewer's memberships.
+    pub async fn index(&mut self, search: &Search) -> Result<Vec<Value>, AppError> {
+        let memberships = self.memberships().await?;
+        let channels = self.public_channels(search).await?;
+        let mut out = Vec::new();
+        for channel in &channels {
+            let membership = memberships.iter().find(|m| m.chat_channel_id == channel.id);
+            out.push(self.channel(channel, membership, None, None).await?);
+        }
+        Ok(out)
+    }
+
+    /// `Chat::Channel.find` (live channels) and
+    /// `ensure_can_join_chat_channel!`, as the channel actions find
+    /// theirs.
+    pub async fn find_joinable(&mut self, id: &str) -> Result<Found, AppError> {
+        // An id casts as ActiveModel's integer type casts: digits first,
+        // else no id at all.
+        let numeric = id
+            .trim_start()
+            .trim_start_matches(['+', '-'])
+            .starts_with(|c: char| c.is_ascii_digit());
+        if !numeric {
+            return Ok(Found::NotFound);
+        }
+        let sql = format!(
+            "SELECT {CHANNEL_COLUMNS} FROM chat_channels WHERE id = $1 AND deleted_at IS NULL"
+        );
+        let channel: Option<ChannelRow> = sqlx::query_as(&sql)
+            .bind(crate::ruby::to_i(id))
+            .fetch_optional(&mut *self.conn)
+            .await?;
+        let Some(channel) = channel else {
+            return Ok(Found::NotFound);
+        };
+        if channel.chatable_type != "Category" {
+            return Err(Unsupported("chat direct messages").into());
+        }
+        if !self.can_join(&channel, None).await? {
+            return Ok(Found::Forbidden);
+        }
+        Ok(Found::Channel(channel))
+    }
+
+    /// GET /chat/api/channels/:id: the channel with the viewer's
+    /// membership (`membership_for`, followed or not).
+    pub async fn show(&mut self, channel: &ChannelRow) -> Result<Value, AppError> {
+        let membership = self
+            .memberships()
+            .await?
+            .into_iter()
+            .find(|m| m.chat_channel_id == channel.id);
+        Ok(json!({"channel": self.channel(channel, membership.as_ref(), None, None).await?}))
+    }
+
+    /// GET /chat/api/channels/:id/memberships:
+    /// Chat::ChannelMembershipsQuery with
+    /// Chat::MemberListChannelMembershipSerializer, and the next page's url.
+    pub async fn members(
+        &mut self,
+        channel: &ChannelRow,
+        offset: i64,
+        limit: i64,
+        username: Option<&str>,
+    ) -> Result<Value, AppError> {
+        let settings = self.settings;
+        let by_username = settings.get("prioritize_username_in_ux")?.truthy()
+            || !settings.get("enable_names")?.truthy();
+        // Real, active, unstaged, unsuspended, unsilenced users following
+        // the channel.
+        let mut sql = String::from(
+            "SELECT users.id, users.username, users.name, users.uploaded_avatar_id, \
+                    COALESCE(user_options.chat_enabled, FALSE) AS chat_enabled \
+             FROM user_chat_channel_memberships m \
+             JOIN users ON users.id = m.user_id \
+             LEFT JOIN user_options ON user_options.user_id = users.id \
+             WHERE m.chat_channel_id = $1 AND m.following \
+               AND users.id > 0 \
+               AND NOT EXISTS (SELECT 1 FROM anonymous_users a WHERE a.user_id = users.id) \
+               AND users.active AND NOT users.staged \
+               AND (users.suspended_till IS NULL OR users.suspended_till <= $2) \
+               AND (users.silenced_till IS NULL OR users.silenced_till <= $2)",
+        );
+        // A read restricted category's channel: only members of the
+        // groups that can see it, and staff.
+        let restricted: Option<bool> =
+            sqlx::query_scalar("SELECT read_restricted FROM categories WHERE id = $1")
+                .bind(channel.chatable_id)
+                .fetch_optional(&mut *self.conn)
+                .await?;
+        if restricted == Some(true) {
+            let mut groups: Vec<i32> =
+                sqlx::query_scalar("SELECT group_id FROM category_groups WHERE category_id = $1")
+                    .bind(channel.chatable_id as i32)
+                    .fetch_all(&mut *self.conn)
+                    .await?;
+            groups.extend(STAFF_GROUP_IDS);
+            let groups: Vec<String> = groups.iter().map(|g| g.to_string()).collect();
+            sql.push_str(&format!(
+                " AND m.user_id IN (SELECT user_id FROM group_users WHERE group_id IN ({}))",
+                groups.join(", ")
+            ));
+        }
+        let username = username.filter(|u| !u.trim().is_empty());
+        if username.is_some() {
+            sql.push_str(if by_username {
+                " AND users.username_lower ILIKE $3"
+            } else {
+                " AND (LOWER(users.name) ILIKE $3 OR users.username_lower ILIKE $3)"
+            });
+        }
+        sql.push_str(if by_username {
+            " ORDER BY users.username_lower ASC"
+        } else {
+            " ORDER BY users.name ASC, users.username_lower ASC"
+        });
+        sql.push_str(" OFFSET $4 LIMIT $5");
+        let rows: Vec<MemberRow> = sqlx::query_as(&sql)
+            .bind(channel.id)
+            .bind(crate::clock::now_naive())
+            .bind(format!("%{}%", username.unwrap_or_default()))
+            .bind(offset)
+            .bind(limit)
+            .fetch_all(&mut *self.conn)
+            .await?;
+
+        // Chat::BasicUserSerializer: can_chat is the viewer's.
+        let can_chat = super::enabled(settings)?
+            && super::can_chat(&mut *self.conn, settings, self.guardian).await?;
+        let enable_names = settings.get("enable_names")?.truthy();
+        let status = settings.get("enable_user_status")?.truthy();
+        let logo = crate::admin_users::logo_small_url(&mut *self.conn, settings).await?;
+        let urls = crate::url::Urls {
+            config: self.config,
+            settings,
+        };
+        let mut memberships = Vec::new();
+        for MemberRow {
+            id,
+            username,
+            name,
+            uploaded_avatar_id: avatar,
+            chat_enabled,
+        } in rows
+        {
+            if status {
+                let has_status: bool = sqlx::query_scalar(
+                    "SELECT EXISTS (SELECT 1 FROM user_statuses WHERE user_id = $1 AND (ends_at IS NULL OR ends_at > now()))",
+                )
+                .bind(id)
+                .fetch_one(&mut *self.conn)
+                .await?;
+                if has_status {
+                    return Err(Unsupported("user status").into());
+                }
+            }
+            let mut user = Map::new();
+            user.insert("id".into(), json!(id));
+            user.insert("username".into(), json!(username));
+            if enable_names {
+                user.insert("name".into(), json!(name));
+            }
+            user.insert(
+                "avatar_template".into(),
+                json!(crate::avatar::avatar_template(
+                    &urls,
+                    id,
+                    &username,
+                    avatar,
+                    logo.as_deref()
+                )?),
+            );
+            user.insert("can_chat".into(), json!(can_chat));
+            user.insert("has_chat_enabled".into(), json!(can_chat && chat_enabled));
+            memberships.push(json!({"user": user}));
+        }
+        Ok(json!({
+            "memberships": memberships,
+            "meta": {
+                "total_rows": channel.user_count,
+                "load_more_url": format!(
+                    "/chat/api/channels/{}/memberships?offset={}&limit={limit}&username={}",
+                    channel.id,
+                    offset + limit,
+                    username.unwrap_or_default()
+                ),
+            },
+        }))
     }
 
     /// The category a channel belongs to, as Category::find gives it.
@@ -533,6 +837,30 @@ impl Context<'_> {
         Ok(Value::Object(out))
     }
 
+    /// `can_join_chat_channel?`: a member who can chat, see the channel's
+    /// category and post in it (can_post_in_chatable?: the post-allowed
+    /// ids when given, else can_post_in_category?).
+    pub async fn can_join(
+        &mut self,
+        channel: &ChannelRow,
+        post_allowed_category_ids: Option<&[i64]>,
+    ) -> Result<bool, AppError> {
+        let g = self.guardian;
+        if !g.is_authenticated() || !super::can_chat(&mut *self.conn, self.settings, g).await? {
+            return Ok(false);
+        }
+        if !self.can_see_category(channel.chatable_id).await? {
+            return Ok(false);
+        }
+        Ok(match post_allowed_category_ids {
+            Some(ids) => g.is_admin() || ids.contains(&channel.chatable_id),
+            None => !self
+                .post_allowed_category_ids(&[channel.chatable_id])
+                .await?
+                .is_empty(),
+        })
+    }
+
     /// The serializer's `meta`: the message bus ids and the viewer's
     /// permissions on the channel.
     async fn meta(
@@ -552,20 +880,7 @@ impl Context<'_> {
         }
         let can_chat = super::can_chat(&mut *self.conn, settings, g).await?;
         let can_preview = self.can_see_category(channel.chatable_id).await?;
-        // can_post_in_chatable? for a category: the post-allowed ids when
-        // given, else can_post_in_category?.
-        let can_post = match post_allowed_category_ids {
-            Some(ids) => {
-                g.is_authenticated() && (g.is_admin() || ids.contains(&channel.chatable_id))
-            }
-            None => {
-                let ids = self
-                    .post_allowed_category_ids(&[channel.chatable_id])
-                    .await?;
-                !ids.is_empty()
-            }
-        };
-        let joinable = g.is_authenticated() && can_chat && can_preview && can_post;
+        let joinable = self.can_join(channel, post_allowed_category_ids).await?;
         let mut meta = Map::new();
         meta.insert("message_bus_last_ids".into(), Value::Object(ids));
         meta.insert(
@@ -629,4 +944,21 @@ impl Context<'_> {
         meta.insert("can_manage_pins".into(), json!(pins));
         Ok(Value::Object(meta))
     }
+}
+
+/// A channel member, as the members list reads them.
+#[derive(sqlx::FromRow)]
+struct MemberRow {
+    id: i32,
+    username: String,
+    name: Option<String>,
+    uploaded_avatar_id: Option<i32>,
+    chat_enabled: bool,
+}
+
+/// A channel action's channel.
+pub enum Found {
+    Channel(ChannelRow),
+    NotFound,
+    Forbidden,
 }

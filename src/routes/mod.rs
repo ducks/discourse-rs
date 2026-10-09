@@ -157,6 +157,17 @@ pub fn router(state: &AppState) -> Router<AppState> {
         // chat's Chat::Api controllers.
         .route("/chat/api/me/channels", get(chat::me_channels))
         .route("/chat/api/me/channels.json", get(chat::me_channels))
+        .route("/chat/api/channels", get(chat::index))
+        .route("/chat/api/channels.json", get(chat::index))
+        .route("/chat/api/channels/{id}", get(chat::show))
+        .route(
+            "/chat/api/channels/{id}/memberships",
+            get(chat::memberships),
+        )
+        .route(
+            "/chat/api/channels/{id}/memberships.json",
+            get(chat::memberships),
+        )
         // discourse-solved's AnswerController.
         .route("/solution/accept", post(solved::accept))
         .route("/solution/accept.json", post(solved::accept))

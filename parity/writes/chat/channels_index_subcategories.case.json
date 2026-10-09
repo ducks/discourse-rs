@@ -1,0 +1,14 @@
+{
+  "user": "user2",
+  "setup": [
+    "INSERT INTO chat_channels (id, chatable_id, chatable_type, name, slug, description, emoji, created_at, updated_at, type, user_count, status) VALUES (3, 34, 'Category', 'Sub General', 'sub-general', 'Below general', 'wave', now() - interval '23 hours', now() - interval '23 hours', 'CategoryChannel', 1, 0), (4, 2, 'Category', 'Feedback :smile:', 'feedback', NULL, NULL, now() - interval '23 hours', now() - interval '23 hours', 'CategoryChannel', 0, 2)",
+    "SELECT setval('chat_channels_id_seq', 4)",
+    "INSERT INTO user_chat_channel_memberships (user_id, chat_channel_id, following, muted, notification_level, last_viewed_at, created_at, updated_at, starred) VALUES (4, 3, true, true, 0, now() - interval '23 hours', now() - interval '23 hours', now() - interval '23 hours', true)"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/chat/api/channels.json?chatable_type=Category&chatable_id=4&include_subcategories=true"
+    }
+  ]
+}

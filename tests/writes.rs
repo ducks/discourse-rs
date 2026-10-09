@@ -462,6 +462,11 @@ fn normalize(value: &Value, started: NaiveDateTime) -> Value {
     match value {
         Value::String(s) => match timestamp(s) {
             Some(t) if t >= started => Value::String("<now>".into()),
+            // In whole seconds (DateTime#iso8601), a time taken at the start
+            // reads as up to a second before it.
+            Some(t) if !s.contains('.') && t >= started.with_nanosecond(0).unwrap_or(started) => {
+                Value::String("<now>".into())
+            }
             // A setup's `now() - interval ...`: how long before the case
             // began, to the minute, as setup takes its own time on each side.
             Some(t) if started - t < chrono::Duration::days(1) => {
@@ -1076,13 +1081,14 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
             .unwrap_or(Value::Array(Vec::new()));
     }
     // The reference runs in development, where a route that does not match
-    // (an admin route for a non-admin) renders the Routing Error page; the
-    // port renders the production 404. The status is still compared.
+    // (an admin route for a non-admin) renders the Routing Error page, and
+    // a record not found its exception page; the port renders the
+    // production 404. The status is still compared.
     for i in 0..rails["responses"].as_array().map_or(0, Vec::len) {
         let routing_error = rails["responses"][i]["status"] == 404
-            && rails["responses"][i]["body"]
-                .as_str()
-                .is_some_and(|b| b.starts_with("Routing Error"));
+            && rails["responses"][i]["body"].as_str().is_some_and(|b| {
+                b.starts_with("Routing Error") || b.starts_with("ActiveRecord::RecordNotFound in ")
+            });
         if routing_error && ours["responses"][i]["status"] == 404 {
             rails["responses"][i]["body"] = Value::String("<not found>".into());
             ours["responses"][i]["body"] = Value::String("<not found>".into());
