@@ -92,6 +92,10 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/live", get(live::page))
         .route("/user-menu", get(user_menu::show))
         .route("/live/post/{id}", get(live::post))
+        .route(
+            "/live/chat/{channel_id}/{message_id}",
+            get(chat_pages::live_message),
+        )
         .route("/", cached!(get(list::latest)))
         .route("/latest", cached!(get(list::latest)))
         .route("/latest.json", cached!(get(list::latest_json)))
@@ -156,6 +160,8 @@ pub fn router(state: &AppState) -> Router<AppState> {
             delete(read_tracking::destroy_timings),
         )
         // chat's Chat::Api controllers.
+        // Chat::Api::ChannelMessagesController#create.
+        .route("/chat/{id}", post(chat::create_message))
         // Full-page chat (Chat::ChatController#respond).
         .route("/chat", get(chat_pages::index))
         .route("/chat/channels", get(chat_pages::index))
@@ -178,8 +184,52 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/chat/api/channels/{id}/memberships.json",
             get(chat::memberships),
         )
+        .route("/chat/api/channels/read", put(chat::mark_all_read))
+        .route("/chat/api/channels/read.json", put(chat::mark_all_read))
+        .route("/chat/api/channels/{id}/drafts", post(chat::draft))
+        .route("/chat/api/channels/{id}/drafts.json", post(chat::draft))
+        .route("/chat/api/channels/{id}/read", put(chat::mark_read))
+        .route("/chat/api/channels/{id}/read.json", put(chat::mark_read))
+        .route(
+            "/chat/api/channels/{id}/memberships/me",
+            post(chat::own_membership)
+                .put(chat::own_membership)
+                .delete(chat::own_membership),
+        )
+        .route(
+            "/chat/api/channels/{id}/memberships/me.json",
+            post(chat::own_membership)
+                .put(chat::own_membership)
+                .delete(chat::own_membership),
+        )
+        .route(
+            "/chat/api/channels/{id}/memberships/me/follows",
+            delete(chat::unfollow),
+        )
+        .route(
+            "/chat/api/channels/{id}/memberships/me/follows.json",
+            delete(chat::unfollow),
+        )
         .route("/chat/api/channels/{id}/messages", get(chat::messages))
         .route("/chat/api/channels/{id}/messages.json", get(chat::messages))
+        .route(
+            "/chat/api/channels/{id}/messages/{message_id}",
+            put(chat::update_message).delete(chat::trash_message),
+        )
+        .route(
+            "/chat/api/channels/{id}/messages/{message_id}/restore",
+            put(chat::restore_message),
+        )
+        .route(
+            "/chat/api/channels/{id}/messages/{message_id}/restore.json",
+            put(chat::restore_message),
+        )
+        .route("/chat/{id}/react/{message_id}", put(chat::react))
+        .route("/chat/{id}/{message_id}/rebake", put(chat::rebake_message))
+        .route(
+            "/chat/{id}/{message_id}/rebake.json",
+            put(chat::rebake_message),
+        )
         // discourse-solved's AnswerController.
         .route("/solution/accept", post(solved::accept))
         .route("/solution/accept.json", post(solved::accept))

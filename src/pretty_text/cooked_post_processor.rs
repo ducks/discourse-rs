@@ -857,6 +857,7 @@ pub async fn cooked_column(host: &Host, post_id: i64) -> Result<String, CookErro
         user_id: post.last_editor_id.map(i64::from),
         force_quote_link: false,
         omit_nofollow: post.omit_nofollow,
+        chat: false,
     };
     let cooked = cook(host, &post.raw, &opts).await?;
     // Jobs::ProcessPost does nothing for a post whose topic is gone.

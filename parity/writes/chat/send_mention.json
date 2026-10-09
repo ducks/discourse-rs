@@ -1,0 +1,280 @@
+{
+  "name": "send_mention",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/chat/2.json",
+      "params": {
+        "message": "hey @user0 look",
+        "staged_id": "s"
+      }
+    }
+  ],
+  "started_at": "2026-10-09T21:25:44.230804",
+  "transaction_started_at": "2026-10-09T21:25:43.189848",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "message_id": 7
+      }
+    }
+  ],
+  "changes": {
+    "chat_channels": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 2,
+            "name": "General",
+            "slug": "general",
+            "type": "CategoryChannel",
+            "emoji": null,
+            "status": 0,
+            "created_at": "2026-07-25T05:58:28.954734",
+            "deleted_at": null,
+            "updated_at": "2026-10-01T15:43:03.1786",
+            "user_count": 3,
+            "chatable_id": 4,
+            "description": null,
+            "chatable_type": "Category",
+            "deleted_by_id": null,
+            "messages_count": 6,
+            "auto_join_users": true,
+            "last_message_id": 6,
+            "user_count_stale": false,
+            "threading_enabled": false,
+            "delete_after_seconds": null,
+            "featured_in_category_id": null,
+            "allow_channel_wide_mentions": true
+          },
+          "after": {
+            "id": 2,
+            "name": "General",
+            "slug": "general",
+            "type": "CategoryChannel",
+            "emoji": null,
+            "status": 0,
+            "created_at": "2026-07-25T05:58:28.954734",
+            "deleted_at": null,
+            "updated_at": "2026-10-09T21:25:44.288643",
+            "user_count": 3,
+            "chatable_id": 4,
+            "description": null,
+            "chatable_type": "Category",
+            "deleted_by_id": null,
+            "messages_count": 6,
+            "auto_join_users": true,
+            "last_message_id": 7,
+            "user_count_stale": false,
+            "threading_enabled": false,
+            "delete_after_seconds": null,
+            "featured_in_category_id": null,
+            "allow_channel_wide_mentions": true
+          }
+        }
+      ]
+    },
+    "chat_mentions": {
+      "inserted": [
+        {
+          "id": 2,
+          "type": "Chat::UserMention",
+          "target_id": 2,
+          "created_at": "2026-10-09T21:25:43.189848",
+          "updated_at": "2026-10-09T21:25:43.189848",
+          "chat_message_id": 7
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "chat_message_search_data": {
+      "inserted": [
+        {
+          "locale": "en",
+          "version": 1,
+          "raw_data": "hey @user0 look hey @user0 look",
+          "search_data": "'hey':1A,4 'look':3A,6 'user0':2A,5",
+          "chat_message_id": 7
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "chat_messages": {
+      "inserted": [
+        {
+          "id": 7,
+          "blocks": null,
+          "cooked": "<p>hey <a class=\"mention\" href=\"/u/user0\">@user0</a> look</p>",
+          "excerpt": "hey @user0 look",
+          "message": "hey @user0 look",
+          "user_id": 3,
+          "streaming": false,
+          "thread_id": null,
+          "created_at": "2026-10-09T21:25:44.285395",
+          "deleted_at": null,
+          "updated_at": "2026-10-09T21:25:44.285395",
+          "deleted_by_id": null,
+          "cooked_version": 2,
+          "created_by_sdk": false,
+          "in_reply_to_id": null,
+          "last_editor_id": 3,
+          "chat_channel_id": 2
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 429,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "U0KK2vYkNBLPPl9+1fCsiaFV8io=",
+            "created_at": "2026-10-09T21:25:43.548447",
+            "rotated_at": "2026-10-09T21:25:43.548231",
+            "updated_at": "2026-10-09T21:25:43.548447",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "U0KK2vYkNBLPPl9+1fCsiaFV8io=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 429,
+            "seen_at": "2026-10-09T21:25:44.240484",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "U0KK2vYkNBLPPl9+1fCsiaFV8io=",
+            "created_at": "2026-10-09T21:25:43.548447",
+            "rotated_at": "2026-10-09T21:25:43.548231",
+            "updated_at": "2026-10-09T21:25:43.548447",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "U0KK2vYkNBLPPl9+1fCsiaFV8io=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_chat_channel_memberships": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 2,
+            "muted": false,
+            "starred": false,
+            "user_id": 3,
+            "following": true,
+            "join_mode": 1,
+            "created_at": "2026-10-01T15:42:53.286883",
+            "updated_at": "2026-10-01T15:42:53.286883",
+            "last_viewed_at": "2026-10-01T15:42:53.287295",
+            "chat_channel_id": 2,
+            "notification_level": 1,
+            "last_viewed_pins_at": null,
+            "last_read_message_id": 2,
+            "mobile_notification_level": 1,
+            "desktop_notification_level": 1,
+            "last_unread_mention_when_emailed_id": null
+          },
+          "after": {
+            "id": 2,
+            "muted": false,
+            "starred": false,
+            "user_id": 3,
+            "following": true,
+            "join_mode": 1,
+            "created_at": "2026-10-01T15:42:53.286883",
+            "updated_at": "2026-10-09T21:25:44.290342",
+            "last_viewed_at": "2026-10-01T15:42:53.287295",
+            "chat_channel_id": 2,
+            "notification_level": 1,
+            "last_viewed_pins_at": null,
+            "last_read_message_id": 7,
+            "mobile_notification_level": 1,
+            "desktop_notification_level": 1,
+            "last_unread_mention_when_emailed_id": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "Jobs::Chat::ProcessMessage",
+      {
+        "chat_message_id": 7,
+        "staged_id": "s"
+      }
+    ]
+  ],
+  "next_ids": {
+    "chat_mentions": 2,
+    "chat_messages": 7
+  },
+  "setup": [
+    "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id) VALUES (1, 2, 2, now() - interval '50 minutes', now() - interval '50 minutes', 'Hello **world**', '<p>Hello <strong>world</strong></p>', 1, 2)",
+    "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id, in_reply_to_id) VALUES (2, 2, 3, now() - interval '40 minutes', now() - interval '40 minutes', '@user0 hi back', '<p><a class=\"mention\" href=\"/u/user0\">@user0</a> hi back</p>', 1, 3, 1)",
+    "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id) VALUES (3, 2, 1, now() - interval '30 minutes', now() - interval '30 minutes', 'edited message :heart:', '<p>edited message <img src=\"/images/emoji/twitter/heart.png?v=14\" title=\":heart:\" class=\"emoji\" alt=\":heart:\" loading=\"lazy\" width=\"20\" height=\"20\"></p>', 1, 1)",
+    "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id, deleted_at, deleted_by_id) VALUES (4, 2, 2, now() - interval '20 minutes', now() - interval '20 minutes', 'gone', '<p>gone</p>', 1, 2, now() - interval '10 minutes', 2)",
+    "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id) VALUES (5, 2, 3, now() - interval '15 minutes', now() - interval '15 minutes', '/me waves', '<p>/me waves</p>', 1, 3)",
+    "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id) VALUES (6, 2, 2, now() - interval '5 minutes', now() - interval '5 minutes', 'https://example.com', '<p><a href=\"https://example.com\" rel=\"noopener nofollow ugc\">https://example.com</a></p>', 1, 2)",
+    "SELECT setval('chat_messages_id_seq', 6)",
+    "UPDATE chat_channels SET last_message_id = 6, messages_count = 6 WHERE id = 2",
+    "INSERT INTO chat_message_revisions (chat_message_id, old_message, new_message, created_at, updated_at, user_id) VALUES (3, 'message', 'edited message :heart:', now() - interval '25 minutes', now() - interval '25 minutes', 1)",
+    "INSERT INTO chat_message_reactions (chat_message_id, user_id, emoji, created_at, updated_at) VALUES (3, 3, 'heart', now() - interval '29 minutes', now() - interval '29 minutes'), (3, 2, 'heart', now() - interval '28 minutes', now() - interval '28 minutes'), (3, 2, '+1', now() - interval '27 minutes', now() - interval '27 minutes'), (3, 3, 'notanemoji', now() - interval '26 minutes', now() - interval '26 minutes')",
+    "INSERT INTO chat_mentions (chat_message_id, type, target_id, created_at, updated_at) VALUES (2, 'Chat::UserMention', 2, now() - interval '40 minutes', now() - interval '40 minutes')",
+    "INSERT INTO bookmarks (user_id, bookmarkable_id, bookmarkable_type, name, auto_delete_preference, created_at, updated_at) VALUES (3, 1, 'ChatMessage', 'later', 3, now() - interval '45 minutes', now() - interval '45 minutes')",
+    "UPDATE user_chat_channel_memberships SET last_read_message_id = 2 WHERE chat_channel_id = 2 AND user_id = 3"
+  ],
+  "jobs_from_jobs": [
+    [
+      "Jobs::Chat::NotifyMentioned",
+      {
+        "chat_message_id": 7,
+        "to_notify_ids_map": {
+          "direct_mentions": [
+            2
+          ],
+          "here_mentions": [],
+          "global_mentions": []
+        },
+        "already_notified_user_ids": [],
+        "timestamp": "2026-10-09 21:25:44 UTC"
+      }
+    ],
+    [
+      "Jobs::Chat::NotifyWatching in 5s",
+      {
+        "chat_message_id": 7,
+        "except_user_ids": [
+          2,
+          3
+        ],
+        "timestamp": "2026-10-09 21:25:44 UTC"
+      }
+    ]
+  ],
+  "recorded_from": {
+    "case": "ab148958047daf6ffc992aae6d6de79470ef0a1c3f038424e091425568f3011b",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

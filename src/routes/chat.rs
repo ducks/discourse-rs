@@ -305,3 +305,426 @@ pub async fn messages(
     tx.commit().await?;
     Ok(response)
 }
+
+/// A write's request: the CSRF check, then the guard; the transaction,
+/// settings and params, or the response refusing it.
+async fn begin_write(
+    state: &AppState,
+    guardian: &crate::guardian::Guardian,
+    headers: &axum::http::HeaderMap,
+    uri: &Uri,
+    method: &str,
+    body: &[u8],
+) -> Result<
+    Result<
+        (
+            sqlx::Transaction<'static, sqlx::Postgres>,
+            SiteSettings,
+            serde_json::Map<String, serde_json::Value>,
+        ),
+        Response,
+    >,
+    AppError,
+> {
+    let p = params::parse(uri.query(), headers, body);
+    let form: Vec<(String, String)> = p
+        .iter()
+        .filter_map(|(k, v)| params::scalar(v).map(|v| (k.clone(), v)))
+        .collect();
+    if !super::session::csrf_ok(state, headers, &form, uri.path(), method) {
+        return Ok(Err(super::session::bad_csrf()));
+    }
+    let mut tx = state.pool.begin().await?;
+    let settings = match begin(state, &mut tx, guardian).await? {
+        Ok(settings) => settings,
+        Err(refused) => return Ok(Err(refused)),
+    };
+    Ok(Ok((tx, settings, p)))
+}
+
+/// A membership write's outcome as its controller answers it.
+fn membership_response(
+    state: &AppState,
+    outcome: crate::plugins::chat::membership::Outcome,
+) -> Response {
+    use crate::plugins::chat::membership::Outcome;
+    match outcome {
+        Outcome::Done(body) => Json(body).into_response(),
+        Outcome::NotFound => super::topics::not_found_response(state),
+        Outcome::Forbidden => super::search::invalid_access(state),
+        Outcome::Invalid(errors) => (
+            axum::http::StatusCode::BAD_REQUEST,
+            Json(json!({"failed": "FAILED", "errors": errors})),
+        )
+            .into_response(),
+        Outcome::InvalidParameter(name) => super::search::invalid_parameters(state, name),
+        Outcome::Unprocessable => (
+            axum::http::StatusCode::UNPROCESSABLE_ENTITY,
+            Json(json!({"failed": "FAILED"})),
+        )
+            .into_response(),
+    }
+}
+
+/// The channel id a path names (an integer param cast as ActiveModel
+/// casts it; anything else finds no channel).
+fn path_channel_id(id: &str) -> i64 {
+    cast_integer(Some(id.strip_suffix(".json").unwrap_or(id))).unwrap_or(0)
+}
+
+/// POST, PUT and DELETE /chat/api/channels/:channel_id/memberships/me:
+/// ChannelsCurrentUserMembershipController (join, star, leave).
+pub async fn own_membership(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    method: axum::http::Method,
+    headers: axum::http::HeaderMap,
+    Path(id): Path<String>,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    let (mut tx, settings, p) =
+        match begin_write(&state, &guardian, &headers, &uri, method.as_str(), &body).await? {
+            Ok(begun) => begun,
+            Err(refused) => return Ok(refused),
+        };
+    let channel_id = path_channel_id(&id);
+    let mut cx = context(&state, &mut tx, &settings, &guardian);
+    let outcome = match method.as_str() {
+        "POST" => cx.join(channel_id).await?,
+        "PUT" => {
+            let starred = cast_boolean(p.get("starred").and_then(params::scalar).as_deref());
+            cx.star(channel_id, starred).await?
+        }
+        _ => cx.leave(channel_id).await?,
+    };
+    tx.commit().await?;
+    Ok(membership_response(&state, outcome))
+}
+
+/// DELETE /chat/api/channels/:channel_id/memberships/me/follows:
+/// Chat::UnfollowChannel.
+pub async fn unfollow(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    Path(id): Path<String>,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    let (mut tx, settings, _) =
+        match begin_write(&state, &guardian, &headers, &uri, "DELETE", &body).await? {
+            Ok(begun) => begun,
+            Err(refused) => return Ok(refused),
+        };
+    let outcome = context(&state, &mut tx, &settings, &guardian)
+        .unfollow(path_channel_id(&id))
+        .await?;
+    tx.commit().await?;
+    Ok(membership_response(&state, outcome))
+}
+
+/// PUT /chat/api/channels/:channel_id/read: Chat::UpdateUserChannelLastRead.
+pub async fn mark_read(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    Path(id): Path<String>,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    let (mut tx, settings, p) =
+        match begin_write(&state, &guardian, &headers, &uri, "PUT", &body).await? {
+            Ok(begun) => begun,
+            Err(refused) => return Ok(refused),
+        };
+    let message_id = cast_integer(p.get("message_id").and_then(params::scalar).as_deref());
+    let outcome = context(&state, &mut tx, &settings, &guardian)
+        .mark_read(&state.bus, path_channel_id(&id), message_id)
+        .await?;
+    tx.commit().await?;
+    Ok(membership_response(&state, outcome))
+}
+
+/// PUT /chat/api/channels/read: Chat::MarkAllUserChannelsRead.
+pub async fn mark_all_read(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    let (mut tx, settings, _) =
+        match begin_write(&state, &guardian, &headers, &uri, "PUT", &body).await? {
+            Ok(begun) => begun,
+            Err(refused) => return Ok(refused),
+        };
+    let outcome = context(&state, &mut tx, &settings, &guardian)
+        .mark_all_read(&state.bus)
+        .await?;
+    tx.commit().await?;
+    Ok(membership_response(&state, outcome))
+}
+
+/// POST /chat/:chat_channel_id: Chat::Api::ChannelMessagesController#create
+/// (Chat::CreateMessage).
+pub async fn create_message(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    Path(id): Path<String>,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    use crate::plugins::chat::create::{Outcome, Params};
+    let (mut tx, settings, p) =
+        match begin_write(&state, &guardian, &headers, &uri, "POST", &body).await? {
+            Ok(begun) => begun,
+            Err(refused) => return Ok(refused),
+        };
+    let scalar = |key: &str| p.get(key).and_then(params::scalar);
+    let upload_ids = match p.get("upload_ids") {
+        Some(serde_json::Value::Array(ids)) => ids.iter().filter_map(params::scalar).collect(),
+        Some(v) => params::scalar(v).into_iter().collect(),
+        None => Vec::new(),
+    };
+    let params = Params {
+        chat_channel_id: id.strip_suffix(".json").unwrap_or(&id).to_string(),
+        message: scalar("message"),
+        in_reply_to_id: scalar("in_reply_to_id"),
+        staged_id: scalar("staged_id"),
+        thread_id: scalar("thread_id"),
+        upload_ids,
+        blocks: p.contains_key("blocks"),
+        client_created_at: scalar("client_created_at"),
+    };
+    let host = crate::pretty_text::Host::from_state(&state);
+    let outcome = context(&state, &mut tx, &settings, &guardian)
+        .create_message(&host, &state.bus, params)
+        .await?;
+    let response = match outcome {
+        Outcome::Created(id) => {
+            tx.commit().await?;
+            return Ok(Json(json!({"success": "OK", "message_id": id})).into_response());
+        }
+        Outcome::NotFound => super::topics::not_found_response(&state),
+        Outcome::Forbidden => super::search::invalid_access(&state),
+        Outcome::Invalid(errors) => (
+            axum::http::StatusCode::BAD_REQUEST,
+            Json(json!({"failed": "FAILED", "errors": errors})),
+        )
+            .into_response(),
+        Outcome::Unprocessable(error) => (
+            axum::http::StatusCode::UNPROCESSABLE_ENTITY,
+            Json(json!({"errors": [error]})),
+        )
+            .into_response(),
+    };
+    Ok(response)
+}
+
+/// POST /chat/api/channels/:channel_id/drafts: Chat::UpsertDraft.
+pub async fn draft(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    Path(id): Path<String>,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    let (mut tx, settings, p) =
+        match begin_write(&state, &guardian, &headers, &uri, "POST", &body).await? {
+            Ok(begun) => begun,
+            Err(refused) => return Ok(refused),
+        };
+    let thread_id = p.get("thread_id").and_then(params::scalar);
+    let outcome = context(&state, &mut tx, &settings, &guardian)
+        .upsert_draft(path_channel_id(&id), p.get("data"), thread_id.as_deref())
+        .await?;
+    tx.commit().await?;
+    Ok(membership_response(&state, outcome))
+}
+
+fn modify_response(state: &AppState, outcome: crate::plugins::chat::modify::Outcome) -> Response {
+    use crate::plugins::chat::modify::Outcome;
+    match outcome {
+        Outcome::Done(body) => Json(body).into_response(),
+        Outcome::NotFound => super::topics::not_found_response(state),
+        Outcome::Forbidden(None) => super::search::invalid_access(state),
+        Outcome::Forbidden(Some(key)) => super::search::invalid_access_with(state, &key),
+        Outcome::InvalidParameters => {
+            super::search::invalid_parameters(state, "Discourse::InvalidParameters")
+        }
+        Outcome::ParamMissing(name) => super::accounts::param_missing(name),
+        Outcome::Invalid(errors) => (
+            axum::http::StatusCode::BAD_REQUEST,
+            Json(json!({"failed": "FAILED", "errors": errors})),
+        )
+            .into_response(),
+        Outcome::Unprocessable(error) => (
+            axum::http::StatusCode::UNPROCESSABLE_ENTITY,
+            Json(json!({"errors": [error]})),
+        )
+            .into_response(),
+        Outcome::RecordInvalid(errors) => (
+            axum::http::StatusCode::UNPROCESSABLE_ENTITY,
+            Json(json!({"errors": errors, "error_type": "record_invalid"})),
+        )
+            .into_response(),
+    }
+}
+
+/// Commits a change that went through, else drops it.
+async fn finish(
+    state: &AppState,
+    tx: sqlx::Transaction<'static, sqlx::Postgres>,
+    outcome: crate::plugins::chat::modify::Outcome,
+) -> Result<Response, AppError> {
+    if matches!(outcome, crate::plugins::chat::modify::Outcome::Done(_)) {
+        tx.commit().await?;
+    }
+    Ok(modify_response(state, outcome))
+}
+
+fn strip_format(id: &str) -> &str {
+    id.strip_suffix(".json").unwrap_or(id)
+}
+
+/// PUT /chat/api/channels/:channel_id/messages/:message_id
+/// (Chat::Api::ChannelMessagesController#update).
+pub async fn update_message(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    Path((id, message_id)): Path<(String, String)>,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    let (mut tx, settings, p) =
+        match begin_write(&state, &guardian, &headers, &uri, "PUT", &body).await? {
+            Ok(begun) => begun,
+            Err(refused) => return Ok(refused),
+        };
+    let upload_ids: Vec<String> = match p.get("upload_ids") {
+        Some(serde_json::Value::Array(ids)) => ids.iter().filter_map(params::scalar).collect(),
+        Some(v) => params::scalar(v).into_iter().collect(),
+        None => Vec::new(),
+    };
+    let host = crate::pretty_text::Host::from_state(&state);
+    let outcome = context(&state, &mut tx, &settings, &guardian)
+        .update_message(
+            &host,
+            &state.bus,
+            contract_integer(&id),
+            strip_format(&message_id),
+            p.get("message").and_then(params::scalar),
+            &upload_ids,
+        )
+        .await?;
+    finish(&state, tx, outcome).await
+}
+
+/// DELETE /chat/api/channels/:channel_id/messages/:message_id
+/// (Chat::Api::ChannelMessagesController#destroy).
+pub async fn trash_message(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    Path((id, message_id)): Path<(String, String)>,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    let (mut tx, settings, _) =
+        match begin_write(&state, &guardian, &headers, &uri, "DELETE", &body).await? {
+            Ok(begun) => begun,
+            Err(refused) => return Ok(refused),
+        };
+    let outcome = context(&state, &mut tx, &settings, &guardian)
+        .trash_message(
+            &state.bus,
+            contract_integer(&id),
+            contract_integer(&message_id),
+        )
+        .await?;
+    finish(&state, tx, outcome).await
+}
+
+/// PUT /chat/api/channels/:channel_id/messages/:message_id/restore
+/// (Chat::Api::ChannelMessagesController#restore).
+pub async fn restore_message(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    Path((id, message_id)): Path<(String, String)>,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    let (mut tx, settings, _) =
+        match begin_write(&state, &guardian, &headers, &uri, "PUT", &body).await? {
+            Ok(begun) => begun,
+            Err(refused) => return Ok(refused),
+        };
+    let outcome = context(&state, &mut tx, &settings, &guardian)
+        .restore_message(
+            &state.bus,
+            contract_integer(&id),
+            contract_integer(&message_id),
+        )
+        .await?;
+    finish(&state, tx, outcome).await
+}
+
+/// PUT /chat/:chat_channel_id/react/:message_id (Chat::ChatController#react).
+pub async fn react(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    Path((id, message_id)): Path<(String, String)>,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    let (mut tx, settings, p) =
+        match begin_write(&state, &guardian, &headers, &uri, "PUT", &body).await? {
+            Ok(begun) => begun,
+            Err(refused) => return Ok(refused),
+        };
+    let emoji = p.get("emoji").and_then(params::scalar);
+    let react_action = p.get("react_action").and_then(params::scalar);
+    let outcome = context(&state, &mut tx, &settings, &guardian)
+        .react(
+            &state.bus,
+            &id,
+            strip_format(&message_id),
+            emoji.as_deref(),
+            react_action.as_deref(),
+        )
+        .await?;
+    finish(&state, tx, outcome).await
+}
+
+/// A service contract's integer attribute (ActiveModel's cast): blank is
+/// nil, anything else `to_i`.
+fn contract_integer(v: &str) -> Option<i64> {
+    let v = strip_format(v);
+    (!v.trim().is_empty()).then(|| crate::ruby::to_i(v))
+}
+
+/// PUT /chat/:chat_channel_id/:message_id/rebake (Chat::ChatController#rebake).
+pub async fn rebake_message(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    Path((id, message_id)): Path<(String, String)>,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    let (mut tx, settings, _) =
+        match begin_write(&state, &guardian, &headers, &uri, "PUT", &body).await? {
+            Ok(begun) => begun,
+            Err(refused) => return Ok(refused),
+        };
+    let outcome = context(&state, &mut tx, &settings, &guardian)
+        .rebake_message(contract_integer(&id), contract_integer(&message_id))
+        .await?;
+    finish(&state, tx, outcome).await
+}

@@ -115,6 +115,9 @@ ICONS=(
   comment-slash
   box-archive
   filter-circle-xmark
+  discourse-emojis
+  rotate
+  circle-xmark
 )
 
 root="$(cd "$(dirname "$0")/.." && pwd)"

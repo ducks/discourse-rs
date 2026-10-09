@@ -258,7 +258,7 @@ fn block_tag(tag: &str, settings: &RenderSettings, ctx: &Context) -> Option<Bloc
         "quote" => BlockTag::Quote,
         "wrap" => BlockTag::Wrap,
         "grid" => BlockTag::Grid,
-        "details" => BlockTag::Details,
+        "details" if !settings.chat => BlockTag::Details,
         "spoiler" if settings.spoiler => BlockTag::Spoiler,
         "poll" if settings.poll => BlockTag::Poll,
         "policy" if settings.policy => BlockTag::Policy,

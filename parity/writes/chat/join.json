@@ -1,0 +1,176 @@
+{
+  "name": "join",
+  "user": "user2",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/chat/api/channels/2/memberships/me.json"
+    }
+  ],
+  "started_at": "2026-10-09T20:47:32.714652",
+  "transaction_started_at": "2026-10-09T20:47:31.653206",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "membership": {
+          "following": true,
+          "muted": false,
+          "notification_level": "mention",
+          "chat_channel_id": 2,
+          "last_read_message_id": null,
+          "last_viewed_at": "2026-10-09T20:47:31.653Z",
+          "last_viewed_pins_at": null,
+          "starred": false,
+          "has_unseen_pins": false,
+          "user": {
+            "id": 4,
+            "username": "user2",
+            "name": "User2",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+            "can_chat": true,
+            "has_chat_enabled": true
+          }
+        }
+      }
+    }
+  ],
+  "changes": {
+    "chat_channels": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 2,
+            "name": "General",
+            "slug": "general",
+            "type": "CategoryChannel",
+            "emoji": null,
+            "status": 0,
+            "created_at": "2026-07-25T05:58:28.954734",
+            "deleted_at": null,
+            "updated_at": "2026-10-01T15:43:03.1786",
+            "user_count": 3,
+            "chatable_id": 4,
+            "description": null,
+            "chatable_type": "Category",
+            "deleted_by_id": null,
+            "messages_count": 0,
+            "auto_join_users": true,
+            "last_message_id": null,
+            "user_count_stale": false,
+            "threading_enabled": false,
+            "delete_after_seconds": null,
+            "featured_in_category_id": null,
+            "allow_channel_wide_mentions": true
+          },
+          "after": {
+            "id": 2,
+            "name": "General",
+            "slug": "general",
+            "type": "CategoryChannel",
+            "emoji": null,
+            "status": 0,
+            "created_at": "2026-07-25T05:58:28.954734",
+            "deleted_at": null,
+            "updated_at": "2026-10-09T20:47:32.737938",
+            "user_count": 3,
+            "chatable_id": 4,
+            "description": null,
+            "chatable_type": "Category",
+            "deleted_by_id": null,
+            "messages_count": 0,
+            "auto_join_users": true,
+            "last_message_id": null,
+            "user_count_stale": true,
+            "threading_enabled": false,
+            "delete_after_seconds": null,
+            "featured_in_category_id": null,
+            "allow_channel_wide_mentions": true
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 426,
+            "seen_at": null,
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "7Bv236IFQXvWCS0+4/RNE9Y2d0k=",
+            "created_at": "2026-10-09T20:47:32.119517",
+            "rotated_at": "2026-10-09T20:47:32.119242",
+            "updated_at": "2026-10-09T20:47:32.119517",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "7Bv236IFQXvWCS0+4/RNE9Y2d0k=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 426,
+            "seen_at": "2026-10-09T20:47:32.720787",
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "7Bv236IFQXvWCS0+4/RNE9Y2d0k=",
+            "created_at": "2026-10-09T20:47:32.119517",
+            "rotated_at": "2026-10-09T20:47:32.119242",
+            "updated_at": "2026-10-09T20:47:32.119517",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "7Bv236IFQXvWCS0+4/RNE9Y2d0k=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_chat_channel_memberships": {
+      "inserted": [
+        {
+          "id": 5,
+          "muted": false,
+          "starred": false,
+          "user_id": 4,
+          "following": true,
+          "join_mode": 0,
+          "created_at": "2026-10-09T20:47:32.734174",
+          "updated_at": "2026-10-09T20:47:32.734174",
+          "last_viewed_at": "2026-10-09T20:47:31.653206",
+          "chat_channel_id": 2,
+          "notification_level": 1,
+          "last_viewed_pins_at": null,
+          "last_read_message_id": null,
+          "mobile_notification_level": 1,
+          "desktop_notification_level": 1,
+          "last_unread_mention_when_emailed_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [
+    [
+      "Jobs::Chat::UpdateChannelUserCount in 3s",
+      {
+        "chat_channel_id": 2
+      }
+    ]
+  ],
+  "next_ids": {
+    "user_chat_channel_memberships": 5
+  },
+  "recorded_from": {
+    "case": "7a1caa9f222d8272c1f046fee5bda4097e1572a61556ae5aa363cc8361709e92",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

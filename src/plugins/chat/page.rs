@@ -56,9 +56,13 @@ struct View<'a> {
 impl Context<'_> {
     /// The chat page around a route's content (templates/chat.gjs with the
     /// core sidebar).
-    pub fn full_page(content: &str) -> String {
+    /// `chat_view`: mainOutletModifierClasses' chat-view, off for the
+    /// browse and channel info routes.
+    pub fn full_page(content: &str, base_path: &str, chat_view: bool) -> String {
         format!(
-            "<div id=\"chat-progress-bar-container\"></div><div class=\"full-page-chat full-page-chat-sidebar-enabled\"><div class=\"main-chat-outlet chat-view\" id=\"main-chat-outlet\">{content}</div></div>"
+            "<div id=\"chat-progress-bar-container\"></div><div class=\"full-page-chat full-page-chat-sidebar-enabled\" data-base-path=\"{}\"><div class=\"main-chat-outlet{}\" id=\"main-chat-outlet\">{content}</div></div>",
+            escape(base_path),
+            if chat_view { " chat-view" } else { "" }
         )
     }
 
@@ -117,7 +121,7 @@ impl Context<'_> {
             classes.push_str(" is-empty");
         }
         out.push_str(&format!(
-            "<div class=\"{classes}\" data-id=\"{}\" data-label-today=\"{}\" data-label-yesterday=\"{}\" data-label-last-visit=\"{}\" data-format-time=\"{}\" data-format-tiny=\"{}\" data-format-title=\"{}\" data-format-date=\"{}\">",
+            "<div class=\"{classes}\" data-id=\"{}\" data-label-today=\"{}\" data-label-yesterday=\"{}\" data-label-last-visit=\"{}\" data-format-time=\"{}\" data-format-tiny=\"{}\" data-format-title=\"{}\" data-format-date=\"{}\" data-last-read=\"{}\" data-following=\"{}\" data-viewer-id=\"{}\" data-staff=\"{}\" data-can-moderate=\"{}\" data-label-deleted-one=\"{}\" data-label-deleted-other=\"{}\">",
             channel.id,
             escape(&t("chat.chat_message_separator.today")),
             escape(&t("chat.chat_message_separator.yesterday")),
@@ -127,6 +131,13 @@ impl Context<'_> {
             escape(&t("dates.long_with_year")),
             // moment's LL, in English.
             "MMMM D, YYYY",
+            last_read.unwrap_or(0),
+            following,
+            viewer_id,
+            self.guardian.is_staff(),
+            channel_json["meta"]["can_moderate"] == true,
+            escape(&t("chat.deleted.one")),
+            escape(&t("chat.deleted.other")),
         ));
         out.push_str(&channel_status(&channel_json, &t));
         out.push_str(&format!(
@@ -148,7 +159,28 @@ impl Context<'_> {
                 .and_then(|m| m["id"].as_i64())
                 .filter(|id| Some(*id) != channel_json["last_message"]["id"].as_i64());
             for index in 0..messages.len() {
-                out.push_str(&message_html(&view, &messages, index, newest, last_read)?);
+                // shouldRender: of a run of deleted messages only the last
+                // is drawn, collapsed; expanding it (chat.js) draws the run
+                // from each one's expanded form.
+                if messages[index]["deleted_at"].is_null() {
+                    out.push_str(&message_html(
+                        &view, &messages, index, newest, last_read, false,
+                    )?);
+                    continue;
+                }
+                let next_deleted = messages
+                    .get(index + 1)
+                    .is_some_and(|n| !n["deleted_at"].is_null());
+                if !next_deleted {
+                    out.push_str(&message_html(
+                        &view, &messages, index, newest, last_read, false,
+                    )?);
+                }
+                out.push_str(&format!(
+                    "<template class=\"chat-message-expanded\" data-id=\"{}\">{}</template>",
+                    messages[index]["id"],
+                    message_html(&view, &messages, index, newest, last_read, true)?
+                ));
             }
         }
         out.push_str("</div>");
@@ -159,6 +191,37 @@ impl Context<'_> {
             ));
         }
         out.push_str("</div>");
+        // ChatMessageActionsDesktop, for members who can interact
+        // (userCanInteractWithChat).
+        if viewer_id > 0 && view.can_interact {
+            let custom = match self.guardian.user_id() {
+                Some(id) => super::options(&mut *self.conn, id)
+                    .await?
+                    .filter(|o| o.chat_quick_reaction_type == 1)
+                    .and_then(|o| o.chat_quick_reactions_custom),
+                None => None,
+            };
+            let defaults = self
+                .settings
+                .get("default_emoji_reactions")?
+                .to_s()
+                .to_string();
+            let toolbar = super::actions_view::Toolbar {
+                t: &t,
+                base_path: self.base_path,
+                emoji_set: &view.emoji_set,
+                viewer_id,
+                staff: self.guardian.is_staff(),
+                quick_custom: custom.as_deref(),
+                default_reactions: &defaults,
+                pins: self.settings.get("chat_pinned_messages")?.truthy(),
+            };
+            out.push_str(&super::actions_view::template(
+                &toolbar,
+                &channel_json,
+                following,
+            ));
+        }
         out.push_str(&format!(
             "<div class=\"chat-scroll-to-bottom\"><button class=\"btn no-text btn-flat chat-scroll-to-bottom__button\" type=\"button\"><span class=\"chat-scroll-to-bottom__arrow\">{}</span></button></div>",
             d_icon("arrow-down", None)
@@ -170,6 +233,107 @@ impl Context<'_> {
         }
         out.push_str("</div></div>");
         Ok(out)
+    }
+
+    /// One message as the channel page draws it, after `previous` (the
+    /// message above it in the viewer's page, which decides what it
+    /// repeats of its author and reply): what chat.js swaps in when the
+    /// channel's bus says a message came, changed or came back. A deleted
+    /// message, for those who see it (its author, staff, moderators), is
+    /// drawn expanded. None when the viewer can't see it.
+    pub async fn message_fragment(
+        &mut self,
+        channel_id: i64,
+        message_id: i64,
+        previous: Option<i64>,
+    ) -> Result<Option<String>, AppError> {
+        let sql = format!(
+            "SELECT {} FROM chat_channels WHERE id = $1 AND deleted_at IS NULL",
+            super::channels::CHANNEL_COLUMNS
+        );
+        let channel: Option<ChannelRow> = sqlx::query_as(&sql)
+            .bind(channel_id)
+            .fetch_optional(&mut *self.conn)
+            .await?;
+        let Some(channel) = channel else {
+            return Ok(None);
+        };
+        if channel.chatable_type != "Category" {
+            return Err(Unsupported("chat direct messages").into());
+        }
+        if !self.can_see_category(channel.chatable_id).await? {
+            return Ok(None);
+        }
+        let found: Option<(Option<i32>, bool)> = sqlx::query_as(
+            "SELECT user_id, deleted_at IS NOT NULL FROM chat_messages WHERE id = $1 AND chat_channel_id = $2",
+        )
+        .bind(message_id)
+        .bind(channel.id)
+        .fetch_optional(&mut *self.conn)
+        .await?;
+        let Some((author, deleted)) = found else {
+            return Ok(None);
+        };
+        let viewer = self.guardian.user_id();
+        if deleted
+            && !(author.is_some() && author == viewer)
+            && !self.guardian.is_staff()
+            && !self.can_moderate(&channel).await?
+        {
+            return Ok(None);
+        }
+        let previous: Option<i64> = match previous {
+            Some(id) => {
+                sqlx::query_scalar(
+                    "SELECT id FROM chat_messages WHERE id = $1 AND chat_channel_id = $2",
+                )
+                .bind(id)
+                .bind(channel.id)
+                .fetch_optional(&mut *self.conn)
+                .await?
+            }
+            None => None,
+        };
+        let membership = self
+            .memberships()
+            .await?
+            .into_iter()
+            .find(|m| m.chat_channel_id == channel.id);
+        let channel_json = self
+            .channel(&channel, membership.as_ref(), None, None)
+            .await?;
+        let last_read = membership.as_ref().and_then(|m| m.last_read_message_id);
+        let ids: Vec<i64> = previous.into_iter().chain([message_id]).collect();
+        let serialized = self.serialize_messages(&channel, &ids).await?;
+        // In the page's order: the previous one first.
+        let messages: Vec<Value> = ids
+            .iter()
+            .filter_map(|id| {
+                serialized
+                    .iter()
+                    .find(|m| m["id"].as_i64() == Some(*id))
+                    .cloned()
+            })
+            .collect();
+        let Some(index) = messages
+            .iter()
+            .position(|m| m["id"].as_i64() == Some(message_id))
+        else {
+            return Ok(None);
+        };
+        let i18n = self.i18n;
+        let t = move |key: &str| js(i18n, key);
+        let view = View {
+            base_path: self.base_path,
+            channel: &channel_json,
+            viewer_id: i64::from(viewer.unwrap_or(0)),
+            emoji_set: self.settings.get("emoji_set")?.to_s().to_string(),
+            can_interact: channel_json["meta"]["user_silenced"] != true,
+            t: &t,
+        };
+        Ok(Some(message_html(
+            &view, &messages, index, None, last_read, deleted,
+        )?))
     }
 
     /// ChatRetentionReminder on a category channel, for staff who haven't
@@ -383,7 +547,25 @@ impl Context<'_> {
         };
         let draft = self.draft_message(channel.id).await?;
         let disabled_attr = if disabled { " disabled=\"\"" } else { "" };
-        let mut out = String::from("<div class=\"chat-composer__wrapper\">");
+        // What chat.js sends with: the minimum length (hasContent) and the
+        // member's send shortcut.
+        let shortcut = match self.guardian.user_id() {
+            Some(id) => super::options(&mut *self.conn, id)
+                .await?
+                .and_then(|o| {
+                    super::SEND_SHORTCUTS
+                        .get(usize::try_from(o.send_shortcut).unwrap_or(0))
+                        .copied()
+                })
+                .unwrap_or("enter"),
+            None => "enter",
+        };
+        let mut out = format!(
+            "<div class=\"chat-composer__wrapper\" data-min-length=\"{}\" data-max-length=\"{}\" data-send-shortcut=\"{shortcut}\">",
+            self.settings.get("chat_minimum_message_length")?.to_i(),
+            self.settings.get("chat_maximum_message_length")?.to_i()
+        );
+        out.push_str(&draft.details);
         out.push_str(&format!(
             "<div aria-label=\"{}\" class=\"chat-composer is-send-disabled {} is-draft-saved\" role=\"region\"><div class=\"chat-composer__outer-container\"><div class=\"chat-composer__inner-container\">",
             escape(&t("chat.aria_roles.composer")),
@@ -397,7 +579,7 @@ impl Context<'_> {
         out.push_str(&format!(
             "<div class=\"chat-composer__input-container\"><textarea placeholder=\"{}\" autocorrect=\"on\" autocapitalize=\"sentences\" rows=\"1\" id=\"channel-composer\" class=\"chat-composer__input\" data-chat-composer-context=\"channel\" type=\"text\"{disabled_attr}>{}</textarea></div>",
             escape(&placeholder),
-            escape(&draft)
+            escape(&draft.message)
         ));
         out.push_str(&format!(
             "<button aria-expanded=\"false\" class=\"btn no-text fk-d-menu__trigger emoji-picker-trigger chat-composer-button btn-transparent --emoji\" data-identifier=\"emoji-picker\" data-trigger=\"\" type=\"button\"{disabled_attr}>{}&#8203;</button><div class=\"chat-composer-separator\"></div>",
@@ -419,12 +601,12 @@ impl Context<'_> {
         Ok(out)
     }
 
-    /// The member's draft for the channel (chat_drafts): its text. A draft
-    /// carrying uploads, a reply or an edit is refused until composing is
-    /// ported.
-    async fn draft_message(&mut self, channel_id: i64) -> Result<String, AppError> {
+    /// The member's draft for the channel (chat_drafts): its text, and the
+    /// message it edits or replies to. One carrying uploads is refused until
+    /// uploads are ported.
+    async fn draft_message(&mut self, channel_id: i64) -> Result<Draft, AppError> {
         let Some(user_id) = self.guardian.user_id() else {
-            return Ok(String::new());
+            return Ok(Draft::default());
         };
         let data: Option<Option<String>> = sqlx::query_scalar(
             "SELECT data FROM chat_drafts WHERE user_id = $1 AND chat_channel_id = $2 AND thread_id IS NULL \
@@ -435,20 +617,98 @@ impl Context<'_> {
         .fetch_optional(&mut *self.conn)
         .await?;
         let Some(Some(data)) = data else {
+            return Ok(Draft::default());
+        };
+        // What UpsertDraft stores is Ruby's inspect of the client's hash,
+        // which the client's JSON.parse throws on: such a draft shows as
+        // none here.
+        let Ok(draft) = serde_json::from_str::<Value>(&data) else {
+            return Ok(Draft::default());
+        };
+        if draft["uploads"].as_array().is_some_and(|u| !u.is_empty()) {
+            return Err(Unsupported("chat drafts with uploads").into());
+        }
+        Ok(Draft {
+            message: s(&draft["message"]).to_string(),
+            details: self.draft_details(&draft).await?,
+        })
+    }
+
+    /// ChatComposerMessageDetails for a draft restored as
+    /// ChatMessage.createDraftMessage makes it: an edit (`editing`, the
+    /// draft's id and excerpt, the member's own), else a reply
+    /// (`replyToMsg`, as it was saved).
+    async fn draft_details(&mut self, draft: &Value) -> Result<String, AppError> {
+        let i18n = self.i18n;
+        let t = move |key: &str| js(i18n, key);
+        let (action, id, excerpt, user) = if draft["editing"] == true {
+            let Some(user_id) = self.guardian.user_id() else {
+                return Ok(String::new());
+            };
+            let (username, avatar): (String, Option<i32>) =
+                sqlx::query_as("SELECT username, uploaded_avatar_id FROM users WHERE id = $1")
+                    .bind(user_id)
+                    .fetch_one(&mut *self.conn)
+                    .await?;
+            let logo = crate::admin_users::logo_small_url(&mut *self.conn, self.settings).await?;
+            let urls = crate::url::Urls {
+                config: self.config,
+                settings: self.settings,
+            };
+            let template =
+                crate::avatar::avatar_template(&urls, user_id, &username, avatar, logo.as_deref())?;
+            (
+                "edit",
+                draft["id"].as_i64().unwrap_or(0),
+                s(&draft["excerpt"]).to_string(),
+                serde_json::json!({"id": user_id, "username": username, "avatar_template": template}),
+            )
+        } else if draft["replyToMsg"].is_object() {
+            let reply = &draft["replyToMsg"];
+            (
+                "reply",
+                reply["id"].as_i64().unwrap_or(0),
+                s(&reply["excerpt"]).to_string(),
+                reply["user"].clone(),
+            )
+        } else {
             return Ok(String::new());
         };
-        let draft: Value = serde_json::from_str(&data).unwrap_or(Value::Null);
-        let only_text = draft.as_object().is_some_and(|o| {
-            o.iter().all(|(k, v)| match k.as_str() {
-                "message" => true,
-                "uploads" => v.as_array().is_none_or(Vec::is_empty),
-                _ => v.is_null(),
-            })
-        });
-        if !only_text {
-            return Err(Unsupported("chat drafts with uploads, replies or edits").into());
-        }
-        Ok(draft["message"].as_str().unwrap_or_default().to_string())
+        let view = View {
+            base_path: self.base_path,
+            channel: &Value::Null,
+            viewer_id: i64::from(self.guardian.user_id().unwrap_or(0)),
+            emoji_set: self.settings.get("emoji_set")?.to_s().to_string(),
+            can_interact: true,
+            t: &t,
+        };
+        let inline_emoji = self
+            .settings
+            .get("enable_inline_emoji_translation")?
+            .truthy();
+        let text = format!(
+            "<span class=\"chat-reply__username\">{}</span><span class=\"chat-reply__excerpt\">{}</span>",
+            escape(s(&user["username"])),
+            crate::topic_list_view::emoji_unescape_with(
+                &excerpt,
+                inline_emoji,
+                &view.emoji_set,
+                self.base_path
+            )
+        );
+        let data = format!(
+            " data-excerpt=\"{}\" data-user=\"{}\"",
+            escape(&excerpt),
+            escape(&user.to_string())
+        );
+        Ok(super::actions_view::details_bar(
+            &t,
+            action,
+            id,
+            &data,
+            &user_avatar(&user, 24, false, &view),
+            &text,
+        ))
     }
 
     /// The upload field's accepted types: the authorized extensions for
@@ -585,6 +845,7 @@ fn message_html(
     index: usize,
     newest: Option<i64>,
     last_read: Option<i64>,
+    expanded: bool,
 ) -> Result<String, AppError> {
     let t = v.t;
     let m = &messages[index];
@@ -622,8 +883,36 @@ fn message_html(
     if has_reply_line {
         classes.push("has-reply");
     }
+    // What the message actions read: its author, text and state.
+    let mut data = format!(
+        " data-user-id=\"{}\" data-username=\"{}\" data-avatar-template=\"{}\" data-message=\"{}\" data-excerpt=\"{}\"",
+        user["id"],
+        escape(s(&user["username"])),
+        escape(s(&user["avatar_template"])),
+        escape(s(&m["message"])),
+        escape(s(&m["excerpt"])),
+    );
+    if let Some(name) = user["name"].as_str() {
+        data.push_str(&format!(" data-name=\"{}\"", escape(name)));
+    }
+    if deleted {
+        data.push_str(&format!(" data-deleted-by-id=\"{}\"", m["deleted_by_id"]));
+    }
+    if let Some(status) = m.get("user_flag_status") {
+        data.push_str(&format!(" data-user-flag-status=\"{status}\""));
+    }
+    if m["pinned"] == true {
+        data.push_str(" data-pinned=\"\"");
+    }
+    if let Some(bookmark) = m.get("bookmark") {
+        data.push_str(&format!(
+            " data-bookmark-name=\"{}\" data-bookmark-reminder-at=\"{}\"",
+            escape(s(&bookmark["name"])),
+            escape(s(&bookmark["reminder_at"]))
+        ));
+    }
     let mut out = format!(
-        "<div class=\"{}\" data-id=\"{id}\" data-created-at=\"{}\"{}{}>",
+        "<div class=\"{}\" data-id=\"{id}\" data-created-at=\"{}\"{data}{}{}>",
         classes.join(" "),
         escape(s(&m["created_at"])),
         if Some(id) == newest {
@@ -638,9 +927,9 @@ fn message_html(
         }
     );
 
-    // A deleted message is collapsed to a label counting the deleted ones
-    // above it.
-    if deleted {
+    // A deleted message, unless expanded, is collapsed to a label counting
+    // the deleted ones above it.
+    if deleted && !expanded {
         let count = 1 + messages[..index]
             .iter()
             .rev()
@@ -652,7 +941,7 @@ fn message_html(
             "chat.deleted.other"
         };
         out.push_str(&format!(
-            "<div class=\"chat-message-text -deleted\"><button class=\"btn btn-text btn-flat chat-message-expand\" type=\"button\"><span class=\"d-button-label\">{}</span></button></div></div>",
+            "<div class=\"chat-message-text -deleted\"><button class=\"btn btn-flat chat-message-expand\" type=\"button\"><span class=\"d-button-label\">{}</span></button></div></div>",
             escape(&t(key).replace("%{count}", &count.to_string()))
         ));
         return Ok(out);
@@ -1190,4 +1479,12 @@ pub fn disabled_page(i18n: &crate::i18n::I18n, base_path: &str) -> String {
         d_icon("gear", None),
         escape(&js(i18n, "chat.disabled.cta"))
     )
+}
+
+/// A member's draft, as the composer shows it.
+#[derive(Default)]
+struct Draft {
+    message: String,
+    /// ChatComposerMessageDetails, when it edits or replies.
+    details: String,
 }

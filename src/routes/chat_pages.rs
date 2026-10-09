@@ -96,6 +96,7 @@ async fn render(
     active: Active,
     title: String,
     content: &str,
+    chat_view: bool,
 ) -> Result<Response, AppError> {
     let base_path = state.config.globals.relative_url_root();
     let bus_position = crate::bus::page_position(&state.bus).await?;
@@ -123,7 +124,7 @@ async fn render(
         bus_position: site.bus_position,
         chrome: site.chrome,
         title,
-        main: Context::full_page(content),
+        main: Context::full_page(content, base_path, chat_view),
     };
     let response = Html(page.render().map_err(crate::html::HtmlError::from)?).into_response();
     Ok(crate::html::with_viewer_headers(response, &vs))
@@ -264,6 +265,7 @@ pub async fn browse(
         Active::Chat,
         title,
         &content,
+        false,
     )
     .await
 }
@@ -357,6 +359,7 @@ pub async fn channel(
         Active::ChatChannel(channel.id),
         title,
         &content,
+        true,
     )
     .await
 }
@@ -383,6 +386,47 @@ pub async fn disabled(
         Active::Chat,
         title,
         &content,
+        true,
     )
     .await
+}
+
+#[derive(serde::Deserialize, Default)]
+pub struct LiveMessageParams {
+    previous: Option<String>,
+}
+
+/// GET /live/chat/:channel_id/:message_id: a message as the viewer's
+/// channel page draws it, after `previous`, for chat.js to swap in when
+/// the channel's bus tells of it.
+pub async fn live_message(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path((channel_id, message_id)): Path<(String, String)>,
+    axum::extract::Query(params): axum::extract::Query<LiveMessageParams>,
+) -> Result<Response, AppError> {
+    let (Ok(channel_id), Ok(message_id)) = (channel_id.parse::<i64>(), message_id.parse::<i64>())
+    else {
+        return Ok(StatusCode::NOT_FOUND.into_response());
+    };
+    let mut conn = state.pool.acquire().await?;
+    let settings = match gate(&state, &mut conn, &guardian, false).await? {
+        Ok(settings) => settings,
+        Err(_) => return Ok(StatusCode::NOT_FOUND.into_response()),
+    };
+    let previous = params.previous.and_then(|p| p.parse::<i64>().ok());
+    let html = context(&state, &mut conn, &settings, &guardian)
+        .message_fragment(channel_id, message_id, previous)
+        .await?;
+    Ok(match html {
+        Some(html) => (
+            [
+                (header::CONTENT_TYPE, "text/html; charset=utf-8"),
+                (header::CACHE_CONTROL, "no-cache, no-store"),
+            ],
+            html,
+        )
+            .into_response(),
+        None => StatusCode::NOT_FOUND.into_response(),
+    })
 }

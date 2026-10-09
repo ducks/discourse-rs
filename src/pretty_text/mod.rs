@@ -156,6 +156,9 @@ pub struct MarkdownOptions {
     /// No `nofollow` on off-site links: the post's author is staff or
     /// trusted (`Post#omit_nofollow?`).
     pub omit_nofollow: bool,
+    /// Chat::Message.markdown_options: chat's features and rules, and
+    /// hashtags in the chat composer's context (channels first).
+    pub chat: bool,
 }
 
 /// `opt_input` of `PrettyText.markdown`, without the per-call ids.
@@ -237,6 +240,11 @@ pub async fn options(
         types.push("tag");
         icons.insert("tag".into(), json!("tag"));
     }
+    // Chat's channel data source, last in the topic composer.
+    if settings.get("chat_enabled")?.truthy() && settings.get("enable_public_channels")?.truthy() {
+        types.push("channel");
+        icons.insert("channel".into(), json!("comment"));
+    }
     out.insert("hashtagTypesInPriorityOrder".into(), json!(types));
     out.insert("hashtagIcons".into(), Value::Object(icons));
     Ok(out)
@@ -258,12 +266,33 @@ pub async fn markdown(host: &Host, raw: &str, opts: &MarkdownOptions) -> Result<
     // What `options` refuses (watched words, custom emoji...) the renderer
     // does not handle either.
     let options = options(host, &mut conn, &settings).await?;
-    let hashtag_types = options["hashtagTypesInPriorityOrder"].clone();
+    let mut hashtag_types = options["hashtagTypesInPriorityOrder"].clone();
+    // The chat composer's order (register_hashtag_type_priority_for_context):
+    // channel, category, tag.
+    if opts.chat
+        && let Some(types) = hashtag_types.as_array_mut()
+    {
+        types.sort_by_key(|t| match t.as_str() {
+            Some("channel") => 0,
+            Some("category") => 1,
+            _ => 2,
+        });
+    }
 
     let mut render_settings = render_settings(&settings, &host.i18n, &host.config)?;
     render_settings.topic_id = opts.topic_id;
     render_settings.post_id = opts.post_id;
     render_settings.force_quote_link = opts.force_quote_link;
+    if opts.chat {
+        // MARKDOWN_FEATURES leaves these out.
+        render_settings.chat = true;
+        render_settings.poll = false;
+        render_settings.checklist = false;
+        render_settings.footnotes = false;
+        render_settings.policy = false;
+        // and always includes inlineEmoji.
+        render_settings.inline_emoji = true;
+    }
 
     let (html, needs) = render::render(raw, &render_settings, Lookups::default())?;
     if needs.is_empty() {
@@ -437,6 +466,7 @@ pub fn render_settings(
         topic_id: None,
         force_quote_link: false,
         post_id: None,
+        chat: false,
     }
     .compiled()?)
 }

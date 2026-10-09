@@ -1,0 +1,19 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO chat_drafts (user_id, chat_channel_id, data, created_at, updated_at) VALUES (3, 2, '{\"message\":\"half typed\"}', now() - interval '5 minutes', now() - interval '5 minutes')"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/chat/2.json",
+      "params": {
+        "message": "Hello **there**",
+        "staged_id": "staged-1"
+      }
+    }
+  ],
+  "run_jobs": [
+    "Jobs::Chat::ProcessMessage"
+  ]
+}

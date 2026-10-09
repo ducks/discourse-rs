@@ -9,7 +9,8 @@ use serde::Deserialize;
 
 const EMOJIS_JSON: &str = include_str!("../../../vendor/discourse-emojis/dist/emojis.json");
 const ALIASES_JSON: &str = include_str!("../../../vendor/discourse-emojis/dist/aliases.json");
-const TONABLE_JSON: &str =
+/// `Emoji.tonable_emojis`, as JSON.
+pub const TONABLE_JSON: &str =
     include_str!("../../../vendor/discourse-emojis/dist/tonable_emojis.json");
 
 /// Fitzpatrick modifiers for `:name:t2` .. `:name:t6`.

@@ -11,6 +11,7 @@
 mod anchor;
 mod bbcode;
 mod blocks;
+mod chat_html;
 mod checklist;
 mod code;
 pub mod context;
@@ -107,6 +108,12 @@ pub struct RenderSettings {
     pub force_quote_link: bool,
     /// `postId`: prefixes heading anchors.
     pub post_id: Option<i64>,
+    /// Chat::Message.cook's engine: markdown-it's zero preset with chat's
+    /// rules (no headings, rules, references or raw HTML but `kbd` and
+    /// `mark`), markdown-it's own replacements for the typographer, and
+    /// details off. The other features chat leaves out (poll, checklist,
+    /// footnotes, policy) are off in the settings it cooks with.
+    pub chat: bool,
 }
 
 impl MarkdownItExt for RenderSettings {}
@@ -160,6 +167,9 @@ fn engine(settings: &RenderSettings, lookups: Lookups) -> MarkdownIt {
     let mut md = MarkdownIt::new();
     md.ext.insert(settings.clone());
     md.ext.insert(Context::with(lookups));
+    if settings.chat {
+        return chat_engine(md);
+    }
     markdown_it::plugins::cmark::add(&mut md);
     markdown_it::plugins::html::add(&mut md);
     html_img::add(&mut md);
@@ -207,7 +217,9 @@ pub fn render(
         }
         onebox::run(&mut root);
     }
-    if settings.typographer {
+    if settings.typographer && settings.chat {
+        typographer::markdown_it_apply(&mut root);
+    } else if settings.typographer {
         typographer::apply(&mut root);
         smartquotes::run(&mut root, &md);
     }
@@ -235,4 +247,36 @@ pub fn render(
         return Err(Unsupported(what));
     }
     Ok((html, ctx.needs()))
+}
+
+/// The engine Chat::Message.markdown_options builds: markdown-it's "zero"
+/// preset enabling only chat's rules (autolink, list, backticks, newline,
+/// code, fence, image, table, linkify, link, strikethrough, blockquote,
+/// emphasis, replacements, escape, entity), with chat's features.
+fn chat_engine(mut md: MarkdownIt) -> MarkdownIt {
+    use markdown_it::plugins::cmark::{block, inline};
+    inline::newline::add(&mut md);
+    inline::escape::add(&mut md);
+    inline::backticks::add(&mut md);
+    inline::emphasis::add(&mut md);
+    inline::link::add(&mut md);
+    inline::image::add(&mut md);
+    inline::autolink::add(&mut md);
+    inline::entity::add(&mut md);
+    block::code::add(&mut md);
+    block::fence::add(&mut md);
+    block::blockquote::add(&mut md);
+    block::list::add(&mut md);
+    block::paragraph::add(&mut md);
+    markdown_it::plugins::extra::strikethrough::add(&mut md);
+    markdown_it::plugins::extra::tables::add(&mut md);
+    newline::add(&mut md);
+    bbcode::add(&mut md);
+    anchor::add(&mut md);
+    link_pipes::add(&mut md);
+    blocks::add(&mut md);
+    tight::add(&mut md);
+    linkify::add(&mut md);
+    chat_html::add(&mut md);
+    md
 }

@@ -381,9 +381,12 @@ impl<'a> Helpers<'a> {
             None => Guardian::anonymous(),
         };
         let tagging = self.settings.get("tagging_enabled")?.truthy();
+        let channels = self.settings.get("chat_enabled")?.truthy()
+            && self.settings.get("enable_public_channels")?.truthy();
         let enabled = |ty: &str| match ty {
             "category" => true,
             "tag" => tagging,
+            "channel" => channels,
             _ => false,
         };
         let types: Vec<&str> = types
@@ -395,7 +398,7 @@ impl<'a> Helpers<'a> {
             .collect();
 
         // A `::type` suffix of an enabled type pins the lookup to it.
-        let suffixed = ["category", "tag"]
+        let suffixed = ["category", "tag", "channel"]
             .into_iter()
             .filter(|ty| enabled(ty))
             .find(|ty| slug.ends_with(&format!("::{ty}")));
@@ -407,6 +410,7 @@ impl<'a> Helpers<'a> {
             };
             let item = match *ty {
                 "category" => self.category_hashtag(&guardian, &lookup).await?,
+                "channel" => self.channel_hashtag(&guardian, &lookup).await?,
                 _ => self.tag_hashtag(&guardian, &lookup).await?,
             };
             if let Some(mut item) = item {
@@ -420,29 +424,75 @@ impl<'a> Helpers<'a> {
                 return Ok(ordered(item));
             }
         }
-        // Chat registers a `channel` data source while it is enabled, last
-        // in the composer's order: what core did not resolve may be a
-        // channel. One in a category the cooking user cannot see resolves
-        // to nothing in Rails as well; any other needs chat's own rules.
-        if self.settings.get("chat_enabled")?.truthy() {
-            let secure = guardian
-                .secure_category_ids(&mut *self.conn, self.settings)
-                .await?;
-            let channel: bool = sqlx::query_scalar(
-                "SELECT EXISTS (SELECT 1 FROM chat_channels ch \
-                 LEFT JOIN categories c ON ch.chatable_type = 'Category' AND c.id = ch.chatable_id \
-                 WHERE lower(ch.slug) = lower($1) AND ch.deleted_at IS NULL \
-                   AND (c.id IS NULL OR NOT c.read_restricted OR c.id = ANY($2)))",
-            )
-            .bind(slug.trim_end_matches("::channel"))
-            .bind(&secure)
-            .fetch_one(&mut *self.conn)
-            .await?;
-            if channel {
-                return Err(Unsupported("chat channel hashtags in cooking").into());
-            }
-        }
         Ok(Value::Null)
+    }
+
+    /// Chat::ChannelHashtagDataSource.lookup for one slug: a category
+    /// channel the cooking user may post in, while they can chat.
+    async fn channel_hashtag(
+        &mut self,
+        guardian: &Guardian,
+        slug: &str,
+    ) -> Result<Option<Map<String, Value>>, CookError> {
+        // guardian.can_chat?
+        if !guardian.is_authenticated()
+            || !guardian.in_setting_groups(self.settings, "chat_allowed_groups")?
+        {
+            return Ok(None);
+        }
+        // ChannelFetcher.secured_public_channel_slug_lookup
+        let sql = format!(
+            "SELECT ch.id, COALESCE(NULLIF(ch.name, ''), categories.name) AS title, ch.slug, ch.description, ch.emoji \
+             FROM chat_channels ch \
+             JOIN categories ON categories.id = ch.chatable_id AND ch.chatable_type = 'Category' \
+             WHERE ch.deleted_at IS NULL AND ch.slug = $1 AND {} \
+             ORDER BY ch.id LIMIT 1",
+            crate::plugins::chat::categories_scoped_to(guardian, "1, 2")
+        );
+        #[derive(sqlx::FromRow)]
+        struct ChannelRow {
+            id: i64,
+            title: String,
+            slug: String,
+            description: Option<String>,
+            emoji: Option<String>,
+        }
+        let channel: Option<ChannelRow> = sqlx::query_as(&sql)
+            .bind(slug.to_lowercase())
+            .fetch_optional(&mut *self.conn)
+            .await?;
+        let Some(ChannelRow {
+            id,
+            title,
+            slug,
+            description,
+            emoji,
+        }) = channel
+        else {
+            return Ok(None);
+        };
+        let emoji = emoji.filter(|e| !e.is_empty());
+        let mut item = Map::new();
+        item.insert(
+            "relative_url".into(),
+            json!(format!(
+                "{}/chat/c/{slug}/{id}",
+                self.host.config.globals.relative_url_root()
+            )),
+        );
+        item.insert("text".into(), json!(title));
+        item.insert("description".into(), json!(description));
+        item.insert("icon".into(), json!("comment"));
+        item.insert("colors".into(), Value::Null);
+        item.insert("ref".into(), json!(slug));
+        item.insert("slug".into(), json!(slug));
+        item.insert("id".into(), json!(id));
+        item.insert(
+            "style_type".into(),
+            json!(if emoji.is_some() { "emoji" } else { "icon" }),
+        );
+        item.insert("emoji".into(), json!(emoji));
+        Ok(Some(item))
     }
 
     /// CategoryHashtagDataSource.lookup for one slug, `parent:child` too.

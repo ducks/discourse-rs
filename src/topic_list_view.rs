@@ -229,7 +229,17 @@ static TEXT_EMOJI_INLINE: LazyLock<Regex> =
 /// emoji), becomes its image. An emoji right after a unicode one is not
 /// told apart (emojiReplacementRegex), and emoticons are left as text.
 pub fn emoji_unescape(text: &str, settings: &ListSettings, base_path: &str) -> String {
-    let regex: &Regex = if settings.inline_emoji {
+    emoji_unescape_with(text, settings.inline_emoji, &settings.emoji_set, base_path)
+}
+
+/// `emojiUnescape` with the two site settings it reads.
+pub fn emoji_unescape_with(
+    text: &str,
+    inline_emoji: bool,
+    emoji_set: &str,
+    base_path: &str,
+) -> String {
+    let regex: &Regex = if inline_emoji {
         &TEXT_EMOJI_INLINE
     } else {
         &TEXT_EMOJI
@@ -244,7 +254,7 @@ pub fn emoji_unescape(text: &str, settings: &ListSettings, base_path: &str) -> S
             continue;
         }
         let before = &text[..m.start()];
-        let replaceable = settings.inline_emoji
+        let replaceable = inline_emoji
             || before.is_empty()
             || before
                 .chars()
@@ -257,7 +267,7 @@ pub fn emoji_unescape(text: &str, settings: &ListSettings, base_path: &str) -> S
         }
         let url = format!(
             "{base_path}/images/emoji/{}/{}.png?v={}",
-            settings.emoji_set,
+            emoji_set,
             code.replacen(":t", "/", 1),
             crate::emoji::image_version()
         );

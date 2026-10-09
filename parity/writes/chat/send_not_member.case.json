@@ -1,0 +1,12 @@
+{
+  "user": "user2",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/chat/2.json",
+      "params": {
+        "message": "hi"
+      }
+    }
+  ]
+}

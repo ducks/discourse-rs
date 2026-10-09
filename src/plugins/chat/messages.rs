@@ -190,6 +190,25 @@ fn build_excerpt(m: &MessageRow) -> Result<String, AppError> {
     ))
 }
 
+/// `Chat::Message#build_excerpt` for a message not yet saved.
+pub(crate) fn build_excerpt_for(message: &str, cooked: &str) -> Result<String, AppError> {
+    build_excerpt(&MessageRow {
+        id: 0,
+        user_id: None,
+        created_at: NaiveDateTime::default(),
+        deleted_at: None,
+        deleted_by_id: None,
+        in_reply_to_id: None,
+        message: Some(message.to_string()),
+        cooked: Some(cooked.to_string()),
+        thread_id: None,
+        streaming: false,
+        excerpt: None,
+        blocks: None,
+        chat_channel_id: 0,
+    })
+}
+
 /// `Chat::Message#excerpt_for_display`: the stored excerpt, else one
 /// built from the cooked message.
 fn excerpt_for_display(m: &MessageRow) -> Result<String, AppError> {
@@ -264,6 +283,29 @@ impl Context<'_> {
             "chat_channel_id": m.chat_channel_id,
             "streaming": m.streaming,
         })))
+    }
+
+    /// Chat::MessageSerializer for these messages of the channel, by id, as
+    /// this context's guardian sees them (the publisher's anonymous one
+    /// for the bus).
+    pub(crate) async fn serialize_messages(
+        &mut self,
+        channel: &ChannelRow,
+        ids: &[i64],
+    ) -> Result<Vec<Value>, AppError> {
+        let sql = format!(
+            "SELECT {MESSAGE_COLUMNS} FROM chat_messages WHERE chat_messages.id = ANY($1) ORDER BY chat_messages.id"
+        );
+        let rows: Vec<MessageRow> = sqlx::query_as(&sql)
+            .bind(ids)
+            .fetch_all(&mut *self.conn)
+            .await?;
+        let shared = self.shared(channel, &rows).await?;
+        let mut out = Vec::new();
+        for m in &rows {
+            out.push(self.message(&shared, m).await?);
+        }
+        Ok(out)
     }
 
     /// GET /chat/api/channels/:channel_id/messages
@@ -375,11 +417,17 @@ impl Context<'_> {
             }
         }
 
+        // Chat::TrackingStateReportQuery for no channels and the messages'
+        // threads (include_threads): none without threads, else the
+        // member's threads.
+        let thread_tracking = if page.messages.iter().any(|m| m.thread_id.is_some()) {
+            self.thread_tracking().await?
+        } else {
+            serde_json::Map::new()
+        };
         Ok(Listed::Messages(json!({
             "messages": messages,
-            // Chat::TrackingStateReportQuery for no channels and the
-            // messages' threads (none).
-            "tracking": {"channel_tracking": {}, "thread_tracking": {}},
+            "tracking": {"channel_tracking": {}, "thread_tracking": thread_tracking},
             "meta": {
                 "target_message_id": page.target_message_id,
                 "can_load_more_future": page.can_load_more_future,

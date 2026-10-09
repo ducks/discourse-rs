@@ -7,10 +7,16 @@
 //! (ChannelFetcher.generate_allowed_channel_ids_sql), and the keys it adds
 //! to users, the current user and their options.
 
+pub mod actions_view;
 pub mod auto_join;
 pub mod channels;
+pub mod cook;
+pub mod create;
+pub mod membership;
 pub mod messages;
+pub mod modify;
 pub mod page;
+pub mod publisher;
 pub mod view;
 
 use serde_json::{Map, Value, json};
@@ -59,7 +65,7 @@ pub fn can_direct_message(
 
 /// `Category.scoped_to_permissions(guardian, permissions)` as a condition
 /// on `categories`, the ids written in.
-fn categories_scoped_to(guardian: &Guardian, permissions: &str) -> String {
+pub(crate) fn categories_scoped_to(guardian: &Guardian, permissions: &str) -> String {
     match guardian.user() {
         _ if guardian.is_admin() => "TRUE".to_string(),
         None => "1 = 0".to_string(),
@@ -197,7 +203,7 @@ const EMAIL_FREQUENCIES: [&str; 2] = ["never", "when_away"];
 pub(crate) const HEADER_INDICATORS: [&str; 4] =
     ["all_new", "dm_and_mentions", "never", "only_mentions"];
 pub(crate) const SIDEBAR_MODES: [&str; 4] = ["default", "never", "always", "fullscreen"];
-const SEND_SHORTCUTS: [&str; 2] = ["enter", "meta_enter"];
+pub(crate) const SEND_SHORTCUTS: [&str; 2] = ["enter", "meta_enter"];
 const QUICK_REACTION_TYPES: [&str; 2] = ["frequent", "custom"];
 
 /// The keys chat adds to UserOptionSerializer, in their order.
