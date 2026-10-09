@@ -208,6 +208,19 @@ pub fn router(state: &AppState) -> Router<AppState> {
         )
         .route("/chat/api/channels/{id}/messages", get(chat::messages))
         .route("/chat/api/channels/{id}/messages.json", get(chat::messages))
+        .route(
+            "/chat/api/channels/{id}/messages/{message_id}",
+            put(chat::update_message).delete(chat::trash_message),
+        )
+        .route(
+            "/chat/api/channels/{id}/messages/{message_id}/restore",
+            put(chat::restore_message),
+        )
+        .route(
+            "/chat/api/channels/{id}/messages/{message_id}/restore.json",
+            put(chat::restore_message),
+        )
+        .route("/chat/{id}/react/{message_id}", put(chat::react))
         // discourse-solved's AnswerController.
         .route("/solution/accept", post(solved::accept))
         .route("/solution/accept.json", post(solved::accept))

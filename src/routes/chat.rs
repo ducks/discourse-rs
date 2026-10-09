@@ -544,3 +544,167 @@ pub async fn draft(
     tx.commit().await?;
     Ok(membership_response(&state, outcome))
 }
+
+fn modify_response(state: &AppState, outcome: crate::plugins::chat::modify::Outcome) -> Response {
+    use crate::plugins::chat::modify::Outcome;
+    match outcome {
+        Outcome::Done(body) => Json(body).into_response(),
+        Outcome::NotFound => super::topics::not_found_response(state),
+        Outcome::Forbidden(None) => super::search::invalid_access(state),
+        Outcome::Forbidden(Some(key)) => super::search::invalid_access_with(state, &key),
+        Outcome::InvalidParameters => {
+            super::search::invalid_parameters(state, "Discourse::InvalidParameters")
+        }
+        Outcome::ParamMissing(name) => super::accounts::param_missing(name),
+        Outcome::Invalid(errors) => (
+            axum::http::StatusCode::BAD_REQUEST,
+            Json(json!({"failed": "FAILED", "errors": errors})),
+        )
+            .into_response(),
+        Outcome::Unprocessable(error) => (
+            axum::http::StatusCode::UNPROCESSABLE_ENTITY,
+            Json(json!({"errors": [error]})),
+        )
+            .into_response(),
+        Outcome::RecordInvalid(errors) => (
+            axum::http::StatusCode::UNPROCESSABLE_ENTITY,
+            Json(json!({"errors": errors, "error_type": "record_invalid"})),
+        )
+            .into_response(),
+    }
+}
+
+/// Commits a change that went through, else drops it.
+async fn finish(
+    state: &AppState,
+    tx: sqlx::Transaction<'static, sqlx::Postgres>,
+    outcome: crate::plugins::chat::modify::Outcome,
+) -> Result<Response, AppError> {
+    if matches!(outcome, crate::plugins::chat::modify::Outcome::Done(_)) {
+        tx.commit().await?;
+    }
+    Ok(modify_response(state, outcome))
+}
+
+fn strip_format(id: &str) -> &str {
+    id.strip_suffix(".json").unwrap_or(id)
+}
+
+/// PUT /chat/api/channels/:channel_id/messages/:message_id
+/// (Chat::Api::ChannelMessagesController#update).
+pub async fn update_message(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    Path((id, message_id)): Path<(String, String)>,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    let (mut tx, settings, p) =
+        match begin_write(&state, &guardian, &headers, &uri, "PUT", &body).await? {
+            Ok(begun) => begun,
+            Err(refused) => return Ok(refused),
+        };
+    let upload_ids: Vec<String> = match p.get("upload_ids") {
+        Some(serde_json::Value::Array(ids)) => ids.iter().filter_map(params::scalar).collect(),
+        Some(v) => params::scalar(v).into_iter().collect(),
+        None => Vec::new(),
+    };
+    let host = crate::pretty_text::Host::from_state(&state);
+    let outcome = context(&state, &mut tx, &settings, &guardian)
+        .update_message(
+            &host,
+            &state.bus,
+            contract_integer(&id),
+            strip_format(&message_id),
+            p.get("message").and_then(params::scalar),
+            &upload_ids,
+        )
+        .await?;
+    finish(&state, tx, outcome).await
+}
+
+/// DELETE /chat/api/channels/:channel_id/messages/:message_id
+/// (Chat::Api::ChannelMessagesController#destroy).
+pub async fn trash_message(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    Path((id, message_id)): Path<(String, String)>,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    let (mut tx, settings, _) =
+        match begin_write(&state, &guardian, &headers, &uri, "DELETE", &body).await? {
+            Ok(begun) => begun,
+            Err(refused) => return Ok(refused),
+        };
+    let outcome = context(&state, &mut tx, &settings, &guardian)
+        .trash_message(
+            &state.bus,
+            contract_integer(&id),
+            contract_integer(&message_id),
+        )
+        .await?;
+    finish(&state, tx, outcome).await
+}
+
+/// PUT /chat/api/channels/:channel_id/messages/:message_id/restore
+/// (Chat::Api::ChannelMessagesController#restore).
+pub async fn restore_message(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    Path((id, message_id)): Path<(String, String)>,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    let (mut tx, settings, _) =
+        match begin_write(&state, &guardian, &headers, &uri, "PUT", &body).await? {
+            Ok(begun) => begun,
+            Err(refused) => return Ok(refused),
+        };
+    let outcome = context(&state, &mut tx, &settings, &guardian)
+        .restore_message(
+            &state.bus,
+            contract_integer(&id),
+            contract_integer(&message_id),
+        )
+        .await?;
+    finish(&state, tx, outcome).await
+}
+
+/// PUT /chat/:chat_channel_id/react/:message_id (Chat::ChatController#react).
+pub async fn react(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    Path((id, message_id)): Path<(String, String)>,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    let (mut tx, settings, p) =
+        match begin_write(&state, &guardian, &headers, &uri, "PUT", &body).await? {
+            Ok(begun) => begun,
+            Err(refused) => return Ok(refused),
+        };
+    let emoji = p.get("emoji").and_then(params::scalar);
+    let react_action = p.get("react_action").and_then(params::scalar);
+    let outcome = context(&state, &mut tx, &settings, &guardian)
+        .react(
+            &state.bus,
+            &id,
+            strip_format(&message_id),
+            emoji.as_deref(),
+            react_action.as_deref(),
+        )
+        .await?;
+    finish(&state, tx, outcome).await
+}
+
+/// A service contract's integer attribute (ActiveModel's cast): blank is
+/// nil, anything else `to_i`.
+fn contract_integer(v: &str) -> Option<i64> {
+    let v = strip_format(v);
+    (!v.trim().is_empty()).then(|| crate::ruby::to_i(v))
+}

@@ -100,7 +100,7 @@ pub struct MembershipRow {
 /// `UserChatChannelMembership::NOTIFICATION_LEVELS`
 const NOTIFICATION_LEVELS: [&str; 3] = ["never", "mention", "always"];
 
-fn time_json(t: NaiveDateTime) -> String {
+pub(crate) fn time_json(t: NaiveDateTime) -> String {
     crate::topic_list::time_json(t)
 }
 
@@ -407,7 +407,10 @@ impl Context<'_> {
     }
 
     /// `Category.post_create_allowed(guardian).where(id: ids).pluck(:id)`
-    async fn post_allowed_category_ids(&mut self, ids: &[i64]) -> Result<Vec<i64>, AppError> {
+    pub(crate) async fn post_allowed_category_ids(
+        &mut self,
+        ids: &[i64],
+    ) -> Result<Vec<i64>, AppError> {
         if ids.is_empty() {
             return Ok(Vec::new());
         }

@@ -13,6 +13,7 @@ pub mod cook;
 pub mod create;
 pub mod membership;
 pub mod messages;
+pub mod modify;
 pub mod page;
 pub mod publisher;
 pub mod view;

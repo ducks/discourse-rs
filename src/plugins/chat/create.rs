@@ -56,7 +56,7 @@ fn t(i18n: &crate::i18n::I18n, key: &str) -> String {
 impl Context<'_> {
     /// `Chat::Channel.find_by_id_or_slug`: a live channel by id, else by
     /// slug.
-    async fn find_by_id_or_slug(
+    pub(crate) async fn find_by_id_or_slug(
         &mut self,
         id_or_slug: &str,
     ) -> Result<Option<ChannelRow>, AppError> {
@@ -541,11 +541,17 @@ pub async fn process_message(
         extract_links(conn, message_id, &cooked, now).await?;
     }
 
-    // Chat::Notifier#notify_new, for direct mentions.
-    if args.get("edit_timestamp").is_some() {
-        return Err(Unsupported("notifications of edited chat messages").into());
-    }
-    if !args["skip_notifications"].as_bool().unwrap_or(false) {
+    // Chat::Notifier#notify_edit or #notify_new, for direct mentions.
+    if let Some(timestamp) = args.get("edit_timestamp") {
+        let timestamp = match timestamp {
+            Value::String(s) => s.clone(),
+            other => other.to_string(),
+        };
+        notify_edit(
+            conn, settings, channel_id, message_id, user_id, &username, &timestamp, &mentioned,
+        )
+        .await?;
+    } else if !args["skip_notifications"].as_bool().unwrap_or(false) {
         notify_new(
             conn, &state.bus, settings, channel_id, message_id, user_id, &username, created_at,
             &mentioned,
@@ -673,21 +679,66 @@ async fn extract_links(
     Ok(())
 }
 
-/// `Chat::Notifier#notify_new` for direct mentions: who to notify (members
-/// who can chat, not suspended), the new mention published to each, then
-/// NotifyMentioned and, 5 seconds on, NotifyWatching enqueued.
+/// `Chat::Notifier#notify_edit` for direct mentions: the mentioned members
+/// not notified of the message yet make NotifyMentioned run again, told
+/// who was.
 #[allow(clippy::too_many_arguments)]
-async fn notify_new(
+async fn notify_edit(
     conn: &mut sqlx::PgConnection,
-    bus: &pg_bus::Bus,
     settings: &crate::site_settings::SiteSettings,
     channel_id: i64,
     message_id: i64,
     user_id: i32,
     username: &str,
-    created_at: NaiveDateTime,
+    timestamp: &str,
     mentioned: &[(i32, String)],
 ) -> Result<(), AppError> {
+    let already: Vec<i32> = sqlx::query_scalar(
+        "SELECT notifications.user_id FROM notifications \
+         INNER JOIN chat_mention_notifications ON chat_mention_notifications.notification_id = notifications.id \
+         INNER JOIN chat_mentions ON chat_mentions.id = chat_mention_notifications.chat_mention_id \
+         WHERE notifications.notification_type = $1 AND chat_mentions.chat_message_id = $2",
+    )
+    .bind(CHAT_MENTION_NOTIFICATION)
+    .bind(message_id)
+    .fetch_all(&mut *conn)
+    .await?;
+    let direct = users_to_notify(conn, settings, channel_id, user_id, username, mentioned).await?;
+    if direct.iter().all(|id| already.contains(id)) {
+        return Ok(());
+    }
+    crate::jobs::enqueue(
+        &mut *conn,
+        NOTIFY_MENTIONED_JOB,
+        json!({
+            "chat_message_id": message_id,
+            "to_notify_ids_map": {
+                "direct_mentions": direct,
+                "here_mentions": [],
+                "global_mentions": [],
+            },
+            "already_notified_user_ids": already,
+            "timestamp": timestamp,
+        }),
+    )
+    .await?;
+    Ok(())
+}
+
+/// `Notification.types[:chat_mention]`
+const CHAT_MENTION_NOTIFICATION: i32 = 29;
+
+/// `Chat::Notifier#list_users_to_notify` for direct mentions: the members
+/// who can chat, not suspended, nor the sender; none past
+/// max_mentions_per_chat_message.
+async fn users_to_notify(
+    conn: &mut sqlx::PgConnection,
+    settings: &crate::site_settings::SiteSettings,
+    channel_id: i64,
+    user_id: i32,
+    username: &str,
+    mentioned: &[(i32, String)],
+) -> Result<Vec<i32>, AppError> {
     let max = settings.get("max_mentions_per_chat_message")?.to_i();
     let skip = mentioned.len() as i64 > max;
     let mut direct = Vec::new();
@@ -732,6 +783,25 @@ async fn notify_new(
     if screened {
         return Err(Unsupported("chat mentions by an ignored or muted user").into());
     }
+    Ok(direct)
+}
+
+/// `Chat::Notifier#notify_new` for direct mentions: the new mention
+/// published to each member to notify, then NotifyMentioned and, 5 seconds
+/// on, NotifyWatching enqueued.
+#[allow(clippy::too_many_arguments)]
+async fn notify_new(
+    conn: &mut sqlx::PgConnection,
+    bus: &pg_bus::Bus,
+    settings: &crate::site_settings::SiteSettings,
+    channel_id: i64,
+    message_id: i64,
+    user_id: i32,
+    username: &str,
+    created_at: NaiveDateTime,
+    mentioned: &[(i32, String)],
+) -> Result<(), AppError> {
+    let direct = users_to_notify(conn, settings, channel_id, user_id, username, mentioned).await?;
     // Chat::Publisher.publish_new_mention, to each mentioned member.
     for id in &direct {
         bus.publish(
