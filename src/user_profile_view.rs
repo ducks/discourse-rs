@@ -34,6 +34,9 @@ pub enum Tab<'a> {
     Activity {
         filter: ActivityFilter,
         stream: &'a [Value],
+        /// The votes list's topics (discourse-topic-voting's
+        /// userActivity.votes), empty elsewhere.
+        topics: &'a [Value],
     },
 }
 
@@ -44,6 +47,9 @@ pub enum ActivityFilter {
     Topics,
     Replies,
     LikesGiven,
+    /// discourse-topic-voting's: the topics the user voted on, a topic
+    /// list rather than a stream.
+    Votes,
 }
 
 impl ActivityFilter {
@@ -54,6 +60,7 @@ impl ActivityFilter {
             "topics" => ActivityFilter::Topics,
             "replies" => ActivityFilter::Replies,
             "likes-given" => ActivityFilter::LikesGiven,
+            "votes" => ActivityFilter::Votes,
             _ => return None,
         })
     }
@@ -66,6 +73,7 @@ impl ActivityFilter {
             // TYPES.posts: the replies route's own posts.
             ActivityFilter::Replies => &[5],
             ActivityFilter::LikesGiven => &[1],
+            ActivityFilter::Votes => &[],
         }
     }
 
@@ -76,6 +84,7 @@ impl ActivityFilter {
             ActivityFilter::Topics => " filter-4",
             ActivityFilter::Replies => " filter-5",
             ActivityFilter::LikesGiven => " filter-1",
+            ActivityFilter::Votes => "",
         }
     }
 }
@@ -84,6 +93,8 @@ impl ActivityFilter {
 pub struct ProfileSettings {
     pub enable_badges: bool,
     pub hide_user_activity_tab: bool,
+    /// discourse-topic-voting's votes tab (topic_voting_show_votes_on_profile).
+    pub show_votes: bool,
 }
 
 fn date(v: &Value) -> Option<DateTime<Utc>> {
@@ -485,13 +496,19 @@ pub fn render(
                 cx, settings, &user_path, username, summary,
             )),
             Tab::Summary(None) => {}
-            Tab::Activity { filter, stream } => out.push_str(&activity_content(
+            Tab::Activity {
+                filter,
+                stream,
+                topics,
+            } => out.push_str(&activity_content(
                 cx,
+                settings,
                 viewer,
                 viewing_self,
                 &user_path,
                 *filter,
                 stream,
+                topics,
                 u["pending_posts_count"].as_i64().unwrap_or(0),
             )),
         }
@@ -500,15 +517,65 @@ pub fn render(
     out
 }
 
+/// discourse-topic-voting's userActivity.votes: the user's voted topics
+/// as a paginated topic list without posters, or its empty state.
+fn votes_list(cx: &ListContext, viewing_self: bool, user_path: &str, topics: &[Value]) -> String {
+    if topics.is_empty() {
+        let title = if viewing_self {
+            t(cx, "topic_voting.no_votes_title_self")
+        } else {
+            t_with(
+                cx,
+                "topic_voting.no_votes_title_others",
+                &[("username", user_path.rsplit('/').next().unwrap_or(""))],
+            )
+        };
+        return format!(
+            "<div class=\"empty-state\"><span class=\"empty-state__title\">{}</span></div>",
+            escape(&title)
+        );
+    }
+    let header = |class: &str, key: &str, sortable: bool| {
+        let label = escape(&t(cx, key));
+        if sortable {
+            format!(
+                "<th class=\"topic-list-data {class} sortable num\" data-sort-order=\"{class}\" scope=\"col\"><button>{label}</button></th>"
+            )
+        } else {
+            format!(
+                "<th class=\"topic-list-data {class}\" data-sort-order=\"{class}\" scope=\"col\"><span>{label}</span></th>"
+            )
+        }
+    };
+    let rows: String = topics
+        .iter()
+        .map(|topic| crate::topic_list_view::suggested_row(cx, topic))
+        .collect();
+    format!(
+        "<div class=\"paginated-topics-list\"><div class=\"row dismiss-container-top\"></div><div><div class=\"loading-container\">\
+         <table class=\"topic-list\"><caption class=\"sr-only\">{}</caption><thead class=\"topic-list-header\"><tr>{}{}{}{}</tr></thead>\
+         <tbody class=\"topic-list-body\">{rows}</tbody></table></div></div><div class=\"loading-container\"></div>\
+         <div aria-hidden=\"true\" class=\"load-more-sentinel\"></div></div>",
+        escape(&t(cx, "sr_topic_list_caption")),
+        header("default", "topic.title", false),
+        header("posts", "replies", true),
+        header("views", "views", true),
+        header("activity", "activity", true),
+    )
+}
+
 /// `user-activity.gjs`: the secondary navigation, then the user stream
 /// (`user/stream.gjs`).
+#[allow(clippy::too_many_arguments)]
 fn activity_content(
     cx: &ListContext,
+    settings: &ProfileSettings,
     viewer: &Viewer,
     viewing_self: bool,
     user_path: &str,
     filter: ActivityFilter,
     stream: &[Value],
+    topics: &[Value],
     pending_posts_count: i64,
 ) -> String {
     let mut out = String::from(
@@ -607,6 +674,22 @@ fn activity_content(
             None,
         ));
     }
+    // discourse-topic-voting's user-activity-bottom outlet.
+    if settings.show_votes {
+        out.push_str(&item(
+            "user-nav__activity-votes",
+            "votes",
+            "check-to-slot",
+            &t(cx, "topic_voting.vote_title_plural"),
+            None,
+        ));
+    }
+    if filter == ActivityFilter::Votes {
+        out.push_str("</ul></div></nav></div><section class=\"user-content\" id=\"user-content\">");
+        out.push_str(&votes_list(cx, viewing_self, user_path, topics));
+        out.push_str("</section>");
+        return out;
+    }
     out.push_str(
         "</ul></div></nav></div><section class=\"user-content\" id=\"user-content\"><div>",
     );
@@ -615,7 +698,8 @@ fn activity_content(
     if items.is_empty() {
         // The route's emptyState (DEmptyState, text only).
         let (title, body) = match filter {
-            ActivityFilter::All | ActivityFilter::Topics => {
+            // Votes renders its own list (votes_list).
+            ActivityFilter::All | ActivityFilter::Topics | ActivityFilter::Votes => {
                 (t(cx, "user_activity.no_activity_title"), String::new())
             }
             ActivityFilter::Replies if viewing_self => (

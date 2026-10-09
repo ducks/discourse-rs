@@ -196,11 +196,33 @@ pub async fn voted_by(
     if params.period.is_some() {
         return Err(crate::Unsupported("period on the voted_by list").into());
     }
+    let list_path = format!(
+        "{}/topics/voted-by/{username}",
+        state.config.globals.relative_url_root()
+    );
+    let more = super::list::next_url(&list_path, &params, &options, false);
+    let json = voted_by_list(
+        &state, &mut conn, &settings, &guardian, user_id, options, more,
+    )
+    .await?;
+    Ok(Json(json).into_response())
+}
+
+/// TopicQuery#list_voted_by(user), serialized as a topic list.
+pub(crate) async fn voted_by_list(
+    state: &AppState,
+    conn: &mut sqlx::PgConnection,
+    settings: &SiteSettings,
+    guardian: &crate::guardian::Guardian,
+    user_id: i32,
+    options: crate::topic_query::Options,
+    more_topics_url: String,
+) -> Result<Value, AppError> {
     let topics = crate::topic_query::TopicQuery {
-        conn: &mut conn,
-        settings: &settings,
-        guardian: &guardian,
-        options: options.clone(),
+        conn: &mut *conn,
+        settings,
+        guardian,
+        options,
         category: Default::default(),
         tags: Default::default(),
         filter: Default::default(),
@@ -210,25 +232,19 @@ pub async fn voted_by(
     .await?;
     let urls = Urls {
         config: &state.config,
-        settings: &settings,
+        settings,
     };
-    let list_path = format!(
-        "{}/topics/voted-by/{username}",
-        state.config.globals.relative_url_root()
-    );
-    let more = super::list::next_url(&list_path, &params, &options, false);
-    let json = crate::topic_list::TopicListSerializer {
-        conn: &mut conn,
-        settings: &settings,
+    Ok(crate::topic_list::TopicListSerializer {
+        conn,
+        settings,
         i18n: &state.i18n,
-        guardian: &guardian,
+        guardian,
         urls: &urls,
-        more_topics_url: Some(more),
+        more_topics_url: Some(more_topics_url),
         category_id: None,
         group_id: None,
         prefetched: Default::default(),
     }
     .serialize(&topics)
-    .await?;
-    Ok(Json(json).into_response())
+    .await?)
 }
