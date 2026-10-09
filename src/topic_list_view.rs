@@ -607,6 +607,10 @@ fn row_for(cx: &ListContext, topic: &Value, users: &[Value], suggested: bool) ->
             classes.push(format!("tag-{name}"));
         }
     }
+    // discourse-solved's topic-list-item-class transformer.
+    if flag("has_accepted_answer") {
+        classes.push("status-solved".to_string());
+    }
 
     let statuses = topic_statuses(cx, topic);
 
@@ -896,6 +900,22 @@ pub fn topic_statuses(cx: &ListContext, topic: &Value) -> String {
                 &[("unlistedReason", &reason)]
             )),
             icon("far-eye-slash", None)
+        ));
+    }
+    // discourse-solved's after-topic-status outlet (SolvedStatus). The
+    // unsolved status is the topic list's, and only lists carry
+    // can_have_answer.
+    if flag("has_accepted_answer") || flag("accepted_answer") {
+        statuses.push_str(&format!(
+            "<span class=\"topic-status --solved\" title=\"{}\">{}</span>",
+            escape(&t(cx, "topic_statuses.solved.help")),
+            icon("far-square-check", None)
+        ));
+    } else if flag("can_have_answer") {
+        statuses.push_str(&format!(
+            "<span class=\"topic-status --unsolved\" title=\"{}\">{}</span>",
+            escape(&t(cx, "solved.has_no_accepted_answer")),
+            icon("far-square", None)
         ));
     }
     statuses

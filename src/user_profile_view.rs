@@ -40,6 +40,9 @@ pub enum Tab<'a> {
         /// The reactions list (discourse-reactions' userActivity.reactions,
         /// UserReactionSerializer), empty elsewhere.
         reactions: &'a [Value],
+        /// The solved posts (discourse-solved's userActivity.solved,
+        /// SolvedPostSerializer), empty elsewhere.
+        solved: &'a [Value],
     },
 }
 
@@ -55,6 +58,8 @@ pub enum ActivityFilter {
     Votes,
     /// discourse-reactions': the user's reactions, a post list of them.
     Reactions,
+    /// discourse-solved's: the user's accepted answers, a post list.
+    Solved,
 }
 
 impl ActivityFilter {
@@ -67,6 +72,7 @@ impl ActivityFilter {
             "likes-given" => ActivityFilter::LikesGiven,
             "votes" => ActivityFilter::Votes,
             "reactions" => ActivityFilter::Reactions,
+            "solved" => ActivityFilter::Solved,
             _ => return None,
         })
     }
@@ -79,7 +85,7 @@ impl ActivityFilter {
             // TYPES.posts: the replies route's own posts.
             ActivityFilter::Replies => &[5],
             ActivityFilter::LikesGiven => &[1],
-            ActivityFilter::Votes | ActivityFilter::Reactions => &[],
+            ActivityFilter::Votes | ActivityFilter::Reactions | ActivityFilter::Solved => &[],
         }
     }
 
@@ -90,7 +96,7 @@ impl ActivityFilter {
             ActivityFilter::Topics => " filter-4",
             ActivityFilter::Replies => " filter-5",
             ActivityFilter::LikesGiven => " filter-1",
-            ActivityFilter::Votes | ActivityFilter::Reactions => "",
+            ActivityFilter::Votes | ActivityFilter::Reactions | ActivityFilter::Solved => "",
         }
     }
 }
@@ -103,6 +109,8 @@ pub struct ProfileSettings {
     pub show_votes: bool,
     /// discourse-reactions' settings, when it is on: its reactions tab.
     pub reactions: Option<crate::plugins::reactions::view::ReactionsUi>,
+    /// discourse-solved is on: its Solved tab and summary stat.
+    pub solved: bool,
 }
 
 fn date(v: &Value) -> Option<DateTime<Utc>> {
@@ -509,6 +517,7 @@ pub fn render(
                 stream,
                 topics,
                 reactions,
+                solved,
             } => out.push_str(&activity_content(
                 cx,
                 settings,
@@ -519,6 +528,7 @@ pub fn render(
                 stream,
                 topics,
                 reactions,
+                solved,
                 u["pending_posts_count"].as_i64().unwrap_or(0),
             )),
         }
@@ -587,6 +597,7 @@ fn activity_content(
     stream: &[Value],
     topics: &[Value],
     reactions: &[Value],
+    solved: &[Value],
     pending_posts_count: i64,
 ) -> String {
     let mut out = String::from(
@@ -696,13 +707,28 @@ fn activity_content(
             None,
         ));
     }
+    // The plugins' links that put no span around their label.
+    let bare_item = |class: &str, path: &str, icon_name: &str, label: &str| {
+        item(class, path, icon_name, label, None).replacen(
+            &format!(" <span>{}</span>", escape(label)),
+            &format!(" {}", escape(label)),
+            1,
+        )
+    };
+    if settings.solved {
+        out.push_str(&bare_item(
+            "user-activity-bottom-outlet solved-list",
+            "solved",
+            "square-check",
+            &t(cx, "solved.title"),
+        ));
+    }
     if settings.show_votes {
-        out.push_str(&item(
+        out.push_str(&bare_item(
             "user-nav__activity-votes",
             "votes",
             "check-to-slot",
             &t(cx, "topic_voting.vote_title_plural"),
-            None,
         ));
     }
     if filter == ActivityFilter::Reactions
@@ -713,6 +739,12 @@ fn activity_content(
         );
         out.push_str(&reactions_list(cx, ui, reactions));
         out.push_str("</div></section>");
+        return out;
+    }
+    if filter == ActivityFilter::Solved && settings.solved {
+        out.push_str("</ul></div></nav></div><section class=\"user-content\" id=\"user-content\">");
+        out.push_str(&solved_list(cx, viewing_self, user_path, solved));
+        out.push_str("</section>");
         return out;
     }
     if filter == ActivityFilter::Votes {
@@ -733,9 +765,8 @@ fn activity_content(
             ActivityFilter::All
             | ActivityFilter::Topics
             | ActivityFilter::Votes
-            | ActivityFilter::Reactions => {
-                (t(cx, "user_activity.no_activity_title"), String::new())
-            }
+            | ActivityFilter::Reactions
+            | ActivityFilter::Solved => (t(cx, "user_activity.no_activity_title"), String::new()),
             ActivityFilter::Replies if viewing_self => (
                 t(cx, "user_activity.no_replies_title"),
                 t_with(
@@ -984,6 +1015,97 @@ fn stream_item(cx: &ListContext, item: &StreamItem) -> String {
         a["user_id"].as_i64().unwrap_or(0),
         s(&a["excerpt"])
     ));
+    out
+}
+
+/// discourse-solved's user-activity/solved: the user's accepted answers
+/// as UserStream draws them, or the route's empty state.
+fn solved_list(cx: &ListContext, viewing_self: bool, user_path: &str, posts: &[Value]) -> String {
+    let base = cx.base_path;
+    if posts.is_empty() {
+        let (title, body) = if viewing_self {
+            (
+                t(cx, "solved.no_solved_topics_title"),
+                t(cx, "solved.no_solved_topics_body"),
+            )
+        } else {
+            (
+                t_with(
+                    cx,
+                    "solved.no_solved_topics_title_others",
+                    &[("username", user_path.rsplit('/').next().unwrap_or(""))],
+                ),
+                String::new(),
+            )
+        };
+        let mut out = format!(
+            "<div class=\"empty-state__container --text-only\"><div class=\"empty-state\"><div class=\"empty-state__title\" data-test-title>{}</div>",
+            escape(&title)
+        );
+        if !body.is_empty() {
+            out.push_str(&format!(
+                "<div class=\"empty-state__body\"><p data-test-body>{}</p></div>",
+                escape(&body)
+            ));
+        }
+        out.push_str("</div></div>");
+        return out;
+    }
+    let mut out = String::from("<div><div class=\"post-list user-stream\">");
+    for p in posts {
+        let username = s(&p["username"]);
+        let u = escape(username);
+        out.push_str(&format!(
+            "<div class=\"post-list-item user-stream-item\"><div class=\"post-list-item__header info\"><a class=\"avatar-link\" data-user-card=\"{u}\" href=\"{base}/u/{}\"><div class=\"avatar-wrapper\">{}</div></a>",
+            escape(&username.to_lowercase()),
+            avatar(cx, s(&p["avatar_template"]), 48).replacen(
+                "class=\"avatar\"",
+                &format!("class=\"avatar actor\" title=\"{u}\""),
+                1
+            )
+        ));
+        // titleHtml is the topic's fancy title; the link is the post's url.
+        let title = s(&p["topic_title"]);
+        let aria = t_with(
+            cx,
+            "post_list.aria_post_number",
+            &[
+                ("title", title),
+                (
+                    "postNumber",
+                    &p["post_number"].as_i64().unwrap_or(0).to_string(),
+                ),
+            ],
+        );
+        out.push_str(&format!(
+            "<div class=\"post-list-item__details\"><div class=\"stream-topic-title\"><span class=\"topic-statuses\"></span><span class=\"title\"><a aria-label=\"{}\" href=\"{}\">{title}</a></span></div><div class=\"post-list-item__metadata\">",
+            escape(&aria),
+            escape(s(&p["url"]))
+        ));
+        if let Some(category) = p["category_id"]
+            .as_i64()
+            .and_then(|id| cx.categories.get(&id))
+        {
+            out.push_str(&format!(
+                "<span class=\"category stream-post-category\">{}</span>",
+                category_badge(cx, category)
+            ));
+        }
+        if let Some(at) = date(&p["created_at"]) {
+            out.push_str(&format!(
+                "<span class=\"time\"> {} </span>",
+                age_medium(cx, at, true)
+            ));
+        }
+        out.push_str(&format!(
+            "</div></div></div><div class=\"excerpt\" data-post-id=\"{}\" data-topic-id=\"{}\" data-user-id=\"{}\"><div class=\"cooked\">{}</div></div></div>",
+            p["post_id"].as_i64().unwrap_or(0),
+            p["topic_id"].as_i64().unwrap_or(0),
+            p["user_id"].as_i64().unwrap_or(0),
+            s(&p["excerpt"])
+        ));
+    }
+    out.push_str("</div><div class=\"loading-container\"></div><div aria-hidden=\"true\" class=\"load-more-sentinel\"></div></div>");
     out
 }
 
@@ -1242,6 +1364,19 @@ fn summary_content(
             Some(format!("{user_path}/activity/replies")),
             count_stat("post_count", "post_count", None),
         ));
+        // discourse-solved's user-summary-stat outlet (SolvedCount).
+        let solved = n("solved_count");
+        if settings.solved && solved > 0 {
+            out.push_str(&format!(
+                "<li class=\"user-summary-stat-outlet solved-count linked-stat\"><a href=\"{user_path}/activity/solved\">{}</a></li>",
+                stat(
+                    number(cx, solved),
+                    escape(&t_count(cx, "solved.solution_summary", solved, &[])),
+                    Some("square-check"),
+                    None
+                )
+            ));
+        }
         out.push_str("</ul></div>");
     }
 

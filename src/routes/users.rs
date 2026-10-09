@@ -330,8 +330,53 @@ async fn respond(
             .cloned()
             .unwrap_or_default();
     }
+    // discourse-solved's Solved tab: its route's first page of
+    // SolvedTopicsController#by_user (20), with the same checks.
+    let mut solved = Vec::new();
+    if filter == Some(ActivityFilter::Solved) {
+        if !crate::plugins::solved::enabled(&settings)? {
+            return Ok(super::topics::not_found_response(&state));
+        }
+        let public = guardian.is_authenticated()
+            || !settings.get("hide_user_profiles_from_public")?.truthy();
+        let sees_private =
+            guardian.is_authenticated() && (guardian.is_me(user.id) || guardian.is_admin());
+        if !public
+            || !visible
+            || (!sees_private && settings.get("hide_user_activity_tab")?.truthy())
+        {
+            return Ok(super::topics::not_found_response(&state));
+        }
+        let host = crate::pretty_text::Host::from_state(&state);
+        let ctx = crate::posting::Ctx {
+            host: &host,
+            settings: &settings,
+            config: &state.config,
+            i18n: &state.i18n,
+            bus: &state.bus,
+        };
+        let urls = crate::url::Urls {
+            config: &state.config,
+            settings: &settings,
+        };
+        solved = crate::plugins::solved::by_user::by_user(
+            &mut *users.conn,
+            &ctx,
+            &urls,
+            &guardian,
+            user.id,
+            0,
+            20,
+        )
+        .await?["user_solved_posts"]
+            .as_array()
+            .cloned()
+            .unwrap_or_default();
+    }
     let stream = match filter {
-        Some(ActivityFilter::Votes | ActivityFilter::Reactions) => Vec::new(),
+        Some(ActivityFilter::Votes | ActivityFilter::Reactions | ActivityFilter::Solved) => {
+            Vec::new()
+        }
         Some(filter) if visible && !settings.get("hide_user_activity_tab")?.truthy() => {
             users
                 .actions(&user, filter.action_types(), 0, 30, None)
@@ -346,6 +391,7 @@ async fn respond(
             stream: &stream,
             topics: &voted_topics,
             reactions: &reactions,
+            solved: &solved,
         },
     };
     let active = if filter == Some(ActivityFilter::All) && guardian.is_me(user.id) {
@@ -541,6 +587,7 @@ async fn profile_page(
         show_votes: crate::plugins::topic_voting::enabled(settings)?
             && settings.get("topic_voting_show_votes_on_profile")?.truthy(),
         reactions: crate::plugins::reactions::view::ReactionsUi::load(settings)?,
+        solved: crate::plugins::solved::enabled(settings)?,
     };
     let main = crate::user_profile_view::render(&cx, &profile_settings, &viewer, show, tab);
     Ok(ProfilePage {

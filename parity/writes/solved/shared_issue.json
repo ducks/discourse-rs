@@ -1,0 +1,91 @@
+{
+  "name": "shared_issue",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/solution/shared_issue.json",
+      "params": {
+        "topic_id": 35
+      }
+    }
+  ],
+  "started_at": "2026-10-09T15:00:54.741422",
+  "transaction_started_at": "2026-10-09T15:00:53.73431",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "count": 1,
+        "user_created_shared_issue": true
+      }
+    }
+  ],
+  "changes": {
+    "discourse_solved_shared_issues": {
+      "inserted": [
+        {
+          "id": 1,
+          "user_id": 3,
+          "topic_id": 35,
+          "created_at": "2026-10-09T15:00:54.765766",
+          "updated_at": "2026-10-09T15:00:54.765766"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 373,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "sBgWS4O11d5ABGrazFs9tUDvHeo=",
+            "created_at": "2026-10-09T15:00:54.058811",
+            "rotated_at": "2026-10-09T15:00:54.058588",
+            "updated_at": "2026-10-09T15:00:54.058811",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "sBgWS4O11d5ABGrazFs9tUDvHeo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 373,
+            "seen_at": "2026-10-09T15:00:54.749574",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "sBgWS4O11d5ABGrazFs9tUDvHeo=",
+            "created_at": "2026-10-09T15:00:54.058811",
+            "rotated_at": "2026-10-09T15:00:54.058588",
+            "updated_at": "2026-10-09T15:00:54.058811",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "sBgWS4O11d5ABGrazFs9tUDvHeo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "discourse_solved_shared_issues": 1
+  },
+  "setup": [
+    "INSERT INTO category_custom_fields (category_id, name, value, created_at, updated_at) VALUES (4, 'enable_accepted_answers', 'true', now(), now())"
+  ],
+  "recorded_from": {
+    "case": "fe9f6dc985ed855841387a0884295de294ad454da11bd782a5db941176617bf5",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

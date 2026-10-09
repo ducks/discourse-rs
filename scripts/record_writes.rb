@@ -114,6 +114,8 @@ end
 def reset_plugin_caches
   Site.clear_cache
   Category.reset_voting_cache if Category.respond_to?(:reset_voting_cache)
+  # discourse-solved's in-memory list of categories that take answers.
+  DiscourseSolved::AcceptedAnswerCache.reset_accepted_answer_cache if defined?(DiscourseSolved::AcceptedAnswerCache)
 end
 
 def checksums

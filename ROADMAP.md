@@ -429,9 +429,10 @@ write endpoints. The design and its open decisions are in PLUGINS.md.
       plugins a sandboxed runtime later (Luau spike on
       spike/plugin-runtime)
 - [ ] The bundled plugins, default-on first: solved (topic list, topic
-      view, posts, users, accepting and unaccepting answers; left: auto
-      close timers, web hooks, crawler schema markup, the by_user list,
-      shared issues' writes, search filters and the admin dashboard),
+      view, posts, users, accepting and unaccepting answers, the by_user
+      list, shared issues, and the UI on the pages; left: auto close
+      timers, web hooks, crawler schema markup, search filters, lists
+      filtered by solved status and the admin dashboard),
       topic voting (done but for what core doesn't port yet: the votes
       RSS feed, search's min_vote_count: and order:votes, /filter's votes
       filters, the release and reclaim hooks on topic recovery, category

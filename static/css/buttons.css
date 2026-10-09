@@ -144,6 +144,27 @@ svg > use {
   color: var(--d-button-default-icon-color--hover);
 }
 
+/* The btn mixin's disabled state (buttons.scss:142), with the default
+   colors. */
+.btn[disabled],
+.btn.disabled {
+  cursor: not-allowed;
+}
+.btn[disabled]:not(.is-loading),
+.btn.disabled:not(.is-loading) {
+  opacity: 0.4;
+}
+.btn[disabled]:hover,
+.btn.disabled:hover {
+  color: var(--d-button-default-text-color);
+  background: var(--d-button-default-bg-color);
+  border: var(--d-button-border);
+}
+.btn[disabled]:hover .d-icon,
+.btn.disabled:hover .d-icon {
+  color: var(--d-button-default-icon-color);
+}
+
 /* .btn-default (buttons.scss:259) */
 .btn-default {
   border: var(--d-button-default-border);

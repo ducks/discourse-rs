@@ -220,3 +220,52 @@ pub async fn by_user(
     .await?;
     Ok(Json(body).into_response())
 }
+
+/// POST /solution/shared_issue(.json): SharedIssueController#create.
+pub async fn shared_issue(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    use crate::plugins::solved::shared_issue::{Outcome, toggle};
+    let p = params::parse(uri.query(), &headers, &body);
+    if !csrf_ok(&state, &headers, &form_pairs(&p), uri.path(), "POST") {
+        return Ok(bad_csrf());
+    }
+    let mut tx = state.pool.begin().await?;
+    let settings =
+        SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
+    // requires_plugin, requires_login
+    if !crate::plugins::solved::enabled(&settings)? {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    if guardian.is_anonymous() {
+        return Ok(super::login_required::not_logged_in(&state));
+    }
+    // The contract: `topic_id`, an integer, present.
+    let topic_id = p
+        .get("topic_id")
+        .and_then(params::scalar)
+        .filter(|v| !v.trim().is_empty() && v.trim().parse::<i64>().is_ok())
+        .map(|v| crate::ruby::to_i(&v) as i32);
+    let Some(topic_id) = topic_id else {
+        return Ok((
+            StatusCode::BAD_REQUEST,
+            Json(json!({ "failed": "FAILED", "errors": ["Topic can't be blank"] })),
+        )
+            .into_response());
+    };
+    match toggle(&mut tx, &state.bus, &settings, &guardian, topic_id).await? {
+        Outcome::Done { count, created } => {
+            tx.commit().await?;
+            Ok(
+                Json(json!({ "count": count, "user_created_shared_issue": created }))
+                    .into_response(),
+            )
+        }
+        Outcome::NotFound => Ok(super::topics::not_found_response(&state)),
+        Outcome::Forbidden => Ok(super::search::invalid_access(&state)),
+    }
+}

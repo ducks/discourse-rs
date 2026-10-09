@@ -1004,6 +1004,9 @@ pub struct TopicPage {
     pub live: bool,
     /// discourse-reactions is on: its script runs the reaction controls.
     pub reactions: bool,
+    /// discourse-solved is on: its script runs the Solved button and the
+    /// accepted answers.
+    pub solved: bool,
 }
 
 /// `categories` rows the pages link to.
@@ -1285,6 +1288,20 @@ pub async fn topic_page(
 
     // topic.gjs hides the footer until the post stream is loaded to its end.
     let mut site = site;
+    // The page's posts, which the live updates redraw when a change spans
+    // the topic (discourse-solved's accepted answers).
+    let numbers: Vec<i64> = view["post_stream"]["posts"]
+        .as_array()
+        .map(|posts| {
+            posts
+                .iter()
+                .filter_map(|p| p["post_number"].as_i64())
+                .collect()
+        })
+        .unwrap_or_default();
+    if let (Some(first), Some(last)) = (numbers.iter().min(), numbers.iter().max()) {
+        site.chrome.live_param("posts", &format!("{first}-{last}"));
+    }
     if page < last_page {
         site.chrome.powered_by = false;
     }
@@ -1309,6 +1326,7 @@ pub async fn topic_page(
         // New posts land on the last page; earlier pages stay as they are.
         live: page >= last_page,
         reactions: post_settings.reactions.is_some(),
+        solved: post_settings.solved.is_some(),
         prev_url: (page > 1).then(|| page_url(page - 1)),
         next_url: (page < last_page).then(|| page_url(page + 1)),
     })

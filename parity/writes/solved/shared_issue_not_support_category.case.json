@@ -1,0 +1,12 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/solution/shared_issue.json",
+      "params": {
+        "topic_id": 35
+      }
+    }
+  ]
+}

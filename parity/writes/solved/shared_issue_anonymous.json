@@ -1,0 +1,37 @@
+{
+  "name": "shared_issue_anonymous",
+  "user": null,
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/solution/shared_issue.json",
+      "params": {
+        "topic_id": 35
+      }
+    }
+  ],
+  "started_at": "2026-10-09T15:00:52.164479",
+  "transaction_started_at": "2026-10-09T15:00:51.504028",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You need to be logged in to do that."
+        ],
+        "error_type": "not_logged_in"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO category_custom_fields (category_id, name, value, created_at, updated_at) VALUES (4, 'enable_accepted_answers', 'true', now(), now())"
+  ],
+  "recorded_from": {
+    "case": "835cad429dfe5e51c7d613a6ebebd68c6a15f7e0bdc75f3eed1ee4b3e248e448",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

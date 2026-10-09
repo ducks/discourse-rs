@@ -35,3 +35,12 @@ VALUES (35, 3, 2, '2026-10-01 04:00:00', '2026-10-01 04:00:00'),
 UPDATE posts SET like_count = like_count + 3 WHERE id = 35;
 UPDATE posts SET like_count = like_count + 1 WHERE id = 37;
 UPDATE topics SET like_count = like_count + 4 WHERE id = 35;
+
+-- discourse-solved: General takes accepted answers; on the
+-- replies-and-posters topic, user0 (its author) accepted user2's reply.
+INSERT INTO category_custom_fields (category_id, name, value, created_at, updated_at)
+VALUES (4, 'enable_accepted_answers', 'true', '2026-10-01 00:00:00', '2026-10-01 00:00:00');
+INSERT INTO discourse_solved_solved_topics (topic_id, answer_post_id, accepter_user_id, created_at, updated_at)
+VALUES (35, 37, 2, '2026-10-01 07:00:00', '2026-10-01 07:00:00');
+INSERT INTO discourse_solved_topic_answers (solved_topic_id, answer_post_id, accepter_user_id, created_at, updated_at)
+SELECT id, 37, 2, '2026-10-01 07:00:00', '2026-10-01 07:00:00' FROM discourse_solved_solved_topics WHERE topic_id = 35;

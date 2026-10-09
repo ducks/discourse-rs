@@ -6,6 +6,8 @@
 
 pub mod answers;
 pub mod by_user;
+pub mod shared_issue;
+pub mod view;
 
 use std::collections::{HashMap, HashSet};
 

@@ -1,0 +1,737 @@
+/* discourse-solved: assets/stylesheets/solutions.scss, as Rails compiles it
+   (/stylesheets/discourse-solved_<digest>.css). */
+
+
+
+@keyframes solved-confetti-burst {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(-50% + cos(var(--angle)) * var(--distance)), calc(-50% + sin(var(--angle)) * var(--distance) + 50px)) rotate(var(--rotation));
+    opacity: 0;
+  }
+}
+.solved-confetti {
+  position: fixed;
+  top: 200px;
+  right: 200px;
+  width: 0;
+  height: 0;
+  z-index: 1001;
+  overflow: visible;
+  pointer-events: none;
+}
+.solved-confetti-particle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  animation: solved-confetti-burst 1.5s ease-out forwards;
+}
+.solved-confetti-particle:nth-child(1) {
+  --angle: 330deg;
+  --distance: 144px;
+  --rotation: -285deg;
+  --delay: 0.17s;
+  --color: hsl(183, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(2) {
+  --angle: 219deg;
+  --distance: 145px;
+  --rotation: 108deg;
+  --delay: 0.191s;
+  --color: hsl(180, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(3) {
+  --angle: 85deg;
+  --distance: 128px;
+  --rotation: 77deg;
+  --delay: 0.067s;
+  --color: hsl(190, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(4) {
+  --angle: 177deg;
+  --distance: 104px;
+  --rotation: -14deg;
+  --delay: 0.174s;
+  --color: hsl(19, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(5) {
+  --angle: 293deg;
+  --distance: 139px;
+  --rotation: 333deg;
+  --delay: 0.243s;
+  --color: hsl(91, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(6) {
+  --angle: 53deg;
+  --distance: 164px;
+  --rotation: 44deg;
+  --delay: 0.151s;
+  --color: hsl(34, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(7) {
+  --angle: 310deg;
+  --distance: 204px;
+  --rotation: -221deg;
+  --delay: 0.195s;
+  --color: hsl(291, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(8) {
+  --angle: 27deg;
+  --distance: 172px;
+  --rotation: 177deg;
+  --delay: 0.238s;
+  --color: hsl(295, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(9) {
+  --angle: 57deg;
+  --distance: 226px;
+  --rotation: -157deg;
+  --delay: 0.214s;
+  --color: hsl(252, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(10) {
+  --angle: 11deg;
+  --distance: 225px;
+  --rotation: 329deg;
+  --delay: 0.144s;
+  --color: hsl(254, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(11) {
+  --angle: 148deg;
+  --distance: 117px;
+  --rotation: -350deg;
+  --delay: 0.011s;
+  --color: hsl(47, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(12) {
+  --angle: 125deg;
+  --distance: 142px;
+  --rotation: -56deg;
+  --delay: 0.197s;
+  --color: hsl(299, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(13) {
+  --angle: 46deg;
+  --distance: 216px;
+  --rotation: -315deg;
+  --delay: 0.092s;
+  --color: hsl(354, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(14) {
+  --angle: 111deg;
+  --distance: 188px;
+  --rotation: -5deg;
+  --delay: 0.231s;
+  --color: hsl(175, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(15) {
+  --angle: 238deg;
+  --distance: 132px;
+  --rotation: 184deg;
+  --delay: 0.243s;
+  --color: hsl(139, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(16) {
+  --angle: 258deg;
+  --distance: 215px;
+  --rotation: -294deg;
+  --delay: 0.137s;
+  --color: hsl(32, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(17) {
+  --angle: 162deg;
+  --distance: 162px;
+  --rotation: -62deg;
+  --delay: 0.074s;
+  --color: hsl(17, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(18) {
+  --angle: 91deg;
+  --distance: 142px;
+  --rotation: 270deg;
+  --delay: 0.197s;
+  --color: hsl(167, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(19) {
+  --angle: 285deg;
+  --distance: 163px;
+  --rotation: -81deg;
+  --delay: 0.171s;
+  --color: hsl(326, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(20) {
+  --angle: 300deg;
+  --distance: 149px;
+  --rotation: -322deg;
+  --delay: 0.204s;
+  --color: hsl(312, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(21) {
+  --angle: 115deg;
+  --distance: 81px;
+  --rotation: -11deg;
+  --delay: 0.236s;
+  --color: hsl(93, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(22) {
+  --angle: 170deg;
+  --distance: 198px;
+  --rotation: -317deg;
+  --delay: 0.137s;
+  --color: hsl(297, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(23) {
+  --angle: 292deg;
+  --distance: 139px;
+  --rotation: -47deg;
+  --delay: 0.032s;
+  --color: hsl(75, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(24) {
+  --angle: 215deg;
+  --distance: 165px;
+  --rotation: 201deg;
+  --delay: 0.075s;
+  --color: hsl(56, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(25) {
+  --angle: 358deg;
+  --distance: 130px;
+  --rotation: 216deg;
+  --delay: 0.237s;
+  --color: hsl(131, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(26) {
+  --angle: 264deg;
+  --distance: 147px;
+  --rotation: 101deg;
+  --delay: 0.115s;
+  --color: hsl(303, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(27) {
+  --angle: 120deg;
+  --distance: 89px;
+  --rotation: -341deg;
+  --delay: 0.129s;
+  --color: hsl(71, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(28) {
+  --angle: 230deg;
+  --distance: 164px;
+  --rotation: -3deg;
+  --delay: 0.107s;
+  --color: hsl(172, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(29) {
+  --angle: 39deg;
+  --distance: 201px;
+  --rotation: -273deg;
+  --delay: 0.043s;
+  --color: hsl(163, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(30) {
+  --angle: 332deg;
+  --distance: 157px;
+  --rotation: -141deg;
+  --delay: 0.058s;
+  --color: hsl(286, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(31) {
+  --angle: 250deg;
+  --distance: 209px;
+  --rotation: -153deg;
+  --delay: 0.212s;
+  --color: hsl(99, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(32) {
+  --angle: 330deg;
+  --distance: 188px;
+  --rotation: -300deg;
+  --delay: 0.137s;
+  --color: hsl(292, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(33) {
+  --angle: 172deg;
+  --distance: 83px;
+  --rotation: 120deg;
+  --delay: 0.09s;
+  --color: hsl(284, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(34) {
+  --angle: 21deg;
+  --distance: 176px;
+  --rotation: -4deg;
+  --delay: 0.102s;
+  --color: hsl(330, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(35) {
+  --angle: 111deg;
+  --distance: 170px;
+  --rotation: -324deg;
+  --delay: 0.226s;
+  --color: hsl(32, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(36) {
+  --angle: 38deg;
+  --distance: 117px;
+  --rotation: -132deg;
+  --delay: 0.048s;
+  --color: hsl(125, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(37) {
+  --angle: 73deg;
+  --distance: 120px;
+  --rotation: 330deg;
+  --delay: 0.073s;
+  --color: hsl(72, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(38) {
+  --angle: 222deg;
+  --distance: 133px;
+  --rotation: -255deg;
+  --delay: 0.181s;
+  --color: hsl(146, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(39) {
+  --angle: 217deg;
+  --distance: 186px;
+  --rotation: -25deg;
+  --delay: 0.12s;
+  --color: hsl(215, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(40) {
+  --angle: 33deg;
+  --distance: 153px;
+  --rotation: 279deg;
+  --delay: 0.052s;
+  --color: hsl(29, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(41) {
+  --angle: 10deg;
+  --distance: 224px;
+  --rotation: -357deg;
+  --delay: 0.129s;
+  --color: hsl(245, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(42) {
+  --angle: 28deg;
+  --distance: 86px;
+  --rotation: -137deg;
+  --delay: 0.096s;
+  --color: hsl(11, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(43) {
+  --angle: 61deg;
+  --distance: 177px;
+  --rotation: 91deg;
+  --delay: 0.153s;
+  --color: hsl(32, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(44) {
+  --angle: 163deg;
+  --distance: 149px;
+  --rotation: -140deg;
+  --delay: 0.192s;
+  --color: hsl(90, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(45) {
+  --angle: 261deg;
+  --distance: 139px;
+  --rotation: 204deg;
+  --delay: 0.029s;
+  --color: hsl(134, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(46) {
+  --angle: 48deg;
+  --distance: 212px;
+  --rotation: 212deg;
+  --delay: 0.133s;
+  --color: hsl(96, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(47) {
+  --angle: 28deg;
+  --distance: 124px;
+  --rotation: -41deg;
+  --delay: 0.036s;
+  --color: hsl(223, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(48) {
+  --angle: 99deg;
+  --distance: 132px;
+  --rotation: 342deg;
+  --delay: 0.207s;
+  --color: hsl(261, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(49) {
+  --angle: 48deg;
+  --distance: 164px;
+  --rotation: -142deg;
+  --delay: 0.055s;
+  --color: hsl(312, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.solved-confetti-particle:nth-child(50) {
+  --angle: 50deg;
+  --distance: 154px;
+  --rotation: 213deg;
+  --delay: 0.198s;
+  --color: hsl(313, 80%, 60%);
+  background-color: var(--color);
+  animation-delay: var(--delay);
+}
+.select-kit.solved-status-filter {
+  min-width: auto;
+  margin-right: .5em;
+}
+.select-kit.solved-status-filter .select-kit-header {
+  color: var(--primary-high);
+}
+.select-kit.solved-status-filter .angle-icon {
+  color: currentcolor;
+}
+.fa.accepted {
+  color: var(--success);
+}
+.post-controls .extra-buttons .accepted-text {
+  white-space: nowrap;
+}
+.post-controls .extra-buttons .accepted-text .d-icon,
+.post-controls .extra-buttons .accepted-text .accepted-label {
+  color: var(--success);
+}
+.post-controls .extra-buttons .accepted .d-icon,
+.post-controls .extra-buttons .accepted .d-button-label {
+  color: var(--success);
+}
+.post-controls span.accepted-text {
+  display: inline-flex;
+  align-items: center;
+  gap: .25em;
+  padding: 0 .5rem;
+  font-size: var(--font-up-1);
+  height: 100%;
+}
+.user-card-metadata-outlet.accepted-answers {
+  display: inline-block;
+}
+.post-action-menu__solved-accepted-tooltip-content .fk-d-tooltip__inner-content {
+  display: block;
+}
+.topic-statuses .topic-status.--solved .d-icon {
+  color: var(--success);
+}
+.accepted-answers.d-post-accordion {
+  --d-post-accordion-header-color: var(--secondary);
+  --d-post-accordion-header-background: var(--success);
+  --d-post-accordion-header-border-color: var(--success);
+  padding-bottom: var(--space-4);
+}
+@media(width >= 40rem) {
+  .accepted-answers.d-post-accordion {
+    padding: var(--space-1) var(--topic-body-width-padding) var(--space-4) var(--topic-body-width-padding);
+  }
+}
+.accepted-answers__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  text-transform: uppercase;
+  font-weight: normal;
+}
+.accepted-answers__solution-count {
+  font-size: var(--font-down-1);
+}
+@media(width >= 40rem) {
+  .solved-shared-issue-row {
+    padding-left: var(--topic-body-width-padding);
+  }
+}
+.solved-shared-issue-row .post-action-menu__solved-shared-issue.has-shared-issue {
+  --d-button-default-icon-color: var(--tertiary);
+}
+
+/* Core's DPostAccordion, which SolvedAcceptedAnswers draws:
+   its rules in Rails' compiled common stylesheet. */
+
+
+
+.d-post-accordion {
+  --d-post-accordion-font-size: var(--font-down-1-rem);
+  --d-post-accordion-radius: var(--d-border-radius-large);
+  --d-post-accordion-border-color: var(--primary-low);
+  --d-post-accordion-background: var(--secondary);
+  --d-post-accordion-header-color: var(--primary);
+  --d-post-accordion-header-background: var(--secondary);
+  --d-post-accordion-header-border-color: var(--d-post-accordion-border-color);
+  --d-post-accordion-item-header-color: var(--primary-low-mid);
+  --d-post-accordion-item-header-background: var(--primary-very-low);
+  --d-post-accordion-item-link-color: var(--primary-low-mid);
+  --d-post-accordion-item-username-color: var(--primary-medium);
+  --d-post-accordion-item-control-color: var(--primary-medium);
+}
+.d-post-accordion * {
+  font-size: var(--d-post-accordion-font-size);
+}
+.d-post-accordion__layout {
+  border-radius: var(--d-post-accordion-radius);
+}
+.d-post-accordion__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--d-post-accordion-header-color);
+  background-color: var(--d-post-accordion-header-background);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--d-post-accordion-header-border-color);
+  border-bottom: 0;
+  border-radius: var(--d-post-accordion-radius) var(--d-post-accordion-radius) 0 0;
+  overflow: hidden;
+}
+.d-post-accordion__items {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--d-post-accordion-border-color);
+  border-top: 0;
+  border-radius: 0 0 var(--d-post-accordion-radius) var(--d-post-accordion-radius);
+  overflow: hidden;
+}
+.d-post-accordion__item {
+  border-top: 1px solid var(--d-post-accordion-border-color);
+}
+.d-post-accordion-item {
+  background: var(--d-post-accordion-background);
+  border-top: 1px solid var(--d-post-accordion-border-color);
+}
+.d-post-accordion-item__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-down-1);
+  color: var(--d-post-accordion-item-header-color);
+  background: var(--d-post-accordion-item-header-background);
+}
+.d-post-accordion-item__body {
+  border-top: 1px solid var(--d-post-accordion-border-color);
+}
+.d-post-accordion-item__metadata {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+.d-post-accordion-item__metadata a,
+.d-post-accordion-item__metadata a:hover,
+.d-post-accordion-item__metadata a:visited {
+  color: var(--d-post-accordion-item-link-color);
+}
+.d-post-accordion-item__metadata .user-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--d-post-accordion-item-username-color);
+  font-weight: bold;
+}
+.d-post-accordion-item__metadata .user-link,
+.d-post-accordion-item__metadata .user-link:hover,
+.d-post-accordion-item__metadata .user-link:visited {
+  color: var(--d-post-accordion-item-username-color);
+}
+.d-post-accordion-item__controls {
+  margin-left: auto;
+}
+.d-post-accordion-item__controls .btn,
+.d-post-accordion-item__controls .d-modal.json-schema-editor-modal .je-ready button,
+.d-modal.json-schema-editor-modal .je-ready .d-post-accordion-item__controls button,
+.d-post-accordion-item__controls .d-modal.json-schema-editor-modal .je-ready .json-editor-btn-add,
+.d-modal.json-schema-editor-modal .je-ready .d-post-accordion-item__controls .json-editor-btn-add {
+  padding: 0;
+}
+.d-post-accordion-item__controls .btn .d-icon,
+.d-post-accordion-item__controls .d-modal.json-schema-editor-modal .je-ready button .d-icon,
+.d-modal.json-schema-editor-modal .je-ready .d-post-accordion-item__controls button .d-icon,
+.d-post-accordion-item__controls .d-modal.json-schema-editor-modal .je-ready .json-editor-btn-add .d-icon,
+.d-modal.json-schema-editor-modal .je-ready .d-post-accordion-item__controls .json-editor-btn-add .d-icon {
+  color: var(--d-post-accordion-item-control-color);
+  background: rgba(0,0,0,0);
+  font-size: var(--font-down-1);
+}
+.discourse-no-touch .d-post-accordion-item__controls .btn:hover,
+.discourse-no-touch .d-post-accordion-item__controls .d-modal.json-schema-editor-modal .je-ready button:hover,
+.d-modal.json-schema-editor-modal .je-ready .discourse-no-touch .d-post-accordion-item__controls button:hover,
+.discourse-no-touch .d-post-accordion-item__controls .d-modal.json-schema-editor-modal .je-ready .json-editor-btn-add:hover,
+.d-modal.json-schema-editor-modal .je-ready .discourse-no-touch .d-post-accordion-item__controls .json-editor-btn-add:hover,
+.discourse-touch .d-post-accordion-item__controls .btn:hover,
+.discourse-touch .d-post-accordion-item__controls .d-modal.json-schema-editor-modal .je-ready button:hover,
+.d-modal.json-schema-editor-modal .je-ready .discourse-touch .d-post-accordion-item__controls button:hover,
+.discourse-touch .d-post-accordion-item__controls .d-modal.json-schema-editor-modal .je-ready .json-editor-btn-add:hover,
+.d-modal.json-schema-editor-modal .je-ready .discourse-touch .d-post-accordion-item__controls .json-editor-btn-add:hover,
+.discourse-no-touch .d-post-accordion-item__controls .btn:visited,
+.discourse-no-touch .d-post-accordion-item__controls .d-modal.json-schema-editor-modal .je-ready button:visited,
+.d-modal.json-schema-editor-modal .je-ready .discourse-no-touch .d-post-accordion-item__controls button:visited,
+.discourse-no-touch .d-post-accordion-item__controls .d-modal.json-schema-editor-modal .je-ready .json-editor-btn-add:visited,
+.d-modal.json-schema-editor-modal .je-ready .discourse-no-touch .d-post-accordion-item__controls .json-editor-btn-add:visited,
+.discourse-touch .d-post-accordion-item__controls .btn:visited,
+.discourse-touch .d-post-accordion-item__controls .d-modal.json-schema-editor-modal .je-ready button:visited,
+.d-modal.json-schema-editor-modal .je-ready .discourse-touch .d-post-accordion-item__controls button:visited,
+.discourse-touch .d-post-accordion-item__controls .d-modal.json-schema-editor-modal .je-ready .json-editor-btn-add:visited,
+.d-modal.json-schema-editor-modal .je-ready .discourse-touch .d-post-accordion-item__controls .json-editor-btn-add:visited {
+  color: var(--d-post-accordion-item-control-color);
+  background: rgba(0,0,0,0);
+}
+.discourse-no-touch .d-post-accordion-item__controls .btn:hover .d-icon,
+.discourse-no-touch .d-post-accordion-item__controls .d-modal.json-schema-editor-modal .je-ready button:hover .d-icon,
+.d-modal.json-schema-editor-modal .je-ready .discourse-no-touch .d-post-accordion-item__controls button:hover .d-icon,
+.discourse-no-touch .d-post-accordion-item__controls .d-modal.json-schema-editor-modal .je-ready .json-editor-btn-add:hover .d-icon,
+.d-modal.json-schema-editor-modal .je-ready .discourse-no-touch .d-post-accordion-item__controls .json-editor-btn-add:hover .d-icon,
+.discourse-touch .d-post-accordion-item__controls .btn:hover .d-icon,
+.discourse-touch .d-post-accordion-item__controls .d-modal.json-schema-editor-modal .je-ready button:hover .d-icon,
+.d-modal.json-schema-editor-modal .je-ready .discourse-touch .d-post-accordion-item__controls button:hover .d-icon,
+.discourse-touch .d-post-accordion-item__controls .d-modal.json-schema-editor-modal .je-ready .json-editor-btn-add:hover .d-icon,
+.d-modal.json-schema-editor-modal .je-ready .discourse-touch .d-post-accordion-item__controls .json-editor-btn-add:hover .d-icon,
+.discourse-no-touch .d-post-accordion-item__controls .btn:visited .d-icon,
+.discourse-no-touch .d-post-accordion-item__controls .d-modal.json-schema-editor-modal .je-ready button:visited .d-icon,
+.d-modal.json-schema-editor-modal .je-ready .discourse-no-touch .d-post-accordion-item__controls button:visited .d-icon,
+.discourse-no-touch .d-post-accordion-item__controls .d-modal.json-schema-editor-modal .je-ready .json-editor-btn-add:visited .d-icon,
+.d-modal.json-schema-editor-modal .je-ready .discourse-no-touch .d-post-accordion-item__controls .json-editor-btn-add:visited .d-icon,
+.discourse-touch .d-post-accordion-item__controls .btn:visited .d-icon,
+.discourse-touch .d-post-accordion-item__controls .d-modal.json-schema-editor-modal .je-ready button:visited .d-icon,
+.d-modal.json-schema-editor-modal .je-ready .discourse-touch .d-post-accordion-item__controls button:visited .d-icon,
+.discourse-touch .d-post-accordion-item__controls .d-modal.json-schema-editor-modal .je-ready .json-editor-btn-add:visited .d-icon,
+.d-modal.json-schema-editor-modal .je-ready .discourse-touch .d-post-accordion-item__controls .json-editor-btn-add:visited .d-icon {
+  color: var(--d-post-accordion-item-control-color);
+  background: rgba(0,0,0,0);
+}
+.d-post-accordion-item__content {
+  position: relative;
+  border-left: 0;
+  background: var(--d-post-accordion-background);
+  padding: var(--space-2) var(--space-3) 0 var(--space-3);
+  margin: 0;
+  max-height: calc(var(--max-lines-displayed, 6)*var(--cooked-line-height)*1em);
+  overflow: hidden;
+}
+.d-post-accordion-item__content .cooked {
+  padding: 0 !important;
+}
+.d-post-accordion-item[data-overflowing=true] .d-post-accordion-item__content::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  background: linear-gradient(transparent, 75%, var(--d-post-accordion-background));
+  pointer-events: none;
+  z-index: 1;
+}
+.d-post-accordion-item__read-more {
+  padding: var(--space-3);
+}
+.d-post-accordion-item:not([data-expanded])>.d-post-accordion-item__body {
+  display: none;
+}
+.d-post-accordion-item:last-of-type {
+  border-radius: 0 0 var(--d-post-accordion-radius) var(--d-post-accordion-radius);
+}
