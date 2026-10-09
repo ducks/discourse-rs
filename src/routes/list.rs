@@ -584,6 +584,51 @@ pub async fn category(
         crate::html::category_heading(&mut conn, &base_path, &category, params.page.is_none())
             .await?,
     );
+    // The category navigation: breadcrumbs, the category's pills, and a
+    // member's notification level in it.
+    let categories = crate::topic_list_view::categories(&mut conn).await?;
+    let list_cx = crate::topic_list_view::ListContext {
+        i18n: &state.i18n,
+        base_path: &base_path,
+        now: chrono::Utc::now(),
+        categories: &categories,
+        expand_all_pinned: true,
+        member_trust_level: None,
+        settings: crate::topic_list_view::ListSettings::load(&settings)?,
+    };
+    page.category_nav = true;
+    page.breadcrumbs =
+        crate::html::category_breadcrumbs(&list_cx, &settings, i64::from(category.id), none)?;
+    let can_vote = crate::plugins::topic_voting::enabled(&settings)?
+        && crate::plugins::topic_voting::category_votes(&mut conn, category.id).await?;
+    page.nav = crate::html::category_nav_items(
+        &state.i18n,
+        &settings,
+        &format!(
+            "{base_path}/c/{real_slug}{}",
+            if none { "/none" } else { "" }
+        ),
+        category.id,
+        none,
+        kind.name(),
+        page.chrome.tracking.as_ref(),
+        can_vote,
+    )?;
+    if let Some(user_id) = guardian.user_id() {
+        let level: Option<i32> = sqlx::query_scalar(
+            "SELECT notification_level FROM category_users WHERE user_id = $1 AND category_id = $2",
+        )
+        .bind(user_id)
+        .bind(category.id)
+        .fetch_optional(&mut *conn)
+        .await?;
+        page.category_controls = crate::html::category_notifications(
+            &state.i18n,
+            &base_path,
+            i64::from(category.id),
+            i64::from(level.unwrap_or(1)),
+        );
+    }
     // canonical_url "#{Discourse.base_url_no_prefix}#{.url}"
     let urls = Urls {
         config: &state.config,

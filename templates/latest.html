@@ -3,7 +3,7 @@
 {% block title %}{% if let Some(h) = heading %}{{ h.name }}{% else if let Some(t) = tag %}Topics tagged {{ t.name }}{% else %}Latest topics{% endif %} - {{ site_title }}{% endblock %}
 {% block content %}
 {{ banner|safe }}
-{% if let Some(h) = heading %}
+{% if let Some(h) = heading %}{% if !category_nav %}
 <h1 class="category-heading">
   {% if let Some(p) = h.parent %}<a href="{{ p.url }}">{{ p.name }}</a> &rsaquo; {% endif %}<a href="{{ h.url }}">{{ h.name }}</a>
 </h1>
@@ -12,11 +12,11 @@
   {% for s in h.subcategories %}<div class="subcategory"><a href="{{ s.url }}">{{ s.name }}</a>{% if let Some(d) = s.description %} <span class="description">{{ d|safe }}</span>{% endif %}</div>{% endfor %}
 </div>
 {% endif %}
-{% endif %}
+{% endif %}{% endif %}
 {% if let Some(t) = tag %}
 <h1 class="tag-heading"><a href="{{ t.url }}" class="discourse-tag">{{ t.name }}</a></h1>
 {% endif %}
-{% if !nav.is_empty() %}{% call m::list_controls(nav, breadcrumbs, chrome, self.heading_id(), admin_controls) %}{% endif %}
+{% if !nav.is_empty() %}{% call m::list_controls(nav, breadcrumbs, chrome, self.heading_id(), admin_controls, category_controls, category_nav) %}{% endif %}
 <div id="list-updates" class="list-updates"></div>
 <div class="container list-container --topic-list">
  <div class="row full-width">
@@ -44,6 +44,7 @@
   <div class="more-topics"><a href="{{ url }}" rel="next">Next page</a></div>
   {% endif %}
 </div>
+{% if !category_controls.is_empty() %}<script src="{{ base_path }}/assets/tracking-menu.js"></script>{% endif %}
 {% endblock %}
 {#- The new-or-updated banner and a member's counts arrive on the page's
     stream. -#}

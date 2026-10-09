@@ -556,7 +556,7 @@ async fn batch_set_categories(
 }
 
 /// `CategoryUser.auto_watch(user_id:)`
-async fn auto_watch(conn: &mut PgConnection, user_id: i32) -> Result<(), sqlx::Error> {
+pub(crate) async fn auto_watch(conn: &mut PgConnection, user_id: i32) -> Result<(), sqlx::Error> {
     sqlx::query(
         "UPDATE topic_users tu \
          SET notification_level = CASE WHEN should_track THEN $2 WHEN should_watch THEN $3 \
@@ -591,7 +591,7 @@ async fn auto_watch(conn: &mut PgConnection, user_id: i32) -> Result<(), sqlx::E
 }
 
 /// `CategoryUser.auto_track(user_id:)`
-async fn auto_track(conn: &mut PgConnection, user_id: i32) -> Result<(), sqlx::Error> {
+pub(crate) async fn auto_track(conn: &mut PgConnection, user_id: i32) -> Result<(), sqlx::Error> {
     sqlx::query(
         "UPDATE topic_users tu SET notification_level = $2, notifications_reason_id = $4 \
          FROM topics t, category_users cu \

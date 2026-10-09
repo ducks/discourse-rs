@@ -16,11 +16,13 @@
 {% endmacro %}
 
 {#- The list controls (discovery navigation): the breadcrumbs, the nav pills and
-    the new topic button; category_id preselects the composer category. -#}
-{% macro list_controls(nav, breadcrumbs, chrome, category_id, admin_controls) %}
+    the new topic button; category_id preselects the composer category.
+    On a category's list (`category_nav`), `category_controls` is the
+    member's notification level in it. -#}
+{% macro list_controls(nav, breadcrumbs, chrome, category_id, admin_controls, category_controls, category_nav) %}
 <div class="list-controls">
   <div class="container">
-    <section class="navigation-container">
+    <section class="navigation-container{% if category_nav %} category-navigation{% endif %}">
       {{ breadcrumbs|safe }}
       <ul class="nav nav-pills" id="navigation-bar">
         {%- for item in nav %}
@@ -29,14 +31,16 @@
         </li>
         {%- endfor %}
       </ul>
-      {%- if chrome.can_create_topic || !admin_controls.is_empty() %}
+      {%- if chrome.can_create_topic || !admin_controls.is_empty() || category_nav %}
       <div class="navigation-controls">
+        {%- if category_nav %}<div class="row dismiss-container-top"></div>{% endif %}
         {{ admin_controls|safe }}
         {%- if chrome.can_create_topic %}
         <div class="d-combo-button{% if !chrome.drafts_menu_trigger.is_empty() %} --has-menu{% endif %} topic-create-button__combo" role="group" aria-label="New topic and drafts">
           <button aria-label="New Topic" class="btn btn-icon-text d-combo-button-button btn-primary" id="create-topic" type="button"{% if let Some(id) = category_id %} data-category="{{ id }}"{% endif %}><svg class="fa d-icon d-icon-far-pen-to-square svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#far-pen-to-square"></use></svg><span class="d-button-label">New Topic</span></button>{{ chrome.drafts_menu_trigger|safe }}
         </div>
         {%- endif %}
+        {{ category_controls|safe }}
       </div>
       {%- endif %}
     </section>

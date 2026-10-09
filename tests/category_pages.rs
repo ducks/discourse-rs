@@ -119,27 +119,30 @@ async fn category_routes_redirect_and_404() {
 }
 
 #[tokio::test]
-async fn category_page_renders_heading_and_subcategories() {
+async fn category_page_renders_the_category_navigation() {
     let db = TestDb::new().await;
     let (status, _, html) = get(&db.pool, "/c/general/4").await;
     assert_eq!(status, StatusCode::OK);
     assert!(html.contains("<title>General - Discourse</title>"));
-    assert!(html.contains(r#"<a href="/c/general/4">General</a>"#));
-    assert!(
-        html.contains(
-            r#"<div class="subcategory"><a href="/c/general/sub-general/34">Sub General</a>"#
-        ),
-        "{html}"
-    );
+    assert!(html.contains(r#"<section class="navigation-container category-navigation">"#));
+    // The category selected, its subcategories, then the tags.
+    assert!(html.contains(r#"data-name="General" data-value="4" title="General""#));
+    assert!(html.contains(r#"category-breadcrumb__subcategory-selector"#));
+    assert!(html.contains(r#"data-name="subcategories" title="subcategories""#));
+    assert!(html.contains(r#"href="/c/general/4/l/latest""#));
+    assert!(!html.contains("nav-item_categories"));
     assert!(html.contains("About the General category"));
 
+    // A subcategory: its parent, then itself selected, no further level.
     let (_, _, html) = get(&db.pool, "/c/general/sub-general/34").await;
-    assert!(html.contains(r#"<a href="/c/general/4">General</a> &rsaquo; <a href="/c/general/sub-general/34">Sub General</a>"#));
-    let (_, _, html) = get(&db.pool, "/c/general/4?page=1").await;
-    assert!(
-        !html.contains(r#"class="subcategory""#),
-        "subcategories only on the first page"
-    );
+    assert!(html.contains(r#"data-name="General" data-value="4""#));
+    assert!(html.contains(r#"data-name="Sub General" data-value="34""#));
+    assert!(html.contains(r#"href="/c/general/sub-general/34/l/hot""#));
+
+    // /none: no subcategories, the pills keep the /none path.
+    let (_, _, html) = get(&db.pool, "/c/general/4/none").await;
+    assert!(html.contains(r#"data-name="no subcategories""#));
+    assert!(html.contains(r#"href="/c/general/4/none/l/latest""#));
 }
 
 #[tokio::test]

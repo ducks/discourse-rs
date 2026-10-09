@@ -167,7 +167,7 @@ fn date(v: &Value) -> Option<DateTime<Utc>> {
 
 /// `iconHTML` with lib/icon-library's replacements: the class keeps the
 /// name unless it has a dot.
-fn d_icon(name: &str, extra: Option<&str>) -> String {
+pub(crate) fn d_icon(name: &str, extra: Option<&str>) -> String {
     // "thumbtack unpinned": the icon, with the rest as classes.
     if let Some((base, classes)) = name.split_once(' ') {
         return d_icon(base, extra).replacen(
@@ -185,6 +185,7 @@ fn d_icon(name: &str, extra: Option<&str>) -> String {
         "d-regular" => "far-bell",
         "d-tracking" => "bell",
         "d-watching" => "discourse-bell-exclamation",
+        "d-watching-first" => "discourse-bell-one",
         "topic.opened" => "unlock",
         other => other,
     };

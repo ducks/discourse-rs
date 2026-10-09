@@ -76,6 +76,7 @@ ICONS=(
   discourse-bookmark-clock
   discourse-bell-exclamation
   discourse-bell-slash
+  discourse-bell-one
   far-bell
   minus
   xmark
