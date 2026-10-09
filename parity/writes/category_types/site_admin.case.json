@@ -1,0 +1,31 @@
+{
+  "settings": {
+    "enable_simplified_category_creation": "true",
+    "events_calendar_categories": "34"
+  },
+  "setup": [
+    "INSERT INTO topic_voting_category_settings (category_id, created_at, updated_at) VALUES (4, now(), now())",
+    "INSERT INTO category_custom_fields (category_id, name, value, created_at, updated_at) VALUES (2, 'enable_accepted_answers', 'true', now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/site.json",
+      "params": {}
+    }
+  ],
+  "user": "admin",
+  "ignore": [
+    "/responses/0/body/markdown_additional_options",
+    "/responses/0/body/hashtag_configurations",
+    "/responses/0/body/hashtag_icons",
+    "/responses/0/body/access_control",
+    "/responses/0/body/categories/*/custom_fields",
+    "/responses/0/body/valid_flag_applies_to_types",
+    "/responses/0/body/admin_config_login_routes",
+    "/responses/0/body/permanent_upcoming_change_names",
+    "/responses/0/body/topic_admin_button_workflows",
+    "/responses/0/body/post_button_workflows",
+    "/responses/0/body/users_on_holiday"
+  ]
+}
