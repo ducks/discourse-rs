@@ -734,7 +734,8 @@ impl From<sqlx::Error> for SettingError {
 /// Resolved settings for one site, the equivalent of SiteSetting.current.
 #[derive(Debug, Clone)]
 pub struct SiteSettings {
-    values: HashMap<String, Value>,
+    /// Shared with the cache: a request's copy is a reference count.
+    values: std::sync::Arc<HashMap<String, Value>>,
 }
 
 impl SiteSettings {
@@ -822,7 +823,9 @@ impl SiteSettings {
             .entry("default_locale".into())
             .or_insert_with(|| Value::Str(DEFAULT_LOCALE.into()));
 
-        Ok(SiteSettings { values })
+        Ok(SiteSettings {
+            values: std::sync::Arc::new(values),
+        })
     }
 
     /// The settings as of now: resolved again only when a row of
