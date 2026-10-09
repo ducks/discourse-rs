@@ -177,6 +177,9 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/top/{period}", get(list::top_period_redirect))
         .route("/hot", get(list::hot))
         .route("/hot.json", get(list::hot_json))
+        // discourse-topic-voting's filter.
+        .route("/votes", get(list::user_list))
+        .route("/votes.json", get(list::user_list))
         .route("/unread", get(list::user_list))
         .route("/unread.json", get(list::user_list))
         .route("/new", get(list::user_list))
@@ -241,6 +244,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/voting/unvote.json", post(topic_voting::unvote))
         .route("/voting/who", get(topic_voting::who))
         .route("/voting/who.json", get(topic_voting::who))
+        .route("/topics/voted-by/{username}", get(topic_voting::voted_by))
         // TopicsController#set_notifications; {slug} holds the topic id.
         .route(
             "/t/{slug}/notifications",

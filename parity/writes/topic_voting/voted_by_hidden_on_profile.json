@@ -1,0 +1,39 @@
+{
+  "name": "voted_by_hidden_on_profile",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/topics/voted-by/user2.json",
+      "params": {}
+    }
+  ],
+  "started_at": "2026-10-09T07:12:45.594392",
+  "transaction_started_at": "2026-10-09T07:12:44.745535",
+  "responses": [
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "settings": {
+    "topic_voting_show_votes_on_profile": "false"
+  },
+  "setup": [
+    "INSERT INTO topic_voting_category_settings (category_id, created_at, updated_at) VALUES (4, now(), now())",
+    "INSERT INTO topic_voting_votes (topic_id, user_id, archive, created_at, updated_at) VALUES (41, 3, false, now() - interval '2 hours', now()), (41, 4, false, now() - interval '3 hours', now()), (5, 4, false, now() - interval '100 hours', now()), (35, 3, true, now() - interval '1 hour', now())",
+    "INSERT INTO topic_voting_topic_vote_count (topic_id, votes_count, created_at, updated_at) VALUES (41, 2, now(), now()), (5, 1, now(), now()), (35, 1, now(), now()) ON CONFLICT (topic_id) DO UPDATE SET votes_count = EXCLUDED.votes_count"
+  ],
+  "recorded_from": {
+    "case": "6930d9876c4c751addccc14007e38233222f2ec64dca771fdf6f7a7ad8296a9f",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
