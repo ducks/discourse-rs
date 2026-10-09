@@ -21,6 +21,7 @@ use crate::site_settings::{SettingError, SiteSettings};
 
 pub mod toggle;
 pub mod users;
+pub mod view;
 
 /// `PostActionType::LIKE_POST_ACTION_ID`
 const LIKE: i32 = 2;

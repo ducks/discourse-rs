@@ -98,6 +98,7 @@ ICONS=(
   check-to-slot
   toggle-on
   toggle-off
+  far-face-smile
   plugin-vote-up
   plugin-vote-up-filled
 )

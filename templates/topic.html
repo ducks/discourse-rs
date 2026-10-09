@@ -31,6 +31,7 @@
 <script src="{{ crate::assets::url(base_path, "tracking-menu.js") }}"></script>
 <script src="{{ crate::assets::url(base_path, "topic.js") }}"></script>
 {% if title_html.contains("title-voting") %}<script src="{{ crate::assets::url(base_path, "topic-voting.js") }}"></script>{% endif %}
+{% if reactions %}<script src="{{ crate::assets::url(base_path, "discourse-reactions.js") }}"></script>{% endif %}
 {% if viewer.is_some() %}<script src="{{ crate::assets::url(base_path, "screen-track.js") }}" defer></script>{% endif %}
 {% endblock %}
 {#- The topic's changes arrive on the page's stream on every page (a like

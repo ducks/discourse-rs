@@ -1419,6 +1419,8 @@ async fn members_hear_their_notifications_on_every_page() {
 #[tokio::test(flavor = "multi_thread")]
 async fn members_like_from_the_topic_page() {
     let db = TestDb::new().await;
+    // Core's like button, where discourse-reactions doesn't replace it.
+    common::set_setting(&db.pool, "discourse_reactions_enabled", 5, "f").await;
     let mut client = Client::new(state(db.pool.clone(), config(RailsEnv::Test, &[])).await);
     let reply = client.login("user1", "password").await;
     assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);

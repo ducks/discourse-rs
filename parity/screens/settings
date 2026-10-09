@@ -6,6 +6,5 @@
 # measure what is. A plugin comes off this list when its UI lands.
 chat_enabled=false
 presence_enabled=false
-discourse_reactions_enabled=false
 solved_enabled=false
 discourse_templates_enabled=false

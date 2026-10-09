@@ -1002,6 +1002,8 @@ pub struct TopicPage {
     pub topic_id: i64,
     /// The last page: live updates append new posts here.
     pub live: bool,
+    /// discourse-reactions is on: its script runs the reaction controls.
+    pub reactions: bool,
 }
 
 /// `categories` rows the pages link to.
@@ -1306,6 +1308,7 @@ pub async fn topic_page(
         topic_id: id,
         // New posts land on the last page; earlier pages stay as they are.
         live: page >= last_page,
+        reactions: post_settings.reactions.is_some(),
         prev_url: (page > 1).then(|| page_url(page - 1)),
         next_url: (page < last_page).then(|| page_url(page + 1)),
     })
@@ -1738,6 +1741,8 @@ pub fn notification_verb(notification_type: i64) -> &'static str {
         13 => "invited you to",
         17 => "posted a new topic,",
         24 => "Reminder:",
+        // discourse-reactions' reaction.
+        25 => "reacted to your post in",
         _ => "in",
     }
 }

@@ -37,6 +37,9 @@ pub enum Tab<'a> {
         /// The votes list's topics (discourse-topic-voting's
         /// userActivity.votes), empty elsewhere.
         topics: &'a [Value],
+        /// The reactions list (discourse-reactions' userActivity.reactions,
+        /// UserReactionSerializer), empty elsewhere.
+        reactions: &'a [Value],
     },
 }
 
@@ -50,6 +53,8 @@ pub enum ActivityFilter {
     /// discourse-topic-voting's: the topics the user voted on, a topic
     /// list rather than a stream.
     Votes,
+    /// discourse-reactions': the user's reactions, a post list of them.
+    Reactions,
 }
 
 impl ActivityFilter {
@@ -61,6 +66,7 @@ impl ActivityFilter {
             "replies" => ActivityFilter::Replies,
             "likes-given" => ActivityFilter::LikesGiven,
             "votes" => ActivityFilter::Votes,
+            "reactions" => ActivityFilter::Reactions,
             _ => return None,
         })
     }
@@ -73,7 +79,7 @@ impl ActivityFilter {
             // TYPES.posts: the replies route's own posts.
             ActivityFilter::Replies => &[5],
             ActivityFilter::LikesGiven => &[1],
-            ActivityFilter::Votes => &[],
+            ActivityFilter::Votes | ActivityFilter::Reactions => &[],
         }
     }
 
@@ -84,7 +90,7 @@ impl ActivityFilter {
             ActivityFilter::Topics => " filter-4",
             ActivityFilter::Replies => " filter-5",
             ActivityFilter::LikesGiven => " filter-1",
-            ActivityFilter::Votes => "",
+            ActivityFilter::Votes | ActivityFilter::Reactions => "",
         }
     }
 }
@@ -95,6 +101,8 @@ pub struct ProfileSettings {
     pub hide_user_activity_tab: bool,
     /// discourse-topic-voting's votes tab (topic_voting_show_votes_on_profile).
     pub show_votes: bool,
+    /// discourse-reactions' settings, when it is on: its reactions tab.
+    pub reactions: Option<crate::plugins::reactions::view::ReactionsUi>,
 }
 
 fn date(v: &Value) -> Option<DateTime<Utc>> {
@@ -500,6 +508,7 @@ pub fn render(
                 filter,
                 stream,
                 topics,
+                reactions,
             } => out.push_str(&activity_content(
                 cx,
                 settings,
@@ -509,6 +518,7 @@ pub fn render(
                 *filter,
                 stream,
                 topics,
+                reactions,
                 u["pending_posts_count"].as_i64().unwrap_or(0),
             )),
         }
@@ -576,6 +586,7 @@ fn activity_content(
     filter: ActivityFilter,
     stream: &[Value],
     topics: &[Value],
+    reactions: &[Value],
     pending_posts_count: i64,
 ) -> String {
     let mut out = String::from(
@@ -674,7 +685,17 @@ fn activity_content(
             None,
         ));
     }
-    // discourse-topic-voting's user-activity-bottom outlet.
+    // The user-activity-bottom outlet: discourse-reactions', then
+    // discourse-topic-voting's.
+    if settings.reactions.is_some() {
+        out.push_str(&item(
+            "user-activity-bottom-outlet discourse-reactions-user-activity-reactions",
+            "reactions",
+            "far-face-smile",
+            &t(cx, "discourse_reactions.reactions_title"),
+            None,
+        ));
+    }
     if settings.show_votes {
         out.push_str(&item(
             "user-nav__activity-votes",
@@ -683,6 +704,16 @@ fn activity_content(
             &t(cx, "topic_voting.vote_title_plural"),
             None,
         ));
+    }
+    if filter == ActivityFilter::Reactions
+        && let Some(ui) = settings.reactions.as_ref()
+    {
+        out.push_str(
+            "</ul></div></nav></div><section class=\"user-content\" id=\"user-content\"><div>",
+        );
+        out.push_str(&reactions_list(cx, ui, reactions));
+        out.push_str("</div></section>");
+        return out;
     }
     if filter == ActivityFilter::Votes {
         out.push_str("</ul></div></nav></div><section class=\"user-content\" id=\"user-content\">");
@@ -699,7 +730,10 @@ fn activity_content(
         // The route's emptyState (DEmptyState, text only).
         let (title, body) = match filter {
             // Votes renders its own list (votes_list).
-            ActivityFilter::All | ActivityFilter::Topics | ActivityFilter::Votes => {
+            ActivityFilter::All
+            | ActivityFilter::Topics
+            | ActivityFilter::Votes
+            | ActivityFilter::Reactions => {
                 (t(cx, "user_activity.no_activity_title"), String::new())
             }
             ActivityFilter::Replies if viewing_self => (
@@ -950,6 +984,101 @@ fn stream_item(cx: &ListContext, item: &StreamItem) -> String {
         a["user_id"].as_i64().unwrap_or(0),
         s(&a["excerpt"])
     ));
+    out
+}
+
+/// discourse-reactions' user-activity/reactions: a PostList of the
+/// reactions (flattenForPostList), each with the reaction and its user
+/// above the excerpt (DiscourseReactionsReactionEmoji).
+fn reactions_list(
+    cx: &ListContext,
+    ui: &crate::plugins::reactions::view::ReactionsUi,
+    reactions: &[Value],
+) -> String {
+    let base = cx.base_path;
+    let mut out = String::from("<div class=\"post-list user-stream\">");
+    if reactions.is_empty() {
+        out.push_str(&format!(
+            "<div class=\"post-list__empty-text\">{}</div>",
+            escape(&t(cx, "notifications.empty"))
+        ));
+    }
+    for r in reactions {
+        let post = &r["post"];
+        let username = s(&post["username"]);
+        let u = escape(username);
+        out.push_str(&format!(
+            "<div class=\"post-list-item user-stream-item\"><div class=\"post-list-item__header info\"><a class=\"avatar-link\" data-user-card=\"{u}\" href=\"{base}/u/{}\"><div class=\"avatar-wrapper\">{}</div></a>",
+            escape(&username.to_lowercase()),
+            avatar(cx, s(&post["avatar_template"]), 48).replacen(
+                "class=\"avatar\"",
+                &format!("class=\"avatar actor\" title=\"{u}\""),
+                1
+            )
+        ));
+        // PostListItemDetails: the flattened item has no post number.
+        let title_html = crate::topic_list_view::emoji_unescape(
+            s(&post["topic"]["fancy_title"]),
+            &cx.settings,
+            base,
+        );
+        let url = format!(
+            "{base}/t/{}/{}",
+            s(&post["topic_slug"]),
+            post["topic_id"].as_i64().unwrap_or(0)
+        );
+        out.push_str(&format!(
+            "<div class=\"post-list-item__details\"><div class=\"stream-topic-title\"><span class=\"topic-statuses\"></span><span class=\"title\"><a href=\"{}\">{title_html}</a></span></div><div class=\"post-list-item__metadata\">",
+            escape(&url)
+        ));
+        if let Some(category) = post["category_id"]
+            .as_i64()
+            .and_then(|id| cx.categories.get(&id))
+        {
+            out.push_str(&format!(
+                "<span class=\"category stream-post-category\">{}</span>",
+                category_badge(cx, category)
+            ));
+        }
+        if let Some(at) = date(&r["created_at"]) {
+            out.push_str(&format!(
+                "<span class=\"time\"> {} </span>",
+                age_medium(cx, at, true)
+            ));
+        }
+        out.push_str("</div></div></div>");
+        let reaction = &r["reaction"];
+        if reaction["reaction_users_count"].as_i64().unwrap_or(0) > 0 {
+            let reactor = s(&r["user"]["username"]);
+            let value = s(&reaction["reaction_value"]);
+            let emoji = if value.is_empty() {
+                String::new()
+            } else {
+                format!(
+                    "<img width=\"20\" height=\"20\" src=\"{}\" title=\"{v}\" alt=\"{v}\" class=\"emoji reaction-emoji\">",
+                    crate::category_badge::html_escape(&ui.emoji_url(base, value)),
+                    v = escape(value)
+                )
+            };
+            out.push_str(&format!(
+                "<div class=\"discourse-reactions-my-reaction\">{emoji}<a class=\"avatar-link\" data-user-card=\"{ru}\">{}</a></div>",
+                avatar(cx, s(&r["user"]["avatar_template"]), 24).replacen(
+                    "class=\"avatar\"",
+                    &format!("class=\"avatar actor\" title=\"{}\"", escape(reactor)),
+                    1
+                ),
+                ru = escape(reactor)
+            ));
+        }
+        out.push_str(&format!(
+            "<div class=\"excerpt\" data-post-id=\"{}\" data-topic-id=\"{}\" data-user-id=\"{}\"><div class=\"cooked\">{}</div></div></div>",
+            post["id"].as_i64().unwrap_or(0),
+            post["topic_id"].as_i64().unwrap_or(0),
+            post["user_id"].as_i64().unwrap_or(0),
+            s(&post["excerpt"])
+        ));
+    }
+    out.push_str("</div><div class=\"loading-container\"></div><div aria-hidden=\"true\" class=\"load-more-sentinel\"></div>");
     out
 }
 

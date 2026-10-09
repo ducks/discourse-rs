@@ -38,3 +38,4 @@
 /u/user0/activity/likes-given as=user0
 /u/user1/activity as=user0
 /u/user1/activity/votes as=user1
+/u/user1/activity/reactions as=user1

@@ -68,10 +68,12 @@ pub async fn toggle(
         Outcome::NotFound => Ok(super::topics::not_found_response(&state)),
         Outcome::InvalidAccess => Ok(super::search::invalid_access(&state)),
         // render_json_error(post): a post without errors gets
-        // JsonError.generic_error, the client locale's js.generic_error.
+        // JsonError.generic_error.
         Outcome::InvalidReaction => Ok((
             StatusCode::UNPROCESSABLE_ENTITY,
-            Json(json!({"errors": ["Sorry, an error has occurred."]})),
+            Json(
+                json!({"errors": [state.i18n.t("js.generic_error").unwrap_or("js.generic_error")]}),
+            ),
         )
             .into_response()),
     }

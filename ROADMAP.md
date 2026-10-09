@@ -437,8 +437,11 @@ write endpoints. The design and its open decisions are in PLUGINS.md.
       filters, the release and reclaim hooks on topic recovery, category
       edits and merges, the category editor's voting toggle, the docked
       header's vote box, and an anonymous vote cast after login; web hooks
-      and discourse-workflows triggers are refused), reactions, presence,
-      templates, narrative-bot, chat, poll's voting
+      and discourse-workflows triggers are refused), reactions (done but
+      for what core doesn't port yet: the Reactions received notifications
+      page, the allow-any-emoji picker; reactions in messages are refused,
+      as likes there are; the animations and touch gestures are not
+      ported), presence, templates, narrative-bot, chat, poll's voting
 - [ ] Tier 0: `plugin.toml` with settings, preloaded custom fields,
       assets, i18n, the tables the plugin owns; `discourse-rs plugins`
 - [ ] The host functions: keyed batch reads of the plugin's own tables,

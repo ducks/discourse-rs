@@ -35,6 +35,7 @@ const DISCOURSE_CSS: &str = concat!(
     include_str!("../static/css/powered-by.css"),
     // The bundled plugins' stylesheets, after core's.
     include_str!("../static/css/topic-voting.css"),
+    include_str!("../static/css/discourse-reactions.css"),
 );
 
 const CSS: &str = "text/css; charset=utf-8";
@@ -57,6 +58,11 @@ const ASSETS: &[(&str, &str, &str)] = &[
     ),
     ("sidebar.js", JS, include_str!("../static/js/sidebar.js")),
     ("topic.js", JS, include_str!("../static/js/topic.js")),
+    (
+        "discourse-reactions.js",
+        JS,
+        include_str!("../static/js/discourse-reactions.js"),
+    ),
     (
         "topic-voting.js",
         JS,
