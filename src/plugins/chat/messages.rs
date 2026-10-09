@@ -228,6 +228,44 @@ impl Context<'_> {
         .await?)
     }
 
+    /// Chat::LastMessageSerializer for a channel's last message, None when
+    /// it is deleted (the association's default scope hides it, leaving
+    /// the NullMessage).
+    pub(crate) async fn last_message(&mut self, id: i64) -> Result<Option<Value>, AppError> {
+        let sql = format!(
+            "SELECT {MESSAGE_COLUMNS} FROM chat_messages WHERE id = $1 AND deleted_at IS NULL"
+        );
+        let m: Option<MessageRow> = sqlx::query_as(&sql)
+            .bind(id)
+            .fetch_optional(&mut *self.conn)
+            .await?;
+        let Some(m) = m else {
+            return Ok(None);
+        };
+        let uploads: bool = sqlx::query_scalar(
+            "SELECT EXISTS (SELECT 1 FROM upload_references WHERE target_type = $1 AND target_id = $2)",
+        )
+        .bind(POLYMORPHIC_NAME)
+        .bind(m.id)
+        .fetch_one(&mut *self.conn)
+        .await?;
+        if uploads {
+            return Err(Unsupported("chat message uploads").into());
+        }
+        Ok(Some(json!({
+            "id": m.id,
+            "message": m.message,
+            "cooked": m.cooked,
+            "created_at": iso8601(m.created_at),
+            "excerpt": excerpt_for_display(&m)?,
+            "deleted_at": null,
+            "deleted_by_id": m.deleted_by_id,
+            "thread_id": m.thread_id,
+            "chat_channel_id": m.chat_channel_id,
+            "streaming": m.streaming,
+        })))
+    }
+
     /// GET /chat/api/channels/:channel_id/messages
     pub async fn list_messages(
         &mut self,

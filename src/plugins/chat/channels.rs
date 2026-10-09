@@ -745,14 +745,15 @@ impl Context<'_> {
             out.insert("pinned_messages_count".into(), json!(pins));
         }
         // include_last_message?: can_preview_chat_channel?, seeing the
-        // category. Without one, the NullMessage, dated now.
+        // category. Without a live one, the NullMessage, dated now.
         if self.can_see_category(channel.chatable_id).await? {
-            if channel.last_message_id.is_some() {
-                return Err(Unsupported("chat channels' last messages").into());
-            }
+            let last = match channel.last_message_id {
+                Some(id) => self.last_message(id).await?,
+                None => None,
+            };
             out.insert(
                 "last_message".into(),
-                json!({
+                last.unwrap_or_else(|| json!({
                     "id": null,
                     "message": null,
                     "cooked": null,
@@ -763,7 +764,7 @@ impl Context<'_> {
                     "thread_id": null,
                     "chat_channel_id": null,
                     "streaming": false,
-                }),
+                })),
             );
         }
         Ok(Value::Object(out))
