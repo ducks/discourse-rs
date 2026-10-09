@@ -223,6 +223,7 @@ pub async fn revise(
                 user_id: Some(i64::from(editor_user.id)),
                 force_quote_link: false,
                 omit_nofollow: omit,
+                chat: false,
             },
         )
         .await?;

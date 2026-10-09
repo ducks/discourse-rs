@@ -391,6 +391,7 @@ pub async fn create(
             user_id: Some(i64::from(user.id)),
             force_quote_link: false,
             omit_nofollow,
+            chat: false,
         },
     )
     .await?;

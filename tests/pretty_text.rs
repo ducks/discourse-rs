@@ -118,21 +118,12 @@ async fn options_match_rails_apart_from_plugin_contributions() {
     let before = iframes.len();
     iframes.retain(|url| !url.as_str().unwrap().ends_with("/discobot/certificate.svg"));
     assert_eq!(iframes.len(), before - 1);
-    // Chat's markdown options, hashtag type and icon.
+    // Chat's markdown options.
     assert!(
         rails["additionalOptions"]
             .as_object_mut()
             .unwrap()
             .remove("chat")
-            .is_some()
-    );
-    let types = rails["hashtagTypesInPriorityOrder"].as_array_mut().unwrap();
-    assert_eq!(types.pop(), Some(Value::from("channel")));
-    assert!(
-        rails["hashtagIcons"]
-            .as_object_mut()
-            .unwrap()
-            .remove("channel")
             .is_some()
     );
 
@@ -206,11 +197,11 @@ async fn unported_inputs_are_refused() {
     let host = host(&db);
     let mut conn = db.pool.acquire().await.unwrap();
 
-    // A chat channel the cooking user can see, named like the hashtag:
-    // only chat could resolve it.
+    // A chat channel the cooking user can post in, named like the
+    // hashtag: chat's data source, last in a topic, resolves it.
     sqlx::query(
-        "INSERT INTO chat_channels (chatable_id, chatable_type, name, slug, type, created_at, updated_at) \
-         VALUES (4, 'Category', 'Lounge', 'lounge', 'CategoryChannel', now(), now())",
+        "INSERT INTO chat_channels (id, chatable_id, chatable_type, name, slug, type, created_at, updated_at) \
+         VALUES (50, 4, 'Category', 'Lounge', 'lounge', 'CategoryChannel', now(), now())",
     )
     .execute(&db.pool)
     .await
@@ -219,7 +210,7 @@ async fn unported_inputs_are_refused() {
     let settings = SiteSettings::load(&mut conn, &host.site_setting_defs, &host.config.globals)
         .await
         .unwrap();
-    let error = Helpers {
+    let found = Helpers {
         host: &host,
         conn: &mut conn,
         settings: &settings,
@@ -227,11 +218,12 @@ async fn unported_inputs_are_refused() {
     .hashtag_lookup(
         &Value::from("lounge"),
         &Value::from(3),
-        &serde_json::json!(["category", "tag"]),
+        &serde_json::json!(["category", "tag", "channel"]),
     )
     .await
-    .unwrap_err();
-    assert!(matches!(error, CookError::Unsupported(_)), "{error}");
+    .unwrap();
+    assert_eq!(found["type"], "channel", "{found}");
+    assert_eq!(found["relative_url"], "/chat/c/lounge/50");
 
     // A censored watched word (action 2) changes the options.
     sqlx::query(

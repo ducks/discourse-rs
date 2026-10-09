@@ -9,6 +9,7 @@
 
 pub mod auto_join;
 pub mod channels;
+pub mod cook;
 pub mod membership;
 pub mod messages;
 pub mod page;
@@ -60,7 +61,7 @@ pub fn can_direct_message(
 
 /// `Category.scoped_to_permissions(guardian, permissions)` as a condition
 /// on `categories`, the ids written in.
-fn categories_scoped_to(guardian: &Guardian, permissions: &str) -> String {
+pub(crate) fn categories_scoped_to(guardian: &Guardian, permissions: &str) -> String {
     match guardian.user() {
         _ if guardian.is_admin() => "TRUE".to_string(),
         None => "1 = 0".to_string(),

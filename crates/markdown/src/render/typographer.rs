@@ -128,6 +128,68 @@ pub fn apply(root: &mut Node) {
     visit(root, false);
 }
 
+/// markdown-it's own `replacements` rule, which chat's engine enables in
+/// place of Discourse's: (c), (r) and (tm), and the rare replacements
+/// without arrows, an ellipsis from two dots on.
+pub fn markdown_it_apply(root: &mut Node) {
+    static RARE_MD: Lazy<Regex> =
+        Lazy::new(|| Regex::new(r"\+-|\.\.|\?\?\?\?|!!!!|,,|--").unwrap());
+    static SCOPED_MD: Lazy<Regex> = Lazy::new(|| Regex::new(r"(?i)\((c|tm|r)\)").unwrap());
+    static DOTS: Lazy<Regex> = Lazy::new(|| Regex::new(r"\.{2,}").unwrap());
+    fn rare(text: &str) -> String {
+        let text = text.replace("+-", "±");
+        let text = DOTS.replace_all(&text, "…");
+        let text = MARK_ELLIPSIS.replace_all(&text, "$1..");
+        let text = MARKS.replace_all(&text, "$1$1$1");
+        let text = COMMAS.replace_all(&text, ",");
+        let text = replace_dashes(&text, "---", '\u{2014}', |p| p != '-', |n| n != '-');
+        let text = replace_dashes(
+            &text,
+            "--",
+            '\u{2013}',
+            char::is_whitespace,
+            char::is_whitespace,
+        );
+        replace_dashes(
+            &text,
+            "--",
+            '\u{2013}',
+            |p| p != '-' && !p.is_whitespace(),
+            |n| n != '-' && !n.is_whitespace(),
+        )
+    }
+    fn visit(node: &mut Node, in_autolink: bool) {
+        if node.is::<Image>() {
+            return;
+        }
+        if let Some(text) = node.cast_mut::<Text>() {
+            if in_autolink {
+                return;
+            }
+            if SCOPED_MD.is_match(&text.content) {
+                text.content = SCOPED_MD
+                    .replace_all(&text.content, |caps: &regex::Captures| {
+                        match caps[1].to_ascii_lowercase().as_str() {
+                            "c" => "©",
+                            "r" => "®",
+                            _ => "™",
+                        }
+                    })
+                    .into_owned();
+            }
+            if RARE_MD.is_match(&text.content) {
+                text.content = rare(&text.content);
+            }
+            return;
+        }
+        let in_autolink = in_autolink || super::linkify::is_auto_link(node);
+        for child in node.children.iter_mut() {
+            visit(child, in_autolink);
+        }
+    }
+    visit(root, false);
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
