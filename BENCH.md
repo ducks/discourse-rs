@@ -28,7 +28,11 @@ Caveats that apply to every run:
 The production comparison above, rerun for anonymous visitors once
 discourse-rs had Middleware::AnonymousCache (feat/anonymous-cache): rs in
 RAILS_ENV=production, where the cache is on, the rs-prod agent unchanged,
-c=16, 5 s, no Accept-Encoding (`cached` and `uncached` are Rails'):
+c=16, 5 s (`cached` and `uncached` are Rails'). This table is from the
+first version of the cache, which sat inside the compression layer and
+compressed every hit again; oha sends `Accept-Encoding: gzip, compress,
+deflate, br` unless told otherwise, so every row here was compressed on
+both sides:
 
 | endpoint | target | req/s | p50 ms | p99 ms | non-2xx |
 |---|---|---:|---:|---:|---:|
@@ -66,18 +70,24 @@ c=16, 5 s, no Accept-Encoding (`cached` and `uncached` are Rails'):
 | /tag/guide.json | rails-prod (cached) | 3899 | 4 | 5.6 | 0 |
 | /tag/guide.json | rails-prod (uncached) | 236 | 68 | 79.8 | 0 |
 
-Cached JSON serves 22000 to 31000 req/s against Rails' 3700 to 3900.
-Without compression the cached HTML pages are bound by their size: the
-port renders the whole page (75 KB, 42 KB of it the inline icon sprite)
-where Rails sends a 17 KB Ember shell, and rs serves them at about 2200
-req/s against Rails' 3450. With Accept-Encoding: br, as browsers ask,
-the stored copy is the compressed one (18 KB) and a hit sends it as is:
+The HTML rows (about 2200 req/s) were the cost of compressing a 75 KB
+page on every hit, not its size. The cache now stores the response as
+sent, compressed for the encoding in its key, and a hit sends it as is:
 
-| endpoint, br, cached | rs | rails-prod |
+| cached anonymous request, c=16 | rs | rails-prod |
 |---|---:|---:|
-| /latest | 60158 | 3548 |
-| /t/welcome-to-discourse/5 | 62206 | 3469 |
-| /latest.json | 63911 | 3740 |
+| /latest, br | 60158 | 3548 |
+| /t/welcome-to-discourse/5, br | 62206 | 3469 |
+| /latest.json, br | 63911 | 3740 |
+| /latest, identity (75 KB on rs, a 17 KB Ember shell on Rails) | 50841 | 3623 |
+| /latest.json, identity | 64239 | 4174 |
+
+Checked: both serve 200s with byte-identical /latest.json bodies, and
+Rails' are real hits (X-Discourse-Cached: true, X-Runtime 1.0 ms against
+30.9 ms uncached). Rails' hit still crosses nginx, a Pitchfork worker and
+the Rack middleware ahead of AnonymousCache, with two Redis reads; the
+port's is a lookup in its own memory. At these rates the load generator
+on the same box takes a share of the CPU too.
 
 ## 2026-10-09, against a production Discourse
 
