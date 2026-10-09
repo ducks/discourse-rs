@@ -153,9 +153,10 @@ baseline: each page's score, statuses and sizes, a page a line, so a diff
 shows which pages moved. Logging in on the reference saves drafts and timings, so
 `make reset-reference` before the next recording. Before capturing, the
 script applies `parity/screens/settings` to the reference: it turns off the
-bundled plugins Discourse enables by default (chat, reactions, solved,
-voting, presence, templates), which here are plugins (PLUGINS.md), so the
-scores measure core.
+bundled plugins Discourse enables by default whose UI isn't ported yet (chat,
+reactions, solved, presence, templates), so the scores measure what is; and
+runs `parity/screens/setup.sql` on both databases (`--setup`) for fixture rows
+the seed lacks, such as a voting category.
 
 ## Bench
 
@@ -168,7 +169,7 @@ caveats (production-mode reference, Rails' anonymous cache, search rate limits).
 
 What comes next, and in what order, is in [ROADMAP.md](ROADMAP.md).
 
-| Route| Route | Discourse source | Notes |
+| Route | Discourse source | Notes |
 |---|---|---|
 | `GET /srv/status` | `forums_controller.rb` | |
 | `GET /site/basic-info` | `site_controller.rb#basic_info` | S3 upload CDN not supported (explicit 500) |
@@ -216,6 +217,11 @@ What comes next, and in what order, is in [ROADMAP.md](ROADMAP.md).
 | `POST /uploads/lookup-urls` | `uploads_controller.rb#lookup_urls`, `PrettyText::Helpers.lookup_upload_urls` | each short url of an upload that exists with its url and short path, for the composer's preview; members only |
 | `POST /admin/email/handle_mail(.json)`, Jobs::ProcessEmail | `admin/email_controller.rb#handle_mail`, `Email::Processor`, `Email::Receiver`, `Email::Cleaner`, `EmailReplyTrimmer`, `PostCreator` | a reply by a known, active user to a reply key, plain text or HTML (HtmlToMarkdown, with the per-client extracters for Gmail, Outlook, Word, Exchange, Apple Mail, Thunderbird, ProtonMail, Zimbra, Newton and Front): the incoming_emails row (the raw as the mail gem re-serializes it), the body with Discourse's markers cut and the quote trimmed, the post by email (its date, raw email and outbound Message-ID) and its jobs; measured against Rails. Rejections email the sender as Email::Processor does (once a day per address and kind) and keep the message on the incoming email. Refused: staged users, attachments, bounces, forwarded emails, likes and notification levels by email, replies to messages, email_in addresses, POP3 polling |
 | `GET /session/hp(.json)`, `POST /u(.json)`, `PUT /u/activate-account/:token(.json)`, `POST /u/email-login(.json)`, `POST /session/forgot_password(.json)`, `POST /session/password-reset-code/verify(.json)`, `PUT /u/password-reset/:token(.json)` | `session_controller.rb#get_honeypot_value`, `#forgot_password`, `users_controller.rb#create`, `#perform_account_activation`, `#email_login`, `#password_reset_update`, `UserActivator`, `EmailToken`, `EmailLoginCode`, `UsernameValidator`, `UserPasswordValidator`, `SpamHandler`, `UserNotifications` (signup, email_login, forgot_password, set_password, the login and reset codes) | local signup with the honeypot and challenge, its rows (user, email, password, stats, options, profile, avatar row, trust level group, default category and sidebar preferences, search index) and the activation email; activation and login; email login links; password reset by code or link; every table write and email measured against Rails. Refused: invite codes, user fields, staged users, approval, OAuth, random avatars, screened emails, unicode usernames, validation errors other than the username's, second factors on reset, welcome messages |
+| `POST /t/:topic_id/notifications`, `DELETE /t/:topic_id/timings` | `topics_controller.rb#set_notifications`, `TopicUser.change`, `topics_controller.rb#destroy_timings`, `PostTiming.destroy_last_for`, `PostTiming.destroy_for` | a member's notification level in a topic (the reason it records, the live update to their other tabs), and mark unread (Defer): with `last=1` the topic's last post, else the whole topic, unread again with the latest notification on it; for the topic page's tracking menu and Defer button; measured against Rails. Messages' read state isn't published |
+| `POST /category/:category_id/notifications` | `categories_controller.rb#set_notifications`, `CategoryUser.set_notification_level_for_category`, `CategoryUser.auto_watch`, `.auto_track` | a member's level in a category (watching, tracking, watching first post, normal, muted), the auto watch and track passes it triggers, and the indirectly muted categories in the answer; measured against Rails |
+| `POST /solution/accept`, `POST /solution/unaccept` (discourse-solved) | `DiscourseSolved::AnswerController`, `DiscourseSolved::AcceptAnswer`, `UnacceptAnswer`, `AcceptedAnswersHelper` | accepting and unaccepting an answer as the topic's author (when allowed), staff or the accept-all groups: the solved topic and its answers, the SOLVED user action, the notifications to the answerer, the topic's owner and its trackers, the accepted answers published on the topic's channel. Read side: the topic list, topic view, post, user and summary keys. Refused: the auto close timer, web hooks |
+| `POST /voting/vote`, `POST /voting/unvote`, `GET /voting/who`, `GET /votes`, `GET /topics/voted-by/:username.json` (discourse-topic-voting) | `DiscourseTopicVoting::VotesController`, `Votes::Cast`, `Votes::Remove`, `TopicQueryExtension`, `ListControllerExtension`, `Jobs::DiscourseTopicVoting::*`, `BadgeGranter.backfill` | voting and unvoting with the vote limits and their answer, the voters; the votes list (front page, `/c/.../l/votes`, `/tag/.../l/votes`), `order=votes`, `state=my_votes`, the voted-by list, a voting category's hot list; vote release and reclaim on closing, archiving and deleting with their notifications, and the voting badges' backfill; the list, topic, post, category and current user keys; the vote box, list counts, category pills and the profile's Votes tab on the pages; measured against Rails. Waiting on core: the votes RSS feed, search and /filter filters, hooks on topic recovery, category edits and merges. Refused: web hooks, workflow triggers |
+| `GET /site` `category_types` | `Categories::TypeRegistry`, `Categories::Types::Base#metadata`, discourse-events' `Events`, discourse-solved's `Support`, discourse-topic-voting's `Ideas` | the staff list of category types and each category's matching types (with `enable_simplified_category_creation`): metadata, the resolved configuration schema (site settings with their definitions, category settings and custom fields, site texts), whether a non-admin may enable the plugin; configuring a category as a type is not ported |
 
 Supporting ports: SiteSetting (YAML defaults, `locale_default`, typed DB
 rows, GlobalSetting shadowing, upcoming-change promotion), server-side I18n
