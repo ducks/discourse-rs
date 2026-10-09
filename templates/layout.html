@@ -2,7 +2,7 @@
 {% import "macros.html" as m %}
 {#- The classes the Ember client sets on <html> for a desktop browser
     without touch; there is no client here to tell otherwise. -#}
-<html lang="{{ lang }}" class="text-size-normal{% if viewer.is_none() %} anon{% endif %} no-touch discourse-no-touch desktop-view not-mobile-device">
+<html lang="{{ lang }}" class="text-size-normal{% if viewer.is_none() %} anon{% endif %} no-touch discourse-no-touch desktop-view not-mobile-device{{ chrome.html_classes }}">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -82,6 +82,7 @@
                   {% if let Some(v) = viewer %}
                   <span class="header-buttons"></span>
                   <ul class="icons d-header-icons">
+                    {{- chrome.chat_header_icon|safe }}
                     {#- The avatar opens the user menu, its notifications
                         fetched as HTML, or closes it when it is open. The
                         badge is the unread count, kept current live. -#}

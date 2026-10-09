@@ -42,3 +42,9 @@
 /u/user2/activity/solved as=user0
 /u/user0/activity/solved as=user0
 /u/user2/summary as=user0
+
+# chat (full page)
+/chat/c/general/2 as=user1 wait=3000 mask=.chat-time
+/chat/c/general/2 as=admin wait=3000 mask=.chat-time
+/chat/browse/open as=user1 wait=3000
+/chat/browse/all as=admin wait=3000

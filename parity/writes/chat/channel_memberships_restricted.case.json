@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO user_chat_channel_memberships (user_id, chat_channel_id, following, last_viewed_at, created_at, updated_at) VALUES (3, 1, true, now(), now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/chat/api/channels/1/memberships.json"
+    }
+  ]
+}

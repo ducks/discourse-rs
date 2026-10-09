@@ -30,6 +30,10 @@ pub enum Active {
     Tags,
     /// userActivity.index for the current user: My posts.
     MyPosts,
+    /// Full-page chat (the chat.* routes) on no channel.
+    Chat,
+    /// Full-page chat on this channel.
+    ChatChannel(i64),
 }
 
 impl Active {
@@ -43,6 +47,8 @@ impl Active {
             Active::Tag(name) => format!("tag:{name}"),
             Active::Tags => "tags".into(),
             Active::MyPosts => "my-posts".into(),
+            Active::Chat => "chat".into(),
+            Active::ChatChannel(id) => format!("chat-channel:{id}"),
         }
     }
 
@@ -50,11 +56,15 @@ impl Active {
         match key.split_once(':') {
             Some(("category", id)) => id.parse().map(Active::Category).unwrap_or(Active::None),
             Some(("tag", name)) => Active::Tag(name.to_string()),
+            Some(("chat-channel", id)) => {
+                id.parse().map(Active::ChatChannel).unwrap_or(Active::None)
+            }
             _ => match key {
                 "discovery" => Active::Discovery,
                 "categories" => Active::Categories,
                 "tags" => Active::Tags,
                 "my-posts" => Active::MyPosts,
+                "chat" => Active::Chat,
                 _ => Active::None,
             },
         }
@@ -98,6 +108,8 @@ pub struct Context<'a> {
     pub member: Option<&'a Member>,
     /// SiteSetting.emoji_set, for emoji prefixes.
     pub emoji_set: &'a str,
+    /// The bundled plugins' sections (chat's), after the core ones.
+    pub plugin_sections: &'a str,
 }
 
 impl Context<'_> {
@@ -149,6 +161,7 @@ pub fn render(site: &Value, cx: &Context) -> Result<String, SettingError> {
     if show_tags {
         out.push_str(&tags_section(site, cx)?);
     }
+    out.push_str(cx.plugin_sections);
     out.push_str("</div>");
     // The footer's only anonymous action, keyboard shortcuts, opens a modal
     // that is not ported, so its bar is empty.
@@ -209,28 +222,28 @@ pub fn tracked_links(site: &Value, cx: &Context) -> Result<Vec<String>, SettingE
 
 /// A rendered link (SectionLink's arguments).
 #[derive(Default)]
-struct Link {
+pub(crate) struct Link {
     /// `@linkName`: data-list-item-name and data-link-name.
-    link_name: Option<String>,
+    pub(crate) link_name: Option<String>,
     /// Extra attributes on the li (`...attributes`).
-    attributes: String,
+    pub(crate) attributes: String,
     /// The plain `<a>` of an `@href` link, rather than a LinkTo.
-    plain: bool,
-    href: String,
-    title: Option<String>,
-    content: String,
-    prefix: Prefix,
+    pub(crate) plain: bool,
+    pub(crate) href: String,
+    pub(crate) title: Option<String>,
+    pub(crate) content: String,
+    pub(crate) prefix: Prefix,
     /// `@prefixBadge`: an icon over the prefix (a restricted category's lock).
-    prefix_badge: Option<&'static str>,
-    active: bool,
+    pub(crate) prefix_badge: Option<&'static str>,
+    pub(crate) active: bool,
     /// `@badgeText`
-    badge: Option<String>,
+    pub(crate) badge: Option<String>,
     /// An unread suffix icon (`@suffixType` icon, `@suffixCSSClass` unread).
-    suffix: Option<&'static str>,
+    pub(crate) suffix: Option<&'static str>,
 }
 
 #[derive(Default)]
-enum Prefix {
+pub(crate) enum Prefix {
     #[default]
     None,
     Icon {
@@ -321,7 +334,21 @@ fn show_countable(link: &mut Link, cx: &Context, countable: Option<Countable>, f
     }
 }
 
-fn link_html(link: &Link, cx: &Context) -> String {
+pub(crate) fn link_html(link: &Link, cx: &Context) -> String {
+    link_html_with(link, &LinkExtra::default(), cx)
+}
+
+/// What a plugin's links add: classes on the `<a>`, a suffix component, and
+/// a hover button (`@hoverValue`, `@hoverTitle`).
+#[derive(Default)]
+pub(crate) struct LinkExtra {
+    pub(crate) classes: String,
+    pub(crate) suffix_html: String,
+    pub(crate) hover: Option<(&'static str, String)>,
+}
+
+/// SectionLink.gjs
+pub(crate) fn link_html_with(link: &Link, extra: &LinkExtra, cx: &Context) -> String {
     let mut li = String::from("<li class=\"sidebar-section-link-wrapper\"");
     if let Some(name) = &link.link_name {
         li.push_str(&format!(" data-list-item-name=\"{}\"", escape(name)));
@@ -334,7 +361,11 @@ fn link_html(link: &Link, cx: &Context) -> String {
     } else {
         "sidebar-section-link sidebar-row"
     };
-    let mut a = format!("<a class=\"{class}\"");
+    let mut a = if extra.classes.is_empty() {
+        format!("<a class=\"{class}\"")
+    } else {
+        format!("<a class=\"{class} {}\"", escape(&extra.classes))
+    };
     if let Some(title) = &link.title {
         a.push_str(&format!(" title=\"{}\"", escape(title)));
     }
@@ -356,6 +387,17 @@ fn link_html(link: &Link, cx: &Context) -> String {
             )
         })
         .unwrap_or_default();
+    let hover = extra
+        .hover
+        .as_ref()
+        .map(|(name, title)| {
+            format!(
+                "<span class=\"sidebar-section-link-hover\"><button aria-label=\"{t}\" class=\"sidebar-section-hover-button btn-flat\" title=\"{t}\" type=\"button\">{}</button></span>",
+                icon(name, Some("hover-icon")),
+                t = escape(title)
+            )
+        })
+        .unwrap_or_default();
     let suffix = link
         .suffix
         .map(|s| {
@@ -366,9 +408,11 @@ fn link_html(link: &Link, cx: &Context) -> String {
         })
         .unwrap_or_default();
     format!(
-        "{li}{a}{}<span class=\"sidebar-section-link-content-text\">{}</span>{badge}{suffix}</a></li>",
+        "{li}{a}{}<span class=\"sidebar-section-link-content-text\">{}</span>{badge}{}{suffix}{}</a></li>",
         prefix_html(&link.prefix, link.prefix_badge, cx),
-        link.content
+        link.content,
+        extra.suffix_html,
+        hover
     )
 }
 
@@ -396,7 +440,7 @@ fn style(color: &Option<String>) -> String {
 }
 
 /// SectionLinkPrefix
-fn prefix_html(prefix: &Prefix, badge: Option<&str>, cx: &Context) -> String {
+pub(crate) fn prefix_html(prefix: &Prefix, badge: Option<&str>, cx: &Context) -> String {
     let badge = badge
         .map(|b| icon(b, Some("prefix-badge")))
         .unwrap_or_default();
@@ -405,7 +449,7 @@ fn prefix_html(prefix: &Prefix, badge: Option<&str>, cx: &Context) -> String {
         Prefix::Icon { name, color } => format!(
             "<span class=\"sidebar-section-link-prefix icon\"{}>{}{badge}</span>",
             style(color),
-            icon(name, Some("prefix-icon"))
+            crate::post_view::d_icon(name, Some("prefix-icon"))
         ),
         Prefix::Emoji { name, color } => format!(
             "<span class=\"sidebar-section-link-prefix emoji\"{}>{}{badge}</span>",
@@ -451,6 +495,18 @@ fn emoji_html(name: &str, cx: &Context) -> String {
 /// Section.gjs with SectionHeader, collapsable as the anonymous sections
 /// are.
 fn section_html(name: &str, header: Option<&str>, links: &str, cx: &Context) -> String {
+    section_html_with(name, header, "", links, cx)
+}
+
+/// Section.gjs with buttons after the header (a plugin section's inline
+/// actions).
+pub(crate) fn section_html_with(
+    name: &str,
+    header: Option<&str>,
+    header_buttons: &str,
+    links: &str,
+    cx: &Context,
+) -> String {
     let mut out = format!(
         "<div class=\"sidebar-section sidebar-section-wrapper sidebar-section--expanded\" data-section-name=\"{}\">",
         escape(name)
@@ -458,7 +514,7 @@ fn section_html(name: &str, header: Option<&str>, links: &str, cx: &Context) -> 
     let content_id = format!("sidebar-section-content-{}", escape(name));
     if let Some(header) = header {
         out.push_str(&format!(
-            "<div class=\"sidebar-section-header-wrapper sidebar-row\"><button aria-controls=\"{content_id}\" aria-expanded=\"true\" class=\"btn no-text sidebar-section-header sidebar-section-header-collapsable btn-transparent\" title=\"{}\" type=\"button\"><span class=\"sidebar-section-header-caret\">{}</span><span class=\"sidebar-section-header-text\">{}</span></button></div>",
+            "<div class=\"sidebar-section-header-wrapper sidebar-row\"><button aria-controls=\"{content_id}\" aria-expanded=\"true\" class=\"btn no-text sidebar-section-header sidebar-section-header-collapsable btn-transparent\" title=\"{}\" type=\"button\"><span class=\"sidebar-section-header-caret\">{}</span><span class=\"sidebar-section-header-text\">{}</span></button>{header_buttons}</div>",
             escape(&cx.t("sidebar.toggle_section")),
             icon("angle-down", None),
             escape(header)

@@ -107,6 +107,14 @@ ICONS=(
   hand
   plugin-vote-up
   plugin-vote-up-filled
+  arrow-down
+  chevron-left
+  far-star
+  star
+  discourse-chat-search
+  comment-slash
+  box-archive
+  filter-circle-xmark
 )
 
 root="$(cd "$(dirname "$0")/.." && pwd)"

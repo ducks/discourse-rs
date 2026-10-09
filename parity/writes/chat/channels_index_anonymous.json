@@ -1,0 +1,32 @@
+{
+  "name": "channels_index_anonymous",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/chat/api/channels.json"
+    }
+  ],
+  "started_at": "2026-10-09T17:58:06.348175",
+  "transaction_started_at": "2026-10-09T17:58:05.486088",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You need to be logged in to do that."
+        ],
+        "error_type": "not_logged_in"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "setup": [],
+  "recorded_from": {
+    "case": "9aeed050821fa257ed6761cb9f62fc9fac25dc67d8b7ceb4d6c998c8d9fdd292",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

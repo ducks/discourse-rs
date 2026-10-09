@@ -190,6 +190,12 @@ pub struct Chrome {
     /// less the pages that hide the application footer (a list with more
     /// to load, a topic not loaded to its end).
     pub powered_by: bool,
+    /// Chat's header icon (plugins::chat::view), empty when the viewer
+    /// can't chat.
+    pub chat_header_icon: String,
+    /// Classes a route adds to `<html>` (htmlClass), each with a leading
+    /// space.
+    pub html_classes: String,
 }
 
 impl Chrome {
@@ -289,32 +295,59 @@ impl Site {
             && settings.get("navigation_menu")?.to_s() == "sidebar";
         self.chrome.tracking =
             crate::topic_tracking_report::load(&mut *conn, settings, guardian).await?;
-        if sidebar_enabled {
-            let (site, member) = sidebar_inputs(
-                &mut *conn,
-                state,
-                settings,
-                guardian,
-                self.chrome.tracking.clone(),
-            )
-            .await?;
-            let emoji_set = settings.get("emoji_set")?.to_s().to_string();
-            self.chrome.sidebar = crate::sidebar::render(
-                &site,
-                &crate::sidebar::Context {
-                    i18n: &state.i18n,
+        let inputs = if sidebar_enabled {
+            Some(
+                sidebar_inputs(
+                    &mut *conn,
+                    state,
                     settings,
-                    base_path: &self.base_path,
-                    active: &active,
-                    member: member.as_ref(),
-                    emoji_set: &emoji_set,
-                },
-            )?;
+                    guardian,
+                    self.chrome.tracking.clone(),
+                )
+                .await?,
+            )
+        } else {
+            None
+        };
+        let emoji_set = settings.get("emoji_set")?.to_s().to_string();
+        let sidebar_cx = |plugin_sections| {
+            inputs.as_ref().map(|(_, member)| crate::sidebar::Context {
+                i18n: &state.i18n,
+                settings,
+                base_path: &self.base_path,
+                active: &active,
+                member: member.as_ref(),
+                emoji_set: &emoji_set,
+                plugin_sections,
+            })
+        };
+        // Chat's header icon and sidebar sections (chat-setup.js adds the
+        // body's chat-enabled class).
+        let chat = crate::plugins::chat::view::load(
+            &mut *conn,
+            state,
+            settings,
+            guardian,
+            &self.base_path,
+            &active,
+            sidebar_cx("").as_ref(),
+        )
+        .await?;
+        let chat_sections = chat
+            .as_ref()
+            .map(|c| c.sidebar_sections.clone())
+            .unwrap_or_default();
+        if let (Some((site, _)), Some(cx)) = (&inputs, sidebar_cx(&chat_sections)) {
+            self.chrome.sidebar = crate::sidebar::render(site, &cx)?;
             if self.chrome.tracking.is_some() {
                 self.chrome.live_param("sidebar", &active.key());
             }
             // Sidebar.gjs's bodyClass
             classes.push("has-sidebar-page".into());
+        }
+        if let Some(chat) = chat {
+            classes.insert(0, "chat-enabled".into());
+            self.chrome.chat_header_icon = chat.header_icon;
         }
         if let Some(user_id) = guardian.user_id() {
             self.chrome.can_create_topic = guardian.can_create_topic(&mut *conn, settings).await?;

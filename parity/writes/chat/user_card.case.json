@@ -1,0 +1,9 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/u/user2.json"
+    }
+  ]
+}

@@ -1,0 +1,282 @@
+{
+  "name": "channels_index_filter",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/chat/api/channels.json?filter=GEN"
+    }
+  ],
+  "started_at": "2026-10-09T18:05:18.975991",
+  "transaction_started_at": "2026-10-09T18:05:17.837325",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "channels": [
+          {
+            "id": 2,
+            "auto_join_users": true,
+            "allow_channel_wide_mentions": true,
+            "chatable": {
+              "id": 4,
+              "name": "General",
+              "color": "25AAE2",
+              "text_color": "FFFFFF",
+              "style_type": "emoji",
+              "icon": null,
+              "emoji": "blue_book",
+              "slug": "general",
+              "topic_count": 3,
+              "post_count": 6,
+              "position": 3,
+              "description": "<p>Create topics here that don’t fit into any other existing category.</p>",
+              "description_text": "Create topics here that don’t fit into any other existing category.",
+              "description_excerpt": "Create topics here that don’t fit into any other existing category.",
+              "topic_url": "/t/about-the-general-category/3",
+              "read_restricted": false,
+              "permission": null,
+              "notification_level": null,
+              "topic_template": null,
+              "topic_title_placeholder": null,
+              "has_children": null,
+              "subcategory_count": null,
+              "sort_order": null,
+              "sort_ascending": null,
+              "show_subcategory_list": false,
+              "num_featured_topics": 3,
+              "default_view": null,
+              "subcategory_list_style": "rows_with_featured_topics",
+              "default_top_period": "all",
+              "default_list_filter": "all",
+              "minimum_required_tags": 0,
+              "navigate_to_first_post_after_read": false,
+              "custom_fields": {
+                "enable_unassigned_filter": null,
+                "additional_assign_allowed_on_groups": null,
+                "sort_topics_by_event_start_date": null,
+                "disable_topic_resorting": null,
+                "create_as_post_voting_default": null,
+                "only_post_voting_in_this_category": null,
+                "enable_accepted_answers": null,
+                "notify_on_staff_accept_solved": null,
+                "empty_box_on_unsolved": null,
+                "enable_shared_issues": null,
+                "enable_topic_voting": null,
+                "has_chat_enabled": true
+              },
+              "uploaded_logo": null,
+              "uploaded_logo_dark": null,
+              "uploaded_background": null,
+              "uploaded_background_dark": null
+            },
+            "chatable_id": 4,
+            "chatable_type": "Category",
+            "chatable_url": "/c/general/4",
+            "title": "General",
+            "unicode_title": "General",
+            "slug": "general",
+            "status": "open",
+            "memberships_count": 3,
+            "current_user_membership": {
+              "following": true,
+              "muted": false,
+              "notification_level": "mention",
+              "chat_channel_id": 2,
+              "last_read_message_id": null,
+              "last_viewed_at": "2026-10-01T15:42:53.424Z",
+              "last_viewed_pins_at": null,
+              "starred": false,
+              "has_unseen_pins": false
+            },
+            "meta": {
+              "message_bus_last_ids": {
+                "channel_message_bus_last_id": 0,
+                "new_messages": 0,
+                "new_mentions": 0,
+                "kick": 0
+              },
+              "can_join_chat_channel": true,
+              "can_flag": true,
+              "user_silenced": false,
+              "can_moderate": true,
+              "can_delete_self": true,
+              "can_delete_others": true,
+              "can_remove_members": true,
+              "can_manage_pins": true
+            },
+            "threading_enabled": false,
+            "pinned_messages_count": 0,
+            "last_message": {
+              "id": null,
+              "message": null,
+              "cooked": null,
+              "created_at": "2026-10-09T18:05:18+00:00",
+              "excerpt": null,
+              "deleted_at": null,
+              "deleted_by_id": null,
+              "thread_id": null,
+              "chat_channel_id": null,
+              "streaming": false
+            }
+          },
+          {
+            "id": 3,
+            "auto_join_users": false,
+            "allow_channel_wide_mentions": true,
+            "chatable": {
+              "id": 34,
+              "name": "Sub General",
+              "color": "AB9364",
+              "text_color": "FFFFFF",
+              "style_type": "square",
+              "icon": null,
+              "emoji": null,
+              "slug": "sub-general",
+              "topic_count": 1,
+              "post_count": 1,
+              "position": 4,
+              "description": null,
+              "description_text": null,
+              "description_excerpt": null,
+              "topic_url": "/t/about-the-sub-general-category/34",
+              "read_restricted": false,
+              "permission": null,
+              "parent_category_id": 4,
+              "notification_level": null,
+              "topic_template": null,
+              "topic_title_placeholder": null,
+              "has_children": null,
+              "subcategory_count": null,
+              "sort_order": null,
+              "sort_ascending": null,
+              "show_subcategory_list": false,
+              "num_featured_topics": 3,
+              "default_view": null,
+              "subcategory_list_style": "rows_with_featured_topics",
+              "default_top_period": "all",
+              "default_list_filter": "all",
+              "minimum_required_tags": 0,
+              "navigate_to_first_post_after_read": false,
+              "custom_fields": {
+                "has_chat_enabled": null,
+                "enable_unassigned_filter": null,
+                "additional_assign_allowed_on_groups": null,
+                "sort_topics_by_event_start_date": null,
+                "disable_topic_resorting": null,
+                "create_as_post_voting_default": null,
+                "only_post_voting_in_this_category": null,
+                "enable_accepted_answers": null,
+                "notify_on_staff_accept_solved": null,
+                "empty_box_on_unsolved": null,
+                "enable_shared_issues": null,
+                "enable_topic_voting": null
+              },
+              "uploaded_logo": null,
+              "uploaded_logo_dark": null,
+              "uploaded_background": null,
+              "uploaded_background_dark": null
+            },
+            "chatable_id": 34,
+            "chatable_type": "Category",
+            "chatable_url": "/c/general/sub-general/34",
+            "description": "Below general",
+            "emoji": "wave",
+            "title": "Sub General",
+            "unicode_title": "Sub General",
+            "slug": "sub-general",
+            "status": "open",
+            "memberships_count": 1,
+            "meta": {
+              "message_bus_last_ids": {
+                "channel_message_bus_last_id": 0,
+                "new_messages": 0,
+                "new_mentions": 0,
+                "kick": 0
+              },
+              "can_join_chat_channel": true,
+              "can_flag": true,
+              "user_silenced": false,
+              "can_moderate": true,
+              "can_delete_self": true,
+              "can_delete_others": true,
+              "can_remove_members": true,
+              "can_manage_pins": true
+            },
+            "threading_enabled": false,
+            "pinned_messages_count": 0,
+            "last_message": {
+              "id": null,
+              "message": null,
+              "cooked": null,
+              "created_at": "2026-10-09T18:05:18+00:00",
+              "excerpt": null,
+              "deleted_at": null,
+              "deleted_by_id": null,
+              "thread_id": null,
+              "chat_channel_id": null,
+              "streaming": false
+            }
+          }
+        ],
+        "meta": {
+          "load_more_url": "/chat/api/channels?chatable_id&chatable_type&filter=GEN&limit=25&offset=25&status"
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 395,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "RW8qpD7L4qqiH8MEKxwsqffgPBY=",
+            "created_at": "2026-10-09T18:05:18.48859",
+            "rotated_at": "2026-10-09T18:05:18.488323",
+            "updated_at": "2026-10-09T18:05:18.48859",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "RW8qpD7L4qqiH8MEKxwsqffgPBY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 395,
+            "seen_at": "2026-10-09T18:05:18.982799",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "RW8qpD7L4qqiH8MEKxwsqffgPBY=",
+            "created_at": "2026-10-09T18:05:18.48859",
+            "rotated_at": "2026-10-09T18:05:18.488323",
+            "updated_at": "2026-10-09T18:05:18.48859",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "RW8qpD7L4qqiH8MEKxwsqffgPBY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO chat_channels (id, chatable_id, chatable_type, name, slug, description, emoji, created_at, updated_at, type, user_count, status) VALUES (3, 34, 'Category', 'Sub General', 'sub-general', 'Below general', 'wave', now() - interval '23 hours', now() - interval '23 hours', 'CategoryChannel', 1, 0), (4, 2, 'Category', 'Feedback :smile:', 'feedback', NULL, NULL, now() - interval '23 hours', now() - interval '23 hours', 'CategoryChannel', 0, 2)",
+    "SELECT setval('chat_channels_id_seq', 4)",
+    "INSERT INTO user_chat_channel_memberships (user_id, chat_channel_id, following, muted, notification_level, last_viewed_at, created_at, updated_at, starred) VALUES (4, 3, true, true, 0, now() - interval '23 hours', now() - interval '23 hours', now() - interval '23 hours', true)"
+  ],
+  "recorded_from": {
+    "case": "436c27de154aea123ab72699c2139f3ab927ab66bfbba2e122db821898b666e6",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

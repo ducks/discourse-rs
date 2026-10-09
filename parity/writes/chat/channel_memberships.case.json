@@ -1,0 +1,10 @@
+{
+  "user": "user1",
+  "setup": [],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/chat/api/channels/2/memberships.json"
+    }
+  ]
+}

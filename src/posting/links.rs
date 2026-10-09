@@ -170,7 +170,7 @@ async fn topic_target(
 
 /// `PrettyText.extract_links(html)`: hrefs outside quotes, oneboxes,
 /// elided parts and image lightboxes.
-fn extract(cooked: &str) -> Result<Vec<String>, Unsupported> {
+pub(crate) fn extract(cooked: &str) -> Result<Vec<String>, Unsupported> {
     let dom = parse(cooked);
     let mut links = Vec::new();
     collect(&fragment_root(&dom), false, &mut links)?;

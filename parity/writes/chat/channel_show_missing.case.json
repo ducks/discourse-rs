@@ -1,0 +1,14 @@
+{
+  "user": "user1",
+  "setup": [],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/chat/api/channels/99.json"
+    },
+    {
+      "method": "GET",
+      "path": "/chat/api/channels/general.json"
+    }
+  ]
+}

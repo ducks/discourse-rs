@@ -1,0 +1,76 @@
+{
+  "name": "channels_index_plugin_off",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/chat/api/channels.json"
+    }
+  ],
+  "started_at": "2026-10-09T17:58:18.251502",
+  "transaction_started_at": "2026-10-09T17:58:17.062401",
+  "responses": [
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 395,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "UQpKHNXu9vscQ22McJjgYsai6fE=",
+            "created_at": "2026-10-09T17:58:17.432423",
+            "rotated_at": "2026-10-09T17:58:17.432137",
+            "updated_at": "2026-10-09T17:58:17.432423",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "UQpKHNXu9vscQ22McJjgYsai6fE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 395,
+            "seen_at": "2026-10-09T17:58:18.266558",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "UQpKHNXu9vscQ22McJjgYsai6fE=",
+            "created_at": "2026-10-09T17:58:17.432423",
+            "rotated_at": "2026-10-09T17:58:17.432137",
+            "updated_at": "2026-10-09T17:58:17.432423",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "UQpKHNXu9vscQ22McJjgYsai6fE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "chat_enabled": "false"
+  },
+  "setup": [],
+  "recorded_from": {
+    "case": "6c4c31a8934b62a12cb2fc51b488d4fe100ec2002e9c5029d55fe90e750c9e9a",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

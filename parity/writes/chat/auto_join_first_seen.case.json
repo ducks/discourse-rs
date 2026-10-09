@@ -1,0 +1,18 @@
+{
+  "user": "user2",
+  "setup": [
+    "UPDATE users SET first_seen_at = NULL, last_seen_at = NULL, previous_visit_at = NULL WHERE id = 4"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/session/current.json",
+      "headers": {
+        "Discourse-Present": "true"
+      }
+    }
+  ],
+  "ignore": [
+    "/responses/0/body/current_user/user_option/treat_as_new_topic_start_date"
+  ]
+}

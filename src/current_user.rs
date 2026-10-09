@@ -271,7 +271,6 @@ pub async fn serialize(
         name: Option<String>,
         uploaded_avatar_id: Option<i32>,
         title: Option<String>,
-        previous_visit_at: Option<chrono::NaiveDateTime>,
         seen_notification_id: i64,
         primary_group_id: Option<i32>,
         flair_group_id: Option<i32>,
@@ -288,7 +287,7 @@ pub async fn serialize(
         new_since: Option<chrono::NaiveDateTime>,
     }
     let row: Row = sqlx::query_as(
-        "SELECT u.name, u.uploaded_avatar_id, u.title, u.previous_visit_at, u.seen_notification_id::bigint AS seen_notification_id, \
+        "SELECT u.name, u.uploaded_avatar_id, u.title, u.seen_notification_id::bigint AS seen_notification_id, \
                 u.primary_group_id, u.flair_group_id, u.required_fields_version, u.created_at, \
                 up.dismissed_banner_key, COALESCE(uo.skip_new_user_tips, false) AS skip_new_user_tips, \
                 COALESCE(us.draft_count, 0) AS draft_count, COALESCE(us.pending_posts_count, 0) AS pending_posts_count, \
@@ -451,28 +450,35 @@ pub async fn serialize(
         "can_delete_all_posts_and_topics".into(),
         json!(g.in_setting_groups("delete_all_posts_and_topics_allowed_groups")?),
     );
-    // custom_fields: public_user_custom_fields only (plugin fields ignored).
+    // custom_fields: public_user_custom_fields and the fields plugins
+    // register (DiscoursePluginRegistry.serialized_current_user_fields),
+    // typed as registered. Of the bundled plugins, chat's last channel
+    // (an integer); the others aren't ported.
     let mut custom = Map::new();
-    let names: Vec<String> = settings
+    let mut names: Vec<String> = settings
         .get("public_user_custom_fields")?
         .to_s()
         .split('|')
         .filter(|s| !s.is_empty())
         .map(str::to_string)
         .collect();
-    if !names.is_empty() {
-        let rows: Vec<(String, Option<String>)> =
-            sqlx::query_as("SELECT name, value FROM user_custom_fields WHERE user_id = $1 AND name = ANY($2) ORDER BY id")
-                .bind(uid)
-                .bind(&names)
-                .fetch_all(&mut *conn)
-                .await?;
-        for (name, value) in rows {
-            if custom.contains_key(&name) {
-                return Err(Unsupported("repeated user custom fields (array values)").into());
-            }
-            custom.insert(name, json!(value));
+    names.push(crate::plugins::chat::messages::LAST_CHAT_CHANNEL_ID.to_string());
+    let rows: Vec<(String, Option<String>)> =
+        sqlx::query_as("SELECT name, value FROM user_custom_fields WHERE user_id = $1 AND name = ANY($2) ORDER BY id")
+            .bind(uid)
+            .bind(&names)
+            .fetch_all(&mut *conn)
+            .await?;
+    for (name, value) in rows {
+        if custom.contains_key(&name) {
+            return Err(Unsupported("repeated user custom fields (array values)").into());
         }
+        let value = if name == crate::plugins::chat::messages::LAST_CHAT_CHANNEL_ID {
+            json!(value.as_deref().map(crate::ruby::to_i))
+        } else {
+            json!(value)
+        };
+        custom.insert(name, value);
     }
     out.insert("custom_fields".into(), Value::Object(custom));
 
@@ -573,9 +579,12 @@ pub async fn serialize(
         json!(new_pms),
     );
     out.insert("read_faq".into(), json!(row.read_faq));
+    // The user as loaded with the session: the last seen update the
+    // request made (before the action, as Rails' deferred one runs) is in
+    // the database, not in this record.
     out.insert(
         "previous_visit_at".into(),
-        json!(row.previous_visit_at.map(crate::topic_list::time_json)),
+        json!(user.previous_visit_at.map(crate::topic_list::time_json)),
     );
     out.insert("seen_notification_id".into(), json!(seen));
     if let Some(id) = row.primary_group_id {
@@ -783,6 +792,19 @@ pub async fn serialize(
         ),
     );
     if g.is_staff() {
+        // DiscourseUpdates.has_unseen_features?: false until the background
+        // job has cached the latest feature's date, and the job is queued
+        // (once a minute) to do so. The job itself, reading the feed, is not
+        // ported, so nothing is ever cached and it stays false.
+        if crate::owned_schema::cached_get(&mut *conn, "latest_new_feature_created_at")
+            .await?
+            .is_some()
+        {
+            return Err(Unsupported("unseen new features").into());
+        }
+        if crate::owned_schema::set_once(&mut *conn, "refresh_latest_new_feature_lock", 60).await? {
+            crate::jobs::enqueue(&mut *conn, "refresh_latest_new_feature", json!({})).await?;
+        }
         out.insert("has_unseen_features".into(), json!(false));
         let last_visited: Option<Option<String>> = sqlx::query_scalar(
             "SELECT value FROM user_custom_fields WHERE user_id = $1 AND name = 'last_visited_upcoming_changes_at' ORDER BY id LIMIT 1",
@@ -857,6 +879,11 @@ pub async fn serialize(
             out.insert("can_run_design_wizard".into(), json!(true));
         }
     }
+    // chat's keys.
+    if crate::plugins::chat::enabled(settings)? {
+        let guardian = crate::guardian::Guardian::for_user(&mut *conn, user).await?;
+        crate::plugins::chat::current_user_keys(&mut *conn, settings, &guardian, &mut out).await?;
+    }
     out.insert(
         "user_option".into(),
         user_option(conn, settings, &row.new_since, row.created_at, uid).await?,
@@ -875,7 +902,7 @@ pub async fn serialize(
 }
 
 /// `SpamRule::AutoSilence.should_autosilence?` for a new user.
-async fn autosilence_pending(
+pub(crate) async fn autosilence_pending(
     conn: &mut PgConnection,
     settings: &SiteSettings,
     uid: i32,
@@ -1221,7 +1248,7 @@ async fn user_option(
         .get(o.default_calendar as usize)
         .copied()
         .unwrap_or("none_selected");
-    Ok(json!({
+    let mut option = json!({
         "mailing_list_mode": o.mailing_list_mode,
         "external_links_in_new_tab": o.external_links_in_new_tab,
         "enable_quoting": o.enable_quoting,
@@ -1250,7 +1277,14 @@ async fn user_option(
         "automatically_translate": o.automatically_translate,
         "understood_languages": o.understood_languages,
         "hidden_composer_toolbar_buttons": o.hidden_composer_toolbar_buttons,
-    }))
+    });
+    // chat's keys.
+    if crate::plugins::chat::enabled(settings)?
+        && let Value::Object(map) = &mut option
+    {
+        crate::plugins::chat::current_user_option_keys(conn, uid, map).await?;
+    }
+    Ok(option)
 }
 
 /// `can_send_private_messages`

@@ -1,0 +1,6 @@
+{% extends "layout.html" %}
+{% block title %}{{ title }}{{ site_title }}{% endblock %}
+{% block content %}
+{{ main|safe }}
+<script src="{{ crate::assets::url(base_path, "chat.js") }}"></script>
+{% endblock %}

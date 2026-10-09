@@ -1,0 +1,13 @@
+{
+  "user": "user1",
+  "settings": {
+    "prioritize_username_in_ux": "false"
+  },
+  "setup": [],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/chat/api/channels/2/memberships.json?username=user0"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/chat/api/me/channels.json"
+    }
+  ]
+}
