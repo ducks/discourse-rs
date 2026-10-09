@@ -310,7 +310,9 @@ impl Categories<'_> {
                 ),
             );
         }
-        out.insert("category_types".into(), self.category_types()?);
+        // Filled in by Site (crate::category_types) when
+        // enable_simplified_category_creation is on.
+        out.insert("category_types".into(), json!({}));
         self.uploads(&mut out, c).await?;
         Ok(out)
     }
@@ -438,34 +440,6 @@ impl Categories<'_> {
             out.insert("can_vote".into(), json!(true));
         }
         Ok(out)
-    }
-
-    /// `Category#category_types` with the core Discussion type, which
-    /// matches every category. Plugin types aren't registered.
-    fn category_types(&self) -> Result<Value, CategoriesError> {
-        if !self
-            .settings
-            .get("enable_simplified_category_creation")?
-            .truthy()
-        {
-            return Ok(json!({}));
-        }
-        let name = self
-            .i18n
-            .t("category_types.discussion.name")
-            .unwrap_or("Discussion");
-        Ok(json!({
-            "discussion": {
-                "id": "discussion",
-                "name": name,
-                "title": self.i18n.t("category_types.discussion.title").unwrap_or(name),
-                "description": self.i18n.t("category_types.discussion.description").unwrap_or(""),
-                "icon": "memo",
-                "available": true,
-                "visible": true,
-                "configuration_schema": {},
-            }
-        }))
     }
 
     /// CategoryUploadSerializer, null when unset.

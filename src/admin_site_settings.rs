@@ -732,3 +732,33 @@ async fn dimensions(
     }
     Err(Unsupported("the dimensions of an upload whose file is missing").into())
 }
+
+/// What `SiteSetting.setting_metadata_hash(name)` and the type
+/// supervisor's dependencies give a category type's schema.
+pub struct SettingMeta {
+    pub type_name: String,
+    pub description: String,
+    pub humanized_name: String,
+    /// The settings.yml `choices`, when declared.
+    pub choices: Option<Json>,
+    pub min: Option<Json>,
+    pub max: Option<Json>,
+    /// The first `depends_on`.
+    pub depends_on: Option<String>,
+}
+
+pub fn setting_meta(cx: &Context<'_>, name: &str) -> Option<SettingMeta> {
+    let def = cx.defs.get(name)?;
+    let type_name = type_name(def);
+    let bounded = type_name == "integer" || type_name == "file_size_restriction";
+    let bound = |key: &str| bounded.then(|| opt(def, key).map(yaml_json)).flatten();
+    Some(SettingMeta {
+        description: description(cx, name),
+        humanized_name: humanized_name(name),
+        choices: opt(def, "choices").map(yaml_json),
+        min: bound("min"),
+        max: bound("max"),
+        depends_on: def.depends_on.first().cloned(),
+        type_name,
+    })
+}

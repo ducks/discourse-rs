@@ -109,9 +109,10 @@ def clear_redis_state
   end
 end
 
-# Plugins' in-process caches of rows a case's setup inserts (and the
-# rollback removes): topic-voting's voting categories.
+# Caches of rows a case's setup inserts (and the rollback removes): the
+# serialized site categories, and topic-voting's voting categories.
 def reset_plugin_caches
+  Site.clear_cache
   Category.reset_voting_cache if Category.respond_to?(:reset_voting_cache)
 end
 

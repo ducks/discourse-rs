@@ -172,6 +172,8 @@ pub enum SiteError {
     Setting(SettingError),
     Url(UrlError),
     Unsupported(Unsupported),
+    /// From parts shared with the request handlers (category types).
+    App(crate::AppError),
 }
 
 impl std::fmt::Display for SiteError {
@@ -181,6 +183,7 @@ impl std::fmt::Display for SiteError {
             SiteError::Setting(e) => e.fmt(f),
             SiteError::Url(e) => e.fmt(f),
             SiteError::Unsupported(e) => e.fmt(f),
+            SiteError::App(e) => e.fmt(f),
         }
     }
 }
@@ -202,6 +205,12 @@ impl From<SettingError> for SiteError {
 impl From<UrlError> for SiteError {
     fn from(e: UrlError) -> Self {
         SiteError::Url(e)
+    }
+}
+
+impl From<crate::AppError> for SiteError {
+    fn from(e: crate::AppError) -> Self {
+        SiteError::App(e)
     }
 }
 
@@ -280,7 +289,7 @@ impl Site<'_> {
                 self.navigation_menu_site_top_tags(&top_tags).await?,
             );
         }
-        let categories = Categories {
+        let mut categories = Categories {
             conn: self.conn,
             settings: self.settings,
             i18n: self.i18n,
@@ -290,6 +299,7 @@ impl Site<'_> {
         }
         .for_site()
         .await?;
+        self.fill_category_types(&mut categories).await?;
         if !categories.is_empty() {
             out.insert("categories".into(), Value::Array(categories));
         }
@@ -420,7 +430,7 @@ impl Site<'_> {
             "watched_words_link".into(),
             self.watched_words("link").await?.unwrap_or(Value::Null),
         );
-        let categories = Categories {
+        let mut categories = Categories {
             conn: self.conn,
             settings: self.settings,
             i18n: self.i18n,
@@ -430,6 +440,7 @@ impl Site<'_> {
         }
         .for_site()
         .await?;
+        self.fill_category_types(&mut categories).await?;
         if !categories.is_empty() {
             out.insert("categories".into(), Value::Array(categories));
         }
@@ -510,7 +521,7 @@ impl Site<'_> {
             json!({"mandatory_acl": {}, "banned_acl": {}}),
         );
         if self.guardian.is_staff() {
-            out.insert("category_types".into(), self.category_types());
+            out.insert("category_types".into(), self.category_types().await?);
         }
         out.insert("archetypes".into(), self.archetypes());
         out.insert("user_fields".into(), self.user_fields().await?);
@@ -560,25 +571,52 @@ impl Site<'_> {
         Ok(true)
     }
 
-    /// `Categories::TypeRegistry.list(only_visible: true)`: core registers
-    /// the Discussion type; plugins add theirs.
-    fn category_types(&self) -> Value {
-        let t = |key: &str, default: &str| {
-            self.i18n
-                .t(&format!("category_types.discussion.{key}"))
-                .unwrap_or(default)
-                .to_string()
+    /// The category type registry over this request's settings.
+    async fn with_category_types<T>(
+        &mut self,
+        f: impl AsyncFnOnce(
+            &crate::category_types::Registry<'_>,
+            &mut PgConnection,
+            &Guardian,
+        ) -> Result<T, crate::AppError>,
+    ) -> Result<T, SiteError> {
+        let urls = crate::url::Urls {
+            config: self.config,
+            settings: self.settings,
         };
-        json!([{
-            "id": "discussion",
-            "name": t("name", "Discussion"),
-            "title": t("title", "discussion"),
-            "description": t("description", ""),
-            "icon": "memo",
-            "available": true,
-            "visible": true,
-            "configuration_schema": {},
-        }])
+        let cx = crate::admin_site_settings::Context {
+            defs: self.defs,
+            settings: self.settings,
+            i18n: self.i18n,
+            globals: &self.config.globals,
+            base_path: self.config.globals.relative_url_root(),
+            urls: &urls,
+        };
+        let registry = crate::category_types::Registry { cx: &cx };
+        Ok(f(&registry, &mut *self.conn, &self.guardian).await?)
+    }
+
+    /// `Categories::TypeRegistry.list(only_visible: true, guardian:)`
+    async fn category_types(&mut self) -> Result<Value, SiteError> {
+        self.with_category_types(async |r, conn, guardian| r.list(conn, guardian).await)
+            .await
+    }
+
+    /// SiteCategorySerializer#category_types: each category's matching
+    /// types when enable_simplified_category_creation is on.
+    async fn fill_category_types(&mut self, categories: &mut [Value]) -> Result<(), SiteError> {
+        if !self.truthy("enable_simplified_category_creation")? {
+            return Ok(());
+        }
+        self.with_category_types(async |r, conn, _| {
+            for c in categories.iter_mut() {
+                if let Some(id) = c["id"].as_i64() {
+                    c["category_types"] = r.for_category(conn, id as i32).await?;
+                }
+            }
+            Ok(())
+        })
+        .await
     }
     /// Site.json_for's login_required branch (site.rb:245-268).
     async fn login_required_json(&mut self) -> Result<Value, SiteError> {
