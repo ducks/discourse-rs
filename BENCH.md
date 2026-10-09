@@ -23,6 +23,161 @@ Caveats that apply to every run:
 - Same box, same Postgres, client and servers all local; keep-alive off so
   each request carries a connection.
 
+## 2026-10-09, after topic voting
+
+Release binary at ac53196, rustc 1.99, the seed fixtures
+(seed/fresh_install.sql) loaded fresh into discourse_rs_screens; Rails is
+the `rs-parity` dv agent (development mode, Discourse bf55a44) on the same
+seed. Same laptop (16 cores, powersave governor), c=2, 5 s, keep-alive off.
+The data set is the parity fixtures, not the Faker backup of the earlier
+runs, so absolute numbers aren't comparable with those.
+
+Process:
+
+| measure | value | 2026-09-30 |
+|---|---:|---:|
+| binary size | 53 MB | 14 MB |
+| exec to first 200 (median of 3) | 75 ms | 40 ms |
+| RSS idle | 32 MB | 17 MB |
+| RSS after 100 requests | 44 MB | 26 MB |
+
+The binary is 27 MB of code and 12 MB of read-only data (the vendored
+schema, locales, settings, emoji and icon sprites it embeds), plus about
+9 MB of symbols; the startup and RSS growth follow from what it loads.
+
+Build and tests (warm unless said):
+
+| measure | value |
+|---|---:|
+| `cargo build --release`, clean | 1m 58s |
+| `cargo build --release`, one-file change | 70s |
+| `cargo build` (dev), one-file change | 5s |
+| `make clippy` | 4s |
+| `make test` (330 tests) | 100s |
+| `make test` after `cargo clean` | 3m 17s |
+| `make parity-test` (486 goldens and write cases) | 3m 45s |
+
+Requests, anonymous:
+
+| endpoint | target | req/s | p50 ms | p99 ms | non-2xx |
+|---|---|---:|---:|---:|---:|
+| /srv/status | rs | 19179 | 0.1 | 0.2 | 0 |
+| /srv/status | rails-dev (cached) | 1240 | 1.4 | 3.7 | 0 |
+| /srv/status | rails-dev (uncached) | 1314 | 1.4 | 2.7 | 0 |
+| /site.json | rs | 769 | 2.5 | 3.9 | 0 |
+| /site.json | rails-dev (cached) | 271 | 4.9 | 17 | 0 |
+| /site.json | rails-dev (uncached) | 260 | 5.2 | 15.7 | 0 |
+| /latest.json | rs | 849 | 2.3 | 4 | 0 |
+| /latest.json | rails-dev (cached) | 33 | 57.2 | 168 | 0 |
+| /latest.json | rails-dev (uncached) | 33 | 58.2 | 129.4 | 0 |
+| /latest | rs | 422 | 4.7 | 7.3 | 0 |
+| /latest | rails-dev (cached) | 17 | 109 | 390.9 | 0 |
+| /latest | rails-dev (uncached) | 18 | 110 | 247.6 | 0 |
+| /c/general/4.json | rs | 568 | 3.5 | 5.5 | 0 |
+| /c/general/4.json | rails-dev (cached) | 28 | 69.1 | 89 | 0 |
+| /c/general/4.json | rails-dev (uncached) | 31 | 63.7 | 89.6 | 0 |
+| /categories.json | rs | 754 | 2.6 | 4.1 | 0 |
+| /categories.json | rails-dev (cached) | 44 | 43.8 | 99 | 0 |
+| /categories.json | rails-dev (uncached) | 45 | 43.1 | 103.3 | 0 |
+| /t/welcome-to-discourse/5.json | rs | 399 | 4.9 | 7.5 | 0 |
+| /t/welcome-to-discourse/5.json | rails-dev (cached) | 17 | 111.6 | 161.8 | 0 |
+| /t/welcome-to-discourse/5.json | rails-dev (uncached) | 17 | 110 | 156.7 | 0 |
+| /t/welcome-to-discourse/5 | rs | 306 | 6.4 | 10.7 | 0 |
+| /t/welcome-to-discourse/5 | rails-dev (cached) | 10 | 178.8 | 351.8 | 0 |
+| /t/welcome-to-discourse/5 | rails-dev (uncached) | 11 | 178.8 | 211.3 | 0 |
+| /u/system.json | rs | 1514 | 1.3 | 2.7 | 0 |
+| /u/system.json | rails-dev (cached) | 44 | 43.8 | 109.2 | 0 |
+| /u/system.json | rails-dev (uncached) | 48 | 41.2 | 91.1 | 0 |
+| /search.json?q=Welcome | rs | 638 | 3.1 | 4.6 | 0 |
+| /search.json?q=Welcome | rails-dev (cached) | 259 | 6.9 | 28.5 | 1284 |
+| /search.json?q=Welcome | rails-dev (uncached) | 288 | 6.4 | 18.4 | 1436 |
+| /tag/guide.json | rs | 709 | 2.8 | 4.3 | 0 |
+| /tag/guide.json | rails-dev (cached) | 37 | 52.1 | 118.1 | 0 |
+| /tag/guide.json | rails-dev (uncached) | 33 | 57.3 | 139.3 | 0 |
+
+Requests, logged in as user1:
+
+| endpoint | target | req/s | p50 ms | p99 ms | non-2xx |
+|---|---|---:|---:|---:|---:|
+| /srv/status | rs (user) | 3408 | 0.6 | 1 | 0 |
+| /srv/status | rails-dev (user) | 1049 | 1.7 | 4.5 | 0 |
+| /site.json | rs (user) | 558 | 3.5 | 6 | 0 |
+| /site.json | rails-dev (user) | 39 | 49.2 | 117.7 | 0 |
+| /latest.json | rs (user) | 722 | 2.6 | 5.7 | 0 |
+| /latest.json | rails-dev (user) | 25 | 79.2 | 99.4 | 0 |
+| /latest | rs (user) | 305 | 6.3 | 11.4 | 0 |
+| /latest | rails-dev (user) | 14 | 139.8 | 263.8 | 0 |
+| /c/general/4.json | rs (user) | 546 | 3.5 | 7.5 | 0 |
+| /c/general/4.json | rails-dev (user) | 22 | 88.6 | 145 | 0 |
+| /categories.json | rs (user) | 653 | 3 | 4.7 | 0 |
+| /categories.json | rails-dev (user) | 34 | 59.5 | 70.8 | 0 |
+| /t/welcome-to-discourse/5.json | rs (user) | 293 | 6.5 | 12.6 | 0 |
+| /t/welcome-to-discourse/5.json | rails-dev (user) | 12 | 165.9 | 187.4 | 0 |
+| /t/welcome-to-discourse/5 | rs (user) | 184 | 10.4 | 19 | 0 |
+| /t/welcome-to-discourse/5 | rails-dev (user) | 7 | 251.5 | 407.2 | 0 |
+| /u/system.json | rs (user) | 1004 | 1.9 | 3.9 | 0 |
+| /u/system.json | rails-dev (user) | 28 | 71.6 | 85.5 | 0 |
+| /search.json?q=Welcome | rs (user) | 554 | 3.5 | 5.5 | 0 |
+| /search.json?q=Welcome | rails-dev (user) | 137 | 12.7 | 52 | 654 |
+| /tag/guide.json | rs (user) | 546 | 3.5 | 8.2 | 0 |
+| /tag/guide.json | rails-dev (user) | 25 | 79.3 | 98.3 | 0 |
+| /unread.json | rs (user) | 716 | 2.7 | 4.6 | 0 |
+| /unread.json | rails-dev (user) | 31 | 64.3 | 74.3 | 0 |
+| /new.json | rs (user) | 686 | 2.8 | 5.2 | 0 |
+| /new.json | rails-dev (user) | 29 | 66.8 | 103.8 | 0 |
+
+The HTML pages no longer sit at ~1 req/s (the anomaly noted in earlier
+sessions): /latest serves 422 req/s anonymous, topics 306. Logged-in
+/srv/status is 3408 req/s against 4817 on 2026-10-01 while the anonymous
+floor held (19179 against 19447); worth a look.
+
+Payloads (bytes, neither side compresses: Rails dev has no nginx in
+front, discourse-rs has no compression layer):
+
+| path | rs | rails-dev |
+|---|---:|---:|
+| /site.json | 15660 | 18521 |
+| /latest.json | 6294 | 6294 |
+| /categories.json | 6461 | 7712 |
+| /t/parity-fixture-replies-and-posters/35.json | 11261 | 12185 |
+| /u/user1.json | 2952 | 3014 |
+| /search.json?q=fixture | 4067 | 4068 |
+
+JSON sizes differ where the reference's unported plugins add keys
+(chat, reactions, ...). rs's HTML pages are 75 to 86 KB, 42 KB of it the
+inline icon sprite; gzip -9 takes them to about 19 KB.
+
+Page loads in Chromium, median of five after a warm-up, a fresh context
+each (cold cache); "content" is when the list or first post is in the
+DOM, in ms from navigation start:
+
+| page | target | requests | document | all resources | DOMContentLoaded | content |
+|---|---|---:|---:|---:|---:|---:|
+| /latest | rs | 18 | 73 KB | 749 KB | 46 | 62 |
+| /c/general/4 | rs | 18 | 73 KB | 749 KB | 42 | 59 |
+| /t/parity-fixture-replies-and-posters/35 | rs | 18 | 84 KB | 711 KB | 62 | 72 |
+| /categories | rs | 17 | 74 KB | 751 KB | 47 | 65 |
+| /u/user1/summary | rs | 13 | 69 KB | 681 KB | 46 | 67 |
+| /latest as=user1 | rs | 21 | 88 KB | 808 KB | 64 | 79 |
+| /t/parity-fixture-replies-and-posters/35 as=user1 | rs | 22 | 122 KB | 800 KB | 97 | 106 |
+| /latest | rails-dev | 104 | 109 KB | 15449 KB | 608 | 1097 |
+| /c/general/4 | rails-dev | 104 | 109 KB | 15463 KB | 549 | 843 |
+| /t/parity-fixture-replies-and-posters/35 | rails-dev | 104 | 115 KB | 15525 KB | 614 | 988 |
+| /categories | rails-dev | 104 | 110 KB | 15536 KB | 575 | 876 |
+| /u/user1/summary | rails-dev | 103 | 92 KB | 15384 KB | 488 | 1105 |
+| /latest as=user1 | rails-dev | 107 | 103 KB | 15700 KB | 594 | 916 |
+| /t/parity-fixture-replies-and-posters/35 as=user1 | rails-dev | 102 | 115 KB | 15521 KB | 565 | 933 |
+
+Rails dev serves its JavaScript unbundled and unminified (about 15 MB a
+page), so its column shows the order of magnitude only. rs's 750 KB is
+mostly the Inter font (344 KB, cached immutable) and discourse.css
+(193 KB).
+
+Found while measuring: /assets/*.css and *.js carry no Cache-Control,
+ETag or Last-Modified, so every page load fetches them again (about
+270 KB); and responses aren't compressed. Both are cheap to fix and
+matter more than any request-rate row above for a real visitor.
+
 ## 2026-09-30, first run
 
 Framework 16 laptop, local Postgres 16, the Faker backup (482 posts, 58
