@@ -13,6 +13,9 @@
 //! - before serialize: each topic's poster inputs (`PosterInputs`),
 //!   rewritten before the posters are built from them;
 //! - after serialize: the keys plugins add to each topic.
+//!
+//! Core's events (DiscourseEvent) reach the plugins listening through the
+//! functions here, called where Rails triggers them.
 
 pub mod solved;
 pub mod topic_voting;
@@ -120,6 +123,36 @@ pub fn topic_list_before_serialize(
     if let Some(solved) = &data.solved {
         solved.rewrite_posters(i18n, topic_id, last_post_user_id, inputs);
     }
+}
+
+/// DiscourseEvent `:topic_status_updated` (TopicStatusUpdater, when the
+/// status changed), to the enabled plugins listening.
+pub async fn topic_status_updated(
+    conn: &mut sqlx::PgConnection,
+    settings: &SiteSettings,
+    topic_id: i32,
+    status: &str,
+    enabled: bool,
+) -> Result<(), PluginError> {
+    if topic_voting::enabled(settings)? {
+        topic_voting::lifecycle::topic_status_updated(conn, topic_id, status, enabled).await?;
+    }
+    Ok(())
+}
+
+/// DiscourseEvent `:topic_trashed` (Topic#trash! on a topic not yet
+/// trashed).
+pub async fn topic_trashed(
+    conn: &mut sqlx::PgConnection,
+    settings: &SiteSettings,
+    topic_id: i32,
+    closed: bool,
+    archived: bool,
+) -> Result<(), PluginError> {
+    if topic_voting::enabled(settings)? {
+        topic_voting::lifecycle::topic_trashed(conn, topic_id, closed, archived).await?;
+    }
+    Ok(())
 }
 
 /// `WebHook.active_web_hooks(event).exists?`: an active hook for the

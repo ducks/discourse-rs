@@ -60,11 +60,14 @@ struct Topic {
     archetype: String,
     visible: bool,
     highest_post_number: i32,
+    closed: bool,
+    archived: bool,
 }
 
 async fn load_topic(conn: &mut PgConnection, id: i32) -> Result<Topic, sqlx::Error> {
     sqlx::query_as(
-        "SELECT id, user_id, title, created_at, category_id, archetype, visible, highest_post_number \
+        "SELECT id, user_id, title, created_at, category_id, archetype, visible, highest_post_number, \
+                closed, archived \
          FROM topics WHERE id = $1",
     )
     .bind(id)
@@ -621,6 +624,14 @@ async fn perform_delete(
         .bind(topic.id)
         .bind(acting_user_id)
         .execute(&mut *conn)
+        .await?;
+        crate::plugins::topic_trashed(
+            &mut *conn,
+            ctx.settings,
+            topic.id,
+            topic.closed,
+            topic.archived,
+        )
         .await?;
     }
 

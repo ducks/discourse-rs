@@ -56,6 +56,19 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         "Jobs::DiscourseTopicVoting::BackfillBadges" => {
             topic_voting_backfill_badges(state, &job.args).await
         }
+        "Jobs::DiscourseTopicVoting::VoteRelease" => {
+            topic_voting_vote_release(state, &job.args).await
+        }
+        "Jobs::DiscourseTopicVoting::VoteReclaim" => {
+            let mut tx = match state.pool.begin().await {
+                Ok(tx) => tx,
+                Err(e) => return Err(AppError::from(e).into()),
+            };
+            match crate::plugins::topic_voting::lifecycle::vote_reclaim(&mut tx, &job.args).await {
+                Ok(()) => tx.commit().await.map_err(AppError::from),
+                Err(e) => Err(e),
+            }
+        }
         other => {
             return Err(JobError::Unported(format!(
                 "not ported yet: the {other} job"
@@ -63,6 +76,15 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         }
     };
     Ok(result?)
+}
+
+/// Jobs::DiscourseTopicVoting::VoteRelease
+async fn topic_voting_vote_release(state: &AppState, args: &Value) -> Result<(), AppError> {
+    let mut tx = state.pool.begin().await?;
+    let s = settings(state, &mut tx).await?;
+    crate::plugins::topic_voting::lifecycle::vote_release(&mut tx, &state.bus, &s, args).await?;
+    tx.commit().await?;
+    Ok(())
 }
 
 /// Jobs::DiscourseTopicVoting::BackfillBadges: the voting badges
