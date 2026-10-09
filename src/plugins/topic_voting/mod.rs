@@ -5,6 +5,7 @@
 //! user, the `votes` list order, and voting (`votes`).
 
 pub mod lifecycle;
+pub mod view;
 pub mod votes;
 
 use std::collections::{HashMap, HashSet};

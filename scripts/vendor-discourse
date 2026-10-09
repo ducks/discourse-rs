@@ -90,6 +90,16 @@ done < <(git -C "$src" ls-tree -r --name-only "$commit" plugins \
   | grep -E '^plugins/[^/]+/config/locales/server\.en\.yml$' | LC_ALL=C sort)
 echo "vendored $(grep -c '^--- # ' "$plugin_server") plugin server locales"
 
+# The bundled plugins' icon sprites (register_svg_icon draws from them).
+sprites=0
+while read -r f; do
+  mkdir -p "$dest/$(dirname "$f")"
+  git -C "$src" show "$commit:$f" > "$dest/$f"
+  sprites=$((sprites + 1))
+done < <(git -C "$src" ls-tree -r --name-only "$commit" plugins \
+  | grep -E '^plugins/[^/]+/svg-icons/[^/]+\.svg$' | LC_ALL=C sort)
+echo "vendored $sprites plugin icon sprites"
+
 cat > "$dest/DISCOURSE_REF" <<EOF
 commit=$commit
 committed_at=$committed_at

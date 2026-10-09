@@ -1,12 +1,11 @@
 # Site settings scripts/parity-screenshots sets on the reference first.
 #
-# Discourse bundles these plugins enabled by default. In discourse-rs they
-# are plugins (PLUGINS.md, ROADMAP.md milestone 5), not core, so their UI
-# is off on both sides and the screenshots measure core. A plugin comes
-# off this list when it runs on the plugin protocol.
+# Discourse bundles these plugins enabled by default. discourse-rs ports
+# them as Rust modules (PLUGINS.md, decision 6), one at a time; until a
+# plugin's UI is ported it is off on the reference so the screenshots
+# measure what is. A plugin comes off this list when its UI lands.
 chat_enabled=false
 presence_enabled=false
 discourse_reactions_enabled=false
 solved_enabled=false
-topic_voting_enabled=false
 discourse_templates_enabled=false

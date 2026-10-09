@@ -364,7 +364,9 @@ pub fn category_badge_html(
 }
 
 /// `renderTags` in list mode, with `defaultRenderTag`.
-pub(crate) fn tags_html(cx: &ListContext, topic: &Value, title: &str) -> String {
+/// `renderTags`: the topic's tags, then what the plugins' tags callbacks
+/// return (`custom`), each an item after a separator.
+pub(crate) fn tags_html(cx: &ListContext, topic: &Value, title: &str, custom: &[String]) -> String {
     let tags: Vec<&Value> = topic["tags"]
         .as_array()
         .map(|t| t.iter().collect())
@@ -382,9 +384,11 @@ pub(crate) fn tags_html(cx: &ListContext, topic: &Value, title: &str) -> String 
     } else {
         tags
     };
-    if tags.is_empty() {
+    let custom: Vec<&String> = custom.iter().filter(|c| !c.is_empty()).collect();
+    if tags.is_empty() && custom.is_empty() {
         return String::new();
     }
+    let separator = "<span class=\"discourse-tags__tag-separator\">,</span>";
     let mut out = format!(
         "<ul class='discourse-tags' aria-label={}>",
         t(cx, "tagging.tags")
@@ -413,13 +417,30 @@ pub(crate) fn tags_html(cx: &ListContext, topic: &Value, title: &str) -> String 
             "<li><a href='{}{path}'  data-tag-name={lower} class='{classes}'>{visible}</a>",
             cx.base_path
         ));
-        if i < tags.len() - 1 {
-            out.push_str("<span class=\"discourse-tags__tag-separator\">,</span>");
+        if i < tags.len() - 1 || !custom.is_empty() {
+            out.push_str(separator);
+        }
+        out.push_str("</li>");
+    }
+    for (i, html) in custom.iter().enumerate() {
+        out.push_str("<li>");
+        out.push_str(html);
+        if i < custom.len() - 1 {
+            out.push_str(separator);
         }
         out.push_str("</li>");
     }
     out.push_str("</ul>");
     out
+}
+
+/// The plugins' tags callbacks (addTagsHtmlCallback) for a topic outside
+/// the topic page: discourse-topic-voting's vote count.
+pub(crate) fn tags_callbacks(cx: &ListContext, topic: &Value) -> Vec<String> {
+    let url = format!("{}/t/{}/{}", cx.base_path, s(&topic["slug"]), topic["id"]);
+    vec![crate::plugins::topic_voting::view::list_vote_count(
+        cx.i18n, topic, &url,
+    )]
 }
 
 fn date(v: &Value) -> Option<DateTime<Utc>> {
@@ -649,7 +670,7 @@ fn row_for(cx: &ListContext, topic: &Value, users: &[Value], suggested: bool) ->
         Some(c) if !pinned_uncategorized => category_badge(cx, c),
         _ => String::new(),
     };
-    let tags = tags_html(cx, topic, s(&topic["title"]));
+    let tags = tags_html(cx, topic, s(&topic["title"]), &tags_callbacks(cx, topic));
 
     let excerpt_html = match excerpt {
         Some(e) if expand_pinned => {

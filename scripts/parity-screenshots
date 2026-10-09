@@ -33,8 +33,17 @@
 # port draws no plugin UI either way, and its admin API refuses plugin
 # settings until plugins run (ROADMAP.md milestone 5).
 #
+# --setup FILE: SQL run on both databases before any page is captured
+# (fixture rows the seed lacks, such as a voting category): on the
+# reference agent (--agent, default rs-parity), whose Redis is then
+# flushed and Discourse restarted so no cache predates the rows, and on
+# the port's database (--db, default discourse_rs_screens). The default,
+# parity/screens/setup.sql, is used when it exists. Reset both afterwards
+# (make reset-reference, scripts/db-load --force).
+#
 # Usage: scripts/parity-screenshots [--reference URL] [--pages FILE]
-#          [--settings FILE] [--width PX] [--fail-above PCT] [--summary FILE]
+#          [--settings FILE] [--setup FILE] [--agent NAME] [--db NAME]
+#          [--width PX] [--fail-above PCT] [--summary FILE]
 #          <our-url> <out-dir>
 # Defaults: --reference http://127.0.0.1:3042, --pages parity/screens/pages,
 # --settings parity/screens/settings, --width 1280. The page list format is
@@ -45,6 +54,9 @@ root="$(cd "$(dirname "$0")/.." && pwd)"
 reference="http://127.0.0.1:3042"
 pages="$root/parity/screens/pages"
 settings="$root/parity/screens/settings"
+setup="$root/parity/screens/setup.sql"
+agent="rs-parity"
+db="discourse_rs_screens"
 width=1280
 fail_above=""
 summary=""
@@ -53,6 +65,9 @@ while [ $# -gt 0 ]; do
     --reference) reference="$2"; shift 2 ;;
     --pages) pages="$2"; shift 2 ;;
     --settings) settings="$2"; shift 2 ;;
+    --setup) setup="$2"; shift 2 ;;
+    --agent) agent="$2"; shift 2 ;;
+    --db) db="$2"; shift 2 ;;
     --width) width="$2"; shift 2 ;;
     --fail-above) fail_above="$2"; shift 2 ;;
     --summary) summary="$(realpath -m "$2")"; shift 2 ;;
@@ -67,6 +82,21 @@ fi
 ours="$1"
 out="$2"
 mkdir -p "$out"
+
+if [ -f "$setup" ]; then
+  dv copy "$setup" "$agent:/tmp/screens-setup.sql" > /dev/null
+  dv run --name "$agent" -- psql -q -v ON_ERROR_STOP=1 --single-transaction \
+    -f /tmp/screens-setup.sql discourse_development > /dev/null
+  dv run --name "$agent" -- rm -f /tmp/screens-setup.sql
+  dv run --name "$agent" -- redis-cli flushall > /dev/null
+  dv restart --name "$agent" discourse > /dev/null
+  psql -q -v ON_ERROR_STOP=1 --single-transaction -f "$setup" "$db" > /dev/null
+  # Discourse takes a while to boot after the restart.
+  for _ in $(seq 1 120); do
+    curl -sf -o /dev/null "$reference/srv/status" && break
+    sleep 1
+  done
+fi
 
 exec nix-shell -p "python3.withPackages (ps: [ ps.playwright ps.pillow ps.numpy ])" playwright-driver.browsers --run "
   export PLAYWRIGHT_BROWSERS_PATH=\$(nix-build '<nixpkgs>' -A playwright-driver.browsers --no-out-link)

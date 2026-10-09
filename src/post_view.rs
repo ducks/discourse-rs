@@ -331,7 +331,7 @@ pub fn topic_title(list: &ListContext, view: &Value, url: &str) -> String {
         crate::topic_list_view::topic_statuses(list, view),
         escape(url),
         crate::topic_list_view::emoji_unescape(fancy, &list.settings, list.base_path),
-        crate::topic_list_view::tags_html(list, view, title)
+        crate::topic_list_view::tags_html(list, view, title, &[])
     )
 }
 
@@ -442,6 +442,11 @@ fn regular(cx: &PostContext, p: &Value, prev: Option<Prev>) -> String {
     });
     if flag("user_suspended") {
         classes.push("post--user-suspended user-suspended");
+    }
+    // The plugins' post classes: discourse-topic-voting's on a votable
+    // topic's first post.
+    if number == 1 && flag("can_vote") {
+        classes.push("voting-post");
     }
 
     let created = date(&p["created_at"]);

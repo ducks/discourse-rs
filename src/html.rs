@@ -17,6 +17,7 @@ pub enum HtmlError {
     Setting(SettingError),
     Template(askama::Error),
     MessageFormat(crate::message_format::ParseError),
+    Unsupported(crate::Unsupported),
 }
 
 impl std::fmt::Display for HtmlError {
@@ -26,6 +27,7 @@ impl std::fmt::Display for HtmlError {
             HtmlError::Setting(e) => e.fmt(f),
             HtmlError::Template(e) => write!(f, "rendering template: {e}"),
             HtmlError::MessageFormat(e) => e.fmt(f),
+            HtmlError::Unsupported(e) => e.fmt(f),
         }
     }
 }
@@ -47,6 +49,16 @@ impl From<sqlx::Error> for HtmlError {
 impl From<SettingError> for HtmlError {
     fn from(e: SettingError) -> Self {
         HtmlError::Setting(e)
+    }
+}
+
+impl From<crate::plugins::PluginError> for HtmlError {
+    fn from(e: crate::plugins::PluginError) -> Self {
+        match e {
+            crate::plugins::PluginError::Db(e) => HtmlError::Db(e),
+            crate::plugins::PluginError::Setting(e) => HtmlError::Setting(e),
+            crate::plugins::PluginError::Unsupported(e) => HtmlError::Unsupported(e),
+        }
     }
 }
 
@@ -884,7 +896,34 @@ pub async fn topic_page(
         member_trust_level: site.viewer.as_ref().map(|v| v.trust_level),
         settings: crate::topic_list_view::ListSettings::load(settings)?,
     };
-    let title_html = crate::post_view::topic_title(&list, view, &topic_url);
+    let mut title_html = crate::post_view::topic_title(&list, view, &topic_url);
+    // discourse-topic-voting's topic-title outlet.
+    if view["can_vote"] == serde_json::Value::Bool(true) {
+        let voter = match site.viewer.as_ref() {
+            Some(v) => {
+                let id: i32 = sqlx::query_scalar("SELECT id FROM users WHERE username = $1")
+                    .bind(&v.username)
+                    .fetch_one(&mut *conn)
+                    .await?;
+                let votes = crate::plugins::topic_voting::UserVotes::load(
+                    conn,
+                    settings,
+                    id,
+                    v.trust_level,
+                )
+                .await?;
+                Some(crate::plugins::topic_voting::view::Voter { votes })
+            }
+            None => None,
+        };
+        title_html.push_str(&crate::plugins::topic_voting::view::title_voting(
+            i18n,
+            &base,
+            settings.get("topic_voting_show_who_voted")?.truthy(),
+            view,
+            voter.as_ref(),
+        ));
+    }
     let post_settings = crate::post_view::PostSettings::load(settings)?;
     let viewer = site.viewer.as_ref().map(|v| v.username.as_str());
     let staff = site.viewer.as_ref().is_some_and(|v| v.staff);
