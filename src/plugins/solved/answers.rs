@@ -151,18 +151,6 @@ fn can_accept(t: &Target, guardian: &Guardian) -> bool {
 }
 
 /// `WebHook.active_web_hooks(event).exists?`
-async fn web_hooks_active(conn: &mut PgConnection, event: &str) -> Result<bool, sqlx::Error> {
-    sqlx::query_scalar(
-        "SELECT EXISTS (SELECT 1 FROM web_hooks w \
-         LEFT JOIN web_hook_event_types_hooks h ON h.web_hook_id = w.id \
-         LEFT JOIN web_hook_event_types t ON t.id = h.web_hook_event_type_id \
-         WHERE w.active AND (w.wildcard_web_hook OR t.name = $1))",
-    )
-    .bind(event)
-    .fetch_one(&mut *conn)
-    .await
-}
-
 /// The topic's row, locked (`lock(:topic)`).
 async fn lock_topic(conn: &mut PgConnection, topic_id: i32) -> Result<(), sqlx::Error> {
     sqlx::query("SELECT id FROM topics WHERE id = $1 FOR UPDATE")
@@ -269,7 +257,7 @@ pub async fn accept(
     if t.view.accepted(t.post.id) {
         return Ok(Outcome::Failed);
     }
-    if web_hooks_active(conn, "accepted_solution").await? {
+    if crate::plugins::web_hooks_active(conn, "accepted_solution").await? {
         return Err(Unsupported("accepted_solution web hooks").into());
     }
     let me = guardian
@@ -453,7 +441,7 @@ pub async fn unaccept(
     if !accepted {
         return Ok(Outcome::Done(topic_id));
     }
-    if web_hooks_active(conn, "unaccepted_solution").await? {
+    if crate::plugins::web_hooks_active(conn, "unaccepted_solution").await? {
         return Err(Unsupported("unaccepted_solution web hooks").into());
     }
     lock_topic(conn, topic_id).await?;

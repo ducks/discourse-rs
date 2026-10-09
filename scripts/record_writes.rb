@@ -228,7 +228,9 @@ cases.each do |c|
       base = name.split(" ").first
       next if !names.include?(base)
       seen = ENQUEUED.size
-      "Jobs::#{base.camelize}".constantize.new.execute(args.with_indifferent_access)
+      # Core jobs are enqueued by name, plugins' by class.
+      klass = base.start_with?("Jobs::") ? base : "Jobs::#{base.camelize}"
+      klass.constantize.new.execute(args.with_indifferent_access)
       pending.concat(ENQUEUED[seen..])
     end
     emails =

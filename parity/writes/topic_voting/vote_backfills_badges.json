@@ -1,0 +1,232 @@
+{
+  "name": "vote_backfills_badges",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/voting/vote",
+      "params": {
+        "topic_id": "35"
+      }
+    }
+  ],
+  "started_at": "2026-10-09T06:44:56.468539",
+  "transaction_started_at": "2026-10-09T06:44:53.728477",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "can_vote": true,
+        "vote_limit": 6,
+        "vote_count": 2,
+        "who_voted": [
+          {
+            "id": 3,
+            "username": "user1",
+            "name": "User1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png"
+          },
+          {
+            "id": 4,
+            "username": "user2",
+            "name": "User2",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png"
+          }
+        ],
+        "votes_left": 5,
+        "alert": false
+      }
+    }
+  ],
+  "changes": {
+    "badges": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 107,
+            "icon": "vote-up-filled",
+            "name": "Daydreamer",
+            "query": "SELECT post_id, user_id, granted_at\nFROM (\n  SELECT\n    p.id AS post_id,\n    t.user_id,\n    v.created_at AS granted_at,\n    ROW_NUMBER() OVER (PARTITION BY p.id ORDER BY v.created_at) AS rn\n  FROM topic_voting_votes v\n  JOIN topics t ON t.id = v.topic_id\n  JOIN badge_posts p ON p.topic_id = t.id AND p.post_number = 1\n  WHERE v.user_id <> t.user_id\n    AND (:backfill OR p.id IN (:post_ids))\n) q\nWHERE rn = 1\n",
+            "system": true,
+            "enabled": true,
+            "trigger": 0,
+            "listable": true,
+            "created_at": "2026-07-25T05:58:29.893607",
+            "show_posts": true,
+            "updated_at": "2026-07-25T05:58:29.893607",
+            "allow_title": false,
+            "auto_revoke": true,
+            "description": null,
+            "grant_count": 0,
+            "target_posts": true,
+            "badge_type_id": 3,
+            "multiple_grant": true,
+            "image_upload_id": null,
+            "long_description": null,
+            "badge_grouping_id": 2,
+            "show_in_post_header": false
+          },
+          "after": {
+            "id": 107,
+            "icon": "vote-up-filled",
+            "name": "Daydreamer",
+            "query": "SELECT post_id, user_id, granted_at\nFROM (\n  SELECT\n    p.id AS post_id,\n    t.user_id,\n    v.created_at AS granted_at,\n    ROW_NUMBER() OVER (PARTITION BY p.id ORDER BY v.created_at) AS rn\n  FROM topic_voting_votes v\n  JOIN topics t ON t.id = v.topic_id\n  JOIN badge_posts p ON p.topic_id = t.id AND p.post_number = 1\n  WHERE v.user_id <> t.user_id\n    AND (:backfill OR p.id IN (:post_ids))\n) q\nWHERE rn = 1\n",
+            "system": true,
+            "enabled": true,
+            "trigger": 0,
+            "listable": true,
+            "created_at": "2026-07-25T05:58:29.893607",
+            "show_posts": true,
+            "updated_at": "2026-10-09T06:44:56.607895",
+            "allow_title": false,
+            "auto_revoke": true,
+            "description": null,
+            "grant_count": 1,
+            "target_posts": true,
+            "badge_type_id": 3,
+            "multiple_grant": true,
+            "image_upload_id": null,
+            "long_description": null,
+            "badge_grouping_id": 2,
+            "show_in_post_header": false
+          }
+        }
+      ]
+    },
+    "notifications": {
+      "inserted": [
+        {
+          "id": 53,
+          "data": "{\"badge_id\":107,\"badge_name\":\"Daydreamer\",\"badge_slug\":\"daydreamer\",\"badge_title\":false,\"username\":\"user0\"}",
+          "read": false,
+          "user_id": 2,
+          "topic_id": null,
+          "created_at": "2026-10-09T06:44:56.591583",
+          "updated_at": "2026-10-09T06:44:56.591583",
+          "post_number": null,
+          "high_priority": false,
+          "post_action_id": null,
+          "notification_type": 12
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_voting_topic_vote_count": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 4,
+            "topic_id": 35,
+            "created_at": "2026-10-09T06:44:53.728477",
+            "updated_at": "2026-10-09T06:44:53.728477",
+            "votes_count": 1
+          },
+          "after": {
+            "id": 4,
+            "topic_id": 35,
+            "created_at": "2026-10-09T06:44:53.728477",
+            "updated_at": "2026-10-09T06:44:53.728477",
+            "votes_count": 2
+          }
+        }
+      ]
+    },
+    "topic_voting_votes": {
+      "inserted": [
+        {
+          "id": 2,
+          "archive": false,
+          "user_id": 3,
+          "topic_id": 35,
+          "created_at": "2026-10-09T06:44:56.551278",
+          "updated_at": "2026-10-09T06:44:56.551278"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 291,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "9qTZwOfFSRSEqtNSJ7AfehwKUaI=",
+            "created_at": "2026-10-09T06:44:54.90885",
+            "rotated_at": "2026-10-09T06:44:54.901728",
+            "updated_at": "2026-10-09T06:44:54.90885",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "9qTZwOfFSRSEqtNSJ7AfehwKUaI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 291,
+            "seen_at": "2026-10-09T06:44:56.513791",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "9qTZwOfFSRSEqtNSJ7AfehwKUaI=",
+            "created_at": "2026-10-09T06:44:54.90885",
+            "rotated_at": "2026-10-09T06:44:54.901728",
+            "updated_at": "2026-10-09T06:44:54.90885",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "9qTZwOfFSRSEqtNSJ7AfehwKUaI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_badges": {
+      "inserted": [
+        {
+          "id": 19,
+          "seq": 0,
+          "post_id": 35,
+          "user_id": 2,
+          "badge_id": 107,
+          "created_at": "2026-10-09T06:44:53.728477",
+          "granted_at": "2026-10-08T00:00:00",
+          "is_favorite": null,
+          "featured_rank": null,
+          "granted_by_id": -1,
+          "notification_id": 53
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [
+    [
+      "Jobs::DiscourseTopicVoting::BackfillBadges",
+      {
+        "topic_id": 35
+      }
+    ]
+  ],
+  "setup": [
+    "INSERT INTO topic_voting_category_settings (category_id, created_at, updated_at) VALUES (4, now(), now())",
+    "INSERT INTO topic_voting_votes (topic_id, user_id, archive, created_at, updated_at) VALUES (35, 4, false, '2026-10-08 00:00:00', '2026-10-08 00:00:00')",
+    "INSERT INTO topic_voting_topic_vote_count (topic_id, votes_count, created_at, updated_at) VALUES (35, 1, now(), now()) ON CONFLICT (topic_id) DO UPDATE SET votes_count = EXCLUDED.votes_count"
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "ddb984cd7e9299b5545e2a13f9d40bcd6d2dcf76bd1ed523388baec719c15e87",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

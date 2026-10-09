@@ -1,10 +1,10 @@
-//! discourse-topic-voting, read side: the keys it adds to topic list
-//! items, the topic view, the first post, categories and the current
-//! user, and the `votes` list order, on the tables Rails' plugin created
+//! discourse-topic-voting, on the tables Rails' plugin created
 //! (`topic_voting_category_settings`, `topic_voting_votes`,
-//! `topic_voting_topic_vote_count`). Not ported yet: voting itself, the
-//! my_votes state, the hot list of a voting category, the voted_by and
-//! votes lists, and the search filters.
+//! `topic_voting_topic_vote_count`): the keys it adds to topic list
+//! items, the topic view, the first post, categories and the current
+//! user, the `votes` list order, and voting (`votes`).
+
+pub mod votes;
 
 use std::collections::{HashMap, HashSet};
 
@@ -13,6 +13,9 @@ use sqlx::PgConnection;
 
 use crate::guardian::Guardian;
 use crate::site_settings::{SettingError, SiteSettings};
+
+/// `DiscourseTopicVoting::BADGE_NAMES`
+pub const BADGE_NAMES: [&str; 4] = ["Daydreamer", "Brainstormer", "Innovator", "Visionary"];
 
 /// `enabled_site_setting :topic_voting_enabled`
 pub fn enabled(settings: &SiteSettings) -> Result<bool, SettingError> {
@@ -166,9 +169,61 @@ pub async fn topic_view_keys(
     Ok(())
 }
 
-/// The current user's keys: `votes_exceeded`, `votes_count` (their
-/// unarchived votes), `votes_left` and `vote_limit` (nil without vote
-/// limits).
+/// A user's votes against their limit (DiscourseTopicVoting::UserExtension).
+#[derive(Debug, Clone, Copy)]
+pub struct UserVotes {
+    /// `vote_count`: their unarchived votes.
+    pub count: i64,
+    /// `vote_limit`: nil without vote limits.
+    pub limit: Option<i64>,
+}
+
+impl UserVotes {
+    pub async fn load(
+        conn: &mut PgConnection,
+        settings: &SiteSettings,
+        user_id: i32,
+        trust_level: i32,
+    ) -> Result<Self, crate::plugins::PluginError> {
+        let count: i64 = sqlx::query_scalar(
+            "SELECT count(*) FROM topic_voting_votes WHERE user_id = $1 AND NOT archive",
+        )
+        .bind(user_id)
+        .fetch_one(&mut *conn)
+        .await?;
+        let limit = if settings.get("topic_voting_enable_vote_limits")?.truthy() {
+            Some(
+                settings
+                    .get(&format!("topic_voting_tl{trust_level}_vote_limit"))?
+                    .to_i(),
+            )
+        } else {
+            None
+        };
+        Ok(UserVotes { count, limit })
+    }
+
+    /// `reached_voting_limit?`
+    pub fn reached(&self) -> bool {
+        self.limit.is_some_and(|l| self.count >= l)
+    }
+
+    /// `votes_left`
+    pub fn left(&self) -> Option<i64> {
+        self.limit.map(|l| (l - self.count).max(0))
+    }
+
+    /// `alert_low_votes?`
+    pub fn alert_low(&self, settings: &SiteSettings) -> Result<bool, SettingError> {
+        let Some(limit) = self.limit else {
+            return Ok(false);
+        };
+        Ok(limit - self.count <= settings.get("topic_voting_alert_votes_left")?.to_i())
+    }
+}
+
+/// The current user's keys: `votes_exceeded`, `votes_count`, `votes_left`
+/// and `vote_limit`.
 pub async fn current_user_keys(
     conn: &mut PgConnection,
     settings: &SiteSettings,
@@ -176,31 +231,11 @@ pub async fn current_user_keys(
     trust_level: i32,
     out: &mut Map<String, Value>,
 ) -> Result<(), crate::plugins::PluginError> {
-    let count: i64 = sqlx::query_scalar(
-        "SELECT count(*) FROM topic_voting_votes WHERE user_id = $1 AND NOT archive",
-    )
-    .bind(user_id)
-    .fetch_one(&mut *conn)
-    .await?;
-    let limit = if settings.get("topic_voting_enable_vote_limits")?.truthy() {
-        Some(
-            settings
-                .get(&format!("topic_voting_tl{trust_level}_vote_limit"))?
-                .to_i(),
-        )
-    } else {
-        None
-    };
-    out.insert(
-        "votes_exceeded".into(),
-        json!(limit.is_some_and(|l| count >= l)),
-    );
-    out.insert("votes_count".into(), json!(count));
-    out.insert(
-        "votes_left".into(),
-        json!(limit.map(|l| (l - count).max(0))),
-    );
-    out.insert("vote_limit".into(), json!(limit));
+    let votes = UserVotes::load(conn, settings, user_id, trust_level).await?;
+    out.insert("votes_exceeded".into(), json!(votes.reached()));
+    out.insert("votes_count".into(), json!(votes.count));
+    out.insert("votes_left".into(), json!(votes.left()));
+    out.insert("vote_limit".into(), json!(votes.limit));
     Ok(())
 }
 

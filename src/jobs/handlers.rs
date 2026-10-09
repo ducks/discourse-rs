@@ -53,6 +53,9 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
             }
         }
         "process_email" => process_email(state, &job.args).await,
+        "Jobs::DiscourseTopicVoting::BackfillBadges" => {
+            topic_voting_backfill_badges(state, &job.args).await
+        }
         other => {
             return Err(JobError::Unported(format!(
                 "not ported yet: the {other} job"
@@ -60,6 +63,45 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         }
     };
     Ok(result?)
+}
+
+/// Jobs::DiscourseTopicVoting::BackfillBadges: the voting badges
+/// backfilled for the topic's first post.
+async fn topic_voting_backfill_badges(state: &AppState, args: &Value) -> Result<(), AppError> {
+    let Some(topic_id) = int_arg(args, "topic_id")? else {
+        return Ok(());
+    };
+    let mut tx = state.pool.begin().await?;
+    let s = settings(state, &mut tx).await?;
+    if !s.get("enable_badges")?.truthy() {
+        return Ok(());
+    }
+    let first_post: Option<i32> =
+        sqlx::query_scalar("SELECT id FROM posts WHERE topic_id = $1 AND post_number = 1")
+            .bind(topic_id)
+            .fetch_optional(&mut *tx)
+            .await?;
+    let Some(first_post) = first_post else {
+        return Ok(());
+    };
+    let badges = crate::badge_granter::Badge::enabled_named(
+        &mut tx,
+        &crate::plugins::topic_voting::BADGE_NAMES,
+    )
+    .await?;
+    for badge in &badges {
+        crate::badge_granter::backfill(
+            &mut tx,
+            &state.bus,
+            &s,
+            &state.i18n,
+            badge,
+            Some(crate::badge_granter::Scope::Posts(&[first_post])),
+        )
+        .await?;
+    }
+    tx.commit().await?;
+    Ok(())
 }
 
 fn int_arg(args: &Value, key: &str) -> Result<Option<i32>, AppError> {

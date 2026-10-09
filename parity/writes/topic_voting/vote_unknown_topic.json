@@ -1,0 +1,77 @@
+{
+  "name": "vote_unknown_topic",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/voting/vote",
+      "params": {
+        "topic_id": "99999"
+      }
+    }
+  ],
+  "started_at": "2026-10-09T06:34:38.418946",
+  "transaction_started_at": "2026-10-09T06:34:37.419457",
+  "responses": [
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 291,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "iJkEvxF3ltt8JKMOgZF/uuY+Eto=",
+            "created_at": "2026-10-09T06:34:37.760731",
+            "rotated_at": "2026-10-09T06:34:37.760513",
+            "updated_at": "2026-10-09T06:34:37.760731",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "iJkEvxF3ltt8JKMOgZF/uuY+Eto=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 291,
+            "seen_at": "2026-10-09T06:34:38.426982",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "iJkEvxF3ltt8JKMOgZF/uuY+Eto=",
+            "created_at": "2026-10-09T06:34:37.760731",
+            "rotated_at": "2026-10-09T06:34:37.760513",
+            "updated_at": "2026-10-09T06:34:37.760731",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "iJkEvxF3ltt8JKMOgZF/uuY+Eto=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "setup": [
+    "INSERT INTO topic_voting_category_settings (category_id, created_at, updated_at) VALUES (4, now(), now())"
+  ],
+  "recorded_from": {
+    "case": "7d06355caf991101ed8f038c32e063bbb627365b45e4f935127a96438889553a",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

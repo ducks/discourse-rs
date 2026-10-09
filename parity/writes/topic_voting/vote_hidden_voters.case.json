@@ -1,0 +1,18 @@
+{
+  "user": "user1",
+  "settings": {
+    "topic_voting_show_who_voted": "false"
+  },
+  "setup": [
+    "INSERT INTO topic_voting_category_settings (category_id, created_at, updated_at) VALUES (4, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/voting/vote",
+      "params": {
+        "topic_id": "35"
+      }
+    }
+  ]
+}

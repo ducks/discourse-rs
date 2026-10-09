@@ -1,0 +1,79 @@
+{
+  "name": "vote_archived_vote",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/voting/vote",
+      "params": {
+        "topic_id": "41"
+      }
+    }
+  ],
+  "started_at": "2026-10-09T06:34:24.273101",
+  "transaction_started_at": "2026-10-09T06:34:23.39441",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 291,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "/nFP8ud39dHB0B3LIyScwfpt4qY=",
+            "created_at": "2026-10-09T06:34:23.755366",
+            "rotated_at": "2026-10-09T06:34:23.755105",
+            "updated_at": "2026-10-09T06:34:23.755366",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "/nFP8ud39dHB0B3LIyScwfpt4qY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 291,
+            "seen_at": "2026-10-09T06:34:24.279054",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "/nFP8ud39dHB0B3LIyScwfpt4qY=",
+            "created_at": "2026-10-09T06:34:23.755366",
+            "rotated_at": "2026-10-09T06:34:23.755105",
+            "updated_at": "2026-10-09T06:34:23.755366",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "/nFP8ud39dHB0B3LIyScwfpt4qY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "setup": [
+    "INSERT INTO topic_voting_category_settings (category_id, created_at, updated_at) VALUES (4, now(), now())",
+    "INSERT INTO topic_voting_votes (topic_id, user_id, archive, created_at, updated_at) VALUES (41, 3, true, now() - interval '10 hours', now() - interval '10 hours')",
+    "INSERT INTO topic_voting_topic_vote_count (topic_id, votes_count, created_at, updated_at) VALUES (41, 1, now(), now()) ON CONFLICT (topic_id) DO UPDATE SET votes_count = EXCLUDED.votes_count"
+  ],
+  "recorded_from": {
+    "case": "b68ad64dc5253b0f39618307a61e76ec0d9706dc12ccc6e9ab354ac7cc1ae6b6",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

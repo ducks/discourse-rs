@@ -121,3 +121,20 @@ pub fn topic_list_before_serialize(
         solved.rewrite_posters(i18n, topic_id, last_post_user_id, inputs);
     }
 }
+
+/// `WebHook.active_web_hooks(event).exists?`: an active hook for the
+/// event, or a wildcard one.
+pub(crate) async fn web_hooks_active(
+    conn: &mut sqlx::PgConnection,
+    event: &str,
+) -> Result<bool, sqlx::Error> {
+    sqlx::query_scalar(
+        "SELECT EXISTS (SELECT 1 FROM web_hooks w \
+         LEFT JOIN web_hook_event_types_hooks h ON h.web_hook_id = w.id \
+         LEFT JOIN web_hook_event_types t ON t.id = h.web_hook_event_type_id \
+         WHERE w.active AND (w.wildcard_web_hook OR t.name = $1))",
+    )
+    .bind(event)
+    .fetch_one(&mut *conn)
+    .await
+}

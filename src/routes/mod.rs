@@ -34,6 +34,7 @@ mod stylesheets;
 mod tags;
 mod topic_notifications;
 mod topic_status;
+mod topic_voting;
 mod topics;
 mod user_avatars;
 mod user_menu;
@@ -233,6 +234,13 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/solution/accept.json", post(solved::accept))
         .route("/solution/unaccept", post(solved::unaccept))
         .route("/solution/unaccept.json", post(solved::unaccept))
+        // discourse-topic-voting's VotesController.
+        .route("/voting/vote", post(topic_voting::vote))
+        .route("/voting/vote.json", post(topic_voting::vote))
+        .route("/voting/unvote", post(topic_voting::unvote))
+        .route("/voting/unvote.json", post(topic_voting::unvote))
+        .route("/voting/who", get(topic_voting::who))
+        .route("/voting/who.json", get(topic_voting::who))
         // TopicsController#set_notifications; {slug} holds the topic id.
         .route(
             "/t/{slug}/notifications",
