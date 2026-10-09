@@ -7,6 +7,7 @@
 //! (ChannelFetcher.generate_allowed_channel_ids_sql), and the keys it adds
 //! to users, the current user and their options.
 
+pub mod auto_join;
 pub mod channels;
 pub mod messages;
 pub mod view;

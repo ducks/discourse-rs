@@ -59,6 +59,9 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         "Jobs::DiscourseTopicVoting::VoteRelease" => {
             topic_voting_vote_release(state, &job.args).await
         }
+        crate::plugins::chat::auto_join::UPDATE_USER_COUNT_JOB => {
+            chat_update_channel_user_count(state, &job.args).await
+        }
         "Jobs::DiscourseTopicVoting::VoteReclaim" => {
             let mut tx = match state.pool.begin().await {
                 Ok(tx) => tx,
@@ -83,6 +86,15 @@ async fn topic_voting_vote_release(state: &AppState, args: &Value) -> Result<(),
     let mut tx = state.pool.begin().await?;
     let s = settings(state, &mut tx).await?;
     crate::plugins::topic_voting::lifecycle::vote_release(&mut tx, &state.bus, &s, args).await?;
+    tx.commit().await?;
+    Ok(())
+}
+
+/// Jobs::Chat::UpdateChannelUserCount
+async fn chat_update_channel_user_count(state: &AppState, args: &Value) -> Result<(), AppError> {
+    let mut tx = state.pool.begin().await?;
+    let s = settings(state, &mut tx).await?;
+    crate::plugins::chat::auto_join::update_user_count(&mut tx, &state.bus, &s, args).await?;
     tx.commit().await?;
     Ok(())
 }

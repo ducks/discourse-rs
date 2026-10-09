@@ -373,6 +373,22 @@ pub async fn layer(
         }
         _ => false,
     };
+    // The session user's last seen, as Rails updates it when the current
+    // user is looked up: before the action, which then sees what it did
+    // (chat's auto-join on a first sight).
+    if let (Some(settings), Some(session)) = (&settings, &incoming.session)
+        && should_update_last_seen(&headers, &method)
+    {
+        let mut conn = state.pool.acquire().await?;
+        update_last_seen(
+            &mut conn,
+            &state,
+            settings,
+            &session.user,
+            &remote_ip(&headers, peer),
+        )
+        .await?;
+    }
     request.extensions_mut().insert(incoming.clone());
     let mut response = next.run(request).await;
     if cleared {
@@ -415,16 +431,6 @@ pub async fn layer(
                         .headers_mut()
                         .append(header::SET_COOKIE, HeaderValue::from_str(&cookie)?);
                 }
-            }
-            if should_update_last_seen(&headers, &method) {
-                update_last_seen(
-                    &mut conn,
-                    &state.keys,
-                    &settings,
-                    &session.user,
-                    &remote_ip(&headers, peer),
-                )
-                .await?;
             }
         }
         None if incoming.had_token_cookie => {
@@ -513,7 +519,7 @@ fn should_update_last_seen(headers: &HeaderMap, method: &Method) -> bool {
 /// per `active_user_rate_limit_secs` per user and day.
 async fn update_last_seen(
     conn: &mut PgConnection,
-    keys: &Keys,
+    state: &AppState,
     settings: &SiteSettings,
     user: &SessionUser,
     ip: &str,
@@ -521,7 +527,8 @@ async fn update_last_seen(
     let limit = settings.get("active_user_rate_limit_secs")?.to_i();
     let today = crate::clock::now().format("%Y-%m-%d").to_string();
     let allowed = {
-        let mut gate = keys
+        let mut gate = state
+            .keys
             .last_seen_gate
             .lock()
             .unwrap_or_else(|e| e.into_inner());
@@ -559,12 +566,20 @@ async fn update_last_seen(
         .bind(timeout as f64)
         .execute(&mut *conn)
         .await?;
-        sqlx::query(
-            "UPDATE users SET last_seen_at = now(), first_seen_at = COALESCE(first_seen_at, now()) WHERE id = $1",
+        let first_seen: Option<bool> = sqlx::query_scalar(
+            "UPDATE users SET last_seen_at = now(), first_seen_at = COALESCE(first_seen_at, now()) WHERE id = $1 \
+             RETURNING first_seen_at = last_seen_at",
         )
         .bind(user.id)
-        .execute(&mut *conn)
-        .await?;
+        .fetch_optional(&mut *conn)
+        .await?
+        .flatten();
+        // DiscourseEvent :user_seen: chat auto-joins a user seen for the
+        // first time.
+        if first_seen == Some(true) {
+            crate::plugins::chat::auto_join::user(&mut *conn, &state.bus, state, settings, user.id)
+                .await?;
+        }
     }
     if user.ip_address.as_deref() != Some(ip) && !ip.is_empty() {
         sqlx::query("UPDATE users SET ip_address = $2::inet WHERE id = $1")

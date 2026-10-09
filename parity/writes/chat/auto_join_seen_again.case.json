@@ -1,0 +1,18 @@
+{
+  "user": "user2",
+  "setup": [
+    "UPDATE users SET first_seen_at = now() - interval '23 hours', last_seen_at = now() - interval '23 hours' WHERE id = 4"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/session/current.json",
+      "headers": {
+        "Discourse-Present": "true"
+      }
+    }
+  ],
+  "ignore": [
+    "/responses/0/body/current_user/user_option/treat_as_new_topic_start_date"
+  ]
+}

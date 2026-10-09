@@ -271,7 +271,6 @@ pub async fn serialize(
         name: Option<String>,
         uploaded_avatar_id: Option<i32>,
         title: Option<String>,
-        previous_visit_at: Option<chrono::NaiveDateTime>,
         seen_notification_id: i64,
         primary_group_id: Option<i32>,
         flair_group_id: Option<i32>,
@@ -288,7 +287,7 @@ pub async fn serialize(
         new_since: Option<chrono::NaiveDateTime>,
     }
     let row: Row = sqlx::query_as(
-        "SELECT u.name, u.uploaded_avatar_id, u.title, u.previous_visit_at, u.seen_notification_id::bigint AS seen_notification_id, \
+        "SELECT u.name, u.uploaded_avatar_id, u.title, u.seen_notification_id::bigint AS seen_notification_id, \
                 u.primary_group_id, u.flair_group_id, u.required_fields_version, u.created_at, \
                 up.dismissed_banner_key, COALESCE(uo.skip_new_user_tips, false) AS skip_new_user_tips, \
                 COALESCE(us.draft_count, 0) AS draft_count, COALESCE(us.pending_posts_count, 0) AS pending_posts_count, \
@@ -580,9 +579,12 @@ pub async fn serialize(
         json!(new_pms),
     );
     out.insert("read_faq".into(), json!(row.read_faq));
+    // The user as loaded with the session: the last seen update the
+    // request made (before the action, as Rails' deferred one runs) is in
+    // the database, not in this record.
     out.insert(
         "previous_visit_at".into(),
-        json!(row.previous_visit_at.map(crate::topic_list::time_json)),
+        json!(user.previous_visit_at.map(crate::topic_list::time_json)),
     );
     out.insert("seen_notification_id".into(), json!(seen));
     if let Some(id) = row.primary_group_id {

@@ -41,7 +41,7 @@ pub struct ChannelRow {
     pub last_message_id: Option<i64>,
 }
 
-const CHANNEL_COLUMNS: &str = "chat_channels.id, chat_channels.chatable_id, chat_channels.chatable_type, \
+pub(crate) const CHANNEL_COLUMNS: &str = "chat_channels.id, chat_channels.chatable_id, chat_channels.chatable_type, \
      chat_channels.name, chat_channels.description, chat_channels.emoji, chat_channels.status, \
      chat_channels.user_count, chat_channels.auto_join_users, chat_channels.allow_channel_wide_mentions, \
      chat_channels.threading_enabled, chat_channels.slug, chat_channels.last_message_id";
