@@ -451,28 +451,35 @@ pub async fn serialize(
         "can_delete_all_posts_and_topics".into(),
         json!(g.in_setting_groups("delete_all_posts_and_topics_allowed_groups")?),
     );
-    // custom_fields: public_user_custom_fields only (plugin fields ignored).
+    // custom_fields: public_user_custom_fields and the fields plugins
+    // register (DiscoursePluginRegistry.serialized_current_user_fields),
+    // typed as registered. Of the bundled plugins, chat's last channel
+    // (an integer); the others aren't ported.
     let mut custom = Map::new();
-    let names: Vec<String> = settings
+    let mut names: Vec<String> = settings
         .get("public_user_custom_fields")?
         .to_s()
         .split('|')
         .filter(|s| !s.is_empty())
         .map(str::to_string)
         .collect();
-    if !names.is_empty() {
-        let rows: Vec<(String, Option<String>)> =
-            sqlx::query_as("SELECT name, value FROM user_custom_fields WHERE user_id = $1 AND name = ANY($2) ORDER BY id")
-                .bind(uid)
-                .bind(&names)
-                .fetch_all(&mut *conn)
-                .await?;
-        for (name, value) in rows {
-            if custom.contains_key(&name) {
-                return Err(Unsupported("repeated user custom fields (array values)").into());
-            }
-            custom.insert(name, json!(value));
+    names.push(crate::plugins::chat::messages::LAST_CHAT_CHANNEL_ID.to_string());
+    let rows: Vec<(String, Option<String>)> =
+        sqlx::query_as("SELECT name, value FROM user_custom_fields WHERE user_id = $1 AND name = ANY($2) ORDER BY id")
+            .bind(uid)
+            .bind(&names)
+            .fetch_all(&mut *conn)
+            .await?;
+    for (name, value) in rows {
+        if custom.contains_key(&name) {
+            return Err(Unsupported("repeated user custom fields (array values)").into());
         }
+        let value = if name == crate::plugins::chat::messages::LAST_CHAT_CHANNEL_ID {
+            json!(value.as_deref().map(crate::ruby::to_i))
+        } else {
+            json!(value)
+        };
+        custom.insert(name, value);
     }
     out.insert("custom_fields".into(), Value::Object(custom));
 

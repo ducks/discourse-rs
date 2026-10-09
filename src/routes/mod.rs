@@ -168,6 +168,8 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/chat/api/channels/{id}/memberships.json",
             get(chat::memberships),
         )
+        .route("/chat/api/channels/{id}/messages", get(chat::messages))
+        .route("/chat/api/channels/{id}/messages.json", get(chat::messages))
         // discourse-solved's AnswerController.
         .route("/solution/accept", post(solved::accept))
         .route("/solution/accept.json", post(solved::accept))

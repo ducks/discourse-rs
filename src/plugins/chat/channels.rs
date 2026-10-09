@@ -331,7 +331,7 @@ impl Context<'_> {
 
     /// `Chat::Thread.viewable_by_user(user).exists?`, refused while threads
     /// aren't ported: false only when the site has none.
-    async fn refuse_threads(&mut self) -> Result<(), AppError> {
+    pub(crate) async fn refuse_threads(&mut self) -> Result<(), AppError> {
         let any: bool = sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM chat_threads)")
             .fetch_one(&mut *self.conn)
             .await?;
@@ -912,24 +912,7 @@ impl Context<'_> {
             }
         };
         meta.insert("user_silenced".into(), json!(silenced));
-        // can_moderate_chat?: staff, or the category's group moderators.
-        let can_moderate = g.is_staff() || {
-            settings.get("enable_category_group_moderation")?.truthy()
-                && match g.user_id() {
-                    None => false,
-                    Some(uid) => {
-                        sqlx::query_scalar::<_, bool>(
-                            "SELECT EXISTS (SELECT 1 FROM category_moderation_groups cmg \
-                         JOIN group_users gu ON gu.group_id = cmg.group_id \
-                         WHERE cmg.category_id = $1 AND gu.user_id = $2)",
-                        )
-                        .bind(channel.chatable_id as i32)
-                        .bind(uid)
-                        .fetch_one(&mut *self.conn)
-                        .await?
-                    }
-                }
-        };
+        let can_moderate = self.can_moderate(channel).await?;
         meta.insert("can_moderate".into(), json!(can_moderate));
         meta.insert(
             "can_delete_self".into(),

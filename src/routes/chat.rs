@@ -234,3 +234,74 @@ pub async fn memberships(
     )
     .into_response())
 }
+
+/// ActiveModel's integer cast of a param: digits first (after any sign
+/// and space), else nil.
+fn cast_integer(v: Option<&str>) -> Option<i64> {
+    let v = v?;
+    v.trim_start()
+        .trim_start_matches(['+', '-'])
+        .starts_with(|c: char| c.is_ascii_digit())
+        .then(|| crate::ruby::to_i(v))
+}
+
+/// GET /chat/api/channels/:channel_id/messages:
+/// Chat::Api::ChannelMessagesController#index (Chat::ListChannelMessages).
+pub async fn messages(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(id): Path<String>,
+    uri: Uri,
+) -> Result<Response, AppError> {
+    use crate::plugins::chat::messages::{ListParams, Listed};
+    /// `ChannelMessagesController::MAX_PAGE_SIZE`
+    const MAX_PAGE_SIZE: i64 = 50;
+
+    let mut tx = state.pool.begin().await?;
+    let settings = match begin(&state, &mut tx, &guardian).await? {
+        Ok(settings) => settings,
+        Err(refused) => return Ok(refused),
+    };
+    let p = uri.query().map(params::parse_query).unwrap_or_default();
+    let scalar = |key: &str| p.get(key).and_then(params::scalar);
+
+    // The contract.
+    let channel_id = cast_integer(Some(id.strip_suffix(".json").unwrap_or(&id)));
+    let page_size = cast_integer(scalar("page_size").as_deref());
+    let direction = scalar("direction");
+    let mut errors = Vec::new();
+    if channel_id.is_none() {
+        errors.push("Channel can't be blank");
+    }
+    if page_size.is_some_and(|n| n < 1) {
+        errors.push("Page size must be greater than or equal to 1");
+    }
+    if direction
+        .as_deref()
+        .is_some_and(|d| d != "past" && d != "future")
+    {
+        errors.push("Direction is not included in the list");
+    }
+    let Some(channel_id) = channel_id.filter(|_| errors.is_empty()) else {
+        return Ok((
+            axum::http::StatusCode::BAD_REQUEST,
+            Json(json!({"failed": "FAILED", "errors": errors})),
+        )
+            .into_response());
+    };
+    let list = ListParams {
+        page_size: page_size.unwrap_or(MAX_PAGE_SIZE).min(MAX_PAGE_SIZE),
+        target_message_id: cast_integer(scalar("target_message_id").as_deref()),
+        direction,
+        fetch_from_last_read: cast_boolean(scalar("fetch_from_last_read").as_deref()) == Some(true),
+        target_date: scalar("target_date"),
+    };
+    let mut cx = context(&state, &mut tx, &settings, &guardian);
+    let response = match cx.list_messages(channel_id, &list).await? {
+        Listed::Messages(body) => Json(body).into_response(),
+        Listed::NotFound => return Ok(super::topics::not_found_response(&state)),
+        Listed::Forbidden => return Ok(super::search::invalid_access(&state)),
+    };
+    tx.commit().await?;
+    Ok(response)
+}

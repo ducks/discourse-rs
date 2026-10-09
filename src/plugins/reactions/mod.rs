@@ -116,7 +116,7 @@ impl Reactions {
 
 /// `Emoji.exists?`: a standard emoji or alias, or a custom one; `:name:`
 /// and a `:tN` skin tone are accepted around the name.
-fn emoji_exists(name: &str, custom: &HashSet<String>) -> bool {
+pub(crate) fn emoji_exists(name: &str, custom: &HashSet<String>) -> bool {
     let name = name.trim_matches(':');
     let name = match name.rsplit_once(":t") {
         Some((base, tone))

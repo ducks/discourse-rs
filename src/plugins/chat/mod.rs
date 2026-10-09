@@ -8,6 +8,7 @@
 //! to users, the current user and their options.
 
 pub mod channels;
+pub mod messages;
 
 use serde_json::{Map, Value, json};
 use sqlx::PgConnection;
