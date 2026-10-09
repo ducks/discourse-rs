@@ -23,6 +23,62 @@ Caveats that apply to every run:
 - Same box, same Postgres, client and servers all local; keep-alive off so
   each request carries a connection.
 
+## 2026-10-09, with the anonymous cache
+
+The production comparison above, rerun for anonymous visitors once
+discourse-rs had Middleware::AnonymousCache (feat/anonymous-cache): rs in
+RAILS_ENV=production, where the cache is on, the rs-prod agent unchanged,
+c=16, 5 s, no Accept-Encoding (\`cached\` and \`uncached\` are Rails'):
+
+| endpoint | target | req/s | p50 ms | p99 ms | non-2xx |
+|---|---|---:|---:|---:|---:|
+| /srv/status | rs | 50060 | 0.3 | 0.8 | 0 |
+| /srv/status | rails-prod (cached) | 3131 | 5 | 7 | 0 |
+| /srv/status | rails-prod (uncached) | 3105 | 5 | 7.2 | 0 |
+| /site.json | rs | 2703 | 5.9 | 8.3 | 0 |
+| /site.json | rails-prod (cached) | 1827 | 8.6 | 13.4 | 0 |
+| /site.json | rails-prod (uncached) | 1941 | 8.1 | 12.9 | 0 |
+| /latest.json | rs | 26653 | 0.5 | 1.6 | 0 |
+| /latest.json | rails-prod (cached) | 3692 | 4.2 | 6.1 | 0 |
+| /latest.json | rails-prod (uncached) | 230 | 69.4 | 81.8 | 0 |
+| /latest | rs | 2165 | 7.1 | 13.8 | 0 |
+| /latest | rails-prod (cached) | 3427 | 4.5 | 6.7 | 0 |
+| /latest | rails-prod (uncached) | 150 | 107.5 | 127.3 | 0 |
+| /c/general/4.json | rs | 25317 | 0.6 | 1.7 | 0 |
+| /c/general/4.json | rails-prod (cached) | 3799 | 4.1 | 6.2 | 0 |
+| /c/general/4.json | rails-prod (uncached) | 217 | 73.5 | 91.6 | 0 |
+| /categories.json | rs | 25399 | 0.6 | 1.6 | 0 |
+| /categories.json | rails-prod (cached) | 3816 | 4.1 | 6 | 0 |
+| /categories.json | rails-prod (uncached) | 363 | 43.8 | 56.2 | 0 |
+| /t/welcome-to-discourse/5.json | rs | 22468 | 0.6 | 1.9 | 0 |
+| /t/welcome-to-discourse/5.json | rails-prod (cached) | 3742 | 4.1 | 5.9 | 0 |
+| /t/welcome-to-discourse/5.json | rails-prod (uncached) | 144 | 111.9 | 127.6 | 0 |
+| /t/welcome-to-discourse/5 | rs | 2192 | 6.9 | 13.8 | 0 |
+| /t/welcome-to-discourse/5 | rails-prod (cached) | 3451 | 4.4 | 7 | 0 |
+| /t/welcome-to-discourse/5 | rails-prod (uncached) | 100 | 161.4 | 271.8 | 0 |
+| /u/system.json | rs | 7654 | 2 | 4.4 | 0 |
+| /u/system.json | rails-prod (cached) | 437 | 36.1 | 47.8 | 0 |
+| /u/system.json | rails-prod (uncached) | 436 | 36.2 | 52.4 | 0 |
+| /search.json?q=Welcome | rs | 31012 | 0.5 | 1.3 | 0 |
+| /search.json?q=Welcome | rails-prod (cached) | 3876 | 4 | 5.8 | 26 |
+| /search.json?q=Welcome | rails-prod (uncached) | 1851 | 8.4 | 13.5 | 9233 |
+| /tag/guide.json | rs | 30567 | 0.5 | 1.3 | 0 |
+| /tag/guide.json | rails-prod (cached) | 3899 | 4 | 5.6 | 0 |
+| /tag/guide.json | rails-prod (uncached) | 236 | 68 | 79.8 | 0 |
+
+Cached JSON serves 22000 to 31000 req/s against Rails' 3700 to 3900.
+Without compression the cached HTML pages are bound by their size: the
+port renders the whole page (75 KB, 42 KB of it the inline icon sprite)
+where Rails sends a 17 KB Ember shell, and rs serves them at about 2200
+req/s against Rails' 3450. With Accept-Encoding: br, as browsers ask,
+the stored copy is the compressed one (18 KB) and a hit sends it as is:
+
+| endpoint, br, cached | rs | rails-prod |
+|---|---:|---:|
+| /latest | 60158 | 3548 |
+| /t/welcome-to-discourse/5 | 62206 | 3469 |
+| /latest.json | 63911 | 3740 |
+
 ## 2026-10-09, against a production Discourse
 
 The first comparison with Rails in production. The `rs-prod` dv agent runs
