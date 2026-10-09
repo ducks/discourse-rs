@@ -31,6 +31,7 @@ const DISCOURSE_CSS: &str = concat!(
     include_str!("../static/css/user-stream.css"),
     include_str!("../static/css/composer.css"),
     include_str!("../static/css/menus.css"),
+    include_str!("../static/css/filter-controls.css"),
     include_str!("../static/css/not-found.css"),
     include_str!("../static/css/powered-by.css"),
     // The bundled plugins' stylesheets, after core's.
@@ -71,6 +72,7 @@ const ASSETS: &[(&str, &str, &str)] = &[
         JS,
         include_str!("../static/js/discourse-solved.js"),
     ),
+    ("chat.js", JS, include_str!("../static/js/chat.js")),
     (
         "topic-voting.js",
         JS,

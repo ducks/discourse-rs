@@ -193,6 +193,9 @@ pub struct Chrome {
     /// Chat's header icon (plugins::chat::view), empty when the viewer
     /// can't chat.
     pub chat_header_icon: String,
+    /// Classes a route adds to `<html>` (htmlClass), each with a leading
+    /// space.
+    pub html_classes: String,
 }
 
 impl Chrome {

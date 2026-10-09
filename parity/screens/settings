@@ -4,6 +4,5 @@
 # them as Rust modules (PLUGINS.md, decision 6), one at a time; until a
 # plugin's UI is ported it is off on the reference so the screenshots
 # measure what is. A plugin comes off this list when its UI lands.
-chat_enabled=false
 presence_enabled=false
 discourse_templates_enabled=false

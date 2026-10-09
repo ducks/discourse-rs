@@ -376,3 +376,190 @@ async fn a_profile_offers_to_chat() {
     let own = user1.page("/u/user1/summary").await;
     assert!(!own.contains("chat-direct-message-btn"));
 }
+
+/// General's messages, as parity/writes/chat/messages.case.json seeds
+/// them: user0's message, user1's reply, admin's edited message with
+/// reactions, a deleted one, user1's /me and a link; user1 has read to
+/// the second and bookmarked the first.
+async fn chat_messages(db: &TestDb) {
+    let m = |id: i32, user: i32, mins: i32, msg: &str, cooked: &str, extra: &str, values: &str| {
+        format!(
+            "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id{extra}) \
+             VALUES ({id}, 2, {user}, now() - interval '{mins} minutes', now() - interval '{mins} minutes', '{msg}', '{cooked}', 1, {user}{values})"
+        )
+    };
+    for sql in [
+        m(1, 2, 50, "Hello **world**", "<p>Hello <strong>world</strong></p>", "", ""),
+        m(2, 3, 40, "@user0 hi back", "<p><a class=\"mention\" href=\"/u/user0\">@user0</a> hi back</p>", ", in_reply_to_id", ", 1"),
+        m(3, 1, 30, "edited", "<p>edited</p>", "", ""),
+        m(4, 2, 20, "gone", "<p>gone</p>", ", deleted_at, deleted_by_id", ", now() - interval '10 minutes', 2"),
+        m(5, 3, 15, "/me waves", "<p>/me waves</p>", "", ""),
+        m(6, 2, 5, "https://example.com", "<p><a href=\"https://example.com\">https://example.com</a></p>", "", ""),
+        "SELECT setval('chat_messages_id_seq', 6)".into(),
+        "UPDATE chat_channels SET last_message_id = 6 WHERE id = 2".into(),
+        "INSERT INTO chat_message_revisions (chat_message_id, old_message, new_message, created_at, updated_at, user_id) VALUES (3, 'x', 'edited', now(), now(), 1)".into(),
+        "INSERT INTO chat_message_reactions (chat_message_id, user_id, emoji, created_at, updated_at) VALUES (3, 3, 'heart', now(), now()), (3, 2, 'heart', now(), now())".into(),
+        "INSERT INTO bookmarks (user_id, bookmarkable_id, bookmarkable_type, name, auto_delete_preference, created_at, updated_at) VALUES (3, 1, 'ChatMessage', 'later', 3, now(), now())".into(),
+        "UPDATE user_chat_channel_memberships SET last_read_message_id = 2 WHERE chat_channel_id = 2 AND user_id = 3".into(),
+    ] {
+        sqlx::query(&sql).execute(&db.pool).await.unwrap();
+    }
+}
+
+impl Client {
+    /// A page request's status and Location, without following it.
+    async fn head(&mut self, path: &str) -> (u16, Option<String>) {
+        let cookie: Vec<String> = self
+            .cookies
+            .iter()
+            .map(|(k, v)| format!("{k}={v}"))
+            .collect();
+        let request = Request::get(path)
+            .header(header::HOST, "test.localhost")
+            .header(header::COOKIE, cookie.join("; "));
+        let response = discourse_rs::app(self.state.clone())
+            .oneshot(request.body(Body::empty()).unwrap())
+            .await
+            .unwrap();
+        let location = response
+            .headers()
+            .get(header::LOCATION)
+            .map(|v| v.to_str().unwrap().to_string());
+        (response.status().as_u16(), location)
+    }
+}
+
+#[tokio::test]
+async fn chat_goes_to_the_last_channel_or_the_browser() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Client::logged_in(st, "user1").await;
+    assert_eq!(
+        user1.head("/chat").await,
+        (302, Some("/chat/browse/open".into()))
+    );
+    assert_eq!(
+        user1.head("/chat/browse").await,
+        (302, Some("/chat/browse/open".into()))
+    );
+    // Archiving is off: its tab goes back to the browser.
+    assert_eq!(
+        user1.head("/chat/browse/archived").await,
+        (302, Some("/chat/browse".into()))
+    );
+    // A channel the member can't open sends them back to /chat; a wrong
+    // slug to the channel's own.
+    assert_eq!(
+        user1.head("/chat/c/staff/1").await,
+        (302, Some("/chat".into()))
+    );
+    assert_eq!(
+        user1.head("/chat/c/-/2").await,
+        (302, Some("/chat/c/general/2".into()))
+    );
+    assert_eq!(
+        user1.head("/chat/c/-/2/5").await,
+        (302, Some("/chat/c/general/2/5".into()))
+    );
+    // Reading a channel makes it the last one.
+    user1.page("/chat/c/general/2").await;
+    assert_eq!(
+        user1.head("/chat").await,
+        (302, Some("/chat/c/general/2".into()))
+    );
+}
+
+#[tokio::test]
+async fn chat_off_in_preferences_goes_to_the_disabled_page() {
+    let db = TestDb::new().await;
+    sqlx::query("UPDATE user_options SET chat_enabled = FALSE WHERE user_id = 3")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Client::logged_in(st, "user1").await;
+    assert_eq!(
+        user1.head("/chat/c/general/2").await,
+        (302, Some("/chat/disabled".into()))
+    );
+    let html = user1.page("/chat/disabled").await;
+    assert!(html.contains("<div class=\"chat-disabled\">"), "{html}");
+    assert!(html.contains("href=\"/my/preferences/chat\""));
+}
+
+#[tokio::test]
+async fn a_channel_page_shows_its_messages() {
+    let db = TestDb::new().await;
+    chat_messages(&db).await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Client::logged_in(st, "user1").await;
+    let html = user1.page("/chat/c/general/2").await;
+    assert!(
+        html.contains("desktop-view not-mobile-device has-chat has-full-page-chat\">"),
+        "{html}"
+    );
+    assert!(html.contains("<title>#General - Chat - "));
+    // The bookmarked first message, and the reply to it saying nothing of
+    // what it replies to.
+    assert!(html.contains(
+        "<div class=\"chat-message-container -persisted -processed -bookmarked\" data-id=\"1\""
+    ));
+    assert!(html.contains("<div class=\"chat-message-container is-by-current-user -last-read -persisted -processed\" data-id=\"2\""));
+    // The first unread message carries the last visit line; the deleted
+    // one is left out for a member.
+    assert!(html.contains("data-id=\"3\" data-created-at=") && html.contains("data-newest=\"\""));
+    assert!(!html.contains("data-id=\"4\""));
+    // /me hides its author.
+    assert!(html.contains("-persisted -processed -user-info-hidden\" data-id=\"5\""));
+    assert!(html.contains("<span class=\"chat-message-edited\">(edited)</span>"));
+    assert!(html.contains("<button aria-describedby=\"chat-message-reaction-description-3-0\" aria-label=\"heart reaction, 2 people\" aria-pressed=\"true\" class=\"chat-message-reaction reacted\" data-emoji-name=\"heart\""));
+    assert!(html.contains("<span class=\"sr-only\" id=\"chat-message-reaction-description-3-0\"><span>You and user0 reacted with </span><img"));
+    assert!(html.contains("placeholder=\"Chat in #General\""));
+    assert!(html.contains("<div class=\"all-loaded-message\">Showing all messages</div>"));
+    // The sidebar marks the channel.
+    assert!(html.contains("<a class=\"active sidebar-section-link sidebar-row sidebar-section-link--active channel-2\""));
+}
+
+#[tokio::test]
+async fn staff_see_deleted_messages_collapsed() {
+    let db = TestDb::new().await;
+    chat_messages(&db).await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut admin = Client::logged_in(st, "admin").await;
+    let html = admin.page("/chat/c/general/2").await;
+    assert!(
+        html.contains("-persisted -processed -deleted\" data-id=\"4\""),
+        "{html}"
+    );
+    assert!(html.contains("<span class=\"d-button-label\">A message was deleted. [view]</span>"));
+}
+
+#[tokio::test]
+async fn an_empty_channel_shows_its_members() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Client::logged_in(st, "user1").await;
+    let html = user1.page("/chat/c/general/2").await;
+    assert!(html.contains("<div class=\"empty-state__title\" data-test-title=\"\">You&#x27;re the first in #General</div>")
+        || html.contains("<div class=\"empty-state__title\" data-test-title=\"\">You're the first in #General</div>"), "{html}");
+    assert!(html.contains(
+        "<span class=\"empty-state__members-count\"><strong>2 members</strong> here</span>"
+    ));
+    assert!(html.contains("title=\"admin\"") && html.contains("title=\"user0\""));
+}
+
+#[tokio::test]
+async fn the_browser_lists_channels() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut admin = Client::logged_in(st, "admin").await;
+    let html = admin.page("/chat/browse/all").await;
+    assert!(html.contains("<a class=\"active chat-browse-view__filter-link -all\" href=\"/chat/browse/all\">All</a>"), "{html}");
+    assert!(html.contains("<div class=\"chat-channel-card\" data-channel-id=\"2\" data-following=\"true\" style=\"--chat-channel-card-border: #25AAE2\">"));
+    assert!(html.contains("data-channel-id=\"1\""));
+    assert!(html.contains(">3 members</a>"));
+    let filtered = admin.page("/chat/browse/all?filter=staff").await;
+    assert!(
+        filtered.contains("data-channel-id=\"1\"") && !filtered.contains("data-channel-id=\"2\"")
+    );
+}

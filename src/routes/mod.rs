@@ -27,6 +27,7 @@ pub(crate) use sitemap::regenerate_sitemaps;
 pub(crate) use topics::not_found_response;
 mod category_notifications;
 mod chat;
+mod chat_pages;
 mod reactions;
 mod session;
 mod site;
@@ -155,6 +156,15 @@ pub fn router(state: &AppState) -> Router<AppState> {
             delete(read_tracking::destroy_timings),
         )
         // chat's Chat::Api controllers.
+        // Full-page chat (Chat::ChatController#respond).
+        .route("/chat", get(chat_pages::index))
+        .route("/chat/channels", get(chat_pages::index))
+        .route("/chat/disabled", get(chat_pages::disabled))
+        .route("/chat/browse", get(chat_pages::browse_index))
+        .route("/chat/browse/{tab}", get(chat_pages::browse))
+        .route("/chat/browse/{tab}/page", get(chat_pages::browse_more))
+        .route("/chat/c/{slug}/{id}", get(chat_pages::channel))
+        .route("/chat/c/{slug}/{id}/{message_id}", get(chat_pages::channel))
         .route("/chat/api/me/channels", get(chat::me_channels))
         .route("/chat/api/me/channels.json", get(chat::me_channels))
         .route("/chat/api/channels", get(chat::index))
@@ -566,6 +576,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/topic-voting.js", get(asset))
         .route("/assets/discourse-reactions.js", get(asset))
         .route("/assets/discourse-solved.js", get(asset))
+        .route("/assets/chat.js", get(asset))
         .route("/assets/tracking-menu.js", get(asset))
         .route("/assets/composer.js", get(asset))
         .route("/assets/screen-track.js", get(asset))

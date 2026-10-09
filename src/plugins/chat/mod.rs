@@ -10,6 +10,7 @@
 pub mod auto_join;
 pub mod channels;
 pub mod messages;
+pub mod page;
 pub mod view;
 
 use serde_json::{Map, Value, json};
