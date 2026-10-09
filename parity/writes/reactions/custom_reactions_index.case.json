@@ -1,0 +1,13 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/discourse-reactions/custom-reactions.json",
+      "params": {}
+    }
+  ],
+  "ignore": [
+    "/responses/0/body"
+  ]
+}

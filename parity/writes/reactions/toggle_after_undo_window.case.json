@@ -1,0 +1,15 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO discourse_reactions_reactions (post_id, reaction_type, reaction_value, reaction_users_count, created_at, updated_at) VALUES (52, 0, 'clap', 1, now() - interval '90 minutes', now() - interval '90 minutes')",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) SELECT id, 3, 52, now() - interval '90 minutes', now() - interval '90 minutes' FROM discourse_reactions_reactions WHERE post_id = 52 AND reaction_value = 'clap'",
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (52, 3, 2, now() - interval '90 minutes', now() - interval '90 minutes')"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/discourse-reactions/posts/52/custom-reactions/laughing/toggle.json",
+      "params": {}
+    }
+  ]
+}

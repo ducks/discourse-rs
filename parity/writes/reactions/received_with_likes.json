@@ -1,0 +1,439 @@
+{
+  "name": "received_with_likes",
+  "user": "user0",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/discourse-reactions/posts/reactions-received.json",
+      "params": {
+        "username": "user0",
+        "include_likes": "true"
+      }
+    }
+  ],
+  "started_at": "2026-10-09T12:25:44.865644",
+  "transaction_started_at": "2026-10-09T12:25:43.926985",
+  "responses": [
+    {
+      "status": 200,
+      "body": [
+        {
+          "id": 4,
+          "user_id": 4,
+          "post_id": 35,
+          "created_at": "2026-10-09T12:20:43.926Z",
+          "user": {
+            "id": 4,
+            "username": "user2",
+            "name": "User2",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+            "title": null,
+            "primary_group_name": null
+          },
+          "post": {
+            "excerpt": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+            "id": 35,
+            "created_at": "2026-09-30T07:28:28.901Z",
+            "topic_id": 35,
+            "topic_title": "Parity fixture: replies and posters",
+            "topic_slug": "parity-fixture-replies-and-posters",
+            "topic_html_title": "Parity fixture: replies and posters",
+            "url": "/t/parity-fixture-replies-and-posters/35/1",
+            "category_id": 4,
+            "post_number": 1,
+            "posts_count": 5,
+            "post_type": 1,
+            "user_id": 2,
+            "username": "user0",
+            "name": "User0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+            "user_title": null,
+            "primary_group_name": null,
+            "user": {
+              "id": 2,
+              "username": "user0",
+              "name": "User0",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+              "title": null,
+              "primary_group_name": null
+            },
+            "topic": {
+              "fancy_title": "Parity fixture: replies and posters",
+              "id": 35,
+              "title": "Parity fixture: replies and posters",
+              "slug": "parity-fixture-replies-and-posters",
+              "posts_count": 5
+            }
+          },
+          "reaction": {
+            "id": 1,
+            "post_id": 35,
+            "reaction_type": "emoji",
+            "reaction_value": "clap",
+            "reaction_users_count": 2,
+            "created_at": "2026-10-09T11:25:43.926Z"
+          }
+        },
+        {
+          "id": 5,
+          "user_id": 3,
+          "post_id": 52,
+          "created_at": "2026-10-09T12:05:43.926Z",
+          "user": {
+            "id": 3,
+            "username": "user1",
+            "name": "User1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+            "title": null,
+            "primary_group_name": null
+          },
+          "post": {
+            "excerpt": "Reply from user0 mentioning <a class=\"mention\" href=\"/u/user1\">@user1</a> so a mention notification exists.",
+            "id": 52,
+            "created_at": "2026-10-01T15:39:51.834Z",
+            "topic_id": 35,
+            "topic_title": "Parity fixture: replies and posters",
+            "topic_slug": "parity-fixture-replies-and-posters",
+            "topic_html_title": "Parity fixture: replies and posters",
+            "url": "/t/parity-fixture-replies-and-posters/35/5",
+            "category_id": 4,
+            "post_number": 5,
+            "posts_count": 5,
+            "post_type": 1,
+            "user_id": 2,
+            "username": "user0",
+            "name": "User0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+            "user_title": null,
+            "primary_group_name": null,
+            "user": {
+              "id": 2,
+              "username": "user0",
+              "name": "User0",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+              "title": null,
+              "primary_group_name": null
+            },
+            "topic": {
+              "fancy_title": "Parity fixture: replies and posters",
+              "id": 35,
+              "title": "Parity fixture: replies and posters",
+              "slug": "parity-fixture-replies-and-posters",
+              "posts_count": 5
+            }
+          },
+          "reaction": {
+            "id": 4,
+            "post_id": 52,
+            "reaction_type": "emoji",
+            "reaction_value": "hugs",
+            "reaction_users_count": 1,
+            "created_at": "2026-10-09T12:05:43.926Z"
+          }
+        },
+        {
+          "id": 3,
+          "user_id": 1,
+          "post_id": 35,
+          "created_at": "2026-10-09T11:55:43.926Z",
+          "user": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "title": null,
+            "primary_group_name": null
+          },
+          "post": {
+            "excerpt": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+            "id": 35,
+            "created_at": "2026-09-30T07:28:28.901Z",
+            "topic_id": 35,
+            "topic_title": "Parity fixture: replies and posters",
+            "topic_slug": "parity-fixture-replies-and-posters",
+            "topic_html_title": "Parity fixture: replies and posters",
+            "url": "/t/parity-fixture-replies-and-posters/35/1",
+            "category_id": 4,
+            "post_number": 1,
+            "posts_count": 5,
+            "post_type": 1,
+            "user_id": 2,
+            "username": "user0",
+            "name": "User0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+            "user_title": null,
+            "primary_group_name": null,
+            "user": {
+              "id": 2,
+              "username": "user0",
+              "name": "User0",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+              "title": null,
+              "primary_group_name": null
+            },
+            "topic": {
+              "fancy_title": "Parity fixture: replies and posters",
+              "id": 35,
+              "title": "Parity fixture: replies and posters",
+              "slug": "parity-fixture-replies-and-posters",
+              "posts_count": 5
+            }
+          },
+          "reaction": {
+            "id": 3,
+            "post_id": 35,
+            "reaction_type": "emoji",
+            "reaction_value": "laughing",
+            "reaction_users_count": 1,
+            "created_at": "2026-10-09T11:55:43.926Z"
+          }
+        },
+        {
+          "id": 2,
+          "user_id": 5,
+          "post_id": 35,
+          "created_at": "2026-10-09T11:45:43.926Z",
+          "user": {
+            "id": 5,
+            "username": "user3",
+            "name": "User3",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/ec9cab/{size}.png",
+            "title": null,
+            "primary_group_name": null
+          },
+          "post": {
+            "excerpt": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+            "id": 35,
+            "created_at": "2026-09-30T07:28:28.901Z",
+            "topic_id": 35,
+            "topic_title": "Parity fixture: replies and posters",
+            "topic_slug": "parity-fixture-replies-and-posters",
+            "topic_html_title": "Parity fixture: replies and posters",
+            "url": "/t/parity-fixture-replies-and-posters/35/1",
+            "category_id": 4,
+            "post_number": 1,
+            "posts_count": 5,
+            "post_type": 1,
+            "user_id": 2,
+            "username": "user0",
+            "name": "User0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+            "user_title": null,
+            "primary_group_name": null,
+            "user": {
+              "id": 2,
+              "username": "user0",
+              "name": "User0",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+              "title": null,
+              "primary_group_name": null
+            },
+            "topic": {
+              "fancy_title": "Parity fixture: replies and posters",
+              "id": 35,
+              "title": "Parity fixture: replies and posters",
+              "slug": "parity-fixture-replies-and-posters",
+              "posts_count": 5
+            }
+          },
+          "reaction": {
+            "id": 2,
+            "post_id": 35,
+            "reaction_type": "emoji",
+            "reaction_value": "-1",
+            "reaction_users_count": 1,
+            "created_at": "2026-10-09T11:45:43.926Z"
+          }
+        },
+        {
+          "id": 1,
+          "user_id": 3,
+          "post_id": 35,
+          "created_at": "2026-10-09T11:25:43.926Z",
+          "user": {
+            "id": 3,
+            "username": "user1",
+            "name": "User1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+            "title": null,
+            "primary_group_name": null
+          },
+          "post": {
+            "excerpt": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+            "id": 35,
+            "created_at": "2026-09-30T07:28:28.901Z",
+            "topic_id": 35,
+            "topic_title": "Parity fixture: replies and posters",
+            "topic_slug": "parity-fixture-replies-and-posters",
+            "topic_html_title": "Parity fixture: replies and posters",
+            "url": "/t/parity-fixture-replies-and-posters/35/1",
+            "category_id": 4,
+            "post_number": 1,
+            "posts_count": 5,
+            "post_type": 1,
+            "user_id": 2,
+            "username": "user0",
+            "name": "User0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+            "user_title": null,
+            "primary_group_name": null,
+            "user": {
+              "id": 2,
+              "username": "user0",
+              "name": "User0",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+              "title": null,
+              "primary_group_name": null
+            },
+            "topic": {
+              "fancy_title": "Parity fixture: replies and posters",
+              "id": 35,
+              "title": "Parity fixture: replies and posters",
+              "slug": "parity-fixture-replies-and-posters",
+              "posts_count": 5
+            }
+          },
+          "reaction": {
+            "id": 1,
+            "post_id": 35,
+            "reaction_type": "emoji",
+            "reaction_value": "clap",
+            "reaction_users_count": 2,
+            "created_at": "2026-10-09T11:25:43.926Z"
+          }
+        },
+        {
+          "id": 1,
+          "user_id": 3,
+          "post_id": 46,
+          "created_at": "2026-09-30T07:28:30.313Z",
+          "user": {
+            "id": 3,
+            "username": "user1",
+            "name": "User1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+            "title": null,
+            "primary_group_name": null
+          },
+          "post": {
+            "excerpt": "An archived topic whose first post got a like, for like_count and op_like_count.",
+            "id": 46,
+            "created_at": "2026-09-30T07:28:30.163Z",
+            "topic_id": 41,
+            "topic_title": "Parity fixture: liked and archived",
+            "topic_slug": "parity-fixture-liked-and-archived",
+            "topic_html_title": "Parity fixture: liked and archived",
+            "url": "/t/parity-fixture-liked-and-archived/41/1",
+            "category_id": 4,
+            "post_number": 1,
+            "posts_count": 1,
+            "post_type": 1,
+            "user_id": 2,
+            "username": "user0",
+            "name": "User0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+            "user_title": null,
+            "primary_group_name": null,
+            "user": {
+              "id": 2,
+              "username": "user0",
+              "name": "User0",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+              "title": null,
+              "primary_group_name": null
+            },
+            "topic": {
+              "fancy_title": "Parity fixture: liked and archived",
+              "id": 41,
+              "title": "Parity fixture: liked and archived",
+              "slug": "parity-fixture-liked-and-archived",
+              "posts_count": 1
+            }
+          },
+          "reaction": {
+            "id": 1,
+            "post_id": 46,
+            "reaction_type": "emoji",
+            "reaction_value": "heart",
+            "reaction_users_count": 1,
+            "created_at": "2026-09-30T07:28:30.313Z"
+          }
+        }
+      ]
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 317,
+            "seen_at": null,
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "3XlkSoajYXyZ71ebq6iSyTI0vgk=",
+            "created_at": "2026-10-09T12:25:44.273685",
+            "rotated_at": "2026-10-09T12:25:44.273432",
+            "updated_at": "2026-10-09T12:25:44.273685",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "3XlkSoajYXyZ71ebq6iSyTI0vgk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 317,
+            "seen_at": "2026-10-09T12:25:44.875574",
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "3XlkSoajYXyZ71ebq6iSyTI0vgk=",
+            "created_at": "2026-10-09T12:25:44.273685",
+            "rotated_at": "2026-10-09T12:25:44.273432",
+            "updated_at": "2026-10-09T12:25:44.273685",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "3XlkSoajYXyZ71ebq6iSyTI0vgk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO discourse_reactions_reactions (post_id, reaction_type, reaction_value, reaction_users_count, created_at, updated_at) SELECT 35, 0, 'clap', 0, now() - interval '60 minutes', now() - interval '60 minutes' WHERE NOT EXISTS (SELECT 1 FROM discourse_reactions_reactions WHERE post_id = 35 AND reaction_value = 'clap')",
+    "UPDATE discourse_reactions_reactions SET reaction_users_count = reaction_users_count + 1 WHERE post_id = 35 AND reaction_value = 'clap'",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) SELECT id, 3, 35, now() - interval '60 minutes', now() - interval '60 minutes' FROM discourse_reactions_reactions WHERE post_id = 35 AND reaction_value = 'clap'",
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (35, 3, 2, now() - interval '60 minutes', now() - interval '60 minutes')",
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (35, 4, 2, now() - interval '50 minutes', now() - interval '50 minutes')",
+    "INSERT INTO discourse_reactions_reactions (post_id, reaction_type, reaction_value, reaction_users_count, created_at, updated_at) SELECT 35, 0, '-1', 0, now() - interval '40 minutes', now() - interval '40 minutes' WHERE NOT EXISTS (SELECT 1 FROM discourse_reactions_reactions WHERE post_id = 35 AND reaction_value = '-1')",
+    "UPDATE discourse_reactions_reactions SET reaction_users_count = reaction_users_count + 1 WHERE post_id = 35 AND reaction_value = '-1'",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) SELECT id, 5, 35, now() - interval '40 minutes', now() - interval '40 minutes' FROM discourse_reactions_reactions WHERE post_id = 35 AND reaction_value = '-1'",
+    "INSERT INTO discourse_reactions_reactions (post_id, reaction_type, reaction_value, reaction_users_count, created_at, updated_at) SELECT 35, 0, 'laughing', 0, now() - interval '30 minutes', now() - interval '30 minutes' WHERE NOT EXISTS (SELECT 1 FROM discourse_reactions_reactions WHERE post_id = 35 AND reaction_value = 'laughing')",
+    "UPDATE discourse_reactions_reactions SET reaction_users_count = reaction_users_count + 1 WHERE post_id = 35 AND reaction_value = 'laughing'",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) SELECT id, 1, 35, now() - interval '30 minutes', now() - interval '30 minutes' FROM discourse_reactions_reactions WHERE post_id = 35 AND reaction_value = 'laughing'",
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (35, 1, 2, now() - interval '30 minutes', now() - interval '30 minutes')",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) SELECT id, 4, 35, now() - interval '5 minutes', now() - interval '5 minutes' FROM discourse_reactions_reactions WHERE post_id = 35 AND reaction_value = 'clap'",
+    "UPDATE discourse_reactions_reactions SET reaction_users_count = reaction_users_count + 1 WHERE post_id = 35 AND reaction_value = 'clap'",
+    "INSERT INTO discourse_reactions_reactions (post_id, reaction_type, reaction_value, reaction_users_count, created_at, updated_at) SELECT 52, 0, 'hugs', 0, now() - interval '20 minutes', now() - interval '20 minutes' WHERE NOT EXISTS (SELECT 1 FROM discourse_reactions_reactions WHERE post_id = 52 AND reaction_value = 'hugs')",
+    "UPDATE discourse_reactions_reactions SET reaction_users_count = reaction_users_count + 1 WHERE post_id = 52 AND reaction_value = 'hugs'",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) SELECT id, 3, 52, now() - interval '20 minutes', now() - interval '20 minutes' FROM discourse_reactions_reactions WHERE post_id = 52 AND reaction_value = 'hugs'",
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (52, 3, 2, now() - interval '20 minutes', now() - interval '20 minutes')",
+    "INSERT INTO discourse_reactions_reactions (post_id, reaction_type, reaction_value, reaction_users_count, created_at, updated_at) SELECT 36, 0, 'laughing', 0, now() - interval '15 minutes', now() - interval '15 minutes' WHERE NOT EXISTS (SELECT 1 FROM discourse_reactions_reactions WHERE post_id = 36 AND reaction_value = 'laughing')",
+    "UPDATE discourse_reactions_reactions SET reaction_users_count = reaction_users_count + 1 WHERE post_id = 36 AND reaction_value = 'laughing'",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) SELECT id, 5, 36, now() - interval '15 minutes', now() - interval '15 minutes' FROM discourse_reactions_reactions WHERE post_id = 36 AND reaction_value = 'laughing'",
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (36, 5, 2, now() - interval '15 minutes', now() - interval '15 minutes')",
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (37, 2, 2, now() - interval '10 minutes', now() - interval '10 minutes')"
+  ],
+  "recorded_from": {
+    "case": "e937176e939b3bb5b9ad3783282a716e97eccb40e67c53f02ff206cb6c687cb0",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

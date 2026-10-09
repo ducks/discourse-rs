@@ -180,6 +180,36 @@ pub(super) async fn serialize_post(
         .await?)
 }
 
+/// PostSerializer for one post outside a topic view and without the
+/// viewer's actions (`post_actions` nil), as plugin controllers render it.
+pub(super) async fn serialize_post_alone(
+    state: &AppState,
+    settings: &SiteSettings,
+    guardian: &crate::guardian::Guardian,
+    post_id: i32,
+) -> Result<Value, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let urls = Urls {
+        config: &state.config,
+        settings,
+    };
+    let mut view = TopicView {
+        conn: &mut conn,
+        settings,
+        i18n: &state.i18n,
+        guardian,
+        urls: &urls,
+        options: Options {
+            page: 0,
+            post_number: None,
+        },
+        post_types: Vec::new(),
+    };
+    Ok(view
+        .serialize_single_post(post_id, false, false, false)
+        .await?)
+}
+
 /// Rails' `(.:format)` on the last segment.
 fn strip_format(segment: &str) -> &str {
     segment.strip_suffix(".json").unwrap_or(segment)

@@ -1,0 +1,13 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO notifications (notification_type, user_id, topic_id, post_number, data, read, high_priority, created_at, updated_at) VALUES (25, 2, NULL, NULL, '{\"topic_title\": \"Parity fixture: replies and posters\", \"original_post_id\": 35, \"original_post_type\": 1, \"original_username\": \"user1\", \"revision_number\": null, \"display_username\": \"user1\", \"username\": \"user1\", \"name\": null, \"consolidated\": true, \"count\": 4}', FALSE, FALSE, now() - interval '10 minutes', now() - interval '10 minutes')"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/discourse-reactions/posts/52/custom-reactions/clap/toggle.json",
+      "params": {}
+    }
+  ]
+}

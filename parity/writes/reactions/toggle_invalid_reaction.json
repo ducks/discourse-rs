@@ -1,0 +1,72 @@
+{
+  "name": "toggle_invalid_reaction",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/discourse-reactions/posts/52/custom-reactions/notanemoji/toggle.json",
+      "params": {}
+    }
+  ],
+  "started_at": "2026-10-09T12:13:53.785222",
+  "transaction_started_at": "2026-10-09T12:13:52.679318",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Sorry, an error has occurred."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 317,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "T7eQgOUOQSzzTPCjcArKz0HUUJ0=",
+            "created_at": "2026-10-09T12:13:53.191978",
+            "rotated_at": "2026-10-09T12:13:53.190641",
+            "updated_at": "2026-10-09T12:13:53.191978",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "T7eQgOUOQSzzTPCjcArKz0HUUJ0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 317,
+            "seen_at": "2026-10-09T12:13:53.792741",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "T7eQgOUOQSzzTPCjcArKz0HUUJ0=",
+            "created_at": "2026-10-09T12:13:53.191978",
+            "rotated_at": "2026-10-09T12:13:53.190641",
+            "updated_at": "2026-10-09T12:13:53.191978",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "T7eQgOUOQSzzTPCjcArKz0HUUJ0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "e11140f29c5280dff3f665e8a9e3dab9ae6101bfad05de9677bfcb7cba15a406",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

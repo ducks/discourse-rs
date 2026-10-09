@@ -1,0 +1,16 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO notifications (notification_type, user_id, topic_id, post_number, data, read, high_priority, created_at, updated_at) VALUES (19, 2, NULL, NULL, '{\"topic_title\": \"x\", \"display_username\": \"user1\", \"username\": \"user1\", \"count\": 4}', FALSE, FALSE, now() - interval '10 minutes', now() - interval '10 minutes')"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/post_actions.json",
+      "params": {
+        "id": 52,
+        "post_action_type_id": 2
+      }
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "name": "custom_reactions_index",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/discourse-reactions/custom-reactions.json",
+      "params": {}
+    }
+  ],
+  "started_at": "2026-10-09T12:25:31.853739",
+  "transaction_started_at": "2026-10-09T12:25:28.620466",
+  "responses": [
+    {
+      "status": 404,
+      "body": "Unknown action\n\nThe action 'index' could not be found for DiscourseReactions::CustomReactionsController\n"
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "8b33129427547fc0c7089693835dc8cb86d389579f99ed15d76783e5ecafeec1",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

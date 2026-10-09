@@ -19,6 +19,9 @@ use sqlx::PgConnection;
 
 use crate::site_settings::{SettingError, SiteSettings};
 
+pub mod toggle;
+pub mod users;
+
 /// `PostActionType::LIKE_POST_ACTION_ID`
 const LIKE: i32 = 2;
 
@@ -76,6 +79,32 @@ impl Reactions {
         self.valid.iter().any(|v| v == value)
             && !self.excluded.iter().any(|e| e == value)
             && value != self.main
+    }
+
+    /// `Reaction.valid?`: any emoji when any is allowed, else one of the
+    /// valid reactions.
+    pub async fn is_valid(
+        &self,
+        conn: &mut PgConnection,
+        value: &str,
+    ) -> Result<bool, sqlx::Error> {
+        if value.is_empty() {
+            return Ok(false);
+        }
+        if !self.allow_any_emoji {
+            return Ok(self.valid.iter().any(|v| v == value));
+        }
+        let custom: HashSet<String> = sqlx::query_scalar("SELECT name FROM custom_emojis")
+            .fetch_all(&mut *conn)
+            .await?
+            .into_iter()
+            .collect();
+        Ok(emoji_exists(value, &custom))
+    }
+
+    /// `reactions_excluded_from_like` includes it.
+    pub fn excluded_from_like(&self, value: &str) -> bool {
+        self.excluded.iter().any(|e| e == value)
     }
 
     /// The topic view's `valid_reactions`.

@@ -1,0 +1,38 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO discourse_reactions_reactions (post_id, reaction_type, reaction_value, reaction_users_count, created_at, updated_at) SELECT 35, 0, 'clap', 0, now() - interval '60 minutes', now() - interval '60 minutes' WHERE NOT EXISTS (SELECT 1 FROM discourse_reactions_reactions WHERE post_id = 35 AND reaction_value = 'clap')",
+    "UPDATE discourse_reactions_reactions SET reaction_users_count = reaction_users_count + 1 WHERE post_id = 35 AND reaction_value = 'clap'",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) SELECT id, 3, 35, now() - interval '60 minutes', now() - interval '60 minutes' FROM discourse_reactions_reactions WHERE post_id = 35 AND reaction_value = 'clap'",
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (35, 3, 2, now() - interval '60 minutes', now() - interval '60 minutes')",
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (35, 4, 2, now() - interval '50 minutes', now() - interval '50 minutes')",
+    "INSERT INTO discourse_reactions_reactions (post_id, reaction_type, reaction_value, reaction_users_count, created_at, updated_at) SELECT 35, 0, '-1', 0, now() - interval '40 minutes', now() - interval '40 minutes' WHERE NOT EXISTS (SELECT 1 FROM discourse_reactions_reactions WHERE post_id = 35 AND reaction_value = '-1')",
+    "UPDATE discourse_reactions_reactions SET reaction_users_count = reaction_users_count + 1 WHERE post_id = 35 AND reaction_value = '-1'",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) SELECT id, 5, 35, now() - interval '40 minutes', now() - interval '40 minutes' FROM discourse_reactions_reactions WHERE post_id = 35 AND reaction_value = '-1'",
+    "INSERT INTO discourse_reactions_reactions (post_id, reaction_type, reaction_value, reaction_users_count, created_at, updated_at) SELECT 35, 0, 'laughing', 0, now() - interval '30 minutes', now() - interval '30 minutes' WHERE NOT EXISTS (SELECT 1 FROM discourse_reactions_reactions WHERE post_id = 35 AND reaction_value = 'laughing')",
+    "UPDATE discourse_reactions_reactions SET reaction_users_count = reaction_users_count + 1 WHERE post_id = 35 AND reaction_value = 'laughing'",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) SELECT id, 1, 35, now() - interval '30 minutes', now() - interval '30 minutes' FROM discourse_reactions_reactions WHERE post_id = 35 AND reaction_value = 'laughing'",
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (35, 1, 2, now() - interval '30 minutes', now() - interval '30 minutes')",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) SELECT id, 4, 35, now() - interval '5 minutes', now() - interval '5 minutes' FROM discourse_reactions_reactions WHERE post_id = 35 AND reaction_value = 'clap'",
+    "UPDATE discourse_reactions_reactions SET reaction_users_count = reaction_users_count + 1 WHERE post_id = 35 AND reaction_value = 'clap'",
+    "INSERT INTO discourse_reactions_reactions (post_id, reaction_type, reaction_value, reaction_users_count, created_at, updated_at) SELECT 52, 0, 'hugs', 0, now() - interval '20 minutes', now() - interval '20 minutes' WHERE NOT EXISTS (SELECT 1 FROM discourse_reactions_reactions WHERE post_id = 52 AND reaction_value = 'hugs')",
+    "UPDATE discourse_reactions_reactions SET reaction_users_count = reaction_users_count + 1 WHERE post_id = 52 AND reaction_value = 'hugs'",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) SELECT id, 3, 52, now() - interval '20 minutes', now() - interval '20 minutes' FROM discourse_reactions_reactions WHERE post_id = 52 AND reaction_value = 'hugs'",
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (52, 3, 2, now() - interval '20 minutes', now() - interval '20 minutes')",
+    "INSERT INTO discourse_reactions_reactions (post_id, reaction_type, reaction_value, reaction_users_count, created_at, updated_at) SELECT 36, 0, 'laughing', 0, now() - interval '15 minutes', now() - interval '15 minutes' WHERE NOT EXISTS (SELECT 1 FROM discourse_reactions_reactions WHERE post_id = 36 AND reaction_value = 'laughing')",
+    "UPDATE discourse_reactions_reactions SET reaction_users_count = reaction_users_count + 1 WHERE post_id = 36 AND reaction_value = 'laughing'",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) SELECT id, 5, 36, now() - interval '15 minutes', now() - interval '15 minutes' FROM discourse_reactions_reactions WHERE post_id = 36 AND reaction_value = 'laughing'",
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (36, 5, 2, now() - interval '15 minutes', now() - interval '15 minutes')",
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (37, 2, 2, now() - interval '10 minutes', now() - interval '10 minutes')"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/discourse-reactions/posts/35/reactions-users-list.json",
+      "params": {
+        "limit": "2",
+        "page": "1"
+      }
+    }
+  ]
+}

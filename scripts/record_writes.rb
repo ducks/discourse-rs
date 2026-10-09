@@ -144,6 +144,20 @@ def reset_sequences
   end
 end
 
+# The id each table's sequence hands out next: where a case's new rows
+# start, though rows it inserts and deletes again never show in its changes.
+def next_ids
+  db.select_rows(<<~SQL).to_h { |table, last| [table, last.nil? ? 1 : last.to_i + 1] }
+    SELECT t.relname, ps.last_value
+    FROM pg_class s
+    JOIN pg_depend d ON d.objid = s.oid AND d.deptype = 'a'
+    JOIN pg_class t ON t.oid = d.refobjid
+    JOIN pg_attribute a ON a.attrelid = t.oid AND a.attnum = d.refobjsubid AND a.attname = 'id'
+    JOIN pg_sequences ps ON ps.schemaname = 'public' AND ps.sequencename = s.relname
+    WHERE s.relkind = 'S'
+  SQL
+end
+
 def diff(before_sums, before_rows)
   after = checksums
   changed = after.keys.select { |t| after[t] != before_sums[t] }
@@ -199,6 +213,7 @@ cases.each do |c|
     ENQUEUED.clear
     before_sums = checksums
     before_rows = before_sums.keys.to_h { |t| [t, rows(t)] }
+    first_ids = next_ids
     started_at = db.select_value("SELECT to_jsonb(clock_timestamp()::timestamp)::text")
     transaction_started_at = db.select_value("SELECT to_jsonb(transaction_timestamp()::timestamp)::text")
     responses = []
@@ -252,6 +267,7 @@ cases.each do |c|
       changes: diff(before_sums, before_rows),
       jobs: from_requests,
     }
+    record[:next_ids] = first_ids.slice(*record[:changes].select { |_, c| c[:inserted].any? }.keys)
     record[:settings] = c["settings"] if c["settings"]
     record[:setup] = c["setup"] if c["setup"]
     record[:jobs_from_jobs] = ENQUEUED.dup if c["run_jobs"]
