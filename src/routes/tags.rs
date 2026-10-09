@@ -430,7 +430,7 @@ async fn show_list(
         None => crate::sidebar::Active::Tag(tag_name.to_string()),
         Some(_) => crate::sidebar::Active::None,
     };
-    site.load_chrome(&state, &settings, &guardian, active)
+    site.load_chrome(&mut conn, &state, &settings, &guardian, active)
         .await?;
     site.bus_position = bus_position;
     let mut page =
@@ -630,8 +630,14 @@ async fn index_response(
     let mut site =
         crate::html::Site::from_settings(&settings, state.config.globals.relative_url_root())?;
     site.viewer = vs.viewer.clone();
-    site.load_chrome(&state, &settings, &guardian, crate::sidebar::Active::Tags)
-        .await?;
+    site.load_chrome(
+        &mut conn,
+        &state,
+        &settings,
+        &guardian,
+        crate::sidebar::Active::Tags,
+    )
+    .await?;
     site.bus_position = bus_position;
     let mut page = crate::html::tags_page(&state.i18n, site, &doc, &category_names);
     let urls = Urls {

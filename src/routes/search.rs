@@ -325,8 +325,14 @@ async fn show_response(
     let vs = super::session::viewer_state(&state, &headers, &settings, &guardian)?;
     let mut site = crate::html::Site::from_settings(&settings, base_path)?;
     site.viewer = vs.viewer.clone();
-    site.load_chrome(&state, &settings, &guardian, crate::sidebar::Active::None)
-        .await?;
+    site.load_chrome(
+        &mut conn,
+        &state,
+        &settings,
+        &guardian,
+        crate::sidebar::Active::None,
+    )
+    .await?;
     site.bus_position = bus_position;
     let mut page = search_page(&state, site, &term, &doc, page, &mut conn).await?;
     // No crawlable_meta_data on search; the description meta and the

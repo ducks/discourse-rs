@@ -223,7 +223,9 @@ async fn show(
 
     // Discourse::InvalidParameters for non-scalar ids can't happen here.
     let page = crate::ruby::to_i(params.page.as_deref().unwrap_or(""));
+    // topic_not_found takes its own connection: this one goes first.
     if page < 0 {
+        drop(conn);
         return topic_not_found(state, guardian, &page_slug).await;
     }
 
@@ -238,6 +240,7 @@ async fn show(
             .bind(id)
             .fetch_optional(&mut *conn)
             .await?;
+            drop(conn);
             return Ok(match found {
                 Some((id, slug)) => redirect(
                     headers,
@@ -270,7 +273,11 @@ async fn show(
     };
     let rendered = match view.render(topic_id).await {
         Ok(r) => r,
-        Err(TopicViewError::NotFound) => return topic_not_found(state, guardian, &page_slug).await,
+        Err(TopicViewError::NotFound) => {
+            drop(view);
+            drop(conn);
+            return topic_not_found(state, guardian, &page_slug).await;
+        }
         Err(e) => return Err(e.into()),
     };
 
@@ -312,8 +319,14 @@ async fn show(
     let vs = super::session::viewer_state(state, headers, &settings, guardian)?;
     let mut site = crate::html::Site::from_settings(&settings, &base_path)?;
     site.viewer = vs.viewer.clone();
-    site.load_chrome(state, &settings, guardian, crate::sidebar::Active::None)
-        .await?;
+    site.load_chrome(
+        &mut conn,
+        state,
+        &settings,
+        guardian,
+        crate::sidebar::Active::None,
+    )
+    .await?;
     site.bus_position = bus_position;
     let mut page = crate::html::topic_page(
         &mut conn,

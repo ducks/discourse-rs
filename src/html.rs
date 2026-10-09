@@ -256,21 +256,21 @@ impl Site {
     /// not ported.
     pub async fn load_chrome(
         &mut self,
+        conn: &mut PgConnection,
         state: &crate::AppState,
         settings: &SiteSettings,
         guardian: &crate::guardian::Guardian,
         active: crate::sidebar::Active,
     ) -> Result<(), crate::AppError> {
-        let mut conn = state.pool.acquire().await?;
         let urls = crate::url::Urls {
             config: &state.config,
             settings,
         };
-        self.chrome.logo_url = crate::site_icons::site_url(&mut conn, &urls, "logo").await?;
-        self.chrome.favicon_url = crate::site_icons::site_url(&mut conn, &urls, "favicon").await?;
+        self.chrome.logo_url = crate::site_icons::site_url(&mut *conn, &urls, "logo").await?;
+        self.chrome.favicon_url = crate::site_icons::site_url(&mut *conn, &urls, "favicon").await?;
         self.chrome.favicon_type = crate::site_icons::mime_type(&self.chrome.favicon_url);
         self.chrome.apple_touch_icon_url =
-            crate::site_icons::site_url(&mut conn, &urls, "apple_touch_icon").await?;
+            crate::site_icons::site_url(&mut *conn, &urls, "apple_touch_icon").await?;
         let mut classes = Vec::new();
         for name in state.site_setting_defs.upcoming_changes_with_css() {
             if settings.get(name)?.truthy() {
@@ -288,10 +288,10 @@ impl Site {
             || !settings.get("login_required")?.truthy())
             && settings.get("navigation_menu")?.to_s() == "sidebar";
         self.chrome.tracking =
-            crate::topic_tracking_report::load(&mut conn, settings, guardian).await?;
+            crate::topic_tracking_report::load(&mut *conn, settings, guardian).await?;
         if sidebar_enabled {
             let (site, member) = sidebar_inputs(
-                &mut conn,
+                &mut *conn,
                 state,
                 settings,
                 guardian,
@@ -317,7 +317,7 @@ impl Site {
             classes.push("has-sidebar-page".into());
         }
         if let Some(user_id) = guardian.user_id() {
-            self.chrome.can_create_topic = guardian.can_create_topic(&mut conn, settings).await?;
+            self.chrome.can_create_topic = guardian.can_create_topic(&mut *conn, settings).await?;
             let draft_count: Option<i32> =
                 sqlx::query_scalar("SELECT draft_count FROM user_stats WHERE user_id = $1")
                     .bind(user_id)
@@ -325,7 +325,7 @@ impl Site {
                     .await?;
             self.chrome.drafts_menu_trigger =
                 drafts_menu_trigger(&state.i18n, i64::from(draft_count.unwrap_or(0)));
-            self.chrome.composer = self.composer(&mut conn, state, settings, guardian).await?;
+            self.chrome.composer = self.composer(&mut *conn, state, settings, guardian).await?;
         }
         self.chrome.body_classes = classes.join(" ");
         Ok(())
