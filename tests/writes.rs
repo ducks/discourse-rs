@@ -144,13 +144,8 @@ fn undrift_user(user: &mut Value) {
     }
 }
 
-/// Jobs plugins enqueue on the reference (discourse-narrative-bot, and
-/// discourse-topic-voting on topic_status_updated).
-const PLUGIN_JOBS: [&str; 3] = [
-    "bot_input",
-    "Jobs::DiscourseTopicVoting::VoteRelease",
-    "Jobs::DiscourseTopicVoting::VoteReclaim",
-];
+/// Jobs plugins enqueue on the reference (discourse-narrative-bot).
+const PLUGIN_JOBS: [&str; 1] = ["bot_input"];
 
 struct Client {
     state: AppState,

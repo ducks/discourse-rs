@@ -4,6 +4,7 @@
 //! items, the topic view, the first post, categories and the current
 //! user, the `votes` list order, and voting (`votes`).
 
+pub mod lifecycle;
 pub mod votes;
 
 use std::collections::{HashMap, HashSet};

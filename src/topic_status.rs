@@ -262,6 +262,12 @@ pub async fn update(
         )
         .await?;
     }
+    // DiscourseEvent :topic_status_updated (pins compare the pin instead,
+    // and no plugin listens for them).
+    if updated && !matches!(status, Status::Pinned | Status::PinnedGlobally) {
+        crate::plugins::topic_status_updated(&mut *conn, s, topic.id, status.name(), enabled)
+            .await?;
+    }
 
     // StaffActionLogger
     let logged = match status {

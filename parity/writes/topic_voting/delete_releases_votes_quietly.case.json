@@ -1,0 +1,18 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO topic_voting_category_settings (category_id, created_at, updated_at) VALUES (4, now(), now())",
+    "INSERT INTO topic_voting_votes (topic_id, user_id, archive, created_at, updated_at) VALUES (35, 3, false, '2026-10-08 00:00:00', '2026-10-08 00:00:00'), (35, 4, false, '2026-10-08 01:00:00', '2026-10-08 01:00:00')",
+    "INSERT INTO topic_voting_topic_vote_count (topic_id, votes_count, created_at, updated_at) VALUES (35, 2, '2026-10-08 00:00:00', '2026-10-08 00:00:00') ON CONFLICT (topic_id) DO UPDATE SET votes_count = EXCLUDED.votes_count"
+  ],
+  "run_jobs": [
+    "Jobs::DiscourseTopicVoting::VoteRelease"
+  ],
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/t/35.json",
+      "params": {}
+    }
+  ]
+}
