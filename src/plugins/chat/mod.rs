@@ -13,6 +13,7 @@ pub mod channels;
 pub mod cook;
 pub mod create;
 pub mod membership;
+pub mod mentions;
 pub mod messages;
 pub mod modify;
 pub mod notify;

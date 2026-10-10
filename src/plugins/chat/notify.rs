@@ -162,12 +162,6 @@ impl Job<'_> {
         mention_type: &str,
         user_ids: &[i64],
     ) -> Result<(), AppError> {
-        if mention_type != "direct_mentions" {
-            if user_ids.is_empty() {
-                return Ok(());
-            }
-            return Err(Unsupported("group and channel-wide chat mentions").into());
-        }
         let memberships: Vec<Membership> = sqlx::query_as(
             "SELECT user_id, notification_level, muted, last_read_message_id FROM user_chat_channel_memberships \
              WHERE user_id = ANY($1) AND chat_channel_id = $2 AND following ORDER BY id",
@@ -177,20 +171,50 @@ impl Job<'_> {
         .fetch_all(&mut *conn)
         .await?;
         for membership in memberships {
-            let mention: Option<i64> = sqlx::query_scalar(
-                "SELECT id FROM chat_mentions WHERE chat_message_id = $1 AND type = 'Chat::UserMention' AND target_id = $2",
-            )
-            .bind(self.message_id)
-            .bind(membership.user_id)
-            .fetch_optional(&mut *conn)
-            .await?;
+            let mention = self
+                .find_mention(conn, mention_type, membership.user_id)
+                .await?;
             let Some(mention) = mention else {
                 continue;
             };
-            self.create_notification(conn, &membership, mention).await?;
-            self.send_notifications(conn, &membership).await?;
+            self.create_notification(conn, &membership, mention, mention_type)
+                .await?;
+            self.send_notifications(conn, &membership, mention_type)
+                .await?;
         }
         Ok(())
+    }
+
+    /// find_mention: the message's mention of this type, a group's by its
+    /// name, the member's own for a direct one.
+    async fn find_mention(
+        &self,
+        conn: &mut PgConnection,
+        mention_type: &str,
+        user_id: i32,
+    ) -> Result<Option<i64>, AppError> {
+        let (kind, target): (&str, Option<i32>) = match mention_type {
+            "direct_mentions" => ("Chat::UserMention", Some(user_id)),
+            "here_mentions" => ("Chat::HereMention", None),
+            "global_mentions" => ("Chat::AllMention", None),
+            group => {
+                let id: Option<i32> =
+                    sqlx::query_scalar("SELECT id FROM groups WHERE LOWER(name) = $1")
+                        .bind(group)
+                        .fetch_optional(&mut *conn)
+                        .await?;
+                ("Chat::GroupMention", id)
+            }
+        };
+        Ok(sqlx::query_scalar(
+            "SELECT id FROM chat_mentions WHERE chat_message_id = $1 AND type = $2 \
+               AND target_id IS NOT DISTINCT FROM $3 ORDER BY id LIMIT 1",
+        )
+        .bind(self.message_id)
+        .bind(kind)
+        .bind(target)
+        .fetch_optional(&mut *conn)
+        .await?)
     }
 
     /// create_notification!: read when the member has read past it.
@@ -199,6 +223,7 @@ impl Job<'_> {
         conn: &mut PgConnection,
         membership: &Membership,
         mention: i64,
+        mention_type: &str,
     ) -> Result<(), AppError> {
         let mut data = Map::new();
         data.insert("chat_message_id".into(), json!(self.message_id));
@@ -207,6 +232,19 @@ impl Job<'_> {
         data.insert("is_direct_message_channel".into(), json!(false));
         data.insert("chat_channel_title".into(), json!(self.title));
         data.insert("chat_channel_slug".into(), json!(self.slug));
+        match mention_type {
+            "direct_mentions" => {}
+            "here_mentions" => {
+                data.insert("identifier".into(), json!("here"));
+            }
+            "global_mentions" => {
+                data.insert("identifier".into(), json!("all"));
+            }
+            group => {
+                data.insert("identifier".into(), json!(group));
+                data.insert("is_group_mention".into(), json!(true));
+            }
+        }
         // Chat::Notifier.user_has_seen_message?
         let read = membership.last_read_message_id.unwrap_or(0) >= self.message_id;
         let notification_id: i64 = sqlx::query_scalar(
@@ -244,6 +282,7 @@ impl Job<'_> {
         &self,
         conn: &mut PgConnection,
         membership: &Membership,
+        mention_type: &str,
     ) -> Result<(), AppError> {
         if membership.notification_level == NOTIFICATION_NEVER || membership.muted {
             return Ok(());
@@ -254,12 +293,27 @@ impl Job<'_> {
         };
         let base_path = self.state.config.globals.relative_url_root();
         let hostname = urls.current_hostname()?;
+        let identifier = match mention_type {
+            "direct_mentions" => String::new(),
+            "here_mentions" => "@here".to_string(),
+            "global_mentions" => "@all".to_string(),
+            group => format!("@{group}"),
+        };
+        let key = if mention_type == "direct_mentions" {
+            "discourse_push_notifications.popup.chat_mention.direct"
+        } else {
+            "discourse_push_notifications.popup.chat_mention.other_type"
+        };
         let title = self
             .state
             .i18n
             .t_with(
-                "discourse_push_notifications.popup.chat_mention.direct",
-                &[("username", self.creator), ("channel", &self.title)],
+                key,
+                &[
+                    ("username", self.creator),
+                    ("identifier", &identifier),
+                    ("channel", &self.title),
+                ],
             )
             .unwrap_or_default();
         let payload = json!({

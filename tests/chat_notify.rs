@@ -20,25 +20,20 @@ async fn message(db: &TestDb, text: &str) {
     }
 }
 
-async fn alerts(st: &discourse_rs::AppState, from: pg_bus::Position, user_id: i32) -> Vec<Value> {
-    let mut conn = st.pool.acquire().await.unwrap();
-    let tags = discourse_rs::bus::tags(&mut conn, Some(user_id))
-        .await
-        .unwrap();
-    st.bus
-        .backlog(
-            from,
-            &pg_bus::Filter {
-                channels: vec![format!("/chat/notification-alert/{user_id}")],
-                tags,
-            },
-            10,
-        )
-        .await
-        .unwrap()
-        .into_iter()
-        .map(|m| m.data)
-        .collect()
+async fn alerts(
+    st: &discourse_rs::AppState,
+    from: pg_bus::Position,
+    user_id: i32,
+    want: usize,
+) -> Vec<Value> {
+    heard(
+        st,
+        from,
+        &format!("/chat/notification-alert/{user_id}"),
+        user_id,
+        want,
+    )
+    .await
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -64,7 +59,7 @@ async fn watching_members_hear_each_new_message() {
     )
     .await
     .unwrap();
-    let heard = alerts(&st, from, 2).await;
+    let heard = alerts(&st, from, 2, 1).await;
     assert_eq!(heard.len(), 1, "{heard:?}");
     let alert = &heard[0];
     assert_eq!(alert["notification_type"], 30);
@@ -80,7 +75,7 @@ async fn watching_members_hear_each_new_message() {
         json!({ "channel_id": 2, "message_id": 1 })
     );
     // The sender is excepted.
-    assert!(alerts(&st, from, 3).await.is_empty());
+    assert!(alerts(&st, from, 3, 0).await.is_empty());
 
     // A member who has read past it, or mutes the channel, hears nothing.
     sqlx::query("UPDATE user_chat_channel_memberships SET muted = true WHERE chat_channel_id = 2 AND user_id = 2")
@@ -96,7 +91,7 @@ async fn watching_members_hear_each_new_message() {
     )
     .await
     .unwrap();
-    assert!(alerts(&st, from, 2).await.is_empty());
+    assert!(alerts(&st, from, 2, 0).await.is_empty());
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -128,7 +123,7 @@ async fn a_mentioned_member_is_notified_and_alerted() {
     )
     .await
     .unwrap();
-    let heard = alerts(&st, from, 2).await;
+    let heard = alerts(&st, from, 2, 1).await;
     assert_eq!(heard.len(), 1, "{heard:?}");
     assert_eq!(heard[0]["notification_type"], 29);
     assert_eq!(
@@ -144,4 +139,105 @@ async fn a_mentioned_member_is_notified_and_alerted() {
     .await
     .unwrap();
     assert_eq!(linked, 1);
+}
+
+/// What the sender hears on the channel of their mentions' fate.
+async fn notices(st: &discourse_rs::AppState, text: &str, setup: &[&str]) -> Vec<Value> {
+    sqlx::query(&format!(
+        "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id) \
+         VALUES (1, 2, 3, now(), now(), '{text}', '', 1, 3)"
+    ))
+    .execute(&st.pool)
+    .await
+    .unwrap();
+    for sql in setup {
+        sqlx::query(sql).execute(&st.pool).await.unwrap();
+    }
+    let from = st.bus.now().await.unwrap();
+    let mut conn = st.pool.acquire().await.unwrap();
+    let settings = SiteSettings::load(&mut conn, &st.site_setting_defs, &st.config.globals)
+        .await
+        .unwrap();
+    discourse_rs::plugins::chat::create::process_message(
+        st,
+        &mut conn,
+        &settings,
+        &json!({ "chat_message_id": 1 }),
+    )
+    .await
+    .unwrap();
+    heard(st, from, "/chat/2", 3, 2)
+        .await
+        .into_iter()
+        .filter(|d| d["type"] == "notice")
+        .collect()
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn the_sender_hears_who_their_mentions_missed() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    // user2 can join General but hasn't.
+    let heard = notices(&st, "@user2 come here", &[]).await;
+    assert_eq!(heard.len(), 1, "{heard:?}");
+    assert_eq!(heard[0]["notice_type"], "mention_without_membership");
+    assert_eq!(heard[0]["data"]["user_ids"], json!([4]));
+    assert_eq!(
+        heard[0]["data"]["text"],
+        "user2 has not joined this channel."
+    );
+    assert_eq!(heard[0]["data"]["message_id"], 1);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn channel_wide_mentions_where_disallowed_are_noticed() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let heard = notices(
+        &st,
+        "@all standup",
+        &["UPDATE chat_channels SET allow_channel_wide_mentions = false WHERE id = 2"],
+    )
+    .await;
+    assert_eq!(heard.len(), 1, "{heard:?}");
+    assert_eq!(
+        heard[0]["text_content"],
+        "@here and @all mentions are disabled in this channel."
+    );
+}
+
+/// The bus's messages on a channel from a position, as the user hears
+/// them: waited for, since a message shows only once every older write
+/// transaction in the cluster has ended (other tests' too).
+async fn heard(
+    st: &discourse_rs::AppState,
+    from: pg_bus::Position,
+    channel: &str,
+    user_id: i32,
+    want: usize,
+) -> Vec<Value> {
+    let mut conn = st.pool.acquire().await.unwrap();
+    let tags = discourse_rs::bus::tags(&mut conn, Some(user_id))
+        .await
+        .unwrap();
+    let filter = pg_bus::Filter {
+        channels: vec![channel.to_string()],
+        tags,
+    };
+    let mut out = Vec::new();
+    for _ in 0..50 {
+        out = st
+            .bus
+            .backlog(from, &filter, 10)
+            .await
+            .unwrap()
+            .into_iter()
+            .map(|m| m.data)
+            .collect();
+        if out.len() >= want {
+            break;
+        }
+        tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+    }
+    out
 }

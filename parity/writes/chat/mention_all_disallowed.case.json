@@ -1,0 +1,20 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE chat_channels SET allow_channel_wide_mentions = false WHERE id = 2"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/chat/2.json",
+      "params": {
+        "message": "@all standup",
+        "staged_id": "s"
+      }
+    }
+  ],
+  "run_jobs": [
+    "Jobs::Chat::ProcessMessage",
+    "Jobs::Chat::NotifyMentioned"
+  ]
+}

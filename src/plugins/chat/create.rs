@@ -19,8 +19,6 @@ use crate::{AppError, Unsupported};
 pub const PROCESS_MESSAGE_JOB: &str = "Jobs::Chat::ProcessMessage";
 /// The job that recounts a thread's replies.
 pub const UPDATE_THREAD_REPLY_COUNT_JOB: &str = "Jobs::Chat::UpdateThreadReplyCount";
-use super::notify::NOTIFY_MENTIONED_JOB;
-use super::notify::NOTIFY_WATCHING_JOB;
 
 /// `Chat::NotificationLevels.all[:tracking]`
 const THREAD_TRACKING: i32 = 2;
@@ -477,7 +475,14 @@ pub async fn process_message(
     )
     .await?;
     if cooked.contains("class=\"onebox\"")
-        || cooked.contains("<img") && !only_emoji_images(&cooked)
+        || has_processed_images(
+            &cooked,
+            &crate::url::Urls {
+                config: &state.config,
+                settings,
+            }
+            .current_hostname_with_port()?,
+        )
         || cooked.contains("<video")
     {
         return Err(Unsupported("oneboxes, images and videos in chat messages").into());
@@ -492,84 +497,55 @@ pub async fn process_message(
             .await?;
     }
 
-    // upsert_mentions: direct user mentions.
-    let mentions = parsed_mentions(&cooked)?;
-    let mentioned: Vec<(i32, String)> = sqlx::query_as(
-        "SELECT DISTINCT users.id, users.username_lower FROM users \
-         JOIN user_options ON user_options.user_id = users.id AND user_options.chat_enabled \
-         WHERE users.username_lower = ANY($1) ORDER BY users.id",
-    )
-    .bind(&mentions)
-    .fetch_all(&mut *conn)
-    .await?;
-    let old: Vec<i32> = sqlx::query_scalar(
-        "SELECT target_id FROM chat_mentions WHERE chat_message_id = $1 AND type = 'Chat::UserMention'",
-    )
-    .bind(message_id)
-    .fetch_all(&mut *conn)
-    .await?;
-    let new_ids: Vec<i32> = mentioned.iter().map(|(id, _)| *id).collect();
-    let removed: Vec<i32> = old
-        .iter()
-        .copied()
-        .filter(|id| !new_ids.contains(id))
-        .collect();
-    if !removed.is_empty() {
-        sqlx::query(
-            "DELETE FROM chat_mentions WHERE chat_message_id = $1 AND type = 'Chat::UserMention' AND target_id = ANY($2)",
-        )
-        .bind(message_id)
-        .bind(&removed)
-        .execute(&mut *conn)
-        .await?;
-    }
+    // upsert_mentions
+    let parsed = super::mentions::parse(&cooked);
+    let author = super::mentions::Author::load(&mut *conn, user_id)
+        .await?
+        .ok_or(Unsupported("chat messages of deleted users"))?;
     let now = crate::clock::now_naive();
-    for id in new_ids.iter().filter(|id| !old.contains(id)) {
-        sqlx::query(
-            "INSERT INTO chat_mentions (chat_message_id, target_id, type, created_at, updated_at) \
-             VALUES ($1, $2, 'Chat::UserMention', $3, $3)",
-        )
-        .bind(message_id)
-        .bind(id)
-        .bind(now)
-        .execute(&mut *conn)
-        .await?;
-    }
+    super::mentions::upsert(
+        conn, &state.bus, settings, message_id, &parsed, &author, now,
+    )
+    .await?;
 
     // Chat::MessageLink.extract_from
     if deleted_at.is_none() {
         extract_links(conn, message_id, &cooked, now).await?;
     }
 
-    // Chat::Notifier#notify_edit or #notify_new, for direct mentions.
+    // Chat::Notifier#notify_edit or #notify_new.
+    let sql = format!(
+        "SELECT {} FROM chat_channels WHERE id = $1",
+        super::channels::CHANNEL_COLUMNS
+    );
+    let channel: ChannelRow = sqlx::query_as(&sql)
+        .bind(channel_id)
+        .fetch_one(&mut *conn)
+        .await?;
+    if channel.chatable_type != "Category" {
+        return Err(Unsupported("chat direct messages").into());
+    }
+    let notifier = super::mentions::Notifier {
+        state,
+        settings,
+        channel: &channel,
+        message_id,
+        author: &author,
+        parsed: &parsed,
+    };
     if let Some(timestamp) = args.get("edit_timestamp") {
         let timestamp = match timestamp {
             Value::String(s) => s.clone(),
             other => other.to_string(),
         };
-        notify_edit(
-            conn, settings, channel_id, message_id, user_id, &username, &timestamp, &mentioned,
-        )
-        .await?;
+        notifier.notify_edit(conn, &timestamp).await?;
     } else if !args["skip_notifications"].as_bool().unwrap_or(false) {
-        notify_new(
-            conn, &state.bus, settings, channel_id, message_id, user_id, &username, created_at,
-            &mentioned,
-        )
-        .await?;
+        notifier.notify_new(conn, created_at).await?;
     }
 
     // Chat::Publisher.publish_processed!
     let anonymous = crate::guardian::Guardian::anonymous();
-    let sql = format!(
-        "SELECT {} FROM chat_channels WHERE id = $1",
-        super::channels::CHANNEL_COLUMNS
-    );
-    let channel: Option<ChannelRow> = sqlx::query_as(&sql)
-        .bind(channel_id)
-        .fetch_optional(&mut *conn)
-        .await?;
-    if let Some(channel) = channel {
+    {
         let mut cx = Context {
             conn: &mut *conn,
             settings,
@@ -584,41 +560,30 @@ pub async fn process_message(
     Ok(())
 }
 
-/// Whether every image in the cooked HTML is an emoji.
-fn only_emoji_images(cooked: &str) -> bool {
-    cooked.matches("<img").count() == cooked.matches("class=\"emoji").count()
-}
-
-/// Chat::ParsedMentions' direct mentions: the `.mention` texts outside
-/// quotes and transcripts, normalized. Group and channel-wide mentions are
-/// refused until mentions are ported.
-fn parsed_mentions(cooked: &str) -> Result<Vec<String>, AppError> {
-    if cooked.contains("mention-group") {
-        return Err(Unsupported("group mentions in chat").into());
-    }
-    let mentions = crate::pretty_text::extract_mentions(&strip_quoted(cooked)?)?;
-    let mut out = Vec::new();
-    for m in mentions {
-        let lower = m.to_lowercase();
-        if lower == "here" || lower == "all" {
-            return Err(Unsupported("channel-wide mentions in chat").into());
-        }
-        if !out.contains(&lower) {
-            out.push(lower);
-        }
-    }
-    Ok(out)
-}
-
-/// The cooked HTML less its quotes and transcripts, where mentions don't
-/// count (cooked_stripped); one with mentions inside is refused.
-fn strip_quoted(cooked: &str) -> Result<String, AppError> {
-    if (cooked.contains("<aside class=\"quote") || cooked.contains("chat-transcript"))
-        && cooked.contains("class=\"mention")
-    {
-        return Err(Unsupported("mentions alongside quotes in chat").into());
-    }
-    Ok(cooked.to_string())
+/// Whether the message processor would change an image: an upload's
+/// (data-base62-sha1, its lightbox) or one from another host than the
+/// site's (hotlinked media). Emoji, data: images and the site's own, a
+/// quote's avatar, it leaves as they are.
+fn has_processed_images(cooked: &str, host: &str) -> bool {
+    let dom = crate::pretty_text::cleanup::parse(cooked);
+    crate::pretty_text::cleanup::all_elements(&dom)
+        .iter()
+        .any(|e| {
+            if crate::pretty_text::cleanup::element_name(e) != Some("img")
+                || crate::pretty_text::cleanup::has_class(e, "emoji")
+            {
+                return false;
+            }
+            let src = crate::pretty_text::cleanup::attr(e, "src").unwrap_or_default();
+            let remote = src
+                .strip_prefix("https:")
+                .or_else(|| src.strip_prefix("http:"))
+                .unwrap_or(&src)
+                .strip_prefix("//")
+                .and_then(|rest| rest.split('/').next())
+                .is_some_and(|h| !h.eq_ignore_ascii_case(host));
+            crate::pretty_text::cleanup::attr(e, "data-base62-sha1").is_some() || remote
+        })
 }
 
 /// `Chat::MessageLink.extract_from`
@@ -629,7 +594,7 @@ async fn extract_links(
     now: NaiveDateTime,
 ) -> Result<(), AppError> {
     let mut urls: Vec<String> = Vec::new();
-    for link in crate::posting::links::extract(cooked)? {
+    for link in crate::posting::links::extract_with_quotes(cooked)? {
         // UrlHelper.relaxed_parse: the url as written, with its scheme and
         // host; relative urls (mentions' profiles) have no host.
         let (scheme, rest) = match link.split_once(':') {
@@ -675,171 +640,6 @@ async fn extract_links(
     .bind(message_id)
     .bind(&urls)
     .execute(&mut *conn)
-    .await?;
-    Ok(())
-}
-
-/// `Chat::Notifier#notify_edit` for direct mentions: the mentioned members
-/// not notified of the message yet make NotifyMentioned run again, told
-/// who was.
-#[allow(clippy::too_many_arguments)]
-async fn notify_edit(
-    conn: &mut sqlx::PgConnection,
-    settings: &crate::site_settings::SiteSettings,
-    channel_id: i64,
-    message_id: i64,
-    user_id: i32,
-    username: &str,
-    timestamp: &str,
-    mentioned: &[(i32, String)],
-) -> Result<(), AppError> {
-    let already: Vec<i32> = sqlx::query_scalar(
-        "SELECT notifications.user_id FROM notifications \
-         INNER JOIN chat_mention_notifications ON chat_mention_notifications.notification_id = notifications.id \
-         INNER JOIN chat_mentions ON chat_mentions.id = chat_mention_notifications.chat_mention_id \
-         WHERE notifications.notification_type = $1 AND chat_mentions.chat_message_id = $2",
-    )
-    .bind(CHAT_MENTION_NOTIFICATION)
-    .bind(message_id)
-    .fetch_all(&mut *conn)
-    .await?;
-    let direct = users_to_notify(conn, settings, channel_id, user_id, username, mentioned).await?;
-    if direct.iter().all(|id| already.contains(id)) {
-        return Ok(());
-    }
-    crate::jobs::enqueue(
-        &mut *conn,
-        NOTIFY_MENTIONED_JOB,
-        json!({
-            "chat_message_id": message_id,
-            "to_notify_ids_map": {
-                "direct_mentions": direct,
-                "here_mentions": [],
-                "global_mentions": [],
-            },
-            "already_notified_user_ids": already,
-            "timestamp": timestamp,
-        }),
-    )
-    .await?;
-    Ok(())
-}
-
-/// `Notification.types[:chat_mention]`
-const CHAT_MENTION_NOTIFICATION: i32 = 29;
-
-/// `Chat::Notifier#list_users_to_notify` for direct mentions: the members
-/// who can chat, not suspended, nor the sender; none past
-/// max_mentions_per_chat_message.
-async fn users_to_notify(
-    conn: &mut sqlx::PgConnection,
-    settings: &crate::site_settings::SiteSettings,
-    channel_id: i64,
-    user_id: i32,
-    username: &str,
-    mentioned: &[(i32, String)],
-) -> Result<Vec<i32>, AppError> {
-    let max = settings.get("max_mentions_per_chat_message")?.to_i();
-    let skip = mentioned.len() as i64 > max;
-    let mut direct = Vec::new();
-    if !skip {
-        for (id, username_lower) in mentioned {
-            if *username_lower == username.to_lowercase() {
-                continue;
-            }
-            let row: Option<(bool, bool)> = sqlx::query_as(
-                "SELECT (suspended_till IS NOT NULL AND suspended_till > now()), \
-                        EXISTS (SELECT 1 FROM user_chat_channel_memberships m \
-                                WHERE m.user_id = users.id AND m.chat_channel_id = $2 AND m.following) \
-                 FROM users WHERE id = $1",
-            )
-            .bind(id)
-            .bind(channel_id)
-            .fetch_optional(&mut *conn)
-            .await?;
-            let Some((suspended, member)) = row else {
-                continue;
-            };
-            if suspended {
-                continue;
-            }
-            // group_users_to_notify: a mentioned user who can't join, or
-            // can but isn't a member, gets a notice to the sender instead.
-            if !member {
-                return Err(Unsupported("chat mentions of users outside the channel").into());
-            }
-            direct.push(*id);
-        }
-    }
-    // filter_users_ignoring_or_muting_creator
-    let screened: bool = sqlx::query_scalar(
-        "SELECT EXISTS (SELECT 1 FROM ignored_users WHERE user_id = ANY($1) AND ignored_user_id = $2) \
-           OR EXISTS (SELECT 1 FROM muted_users WHERE user_id = ANY($1) AND muted_user_id = $2)",
-    )
-    .bind(&direct)
-    .bind(user_id)
-    .fetch_one(&mut *conn)
-    .await?;
-    if screened {
-        return Err(Unsupported("chat mentions by an ignored or muted user").into());
-    }
-    Ok(direct)
-}
-
-/// `Chat::Notifier#notify_new` for direct mentions: the new mention
-/// published to each member to notify, then NotifyMentioned and, 5 seconds
-/// on, NotifyWatching enqueued.
-#[allow(clippy::too_many_arguments)]
-async fn notify_new(
-    conn: &mut sqlx::PgConnection,
-    bus: &pg_bus::Bus,
-    settings: &crate::site_settings::SiteSettings,
-    channel_id: i64,
-    message_id: i64,
-    user_id: i32,
-    username: &str,
-    created_at: NaiveDateTime,
-    mentioned: &[(i32, String)],
-) -> Result<(), AppError> {
-    let direct = users_to_notify(conn, settings, channel_id, user_id, username, mentioned).await?;
-    // Chat::Publisher.publish_new_mention, to each mentioned member.
-    for id in &direct {
-        bus.publish(
-            &mut *conn,
-            &format!("/chat/{channel_id}/new-mentions"),
-            &json!({ "message_id": message_id, "channel_id": channel_id }),
-            Some(&[crate::bus::user_tag(*id)]),
-        )
-        .await?;
-    }
-    let timestamp = format!("{} UTC", created_at.format("%Y-%m-%d %H:%M:%S"));
-    crate::jobs::enqueue(
-        &mut *conn,
-        NOTIFY_MENTIONED_JOB,
-        json!({
-            "chat_message_id": message_id,
-            "to_notify_ids_map": {
-                "direct_mentions": direct,
-                "here_mentions": [],
-                "global_mentions": [],
-            },
-            "already_notified_user_ids": [],
-            "timestamp": timestamp,
-        }),
-    )
-    .await?;
-    let mut except: Vec<i32> = direct.clone();
-    except.push(user_id);
-    crate::jobs::enqueue_in(
-        &mut *conn,
-        5,
-        NOTIFY_WATCHING_JOB,
-        json!({
-            "chat_message_id": message_id,
-            "except_user_ids": except,
-            "timestamp": timestamp,
-        }),
-    )
     .await?;
     Ok(())
 }

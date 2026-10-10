@@ -165,7 +165,7 @@ fn strip_schemes(s: &str) -> String {
 fn build_excerpt(m: &MessageRow) -> Result<String, AppError> {
     let cooked = m.cooked.as_deref().unwrap_or_default();
     // Just the URL if the whole message is URLs: oneboxes don't excerpt.
-    let urls = crate::posting::links::extract(cooked)?;
+    let urls = crate::posting::links::extract_with_quotes(cooked)?;
     if !urls.is_empty() {
         let mut clean: Vec<String> = urls.iter().map(|u| strip_schemes(u)).collect();
         let stripped = strip_schemes(m.message.as_deref().unwrap_or_default());

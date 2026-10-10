@@ -1,0 +1,18 @@
+{
+  "user": "user1",
+  "setup": [],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/chat/2.json",
+      "params": {
+        "message": "@all standup",
+        "staged_id": "s"
+      }
+    }
+  ],
+  "run_jobs": [
+    "Jobs::Chat::ProcessMessage",
+    "Jobs::Chat::NotifyMentioned"
+  ]
+}
