@@ -1,0 +1,31 @@
+{
+  "name": "summary_email_nothing",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-10T05:49:41.394464",
+  "transaction_started_at": "2026-10-10T05:49:40.770059",
+  "responses": [],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE users SET last_seen_at = now() - interval '1 hour' WHERE id = 2"
+  ],
+  "enqueue": [
+    [
+      "user_email",
+      {
+        "type": "chat_summary",
+        "user_id": 2,
+        "to_address": "user0@example.com",
+        "force_respect_seen_recently": true
+      }
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "e3abd8bb64aa552be4595bdca724734d7f741e8ceba4801abada7645eecdabc5",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

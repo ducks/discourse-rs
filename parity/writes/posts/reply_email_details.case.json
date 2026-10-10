@@ -1,0 +1,18 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "reply_to_post_number": 1,
+        "raw": "Replying with a hidden part.\n\n[details=\"Spoiler here\"]\nThe secret ending.\n[/details]\n\nAnd after it."
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert",
+    "user_email"
+  ]
+}

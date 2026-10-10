@@ -183,5 +183,6 @@ pub async fn build_template(
             html: None,
         },
         html_part,
+        view_rendered: false,
     })
 }

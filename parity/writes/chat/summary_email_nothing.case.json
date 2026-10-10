@@ -1,0 +1,21 @@
+{
+  "user": null,
+  "setup": [
+    "UPDATE users SET last_seen_at = now() - interval '1 hour' WHERE id = 2"
+  ],
+  "requests": [],
+  "enqueue": [
+    [
+      "user_email",
+      {
+        "type": "chat_summary",
+        "user_id": 2,
+        "to_address": "user0@example.com",
+        "force_respect_seen_recently": true
+      }
+    ]
+  ],
+  "run_jobs": [
+    "user_email"
+  ]
+}

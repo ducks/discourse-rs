@@ -998,6 +998,23 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
         .map(|(id, name, _)| (*id, name.clone()))
         .collect();
     let mut seen_id = last_id;
+    // `enqueue`: the case's own jobs, after its requests', run as theirs.
+    if let Some(list) = case["enqueue"].as_array() {
+        let mut conn = db.pool.acquire().await.unwrap();
+        for job in list {
+            discourse_rs::jobs::enqueue(
+                &mut conn,
+                job[0].as_str().unwrap(),
+                job.get(1).cloned().unwrap_or_else(|| serde_json::json!({})),
+            )
+            .await
+            .unwrap();
+        }
+        for (id, name, _) in queued_jobs(&db.pool, seen_id).await {
+            seen_id = id;
+            pending.push_back((id, name));
+        }
+    }
     let mut from_jobs: Vec<Value> = Vec::new();
     while let Some((id, name)) = pending.pop_front() {
         if !run_jobs.contains(&name) {
