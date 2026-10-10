@@ -781,3 +781,42 @@ async fn the_emoji_data_carries_names_aliases_and_unicode() {
     assert_eq!(data["aliases"]["thumbsup"], "+1");
     assert_eq!(data["unicode"]["👍"], "+1");
 }
+
+#[tokio::test]
+async fn a_channel_page_carries_what_stages_a_message() {
+    let db = TestDb::new().await;
+    chat_messages(&db).await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Client::logged_in(st, "user1").await;
+    let html = user1.page("/chat/c/general/2").await;
+    // The member's own message, with and without its author line, and the
+    // chat renderer to cook it with.
+    assert!(html.contains("<template class=\"chat-staged-template\" data-variant=\"info\" data-wasm=\"/assets/markdown.wasm?v="), "{html}");
+    assert!(html.contains("data-settings=\"/assets/markdown-settings.json?chat=1\""));
+    assert!(html.contains(
+        "data-label-network-error=\"Network error\" data-label-send-again=\"Send again?\""
+    ));
+    assert!(html.contains("<template class=\"chat-staged-template\" data-variant=\"hidden\"><div class=\"chat-message-container is-by-current-user -persisted -processed -user-info-hidden\" data-id=\"0\""));
+
+    let settings = user1.page("/assets/markdown-settings.json?chat=1").await;
+    let settings: serde_json::Value = serde_json::from_str(&settings).unwrap();
+    assert_eq!(settings["chat"], true);
+    assert_eq!(settings["poll"], false);
+    let plain = user1.page("/assets/markdown-settings.json").await;
+    let plain: serde_json::Value = serde_json::from_str(&plain).unwrap();
+    assert_eq!(plain["chat"], false);
+
+    // After their own staged message, their next one hides its author;
+    // after another's, it shows.
+    sqlx::query(
+        "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id) \
+         VALUES (7, 2, 3, now(), now(), 'again', '<p>again</p>', 1, 3)",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let html = user1.page("/live/chat/2/7?previous=staged").await;
+    assert!(html.contains("-user-info-hidden\" data-id=\"7\""), "{html}");
+    let html = user1.page("/live/chat/2/7?previous=6").await;
+    assert!(html.contains("-processed\" data-id=\"7\""), "{html}");
+}
