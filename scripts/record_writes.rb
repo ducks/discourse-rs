@@ -7,7 +7,8 @@
 # was. Recorded per case: each response, every row the requests inserted,
 # updated or deleted (rows as Postgres' to_jsonb writes them), and the jobs
 # they enqueued. A case with `run_jobs` also runs those of its enqueued
-# jobs, and records what they enqueue in turn (`jobs_from_jobs`).
+# jobs, and records what they enqueue in turn (`jobs_from_jobs`); its
+# `enqueue` jobs are queued after its requests, for run_jobs to run.
 #
 # Before a case every id sequence is set to its table's max(id), so the
 # rows a case inserts get the ids discourse-rs will give them.
@@ -243,6 +244,9 @@ cases.each do |c|
     ActionMailer::Base.deliveries.clear
     names = c["run_jobs"] || []
     pending = from_requests.dup
+    # `enqueue`: jobs the case puts in the queue itself, after its requests
+    # (a scheduled job, say), run as run_jobs runs the requests'.
+    pending.concat((c["enqueue"] || []).map { |name, args| [name, args || {}] })
     while (job = pending.shift)
       name, args = job
       base = name.split(" ").first
@@ -274,6 +278,7 @@ cases.each do |c|
     record[:next_ids] = first_ids.slice(*record[:changes].select { |_, c| c[:inserted].any? }.keys)
     record[:settings] = c["settings"] if c["settings"]
     record[:setup] = c["setup"] if c["setup"]
+    record[:enqueue] = c["enqueue"] if c["enqueue"]
     record[:jobs_from_jobs] = ENQUEUED.dup if c["run_jobs"]
     record[:emails] = emails if emails.any?
     File.write("#{out}/#{c["name"]}.json", JSON.pretty_generate(record) + "\n")
