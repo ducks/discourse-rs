@@ -4,14 +4,14 @@
     posts are appended), `filter` a list; `params` (Chrome::live_params)
     names the nav pill and sidebar to keep counted. -#}
 {% macro live_sink(base_path, bus_position, topic_id, tail, filter, since, params) %}
-<div hidden hx-ext="sse" sse-connect="{{ base_path }}/live?position={{ bus_position }}{% if topic_id > 0 %}&amp;topic={{ topic_id }}{% if tail %}&amp;tail=1{% endif %}{% endif %}{% if !filter.is_empty() %}&amp;filter={{ filter }}&amp;since={{ since }}{% endif %}{{ params }}" sse-swap="post,list,header"></div>
+<div hidden hx-ext="sse" sse-connect="{{ base_path }}/live?position={{ bus_position }}{% if topic_id > 0 %}&amp;topic={{ topic_id }}{% if tail %}&amp;tail=1{% endif %}{% endif %}{% if !filter.is_empty() %}&amp;filter={{ filter }}&amp;since={{ since }}{% endif %}{{ params }}" sse-swap="post,list,header,chat"></div>
 {% endmacro %}
 
 {#- The stream every page has for a member: their notifications and
     counts, nothing more. -#}
 {% macro live_sink_for_member(member, base_path, bus_position, params) %}
 {% if member && !bus_position.is_empty() %}
-<div hidden hx-ext="sse" sse-connect="{{ base_path }}/live?position={{ bus_position }}{{ params }}" sse-swap="post,list,header"></div>
+<div hidden hx-ext="sse" sse-connect="{{ base_path }}/live?position={{ bus_position }}{{ params }}" sse-swap="post,list,header,chat"></div>
 {% endif %}
 {% endmacro %}
 

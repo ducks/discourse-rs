@@ -70,6 +70,9 @@ pub struct Params {
     sidebar: Option<String>,
     /// The topic page's posts, `<first>-<last>` post numbers.
     posts: Option<String>,
+    /// A member who chats, the page's `Active::key`: chat's header icon and
+    /// sidebar sections kept current.
+    chat: Option<String>,
 }
 
 /// GET /live
@@ -140,6 +143,28 @@ pub async fn page(
         channels.push(crate::bus::notification_channel(id));
         channels.push(format!("/notification-alert/{id}"));
     }
+    // Chat's unread state: its followed channels' new messages and the
+    // member's mentions in them, and their own read tracking.
+    let chat = params
+        .chat
+        .filter(|_| user_id.is_some())
+        .map(|key| crate::sidebar::Active::parse(&key));
+    let mut chat_channels = Vec::new();
+    if let (Some(_), Some(id)) = (&chat, user_id) {
+        let mut conn = state.pool.acquire().await?;
+        let followed: Vec<i64> = sqlx::query_scalar(
+            "SELECT chat_channel_id FROM user_chat_channel_memberships WHERE user_id = $1 AND following",
+        )
+        .bind(id)
+        .fetch_all(&mut *conn)
+        .await?;
+        for channel in followed {
+            chat_channels.push(format!("/chat/{channel}/new-messages"));
+            chat_channels.push(format!("/chat/{channel}/new-mentions"));
+        }
+        chat_channels.push(format!("/chat/user-tracking-state/{id}"));
+        channels.extend(chat_channels.iter().cloned());
+    }
     let subscription = state.bus.subscribe(from, Filter { channels, tags });
     let live = Live {
         state,
@@ -160,6 +185,9 @@ pub async fn page(
             .sidebar
             .filter(|_| user_id.is_some())
             .map(|key| crate::sidebar::Active::parse(&key)),
+        chat,
+        chat_channels,
+        sent_chat: None,
         sent_lists: None,
         started: false,
         pending: VecDeque::new(),
@@ -211,6 +239,12 @@ struct Live {
     /// The nav pill and sidebar a member's counts are kept on.
     nav: Option<String>,
     sidebar: Option<crate::sidebar::Active>,
+    /// The page chat's chrome is kept current on, and the bus channels that
+    /// change it.
+    chat: Option<crate::sidebar::Active>,
+    chat_channels: Vec<String>,
+    /// Chat's chrome last sent.
+    sent_chat: Option<String>,
     /// The list HTML last computed, sent or (when empty) not.
     sent_lists: Option<String>,
     started: bool,
@@ -257,6 +291,7 @@ async fn handle_batch(
     let notification = live.user_id.map(crate::bus::notification_channel);
     let alert = live.user_id.map(|id| format!("/notification-alert/{id}"));
     let mut tracking: Option<Position> = None;
+    let mut chat = false;
     let mut last: Option<Position> = None;
     for item in batch {
         let message = match item? {
@@ -290,6 +325,8 @@ async fn handle_batch(
                     .id(id)
                     .data(notification_alert(base, &message.data)),
             );
+        } else if live.chat_channels.contains(&message.channel) {
+            chat = true;
         } else {
             tracking = Some(message.position);
         }
@@ -297,6 +334,9 @@ async fn handle_batch(
     if tracking.is_some() && live.lists {
         // Carries the batch's last position, so the ids stay in bus order.
         recount_lists(live, last).await?;
+    }
+    if chat {
+        chat_chrome(live, last).await?;
     }
     Ok(())
 }
@@ -756,3 +796,81 @@ pub async fn post(
         None => Ok(StatusCode::NOT_FOUND.into_response()),
     }
 }
+
+/// Chat's header icon and sidebar sections as the member's page draws them
+/// now, each an out-of-band swap of its own (`.chat-header-icon`, a
+/// section by its name): what ChatSubscriptionsManager's tracking keeps
+/// current in Ember. Queued only when it changed.
+async fn chat_chrome(live: &mut Live, id: Option<Position>) -> Result<(), AppError> {
+    let Some(active) = live.chat.clone() else {
+        return Ok(());
+    };
+    let mut conn = live.state.pool.acquire().await?;
+    let base_path = live.state.config.globals.relative_url_root();
+    let tracking =
+        crate::topic_tracking_report::load(&mut conn, &live.settings, &live.guardian).await?;
+    let (_, member) = crate::html::sidebar_inputs(
+        &mut conn,
+        &live.state,
+        &live.settings,
+        &live.guardian,
+        tracking,
+    )
+    .await?;
+    let emoji_set = live.settings.get("emoji_set")?.to_s().to_string();
+    let cx = crate::sidebar::Context {
+        i18n: &live.state.i18n,
+        settings: &live.settings,
+        base_path,
+        active: &active,
+        member: member.as_ref(),
+        emoji_set: &emoji_set,
+        plugin_sections: "",
+    };
+    let Some(chat) = crate::plugins::chat::view::load(
+        &mut conn,
+        &live.state,
+        &live.settings,
+        &live.guardian,
+        base_path,
+        &active,
+        Some(&cx),
+    )
+    .await?
+    else {
+        return Ok(());
+    };
+    let html = format!(
+        "{}{}",
+        chat.header_icon.replacen(
+            "<li class=\"header-dropdown-toggle chat-header-icon\">",
+            "<li hx-swap-oob=\"outerHTML:.chat-header-icon\" class=\"header-dropdown-toggle chat-header-icon\">",
+            1
+        ),
+        CHAT_SECTION.replace_all(&chat.sidebar_sections, |c: &regex::Captures| {
+            format!(
+                "<div hx-swap-oob=\"outerHTML:.sidebar-section[data-section-name='{}']\" {}",
+                &c[2],
+                &c[1]
+            )
+        })
+    );
+    if live.sent_chat.as_ref() == Some(&html) {
+        return Ok(());
+    }
+    live.sent_chat = Some(html.clone());
+    let mut event = Event::default().event("chat").data(html);
+    if let Some(position) = id {
+        event = event.id(position.to_string());
+    }
+    live.pending.push_back(event);
+    Ok(())
+}
+
+/// A chat sidebar section's opening tag, its name captured.
+static CHAT_SECTION: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
+    regex::Regex::new(
+        r#"<div (class="sidebar-section sidebar-section-wrapper[^"]*" data-section-name="(chat-[a-z-]+)")"#,
+    )
+    .unwrap()
+});
