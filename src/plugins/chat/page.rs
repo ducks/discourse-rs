@@ -1123,7 +1123,13 @@ fn message_info(m: &Value, date: &str, v: &View) -> String {
 fn reaction_html(v: &View, message_id: i64, index: usize, r: &Value) -> Result<String, AppError> {
     let t = v.t;
     let emoji = s(&r["emoji"]);
-    if !crate::emoji::DATA.exists(emoji.trim_matches(':')) {
+    // A skin tone (`:tN`) is the standard emoji's.
+    let base = emoji.trim_matches(':');
+    let base = match base.rsplit_once(":t") {
+        Some((name, tone)) if tone.len() == 1 && ("1"..="6").contains(&tone) => name,
+        _ => base,
+    };
+    if !crate::emoji::DATA.exists(base) {
         return Err(Unsupported("custom emoji chat reactions").into());
     }
     let count = r["count"].as_i64().unwrap_or(0);

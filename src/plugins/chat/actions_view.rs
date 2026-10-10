@@ -127,7 +127,49 @@ pub fn template(tb: &Toolbar, c: &Value, following: bool) -> String {
     out.push_str(&details_bar(t, "", 0, "", "", ""));
     out.push_str("</template>");
     out.push_str(&toast_template());
+    out.push_str(&emoji_picker_template(tb));
     out
+}
+
+/// What static/js/emoji-picker.js draws the picker with: its strings
+/// (chat.emoji_picker.*) and the url of a standard emoji's image.
+fn emoji_picker_template(tb: &Toolbar) -> String {
+    let t = tb.t;
+    let mut labels = serde_json::Map::new();
+    for key in [
+        "favorites",
+        "smileys_&_emotion",
+        "objects",
+        "people_&_body",
+        "travel_&_places",
+        "animals_&_nature",
+        "food_&_drink",
+        "activities",
+        "flags",
+        "symbols",
+        "search_placeholder",
+        "no_results",
+    ] {
+        labels.insert(
+            key.into(),
+            Value::String(t(&format!("chat.emoji_picker.{key}"))),
+        );
+    }
+    format!(
+        "<template class=\"emoji-picker-template\" data-base-path=\"{}\" data-emoji-url=\"{}\" data-labels=\"{}\"><div class=\"emoji-picker-icons\">{}{}{}{}</div></template>",
+        escape(tb.base_path),
+        escape(&format!(
+            "{}/images/emoji/{}/%{{name}}.png?v={}",
+            tb.base_path,
+            tb.emoji_set,
+            crate::emoji::image_version()
+        )),
+        escape(&Value::Object(labels).to_string()),
+        d_icon("magnifying-glass", Some("-left")),
+        d_icon("trash-can", None),
+        d_icon("chevron-up", None),
+        d_icon("chevron-down", None),
+    )
 }
 
 /// The success toast (DToasts with DDefaultToast) chat.js shows for a
