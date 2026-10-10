@@ -662,54 +662,223 @@
       return;
     }
     var reply = replying(parts);
-    // The composer empties as the message goes (Ember stages it, and
-    // resets the draft), and gets its text back if sending fails.
-    resetComposer(parts);
     parts.composer.classList.add("is-sending");
-    var request;
+    var done = function () {
+      var now = composerParts();
+      if (now) {
+        now.composer.classList.remove("is-sending");
+        updateSendState(now);
+        now.input.focus();
+      }
+    };
     if (edit) {
-      request = fetch(basePath() + "/chat/api/channels/" + channelId + "/messages/" + edit.dataset.id, {
+      // #sendEditMessage: the composer reset, the edit saved; a failed one
+      // says why (popupAjaxError).
+      resetComposer(parts);
+      fetch(basePath() + "/chat/api/channels/" + channelId + "/messages/" + edit.dataset.id, {
         method: "PUT",
         credentials: "same-origin",
         headers: csrfHeaders(),
         body: new URLSearchParams({ message: message }).toString(),
-      });
-    } else {
-      var params = {
-        message: message,
-        staged_id: "staged-" + Date.now() + "-" + Math.floor(Math.random() * 1e6),
-        client_created_at: new Date().toISOString(),
-      };
-      if (reply) {
-        params.in_reply_to_id = reply.dataset.id;
-      }
-      request = fetch(basePath() + "/chat/" + channelId, {
-        method: "POST",
-        credentials: "same-origin",
-        headers: csrfHeaders(),
-        body: new URLSearchParams(params).toString(),
+      })
+        .then(function (r) {
+          return r.ok ? changed() : failed(r);
+        })
+        .finally(done);
+      return;
+    }
+    // #sendNewMessage: cooked in the browser and staged, the composer
+    // reset, then sent; the bus swaps the server's message in.
+    var params = {
+      message: message,
+      // guid()
+      staged_id: window.crypto && window.crypto.randomUUID
+        ? window.crypto.randomUUID()
+        : "staged-" + Date.now() + "-" + Math.floor(Math.random() * 1e6),
+      client_created_at: new Date().toISOString(),
+    };
+    if (reply) {
+      params.in_reply_to_id = reply.dataset.id;
+    }
+    cookStaged(message)
+      .then(function (cooked) {
+        var staged = stage(cooked, params, reply);
+        resetComposer(parts);
+        return sendStaged(channelId, params, staged);
+      })
+      .finally(done);
+  }
+
+  // ChatMessage#cook in the browser: the markdown crate's chat rules, as
+  // the composer's preview loads it; the text escaped when it can't.
+  var chatRenderer = null;
+
+  function cookStaged(message) {
+    var tpl = document.querySelector("template.chat-staged-template[data-wasm]");
+    var escaped = function () {
+      var p = document.createElement("p");
+      p.textContent = message;
+      return p.outerHTML;
+    };
+    if (!tpl || !window.WebAssembly) {
+      return Promise.resolve(escaped());
+    }
+    if (!chatRenderer) {
+      chatRenderer = Promise.all([
+        WebAssembly.instantiateStreaming(fetch(tpl.dataset.wasm), {}),
+        fetch(tpl.dataset.settings, { credentials: "same-origin" }).then(function (r) {
+          if (!r.ok) {
+            throw new Error("settings " + r.status);
+          }
+          return r.text();
+        }),
+      ]).then(function (loaded) {
+        var wasm = loaded[0].instance.exports;
+        var call = function (fn, text) {
+          var bytes = new TextEncoder().encode(text);
+          var ptr = wasm.alloc(bytes.length);
+          new Uint8Array(wasm.memory.buffer, ptr, bytes.length).set(bytes);
+          var status = fn(ptr, bytes.length);
+          wasm.dealloc(ptr, bytes.length);
+          var out = new TextDecoder().decode(
+            new Uint8Array(wasm.memory.buffer, wasm.output_ptr(), wasm.output_len())
+          );
+          if (status !== 0) {
+            throw new Error(out);
+          }
+          return out;
+        };
+        call(wasm.configure, loaded[1]);
+        return function (raw) {
+          return call(wasm.preview, raw);
+        };
       });
     }
-    request
-      .then(function (r) {
+    return chatRenderer
+      .then(function (cook) {
+        return cook(message);
+      })
+      .catch(function () {
+        return escaped();
+      });
+  }
+
+  // ChatChannel#stageMessage: the member's message at the end of the list
+  // (-staged, -not-processed), its author line hidden after their own
+  // recent message (hideUserInfo).
+  function stage(cooked, params, reply) {
+    var channel = document.querySelector(".chat-channel[data-id]");
+    var list = channel && channel.querySelector(".chat-messages-container");
+    if (!list) {
+      return null;
+    }
+    if (channel.classList.contains("is-empty")) {
+      // The empty state gives way to the first message.
+      channel.classList.remove("is-empty");
+      list.innerHTML = "";
+    }
+    var items = listItems(list);
+    var previous = items[items.length - 1] || null;
+    var now = new Date();
+    var hidden =
+      !!previous &&
+      !previous.matches("template") &&
+      !previous.classList.contains("-deleted") &&
+      previous.dataset.userId === channel.dataset.viewerId &&
+      Math.abs(now - new Date(previous.dataset.createdAt)) <= 300000 &&
+      (!reply || reply.dataset.id === previous.dataset.id);
+    var tpl = document.querySelector(
+      'template.chat-staged-template[data-variant="' + (hidden ? "hidden" : "info") + '"]'
+    );
+    if (!tpl) {
+      return null;
+    }
+    var node = tpl.content.querySelector(".chat-message-container").cloneNode(true);
+    node.classList.remove("-persisted", "-processed", "-last-read");
+    node.classList.add("-staged", "-not-processed");
+    node.dataset.id = params.staged_id;
+    node.dataset.createdAt = now.toISOString();
+    node.dataset.message = params.message;
+    node.dataset.excerpt = params.message;
+    node.querySelector(".chat-cooked").innerHTML = cooked;
+    var bottom = atBottom(channel);
+    list.appendChild(node);
+    redraw(channel);
+    // Its time, not yet a link to it.
+    node.querySelectorAll("a.chat-time").forEach(function (link) {
+      var span = document.createElement("span");
+      span.setAttribute("title", link.title);
+      span.setAttribute("tabindex", "-1");
+      span.className = "chat-time";
+      span.textContent = link.textContent;
+      link.replaceWith(span);
+    });
+    if (bottom) {
+      channel.querySelector(".chat-messages-scroller").scrollTop = 0;
+    }
+    return node;
+  }
+
+  // The send, and setSendError on the staged message when it fails: the
+  // server's reason, or a network error with "Send again?".
+  function sendStaged(channelId, params, staged) {
+    if (staged) {
+      staged.classList.remove("-errored");
+      var old = staged.querySelector(".chat-message-error");
+      if (old) {
+        old.remove();
+      }
+    }
+    return fetch(basePath() + "/chat/" + channelId, {
+      method: "POST",
+      credentials: "same-origin",
+      headers: csrfHeaders(),
+      body: new URLSearchParams(params).toString(),
+    }).then(
+      function (r) {
         if (r.ok) {
           return changed();
         }
-        // A failed edit stays reset (popupAjaxError); a failed message
-        // comes back to the composer.
-        if (!edit) {
-          parts.input.value = message + parts.input.value;
+        if (!staged) {
+          return failed(r);
         }
-        return failed(r);
-      })
-      .finally(function () {
-        var now = composerParts();
-        if (now) {
-          now.composer.classList.remove("is-sending");
-          updateSendState(now);
-          now.input.focus();
+        return r
+          .json()
+          .catch(function () {
+            return {};
+          })
+          .then(function (body) {
+            sendError(staged, channelId, params, (body.errors || [])[0]);
+          });
+      },
+      function () {
+        if (staged) {
+          sendError(staged, channelId, params, null);
         }
+      }
+    );
+  }
+
+  // ChatMessageError
+  function sendError(staged, channelId, params, reason) {
+    var tpl = document.querySelector("template.chat-staged-template[data-wasm]");
+    staged.classList.add("-errored");
+    var error = el("div", "chat-message-error");
+    if (reason) {
+      error.textContent = reason;
+    } else {
+      var button = el("button", "btn no-text btn-icon chat-message-error__retry-btn");
+      button.type = "button";
+      button.innerHTML = tpl.content.querySelector("template.chat-retry-icon").innerHTML;
+      button.appendChild(el("span", "chat-message-error__retry-btn-title", tpl.dataset.labelNetworkError));
+      button.appendChild(el("span", "chat-message-error__retry-btn-action", tpl.dataset.labelSendAgain));
+      button.addEventListener("click", function () {
+        // resendStagedMessage
+        sendStaged(channelId, params, staged);
       });
+      error.appendChild(button);
+    }
+    staged.querySelector(".chat-message-content").appendChild(error);
   }
 
   document.addEventListener("input", function (event) {
@@ -1079,7 +1248,7 @@
     if (!actionsTemplate() || message.classList.contains("-active")) {
       return;
     }
-    if (message.querySelector(".chat-message-expand")) {
+    if (message.querySelector(".chat-message-expand") || message.classList.contains("-staged")) {
       return;
     }
     clearActive();
@@ -1403,7 +1572,7 @@
   function fetchMessage(channelId, id, previous) {
     var url = basePath() + "/live/chat/" + channelId + "/" + id;
     if (previous) {
-      url += "?previous=" + previous.dataset.id;
+      url += "?previous=" + (previous.classList.contains("-staged") ? "staged" : previous.dataset.id);
     }
     return fetch(url, { credentials: "same-origin" }).then(function (r) {
       return r.ok ? r.text() : null;
@@ -1464,11 +1633,42 @@
     });
   }
 
+  // The member's last read message is one: a message drawn as it moves
+  // there takes the mark from the one before.
+  function lastReadOnly(list, node) {
+    if (!node.classList.contains("-last-read")) {
+      return;
+    }
+    list.querySelectorAll(":scope > .chat-message-container.-last-read").forEach(function (other) {
+      if (other !== node) {
+        other.classList.remove("-last-read");
+      }
+    });
+  }
+
   // handleSentMessage: a message not in the page yet, at its end.
   function onSent(channel, list, data) {
     var id = data.chat_message.id;
     if (findMessage(list, id)) {
       return Promise.resolve();
+    }
+    // handleStagedMessage: the member's staged message becomes the server's,
+    // where it is.
+    var staged = data.staged_id && findMessage(list, data.staged_id);
+    if (staged) {
+      return fetchMessage(channel.dataset.id, id, previousItem(list, staged)).then(function (html) {
+        if (html && staged.isConnected && !findMessage(list, id)) {
+          if (staged.classList.contains("-active")) {
+            clearActive();
+          }
+          var sent = fragment(html);
+          // Processed once the bus says so.
+          sent.classList.replace("-processed", "-not-processed");
+          staged.replaceWith(sent);
+          lastReadOnly(list, sent);
+          redraw(channel);
+        }
+      });
     }
     if (channel.classList.contains("is-empty")) {
       return refresh();
@@ -1480,7 +1680,9 @@
       if (!html || findMessage(list, id)) {
         return;
       }
-      list.appendChild(fragment(html));
+      var added = fragment(html);
+      list.appendChild(added);
+      lastReadOnly(list, added);
       redraw(channel);
       if (bottom) {
         channel.querySelector(".chat-messages-scroller").scrollTop = 0;

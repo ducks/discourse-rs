@@ -397,8 +397,9 @@ pub struct LiveMessageParams {
 }
 
 /// GET /live/chat/:channel_id/:message_id: a message as the viewer's
-/// channel page draws it, after `previous`, for chat.js to swap in when
-/// the channel's bus tells of it.
+/// channel page draws it, after `previous` (a message id, or `staged`: the
+/// viewer's own not yet sent), for chat.js to swap in when the channel's
+/// bus tells of it.
 pub async fn live_message(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
@@ -414,9 +415,10 @@ pub async fn live_message(
         Ok(settings) => settings,
         Err(_) => return Ok(StatusCode::NOT_FOUND.into_response()),
     };
+    let staged = params.previous.as_deref() == Some("staged");
     let previous = params.previous.and_then(|p| p.parse::<i64>().ok());
     let html = context(&state, &mut conn, &settings, &guardian)
-        .message_fragment(channel_id, message_id, previous)
+        .message_fragment(channel_id, message_id, previous, staged)
         .await?;
     Ok(match html {
         Some(html) => (

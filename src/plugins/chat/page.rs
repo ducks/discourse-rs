@@ -206,21 +206,22 @@ impl Context<'_> {
                 .get("default_emoji_reactions")?
                 .to_s()
                 .to_string();
-            let toolbar = super::actions_view::Toolbar {
-                t: &t,
-                base_path: self.base_path,
-                emoji_set: &view.emoji_set,
-                viewer_id,
-                staff: self.guardian.is_staff(),
-                quick_custom: custom.as_deref(),
-                default_reactions: &defaults,
-                pins: self.settings.get("chat_pinned_messages")?.truthy(),
+            let pins = self.settings.get("chat_pinned_messages")?.truthy();
+            let actions = {
+                let toolbar = super::actions_view::Toolbar {
+                    t: &t,
+                    base_path: self.base_path,
+                    emoji_set: &view.emoji_set,
+                    viewer_id,
+                    staff: self.guardian.is_staff(),
+                    quick_custom: custom.as_deref(),
+                    default_reactions: &defaults,
+                    pins,
+                };
+                super::actions_view::template(&toolbar, &channel_json, following)
             };
-            out.push_str(&super::actions_view::template(
-                &toolbar,
-                &channel_json,
-                following,
-            ));
+            out.push_str(&actions);
+            out.push_str(&self.staged_templates(&view).await?);
         }
         out.push_str(&format!(
             "<div class=\"chat-scroll-to-bottom\"><button class=\"btn no-text btn-flat chat-scroll-to-bottom__button\" type=\"button\"><span class=\"chat-scroll-to-bottom__arrow\">{}</span></button></div>",
@@ -235,17 +236,94 @@ impl Context<'_> {
         Ok(out)
     }
 
+    /// The member's own message as ChatChannel#stageMessage shows it before
+    /// the server has it, for chat.js to fill (the cooked text, an id):
+    /// with its author line, and without (hideUserInfo, after their own
+    /// message), as Ember draws a message by currentUser.
+    async fn staged_templates(&mut self, view: &View<'_>) -> Result<String, AppError> {
+        let Some(user_id) = self.guardian.user_id() else {
+            return Ok(String::new());
+        };
+        #[derive(sqlx::FromRow)]
+        struct Me {
+            username: String,
+            name: Option<String>,
+            uploaded_avatar_id: Option<i32>,
+            admin: bool,
+            moderator: bool,
+            primary_group_name: Option<String>,
+        }
+        let me: Me = sqlx::query_as(
+            "SELECT users.username, users.name, users.uploaded_avatar_id, users.admin, users.moderator, \
+               groups.name AS primary_group_name \
+             FROM users LEFT JOIN groups ON groups.id = users.primary_group_id WHERE users.id = $1",
+        )
+        .bind(user_id)
+        .fetch_one(&mut *self.conn)
+        .await?;
+        let logo = crate::admin_users::logo_small_url(&mut *self.conn, self.settings).await?;
+        let urls = crate::url::Urls {
+            config: self.config,
+            settings: self.settings,
+        };
+        let avatar = crate::avatar::avatar_template(
+            &urls,
+            user_id,
+            &me.username,
+            me.uploaded_avatar_id,
+            logo.as_deref(),
+        )?;
+        let now = crate::topic_list::time_json(crate::clock::now_naive());
+        let message = |id: i64| {
+            serde_json::json!({
+                "id": id,
+                "message": "",
+                "cooked": "",
+                "excerpt": "",
+                "created_at": now,
+                "deleted_at": null,
+                "in_reply_to": null,
+                "chat_webhook_event": null,
+                "user": {
+                    "id": user_id,
+                    "username": me.username,
+                    "name": me.name,
+                    "avatar_template": avatar,
+                    "admin": me.admin,
+                    "moderator": me.moderator,
+                    "staff": me.admin || me.moderator,
+                    "primary_group_name": me.primary_group_name,
+                },
+            })
+        };
+        let alone = [message(0)];
+        let after_own = [message(-1), message(0)];
+        Ok(format!(
+            "<template class=\"chat-staged-template\" data-variant=\"info\" data-wasm=\"{}/assets/markdown.wasm?v={}\" data-settings=\"{}/assets/markdown-settings.json?chat=1\" data-label-network-error=\"{}\" data-label-send-again=\"{}\"><template class=\"chat-retry-icon\">{}</template>{}</template><template class=\"chat-staged-template\" data-variant=\"hidden\">{}</template>",
+            self.base_path,
+            crate::routes::composer::MARKDOWN_WASM_VERSION,
+            self.base_path,
+            escape(&(view.t)("chat.retry_staged_message.title")),
+            escape(&(view.t)("chat.retry_staged_message.action")),
+            d_icon("circle-exclamation", None),
+            message_html(view, &alone, 0, None, None, false)?,
+            message_html(view, &after_own, 1, None, None, false)?
+        ))
+    }
+
     /// One message as the channel page draws it, after `previous` (the
     /// message above it in the viewer's page, which decides what it
     /// repeats of its author and reply): what chat.js swaps in when the
     /// channel's bus says a message came, changed or came back. A deleted
     /// message, for those who see it (its author, staff, moderators), is
-    /// drawn expanded. None when the viewer can't see it.
+    /// drawn expanded. `staged_previous`: the message above is the viewer's
+    /// own still staged. None when the viewer can't see it.
     pub async fn message_fragment(
         &mut self,
         channel_id: i64,
         message_id: i64,
         previous: Option<i64>,
+        staged_previous: bool,
     ) -> Result<Option<String>, AppError> {
         let sql = format!(
             "SELECT {} FROM chat_channels WHERE id = $1 AND deleted_at IS NULL",
@@ -306,7 +384,7 @@ impl Context<'_> {
         let ids: Vec<i64> = previous.into_iter().chain([message_id]).collect();
         let serialized = self.serialize_messages(&channel, &ids).await?;
         // In the page's order: the previous one first.
-        let messages: Vec<Value> = ids
+        let mut messages: Vec<Value> = ids
             .iter()
             .filter_map(|id| {
                 serialized
@@ -315,6 +393,19 @@ impl Context<'_> {
                     .cloned()
             })
             .collect();
+        // After the viewer's staged message: theirs, just now.
+        if staged_previous && previous.is_none() {
+            messages.insert(
+                0,
+                serde_json::json!({
+                    "id": null,
+                    "user": { "id": viewer },
+                    "created_at": crate::topic_list::time_json(crate::clock::now_naive()),
+                    "deleted_at": null,
+                    "in_reply_to": null,
+                }),
+            );
+        }
         let Some(index) = messages
             .iter()
             .position(|m| m["id"].as_i64() == Some(message_id))

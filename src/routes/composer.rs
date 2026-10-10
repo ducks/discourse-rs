@@ -29,14 +29,23 @@ pub async fn markdown_wasm() -> Response {
 }
 
 /// GET /assets/markdown-settings.json: the RenderSettings posts cook with,
-/// for the preview. A site whose settings the renderer refuses gets a 404,
-/// and its composer no preview.
-pub async fn markdown_settings(State(state): State<AppState>) -> Result<Response, AppError> {
+/// for the preview; with `chat=1`, chat messages' (what ChatMessage#cook
+/// stages a message with). A site whose settings the renderer refuses gets
+/// a 404, and its composer no preview.
+pub async fn markdown_settings(
+    State(state): State<AppState>,
+    axum::extract::Query(params): axum::extract::Query<std::collections::HashMap<String, String>>,
+) -> Result<Response, AppError> {
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
     match crate::pretty_text::render_settings(&settings, &state.i18n, &state.config) {
-        Ok(render) => Ok(([(header::CACHE_CONTROL, "no-cache")], Json(render)).into_response()),
+        Ok(mut render) => {
+            if params.get("chat").map(String::as_str) == Some("1") {
+                crate::pretty_text::chat_render_settings(&mut render);
+            }
+            Ok(([(header::CACHE_CONTROL, "no-cache")], Json(render)).into_response())
+        }
         Err(crate::pretty_text::CookError::Unsupported(e)) => {
             tracing::info!(error = %e, "no composer preview");
             Ok(axum::http::StatusCode::NOT_FOUND.into_response())

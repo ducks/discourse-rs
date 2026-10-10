@@ -116,6 +116,7 @@ ICONS=(
   box-archive
   filter-circle-xmark
   discourse-emojis
+  circle-exclamation
   rotate
   circle-xmark
 )

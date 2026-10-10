@@ -284,14 +284,7 @@ pub async fn markdown(host: &Host, raw: &str, opts: &MarkdownOptions) -> Result<
     render_settings.post_id = opts.post_id;
     render_settings.force_quote_link = opts.force_quote_link;
     if opts.chat {
-        // MARKDOWN_FEATURES leaves these out.
-        render_settings.chat = true;
-        render_settings.poll = false;
-        render_settings.checklist = false;
-        render_settings.footnotes = false;
-        render_settings.policy = false;
-        // and always includes inlineEmoji.
-        render_settings.inline_emoji = true;
+        chat_render_settings(&mut render_settings);
     }
 
     let (html, needs) = render::render(raw, &render_settings, Lookups::default())?;
@@ -490,6 +483,18 @@ pub fn extract_mentions(cooked: &str) -> Result<Vec<String>, crate::Unsupported>
         }
     }
     Ok(out)
+}
+
+/// Chat::Message.markdown_options' features: chat's rules, and
+/// MARKDOWN_FEATURES leaving out polls, checklists, footnotes and policies
+/// while always including inlineEmoji.
+pub fn chat_render_settings(render_settings: &mut render::RenderSettings) {
+    render_settings.chat = true;
+    render_settings.poll = false;
+    render_settings.checklist = false;
+    render_settings.footnotes = false;
+    render_settings.policy = false;
+    render_settings.inline_emoji = true;
 }
 
 #[cfg(test)]
