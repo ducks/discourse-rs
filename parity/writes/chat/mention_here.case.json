@@ -1,0 +1,20 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE users SET last_seen_at = now() WHERE id IN (2, 3)"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/chat/2.json",
+      "params": {
+        "message": "@here standup",
+        "staged_id": "s"
+      }
+    }
+  ],
+  "run_jobs": [
+    "Jobs::Chat::ProcessMessage",
+    "Jobs::Chat::NotifyMentioned"
+  ]
+}

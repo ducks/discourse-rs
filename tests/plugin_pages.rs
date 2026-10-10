@@ -820,3 +820,35 @@ async fn a_channel_page_carries_what_stages_a_message() {
     let html = user1.page("/live/chat/2/7?previous=6").await;
     assert!(html.contains("-processed\" data-id=\"7\""), "{html}");
 }
+
+#[tokio::test]
+async fn the_user_menu_shows_chat_mentions() {
+    let db = TestDb::new().await;
+    let data = r#"{"chat_message_id":7,"chat_channel_id":2,"mentioned_by_username":"user1","is_direct_message_channel":false,"chat_channel_title":"General","chat_channel_slug":"general"}"#;
+    let group = r#"{"chat_message_id":8,"chat_channel_id":2,"mentioned_by_username":"user1","is_direct_message_channel":false,"chat_channel_title":"General","chat_channel_slug":null,"identifier":"squad","is_group_mention":true}"#;
+    for d in [data, group] {
+        sqlx::query(
+            "INSERT INTO notifications (notification_type, user_id, data, read, high_priority, created_at, updated_at) \
+             VALUES (29, 2, $1, false, true, now(), now())",
+        )
+        .bind(d)
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    }
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user0 = Client::logged_in(st, "user0").await;
+    let html = user0.page("/user-menu").await;
+    assert!(
+        html.contains(r#"<a href="/chat/c/general/2/7"><strong>user1</strong> mentioned you in &#34;General&#34; <span class="title"></span></a>"#)
+            || html.contains(r#"<a href="/chat/c/general/2/7"><strong>user1</strong> mentioned you in &quot;General&quot; <span class="title"></span></a>"#),
+        "{html}"
+    );
+    // No slug: the title slugified.
+    assert!(
+        html.contains(
+            r#"<a href="/chat/c/general/2/8"><strong>user1</strong> mentioned @squad in"#
+        ),
+        "{html}"
+    );
+}

@@ -1,0 +1,20 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE user_chat_channel_memberships SET notification_level = 2 WHERE chat_channel_id = 2 AND user_id = 2"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/chat/2.json",
+      "params": {
+        "message": "for the watchers",
+        "staged_id": "s"
+      }
+    }
+  ],
+  "run_jobs": [
+    "Jobs::Chat::ProcessMessage",
+    "Jobs::Chat::NotifyWatching"
+  ]
+}

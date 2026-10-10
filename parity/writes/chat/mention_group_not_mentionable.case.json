@@ -1,0 +1,21 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO groups (id, name, created_at, updated_at, mentionable_level, visibility_level, members_visibility_level, user_count) VALUES (50, 'squad', now(), now(), 0, 0, 0, 2)",
+    "INSERT INTO group_users (group_id, user_id, created_at, updated_at) VALUES (50, 2, now(), now()), (50, 4, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/chat/2.json",
+      "params": {
+        "message": "hi @squad",
+        "staged_id": "s"
+      }
+    }
+  ],
+  "run_jobs": [
+    "Jobs::Chat::ProcessMessage",
+    "Jobs::Chat::NotifyMentioned"
+  ]
+}

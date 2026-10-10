@@ -1,0 +1,21 @@
+{
+  "user": "user1",
+  "setup": [],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/chat/2.json",
+      "params": {
+        "message": "@user0 @user2 hi",
+        "staged_id": "s"
+      }
+    }
+  ],
+  "run_jobs": [
+    "Jobs::Chat::ProcessMessage",
+    "Jobs::Chat::NotifyMentioned"
+  ],
+  "settings": {
+    "max_mentions_per_chat_message": "1"
+  }
+}

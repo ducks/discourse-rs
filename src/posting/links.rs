@@ -173,15 +173,47 @@ async fn topic_target(
 pub(crate) fn extract(cooked: &str) -> Result<Vec<String>, Unsupported> {
     let dom = parse(cooked);
     let mut links = Vec::new();
-    collect(&fragment_root(&dom), false, &mut links)?;
+    collect(&fragment_root(&dom), false, false, &mut links)?;
     Ok(links)
 }
 
-fn collect(node: &Handle, skip: bool, links: &mut Vec<String>) -> Result<(), Unsupported> {
+/// `PrettyText.extract_links(html)` with its quotes' links too (after the
+/// others, `/t/:topic_id/:post_number`), for callers that only keep links
+/// with a host, as chat's Chat::MessageLink.extract_from does.
+pub(crate) fn extract_with_quotes(cooked: &str) -> Result<Vec<String>, Unsupported> {
+    let dom = parse(cooked);
+    let root = fragment_root(&dom);
+    let mut links = Vec::new();
+    collect(&root, false, true, &mut links)?;
+    for node in crate::pretty_text::cleanup::all_elements(&dom) {
+        if element_name(&node) == Some("aside") && has_class(&node, "quote") {
+            let topic = attr(&node, "data-topic").filter(|t| !t.trim().is_empty());
+            if let Some(topic) = topic {
+                let mut url = format!("/t/{topic}");
+                if let Some(post) = attr(&node, "data-post").filter(|p| !p.trim().is_empty()) {
+                    url.push_str(&format!("/{post}"));
+                }
+                links.push(url);
+            }
+        }
+    }
+    Ok(links)
+}
+
+fn collect(
+    node: &Handle,
+    skip: bool,
+    quotes: bool,
+    links: &mut Vec<String>,
+) -> Result<(), Unsupported> {
     let name = element_name(node);
     let mut skip = skip;
     if let Some(name) = name {
-        if name == "aside" && has_class(node, "quote") && attr(node, "data-topic").is_some() {
+        if !quotes
+            && name == "aside"
+            && has_class(node, "quote")
+            && attr(node, "data-topic").is_some()
+        {
             return Err(Unsupported(
                 "links from quotes (topic links and QuotedPost)",
             ));
@@ -211,7 +243,7 @@ fn collect(node: &Handle, skip: bool, links: &mut Vec<String>) -> Result<(), Uns
         }
     }
     for child in node.children.borrow().iter() {
-        collect(child, skip, links)?;
+        collect(child, skip, quotes, links)?;
     }
     Ok(())
 }

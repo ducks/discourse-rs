@@ -648,6 +648,14 @@ pub fn router(state: &AppState) -> Router<AppState> {
     if let Some(emoji) = config.emoji_dir() {
         router = router.nest_service("/images/emoji", ServeDir::new(emoji));
     }
+    // The push notifications' icons (app/assets/images/push-notifications),
+    // undigested.
+    if let Some(src) = &config.discourse_src {
+        router = router.nest_service(
+            "/assets/push-notifications",
+            ServeDir::new(src.join("app/assets/images/push-notifications")),
+        );
+    }
     router
         .nest_service("/images", images)
         // Only for routed requests, as Rails' before_action only runs once a
