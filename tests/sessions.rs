@@ -1291,7 +1291,7 @@ async fn list_pages_show_the_members_unread_and_new_counts() {
     assert!(page.contains(r#"href="/new">New (2)</a>"#));
     assert!(!page.contains("nav-item_unread"));
     assert!(
-        page.contains("&#38;sidebar=discovery&#38;nav=latest\""),
+        page.contains("&#38;sidebar=discovery") && page.contains("&#38;nav=latest"),
         "{page}"
     );
     let dot = r#"<span class="sidebar-section-link-suffix icon unread">"#;
@@ -2259,5 +2259,62 @@ async fn the_composer_stays_across_pages() {
             .contains(r#"<form class="user-menu-logout" hx-boost="false" method="post""#),
         "{}",
         menu.body
+    );
+}
+
+/// A member who chats: every page keeps chat's header icon and sidebar
+/// sections current from their channels' new messages.
+#[tokio::test(flavor = "multi_thread")]
+async fn chat_unread_state_goes_live_on_every_page() {
+    let db = TestDb::new().await;
+    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut client = Client::new(app_state.clone());
+    let reply = client.login("user1", "password").await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    sqlx::query("UPDATE users SET last_seen_at = now() WHERE username = 'user1'")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let page = client.get("/latest").await.body;
+    assert!(page.contains("&#38;chat=discovery"), "{page}");
+
+    let from = app_state.bus.now().await.unwrap();
+    let mut body = client
+        .open(&format!("/live?chat=discovery&position={from}"))
+        .await;
+    let mut buffer = String::new();
+    // user0 writes in General, which user1 follows.
+    sqlx::query(
+        "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id) \
+         VALUES (1, 2, 2, now(), now(), 'hi', '<p>hi</p>', 1, 2)",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    sqlx::query("UPDATE chat_channels SET last_message_id = 1 WHERE id = 2")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let mut conn = db.pool.acquire().await.unwrap();
+    app_state
+        .bus
+        .publish(
+            &mut conn,
+            "/chat/2/new-messages",
+            &serde_json::json!({ "type": "channel", "channel_id": 2 }),
+            Some(&[discourse_rs::bus::group_tag(10)]),
+        )
+        .await
+        .unwrap();
+    let html = common::next_sse_event(&mut body, &mut buffer, "chat").await;
+    assert!(
+        html.starts_with(r#"<li hx-swap-oob="outerHTML:.chat-header-icon" class="header-dropdown-toggle chat-header-icon">"#),
+        "{html}"
+    );
+    assert!(html.contains(r#"<div class="chat-channel-unread-indicator"></div>"#));
+    assert!(html.contains(r#"<div hx-swap-oob="outerHTML:.sidebar-section[data-section-name='chat-channels']" class="sidebar-section"#));
+    assert!(
+        html.contains("sidebar-section-link-content-badge icon unread"),
+        "{html}"
     );
 }

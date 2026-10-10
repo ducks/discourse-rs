@@ -347,6 +347,8 @@ impl Site {
         }
         if let Some(chat) = chat {
             classes.insert(0, "chat-enabled".into());
+            // Kept current over the live stream.
+            self.chrome.live_param("chat", &active.key());
             self.chrome.chat_header_icon = chat.header_icon;
         }
         if let Some(user_id) = guardian.user_id() {
