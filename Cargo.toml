@@ -1,6 +1,6 @@
 [package]
 name = "discourse-rs"
-version = "20261009.0.3"
+version = "20261010.0.0"
 license = "GPL-3.0-or-later"
 edition = "2024"
 default-run = "discourse-rs"
