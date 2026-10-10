@@ -19,8 +19,8 @@ use crate::{AppError, Unsupported};
 pub const PROCESS_MESSAGE_JOB: &str = "Jobs::Chat::ProcessMessage";
 /// The job that recounts a thread's replies.
 pub const UPDATE_THREAD_REPLY_COUNT_JOB: &str = "Jobs::Chat::UpdateThreadReplyCount";
-const NOTIFY_MENTIONED_JOB: &str = "Jobs::Chat::NotifyMentioned";
-const NOTIFY_WATCHING_JOB: &str = "Jobs::Chat::NotifyWatching";
+use super::notify::NOTIFY_MENTIONED_JOB;
+use super::notify::NOTIFY_WATCHING_JOB;
 
 /// `Chat::NotificationLevels.all[:tracking]`
 const THREAD_TRACKING: i32 = 2;

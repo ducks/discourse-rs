@@ -68,6 +68,12 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         crate::plugins::chat::create::UPDATE_THREAD_REPLY_COUNT_JOB => {
             chat_update_thread_reply_count(state, &job.args).await
         }
+        crate::plugins::chat::notify::NOTIFY_MENTIONED_JOB => {
+            chat_notify_mentioned(state, &job.args).await
+        }
+        crate::plugins::chat::notify::NOTIFY_WATCHING_JOB => {
+            chat_notify_watching(state, &job.args).await
+        }
         "Jobs::DiscourseTopicVoting::VoteReclaim" => {
             let mut tx = match state.pool.begin().await {
                 Ok(tx) => tx,
@@ -705,6 +711,24 @@ async fn send_system_message(state: &AppState, args: &Value) -> Result<(), AppEr
         post_alert_options,
     )
     .await?;
+    Ok(())
+}
+
+/// Jobs::Chat::NotifyWatching
+async fn chat_notify_watching(state: &AppState, args: &Value) -> Result<(), AppError> {
+    let mut tx = state.pool.begin().await?;
+    let s = settings(state, &mut tx).await?;
+    crate::plugins::chat::notify::notify_watching(state, &mut tx, &s, args).await?;
+    tx.commit().await?;
+    Ok(())
+}
+
+/// Jobs::Chat::NotifyMentioned
+async fn chat_notify_mentioned(state: &AppState, args: &Value) -> Result<(), AppError> {
+    let mut tx = state.pool.begin().await?;
+    let s = settings(state, &mut tx).await?;
+    crate::plugins::chat::notify::notify_mentioned(state, &mut tx, &s, args).await?;
+    tx.commit().await?;
     Ok(())
 }
 

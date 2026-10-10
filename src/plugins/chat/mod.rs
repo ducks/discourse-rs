@@ -15,6 +15,7 @@ pub mod create;
 pub mod membership;
 pub mod messages;
 pub mod modify;
+pub mod notify;
 pub mod page;
 pub mod publisher;
 pub mod view;
