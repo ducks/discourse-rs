@@ -159,9 +159,9 @@ const DISCOURSE_REF: &str = include_str!("../../../vendor/discourse/DISCOURSE_RE
 /// What cooking needs to know about emoji, built once.
 pub struct EmojiData {
     /// `emojis`: the canonical names.
-    names: std::collections::HashSet<String>,
+    pub names: std::collections::HashSet<String>,
     /// `aliasMap`: alias -> canonical name.
-    aliases: HashMap<String, String>,
+    pub aliases: HashMap<String, String>,
     /// `Emoji.unicode_replacements`: the emoji itself -> its name
     /// (`name:tN` for a skin tone).
     pub unicode: HashMap<String, String>,

@@ -24,6 +24,7 @@ pub mod discourse_diff;
 pub mod drafts;
 pub mod email;
 pub mod email_logs;
+pub mod emojis;
 pub use discourse_markdown::emoji;
 pub mod excerpt;
 pub mod file_store;

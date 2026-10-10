@@ -129,8 +129,11 @@ if [ -z "$gem_dist" ]; then
   echo "discourse-emojis $gem_version is not installed in $src/.bundle; run bundle install there" >&2
   exit 1
 fi
-mkdir -p "$dest/../discourse-emojis/dist"
-for f in emojis.json aliases.json tonable_emojis.json translations.json; do
+mkdir -p "$dest/../discourse-emojis/dist/locale_search_aliases"
+# The picker's groups and search terms; of the locales' terms, English's,
+# the one locale the port speaks.
+for f in emojis.json aliases.json tonable_emojis.json translations.json groups.json \
+  search_aliases.json locale_search_aliases/en.json; do
   cp "$gem_dist/$f" "$dest/../discourse-emojis/dist/$f"
 done
 echo "discourse_emojis=$gem_version" >> "$dest/DISCOURSE_REF"

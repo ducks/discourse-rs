@@ -110,9 +110,11 @@ def clear_redis_state
 end
 
 # Caches of rows a case's setup inserts (and the rollback removes): the
-# serialized site categories, and topic-voting's voting categories.
+# serialized site categories, the custom emoji, and topic-voting's voting
+# categories.
 def reset_plugin_caches
   Site.clear_cache
+  Emoji.clear_cache
   Category.reset_voting_cache if Category.respond_to?(:reset_voting_cache)
   # discourse-solved's in-memory list of categories that take answers.
   DiscourseSolved::AcceptedAnswerCache.reset_accepted_answer_cache if defined?(DiscourseSolved::AcceptedAnswerCache)

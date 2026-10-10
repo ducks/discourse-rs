@@ -2,5 +2,6 @@
 {% block title %}{{ title }}{{ site_title }}{% endblock %}
 {% block content %}
 {{ main|safe }}
+<script src="{{ crate::assets::url(base_path, "emoji-picker.js") }}"></script>
 <script src="{{ crate::assets::url(base_path, "chat.js") }}"></script>
 {% endblock %}

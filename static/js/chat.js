@@ -628,6 +628,33 @@
       api("DELETE", "/channels/" + channelId + "/messages/" + id).then(changed).catch(function () {});
       return;
     }
+    // reactingToLastMessage: "+emoji" (or "+:code:") reacts to the last
+    // message instead.
+    var trimmed = message.trim();
+    if (trimmed.charAt(0) === "+") {
+      parts.composer.classList.add("is-sending");
+      Discourse.emojiPicker
+        .shortcutReaction(trimmed)
+        .catch(function () {
+          return null;
+        })
+        .then(function (code) {
+          parts.composer.classList.remove("is-sending");
+          var last = lastMessage();
+          if (code && last) {
+            resetComposer(parts);
+            react(last, code, "add");
+          } else {
+            deliver(parts, message, channelId, edit);
+          }
+        });
+      return;
+    }
+    deliver(parts, message, channelId, edit);
+  }
+
+  // onSendMessage: the message sent, or the edit saved.
+  function deliver(parts, message, channelId, edit) {
     var max = Number(parts.wrapper.dataset.maxLength || 0);
     if (max && message.length > max) {
       var tpl = actionsTemplate();
@@ -856,65 +883,22 @@
     return actions;
   }
 
-  // The emoji store (EmojiStore, the same localStorage keys): the chat
-  // context's recent emoji and the chosen skin tone.
-  var STORE = "discourse_emoji_reaction_";
-
-  function storeGet(key) {
-    try {
-      var value = window.localStorage.getItem(STORE + key);
-      return value === null ? null : JSON.parse(value);
-    } catch (e) {
-      return null;
-    }
-  }
-
-  function storeSet(key, value) {
-    try {
-      window.localStorage.setItem(STORE + key, JSON.stringify(value));
-    } catch (e) {
-      // No storage: the quick reactions stay the defaults.
-    }
-  }
-
-  function diversity() {
-    return storeGet("emojiSelectedDiversity") || 1;
-  }
-
-  function trackEmoji(emoji) {
-    var recent = storeGet("chat_emojiUsage") || [];
-    recent.unshift(emoji.replace(/(^:)|(:$)/g, ""));
-    recent.length = Math.min(recent.length, 40);
-    storeSet("chat_emojiUsage", recent);
-  }
-
+  // isSkinTonableEmoji: a tonable emoji not toned yet.
   function tonable(tpl, emoji) {
-    return (tpl.dataset.tonable || "").split("|").indexOf(emoji.split(":")[0]) !== -1;
+    return !/:t[1-6]:?$/.test(emoji) && (tpl.dataset.tonable || "").split("|").indexOf(emoji.split(":")[0]) !== -1;
   }
 
-  function withTone(tpl, emoji) {
-    var tone = diversity();
-    return tone !== 1 && tonable(tpl, emoji) ? emoji + ":t" + tone : emoji;
-  }
-
-  // quickReactionEmojis: the member's custom ones, then the most used,
-  // then the site's defaults; three of them.
+  // quickReactionEmojis: the member's custom ones, then the most used
+  // (EmojiStore's, in emoji-picker.js), then the site's defaults in the
+  // chosen skin tone; three of them.
   function quickReactions(tpl) {
     var custom = (tpl.dataset.quickCustom || "").split("|").filter(Boolean);
-    var counters = {};
-    (storeGet("chat_emojiUsage") || []).forEach(function (emoji) {
-      counters[emoji] = (counters[emoji] || 0) + 1;
+    var frequent = Discourse.emojiStore.favorites("chat", function (emoji) {
+      return tonable(tpl, emoji);
     });
-    var frequent = Object.keys(counters)
-      .sort(function (a, b) {
-        return counters[b] - counters[a];
-      })
-      .slice(0, 20)
-      .map(function (emoji) {
-        return withTone(tpl, emoji);
-      });
+    var tone = Discourse.emojiStore.diversity();
     var defaults = (tpl.dataset.quickDefaults || "").split("|").map(function (emoji) {
-      return withTone(tpl, emoji);
+      return tone !== 1 && tonable(tpl, emoji) ? emoji + ":t" + tone : emoji;
     });
     var all = custom.concat(frequent).concat(defaults);
     return all
@@ -1072,8 +1056,13 @@
 
   var hoverTimer = null;
 
+  // The menu or the emoji picker of the active message is open
+  // (interactedChatMessage.emojiPickerOpen): it stays active.
   function menuOpen() {
-    return !!document.querySelector(".chat-message-actions-container .more-buttons.is-expanded");
+    return (
+      !!document.querySelector(".chat-message-actions-container .more-buttons.is-expanded") ||
+      (!!pickerMessage && Discourse.emojiPicker.isOpen())
+    );
   }
 
   function clearActive() {
@@ -1172,6 +1161,63 @@
     }
   });
 
+  // The message whose emoji picker is open.
+  var pickerMessage = null;
+
+  // ChatMessageInteractor#openEmojiPicker: the picked emoji is added as a
+  // reaction (selectReaction).
+  function openReactionPicker(trigger) {
+    var message = trigger.closest(".chat-message-container[data-id]");
+    if (!message) {
+      return;
+    }
+    pickerMessage = message;
+    Discourse.emojiPicker.open(trigger, {
+      context: "chat",
+      onSelect: function (emoji) {
+        react(message, emoji, "add");
+      },
+      onClose: function () {
+        pickerMessage = null;
+        if (!message.matches(":hover")) {
+          clearActive();
+        }
+      },
+    });
+  }
+
+  // TextareaTextManipulation#emojiSelected: a `:term` before the caret
+  // completed, else the code added (after a space when text precedes it).
+  function emojiSelected(input, code) {
+    var start = input.selectionStart;
+    var end = input.selectionEnd;
+    var pre = input.value.substring(0, start);
+    var captures = pre.match(/\B:([\p{L}\p{N}_]*)$/u);
+    if (captures) {
+      input.setRangeText(code + ":", start - captures[1].length, end, "end");
+    } else {
+      input.setRangeText(/\S$/.test(pre) ? " :" + code + ":" : ":" + code + ":", start, end, "end");
+    }
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+
+  // The composer's emoji button: the picked emoji goes into the composer
+  // (onSelectEmoji).
+  function openComposerPicker(trigger) {
+    // EmojiPicker's own DMenu, 405 wide.
+    Discourse.emojiPicker.open(trigger, {
+      context: "chat",
+      maxWidth: 405,
+      onSelect: function (emoji) {
+        var parts = composerParts();
+        if (parts) {
+          emojiSelected(parts.input, emoji);
+          parts.input.focus();
+        }
+      },
+    });
+  }
+
   // react: the reaction toggled, the emoji counted as used, the page drawn
   // again.
   function react(message, emoji, action) {
@@ -1185,7 +1231,7 @@
       if (!r.ok) {
         return failed(r);
       }
-      trackEmoji(emoji);
+      Discourse.emojiStore.track(emoji, "chat");
       return changed();
     });
   }
@@ -1311,6 +1357,16 @@
       var replied = target.closest(".chat-message-container");
       clearActive();
       startReply(replied);
+      return;
+    }
+    var reactButton = target.closest(".chat-message-actions .react-btn, .chat-message-react-btn");
+    if (reactButton) {
+      openReactionPicker(reactButton);
+      return;
+    }
+    var emojiButton = target.closest(".chat-composer-button.--emoji");
+    if (emojiButton && !emojiButton.disabled) {
+      openComposerPicker(emojiButton);
     }
   });
 

@@ -739,3 +739,45 @@ async fn a_live_chat_message_is_drawn_for_its_viewer() {
     assert!(html.contains("-deleted"), "{html}");
     assert!(html.contains("<p>gone</p>"));
 }
+
+#[tokio::test]
+async fn a_skin_toned_chat_reaction_is_drawn() {
+    let db = TestDb::new().await;
+    chat_messages(&db).await;
+    sqlx::query(
+        "INSERT INTO chat_message_reactions (chat_message_id, user_id, emoji, created_at, updated_at) VALUES (1, 3, 'waving_hand:t3', now(), now())",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Client::logged_in(st, "user1").await;
+    let html = user1.page("/chat/c/general/2").await;
+    assert!(
+        html.contains("data-emoji-name=\"waving_hand:t3\""),
+        "{html}"
+    );
+    assert!(html.contains("/images/emoji/twitter/waving_hand/3.png"));
+}
+
+#[tokio::test]
+async fn the_emoji_data_carries_names_aliases_and_unicode() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut anon = Client {
+        state: st,
+        cookies: Vec::new(),
+        csrf: None,
+    };
+    let body = anon.page("/assets/emoji-data.json").await;
+    let data: serde_json::Value = serde_json::from_str(&body).unwrap();
+    assert!(
+        data["names"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|n| n == "heart")
+    );
+    assert_eq!(data["aliases"]["thumbsup"], "+1");
+    assert_eq!(data["unicode"]["👍"], "+1");
+}
