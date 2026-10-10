@@ -19,6 +19,7 @@ pub mod modify;
 pub mod notify;
 pub mod page;
 pub mod publisher;
+pub mod summary_email;
 pub mod view;
 
 use serde_json::{Map, Value, json};

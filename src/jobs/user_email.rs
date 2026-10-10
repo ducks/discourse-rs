@@ -57,10 +57,17 @@ pub async fn run(
         return Ok(());
     }
     let account = crate::email::account::template_for(email_type, true).is_some();
-    if !NOTIFICATION_TYPES.contains(&email_type) && !account {
+    // Chat's UserNotifications#chat_summary.
+    let chat_summary = email_type == "chat_summary";
+    if !NOTIFICATION_TYPES.contains(&email_type) && !account && !chat_summary {
         return Err(Unsupported("this email type").into());
     }
-    if args.get("to_address").is_some_and(|a| !a.is_null()) {
+    let given_address = args
+        .get("to_address")
+        .and_then(Value::as_str)
+        .filter(|a| !a.trim().is_empty())
+        .map(str::to_string);
+    if given_address.is_some() && !chat_summary {
         return Err(Unsupported("user_email with an address").into());
     }
     if !account && args.get("email_token").is_some() {
@@ -90,18 +97,18 @@ pub async fn run(
         return skip(
             conn,
             email_type,
-            "no_email_found",
+            given_address.as_deref().unwrap_or("no_email_found"),
             Some(user_id),
             post_id,
             r::USER_EMAIL_NO_USER,
         )
         .await;
     };
-    let to_address = user
-        .email
+    let to_address = given_address
         .clone()
+        .or_else(|| user.email.clone())
         .unwrap_or_else(|| "no_email_found".into());
-    if user.email.is_none() {
+    if to_address == "no_email_found" {
         return skip(
             conn,
             email_type,
@@ -183,10 +190,12 @@ pub async fn run(
     }
     // email_level always (0) sends even to someone online.
     let always = user.email_level == 0;
-    let seen_recently = user.seen_recently && !always;
+    // force_respect_seen_recently (chat's summary) keeps it even then.
+    let force = args["force_respect_seen_recently"] == true;
+    let seen_recently = user.seen_recently && (force || !always);
     let notification_type = args.get("notification_type").and_then(Value::as_str);
     let has_notification = notification_read.is_some() || notification_type.is_some();
-    if (post_id.is_some() || has_notification) && seen_recently {
+    if (post_id.is_some() || has_notification || force) && seen_recently {
         return skip(
             conn,
             email_type,
@@ -199,6 +208,9 @@ pub async fn run(
     }
     if account {
         return account_email(conn, ctx, args, email_type, user_id, &to_address, &user).await;
+    }
+    if chat_summary {
+        return chat_summary_email(conn, ctx, email_type, user_id, &to_address, &user).await;
     }
     let Some(notification_type) = notification_type else {
         return Err(Unsupported("notification emails without a notification type").into());
@@ -425,6 +437,67 @@ async fn account_email(
     let template = crate::email::account::template_for(email_type, has_password)
         .ok_or(Unsupported("this email type"))?;
     let built = crate::email::account::build(&mut *conn, ctx, template, user_id, token).await?;
+    sender::send(&mut *conn, ctx, built, email_type, Some(user_id)).await?;
+    let erode = s.get("bounce_score_erode_on_send")?.to_f();
+    if bounce_score > erode {
+        sqlx::query("UPDATE user_stats SET bounce_score = bounce_score - $2 WHERE user_id = $1")
+            .bind(user_id)
+            .bind(erode)
+            .execute(&mut *conn)
+            .await?;
+    }
+    Ok(())
+}
+
+/// The rest of message_for_email for chat's summary: the daily and bounce
+/// limits, then the mailer, which may find nothing to send.
+async fn chat_summary_email(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    email_type: &str,
+    user_id: i32,
+    to_address: &str,
+    user: &Recipient,
+) -> Result<(), AppError> {
+    let s = ctx.settings;
+    let max = s.get("max_emails_per_day_per_user")?.to_i();
+    if max > 0 {
+        let sent: i64 = sqlx::query_scalar(
+            "SELECT COUNT(*) FROM email_logs WHERE created_at > now() - interval '1 day' AND user_id = $1",
+        )
+        .bind(user_id)
+        .fetch_one(&mut *conn)
+        .await?;
+        if sent >= max {
+            return skip(
+                conn,
+                email_type,
+                to_address,
+                Some(user_id),
+                None,
+                r::EXCEEDED_EMAILS_LIMIT,
+            )
+            .await;
+        }
+    }
+    let bounce_score = user.bounce_score.unwrap_or(0.0);
+    if bounce_score >= s.get("bounce_score_threshold")?.to_f() {
+        return skip(
+            conn,
+            email_type,
+            to_address,
+            Some(user_id),
+            None,
+            r::EXCEEDED_BOUNCES_LIMIT,
+        )
+        .await;
+    }
+    // A mailer that builds nothing sends nothing, and logs nothing.
+    let Some(built) =
+        crate::plugins::chat::summary_email::build(&mut *conn, ctx, user_id, to_address).await?
+    else {
+        return Ok(());
+    };
     sender::send(&mut *conn, ctx, built, email_type, Some(user_id)).await?;
     let erode = s.get("bounce_score_erode_on_send")?.to_f();
     if bounce_score > erode {

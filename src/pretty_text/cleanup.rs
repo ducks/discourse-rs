@@ -66,6 +66,22 @@ pub(crate) fn fragment_root(dom: &RcDom) -> Handle {
         .unwrap_or_else(|| dom.document.clone())
 }
 
+/// One node as HTML, itself included (Nokogiri's `node.to_s`).
+pub(crate) fn node_html(node: &Handle) -> String {
+    let mut out = Vec::new();
+    let handle: SerializableHandle = node.clone().into();
+    serialize(
+        &mut out,
+        &handle,
+        SerializeOpts {
+            traversal_scope: TraversalScope::IncludeNode,
+            ..Default::default()
+        },
+    )
+    .expect("writing to a vector cannot fail");
+    String::from_utf8(out).expect("the serializer writes UTF-8")
+}
+
 pub(crate) fn to_html(dom: &RcDom) -> String {
     let root = fragment_root(dom);
     let mut out = Vec::new();
@@ -189,6 +205,28 @@ pub(crate) fn replace(old: &Handle, new: Handle) {
     if let Some(i) = children.iter().position(|c| Rc::ptr_eq(c, old)) {
         children[i] = new;
     }
+}
+
+/// Puts `nodes` where `old` is in its parent (Nokogiri's replace with a
+/// fragment).
+pub(crate) fn replace_with(old: &Handle, nodes: Vec<Handle>) {
+    let Some(parent) = old.parent.take().and_then(|p| p.upgrade()) else {
+        return;
+    };
+    for node in &nodes {
+        node.parent.set(Some(Rc::downgrade(&parent)));
+    }
+    let mut children = parent.children.borrow_mut();
+    if let Some(i) = children.iter().position(|c| Rc::ptr_eq(c, old)) {
+        children.splice(i..=i, nodes);
+    }
+}
+
+/// Every element under `node`, in document order (`node.css("*")`).
+pub(crate) fn all_elements_within(node: &Handle) -> Vec<Handle> {
+    let mut out = Vec::new();
+    elements(node, &mut out);
+    out
 }
 
 fn remove(node: &Handle) {

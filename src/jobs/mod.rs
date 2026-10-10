@@ -175,12 +175,21 @@ pub async fn drain(state: &AppState) -> Result<usize, sqlx::Error> {
 /// Jobs::Scheduled the port runs: the name and how often. They run when
 /// the worker starts and then on their interval; with one worker per site
 /// there is no lock between workers as MiniScheduler keeps.
-const SCHEDULED: &[(&str, Duration)] = &[("regenerate_sitemaps", Duration::from_secs(3600))];
+const SCHEDULED: &[(&str, Duration)] = &[
+    ("regenerate_sitemaps", Duration::from_secs(3600)),
+    (
+        crate::plugins::chat::summary_email::EMAIL_NOTIFICATIONS_JOB,
+        Duration::from_secs(300),
+    ),
+];
 
 /// Runs one of the SCHEDULED jobs now.
 pub async fn run_scheduled(state: &AppState, name: &str) -> Result<(), AppError> {
     match name {
         "regenerate_sitemaps" => crate::routes::regenerate_sitemaps(state).await,
+        crate::plugins::chat::summary_email::EMAIL_NOTIFICATIONS_JOB => {
+            crate::plugins::chat::summary_email::send_unread_mentions_summary(state).await
+        }
         _ => unreachable!("every SCHEDULED job has a handler"),
     }
 }

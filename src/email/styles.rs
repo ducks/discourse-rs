@@ -557,6 +557,37 @@ impl Styles {
             &[],
         );
         self.onebox_styles();
+        // plugin_styles: chat's (Email::Styles.register_plugin_style), its
+        // summary's header and messages for the dark mode styles.
+        self.style(".chat-summary-header", None, &[("dm", "header")]);
+        self.style(".chat-summary-content", None, &[("dm", "body")]);
+        // discourse-details': elided parts out, each details its summary
+        // as a paragraph.
+        for details in self.select("details.elided") {
+            remove(&details);
+        }
+        for details in self.select("details") {
+            let Some(summary) = self.select_within(&details, "summary").into_iter().next() else {
+                continue;
+            };
+            let attrs: Vec<(String, String)> = match &summary.data {
+                NodeData::Element { attrs, .. } => attrs
+                    .borrow()
+                    .iter()
+                    .map(|a| (a.name.local.to_string(), a.value.to_string()))
+                    .collect(),
+                _ => Vec::new(),
+            };
+            let pairs: Vec<(&str, &str)> = attrs
+                .iter()
+                .map(|(k, v)| (k.as_str(), v.as_str()))
+                .collect();
+            let p = crate::pretty_text::cleanup::new_element("p", &pairs);
+            for child in summary.children.take() {
+                crate::pretty_text::cleanup::append(&p, child);
+            }
+            crate::pretty_text::cleanup::replace(&details, p);
+        }
         // dark_mode_styles
         self.style(
             ".digest-header, .digest-topic, .digest-topic-title-wrapper, .digest-topic-stats, .popular-post-excerpt",

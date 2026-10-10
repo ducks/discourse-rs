@@ -1,0 +1,302 @@
+{
+  "name": "summary_email_two_channels",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-10T05:49:43.253031",
+  "transaction_started_at": "2026-10-10T05:49:42.450611",
+  "responses": [],
+  "changes": {
+    "email_logs": {
+      "inserted": [
+        {
+          "id": 1,
+          "raw": null,
+          "bounced": false,
+          "post_id": null,
+          "user_id": 2,
+          "topic_id": null,
+          "bounce_key": null,
+          "created_at": "2026-10-10T05:49:43.285026",
+          "email_type": "chat_summary",
+          "message_id": "4ae5a1dd-5dd8-4835-904c-b6f00ae311b0@localhost",
+          "to_address": "user0@example.com",
+          "updated_at": "2026-10-10T05:49:43.285026",
+          "cc_user_ids": null,
+          "cc_addresses": null,
+          "bcc_addresses": null,
+          "smtp_group_id": null,
+          "bounce_error_code": null,
+          "smtp_transaction_response": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_chat_channel_memberships": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "muted": false,
+            "starred": false,
+            "user_id": 2,
+            "following": true,
+            "join_mode": 1,
+            "created_at": "2026-10-01T06:40:59.858594",
+            "updated_at": "2026-10-01T06:40:59.858594",
+            "last_viewed_at": "2026-10-01T06:40:59.858925",
+            "chat_channel_id": 2,
+            "notification_level": 1,
+            "last_viewed_pins_at": null,
+            "last_read_message_id": null,
+            "mobile_notification_level": 1,
+            "desktop_notification_level": 1,
+            "last_unread_mention_when_emailed_id": null
+          },
+          "after": {
+            "id": 1,
+            "muted": false,
+            "starred": false,
+            "user_id": 2,
+            "following": true,
+            "join_mode": 1,
+            "created_at": "2026-10-01T06:40:59.858594",
+            "updated_at": "2026-10-01T06:40:59.858594",
+            "last_viewed_at": "2026-10-01T06:40:59.858925",
+            "chat_channel_id": 2,
+            "notification_level": 1,
+            "last_viewed_pins_at": null,
+            "last_read_message_id": null,
+            "mobile_notification_level": 1,
+            "desktop_notification_level": 1,
+            "last_unread_mention_when_emailed_id": 1
+          }
+        },
+        {
+          "before": {
+            "id": 5,
+            "muted": false,
+            "starred": false,
+            "user_id": 2,
+            "following": true,
+            "join_mode": 0,
+            "created_at": "2026-10-09T05:00:00",
+            "updated_at": "2026-10-09T05:00:00",
+            "last_viewed_at": "2026-10-10T05:49:42.450611",
+            "chat_channel_id": 3,
+            "notification_level": 1,
+            "last_viewed_pins_at": null,
+            "last_read_message_id": null,
+            "mobile_notification_level": 1,
+            "desktop_notification_level": 1,
+            "last_unread_mention_when_emailed_id": null
+          },
+          "after": {
+            "id": 5,
+            "muted": false,
+            "starred": false,
+            "user_id": 2,
+            "following": true,
+            "join_mode": 0,
+            "created_at": "2026-10-09T05:00:00",
+            "updated_at": "2026-10-09T05:00:00",
+            "last_viewed_at": "2026-10-10T05:49:42.450611",
+            "chat_channel_id": 3,
+            "notification_level": 1,
+            "last_viewed_pins_at": null,
+            "last_read_message_id": null,
+            "mobile_notification_level": 1,
+            "desktop_notification_level": 1,
+            "last_unread_mention_when_emailed_id": 5
+          }
+        }
+      ]
+    },
+    "users": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 2,
+            "name": "User0",
+            "admin": false,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": false,
+            "username": "user0",
+            "moderator": false,
+            "created_at": "2026-07-25T05:59:15.831079",
+            "flag_level": 0,
+            "ip_address": "172.17.0.1",
+            "updated_at": "2026-10-01T15:39:52.016889",
+            "approved_at": null,
+            "trust_level": 1,
+            "last_seen_at": "2026-10-10T04:49:42.450611",
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": "2026-10-01T06:40:59.592885",
+            "silenced_till": null,
+            "approved_by_id": null,
+            "flair_group_id": null,
+            "last_posted_at": "2026-10-01T15:39:51.834549",
+            "suspended_till": null,
+            "username_lower": "user0",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": "2026-10-01T15:44:57.254251",
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          },
+          "after": {
+            "id": 2,
+            "name": "User0",
+            "admin": false,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": false,
+            "username": "user0",
+            "moderator": false,
+            "created_at": "2026-07-25T05:59:15.831079",
+            "flag_level": 0,
+            "ip_address": "172.17.0.1",
+            "updated_at": "2026-10-01T15:39:52.016889",
+            "approved_at": null,
+            "trust_level": 1,
+            "last_seen_at": "2026-10-10T04:49:42.450611",
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": "2026-10-01T06:40:59.592885",
+            "silenced_till": null,
+            "approved_by_id": null,
+            "flair_group_id": null,
+            "last_posted_at": "2026-10-01T15:39:51.834549",
+            "suspended_till": null,
+            "username_lower": "user0",
+            "last_emailed_at": "2026-10-10T05:49:42.450611",
+            "primary_group_id": null,
+            "previous_visit_at": "2026-10-01T15:44:57.254251",
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "email_logs": 1
+  },
+  "setup": [
+    "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id, excerpt) VALUES (1, 2, 3, date_trunc('hour', now()) - interval '2 hours', date_trunc('hour', now()) - interval '2 hours', 'hey @user0 lunch?', '<p>hey <a class=\"mention\" href=\"/u/user0\">@user0</a> lunch?</p>', 1, 3, 'hey @user0 lunch?')",
+    "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id, excerpt) VALUES (2, 2, 3, date_trunc('hour', now()) - interval '110 minutes', date_trunc('hour', now()) - interval '110 minutes', 'and **dessert**', '<p>and <strong>dessert</strong></p>', 1, 3, 'and dessert')",
+    "SELECT setval('chat_messages_id_seq', 2)",
+    "UPDATE chat_channels SET last_message_id = 2 WHERE id = 2",
+    "INSERT INTO chat_mentions (id, chat_message_id, type, target_id, created_at, updated_at) VALUES (1, 1, 'Chat::UserMention', 2, date_trunc('hour', now()) - interval '2 hours', date_trunc('hour', now()) - interval '2 hours')",
+    "INSERT INTO notifications (id, notification_type, user_id, data, read, high_priority, created_at, updated_at) VALUES (900, 29, 2, '{}', false, true, date_trunc('hour', now()) - interval '2 hours', date_trunc('hour', now()) - interval '2 hours')",
+    "INSERT INTO chat_mention_notifications (chat_mention_id, notification_id) VALUES (1, 900)",
+    "UPDATE users SET last_seen_at = now() - interval '1 hour' WHERE id = 2",
+    "INSERT INTO chat_channels (id, chatable_id, chatable_type, name, slug, created_at, updated_at, type, user_count, status) VALUES (3, 34, 'Category', 'Sub General', 'sub-general', date_trunc('hour', now()) - interval '1 day', date_trunc('hour', now()) - interval '1 day', 'CategoryChannel', 1, 0)",
+    "SELECT setval('chat_channels_id_seq', 3)",
+    "INSERT INTO user_chat_channel_memberships (user_id, chat_channel_id, following, muted, notification_level, created_at, updated_at) VALUES (2, 3, true, false, 1, date_trunc('hour', now()) - interval '1 day', date_trunc('hour', now()) - interval '1 day')",
+    "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id, excerpt) VALUES (5, 3, 4, date_trunc('hour', now()) - interval '80 minutes', date_trunc('hour', now()) - interval '80 minutes', '@user0 over here', '<p><a class=\"mention\" href=\"/u/user0\">@user0</a> over here</p>', 1, 4, '@user0 over here')",
+    "SELECT setval('chat_messages_id_seq', 5)",
+    "INSERT INTO chat_mentions (id, chat_message_id, type, target_id, created_at, updated_at) VALUES (2, 5, 'Chat::UserMention', 2, date_trunc('hour', now()) - interval '80 minutes', date_trunc('hour', now()) - interval '80 minutes')",
+    "INSERT INTO notifications (id, notification_type, user_id, data, read, high_priority, created_at, updated_at) VALUES (901, 29, 2, '{}', false, true, date_trunc('hour', now()) - interval '80 minutes', date_trunc('hour', now()) - interval '80 minutes')",
+    "INSERT INTO chat_mention_notifications (chat_mention_id, notification_id) VALUES (2, 901)"
+  ],
+  "enqueue": [
+    [
+      "Jobs::Chat::EmailNotifications",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [
+    [
+      "user_email",
+      {
+        "type": "chat_summary",
+        "user_id": 2,
+        "to_address": "user0@example.com",
+        "force_respect_seen_recently": true
+      }
+    ]
+  ],
+  "emails": [
+    {
+      "headers": [
+        [
+          "From",
+          "\"Discourse\" <noreply@unconfigured.discourse.org>"
+        ],
+        [
+          "Reply-To",
+          "\"Discourse\" <noreply@unconfigured.discourse.org>"
+        ],
+        [
+          "To",
+          "user0@example.com"
+        ],
+        [
+          "Message-ID",
+          "<4ae5a1dd-5dd8-4835-904c-b6f00ae311b0@localhost>"
+        ],
+        [
+          "Subject",
+          "[Discourse] New messages in General and Sub General"
+        ],
+        [
+          "MIME-Version",
+          "1.0"
+        ],
+        [
+          "Content-Type",
+          "multipart/alternative; boundary=\"--==_mimepart_6ac9d1f743eb6_2ffb5f2843268\"; charset=UTF-8"
+        ],
+        [
+          "Content-Transfer-Encoding",
+          "7bit"
+        ],
+        [
+          "X-Auto-Response-Suppress",
+          "All"
+        ],
+        [
+          "x-ms-reactions",
+          "disallow"
+        ],
+        [
+          "Auto-Submitted",
+          "auto-generated"
+        ]
+      ],
+      "text": "You have new chat messages\n[View 3 messages][2]\n       This chat summary is sent from [Discourse][1] when you are away. Change your [chat email preference][3].\n[1]: http://localhost:3042/\n[2]: http://localhost:3042/chat\n[3]: http://localhost:3042/my/preferences/emails\n",
+      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    <div class=\"summary-email\" style=\"-moz-box-sizing:border-box;-ms-text-size-adjust:100%;-webkit-box-sizing:border-box;-webkit-text-size-adjust:100%;box-sizing:border-box;color:#0a0a0a;font-family:Arial,sans-serif;font-size:14px;font-weight:400;line-height:1.3;margin:0;min-width:100%;padding:0;width:100%\">\n  <table class=\"chat-summary-header text-header with-dir\" style=\"text-align:left;background-color:#fff;width:100%;min-width:100%\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" dir=\"ltr\" dm=\"header\">\n    <tbody><tr>\n      <td align=\"center\" style=\"text-align:center;padding:20px 0;font-family:Arial,sans-serif\">\n        <a href=\"http://localhost:3042\" style=\"text-decoration:none;font-weight:bold;color:#333;font-size:22px\">\n            <img src=\"http://localhost:3042/images/discourse-logo-sketch.png\" height=\"40\" style=\"clear:both;display:block;height:40px;margin:auto;max-width:100%;outline:0;text-decoration:none\" alt=\"Discourse\">\n        </a>\n      </td>\n    </tr>\n    <tr>\n      <td align=\"center\" style=\"font-weight:bold;font-size:22px;color:#333\">\n        You have new chat messages\n      </td>\n    </tr>\n  </tbody></table>\n\n      <table class=\"chat-summary-content\" style=\"padding:1em;margin-top:20px;width:100%;min-width:100%;background-color:#f7f7f7\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" dm=\"body\">\n        <tbody>\n          <tr>\n            <td colspan=\"100%\">\n              <h5 style=\"margin:0.5em 0 0.5em 0;font-size:0.9em\">\n                  General\n              </h5>\n            </td>\n          </tr>\n\n              <tr class=\"message-row\">\n                <td style=\"white-space:nowrap;vertical-align:top;padding:1em 0 0 2em\">\n                  <img src=\"http://localhost:3042/letter_avatar_proxy/v4/letter/u/5daacb/45.png\" style=\"height:20px;width:20px;margin:0 5px 0 0;border-radius:50%;clear:both;display:inline-block;outline:0;text-decoration:none;vertical-align:top\" alt=\"user1\">\n                  <span style=\"display:inline-block;color:#0a0a0a;vertical-align:top;font-weight:bold\">\n                    user1                  </span>\n                  <span style=\"display:inline-block;color:#0a0a0a;font-size:0.8em\">\n                    October 9, 2026,  9:00pm                  </span>\n                </td>\n              </tr>\n              <tr>\n                <td style=\"width:99%;margin:0;padding:0 0 0 2em;vertical-align:top\">\n                  <p>hey <a class=\"mention\" href=\"http://localhost:3042/u/user0\" style=\"text-decoration:none;font-weight:bold;color:#006699\">@user0</a> lunch?</p>\n                </td>\n              </tr>\n              <tr class=\"message-row\">\n                <td style=\"white-space:nowrap;vertical-align:top;padding:1em 0 0 2em\">\n                  <img src=\"http://localhost:3042/letter_avatar_proxy/v4/letter/u/5daacb/45.png\" style=\"height:20px;width:20px;margin:0 5px 0 0;border-radius:50%;clear:both;display:inline-block;outline:0;text-decoration:none;vertical-align:top\" alt=\"user1\">\n                  <span style=\"display:inline-block;color:#0a0a0a;vertical-align:top;font-weight:bold\">\n                    user1                  </span>\n                  <span style=\"display:inline-block;color:#0a0a0a;font-size:0.8em\">\n                    October 9, 2026,  9:10pm                  </span>\n                </td>\n              </tr>\n              <tr>\n                <td style=\"width:99%;margin:0;padding:0 0 0 2em;vertical-align:top\">\n                  <p>and <strong>dessert</strong></p>\n                </td>\n              </tr>\n\n          <tr>\n            <td colspan=\"100%\" style=\"padding:2em 0 0 2em\">\n              <a class=\"more-messages-link\" href=\"http://localhost:3042/chat/c/-/2/1\" style=\"text-decoration:none;font-weight:bold;color:#006699\">\n                  View 2 messages\n              </a>\n            </td>\n          </tr>\n        </tbody>\n      </table>\n      <table class=\"chat-summary-content\" style=\"padding:1em;margin-top:20px;width:100%;min-width:100%;background-color:#f7f7f7\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" dm=\"body\">\n        <tbody>\n          <tr>\n            <td colspan=\"100%\">\n              <h5 style=\"margin:0.5em 0 0.5em 0;font-size:0.9em\">\n                  Sub General\n              </h5>\n            </td>\n          </tr>\n\n              <tr class=\"message-row\">\n                <td style=\"white-space:nowrap;vertical-align:top;padding:1em 0 0 2em\">\n                  <img src=\"http://localhost:3042/letter_avatar_proxy/v4/letter/u/ecb155/45.png\" style=\"height:20px;width:20px;margin:0 5px 0 0;border-radius:50%;clear:both;display:inline-block;outline:0;text-decoration:none;vertical-align:top\" alt=\"user2\">\n                  <span style=\"display:inline-block;color:#0a0a0a;vertical-align:top;font-weight:bold\">\n                    user2                  </span>\n                  <span style=\"display:inline-block;color:#0a0a0a;font-size:0.8em\">\n                    October 9, 2026,  9:40pm                  </span>\n                </td>\n              </tr>\n              <tr>\n                <td style=\"width:99%;margin:0;padding:0 0 0 2em;vertical-align:top\">\n                  <p><a class=\"mention\" href=\"http://localhost:3042/u/user0\" style=\"text-decoration:none;font-weight:bold;color:#006699\">@user0</a> over here</p>\n                </td>\n              </tr>\n\n          <tr>\n            <td colspan=\"100%\" style=\"padding:2em 0 0 2em\">\n              <a class=\"more-messages-link\" href=\"http://localhost:3042/chat/c/-/3/5\" style=\"text-decoration:none;font-weight:bold;color:#006699\">\n                  View message\n              </a>\n            </td>\n          </tr>\n        </tbody>\n      </table>\n</div>\n\n<table class=\"summary-footer with-dir\" style=\"text-align:left;margin-top:2em;width:100%\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" dir=\"ltr\" dm=\"text-color\">\n  <tbody><tr>\n    <td align=\"center\">\n         This chat summary is sent from <a href=\"http://localhost:3042\" style=\"text-decoration:none;font-weight:bold;color:#006699\">Discourse</a> when you are away. Change your <a href=\"http://localhost:3042/my/preferences/emails\" style=\"text-decoration:none;font-weight:bold;color:#006699\">chat email preference</a>.\n    </td>\n  </tr>\n</tbody></table>\n\n    \n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
+    }
+  ],
+  "recorded_from": {
+    "case": "a03f4b4a7412da7d62e3f3c35bdf4d48de1bd525c7f4f23c5d5ed843e88040c7",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

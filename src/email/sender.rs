@@ -154,6 +154,7 @@ pub async fn send(
 ) -> Result<(), AppError> {
     let s = ctx.settings;
     let mut message = built.message;
+    let view_rendered = built.view_rendered;
     match s.get("disable_emails")?.to_s().as_str() {
         "yes" => return Ok(()),
         "non-staff" => {
@@ -465,7 +466,11 @@ pub async fn send(
     message.headers.push(("MIME-Version".into(), "1.0".into()));
     message.headers.push((
         "Content-Type".into(),
-        "multipart/alternative; boundary=--==_mimepart_discourse_rs".into(),
+        if view_rendered {
+            "multipart/alternative; boundary=\"--==_mimepart_discourse_rs\"; charset=UTF-8".into()
+        } else {
+            "multipart/alternative; boundary=--==_mimepart_discourse_rs".into()
+        },
     ));
     message
         .headers

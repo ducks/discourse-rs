@@ -74,6 +74,9 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         crate::plugins::chat::notify::NOTIFY_WATCHING_JOB => {
             chat_notify_watching(state, &job.args).await
         }
+        crate::plugins::chat::summary_email::EMAIL_NOTIFICATIONS_JOB => {
+            crate::plugins::chat::summary_email::send_unread_mentions_summary(state).await
+        }
         "Jobs::DiscourseTopicVoting::VoteReclaim" => {
             let mut tx = match state.pool.begin().await {
                 Ok(tx) => tx,

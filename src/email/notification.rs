@@ -32,6 +32,9 @@ pub struct Built {
     pub message: Message,
     /// Email::Renderer works on this before the sender restyles it.
     pub html_part: String,
+    /// A view rendered the body (ActionMailer's templates, not
+    /// html_override): the multipart type carries the charset.
+    pub view_rendered: bool,
 }
 
 /// `ERB::Util.html_escape`
@@ -362,7 +365,17 @@ pub async fn build(
             name: post.name.as_deref(),
             title: post.title.as_deref(),
             created_at: post.created_at,
-            body: &format_for_email(&post.cooked, &urls)?,
+            body: &format_for_email(
+                &post.cooked,
+                &urls,
+                ctx.i18n,
+                Some(&format!(
+                    "/t/{}/{}/{}",
+                    post.slug.as_deref().unwrap_or_default(),
+                    post.topic_id,
+                    post.post_number
+                )),
+            )?,
             base_url: &base_url,
         },
     )?;
@@ -601,6 +614,7 @@ pub async fn build(
             html: None,
         },
         html_part,
+        view_rendered: false,
     })
 }
 
@@ -627,12 +641,40 @@ async fn unsubscribe_key(
     Ok(key)
 }
 
-/// `PrettyText.format_for_email(cooked)`: lightbox metadata out, links
-/// absolute.
-fn format_for_email(cooked: &str, urls: &Urls<'_>) -> Result<String, AppError> {
-    use crate::pretty_text::cleanup::{attr, parse, set_attr, to_html};
+/// `PrettyText.format_for_email(cooked, post)`: reduce_cooked's changes
+/// (discourse-details: each details its summary and a link to the post,
+/// `post_url`, else the site), lightbox metadata out, links absolute.
+pub(crate) fn format_for_email(
+    cooked: &str,
+    urls: &Urls<'_>,
+    i18n: &crate::i18n::I18n,
+    post_url: Option<&str>,
+) -> Result<String, AppError> {
+    use crate::pretty_text::cleanup::{
+        all_elements, all_elements_within, append, attr, element_name, new_element, new_text,
+        parse, replace_with, set_attr, text, to_html,
+    };
     let dom = parse(cooked);
     let base_url = urls.base_url()?;
+    // reduce_cooked: discourse-details' summary and link in place of each
+    // details, outermost first (the inner ones go with it).
+    let label = i18n
+        .t("details.excerpt_details")
+        .unwrap_or_default()
+        .to_string();
+    while let Some(details) = all_elements(&dom)
+        .into_iter()
+        .find(|e| element_name(e) == Some("details"))
+    {
+        let summary: String = all_elements_within(&details)
+            .iter()
+            .filter(|e| element_name(e) == Some("summary"))
+            .map(text)
+            .collect();
+        let link = new_element("a", &[("href", post_url.unwrap_or(&base_url))]);
+        append(&link, new_text(&label));
+        replace_with(&details, vec![new_text(&format!("{summary} ")), link]);
+    }
     let base_no_prefix = urls.base_url_no_prefix()?;
     let base_path = urls.config.globals.relative_url_root();
     let mut stack = vec![dom.document.clone()];
@@ -743,8 +785,21 @@ fn render_post(ctx: &super::sender::Ctx<'_>, p: &PostPartial<'_>) -> Result<Stri
 
 /// layouts/email_template with EmailStyle's default template around the
 /// body.
-pub(super) fn layout(html_body: &str, html_lang: &str, preview_html: &str) -> String {
+pub(crate) fn layout(html_body: &str, html_lang: &str, preview_html: &str) -> String {
     let content = format!("\n    \n    {html_body}\n");
+    DEFAULT_TEMPLATE
+        .replacen("%{email_content}", &content, 1)
+        .replace("%{email_preview}", preview_html)
+        .replace("%{html_lang}", html_lang)
+        .replace("%{dark_mode_meta_tags}", DARK_MODE_META_TAGS)
+        .replace("%{dark_mode_styles}", DARK_MODE_STYLES)
+}
+
+/// layouts/email_template around a mailer's own view (ActionMailer's
+/// layout, as chat's summary renders): the view as `yield` leaves it in
+/// email_html_template's block.
+pub(crate) fn layout_view(view: &str, html_lang: &str, preview_html: &str) -> String {
+    let content = format!("\n    {view}\n    \n");
     DEFAULT_TEMPLATE
         .replacen("%{email_content}", &content, 1)
         .replace("%{email_preview}", preview_html)
