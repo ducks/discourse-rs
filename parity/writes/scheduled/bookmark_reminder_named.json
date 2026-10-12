@@ -1,0 +1,84 @@
+{
+  "name": "bookmark_reminder_named",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-12T21:08:29.406317",
+  "transaction_started_at": "2026-10-12T21:08:28.758686",
+  "responses": [],
+  "changes": {
+    "bookmarks": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 3,
+            "name": "read later",
+            "pinned": null,
+            "user_id": 3,
+            "created_at": "2026-10-01T22:32:02.391051",
+            "updated_at": "2026-10-01T22:32:02.391051",
+            "reminder_at": "2026-10-12T21:03:28.758686",
+            "bookmarkable_id": 36,
+            "reminder_set_at": "2026-10-11T21:08:28.758686",
+            "bookmarkable_type": "Post",
+            "reminder_last_sent_at": null,
+            "auto_delete_preference": 0
+          },
+          "after": {
+            "id": 3,
+            "name": "read later",
+            "pinned": null,
+            "user_id": 3,
+            "created_at": "2026-10-01T22:32:02.391051",
+            "updated_at": "2026-10-12T21:08:29.415832",
+            "reminder_at": "2026-10-12T21:03:28.758686",
+            "bookmarkable_id": 36,
+            "reminder_set_at": null,
+            "bookmarkable_type": "Post",
+            "reminder_last_sent_at": "2026-10-12T21:08:29.41491",
+            "auto_delete_preference": 0
+          }
+        }
+      ]
+    },
+    "notifications": {
+      "inserted": [
+        {
+          "id": 53,
+          "data": "{\"title\":\"Parity fixture: replies and posters\",\"bookmarkable_url\":\"/t/parity-fixture-replies-and-posters/35/2\",\"display_username\":\"user1\",\"bookmark_name\":\"read later\",\"bookmark_id\":3,\"bookmarkable_type\":\"Post\",\"bookmarkable_id\":36}",
+          "read": false,
+          "user_id": 3,
+          "topic_id": 35,
+          "created_at": "2026-10-12T21:08:29.414168",
+          "updated_at": "2026-10-12T21:08:29.414168",
+          "post_number": 2,
+          "high_priority": true,
+          "post_action_id": null,
+          "notification_type": 24
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "notifications": 53
+  },
+  "setup": [
+    "UPDATE bookmarks SET reminder_at = now() - interval '5 minutes', reminder_set_at = now() - interval '1 day', auto_delete_preference = 0, name = 'read later' WHERE id = 3"
+  ],
+  "enqueue": [
+    [
+      "bookmark_reminder_notifications",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "7f2e271cc4060a42e369d0f80279e925b85786be51de6f5537fc5820b0eb7663",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

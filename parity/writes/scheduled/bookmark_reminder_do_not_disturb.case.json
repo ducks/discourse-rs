@@ -1,0 +1,17 @@
+{
+  "user": null,
+  "setup": [
+    "UPDATE bookmarks SET reminder_at = now() - interval '5 minutes', reminder_set_at = now() - interval '1 day', auto_delete_preference = 0 WHERE id = 3",
+    "INSERT INTO do_not_disturb_timings (user_id, starts_at, ends_at, scheduled) VALUES (3, now() - interval '1 hour', now() + interval '1 hour', false)"
+  ],
+  "requests": [],
+  "enqueue": [
+    [
+      "bookmark_reminder_notifications",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "bookmark_reminder_notifications"
+  ]
+}

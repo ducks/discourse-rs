@@ -8,6 +8,7 @@
 //! failures are retried with Sidekiq's backoff, and a job whose kind is not
 //! ported fails at once with the reason kept on the row.
 
+pub mod bookmark_reminders;
 mod handlers;
 pub(crate) use handlers::choose_featured_users;
 pub(crate) mod post_alert;
@@ -183,6 +184,7 @@ const SCHEDULED: &[(&str, Duration)] = &[
     ),
     // Jobs::PresenceChannelAutoLeave, every DEFAULT_TIMEOUT.
     ("presence_channel_auto_leave", Duration::from_secs(60)),
+    (bookmark_reminders::JOB, Duration::from_secs(300)),
 ];
 
 /// Runs one of the SCHEDULED jobs now.
@@ -190,6 +192,7 @@ pub async fn run_scheduled(state: &AppState, name: &str) -> Result<(), AppError>
     match name {
         "regenerate_sitemaps" => crate::routes::regenerate_sitemaps(state).await,
         "presence_channel_auto_leave" => crate::presence::auto_leave_all(state).await,
+        bookmark_reminders::JOB => bookmark_reminders::run(state).await,
         crate::plugins::chat::summary_email::EMAIL_NOTIFICATIONS_JOB => {
             crate::plugins::chat::summary_email::send_unread_mentions_summary(state).await
         }

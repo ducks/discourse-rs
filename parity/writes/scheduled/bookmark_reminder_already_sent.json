@@ -1,0 +1,26 @@
+{
+  "name": "bookmark_reminder_already_sent",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-12T21:08:22.473069",
+  "transaction_started_at": "2026-10-12T21:08:21.186131",
+  "responses": [],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE bookmarks SET reminder_at = now() - interval '5 minutes', reminder_set_at = now() - interval '1 day', reminder_last_sent_at = now() - interval '1 minute', auto_delete_preference = 0 WHERE id = 3"
+  ],
+  "enqueue": [
+    [
+      "bookmark_reminder_notifications",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "b2aed9424b06187807fa70e8c010bebfefcdf702895cf8199e7ecd71d5c241f4",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
