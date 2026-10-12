@@ -1,0 +1,23 @@
+{
+  "user": null,
+  "settings": {
+    "top_menu": "latest|new|categories"
+  },
+  "setup": [
+    "UPDATE posts SET like_count = 3 WHERE id = 35"
+  ],
+  "requests": [],
+  "enqueue": [
+    [
+      "update_topic_hot_scores",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "update_topic_hot_scores"
+  ],
+  "job_clock": "topic_hot_scores.updated_at",
+  "approximate": [
+    "topic_hot_scores.score"
+  ]
+}

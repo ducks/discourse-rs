@@ -1,0 +1,97 @@
+{
+  "name": "top_refresh_today_invisible",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-12T21:35:49.586714",
+  "transaction_started_at": "2026-10-12T21:35:48.956222",
+  "responses": [],
+  "changes": {
+    "top_topics": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 5,
+          "topic_id": 37,
+          "all_score": 0,
+          "daily_score": 0,
+          "weekly_score": 0,
+          "yearly_score": 0,
+          "monthly_score": 0,
+          "quarterly_score": 0,
+          "daily_likes_count": 0,
+          "daily_posts_count": 1,
+          "daily_views_count": 0,
+          "weekly_likes_count": 0,
+          "weekly_posts_count": 1,
+          "weekly_views_count": 0,
+          "yearly_likes_count": 0,
+          "yearly_posts_count": 1,
+          "yearly_views_count": 0,
+          "monthly_likes_count": 0,
+          "monthly_posts_count": 1,
+          "monthly_views_count": 0,
+          "daily_op_likes_count": 0,
+          "quarterly_likes_count": 0,
+          "quarterly_posts_count": 1,
+          "quarterly_views_count": 0,
+          "weekly_op_likes_count": 0,
+          "yearly_op_likes_count": 0,
+          "monthly_op_likes_count": 0,
+          "quarterly_op_likes_count": 0
+        },
+        {
+          "id": 6,
+          "topic_id": 35,
+          "all_score": 0.6020599913279624,
+          "daily_score": 0,
+          "weekly_score": 0.6020599913279624,
+          "yearly_score": 0.6020599913279624,
+          "monthly_score": 0.6020599913279624,
+          "quarterly_score": 0.6020599913279624,
+          "daily_likes_count": 0,
+          "daily_posts_count": 1,
+          "daily_views_count": 0,
+          "weekly_likes_count": 0,
+          "weekly_posts_count": 4,
+          "weekly_views_count": 0,
+          "yearly_likes_count": 0,
+          "yearly_posts_count": 4,
+          "yearly_views_count": 0,
+          "monthly_likes_count": 0,
+          "monthly_posts_count": 4,
+          "monthly_views_count": 0,
+          "daily_op_likes_count": 0,
+          "quarterly_likes_count": 0,
+          "quarterly_posts_count": 4,
+          "quarterly_views_count": 0,
+          "weekly_op_likes_count": 0,
+          "yearly_op_likes_count": 0,
+          "monthly_op_likes_count": 0,
+          "quarterly_op_likes_count": 0
+        }
+      ],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE topics SET visible = false WHERE id = 35",
+    "UPDATE topics SET archived = true WHERE id = 37"
+  ],
+  "enqueue": [
+    [
+      "top_refresh_today",
+      {}
+    ]
+  ],
+  "include_tables": [
+    "top_topics"
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "c428f9ccf6c129086eb5ce390c46a69a04d7cdba76e63db7db5a12035d74c4fb",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

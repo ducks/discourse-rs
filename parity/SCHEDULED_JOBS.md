@@ -25,14 +25,14 @@ Classes:
 | unsilence_users | 15m | scheduled/unsilence_users* |
 | purge_expired_ignored_users | 1d | scheduled/purge_expired_ignored_users |
 | purge_old_notifications | 1w | scheduled/purge_old_notifications* |
+| top_refresh_today, top_refresh_older | 1h, 1d | scheduled/top_refresh_* |
+| update_topic_hot_scores | 10m | scheduled/hot_scores* |
+| category_stats | 1d | scheduled/category_stats* |
 
 ## Ready, in porting order
 
 | Job | Every | Missing without it | Size |
 |---|---|---|---|
-| top_refresh_today, top_refresh_older | 1h, 1d | /top reads top_topics nothing writes | M–L |
-| update_topic_hot_scores | 10m | /hot reads topic_hot_scores nothing writes | M |
-| category_stats | 1d | topics_week/month/year and /categories counts go stale | M |
 | periodical_updates, calculate_scores | 15m, 1w | featured topics, post/topic scores, percent_rank, rebakes | L |
 | update_heat_settings | 1mo | topic list heat thresholds never adapt | S |
 | Chat::PeriodicalUpdates | 15m | channel and thread counts drift | S |
