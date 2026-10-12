@@ -256,6 +256,79 @@ impl BasicGroup {
     }
 }
 
+/// `Group.members_visible_groups(user)` over the `groups` table aliased
+/// `alias`: real groups (not everyone, anonymous or logged-in users)
+/// whose members the user may see, by members_visibility_level.
+pub fn members_visible_groups_where(guardian: &Guardian, alias: &str) -> String {
+    let real = format!("{alias}.id > 0 AND {alias}.id NOT IN (4, 5)");
+    let visible = match guardian.user() {
+        None => format!("{alias}.members_visibility_level = 0"),
+        Some(u) if u.admin => "TRUE".to_string(),
+        Some(u) if u.moderator => format!(
+            "({alias}.members_visibility_level IN (0, 1, 2, 3) OR {alias}.id IN (\
+                SELECT g.id FROM groups g JOIN group_users gu ON gu.group_id = g.id \
+                AND gu.user_id = {} AND gu.owner WHERE g.members_visibility_level = 4))",
+            u.id
+        ),
+        Some(u) => format!(
+            "{alias}.id IN (\
+                SELECT id FROM groups WHERE members_visibility_level IN (0, 1) \
+                UNION ALL SELECT g.id FROM groups g JOIN group_users gu ON gu.group_id = g.id \
+                AND gu.user_id = {uid} WHERE g.members_visibility_level = 2 \
+                UNION ALL SELECT g.id FROM groups g JOIN group_users gu ON gu.group_id = g.id \
+                AND gu.user_id = {uid} AND gu.owner WHERE g.members_visibility_level IN (3, 4))",
+            uid = u.id
+        ),
+    };
+    format!("{real} AND {visible}")
+}
+
+/// `Guardian#can_see_group_and_members?(group)`: `can_see_group?` on
+/// its visibility_level and `can_see_group_members?` on its
+/// members_visibility_level, which follow the same rule.
+pub async fn can_see_group_and_members(
+    conn: &mut PgConnection,
+    guardian: &Guardian,
+    group_id: i32,
+    visibility_level: i32,
+    members_visibility_level: i32,
+) -> Result<bool, sqlx::Error> {
+    // public 0, logged_on_users 1, members 2, staff 3, owners 4
+    let mut membership: Option<Option<bool>> = None;
+    for level in [visibility_level, members_visibility_level] {
+        if guardian.is_admin() || level == 0 {
+            continue;
+        }
+        if guardian.is_staff() && (level == 3 || level == 2) {
+            continue;
+        }
+        if guardian.is_authenticated() && level == 1 {
+            continue;
+        }
+        let Some(user_id) = guardian.user_id() else {
+            return Ok(false);
+        };
+        if membership.is_none() {
+            membership = Some(
+                sqlx::query_scalar(
+                    "SELECT owner FROM group_users WHERE group_id = $1 AND user_id = $2",
+                )
+                .bind(group_id)
+                .bind(user_id)
+                .fetch_optional(&mut *conn)
+                .await?,
+            );
+        }
+        match membership.flatten() {
+            None => return Ok(false),
+            Some(true) => continue,
+            Some(false) if level == 4 || level == 3 => return Ok(false),
+            Some(false) => continue,
+        }
+    }
+    Ok(true)
+}
+
 /// `Group.visible_groups(user)`'s visibility clause over the `groups`
 /// table aliased `alias`: public groups for anonymous users, everything
 /// for admins, by visibility level and membership or ownership otherwise.

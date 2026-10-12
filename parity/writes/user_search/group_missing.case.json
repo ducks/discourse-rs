@@ -1,0 +1,7 @@
+{
+  "user": "user0",
+  "setup": ["UPDATE users SET last_seen_at = now() - interval '1 hour' * (CASE WHEN id > 0 THEN id ELSE 10 - id END) WHERE id <> 0"],
+  "requests": [
+    { "method": "GET", "path": "/u/search/users.json?term=user&group=nosuchgroup" }
+  ]
+}

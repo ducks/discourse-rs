@@ -44,6 +44,7 @@ mod topic_voting;
 mod topics;
 mod user_avatars;
 mod user_menu;
+mod user_search;
 mod user_update;
 mod users;
 
@@ -325,6 +326,8 @@ pub fn router(state: &AppState) -> Router<AppState> {
         // TopicsController#status; {slug} holds the topic id here.
         .route("/t/{slug}/status", put(topic_status::status))
         .route("/t/{slug}/{id}/status", put(topic_status::status_with_slug))
+        .route("/u/search/users", get(user_search::search_users))
+        .route("/u/search/users.json", get(user_search::search_users))
         .route("/u/{username}", get(users::show).put(user_update::update))
         .route("/u/{username}/bookmarks", get(bookmarks::index))
         .route("/u/{username}/bookmarks.json", get(bookmarks::index))

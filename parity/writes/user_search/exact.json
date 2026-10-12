@@ -1,0 +1,80 @@
+{
+  "name": "exact",
+  "user": "user0",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/u/search/users.json?term=user2&include_groups=true&limit=6"
+    }
+  ],
+  "started_at": "2026-10-12T18:30:33.356568",
+  "transaction_started_at": "2026-10-12T18:30:32.388056",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "users": [
+          {
+            "id": 4,
+            "username": "user2",
+            "name": "User2",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png"
+          }
+        ],
+        "groups": []
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 451,
+            "seen_at": null,
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "qTuI/4RQAudoFtZVMRUGRqRFUqs=",
+            "created_at": "2026-10-12T18:30:32.84742",
+            "rotated_at": "2026-10-12T18:30:32.847179",
+            "updated_at": "2026-10-12T18:30:32.84742",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "qTuI/4RQAudoFtZVMRUGRqRFUqs=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 451,
+            "seen_at": "2026-10-12T18:30:33.363672",
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "qTuI/4RQAudoFtZVMRUGRqRFUqs=",
+            "created_at": "2026-10-12T18:30:32.84742",
+            "rotated_at": "2026-10-12T18:30:32.847179",
+            "updated_at": "2026-10-12T18:30:32.84742",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "qTuI/4RQAudoFtZVMRUGRqRFUqs=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE users SET last_seen_at = now() - interval '1 hour' * (CASE WHEN id > 0 THEN id ELSE 10 - id END) WHERE id <> 0"
+  ],
+  "recorded_from": {
+    "case": "9fdc07e209cf65246193c6e169195a3ee93e1a78e21ed149a34c0aa0a065aff6",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

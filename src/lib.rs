@@ -96,6 +96,7 @@ pub mod url;
 pub mod user_penalties;
 pub mod user_private;
 pub mod user_profile_view;
+pub mod user_search;
 pub mod user_updater;
 pub mod users;
 

@@ -1,0 +1,16 @@
+{
+  "user": "user0",
+  "setup": [
+    "UPDATE users SET last_seen_at = now() - interval '1 hour' * (CASE WHEN id > 0 THEN id ELSE 10 - id END) WHERE id <> 0",
+    "INSERT INTO user_statuses (user_id, emoji, description, set_at) VALUES (3, 'tooth', 'at the dentist', now())"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/u/search/users.json?term=user1"
+    }
+  ],
+  "settings": {
+    "enable_user_status": true
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "name": "group_anonymous",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/u/search/users.json?term=a&group=staff"
+    }
+  ],
+  "started_at": "2026-10-12T18:32:18.26963",
+  "transaction_started_at": "2026-10-12T18:32:17.508073",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE users SET last_seen_at = now() - interval '1 hour' * (CASE WHEN id > 0 THEN id ELSE 10 - id END) WHERE id <> 0"
+  ],
+  "recorded_from": {
+    "case": "3710414b83a0872f948a4799a4fd660f754448836e4777067aac5d4435f54ecf",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
