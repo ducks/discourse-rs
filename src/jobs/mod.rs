@@ -206,6 +206,23 @@ const SCHEDULED: &[(&str, Duration)] = &[
         Duration::from_secs(10 * 60),
     ),
     (list_stats::CATEGORY_STATS, Duration::from_secs(24 * 3600)),
+    (
+        crate::plugins::chat::scheduled::PERIODICAL_UPDATES,
+        Duration::from_secs(15 * 60),
+    ),
+    (
+        crate::plugins::chat::scheduled::AUTO_JOIN_USERS,
+        Duration::from_secs(3600),
+    ),
+    // Rails runs it daily at midnight; here, daily from the worker's start.
+    (
+        crate::plugins::chat::scheduled::DELETE_OLD_MESSAGES,
+        Duration::from_secs(24 * 3600),
+    ),
+    (
+        crate::plugins::reactions::like_sync::JOB,
+        Duration::from_secs(3600),
+    ),
 ];
 
 /// A SCHEDULED job's name: it runs from the queue too (a case enqueues
@@ -229,6 +246,18 @@ pub async fn run_scheduled(state: &AppState, name: &str) -> Result<(), AppError>
         list_stats::TOP_REFRESH_OLDER => list_stats::top_refresh_older(state).await,
         list_stats::UPDATE_TOPIC_HOT_SCORES => list_stats::update_topic_hot_scores(state).await,
         list_stats::CATEGORY_STATS => list_stats::category_stats(state).await,
+        crate::plugins::chat::scheduled::PERIODICAL_UPDATES => {
+            crate::plugins::chat::scheduled::periodical_updates(state).await
+        }
+        crate::plugins::chat::scheduled::AUTO_JOIN_USERS => {
+            crate::plugins::chat::scheduled::auto_join_users(state, &serde_json::Value::Null).await
+        }
+        crate::plugins::chat::scheduled::DELETE_OLD_MESSAGES => {
+            crate::plugins::chat::scheduled::delete_old_messages(state).await
+        }
+        crate::plugins::reactions::like_sync::JOB => {
+            crate::plugins::reactions::like_sync::run(state).await
+        }
         crate::plugins::chat::summary_email::EMAIL_NOTIFICATIONS_JOB => {
             crate::plugins::chat::summary_email::send_unread_mentions_summary(state).await
         }

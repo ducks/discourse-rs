@@ -1,0 +1,18 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO user_chat_channel_memberships (user_id, chat_channel_id, following, muted, notification_level, created_at, updated_at) VALUES (3, 1, true, false, 1, now() - interval '1 day', now() - interval '1 day')"
+  ],
+  "requests": [],
+  "enqueue": [
+    [
+      "Jobs::Chat::AutoJoinUsers",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "Jobs::Chat::AutoJoinUsers",
+    "Jobs::Chat::UpdateChannelUserCount",
+    "Jobs::Chat::KickUsersFromChannel"
+  ]
+}

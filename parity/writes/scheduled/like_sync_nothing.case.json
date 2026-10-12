@@ -1,0 +1,14 @@
+{
+  "user": null,
+  "setup": [],
+  "requests": [],
+  "enqueue": [
+    [
+      "Jobs::DiscourseReactions::ScheduledLikeSynchronizer",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "Jobs::DiscourseReactions::ScheduledLikeSynchronizer"
+  ]
+}

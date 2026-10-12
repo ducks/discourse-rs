@@ -1089,8 +1089,17 @@ async fn notification_state_goes_live_to_its_user_only() {
         .fetch_one(&mut *conn)
         .await
         .unwrap();
+    let settings = discourse_rs::site_settings::SiteSettings::load(
+        &mut conn,
+        &app_state.site_setting_defs,
+        &app_state.config.globals,
+    )
+    .await
+    .unwrap();
     for viewer in [None, Some(other)] {
-        let tags = discourse_rs::bus::tags(&mut conn, viewer).await.unwrap();
+        let tags = discourse_rs::bus::tags(&mut conn, &settings, viewer)
+            .await
+            .unwrap();
         let heard = app_state
             .bus
             .backlog(

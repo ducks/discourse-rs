@@ -370,7 +370,14 @@ pub async fn heard(
     want: usize,
 ) -> Vec<serde_json::Value> {
     let mut conn = st.pool.acquire().await.unwrap();
-    let tags = discourse_rs::bus::tags(&mut conn, Some(user_id))
+    let settings = discourse_rs::site_settings::SiteSettings::load(
+        &mut conn,
+        &st.site_setting_defs,
+        &st.config.globals,
+    )
+    .await
+    .unwrap();
+    let tags = discourse_rs::bus::tags(&mut conn, &settings, Some(user_id))
         .await
         .unwrap();
     let filter = pg_bus::Filter {

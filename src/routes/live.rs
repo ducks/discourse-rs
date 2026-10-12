@@ -108,7 +108,7 @@ pub async fn page(
         }
         None => None,
     };
-    let tags = crate::bus::tags(&mut conn, guardian.user_id()).await?;
+    let tags = crate::bus::tags(&mut conn, &settings, guardian.user_id()).await?;
     drop(conn);
     let from = match pg_bus::sse::last_event_id(&headers) {
         Some(position) => position,

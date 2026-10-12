@@ -28,6 +28,10 @@ Classes:
 | top_refresh_today, top_refresh_older | 1h, 1d | scheduled/top_refresh_* |
 | update_topic_hot_scores | 10m | scheduled/hot_scores* |
 | category_stats | 1d | scheduled/category_stats* |
+| Chat::PeriodicalUpdates | 15m | scheduled/chat_periodical_updates* |
+| Chat::AutoJoinUsers | 1h | scheduled/chat_auto_* |
+| Chat::DeleteOldMessages | daily (from the worker's start; Rails: midnight) | scheduled/chat_delete_old_messages* |
+| DiscourseReactions::ScheduledLikeSynchronizer | 1h | scheduled/like_sync_* |
 
 ## Ready, in porting order
 
@@ -35,10 +39,6 @@ Classes:
 |---|---|---|---|
 | periodical_updates, calculate_scores | 15m, 1w | featured topics, post/topic scores, percent_rank, rebakes | L |
 | update_heat_settings | 1mo | topic list heat thresholds never adapt | S |
-| Chat::PeriodicalUpdates | 15m | channel and thread counts drift | S |
-| Chat::AutoJoinUsers | 1h | batch channel auto-join and removals never run | M |
-| Chat::DeleteOldMessages | daily | public chat is never pruned (DM half refused) | M |
-| DiscourseReactions::ScheduledLikeSynchronizer | 1h | reactions and likes drift apart | M |
 | tl3_promotions | daily 4h | TL3 is never granted or revoked | M |
 | pending_reviewables_reminder | 15m | no PM about stale flags (last id kept in Redis) | M |
 | reviewable_priorities | 1d | review priority thresholds never adapt | S |

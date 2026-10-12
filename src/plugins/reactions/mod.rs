@@ -19,6 +19,7 @@ use sqlx::PgConnection;
 
 use crate::site_settings::{SettingError, SiteSettings};
 
+pub mod like_sync;
 pub mod toggle;
 pub mod users;
 pub mod view;

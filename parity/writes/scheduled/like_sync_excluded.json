@@ -1,0 +1,117 @@
+{
+  "name": "like_sync_excluded",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-12T22:02:47.499073",
+  "transaction_started_at": "2026-10-12T22:02:46.247026",
+  "responses": [],
+  "changes": {
+    "given_daily_likes": {
+      "inserted": [],
+      "deleted": [
+        {
+          "user_id": 4,
+          "given_date": "2026-10-12",
+          "likes_given": 1,
+          "limit_reached": false
+        }
+      ],
+      "updated": []
+    },
+    "post_actions": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 900,
+            "post_id": 36,
+            "user_id": 4,
+            "agreed_at": null,
+            "created_at": "2026-10-12T20:02:46.247026",
+            "deleted_at": null,
+            "updated_at": "2026-10-12T20:02:46.247026",
+            "deferred_at": null,
+            "agreed_by_id": null,
+            "disagreed_at": null,
+            "deleted_by_id": null,
+            "targets_topic": false,
+            "deferred_by_id": null,
+            "disagreed_by_id": null,
+            "related_post_id": null,
+            "staff_took_action": false,
+            "post_action_type_id": 2
+          },
+          "after": {
+            "id": 900,
+            "post_id": 36,
+            "user_id": 4,
+            "agreed_at": null,
+            "created_at": "2026-10-12T20:02:46.247026",
+            "deleted_at": "2026-10-12T22:02:46.247026",
+            "updated_at": "2026-10-12T20:02:46.247026",
+            "deferred_at": null,
+            "agreed_by_id": null,
+            "disagreed_at": null,
+            "deleted_by_id": null,
+            "targets_topic": false,
+            "deferred_by_id": null,
+            "disagreed_by_id": null,
+            "related_post_id": null,
+            "staff_took_action": false,
+            "post_action_type_id": 2
+          }
+        }
+      ]
+    },
+    "user_actions": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 65,
+          "user_id": 4,
+          "created_at": "2026-10-12T20:02:46.247026",
+          "updated_at": "2026-10-12T20:02:46.247026",
+          "action_type": 1,
+          "acting_user_id": 4,
+          "target_post_id": 36,
+          "target_user_id": null,
+          "target_topic_id": 35
+        },
+        {
+          "id": 66,
+          "user_id": 3,
+          "created_at": "2026-10-12T20:02:46.247026",
+          "updated_at": "2026-10-12T20:02:46.247026",
+          "action_type": 2,
+          "acting_user_id": 4,
+          "target_post_id": 36,
+          "target_user_id": null,
+          "target_topic_id": 35
+        }
+      ],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO discourse_reactions_reactions (id, post_id, reaction_type, reaction_value, reaction_users_count, created_at, updated_at) VALUES (901, 36, 0, 'poop', 1, now() - interval '2 hours', now() - interval '2 hours')",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) VALUES (901, 4, 36, now() - interval '2 hours', now() - interval '2 hours')",
+    "INSERT INTO post_actions (id, post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (900, 36, 4, 2, now() - interval '2 hours', now() - interval '2 hours')",
+    "INSERT INTO user_actions (action_type, user_id, acting_user_id, target_post_id, target_topic_id, created_at, updated_at) VALUES (1, 4, 4, 36, 35, now() - interval '2 hours', now() - interval '2 hours'), (2, 3, 4, 36, 35, now() - interval '2 hours', now() - interval '2 hours')",
+    "INSERT INTO given_daily_likes (user_id, given_date, likes_given) VALUES (4, CURRENT_DATE, 1) ON CONFLICT DO NOTHING"
+  ],
+  "enqueue": [
+    [
+      "Jobs::DiscourseReactions::ScheduledLikeSynchronizer",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "12a9d21726d0eafb160dc2e96fc1437638494ba4099a5dd985ac9753254b9ee7",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

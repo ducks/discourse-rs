@@ -1,0 +1,17 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO discourse_reactions_reactions (id, post_id, reaction_type, reaction_value, reaction_users_count, created_at, updated_at) VALUES (900, 35, 0, 'clap', 1, now() - interval '2 hours', now() - interval '2 hours')",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) VALUES (900, 3, 35, now() - interval '2 hours', now() - interval '2 hours')"
+  ],
+  "requests": [],
+  "enqueue": [
+    [
+      "Jobs::DiscourseReactions::ScheduledLikeSynchronizer",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "Jobs::DiscourseReactions::ScheduledLikeSynchronizer"
+  ]
+}

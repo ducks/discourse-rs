@@ -1,0 +1,19 @@
+{
+  "user": null,
+  "settings": {
+    "chat_allowed_groups": "3"
+  },
+  "setup": [],
+  "requests": [],
+  "enqueue": [
+    [
+      "Jobs::Chat::AutoJoinUsers",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "Jobs::Chat::AutoJoinUsers",
+    "Jobs::Chat::UpdateChannelUserCount",
+    "Jobs::Chat::KickUsersFromChannel"
+  ]
+}
