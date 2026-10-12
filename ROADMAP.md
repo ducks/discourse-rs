@@ -11,6 +11,156 @@ ported yet gets an explicit `Unsupported(...)` 500 naming it. The list of
 those markers (`grep -rho 'Unsupported("[^"]*")' src/`) is the fine-grained
 backlog; the milestones below are the coarse one.
 
+## Now: the parity queue (2026-10-13)
+
+The next branches, in order. Each has a brief with the Rails reading
+done (bf55a44: files, exact behavior, what the port reuses, fixture
+gotchas, the case plan) in the working notes,
+`~/agents/notes/discourse-rs/spec-<brief>-2026-10-13.md`; the brief is
+named in brackets. Sizes: S one module and a few cases, M several
+modules, L a cross-cutting change or several branches in one. Cross a
+branch off here in the commit that merges it.
+
+Working a branch: read the brief's fixture notes before writing cases
+(setting units and defaults, PM or regular topics, rows the reference
+already has, timestamps near a window's edge); start the next branch's
+reading while the gate runs.
+
+### Phase 0: fix first
+
+Bugs or silent gaps in what is merged, small and independent.
+
+1. `fix/remote-ip` S: both `remote_ip`s (session/current.rs,
+   routes/search.rs) trust the first X-Forwarded-For hop, which a client
+   sets; take the address the trusted proxy saw, as ActionDispatch's
+   RemoteIp does, in one shared function [rate-limiting]
+2. `fix/topic-timers-timerable-id` S: five queries read
+   `topic_timers.topic_id`, which Rails no longer writes
+   (`timerable_id`); timers are never found on real data [badges-timers]
+3. `fix/poll-guard` S: a `[poll]` post cooks and saves without its
+   `polls` rows; refuse until poll-create [messages-dms]
+4. `fix/search-recent-offset` S: search refuses every query once
+   `search_recent_regular_posts_offset_post_id` is set (any site past
+   the offset size); port Search#aggregate_post_sql's `min_id`
+   [scheduled-jobs-rest]
+5. `feat/chat-dm-reads` L: a DM channel row (restored backups have
+   them) makes chat's channel list refuse, failing every page of that
+   member; the DM reads, serializers and drawer list [messages-dms]
+6. `feat/harness-fixture-dates` S: the seed's dates leave the one-month
+   windows (digests, "recent") after 2026-10-30; pin or re-seed relative
+   to now [users-digests-dnd]
+
+### Phase 1: the scheduled jobs left (ready)
+
+7. `feat/jobs-heat-settings` S: SiteSetting set-and-log (a row even for
+   a default, unchanged values skipped, /client_settings published),
+   then update_heat_settings
+8. `feat/jobs-search-index` M: reindex_search,
+   create_recent_post_search_indexes
+9. `feat/jobs-scores` S: ScoreCalculator, calculate_scores (weights as
+   SQL numerics, not bound floats)
+10. `feat/jobs-periodical-updates` M: with feature_topics_for's early
+    return (it rewrites rows every run today); rebakes refused while
+    stale posts exist
+11. `feat/post-rebake` M/L
+12. `feat/jobs-consistency-counters` M, 13. `feat/jobs-consistency-users`
+    M: ensure_db_consistency, refusals checked before any write
+14. `feat/harness-upload-files` S, 15. `feat/jobs-upload-metadata` S,
+    16. `feat/jobs-clean-up-uploads` M (Upload#destroy; cases never
+    destroy fixture uploads)
+
+[scheduled-jobs-rest]
+
+### Phase 2: rate limiting
+
+17. `feat/rate-limiter-core` M: a Postgres limiter in discourse_rs, the
+    429/422 shapes and headers, off for existing cases; the recorder's
+    per-case `"rate_limits": true` (Rails dev enforces them; the recorder
+    disables them today)
+18. `feat/rate-limit-posting` L, 19. `feat/rate-limit-post-actions` M,
+    20. `feat/rate-limit-auth` M, 21. `feat/rate-limit-endpoints` S
+22. `feat/request-tracker-limits` M: the global per-IP limits, tested
+    in Rust only (not loaded in Rails dev, loopback exempt); needs
+    fix/remote-ip
+
+[rate-limiting]
+
+### Phase 3: messages
+
+23. `feat/user-comm-screener` S: gates PM creation, alerts, invites, DMs
+24. `feat/pm-tracking-state` S
+25. `feat/group-messages-create` M, 26. `feat/group-messages-alerts` M
+27. `feat/jobs-group-messages` S: unblocks ignored_users_summary and
+    pending_reviewables_reminder
+28. `feat/pm-archive` S, 29. `feat/pm-small-actions` M,
+    30. `feat/pm-likes` S, 31. `feat/pm-destroy` M,
+    32. `feat/pm-invite` M, 33. `feat/pm-invite-group` S
+
+[messages-dms]
+
+### Phase 4: chat DMs and polls
+
+34. `feat/chat-dm-create` M, 35. `feat/chat-dm-messages` M (mention
+    warnings fold in), 36. `feat/chat-dm-groups` M,
+    37. `feat/chat-dm-summary-email` S
+38. `feat/poll-create` M, 39. `feat/poll-vote` M, 40. `feat/poll-edit`
+    S/M
+
+[messages-dms]
+
+### Phase 5: the client's infrastructure
+
+41. `feat/cooked-css-basics` S (also the composer textarea's
+    line-height: foundation.css ports one of discourse.scss's two
+    textarea blocks), 42. `feat/hashtag-css` S/M
+43. `feat/onebox-local` M: internal topic, post, user and category
+    links without fetching; posts with onebox links are refused today
+    (posting/validate.rs)
+44. `feat/cooked-decorators-js` M: run once per post, swapped-in posts
+    included
+45. `feat/float-positioner` S, 46. `feat/user-card` M
+47. `feat/lightbox` M (PhotoSwipe), 48. `feat/highlight-js` M,
+    49. `feat/local-dates` M (moment and moment-timezone vendored, as
+    Discourse renders), 50. `feat/inline-footnotes` S
+51. `feat/onebox-endpoints` S, 52. `feat/onebox-fetch` L (SSRF guard
+    with DNS pinning), 53. `feat/onebox-engines-nofetch` M,
+    54. `feat/onebox-generic` L, 55. `feat/onebox-engines-api` L
+
+[client-infra]
+
+### Phase 6: badges and topic timers
+
+56. `feat/badge-grant` M, 57. `feat/badge-queue` M (Rails' queue is
+    Redis: the harness cannot see a missed enqueue, so each enqueue
+    site gets a backlog case), 58. `feat/badge-jobs` M,
+    59. `feat/badges-read` M
+60. `feat/topic-timers` L, 61. `feat/topic-timer-jobs` M,
+    62. `feat/category-auto-close` M
+
+[badges-timers]
+
+### Phase 7: users, digests, do not disturb
+
+63. `feat/user-destroyer` L (about 60 tables; self delete needs
+    pm-destroy and deleting posts with links and likes),
+    64. `feat/jobs-user-cleanup` S, 65. `feat/review-delete-user` S/M
+66. `refactor/notification-insert` S: one path for the ten places that
+    insert notifications, which shelving hooks into
+67. `feat/dnd-shelving` M, 68. `feat/dnd-schedules` M
+69. `feat/email-unsubscribe` M, 70. `feat/digest-email` L,
+    71. `feat/jobs-digest` S, 72. `feat/admin-email-digest` S
+73. `feat/about-stats` S/M, 74. `feat/directory` M
+75. `feat/review-reject-queued-post` M,
+    76. `feat/user-destroyer-delete-posts` M
+77. `feat/username-changer` L, 78. `feat/user-anonymizer` M,
+    79. `feat/user-merger` L
+
+[users-digests-dnd]
+
+Later, not briefed yet: admin badges, web hooks, user API keys,
+themes, backups through the app, the pageview and dashboard reports
+(parity/SCHEDULED_JOBS.md has the jobs each one unblocks).
+
 ## Milestone 1: a hostable read-only mirror
 
 Serve an anonymous, read-only copy of a Discourse backup that someone
