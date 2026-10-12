@@ -397,7 +397,7 @@ pub async fn create(
     // login(user): timezone, log_on_user, UserSerializer.
     crate::accounts::update_timezone_if_missing(&mut conn, user.id, param(&form, "timezone"))
         .await?;
-    let ip = current::remote_ip(&headers, peer);
+    let ip = crate::remote_ip::remote_ip(&headers, peer)?;
     let user_agent = headers
         .get(header::USER_AGENT)
         .and_then(|v| v.to_str().ok())

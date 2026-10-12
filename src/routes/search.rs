@@ -121,22 +121,10 @@ impl<S: Send + Sync> FromRequestParts<S> for Peer {
     }
 }
 
-/// `request.remote_ip`: the first forwarded address, else the peer.
-pub(super) fn remote_ip(headers: &HeaderMap, peer: Option<SocketAddr>) -> String {
-    headers
-        .get("x-forwarded-for")
-        .and_then(|v| v.to_str().ok())
-        .and_then(|v| v.split(',').next())
-        .map(|v| v.trim().to_string())
-        .filter(|v| !v.is_empty())
-        .or_else(|| peer.map(|p| p.ip().to_string()))
-        .unwrap_or_else(|| "127.0.0.1".to_string())
-}
-
 fn request_context(
     headers: &HeaderMap,
     peer: Option<SocketAddr>,
-) -> (String, Option<String>, Option<String>) {
+) -> Result<(String, Option<String>, Option<String>), crate::remote_ip::IpSpoofAttack> {
     let user_agent = headers
         .get(header::USER_AGENT)
         .and_then(|v| v.to_str().ok())
@@ -145,7 +133,11 @@ fn request_context(
         .get("discourse-pageview-session-id")
         .and_then(|v| v.to_str().ok())
         .map(str::to_string);
-    (remote_ip(headers, peer), user_agent, session_id)
+    Ok((
+        crate::remote_ip::remote_ip(headers, peer)?,
+        user_agent,
+        session_id,
+    ))
 }
 
 async fn run(state: &AppState, guardian: &Guardian, args: &SearchArgs) -> Result<Value, AppError> {
@@ -302,7 +294,7 @@ async fn show_response(
         }
         page = n.max(1);
     }
-    let (ip_address, user_agent, session_id) = request_context(&headers, peer);
+    let (ip_address, user_agent, session_id) = request_context(&headers, peer)?;
     let args = SearchArgs {
         term: term.clone(),
         type_filter: Some(TypeFilter::Topic),
@@ -400,7 +392,7 @@ pub async fn query(
         Some("all_topics") => return Err(Unsupported("type_filter=all_topics").into()),
         Some(_) => return Ok(invalid_access(&state)),
     };
-    let (ip_address, user_agent, session_id) = request_context(&headers, peer);
+    let (ip_address, user_agent, session_id) = request_context(&headers, peer)?;
     let args = SearchArgs {
         term,
         type_filter,

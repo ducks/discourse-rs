@@ -120,18 +120,6 @@ pub fn cookie<'a>(headers: &'a HeaderMap, name: &str) -> Option<&'a str> {
     })
 }
 
-/// `request.remote_ip`
-pub fn remote_ip(headers: &HeaderMap, peer: Option<std::net::SocketAddr>) -> String {
-    headers
-        .get("x-forwarded-for")
-        .and_then(|v| v.to_str().ok())
-        .and_then(|v| v.split(',').next())
-        .map(|v| v.trim().to_string())
-        .filter(|v| !v.is_empty())
-        .or_else(|| peer.map(|p| p.ip().to_string()))
-        .unwrap_or_else(|| "127.0.0.1".to_string())
-}
-
 fn user_agent(headers: &HeaderMap) -> Option<String> {
     headers
         .get(header::USER_AGENT)
@@ -280,7 +268,7 @@ pub async fn layer(
         .contains_key(super::api_key::HEADER_API_KEY)
     {
         let mut conn = state.pool.acquire().await?;
-        let ip = remote_ip(&headers, peer);
+        let ip = crate::remote_ip::remote_ip(&headers, peer)?;
         // Rails renders the InvalidAccess message as plain text unless the
         // request is JSON or XHR.
         let header_has = |name: header::HeaderName, needle: &str| {
@@ -385,7 +373,7 @@ pub async fn layer(
             &state,
             settings,
             &session.user,
-            &remote_ip(&headers, peer),
+            &crate::remote_ip::remote_ip(&headers, peer)?,
         )
         .await?;
     }
@@ -415,7 +403,7 @@ pub async fn layer(
         Some(session) => {
             let mut conn = state.pool.acquire().await?;
             if token::needs_rotation(&session.token) {
-                let ip = remote_ip(&headers, peer);
+                let ip = crate::remote_ip::remote_ip(&headers, peer)?;
                 if let Some(unhashed) = token::rotate(
                     &mut conn,
                     &session.token,

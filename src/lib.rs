@@ -58,6 +58,7 @@ pub mod presence;
 pub mod pretty_text;
 pub mod promotion;
 pub mod read_tracking;
+pub mod remote_ip;
 pub mod review;
 pub mod review_list;
 pub mod reviewable_user;
