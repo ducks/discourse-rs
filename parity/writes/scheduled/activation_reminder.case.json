@@ -1,0 +1,10 @@
+{
+  "user": null,
+  "setup": [
+    "UPDATE users SET active = FALSE, created_at = now() - interval '60 hours' WHERE id = 4",
+    "UPDATE users SET active = FALSE, created_at = now() - interval '30 hours' WHERE id = 3"
+  ],
+  "requests": [],
+  "enqueue": [["activation_reminder_emails", {}]],
+  "run_jobs": ["activation_reminder_emails", "user_email"]
+}

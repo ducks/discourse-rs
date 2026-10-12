@@ -1,0 +1,44 @@
+{
+  "name": "email_tokens_purge",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-12T22:37:02.634858",
+  "transaction_started_at": "2026-10-12T22:37:01.979589",
+  "responses": [],
+  "changes": {
+    "email_tokens": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 9501,
+          "email": "user1@example.com",
+          "scope": 1,
+          "expired": true,
+          "user_id": 3,
+          "confirmed": false,
+          "created_at": "2026-09-02T22:37:01.979589",
+          "token_hash": "h9501",
+          "updated_at": "2026-09-02T22:37:01.979589"
+        }
+      ],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO email_tokens (id, user_id, email, confirmed, expired, created_at, updated_at, token_hash, scope) VALUES (9501, 3, 'user1@example.com', FALSE, TRUE, now() - interval '40 days', now() - interval '40 days', 'h9501', 1), (9502, 3, 'user1@example.com', FALSE, TRUE, now() - interval '20 days', now() - interval '20 days', 'h9502', 1), (9503, 3, 'user1@example.com', TRUE, TRUE, now() - interval '40 days', now() - interval '40 days', 'h9503', 1), (9504, 3, 'user1@example.com', FALSE, FALSE, now() - interval '40 days', now() - interval '40 days', 'h9504', 1)"
+  ],
+  "enqueue": [
+    [
+      "clean_up_email_tokens",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "232fd200dbecc60f2250e02d5fd1dcbbafd6da0cdbdc2ec4b012057c452ecd9e",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

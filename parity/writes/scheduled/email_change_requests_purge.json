@@ -1,0 +1,45 @@
+{
+  "name": "email_change_requests_purge",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-12T22:36:59.095101",
+  "transaction_started_at": "2026-10-12T22:36:58.483095",
+  "responses": [],
+  "changes": {
+    "email_change_requests": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 9501,
+          "user_id": 3,
+          "new_email": "new1@example.com",
+          "old_email": "user1@example.com",
+          "created_at": "2026-09-02T22:36:58.483095",
+          "updated_at": "2026-09-02T22:36:58.483095",
+          "change_state": 1,
+          "new_email_token_id": null,
+          "old_email_token_id": null,
+          "requested_by_user_id": null
+        }
+      ],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO email_change_requests (id, user_id, old_email, new_email, change_state, created_at, updated_at) VALUES (9501, 3, 'user1@example.com', 'new1@example.com', 1, now() - interval '40 days', now() - interval '40 days'), (9502, 4, 'user2@example.com', 'new2@example.com', 1, now() - interval '40 days', now() - interval '10 days')"
+  ],
+  "enqueue": [
+    [
+      "clean_up_email_change_requests",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "570862ad6aff9bcff53176fd52b2d8d6e456aa6cc99469772bcdc01bb6f12447",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

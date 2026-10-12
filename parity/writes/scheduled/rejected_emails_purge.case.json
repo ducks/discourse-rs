@@ -1,0 +1,9 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO incoming_emails (id, message_id, rejection_message, created_at, updated_at) VALUES (9501, 'm9501@example.com', 'rejected', now() - interval '100 days', now() - interval '100 days'), (9502, 'm9502@example.com', 'rejected', now() - interval '10 days', now() - interval '10 days'), (9503, 'm9503@example.com', NULL, now() - interval '100 days', now() - interval '100 days')"
+  ],
+  "requests": [],
+  "enqueue": [["delete_rejected_emails", {}]],
+  "run_jobs": ["delete_rejected_emails"]
+}

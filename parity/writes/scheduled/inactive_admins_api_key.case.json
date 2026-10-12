@@ -1,0 +1,11 @@
+{
+  "user": null,
+  "settings": { "invalidate_inactive_admin_email_after_days": 10 },
+  "setup": [
+    "UPDATE users SET last_seen_at = now() - interval '20 days' WHERE id IN (1, 5)",
+    "INSERT INTO api_keys (id, user_id, created_by_id, created_at, updated_at, last_used_at, description, key_hash, truncated_key, scope_mode, revoked_at) VALUES (9501, NULL, 1, now() - interval '60 days', now() - interval '60 days', now() - interval '40 days', 'old', 'h9501', 'aaaa', 0, NULL), (9502, NULL, 1, now() - interval '60 days', now() - interval '60 days', now() - interval '10 days', 'used', 'h9502', 'bbbb', 0, NULL), (9503, 1, 1, now() - interval '5 days', now() - interval '5 days', NULL, 'new', 'h9503', 'cccc', 0, NULL), (9504, NULL, 1, now() - interval '60 days', now() - interval '60 days', NULL, 'revoked', 'h9504', 'dddd', 0, now() - interval '50 days')"
+  ],
+  "requests": [],
+  "enqueue": [["invalidate_inactive_admins", {}]],
+  "run_jobs": ["invalidate_inactive_admins"]
+}

@@ -1,0 +1,10 @@
+{
+  "user": null,
+  "setup": [
+    "UPDATE users SET active = FALSE, created_at = now() - interval '60 hours' WHERE id = 4",
+    "INSERT INTO user_custom_fields (user_id, name, value, created_at, updated_at) VALUES (4, 'activation_reminder', 'true', now(), now())"
+  ],
+  "requests": [],
+  "enqueue": [["activation_reminder_emails", {}]],
+  "run_jobs": ["activation_reminder_emails"]
+}

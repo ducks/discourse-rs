@@ -1,0 +1,71 @@
+{
+  "name": "email_logs_purge",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-12T22:37:01.768973",
+  "transaction_started_at": "2026-10-12T22:37:01.118833",
+  "responses": [],
+  "changes": {
+    "email_logs": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 9501,
+          "raw": null,
+          "bounced": false,
+          "post_id": null,
+          "user_id": 3,
+          "topic_id": null,
+          "bounce_key": null,
+          "created_at": "2026-07-04T22:37:01.118833",
+          "email_type": "user_replied",
+          "message_id": null,
+          "to_address": "user1@example.com",
+          "updated_at": "2026-07-04T22:37:01.118833",
+          "cc_user_ids": null,
+          "cc_addresses": null,
+          "bcc_addresses": null,
+          "smtp_group_id": null,
+          "bounce_error_code": null,
+          "smtp_transaction_response": null
+        }
+      ],
+      "updated": []
+    },
+    "skipped_email_logs": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 9501,
+          "post_id": null,
+          "user_id": 3,
+          "created_at": "2026-07-04T22:37:01.118833",
+          "email_type": "user_replied",
+          "to_address": "user1@example.com",
+          "updated_at": "2026-07-04T22:37:01.118833",
+          "reason_type": 2,
+          "custom_reason": null
+        }
+      ],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO email_logs (id, to_address, email_type, user_id, created_at, updated_at) VALUES (9501, 'user1@example.com', 'user_replied', 3, now() - interval '100 days', now() - interval '100 days'), (9502, 'user1@example.com', 'user_replied', 3, now() - interval '10 days', now() - interval '10 days')",
+    "INSERT INTO skipped_email_logs (id, email_type, to_address, user_id, reason_type, created_at, updated_at) VALUES (9501, 'user_replied', 'user1@example.com', 3, 2, now() - interval '100 days', now() - interval '100 days'), (9502, 'user_replied', 'user1@example.com', 3, 2, now() - interval '10 days', now() - interval '10 days')"
+  ],
+  "enqueue": [
+    [
+      "clean_up_email_logs",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "f0fd366b0e56ffaad3a0f72ab8d61823373d3ef58ad77b63e03d8122a74b40a4",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

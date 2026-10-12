@@ -1,0 +1,42 @@
+{
+  "name": "unsubscribe_keys_purge",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-12T22:37:09.27333",
+  "transaction_started_at": "2026-10-12T22:37:08.485606",
+  "responses": [],
+  "changes": {
+    "unsubscribe_keys": {
+      "inserted": [],
+      "deleted": [
+        {
+          "key": "k9501",
+          "post_id": null,
+          "user_id": 3,
+          "topic_id": null,
+          "created_at": "2026-08-03T22:37:08.485606",
+          "updated_at": "2026-08-03T22:37:08.485606",
+          "unsubscribe_key_type": "digest"
+        }
+      ],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO unsubscribe_keys (key, user_id, unsubscribe_key_type, created_at, updated_at) VALUES ('k9501', 3, 'digest', now() - interval '70 days', now() - interval '70 days'), ('k9502', 3, 'digest', now() - interval '50 days', now() - interval '50 days')"
+  ],
+  "enqueue": [
+    [
+      "clean_up_unsubscribe_keys",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "00347ac8174d37c7282bf3383c20ac82812a91edcf92fa8e5f94d1d1de46fc8e",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

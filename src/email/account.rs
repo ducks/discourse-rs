@@ -17,6 +17,7 @@ use crate::{AppError, Unsupported};
 pub fn template_for(email_type: &str, has_password: bool) -> Option<&'static str> {
     Some(match email_type {
         "signup" => "user_notifications.signup",
+        "activation_reminder" => "user_notifications.activation_reminder",
         "email_login" => "user_notifications.email_login",
         "forgot_password" if has_password => "user_notifications.forgot_password",
         "forgot_password" => "user_notifications.set_password",

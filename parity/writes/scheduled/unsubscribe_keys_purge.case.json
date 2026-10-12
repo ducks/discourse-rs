@@ -1,0 +1,9 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO unsubscribe_keys (key, user_id, unsubscribe_key_type, created_at, updated_at) VALUES ('k9501', 3, 'digest', now() - interval '70 days', now() - interval '70 days'), ('k9502', 3, 'digest', now() - interval '50 days', now() - interval '50 days')"
+  ],
+  "requests": [],
+  "enqueue": [["clean_up_unsubscribe_keys", {}]],
+  "run_jobs": ["clean_up_unsubscribe_keys"]
+}

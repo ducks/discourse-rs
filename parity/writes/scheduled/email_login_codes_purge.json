@@ -1,0 +1,44 @@
+{
+  "name": "email_login_codes_purge",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-12T22:36:59.926835",
+  "transaction_started_at": "2026-10-12T22:36:59.299908",
+  "responses": [],
+  "changes": {
+    "email_login_codes": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 9501,
+          "email": "user1@example.com",
+          "purpose": 0,
+          "attempts": 0,
+          "code_hash": "c9501",
+          "created_at": "2026-10-10T22:36:59.299908",
+          "expires_at": "2026-10-10T22:36:59.299908",
+          "updated_at": "2026-10-10T22:36:59.299908",
+          "consumed_at": null
+        }
+      ],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO email_login_codes (id, email, code_hash, expires_at, created_at, updated_at) VALUES (9501, 'user1@example.com', 'c9501', now() - interval '2 days', now() - interval '2 days', now() - interval '2 days'), (9502, 'user1@example.com', 'c9502', now() - interval '1 hour', now() - interval '2 hours', now() - interval '2 hours')"
+  ],
+  "enqueue": [
+    [
+      "clean_up_email_login_codes",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "32ea2e540810efc864862c7938a54837a783ef1fc43dfd78dc226c887cfcdfbc",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
