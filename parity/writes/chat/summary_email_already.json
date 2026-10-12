@@ -2,19 +2,19 @@
   "name": "summary_email_already",
   "user": null,
   "requests": [],
-  "started_at": "2026-10-10T05:49:38.09094",
-  "transaction_started_at": "2026-10-10T05:49:36.521778",
+  "started_at": "2026-10-12T17:51:05.796634",
+  "transaction_started_at": "2026-10-12T17:51:04.636559",
   "responses": [],
   "changes": {},
   "jobs": [],
   "next_ids": {},
   "setup": [
-    "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id, excerpt) VALUES (1, 2, 3, date_trunc('hour', now()) - interval '2 hours', date_trunc('hour', now()) - interval '2 hours', 'hey @user0 lunch?', '<p>hey <a class=\"mention\" href=\"/u/user0\">@user0</a> lunch?</p>', 1, 3, 'hey @user0 lunch?')",
-    "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id, excerpt) VALUES (2, 2, 3, date_trunc('hour', now()) - interval '110 minutes', date_trunc('hour', now()) - interval '110 minutes', 'and **dessert**', '<p>and <strong>dessert</strong></p>', 1, 3, 'and dessert')",
+    "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id, excerpt) VALUES (1, 2, 3, now() - interval '2 hours', now() - interval '2 hours', 'hey @user0 lunch?', '<p>hey <a class=\"mention\" href=\"/u/user0\">@user0</a> lunch?</p>', 1, 3, 'hey @user0 lunch?')",
+    "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id, excerpt) VALUES (2, 2, 3, now() - interval '110 minutes', now() - interval '110 minutes', 'and **dessert**', '<p>and <strong>dessert</strong></p>', 1, 3, 'and dessert')",
     "SELECT setval('chat_messages_id_seq', 2)",
     "UPDATE chat_channels SET last_message_id = 2 WHERE id = 2",
-    "INSERT INTO chat_mentions (id, chat_message_id, type, target_id, created_at, updated_at) VALUES (1, 1, 'Chat::UserMention', 2, date_trunc('hour', now()) - interval '2 hours', date_trunc('hour', now()) - interval '2 hours')",
-    "INSERT INTO notifications (id, notification_type, user_id, data, read, high_priority, created_at, updated_at) VALUES (900, 29, 2, '{}', false, true, date_trunc('hour', now()) - interval '2 hours', date_trunc('hour', now()) - interval '2 hours')",
+    "INSERT INTO chat_mentions (id, chat_message_id, type, target_id, created_at, updated_at) VALUES (1, 1, 'Chat::UserMention', 2, now() - interval '2 hours', now() - interval '2 hours')",
+    "INSERT INTO notifications (id, notification_type, user_id, data, read, high_priority, created_at, updated_at) VALUES (900, 29, 2, '{}', false, true, now() - interval '2 hours', now() - interval '2 hours')",
     "INSERT INTO chat_mention_notifications (chat_mention_id, notification_id) VALUES (1, 900)",
     "UPDATE users SET last_seen_at = now() - interval '1 hour' WHERE id = 2",
     "UPDATE user_chat_channel_memberships SET last_unread_mention_when_emailed_id = 1 WHERE chat_channel_id = 2 AND user_id = 2"
@@ -27,7 +27,7 @@
   ],
   "jobs_from_jobs": [],
   "recorded_from": {
-    "case": "b1877e6b4e6abffe75d1552429e2494b899dc6f3c04d436107b17e4c2bd0b1cd",
+    "case": "9b68603333f714bb3448a1615308cb9b114c0e01533b04e579e5541bb6c3c221",
     "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
     "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
   }
