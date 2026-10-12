@@ -20,19 +20,40 @@ pub mod notify;
 pub mod page;
 pub mod presence;
 pub mod publisher;
+pub mod scheduled;
 pub mod summary_email;
 pub mod view;
 
 use serde_json::{Map, Value, json};
 use sqlx::PgConnection;
 
-use crate::guardian::Guardian;
+use crate::guardian::{Guardian, auto_groups};
 use crate::site_settings::{SettingError, SiteSettings};
 use crate::{AppError, Unsupported};
 
 /// `enabled_site_setting :chat_enabled`
 pub fn enabled(settings: &SiteSettings) -> Result<bool, SettingError> {
     Ok(settings.get("chat_enabled")?.truthy())
+}
+
+/// `Chat.message_bus_allowed_group_ids`: chat_allowed_groups without
+/// anonymous users, everyone and logged in users as trust level 0.
+pub fn message_bus_allowed_group_ids(settings: &SiteSettings) -> Result<Vec<i32>, SettingError> {
+    let mut ids: Vec<i32> = Vec::new();
+    for id in settings.group_ids("chat_allowed_groups")? {
+        if id == auto_groups::ANONYMOUS_USERS {
+            continue;
+        }
+        let id = if id == auto_groups::EVERYONE || id == auto_groups::LOGGED_IN_USERS {
+            auto_groups::TRUST_LEVEL_0
+        } else {
+            id
+        } as i32;
+        if !ids.contains(&id) {
+            ids.push(id);
+        }
+    }
+    Ok(ids)
 }
 
 /// `Guardian#can_chat?`: members of chat_allowed_groups, and bots. A

@@ -1,0 +1,19 @@
+{
+  "user": null,
+  "settings": {
+    "chat_channel_retention_days": 0
+  },
+  "setup": [
+    "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id) VALUES (1, 2, 3, now() - interval '100 days', now() - interval '100 days', 'old one', '<p>old one</p>', 1, 3)"
+  ],
+  "requests": [],
+  "enqueue": [
+    [
+      "Jobs::Chat::DeleteOldMessages",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "Jobs::Chat::DeleteOldMessages"
+  ]
+}

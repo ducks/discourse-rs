@@ -1,0 +1,19 @@
+{
+  "user": null,
+  "setup": [
+    "UPDATE chat_channels SET auto_join_users = true WHERE id = 2",
+    "UPDATE users SET last_seen_at = now() - interval '1 day' WHERE id = 4"
+  ],
+  "requests": [],
+  "enqueue": [
+    [
+      "Jobs::Chat::AutoJoinUsers",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "Jobs::Chat::AutoJoinUsers",
+    "Jobs::Chat::UpdateChannelUserCount",
+    "Jobs::Chat::KickUsersFromChannel"
+  ]
+}

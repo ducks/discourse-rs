@@ -12,8 +12,8 @@ use crate::{AppError, Unsupported};
 
 /// `Chat::Publisher.permissions(channel)` for a category channel, as bus
 /// audience tags: Chat.message_bus_allowed_group_ids (everyone and logged
-/// in users as trust level 0, anonymous users left out). A restricted
-/// category's own audiences are refused until ported.
+/// in users as trust level 0, anonymous users left out); for a restricted
+/// category, its allowed groups as chat's restricted category ids.
 pub async fn audience(
     conn: &mut PgConnection,
     settings: &SiteSettings,
@@ -26,7 +26,24 @@ pub async fn audience(
             .await?
             .unwrap_or(false);
     if restricted {
-        return Err(Unsupported("chat bus audiences of restricted categories").into());
+        // CategoryChannel#allowed_group_ids: staff and the category's
+        // groups, each as chat's restricted category audience id.
+        let mut groups = vec![1, 2, 3];
+        let secure: Vec<i32> = sqlx::query_scalar(
+            "SELECT group_id FROM category_groups WHERE category_id = $1 ORDER BY id",
+        )
+        .bind(chatable_id as i32)
+        .fetch_all(&mut *conn)
+        .await?;
+        for id in secure {
+            if !groups.contains(&id) {
+                groups.push(id);
+            }
+        }
+        return Ok(groups
+            .into_iter()
+            .map(crate::bus::chat_restricted_category_tag)
+            .collect());
     }
     let allowed = settings.group_ids("chat_allowed_groups")?;
     if settings.get("enable_public_channels")?.truthy()
@@ -34,22 +51,10 @@ pub async fn audience(
     {
         return Err(Unsupported("anonymous access to chat channels").into());
     }
-    let mut tags: Vec<String> = Vec::new();
-    for id in allowed {
-        if id == auto_groups::ANONYMOUS_USERS {
-            continue;
-        }
-        let id = if id == auto_groups::EVERYONE || id == auto_groups::LOGGED_IN_USERS {
-            auto_groups::TRUST_LEVEL_0
-        } else {
-            id
-        };
-        let tag = crate::bus::group_tag(id as i32);
-        if !tags.contains(&tag) {
-            tags.push(tag);
-        }
-    }
-    Ok(tags)
+    Ok(super::message_bus_allowed_group_ids(settings)?
+        .into_iter()
+        .map(crate::bus::group_tag)
+        .collect())
 }
 
 /// `serialize_message_with_type`: the message as the anonymous guardian
@@ -398,4 +403,47 @@ pub async fn publish_thread_metadata(
         "preview": preview,
     });
     publish_to_channel(cx, bus, channel, &payload).await
+}
+
+/// `Chat::Publisher.publish_chat_channel_metadata`: the channel's member
+/// count, to its audience.
+pub async fn publish_channel_metadata(
+    conn: &mut PgConnection,
+    bus: &pg_bus::Bus,
+    settings: &SiteSettings,
+    channel_id: i64,
+    chatable_id: i64,
+    memberships_count: i64,
+) -> Result<(), AppError> {
+    let tags = audience(&mut *conn, settings, chatable_id).await?;
+    bus.publish(
+        &mut *conn,
+        "/chat/channel-metadata",
+        &json!({ "chat_channel_id": channel_id, "memberships_count": memberships_count }),
+        Some(&tags),
+    )
+    .await?;
+    Ok(())
+}
+
+/// `Chat::Publisher.publish_kick_users`: the removed members told to leave
+/// the channel (Jobs::Chat::KickUsersFromChannel).
+pub async fn publish_kick_users(
+    conn: &mut PgConnection,
+    bus: &pg_bus::Bus,
+    channel_id: i64,
+    user_ids: &[i32],
+) -> Result<(), AppError> {
+    let tags: Vec<String> = user_ids
+        .iter()
+        .map(|id| crate::bus::user_tag(*id))
+        .collect();
+    bus.publish(
+        &mut *conn,
+        &format!("/chat/{channel_id}/kick"),
+        &json!({ "channel_id": channel_id }),
+        Some(&tags),
+    )
+    .await?;
+    Ok(())
 }

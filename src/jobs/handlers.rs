@@ -77,6 +77,12 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         crate::plugins::chat::summary_email::EMAIL_NOTIFICATIONS_JOB => {
             crate::plugins::chat::summary_email::send_unread_mentions_summary(state).await
         }
+        crate::plugins::chat::scheduled::AUTO_JOIN_USERS => {
+            crate::plugins::chat::scheduled::auto_join_users(state, &job.args).await
+        }
+        crate::plugins::chat::scheduled::KICK_USERS_FROM_CHANNEL => {
+            crate::plugins::chat::scheduled::kick_users_from_channel(state, &job.args).await
+        }
         name if super::is_scheduled(name) => super::run_scheduled(state, name).await,
         "Jobs::DiscourseTopicVoting::VoteReclaim" => {
             let mut tx = match state.pool.begin().await {

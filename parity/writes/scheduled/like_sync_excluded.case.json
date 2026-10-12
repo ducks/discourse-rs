@@ -1,0 +1,20 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO discourse_reactions_reactions (id, post_id, reaction_type, reaction_value, reaction_users_count, created_at, updated_at) VALUES (901, 36, 0, 'poop', 1, now() - interval '2 hours', now() - interval '2 hours')",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) VALUES (901, 4, 36, now() - interval '2 hours', now() - interval '2 hours')",
+    "INSERT INTO post_actions (id, post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (900, 36, 4, 2, now() - interval '2 hours', now() - interval '2 hours')",
+    "INSERT INTO user_actions (action_type, user_id, acting_user_id, target_post_id, target_topic_id, created_at, updated_at) VALUES (1, 4, 4, 36, 35, now() - interval '2 hours', now() - interval '2 hours'), (2, 3, 4, 36, 35, now() - interval '2 hours', now() - interval '2 hours')",
+    "INSERT INTO given_daily_likes (user_id, given_date, likes_given) VALUES (4, CURRENT_DATE, 1) ON CONFLICT DO NOTHING"
+  ],
+  "requests": [],
+  "enqueue": [
+    [
+      "Jobs::DiscourseReactions::ScheduledLikeSynchronizer",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "Jobs::DiscourseReactions::ScheduledLikeSynchronizer"
+  ]
+}

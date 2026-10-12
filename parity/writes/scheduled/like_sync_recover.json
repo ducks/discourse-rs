@@ -1,0 +1,75 @@
+{
+  "name": "like_sync_recover",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-12T22:02:51.196608",
+  "transaction_started_at": "2026-10-12T22:02:50.517128",
+  "responses": [],
+  "changes": {
+    "post_actions": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 901,
+            "post_id": 35,
+            "user_id": 3,
+            "agreed_at": null,
+            "created_at": "2026-10-12T20:02:50.517128",
+            "deleted_at": "2026-10-12T21:02:50.517128",
+            "updated_at": "2026-10-12T20:02:50.517128",
+            "deferred_at": null,
+            "agreed_by_id": null,
+            "disagreed_at": null,
+            "deleted_by_id": 3,
+            "targets_topic": false,
+            "deferred_by_id": null,
+            "disagreed_by_id": null,
+            "related_post_id": null,
+            "staff_took_action": false,
+            "post_action_type_id": 2
+          },
+          "after": {
+            "id": 901,
+            "post_id": 35,
+            "user_id": 3,
+            "agreed_at": null,
+            "created_at": "2026-10-12T20:02:50.517128",
+            "deleted_at": null,
+            "updated_at": "2026-10-12T22:02:50.517128",
+            "deferred_at": null,
+            "agreed_by_id": null,
+            "disagreed_at": null,
+            "deleted_by_id": null,
+            "targets_topic": false,
+            "deferred_by_id": null,
+            "disagreed_by_id": null,
+            "related_post_id": null,
+            "staff_took_action": false,
+            "post_action_type_id": 2
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO discourse_reactions_reactions (id, post_id, reaction_type, reaction_value, reaction_users_count, created_at, updated_at) VALUES (902, 35, 0, 'clap', 1, now() - interval '2 hours', now() - interval '2 hours')",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) VALUES (902, 3, 35, now() - interval '2 hours', now() - interval '2 hours')",
+    "INSERT INTO post_actions (id, post_id, user_id, post_action_type_id, created_at, updated_at, deleted_at, deleted_by_id) VALUES (901, 35, 3, 2, now() - interval '2 hours', now() - interval '2 hours', now() - interval '1 hour', 3)"
+  ],
+  "enqueue": [
+    [
+      "Jobs::DiscourseReactions::ScheduledLikeSynchronizer",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "85415930e6827a8de38641bce8e9cf8ea75f04894514bc5cec4619da7a2b2cc6",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

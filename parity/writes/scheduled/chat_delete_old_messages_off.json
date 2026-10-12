@@ -1,0 +1,29 @@
+{
+  "name": "chat_delete_old_messages_off",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-12T21:57:42.323891",
+  "transaction_started_at": "2026-10-12T21:57:41.676331",
+  "responses": [],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "chat_channel_retention_days": 0
+  },
+  "setup": [
+    "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id) VALUES (1, 2, 3, now() - interval '100 days', now() - interval '100 days', 'old one', '<p>old one</p>', 1, 3)"
+  ],
+  "enqueue": [
+    [
+      "Jobs::Chat::DeleteOldMessages",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "34c158514e0381dd3074dcfcb69d14c711933b6e9054e81e41b3a2b3e049d505",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

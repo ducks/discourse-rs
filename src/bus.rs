@@ -36,9 +36,15 @@ pub fn group_tag(group_id: i32) -> String {
 }
 
 /// The tags a viewer holds: their user and every group they are in,
-/// automatic groups (staff, trust levels) included. Anonymous viewers hold
-/// none and hear only messages without an audience.
-pub async fn tags(conn: &mut PgConnection, user_id: Option<i32>) -> Result<Vec<String>, AppError> {
+/// automatic groups (staff, trust levels) included, and for a member who
+/// can chat, chat's audience id for each of those groups (MessageBus's
+/// group ids, Chat.message_bus_group_ids_for). Anonymous viewers hold none
+/// and hear only messages without an audience.
+pub async fn tags(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    user_id: Option<i32>,
+) -> Result<Vec<String>, AppError> {
     let Some(user_id) = user_id else {
         return Ok(Vec::new());
     };
@@ -48,8 +54,20 @@ pub async fn tags(conn: &mut PgConnection, user_id: Option<i32>) -> Result<Vec<S
             .fetch_all(&mut *conn)
             .await?;
     let mut tags = vec![user_tag(user_id)];
-    tags.extend(groups.into_iter().map(group_tag));
+    tags.extend(groups.iter().copied().map(group_tag));
+    if crate::plugins::chat::enabled(settings)? {
+        let allowed = crate::plugins::chat::message_bus_allowed_group_ids(settings)?;
+        if groups.iter().any(|g| allowed.contains(g)) {
+            tags.extend(groups.iter().copied().map(chat_restricted_category_tag));
+        }
+    }
     Ok(tags)
+}
+
+/// `Chat.restricted_category_message_bus_audience_id(group_id)` as a tag:
+/// who hears a restricted category's channels through that group.
+pub fn chat_restricted_category_tag(group_id: i32) -> String {
+    format!("group:chat-restricted-category-group-{group_id}")
 }
 
 pub fn notification_channel(user_id: i32) -> String {

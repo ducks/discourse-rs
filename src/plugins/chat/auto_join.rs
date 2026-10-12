@@ -30,6 +30,22 @@ pub async fn user(
     settings: &SiteSettings,
     user_id: i32,
 ) -> Result<(), AppError> {
+    create_memberships(conn, bus, state, settings, Some(user_id)).await
+}
+
+/// `Chat::AutoJoinChannels#create_memberships`: a following membership
+/// (join mode automatic) for each recently seen member who may chat
+/// (the user given, or everyone, as Jobs::Chat::AutoJoinUsers runs it) in
+/// every channel set to auto join that they may post in; then each
+/// channel's user count recounted and the channel published to its new
+/// members.
+pub async fn create_memberships(
+    conn: &mut PgConnection,
+    bus: &pg_bus::Bus,
+    state: &crate::AppState,
+    settings: &SiteSettings,
+    user_id: Option<i32>,
+) -> Result<(), AppError> {
     if !super::enabled(settings)? {
         return Ok(());
     }
@@ -40,8 +56,12 @@ pub async fn user(
     let groups_sql = if everyone_allowed {
         String::new()
     } else {
-        "AND EXISTS (SELECT 1 FROM group_users gu WHERE gu.user_id = u.id AND gu.group_id = ANY($4))"
+        "AND EXISTS (SELECT 1 FROM group_users gu WHERE gu.user_id = u.id AND gu.group_id = ANY($3))"
             .to_string()
+    };
+    let user_sql = match user_id {
+        Some(id) => format!("AND u.id = {id}"),
+        None => String::new(),
     };
     // CategoryGroup create_post (2) and full (1).
     let sql = format!(
@@ -49,16 +69,16 @@ pub async fn user(
            SELECT u.id FROM users u \
            JOIN user_options uo ON uo.user_id = u.id AND uo.chat_enabled = TRUE \
            WHERE u.id > 0 AND u.active = TRUE AND u.staged = FALSE \
-             AND (u.suspended_till IS NULL OR u.suspended_till <= $2) \
-             AND (u.silenced_till IS NULL OR u.silenced_till <= $2) \
+             AND (u.suspended_till IS NULL OR u.suspended_till <= $1) \
+             AND (u.silenced_till IS NULL OR u.silenced_till <= $1) \
              AND NOT EXISTS (SELECT 1 FROM anonymous_users au WHERE au.user_id = u.id) \
-             AND u.last_seen_at > $2 - interval '30 days' \
-             AND u.id = $1 {groups_sql} \
-           ORDER BY u.last_seen_at DESC LIMIT $3 \
+             AND u.last_seen_at > $1 - interval '30 days' \
+             {user_sql} {groups_sql} \
+           ORDER BY u.last_seen_at DESC LIMIT $2 \
          ), valid_chat_channels AS ( \
            SELECT cc.id, cc.chatable_id FROM chat_channels cc \
            WHERE cc.auto_join_users = TRUE AND cc.chatable_type = 'Category' \
-             AND cc.deleted_at IS NULL AND cc.user_count < $3 \
+             AND cc.deleted_at IS NULL AND cc.user_count < $2 \
          ), public AS ( \
            SELECT cu.id AS user_id, cc.id AS chat_channel_id FROM valid_chat_channels cc \
            CROSS JOIN chat_users cu \
@@ -70,44 +90,71 @@ pub async fn user(
            JOIN group_users gu ON gu.group_id = cg.group_id AND gu.user_id IN (SELECT id FROM chat_users) \
          ) \
          INSERT INTO user_chat_channel_memberships (user_id, chat_channel_id, following, join_mode, created_at, updated_at) \
-         SELECT p.user_id, p.chat_channel_id, TRUE, 1, $2, $2 \
+         SELECT p.user_id, p.chat_channel_id, TRUE, 1, $1, $1 \
          FROM (SELECT * FROM public UNION ALL SELECT * FROM private) p \
          LEFT JOIN user_chat_channel_memberships uccm \
            ON uccm.user_id = p.user_id AND uccm.chat_channel_id = p.chat_channel_id \
          WHERE uccm.user_id IS NULL \
          ON CONFLICT DO NOTHING \
-         RETURNING chat_channel_id"
+         RETURNING chat_channel_id, user_id"
     );
-    let joined: Vec<i64> = sqlx::query_scalar(&sql)
-        .bind(user_id)
+    let joined: Vec<(i64, i32)> = sqlx::query_as(&sql)
         .bind(crate::clock::now_naive())
         .bind(max_users)
         .bind(&group_ids)
         .fetch_all(&mut *conn)
         .await?;
-    if joined.is_empty() {
-        return Ok(());
+    let mut channels: Vec<i64> = joined.iter().map(|(c, _)| *c).collect();
+    channels.sort();
+    channels.dedup();
+    for channel_id in channels {
+        recalculate_user_count(&mut *conn, channel_id).await?;
+        let users: Vec<i32> = joined
+            .iter()
+            .filter(|(c, _)| *c == channel_id)
+            .map(|(_, u)| *u)
+            .collect();
+        publish_new_channel(&mut *conn, bus, state, settings, channel_id, &users).await?;
     }
+    Ok(())
+}
 
-    let Some(session_user) =
-        crate::session::current::SessionUser::load(&mut *conn, user_id).await?
-    else {
+/// `Chat::Publisher.publish_new_channel`: the channel, as each new member
+/// sees it (with their membership), on /chat/new-channel to them alone.
+async fn publish_new_channel(
+    conn: &mut PgConnection,
+    bus: &pg_bus::Bus,
+    state: &crate::AppState,
+    settings: &SiteSettings,
+    channel_id: i64,
+    user_ids: &[i32],
+) -> Result<(), AppError> {
+    let channel: Option<ChannelRow> = sqlx::query_as(&format!(
+        "SELECT {} FROM chat_channels WHERE id = $1",
+        super::channels::CHANNEL_COLUMNS
+    ))
+    .bind(channel_id)
+    .fetch_optional(&mut *conn)
+    .await?;
+    let Some(channel) = channel else {
         return Ok(());
     };
-    let guardian = crate::guardian::Guardian::for_user(&mut *conn, &session_user).await?;
-    for channel_id in joined {
-        recalculate_user_count(&mut *conn, channel_id).await?;
-        // Chat::Publisher.publish_new_channel: the channel as the user sees it.
-        let channel: Option<ChannelRow> = sqlx::query_as(&format!(
-            "SELECT {} FROM chat_channels WHERE id = $1",
-            super::channels::CHANNEL_COLUMNS
-        ))
-        .bind(channel_id)
-        .fetch_optional(&mut *conn)
-        .await?;
-        let Some(channel) = channel else {
+    // The memberships, by id, as find_in_batches takes them.
+    let members: Vec<i32> = sqlx::query_scalar(
+        "SELECT user_id FROM user_chat_channel_memberships \
+         WHERE chat_channel_id = $1 AND user_id = ANY($2) ORDER BY id",
+    )
+    .bind(channel_id)
+    .bind(user_ids)
+    .fetch_all(&mut *conn)
+    .await?;
+    for user_id in members {
+        let Some(session_user) =
+            crate::session::current::SessionUser::load(&mut *conn, user_id).await?
+        else {
             continue;
         };
+        let guardian = crate::guardian::Guardian::for_user(&mut *conn, &session_user).await?;
         let membership: Option<MembershipRow> = sqlx::query_as(
             "SELECT chat_channel_id, following, muted, notification_level, last_read_message_id, \
                     last_viewed_at, last_viewed_pins_at, starred \
@@ -117,13 +164,12 @@ pub async fn user(
         .bind(channel_id)
         .fetch_optional(&mut *conn)
         .await?;
-        let base_path = state.config.globals.relative_url_root();
         let serialized = Context {
             conn: &mut *conn,
             settings,
             i18n: &state.i18n,
             guardian: &guardian,
-            base_path,
+            base_path: state.config.globals.relative_url_root(),
             config: &state.config,
         }
         .channel(&channel, membership.as_ref(), None, None)
@@ -208,43 +254,13 @@ pub async fn update_user_count(
 
     // Chat::Publisher.publish_chat_channel_metadata, to the channel's
     // audience (Chat::Publisher.permissions).
-    let restricted: bool =
-        sqlx::query_scalar("SELECT COALESCE(read_restricted, FALSE) FROM categories WHERE id = $1")
-            .bind(chatable_id as i32)
-            .fetch_optional(&mut *conn)
-            .await?
-            .unwrap_or(false);
-    if restricted {
-        return Err(crate::Unsupported("chat bus audiences of restricted categories").into());
-    }
-    let allowed = settings.group_ids("chat_allowed_groups")?;
-    if settings.get("enable_public_channels")?.truthy()
-        && allowed.contains(&auto_groups::ANONYMOUS_USERS)
-    {
-        return Err(crate::Unsupported("anonymous access to chat channels").into());
-    }
-    // Chat.message_bus_allowed_group_ids: everyone and logged in users as
-    // trust level 0, anonymous users left out.
-    let mut tags: Vec<String> = Vec::new();
-    for id in allowed {
-        if id == auto_groups::ANONYMOUS_USERS {
-            continue;
-        }
-        let id = if id == auto_groups::EVERYONE || id == auto_groups::LOGGED_IN_USERS {
-            auto_groups::TRUST_LEVEL_0
-        } else {
-            id
-        };
-        let tag = crate::bus::group_tag(id as i32);
-        if !tags.contains(&tag) {
-            tags.push(tag);
-        }
-    }
-    bus.publish(
+    super::publisher::publish_channel_metadata(
         &mut *conn,
-        "/chat/channel-metadata",
-        &json!({ "chat_channel_id": channel_id, "memberships_count": count }),
-        Some(&tags),
+        bus,
+        settings,
+        channel_id,
+        chatable_id,
+        count,
     )
     .await?;
     Ok(())

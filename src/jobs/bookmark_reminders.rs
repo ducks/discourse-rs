@@ -122,7 +122,7 @@ async fn reminder_target(
             .await?,
             other => {
                 return Err(Unsupported(match other {
-                    "Chat::Message" => "reminders for chat message bookmarks",
+                    "ChatMessage" => "reminders for chat message bookmarks",
                     _ => "reminders for bookmarks of other kinds",
                 })
                 .into());

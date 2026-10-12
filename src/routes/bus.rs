@@ -45,7 +45,13 @@ async fn subscription(
         .map(str::to_string)
         .collect();
     let mut conn = state.pool.acquire().await?;
-    let tags = crate::bus::tags(&mut conn, guardian.user_id()).await?;
+    let settings = crate::site_settings::SiteSettings::load(
+        &mut conn,
+        &state.site_setting_defs,
+        &state.config.globals,
+    )
+    .await?;
+    let tags = crate::bus::tags(&mut conn, &settings, guardian.user_id()).await?;
     drop(conn);
     let from = match pg_bus::sse::last_event_id(headers) {
         Some(position) => position,
