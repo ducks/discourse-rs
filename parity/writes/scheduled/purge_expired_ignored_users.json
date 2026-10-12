@@ -1,0 +1,51 @@
+{
+  "name": "purge_expired_ignored_users",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-12T21:21:41.843364",
+  "transaction_started_at": "2026-10-12T21:21:40.685652",
+  "responses": [],
+  "changes": {
+    "ignored_users": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 1,
+          "user_id": 2,
+          "created_at": "2026-10-10T21:21:40.685652",
+          "updated_at": "2026-10-10T21:21:40.685652",
+          "expiring_at": "2026-10-12T20:21:40.685652",
+          "summarized_at": null,
+          "ignored_user_id": 3
+        },
+        {
+          "id": 3,
+          "user_id": 3,
+          "created_at": "2026-10-10T21:21:40.685652",
+          "updated_at": "2026-10-10T21:21:40.685652",
+          "expiring_at": "2026-10-12T21:20:40.685652",
+          "summarized_at": null,
+          "ignored_user_id": 4
+        }
+      ],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO ignored_users (user_id, ignored_user_id, created_at, updated_at, expiring_at) VALUES (2, 3, now() - interval '2 days', now() - interval '2 days', now() - interval '1 hour'), (2, 4, now() - interval '2 days', now() - interval '2 days', now() + interval '1 day'), (3, 4, now() - interval '2 days', now() - interval '2 days', now() - interval '1 minute')"
+  ],
+  "enqueue": [
+    [
+      "purge_expired_ignored_users",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "601a0bf3ce79c5ef155796fbed1d2547569fd76f3f996c178d3784487aa5d39d",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

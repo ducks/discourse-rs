@@ -381,6 +381,34 @@ pub async fn silence(
     })))
 }
 
+/// `UserSilencer#unsilence` for a silenced user: the silence lifted, the
+/// unsilenced system message, and the staff action logged for whoever
+/// lifted it (the system user when it ran out, Jobs::UnsilenceUsers).
+pub async fn lift_silence(
+    pool: &sqlx::PgPool,
+    ctx: &Ctx<'_>,
+    by_user_id: i32,
+    user_id: i32,
+) -> Result<(), AppError> {
+    sqlx::query(
+        "UPDATE users SET silenced_till = NULL, updated_at = clock_timestamp() WHERE id = $1",
+    )
+    .bind(user_id)
+    .execute(pool)
+    .await?;
+    crate::system_message::create(pool, ctx, user_id, "unsilenced", &[], None).await?;
+    sqlx::query(
+        "INSERT INTO user_histories (action, acting_user_id, target_user_id, admin_only, created_at, updated_at) \
+         VALUES ($1, $2, $3, FALSE, clock_timestamp(), clock_timestamp())",
+    )
+    .bind(UNSILENCE_USER)
+    .bind(by_user_id)
+    .bind(user_id)
+    .execute(pool)
+    .await?;
+    Ok(())
+}
+
 /// `Admin::UsersController#unsilence` -> `UserSilencer.unsilence`
 pub async fn unsilence(
     pool: &sqlx::PgPool,
@@ -404,24 +432,9 @@ pub async fn unsilence(
     let actor = guardian
         .user()
         .ok_or(Unsupported("unsilencing anonymously"))?;
+    drop(conn);
     if silenced_till.is_some() {
-        sqlx::query(
-            "UPDATE users SET silenced_till = NULL, updated_at = clock_timestamp() WHERE id = $1",
-        )
-        .bind(user_id)
-        .execute(&mut *conn)
-        .await?;
-        drop(conn);
-        crate::system_message::create(pool, ctx, user_id, "unsilenced", &[], None).await?;
-        sqlx::query(
-            "INSERT INTO user_histories (action, acting_user_id, target_user_id, admin_only, created_at, updated_at) \
-             VALUES ($1, $2, $3, FALSE, clock_timestamp(), clock_timestamp())",
-        )
-        .bind(UNSILENCE_USER)
-        .bind(actor.id)
-        .bind(user_id)
-        .execute(pool)
-        .await?;
+        lift_silence(pool, ctx, actor.id, user_id).await?;
     }
     Ok(Outcome::Done(json!({
         "unsilence": {

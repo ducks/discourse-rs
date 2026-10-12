@@ -10,6 +10,7 @@
 
 pub mod bookmark_reminders;
 mod handlers;
+pub mod housekeeping;
 pub(crate) use handlers::choose_featured_users;
 pub(crate) mod post_alert;
 mod user_email;
@@ -185,7 +186,22 @@ const SCHEDULED: &[(&str, Duration)] = &[
     // Jobs::PresenceChannelAutoLeave, every DEFAULT_TIMEOUT.
     ("presence_channel_auto_leave", Duration::from_secs(60)),
     (bookmark_reminders::JOB, Duration::from_secs(300)),
+    (housekeeping::UNSILENCE_USERS, Duration::from_secs(15 * 60)),
+    (
+        housekeeping::PURGE_EXPIRED_IGNORED_USERS,
+        Duration::from_secs(24 * 3600),
+    ),
+    (
+        housekeeping::PURGE_OLD_NOTIFICATIONS,
+        Duration::from_secs(7 * 24 * 3600),
+    ),
 ];
+
+/// A SCHEDULED job's name: it runs from the queue too (a case enqueues
+/// it, as Jobs.enqueue would).
+pub fn is_scheduled(name: &str) -> bool {
+    SCHEDULED.iter().any(|(n, _)| *n == name)
+}
 
 /// Runs one of the SCHEDULED jobs now.
 pub async fn run_scheduled(state: &AppState, name: &str) -> Result<(), AppError> {
@@ -193,6 +209,11 @@ pub async fn run_scheduled(state: &AppState, name: &str) -> Result<(), AppError>
         "regenerate_sitemaps" => crate::routes::regenerate_sitemaps(state).await,
         "presence_channel_auto_leave" => crate::presence::auto_leave_all(state).await,
         bookmark_reminders::JOB => bookmark_reminders::run(state).await,
+        housekeeping::UNSILENCE_USERS => housekeeping::unsilence_users(state).await,
+        housekeeping::PURGE_EXPIRED_IGNORED_USERS => {
+            housekeeping::purge_expired_ignored_users(state).await
+        }
+        housekeeping::PURGE_OLD_NOTIFICATIONS => housekeeping::purge_old_notifications(state).await,
         crate::plugins::chat::summary_email::EMAIL_NOTIFICATIONS_JOB => {
             crate::plugins::chat::summary_email::send_unread_mentions_summary(state).await
         }

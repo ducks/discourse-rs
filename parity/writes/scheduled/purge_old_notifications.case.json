@@ -1,0 +1,21 @@
+{
+  "user": null,
+  "settings": {
+    "max_notifications_per_user": 3
+  },
+  "setup": [
+    "INSERT INTO notifications (notification_type, user_id, data, read, high_priority, created_at, updated_at) SELECT 6, 5, '{}', false, false, now() - (interval '1 hour' * g), now() - (interval '1 hour' * g) FROM generate_series(1, 6) g"
+  ],
+  "requests": [],
+  "enqueue": [
+    [
+      "purge_old_notifications",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "purge_old_notifications",
+    "post_alert",
+    "send_system_message"
+  ]
+}
