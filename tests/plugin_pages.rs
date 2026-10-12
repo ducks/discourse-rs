@@ -687,6 +687,14 @@ async fn a_draft_comes_back_with_its_reply_or_edit() {
     .execute(&db.pool)
     .await
     .unwrap();
+    // user1 is in /chat/online, so their avatar is drawn online.
+    sqlx::query(
+        "INSERT INTO discourse_rs.presence_clients (channel, user_id, client_id, expires_at) \
+         VALUES ('/chat/online', 3, 'tab', now() + interval '1 minute')",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
     let html = user1.page("/chat/c/general/2").await;
     assert!(
         html.contains(

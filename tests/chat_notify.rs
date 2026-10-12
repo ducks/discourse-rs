@@ -3,7 +3,7 @@
 
 mod common;
 
-use common::{TestDb, config, state};
+use common::{TestDb, config, heard, state};
 use discourse_rs::config::RailsEnv;
 use discourse_rs::site_settings::SiteSettings;
 use serde_json::{Value, json};
@@ -204,42 +204,4 @@ async fn channel_wide_mentions_where_disallowed_are_noticed() {
         heard[0]["text_content"],
         "@here and @all mentions are disabled in this channel."
     );
-}
-
-/// The bus's messages on a channel from a position, as the user hears
-/// them: waited for, since a message shows only once every older write
-/// transaction in the cluster has ended (other tests' too).
-async fn heard(
-    st: &discourse_rs::AppState,
-    from: pg_bus::Position,
-    channel: &str,
-    user_id: i32,
-    want: usize,
-) -> Vec<Value> {
-    let mut conn = st.pool.acquire().await.unwrap();
-    let tags = discourse_rs::bus::tags(&mut conn, Some(user_id))
-        .await
-        .unwrap();
-    let filter = pg_bus::Filter {
-        channels: vec![channel.to_string()],
-        tags,
-    };
-    let mut out = Vec::new();
-    // Up to 30 seconds: pg-bus holds a message until every older write
-    // transaction in the cluster ends, and parallel tests hold long ones.
-    for _ in 0..300 {
-        out = st
-            .bus
-            .backlog(from, &filter, 10)
-            .await
-            .unwrap()
-            .into_iter()
-            .map(|m| m.data)
-            .collect();
-        if out.len() >= want {
-            break;
-        }
-        tokio::time::sleep(std::time::Duration::from_millis(100)).await;
-    }
-    out
 }

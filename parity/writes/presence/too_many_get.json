@@ -1,0 +1,72 @@
+{
+  "name": "too_many_get",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/presence/get?channels%5B%5D=%2Fchat-reply%2F1&channels%5B%5D=%2Fchat-reply%2F2&channels%5B%5D=%2Fchat-reply%2F3&channels%5B%5D=%2Fchat-reply%2F4&channels%5B%5D=%2Fchat-reply%2F5&channels%5B%5D=%2Fchat-reply%2F6&channels%5B%5D=%2Fchat-reply%2F7&channels%5B%5D=%2Fchat-reply%2F8&channels%5B%5D=%2Fchat-reply%2F9&channels%5B%5D=%2Fchat-reply%2F10&channels%5B%5D=%2Fchat-reply%2F11&channels%5B%5D=%2Fchat-reply%2F12&channels%5B%5D=%2Fchat-reply%2F13&channels%5B%5D=%2Fchat-reply%2F14&channels%5B%5D=%2Fchat-reply%2F15&channels%5B%5D=%2Fchat-reply%2F16&channels%5B%5D=%2Fchat-reply%2F17&channels%5B%5D=%2Fchat-reply%2F18&channels%5B%5D=%2Fchat-reply%2F19&channels%5B%5D=%2Fchat-reply%2F20&channels%5B%5D=%2Fchat-reply%2F21&channels%5B%5D=%2Fchat-reply%2F22&channels%5B%5D=%2Fchat-reply%2F23&channels%5B%5D=%2Fchat-reply%2F24&channels%5B%5D=%2Fchat-reply%2F25&channels%5B%5D=%2Fchat-reply%2F26&channels%5B%5D=%2Fchat-reply%2F27&channels%5B%5D=%2Fchat-reply%2F28&channels%5B%5D=%2Fchat-reply%2F29&channels%5B%5D=%2Fchat-reply%2F30&channels%5B%5D=%2Fchat-reply%2F31&channels%5B%5D=%2Fchat-reply%2F32&channels%5B%5D=%2Fchat-reply%2F33&channels%5B%5D=%2Fchat-reply%2F34&channels%5B%5D=%2Fchat-reply%2F35&channels%5B%5D=%2Fchat-reply%2F36&channels%5B%5D=%2Fchat-reply%2F37&channels%5B%5D=%2Fchat-reply%2F38&channels%5B%5D=%2Fchat-reply%2F39&channels%5B%5D=%2Fchat-reply%2F40&channels%5B%5D=%2Fchat-reply%2F41&channels%5B%5D=%2Fchat-reply%2F42&channels%5B%5D=%2Fchat-reply%2F43&channels%5B%5D=%2Fchat-reply%2F44&channels%5B%5D=%2Fchat-reply%2F45&channels%5B%5D=%2Fchat-reply%2F46&channels%5B%5D=%2Fchat-reply%2F47&channels%5B%5D=%2Fchat-reply%2F48&channels%5B%5D=%2Fchat-reply%2F49&channels%5B%5D=%2Fchat-reply%2F50&channels%5B%5D=%2Fchat-reply%2F51"
+    }
+  ],
+  "started_at": "2026-10-12T19:27:01.396085",
+  "transaction_started_at": "2026-10-12T19:27:00.353159",
+  "responses": [
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Too many channels"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 456,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "xrOyf1boE5CK6Kv/XtwiEjYgGJc=",
+            "created_at": "2026-10-12T19:27:00.676765",
+            "rotated_at": "2026-10-12T19:27:00.676501",
+            "updated_at": "2026-10-12T19:27:00.676765",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "xrOyf1boE5CK6Kv/XtwiEjYgGJc=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 456,
+            "seen_at": "2026-10-12T19:27:01.416199",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "xrOyf1boE5CK6Kv/XtwiEjYgGJc=",
+            "created_at": "2026-10-12T19:27:00.676765",
+            "rotated_at": "2026-10-12T19:27:00.676501",
+            "updated_at": "2026-10-12T19:27:00.676765",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "xrOyf1boE5CK6Kv/XtwiEjYgGJc=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "0b7c62beed62785407489f40edf70dca3a99b213b6070890d6ca17be48ae5246",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

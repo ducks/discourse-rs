@@ -93,6 +93,8 @@ Scenarios per action (an `it` marked (xN) counts N).
 | TagsController#show (+ show in category) | 20 | 0 | 0 | 9 |
 | HashtagsController#search | 4 | 0 | 0 | 0 |
 | UsersController#search_users | 37 | 0 | 3 | 0 |
+| PresenceController#update | 2 | 0 | 1 | 1 |
+| PresenceController#get | 2 | 0 | 1 | 0 |
 | SiteController#site | 0 | 0 | 0 | 1 |
 | SiteController#basic_info | 2 | 0 | 0 | 0 |
 | RobotsTxtController#builder | 1 | 1 | 0 | 0 |
@@ -100,7 +102,7 @@ Scenarios per action (an `it` marked (xN) counts N).
 | SitemapController | 6 | 4 | 0 | 0 |
 | UserAvatarsController#show_proxy_letter | 0 | 1 | 1 | 0 |
 | StylesheetsController (color definitions) | 0 | 0 | 4 | 10 |
-| **All (69 sections)** | **430** | **308** | **210** | **514** |
+| **All (71 sections)** | **434** | **308** | **212** | **515** |
 
 ## Cases added from this inventory
 
@@ -1838,3 +1840,24 @@ its own branch (`git log --merges --grep fix/`), so all 94 match.
 | 6629 | returns avatar_template | covered | term (new, matches) |
 | 6640 | status > returned when enabled | covered | status (new, matches) |
 | 6655 | status > not returned when disabled | covered | status_disabled (new, matches) |
+
+## PresenceController#update
+
+`spec/requests/presence_controller_spec.rb`
+
+| Line | Scenario | Class | Case / note |
+|---|---|---|---|
+| 50 | readonly mode produces 503 | unported | readonly mode isn't ported |
+| 64 | updates presence for the requested channels | covered | online, leave, two_tabs (new, match) |
+| 101 | true/false by channel existence and security | covered | unknown, reply_restricted, reply_restricted_admin, not_allowed_to_chat (new, match) |
+| 140 | doesn't overwrite the session | needs-harness | session cookie inspection |
+
+## PresenceController#get
+
+`spec/requests/presence_controller_spec.rb`
+
+| Line | Scenario | Class | Case / note |
+|---|---|---|---|
+| 159 | returns presence for the requested channels | covered | online, get_duplicates (new, match) |
+| 183 | respects existence and security of the channel | covered | unknown, get_anonymous, reply_restricted (new, match) |
+| 210 | count_only channels | needs-harness | registers a test channel prefix; no ported prefix is count only |

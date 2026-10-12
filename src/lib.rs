@@ -54,6 +54,7 @@ pub mod post_actions;
 pub mod post_destroyer;
 pub mod post_view;
 pub mod posting;
+pub mod presence;
 pub mod pretty_text;
 pub mod promotion;
 pub mod read_tracking;

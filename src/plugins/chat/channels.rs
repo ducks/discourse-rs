@@ -485,11 +485,6 @@ impl Context<'_> {
         );
         out.insert("unread_thread_overview".into(), json!({}));
         out.insert("has_threads".into(), json!(false));
-        // PresenceChannel("/chat/online").state: presence isn't ported.
-        out.insert(
-            "global_presence_channel_state".into(),
-            json!({"count": 0, "last_message_id": null, "users": []}),
-        );
         Ok(Value::Object(out))
     }
 

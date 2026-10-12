@@ -1,0 +1,15 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "leave_channels": {
+          "a": "/chat/online"
+        }
+      }
+    }
+  ]
+}

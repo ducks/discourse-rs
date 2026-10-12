@@ -108,6 +108,8 @@ def clear_redis_state
   %w[unique-post-* rejection_email:* user-last-seen:*].each do |pattern|
     Discourse.redis.keys(pattern).each { |k| Discourse.redis.del(k) }
   end
+  # Presence lives in Redis too, members and cached configs alike.
+  PresenceChannel.clear_all!
 end
 
 # Caches of rows a case's setup inserts (and the rollback removes): the

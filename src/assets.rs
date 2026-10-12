@@ -84,6 +84,7 @@ const ASSETS: &[(&str, &str, &str)] = &[
         JS,
         include_str!("../static/js/autocomplete.js"),
     ),
+    ("presence.js", JS, include_str!("../static/js/presence.js")),
     (
         "topic-voting.js",
         JS,

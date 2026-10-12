@@ -1,0 +1,37 @@
+{
+  "name": "update_anonymous",
+  "user": null,
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/chat/online"
+        ]
+      }
+    }
+  ],
+  "started_at": "2026-10-12T19:27:06.323649",
+  "transaction_started_at": "2026-10-12T19:27:05.503062",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You need to be logged in to do that."
+        ],
+        "error_type": "not_logged_in"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "3db1b313ae812510a0d98b4c417a4dc880f1fa25a75865c10ff5055073130fee",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

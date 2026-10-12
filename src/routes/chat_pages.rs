@@ -115,6 +115,14 @@ async fn render(
         .push_str(" has-chat has-full-page-chat");
     // The chat routes leave out the application footer.
     site.chrome.powered_by = false;
+    let hide_presence: bool = match guardian.user_id() {
+        Some(id) => sqlx::query_scalar("SELECT hide_presence FROM user_options WHERE user_id = $1")
+            .bind(id)
+            .fetch_optional(&mut *conn)
+            .await?
+            .unwrap_or(false),
+        None => false,
+    };
     let page = ChatPage {
         site_title: site.site_title,
         lang: site.lang,
@@ -124,7 +132,7 @@ async fn render(
         bus_position: site.bus_position,
         chrome: site.chrome,
         title,
-        main: Context::full_page(content, base_path, chat_view),
+        main: Context::full_page(content, base_path, chat_view, hide_presence),
     };
     let response = Html(page.render().map_err(crate::html::HtmlError::from)?).into_response();
     Ok(crate::html::with_viewer_headers(response, &vs))

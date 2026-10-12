@@ -1,0 +1,88 @@
+{
+  "name": "not_allowed_to_chat",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/chat/online"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/presence/get?channels%5B%5D=%2Fchat%2Fonline"
+    }
+  ],
+  "started_at": "2026-10-12T19:26:52.808839",
+  "transaction_started_at": "2026-10-12T19:26:51.771321",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "/chat/online": false
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "/chat/online": null
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 456,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "hBM9HfMjSlSDBPIXWn1I2XYUScU=",
+            "created_at": "2026-10-12T19:26:52.114012",
+            "rotated_at": "2026-10-12T19:26:52.113778",
+            "updated_at": "2026-10-12T19:26:52.114012",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "hBM9HfMjSlSDBPIXWn1I2XYUScU=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 456,
+            "seen_at": "2026-10-12T19:26:52.814975",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "hBM9HfMjSlSDBPIXWn1I2XYUScU=",
+            "created_at": "2026-10-12T19:26:52.114012",
+            "rotated_at": "2026-10-12T19:26:52.113778",
+            "updated_at": "2026-10-12T19:26:52.114012",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "hBM9HfMjSlSDBPIXWn1I2XYUScU=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "chat_allowed_groups": "1"
+  },
+  "recorded_from": {
+    "case": "0fbf526b88c7b735733d318b115cf13096dd3e210b113d63d937a07d1addc086",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

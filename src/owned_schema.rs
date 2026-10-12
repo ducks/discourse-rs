@@ -33,6 +33,16 @@ pub async fn migrate(pool: &PgPool) -> Result<(), sqlx::Error> {
            key text PRIMARY KEY, \
            value text NOT NULL, \
            expires_at timestamp NOT NULL)",
+        // PresenceChannel's clients (its zlist and user hash in Redis): a
+        // browser tab present in a channel until expires_at.
+        "CREATE TABLE IF NOT EXISTS discourse_rs.presence_clients ( \
+           channel text NOT NULL, \
+           user_id integer NOT NULL, \
+           client_id text NOT NULL, \
+           entered_at timestamptz NOT NULL DEFAULT now(), \
+           expires_at timestamptz NOT NULL, \
+           PRIMARY KEY (channel, user_id, client_id))",
+        "CREATE INDEX IF NOT EXISTS presence_clients_expiring ON discourse_rs.presence_clients (expires_at)",
     ] {
         sqlx::query(statement).execute(&mut *conn).await?;
     }

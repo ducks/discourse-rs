@@ -1,0 +1,9 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/presence/get?channels=%2Fchat%2Fonline"
+    }
+  ]
+}
