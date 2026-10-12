@@ -1,0 +1,22 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE posts SET locked_by_id = 1 WHERE id = 36"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/discourse-presence/edit/36"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/presence/get?channels%5B%5D=%2Fdiscourse-presence%2Fedit%2F36"
+    }
+  ]
+}

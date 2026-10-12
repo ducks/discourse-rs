@@ -39,6 +39,7 @@ const DISCOURSE_CSS: &str = concat!(
     include_str!("../static/css/topic-voting.css"),
     include_str!("../static/css/discourse-reactions.css"),
     include_str!("../static/css/discourse-solved.css"),
+    include_str!("../static/css/discourse-presence.css"),
     include_str!("../static/css/chat.css"),
 );
 
@@ -85,6 +86,11 @@ const ASSETS: &[(&str, &str, &str)] = &[
         include_str!("../static/js/autocomplete.js"),
     ),
     ("presence.js", JS, include_str!("../static/js/presence.js")),
+    (
+        "topic-presence.js",
+        JS,
+        include_str!("../static/js/topic-presence.js"),
+    ),
     (
         "topic-voting.js",
         JS,

@@ -1,0 +1,25 @@
+{
+  "user": "user1",
+  "settings": {
+    "whispers_allowed_groups": "11"
+  },
+  "setup": [
+    "UPDATE posts SET post_type = 4 WHERE id = 37"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/discourse-presence/edit/37"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/presence/get?channels%5B%5D=%2Fdiscourse-presence%2Fedit%2F37"
+    }
+  ]
+}

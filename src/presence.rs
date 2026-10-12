@@ -95,6 +95,9 @@ pub async fn config(
         "chat" | "chat-reply" if crate::plugins::chat::enabled(settings)? => {
             crate::plugins::chat::presence::config(conn, settings, prefix, name).await
         }
+        "discourse-presence" if crate::plugins::presence::enabled(settings)? => {
+            crate::plugins::presence::config(conn, settings, name).await
+        }
         _ => Ok(None),
     }
 }

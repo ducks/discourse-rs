@@ -1,0 +1,22 @@
+{
+  "user": "user1",
+  "settings": {
+    "content_localization_allow_author_localization": true
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/discourse-presence/translate/36"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/presence/get?channels%5B%5D=%2Fdiscourse-presence%2Ftranslate%2F36"
+    }
+  ]
+}

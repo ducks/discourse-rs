@@ -1,0 +1,85 @@
+{
+  "name": "post_edit_pm",
+  "user": "user0",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/discourse-presence/edit/48"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/presence/get?channels%5B%5D=%2Fdiscourse-presence%2Fedit%2F48"
+    }
+  ],
+  "started_at": "2026-10-12T20:19:00.995187",
+  "transaction_started_at": "2026-10-12T20:19:00.043213",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "/discourse-presence/edit/48": false
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "/discourse-presence/edit/48": null
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 466,
+            "seen_at": null,
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "JvFZm/ob+X4Nqon67TzHka1wrKo=",
+            "created_at": "2026-10-12T20:19:00.507457",
+            "rotated_at": "2026-10-12T20:19:00.507213",
+            "updated_at": "2026-10-12T20:19:00.507457",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "JvFZm/ob+X4Nqon67TzHka1wrKo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 466,
+            "seen_at": "2026-10-12T20:19:01.00185",
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "JvFZm/ob+X4Nqon67TzHka1wrKo=",
+            "created_at": "2026-10-12T20:19:00.507457",
+            "rotated_at": "2026-10-12T20:19:00.507213",
+            "updated_at": "2026-10-12T20:19:00.507457",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "JvFZm/ob+X4Nqon67TzHka1wrKo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "33f34a1c58f94236d4f1fdaf658821bee06aef9e985e1ebff13c4e07e3cd7ac9",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

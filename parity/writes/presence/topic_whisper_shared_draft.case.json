@@ -1,0 +1,26 @@
+{
+  "user": "admin",
+  "settings": {
+    "whispers_allowed_groups": "3",
+    "shared_drafts_category": "4"
+  },
+  "setup": [
+    "INSERT INTO shared_drafts (topic_id, category_id, created_at, updated_at) VALUES (35, 2, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/discourse-presence/whisper/35"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/presence/get?channels%5B%5D=%2Fdiscourse-presence%2Fwhisper%2F35"
+    }
+  ]
+}

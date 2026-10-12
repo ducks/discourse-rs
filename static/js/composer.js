@@ -117,6 +117,7 @@
   // _draft_serializer's fields the composer has.
   function draftData(s) {
     var d = { reply: textarea.value, action: draftAction(s.mode), archetypeId: "regular" };
+    d.original_text = s.originalText === undefined ? null : s.originalText;
     if (s.mode === "create-topic") {
       d.title = title.value;
       var category = chooser.querySelector("summary").dataset.value;
@@ -309,11 +310,17 @@
       s.postId = draft.postId;
       setMode("edit");
     }
+    // originalText: what the composer started from, as a draft keeps it
+    // (original_text); an edit's is the post's raw, a new reply's none.
+    s.originalText = draft && "original_text" in draft ? draft.original_text : null;
     if (s.mode === "edit") {
       if (editDraft && String(draft.postId) === String(s.postId)) {
         return Promise.resolve(draft.reply || "");
       }
-      return rawToEdit(s);
+      return rawToEdit(s).then(function (raw) {
+        s.originalText = raw;
+        return raw;
+      });
     }
     if (draft && !editDraft) {
       if (s.mode === "create-topic") {
@@ -371,6 +378,7 @@
     s.draftSequence = opts.draftSequence || 0;
     s.loading = true;
     textarea.disabled = true;
+    announce();
     // A new topic's key is new: there is no draft to look up.
     var lookup =
       opts.mode === "create-topic" && !resuming
@@ -386,6 +394,7 @@
         }
         textarea.value = text;
         updatePreview();
+        announce();
       })
       .catch(function () {
         if (state === s) {
@@ -417,6 +426,24 @@
     replyArea.hidden = true;
     document.body.classList.remove("fullscreen-composer");
     state = null;
+    announce();
+  }
+
+  // The composer's model as discourse-presence's ComposerPresenceDisplay
+  // reads it: the action, its topic or post, and replyDirty (the text
+  // changed from what it opened with). Null while closed.
+  function announce() {
+    var detail = null;
+    if (state) {
+      detail = {
+        mode: state.mode,
+        topicId: state.topicId || null,
+        postId: state.postId || null,
+        // replyDirty: the trimmed text against the trimmed original.
+        dirty: !state.loading && textarea.value.trim() !== (state.originalText || "").trim(),
+      };
+    }
+    control.dispatchEvent(new CustomEvent("composer:presence", { detail: detail, bubbles: true }));
   }
 
   function dirty() {
@@ -630,6 +657,7 @@
 
   applyPreviewShown();
   textarea.addEventListener("input", schedulePreview);
+  textarea.addEventListener("input", announce);
 
   // The category chooser.
   function selectCategory(id) {
