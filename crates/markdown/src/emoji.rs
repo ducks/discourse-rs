@@ -173,8 +173,20 @@ pub struct EmojiData {
 
 pub static DATA: LazyLock<EmojiData> = LazyLock::new(|| {
     let emojis: Vec<EmojiEntry> = serde_json::from_str(EMOJIS_JSON).expect("vendored emojis.json");
-    let alias_lists: HashMap<String, Vec<String>> =
-        serde_json::from_str(ALIASES_JSON).expect("vendored aliases.json");
+    // In the file's order: a name that is both an alias and has aliases
+    // (smile, grinning_face_with_smiling_eyes) maps as the later entry
+    // says, as Emoji.reverse_aliases and the client's aliasMap build it.
+    let alias_lists: Vec<(String, Vec<String>)> =
+        serde_json::from_str::<serde_json::Map<String, serde_json::Value>>(ALIASES_JSON)
+            .expect("vendored aliases.json")
+            .into_iter()
+            .map(|(name, list)| {
+                (
+                    name,
+                    serde_json::from_value(list).expect("vendored aliases.json lists"),
+                )
+            })
+            .collect();
     let tonable: std::collections::HashSet<String> =
         serde_json::from_str::<Vec<String>>(TONABLE_JSON)
             .expect("vendored tonable_emojis.json")
@@ -274,6 +286,23 @@ mod tests {
             ":not_an_emoji_xyz:"
         );
         assert_eq!(gsub_emoji_to_unicode("no emoji"), "no emoji");
+    }
+
+    #[test]
+    fn aliases_map_as_the_later_entry_says() {
+        // aliases.json lists smile under grinning_face_with_smiling_eyes
+        // and the other way round; Emoji.reverse_aliases and the client's
+        // aliasMap keep the later entry.
+        assert_eq!(
+            DATA.aliases.get("smile").map(String::as_str),
+            Some("grinning_face_with_smiling_eyes")
+        );
+        assert_eq!(
+            DATA.aliases
+                .get("grinning_face_with_smiling_eyes")
+                .map(String::as_str),
+            Some("smile")
+        );
     }
 
     #[test]

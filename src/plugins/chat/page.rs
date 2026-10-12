@@ -651,10 +651,31 @@ impl Context<'_> {
                 .unwrap_or("enter"),
             None => "enter",
         };
+        // What the composer's autocompletes read: the site settings that
+        // turn them on, the denied emojis, the hashtag types in the
+        // chat-composer context's order (ordered_types_for_context) and the
+        // "more" item's label.
+        let mut hashtag_order = Vec::new();
+        if self.settings.get("enable_public_channels")?.truthy() {
+            hashtag_order.push("channel");
+        }
+        hashtag_order.push("category");
+        if self.settings.get("tagging_enabled")?.truthy() {
+            hashtag_order.push("tag");
+        }
+        let autocomplete = serde_json::json!({
+            "mentions": self.settings.get("enable_mentions")?.truthy(),
+            "emoji": self.settings.get("enable_emoji")?.truthy(),
+            "emojiMinChars": self.settings.get("emoji_autocomplete_min_chars")?.to_i(),
+            "deniedEmojis": crate::emojis::denied(self.settings)?,
+            "hashtagOrder": hashtag_order,
+            "moreEmoji": t("composer.more_emoji"),
+        });
         let mut out = format!(
-            "<div class=\"chat-composer__wrapper\" data-min-length=\"{}\" data-max-length=\"{}\" data-send-shortcut=\"{shortcut}\">",
+            "<div class=\"chat-composer__wrapper\" data-min-length=\"{}\" data-max-length=\"{}\" data-send-shortcut=\"{shortcut}\" data-autocomplete=\"{}\">",
             self.settings.get("chat_minimum_message_length")?.to_i(),
-            self.settings.get("chat_maximum_message_length")?.to_i()
+            self.settings.get("chat_maximum_message_length")?.to_i(),
+            escape(&autocomplete.to_string())
         );
         out.push_str(&draft.details);
         out.push_str(&format!(
