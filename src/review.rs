@@ -199,6 +199,7 @@ pub async fn perform(
         &post,
         action,
         Some(version),
+        false,
     )
     .await?
     else {
@@ -230,6 +231,7 @@ async fn run(
     post: &FlaggedPost,
     action: FlagAction,
     version: Option<i64>,
+    expired: bool,
 ) -> Result<Option<i64>, AppError> {
     // increment_version!
     let version: Option<i32> = match version {
@@ -263,7 +265,8 @@ async fn run(
         .into_iter()
         .filter(|(_, _, t, _)| types.is_notify_flag(i64::from(*t)))
         .collect();
-    if actions.iter().any(|(_, _, _, related)| related.is_some()) {
+    // An expired ignore (AutoQueueHandler) adds no moderator reply.
+    if !expired && actions.iter().any(|(_, _, _, related)| related.is_some()) {
         return Err(Unsupported("settling flags that sent a message (moderator replies)").into());
     }
     let (column, transition, score_status, stat) = match action {
@@ -406,6 +409,55 @@ pub async fn agree_with_flags(
         &post,
         FlagAction::AgreeAndKeep,
         None,
+        false,
+    )
+    .await?;
+    Ok(())
+}
+
+/// `reviewable.perform(Discourse.system_user, :ignore_and_do_nothing,
+/// expired: true)`, as Jobs::AutoQueueHandler runs it on a pending flagged
+/// post's reviewable older than auto_handle_queued_age.
+pub async fn expire_flags(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    reviewable_id: i64,
+) -> Result<(), AppError> {
+    let reviewable: Option<Reviewable> = sqlx::query_as(
+        "SELECT id, type, status, target_id, topic_id, reviewable_by_moderator FROM reviewables WHERE id = $1",
+    )
+    .bind(reviewable_id)
+    .fetch_optional(&mut *conn)
+    .await?;
+    let Some(reviewable) = reviewable else {
+        return Ok(());
+    };
+    let post = match reviewable.target_id {
+        Some(id) => flagged_post(&mut *conn, id).await?,
+        None => None,
+    };
+    let Some(post) = post.filter(|_| reviewable.status == PENDING) else {
+        return Ok(());
+    };
+    if post.deleted_at.is_some() || post.user_deleted {
+        return Err(Unsupported("reviewing flags on deleted posts").into());
+    }
+    if post.hidden {
+        return Err(Unsupported("disagreeing with or ignoring flags on hidden posts").into());
+    }
+    let system: String = sqlx::query_scalar("SELECT username FROM users WHERE id = -1")
+        .fetch_one(&mut *conn)
+        .await?;
+    run(
+        conn,
+        ctx,
+        -1,
+        &system,
+        &reviewable,
+        &post,
+        FlagAction::Ignore,
+        None,
+        true,
     )
     .await?;
     Ok(())

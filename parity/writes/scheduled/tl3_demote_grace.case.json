@@ -1,0 +1,12 @@
+{
+  "user": null,
+  "setup": [
+    "UPDATE users SET trust_level = 3 WHERE id = 3",
+    "INSERT INTO group_users (group_id, user_id, created_at, updated_at, notification_level) VALUES (13, 3, now(), now(), 2)",
+    "UPDATE groups SET user_count = user_count + 1 WHERE id = 13",
+    "INSERT INTO user_histories (action, target_user_id, previous_value, new_value, created_at, updated_at) VALUES (15, 3, '2', '3', now() - interval '10 days', now() - interval '10 days')"
+  ],
+  "requests": [],
+  "enqueue": [["tl3_promotions", {}]],
+  "run_jobs": ["tl3_promotions"]
+}

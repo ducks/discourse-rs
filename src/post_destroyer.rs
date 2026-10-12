@@ -184,6 +184,34 @@ pub async fn destroy_topic(
     Ok(Outcome::Done)
 }
 
+/// `PostDestroyer.new(Discourse.system_user, post, context:).destroy`, as
+/// the scheduled jobs delete old stubs and hidden posts.
+pub async fn destroy_as_system(
+    pool: &PgPool,
+    ctx: &Ctx<'_>,
+    post_id: i32,
+    context: &str,
+) -> Result<(), AppError> {
+    let mut conn = pool.acquire().await?;
+    let system = crate::session::current::SessionUser::load(&mut conn, -1)
+        .await?
+        .ok_or(Unsupported("a site without its system user"))?;
+    let guardian = Guardian::for_user(&mut conn, &system).await?;
+    drop(conn);
+    // The system user is an admin: it sees every topic.
+    destroy(
+        pool,
+        ctx,
+        &guardian,
+        post_id,
+        true,
+        &Request {
+            context: Some(context),
+        },
+    )
+    .await
+}
+
 /// `PostDestroyer#destroy`: deleted outright by those who moderate the
 /// topic (or anyone, with delete_removed_posts_after below 1), marked for
 /// deletion when the author removes their own.

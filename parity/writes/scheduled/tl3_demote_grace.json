@@ -1,0 +1,29 @@
+{
+  "name": "tl3_demote_grace",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-12T22:20:51.670863",
+  "transaction_started_at": "2026-10-12T22:20:51.023588",
+  "responses": [],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE users SET trust_level = 3 WHERE id = 3",
+    "INSERT INTO group_users (group_id, user_id, created_at, updated_at, notification_level) VALUES (13, 3, now(), now(), 2)",
+    "UPDATE groups SET user_count = user_count + 1 WHERE id = 13",
+    "INSERT INTO user_histories (action, target_user_id, previous_value, new_value, created_at, updated_at) VALUES (15, 3, '2', '3', now() - interval '10 days', now() - interval '10 days')"
+  ],
+  "enqueue": [
+    [
+      "tl3_promotions",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "67314148c13009ff07144e711ca13ad3981a03747141650f863e56bdba9e227a",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

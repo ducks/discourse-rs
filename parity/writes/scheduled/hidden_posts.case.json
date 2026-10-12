@@ -1,0 +1,10 @@
+{
+  "user": null,
+  "setup": [
+    "UPDATE posts SET hidden = TRUE, hidden_at = now() - interval '31 days', hidden_reason_id = 1 WHERE id = 41",
+    "UPDATE posts SET hidden = TRUE, hidden_at = now() - interval '29 days', hidden_reason_id = 1 WHERE id = 36"
+  ],
+  "requests": [],
+  "enqueue": [["destroy_old_hidden_posts", {}]],
+  "run_jobs": ["destroy_old_hidden_posts"]
+}

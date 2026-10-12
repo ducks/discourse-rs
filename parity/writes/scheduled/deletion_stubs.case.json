@@ -1,0 +1,11 @@
+{
+  "user": null,
+  "setup": [
+    "UPDATE posts SET user_deleted = TRUE, updated_at = now() - interval '25 hours' WHERE id IN (52, 37)",
+    "UPDATE posts SET user_deleted = TRUE, updated_at = now() - interval '23 hours' WHERE id = 36",
+    "INSERT INTO post_actions (id, post_id, user_id, post_action_type_id, created_at, updated_at, staff_took_action, targets_topic) VALUES (9302, 37, 3, 4, now(), now(), FALSE, FALSE)"
+  ],
+  "requests": [],
+  "enqueue": [["destroy_old_deletion_stubs", {}]],
+  "run_jobs": ["destroy_old_deletion_stubs"]
+}

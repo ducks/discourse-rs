@@ -1,0 +1,8 @@
+{
+  "user": null,
+  "settings": { "tl3_requires_days_visited": 1, "tl3_requires_topics_replied_to": 0, "tl3_requires_topics_viewed": 0, "tl3_requires_posts_read": 0, "tl3_requires_topics_viewed_all_time": 0, "tl3_requires_posts_read_all_time": 0, "tl3_requires_likes_given": 0, "tl3_requires_likes_received": 0 },
+  "setup": ["UPDATE user_visits SET posts_read = 1 WHERE user_id IN (3, 4)"],
+  "requests": [],
+  "enqueue": [["tl3_promotions", {}]],
+  "run_jobs": ["tl3_promotions"]
+}
