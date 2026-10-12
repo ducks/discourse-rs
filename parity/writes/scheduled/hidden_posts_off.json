@@ -1,0 +1,30 @@
+{
+  "name": "hidden_posts_off",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-12T22:23:17.780331",
+  "transaction_started_at": "2026-10-12T22:23:16.984597",
+  "responses": [],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "delete_old_hidden_posts": false
+  },
+  "setup": [
+    "UPDATE posts SET hidden = TRUE, hidden_at = now() - interval '31 days', hidden_reason_id = 1 WHERE id = 41",
+    "UPDATE posts SET hidden = TRUE, hidden_at = now() - interval '29 days', hidden_reason_id = 1 WHERE id = 36"
+  ],
+  "enqueue": [
+    [
+      "destroy_old_hidden_posts",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "99432381b6a78c7e6d7f0563245cb1f653d9d7d3aa38d51e1b9b9e6f49f38a0f",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

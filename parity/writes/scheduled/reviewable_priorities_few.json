@@ -1,0 +1,27 @@
+{
+  "name": "reviewable_priorities_few",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-12T22:20:49.738597",
+  "transaction_started_at": "2026-10-12T22:20:48.913641",
+  "responses": [],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO reviewables (id, type, type_source, status, created_by_id, reviewable_by_moderator, category_id, topic_id, score, potential_spam, target_id, target_type, target_created_by_id, payload, version, latest_score, force_review, potentially_illegal, created_at, updated_at) SELECT 9400 + i, 'ReviewableFlaggedPost', 'core', 1, 3, TRUE, 4, 35, i * 1.5, FALSE, 9400 + i, 'Post', 2, '{}', 1, now(), FALSE, FALSE, now(), now() FROM generate_series(1, 14) AS i",
+    "INSERT INTO reviewable_scores (reviewable_id, user_id, reviewable_score_type, status, score, take_action_bonus, user_accuracy_bonus, created_at, updated_at) SELECT 9400 + i, u, 3, 1, 1, 0, 0, now(), now() FROM generate_series(1, 16) AS i, (VALUES (3), (4)) AS v(u) WHERE i % 3 <> 0 OR u = 3"
+  ],
+  "enqueue": [
+    [
+      "reviewable_priorities",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "5e4aac6fe422b1ad75f9f46822844e2d6a5e95e91f130436736522bf08bd1062",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

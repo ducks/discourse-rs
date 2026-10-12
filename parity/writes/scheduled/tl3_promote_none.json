@@ -1,0 +1,23 @@
+{
+  "name": "tl3_promote_none",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-12T22:20:54.439933",
+  "transaction_started_at": "2026-10-12T22:20:53.841822",
+  "responses": [],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "enqueue": [
+    [
+      "tl3_promotions",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "acbd3b6b00f50ce9c3eeca44448f65baf4d3059adfe05ecd702a3907d654a039",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

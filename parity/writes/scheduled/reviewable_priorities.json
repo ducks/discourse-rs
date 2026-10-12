@@ -1,0 +1,57 @@
+{
+  "name": "reviewable_priorities",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-12T22:20:48.672307",
+  "transaction_started_at": "2026-10-12T22:20:48.002044",
+  "responses": [],
+  "changes": {
+    "plugin_store_rows": {
+      "inserted": [
+        {
+          "id": 2,
+          "key": "priority_0",
+          "value": "0",
+          "type_name": "Integer",
+          "plugin_name": "reviewables"
+        },
+        {
+          "id": 3,
+          "key": "priority_5",
+          "value": "12.0",
+          "type_name": "Float",
+          "plugin_name": "reviewables"
+        },
+        {
+          "id": 4,
+          "key": "priority_10",
+          "value": "21.0",
+          "type_name": "Float",
+          "plugin_name": "reviewables"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "plugin_store_rows": 2
+  },
+  "setup": [
+    "INSERT INTO reviewables (id, type, type_source, status, created_by_id, reviewable_by_moderator, category_id, topic_id, score, potential_spam, target_id, target_type, target_created_by_id, payload, version, latest_score, force_review, potentially_illegal, created_at, updated_at) SELECT 9400 + i, 'ReviewableFlaggedPost', 'core', 1, 3, TRUE, 4, 35, i * 1.5, FALSE, 9400 + i, 'Post', 2, '{}', 1, now(), FALSE, FALSE, now(), now() FROM generate_series(1, 16) AS i",
+    "INSERT INTO reviewable_scores (reviewable_id, user_id, reviewable_score_type, status, score, take_action_bonus, user_accuracy_bonus, created_at, updated_at) SELECT 9400 + i, u, 3, 1, 1, 0, 0, now(), now() FROM generate_series(1, 16) AS i, (VALUES (3), (4)) AS v(u) WHERE i % 3 <> 0 OR u = 3"
+  ],
+  "enqueue": [
+    [
+      "reviewable_priorities",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "5aa007e1781dc9e94aa7629c3a376f16f25313fa7f178a737528e6287e164483",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

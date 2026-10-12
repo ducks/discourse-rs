@@ -12,6 +12,7 @@ pub mod bookmark_reminders;
 mod handlers;
 pub mod housekeeping;
 pub mod list_stats;
+pub mod moderation;
 pub(crate) use handlers::choose_featured_users;
 pub(crate) mod post_alert;
 mod user_email;
@@ -223,6 +224,23 @@ const SCHEDULED: &[(&str, Duration)] = &[
         crate::plugins::reactions::like_sync::JOB,
         Duration::from_secs(3600),
     ),
+    (moderation::TL3_PROMOTIONS, Duration::from_secs(24 * 3600)),
+    (
+        moderation::REVIEWABLE_PRIORITIES,
+        Duration::from_secs(24 * 3600),
+    ),
+    (
+        moderation::AUTO_QUEUE_HANDLER,
+        Duration::from_secs(24 * 3600),
+    ),
+    (
+        moderation::DESTROY_OLD_DELETION_STUBS,
+        Duration::from_secs(30 * 60),
+    ),
+    (
+        moderation::DESTROY_OLD_HIDDEN_POSTS,
+        Duration::from_secs(24 * 3600),
+    ),
 ];
 
 /// A SCHEDULED job's name: it runs from the queue too (a case enqueues
@@ -261,6 +279,13 @@ pub async fn run_scheduled(state: &AppState, name: &str) -> Result<(), AppError>
         crate::plugins::chat::summary_email::EMAIL_NOTIFICATIONS_JOB => {
             crate::plugins::chat::summary_email::send_unread_mentions_summary(state).await
         }
+        moderation::TL3_PROMOTIONS => moderation::tl3_promotions(state).await,
+        moderation::REVIEWABLE_PRIORITIES => moderation::reviewable_priorities(state).await,
+        moderation::AUTO_QUEUE_HANDLER => moderation::auto_queue_handler(state).await,
+        moderation::DESTROY_OLD_DELETION_STUBS => {
+            moderation::destroy_old_deletion_stubs(state).await
+        }
+        moderation::DESTROY_OLD_HIDDEN_POSTS => moderation::destroy_old_hidden_posts(state).await,
         _ => unreachable!("every SCHEDULED job has a handler"),
     }
 }

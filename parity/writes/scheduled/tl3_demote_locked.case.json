@@ -1,0 +1,12 @@
+{
+  "user": null,
+  "setup": [
+    "UPDATE users SET trust_level = 3, manual_locked_trust_level = 3 WHERE id = 3",
+    "UPDATE users SET trust_level = 3 WHERE id = 4",
+    "INSERT INTO groups (id, name, created_at, updated_at, grant_trust_level, user_count) VALUES (9401, 'regulars', '2026-10-01 10:00:00', '2026-10-01 10:00:00', 3, 1)",
+    "INSERT INTO group_users (group_id, user_id, created_at, updated_at, notification_level) VALUES (9401, 4, now(), now(), 2)"
+  ],
+  "requests": [],
+  "enqueue": [["tl3_promotions", {}]],
+  "run_jobs": ["tl3_promotions"]
+}

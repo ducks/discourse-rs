@@ -32,6 +32,11 @@ Classes:
 | Chat::AutoJoinUsers | 1h | scheduled/chat_auto_* |
 | Chat::DeleteOldMessages | daily (from the worker's start; Rails: midnight) | scheduled/chat_delete_old_messages* |
 | DiscourseReactions::ScheduledLikeSynchronizer | 1h | scheduled/like_sync_* |
+| tl3_promotions | 1d (from the worker's start; Rails: 4am) | scheduled/tl3_* |
+| reviewable_priorities | 1d | scheduled/reviewable_priorities* |
+| auto_queue_handler | 1d (flagged posts; queued posts and users refused) | scheduled/auto_queue_* |
+| destroy_old_deletion_stubs | 30m | scheduled/deletion_stubs |
+| destroy_old_hidden_posts | 1d (posts in messages refused) | scheduled/hidden_posts* |
 
 ## Ready, in porting order
 
@@ -39,12 +44,6 @@ Classes:
 |---|---|---|---|
 | periodical_updates, calculate_scores | 15m, 1w | featured topics, post/topic scores, percent_rank, rebakes | L |
 | update_heat_settings | 1mo | topic list heat thresholds never adapt | S |
-| tl3_promotions | daily 4h | TL3 is never granted or revoked | M |
-| pending_reviewables_reminder | 15m | no PM about stale flags (last id kept in Redis) | M |
-| reviewable_priorities | 1d | review priority thresholds never adapt | S |
-| auto_queue_handler | 1d | old flags never auto-ignored (flagged posts only) | M |
-| destroy_old_deletion_stubs | 30m | "(post deleted by author)" stubs stay | M |
-| destroy_old_hidden_posts | 1d | old hidden posts stay | M |
 | activation_reminder_emails | 2h | no activation reminders (template needed) | S–M |
 | invalidate_inactive_admins | 1d | inactive admins stay active | S |
 | clean_up_api_keys_max_life, clean_up_unused_api_keys | 1d | API keys never auto-revoked | S |
@@ -62,7 +61,7 @@ Classes:
 |---|---|
 | badge_grant, ensure_badges_consistency, grant_anniversary_badges, grant_new_user_of_the_month_badges, process_badge_backlog | badges |
 | topic_timer_enqueuer | topic timers |
-| ignored_users_summary | messages to a group (PostCreator target_group_names; group message alerts are refused) |
+| ignored_users_summary, pending_reviewables_reminder | messages to a group (PostCreator target_group_names; group message alerts are refused) |
 | process_shelved_notifications, process_user_notification_schedules | do not disturb |
 | enqueue_digest_emails | digest emails |
 | directory_refresh | the user directory |
