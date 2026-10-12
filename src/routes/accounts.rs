@@ -155,7 +155,7 @@ pub async fn forgot_password(
     let Some(login) = normalized_login(&p)? else {
         return Ok(param_missing("login"));
     };
-    let ip = crate::session::current::remote_ip(&headers, peer);
+    let ip = crate::remote_ip::remote_ip(&headers, peer)?;
     let mut tx = state.pool.begin().await?;
     if accounts::ip_blocked(&mut tx, &ip).await? {
         tx.commit().await?;
@@ -566,7 +566,7 @@ pub async fn password_reset_update(
         || !settings.get("must_approve_users")?.truthy();
     let mut cookies = Vec::new();
     let message = if can_access {
-        let ip = crate::session::current::remote_ip(&headers, peer);
+        let ip = crate::remote_ip::remote_ip(&headers, peer)?;
         let user_agent = headers
             .get(header::USER_AGENT)
             .and_then(|v| v.to_str().ok())
@@ -806,7 +806,7 @@ pub async fn create_user(
     let password = params::string(&p, "password");
     let locale = params::string(&p, "locale");
     let timezone = params::string(&p, "timezone");
-    let ip = crate::session::current::remote_ip(&headers, peer);
+    let ip = crate::remote_ip::remote_ip(&headers, peer)?;
     let created = crate::signup::create(
         &mut tx,
         &settings,
@@ -911,7 +911,7 @@ pub async fn perform_account_activation(
     if session_user.admin {
         return Err(crate::Unsupported("the wizard redirect for admins").into());
     }
-    let ip = crate::session::current::remote_ip(&headers, peer);
+    let ip = crate::remote_ip::remote_ip(&headers, peer)?;
     let user_agent = headers
         .get(header::USER_AGENT)
         .and_then(|v| v.to_str().ok())

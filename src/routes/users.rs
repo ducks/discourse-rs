@@ -234,7 +234,7 @@ async fn respond(
             let doc = users.show(&user).await?;
             // Viewing one's own profile isn't tracked.
             if params.skip_track_visit.is_none() && !guardian.is_me(user.id) {
-                let ip = super::search::remote_ip(&headers, peer);
+                let ip = crate::remote_ip::remote_ip(&headers, peer)?;
                 users.track_view(&user, &ip).await?;
             }
             doc

@@ -30,7 +30,7 @@ reading while the gate runs.
 
 Bugs or silent gaps in what is merged, small and independent.
 
-1. `fix/remote-ip` S: both `remote_ip`s (session/current.rs,
+1. ~~`fix/remote-ip`~~ (done) S: both `remote_ip`s (session/current.rs,
    routes/search.rs) trust the first X-Forwarded-For hop, which a client
    sets; take the address the trusted proxy saw, as ActionDispatch's
    RemoteIp does, in one shared function [rate-limiting]
