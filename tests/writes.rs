@@ -29,6 +29,21 @@ use tower::ServiceExt;
 /// covers it.
 const BACKGROUND_TABLES: [&str; 3] = ["scheduler_stats", "top_topics", "user_auth_tokens"];
 
+/// A background table is compared when the case names it in
+/// `include_tables` (it runs the job that writes it).
+fn background(table: &str, include: &[String]) -> bool {
+    BACKGROUND_TABLES.contains(&table) && !include.iter().any(|t| t == table)
+}
+
+fn include_tables(case: &Value) -> Vec<String> {
+    case["include_tables"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(|t| t.as_str().map(str::to_string))
+        .collect()
+}
+
 /// Compared as a set, without ids: tables Rails fills from a query without
 /// ORDER BY (sidebar links from `Category.where(id:).pluck(:id)`), whose
 /// ids follow each database's heap order, and upload references, which
@@ -272,7 +287,7 @@ fn multipart(params: &Map<String, Value>) -> (String, Vec<u8>) {
 }
 
 /// Every table with its primary key columns.
-async fn tables(pool: &PgPool) -> Vec<(String, Vec<String>)> {
+async fn tables(pool: &PgPool, include: &[String]) -> Vec<(String, Vec<String>)> {
     let rows: Vec<(String, String)> = sqlx::query_as(
         "SELECT c.relname, \
                 COALESCE((SELECT string_agg(a.attname, ',' ORDER BY array_position(i.indkey, a.attnum)) \
@@ -285,7 +300,7 @@ async fn tables(pool: &PgPool) -> Vec<(String, Vec<String>)> {
     .await
     .unwrap();
     rows.into_iter()
-        .filter(|(t, _)| !BACKGROUND_TABLES.contains(&t.as_str()))
+        .filter(|(t, _)| !background(t, include))
         .map(|(t, pk)| {
             let pk = pk
                 .split(',')
@@ -389,6 +404,37 @@ fn unrandom(s: &str) -> String {
     let s = KEY.replace_all(&s, "<key>");
     let s = UUID.replace_all(&s, "<uuid>");
     BOUNDARY.replace_all(&s, "boundary=<boundary>").into_owned()
+}
+
+/// The columns a case names in `approximate` (`table.column`), floats
+/// computed through powers and logs, rounded to seven significant digits on
+/// both sides: their last digits follow rounding in the arithmetic, the
+/// connection's float output (extra_float_digits) and Ruby's sub-microsecond
+/// clock against the stored timestamp.
+fn approximate(doc: &mut Value, case: &Value) {
+    let round = |v: &mut Value| {
+        if let Some(f) = v.as_f64().filter(|f| *f != 0.0 && f.is_finite()) {
+            let digits = 6 - f.abs().log10().floor() as i32;
+            let scale = 10f64.powi(digits);
+            *v = serde_json::json!((f * scale).round() / scale);
+        }
+    };
+    for spec in case["approximate"].as_array().into_iter().flatten() {
+        let Some((table, column)) = spec.as_str().and_then(|s| s.split_once('.')) else {
+            continue;
+        };
+        let change = &mut doc["changes"][table];
+        for kind in ["inserted", "deleted"] {
+            for row in change[kind].as_array_mut().into_iter().flatten() {
+                round(&mut row[column]);
+            }
+        }
+        for row in change["updated"].as_array_mut().into_iter().flatten() {
+            for side in ["before", "after"] {
+                round(&mut row[side][column]);
+            }
+        }
+    }
 }
 
 /// Per-run secrets a document carries in its own jobs and responses (email
@@ -553,11 +599,11 @@ fn modifications_value(yaml: &str) -> Value {
 /// Background tables go, and an updated row becomes the columns that
 /// changed: the seed and the reference drift apart on columns no case
 /// touches (category stats, unread markers), which is not what is measured.
-fn changed_columns(mut doc: Value) -> Value {
+fn changed_columns(mut doc: Value, include: &[String]) -> Value {
     let Some(Value::Object(tables)) = doc.get_mut("changes") else {
         return doc;
     };
-    tables.retain(|t, _| !BACKGROUND_TABLES.contains(&t.as_str()));
+    tables.retain(|t, _| !background(t, include));
     // A table listed with nothing inserted, deleted or updated did not change.
     tables.retain(|_, change| {
         ["inserted", "deleted", "updated"]
@@ -985,7 +1031,7 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
         db.pin_clock(None).await;
     }
 
-    let tables = tables(&db.pool).await;
+    let tables = tables(&db.pool, &include_tables(case)).await;
     let mut before_sums = HashMap::new();
     let mut before_rows = HashMap::new();
     for (table, _) in &tables {
@@ -1039,6 +1085,33 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
             pending.push_back((id, name));
         }
     }
+    // `job_clock` (`table.column`): the jobs run at the time Rails' did, the
+    // latest value its run wrote in that column, so what they compute from
+    // the clock (a hot score's age) comes out the same.
+    let job_clock = case["job_clock"]
+        .as_str()
+        .and_then(|spec| spec.split_once('.'))
+        .and_then(|(table, column)| {
+            let change = &case["changes"][table];
+            let mut times: Vec<NaiveDateTime> = change["inserted"]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .chain(
+                    change["updated"]
+                        .as_array()
+                        .into_iter()
+                        .flatten()
+                        .map(|row| &row["after"]),
+                )
+                .filter_map(|row| row[column].as_str().and_then(timestamp))
+                .collect();
+            times.sort();
+            times.pop()
+        });
+    if let Some(at) = job_clock {
+        db.pin_clock(Some(at.and_utc())).await;
+    }
     let mut from_jobs: Vec<Value> = Vec::new();
     while let Some((id, name)) = pending.pop_front() {
         if !run_jobs.contains(&name) {
@@ -1061,6 +1134,9 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
             from_jobs.push(shown);
             pending.push_back((new_id, new_name));
         }
+    }
+    if job_clock.is_some() {
+        db.pin_clock(None).await;
     }
     let mut ours = serde_json::json!({
         "responses": responses,
@@ -1210,20 +1286,28 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
     let _ = std::fs::remove_dir_all(&public);
     differences(
         "",
-        &changed_columns(normalize(
-            &{
-                hide_secrets(&mut rails);
-                rails
-            },
-            rails_started,
-        )),
-        &changed_columns(normalize(
-            &{
-                hide_secrets(&mut ours);
-                ours
-            },
-            started,
-        )),
+        &changed_columns(
+            normalize(
+                &{
+                    hide_secrets(&mut rails);
+                    approximate(&mut rails, case);
+                    rails
+                },
+                rails_started,
+            ),
+            &include_tables(case),
+        ),
+        &changed_columns(
+            normalize(
+                &{
+                    hide_secrets(&mut ours);
+                    approximate(&mut ours, case);
+                    ours
+                },
+                started,
+            ),
+            &include_tables(case),
+        ),
         &mut out,
     );
     out

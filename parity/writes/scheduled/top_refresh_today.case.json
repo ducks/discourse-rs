@@ -1,0 +1,21 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO topic_views (topic_id, viewed_at, user_id, ip_address) VALUES (35, now() - interval '2 hours', 2, NULL), (35, now() - interval '3 hours', 3, NULL), (37, now() - interval '20 days', 4, NULL), (38, now() - interval '200 days', 5, NULL)",
+    "UPDATE posts SET like_count = 3 WHERE id = 35",
+    "UPDATE posts SET created_at = now() - interval '2 hours' WHERE topic_id = 35"
+  ],
+  "requests": [],
+  "enqueue": [
+    [
+      "top_refresh_today",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "top_refresh_today"
+  ],
+  "include_tables": [
+    "top_topics"
+  ]
+}

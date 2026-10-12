@@ -1,0 +1,14 @@
+{
+  "user": null,
+  "setup": [],
+  "requests": [],
+  "enqueue": [
+    [
+      "category_stats",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "category_stats"
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "user": null,
+  "setup": [
+    "UPDATE posts SET like_count = 3 WHERE id = 35",
+    "UPDATE posts SET created_at = now() - interval '2 hours' WHERE topic_id = 35",
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (35, 3, 2, now() - interval '1 hour', now() - interval '1 hour'), (35, 4, 2, now() - interval '1 hour', now() - interval '1 hour')",
+    "UPDATE topics SET bumped_at = now() - interval '1 hour' WHERE id = 35"
+  ],
+  "requests": [],
+  "enqueue": [
+    [
+      "update_topic_hot_scores",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "update_topic_hot_scores"
+  ],
+  "job_clock": "topic_hot_scores.updated_at",
+  "approximate": [
+    "topic_hot_scores.score"
+  ]
+}

@@ -1,0 +1,100 @@
+{
+  "name": "top_refresh_today",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-12T21:35:48.730363",
+  "transaction_started_at": "2026-10-12T21:35:47.985944",
+  "responses": [],
+  "changes": {
+    "top_topics": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 6,
+            "topic_id": 35,
+            "all_score": 0.6020599913279624,
+            "daily_score": 0,
+            "weekly_score": 0.6020599913279624,
+            "yearly_score": 0.6020599913279624,
+            "monthly_score": 0.6020599913279624,
+            "quarterly_score": 0.6020599913279624,
+            "daily_likes_count": 0,
+            "daily_posts_count": 1,
+            "daily_views_count": 0,
+            "weekly_likes_count": 0,
+            "weekly_posts_count": 4,
+            "weekly_views_count": 0,
+            "yearly_likes_count": 0,
+            "yearly_posts_count": 4,
+            "yearly_views_count": 0,
+            "monthly_likes_count": 0,
+            "monthly_posts_count": 4,
+            "monthly_views_count": 0,
+            "daily_op_likes_count": 0,
+            "quarterly_likes_count": 0,
+            "quarterly_posts_count": 4,
+            "quarterly_views_count": 0,
+            "weekly_op_likes_count": 0,
+            "yearly_op_likes_count": 0,
+            "monthly_op_likes_count": 0,
+            "quarterly_op_likes_count": 0
+          },
+          "after": {
+            "id": 6,
+            "topic_id": 35,
+            "all_score": 0.6020599913279624,
+            "daily_score": 0,
+            "weekly_score": 0.6020599913279624,
+            "yearly_score": 0.6020599913279624,
+            "monthly_score": 0.6020599913279624,
+            "quarterly_score": 0.6020599913279624,
+            "daily_likes_count": 4,
+            "daily_posts_count": 5,
+            "daily_views_count": 2,
+            "weekly_likes_count": 0,
+            "weekly_posts_count": 4,
+            "weekly_views_count": 0,
+            "yearly_likes_count": 0,
+            "yearly_posts_count": 4,
+            "yearly_views_count": 0,
+            "monthly_likes_count": 0,
+            "monthly_posts_count": 4,
+            "monthly_views_count": 0,
+            "daily_op_likes_count": 3,
+            "quarterly_likes_count": 0,
+            "quarterly_posts_count": 4,
+            "quarterly_views_count": 0,
+            "weekly_op_likes_count": 0,
+            "yearly_op_likes_count": 0,
+            "monthly_op_likes_count": 0,
+            "quarterly_op_likes_count": 0
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO topic_views (topic_id, viewed_at, user_id, ip_address) VALUES (35, now() - interval '2 hours', 2, NULL), (35, now() - interval '3 hours', 3, NULL), (37, now() - interval '20 days', 4, NULL), (38, now() - interval '200 days', 5, NULL)",
+    "UPDATE posts SET like_count = 3 WHERE id = 35",
+    "UPDATE posts SET created_at = now() - interval '2 hours' WHERE topic_id = 35"
+  ],
+  "enqueue": [
+    [
+      "top_refresh_today",
+      {}
+    ]
+  ],
+  "include_tables": [
+    "top_topics"
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "69c239b7ef6bb64d72d3c1bc8998f7b850b2e92e2e5d60babcfbeef026f8acdb",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

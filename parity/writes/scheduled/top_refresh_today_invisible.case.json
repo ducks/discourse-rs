@@ -1,0 +1,20 @@
+{
+  "user": null,
+  "setup": [
+    "UPDATE topics SET visible = false WHERE id = 35",
+    "UPDATE topics SET archived = true WHERE id = 37"
+  ],
+  "requests": [],
+  "enqueue": [
+    [
+      "top_refresh_today",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "top_refresh_today"
+  ],
+  "include_tables": [
+    "top_topics"
+  ]
+}

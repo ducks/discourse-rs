@@ -1,0 +1,17 @@
+{
+  "user": null,
+  "setup": [
+    "UPDATE topics SET visible = false WHERE id = 39",
+    "UPDATE topics SET created_at = now() - interval '2 years' WHERE id = 41"
+  ],
+  "requests": [],
+  "enqueue": [
+    [
+      "category_stats",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "category_stats"
+  ]
+}

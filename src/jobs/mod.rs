@@ -11,6 +11,7 @@
 pub mod bookmark_reminders;
 mod handlers;
 pub mod housekeeping;
+pub mod list_stats;
 pub(crate) use handlers::choose_featured_users;
 pub(crate) mod post_alert;
 mod user_email;
@@ -195,6 +196,16 @@ const SCHEDULED: &[(&str, Duration)] = &[
         housekeeping::PURGE_OLD_NOTIFICATIONS,
         Duration::from_secs(7 * 24 * 3600),
     ),
+    (list_stats::TOP_REFRESH_TODAY, Duration::from_secs(3600)),
+    (
+        list_stats::TOP_REFRESH_OLDER,
+        Duration::from_secs(24 * 3600),
+    ),
+    (
+        list_stats::UPDATE_TOPIC_HOT_SCORES,
+        Duration::from_secs(10 * 60),
+    ),
+    (list_stats::CATEGORY_STATS, Duration::from_secs(24 * 3600)),
 ];
 
 /// A SCHEDULED job's name: it runs from the queue too (a case enqueues
@@ -214,6 +225,10 @@ pub async fn run_scheduled(state: &AppState, name: &str) -> Result<(), AppError>
             housekeeping::purge_expired_ignored_users(state).await
         }
         housekeeping::PURGE_OLD_NOTIFICATIONS => housekeeping::purge_old_notifications(state).await,
+        list_stats::TOP_REFRESH_TODAY => list_stats::top_refresh_today(state).await,
+        list_stats::TOP_REFRESH_OLDER => list_stats::top_refresh_older(state).await,
+        list_stats::UPDATE_TOPIC_HOT_SCORES => list_stats::update_topic_hot_scores(state).await,
+        list_stats::CATEGORY_STATS => list_stats::category_stats(state).await,
         crate::plugins::chat::summary_email::EMAIL_NOTIFICATIONS_JOB => {
             crate::plugins::chat::summary_email::send_unread_mentions_summary(state).await
         }

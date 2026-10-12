@@ -96,8 +96,11 @@ TABLES =
     SQL
     .to_h { |name, pk| [name, pk.split(",")] }
 
-# Written by the agent's own scheduler while a case runs, not by the case.
+# Written by the agent's own scheduler while a case runs, not by the case,
+# unless the case names them in `include_tables` (a case running the job
+# that writes them).
 BACKGROUND_TABLES = %w[scheduler_stats top_topics]
+INCLUDED_TABLES = []
 
 # Redis is not rolled back: the duplicate post check keeps a key per user
 # and post body, and Email::Processor one per address and rejection a day,
@@ -105,7 +108,7 @@ BACKGROUND_TABLES = %w[scheduler_stats top_topics]
 def clear_redis_state
   # user-last-seen: UserStat.update_time_read!, which would count the
   # seconds since the previous case read a topic.
-  %w[unique-post-* rejection_email:* user-last-seen:*].each do |pattern|
+  %w[unique-post-* rejection_email:* user-last-seen:* hot_score_6_hourly].each do |pattern|
     Discourse.redis.keys(pattern).each { |k| Discourse.redis.del(k) }
   end
   # Presence lives in Redis too, members and cached configs alike.
@@ -124,7 +127,7 @@ def reset_plugin_caches
 end
 
 def checksums
-  (TABLES.keys - BACKGROUND_TABLES).to_h do |t|
+  (TABLES.keys - (BACKGROUND_TABLES - INCLUDED_TABLES)).to_h do |t|
     [t, db.select_value("SELECT md5(COALESCE(string_agg(x::text, '|' ORDER BY x::text), '')) FROM #{db.quote_table_name(t)} x")]
   end
 end
@@ -217,6 +220,7 @@ cases.each do |c|
     # `setup`: SQL for fixture rows a case needs (a reply key), run the same way.
     (c["setup"] || []).each { |sql| db.execute(sql) }
     reset_plugin_caches if c["setup"]
+    INCLUDED_TABLES.replace(c["include_tables"] || [])
     ENQUEUED.clear
     before_sums = checksums
     before_rows = before_sums.keys.to_h { |t| [t, rows(t)] }
@@ -281,6 +285,9 @@ cases.each do |c|
     record[:settings] = c["settings"] if c["settings"]
     record[:setup] = c["setup"] if c["setup"]
     record[:enqueue] = c["enqueue"] if c["enqueue"]
+    record[:include_tables] = c["include_tables"] if c["include_tables"]
+    record[:approximate] = c["approximate"] if c["approximate"]
+    record[:job_clock] = c["job_clock"] if c["job_clock"]
     record[:jobs_from_jobs] = ENQUEUED.dup if c["run_jobs"]
     record[:emails] = emails if emails.any?
     File.write("#{out}/#{c["name"]}.json", JSON.pretty_generate(record) + "\n")
