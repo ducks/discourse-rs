@@ -1,0 +1,142 @@
+{
+  "name": "unmatched_ips_v6",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-12T22:55:24.793672",
+  "transaction_started_at": "2026-10-12T22:55:24.00649",
+  "responses": [],
+  "changes": {
+    "screened_ip_addresses": {
+      "inserted": [
+        {
+          "id": 6,
+          "created_at": "2026-10-09T22:55:24.00649",
+          "ip_address": "2001:db8:1:1::/64",
+          "updated_at": "2026-10-12T22:55:24.797841",
+          "action_type": 1,
+          "match_count": 3,
+          "last_match_at": "2026-10-12T22:55:24.00649"
+        },
+        {
+          "id": 7,
+          "created_at": "2026-10-10T22:55:24.00649",
+          "ip_address": "2001:db8:2::/60",
+          "updated_at": "2026-10-12T22:55:24.803231",
+          "action_type": 1,
+          "match_count": 2,
+          "last_match_at": "2026-10-12T22:55:24.00649"
+        }
+      ],
+      "deleted": [
+        {
+          "id": 9501,
+          "created_at": "2026-10-09T22:55:24.00649",
+          "ip_address": "2001:db8:1:1::1",
+          "updated_at": "2026-10-12T22:55:24.00649",
+          "action_type": 1,
+          "match_count": 1,
+          "last_match_at": "2026-10-12T22:55:24.00649"
+        },
+        {
+          "id": 9502,
+          "created_at": "2026-10-10T22:55:24.00649",
+          "ip_address": "2001:db8:1:1::2/96",
+          "updated_at": "2026-10-12T22:55:24.00649",
+          "action_type": 1,
+          "match_count": 2,
+          "last_match_at": "2026-10-12T22:55:24.00649"
+        },
+        {
+          "id": 9503,
+          "created_at": "2026-10-10T22:55:24.00649",
+          "ip_address": "2001:db8:2::/64",
+          "updated_at": "2026-10-12T22:55:24.00649",
+          "action_type": 1,
+          "match_count": 1,
+          "last_match_at": "2026-10-12T22:55:24.00649"
+        },
+        {
+          "id": 9504,
+          "created_at": "2026-10-10T22:55:24.00649",
+          "ip_address": "2001:db8:2:1::/64",
+          "updated_at": "2026-10-12T22:55:24.00649",
+          "action_type": 1,
+          "match_count": 1,
+          "last_match_at": "2026-10-12T22:55:24.00649"
+        }
+      ],
+      "updated": []
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 20,
+          "context": null,
+          "details": "2001:db8:1:1::/64 from 2001:db8:1:1::, 2001:db8:1:1::1",
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-12T22:55:24.799892",
+          "ip_address": null,
+          "updated_at": "2026-10-12T22:55:24.799892",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": -1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 75,
+          "email": null,
+          "action": 20,
+          "context": null,
+          "details": "2001:db8:2::/60 from 2001:db8:2::, 2001:db8:2:1::",
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-12T22:55:24.804972",
+          "ip_address": null,
+          "updated_at": "2026-10-12T22:55:24.804972",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": -1,
+          "previous_value": null,
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "screened_ip_addresses": 6,
+    "user_histories": 74
+  },
+  "settings": {
+    "min_ban_entries_for_roll_up": 2
+  },
+  "setup": [
+    "INSERT INTO screened_ip_addresses (id, ip_address, action_type, match_count, last_match_at, created_at, updated_at) VALUES (9501, '2001:db8:1:1::1', 1, 1, now(), now() - interval '3 days', now()), (9502, '2001:db8:1:1::2/96', 1, 2, now(), now() - interval '2 days', now()), (9503, '2001:db8:2::/64', 1, 1, now(), now() - interval '2 days', now()), (9504, '2001:db8:2:1::/64', 1, 1, now(), now() - interval '2 days', now())"
+  ],
+  "enqueue": [
+    [
+      "Jobs::CleanUpUnmatchedIPs",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "d14064c207a18160a4fc23a39662768dee1ccdd21308392f879dddaa9cd3caa5",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

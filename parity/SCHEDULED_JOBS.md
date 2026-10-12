@@ -42,6 +42,10 @@ Classes:
 | clean_up_api_keys_max_life, clean_up_unused_api_keys | 1d | scheduled/api_keys_* |
 | clean_up_email_tokens, clean_up_email_login_codes, clean_up_email_change_requests, clean_up_unsubscribe_keys, clean_up_post_reply_keys, clean_up_email_logs | 1d | scheduled/{email_tokens,email_login_codes,email_change_requests,unsubscribe_keys,post_reply_keys,email_logs}_* |
 | delete_rejected_emails | 1w | scheduled/rejected_emails_purge |
+| clean_dismissed_topic_users | 1d | scheduled/dismissed_topic_users* |
+| clean_up_drafts, clean_up_bookmarks, clean_up_user_auth_tokens, clean_up_search_logs | 1w | scheduled/{drafts,bookmarks,user_auth_tokens}_cleanup, scheduled/search_logs_* |
+| clean_up_tags | 1d (tags on live topics and synonyms refused) | scheduled/tags_cleanup* |
+| clean_up_unmatched_emails, CleanUpUnmatchedIPs (with the roll-up) | 1d | scheduled/unmatched_* |
 
 ## Ready, in porting order
 
@@ -49,8 +53,6 @@ Classes:
 |---|---|---|---|
 | periodical_updates, calculate_scores | 15m, 1w | featured topics, post/topic scores, percent_rank, rebakes | L |
 | update_heat_settings | 1mo | topic list heat thresholds never adapt | S |
-| clean_dismissed_topic_users, clean_up_drafts, clean_up_bookmarks, clean_up_user_auth_tokens, clean_up_search_logs, clean_up_tags | 1d–1w | housekeeping | S |
-| clean_up_unmatched_emails, clean_up_unmatched_ips | 1d | stale screened emails and IPs stay | S/M |
 | create_recent_post_search_indexes, reindex_search | 1d, 2h | search's recent-posts offset and stale index rows | S/M |
 | update_animated_uploads, backfill_dominant_colors | 1h, 15m | upload metadata never backfilled | S |
 | clean_up_uploads, purge_deleted_uploads | 1h, 1d | orphaned uploads stay | L |

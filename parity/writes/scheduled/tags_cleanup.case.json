@@ -1,0 +1,14 @@
+{
+  "user": null,
+  "settings": { "automatically_clean_unused_tags": true },
+  "setup": [
+    "INSERT INTO tags (id, name, created_at, updated_at, pm_topic_count, public_topic_count, staff_topic_count) VALUES (9501, 'stale', now() - interval '1 day', now() - interval '1 day', 0, 0, 0), (9502, 'fresh', now(), now(), 0, 0, 0), (9503, 'grouped', now() - interval '1 day', now() - interval '1 day', 0, 0, 0), (9504, 'abandoned', now() - interval '1 day', now() - interval '1 day', 0, 0, 0)",
+    "INSERT INTO tag_groups (id, name, created_at, updated_at) VALUES (9501, 'kept', now(), now())",
+    "INSERT INTO tag_group_memberships (tag_id, tag_group_id, created_at, updated_at) VALUES (9503, 9501, now(), now())",
+    "INSERT INTO tag_users (tag_id, user_id, notification_level, created_at, updated_at) VALUES (9501, 3, 3, now(), now())",
+    "INSERT INTO topic_tags (topic_id, tag_id, created_at, updated_at) VALUES (40, 9504, now(), now())"
+  ],
+  "requests": [],
+  "enqueue": [["clean_up_tags", {}]],
+  "run_jobs": ["clean_up_tags"]
+}

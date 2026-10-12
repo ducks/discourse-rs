@@ -1,0 +1,10 @@
+{
+  "user": null,
+  "settings": { "min_ban_entries_for_roll_up": 2 },
+  "setup": [
+    "INSERT INTO screened_ip_addresses (id, ip_address, action_type, match_count, last_match_at, created_at, updated_at) VALUES (9501, '2001:db8:1:1::1', 1, 1, now(), now() - interval '3 days', now()), (9502, '2001:db8:1:1::2/96', 1, 2, now(), now() - interval '2 days', now()), (9503, '2001:db8:2::/64', 1, 1, now(), now() - interval '2 days', now()), (9504, '2001:db8:2:1::/64', 1, 1, now(), now() - interval '2 days', now())"
+  ],
+  "requests": [],
+  "enqueue": [["Jobs::CleanUpUnmatchedIPs", {}]],
+  "run_jobs": ["Jobs::CleanUpUnmatchedIPs"]
+}

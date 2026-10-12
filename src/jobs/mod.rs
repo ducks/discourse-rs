@@ -10,6 +10,7 @@
 
 pub mod accounts;
 pub mod bookmark_reminders;
+pub mod cleanup;
 mod handlers;
 pub mod housekeeping;
 pub mod list_stats;
@@ -286,6 +287,32 @@ const SCHEDULED: &[(&str, Duration)] = &[
         accounts::DELETE_REJECTED_EMAILS,
         Duration::from_secs(7 * 24 * 3600),
     ),
+    (
+        cleanup::CLEAN_DISMISSED_TOPIC_USERS,
+        Duration::from_secs(24 * 3600),
+    ),
+    (cleanup::CLEAN_UP_DRAFTS, Duration::from_secs(7 * 24 * 3600)),
+    (
+        cleanup::CLEAN_UP_BOOKMARKS,
+        Duration::from_secs(7 * 24 * 3600),
+    ),
+    (
+        cleanup::CLEAN_UP_USER_AUTH_TOKENS,
+        Duration::from_secs(7 * 24 * 3600),
+    ),
+    (
+        cleanup::CLEAN_UP_SEARCH_LOGS,
+        Duration::from_secs(7 * 24 * 3600),
+    ),
+    (cleanup::CLEAN_UP_TAGS, Duration::from_secs(24 * 3600)),
+    (
+        cleanup::CLEAN_UP_UNMATCHED_EMAILS,
+        Duration::from_secs(24 * 3600),
+    ),
+    (
+        cleanup::CLEAN_UP_UNMATCHED_IPS,
+        Duration::from_secs(24 * 3600),
+    ),
 ];
 
 /// A SCHEDULED job's name: it runs from the queue too (a case enqueues
@@ -344,6 +371,14 @@ pub async fn run_scheduled(state: &AppState, name: &str) -> Result<(), AppError>
         accounts::CLEAN_UP_POST_REPLY_KEYS => accounts::clean_up_post_reply_keys(state).await,
         accounts::CLEAN_UP_EMAIL_LOGS => accounts::clean_up_email_logs(state).await,
         accounts::DELETE_REJECTED_EMAILS => accounts::delete_rejected_emails(state).await,
+        cleanup::CLEAN_DISMISSED_TOPIC_USERS => cleanup::clean_dismissed_topic_users(state).await,
+        cleanup::CLEAN_UP_DRAFTS => cleanup::clean_up_drafts(state).await,
+        cleanup::CLEAN_UP_BOOKMARKS => cleanup::clean_up_bookmarks(state).await,
+        cleanup::CLEAN_UP_USER_AUTH_TOKENS => cleanup::clean_up_user_auth_tokens(state).await,
+        cleanup::CLEAN_UP_SEARCH_LOGS => cleanup::clean_up_search_logs(state).await,
+        cleanup::CLEAN_UP_TAGS => cleanup::clean_up_tags(state).await,
+        cleanup::CLEAN_UP_UNMATCHED_EMAILS => cleanup::clean_up_unmatched_emails(state).await,
+        cleanup::CLEAN_UP_UNMATCHED_IPS => cleanup::clean_up_unmatched_ips(state).await,
         _ => unreachable!("every SCHEDULED job has a handler"),
     }
 }

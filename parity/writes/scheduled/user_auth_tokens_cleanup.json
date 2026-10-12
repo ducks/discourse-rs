@@ -1,0 +1,70 @@
+{
+  "name": "user_auth_tokens_cleanup",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-12T22:56:09.130015",
+  "transaction_started_at": "2026-10-12T22:56:07.931876",
+  "responses": [],
+  "changes": {
+    "user_auth_token_logs": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 9502,
+          "path": null,
+          "action": "rotate",
+          "user_id": 3,
+          "client_ip": null,
+          "auth_token": null,
+          "created_at": "2026-08-03T22:56:07.931876",
+          "user_agent": null,
+          "user_auth_token_id": 9501
+        }
+      ],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 9501,
+          "seen_at": null,
+          "user_id": 3,
+          "client_ip": null,
+          "auth_token": "a9501",
+          "created_at": "2026-08-03T22:56:07.931876",
+          "rotated_at": "2026-08-03T22:56:07.931876",
+          "updated_at": "2026-08-03T22:56:07.931876",
+          "user_agent": null,
+          "auth_token_seen": false,
+          "prev_auth_token": "p9501",
+          "impersonated_user_id": null,
+          "authenticated_with_oauth": false,
+          "impersonation_expires_at": null
+        }
+      ],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO user_auth_tokens (id, user_id, auth_token, prev_auth_token, rotated_at, created_at, updated_at) VALUES (9501, 3, 'a9501', 'p9501', now() - interval '70 days', now() - interval '70 days', now() - interval '70 days'), (9502, 3, 'a9502', 'p9502', now() - interval '1 hour', now() - interval '70 days', now() - interval '1 hour')",
+    "INSERT INTO user_auth_token_logs (id, action, user_auth_token_id, user_id, created_at) VALUES (9501, 'generate', 9501, 3, now() - interval '70 days'), (9502, 'rotate', 9501, 3, now() - interval '70 days'), (9503, 'suspicious', 9501, 3, now() - interval '70 days'), (9504, 'rotate', 9502, 3, now() - interval '1 hour')"
+  ],
+  "enqueue": [
+    [
+      "clean_up_user_auth_tokens",
+      {}
+    ]
+  ],
+  "include_tables": [
+    "user_auth_tokens"
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "87d345d0987642d068fe6e86f7c3acad654c645aabd700d8a951a02aa177385a",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "name": "dismissed_topic_users",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-12T22:55:15.079078",
+  "transaction_started_at": "2026-10-12T22:55:14.320844",
+  "responses": [],
+  "changes": {
+    "dismissed_topic_users": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 9501,
+          "user_id": 3,
+          "topic_id": 35,
+          "created_at": "2026-10-12T22:55:14.320844"
+        },
+        {
+          "id": 9502,
+          "user_id": 4,
+          "topic_id": 35,
+          "created_at": "2026-10-12T22:55:14.320844"
+        },
+        {
+          "id": 9503,
+          "user_id": 4,
+          "topic_id": 37,
+          "created_at": "2026-10-12T22:55:14.320844"
+        }
+      ],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "max_new_topics": 1
+  },
+  "setup": [
+    "UPDATE user_options SET new_topic_duration_minutes = -1 WHERE user_id = 4",
+    "INSERT INTO dismissed_topic_users (id, user_id, topic_id, created_at) VALUES (9501, 3, 35, now()), (9502, 4, 35, now()), (9503, 4, 37, now()), (9504, 4, 38, now())",
+    "UPDATE topics SET created_at = created_at + (id - 35) * interval '1 minute' WHERE id IN (35, 37, 38)"
+  ],
+  "enqueue": [
+    [
+      "clean_dismissed_topic_users",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "6bd7d814c5f85dec54e0e6a219b4c68856064d9de6df1fc49a50a4a4c338bdc6",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

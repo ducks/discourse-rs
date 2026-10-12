@@ -1,0 +1,12 @@
+{
+  "user": null,
+  "setup": [
+    "UPDATE user_options SET new_topic_duration_minutes = 60 * 24 * 30 WHERE user_id = 3",
+    "UPDATE user_options SET new_topic_duration_minutes = -2 WHERE user_id = 4",
+    "UPDATE users SET previous_visit_at = '2026-09-30 07:28:29' WHERE id = 4",
+    "INSERT INTO dismissed_topic_users (id, user_id, topic_id, created_at) VALUES (9501, 3, 35, now()), (9502, 4, 35, now()), (9503, 4, 41, now()), (9504, 2, 35, now())"
+  ],
+  "requests": [],
+  "enqueue": [["clean_dismissed_topic_users", {}]],
+  "run_jobs": ["clean_dismissed_topic_users"]
+}

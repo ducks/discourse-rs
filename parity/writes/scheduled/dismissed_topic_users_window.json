@@ -1,0 +1,42 @@
+{
+  "name": "dismissed_topic_users_window",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-12T22:55:15.948747",
+  "transaction_started_at": "2026-10-12T22:55:15.303925",
+  "responses": [],
+  "changes": {
+    "dismissed_topic_users": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 9502,
+          "user_id": 4,
+          "topic_id": 35,
+          "created_at": "2026-10-12T22:55:15.303925"
+        }
+      ],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE user_options SET new_topic_duration_minutes = 60 * 24 * 30 WHERE user_id = 3",
+    "UPDATE user_options SET new_topic_duration_minutes = -2 WHERE user_id = 4",
+    "UPDATE users SET previous_visit_at = '2026-09-30 07:28:29' WHERE id = 4",
+    "INSERT INTO dismissed_topic_users (id, user_id, topic_id, created_at) VALUES (9501, 3, 35, now()), (9502, 4, 35, now()), (9503, 4, 41, now()), (9504, 2, 35, now())"
+  ],
+  "enqueue": [
+    [
+      "clean_dismissed_topic_users",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "d0a12d7bf18fb07d0a1561941316863e3a502d8e327b0564156145b97bc7fc7a",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

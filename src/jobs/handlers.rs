@@ -19,6 +19,7 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         // Publishes reviewable counts to staff on MessageBus, likewise.
         "notify_reviewable" => Ok(()),
         "feature_topic_users" => feature_topic_users(state, &job.args).await,
+        "sync_topic_user_bookmarked" => sync_topic_user_bookmarked(state, &job.args).await,
         "process_post" => process_post(state, &job.args).await,
         "post_alert" => post_alert(state, &job.args).await,
         "user_email" => user_email(state, &job.args, false).await,
@@ -234,6 +235,49 @@ async fn feature_topic_users(state: &AppState, args: &Value) -> Result<(), AppEr
         return Ok(());
     }
     choose_featured_users(&mut conn, topic_id).await
+}
+
+/// `Jobs::SyncTopicUserBookmarked`: each topic user's bookmarked flag
+/// from their live bookmarks in the topic. Flags are cleared only when
+/// someone still has one there: the clearing update joins the counts.
+async fn sync_topic_user_bookmarked(state: &AppState, args: &Value) -> Result<(), AppError> {
+    let Some(topic_id) = int_arg(args, "topic_id")? else {
+        return Err(Unsupported(
+            "sync_topic_user_bookmarked without a topic_id (InvalidParameters)",
+        )
+        .into());
+    };
+    let mut tx = state.pool.begin().await?;
+    sqlx::query(
+        "CREATE TEMP TABLE tmp_sync_topic_user_bookmarks ON COMMIT DROP AS \
+         SELECT bookmarks.user_id, COUNT(*) AS count FROM bookmarks \
+         LEFT JOIN posts ON posts.id = bookmarks.bookmarkable_id AND bookmarks.bookmarkable_type = 'Post' \
+         LEFT JOIN topics ON (topics.id = bookmarks.bookmarkable_id AND bookmarks.bookmarkable_type = 'Topic') \
+           OR (topics.id = posts.topic_id) \
+         WHERE (topics.id = $1 OR posts.topic_id = $1) \
+           AND posts.deleted_at IS NULL AND topics.deleted_at IS NULL \
+         GROUP BY bookmarks.user_id",
+    )
+    .bind(topic_id)
+    .execute(&mut *tx)
+    .await?;
+    sqlx::query(
+        "UPDATE topic_users SET bookmarked = true FROM tmp_sync_topic_user_bookmarks t \
+         WHERE topic_users.user_id = t.user_id AND topic_users.topic_id = $1 AND t.count > 0",
+    )
+    .bind(topic_id)
+    .execute(&mut *tx)
+    .await?;
+    sqlx::query(
+        "UPDATE topic_users SET bookmarked = false FROM tmp_sync_topic_user_bookmarks \
+         WHERE topic_users.topic_id = $1 AND topic_users.bookmarked = true \
+           AND topic_users.user_id NOT IN (SELECT user_id FROM tmp_sync_topic_user_bookmarks)",
+    )
+    .bind(topic_id)
+    .execute(&mut *tx)
+    .await?;
+    tx.commit().await?;
+    Ok(())
 }
 
 /// `TopicFeaturedUsers#choose` (what Topic#feature_topic_users runs).
