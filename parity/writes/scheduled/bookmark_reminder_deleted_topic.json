@@ -1,0 +1,64 @@
+{
+  "name": "bookmark_reminder_deleted_topic",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-12T21:08:27.520148",
+  "transaction_started_at": "2026-10-12T21:08:26.869841",
+  "responses": [],
+  "changes": {
+    "bookmarks": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 3,
+            "name": "Parity fixture: with a reminder",
+            "pinned": null,
+            "user_id": 3,
+            "created_at": "2026-10-01T22:32:02.391051",
+            "updated_at": "2026-10-01T22:32:02.391051",
+            "reminder_at": "2026-10-12T21:03:26.869841",
+            "bookmarkable_id": 36,
+            "reminder_set_at": "2026-10-11T21:08:26.869841",
+            "bookmarkable_type": "Post",
+            "reminder_last_sent_at": null,
+            "auto_delete_preference": 0
+          },
+          "after": {
+            "id": 3,
+            "name": "Parity fixture: with a reminder",
+            "pinned": null,
+            "user_id": 3,
+            "created_at": "2026-10-01T22:32:02.391051",
+            "updated_at": "2026-10-12T21:08:27.525775",
+            "reminder_at": "2026-10-12T21:03:26.869841",
+            "bookmarkable_id": 36,
+            "reminder_set_at": null,
+            "bookmarkable_type": "Post",
+            "reminder_last_sent_at": "2026-10-12T21:08:27.524848",
+            "auto_delete_preference": 0
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE bookmarks SET reminder_at = now() - interval '5 minutes', reminder_set_at = now() - interval '1 day', auto_delete_preference = 0 WHERE id = 3",
+    "UPDATE topics SET deleted_at = now() - interval '1 hour', deleted_by_id = 1 WHERE id = 35"
+  ],
+  "enqueue": [
+    [
+      "bookmark_reminder_notifications",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "06867860bcb38dd6b09ac894dd163aadde94063a68872fd0b2fc4919d42200a8",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

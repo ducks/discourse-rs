@@ -53,7 +53,7 @@ pub struct TopicCtx {
 }
 
 /// What the post predicates read about a post.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, sqlx::FromRow)]
 pub struct PostCtx {
     pub id: i32,
     pub user_id: Option<i32>,
@@ -158,6 +158,22 @@ impl TopicCtx {
 }
 
 impl PostCtx {
+    /// The context of a post by id, trashed ones too.
+    pub async fn load(
+        conn: &mut PgConnection,
+        post_id: i32,
+    ) -> Result<Option<PostCtx>, sqlx::Error> {
+        sqlx::query_as(
+            "SELECT p.id, p.user_id, p.post_number, p.post_type, p.hidden, p.hidden_at, p.locked_by_id, \
+               p.deleted_at, p.user_deleted, p.wiki, p.created_at, \
+               COALESCE(u.admin OR u.moderator, FALSE) AS author_staff \
+             FROM posts p LEFT JOIN users u ON u.id = p.user_id WHERE p.id = $1",
+        )
+        .bind(post_id)
+        .fetch_optional(conn)
+        .await
+    }
+
     pub fn trashed(&self) -> bool {
         self.deleted_at.is_some()
     }

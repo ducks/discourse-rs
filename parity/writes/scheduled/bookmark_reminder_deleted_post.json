@@ -1,0 +1,64 @@
+{
+  "name": "bookmark_reminder_deleted_post",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-12T21:11:17.92147",
+  "transaction_started_at": "2026-10-12T21:11:16.657396",
+  "responses": [],
+  "changes": {
+    "bookmarks": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 5,
+            "name": "Parity fixture: reminder sent",
+            "pinned": null,
+            "user_id": 3,
+            "created_at": "2026-10-01T22:32:02.441836",
+            "updated_at": "2026-10-01T22:32:02.468854",
+            "reminder_at": "2026-10-12T21:06:16.657396",
+            "bookmarkable_id": 52,
+            "reminder_set_at": "2026-10-11T21:11:16.657396",
+            "bookmarkable_type": "Post",
+            "reminder_last_sent_at": null,
+            "auto_delete_preference": 0
+          },
+          "after": {
+            "id": 5,
+            "name": "Parity fixture: reminder sent",
+            "pinned": null,
+            "user_id": 3,
+            "created_at": "2026-10-01T22:32:02.441836",
+            "updated_at": "2026-10-12T21:11:17.940728",
+            "reminder_at": "2026-10-12T21:06:16.657396",
+            "bookmarkable_id": 52,
+            "reminder_set_at": null,
+            "bookmarkable_type": "Post",
+            "reminder_last_sent_at": "2026-10-12T21:11:17.939503",
+            "auto_delete_preference": 0
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE bookmarks SET reminder_at = now() - interval '5 minutes', reminder_set_at = now() - interval '1 day', auto_delete_preference = 0, reminder_last_sent_at = NULL WHERE id = 5",
+    "UPDATE posts SET deleted_at = now() - interval '1 hour', deleted_by_id = 1 WHERE id = 52"
+  ],
+  "enqueue": [
+    [
+      "bookmark_reminder_notifications",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "e03b97f1b606712af26da21e821a4169e23be9148990f017835df32f7e72cb66",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

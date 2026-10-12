@@ -1,0 +1,16 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO bookmarks (id, user_id, bookmarkable_id, bookmarkable_type, auto_delete_preference, reminder_at, reminder_set_at, created_at, updated_at) VALUES (90, 3, 5, 'Post', 0, now() - interval '5 minutes', now() - interval '1 day', now() - interval '1 day', now() - interval '1 day')"
+  ],
+  "requests": [],
+  "enqueue": [
+    [
+      "bookmark_reminder_notifications",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "bookmark_reminder_notifications"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "user": null,
+  "setup": [
+    "UPDATE bookmarks SET reminder_at = now() - interval '5 minutes', reminder_set_at = now() - interval '1 day', auto_delete_preference = 0, name = 'read later' WHERE id = 3"
+  ],
+  "requests": [],
+  "enqueue": [
+    [
+      "bookmark_reminder_notifications",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "bookmark_reminder_notifications"
+  ]
+}
