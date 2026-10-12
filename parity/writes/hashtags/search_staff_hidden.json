@@ -1,0 +1,73 @@
+{
+  "name": "search_staff_hidden",
+  "user": "user0",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/hashtags/search.json?term=sta&order%5B%5D=channel&order%5B%5D=category&order%5B%5D=tag"
+    }
+  ],
+  "started_at": "2026-10-12T18:01:29.076814",
+  "transaction_started_at": "2026-10-12T18:01:28.16724",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "results": []
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 451,
+            "seen_at": null,
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "zKspgosor/p9FuQUelMStkKv0sQ=",
+            "created_at": "2026-10-12T18:01:28.543512",
+            "rotated_at": "2026-10-12T18:01:28.542575",
+            "updated_at": "2026-10-12T18:01:28.543512",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "zKspgosor/p9FuQUelMStkKv0sQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 451,
+            "seen_at": "2026-10-12T18:01:29.084136",
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "zKspgosor/p9FuQUelMStkKv0sQ=",
+            "created_at": "2026-10-12T18:01:28.543512",
+            "rotated_at": "2026-10-12T18:01:28.542575",
+            "updated_at": "2026-10-12T18:01:28.543512",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "zKspgosor/p9FuQUelMStkKv0sQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "tagging_enabled": true
+  },
+  "recorded_from": {
+    "case": "398a6897055503619ca3489e178685c67abd128634be673c38b6b1b01a55fc1f",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

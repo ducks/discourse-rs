@@ -1,0 +1,183 @@
+{
+  "name": "search_no_term_user",
+  "user": "user0",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/hashtags/search.json?order%5B%5D=channel&order%5B%5D=category&order%5B%5D=tag"
+    }
+  ],
+  "started_at": "2026-10-12T18:09:27.307487",
+  "transaction_started_at": "2026-10-12T18:09:26.467536",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "results": [
+          {
+            "relative_url": "/chat/c/general/2",
+            "text": "General",
+            "description": null,
+            "style_type": "icon",
+            "icon": "comment",
+            "emoji": null,
+            "colors": [
+              "25AAE2"
+            ],
+            "type": "channel",
+            "ref": "general",
+            "slug": "general",
+            "id": 2
+          },
+          {
+            "relative_url": "/c/general/sub-general/34",
+            "text": "General > Sub General",
+            "description": null,
+            "style_type": "square",
+            "icon": "folder",
+            "emoji": null,
+            "colors": [
+              "25AAE2",
+              "AB9364"
+            ],
+            "type": "category",
+            "ref": "general:sub-general",
+            "slug": "sub-general",
+            "id": 34
+          },
+          {
+            "relative_url": "/c/general/4",
+            "text": "General",
+            "description": "Create topics here that don’t fit into any other existing category.",
+            "style_type": "emoji",
+            "icon": "folder",
+            "emoji": "blue_book",
+            "colors": [
+              "25AAE2"
+            ],
+            "type": "category",
+            "ref": "general",
+            "slug": "general",
+            "id": 4
+          },
+          {
+            "relative_url": "/c/site-feedback/2",
+            "text": "Site Feedback",
+            "description": "Discussion about this site, its organization, how it works, and how we can improve it.",
+            "style_type": "emoji",
+            "icon": "folder",
+            "emoji": "thought_balloon",
+            "colors": [
+              "808281"
+            ],
+            "type": "category",
+            "ref": "site-feedback",
+            "slug": "site-feedback",
+            "id": 2
+          },
+          {
+            "relative_url": "/c/uncategorized/1",
+            "text": "Uncategorized",
+            "description": null,
+            "style_type": "emoji",
+            "icon": "folder",
+            "emoji": "card_file_box",
+            "colors": [
+              "0088CC"
+            ],
+            "type": "category",
+            "ref": "uncategorized",
+            "slug": "uncategorized",
+            "id": 1
+          },
+          {
+            "relative_url": "/tag/guide/2",
+            "text": "guide",
+            "description": null,
+            "style_type": "icon",
+            "icon": "tag",
+            "emoji": null,
+            "colors": null,
+            "type": "tag",
+            "ref": "guide",
+            "slug": "guide",
+            "id": 2,
+            "secondary_text": "x2"
+          },
+          {
+            "relative_url": "/tag/howto/1",
+            "text": "howto",
+            "description": null,
+            "style_type": "icon",
+            "icon": "tag",
+            "emoji": null,
+            "colors": null,
+            "type": "tag",
+            "ref": "howto",
+            "slug": "howto",
+            "id": 1,
+            "secondary_text": "x2"
+          }
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 451,
+            "seen_at": null,
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "ngpZl2ERditEc88uXafFsNOBpAE=",
+            "created_at": "2026-10-12T18:09:26.814126",
+            "rotated_at": "2026-10-12T18:09:26.813233",
+            "updated_at": "2026-10-12T18:09:26.814126",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "ngpZl2ERditEc88uXafFsNOBpAE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 451,
+            "seen_at": "2026-10-12T18:09:27.313968",
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "ngpZl2ERditEc88uXafFsNOBpAE=",
+            "created_at": "2026-10-12T18:09:26.814126",
+            "rotated_at": "2026-10-12T18:09:26.813233",
+            "updated_at": "2026-10-12T18:09:26.814126",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "ngpZl2ERditEc88uXafFsNOBpAE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "tagging_enabled": true
+  },
+  "setup": [
+    "UPDATE chat_channels SET messages_count = 5 WHERE id = 2",
+    "UPDATE chat_channels SET messages_count = 2 WHERE id = 1",
+    "UPDATE categories SET topic_count = 4 WHERE id = 34"
+  ],
+  "recorded_from": {
+    "case": "b0bb255ad1c46353a445a017ff6809237d389c9e74dcb537f8c4ee1c12caff9a",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

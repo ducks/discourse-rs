@@ -9,6 +9,7 @@ mod bus;
 pub(crate) mod composer;
 mod drafts;
 mod emojis;
+mod hashtags;
 mod list;
 mod live;
 mod login_required;
@@ -140,6 +141,8 @@ pub fn router(state: &AppState) -> Router<AppState> {
         )
         .route("/notifications", get(notifications::index))
         .route("/notifications.json", get(notifications::index))
+        .route("/hashtags/search", get(hashtags::search))
+        .route("/hashtags/search.json", get(hashtags::search))
         .route("/drafts", get(drafts::index).post(drafts::create))
         .route("/drafts.json", get(drafts::index).post(drafts::create))
         .route("/drafts/{id}", get(drafts::show).delete(drafts::destroy))

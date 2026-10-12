@@ -1,0 +1,7 @@
+{
+  "user": null,
+  "settings": {"tagging_enabled": true},
+  "requests": [
+    { "method": "GET", "path": "/hashtags/search.json?term=gen&order%5B%5D=channel&order%5B%5D=category&order%5B%5D=tag" }
+  ]
+}

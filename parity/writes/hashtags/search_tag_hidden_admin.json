@@ -1,0 +1,190 @@
+{
+  "name": "search_tag_hidden_admin",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/hashtags/search.json?term=how&order%5B%5D=category&order%5B%5D=tag"
+    },
+    {
+      "method": "GET",
+      "path": "/hashtags/search.json?order%5B%5D=tag"
+    }
+  ],
+  "started_at": "2026-10-12T18:19:24.99347",
+  "transaction_started_at": "2026-10-12T18:19:24.061233",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "results": [
+          {
+            "relative_url": "/tag/9807-tag/9807",
+            "text": "howpopular",
+            "description": null,
+            "style_type": "icon",
+            "icon": "tag",
+            "emoji": null,
+            "colors": null,
+            "type": "tag",
+            "ref": "howpopular",
+            "slug": "howpopular",
+            "id": 9807,
+            "secondary_text": "x7"
+          },
+          {
+            "relative_url": "/tag/9806-tag/9806",
+            "text": "howsecret",
+            "description": null,
+            "style_type": "icon",
+            "icon": "tag",
+            "emoji": null,
+            "colors": null,
+            "type": "tag",
+            "ref": "howsecret",
+            "slug": "howsecret",
+            "id": 9806,
+            "secondary_text": "x3"
+          },
+          {
+            "relative_url": "/tag/howto/1",
+            "text": "howto",
+            "description": null,
+            "style_type": "icon",
+            "icon": "tag",
+            "emoji": null,
+            "colors": null,
+            "type": "tag",
+            "ref": "howto",
+            "slug": "howto",
+            "id": 1,
+            "secondary_text": "x2"
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "results": [
+          {
+            "relative_url": "/tag/9807-tag/9807",
+            "text": "howpopular",
+            "description": null,
+            "style_type": "icon",
+            "icon": "tag",
+            "emoji": null,
+            "colors": null,
+            "type": "tag",
+            "ref": "howpopular",
+            "slug": "howpopular",
+            "id": 9807,
+            "secondary_text": "x7"
+          },
+          {
+            "relative_url": "/tag/9806-tag/9806",
+            "text": "howsecret",
+            "description": null,
+            "style_type": "icon",
+            "icon": "tag",
+            "emoji": null,
+            "colors": null,
+            "type": "tag",
+            "ref": "howsecret",
+            "slug": "howsecret",
+            "id": 9806,
+            "secondary_text": "x3"
+          },
+          {
+            "relative_url": "/tag/guide/2",
+            "text": "guide",
+            "description": null,
+            "style_type": "icon",
+            "icon": "tag",
+            "emoji": null,
+            "colors": null,
+            "type": "tag",
+            "ref": "guide",
+            "slug": "guide",
+            "id": 2,
+            "secondary_text": "x2"
+          },
+          {
+            "relative_url": "/tag/howto/1",
+            "text": "howto",
+            "description": null,
+            "style_type": "icon",
+            "icon": "tag",
+            "emoji": null,
+            "colors": null,
+            "type": "tag",
+            "ref": "howto",
+            "slug": "howto",
+            "id": 1,
+            "secondary_text": "x2"
+          }
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 451,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "ixgTjOUql4lfws4jN9tOAUOPKqo=",
+            "created_at": "2026-10-12T18:19:24.387307",
+            "rotated_at": "2026-10-12T18:19:24.386411",
+            "updated_at": "2026-10-12T18:19:24.387307",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "ixgTjOUql4lfws4jN9tOAUOPKqo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 451,
+            "seen_at": "2026-10-12T18:19:25.000494",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "ixgTjOUql4lfws4jN9tOAUOPKqo=",
+            "created_at": "2026-10-12T18:19:24.387307",
+            "rotated_at": "2026-10-12T18:19:24.386411",
+            "updated_at": "2026-10-12T18:19:24.387307",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "ixgTjOUql4lfws4jN9tOAUOPKqo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "tagging_enabled": true
+  },
+  "setup": [
+    "INSERT INTO tags (id, name, public_topic_count, staff_topic_count, created_at, updated_at) VALUES (9806, 'howsecret', 0, 3, '2026-10-01 10:00:00', '2026-10-01 10:00:00'), (9807, 'howpopular', 5, 7, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO tag_groups (id, name, created_at, updated_at) VALUES (9801, 'Staff Tags', '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO tag_group_memberships (id, tag_id, tag_group_id, created_at, updated_at) VALUES (9801, 9806, 9801, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO tag_group_permissions (id, tag_group_id, group_id, permission_type, created_at, updated_at) VALUES (9801, 9801, 3, 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "recorded_from": {
+    "case": "eee50f380481cfede6aa55ac2b14f8a83bab1be618dedc7e98b1f68ac1d81bd3",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

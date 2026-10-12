@@ -1,0 +1,120 @@
+{
+  "name": "search_tagging_off",
+  "user": "user0",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/hashtags/search.json?term=gen&order%5B%5D=channel&order%5B%5D=category&order%5B%5D=tag"
+    }
+  ],
+  "started_at": "2026-10-12T18:01:32.763164",
+  "transaction_started_at": "2026-10-12T18:01:31.687457",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "results": [
+          {
+            "relative_url": "/chat/c/general/2",
+            "text": "General",
+            "description": null,
+            "style_type": "icon",
+            "icon": "comment",
+            "emoji": null,
+            "colors": [
+              "25AAE2"
+            ],
+            "type": "channel",
+            "ref": "general",
+            "slug": "general",
+            "id": 2
+          },
+          {
+            "relative_url": "/c/general/4",
+            "text": "General",
+            "description": "Create topics here that don’t fit into any other existing category.",
+            "style_type": "emoji",
+            "icon": "folder",
+            "emoji": "blue_book",
+            "colors": [
+              "25AAE2"
+            ],
+            "type": "category",
+            "ref": "general::category",
+            "slug": "general",
+            "id": 4
+          },
+          {
+            "relative_url": "/c/general/sub-general/34",
+            "text": "General > Sub General",
+            "description": null,
+            "style_type": "square",
+            "icon": "folder",
+            "emoji": null,
+            "colors": [
+              "25AAE2",
+              "AB9364"
+            ],
+            "type": "category",
+            "ref": "general:sub-general",
+            "slug": "sub-general",
+            "id": 34
+          }
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 451,
+            "seen_at": null,
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "vB1WxK21U4DChAElBLg2dXJZCn0=",
+            "created_at": "2026-10-12T18:01:32.034615",
+            "rotated_at": "2026-10-12T18:01:32.033853",
+            "updated_at": "2026-10-12T18:01:32.034615",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "vB1WxK21U4DChAElBLg2dXJZCn0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 451,
+            "seen_at": "2026-10-12T18:01:32.770697",
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "vB1WxK21U4DChAElBLg2dXJZCn0=",
+            "created_at": "2026-10-12T18:01:32.034615",
+            "rotated_at": "2026-10-12T18:01:32.033853",
+            "updated_at": "2026-10-12T18:01:32.034615",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "vB1WxK21U4DChAElBLg2dXJZCn0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "tagging_enabled": false
+  },
+  "recorded_from": {
+    "case": "8ae6a6fbbfc9800f4ec69fe74d188acbc6677be4a4f66e716eee6bd0cfb60d77",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

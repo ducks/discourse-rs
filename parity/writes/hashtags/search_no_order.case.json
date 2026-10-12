@@ -1,0 +1,6 @@
+{
+  "user": "user0",
+  "requests": [
+    { "method": "GET", "path": "/hashtags/search.json?term=gen" }
+  ]
+}

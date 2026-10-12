@@ -1,0 +1,14 @@
+{
+  "user": "user0",
+  "settings": {"tagging_enabled": true},
+  "setup": [
+    "INSERT INTO tags (id, name, public_topic_count, staff_topic_count, created_at, updated_at) VALUES (9806, 'howsecret', 0, 3, '2026-10-01 10:00:00', '2026-10-01 10:00:00'), (9807, 'howpopular', 5, 7, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO tag_groups (id, name, created_at, updated_at) VALUES (9801, 'Staff Tags', '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO tag_group_memberships (id, tag_id, tag_group_id, created_at, updated_at) VALUES (9801, 9806, 9801, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO tag_group_permissions (id, tag_group_id, group_id, permission_type, created_at, updated_at) VALUES (9801, 9801, 3, 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "requests": [
+    { "method": "GET", "path": "/hashtags/search.json?term=how&order%5B%5D=category&order%5B%5D=tag" },
+    { "method": "GET", "path": "/hashtags/search.json?order%5B%5D=tag" }
+  ]
+}
