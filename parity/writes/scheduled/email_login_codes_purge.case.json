@@ -1,0 +1,9 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO email_login_codes (id, email, code_hash, expires_at, created_at, updated_at) VALUES (9501, 'user1@example.com', 'c9501', now() - interval '2 days', now() - interval '2 days', now() - interval '2 days'), (9502, 'user1@example.com', 'c9502', now() - interval '1 hour', now() - interval '2 hours', now() - interval '2 hours')"
+  ],
+  "requests": [],
+  "enqueue": [["clean_up_email_login_codes", {}]],
+  "run_jobs": ["clean_up_email_login_codes"]
+}

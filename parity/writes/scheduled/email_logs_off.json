@@ -1,0 +1,30 @@
+{
+  "name": "email_logs_off",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-12T22:37:00.905518",
+  "transaction_started_at": "2026-10-12T22:37:00.134423",
+  "responses": [],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "delete_email_logs_after_days": 0
+  },
+  "setup": [
+    "INSERT INTO email_logs (id, to_address, email_type, user_id, created_at, updated_at) VALUES (9501, 'user1@example.com', 'user_replied', 3, now() - interval '100 days', now() - interval '100 days'), (9502, 'user1@example.com', 'user_replied', 3, now() - interval '10 days', now() - interval '10 days')",
+    "INSERT INTO skipped_email_logs (id, email_type, to_address, user_id, reason_type, created_at, updated_at) VALUES (9501, 'user_replied', 'user1@example.com', 3, 2, now() - interval '100 days', now() - interval '100 days'), (9502, 'user_replied', 'user1@example.com', 3, 2, now() - interval '10 days', now() - interval '10 days')"
+  ],
+  "enqueue": [
+    [
+      "clean_up_email_logs",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "74b8847e3c6ce84afd14178a0b899b36992c3c33e32795f3a9eeab98ccda431e",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

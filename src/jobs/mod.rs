@@ -8,6 +8,7 @@
 //! failures are retried with Sidekiq's backoff, and a job whose kind is not
 //! ported fails at once with the reason kept on the row.
 
+pub mod accounts;
 pub mod bookmark_reminders;
 mod handlers;
 pub mod housekeeping;
@@ -241,6 +242,50 @@ const SCHEDULED: &[(&str, Duration)] = &[
         moderation::DESTROY_OLD_HIDDEN_POSTS,
         Duration::from_secs(24 * 3600),
     ),
+    (
+        accounts::ACTIVATION_REMINDER_EMAILS,
+        Duration::from_secs(2 * 3600),
+    ),
+    (
+        accounts::INVALIDATE_INACTIVE_ADMINS,
+        Duration::from_secs(24 * 3600),
+    ),
+    (
+        accounts::CLEAN_UP_API_KEYS_MAX_LIFE,
+        Duration::from_secs(24 * 3600),
+    ),
+    (
+        accounts::CLEAN_UP_UNUSED_API_KEYS,
+        Duration::from_secs(24 * 3600),
+    ),
+    (
+        accounts::CLEAN_UP_EMAIL_TOKENS,
+        Duration::from_secs(24 * 3600),
+    ),
+    (
+        accounts::CLEAN_UP_EMAIL_LOGIN_CODES,
+        Duration::from_secs(24 * 3600),
+    ),
+    (
+        accounts::CLEAN_UP_EMAIL_CHANGE_REQUESTS,
+        Duration::from_secs(24 * 3600),
+    ),
+    (
+        accounts::CLEAN_UP_UNSUBSCRIBE_KEYS,
+        Duration::from_secs(24 * 3600),
+    ),
+    (
+        accounts::CLEAN_UP_POST_REPLY_KEYS,
+        Duration::from_secs(24 * 3600),
+    ),
+    (
+        accounts::CLEAN_UP_EMAIL_LOGS,
+        Duration::from_secs(24 * 3600),
+    ),
+    (
+        accounts::DELETE_REJECTED_EMAILS,
+        Duration::from_secs(7 * 24 * 3600),
+    ),
 ];
 
 /// A SCHEDULED job's name: it runs from the queue too (a case enqueues
@@ -286,6 +331,19 @@ pub async fn run_scheduled(state: &AppState, name: &str) -> Result<(), AppError>
             moderation::destroy_old_deletion_stubs(state).await
         }
         moderation::DESTROY_OLD_HIDDEN_POSTS => moderation::destroy_old_hidden_posts(state).await,
+        accounts::ACTIVATION_REMINDER_EMAILS => accounts::activation_reminder_emails(state).await,
+        accounts::INVALIDATE_INACTIVE_ADMINS => accounts::invalidate_inactive_admins(state).await,
+        accounts::CLEAN_UP_API_KEYS_MAX_LIFE => accounts::clean_up_api_keys_max_life(state).await,
+        accounts::CLEAN_UP_UNUSED_API_KEYS => accounts::clean_up_unused_api_keys(state).await,
+        accounts::CLEAN_UP_EMAIL_TOKENS => accounts::clean_up_email_tokens(state).await,
+        accounts::CLEAN_UP_EMAIL_LOGIN_CODES => accounts::clean_up_email_login_codes(state).await,
+        accounts::CLEAN_UP_EMAIL_CHANGE_REQUESTS => {
+            accounts::clean_up_email_change_requests(state).await
+        }
+        accounts::CLEAN_UP_UNSUBSCRIBE_KEYS => accounts::clean_up_unsubscribe_keys(state).await,
+        accounts::CLEAN_UP_POST_REPLY_KEYS => accounts::clean_up_post_reply_keys(state).await,
+        accounts::CLEAN_UP_EMAIL_LOGS => accounts::clean_up_email_logs(state).await,
+        accounts::DELETE_REJECTED_EMAILS => accounts::delete_rejected_emails(state).await,
         _ => unreachable!("every SCHEDULED job has a handler"),
     }
 }

@@ -1,0 +1,9 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO email_change_requests (id, user_id, old_email, new_email, change_state, created_at, updated_at) VALUES (9501, 3, 'user1@example.com', 'new1@example.com', 1, now() - interval '40 days', now() - interval '40 days'), (9502, 4, 'user2@example.com', 'new2@example.com', 1, now() - interval '40 days', now() - interval '10 days')"
+  ],
+  "requests": [],
+  "enqueue": [["clean_up_email_change_requests", {}]],
+  "run_jobs": ["clean_up_email_change_requests"]
+}

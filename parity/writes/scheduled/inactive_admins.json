@@ -1,0 +1,201 @@
+{
+  "name": "inactive_admins",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-12T22:37:04.534464",
+  "transaction_started_at": "2026-10-12T22:37:03.875456",
+  "responses": [],
+  "changes": {
+    "email_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 3,
+            "email": "admin@example.com",
+            "scope": 1,
+            "expired": true,
+            "user_id": 1,
+            "confirmed": true,
+            "created_at": "2026-07-25T05:59:15.181466",
+            "token_hash": "e64aadf1d3ae68ca277eb67932beade1958e4963a05b6cd47d160ee2bbbf5ff5",
+            "updated_at": "2026-07-25T05:59:15.181466"
+          },
+          "after": {
+            "id": 3,
+            "email": "admin@example.com",
+            "scope": 1,
+            "expired": true,
+            "user_id": 1,
+            "confirmed": false,
+            "created_at": "2026-07-25T05:59:15.181466",
+            "token_hash": "e64aadf1d3ae68ca277eb67932beade1958e4963a05b6cd47d160ee2bbbf5ff5",
+            "updated_at": "2026-07-25T05:59:15.181466"
+          }
+        },
+        {
+          "before": {
+            "id": 4,
+            "email": "admin@example.com",
+            "scope": 1,
+            "expired": false,
+            "user_id": 1,
+            "confirmed": true,
+            "created_at": "2026-07-25T05:59:15.741274",
+            "token_hash": "390c400daea610b3bac0b242fca758f66430c4c2d76ce4b8085dcbec5b07e6ad",
+            "updated_at": "2026-07-25T05:59:15.757848"
+          },
+          "after": {
+            "id": 4,
+            "email": "admin@example.com",
+            "scope": 1,
+            "expired": true,
+            "user_id": 1,
+            "confirmed": false,
+            "created_at": "2026-07-25T05:59:15.741274",
+            "token_hash": "390c400daea610b3bac0b242fca758f66430c4c2d76ce4b8085dcbec5b07e6ad",
+            "updated_at": "2026-07-25T05:59:15.757848"
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 39,
+          "context": null,
+          "details": "Automatically deactivated after 10 days of inactivity",
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": false,
+          "created_at": "2026-10-12T22:37:04.545266",
+          "ip_address": null,
+          "updated_at": "2026-10-12T22:37:04.545266",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": -1,
+          "previous_value": null,
+          "target_user_id": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "users": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "name": "Admin",
+            "admin": true,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": true,
+            "username": "admin",
+            "moderator": true,
+            "created_at": "2026-07-25T05:59:14.988794",
+            "flag_level": 0,
+            "ip_address": "127.0.0.1",
+            "updated_at": "2026-10-01T15:45:01.064998",
+            "approved_at": "2026-07-25T05:59:15.471236",
+            "trust_level": 4,
+            "last_seen_at": "2026-09-22T22:37:03.875456",
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": "2026-10-01T15:42:53.401171",
+            "silenced_till": null,
+            "approved_by_id": -1,
+            "flair_group_id": null,
+            "last_posted_at": "2026-09-30T07:28:29.674309",
+            "suspended_till": null,
+            "username_lower": "admin",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": "2026-10-01T15:44:57.175128",
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          },
+          "after": {
+            "id": 1,
+            "name": "Admin",
+            "admin": true,
+            "title": null,
+            "views": 0,
+            "active": false,
+            "locale": null,
+            "staged": false,
+            "approved": true,
+            "username": "admin",
+            "moderator": true,
+            "created_at": "2026-07-25T05:59:14.988794",
+            "flag_level": 0,
+            "ip_address": "127.0.0.1",
+            "updated_at": "2026-10-12T22:37:04.539307",
+            "approved_at": "2026-07-25T05:59:15.471236",
+            "trust_level": 4,
+            "last_seen_at": "2026-09-22T22:37:03.875456",
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": "2026-10-01T15:42:53.401171",
+            "silenced_till": null,
+            "approved_by_id": -1,
+            "flair_group_id": null,
+            "last_posted_at": "2026-09-30T07:28:29.674309",
+            "suspended_till": null,
+            "username_lower": "admin",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": "2026-10-01T15:44:57.175128",
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "user_histories": 74
+  },
+  "settings": {
+    "invalidate_inactive_admin_email_after_days": 10
+  },
+  "setup": [
+    "UPDATE users SET last_seen_at = now() - interval '20 days' WHERE id IN (1, 5)"
+  ],
+  "enqueue": [
+    [
+      "invalidate_inactive_admins",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "c3cba45d8446209f11544aa101cd414f2ddb440748f0917a0ed1178578d099de",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

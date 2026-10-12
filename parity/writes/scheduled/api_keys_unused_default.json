@@ -1,0 +1,26 @@
+{
+  "name": "api_keys_unused_default",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-12T22:36:58.183979",
+  "transaction_started_at": "2026-10-12T22:36:57.52132",
+  "responses": [],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO api_keys (id, user_id, created_by_id, created_at, updated_at, last_used_at, description, key_hash, truncated_key, scope_mode, revoked_at) VALUES (9501, NULL, 1, now() - interval '60 days', now() - interval '60 days', now() - interval '40 days', 'old', 'h9501', 'aaaa', 0, NULL), (9502, NULL, 1, now() - interval '60 days', now() - interval '60 days', now() - interval '10 days', 'used', 'h9502', 'bbbb', 0, NULL), (9503, 1, 1, now() - interval '10 days', now() - interval '10 days', NULL, 'new', 'h9503', 'cccc', 0, NULL), (9504, NULL, 1, now() - interval '60 days', now() - interval '60 days', NULL, 'revoked', 'h9504', 'dddd', 0, now() - interval '50 days')"
+  ],
+  "enqueue": [
+    [
+      "clean_up_unused_api_keys",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "16ab8efb2396dbfeac241024814ed251f37065232e077274701e5f5c4158d281",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

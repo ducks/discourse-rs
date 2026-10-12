@@ -1,0 +1,11 @@
+{
+  "user": null,
+  "settings": { "revoke_api_keys_maxlife_days": 30 },
+  "setup": [
+    "INSERT INTO api_keys (id, user_id, created_by_id, created_at, updated_at, last_used_at, description, key_hash, truncated_key, scope_mode, revoked_at) VALUES (9501, NULL, 1, now() - interval '60 days', now() - interval '60 days', now() - interval '40 days', 'old', 'h9501', 'aaaa', 0, NULL), (9502, NULL, 1, now() - interval '60 days', now() - interval '60 days', now() - interval '10 days', 'used', 'h9502', 'bbbb', 0, NULL), (9503, 1, 1, now() - interval '10 days', now() - interval '10 days', NULL, 'new', 'h9503', 'cccc', 0, NULL), (9504, NULL, 1, now() - interval '60 days', now() - interval '60 days', NULL, 'revoked', 'h9504', 'dddd', 0, now() - interval '50 days')"
+  ],
+  "requests": [],
+  "enqueue": [["clean_up_api_keys_max_life", {}]],
+  "run_jobs": ["clean_up_api_keys_max_life"],
+  "job_clock": "api_keys.revoked_at"
+}

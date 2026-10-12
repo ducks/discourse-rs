@@ -1,0 +1,10 @@
+{
+  "user": null,
+  "settings": { "invalidate_inactive_admin_email_after_days": 10 },
+  "setup": [
+    "UPDATE users SET last_seen_at = now() - interval '20 days' WHERE id IN (1, 5)"
+  ],
+  "requests": [],
+  "enqueue": [["invalidate_inactive_admins", {}]],
+  "run_jobs": ["invalidate_inactive_admins"]
+}

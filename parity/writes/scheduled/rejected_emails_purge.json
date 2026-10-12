@@ -1,0 +1,57 @@
+{
+  "name": "rejected_emails_purge",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-12T22:37:08.256992",
+  "transaction_started_at": "2026-10-12T22:37:07.60829",
+  "responses": [],
+  "changes": {
+    "incoming_emails": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 9501,
+          "raw": null,
+          "error": null,
+          "post_id": null,
+          "subject": null,
+          "user_id": null,
+          "imap_uid": null,
+          "topic_id": null,
+          "imap_sync": null,
+          "is_bounce": false,
+          "created_at": "2026-07-04T22:37:07.60829",
+          "message_id": "m9501@example.com",
+          "updated_at": "2026-07-04T22:37:07.60829",
+          "created_via": 0,
+          "cc_addresses": null,
+          "from_address": null,
+          "imap_missing": false,
+          "to_addresses": null,
+          "imap_group_id": null,
+          "imap_uid_validity": null,
+          "is_auto_generated": false,
+          "rejection_message": "rejected"
+        }
+      ],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO incoming_emails (id, message_id, rejection_message, created_at, updated_at) VALUES (9501, 'm9501@example.com', 'rejected', now() - interval '100 days', now() - interval '100 days'), (9502, 'm9502@example.com', 'rejected', now() - interval '10 days', now() - interval '10 days'), (9503, 'm9503@example.com', NULL, now() - interval '100 days', now() - interval '100 days')"
+  ],
+  "enqueue": [
+    [
+      "delete_rejected_emails",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "a55466f08fb172fb27218c45a19be9ed248aab14ef216b12ba17cd82d4b338be",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

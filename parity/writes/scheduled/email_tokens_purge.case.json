@@ -1,0 +1,9 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO email_tokens (id, user_id, email, confirmed, expired, created_at, updated_at, token_hash, scope) VALUES (9501, 3, 'user1@example.com', FALSE, TRUE, now() - interval '40 days', now() - interval '40 days', 'h9501', 1), (9502, 3, 'user1@example.com', FALSE, TRUE, now() - interval '20 days', now() - interval '20 days', 'h9502', 1), (9503, 3, 'user1@example.com', TRUE, TRUE, now() - interval '40 days', now() - interval '40 days', 'h9503', 1), (9504, 3, 'user1@example.com', FALSE, FALSE, now() - interval '40 days', now() - interval '40 days', 'h9504', 1)"
+  ],
+  "requests": [],
+  "enqueue": [["clean_up_email_tokens", {}]],
+  "run_jobs": ["clean_up_email_tokens"]
+}
