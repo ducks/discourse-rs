@@ -1,0 +1,99 @@
+{
+  "name": "post_edit_edit_all",
+  "user": "user0",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/discourse-presence/edit/37"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/presence/get?channels%5B%5D=%2Fdiscourse-presence%2Fedit%2F37"
+    }
+  ],
+  "started_at": "2026-10-12T20:18:54.425178",
+  "transaction_started_at": "2026-10-12T20:18:51.837133",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "/discourse-presence/edit/37": true
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "/discourse-presence/edit/37": {
+          "count": 1,
+          "last_message_id": 1,
+          "users": [
+            {
+              "id": 2,
+              "username": "user0",
+              "name": "User0",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 466,
+            "seen_at": null,
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "SRg8Fjmym5iBHC3bMZAPAoes5hI=",
+            "created_at": "2026-10-12T20:18:52.926281",
+            "rotated_at": "2026-10-12T20:18:52.922373",
+            "updated_at": "2026-10-12T20:18:52.926281",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "SRg8Fjmym5iBHC3bMZAPAoes5hI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 466,
+            "seen_at": "2026-10-12T20:18:54.434936",
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "SRg8Fjmym5iBHC3bMZAPAoes5hI=",
+            "created_at": "2026-10-12T20:18:52.926281",
+            "rotated_at": "2026-10-12T20:18:52.922373",
+            "updated_at": "2026-10-12T20:18:52.926281",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "SRg8Fjmym5iBHC3bMZAPAoes5hI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "edit_all_post_groups": "11"
+  },
+  "recorded_from": {
+    "case": "55a1c8a18bd02f011445a04950c86d1e05e5c9224c72defdf2ec7012936684fb",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

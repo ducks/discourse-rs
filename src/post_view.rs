@@ -48,6 +48,8 @@ pub struct PostSettings {
     pub reactions: Option<crate::plugins::reactions::view::ReactionsUi>,
     /// discourse-solved's settings, when it is on.
     pub solved: Option<crate::plugins::solved::view::SolvedUi>,
+    /// discourse-presence is on: the footer shows who is replying.
+    pub presence: bool,
 }
 
 impl PostSettings {
@@ -98,6 +100,7 @@ impl PostSettings {
             post_menu_hidden_items: list("post_menu_hidden_items")?,
             reactions: crate::plugins::reactions::view::ReactionsUi::load(settings)?,
             solved: crate::plugins::solved::view::SolvedUi::load(settings)?,
+            presence: flag("presence_enabled")?,
         })
     }
 }
@@ -1845,8 +1848,15 @@ pub fn footer_buttons(cx: &PostContext, view: &Value) -> String {
     } else {
         String::new()
     };
+    // The topic-above-footer-buttons outlet (members only), with
+    // discourse-presence's connector when it is on.
+    let above = if cx.settings.presence {
+        "<span><div class=\"topic-above-footer-buttons-outlet presence\" style=\"--avatar-min-height: 24px\"></div></span>"
+    } else {
+        "<span></span>"
+    };
     format!(
-        "<div aria-label=\"{}\" id=\"topic-footer-buttons\" role=\"region\"><div class=\"topic-footer-main-buttons\"><div class=\"topic-footer-main-buttons__actions\">{actions}</div>{reply}</div>{notifications}</div>{}",
+        "{above}<div aria-label=\"{}\" id=\"topic-footer-buttons\" role=\"region\"><div class=\"topic-footer-main-buttons\"><div class=\"topic-footer-main-buttons__actions\">{actions}</div>{reply}</div>{notifications}</div>{}",
         escape(&t(l, "topic.footer_buttons.region_label")),
         notifications_menu(cx, view)
     )
@@ -2150,6 +2160,7 @@ mod tests {
                 .collect(),
             reactions: None,
             solved: None,
+            presence: false,
         };
         let topic = TopicInfo {
             id: 9,
@@ -2316,6 +2327,7 @@ mod tests {
                 .collect(),
             reactions: None,
             solved: None,
+            presence: false,
         };
         let topic = TopicInfo {
             id: 9,

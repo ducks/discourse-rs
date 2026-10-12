@@ -419,17 +419,49 @@ impl Site {
         );
         let render_settings = format!("{}/assets/markdown-settings.json", self.base_path);
         // allowPreview: not for the rich editor (composition_mode 1).
-        let allow_preview = match guardian.user_id() {
+        let (allow_preview, hide_presence) = match guardian.user_id() {
             Some(uid) => {
-                let mode: Option<i32> = sqlx::query_scalar(
-                    "SELECT composition_mode FROM user_options WHERE user_id = $1",
+                let options: Option<(i32, bool)> = sqlx::query_as(
+                    "SELECT composition_mode, hide_presence FROM user_options WHERE user_id = $1",
                 )
                 .bind(uid)
                 .fetch_optional(&mut *conn)
                 .await?;
-                mode != Some(1)
+                (
+                    options.map(|o| o.0) != Some(1),
+                    options.is_some_and(|o| o.1),
+                )
             }
-            None => false,
+            None => (false, false),
+        };
+        // discourse-presence: what the composer and the topic's footer show
+        // of who else is replying or editing.
+        let presence = if crate::plugins::presence::enabled(settings)? {
+            let js = |key: &str| {
+                state
+                    .i18n
+                    .t(&format!("js.presence.{key}"))
+                    .unwrap_or(key)
+                    .to_string()
+            };
+            Some(serde_json::json!({
+                "replying_one": js("replying.one"),
+                "replying_other": js("replying.other"),
+                "editing_one": js("editing.one"),
+                "editing_other": js("editing.other"),
+                "replying_to_topic_one": js("replying_to_topic.one"),
+                "replying_to_topic_other": js("replying_to_topic.other"),
+                "max_users_shown": settings.get("presence_max_users_shown")?.to_i(),
+                "whisperer": guardian.is_whisperer(settings)?,
+                "hide_presence": hide_presence,
+                "user_id": guardian.user_id(),
+                "profile_possessive": state
+                    .i18n
+                    .t("js.user.profile_possessive")
+                    .unwrap_or("%{username}'s profile"),
+            }))
+        } else {
+            None
         };
         Ok(crate::composer_view::render(
             &list,
@@ -437,6 +469,7 @@ impl Site {
             default_category,
             Some((&wasm, &render_settings)),
             allow_preview,
+            presence.as_ref(),
             crate::composer_view::UploadUi::for_user(
                 &settings.get("authorized_extensions")?.to_s(),
                 &settings.get("authorized_extensions_for_staff")?.to_s(),

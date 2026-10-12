@@ -86,6 +86,9 @@ async fn a_restricted_channel_tells_only_its_groups() {
 async fn the_sweep_takes_expired_clients() {
     let db = TestDb::new().await;
     let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    // From before anyone entered: the bus position is its delivery horizon,
+    // which other transactions in the cluster can hold behind a commit.
+    let from = st.bus.now().await.unwrap();
     enter(&st, "/chat/online", 3, "a").await;
     enter(&st, "/chat/online", 4, "a").await;
     sqlx::query(
@@ -94,10 +97,12 @@ async fn the_sweep_takes_expired_clients() {
     .execute(&db.pool)
     .await
     .unwrap();
-    let from = st.bus.now().await.unwrap();
     presence::auto_leave_all(&st).await.unwrap();
-    let messages = heard(&st, from, "/presence/chat/online", 4, 1).await;
-    assert_eq!(messages, vec![json!({ "leaving_user_ids": [3] })]);
+    let messages = heard(&st, from, "/presence/chat/online", 4, 3).await;
+    assert_eq!(messages.len(), 3, "{messages:?}");
+    assert_eq!(messages[0]["entering_users"][0]["id"], 3);
+    assert_eq!(messages[1]["entering_users"][0]["id"], 4);
+    assert_eq!(messages[2], json!({ "leaving_user_ids": [3] }));
     let left: Vec<i32> = sqlx::query_scalar(
         "SELECT user_id FROM discourse_rs.presence_clients WHERE channel = '/chat/online' ORDER BY user_id",
     )
