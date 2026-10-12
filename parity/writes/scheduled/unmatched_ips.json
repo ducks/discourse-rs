@@ -1,0 +1,136 @@
+{
+  "name": "unmatched_ips",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-12T22:55:23.768679",
+  "transaction_started_at": "2026-10-12T22:55:23.06664",
+  "responses": [],
+  "changes": {
+    "screened_ip_addresses": {
+      "inserted": [
+        {
+          "id": 6,
+          "created_at": "2026-09-12T22:55:23.06664",
+          "ip_address": "203.0.113.0/24",
+          "updated_at": "2026-10-12T22:55:23.775683",
+          "action_type": 1,
+          "match_count": 10,
+          "last_match_at": "2026-10-11T22:55:23.06664"
+        }
+      ],
+      "deleted": [
+        {
+          "id": 9501,
+          "created_at": "2026-09-12T22:55:23.06664",
+          "ip_address": "203.0.113.1",
+          "updated_at": "2026-10-12T22:55:23.06664",
+          "action_type": 1,
+          "match_count": 1,
+          "last_match_at": "2026-10-09T22:55:23.06664"
+        },
+        {
+          "id": 9502,
+          "created_at": "2026-09-22T22:55:23.06664",
+          "ip_address": "203.0.113.2",
+          "updated_at": "2026-10-12T22:55:23.06664",
+          "action_type": 1,
+          "match_count": 2,
+          "last_match_at": "2026-10-10T22:55:23.06664"
+        },
+        {
+          "id": 9503,
+          "created_at": "2026-09-17T22:55:23.06664",
+          "ip_address": "203.0.113.3",
+          "updated_at": "2026-10-12T22:55:23.06664",
+          "action_type": 1,
+          "match_count": 3,
+          "last_match_at": null
+        },
+        {
+          "id": 9504,
+          "created_at": "2026-10-02T22:55:23.06664",
+          "ip_address": "203.0.113.4",
+          "updated_at": "2026-10-12T22:55:23.06664",
+          "action_type": 1,
+          "match_count": 0,
+          "last_match_at": null
+        },
+        {
+          "id": 9505,
+          "created_at": "2026-10-07T22:55:23.06664",
+          "ip_address": "203.0.113.5",
+          "updated_at": "2026-10-12T22:55:23.06664",
+          "action_type": 1,
+          "match_count": 4,
+          "last_match_at": "2026-10-11T22:55:23.06664"
+        },
+        {
+          "id": 9506,
+          "created_at": "2025-05-30T22:55:23.06664",
+          "ip_address": "198.51.100.1",
+          "updated_at": "2026-10-12T22:55:23.06664",
+          "action_type": 1,
+          "match_count": 1,
+          "last_match_at": "2025-09-07T22:55:23.06664"
+        },
+        {
+          "id": 9507,
+          "created_at": "2025-09-07T22:55:23.06664",
+          "ip_address": "198.51.100.2",
+          "updated_at": "2026-10-12T22:55:23.06664",
+          "action_type": 1,
+          "match_count": 0,
+          "last_match_at": null
+        }
+      ],
+      "updated": []
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 20,
+          "context": null,
+          "details": "203.0.113.0/24 from 203.0.113.1, 203.0.113.2, 203.0.113.3, 203.0.113.4, 203.0.113.5",
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-12T22:55:23.778394",
+          "ip_address": null,
+          "updated_at": "2026-10-12T22:55:23.778394",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": -1,
+          "previous_value": null,
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "screened_ip_addresses": 6,
+    "user_histories": 74
+  },
+  "setup": [
+    "INSERT INTO screened_ip_addresses (id, ip_address, action_type, match_count, last_match_at, created_at, updated_at) VALUES (9501, '203.0.113.1', 1, 1, now() - interval '3 days', now() - interval '30 days', now()), (9502, '203.0.113.2', 1, 2, now() - interval '2 days', now() - interval '20 days', now()), (9503, '203.0.113.3', 1, 3, NULL, now() - interval '25 days', now()), (9504, '203.0.113.4', 1, 0, NULL, now() - interval '10 days', now()), (9505, '203.0.113.5', 1, 4, now() - interval '1 day', now() - interval '5 days', now()), (9506, '198.51.100.1', 1, 1, now() - interval '400 days', now() - interval '500 days', now()), (9507, '198.51.100.2', 1, 0, NULL, now() - interval '400 days', now()), (9508, '198.51.100.3', 2, 0, NULL, now() - interval '400 days', now()), (9509, '198.51.100.4', 1, 1, now() - interval '10 days', now() - interval '400 days', now())"
+  ],
+  "enqueue": [
+    [
+      "Jobs::CleanUpUnmatchedIPs",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "f84ebf0274e88bf5a86027151a7be74b1b49c1e5373bb1f524596e0f93fc5984",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "user": null,
+  "settings": { "automatically_clean_unused_tags": true },
+  "setup": [
+    
+  ],
+  "requests": [],
+  "enqueue": [["clean_up_tags", {}]],
+  "run_jobs": ["clean_up_tags"]
+}

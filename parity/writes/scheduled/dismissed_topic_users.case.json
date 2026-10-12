@@ -1,0 +1,12 @@
+{
+  "user": null,
+  "settings": { "max_new_topics": 1 },
+  "setup": [
+    "UPDATE user_options SET new_topic_duration_minutes = -1 WHERE user_id = 4",
+    "INSERT INTO dismissed_topic_users (id, user_id, topic_id, created_at) VALUES (9501, 3, 35, now()), (9502, 4, 35, now()), (9503, 4, 37, now()), (9504, 4, 38, now())",
+    "UPDATE topics SET created_at = created_at + (id - 35) * interval '1 minute' WHERE id IN (35, 37, 38)"
+  ],
+  "requests": [],
+  "enqueue": [["clean_dismissed_topic_users", {}]],
+  "run_jobs": ["clean_dismissed_topic_users"]
+}

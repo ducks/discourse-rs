@@ -1,0 +1,30 @@
+{
+  "name": "tags_cleanup_off",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-12T22:55:21.86486",
+  "transaction_started_at": "2026-10-12T22:55:21.211603",
+  "responses": [],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO tags (id, name, created_at, updated_at, pm_topic_count, public_topic_count, staff_topic_count) VALUES (9501, 'stale', now() - interval '1 day', now() - interval '1 day', 0, 0, 0), (9502, 'fresh', now(), now(), 0, 0, 0), (9503, 'grouped', now() - interval '1 day', now() - interval '1 day', 0, 0, 0), (9504, 'abandoned', now() - interval '1 day', now() - interval '1 day', 0, 0, 0)",
+    "INSERT INTO tag_groups (id, name, created_at, updated_at) VALUES (9501, 'kept', now(), now())",
+    "INSERT INTO tag_group_memberships (tag_id, tag_group_id, created_at, updated_at) VALUES (9503, 9501, now(), now())",
+    "INSERT INTO tag_users (tag_id, user_id, notification_level, created_at, updated_at) VALUES (9501, 3, 3, now(), now())",
+    "INSERT INTO topic_tags (topic_id, tag_id, created_at, updated_at) VALUES (40, 9504, now(), now())"
+  ],
+  "enqueue": [
+    [
+      "clean_up_tags",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "c575699ae5a2a2db6ab2f405edf97a7ad7396db80fcab2476edd699b19af5c7e",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

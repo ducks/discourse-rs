@@ -1,0 +1,12 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO drafts (id, user_id, draft_key, data, created_at, updated_at, sequence, revisions, owner) VALUES (9501, 3, 'new_topic', '{\"reply\":\"stale\"}', now(), now(), 1, 1, NULL), (9502, 3, 'topic_35', '{\"reply\":\"old\"}', now() - interval '200 days', now() - interval '200 days', 0, 1, NULL), (9503, 4, 'topic_35', '{\"reply\":\"fresh\"}', now(), now(), 0, 1, NULL)",
+    "INSERT INTO draft_sequences (user_id, draft_key, sequence) VALUES (3, 'new_topic', 2), (4, 'topic_35', 0)",
+    "UPDATE user_stats SET draft_count = 5 WHERE user_id = 2",
+    "UPDATE user_stats SET draft_count = 2 WHERE user_id = 3"
+  ],
+  "requests": [],
+  "enqueue": [["clean_up_drafts", {}]],
+  "run_jobs": ["clean_up_drafts"]
+}

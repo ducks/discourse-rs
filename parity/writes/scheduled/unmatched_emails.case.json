@@ -1,0 +1,9 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO screened_emails (id, email, action_type, match_count, last_match_at, created_at, updated_at) VALUES (9501, 'old@example.com', 1, 1, now() - interval '400 days', now() - interval '500 days', now()), (9502, 'recent@example.com', 1, 1, now() - interval '10 days', now() - interval '500 days', now()), (9503, 'watched@example.com', 2, 1, now() - interval '400 days', now() - interval '500 days', now()), (9504, 'never@example.com', 1, 0, NULL, now() - interval '500 days', now())"
+  ],
+  "requests": [],
+  "enqueue": [["clean_up_unmatched_emails", {}]],
+  "run_jobs": ["clean_up_unmatched_emails"]
+}

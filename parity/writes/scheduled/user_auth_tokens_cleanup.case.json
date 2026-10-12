@@ -1,0 +1,11 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO user_auth_tokens (id, user_id, auth_token, prev_auth_token, rotated_at, created_at, updated_at) VALUES (9501, 3, 'a9501', 'p9501', now() - interval '70 days', now() - interval '70 days', now() - interval '70 days'), (9502, 3, 'a9502', 'p9502', now() - interval '1 hour', now() - interval '70 days', now() - interval '1 hour')",
+    "INSERT INTO user_auth_token_logs (id, action, user_auth_token_id, user_id, created_at) VALUES (9501, 'generate', 9501, 3, now() - interval '70 days'), (9502, 'rotate', 9501, 3, now() - interval '70 days'), (9503, 'suspicious', 9501, 3, now() - interval '70 days'), (9504, 'rotate', 9502, 3, now() - interval '1 hour')"
+  ],
+  "requests": [],
+  "enqueue": [["clean_up_user_auth_tokens", {}]],
+  "run_jobs": ["clean_up_user_auth_tokens"],
+  "include_tables": ["user_auth_tokens"]
+}

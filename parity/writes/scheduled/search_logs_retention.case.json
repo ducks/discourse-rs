@@ -1,0 +1,10 @@
+{
+  "user": null,
+  "setup": [
+    "DELETE FROM search_logs",
+    "INSERT INTO search_logs (id, term, user_id, search_type, created_at) VALUES (9501, 'one', 3, 1, now() - interval '400 days'), (9502, 'two', 3, 1, now()), (9503, 'three', 3, 1, now()), (9504, 'four', 3, 1, now()), (9505, 'five', 3, 1, now())"
+  ],
+  "requests": [],
+  "enqueue": [["clean_up_search_logs", {}]],
+  "run_jobs": ["clean_up_search_logs"]
+}

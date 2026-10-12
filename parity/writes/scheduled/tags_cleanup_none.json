@@ -1,0 +1,57 @@
+{
+  "name": "tags_cleanup_none",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-12T22:55:20.864941",
+  "transaction_started_at": "2026-10-12T22:55:20.188494",
+  "responses": [],
+  "changes": {
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 23,
+          "context": null,
+          "details": "tags: []",
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-12T22:55:20.867348",
+          "ip_address": null,
+          "updated_at": "2026-10-12T22:55:20.867348",
+          "category_id": null,
+          "custom_type": "deleted_unused_tags",
+          "reviewable_id": null,
+          "acting_user_id": -1,
+          "previous_value": null,
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "user_histories": 74
+  },
+  "settings": {
+    "automatically_clean_unused_tags": true
+  },
+  "setup": [],
+  "enqueue": [
+    [
+      "clean_up_tags",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "49eb6c60c7000314bace3b1f04dfc97c70049541377dc27b1416f5d3567ab91f",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

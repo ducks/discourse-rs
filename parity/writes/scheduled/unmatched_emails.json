@@ -1,0 +1,43 @@
+{
+  "name": "unmatched_emails",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-12T22:55:22.752899",
+  "transaction_started_at": "2026-10-12T22:55:22.079507",
+  "responses": [],
+  "changes": {
+    "screened_emails": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 9501,
+          "email": "old@example.com",
+          "created_at": "2025-05-30T22:55:22.079507",
+          "ip_address": null,
+          "updated_at": "2026-10-12T22:55:22.079507",
+          "action_type": 1,
+          "match_count": 1,
+          "last_match_at": "2025-09-07T22:55:22.079507"
+        }
+      ],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO screened_emails (id, email, action_type, match_count, last_match_at, created_at, updated_at) VALUES (9501, 'old@example.com', 1, 1, now() - interval '400 days', now() - interval '500 days', now()), (9502, 'recent@example.com', 1, 1, now() - interval '10 days', now() - interval '500 days', now()), (9503, 'watched@example.com', 2, 1, now() - interval '400 days', now() - interval '500 days', now()), (9504, 'never@example.com', 1, 0, NULL, now() - interval '500 days', now())"
+  ],
+  "enqueue": [
+    [
+      "clean_up_unmatched_emails",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "5e0cd52b6839346e0492dd577b69a7c56ce7ff88eff926d6399c1f67b7e520bb",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
