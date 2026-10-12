@@ -225,7 +225,9 @@ async fn heard(
         tags,
     };
     let mut out = Vec::new();
-    for _ in 0..50 {
+    // Up to 30 seconds: pg-bus holds a message until every older write
+    // transaction in the cluster ends, and parallel tests hold long ones.
+    for _ in 0..300 {
         out = st
             .bus
             .backlog(from, &filter, 10)
