@@ -1,0 +1,72 @@
+{
+  "name": "empty_term",
+  "user": "user0",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/u/search/users.json?term=&include_groups=true&limit=6"
+    }
+  ],
+  "started_at": "2026-10-12T18:30:32.167023",
+  "transaction_started_at": "2026-10-12T18:30:31.321003",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "users": []
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 451,
+            "seen_at": null,
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "lnSnZxmBeOK26KeqUieE5hB5xjI=",
+            "created_at": "2026-10-12T18:30:31.643448",
+            "rotated_at": "2026-10-12T18:30:31.643224",
+            "updated_at": "2026-10-12T18:30:31.643448",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "lnSnZxmBeOK26KeqUieE5hB5xjI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 451,
+            "seen_at": "2026-10-12T18:30:32.173248",
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "lnSnZxmBeOK26KeqUieE5hB5xjI=",
+            "created_at": "2026-10-12T18:30:31.643448",
+            "rotated_at": "2026-10-12T18:30:31.643224",
+            "updated_at": "2026-10-12T18:30:31.643448",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "lnSnZxmBeOK26KeqUieE5hB5xjI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE users SET last_seen_at = now() - interval '1 hour' * (CASE WHEN id > 0 THEN id ELSE 10 - id END) WHERE id <> 0"
+  ],
+  "recorded_from": {
+    "case": "26d2ff8a161b5f808023935abd3afa863018ee079d2c1cbe50471aaefe3cd2f8",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

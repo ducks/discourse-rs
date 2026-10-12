@@ -10,6 +10,7 @@ use sqlx::PgConnection;
 
 use crate::params;
 use crate::plugins::chat::channels::{Context, Found, MEMBERSHIPS_LIMIT, STATUSES, Search};
+use crate::ruby::cast_boolean;
 use crate::session::current::AuthGuardian;
 use crate::site_settings::SiteSettings;
 use crate::{AppError, AppState};
@@ -76,16 +77,6 @@ pub async fn me_channels(
     };
     let mut cx = context(&state, &mut conn, &settings, &guardian);
     Ok(Json(cx.me_channels().await?).into_response())
-}
-
-/// `ActiveModel::Type::Boolean.new.cast`: nil for nothing or "", false
-/// for the false values, else true.
-fn cast_boolean(v: Option<&str>) -> Option<bool> {
-    match v? {
-        "" => None,
-        "0" | "f" | "F" | "false" | "FALSE" | "off" | "OFF" => Some(false),
-        _ => Some(true),
-    }
 }
 
 /// GET /chat/api/channels: Chat::Api::ChannelsController#index.

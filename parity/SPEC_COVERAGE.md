@@ -92,6 +92,7 @@ Scenarios per action (an `it` marked (xN) counts N).
 | TagsController#index | 22 | 0 | 1 | 9 |
 | TagsController#show (+ show in category) | 20 | 0 | 0 | 9 |
 | HashtagsController#search | 4 | 0 | 0 | 0 |
+| UsersController#search_users | 37 | 0 | 3 | 0 |
 | SiteController#site | 0 | 0 | 0 | 1 |
 | SiteController#basic_info | 2 | 0 | 0 | 0 |
 | RobotsTxtController#builder | 1 | 1 | 0 | 0 |
@@ -99,7 +100,7 @@ Scenarios per action (an `it` marked (xN) counts N).
 | SitemapController | 6 | 4 | 0 | 0 |
 | UserAvatarsController#show_proxy_letter | 0 | 1 | 1 | 0 |
 | StylesheetsController (color definitions) | 0 | 0 | 4 | 10 |
-| **All (68 sections)** | **393** | **308** | **207** | **514** |
+| **All (69 sections)** | **430** | **308** | **210** | **514** |
 
 ## Cases added from this inventory
 
@@ -1790,3 +1791,50 @@ its own branch (`git log --merges --grep fix/`), so all 94 match.
 | 396 | #search > no hidden and restricted categories/tags for a user | covered | search_staff_hidden, search_tag_hidden (new, match) |
 | 409 | #search > admin sees hidden and restricted categories/tags | covered | search_staff_admin, search_tag_hidden_admin (new, match) |
 | 455 | #search > not logged in is invalid access | covered | search_anonymous (new, matches) |
+
+## UsersController#search_users
+
+`spec/requests/users_controller_spec.rb`
+
+| Line | Scenario | Class | Case / note |
+|---|---|---|---|
+| 6089 | searches when provided the term only | covered | term, default_limit, name (new, match) |
+| 6097 | searching usernames > a list of usernames | covered | usernames (new, matches) |
+| 6106 | searching usernames > excludes users hidden by the regular scope | covered | usernames_suspended (new, matches) |
+| 6134 | searching usernames > searches groups with include_groups | covered | usernames_groups (new, matches) |
+| 6153 | searches when provided the topic only | covered | topic (new, matches) |
+| 6160 | searches when provided the term and topic | covered | topic_term (new, matches) |
+| 6169 | in a topic > brings first the replied to user | covered | topic_prioritized (new, matches) |
+| 6183 | in a topic > respects the term when replying | covered | topic_term (new, matches) |
+| 6199 | only users with access to a private topic | covered | topic_allowed (new, matches) |
+| 6228 | interprets a blank category id | covered | blank_category (new, matches) |
+| 6235 | invalid limit params | covered | bad_limit, big_limit, negative_limit (new, match) |
+| 6244 | enable_names true returns names | covered | term (new, matches) |
+| 6254 | enable_names false omits names | covered | names_disabled (new, matches) |
+| 6305 | groups > sorts on prefix | covered | groups, underscore (new, match) |
+| 6314 | groups > none without a term | covered | empty_term (new, matches) |
+| 6323 | groups > only visible groups | covered | groups_admin, exact (new, match) |
+| 6333 | groups > plugin groups filter | needs-harness | plugin registration |
+| 6357 | groups > plugin modifier on the groups filter | needs-harness | modifier registration |
+| 6377 | groups > modifier introducing a join | needs-harness | modifier registration |
+| 6402 | groups > doesn't search groups without a groups param | covered | default_limit (new, matches) |
+| 6414 | groups > messageable groups | covered | messageable (new, matches) |
+| 6430 | groups > mentionable groups | covered | mentionable, mentionable_admin (new, match) |
+| 6450 | groups > anonymous gets no mentionable or messageable groups | covered | anonymous_mentionable (new, matches) |
+| 6486 | by group name > results for a group member | covered | group_members (new, matches) |
+| 6494 | by group name > no results for a non-member | covered | group_param (new, matches) |
+| 6500 | by group name > member of one of the groups | covered | group_members (new, matches) |
+| 6512 | by group name > not a member of the groups | covered | group_param (new, matches) |
+| 6522 | by group name > anonymous can't enumerate a hidden group | covered | group_anonymous, group_hidden (new, match) |
+| 6536 | by group name > signed-in user filters by a group they can see | covered | group_param (new, matches) |
+| 6553 | by group name > missing group gives no results | covered | group_missing (new, matches) |
+| 6569 | include_staged_users > not for public callers | covered | staged_user (new, matches) |
+| 6578 | include_staged_users > included for staff | covered | staged (new, matches) |
+| 6589 | include_staged_users > no last-seen suggestions with staged | covered | staged_last_seen (new, matches) |
+| 6598 | include_staged_users > not without the param | covered | inactive, term (new, match) |
+| 6604 | include_staged_users > not when false | covered | staged_false (new, matches) |
+| 6612 | last_seen_users > results when true | covered | last_seen (new, matches) |
+| 6619 | last_seen_users > respects limit | covered | last_seen (new, matches) |
+| 6629 | returns avatar_template | covered | term (new, matches) |
+| 6640 | status > returned when enabled | covered | status (new, matches) |
+| 6655 | status > not returned when disabled | covered | status_disabled (new, matches) |

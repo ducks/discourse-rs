@@ -1,0 +1,89 @@
+{
+  "name": "status",
+  "user": "user0",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/u/search/users.json?term=user1"
+    }
+  ],
+  "started_at": "2026-10-12T18:30:55.179342",
+  "transaction_started_at": "2026-10-12T18:30:54.192209",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "users": [
+          {
+            "status": {
+              "description": "at the dentist",
+              "emoji": "tooth",
+              "ends_at": null,
+              "message_bus_last_id": 0
+            },
+            "id": 3,
+            "username": "user1",
+            "name": "User1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png"
+          }
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 451,
+            "seen_at": null,
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "iTi9bb9wiGwdV3XziyauZBHUAZQ=",
+            "created_at": "2026-10-12T18:30:54.506425",
+            "rotated_at": "2026-10-12T18:30:54.506192",
+            "updated_at": "2026-10-12T18:30:54.506425",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "iTi9bb9wiGwdV3XziyauZBHUAZQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 451,
+            "seen_at": "2026-10-12T18:30:55.185449",
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "iTi9bb9wiGwdV3XziyauZBHUAZQ=",
+            "created_at": "2026-10-12T18:30:54.506425",
+            "rotated_at": "2026-10-12T18:30:54.506192",
+            "updated_at": "2026-10-12T18:30:54.506425",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "iTi9bb9wiGwdV3XziyauZBHUAZQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "enable_user_status": true
+  },
+  "setup": [
+    "UPDATE users SET last_seen_at = now() - interval '1 hour' * (CASE WHEN id > 0 THEN id ELSE 10 - id END) WHERE id <> 0",
+    "INSERT INTO user_statuses (user_id, emoji, description, set_at) VALUES (3, 'tooth', 'at the dentist', now())"
+  ],
+  "recorded_from": {
+    "case": "f38a74e8be89e0486f91ab48f7b4286cdebbe5eace937353bf5855f14c8a08c6",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

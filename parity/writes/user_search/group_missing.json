@@ -1,0 +1,72 @@
+{
+  "name": "group_missing",
+  "user": "user0",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/u/search/users.json?term=user&group=nosuchgroup"
+    }
+  ],
+  "started_at": "2026-10-12T18:32:19.515831",
+  "transaction_started_at": "2026-10-12T18:32:18.482713",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "users": []
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 451,
+            "seen_at": null,
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "b2bir2aFkKivGi31GUmq6WQDqlA=",
+            "created_at": "2026-10-12T18:32:18.803999",
+            "rotated_at": "2026-10-12T18:32:18.803731",
+            "updated_at": "2026-10-12T18:32:18.803999",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "b2bir2aFkKivGi31GUmq6WQDqlA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 451,
+            "seen_at": "2026-10-12T18:32:19.523072",
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "b2bir2aFkKivGi31GUmq6WQDqlA=",
+            "created_at": "2026-10-12T18:32:18.803999",
+            "rotated_at": "2026-10-12T18:32:18.803731",
+            "updated_at": "2026-10-12T18:32:18.803999",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "b2bir2aFkKivGi31GUmq6WQDqlA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE users SET last_seen_at = now() - interval '1 hour' * (CASE WHEN id > 0 THEN id ELSE 10 - id END) WHERE id <> 0"
+  ],
+  "recorded_from": {
+    "case": "8154bed3894926d7663a4d6f5b69053041638589fa7318d6957553f024be1743",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

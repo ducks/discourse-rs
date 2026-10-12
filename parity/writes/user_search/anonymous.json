@@ -1,0 +1,56 @@
+{
+  "name": "anonymous",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/u/search/users.json?term=user&include_groups=true&limit=6"
+    }
+  ],
+  "started_at": "2026-10-12T18:30:21.572843",
+  "transaction_started_at": "2026-10-12T18:30:20.416784",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "users": [
+          {
+            "id": 2,
+            "username": "user0",
+            "name": "User0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png"
+          },
+          {
+            "id": 3,
+            "username": "user1",
+            "name": "User1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png"
+          },
+          {
+            "id": 4,
+            "username": "user2",
+            "name": "User2",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png"
+          },
+          {
+            "id": 5,
+            "username": "user3",
+            "name": "User3",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/ec9cab/{size}.png"
+          }
+        ]
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE users SET last_seen_at = now() - interval '1 hour' * (CASE WHEN id > 0 THEN id ELSE 10 - id END) WHERE id <> 0"
+  ],
+  "recorded_from": {
+    "case": "3c7b9cb11fda50dc2a46a0cfb50d79e5d3c08c8952f4d9f23db954b8fb174e45",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

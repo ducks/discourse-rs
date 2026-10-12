@@ -1,0 +1,31 @@
+{
+  "name": "anonymous_mentionable",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/u/search/users.json?term=mod&include_mentionable_groups=true"
+    }
+  ],
+  "started_at": "2026-10-12T18:32:14.4723",
+  "transaction_started_at": "2026-10-12T18:32:12.817822",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "users": []
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE users SET last_seen_at = now() - interval '1 hour' * (CASE WHEN id > 0 THEN id ELSE 10 - id END) WHERE id <> 0"
+  ],
+  "recorded_from": {
+    "case": "7e9ee8cf4c2ea8fb94616de0884e9d132f15af5def28cb0aa85a84cadd8111ae",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

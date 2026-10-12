@@ -749,25 +749,12 @@ impl Notifier<'_> {
         conn: &mut PgConnection,
         group_id: i32,
     ) -> Result<bool, AppError> {
-        let user = &self.author.user;
-        if user.admin {
-            return Ok(true);
-        }
-        let sql = if user.moderator {
-            "SELECT EXISTS (SELECT 1 FROM groups WHERE id = $1 AND (members_visibility_level IN (0, 1, 2, 3) \
-               OR id IN (SELECT g.id FROM groups g JOIN group_users gu ON gu.group_id = g.id AND gu.user_id = $2 AND gu.owner \
-                         WHERE g.members_visibility_level = 4)))"
-        } else {
-            "SELECT EXISTS (SELECT 1 FROM groups WHERE id = $1 AND id IN ( \
-               SELECT id FROM groups WHERE members_visibility_level IN (0, 1) \
-               UNION ALL SELECT g.id FROM groups g JOIN group_users gu ON gu.group_id = g.id AND gu.user_id = $2 \
-                 WHERE g.members_visibility_level = 2 \
-               UNION ALL SELECT g.id FROM groups g JOIN group_users gu ON gu.group_id = g.id AND gu.user_id = $2 AND gu.owner \
-                 WHERE g.members_visibility_level IN (3, 4)))"
-        };
-        Ok(sqlx::query_scalar(sql)
+        let sql = format!(
+            "SELECT EXISTS (SELECT 1 FROM groups WHERE groups.id = $1 AND {})",
+            crate::groups::members_visible_groups_where(&self.author.guardian, "groups")
+        );
+        Ok(sqlx::query_scalar(&sql)
             .bind(group_id)
-            .bind(user.id)
             .fetch_one(&mut *conn)
             .await?)
     }

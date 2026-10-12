@@ -103,6 +103,52 @@ pub fn inspect_string(s: &str) -> String {
     out
 }
 
+/// `Kernel#Integer(string)`: surrounding whitespace, a sign, a `0x`,
+/// `0b`, `0o`, `0d` or bare `0` (octal) prefix, digits with single
+/// underscores between them, and nothing else; None where Ruby raises.
+pub fn integer(s: &str) -> Option<i64> {
+    let s = s.trim_matches(|c: char| c.is_ascii_whitespace() || c == '\x0b');
+    let (neg, s) = match s.as_bytes().first()? {
+        b'-' => (true, &s[1..]),
+        b'+' => (false, &s[1..]),
+        _ => (false, s),
+    };
+    let lower = s.to_ascii_lowercase();
+    let (radix, digits) = if let Some(rest) = lower.strip_prefix("0x") {
+        (16, rest)
+    } else if let Some(rest) = lower.strip_prefix("0b") {
+        (2, rest)
+    } else if let Some(rest) = lower.strip_prefix("0o") {
+        (8, rest)
+    } else if let Some(rest) = lower.strip_prefix("0d") {
+        (10, rest)
+    } else if lower.len() > 1 && lower.starts_with('0') {
+        (8, &lower[1..])
+    } else {
+        (10, lower.as_str())
+    };
+    // Underscores only between digits.
+    if digits.is_empty()
+        || digits.starts_with('_')
+        || digits.ends_with('_')
+        || digits.contains("__")
+    {
+        return None;
+    }
+    let n = i64::from_str_radix(&digits.replace('_', ""), radix).ok()?;
+    Some(if neg { -n } else { n })
+}
+
+/// `ActiveModel::Type::Boolean.new.cast`: nil for nothing or "", false
+/// for the false values, else true.
+pub fn cast_boolean(v: Option<&str>) -> Option<bool> {
+    match v? {
+        "" => None,
+        "0" | "f" | "F" | "false" | "FALSE" | "off" | "OFF" => Some(false),
+        _ => Some(true),
+    }
+}
+
 /// `Hash#inspect` (and `Array#inspect`) of a deep-symbolized parameter
 /// hash, as Ruby 3.4 writes it: `{key: value}`, a key that isn't a plain
 /// symbol quoted (`"a b": 1`).
@@ -145,6 +191,19 @@ pub fn inspect_value(value: &serde_json::Value) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn integer_parses_as_kernel_integer() {
+        assert_eq!(integer(" 12 "), Some(12));
+        assert_eq!(integer("-1_000"), Some(-1000));
+        assert_eq!(integer("0x1f"), Some(31));
+        assert_eq!(integer("010"), Some(8));
+        assert_eq!(integer("0b11"), Some(3));
+        assert_eq!(integer("0"), Some(0));
+        for bad in ["", "abc", "1_", "1__0", "12abc", "08", "-", " "] {
+            assert_eq!(integer(bad), None, "{bad:?}");
+        }
+    }
 
     #[test]
     fn strip_keeps_no_break_spaces() {
