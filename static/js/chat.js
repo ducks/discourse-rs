@@ -894,7 +894,13 @@
   });
 
   document.addEventListener("keydown", function (event) {
-    if (event.target.id !== "channel-composer" || event.isComposing) {
+    // An open autocomplete has the keys (#isAutocompleteDisplayed).
+    if (
+      event.target.id !== "channel-composer" ||
+      event.isComposing ||
+      event.altKey ||
+      (Discourse.autocomplete && Discourse.autocomplete.isOpen())
+    ) {
       return;
     }
     var parts = composerParts();
@@ -1851,11 +1857,533 @@
 
   var cleanup = null;
 
+  // The composer's autocompletes (ChatComposer#setupAutocomplete): @
+  // users and groups, : emoji, # channels, categories and tags.
+  function escapeHtml(s) {
+    return String(s === undefined || s === null ? "" : s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#x27;");
+  }
+
+  // iconHTML: the sprite's symbol, with any extra class before svg-string.
+  function iconHtml(name, extraClass) {
+    return (
+      '<svg class="fa d-icon d-icon-' + escapeHtml(name) + " svg-icon fa-width-auto" +
+      (extraClass ? " " + escapeHtml(extraClass) : "") +
+      ' svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#' +
+      escapeHtml(name) + '"></use></svg>'
+    );
+  }
+
+  // A promise of the results unless the next search (or five seconds)
+  // overtakes it, as user-search and hashtag-autocomplete cancel theirs.
+  function debouncedFetch(holder, delay, request) {
+    clearTimeout(holder.timer);
+    if (holder.controller) {
+      holder.controller.abort();
+      holder.controller = null;
+    }
+    if (holder.resolve) {
+      holder.resolve(Discourse.autocomplete.CANCELLED);
+    }
+    return new Promise(function (resolve) {
+      holder.resolve = resolve;
+      var giveUp = setTimeout(function () {
+        resolve(Discourse.autocomplete.CANCELLED);
+      }, 5000);
+      holder.timer = setTimeout(function () {
+        var controller = new AbortController();
+        holder.controller = controller;
+        request(controller.signal)
+          .then(function (result) {
+            clearTimeout(giveUp);
+            resolve(result);
+          })
+          .catch(function () {
+            clearTimeout(giveUp);
+            resolve(Discourse.autocomplete.CANCELLED);
+          })
+          .finally(function () {
+            if (holder.controller === controller) {
+              holder.controller = null;
+            }
+          });
+      }, delay);
+    });
+  }
+
+  function getJson(path, signal) {
+    return fetch(basePath() + path, {
+      credentials: "same-origin",
+      headers: { "X-Requested-With": "XMLHttpRequest", Accept: "application/json" },
+      signal: signal,
+    }).then(function (r) {
+      if (r.status === 429) {
+        var wait = Number(r.headers.get("Retry-After") || 0);
+        userSearchState.rateLimitedUntil = Date.now() + wait * 1000;
+      }
+      if (!r.ok) {
+        throw new Error(String(r.status));
+      }
+      return r.json();
+    });
+  }
+
+  // lib/user-search: the term searched 300ms after typing stops, cached
+  // for 30 seconds, ranked by organizeResults.
+  var userSearchState = { cache: {}, cacheTime: 0, rateLimitedUntil: 0, holder: {} };
+  var USER_IGNORE =
+    /([ -⁯⸀-⹿\\'!"#$%&()*,\/:;<=>?\[\]^`{|}~])|\s\s|^\s$|^[^+]*\+[^@]*$/;
+
+  function lowerCaseIncludes(string, term) {
+    return !!(string && term && string.toLowerCase().indexOf(term.toLowerCase()) !== -1);
+  }
+
+  function organizeResults(r, term, limit) {
+    if (r === Discourse.autocomplete.CANCELLED) {
+      return r;
+    }
+    term = ((term || "").trim().split(/\s/, 1) || [])[0];
+    var users = (r.users || []).map(function (user) {
+      user.isUser = true;
+      user.isMetadataMatch = !!term && !lowerCaseIncludes(user.username, term) && !lowerCaseIncludes(user.name, term);
+      return user;
+    });
+    var groups = (r.groups || []).map(function (group) {
+      group.isGroup = true;
+      return group;
+    });
+    var userSet = {};
+    var groupSet = {};
+    var lower = function (s) {
+      return s === undefined || s === null ? s : String(s).toLowerCase();
+    };
+    var pick = function (list, set, key, test) {
+      return list.filter(function (item) {
+        if (set[item[key]] || !test(item)) {
+          return false;
+        }
+        set[item[key]] = true;
+        return true;
+      });
+    };
+    var ordered = [].concat(
+      pick(users, userSet, "username", function (u) {
+        return lower(u.username) === lower(term);
+      }),
+      pick(groups, groupSet, "name", function (g) {
+        return lower(g.name) === lower(term);
+      }),
+      pick(users, userSet, "username", function (u) {
+        return !u.isMetadataMatch && !(term && !lowerCaseIncludes(u.username, term));
+      }),
+      pick(groups, groupSet, "name", function (g) {
+        return !(term && !lowerCaseIncludes(g.name, term));
+      }),
+      pick(users, userSet, "username", function (u) {
+        return lower(u.name) === lower(term) && !u.isMetadataMatch;
+      }),
+      pick(users, userSet, "username", function (u) {
+        return lowerCaseIncludes(u.name, term) && !u.isMetadataMatch;
+      }),
+      pick(groups, groupSet, "name", function (g) {
+        return !!g.full_name && lower(g.full_name) === lower(term);
+      }),
+      pick(groups, groupSet, "name", function (g) {
+        return !!g.full_name && lowerCaseIncludes(g.full_name, term);
+      }),
+      users.filter(function (u) {
+        return u.isMetadataMatch;
+      })
+    );
+    return ordered.slice(0, limit);
+  }
+
+  function userSearch(term) {
+    if (term && term.charAt(0) === "@") {
+      term = term.substring(1);
+    }
+    term = term || "";
+    var s = userSearchState;
+    if (Date.now() - s.cacheTime > 30000) {
+      s.cache = {};
+    }
+    // skipSearch, without emails.
+    if (term.indexOf("@") !== -1 || USER_IGNORE.test(term)) {
+      return Promise.resolve([]);
+    }
+    return debouncedFetch(s.holder, 300, function (signal) {
+      if (s.cache[term]) {
+        return Promise.resolve(JSON.parse(JSON.stringify(s.cache[term])));
+      }
+      if (s.rateLimitedUntil > Date.now() || term === "") {
+        return Promise.resolve(Discourse.autocomplete.CANCELLED);
+      }
+      var query = new URLSearchParams({ term: term, include_groups: "true", limit: "6" });
+      return getJson("/u/search/users?" + query.toString(), signal).then(function (r) {
+        s.cache[term] = r;
+        s.cacheTime = Date.now();
+        return JSON.parse(JSON.stringify(r));
+      });
+    }).then(function (r) {
+      return organizeResults(r, term, 6);
+    });
+  }
+
+  // UserAutocompleteResults
+  function renderUsers(results, selected) {
+    var tpl = actionsTemplate();
+    var viewer = tpl ? tpl.dataset.viewerId : null;
+    var out = '<div class="autocomplete ac-user"><ul>';
+    results.forEach(function (result, index) {
+      var classes = [];
+      // The chat presence channel's users are online: here, the viewer.
+      if (result.isUser && viewer && String(result.id) === viewer) {
+        classes.push("is-online");
+      }
+      if (index === selected) {
+        classes.push("selected");
+      }
+      var title = result.isUser ? result.name : result.isEmail ? result.username : result.full_name;
+      out += '<li><a class="' + classes.join(" ") + '" href=""' +
+        (title === undefined || title === null ? "" : ' title="' + escapeHtml(title) + '"') + ">";
+      if (result.isUser) {
+        out +=
+          '<img alt="" width="24" height="24" src="' +
+          escapeHtml((result.avatar_template || "").replace("{size}", "24")) +
+          '" class="avatar" title="' + escapeHtml(result.username) + '">' +
+          '<span class="text-content"><span class="username">' + escapeHtml(result.username) + "</span>" +
+          (result.name ? '<span class="name">' + escapeHtml(result.name) + "</span>" : "") +
+          "</span>" + (result.status ? '<span class="user-status"></span>' : "");
+      } else if (result.isGroup) {
+        out +=
+          iconHtml("users") +
+          '<span class="text-content"><span class="username">' + escapeHtml(result.name) +
+          '</span><span class="name">' + escapeHtml(result.full_name) + "</span></span>";
+      }
+      out += "</a></li>";
+    });
+    return out + "</ul></div>";
+  }
+
+  // EmojiAutocompleteResults
+  function renderEmojis(results, selected) {
+    var out = '<div class="autocomplete ac-emoji"><ul>';
+    results.forEach(function (result, index) {
+      out += "<li><a" + (index === selected ? ' class="selected"' : "") + ' href=""><span class="text-content">';
+      if (result.src) {
+        out += '<img class="emoji" src="' + escapeHtml(result.src) + '"><span class="emoji-shortname">' +
+          escapeHtml(result.code) + "</span>";
+      } else {
+        out += escapeHtml(result.label);
+      }
+      out += "</span></a></li>";
+    });
+    return out + "</ul></div>";
+  }
+
+  // RichHashtagAutocompleteResults
+  function renderHashtags(results, selected) {
+    var out = '<div class="autocomplete hashtag-autocomplete"><div class="hashtag-autocomplete__fadeout"><ul>';
+    results.forEach(function (result, index) {
+      out +=
+        '<li class="hashtag-autocomplete__option"><a class="hashtag-autocomplete__link' +
+        (index === selected ? " selected" : "") + '" href="">' + result.iconHtml +
+        '<span class="hashtag-autocomplete__text">' + result.text +
+        (result.secondary_text
+          ? '<span class="hashtag-autocomplete__meta-text">(' + escapeHtml(result.secondary_text) + ")</span>"
+          : "") +
+        "</span></a></li>";
+    });
+    return out + "</ul></div></div>";
+  }
+
+  // The hashtag types' color classes (generateColorCssClasses), added to
+  // #hashtag-css-generator as each hashtag loads (onLoad).
+  var loadedHashtags = {};
+
+  function hashtagCss(result) {
+    var key = result.type + "-" + result.id;
+    if (loadedHashtags[key] || !result.colors) {
+      return;
+    }
+    loadedHashtags[key] = true;
+    var rule = null;
+    if (result.type === "category") {
+      var color = result.colors.length === 1 ? result.colors[0] : result.colors[1];
+      var parent = result.colors.length === 1 ? null : result.colors[0];
+      if (result.style_type === "square") {
+        rule = parent
+          ? "background: linear-gradient(-90deg, #" + color + " 50%, #" + parent + " 50%);"
+          : "background-color: #" + color + ";";
+        rule = ".hashtag-color--category-" + result.id + " { " + rule + " }";
+      } else if (result.style_type === "icon") {
+        rule = ".hashtag-color--category-" + result.id + " { color: #" + color + "; }";
+      }
+    } else if (result.type === "channel") {
+      rule = ".d-icon.hashtag-color--channel-" + result.id + " { color: #" + result.colors[0] + " }";
+    }
+    if (!rule) {
+      return;
+    }
+    var style = document.getElementById("hashtag-css-generator");
+    if (!style) {
+      style = document.createElement("style");
+      style.id = "hashtag-css-generator";
+      style.innerHTML = ".hashtag-category-square { background-color: var(--primary-medium); }";
+      document.head.appendChild(style);
+    }
+    style.innerHTML += "\n" + rule;
+  }
+
+  // The hashtag types' generateIconHTML.
+  function hashtagIcon(result) {
+    var color = "hashtag-color--" + result.type + "-" + result.id;
+    if (result.type === "category") {
+      var inner = "";
+      if (result.style_type === "icon" && result.icon) {
+        inner = iconHtml(result.icon);
+      }
+      if (result.style_type === "emoji" && result.emoji) {
+        inner =
+          '<img width="20" height="20" src="' + escapeHtml(Discourse.emojiPicker.url(result.emoji)) +
+          '" title="' + escapeHtml(result.emoji) + '" alt="' + escapeHtml(result.emoji) + '" class="emoji">';
+      }
+      return '<span class="hashtag-category-' + escapeHtml(result.style_type) + " " + color + '">' + inner + "</span>";
+    }
+    if (result.type === "channel" && result.emoji) {
+      return (
+        '<img width="20" height="20" src="' + escapeHtml(Discourse.emojiPicker.url(result.emoji)) +
+        '" title="' + escapeHtml(result.emoji) + '" alt="' + escapeHtml(result.emoji) + '" class="emoji">'
+      );
+    }
+    return iconHtml(result.icon, color);
+  }
+
+  // lib/hashtag-autocomplete: searched 250ms after typing stops (the
+  // empty term too, for the defaults), cached for 30 seconds.
+  var hashtagState = { cache: {}, cacheTime: 0, holder: {} };
+
+  function hashtagSearch(term, order) {
+    if (/\s/.test(term)) {
+      return null;
+    }
+    var s = hashtagState;
+    if (Date.now() - s.cacheTime > 30000) {
+      s.cache = {};
+    }
+    if (s.cache[term]) {
+      return s.cache[term];
+    }
+    return debouncedFetch(s.holder, 250, function (signal) {
+      var query = new URLSearchParams({ term: term });
+      order.forEach(function (type) {
+        query.append("order[]", type);
+      });
+      return getJson("/hashtags/search.json?" + query.toString(), signal).then(function (response) {
+        var results = response.results;
+        if (!results) {
+          return Discourse.autocomplete.CANCELLED;
+        }
+        return Promise.all(
+          results.map(function (result) {
+            return Discourse.emojiPicker.unescape(escapeHtml(result.text), { shortcuts: true }).then(function (text) {
+              result.text = text;
+              hashtagCss(result);
+              result.iconHtml = hashtagIcon(result);
+              return result;
+            });
+          })
+        ).then(function (all) {
+          s.cache[term] = all;
+          s.cacheTime = Date.now();
+          return all;
+        });
+      });
+    });
+  }
+
+  // inCodeBlock: the caret, marked with a private-use character, cooks
+  // inside code.
+  var CODE_MARKERS = /    |```|~~~|[^`]`[^`]|\[code\]/;
+
+  function inCodeBlock(input) {
+    var text = input.value;
+    if (!CODE_MARKERS.test(text)) {
+      return Promise.resolve(false);
+    }
+    var marker = null;
+    for (var code = 0xe000; code <= 0xf8ff; ++code) {
+      if (text.indexOf(String.fromCharCode(code)) === -1) {
+        marker = String.fromCharCode(code);
+        break;
+      }
+    }
+    if (!marker) {
+      return Promise.resolve(false);
+    }
+    var pos = input.selectionStart;
+    return cookStaged(text.slice(0, pos) + marker + text.slice(pos)).then(function (html) {
+      var doc = new DOMParser().parseFromString("<body>" + html + "</body>", "text/html");
+      var found = false;
+      doc.querySelectorAll("code").forEach(function (node) {
+        if (node.textContent.indexOf(marker) !== -1) {
+          found = true;
+        }
+      });
+      return found;
+    });
+  }
+
+  function setupAutocomplete() {
+    var parts = composerParts();
+    if (!parts || !parts.input || parts.input.chatAutocomplete) {
+      return;
+    }
+    var input = parts.input;
+    var cfg = {};
+    try {
+      cfg = JSON.parse(parts.wrapper.dataset.autocomplete || "{}");
+    } catch (e) {
+      return;
+    }
+    input.chatAutocomplete = true;
+    var refocus = function (text, event) {
+      if (event && event.preventDefault) {
+        event.preventDefault();
+      }
+      input.focus();
+    };
+    if (cfg.mentions) {
+      Discourse.autocomplete.setup(input, {
+        key: "@",
+        render: renderUsers,
+        transformComplete: function (obj) {
+          return obj.username || obj.name;
+        },
+        dataSource: userSearch,
+        afterComplete: refocus,
+      });
+    }
+    if (cfg.emoji) {
+      var emojiTerm = null;
+      Discourse.autocomplete.setup(input, {
+        key: ":",
+        render: renderEmojis,
+        afterComplete: refocus,
+        onKeyUp: function (text, cp) {
+          var matches =
+            /(?:^|[\s.\?,@\/#!%&*;:\[\]{}=\-_()+])(:(?!:).?[\w-]*:?(?!:)(?:t\d?)?:?)$/gi.exec(text.substring(0, cp));
+          if (matches && matches[1]) {
+            return [matches[1]];
+          }
+        },
+        transformComplete: function (v) {
+          if (v.code) {
+            return v.code + ":";
+          }
+          // "more…": the picker, its pick in place of the term.
+          var value = input.value;
+          var caret = input.selectionStart;
+          var incomplete = value.substring(0, caret).match(/(:[\p{L}\p{N}_-]+)$/u);
+          emojiTerm = incomplete ? { start: caret - incomplete[1].length, end: caret - 1 } : null;
+          Discourse.emojiPicker.open(input, {
+            context: "chat",
+            term: v.term,
+            onSelect: function (emoji) {
+              if (emojiTerm) {
+                var before = input.value.substring(0, emojiTerm.start) + ":" + emoji + ": ";
+                input.value = before + input.value.substring(emojiTerm.end + 1);
+                input.setSelectionRange(before.length, before.length);
+                input.dispatchEvent(new Event("input", { bubbles: true }));
+              } else {
+                emojiSelected(input, emoji);
+              }
+              input.focus();
+            },
+          });
+          return "";
+        },
+        dataSource: function (term) {
+          var full = ":" + term;
+          term = term.toLowerCase();
+          // No quick autocomplete: two characters at least, and not :-p
+          // or other typed smileys.
+          if (term.length < Math.max(cfg.emojiMinChars || 0, 2)) {
+            return Promise.resolve(Discourse.autocomplete.SKIP);
+          }
+          if (!term.match(/[^-\{\}\[\]\(\)\*_\<\>\\\/].*[^-\{\}\[\]\(\)\*_\<\>\\\/]/)) {
+            return Promise.resolve(Discourse.autocomplete.SKIP);
+          }
+          var denied = cfg.deniedEmojis || [];
+          return Discourse.emojiPicker
+            .translations()
+            .then(function (translations) {
+              if (translations[full]) {
+                return [translations[full]];
+              }
+              var match = term.match(/^:?(.*?):t([2-6])?$/);
+              var tonable = match
+                ? Discourse.emojiPicker.isSkinTonable(match[1])
+                : Promise.resolve(false);
+              return tonable.then(function (yes) {
+                if (yes && denied.indexOf(match[1]) === -1) {
+                  return match[2]
+                    ? [match[1] + ":t" + match[2]]
+                    : [2, 3, 4, 5, 6].map(function (x) {
+                        return match[1] + ":t" + x;
+                      });
+                }
+                return Discourse.emojiPicker.search(term, {
+                  maxResults: 5,
+                  diversity: Discourse.emojiStore.diversity(),
+                  exclude: denied,
+                });
+              });
+            })
+            .then(function (list) {
+              if (list === Discourse.autocomplete.SKIP) {
+                return list;
+              }
+              var out = list.map(function (code) {
+                return { code: code, src: Discourse.emojiPicker.url(code) };
+              });
+              if (out.length) {
+                out.push({ label: cfg.moreEmoji, term: term });
+              }
+              return out;
+            });
+        },
+      });
+    }
+    Discourse.autocomplete.setup(input, {
+      key: "#",
+      render: renderHashtags,
+      autoSelectFirstSuggestion: true,
+      transformComplete: function (obj) {
+        return obj.ref;
+      },
+      dataSource: function (term) {
+        return hashtagSearch(term, cfg.hashtagOrder || []);
+      },
+      triggerRule: function () {
+        return inCodeBlock(input).then(function (inCode) {
+          return !inCode;
+        });
+      },
+      afterComplete: refocus,
+    });
+  }
+
   function setup() {
     var channel = document.querySelector(".chat-channel[data-id]");
     if (!channel) {
       return;
     }
+    setupAutocomplete();
     drawTimes(channel);
     drawSeparators(channel);
     decorateLinks(channel);

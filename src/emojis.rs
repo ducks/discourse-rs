@@ -88,7 +88,7 @@ fn url_for(settings: &SiteSettings, base_path: &str, filename: &str) -> Result<S
 }
 
 /// `Emoji.denied`: the deny list's names and their aliases.
-fn denied(settings: &SiteSettings) -> Result<Vec<String>, AppError> {
+pub(crate) fn denied(settings: &SiteSettings) -> Result<Vec<String>, AppError> {
     let list = settings.get("emoji_deny_list")?.to_s();
     let mut denied: Vec<String> = list
         .split('|')

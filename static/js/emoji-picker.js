@@ -895,9 +895,149 @@
     });
   }
 
+  // What the composer autocomplete reads: the client data, the list (for
+  // custom emojis and which are tonable) and the search aliases.
+  function loadAll() {
+    var cfg = config();
+    if (!cfg) {
+      return Promise.reject(new Error("no emoji picker template"));
+    }
+    return Promise.all([loadClientData(cfg), loadList(cfg), loadSearchAliases(cfg)]).then(function (loaded) {
+      var data = loaded[0];
+      if (!data.toSearch) {
+        // emojis.keys() and the custom ones (extendedEmojiMap), sorted.
+        data.toSearch = data.names
+          .concat(
+            Object.keys(urls).filter(function (name) {
+              return !data.nameSet[name];
+            })
+          )
+          .sort();
+      }
+      return { cfg: cfg, data: data, searchAliases: loaded[2] };
+    });
+  }
+
+  // isSkinTonableEmoji
+  function isSkinTonable(term) {
+    if (/:t[1-6]:?$/.test(term)) {
+      return false;
+    }
+    var name = term.split(":").filter(Boolean)[0];
+    return !!name && !!tonableNames[name];
+  }
+
+  // pretty-text's emojiSearch(term, { maxResults, diversity, exclude,
+  // searchAliases }): names starting with the term, those whose search
+  // aliases do, then names holding it; an alias counts as its name.
+  function emojiSearchFull(term, options) {
+    return loadAll().then(function (all) {
+      var aliasMap = all.data.aliases;
+      var exclude = options.exclude || [];
+      var results = [];
+      var addResult = function (t) {
+        var val = aliasMap[t] || t;
+        if (results.indexOf(val) === -1 && exclude.indexOf(val) === -1) {
+          if (options.diversity && options.diversity > 1 && isSkinTonable(val)) {
+            results.push(val + ":t" + options.diversity);
+          } else {
+            results.push(val);
+          }
+        }
+      };
+      all.data.toSearch.forEach(function (item) {
+        if (item.indexOf(term) === 0) {
+          addResult(item);
+        }
+      });
+      Object.keys(all.searchAliases).forEach(function (key) {
+        all.searchAliases[key].forEach(function (item) {
+          if (item.indexOf(term) === 0) {
+            addResult(key);
+          }
+        });
+      });
+      all.data.toSearch.forEach(function (item) {
+        if (item.indexOf(term) > 0) {
+          addResult(item);
+        }
+      });
+      return options.maxResults ? results.slice(0, options.maxResults) : results;
+    });
+  }
+
+  function escapeRegExp(s) {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
+
+  // emojiUnescape (performEmojiUnescape, not inline): unicode emojis,
+  // emoticons when shortcuts are on, and `:code:`s at a word's start
+  // become their images.
+  function emojiUnescape(string, options) {
+    return loadAll().then(function (all) {
+      var data = all.data;
+      if (!data.unicodeRegex) {
+        var keys = Object.keys(data.unicode).sort(function (a, b) {
+          return b.length - a.length;
+        });
+        data.unicodeRegex = keys.map(escapeRegExp).join("|");
+      }
+      var known = function (code) {
+        var name = code.split(":")[0];
+        return data.nameSet[name] || urls[name] !== undefined || data.aliases[name] !== undefined;
+      };
+      var replace = function (m, index) {
+        var isEmoticon = options.shortcuts && !!data.translations[m];
+        var isUnicode = !!data.unicode[m] || !!data.unicode[m[0]];
+        var val;
+        if (isEmoticon) {
+          val = data.translations[m];
+        } else if (isUnicode) {
+          val = data.unicode[m] || data.unicode[m[0]];
+        } else {
+          val = m.slice(1, m.length - 1);
+        }
+        var before = string.slice(0, index);
+        var replaceable =
+          (isEmoticon || m.lastIndexOf(":") === m.length - 1 || isUnicode) &&
+          (before.length === 0 ||
+            /(?:\s|[>.,\/#!$%^&*;:{}=\-_`~()])$/.test(before) ||
+            new RegExp("(?:" + data.unicodeRegex + ")$").test(before));
+        if (!known(val) || !replaceable) {
+          return m;
+        }
+        var custom = !data.nameSet[val.split(":")[0]] && data.aliases[val] === undefined;
+        return (
+          '<img width="20" height="20" src="' + escapeHtml(emojiUrl(all.cfg, val.toLowerCase())) +
+          '" title="' + escapeHtml(val) + '" alt="' + escapeHtml(val) + '" class="' +
+          (custom ? "emoji emoji-custom" : "emoji") + '">'
+        );
+      };
+      return string
+        .replace(new RegExp(data.unicodeRegex, "g"), replace)
+        .replace(/\B:[^\s:]+(?::t\d)?:?\B/g, replace);
+    });
+  }
+
   Discourse.emojiPicker = {
     open: open,
     shortcutReaction: shortcutReaction,
+    search: emojiSearchFull,
+    unescape: emojiUnescape,
+    isSkinTonable: function (term) {
+      return loadAll().then(function () {
+        return isSkinTonable(term);
+      });
+    },
+    translations: function () {
+      return loadAll().then(function (all) {
+        return all.data.translations;
+      });
+    },
+    url: function (code) {
+      var cfg = config();
+      return cfg ? emojiUrl(cfg, code) : "";
+    },
     close: close,
     isOpen: function () {
       return !!current;

@@ -35,7 +35,15 @@ pub async fn client_data() -> axum::response::Response {
         names.sort();
         let aliases: std::collections::BTreeMap<&String, &String> = emoji.aliases.iter().collect();
         let unicode: std::collections::BTreeMap<&String, &String> = emoji.unicode.iter().collect();
-        serde_json::json!({ "names": names, "aliases": aliases, "unicode": unicode }).to_string()
+        let translations: std::collections::BTreeMap<&String, &String> =
+            emoji.translations.iter().collect();
+        serde_json::json!({
+            "names": names,
+            "aliases": aliases,
+            "unicode": unicode,
+            "translations": translations,
+        })
+        .to_string()
     });
     (
         [

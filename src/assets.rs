@@ -80,6 +80,11 @@ const ASSETS: &[(&str, &str, &str)] = &[
         include_str!("../static/js/emoji-picker.js"),
     ),
     (
+        "autocomplete.js",
+        JS,
+        include_str!("../static/js/autocomplete.js"),
+    ),
+    (
         "topic-voting.js",
         JS,
         include_str!("../static/js/topic-voting.js"),

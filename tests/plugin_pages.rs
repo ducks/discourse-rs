@@ -852,3 +852,31 @@ async fn the_user_menu_shows_chat_mentions() {
         "{html}"
     );
 }
+#[tokio::test]
+async fn the_composer_carries_its_autocompletes() {
+    let db = TestDb::new().await;
+    common::set_setting(&db.pool, "emoji_deny_list", 1, "poop").await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Client::logged_in(st, "user1").await;
+    let html = user1.page("/chat/c/general/2").await;
+    // ChatComposer#setupAutocomplete's settings, the denied emojis (with
+    // their aliases), the chat-composer context's hashtag types in order
+    // and the "more" item's label.
+    let start = html
+        .find("data-autocomplete=\"")
+        .expect("the composer's autocompletes")
+        + 19;
+    let end = start + html[start..].find('"').unwrap();
+    let cfg: serde_json::Value =
+        serde_json::from_str(&html[start..end].replace("&quot;", "\"")).unwrap();
+    assert_eq!(cfg["mentions"], true);
+    assert_eq!(cfg["emoji"], true);
+    assert_eq!(cfg["emojiMinChars"], 0);
+    assert_eq!(cfg["deniedEmojis"][0], "poop");
+    assert_eq!(
+        cfg["hashtagOrder"],
+        serde_json::json!(["channel", "category", "tag"])
+    );
+    assert_eq!(cfg["moreEmoji"], "more…");
+    assert!(html.contains("/assets/autocomplete.js"));
+}

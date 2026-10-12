@@ -639,6 +639,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/discourse-solved.js", get(asset))
         .route("/assets/chat.js", get(asset))
         .route("/assets/emoji-picker.js", get(asset))
+        .route("/assets/autocomplete.js", get(asset))
         .route("/assets/tracking-menu.js", get(asset))
         .route("/assets/composer.js", get(asset))
         .route("/assets/screen-track.js", get(asset))
