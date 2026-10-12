@@ -1,0 +1,104 @@
+{
+  "name": "search_staff_admin",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/hashtags/search.json?term=sta&order%5B%5D=channel&order%5B%5D=category&order%5B%5D=tag"
+    }
+  ],
+  "started_at": "2026-10-12T18:01:27.814469",
+  "transaction_started_at": "2026-10-12T18:01:26.92607",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "results": [
+          {
+            "relative_url": "/chat/c/staff/1",
+            "text": "Staff",
+            "description": null,
+            "style_type": "icon",
+            "icon": "comment",
+            "emoji": null,
+            "colors": [
+              "E45735"
+            ],
+            "type": "channel",
+            "ref": "staff",
+            "slug": "staff",
+            "id": 1
+          },
+          {
+            "relative_url": "/c/staff/3",
+            "text": "Staff",
+            "description": "Private category for staff discussions. Topics are only visible to admins and moderators.",
+            "style_type": "emoji",
+            "icon": "folder",
+            "emoji": "shield",
+            "colors": [
+              "E45735"
+            ],
+            "type": "category",
+            "ref": "staff::category",
+            "slug": "staff",
+            "id": 3
+          }
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 451,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "tQxyx/ppBfpomLfWRm70YIeRb70=",
+            "created_at": "2026-10-12T18:01:27.294601",
+            "rotated_at": "2026-10-12T18:01:27.29373",
+            "updated_at": "2026-10-12T18:01:27.294601",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "tQxyx/ppBfpomLfWRm70YIeRb70=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 451,
+            "seen_at": "2026-10-12T18:01:27.821879",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "tQxyx/ppBfpomLfWRm70YIeRb70=",
+            "created_at": "2026-10-12T18:01:27.294601",
+            "rotated_at": "2026-10-12T18:01:27.29373",
+            "updated_at": "2026-10-12T18:01:27.294601",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "tQxyx/ppBfpomLfWRm70YIeRb70=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "tagging_enabled": true
+  },
+  "recorded_from": {
+    "case": "fcb5dbde583a5ee63d3ecdded8a54dbaf65afa69f9c49d1791b779b4981716f8",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

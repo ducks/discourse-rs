@@ -91,6 +91,7 @@ Scenarios per action (an `it` marked (xN) counts N).
 | SearchController#show | 8 | 8 | 5 | 5 |
 | TagsController#index | 22 | 0 | 1 | 9 |
 | TagsController#show (+ show in category) | 20 | 0 | 0 | 9 |
+| HashtagsController#search | 4 | 0 | 0 | 0 |
 | SiteController#site | 0 | 0 | 0 | 1 |
 | SiteController#basic_info | 2 | 0 | 0 | 0 |
 | RobotsTxtController#builder | 1 | 1 | 0 | 0 |
@@ -98,7 +99,7 @@ Scenarios per action (an `it` marked (xN) counts N).
 | SitemapController | 6 | 4 | 0 | 0 |
 | UserAvatarsController#show_proxy_letter | 0 | 1 | 1 | 0 |
 | StylesheetsController (color definitions) | 0 | 0 | 4 | 10 |
-| **All (67 sections)** | **389** | **308** | **207** | **514** |
+| **All (68 sections)** | **393** | **308** | **207** | **514** |
 
 ## Cases added from this inventory
 
@@ -1778,3 +1779,14 @@ its own branch (`git log --merges --grep fix/`), so all 94 match.
 | 262 | color_scheme > with theme param | unported | /color-scheme-stylesheet not routed |
 | 272 | color_scheme > no duplicate cache entries | unported | route not served; Stylesheet::Manager.cache inspection |
 
+
+## HashtagsController#search
+
+`spec/requests/hashtags_controller_spec.rb`
+
+| Line | Scenario | Class | Case / note |
+|---|---|---|---|
+| 359 | #search > returns the found category and then tag (tag ref gets ::tag) | covered | search_tag_conflict (new, matches) |
+| 396 | #search > no hidden and restricted categories/tags for a user | covered | search_staff_hidden, search_tag_hidden (new, match) |
+| 409 | #search > admin sees hidden and restricted categories/tags | covered | search_staff_admin, search_tag_hidden_admin (new, match) |
+| 455 | #search > not logged in is invalid access | covered | search_anonymous (new, matches) |

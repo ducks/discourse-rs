@@ -1,0 +1,72 @@
+{
+  "name": "search_order_string",
+  "user": "user0",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/hashtags/search.json?term=gen&order=category"
+    }
+  ],
+  "started_at": "2026-10-12T18:01:25.457055",
+  "transaction_started_at": "2026-10-12T18:01:24.586307",
+  "responses": [
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: order"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 451,
+            "seen_at": null,
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "aT/4Xz84CyNDbLG2LshAQJsozWk=",
+            "created_at": "2026-10-12T18:01:24.922305",
+            "rotated_at": "2026-10-12T18:01:24.921447",
+            "updated_at": "2026-10-12T18:01:24.922305",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "aT/4Xz84CyNDbLG2LshAQJsozWk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 451,
+            "seen_at": "2026-10-12T18:01:25.463927",
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "aT/4Xz84CyNDbLG2LshAQJsozWk=",
+            "created_at": "2026-10-12T18:01:24.922305",
+            "rotated_at": "2026-10-12T18:01:24.921447",
+            "updated_at": "2026-10-12T18:01:24.922305",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "aT/4Xz84CyNDbLG2LshAQJsozWk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "42ec4daab2e126024eee1dd5a618ddfddd2f221d5897104d593d955bb206e6d2",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "user": "user0",
+  "settings": {"tagging_enabled": true},
+  "setup": [
+    "INSERT INTO tags (id, name, public_topic_count, staff_topic_count, created_at, updated_at) VALUES (9806, 'general', 0, 0, '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "requests": [
+    { "method": "GET", "path": "/hashtags/search.json?term=gen&order%5B%5D=category&order%5B%5D=tag" }
+  ]
+}

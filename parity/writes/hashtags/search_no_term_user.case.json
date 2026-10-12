@@ -1,0 +1,17 @@
+{
+  "user": "user0",
+  "settings": {
+    "tagging_enabled": true
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/hashtags/search.json?order%5B%5D=channel&order%5B%5D=category&order%5B%5D=tag"
+    }
+  ],
+  "setup": [
+    "UPDATE chat_channels SET messages_count = 5 WHERE id = 2",
+    "UPDATE chat_channels SET messages_count = 2 WHERE id = 1",
+    "UPDATE categories SET topic_count = 4 WHERE id = 34"
+  ]
+}

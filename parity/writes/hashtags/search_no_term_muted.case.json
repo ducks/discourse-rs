@@ -1,0 +1,19 @@
+{
+  "user": "user0",
+  "settings": {
+    "tagging_enabled": true
+  },
+  "setup": [
+    "UPDATE chat_channels SET messages_count = 5 WHERE id = 2",
+    "UPDATE chat_channels SET messages_count = 2 WHERE id = 1",
+    "UPDATE categories SET topic_count = 4 WHERE id = 34",
+    "INSERT INTO category_users (category_id, user_id, notification_level, last_seen_at) VALUES (4, 2, 0, now())",
+    "INSERT INTO tag_users (tag_id, user_id, notification_level, created_at, updated_at) VALUES (1, 2, 0, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/hashtags/search.json?order%5B%5D=channel&order%5B%5D=category&order%5B%5D=tag"
+    }
+  ]
+}

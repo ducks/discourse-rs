@@ -32,6 +32,7 @@ pub mod flags;
 pub mod group_manager;
 pub mod groups;
 pub mod guardian;
+pub mod hashtags;
 pub mod html;
 pub mod html_prettify;
 pub mod i18n;
