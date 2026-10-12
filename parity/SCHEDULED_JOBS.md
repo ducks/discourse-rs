@@ -22,15 +22,14 @@ Classes:
 | Chat::EmailNotifications | 5m | chat/summary_email* |
 | presence_channel_auto_leave | 60s | tests/presence.rs |
 | bookmark_reminder_notifications | 5m | scheduled/bookmark_reminder_* |
+| unsilence_users | 15m | scheduled/unsilence_users* |
+| purge_expired_ignored_users | 1d | scheduled/purge_expired_ignored_users |
+| purge_old_notifications | 1w | scheduled/purge_old_notifications* |
 
 ## Ready, in porting order
 
 | Job | Every | Missing without it | Size |
 |---|---|---|---|
-| unsilence_users | 15m | timed silences never end | S |
-| purge_expired_ignored_users | 1d | expiring ignores never expire | S |
-| ignored_users_summary | 1d | moderators aren't told of widely ignored users | S |
-| purge_old_notifications | 1w | notifications are never capped | S |
 | top_refresh_today, top_refresh_older | 1h, 1d | /top reads top_topics nothing writes | M–L |
 | update_topic_hot_scores | 10m | /hot reads topic_hot_scores nothing writes | M |
 | category_stats | 1d | topics_week/month/year and /categories counts go stale | M |
@@ -63,6 +62,7 @@ Classes:
 |---|---|
 | badge_grant, ensure_badges_consistency, grant_anniversary_badges, grant_new_user_of_the_month_badges, process_badge_backlog | badges |
 | topic_timer_enqueuer | topic timers |
+| ignored_users_summary | messages to a group (PostCreator target_group_names; group message alerts are refused) |
 | process_shelved_notifications, process_user_notification_schedules | do not disturb |
 | enqueue_digest_emails | digest emails |
 | directory_refresh | the user directory |
