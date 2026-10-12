@@ -1,0 +1,14 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "present_channels": [
+          "/chat/online"
+        ]
+      }
+    }
+  ]
+}

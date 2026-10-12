@@ -494,6 +494,14 @@ fn normalize(value: &Value, started: NaiveDateTime) -> Value {
                     ("auth_token", Value::String(_)) => {
                         (k.clone(), Value::String("<auth_token>".into()))
                     }
+                    // A presence state's place in the bus: Rails' per-channel
+                    // MessageBus id (null before any message), the port's
+                    // pg-bus position. Neither means anything to the other.
+                    ("last_message_id", Value::Null | Value::Number(_) | Value::String(_))
+                        if map.contains_key("count") =>
+                    {
+                        (k.clone(), Value::String("<bus position>".into()))
+                    }
                     // AdminUserListSerializer's ages: Time.now less a time,
                     // so they move with the request's timing.
                     ("last_seen_age" | "last_emailed_age" | "created_at_age", Value::Number(_)) => {

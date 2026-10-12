@@ -181,12 +181,15 @@ const SCHEDULED: &[(&str, Duration)] = &[
         crate::plugins::chat::summary_email::EMAIL_NOTIFICATIONS_JOB,
         Duration::from_secs(300),
     ),
+    // Jobs::PresenceChannelAutoLeave, every DEFAULT_TIMEOUT.
+    ("presence_channel_auto_leave", Duration::from_secs(60)),
 ];
 
 /// Runs one of the SCHEDULED jobs now.
 pub async fn run_scheduled(state: &AppState, name: &str) -> Result<(), AppError> {
     match name {
         "regenerate_sitemaps" => crate::routes::regenerate_sitemaps(state).await,
+        "presence_channel_auto_leave" => crate::presence::auto_leave_all(state).await,
         crate::plugins::chat::summary_email::EMAIL_NOTIFICATIONS_JOB => {
             crate::plugins::chat::summary_email::send_unread_mentions_summary(state).await
         }

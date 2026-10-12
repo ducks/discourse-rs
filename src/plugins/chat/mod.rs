@@ -18,6 +18,7 @@ pub mod messages;
 pub mod modify;
 pub mod notify;
 pub mod page;
+pub mod presence;
 pub mod publisher;
 pub mod summary_email;
 pub mod view;

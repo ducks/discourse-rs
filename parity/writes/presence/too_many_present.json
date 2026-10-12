@@ -1,0 +1,128 @@
+{
+  "name": "too_many_present",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/chat-reply/1",
+          "/chat-reply/2",
+          "/chat-reply/3",
+          "/chat-reply/4",
+          "/chat-reply/5",
+          "/chat-reply/6",
+          "/chat-reply/7",
+          "/chat-reply/8",
+          "/chat-reply/9",
+          "/chat-reply/10",
+          "/chat-reply/11",
+          "/chat-reply/12",
+          "/chat-reply/13",
+          "/chat-reply/14",
+          "/chat-reply/15",
+          "/chat-reply/16",
+          "/chat-reply/17",
+          "/chat-reply/18",
+          "/chat-reply/19",
+          "/chat-reply/20",
+          "/chat-reply/21",
+          "/chat-reply/22",
+          "/chat-reply/23",
+          "/chat-reply/24",
+          "/chat-reply/25",
+          "/chat-reply/26",
+          "/chat-reply/27",
+          "/chat-reply/28",
+          "/chat-reply/29",
+          "/chat-reply/30",
+          "/chat-reply/31",
+          "/chat-reply/32",
+          "/chat-reply/33",
+          "/chat-reply/34",
+          "/chat-reply/35",
+          "/chat-reply/36",
+          "/chat-reply/37",
+          "/chat-reply/38",
+          "/chat-reply/39",
+          "/chat-reply/40",
+          "/chat-reply/41",
+          "/chat-reply/42",
+          "/chat-reply/43",
+          "/chat-reply/44",
+          "/chat-reply/45",
+          "/chat-reply/46",
+          "/chat-reply/47",
+          "/chat-reply/48",
+          "/chat-reply/49",
+          "/chat-reply/50",
+          "/chat-reply/51"
+        ]
+      }
+    }
+  ],
+  "started_at": "2026-10-12T19:27:02.664724",
+  "transaction_started_at": "2026-10-12T19:27:01.692529",
+  "responses": [
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Too many present_channels"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 456,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "RtGStt5trI2cDR5zLaCB2y9DtJ8=",
+            "created_at": "2026-10-12T19:27:02.034997",
+            "rotated_at": "2026-10-12T19:27:02.034759",
+            "updated_at": "2026-10-12T19:27:02.034997",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "RtGStt5trI2cDR5zLaCB2y9DtJ8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 456,
+            "seen_at": "2026-10-12T19:27:02.67344",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "RtGStt5trI2cDR5zLaCB2y9DtJ8=",
+            "created_at": "2026-10-12T19:27:02.034997",
+            "rotated_at": "2026-10-12T19:27:02.034759",
+            "updated_at": "2026-10-12T19:27:02.034997",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "RtGStt5trI2cDR5zLaCB2y9DtJ8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "7b73dfc933e9d91f530637bf7ecdea2d0392f69407c6c8b0c28c50d093882ac6",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

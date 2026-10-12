@@ -76,7 +76,21 @@ pub async fn me_channels(
         Err(refused) => return Ok(refused),
     };
     let mut cx = context(&state, &mut conn, &settings, &guardian);
-    Ok(Json(cx.me_channels().await?).into_response())
+    let mut out = cx.me_channels().await?;
+    // ChannelIndexSerializer#global_presence_channel_state, for members:
+    // PresenceChannel.new("/chat/online").state.
+    if guardian.user_id().is_some()
+        && let Some(config) = crate::presence::config(&mut conn, &settings, "/chat/online").await?
+    {
+        let urls = crate::url::Urls {
+            config: &state.config,
+            settings: &settings,
+        };
+        let online = crate::presence::state(&mut conn, &state.bus, "/chat/online").await?;
+        out["global_presence_channel_state"] =
+            crate::presence::state_json(&mut conn, &urls, &config, &online).await?;
+    }
+    Ok(Json(out).into_response())
 }
 
 /// GET /chat/api/channels: Chat::Api::ChannelsController#index.

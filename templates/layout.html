@@ -41,7 +41,9 @@
     {% endif %}
     {#- Back and forward ask the server for the page again (page.js). -#}
     <meta name="htmx-config" content='{"historyCacheSize": 0}'>
+    <meta name="discourse-base-uri" content="{{ base_path }}">
     <script src="{{ crate::assets::url(base_path, "page.js") }}"></script>
+    <script src="{{ crate::assets::url(base_path, "presence.js") }}"></script>
     <script src="{{ crate::assets::url(base_path, "htmx.min.js") }}" defer></script>
     <script src="{{ crate::assets::url(base_path, "htmx-ext-sse.js") }}" defer></script>
     {% block head %}{% endblock %}

@@ -1,0 +1,72 @@
+{
+  "name": "get_not_list",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/presence/get?channels=%2Fchat%2Fonline"
+    }
+  ],
+  "started_at": "2026-10-12T19:26:46.246018",
+  "transaction_started_at": "2026-10-12T19:26:45.364726",
+  "responses": [
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: channels"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 456,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "zWu6QP/XVC1jAlqD2oiTjPBgm48=",
+            "created_at": "2026-10-12T19:26:45.704977",
+            "rotated_at": "2026-10-12T19:26:45.704747",
+            "updated_at": "2026-10-12T19:26:45.704977",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "zWu6QP/XVC1jAlqD2oiTjPBgm48=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 456,
+            "seen_at": "2026-10-12T19:26:46.25293",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "zWu6QP/XVC1jAlqD2oiTjPBgm48=",
+            "created_at": "2026-10-12T19:26:45.704977",
+            "rotated_at": "2026-10-12T19:26:45.704747",
+            "updated_at": "2026-10-12T19:26:45.704977",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "zWu6QP/XVC1jAlqD2oiTjPBgm48=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "d357d4720f1b4b7700b7b9802035253fdff55bf19083548f3adf9d9d9f4f4077",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

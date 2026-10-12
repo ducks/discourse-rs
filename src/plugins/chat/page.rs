@@ -47,6 +47,8 @@ struct View<'a> {
     base_path: &'a str,
     channel: &'a Value,
     viewer_id: i64,
+    /// Who is in /chat/online, drawn online (chat.js follows it after).
+    online: Vec<i64>,
     emoji_set: String,
     /// `userCanInteractWithChat`: not silenced.
     can_interact: bool,
@@ -54,14 +56,35 @@ struct View<'a> {
 }
 
 impl Context<'_> {
+    /// The members in /chat/online (PresenceChannel#user_ids).
+    async fn online_ids(&mut self) -> Result<Vec<i64>, AppError> {
+        Ok(sqlx::query_scalar(
+            "SELECT DISTINCT user_id::bigint FROM discourse_rs.presence_clients WHERE channel = '/chat/online'",
+        )
+        .fetch_all(&mut *self.conn)
+        .await?)
+    }
+
     /// The chat page around a route's content (templates/chat.gjs with the
     /// core sidebar).
     /// `chat_view`: mainOutletModifierClasses' chat-view, off for the
     /// browse and channel info routes.
-    pub fn full_page(content: &str, base_path: &str, chat_view: bool) -> String {
+    /// `hide_presence`: the member's choice to stay out of /chat/online,
+    /// for chat.js.
+    pub fn full_page(
+        content: &str,
+        base_path: &str,
+        chat_view: bool,
+        hide_presence: bool,
+    ) -> String {
         format!(
-            "<div id=\"chat-progress-bar-container\"></div><div class=\"full-page-chat full-page-chat-sidebar-enabled\" data-base-path=\"{}\"><div class=\"main-chat-outlet{}\" id=\"main-chat-outlet\">{content}</div></div>",
+            "<div id=\"chat-progress-bar-container\"></div><div class=\"full-page-chat full-page-chat-sidebar-enabled\" data-base-path=\"{}\"{}><div class=\"main-chat-outlet{}\" id=\"main-chat-outlet\">{content}</div></div>",
             escape(base_path),
+            if hide_presence {
+                " data-hide-presence=\"true\""
+            } else {
+                ""
+            },
             if chat_view { " chat-view" } else { "" }
         )
     }
@@ -108,6 +131,7 @@ impl Context<'_> {
             base_path: self.base_path,
             channel: &channel_json,
             viewer_id,
+            online: self.online_ids().await?,
             emoji_set: self.settings.get("emoji_set")?.to_s().to_string(),
             can_interact: channel_json["meta"]["user_silenced"] != true,
             t: &t,
@@ -418,6 +442,7 @@ impl Context<'_> {
             base_path: self.base_path,
             channel: &channel_json,
             viewer_id: i64::from(viewer.unwrap_or(0)),
+            online: self.online_ids().await?,
             emoji_set: self.settings.get("emoji_set")?.to_s().to_string(),
             can_interact: channel_json["meta"]["user_silenced"] != true,
             t: &t,
@@ -671,11 +696,20 @@ impl Context<'_> {
             "hashtagOrder": hashtag_order,
             "moreEmoji": t("composer.more_emoji"),
         });
+        // ChatReplyingIndicator's strings, its plural forms whole.
+        let replying = serde_json::json!({
+            "single_user": t("chat.replying_indicator.single_user"),
+            "multiple_users": t("chat.replying_indicator.multiple_users"),
+            "many_users_one": t("chat.replying_indicator.many_users.one"),
+            "many_users_other": t("chat.replying_indicator.many_users.other"),
+            "comma": t("word_connector.comma"),
+        });
         let mut out = format!(
-            "<div class=\"chat-composer__wrapper\" data-min-length=\"{}\" data-max-length=\"{}\" data-send-shortcut=\"{shortcut}\" data-autocomplete=\"{}\">",
+            "<div class=\"chat-composer__wrapper\" data-min-length=\"{}\" data-max-length=\"{}\" data-send-shortcut=\"{shortcut}\" data-autocomplete=\"{}\" data-replying=\"{}\">",
             self.settings.get("chat_minimum_message_length")?.to_i(),
             self.settings.get("chat_maximum_message_length")?.to_i(),
-            escape(&autocomplete.to_string())
+            escape(&autocomplete.to_string()),
+            escape(&replying.to_string())
         );
         out.push_str(&draft.details);
         out.push_str(&format!(
@@ -790,6 +824,7 @@ impl Context<'_> {
             base_path: self.base_path,
             channel: &Value::Null,
             viewer_id: i64::from(self.guardian.user_id().unwrap_or(0)),
+            online: self.online_ids().await?,
             emoji_set: self.settings.get("emoji_set")?.to_s().to_string(),
             can_interact: true,
             t: &t,
@@ -1126,11 +1161,11 @@ fn message_html(
     Ok(out)
 }
 
-/// ChatUserAvatar: the avatar linking to the profile, the viewer's own
-/// marked online (they are in chat, so in its presence channel).
+/// ChatUserAvatar: the avatar linking to the profile, marked online when
+/// its user is in /chat/online.
 fn user_avatar(user: &Value, size: u32, aria_hidden: bool, v: &View) -> String {
     let username = s(&user["username"]);
-    let online = user["id"].as_i64() == Some(v.viewer_id);
+    let online = user["id"].as_i64().is_some_and(|id| v.online.contains(&id));
     let img = avatar(user, size);
     let hidden = if aria_hidden {
         " aria-hidden=\"true\""

@@ -523,11 +523,10 @@
     return user;
   }
 
-  // ChatUserAvatar, the viewer's own marked online.
+  // ChatUserAvatar, marked online when its user is in /chat/online.
   function chatUserAvatar(user, size) {
-    var tpl = actionsTemplate();
     var wrapper = el("div", "chat-user-avatar");
-    if (tpl && String(user.id) === tpl.dataset.viewerId) {
+    if (isOnline(user.username)) {
       wrapper.classList.add("is-online");
     }
     wrapper.dataset.username = user.username;
@@ -890,6 +889,7 @@
       updateSendState(parts);
       saveDraft(parts);
       refreshHeight(parts.input);
+      reportReplying(parts);
     }
   });
 
@@ -1857,6 +1857,184 @@
 
   var cleanup = null;
 
+  // services/chat's presenceChannel: /chat/online, entered while chat is
+  // open (unless the member hides their presence) and they were active in
+  // the last five minutes; the avatars of those in it are drawn online.
+  var CHAT_ONLINE_OPTIONS = { userUnseenTime: 300000, browserHiddenTime: 300000 };
+  var onlineChannel = null;
+
+  function onlineUsers() {
+    return (onlineChannel && onlineChannel.users()) || null;
+  }
+
+  function isOnline(username) {
+    var users = onlineUsers();
+    return !!users && users.some(function (u) {
+      return u.username === username;
+    });
+  }
+
+  function markOnline() {
+    if (!onlineUsers()) {
+      return;
+    }
+    document.querySelectorAll(".chat-user-avatar[data-username]").forEach(function (node) {
+      node.classList.toggle("is-online", isOnline(node.dataset.username));
+    });
+  }
+
+  function hidePresence() {
+    var page = document.querySelector(".full-page-chat");
+    return !!page && page.dataset.hidePresence === "true";
+  }
+
+  // ChatService#updatePresence
+  function startPresence() {
+    if (!window.Discourse || !Discourse.presence || !document.querySelector(".full-page-chat")) {
+      return;
+    }
+    if (!onlineChannel) {
+      onlineChannel = Discourse.presence.getChannel("/chat/online");
+      onlineChannel.on(markOnline);
+      onlineChannel.subscribe().catch(function () {});
+    } else {
+      markOnline();
+    }
+    if (hidePresence()) {
+      onlineChannel.leave().catch(function () {});
+    } else {
+      onlineChannel.enter({ activeOptions: CHAT_ONLINE_OPTIONS }).catch(function () {});
+    }
+    startReplyingIndicator();
+  }
+
+  function stopPresence() {
+    if (onlineChannel) {
+      onlineChannel.leave().catch(function () {});
+      onlineChannel.unsubscribe();
+      onlineChannel = null;
+    }
+    stopReplyingIndicator();
+  }
+
+  // ComposerPresenceManager#notifyState: present in /chat-reply/:id while
+  // writing (not editing), for five seconds from the first keystroke.
+  var CHAT_PRESENCE_KEEP_ALIVE = 5 * 1000;
+  var replyingPresence = { name: null, channel: null, timer: null };
+
+  function leaveReplying() {
+    clearTimeout(replyingPresence.timer);
+    replyingPresence.timer = null;
+    if (replyingPresence.channel) {
+      replyingPresence.channel.leave().catch(function () {});
+    }
+    replyingPresence.channel = null;
+    replyingPresence.name = null;
+  }
+
+  function notifyReplying(name, isReplying) {
+    if (!isReplying) {
+      leaveReplying();
+      return;
+    }
+    if (hidePresence() || !Discourse.presence) {
+      return;
+    }
+    if (replyingPresence.name !== name) {
+      leaveReplying();
+      replyingPresence.name = name;
+      replyingPresence.channel = Discourse.presence.getChannel(name);
+      replyingPresence.channel.enter().catch(function () {});
+      replyingPresence.timer = setTimeout(leaveReplying, CHAT_PRESENCE_KEEP_ALIVE);
+    }
+  }
+
+  // ChatComposer#reportReplyingPresence
+  function reportReplying(parts) {
+    if (!parts.channel) {
+      return;
+    }
+    notifyReplying("/chat-reply/" + parts.channel.dataset.id, !editing(parts) && hasContent(parts));
+  }
+
+  // ChatReplyingIndicator: who else is typing in the channel.
+  var replyingIndicator = null;
+
+  function replyingText(usernames, labels) {
+    var fill = function (text, values) {
+      return text.replace(/%\{(\w+)\}/g, function (_, key) {
+        return values[key] === undefined ? "" : String(values[key]);
+      });
+    };
+    if (usernames.length === 1) {
+      return fill(labels.single_user, { username: usernames[0] });
+    }
+    if (usernames.length < 4) {
+      return fill(labels.multiple_users, {
+        commaSeparatedUsernames: usernames.slice(0, -1).join(labels.comma),
+        lastUsername: usernames[usernames.length - 1],
+      });
+    }
+    var count = usernames.length - 2;
+    return fill(count === 1 ? labels.many_users_one : labels.many_users_other, {
+      commaSeparatedUsernames: usernames.slice(0, 2).join(labels.comma),
+      count: count,
+    });
+  }
+
+  function drawReplying() {
+    var node = document.querySelector(".chat-replying-indicator");
+    var wrapper = document.querySelector(".chat-composer__wrapper[data-replying]");
+    if (!node || !wrapper || !replyingIndicator) {
+      return;
+    }
+    var tpl = actionsTemplate();
+    var viewer = tpl ? tpl.dataset.viewerId : null;
+    var usernames = (replyingIndicator.users() || [])
+      .filter(function (u) {
+        return String(u.id) !== viewer;
+      })
+      .map(function (u) {
+        return u.username;
+      });
+    node.innerHTML = "";
+    if (usernames.length === 0) {
+      return;
+    }
+    var labels = JSON.parse(wrapper.dataset.replying);
+    node.appendChild(el("span", "chat-replying-indicator__text", replyingText(usernames, labels)));
+    var wave = el("span", "chat-replying-indicator__wave");
+    for (var i = 0; i < 3; i++) {
+      wave.appendChild(el("span", "chat-replying-indicator__dot", "."));
+    }
+    node.appendChild(wave);
+  }
+
+  function startReplyingIndicator() {
+    var channel = document.querySelector(".chat-channel[data-id]");
+    var name = channel ? "/chat-reply/" + channel.dataset.id : null;
+    if (replyingIndicator && replyingIndicator.name === name) {
+      drawReplying();
+      return;
+    }
+    stopReplyingIndicator();
+    if (!name || !document.querySelector(".chat-replying-indicator")) {
+      return;
+    }
+    replyingIndicator = Discourse.presence.getChannel(name);
+    replyingIndicator.on(drawReplying);
+    replyingIndicator.subscribe().catch(function () {});
+  }
+
+  function stopReplyingIndicator() {
+    if (replyingIndicator) {
+      replyingIndicator.off(drawReplying);
+      replyingIndicator.unsubscribe();
+      replyingIndicator = null;
+    }
+    leaveReplying();
+  }
+
   // The composer's autocompletes (ChatComposer#setupAutocomplete): @
   // users and groups, : emoji, # channels, categories and tags.
   function escapeHtml(s) {
@@ -2035,13 +2213,11 @@
 
   // UserAutocompleteResults
   function renderUsers(results, selected) {
-    var tpl = actionsTemplate();
-    var viewer = tpl ? tpl.dataset.viewerId : null;
     var out = '<div class="autocomplete ac-user"><ul>';
     results.forEach(function (result, index) {
       var classes = [];
-      // The chat presence channel's users are online: here, the viewer.
-      if (result.isUser && viewer && String(result.id) === viewer) {
+      // Those in the chat presence channel are online.
+      if (result.isUser && isOnline(result.username)) {
         classes.push("is-online");
       }
       if (index === selected) {
@@ -2435,9 +2611,11 @@
   Discourse.onPage(function () {
     setup();
     startLive();
+    startPresence();
     return function () {
       teardown();
       stopLive();
+      stopPresence();
     };
   });
 })();

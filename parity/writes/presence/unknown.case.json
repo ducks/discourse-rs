@@ -1,0 +1,23 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/nope/x",
+          "/chat/other",
+          "/chat-reply/999",
+          "/chat-reply/2/thread/999",
+          "nochannel"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/presence/get?channels%5B%5D=%2Fnope%2Fx&channels%5B%5D=%2Fchat%2Fother"
+    }
+  ]
+}

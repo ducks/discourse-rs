@@ -1,0 +1,9 @@
+{
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/presence/get?channels%5B%5D=%2Fchat%2Fonline&channels%5B%5D=%2Fchat-reply%2F2&channels%5B%5D=%2Fchat-reply%2F1"
+    }
+  ]
+}

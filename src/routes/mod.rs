@@ -19,6 +19,7 @@ mod notifications;
 mod post_actions;
 mod post_destroy;
 mod posts;
+mod presence;
 mod read_tracking;
 mod review;
 mod robots;
@@ -90,6 +91,8 @@ pub fn router(state: &AppState) -> Router<AppState> {
     };
     let mut router = Router::new()
         .route("/srv/status", get(srv::status))
+        .route("/presence/get", get(presence::get))
+        .route("/presence/update", post(presence::update))
         .route("/bus/events", get(bus::events))
         .route("/bus/poll", get(bus::poll))
         .route("/live", get(live::page))
@@ -640,6 +643,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/chat.js", get(asset))
         .route("/assets/emoji-picker.js", get(asset))
         .route("/assets/autocomplete.js", get(asset))
+        .route("/assets/presence.js", get(asset))
         .route("/assets/tracking-menu.js", get(asset))
         .route("/assets/composer.js", get(asset))
         .route("/assets/screen-track.js", get(asset))
