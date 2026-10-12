@@ -929,12 +929,24 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
     let setup_counts = setup_insert_counts(&db.pool, case).await;
     reset_sequences(&db.pool).await;
     align_sequences(&db.pool, case, setup_counts).await;
+    // The recorder logs in and runs the setup inside its transaction, so
+    // their now() is the transaction's start: pinned there, setup rows
+    // carry Rails' very timestamps rather than ones seconds later.
+    let setup_at = case["transaction_started_at"].as_str().and_then(timestamp);
+    if let Some(at) = setup_at {
+        db.pin_clock(Some(at.and_utc())).await;
+    }
     // From before the login and setup, as the recorder's transaction
     // (and so their now()) starts before both.
     let started: NaiveDateTime = sqlx::query_scalar("SELECT clock_timestamp()::timestamp")
         .fetch_one(&db.pool)
         .await
         .unwrap();
+    // To the millisecond, as Rails' is: with the clock pinned, a setup row
+    // stamped at that very instant reads in JSON as a little before it.
+    let started = started
+        .with_nanosecond(started.nanosecond() / 1_000_000 * 1_000_000)
+        .unwrap_or(started);
     let mut client = Client {
         state: app_state,
         cookies: Vec::new(),
@@ -960,6 +972,10 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
         .execute(&db.pool)
         .await
         .unwrap();
+    // The requests run on the shifted clock, time passing as it did there.
+    if setup_at.is_some() {
+        db.pin_clock(None).await;
+    }
 
     let tables = tables(&db.pool).await;
     let mut before_sums = HashMap::new();
