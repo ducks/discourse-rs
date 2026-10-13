@@ -1,0 +1,51 @@
+{
+  "name": "reindex_post_stale",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-13T01:40:11.209491",
+  "transaction_started_at": "2026-10-13T01:40:10.560388",
+  "responses": [],
+  "changes": {
+    "post_search_data": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "locale": "en",
+            "post_id": 36,
+            "version": 4,
+            "raw_data": "",
+            "search_data": "",
+            "private_message": false
+          },
+          "after": {
+            "locale": "en",
+            "post_id": 36,
+            "version": 5,
+            "raw_data": "Reply one from user1, also long enough to pass the minimum length check.",
+            "search_data": "'also':12 'check':20 'enough':14 'fixtur':2A 'general':6B 'guid':7C 'length':19 'long':13 'minimum':18 'one':9 'pariti':1A 'pass':16 'poster':5A 'repli':3A,8 'user1':11",
+            "private_message": false
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE post_search_data SET version = 4, raw_data = '', search_data = ''::tsvector WHERE post_id = 36"
+  ],
+  "enqueue": [
+    [
+      "reindex_search",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "89e0b3085b33879c08cfd092411a84f84b6204535ff284699b5122d074be6ee3",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "user": null,
+  "setup": ["DELETE FROM tag_search_data WHERE tag_id = 1", "UPDATE tags SET name = 'HowTo' WHERE id = 1"],
+  "requests": [],
+  "enqueue": [["reindex_search", {}]],
+  "run_jobs": ["reindex_search"]
+}

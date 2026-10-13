@@ -62,7 +62,7 @@ Bugs or silent gaps in what is merged, small and independent.
 7. ~~`feat/jobs-heat-settings`~~ (done) S: SiteSetting set-and-log (a row even for
    a default, unchanged values skipped, /client_settings published),
    then update_heat_settings
-8. `feat/jobs-search-index` M: reindex_search,
+8. ~~`feat/jobs-search-index`~~ (done) M: reindex_search,
    create_recent_post_search_indexes
 9. `feat/jobs-scores` S: ScoreCalculator, calculate_scores (weights as
    SQL numerics, not bound floats)

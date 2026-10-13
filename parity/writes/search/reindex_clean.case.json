@@ -1,0 +1,7 @@
+{
+  "user": null,
+  "setup": ["INSERT INTO topic_search_data (topic_id, raw_data, locale, version, search_data) VALUES (40, 'x', 'en', 4, ''), (9999, 'x', 'en', 4, '')", "INSERT INTO post_search_data (post_id, raw_data, locale, version, search_data, private_message) VALUES (45, 'x', 'en', 5, '', false), (41, 'x', 'en', 5, '', false)", "UPDATE posts SET deleted_at = now() - interval '2 hours' WHERE id = 37"],
+  "requests": [],
+  "enqueue": [["reindex_search", {}]],
+  "run_jobs": ["reindex_search"]
+}

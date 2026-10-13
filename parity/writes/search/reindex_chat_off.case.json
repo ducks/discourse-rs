@@ -1,0 +1,8 @@
+{
+  "user": null,
+  "settings": { "chat_search_enabled": false },
+  "setup": ["INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id) VALUES (901, 2, 3, now(), now(), 'hello world', '<p>hello world</p>', 1, 3)"],
+  "requests": [],
+  "enqueue": [["reindex_search", {}]],
+  "run_jobs": ["reindex_search"]
+}

@@ -16,6 +16,7 @@ pub mod heat;
 pub mod housekeeping;
 pub mod list_stats;
 pub mod moderation;
+pub mod search_jobs;
 pub(crate) use handlers::choose_featured_users;
 pub(crate) mod post_alert;
 mod user_email;
@@ -318,6 +319,11 @@ const SCHEDULED: &[(&str, Duration)] = &[
         heat::UPDATE_HEAT_SETTINGS,
         Duration::from_secs(30 * 24 * 3600),
     ),
+    (search_jobs::REINDEX_SEARCH, Duration::from_secs(2 * 3600)),
+    (
+        search_jobs::CREATE_RECENT_POST_SEARCH_INDEXES,
+        Duration::from_secs(24 * 3600),
+    ),
 ];
 
 /// A SCHEDULED job's name: it runs from the queue too (a case enqueues
@@ -385,6 +391,10 @@ pub async fn run_scheduled(state: &AppState, name: &str) -> Result<(), AppError>
         cleanup::CLEAN_UP_UNMATCHED_EMAILS => cleanup::clean_up_unmatched_emails(state).await,
         cleanup::CLEAN_UP_UNMATCHED_IPS => cleanup::clean_up_unmatched_ips(state).await,
         heat::UPDATE_HEAT_SETTINGS => heat::update_heat_settings(state).await,
+        search_jobs::REINDEX_SEARCH => search_jobs::reindex_search(state).await,
+        search_jobs::CREATE_RECENT_POST_SEARCH_INDEXES => {
+            search_jobs::create_recent_post_search_indexes(state).await
+        }
         _ => unreachable!("every SCHEDULED job has a handler"),
     }
 }

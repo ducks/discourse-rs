@@ -94,6 +94,115 @@ pub async fn index_post(
     Ok(())
 }
 
+/// `SearchIndexer.index(post, force: true)` from the post's rows: its
+/// topic's title, category name and tags (with their synonyms), the
+/// topic's row too for a first post. A post without its topic is not
+/// indexed.
+pub async fn reindex_post(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    base: &BaseUrls<'_>,
+    post_id: i32,
+) -> Result<(), AppError> {
+    #[derive(sqlx::FromRow)]
+    struct Row {
+        topic_id: i32,
+        post_number: i32,
+        cooked: String,
+        title: String,
+        private_message: bool,
+        category_name: Option<String>,
+        tag_names: Option<String>,
+    }
+    let row: Option<Row> = sqlx::query_as(
+        "SELECT p.topic_id, p.post_number, p.cooked, t.title, \
+                t.archetype = 'private_message' AS private_message, \
+                (SELECT name FROM categories WHERE id = t.category_id) AS category_name, \
+                (SELECT string_agg(name, ' ') FROM (SELECT tg.name FROM topic_tags tt JOIN tags tg ON tg.id = tt.tag_id \
+                   WHERE tt.topic_id = t.id \
+                 UNION ALL SELECT s.name FROM tags s WHERE s.target_tag_id IN \
+                   (SELECT tag_id FROM topic_tags WHERE topic_id = t.id)) n) AS tag_names \
+         FROM posts p JOIN topics t ON t.id = p.topic_id WHERE p.id = $1",
+    )
+    .bind(post_id)
+    .fetch_optional(&mut *conn)
+    .await?;
+    let Some(row) = row else {
+        return Ok(());
+    };
+    index_post(
+        conn,
+        settings,
+        base,
+        &PostIndex {
+            post_id,
+            topic_id: row.topic_id,
+            is_first_post: row.post_number == 1,
+            topic_title: &row.title,
+            category_name: row.category_name.as_deref(),
+            tag_names: row.tag_names.as_deref(),
+            cooked: &row.cooked,
+            private_message: row.private_message,
+        },
+    )
+    .await
+}
+
+/// `update_index` for a table indexed by a single A weight (categories,
+/// tags): the row upserted with the prepared data as its raw_data.
+async fn index_named(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    table: &str,
+    id: i32,
+    a: &str,
+    version: i32,
+) -> Result<(), AppError> {
+    check_unported(settings)?;
+    let weights = [Some(a), None, None, None];
+    let (search_data, prepared) = tsvector(conn, settings, None, &weights).await?;
+    let raw_data = prepared
+        .iter()
+        .filter(|d| !d.is_empty())
+        .cloned()
+        .collect::<Vec<_>>()
+        .join(" ");
+    sqlx::query(&format!(
+        "INSERT INTO {table}_search_data ({table}_id, raw_data, locale, version, search_data) \
+         VALUES ($1, $2, $3, $4, $5::tsvector) \
+         ON CONFLICT ({table}_id) DO UPDATE SET raw_data = EXCLUDED.raw_data, locale = EXCLUDED.locale, \
+           version = EXCLUDED.version, search_data = EXCLUDED.search_data"
+    ))
+    .bind(id)
+    .bind(&raw_data)
+    .bind(settings.get("default_locale")?.to_s())
+    .bind(version)
+    .bind(&search_data)
+    .execute(&mut *conn)
+    .await?;
+    Ok(())
+}
+
+/// `SearchIndexer.update_categories_index`: the name (A).
+pub async fn index_category(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    category_id: i32,
+    name: &str,
+) -> Result<(), AppError> {
+    index_named(conn, settings, "category", category_id, name, 3).await
+}
+
+/// `SearchIndexer.update_tags_index`: the name, lower cased (A).
+pub async fn index_tag(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    tag_id: i32,
+    name: &str,
+) -> Result<(), AppError> {
+    index_named(conn, settings, "tag", tag_id, name, 3).await
+}
+
 const USER_INDEX_VERSION: i32 = 3;
 
 /// `SearchIndexer.update_users_index`: username (A) and name (B),

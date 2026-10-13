@@ -1,0 +1,7 @@
+{
+  "user": null,
+  "setup": ["DELETE FROM user_search_data WHERE user_id IN (-1, 3)"],
+  "requests": [],
+  "enqueue": [["reindex_search", {}]],
+  "run_jobs": ["reindex_search"]
+}

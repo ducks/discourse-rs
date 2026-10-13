@@ -1,0 +1,49 @@
+{
+  "name": "reindex_topic_stale",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-13T01:40:13.10749",
+  "transaction_started_at": "2026-10-13T01:40:12.448748",
+  "responses": [],
+  "changes": {
+    "topic_search_data": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "locale": "en",
+            "version": 0,
+            "raw_data": "",
+            "topic_id": 38,
+            "search_data": "'carri':12B 'categori':18B 'fixtur':2A 'id':19B 'pariti':1A 'show':20B 'subcategori':6A,11B 'tag':3A,14B,16B 'topic':8B"
+          },
+          "after": {
+            "locale": "en",
+            "version": 4,
+            "raw_data": "Parity fixture: tagged in a subcategory A topic in a subcategory carrying a tag, so tags and category ids show up.",
+            "topic_id": 38,
+            "search_data": "'carri':12B 'categori':18B 'fixtur':2A 'id':19B 'pariti':1A 'show':20B 'subcategori':6A,11B 'tag':3A,14B,16B 'topic':8B"
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE topic_search_data SET version = 0, raw_data = '' WHERE topic_id = 38"
+  ],
+  "enqueue": [
+    [
+      "reindex_search",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "d5a0a2f4507a1366fb814397febfb35e9e8b257d143f01912235c2a4c04f4554",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
