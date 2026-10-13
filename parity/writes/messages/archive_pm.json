@@ -1,0 +1,83 @@
+{
+  "name": "archive_pm",
+  "user": "user0",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/42/archive-message",
+      "params": {}
+    }
+  ],
+  "started_at": "2026-10-13T12:57:12.936657",
+  "transaction_started_at": "2026-10-13T12:57:11.965794",
+  "responses": [
+    {
+      "status": 200,
+      "body": ""
+    }
+  ],
+  "changes": {
+    "user_archived_messages": {
+      "inserted": [
+        {
+          "id": 2,
+          "user_id": 2,
+          "topic_id": 42,
+          "created_at": "2026-10-13T12:57:12.958774",
+          "updated_at": "2026-10-13T12:57:12.958774"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 488,
+            "seen_at": null,
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "kI3AhetSk6+wn0XrSyxe6qE+ahQ=",
+            "created_at": "2026-10-13T12:57:12.328372",
+            "rotated_at": "2026-10-13T12:57:12.327346",
+            "updated_at": "2026-10-13T12:57:12.328372",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "kI3AhetSk6+wn0XrSyxe6qE+ahQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 488,
+            "seen_at": "2026-10-13T12:57:12.94294",
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "kI3AhetSk6+wn0XrSyxe6qE+ahQ=",
+            "created_at": "2026-10-13T12:57:12.328372",
+            "rotated_at": "2026-10-13T12:57:12.327346",
+            "updated_at": "2026-10-13T12:57:12.328372",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "kI3AhetSk6+wn0XrSyxe6qE+ahQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "user_archived_messages": 2
+  },
+  "recorded_from": {
+    "case": "5592be2b878f8ea3600ea55ae1bdcd903a99a9f2d93532657e057463c2409790",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

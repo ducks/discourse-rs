@@ -1,0 +1,81 @@
+{
+  "name": "move_to_inbox_pm",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/44/move-to-inbox",
+      "params": {}
+    }
+  ],
+  "started_at": "2026-10-13T12:57:17.493702",
+  "transaction_started_at": "2026-10-13T12:57:16.645236",
+  "responses": [
+    {
+      "status": 200,
+      "body": ""
+    }
+  ],
+  "changes": {
+    "user_archived_messages": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 1,
+          "user_id": 3,
+          "topic_id": 44,
+          "created_at": "2026-10-01T15:39:51.750743",
+          "updated_at": "2026-10-01T15:39:51.750743"
+        }
+      ],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 488,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "MbtNaiKwxGNw+7d1cjj2ko5KgUw=",
+            "created_at": "2026-10-13T12:57:16.971195",
+            "rotated_at": "2026-10-13T12:57:16.970223",
+            "updated_at": "2026-10-13T12:57:16.971195",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "MbtNaiKwxGNw+7d1cjj2ko5KgUw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 488,
+            "seen_at": "2026-10-13T12:57:17.500099",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "MbtNaiKwxGNw+7d1cjj2ko5KgUw=",
+            "created_at": "2026-10-13T12:57:16.971195",
+            "rotated_at": "2026-10-13T12:57:16.970223",
+            "updated_at": "2026-10-13T12:57:16.971195",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "MbtNaiKwxGNw+7d1cjj2ko5KgUw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "11e352ee099f34d3e849db873462c5bbd86c90d481a1343b8d74c2cf5b83ace6",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

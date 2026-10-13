@@ -949,29 +949,7 @@ pub async fn create(
                 .fetch_all(&mut *tx)
                 .await?;
         for archiver in archivers {
-            let muted: bool = sqlx::query_scalar(
-                "SELECT EXISTS (SELECT 1 FROM topic_users WHERE user_id = $1 AND topic_id = $2 \
-                   AND notification_level = 0)",
-            )
-            .bind(archiver)
-            .bind(topic_id)
-            .fetch_one(&mut *tx)
-            .await?;
-            if muted {
-                continue;
-            }
-            sqlx::query("DELETE FROM user_archived_messages WHERE user_id = $1 AND topic_id = $2")
-                .bind(archiver)
-                .bind(topic_id)
-                .execute(&mut *tx)
-                .await?;
-            ctx.bus
-                .publish(
-                    &mut tx,
-                    &format!("/topic/{topic_id}"),
-                    &json!({"type": "move_to_inbox"}),
-                    Some(&[crate::bus::user_tag(archiver)]),
-                )
+            crate::archived_messages::user_move_to_inbox(ctx.bus, &mut tx, archiver, topic_id)
                 .await?;
         }
         let archiving_groups: Vec<i32> =
@@ -980,8 +958,10 @@ pub async fn create(
                 .fetch_all(&mut *tx)
                 .await?;
         for group_id in archiving_groups {
-            super::group_messages::move_to_inbox(ctx.bus, &mut tx, group_id, topic_id, user.id)
-                .await?;
+            crate::archived_messages::group_move_to_inbox(
+                ctx.bus, &mut tx, group_id, topic_id, user.id,
+            )
+            .await?;
         }
     }
     // DraftSequence.next!(user, draft_key) when the composer asked

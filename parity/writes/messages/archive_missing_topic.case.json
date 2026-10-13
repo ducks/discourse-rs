@@ -1,0 +1,10 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/99999/archive-message",
+      "params": {}
+    }
+  ]
+}

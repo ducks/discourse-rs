@@ -2,8 +2,7 @@
 //! the groups a new message is allowed to (TopicCreator#add_groups), their
 //! members' default levels on it, and the groups' read counts as replies
 //! come in (`TopicGroup.new_message_update`); the groups' inbox summary
-//! notifications (`PostAlerter#notify_group_summary`) and a group's
-//! archived message moved back to its inbox.
+//! notifications (`PostAlerter#notify_group_summary`).
 
 use serde_json::json;
 use sqlx::PgConnection;
@@ -349,55 +348,4 @@ pub async fn notify_group_summary(
         return Err(Unsupported("do not disturb (shelved notifications)").into());
     }
     Ok(true)
-}
-
-/// `GroupArchivedMessage.move_to_inbox!(group_id, topic, acting_user_id:)`:
-/// the group's archived message back in its inbox, the group told, and its
-/// members' summaries brought up to date by a job.
-pub async fn move_to_inbox(
-    bus: &pg_bus::Bus,
-    conn: &mut PgConnection,
-    group_id: i32,
-    topic_id: i32,
-    acting_user_id: i32,
-) -> Result<(), AppError> {
-    let allowed: bool = sqlx::query_scalar(
-        "SELECT EXISTS (SELECT 1 FROM topic_allowed_groups WHERE topic_id = $1 AND group_id = $2) \
-         AND EXISTS (SELECT 1 FROM topics WHERE id = $1 AND archetype = 'private_message')",
-    )
-    .bind(topic_id)
-    .bind(group_id)
-    .fetch_one(&mut *conn)
-    .await?;
-    if !allowed {
-        return Ok(());
-    }
-    sqlx::query("DELETE FROM group_archived_messages WHERE group_id = $1 AND topic_id = $2")
-        .bind(group_id)
-        .bind(topic_id)
-        .execute(&mut *conn)
-        .await?;
-    let tags = [crate::bus::group_tag(group_id)];
-    bus.publish(
-        conn,
-        &format!("/topic/{topic_id}"),
-        &json!({"type": "move_to_inbox"}),
-        Some(&tags),
-    )
-    .await?;
-    crate::pm_tracking_state::publish_group_archived(
-        bus,
-        conn,
-        topic_id,
-        group_id,
-        Some(acting_user_id),
-    )
-    .await?;
-    crate::jobs::enqueue(
-        conn,
-        "group_pm_update_summary",
-        json!({"group_id": group_id, "topic_id": topic_id, "acting_user_id": acting_user_id}),
-    )
-    .await?;
-    Ok(())
 }

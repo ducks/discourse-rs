@@ -3,6 +3,7 @@ mod admin_email;
 mod admin_logs;
 mod admin_site_settings;
 mod admin_users;
+mod archive_message;
 mod bookmark_writes;
 mod bookmarks;
 mod bus;
@@ -338,6 +339,12 @@ pub fn router(state: &AppState) -> Router<AppState> {
         )
         // TopicsController#status; {slug} holds the topic id here.
         .route("/t/{slug}/status", put(topic_status::status))
+        // {slug} holds the topic id.
+        .route("/t/{slug}/archive-message", put(archive_message::archive))
+        .route(
+            "/t/{slug}/move-to-inbox",
+            put(archive_message::move_to_inbox),
+        )
         .route("/t/{slug}/{id}/status", put(topic_status::status_with_slug))
         .route("/u/search/users", get(user_search::search_users))
         .route("/u/search/users.json", get(user_search::search_users))
