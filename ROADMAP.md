@@ -24,7 +24,10 @@ branch off here in the commit that merges it.
 Working a branch: read the brief's fixture notes before writing cases
 (setting units and defaults, PM or regular topics, rows the reference
 already has, timestamps near a window's edge); start the next branch's
-reading while the gate runs.
+reading while the gate runs. The seed's rows date from 2026-07-25 to
+2026-10-01: a case whose feature looks back over a window (digests'
+month, "recent", days visited) inserts or updates its rows with
+`now() - interval ...` in setup rather than relying on seed dates.
 
 ### Phase 0: fix first
 
@@ -46,9 +49,10 @@ Bugs or silent gaps in what is merged, small and independent.
 5. `feat/chat-dm-reads` L: a DM channel row (restored backups have
    them) makes chat's channel list refuse, failing every page of that
    member; the DM reads, serializers and drawer list [messages-dms]
-6. `feat/harness-fixture-dates` S: the seed's dates leave the one-month
-   windows (digests, "recent") after 2026-10-30; pin or re-seed relative
-   to now [users-digests-dnd]
+6. ~~`feat/harness-fixture-dates`~~ (not needed): replay shifts each
+   case's clocks to when Rails recorded it (tests/writes.rs), so
+   recordings do not age with the seed; new windowed cases date their
+   setup rows from now() instead (see "Working a branch")
 
 ### Phase 1: the scheduled jobs left (ready)
 
