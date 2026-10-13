@@ -206,6 +206,56 @@ pub struct Chrome {
     pub emoji_base: String,
     pub emoji_version: String,
     pub hashtag_tag_icon: String,
+    /// What the cooked decorators read (cooked.js): the site settings
+    /// that gate them and their strings, as JSON for a script element.
+    pub cooked_config: String,
+}
+
+/// The site settings the cooked decorators check, as the Ember client
+/// reads them from siteSettings.
+const COOKED_SETTINGS: &[&str] = &[
+    "spoiler_enabled",
+    "show_copy_button_on_codeblocks",
+    "display_footnotes_inline",
+];
+
+/// The client strings the cooked decorators show, by their js.* key.
+const COOKED_STRINGS: &[&str] = &[
+    "spoiler.label.show",
+    "copy_codeblock.copied",
+    "copy_codeblock.copy",
+    "copy_codeblock.fullscreen",
+    "copy_codeblock.view_code",
+    "fullscreen_table.expand_btn",
+    "fullscreen_table.view_table",
+    "modal.close",
+    "expand",
+    "post.collapse",
+    "post.follow_quote",
+    "generic_error",
+    "generic_error_with_reason",
+    "multiple_errors",
+];
+
+/// The cooked decorators' settings and strings, as JSON that is safe
+/// inside a script element.
+fn cooked_config(settings: &SiteSettings, i18n: &I18n) -> Result<String, SettingError> {
+    let mut site_settings = serde_json::Map::new();
+    for name in COOKED_SETTINGS {
+        site_settings.insert(
+            (*name).to_string(),
+            Value::Bool(settings.get(name)?.truthy()),
+        );
+    }
+    let strings: serde_json::Map<String, Value> = COOKED_STRINGS
+        .iter()
+        .map(|key| {
+            let text = i18n.t(&format!("js.{key}")).unwrap_or(key);
+            ((*key).to_string(), Value::String(text.to_string()))
+        })
+        .collect();
+    let config = serde_json::json!({ "settings": site_settings, "strings": strings });
+    Ok(config.to_string().replace('<', "\\u003c"))
 }
 
 impl Chrome {
@@ -356,6 +406,7 @@ impl Site {
         if settings.get("tagging_enabled")?.truthy() {
             self.chrome.hashtag_tag_icon = "tag".into();
         }
+        self.chrome.cooked_config = cooked_config(settings, &state.i18n)?;
         let sidebar_cx = |plugin_sections| {
             inputs.as_ref().map(|(_, member)| crate::sidebar::Context {
                 i18n: &state.i18n,

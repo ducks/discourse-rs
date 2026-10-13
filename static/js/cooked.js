@@ -9,6 +9,15 @@
 //       post is a new element, so it is decorated again.
 //
 // Decorators run in the order they register.
+//
+//   Discourse.decorateCooked.apply(el)
+//       runs every decorator on el, which need not be a .cooked element:
+//       the content of an expanded quote, as Ember's PostCookedHtml
+//       decorates it.
+//   Discourse.cooked.setting(name), Discourse.cooked.t(key),
+//   Discourse.cooked.icon(name, extraClass)
+//       what decorators read and draw: the siteSettings that gate them and
+//       their js.* strings, from the page's #cooked-config, and iconHTML.
 (function () {
   "use strict";
 
@@ -57,6 +66,57 @@
     cookedIn(document.documentElement).forEach(function (el) {
       apply(el, decorator);
     });
+  };
+
+  Discourse.decorateCooked.apply = function (el) {
+    decorators.forEach(function (decorator) {
+      apply(el, decorator);
+    });
+  };
+
+  var config;
+  function cookedConfig() {
+    if (!config) {
+      var el = document.getElementById("cooked-config");
+      try {
+        config = el ? JSON.parse(el.textContent) : {};
+      } catch (e) {
+        window.console && console.error("cooked-config", e);
+        config = {};
+      }
+      config.settings = config.settings || {};
+      config.strings = config.strings || {};
+    }
+    return config;
+  }
+
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  Discourse.cooked = {
+    // The settings the decorators check all default to true, so a page
+    // without the config gets the defaults.
+    setting: function (name) {
+      return cookedConfig().settings[name] !== false;
+    },
+    t: function (key) {
+      var text = cookedConfig().strings[key];
+      return text === undefined ? key : text;
+    },
+    // iconHTML
+    icon: function (name, extraClass) {
+      return (
+        '<svg class="fa d-icon d-icon-' + escapeHtml(name) + " svg-icon fa-width-auto" +
+        (extraClass ? " " + escapeHtml(extraClass) : "") +
+        ' svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#' +
+        escapeHtml(name) + '"></use></svg>'
+      );
+    },
   };
 
   new MutationObserver(function (mutations) {

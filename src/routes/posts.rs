@@ -392,6 +392,67 @@ pub async fn revision(
     )
 }
 
+/// GET /posts/by_number/:topic_id/:post_number(.json) (posts#by_number):
+/// the post at that number as render_post_json gives it (PostSerializer
+/// with `raw` and the viewer's actions), found with deleted ones as
+/// find_post_using does: a deleted post, or one in a deleted topic, for
+/// those who can moderate the topic. Quote expansion reads it. A past
+/// version (`version`) isn't ported.
+pub async fn by_number(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path((topic_id, post_number)): Path<(String, String)>,
+    uri: Uri,
+) -> Result<Response, AppError> {
+    if uri
+        .query()
+        .is_some_and(|q| q.split('&').any(|p| p.starts_with("version=")))
+    {
+        return Err(Unsupported("posts#by_number of a past version").into());
+    }
+    let (Ok(topic_id), Ok(post_number)) = (
+        topic_id.parse::<i32>(),
+        strip_format(&post_number).parse::<i32>(),
+    ) else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    // finder.with_deleted.first
+    let post_id: Option<i32> = sqlx::query_scalar(
+        "SELECT id FROM posts WHERE topic_id = $1 AND post_number = $2 ORDER BY id LIMIT 1",
+    )
+    .bind(topic_id)
+    .bind(post_number)
+    .fetch_optional(&mut *conn)
+    .await?;
+    let Some(post_id) = post_id else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    let cook_host = Host::from_state(&state);
+    let ctx = Ctx {
+        host: &cook_host,
+        settings: &settings,
+        config: &state.config,
+        i18n: &state.i18n,
+        bus: &state.bus,
+    };
+    if revisions::find_post_with_deleted(&mut conn, &ctx, &guardian, post_id)
+        .await?
+        .is_none()
+    {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    drop(conn);
+    let mut post = serialize_post(&state, &settings, &guardian, post_id, false, true).await?;
+    // render_post_json gives the serializer no draft_sequence.
+    if let Value::Object(p) = &mut post {
+        p.shift_remove("draft_sequence");
+    }
+    Ok(Json(post).into_response())
+}
+
 /// GET /raw/:topic_id/:post_number (posts#markdown_num): a post's raw
 /// markdown as plain text, for whoever can see it; the composer reads it
 /// to edit. The topic's whole markdown and a revision's are not ported.

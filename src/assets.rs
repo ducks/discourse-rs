@@ -32,6 +32,7 @@ const DISCOURSE_CSS: &str = concat!(
     include_str!("../static/css/user-stream.css"),
     include_str!("../static/css/composer.css"),
     include_str!("../static/css/kit.css"),
+    include_str!("../static/css/modal.css"),
     include_str!("../static/css/menus.css"),
     include_str!("../static/css/filter-controls.css"),
     include_str!("../static/css/not-found.css"),
@@ -69,6 +70,27 @@ const ASSETS: &[(&str, &str, &str)] = &[
     ("page.js", JS, include_str!("../static/js/page.js")),
     ("hashtags.js", JS, include_str!("../static/js/hashtags.js")),
     ("cooked.js", JS, include_str!("../static/js/cooked.js")),
+    ("modal.js", JS, include_str!("../static/js/modal.js")),
+    (
+        "spoiler-alert.js",
+        JS,
+        include_str!("../static/js/spoiler-alert.js"),
+    ),
+    (
+        "post-decorations.js",
+        JS,
+        include_str!("../static/js/post-decorations.js"),
+    ),
+    (
+        "codeblock-buttons.js",
+        JS,
+        include_str!("../static/js/codeblock-buttons.js"),
+    ),
+    (
+        "quote-controls.js",
+        JS,
+        include_str!("../static/js/quote-controls.js"),
+    ),
     ("sidebar.js", JS, include_str!("../static/js/sidebar.js")),
     ("topic.js", JS, include_str!("../static/js/topic.js")),
     (

@@ -119,6 +119,8 @@ ICONS=(
   circle-exclamation
   rotate
   circle-xmark
+  copy
+  arrow-up
 )
 
 root="$(cd "$(dirname "$0")/.." && pwd)"
