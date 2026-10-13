@@ -1,9 +1,19 @@
 {
-  "not_yet": "auto bumping topics (the rate limiter)",
   "user": null,
-  "setup": ["UPDATE category_settings SET num_auto_bump_daily = 1 WHERE category_id = 4"],
+  "setup": [
+    "UPDATE category_settings SET num_auto_bump_daily = 1 WHERE category_id = 4"
+  ],
   "requests": [],
-  "enqueue": [["periodical_updates", {}]],
-  "run_jobs": ["periodical_updates"],
-  "approximate": ["topics.score"]
+  "enqueue": [
+    [
+      "periodical_updates",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "periodical_updates"
+  ],
+  "approximate": [
+    "topics.score"
+  ]
 }

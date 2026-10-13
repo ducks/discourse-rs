@@ -181,17 +181,99 @@ pub async fn periodical_updates(state: &AppState) -> Result<(), AppError> {
         .await?;
     }
 
-    // Category.auto_bump_topic!: limited per category per day by a rate
-    // limiter, which is not ported; without it every run would bump.
-    let auto_bump: bool = sqlx::query_scalar(
-        "SELECT EXISTS (SELECT 1 FROM category_settings WHERE num_auto_bump_daily > 0)",
+    // Category.auto_bump_topic!: the categories with a daily allowance,
+    // shuffled; the first that bumps a topic ends it.
+    let mut categories: Vec<(i32, i32, Option<i32>, Option<i32>)> = sqlx::query_as(
+        "SELECT categories.id, category_settings.num_auto_bump_daily, \
+                category_settings.auto_bump_cooldown_days, categories.topic_id \
+         FROM categories INNER JOIN category_settings ON category_settings.category_id = categories.id \
+         WHERE category_settings.num_auto_bump_daily > 0",
     )
-    .fetch_one(&mut *conn)
+    .fetch_all(&mut *conn)
     .await?;
-    if auto_bump {
-        return Err(Unsupported("auto bumping topics (the rate limiter)").into());
+    drop(conn);
+    {
+        use rand::seq::SliceRandom;
+        categories.shuffle(&mut rand::thread_rng());
+    }
+    for (category_id, daily, cooldown_days, definition) in categories {
+        if auto_bump_topic(state, &s, category_id, daily, cooldown_days, definition).await? {
+            break;
+        }
     }
     Ok(())
+}
+
+/// `TopicTimer.types[:bump]`
+const BUMP_TIMER: i32 = 6;
+
+/// `Category#auto_bump_topic!`: unless the category's limiter (one bump
+/// per day / num_auto_bump_daily seconds) says wait, its longest-unbumped
+/// listable topic past the cooldown (not the definition, pinned, closed,
+/// archived or due a scheduled bump) gets the system user's "autobumped"
+/// small action, which bumps it.
+async fn auto_bump_topic(
+    state: &AppState,
+    s: &SiteSettings,
+    category_id: i32,
+    daily: i32,
+    cooldown_days: Option<i32>,
+    definition: Option<i32>,
+) -> Result<bool, AppError> {
+    let limiter = crate::rate_limiter::RateLimiter::new(
+        None,
+        &format!("auto_bump_limit_{category_id}"),
+        1,
+        86_400 / i64::from(daily),
+    );
+    let enabled = state.config.rate_limits;
+    if !limiter.can_perform(&state.pool, enabled).await? {
+        return Ok(false);
+    }
+    let cutoff =
+        crate::clock::now_naive() - chrono::Duration::days(i64::from(cooldown_days.unwrap_or(1)));
+    let topic_id: Option<i32> = sqlx::query_scalar(
+        "SELECT topics.id FROM topics \
+         WHERE topics.deleted_at IS NULL AND topics.visible = TRUE \
+           AND topics.archetype <> 'private_message' \
+           AND topics.id NOT IN (SELECT timerable_id FROM topic_timers \
+                                 WHERE type = 'TopicTimer' AND status_type = $4 AND deleted_at IS NULL) \
+           AND topics.category_id = $1 AND ($2::int IS NULL OR topics.id <> $2) \
+           AND (bumped_at < $3) AND (pinned_at IS NULL AND NOT closed AND NOT archived) \
+         ORDER BY bumped_at ASC LIMIT 1",
+    )
+    .bind(category_id)
+    .bind(definition)
+    .bind(cutoff)
+    .bind(BUMP_TIMER)
+    .fetch_optional(&state.pool)
+    .await?;
+    let Some(topic_id) = topic_id else {
+        return Ok(false);
+    };
+    let host = crate::pretty_text::Host::from_state(state);
+    let ctx = crate::posting::Ctx {
+        host: &host,
+        settings: s,
+        config: &state.config,
+        i18n: &state.i18n,
+        bus: &state.bus,
+    };
+    let mut tx = state.pool.begin().await?;
+    crate::posting::small_action::add(
+        &mut tx,
+        &ctx,
+        &crate::posting::small_action::SmallAction {
+            user_id: -1,
+            topic_id,
+            action_code: "autobumped",
+            bump: true,
+        },
+    )
+    .await?;
+    tx.commit().await?;
+    let _ = limiter.performed(&state.pool, enabled).await?;
+    Ok(true)
 }
 
 /// `Post.rebake_old(rebake_old_posts_count)`: the newest posts baked
