@@ -86,7 +86,7 @@ Bugs or silent gaps in what is merged, small and independent.
     disables them today)
 18. ~~`feat/rate-limit-posting`~~ (done) L, 19. ~~`feat/rate-limit-post-actions`~~ (done) M,
     20. ~~`feat/rate-limit-auth`~~ (done) M, 21. ~~`feat/rate-limit-endpoints`~~ (done) S
-22. `feat/request-tracker-limits` M: the global per-IP limits, tested
+22. ~~`feat/request-tracker-limits`~~ (done) M: the global per-IP limits, tested
     in Rust only (not loaded in Rails dev, loopback exempt); needs
     fix/remote-ip
 

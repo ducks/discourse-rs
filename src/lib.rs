@@ -26,6 +26,7 @@ pub mod email;
 pub mod email_logs;
 pub mod emojis;
 pub use discourse_markdown::emoji;
+pub mod crawler_detection;
 pub mod excerpt;
 pub mod file_store;
 pub mod flags;
@@ -60,6 +61,7 @@ pub mod promotion;
 pub mod rate_limiter;
 pub mod read_tracking;
 pub mod remote_ip;
+pub mod request_tracker;
 pub mod review;
 pub mod review_list;
 pub mod reviewable_user;
@@ -151,8 +153,13 @@ pub fn app(state: AppState) -> Router {
         // Outside compression: a hit runs nothing else and is sent as it
         // was stored, compressed for the encoding in its key.
         .layer(axum::middleware::from_fn_with_state(
-            state,
+            state.clone(),
             anonymous_cache::layer,
+        ))
+        // Middleware::RequestTracker, ahead of the app and the cache.
+        .layer(axum::middleware::from_fn_with_state(
+            state,
+            request_tracker::layer,
         ))
         .layer(TraceLayer::new_for_http())
 }
