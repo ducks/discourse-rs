@@ -515,6 +515,17 @@ impl TopicView<'_> {
             return Err(Unsupported("topic thumbnails").into());
         }
         out.insert("thumbnails".into(), Value::Null);
+        // include_user_last_posted_at?: a topic user, in slow mode.
+        if let Some(tu) = viewer
+            .topic_user
+            .as_ref()
+            .filter(|_| extra.slow_mode_seconds > 0)
+        {
+            out.insert(
+                "user_last_posted_at".into(),
+                json!(tu.last_posted_at.map(time_json)),
+            );
+        }
         out.insert(
             "slow_mode_enabled_until".into(),
             self.slow_mode_enabled_until(topic.id).await?,
@@ -1075,7 +1086,7 @@ impl TopicView<'_> {
     /// isn't ported.
     async fn topic_timer(&mut self, topic_id: i32) -> Result<Value, TopicViewError> {
         let count: i64 = sqlx::query_scalar(
-            "SELECT count(*) FROM topic_timers WHERE topic_id = $1 AND public_type AND deleted_at IS NULL",
+            "SELECT count(*) FROM topic_timers WHERE timerable_id = $1 AND type = 'TopicTimer' AND public_type AND deleted_at IS NULL",
         )
         .bind(topic_id)
         .fetch_one(&mut *self.conn)
@@ -1089,7 +1100,7 @@ impl TopicView<'_> {
     /// The clear_slow_mode timer's execute_at, if any (status_type 9).
     async fn slow_mode_enabled_until(&mut self, topic_id: i32) -> Result<Value, TopicViewError> {
         let at: Option<NaiveDateTime> = sqlx::query_scalar(
-            "SELECT execute_at FROM topic_timers WHERE topic_id = $1 AND status_type = 9 AND deleted_at IS NULL \
+            "SELECT execute_at FROM topic_timers WHERE timerable_id = $1 AND type = 'TopicTimer' AND status_type = 9 AND deleted_at IS NULL \
              ORDER BY id LIMIT 1",
         )
         .bind(topic_id)

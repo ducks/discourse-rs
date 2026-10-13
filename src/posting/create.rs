@@ -760,16 +760,7 @@ pub async fn create(
     .bind(excerpt)
     .execute(&mut *tx)
     .await?;
-    // update_topic_auto_close
-    let timers: bool = sqlx::query_scalar(
-        "SELECT EXISTS (SELECT 1 FROM topic_timers WHERE topic_id = $1 AND deleted_at IS NULL)",
-    )
-    .bind(topic_id)
-    .fetch_one(&mut *tx)
-    .await?;
-    if timers {
-        return Err(Unsupported("topic timers").into());
-    }
+    super::refuse_topic_auto_close(&mut tx, topic_id).await?;
     // update_user_counts
     sqlx::query(
         "UPDATE user_stats SET first_post_created_at = COALESCE(first_post_created_at, $2) WHERE user_id = $1",

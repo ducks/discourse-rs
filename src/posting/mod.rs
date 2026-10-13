@@ -53,6 +53,33 @@ impl Ctx<'_> {
     }
 }
 
+/// `PostCreator#update_topic_auto_close`, refused where it would act: a
+/// closed topic's close timer finished, or a public timer based on the
+/// last post moved. Otherwise a post leaves timers alone.
+pub async fn refuse_topic_auto_close(
+    conn: &mut PgConnection,
+    topic_id: i32,
+) -> Result<(), AppError> {
+    let acts: bool = sqlx::query_scalar(
+        "SELECT CASE WHEN t.closed \
+           THEN EXISTS (SELECT 1 FROM topic_timers tt WHERE tt.timerable_id = t.id \
+                          AND tt.type = 'TopicTimer' AND tt.status_type = 1 AND tt.deleted_at IS NULL) \
+           ELSE EXISTS (SELECT 1 FROM topic_timers tt WHERE tt.timerable_id = t.id \
+                          AND tt.type = 'TopicTimer' AND tt.public_type AND tt.deleted_at IS NULL \
+                          AND tt.based_on_last_post AND COALESCE(tt.duration_minutes, 0) > 0) \
+         END FROM topics t WHERE t.id = $1",
+    )
+    .bind(topic_id)
+    .fetch_one(conn)
+    .await?;
+    if acts {
+        return Err(
+            crate::Unsupported("topic timers (PostCreator#update_topic_auto_close)").into(),
+        );
+    }
+    Ok(())
+}
+
 /// `Post.types`
 pub mod post_types {
     pub const REGULAR: i32 = 1;
