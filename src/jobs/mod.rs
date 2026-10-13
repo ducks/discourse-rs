@@ -12,6 +12,7 @@ pub mod accounts;
 pub mod bookmark_reminders;
 pub mod cleanup;
 pub mod consistency;
+pub mod group_messages;
 mod handlers;
 pub mod heat;
 pub mod housekeeping;
@@ -235,6 +236,14 @@ const SCHEDULED: &[(&str, Duration)] = &[
     ),
     (moderation::TL3_PROMOTIONS, Duration::from_secs(24 * 3600)),
     (
+        group_messages::IGNORED_USERS_SUMMARY,
+        Duration::from_secs(24 * 3600),
+    ),
+    (
+        group_messages::PENDING_REVIEWABLES_REMINDER,
+        Duration::from_secs(15 * 60),
+    ),
+    (
         moderation::REVIEWABLE_PRIORITIES,
         Duration::from_secs(24 * 3600),
     ),
@@ -389,6 +398,10 @@ pub async fn run_scheduled(state: &AppState, name: &str) -> Result<(), AppError>
             crate::plugins::chat::summary_email::send_unread_mentions_summary(state).await
         }
         moderation::TL3_PROMOTIONS => moderation::tl3_promotions(state).await,
+        group_messages::IGNORED_USERS_SUMMARY => group_messages::ignored_users_summary(state).await,
+        group_messages::PENDING_REVIEWABLES_REMINDER => {
+            group_messages::pending_reviewables_reminder(state).await
+        }
         moderation::REVIEWABLE_PRIORITIES => moderation::reviewable_priorities(state).await,
         moderation::AUTO_QUEUE_HANDLER => moderation::auto_queue_handler(state).await,
         moderation::DESTROY_OLD_DELETION_STUBS => {

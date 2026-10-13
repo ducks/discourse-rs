@@ -343,12 +343,13 @@ pub async fn build(
 
     // The views.
     let first_footer_classes = if user.suspended { "" } else { "highlight" };
+    let logo_small = crate::admin_users::logo_small_url(&mut *conn, s).await?;
     let avatar = crate::avatar::avatar_template(
         &urls,
         post.user_id,
         &post.username,
         post.uploaded_avatar_id,
-        None,
+        logo_small.as_deref(),
     )?
     .replace("{size}", "45");
     let avatar = urls.absolute(&avatar)?;
@@ -436,12 +437,15 @@ pub async fn build(
         None
     };
     if pm {
-        if original_username == "system" {
-            return Err(
-                Unsupported("messages from the system user (button-only instructions)").into(),
-            );
+        // Discourse.system_user.username: a message from it only links.
+        let system: String = sqlx::query_scalar("SELECT username FROM users WHERE id = -1")
+            .fetch_one(&mut *conn)
+            .await?;
+        if original_username == system {
+            respond_key.push_str("_pm_button_only");
+        } else {
+            respond_key.push_str("_pm");
         }
-        respond_key.push_str("_pm");
     }
     let respond_args: Vec<(&str, &str)> = match &participants {
         Some(p) => vec![("base_url", &base_url), ("url", &url), ("participants", p)],

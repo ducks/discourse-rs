@@ -1,0 +1,29 @@
+{
+  "name": "ignored_users_summary_recent",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-13T12:22:56.375441",
+  "transaction_started_at": "2026-10-13T12:22:55.592918",
+  "responses": [],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "ignored_users_count_message_threshold": 3
+  },
+  "setup": [
+    "INSERT INTO ignored_users (user_id, ignored_user_id, created_at, updated_at, summarized_at, expiring_at) VALUES (1, 5, now() - interval '2 days', now() - interval '2 days', now() - interval '10 days', now() + interval '1 year'), (2, 5, now() - interval '2 days', now() - interval '2 days', now() - interval '10 days', now() + interval '1 year'), (4, 5, now() - interval '2 days', now() - interval '2 days', now() - interval '10 days', now() + interval '1 year')"
+  ],
+  "enqueue": [
+    [
+      "ignored_users_summary",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "d331b489cb9ae2130e3ae749c10bf61cb91e24666cc72918267f78b4d82dd5f1",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

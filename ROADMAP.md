@@ -97,10 +97,10 @@ Bugs or silent gaps in what is merged, small and independent.
 23. ~~`feat/user-comm-screener`~~ (done) S: gates PM creation, alerts, invites, DMs
 24. ~~`feat/pm-tracking-state`~~ (done) S
 25. ~~`feat/group-messages-create`~~ (done) M, 26. ~~`feat/group-messages-alerts`~~ (done) M
-27. `feat/jobs-group-messages` S: unblocks ignored_users_summary and
+27. ~~`feat/jobs-group-messages`~~ (done) S: unblocks ignored_users_summary and
     pending_reviewables_reminder
 28. `feat/pm-archive` S, 29. `feat/pm-small-actions` M,
-    30. `feat/pm-likes` S, 31. `feat/pm-destroy` M,
+    30. `feat/pm-likes` S, 31. `feat/pm-destroy` M (then the reminder replacing its previous one),
     32. `feat/pm-invite` M, 33. `feat/pm-invite-group` S
 
 [messages-dms]

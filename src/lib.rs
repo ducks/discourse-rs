@@ -31,6 +31,7 @@ pub mod excerpt;
 pub mod file_store;
 pub mod flags;
 pub mod group_manager;
+pub mod group_message;
 pub mod groups;
 pub mod guardian;
 pub mod hashtags;
