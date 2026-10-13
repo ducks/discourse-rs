@@ -100,7 +100,7 @@ Bugs or silent gaps in what is merged, small and independent.
 27. ~~`feat/jobs-group-messages`~~ (done) S: unblocks ignored_users_summary and
     pending_reviewables_reminder
 28. ~~`feat/pm-archive`~~ (done) S, 29. ~~`feat/pm-small-actions`~~ (done) M,
-    30. `feat/pm-likes` S, 31. `feat/pm-destroy` M (then the reminder replacing its previous one),
+    30. ~~`feat/pm-likes`~~ (done) S, 31. `feat/pm-destroy` M (then the reminder replacing its previous one),
     32. `feat/pm-invite` M, 33. `feat/pm-invite-group` S
 
 [messages-dms]

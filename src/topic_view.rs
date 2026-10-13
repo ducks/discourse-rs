@@ -1498,6 +1498,7 @@ impl TopicView<'_> {
                     &viewer.ctx,
                     user_id,
                     created_at,
+                    crate::post_actions::LIKE,
                 )?;
                 likes.insert(post_id, crate::plugins::reactions::ViewerLike { can_undo });
             }

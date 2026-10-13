@@ -153,9 +153,6 @@ async fn target(
     let Some(access) = find_post(&mut *conn, ctx, guardian, post_id).await? else {
         return Ok(None);
     };
-    if access.topic.private_message() {
-        return Err(Unsupported("likes in messages").into());
-    }
     Ok(Some(Target { access }))
 }
 
@@ -327,7 +324,8 @@ pub(crate) async fn create(
         .execute(&mut *tx)
         .await?
         .rows_affected();
-        if inserted > 0 {
+        // update_like_count, but not for likes in messages.
+        if inserted > 0 && !access.topic.private_message() {
             update_like_count(&mut *tx, user_id, action_type, 1).await?;
         }
     }
@@ -495,10 +493,13 @@ pub(crate) async fn destroy(
     let topic = crate::topic_guardian::TopicCtx::load(&mut *tx, ctx.settings, guardian, topic_id)
         .await?
         .ok_or(Unsupported("likes on posts of deleted topics"))?;
-    if topic.private_message() {
-        return Err(Unsupported("likes in messages").into());
-    }
-    if !guardian.can_delete_post_action(ctx.settings, &topic, action_user, action_created_at)? {
+    if !guardian.can_delete_post_action(
+        ctx.settings,
+        &topic,
+        action_user,
+        action_created_at,
+        crate::post_actions::LIKE,
+    )? {
         return Ok(Outcome::Forbidden("invalid_access"));
     }
     if let Err(refused) = perform(
@@ -549,7 +550,9 @@ pub(crate) async fn destroy(
         .bind(post_id)
         .execute(&mut *tx)
         .await?;
-        update_like_count(&mut *tx, user_id, action_type, -1).await?;
+        if !topic.private_message() {
+            update_like_count(&mut *tx, user_id, action_type, -1).await?;
+        }
     }
     // PostActionNotifier.post_action_deleted: the author's liked
     // notifications on the post go, then refresh_like_notification

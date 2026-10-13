@@ -1,0 +1,13 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/discourse-reactions/posts/49/custom-reactions/heart/toggle.json",
+      "params": {}
+    }
+  ],
+  "run_jobs": [
+    "post_alert"
+  ]
+}

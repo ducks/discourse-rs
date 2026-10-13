@@ -199,6 +199,7 @@ impl Reader<'_> {
                         &post.topic,
                         like.user_id,
                         like.created_at,
+                        crate::post_actions::LIKE,
                     )?;
                 users.push(self.reactor_json(like, can_undo).await?);
             }
