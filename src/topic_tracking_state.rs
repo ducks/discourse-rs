@@ -1,8 +1,7 @@
 //! Port of TopicTrackingState's publishing: what keeps topic lists and
 //! their new and unread counts live for regular topics (`/new`,
 //! `/latest`, `/unread`, `/unread/<user id>`, `/delete`, `/recover`).
-//! Messages' tracking state is PrivateMessageTopicTrackingState, not
-//! ported.
+//! Messages' tracking state is crate::pm_tracking_state.
 
 use chrono::NaiveDateTime;
 use serde_json::{Map, Value, json};
@@ -370,28 +369,7 @@ pub async fn publish_read(
     user_id: i32,
     notification_level: Option<i32>,
 ) -> Result<(), AppError> {
-    // user.whisperer?: staff, or in whispers_allowed_groups.
-    let groups = settings.group_ids("whispers_allowed_groups")?;
-    let whisperer: bool = sqlx::query_scalar(
-        "SELECT (admin OR moderator) OR EXISTS (SELECT 1 FROM group_users \
-           WHERE user_id = $1 AND group_id::bigint = ANY($2::bigint[])) \
-         FROM users WHERE id = $1",
-    )
-    .bind(user_id)
-    .bind(&groups)
-    .fetch_optional(&mut *conn)
-    .await?
-    .unwrap_or(false);
-    let column = if whisperer {
-        "highest_staff_post_number"
-    } else {
-        "highest_post_number"
-    };
-    let highest: Option<i32> =
-        sqlx::query_scalar(&format!("SELECT {column} FROM topics WHERE id = $1"))
-            .bind(topic_id)
-            .fetch_optional(&mut *conn)
-            .await?;
+    let highest = highest_for_reader(settings, conn, topic_id, user_id).await?;
     let message = json!({
         "message_type": "read",
         "topic_id": topic_id,
@@ -409,6 +387,38 @@ pub async fn publish_read(
     )
     .await?;
     Ok(())
+}
+
+/// `publish_read_message`'s highest post number: the staff one for a
+/// whisperer (staff, or in whispers_allowed_groups).
+pub async fn highest_for_reader(
+    settings: &SiteSettings,
+    conn: &mut PgConnection,
+    topic_id: i32,
+    user_id: i32,
+) -> Result<Option<i32>, AppError> {
+    let groups = settings.group_ids("whispers_allowed_groups")?;
+    let whisperer: bool = sqlx::query_scalar(
+        "SELECT (admin OR moderator) OR EXISTS (SELECT 1 FROM group_users \
+           WHERE user_id = $1 AND group_id::bigint = ANY($2::bigint[])) \
+         FROM users WHERE id = $1",
+    )
+    .bind(user_id)
+    .bind(&groups)
+    .fetch_optional(&mut *conn)
+    .await?
+    .unwrap_or(false);
+    let column = if whisperer {
+        "highest_staff_post_number"
+    } else {
+        "highest_post_number"
+    };
+    Ok(
+        sqlx::query_scalar(&format!("SELECT {column} FROM topics WHERE id = $1"))
+            .bind(topic_id)
+            .fetch_optional(&mut *conn)
+            .await?,
+    )
 }
 
 /// `publish_delete`: a regular topic trashed.

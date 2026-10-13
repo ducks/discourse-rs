@@ -115,6 +115,7 @@ pub mod notification_reasons {
     pub const CREATED_TOPIC: i32 = 1;
     pub const USER_CHANGED: i32 = 2;
     pub const CREATED_POST: i32 = 4;
+    pub const AUTO_WATCH: i32 = 5;
     pub const AUTO_WATCH_CATEGORY: i32 = 6;
     pub const AUTO_TRACK_CATEGORY: i32 = 8;
     pub const AUTO_WATCH_TAG: i32 = 10;
@@ -329,8 +330,35 @@ async fn missing_record_level(
         };
         return Ok(Some((t, reason)));
     }
+    // A message the user was invited to (an invited_to_private_message
+    // notification): a group's default level, else watching, without a
+    // reason. The group query joins topic_allowed_groups to nothing, so
+    // any group of the user counts once the topic has an allowed group.
     if pm {
-        return Err(crate::Unsupported("topic_users for messages").into());
+        let invited: bool = sqlx::query_scalar(
+            "SELECT EXISTS (SELECT 1 FROM notifications WHERE user_id = $1 AND topic_id = $2 \
+               AND notification_type = 7)",
+        )
+        .bind(user_id)
+        .bind(topic_id)
+        .fetch_one(&mut *conn)
+        .await?;
+        if invited {
+            let group_level: Option<i32> = sqlx::query_scalar(
+                "SELECT groups.default_notification_level FROM groups \
+                 LEFT OUTER JOIN group_users gu ON gu.group_id = groups.id AND gu.user_id = $1 \
+                 LEFT OUTER JOIN topic_allowed_groups tag ON tag.topic_id = $2 \
+                 WHERE gu.id IS NOT NULL AND tag.id IS NOT NULL LIMIT 1",
+            )
+            .bind(user_id)
+            .bind(topic_id)
+            .fetch_optional(&mut *conn)
+            .await?;
+            return Ok(Some((
+                group_level.unwrap_or(notification_levels::WATCHING),
+                0,
+            )));
+        }
     }
     // auto_track_topics_after_msecs <= total_msecs_viewed (0): immediately.
     let after = match auto_track_after {

@@ -119,8 +119,7 @@ async fn record(
 /// DELETE /t/:topic_id/timings (TopicsController#destroy_timings): Mark
 /// unread. With `last=1` the topic's last post is unread again, else the
 /// whole topic; the user's latest notification on it is unread again.
-/// Messages' read state isn't published (PrivateMessageTopicTrackingState
-/// is not ported), as with timings.
+/// A message's read state is published as it now stands.
 pub async fn destroy_timings(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
@@ -183,6 +182,32 @@ pub async fn destroy_timings(
         > 0;
     if unread_again {
         crate::bus::publish_notifications_state(&state.bus, &mut tx, &settings, user_id).await?;
+    }
+    let private_message: bool = sqlx::query_scalar(
+        "SELECT EXISTS (SELECT 1 FROM topics WHERE id = $1 AND archetype = 'private_message')",
+    )
+    .bind(topic_id)
+    .fetch_one(&mut *tx)
+    .await?;
+    if private_message {
+        let topic_user: Option<(Option<i32>, i32)> = sqlx::query_as(
+            "SELECT last_read_post_number, notification_level FROM topic_users \
+             WHERE user_id = $1 AND topic_id = $2",
+        )
+        .bind(user_id)
+        .bind(topic_id)
+        .fetch_optional(&mut *tx)
+        .await?;
+        crate::pm_tracking_state::publish_read(
+            &state.bus,
+            &settings,
+            &mut tx,
+            topic_id,
+            topic_user.and_then(|t| t.0),
+            user_id,
+            topic_user.map(|t| t.1),
+        )
+        .await?;
     }
     tx.commit().await?;
     // render body: nil
