@@ -1,0 +1,18 @@
+{
+  "user": null,
+  "setup": [
+    "UPDATE topics SET pinned_at = now() - interval '2 days', pinned_globally = true, pinned_until = now() - interval '1 hour' WHERE id = 35",
+    "UPDATE topics SET pinned_at = now() - interval '2 days', pinned_until = now() + interval '1 day' WHERE id = 37"
+  ],
+  "requests": [],
+  "enqueue": [
+    [
+      "ensure_db_consistency",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "ensure_db_consistency",
+    "publish_group_membership_updates"
+  ]
+}

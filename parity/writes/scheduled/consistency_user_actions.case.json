@@ -1,0 +1,18 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO user_actions (id, action_type, user_id, target_topic_id, target_post_id, acting_user_id, created_at, updated_at) SELECT 9501, action_type, user_id, 9999, target_post_id, acting_user_id, now(), now() FROM user_actions WHERE action_type = 1 ORDER BY id LIMIT 1",
+    "INSERT INTO user_actions (id, action_type, user_id, target_topic_id, target_post_id, acting_user_id, created_at, updated_at) VALUES (9502, 5, 3, 1, 36, 3, now(), now())"
+  ],
+  "requests": [],
+  "enqueue": [
+    [
+      "ensure_db_consistency",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "ensure_db_consistency",
+    "publish_group_membership_updates"
+  ]
+}

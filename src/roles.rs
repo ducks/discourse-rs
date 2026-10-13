@@ -15,10 +15,25 @@ use crate::{AppError, Unsupported};
 /// `UserHistory.actions[:grant_moderation]`
 const GRANT_MODERATION: i32 = 34;
 /// `Group::AUTO_GROUPS`: the staff groups, with who belongs in each.
-const STAFF_GROUPS: [(i32, &str, &str); 3] = [
-    (1, "admins", "admin"),
-    (2, "moderators", "moderator"),
-    (3, "staff", "(admin OR moderator)"),
+const STAFF_GROUPS: [(i32, &str, Option<&str>); 3] = [
+    (1, "admins", Some("admin")),
+    (2, "moderators", Some("moderator")),
+    (3, "staff", Some("(admin OR moderator)")),
+];
+/// `Group::AUTO_GROUPS` in key order, with who belongs (None: everyone,
+/// anonymous_users and logged_in_users keep no members).
+const AUTOMATIC_GROUPS: [(i32, &str, Option<&str>); 11] = [
+    (0, "everyone", None),
+    (1, "admins", Some("admin")),
+    (2, "moderators", Some("moderator")),
+    (3, "staff", Some("(admin OR moderator)")),
+    (4, "anonymous_users", None),
+    (5, "logged_in_users", None),
+    (10, "trust_level_0", Some("trust_level >= 0")),
+    (11, "trust_level_1", Some("trust_level >= 1")),
+    (12, "trust_level_2", Some("trust_level >= 2")),
+    (13, "trust_level_3", Some("trust_level >= 3")),
+    (14, "trust_level_4", Some("trust_level >= 4")),
 ];
 /// `Group::AUTO_GROUP_IDS`: every automatic group.
 const AUTO_GROUP_IDS: &str = "0,1,2,3,4,5,10,11,12,13,14";
@@ -132,42 +147,104 @@ pub async fn grant_moderation(
     Ok(())
 }
 
-/// `Group.refresh_automatic_groups!(:admins, :moderators, :staff)`: each
-/// group loses the users who no longer belong and gains those who do, with
-/// publish_group_membership_updates for each change, and its user count
-/// reset.
+/// `Group.refresh_automatic_groups!(:admins, :moderators, :staff)`.
 pub async fn refresh_staff_groups(conn: &mut PgConnection, i18n: &I18n) -> Result<(), AppError> {
+    refresh_groups(conn, i18n, &STAFF_GROUPS).await
+}
+
+/// `Group.refresh_automatic_groups!`: every automatic group.
+pub async fn refresh_automatic_groups(
+    conn: &mut PgConnection,
+    i18n: &I18n,
+) -> Result<(), AppError> {
+    refresh_groups(conn, i18n, &AUTOMATIC_GROUPS).await
+}
+
+/// What refresh_automatic_group! would change about the groups' own rows
+/// (created when missing, renamed from the locale, made logged-on only,
+/// moderators messageable by everyone), which is refused.
+async fn check_groups(
+    conn: &mut PgConnection,
+    i18n: &I18n,
+    groups: &[(i32, &str, Option<&str>)],
+) -> Result<(), AppError> {
     #[derive(sqlx::FromRow)]
     struct GroupRow {
         name: String,
         full_name: Option<String>,
         visibility_level: i32,
         messageable_level: i32,
-        title: Option<String>,
     }
-    for (group_id, name, member) in STAFF_GROUPS {
+    for (group_id, name, _) in groups {
         let group: Option<GroupRow> = sqlx::query_as(
-            "SELECT name, full_name, visibility_level, messageable_level, title FROM groups WHERE id = $1",
+            "SELECT name, full_name, visibility_level, messageable_level FROM groups WHERE id = $1",
         )
         .bind(group_id)
         .fetch_optional(&mut *conn)
         .await?;
         let Some(group) = group else {
-            return Err(Unsupported("creating a missing staff group").into());
+            return Err(Unsupported("creating a missing automatic group").into());
         };
-        let title = group.title;
-        // The name and full name from the locale, a public group made
-        // logged-on only, and moderators messageable by everyone.
         let default_name = i18n.t(&format!("groups.default_names.{name}"));
         let default_full_name = i18n.t(&format!("groups.default_full_names.{name}"));
         if default_name != Some(group.name.as_str())
             || default_full_name != group.full_name.as_deref()
+            // everyone, anonymous_users and logged_in_users are made
+            // logged-on only; the others only when public.
+            || (matches!(group_id, 0 | 4 | 5) && group.visibility_level != 1)
             || group.visibility_level == 0
-            || (group_id == 2 && group.messageable_level != 99)
+            || (*group_id == 2 && group.messageable_level != 99)
         {
-            return Err(Unsupported("renaming or releveling a staff group").into());
+            return Err(Unsupported("renaming or releveling an automatic group").into());
         }
+    }
+    Ok(())
+}
 
+/// The automatic groups' own rows, as refresh_automatic_groups! leaves
+/// them; refused otherwise.
+pub async fn check_automatic_groups(conn: &mut PgConnection, i18n: &I18n) -> Result<(), AppError> {
+    check_groups(conn, i18n, &AUTOMATIC_GROUPS).await
+}
+
+/// `Group.reset_groups_user_count!(only_group_ids)`: the tally of human
+/// members (any member of a non-automatic group).
+pub async fn reset_groups_user_count(
+    conn: &mut PgConnection,
+    only: Option<i32>,
+) -> Result<(), AppError> {
+    sqlx::query(&format!(
+        "WITH tally AS ( \
+           SELECT g.id AS group_id, COUNT(gu.user_id) AS users FROM groups g \
+           LEFT JOIN group_users gu ON gu.group_id = g.id \
+             AND (gu.user_id > 0 OR (g.automatic AND g.id NOT IN ({AUTO_GROUP_IDS}))) \
+           WHERE ($1::int IS NULL OR g.id = $1) GROUP BY g.id) \
+         UPDATE groups SET user_count = tally.users FROM tally \
+         WHERE id = tally.group_id AND user_count <> tally.users"
+    ))
+    .bind(only)
+    .execute(&mut *conn)
+    .await?;
+    Ok(())
+}
+
+/// Each group (that keeps members) loses the users who no longer belong
+/// and gains those who do, with publish_group_membership_updates for each
+/// change, and its user count reset.
+async fn refresh_groups(
+    conn: &mut PgConnection,
+    i18n: &I18n,
+    groups: &[(i32, &str, Option<&str>)],
+) -> Result<(), AppError> {
+    check_groups(&mut *conn, i18n, groups).await?;
+    for (group_id, _, member) in groups {
+        let (group_id, Some(member)) = (*group_id, member) else {
+            continue;
+        };
+        let title: Option<String> = sqlx::query_scalar("SELECT title FROM groups WHERE id = $1")
+            .bind(group_id)
+            .fetch_one(&mut *conn)
+            .await?;
         // remove_users_from_automatic_group
         let removed: Vec<i32> = sqlx::query_scalar(&format!(
             "DELETE FROM group_users USING (SELECT id FROM users WHERE NOT {member} OR staged) x \
@@ -225,19 +302,7 @@ pub async fn refresh_staff_groups(conn: &mut PgConnection, i18n: &I18n) -> Resul
             .await?;
         }
 
-        // reset_user_count
-        sqlx::query(&format!(
-            "WITH tally AS ( \
-               SELECT g.id AS group_id, COUNT(gu.user_id) AS users FROM groups g \
-               LEFT JOIN group_users gu ON gu.group_id = g.id \
-                 AND (gu.user_id > 0 OR (g.automatic AND g.id NOT IN ({AUTO_GROUP_IDS}))) \
-               WHERE g.id = $1 GROUP BY g.id) \
-             UPDATE groups SET user_count = tally.users FROM tally \
-             WHERE id = tally.group_id AND user_count <> tally.users"
-        ))
-        .bind(group_id)
-        .execute(&mut *conn)
-        .await?;
+        reset_groups_user_count(&mut *conn, Some(group_id)).await?;
     }
     Ok(())
 }

@@ -1,0 +1,19 @@
+{
+  "user": null,
+  "setup": [
+    "UPDATE users SET last_seen_at = now() WHERE id = 3",
+    "UPDATE user_stats SET topics_entered = 50, bounce_score = 4, reset_bounce_score_after = now() - interval '1 day' WHERE user_id = 3",
+    "INSERT INTO topic_allowed_groups (topic_id, group_id) SELECT 42, group_id FROM group_users WHERE user_id = 3"
+  ],
+  "requests": [],
+  "enqueue": [
+    [
+      "ensure_db_consistency",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "ensure_db_consistency",
+    "publish_group_membership_updates"
+  ]
+}

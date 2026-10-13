@@ -1,0 +1,19 @@
+{
+  "user": null,
+  "setup": [
+    "DELETE FROM category_tag_stats WHERE id = 3",
+    "UPDATE category_tag_stats SET topic_count = 9 WHERE id = 2",
+    "INSERT INTO category_tag_stats (id, category_id, tag_id, topic_count) VALUES (9501, 2, 2, 4)"
+  ],
+  "requests": [],
+  "enqueue": [
+    [
+      "ensure_db_consistency",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "ensure_db_consistency",
+    "publish_group_membership_updates"
+  ]
+}

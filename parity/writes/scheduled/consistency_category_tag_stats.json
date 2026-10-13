@@ -1,0 +1,65 @@
+{
+  "name": "consistency_category_tag_stats",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-13T02:33:52.205589",
+  "transaction_started_at": "2026-10-13T02:33:51.315627",
+  "responses": [],
+  "changes": {
+    "category_tag_stats": {
+      "inserted": [
+        {
+          "id": 4,
+          "tag_id": 1,
+          "category_id": 4,
+          "topic_count": 1
+        }
+      ],
+      "deleted": [
+        {
+          "id": 9501,
+          "tag_id": 2,
+          "category_id": 2,
+          "topic_count": 4
+        }
+      ],
+      "updated": [
+        {
+          "before": {
+            "id": 2,
+            "tag_id": 2,
+            "category_id": 4,
+            "topic_count": 9
+          },
+          "after": {
+            "id": 2,
+            "tag_id": 2,
+            "category_id": 4,
+            "topic_count": 2
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "category_tag_stats": 4
+  },
+  "setup": [
+    "DELETE FROM category_tag_stats WHERE id = 3",
+    "UPDATE category_tag_stats SET topic_count = 9 WHERE id = 2",
+    "INSERT INTO category_tag_stats (id, category_id, tag_id, topic_count) VALUES (9501, 2, 2, 4)"
+  ],
+  "enqueue": [
+    [
+      "ensure_db_consistency",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "05138f7b2ea10951a04ce8b17b7d7f9dc4fa4e2b77600944abd40cc89b9c1290",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

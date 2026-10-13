@@ -1,0 +1,160 @@
+{
+  "name": "consistency_seen_reader",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-13T02:33:59.809738",
+  "transaction_started_at": "2026-10-13T02:33:59.099099",
+  "responses": [],
+  "changes": {
+    "group_users": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 28,
+            "owner": false,
+            "user_id": 4,
+            "group_id": 10,
+            "created_at": "2026-07-25T05:59:16.953455",
+            "updated_at": "2026-07-25T05:59:16.953455",
+            "first_unread_pm_at": "2026-07-25T05:59:16.731949",
+            "notification_level": 3
+          },
+          "after": {
+            "id": 28,
+            "owner": false,
+            "user_id": 4,
+            "group_id": 10,
+            "created_at": "2026-07-25T05:59:16.953455",
+            "updated_at": "2026-07-25T05:59:16.953455",
+            "first_unread_pm_at": "2026-10-13T02:23:59.885667",
+            "notification_level": 3
+          }
+        },
+        {
+          "before": {
+            "id": 29,
+            "owner": false,
+            "user_id": 4,
+            "group_id": 11,
+            "created_at": "2026-07-25T05:59:17.051978",
+            "updated_at": "2026-07-25T05:59:17.051978",
+            "first_unread_pm_at": "2026-07-25T05:59:17.007778",
+            "notification_level": 3
+          },
+          "after": {
+            "id": 29,
+            "owner": false,
+            "user_id": 4,
+            "group_id": 11,
+            "created_at": "2026-07-25T05:59:17.051978",
+            "updated_at": "2026-07-25T05:59:17.051978",
+            "first_unread_pm_at": "2026-10-13T02:23:59.885667",
+            "notification_level": 3
+          }
+        },
+        {
+          "before": {
+            "id": 30,
+            "owner": false,
+            "user_id": 4,
+            "group_id": 12,
+            "created_at": "2026-07-25T05:59:17.071772",
+            "updated_at": "2026-07-25T05:59:17.071772",
+            "first_unread_pm_at": "2026-07-25T05:59:17.007778",
+            "notification_level": 3
+          },
+          "after": {
+            "id": 30,
+            "owner": false,
+            "user_id": 4,
+            "group_id": 12,
+            "created_at": "2026-07-25T05:59:17.071772",
+            "updated_at": "2026-07-25T05:59:17.071772",
+            "first_unread_pm_at": "2026-10-13T02:23:59.885667",
+            "notification_level": 3
+          }
+        }
+      ]
+    },
+    "user_stats": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "user_id": 4,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:16.927292",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 0,
+            "topic_count": 0,
+            "bounce_score": 0,
+            "days_visited": 0,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 0,
+            "topics_entered": 0,
+            "first_unread_at": "2026-07-25T05:59:16.731949",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 2,
+            "first_unread_pm_at": "2026-07-25T05:59:16.731949",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 2,
+            "first_post_created_at": "2026-09-30T07:28:29.179534",
+            "reset_bounce_score_after": null
+          },
+          "after": {
+            "user_id": 4,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:16.927292",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 0,
+            "topic_count": 0,
+            "bounce_score": 0,
+            "days_visited": 0,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 0,
+            "topics_entered": 0,
+            "first_unread_at": "2026-10-01T15:39:52.00791",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 1,
+            "first_unread_pm_at": "2026-10-01T15:39:51.672869",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 2,
+            "first_post_created_at": "2026-09-30T07:28:29.179534",
+            "reset_bounce_score_after": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE users SET last_seen_at = now() WHERE id = 4",
+    "UPDATE topic_users SET last_read_post_number = 0 WHERE topic_id = 44 AND user_id = 4"
+  ],
+  "enqueue": [
+    [
+      "ensure_db_consistency",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "6e059a998c49d0c9299fff307826f6ab78bee6c9e845b3b5a7fafea6072fe004",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

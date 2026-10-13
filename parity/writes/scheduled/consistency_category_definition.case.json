@@ -1,0 +1,18 @@
+{
+  "not_yet": "creating a category's definition topic",
+  "user": null,
+  "setup": [
+    "UPDATE categories SET topic_id = NULL WHERE id = 2"
+  ],
+  "requests": [],
+  "enqueue": [
+    [
+      "ensure_db_consistency",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "ensure_db_consistency",
+    "publish_group_membership_updates"
+  ]
+}
