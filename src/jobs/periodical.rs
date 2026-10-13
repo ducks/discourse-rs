@@ -89,15 +89,7 @@ pub async fn periodical_updates(state: &AppState) -> Result<(), AppError> {
         .fetch_one(&mut *conn)
         .await?;
     if !gravatars_pending {
-        let stale: bool = sqlx::query_scalar(
-            "SELECT EXISTS (SELECT 1 FROM posts WHERE (baked_version IS NULL OR baked_version < 2) \
-               AND deleted_at IS NULL)",
-        )
-        .fetch_one(&mut *conn)
-        .await?;
-        if stale {
-            return Err(Unsupported("rebaking old posts (Post#rebake!)").into());
-        }
+        rebake_old_posts(state, &s, &mut conn).await?;
     }
 
     // UserProfile.rebake_old(250)
@@ -198,6 +190,74 @@ pub async fn periodical_updates(state: &AppState) -> Result<(), AppError> {
     .await?;
     if auto_bump {
         return Err(Unsupported("auto bumping topics (the rate limiter)").into());
+    }
+    Ok(())
+}
+
+/// `Post.rebake_old(rebake_old_posts_count)`: the newest posts baked
+/// before the current version, each rebaked. A post that fails is retried
+/// on later runs, then marked baked after three attempts (its
+/// rebake_attempts custom field); what the port refuses aborts the job.
+async fn rebake_old_posts(
+    state: &AppState,
+    s: &SiteSettings,
+    conn: &mut sqlx::PgConnection,
+) -> Result<(), AppError> {
+    let ids: Vec<i32> = sqlx::query_scalar(
+        "SELECT id FROM posts WHERE (baked_version IS NULL OR baked_version < 2) \
+           AND posts.deleted_at IS NULL ORDER BY id DESC LIMIT $1",
+    )
+    .bind(s.get("rebake_old_posts_count")?.to_i())
+    .fetch_all(&mut *conn)
+    .await?;
+    let host = crate::pretty_text::Host::from_state(state);
+    let ctx = crate::posting::Ctx {
+        host: &host,
+        settings: s,
+        config: &state.config,
+        i18n: &state.i18n,
+        bus: &state.bus,
+    };
+    for id in ids {
+        let Err(e) = crate::posting::rebake::rebake(&state.pool, &ctx, id).await else {
+            continue;
+        };
+        if e.is_unsupported() {
+            return Err(e);
+        }
+        tracing::warn!(post_id = id, error = %e, "rebaking a post failed");
+        let attempts: Option<String> = sqlx::query_scalar(
+            "SELECT value FROM post_custom_fields WHERE post_id = $1 AND name = 'rebake_attempts' ORDER BY id LIMIT 1",
+        )
+        .bind(id)
+        .fetch_optional(&mut *conn)
+        .await?;
+        let attempts = attempts.map_or(0, |a| crate::ruby::to_i(&a));
+        if attempts > 3 {
+            sqlx::query("UPDATE posts SET baked_version = 2 WHERE id = $1")
+                .bind(id)
+                .execute(&mut *conn)
+                .await?;
+        } else {
+            let updated = sqlx::query(
+                "UPDATE post_custom_fields SET value = $2, updated_at = clock_timestamp() \
+                 WHERE post_id = $1 AND name = 'rebake_attempts'",
+            )
+            .bind(id)
+            .bind((attempts + 1).to_string())
+            .execute(&mut *conn)
+            .await?;
+            if updated.rows_affected() == 0 {
+                sqlx::query(
+                    "INSERT INTO post_custom_fields (post_id, name, value, created_at, updated_at) \
+                     VALUES ($1, 'rebake_attempts', $2, clock_timestamp(), clock_timestamp())",
+                )
+                .bind(id)
+                .bind((attempts + 1).to_string())
+                .execute(&mut *conn)
+                .await?;
+            }
+        }
     }
     Ok(())
 }

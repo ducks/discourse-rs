@@ -1,0 +1,8 @@
+{
+  "user": null,
+  "setup": ["UPDATE posts SET baked_version = 1, raw = E'[quote=\"user0, post:1, topic:38\"]\\nquoted text\\n[/quote]\\n\\nAnd my reply.' WHERE id = 52"],
+  "requests": [],
+  "enqueue": [["periodical_updates", {}]],
+  "run_jobs": ["periodical_updates"],
+  "approximate": ["topics.score"]
+}

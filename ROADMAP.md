@@ -69,7 +69,7 @@ Bugs or silent gaps in what is merged, small and independent.
 10. ~~`feat/jobs-periodical-updates`~~ (done) M: with feature_topics_for's early
     return (it rewrites rows every run today); rebakes refused while
     stale posts exist
-11. `feat/post-rebake` M/L
+11. ~~`feat/post-rebake`~~ (done) M/L
 12. `feat/jobs-consistency-counters` M, 13. `feat/jobs-consistency-users`
     M: ensure_db_consistency, refusals checked before any write
 14. `feat/harness-upload-files` S, 15. `feat/jobs-upload-metadata` S,
