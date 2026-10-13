@@ -293,7 +293,7 @@ fn parse_url(url: &str) -> Option<Parsed<'_>> {
 }
 
 /// Site paths Rails' router recognizes, the users ones apart.
-const RECOGNIZED: [&str; 17] = [
+const RECOGNIZED: [&str; 18] = [
     "/c/",
     "/tag/",
     "/tags",
@@ -310,6 +310,8 @@ const RECOGNIZED: [&str; 17] = [
     "/guidelines",
     "/tos",
     "/privacy",
+    // reviewables#index
+    "/review",
     // uploads#show_short and uploads#show: links to uploads the store
     // does not have a row for.
     "/uploads/",

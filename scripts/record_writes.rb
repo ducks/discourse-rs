@@ -114,7 +114,9 @@ def clear_redis_state
   # reference's own scheduler ran it.
   # l-rate-limit3: the rate limiters' lists, for cases that turn them on.
   # unique-pm-post: the duplicate check's key for posts in messages.
-  %w[unique-post-* unique-pm-post-* rejection_email:* user-last-seen:* hot_score_6_hourly __SEARCH__LOG_* LAST_UPLOAD_CLEANUP l-rate-limit3:*].each do |pattern|
+  # grpmsg, last_notified_reviewable_id: what GroupMessage and the
+  # reviewables reminder remember having sent.
+  %w[unique-post-* unique-pm-post-* rejection_email:* user-last-seen:* hot_score_6_hourly __SEARCH__LOG_* LAST_UPLOAD_CLEANUP l-rate-limit3:* grpmsg:* last_notified_reviewable_id].each do |pattern|
     Discourse.redis.keys(pattern).each { |k| Discourse.redis.del(k) }
   end
   # Presence lives in Redis too, members and cached configs alike.

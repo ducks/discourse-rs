@@ -1,0 +1,22 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO reviewables (id, type, type_source, status, created_by_id, reviewable_by_moderator, category_id, topic_id, score, potential_spam, target_id, target_type, target_created_by_id, payload, version, latest_score, force_review, potentially_illegal, created_at, updated_at) VALUES (9301, 'ReviewableFlaggedPost', 'core', 0, 3, TRUE, 4, 35, 10, FALSE, 52, 'Post', 2, '{\"targets_topic\":false}', 0, now() - interval '3 days', FALSE, FALSE, now() - interval '3 days', now() - interval '3 days')"
+  ],
+  "settings": {
+    "notify_about_reviewable_item_after": 0
+  },
+  "requests": [],
+  "enqueue": [
+    [
+      "pending_reviewables_reminder",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "pending_reviewables_reminder",
+    "post_update_topic_tracking_state",
+    "post_alert",
+    "user_email"
+  ]
+}

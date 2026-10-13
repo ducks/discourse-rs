@@ -1,0 +1,22 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO ignored_users (user_id, ignored_user_id, created_at, updated_at, summarized_at, expiring_at) VALUES (1, 5, now() - interval '2 days', now() - interval '2 days', now() - interval '10 days', now() + interval '1 year'), (2, 5, now() - interval '2 days', now() - interval '2 days', now() - interval '10 days', now() + interval '1 year'), (4, 5, now() - interval '2 days', now() - interval '2 days', now() - interval '10 days', now() + interval '1 year')"
+  ],
+  "settings": {
+    "ignored_users_count_message_threshold": 3
+  },
+  "requests": [],
+  "enqueue": [
+    [
+      "ignored_users_summary",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "ignored_users_summary",
+    "post_update_topic_tracking_state",
+    "post_alert",
+    "user_email"
+  ]
+}

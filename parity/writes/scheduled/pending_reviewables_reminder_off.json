@@ -1,0 +1,29 @@
+{
+  "name": "pending_reviewables_reminder_off",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-13T12:22:58.837565",
+  "transaction_started_at": "2026-10-13T12:22:57.983872",
+  "responses": [],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "notify_about_reviewable_item_after": 0
+  },
+  "setup": [
+    "INSERT INTO reviewables (id, type, type_source, status, created_by_id, reviewable_by_moderator, category_id, topic_id, score, potential_spam, target_id, target_type, target_created_by_id, payload, version, latest_score, force_review, potentially_illegal, created_at, updated_at) VALUES (9301, 'ReviewableFlaggedPost', 'core', 0, 3, TRUE, 4, 35, 10, FALSE, 52, 'Post', 2, '{\"targets_topic\":false}', 0, now() - interval '3 days', FALSE, FALSE, now() - interval '3 days', now() - interval '3 days')"
+  ],
+  "enqueue": [
+    [
+      "pending_reviewables_reminder",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "a82d8d8c39b5219711f1bd8c8f541c8c5a54a91fcfeaf5b750d35595861cee62",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

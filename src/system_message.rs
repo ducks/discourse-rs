@@ -84,6 +84,21 @@ fn interpolations(
     Ok(params)
 }
 
+/// `SystemMessage.new(user).defaults` (and the type's preview, when it
+/// has one) for `user_id`.
+pub async fn defaults(
+    pool: &PgPool,
+    ctx: &Ctx<'_>,
+    user_id: i32,
+    message_type: &str,
+) -> Result<Vec<(String, String)>, AppError> {
+    let recipient: Recipient = sqlx::query_as("SELECT username, name FROM users WHERE id = $1")
+        .bind(user_id)
+        .fetch_one(pool)
+        .await?;
+    interpolations(ctx, &recipient, message_type, &[])
+}
+
 /// The site contact: site_contact_username's user, else the system user.
 async fn site_contact(conn: &mut PgConnection, ctx: &Ctx<'_>) -> Result<SessionUser, AppError> {
     let username = ctx.settings.get("site_contact_username")?.to_s();

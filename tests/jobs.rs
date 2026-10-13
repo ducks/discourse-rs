@@ -175,3 +175,53 @@ async fn purge_deleted_uploads_removes_files_past_the_grace_period() {
     assert!(tombstone.join("young.png").exists());
     let _ = std::fs::remove_dir_all(&public);
 }
+
+/// PendingReviewablesReminder remembers the newest reviewable it reminded
+/// of (a redis key no recording can seed): a second run sends nothing
+/// until a newer one waits.
+#[tokio::test]
+async fn reviewables_reminder_waits_for_a_newer_reviewable() {
+    let db = TestDb::new().await;
+    let app = state(db.pool.clone(), recorded_config()).await;
+    let reviewable = |id: i32, target: i32| {
+        format!(
+            "INSERT INTO reviewables (id, type, type_source, status, created_by_id, reviewable_by_moderator, \
+               category_id, topic_id, score, potential_spam, target_id, target_type, target_created_by_id, payload, \
+               version, latest_score, force_review, potentially_illegal, created_at, updated_at) \
+             VALUES ({id}, 'ReviewableFlaggedPost', 'core', 0, 3, TRUE, 4, 35, 10, FALSE, {target}, 'Post', 2, '{{}}', 0, \
+               now() - interval '3 days', FALSE, FALSE, now() - interval '3 days', now() - interval '3 days')"
+        )
+    };
+    let reminders = || async {
+        sqlx::query_scalar::<_, i64>(
+            "SELECT COUNT(*) FROM topics WHERE user_id = -1 AND subtype = 'system_message' \
+             AND title = 'There are items in the review queue that need reviewing'",
+        )
+        .fetch_one(&db.pool)
+        .await
+        .unwrap()
+    };
+    sqlx::query(&reviewable(9301, 52))
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    jobs::run_scheduled(&app, jobs::group_messages::PENDING_REVIEWABLES_REMINDER)
+        .await
+        .unwrap();
+    assert_eq!(reminders().await, 1);
+    jobs::run_scheduled(&app, jobs::group_messages::PENDING_REVIEWABLES_REMINDER)
+        .await
+        .unwrap();
+    assert_eq!(reminders().await, 1);
+    // A newer one would replace the first reminder, which needs
+    // PostDestroyer in messages: refused rather than sent twice.
+    sqlx::query(&reviewable(9302, 53))
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let refused = jobs::run_scheduled(&app, jobs::group_messages::PENDING_REVIEWABLES_REMINDER)
+        .await
+        .unwrap_err();
+    assert!(refused.is_unsupported(), "{refused}");
+    assert_eq!(reminders().await, 1);
+}

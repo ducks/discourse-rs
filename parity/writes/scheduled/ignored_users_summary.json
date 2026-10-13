@@ -1,0 +1,610 @@
+{
+  "name": "ignored_users_summary",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-13T12:22:53.262492",
+  "transaction_started_at": "2026-10-13T12:22:52.62611",
+  "responses": [],
+  "changes": {
+    "groups": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 2,
+            "name": "moderators",
+            "title": null,
+            "bio_raw": null,
+            "imap_ssl": null,
+            "automatic": true,
+            "full_name": "Moderators",
+            "imap_port": null,
+            "smtp_port": null,
+            "bio_cooked": null,
+            "created_at": "2026-07-25T05:58:06.795937",
+            "flair_icon": null,
+            "updated_at": "2026-07-25T05:58:06.80035",
+            "user_count": 1,
+            "flair_color": null,
+            "imap_server": null,
+            "public_exit": false,
+            "smtp_server": null,
+            "has_messages": false,
+            "imap_enabled": false,
+            "smtp_enabled": false,
+            "imap_last_uid": 0,
+            "primary_group": false,
+            "smtp_ssl_mode": 0,
+            "email_password": null,
+            "email_username": null,
+            "flair_bg_color": null,
+            "incoming_email": null,
+            "flair_upload_id": null,
+            "imap_last_error": null,
+            "imap_new_emails": null,
+            "imap_old_emails": null,
+            "imap_updated_at": null,
+            "smtp_updated_at": null,
+            "assignable_level": 0,
+            "email_from_alias": null,
+            "public_admission": false,
+            "visibility_level": 1,
+            "grant_trust_level": null,
+            "imap_mailbox_name": "",
+            "imap_uid_validity": 0,
+            "mentionable_level": 0,
+            "messageable_level": 99,
+            "imap_updated_by_id": null,
+            "publish_read_state": false,
+            "smtp_updated_by_id": null,
+            "members_visibility_level": 0,
+            "allow_membership_requests": false,
+            "default_notification_level": 2,
+            "membership_request_template": null,
+            "allow_unknown_sender_topic_replies": false,
+            "automatic_membership_email_domains": null
+          },
+          "after": {
+            "id": 2,
+            "name": "moderators",
+            "title": null,
+            "bio_raw": null,
+            "imap_ssl": null,
+            "automatic": true,
+            "full_name": "Moderators",
+            "imap_port": null,
+            "smtp_port": null,
+            "bio_cooked": null,
+            "created_at": "2026-07-25T05:58:06.795937",
+            "flair_icon": null,
+            "updated_at": "2026-07-25T05:58:06.80035",
+            "user_count": 1,
+            "flair_color": null,
+            "imap_server": null,
+            "public_exit": false,
+            "smtp_server": null,
+            "has_messages": true,
+            "imap_enabled": false,
+            "smtp_enabled": false,
+            "imap_last_uid": 0,
+            "primary_group": false,
+            "smtp_ssl_mode": 0,
+            "email_password": null,
+            "email_username": null,
+            "flair_bg_color": null,
+            "incoming_email": null,
+            "flair_upload_id": null,
+            "imap_last_error": null,
+            "imap_new_emails": null,
+            "imap_old_emails": null,
+            "imap_updated_at": null,
+            "smtp_updated_at": null,
+            "assignable_level": 0,
+            "email_from_alias": null,
+            "public_admission": false,
+            "visibility_level": 1,
+            "grant_trust_level": null,
+            "imap_mailbox_name": "",
+            "imap_uid_validity": 0,
+            "mentionable_level": 0,
+            "messageable_level": 99,
+            "imap_updated_by_id": null,
+            "publish_read_state": false,
+            "smtp_updated_by_id": null,
+            "members_visibility_level": 0,
+            "allow_membership_requests": false,
+            "default_notification_level": 2,
+            "membership_request_template": null,
+            "allow_unknown_sender_topic_replies": false,
+            "automatic_membership_email_domains": null
+          }
+        }
+      ]
+    },
+    "ignored_users": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "user_id": 1,
+            "created_at": "2026-10-11T12:22:52.62611",
+            "updated_at": "2026-10-11T12:22:52.62611",
+            "expiring_at": "2027-10-13T12:22:52.62611",
+            "summarized_at": null,
+            "ignored_user_id": 5
+          },
+          "after": {
+            "id": 1,
+            "user_id": 1,
+            "created_at": "2026-10-11T12:22:52.62611",
+            "updated_at": "2026-10-11T12:22:52.62611",
+            "expiring_at": "2027-10-13T12:22:52.62611",
+            "summarized_at": "2026-10-13T12:22:55.260755",
+            "ignored_user_id": 5
+          }
+        },
+        {
+          "before": {
+            "id": 2,
+            "user_id": 2,
+            "created_at": "2026-10-11T12:22:52.62611",
+            "updated_at": "2026-10-11T12:22:52.62611",
+            "expiring_at": "2027-10-13T12:22:52.62611",
+            "summarized_at": null,
+            "ignored_user_id": 5
+          },
+          "after": {
+            "id": 2,
+            "user_id": 2,
+            "created_at": "2026-10-11T12:22:52.62611",
+            "updated_at": "2026-10-11T12:22:52.62611",
+            "expiring_at": "2027-10-13T12:22:52.62611",
+            "summarized_at": "2026-10-13T12:22:55.260755",
+            "ignored_user_id": 5
+          }
+        },
+        {
+          "before": {
+            "id": 3,
+            "user_id": 4,
+            "created_at": "2026-10-11T12:22:52.62611",
+            "updated_at": "2026-10-11T12:22:52.62611",
+            "expiring_at": "2027-10-13T12:22:52.62611",
+            "summarized_at": null,
+            "ignored_user_id": 5
+          },
+          "after": {
+            "id": 3,
+            "user_id": 4,
+            "created_at": "2026-10-11T12:22:52.62611",
+            "updated_at": "2026-10-11T12:22:52.62611",
+            "expiring_at": "2027-10-13T12:22:52.62611",
+            "summarized_at": "2026-10-13T12:22:55.260755",
+            "ignored_user_id": 5
+          }
+        }
+      ]
+    },
+    "notifications": {
+      "inserted": [
+        {
+          "id": 53,
+          "data": "{\"group_id\":2,\"group_name\":\"moderators\",\"inbox_count\":1,\"username\":\"admin\"}",
+          "read": false,
+          "user_id": 1,
+          "topic_id": null,
+          "created_at": "2026-10-13T12:22:55.31563",
+          "updated_at": "2026-10-13T12:22:55.31563",
+          "post_number": null,
+          "high_priority": false,
+          "post_action_id": null,
+          "notification_type": 16
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_search_data": {
+      "inserted": [
+        {
+          "locale": "en",
+          "post_id": 53,
+          "version": 5,
+          "raw_data": "Hello, This is an automated message from Discourse to inform you that @user3 has been ignored by 3 users. This could indicate a problem is developing in your community. You might want to review recent posts from this user, and potentially other users in the ignored and muted user report . For additional guidance, please refer to our community guidelines .",
+          "search_data": "'3':27 'addit':61 'autom':14 'communiti':38,67 'could':30 'develop':35 'discours':17 'guidanc':62 'guidelin':68 'hello':10 'ignor':5A,25,55 'indic':31 'inform':19 'mani':7A 'messag':15 'might':40 'mute':57 'pleas':63 'post':45 'potenti':50 'problem':33 'recent':44 'refer':64 'report':59 'review':43 'user':2A,28,48,52,58 'user3':22 'want':41",
+          "private_message": true
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_stats": {
+      "inserted": [
+        {
+          "id": 52,
+          "post_id": 53,
+          "created_at": "2026-10-13T12:22:55.113987",
+          "updated_at": "2026-10-13T12:22:55.113987",
+          "drafts_saved": 0,
+          "writing_device": null,
+          "composer_version": null,
+          "typing_duration_msecs": 0,
+          "writing_device_user_agent": null,
+          "composer_open_duration_msecs": 0
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_timings": {
+      "inserted": [
+        {
+          "msecs": 5000,
+          "user_id": -1,
+          "topic_id": 45,
+          "post_number": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "posts": {
+      "inserted": [
+        {
+          "id": 53,
+          "raw": "Hello,\n\nThis is an automated message from Discourse to inform you that @user3 has been ignored by 3 users. This could indicate a problem is developing in your community.\n\nYou might want to [review recent posts](http://localhost:3042/u/user3/summary) from this user, and potentially other users in the [ignored and muted user report](http://localhost:3042/admin/reports/top_ignored_users).\n\nFor additional guidance, please refer to our [community guidelines](http://localhost:3042/guidelines).",
+          "wiki": false,
+          "reads": 1,
+          "score": null,
+          "cooked": "<p>Hello,</p>\n<p>This is an automated message from Discourse to inform you that <a class=\"mention\" href=\"/u/user3\">@user3</a> has been ignored by 3 users. This could indicate a problem is developing in your community.</p>\n<p>You might want to <a href=\"http://localhost:3042/u/user3/summary\">review recent posts</a> from this user, and potentially other users in the <a href=\"http://localhost:3042/admin/reports/top_ignored_users\">ignored and muted user report</a>.</p>\n<p>For additional guidance, please refer to our <a href=\"http://localhost:3042/guidelines\">community guidelines</a>.</p>",
+          "hidden": false,
+          "locale": null,
+          "user_id": -1,
+          "version": 1,
+          "baked_at": "2026-10-13T12:22:55.053939",
+          "topic_id": 45,
+          "hidden_at": null,
+          "post_type": 1,
+          "raw_email": null,
+          "via_email": false,
+          "created_at": "2026-10-13T12:22:55.053992",
+          "deleted_at": null,
+          "like_count": 0,
+          "like_score": 0,
+          "self_edits": 0,
+          "sort_order": 1,
+          "spam_count": 0,
+          "updated_at": "2026-10-13T12:22:55.053992",
+          "word_count": 75,
+          "action_code": null,
+          "cook_method": 1,
+          "edit_reason": null,
+          "post_number": 1,
+          "quote_count": 0,
+          "reply_count": 0,
+          "locked_by_id": null,
+          "percent_rank": 1,
+          "reply_quoted": false,
+          "user_deleted": false,
+          "baked_version": 2,
+          "deleted_by_id": null,
+          "illegal_count": 0,
+          "qa_vote_count": 0,
+          "bookmark_count": 0,
+          "last_editor_id": -1,
+          "public_version": 1,
+          "image_upload_id": null,
+          "last_version_at": "2026-10-13T12:22:55.111983",
+          "off_topic_count": 0,
+          "hidden_reason_id": null,
+          "reply_to_user_id": null,
+          "notify_user_count": 0,
+          "inappropriate_count": 0,
+          "incoming_link_count": 0,
+          "outbound_message_id": null,
+          "reply_to_post_number": null,
+          "notify_moderators_count": 0
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_allowed_groups": {
+      "inserted": [
+        {
+          "id": 1,
+          "group_id": 2,
+          "topic_id": 45
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_allowed_users": {
+      "inserted": [
+        {
+          "id": 9,
+          "user_id": -1,
+          "topic_id": 45,
+          "created_at": "2026-10-13T12:22:55.017036",
+          "updated_at": "2026-10-13T12:22:55.017036"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_groups": {
+      "inserted": [
+        {
+          "id": 1,
+          "group_id": 2,
+          "topic_id": 45,
+          "created_at": "2026-10-13T12:22:55.353577",
+          "updated_at": "2026-10-13T12:22:55.353577",
+          "last_read_post_number": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_links": {
+      "inserted": [
+        {
+          "id": 20,
+          "url": "http://localhost:3042/admin/reports/top_ignored_users",
+          "quote": false,
+          "title": null,
+          "clicks": 0,
+          "domain": "localhost",
+          "post_id": 53,
+          "user_id": -1,
+          "internal": false,
+          "topic_id": 45,
+          "extension": null,
+          "crawled_at": null,
+          "created_at": "2026-10-13T12:22:55.192632",
+          "reflection": false,
+          "updated_at": "2026-10-13T12:22:55.192632",
+          "link_post_id": null,
+          "link_topic_id": null
+        },
+        {
+          "id": 21,
+          "url": "http://localhost:3042/guidelines",
+          "quote": false,
+          "title": null,
+          "clicks": 0,
+          "domain": "localhost",
+          "post_id": 53,
+          "user_id": -1,
+          "internal": true,
+          "topic_id": 45,
+          "extension": null,
+          "crawled_at": null,
+          "created_at": "2026-10-13T12:22:55.195066",
+          "reflection": false,
+          "updated_at": "2026-10-13T12:22:55.195066",
+          "link_post_id": null,
+          "link_topic_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_search_data": {
+      "inserted": [
+        {
+          "locale": "en",
+          "version": 4,
+          "raw_data": "A user is being ignored by many other users Hello, This is an automated message from Discourse to inform you that @user3 has been ignored by 3 users. This could indicate a problem is developing in your community. You might want to review recent",
+          "topic_id": 45,
+          "search_data": "'3':27B 'autom':14B 'communiti':38B 'could':30B 'develop':35B 'discours':17B 'hello':10B 'ignor':5A,25B 'indic':31B 'inform':19B 'mani':7A 'messag':15B 'might':40B 'problem':33B 'recent':44B 'review':43B 'user':2A,28B 'user3':22B 'want':41B"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_users": {
+      "inserted": [
+        {
+          "id": 56,
+          "liked": false,
+          "posted": false,
+          "user_id": 1,
+          "topic_id": 45,
+          "bookmarked": false,
+          "last_posted_at": null,
+          "last_visited_at": "2026-10-13T12:22:55.042396",
+          "first_visited_at": "2026-10-13T12:22:55.042396",
+          "cleared_pinned_at": null,
+          "notification_level": 2,
+          "total_msecs_viewed": 0,
+          "last_read_post_number": null,
+          "notifications_reason_id": 2,
+          "last_emailed_post_number": null,
+          "notifications_changed_at": "2026-10-13T12:22:55.041663"
+        },
+        {
+          "id": 55,
+          "liked": false,
+          "posted": true,
+          "user_id": -1,
+          "topic_id": 45,
+          "bookmarked": false,
+          "last_posted_at": "2026-10-13T12:22:55.197827",
+          "last_visited_at": "2026-10-13T12:22:55.030788",
+          "first_visited_at": "2026-10-13T12:22:55.030788",
+          "cleared_pinned_at": null,
+          "notification_level": 3,
+          "total_msecs_viewed": 0,
+          "last_read_post_number": 1,
+          "notifications_reason_id": 1,
+          "last_emailed_post_number": null,
+          "notifications_changed_at": "2026-10-13T12:22:55.029957"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topics": {
+      "inserted": [
+        {
+          "id": 45,
+          "slug": "a-user-is-being-ignored-by-many-other-users",
+          "score": null,
+          "title": "A user is being ignored by many other users",
+          "views": 0,
+          "closed": false,
+          "locale": null,
+          "excerpt": "Hello, \nThis is an automated message from Discourse to inform you that @user3 has been ignored by 3 users. This could indicate a problem is developing in your community. \nYou might want to review recent posts from this u&hellip;",
+          "subtype": "system_message",
+          "user_id": -1,
+          "visible": true,
+          "archived": false,
+          "archetype": "private_message",
+          "bumped_at": "2026-10-13T12:22:55.053992",
+          "pinned_at": null,
+          "created_at": "2026-10-13T12:22:55.013537",
+          "deleted_at": null,
+          "like_count": 0,
+          "spam_count": 0,
+          "updated_at": "2026-10-13T12:22:55.201367",
+          "word_count": 75,
+          "category_id": null,
+          "external_id": null,
+          "fancy_title": "A user is being ignored by many other users",
+          "has_summary": false,
+          "posts_count": 1,
+          "reply_count": 0,
+          "percent_rank": 1,
+          "pinned_until": null,
+          "deleted_by_id": null,
+          "featured_link": null,
+          "bannered_until": null,
+          "last_posted_at": "2026-10-13T12:22:55.053992",
+          "image_upload_id": null,
+          "pinned_globally": false,
+          "reviewable_score": 0,
+          "featured_user1_id": null,
+          "featured_user2_id": null,
+          "featured_user3_id": null,
+          "featured_user4_id": null,
+          "last_post_user_id": -1,
+          "participant_count": 1,
+          "slow_mode_seconds": 0,
+          "og_image_upload_id": null,
+          "highest_post_number": 1,
+          "incoming_link_count": 0,
+          "visibility_reason_id": null,
+          "moderator_posts_count": 0,
+          "notify_moderators_count": 0,
+          "highest_staff_post_number": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_actions": {
+      "inserted": [
+        {
+          "id": 65,
+          "user_id": -1,
+          "created_at": "2026-10-13T12:22:55.013537",
+          "updated_at": "2026-10-13T12:22:55.049114",
+          "action_type": 12,
+          "acting_user_id": -1,
+          "target_post_id": -1,
+          "target_user_id": null,
+          "target_topic_id": 45
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "notifications": 53,
+    "post_stats": 52,
+    "posts": 53,
+    "topic_allowed_groups": 1,
+    "topic_allowed_users": 9,
+    "topic_groups": 1,
+    "topic_links": 20,
+    "topic_users": 55,
+    "topics": 45,
+    "user_actions": 65
+  },
+  "settings": {
+    "ignored_users_count_message_threshold": 3
+  },
+  "setup": [
+    "INSERT INTO ignored_users (user_id, ignored_user_id, created_at, updated_at, summarized_at, expiring_at) VALUES (1, 5, now() - interval '2 days', now() - interval '2 days', NULL, now() + interval '1 year'), (2, 5, now() - interval '2 days', now() - interval '2 days', NULL, now() + interval '1 year'), (4, 5, now() - interval '2 days', now() - interval '2 days', NULL, now() + interval '1 year')"
+  ],
+  "enqueue": [
+    [
+      "ignored_users_summary",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [
+    [
+      "bot_input",
+      {
+        "user_id": 1,
+        "topic_id": 45,
+        "input": "topic_notification_level_changed"
+      }
+    ],
+    [
+      "crawl_topic_link",
+      {
+        "topic_link_id": 20
+      }
+    ],
+    [
+      "crawl_topic_link",
+      {
+        "topic_link_id": 21
+      }
+    ],
+    [
+      "post_alert",
+      {
+        "post_id": 53,
+        "new_record": true,
+        "options": null
+      }
+    ],
+    [
+      "feature_topic_users",
+      {
+        "topic_id": 45
+      }
+    ],
+    [
+      "process_post",
+      {
+        "bypass_bump": false,
+        "cooking_options": null,
+        "new_post": true,
+        "post_id": 53,
+        "skip_pull_hotlinked_images": false
+      }
+    ],
+    [
+      "post_update_topic_tracking_state",
+      {
+        "post_id": 53
+      }
+    ]
+  ],
+  "recorded_from": {
+    "case": "f64e7774cf75f7a7c944c89011140a337b6c230cd07cc6ad12f7df219fd92229",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
