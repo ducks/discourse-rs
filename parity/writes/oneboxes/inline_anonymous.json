@@ -1,0 +1,36 @@
+{
+  "name": "inline_anonymous",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/inline-onebox",
+      "params": {
+        "urls": [
+          "http://localhost:3042/t/x/41"
+        ]
+      }
+    }
+  ],
+  "started_at": "2026-10-13T23:23:57.438025",
+  "transaction_started_at": "2026-10-13T23:23:54.066884",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You need to be logged in to do that."
+        ],
+        "error_type": "not_logged_in"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "6d69acd3d1f220949dd6e5f14b72aad8c7bfe2b65fd685878c419bf6bf549e92",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

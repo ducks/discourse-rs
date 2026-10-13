@@ -623,7 +623,11 @@ impl Site {
             &list,
             &chooser,
             default_category,
-            Some((&wasm, &render_settings)),
+            Some((
+                &wasm,
+                &render_settings,
+                settings.get("max_oneboxes_per_post")?.to_i(),
+            )),
             allow_preview,
             presence.as_ref(),
             crate::composer_view::UploadUi::for_user(

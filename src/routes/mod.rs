@@ -34,6 +34,7 @@ pub(crate) use topics::not_found_response;
 mod category_notifications;
 mod chat;
 mod chat_pages;
+mod onebox;
 mod polls;
 mod reactions;
 mod session;
@@ -151,6 +152,8 @@ pub fn router(state: &AppState) -> Router<AppState> {
         )
         .route("/notifications", get(notifications::index))
         .route("/notifications.json", get(notifications::index))
+        .route("/onebox", get(onebox::show))
+        .route("/inline-onebox", get(onebox::inline))
         .route("/hashtags", get(hashtags::lookup))
         .route("/hashtags.json", get(hashtags::lookup))
         .route("/hashtags/by-ids", get(hashtags::by_ids))
@@ -720,6 +723,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/htmx-ext-sse.js", get(asset))
         .route("/assets/page.js", get(asset))
         .route("/assets/hashtags.js", get(asset))
+        .route("/assets/oneboxes.js", get(asset))
         .route("/assets/cooked.js", get(asset))
         .route("/assets/lightbox.js", get(asset))
         .route("/assets/photoswipe-lightbox.esm.min.js", get(asset))

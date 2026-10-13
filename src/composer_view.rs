@@ -200,12 +200,13 @@ fn toolbar(list: &ListContext, upload: Option<&UploadUi>) -> String {
 /// The closed composer with its category chooser. `default_category` is
 /// the category a new topic starts in (default_composer_category).
 /// `preview` is where the preview's WebAssembly and render settings are
-/// served; None leaves the composer without a preview.
+/// served, and the preview's onebox limit (max_oneboxes_per_post); None
+/// leaves the composer without a preview.
 pub fn render(
     list: &ListContext,
     allowed: &[ChooserCategory],
     default_category: Option<i64>,
-    preview: Option<(&str, &str)>,
+    preview: Option<(&str, &str, i64)>,
     allow_preview: bool,
     presence: Option<&serde_json::Value>,
     upload: Option<&UploadUi>,
@@ -333,8 +334,8 @@ pub fn render(
         None => (String::new(), String::new(), String::new()),
     };
     let preview_data = match preview {
-        Some((wasm, settings)) => format!(
-            " data-preview-wasm=\"{}\" data-preview-settings=\"{}\" data-label-show-preview=\"{}\" data-label-hide-preview=\"{}\"",
+        Some((wasm, settings, max_oneboxes)) => format!(
+            " data-preview-wasm=\"{}\" data-preview-settings=\"{}\" data-max-oneboxes=\"{max_oneboxes}\" data-label-show-preview=\"{}\" data-label-hide-preview=\"{}\"",
             escape(wasm),
             escape(settings),
             escape(&t(list, "composer.show_preview")),

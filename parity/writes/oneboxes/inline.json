@@ -1,0 +1,147 @@
+{
+  "name": "inline",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/inline-onebox",
+      "params": {
+        "urls": [
+          "http://localhost:3042/t/parity-fixture-liked-and-archived/41",
+          "http://localhost:3042/t/parity-fixture-replies-and-posters/35/3",
+          "http://localhost:3042/t/nope/99999",
+          "/relative/link"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/inline-onebox",
+      "params": {
+        "urls": [
+          "http://localhost:3042/t/parity-fixture-replies-and-posters/35/2"
+        ],
+        "topic_id": "35",
+        "category_id": "4"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/inline-onebox",
+      "params": {
+        "urls": [
+          "http://localhost:3042/t/x/0",
+          "http://localhost:3042/t/x/1",
+          "http://localhost:3042/t/x/2",
+          "http://localhost:3042/t/x/3",
+          "http://localhost:3042/t/x/4",
+          "http://localhost:3042/t/x/5",
+          "http://localhost:3042/t/x/6",
+          "http://localhost:3042/t/x/7",
+          "http://localhost:3042/t/x/8",
+          "http://localhost:3042/t/x/9",
+          "http://localhost:3042/t/x/10"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/inline-onebox",
+      "params": {}
+    }
+  ],
+  "started_at": "2026-10-13T23:24:02.452745",
+  "transaction_started_at": "2026-10-13T23:23:58.679094",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "inline-oneboxes": [
+          {
+            "url": "http://localhost:3042/t/parity-fixture-liked-and-archived/41",
+            "title": "Parity fixture: liked and archived"
+          },
+          {
+            "url": "http://localhost:3042/t/parity-fixture-replies-and-posters/35/3",
+            "title": "Parity fixture: replies and posters - #3 by user2"
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "inline-oneboxes": [
+          {
+            "url": "http://localhost:3042/t/parity-fixture-replies-and-posters/35/2",
+            "title": "Parity fixture: replies and posters - #2 by user1"
+          }
+        ]
+      }
+    },
+    {
+      "status": 413,
+      "body": {
+        "failed": "FAILED",
+        "errors": [
+          "Can't convert more than 10 URLs to inline oneboxes in a single request."
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "inline-oneboxes": []
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 527,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "xpuzQJffDgM+xumtR7AgSuTwT6Y=",
+            "created_at": "2026-10-13T23:23:59.72154",
+            "rotated_at": "2026-10-13T23:23:59.712459",
+            "updated_at": "2026-10-13T23:23:59.72154",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "xpuzQJffDgM+xumtR7AgSuTwT6Y=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 527,
+            "seen_at": "2026-10-13T23:24:02.491549",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "xpuzQJffDgM+xumtR7AgSuTwT6Y=",
+            "created_at": "2026-10-13T23:23:59.72154",
+            "rotated_at": "2026-10-13T23:23:59.712459",
+            "updated_at": "2026-10-13T23:23:59.72154",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "xpuzQJffDgM+xumtR7AgSuTwT6Y=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "189742a73dc0286e81fa848c3178ef00560255084f4b59476e12a558b6ae9ea4",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
