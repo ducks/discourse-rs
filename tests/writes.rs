@@ -983,6 +983,18 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
         std::process::id(),
         case["name"].as_str().unwrap()
     ));
+    // `files`: fixture files at the case's upload urls.
+    for (url, name) in case["files"].as_object().into_iter().flatten() {
+        let path = public.join(url.trim_start_matches('/'));
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        std::fs::copy(
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("parity/writes/files")
+                .join(name.as_str().unwrap()),
+            &path,
+        )
+        .unwrap();
+    }
     let mut config = recorded_config();
     config.public_dir = public.clone();
     let app_state = state(db.pool.clone(), config).await;

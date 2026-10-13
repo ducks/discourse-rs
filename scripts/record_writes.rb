@@ -110,7 +110,9 @@ def clear_redis_state
   # seconds since the previous case read a topic.
   # __SEARCH__LOG_: SearchLog.log updates the log of a search made in the
   # last 5 seconds (a previous case's) instead of inserting one.
-  %w[unique-post-* rejection_email:* user-last-seen:* hot_score_6_hourly __SEARCH__LOG_*].each do |pattern|
+  # LAST_UPLOAD_CLEANUP: CleanUpUploads skips orphans for a day after the
+  # reference's own scheduler ran it.
+  %w[unique-post-* rejection_email:* user-last-seen:* hot_score_6_hourly __SEARCH__LOG_* LAST_UPLOAD_CLEANUP].each do |pattern|
     Discourse.redis.keys(pattern).each { |k| Discourse.redis.del(k) }
   end
   # Presence lives in Redis too, members and cached configs alike.
@@ -219,6 +221,13 @@ cases.each do |c|
     # A case's `settings` are set inside the transaction, so they roll back
     # with it (the in-process cache is refreshed after).
     (c["settings"] || {}).each { |name, value| SiteSetting.set(name, value) }
+    # `files`: fixture files stored at upload urls, for rows the setup
+    # inserts (they are not rolled back: removed after the case).
+    (c["files"] || {}).each do |url, name|
+      path = File.join(Rails.root, "public", url)
+      FileUtils.mkdir_p(File.dirname(path))
+      FileUtils.cp(File.join(files_dir, name), path)
+    end
     # `setup`: SQL for fixture rows a case needs (a reply key), run the same way.
     (c["setup"] || []).each { |sql| db.execute(sql) }
     reset_plugin_caches if c["setup"]
@@ -290,12 +299,20 @@ cases.each do |c|
     record[:include_tables] = c["include_tables"] if c["include_tables"]
     record[:approximate] = c["approximate"] if c["approximate"]
     record[:job_clock] = c["job_clock"] if c["job_clock"]
+    record[:files] = c["files"] if c["files"]
     record[:jobs_from_jobs] = ENQUEUED.dup if c["run_jobs"]
     record[:emails] = emails if emails.any?
     File.write("#{out}/#{c["name"]}.json", JSON.pretty_generate(record) + "\n")
     puts "#{c["name"]}: #{responses.map { |r| r[:status] }.join(",")}, #{record[:changes].size} tables, #{from_requests.size} jobs"
   ensure
-    # Stored files are not rolled back: the case's uploads go.
+    # Stored files are not rolled back: the case's files go, and their
+    # tombstone copies.
+    (c["files"] || {}).each_key do |url|
+      [url, url.sub("/uploads/", "/uploads/tombstone/")].each do |u|
+        path = File.join(Rails.root, "public", u)
+        File.delete(path) if File.file?(path)
+      end
+    end
     Array(record && record[:changes]&.dig("uploads", :inserted)).each do |u|
       path = File.join(Rails.root, "public", u["url"].to_s)
       File.delete(path) if u["url"].to_s.start_with?("/uploads/") && File.file?(path)
