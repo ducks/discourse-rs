@@ -1,0 +1,6 @@
+{
+  "not_yet": "topic timers (TopicTimerSerializer)",
+  "user": "admin",
+  "setup": ["INSERT INTO topic_timers (id, execute_at, status_type, user_id, created_at, updated_at, public_type, type, timerable_id, based_on_last_post) VALUES (9601, now() + interval '2 days', 1, 1, now(), now(), TRUE, 'TopicTimer', 35, FALSE)"],
+  "requests": [{ "method": "GET", "path": "/t/parity-fixture-replies-and-posters/35.json" }]
+}

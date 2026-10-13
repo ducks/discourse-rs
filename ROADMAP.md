@@ -34,7 +34,7 @@ Bugs or silent gaps in what is merged, small and independent.
    routes/search.rs) trust the first X-Forwarded-For hop, which a client
    sets; take the address the trusted proxy saw, as ActionDispatch's
    RemoteIp does, in one shared function [rate-limiting]
-2. `fix/topic-timers-timerable-id` S: five queries read
+2. ~~`fix/topic-timers-timerable-id`~~ (done) S: five queries read
    `topic_timers.topic_id`, which Rails no longer writes
    (`timerable_id`); timers are never found on real data [badges-timers]
 3. `fix/poll-guard` S: a `[poll]` post cooks and saves without its

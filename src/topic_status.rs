@@ -123,7 +123,7 @@ pub async fn update(
         .ok_or(Unsupported("changing a topic's status anonymously"))?;
     // @topic_timer: closing and opening act on it.
     let timers: bool = sqlx::query_scalar(
-        "SELECT EXISTS (SELECT 1 FROM topic_timers WHERE topic_id = $1 AND deleted_at IS NULL)",
+        "SELECT EXISTS (SELECT 1 FROM topic_timers WHERE timerable_id = $1 AND type = 'TopicTimer' AND deleted_at IS NULL)",
     )
     .bind(topic.id)
     .fetch_one(&mut *conn)

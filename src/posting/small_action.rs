@@ -151,16 +151,7 @@ pub async fn add(
     .bind(action.bump)
     .execute(&mut *conn)
     .await?;
-    // update_topic_auto_close
-    let timers: bool = sqlx::query_scalar(
-        "SELECT EXISTS (SELECT 1 FROM topic_timers WHERE topic_id = $1 AND deleted_at IS NULL)",
-    )
-    .bind(topic_id)
-    .fetch_one(&mut *conn)
-    .await?;
-    if timers {
-        return Err(Unsupported("topic timers").into());
-    }
+    super::refuse_topic_auto_close(&mut *conn, topic_id).await?;
     // update_user_counts: only the first post's date (no count for a
     // small action, no last_posted_at).
     sqlx::query(
