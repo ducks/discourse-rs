@@ -1,0 +1,26 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO direct_message_channels (id, \"group\", created_at, updated_at) VALUES (4, true, now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO direct_message_users (direct_message_channel_id, user_id, created_at, updated_at) VALUES (4, 2, now() - interval '1 day', now() - interval '1 day'), (4, 3, now() - interval '1 day', now() - interval '1 day'), (4, 4, now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO chat_channels (id, chatable_type, chatable_id, type, status, user_count, name, created_at, updated_at) VALUES (13, 'DirectMessage', 4, 'DirectMessageChannel', 0, 3, 'Weekend plans', now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO user_chat_channel_memberships (user_id, chat_channel_id, following, muted, notification_level, created_at, updated_at) VALUES (2, 13, true, false, 2, now() - interval '1 day', now() - interval '1 day'), (3, 13, true, false, 2, now() - interval '1 day', now() - interval '1 day'), (4, 13, true, false, 2, now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id, excerpt) VALUES (41, 13, 4, now() - interval '40 minutes', now() - interval '40 minutes', 'hike on saturday', '<p>hike on saturday</p>', 1, 4, 'hike on saturday')",
+    "UPDATE chat_channels SET last_message_id = 41 WHERE id = 13",
+    "SELECT setval('chat_channels_id_seq', 20)",
+    "SELECT setval('direct_message_channels_id_seq', 20)",
+    "SELECT setval('chat_messages_id_seq', 40)",
+    "UPDATE users SET last_seen_at = now() - interval '1 hour' WHERE id = 2"
+  ],
+  "requests": [],
+  "enqueue": [
+    [
+      "Jobs::Chat::EmailNotifications",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "Jobs::Chat::EmailNotifications",
+    "user_email"
+  ]
+}
