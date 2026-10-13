@@ -1,0 +1,56 @@
+{
+  "name": "consistency_user_actions",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-13T02:34:02.95409",
+  "transaction_started_at": "2026-10-13T02:34:02.137929",
+  "responses": [],
+  "changes": {
+    "user_actions": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 9501,
+          "user_id": 3,
+          "created_at": "2026-10-13T02:34:02.137929",
+          "updated_at": "2026-10-13T02:34:02.137929",
+          "action_type": 1,
+          "acting_user_id": 3,
+          "target_post_id": 46,
+          "target_user_id": null,
+          "target_topic_id": 9999
+        },
+        {
+          "id": 9502,
+          "user_id": 3,
+          "created_at": "2026-10-13T02:34:02.137929",
+          "updated_at": "2026-10-13T02:34:02.137929",
+          "action_type": 5,
+          "acting_user_id": 3,
+          "target_post_id": 36,
+          "target_user_id": null,
+          "target_topic_id": 1
+        }
+      ],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO user_actions (id, action_type, user_id, target_topic_id, target_post_id, acting_user_id, created_at, updated_at) SELECT 9501, action_type, user_id, 9999, target_post_id, acting_user_id, now(), now() FROM user_actions WHERE action_type = 1 ORDER BY id LIMIT 1",
+    "INSERT INTO user_actions (id, action_type, user_id, target_topic_id, target_post_id, acting_user_id, created_at, updated_at) VALUES (9502, 5, 3, 1, 36, 3, now(), now())"
+  ],
+  "enqueue": [
+    [
+      "ensure_db_consistency",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "f15e00caf2d5c608e1e29611f69e4c5547f65cd88604fd4a99c57072f742e831",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

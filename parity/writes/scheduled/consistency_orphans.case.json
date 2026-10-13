@@ -1,0 +1,24 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO user_badges (id, badge_id, user_id, granted_at, granted_by_id, created_at) VALUES (9501, 1, 9999, now() - interval '1 day', -1, now() - interval '1 day')",
+    "INSERT INTO category_users (category_id, user_id, notification_level) VALUES (4, 9999, 3)",
+    "INSERT INTO user_avatars (id, user_id, created_at, updated_at) VALUES (9501, 9999, now(), now())",
+    "UPDATE user_avatars SET custom_upload_id = 99999 WHERE user_id = 3",
+    "UPDATE users SET uploaded_avatar_id = 99999 WHERE id = 4",
+    "INSERT INTO notifications (id, user_id, notification_type, topic_id, post_number, data, high_priority, read, created_at, updated_at) VALUES (9501, 3, 6, 40, 1, '{}', true, false, now(), now()), (9502, 3, 6, 40, 1, '{}', false, false, now(), now())",
+    "INSERT INTO post_revisions (id, user_id, post_id, modifications, number, created_at, updated_at, hidden) VALUES (9501, 1, 35, '{}', 5, now() - interval '2 hours', now() - interval '2 hours', false), (9502, 1, 35, '{}', 5, now() - interval '1 hour', now() - interval '1 hour', true)",
+    "INSERT INTO topic_thumbnails (id, upload_id, max_width, max_height) VALUES (9501, 99999, 1024, 1024), (9502, 1, 500, 500), (9503, 1, 1024, 1024)"
+  ],
+  "requests": [],
+  "enqueue": [
+    [
+      "ensure_db_consistency",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "ensure_db_consistency",
+    "publish_group_membership_updates"
+  ]
+}

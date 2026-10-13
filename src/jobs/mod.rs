@@ -11,6 +11,7 @@
 pub mod accounts;
 pub mod bookmark_reminders;
 pub mod cleanup;
+pub mod consistency;
 mod handlers;
 pub mod heat;
 pub mod housekeeping;
@@ -328,6 +329,10 @@ const SCHEDULED: &[(&str, Duration)] = &[
     ),
     (scores::CALCULATE_SCORES, Duration::from_secs(7 * 24 * 3600)),
     (periodical::PERIODICAL_UPDATES, Duration::from_secs(15 * 60)),
+    (
+        consistency::ENSURE_DB_CONSISTENCY,
+        Duration::from_secs(12 * 3600),
+    ),
 ];
 
 /// A SCHEDULED job's name: it runs from the queue too (a case enqueues
@@ -401,6 +406,7 @@ pub async fn run_scheduled(state: &AppState, name: &str) -> Result<(), AppError>
         }
         scores::CALCULATE_SCORES => scores::calculate_scores(state).await,
         periodical::PERIODICAL_UPDATES => periodical::periodical_updates(state).await,
+        consistency::ENSURE_DB_CONSISTENCY => consistency::ensure_db_consistency(state).await,
         _ => unreachable!("every SCHEDULED job has a handler"),
     }
 }

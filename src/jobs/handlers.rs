@@ -285,8 +285,26 @@ pub(crate) async fn choose_featured_users(
     conn: &mut sqlx::PgConnection,
     topic_id: i32,
 ) -> Result<(), AppError> {
-    // TopicFeaturedUsers.ensure_consistency!(topic_id): two frequent and
-    // two recent posters other than the topic's creator and last poster.
+    featured_users(&mut *conn, Some(topic_id)).await?;
+    // update_participant_count
+    sqlx::query(
+        "UPDATE topics SET participant_count = (SELECT COUNT(DISTINCT user_id) FROM posts \
+           WHERE topic_id = $1 AND NOT hidden AND post_type IN (1, 2, 3) AND deleted_at IS NULL) \
+         WHERE id = $1",
+    )
+    .bind(topic_id)
+    .execute(&mut *conn)
+    .await?;
+    Ok(())
+}
+
+/// `TopicFeaturedUsers.ensure_consistency!(topic_id)` (every topic for
+/// None): two frequent and two recent posters other than the topic's
+/// creator and last poster.
+pub(crate) async fn featured_users(
+    conn: &mut sqlx::PgConnection,
+    topic_id: Option<i32>,
+) -> Result<(), AppError> {
     sqlx::query(
         "WITH poster_stats AS ( \
            SELECT t.id, t.user_id AS topic_user_id, t.last_post_user_id, p.user_id, COUNT(*) post_count, \
@@ -294,7 +312,7 @@ pub(crate) async fn choose_featured_users(
                   ROW_NUMBER() OVER (PARTITION BY t.id ORDER BY MAX(p.created_at) DESC, MAX(p.id) DESC) AS recent_rank \
            FROM topics t JOIN posts p ON p.topic_id = t.id \
            WHERE p.deleted_at IS NULL AND NOT p.hidden AND p.post_type IN (1, 2, 3) \
-             AND p.user_id <> t.user_id AND p.user_id <> t.last_post_user_id AND t.id = $1 \
+             AND p.user_id <> t.user_id AND p.user_id <> t.last_post_user_id AND ($1::int IS NULL OR t.id = $1) \
            GROUP BY t.id, t.user_id, t.last_post_user_id, p.user_id), \
          selected_recent_posters AS ( \
            SELECT id, user_id, recent_rank + 2 AS rank FROM poster_stats \
@@ -328,16 +346,7 @@ pub(crate) async fn choose_featured_users(
            COALESCE(tt.featured_user2_id, -99) <> COALESCE(x.featured_user2, -99) OR \
            COALESCE(tt.featured_user3_id, -99) <> COALESCE(x.featured_user3, -99) OR \
            COALESCE(tt.featured_user4_id, -99) <> COALESCE(x.featured_user4, -99)) \
-         AND tt.id = $1",
-    )
-    .bind(topic_id)
-    .execute(&mut *conn)
-    .await?;
-    // update_participant_count
-    sqlx::query(
-        "UPDATE topics SET participant_count = (SELECT COUNT(DISTINCT user_id) FROM posts \
-           WHERE topic_id = $1 AND NOT hidden AND post_type IN (1, 2, 3) AND deleted_at IS NULL) \
-         WHERE id = $1",
+         AND ($1::int IS NULL OR tt.id = $1)",
     )
     .bind(topic_id)
     .execute(&mut *conn)

@@ -1,0 +1,21 @@
+{
+  "user": null,
+  "setup": [
+    "UPDATE users SET last_seen_at = now() WHERE id = 4",
+    "UPDATE topic_users SET last_read_post_number = 0 WHERE topic_id = 44 AND user_id = 4"
+  ],
+  "requests": [],
+  "enqueue": [
+    [
+      "ensure_db_consistency",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "ensure_db_consistency",
+    "publish_group_membership_updates"
+  ],
+  "ignore": [
+    "/changes/group_users"
+  ]
+}

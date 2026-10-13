@@ -516,7 +516,7 @@ async fn prevent_registration_from_ip(
 }
 
 /// `UserOption#set_defaults`: the options a new user starts with.
-async fn create_user_option(
+pub(crate) async fn create_user_option(
     conn: &mut PgConnection,
     s: &SiteSettings,
     user_id: i32,

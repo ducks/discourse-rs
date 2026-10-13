@@ -1,0 +1,19 @@
+{
+  "user": null,
+  "setup": [
+    "DELETE FROM group_users WHERE group_id = 12 AND user_id = 3",
+    "INSERT INTO group_users (group_id, user_id, created_at, updated_at, notification_level) VALUES (13, 2, now(), now(), 2), (1, 4, now(), now(), 2)",
+    "UPDATE users SET primary_group_id = 13 WHERE id = 2"
+  ],
+  "requests": [],
+  "enqueue": [
+    [
+      "ensure_db_consistency",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "ensure_db_consistency",
+    "publish_group_membership_updates"
+  ]
+}

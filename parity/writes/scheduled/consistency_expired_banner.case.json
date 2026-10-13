@@ -1,0 +1,18 @@
+{
+  "not_yet": "removing an expired banner (Topic#remove_banner!)",
+  "user": null,
+  "setup": [
+    "UPDATE topics SET archetype = 'banner', bannered_until = now() - interval '1 hour' WHERE id = 35"
+  ],
+  "requests": [],
+  "enqueue": [
+    [
+      "ensure_db_consistency",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "ensure_db_consistency",
+    "publish_group_membership_updates"
+  ]
+}

@@ -610,7 +610,7 @@ pub(crate) async fn auto_track(conn: &mut PgConnection, user_id: i32) -> Result<
 }
 
 /// `TrackedTopicsUpdater#call`
-async fn tracked_topics_updater(
+pub(crate) async fn tracked_topics_updater(
     conn: &mut PgConnection,
     user_id: i32,
     threshold: i64,

@@ -1,0 +1,187 @@
+{
+  "name": "consistency_groups",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-13T02:33:57.751339",
+  "transaction_started_at": "2026-10-13T02:33:56.879646",
+  "responses": [],
+  "changes": {
+    "group_users": {
+      "inserted": [
+        {
+          "id": 70,
+          "owner": false,
+          "user_id": 3,
+          "group_id": 12,
+          "created_at": "2026-10-13T02:33:56.879646",
+          "updated_at": "2026-10-13T02:33:56.879646",
+          "first_unread_pm_at": "2026-10-13T02:33:56.879646",
+          "notification_level": 2
+        }
+      ],
+      "deleted": [
+        {
+          "id": 68,
+          "owner": false,
+          "user_id": 2,
+          "group_id": 13,
+          "created_at": "2026-10-13T02:33:56.879646",
+          "updated_at": "2026-10-13T02:33:56.879646",
+          "first_unread_pm_at": "2026-10-13T02:33:56.879646",
+          "notification_level": 2
+        },
+        {
+          "id": 69,
+          "owner": false,
+          "user_id": 4,
+          "group_id": 1,
+          "created_at": "2026-10-13T02:33:56.879646",
+          "updated_at": "2026-10-13T02:33:56.879646",
+          "first_unread_pm_at": "2026-10-13T02:33:56.879646",
+          "notification_level": 2
+        }
+      ],
+      "updated": []
+    },
+    "users": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 2,
+            "name": "User0",
+            "admin": false,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": false,
+            "username": "user0",
+            "moderator": false,
+            "created_at": "2026-07-25T05:59:15.831079",
+            "flag_level": 0,
+            "ip_address": "172.17.0.1",
+            "updated_at": "2026-10-01T15:39:52.016889",
+            "approved_at": null,
+            "trust_level": 1,
+            "last_seen_at": "2026-10-01T22:32:51.475256",
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": "2026-10-01T06:40:59.592885",
+            "silenced_till": null,
+            "approved_by_id": null,
+            "flair_group_id": null,
+            "last_posted_at": "2026-10-01T15:39:51.834549",
+            "suspended_till": null,
+            "username_lower": "user0",
+            "last_emailed_at": null,
+            "primary_group_id": 13,
+            "previous_visit_at": "2026-10-01T15:44:57.254251",
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          },
+          "after": {
+            "id": 2,
+            "name": "User0",
+            "admin": false,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": false,
+            "username": "user0",
+            "moderator": false,
+            "created_at": "2026-07-25T05:59:15.831079",
+            "flag_level": 0,
+            "ip_address": "172.17.0.1",
+            "updated_at": "2026-10-01T15:39:52.016889",
+            "approved_at": null,
+            "trust_level": 1,
+            "last_seen_at": "2026-10-01T22:32:51.475256",
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": "2026-10-01T06:40:59.592885",
+            "silenced_till": null,
+            "approved_by_id": null,
+            "flair_group_id": null,
+            "last_posted_at": "2026-10-01T15:39:51.834549",
+            "suspended_till": null,
+            "username_lower": "user0",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": "2026-10-01T15:44:57.254251",
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "group_users": 70
+  },
+  "setup": [
+    "DELETE FROM group_users WHERE group_id = 12 AND user_id = 3",
+    "INSERT INTO group_users (group_id, user_id, created_at, updated_at, notification_level) VALUES (13, 2, now(), now(), 2), (1, 4, now(), now(), 2)",
+    "UPDATE users SET primary_group_id = 13 WHERE id = 2"
+  ],
+  "enqueue": [
+    [
+      "ensure_db_consistency",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [
+    [
+      "publish_group_membership_updates",
+      {
+        "user_ids": [
+          4
+        ],
+        "group_id": 1,
+        "type": "remove"
+      }
+    ],
+    [
+      "publish_group_membership_updates",
+      {
+        "user_ids": [
+          3
+        ],
+        "group_id": 12,
+        "type": "add"
+      }
+    ],
+    [
+      "publish_group_membership_updates",
+      {
+        "user_ids": [
+          2
+        ],
+        "group_id": 13,
+        "type": "remove"
+      }
+    ]
+  ],
+  "recorded_from": {
+    "case": "add8621c9aa2f6c1da21d4e924402f2d45e0dc372d10e93a7ba485267fef148a",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

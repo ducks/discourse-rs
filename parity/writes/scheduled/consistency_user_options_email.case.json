@@ -1,0 +1,25 @@
+{
+  "user": null,
+  "settings": {
+    "default_hide_presence": true
+  },
+  "setup": [
+    "DELETE FROM user_options WHERE user_id = 5",
+    "DELETE FROM user_emails WHERE user_id = 5"
+  ],
+  "requests": [],
+  "enqueue": [
+    [
+      "ensure_db_consistency",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "ensure_db_consistency",
+    "publish_group_membership_updates"
+  ],
+  "ignore": [
+    "/changes/user_emails/inserted/0/email",
+    "/changes/user_emails/inserted/0/normalized_email"
+  ]
+}
