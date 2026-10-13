@@ -1,0 +1,8 @@
+{
+  "user": null,
+  "setup": [],
+  "requests": [],
+  "enqueue": [["calculate_scores", {}]],
+  "run_jobs": ["calculate_scores"],
+  "approximate": ["topics.score"]
+}

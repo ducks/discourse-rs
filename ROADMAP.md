@@ -64,7 +64,7 @@ Bugs or silent gaps in what is merged, small and independent.
    then update_heat_settings
 8. ~~`feat/jobs-search-index`~~ (done) M: reindex_search,
    create_recent_post_search_indexes
-9. `feat/jobs-scores` S: ScoreCalculator, calculate_scores (weights as
+9. ~~`feat/jobs-scores`~~ (done) S: ScoreCalculator, calculate_scores (weights as
    SQL numerics, not bound floats)
 10. `feat/jobs-periodical-updates` M: with feature_topics_for's early
     return (it rewrites rows every run today); rebakes refused while
