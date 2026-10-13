@@ -898,6 +898,10 @@ pub async fn serialize(
         )
         .await?;
     }
+    if crate::plugins::poll::enabled(settings)? {
+        let guardian = crate::guardian::Guardian::for_user(&mut *conn, user).await?;
+        crate::plugins::poll::current_user_keys(settings, &guardian, &mut out)?;
+    }
     Ok(Value::Object(out))
 }
 

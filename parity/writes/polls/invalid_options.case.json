@@ -1,0 +1,31 @@
+{
+  "user": "user1",
+  "settings": { "poll_maximum_options": 3 },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": { "topic_id": 35, "raw": "Same options.\n\n[poll]\n* Same\n* Same\n[/poll]" }
+    },
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": { "topic_id": 35, "raw": "Same named options.\n\n[poll name=dup]\n* Same\n* Same\n[/poll]" }
+    },
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": { "topic_id": 35, "raw": "Too many options.\n\n[poll]\n* A\n* B\n* C\n* D\n[/poll]" }
+    },
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": { "topic_id": 35, "raw": "Too many named options.\n\n[poll name=many]\n* A\n* B\n* C\n* D\n[/poll]" }
+    },
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": { "topic_id": 35, "raw": "No options.\n\n[poll]\n[/poll]" }
+    }
+  ]
+}

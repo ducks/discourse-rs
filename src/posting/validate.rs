@@ -110,8 +110,7 @@ pub struct Analysis {
     pub attachments: usize,
     pub links: Vec<String>,
     pub has_oneboxes: bool,
-    /// A `div.poll`: discourse-poll would write its polls and options
-    /// (DiscoursePoll::Poll.create!), which is not ported.
+    /// A `div.poll`: one of discourse-poll's polls.
     pub has_polls: bool,
     /// An upload shown as video or audio, which the post processor would
     /// optimize (post_process_videos is not ported).
@@ -119,8 +118,7 @@ pub struct Analysis {
     pub has_quotes: bool,
 }
 
-/// `PostAnalyzer` counts, refusing what cooking leaves for oneboxing
-/// and posts with polls.
+/// `PostAnalyzer` counts, refusing what cooking leaves for oneboxing.
 pub fn analyze(cooked: &str, base_path: &str) -> Result<Analysis, Unsupported> {
     let dom = parse(cooked);
     let mut a = Analysis::default();
@@ -138,9 +136,6 @@ pub fn analyze(cooked: &str, base_path: &str) -> Result<Analysis, Unsupported> {
     a.mention_names = mentions;
     if a.has_oneboxes {
         return Err(Unsupported("posts with oneboxes"));
-    }
-    if a.has_polls {
-        return Err(Unsupported("posts with polls (discourse-poll's poll rows)"));
     }
     Ok(a)
 }

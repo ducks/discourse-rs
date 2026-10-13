@@ -1,0 +1,147 @@
+{
+  "name": "invalid_arguments",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "Bad arguments.\n\n[poll type=bogus status=maybe results=never]\n* A\n* B\n[/poll]"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "Bad multiple.\n\n[poll type=multiple min=3 max=2]\n* A\n* B\n* C\n[/poll]"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "Bad multiple named.\n\n[poll name=m type=multiple min=1 max=3]\n* A\n* B\n[/poll]"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "Bad number.\n\n[poll type=number min=5 max=2 step=0]\n[/poll]"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "Too few numbers.\n\n[poll name=n type=number min=1 max=2 step=5]\n[/poll]"
+      }
+    }
+  ],
+  "started_at": "2026-10-13T18:18:33.710117",
+  "transaction_started_at": "2026-10-13T18:18:32.813906",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "action": "poll",
+        "errors": [
+          "Invalid value 'bogus' for argument 'type'.",
+          "Invalid value 'maybe' for argument 'status'.",
+          "Invalid value 'never' for argument 'results'."
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "action": "poll",
+        "errors": [
+          "Poll with multiple choices has invalid parameters."
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "action": "poll",
+        "errors": [
+          "Poll named <strong>m</strong> with multiple choice has invalid parameters."
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "action": "poll",
+        "errors": [
+          "Max must be greater than min",
+          "Step must be greater than 0"
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "action": "poll",
+        "errors": [
+          "Poll named <strong>n</strong> must have at least 1 option."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 499,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "tJlmVEothgi2+nLiJNyJ60zJCl8=",
+            "created_at": "2026-10-13T18:18:33.194846",
+            "rotated_at": "2026-10-13T18:18:33.192374",
+            "updated_at": "2026-10-13T18:18:33.194846",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "tJlmVEothgi2+nLiJNyJ60zJCl8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 499,
+            "seen_at": "2026-10-13T18:18:33.716313",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "tJlmVEothgi2+nLiJNyJ60zJCl8=",
+            "created_at": "2026-10-13T18:18:33.194846",
+            "rotated_at": "2026-10-13T18:18:33.192374",
+            "updated_at": "2026-10-13T18:18:33.194846",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "tJlmVEothgi2+nLiJNyJ60zJCl8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "de9cae3aac9013bb7314957de7efd411fef777b8ad75a1afb346601ece612b63",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

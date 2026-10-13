@@ -1518,6 +1518,20 @@ impl TopicView<'_> {
         } else {
             None
         };
+        // discourse-poll's polls for the page (Poll.preload!).
+        let polls = if crate::plugins::poll::enabled(self.settings)? {
+            let ids: Vec<i32> = posts.iter().map(|p| p.id).collect();
+            Some(
+                crate::plugins::poll::PostsData::load(
+                    &mut *self.conn,
+                    &ids,
+                    self.guardian.user_id(),
+                )
+                .await?,
+            )
+        } else {
+            None
+        };
         let mut out = Vec::with_capacity(posts.len());
         for post in posts {
             let u = user(post.user_id);
@@ -1872,6 +1886,10 @@ impl TopicView<'_> {
             // discourse-topic-voting's, on the first post.
             if let Some(can_vote) = can_vote.filter(|_| post.post_number == 1) {
                 p.insert("can_vote".into(), json!(can_vote));
+            }
+            // discourse-poll's.
+            if let Some(polls) = &polls {
+                polls.post_keys(g, post.id, post.user_id, &mut p)?;
             }
             out.push(Value::Object(p));
         }

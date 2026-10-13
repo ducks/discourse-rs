@@ -152,6 +152,11 @@ pub async fn create(
             Json(json!({"action": "create_post", "errors": errors})),
         )
             .into_response()),
+        Outcome::Refused { action, errors } => Ok((
+            StatusCode::UNPROCESSABLE_ENTITY,
+            Json(json!({"action": action, "errors": errors})),
+        )
+            .into_response()),
         Outcome::Forbidden => Ok(super::search::invalid_access(&state)),
         Outcome::InvalidParameter(name) => Ok(super::search::invalid_parameters(&state, name)),
         Outcome::RateLimited(refused) => Ok(refused.into_response(&state.i18n)),

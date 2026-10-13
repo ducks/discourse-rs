@@ -1,0 +1,147 @@
+{
+  "name": "invalid_options",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "Same options.\n\n[poll]\n* Same\n* Same\n[/poll]"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "Same named options.\n\n[poll name=dup]\n* Same\n* Same\n[/poll]"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "Too many options.\n\n[poll]\n* A\n* B\n* C\n* D\n[/poll]"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "Too many named options.\n\n[poll name=many]\n* A\n* B\n* C\n* D\n[/poll]"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "No options.\n\n[poll]\n[/poll]"
+      }
+    }
+  ],
+  "started_at": "2026-10-13T18:18:34.954031",
+  "transaction_started_at": "2026-10-13T18:18:34.097545",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "action": "poll",
+        "errors": [
+          "Poll must have different options."
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "action": "poll",
+        "errors": [
+          "Poll named <strong>dup</strong> must have different options."
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "action": "poll",
+        "errors": [
+          "Poll must have less than 3 options."
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "action": "poll",
+        "errors": [
+          "Poll named <strong>many</strong> must have less than 3 options."
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "action": "poll",
+        "errors": [
+          "Poll must have at least 1 option."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 499,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "ripLycU+yxzj6dQD4tAVh8V2jGU=",
+            "created_at": "2026-10-13T18:18:34.45203",
+            "rotated_at": "2026-10-13T18:18:34.450052",
+            "updated_at": "2026-10-13T18:18:34.45203",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "ripLycU+yxzj6dQD4tAVh8V2jGU=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 499,
+            "seen_at": "2026-10-13T18:18:34.959393",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "ripLycU+yxzj6dQD4tAVh8V2jGU=",
+            "created_at": "2026-10-13T18:18:34.45203",
+            "rotated_at": "2026-10-13T18:18:34.450052",
+            "updated_at": "2026-10-13T18:18:34.45203",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "ripLycU+yxzj6dQD4tAVh8V2jGU=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "poll_maximum_options": 3
+  },
+  "recorded_from": {
+    "case": "c5b04bb180adec56b6cda466e33f8b4f47a19411adf5cd0ae996ec77b7d12375",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
