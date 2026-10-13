@@ -1,0 +1,118 @@
+{
+  "name": "archive_group_and_user",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/90/archive-message",
+      "params": {}
+    }
+  ],
+  "started_at": "2026-10-13T12:57:08.022027",
+  "transaction_started_at": "2026-10-13T12:57:05.307345",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "group_name": "moderators"
+      }
+    }
+  ],
+  "changes": {
+    "group_archived_messages": {
+      "inserted": [
+        {
+          "id": 1,
+          "group_id": 2,
+          "topic_id": 90,
+          "created_at": "2026-10-13T12:57:08.059628",
+          "updated_at": "2026-10-13T12:57:08.059628"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_archived_messages": {
+      "inserted": [
+        {
+          "id": 2,
+          "user_id": 3,
+          "topic_id": 90,
+          "created_at": "2026-10-13T12:57:08.071014",
+          "updated_at": "2026-10-13T12:57:08.071014"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 488,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "RTTIDx0XK/kLMUVR28q0NHHYzrk=",
+            "created_at": "2026-10-13T12:57:06.352539",
+            "rotated_at": "2026-10-13T12:57:06.348208",
+            "updated_at": "2026-10-13T12:57:06.352539",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "RTTIDx0XK/kLMUVR28q0NHHYzrk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 488,
+            "seen_at": "2026-10-13T12:57:08.035238",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "RTTIDx0XK/kLMUVR28q0NHHYzrk=",
+            "created_at": "2026-10-13T12:57:06.352539",
+            "rotated_at": "2026-10-13T12:57:06.348208",
+            "updated_at": "2026-10-13T12:57:06.352539",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "RTTIDx0XK/kLMUVR28q0NHHYzrk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "group_pm_update_summary",
+      {
+        "group_id": 2,
+        "topic_id": 90,
+        "acting_user_id": 3
+      }
+    ]
+  ],
+  "next_ids": {
+    "group_archived_messages": 1,
+    "user_archived_messages": 2
+  },
+  "setup": [
+    "INSERT INTO topics (id, title, fancy_title, slug, user_id, last_post_user_id, archetype, subtype, created_at, updated_at, bumped_at, posts_count, highest_post_number, visible) VALUES (90, 'A group message the moderators received', 'A group message the moderators received', 'a-group-message-the-moderators-received', 3, 3, 'private_message', 'user_to_user', now() - interval '1 hour', now() - interval '1 hour', now() - interval '1 hour', 1, 1, true)",
+    "INSERT INTO posts (id, topic_id, user_id, post_number, raw, cooked, created_at, updated_at, last_version_at, sort_order) VALUES (900, 90, 3, 1, 'The first post of a group message to the moderators.', '<p>The first post of a group message to the moderators.</p>', now() - interval '1 hour', now() - interval '1 hour', now() - interval '1 hour', 1)",
+    "INSERT INTO topic_allowed_users (topic_id, user_id, created_at, updated_at) VALUES (90, 3, now(), now())",
+    "INSERT INTO topic_allowed_groups (topic_id, group_id) VALUES (90, 2)",
+    "INSERT INTO topic_users (user_id, topic_id, notification_level, notifications_reason_id, posted, last_read_post_number) VALUES (3, 90, 3, 1, true, 1), (1, 90, 2, 2, false, NULL)",
+    "INSERT INTO group_users (group_id, user_id, notification_level, created_at, updated_at) VALUES (2, 3, 2, now(), now())",
+    "UPDATE groups SET user_count = 2 WHERE id = 2"
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "70c2057be3c5ec59ce10534769b409a72a3fd927bb136216453ba9f457f3c094",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

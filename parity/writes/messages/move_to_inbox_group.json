@@ -1,0 +1,133 @@
+{
+  "name": "move_to_inbox_group",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/90/move-to-inbox",
+      "params": {}
+    }
+  ],
+  "started_at": "2026-10-13T12:57:15.164317",
+  "transaction_started_at": "2026-10-13T12:57:14.328579",
+  "responses": [
+    {
+      "status": 200,
+      "body": ""
+    }
+  ],
+  "changes": {
+    "group_archived_messages": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 1,
+          "group_id": 2,
+          "topic_id": 90,
+          "created_at": "2026-10-13T12:57:14.328579",
+          "updated_at": "2026-10-13T12:57:14.328579"
+        }
+      ],
+      "updated": []
+    },
+    "notifications": {
+      "inserted": [
+        {
+          "id": 53,
+          "data": "{\"group_id\":2,\"group_name\":\"moderators\",\"inbox_count\":1,\"username\":\"system\"}",
+          "read": false,
+          "user_id": -1,
+          "topic_id": null,
+          "created_at": "2026-10-13T12:57:15.204486",
+          "updated_at": "2026-10-13T12:57:15.204486",
+          "post_number": null,
+          "high_priority": false,
+          "post_action_id": null,
+          "notification_type": 16
+        },
+        {
+          "id": 54,
+          "data": "{\"group_id\":2,\"group_name\":\"moderators\",\"inbox_count\":1,\"username\":\"admin\"}",
+          "read": true,
+          "user_id": 1,
+          "topic_id": null,
+          "created_at": "2026-10-13T12:57:15.215187",
+          "updated_at": "2026-10-13T12:57:15.215187",
+          "post_number": null,
+          "high_priority": false,
+          "post_action_id": null,
+          "notification_type": 16
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 488,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "9WAjF8dw3EEolQIpKwlZSgNBoZU=",
+            "created_at": "2026-10-13T12:57:14.645405",
+            "rotated_at": "2026-10-13T12:57:14.644316",
+            "updated_at": "2026-10-13T12:57:14.645405",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "9WAjF8dw3EEolQIpKwlZSgNBoZU=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 488,
+            "seen_at": "2026-10-13T12:57:15.171158",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "9WAjF8dw3EEolQIpKwlZSgNBoZU=",
+            "created_at": "2026-10-13T12:57:14.645405",
+            "rotated_at": "2026-10-13T12:57:14.644316",
+            "updated_at": "2026-10-13T12:57:14.645405",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "9WAjF8dw3EEolQIpKwlZSgNBoZU=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "group_pm_update_summary",
+      {
+        "group_id": 2,
+        "topic_id": 90,
+        "acting_user_id": 1
+      }
+    ]
+  ],
+  "next_ids": {
+    "notifications": 53
+  },
+  "setup": [
+    "INSERT INTO topics (id, title, fancy_title, slug, user_id, last_post_user_id, archetype, subtype, created_at, updated_at, bumped_at, posts_count, highest_post_number, visible) VALUES (90, 'A group message the moderators received', 'A group message the moderators received', 'a-group-message-the-moderators-received', 3, 3, 'private_message', 'user_to_user', now() - interval '1 hour', now() - interval '1 hour', now() - interval '1 hour', 1, 1, true)",
+    "INSERT INTO posts (id, topic_id, user_id, post_number, raw, cooked, created_at, updated_at, last_version_at, sort_order) VALUES (900, 90, 3, 1, 'The first post of a group message to the moderators.', '<p>The first post of a group message to the moderators.</p>', now() - interval '1 hour', now() - interval '1 hour', now() - interval '1 hour', 1)",
+    "INSERT INTO topic_allowed_users (topic_id, user_id, created_at, updated_at) VALUES (90, 3, now(), now())",
+    "INSERT INTO topic_allowed_groups (topic_id, group_id) VALUES (90, 2)",
+    "INSERT INTO topic_users (user_id, topic_id, notification_level, notifications_reason_id, posted, last_read_post_number) VALUES (3, 90, 3, 1, true, 1), (1, 90, 2, 2, false, NULL)",
+    "INSERT INTO group_archived_messages (group_id, topic_id, created_at, updated_at) VALUES (2, 90, now(), now())"
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "35308c2df5f963ff22009f8953d67984bbbe0126e24a31225ab116f520e8c7e5",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

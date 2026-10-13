@@ -1,0 +1,13 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE topic_users SET notification_level = 0 WHERE user_id = 3 AND topic_id = 44"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/44/move-to-inbox",
+      "params": {}
+    }
+  ]
+}

@@ -3,6 +3,7 @@ pub mod admin_site_settings;
 pub mod admin_user_show;
 pub mod admin_users;
 pub mod anonymous_cache;
+pub mod archived_messages;
 pub mod assets;
 pub mod avatar;
 pub mod badge_granter;
