@@ -26,6 +26,7 @@ const DISCOURSE_CSS: &str = concat!(
     include_str!("../static/css/topic-list.css"),
     include_str!("../static/css/categories.css"),
     include_str!("../static/css/sidebar.css"),
+    include_str!("../static/css/cooked.css"),
     include_str!("../static/css/topic.css"),
     include_str!("../static/css/user.css"),
     include_str!("../static/css/user-stream.css"),
@@ -41,6 +42,10 @@ const DISCOURSE_CSS: &str = concat!(
     include_str!("../static/css/discourse-solved.css"),
     include_str!("../static/css/discourse-presence.css"),
     include_str!("../static/css/chat.css"),
+    include_str!("../static/css/checklist.css"),
+    include_str!("../static/css/discourse-details.css"),
+    include_str!("../static/css/footnote.css"),
+    include_str!("../static/css/spoiler-alert.css"),
 );
 
 const CSS: &str = "text/css; charset=utf-8";

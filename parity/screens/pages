@@ -18,6 +18,7 @@
 /c/general/4 as=user1
 /t/parity-fixture-replies-and-posters/35 wait=4000
 /t/parity-fixture-liked-and-archived/41 wait=4000
+/t/cooked-content-basics-for-the-stylesheets/91 wait=4000
 /u/admin
 /u/user1
 /tags
@@ -31,6 +32,7 @@
 /categories as=user1
 /t/parity-fixture-replies-and-posters/35 as=user0 wait=4000
 /t/parity-fixture-replies-and-posters/35 as=user1 wait=4000
+/t/cooked-content-basics-for-the-stylesheets/91 as=user1 wait=4000
 /t/parity-fixture-liked-and-archived/41 as=admin wait=4000
 /u/user0 as=user0
 /u/user0/summary as=user0

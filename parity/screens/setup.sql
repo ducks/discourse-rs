@@ -85,3 +85,86 @@ INSERT INTO topic_allowed_users (topic_id, user_id, created_at, updated_at) VALU
 INSERT INTO topic_allowed_groups (topic_id, group_id) VALUES (90, 2);
 UPDATE groups SET has_messages = true WHERE id = 2;
 INSERT INTO topic_users (user_id, topic_id, notification_level, notifications_reason_id, posted, last_read_post_number) VALUES (3, 90, 3, 1, true, 1), (1, 90, 2, 2, false, NULL);
+
+-- A post with the cooked content the base stylesheets style (hr, emoji,
+-- details, spoiler, footnote, checklist, code, table), cooked by Rails.
+INSERT INTO topics (id, title, fancy_title, slug, user_id, last_post_user_id, archetype, category_id, created_at, updated_at, bumped_at, last_posted_at, posts_count, highest_post_number, visible) VALUES (91, 'Cooked content basics for the stylesheets', 'Cooked content basics for the stylesheets', 'cooked-content-basics-for-the-stylesheets', 1, 1, 'regular', 4, now() - interval '1 hour', now() - interval '1 hour', now() - interval '1 hour', now() - interval '1 hour', 1, 1, true);
+INSERT INTO posts (id, topic_id, user_id, post_number, raw, cooked, created_at, updated_at, last_version_at, sort_order) VALUES (910, 91, 1, 1, 'Cooked basics, @user1 and @admin.
+
+---
+
+:smile:
+
+<details><summary>More</summary>Hidden text</details>
+
+[details="Open details" open]
+Shown text
+[/details]
+
+[spoiler]a secret[/spoiler]
+
+Footnote here[^1].
+
+[^1]: The note.
+
+[ ] unchecked
+[x] checked
+
+```ruby
+def hello
+  puts "hi"
+end
+```
+
+| a | b |
+|---|---|
+| 1 | 2 |
+
+In a list:
+- item :tada:
+
+Text with <small>small :wave:</small> and <sup>up :wave:</sup>.', '<p>Cooked basics, <a class="mention" href="/u/user1">@user1</a> and <a class="mention" href="/u/admin">@admin</a>.</p>
+<hr>
+<p><img src="/images/emoji/twitter/smile.png?v=15" title=":smile:" class="emoji only-emoji" alt=":smile:" loading="lazy" width="20" height="20"></p>
+<details><summary>More</summary>Hidden text</details>
+<details open="">
+<summary>
+Open details</summary>
+<p>Shown text</p>
+</details>
+<div class="spoiler">
+<p>a secret</p>
+</div>
+<p>Footnote here<sup class="footnote-ref"><a href="#fn1" id="fnref1">[1]</a></sup>.</p>
+<p><span class="chcklst-box fa fa-square-o" data-chk-src="18:0"></span> unchecked<br>
+<span class="chcklst-box checked fa fa-square-check-o" data-chk-src="19:0"></span> checked</p>
+<pre data-code-wrap="ruby"><code class="lang-ruby">def hello
+  puts "hi"
+end
+</code></pre>
+<div class="md-table">
+<table>
+<thead>
+<tr>
+<th>a</th>
+<th>b</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+</div><p>In a list:</p>
+<ul>
+<li>item <img src="/images/emoji/twitter/tada.png?v=15" title=":tada:" class="emoji" alt=":tada:" loading="lazy" width="20" height="20"></li>
+</ul>
+<p>Text with <small>small <img src="/images/emoji/twitter/wave.png?v=15" title=":wave:" class="emoji" alt=":wave:" loading="lazy" width="20" height="20"></small> and <sup>up <img src="/images/emoji/twitter/wave.png?v=15" title=":wave:" class="emoji" alt=":wave:" loading="lazy" width="20" height="20"></sup>.</p>
+<hr class="footnotes-sep">
+
+<ol class="footnotes-list">
+<li id="fn1" class="footnote-item"><p>The note. <a href="#fnref1" class="footnote-backref">↩︎</a></p>
+</li>
+</ol>', now() - interval '1 hour', now() - interval '1 hour', now() - interval '1 hour', 1);
