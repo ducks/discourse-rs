@@ -665,6 +665,10 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/posts/{id}",
             put(posts::update).delete(post_destroy::destroy_post),
         )
+        .route(
+            "/posts/by_number/{topic_id}/{post_number}",
+            get(posts::by_number),
+        )
         .route("/raw/{topic_id}/{post_number}", get(posts::raw))
         .route("/posts/{id}/recover", put(post_destroy::recover_post))
         .route("/posts/{id}/recover.json", put(post_destroy::recover_post))
@@ -721,6 +725,11 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/highlight-syntax.js", get(asset))
         .route("/assets/highlightjs-core.min.js", get(asset))
         .route("/highlight-js/{hostname}/{file}", get(highlight_js::show))
+        .route("/assets/modal.js", get(asset))
+        .route("/assets/spoiler-alert.js", get(asset))
+        .route("/assets/post-decorations.js", get(asset))
+        .route("/assets/codeblock-buttons.js", get(asset))
+        .route("/assets/quote-controls.js", get(asset))
         .route("/assets/sidebar.js", get(asset))
         .route("/assets/topic.js", get(asset))
         .route("/assets/topic-voting.js", get(asset))

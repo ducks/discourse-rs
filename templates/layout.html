@@ -49,6 +49,15 @@
     <meta name="discourse-highlight-js" content="{{ chrome.highlight_js_path }}" data-core="{{ crate::assets::url(base_path, "highlightjs-core.min.js") }}"{% if chrome.autohighlight_all_code %} data-all-code{% endif %}>
     {%- endif %}
     <script src="{{ crate::assets::url(base_path, "highlight-syntax.js") }}" defer></script>
+    {%- if !chrome.cooked_config.is_empty() %}
+    <script type="application/json" id="cooked-config">{{ chrome.cooked_config|safe }}</script>
+    {%- endif %}
+    {#- The cooked-content decorators, registered once the page is parsed. -#}
+    <script src="{{ crate::assets::url(base_path, "modal.js") }}" defer></script>
+    <script src="{{ crate::assets::url(base_path, "spoiler-alert.js") }}" defer></script>
+    <script src="{{ crate::assets::url(base_path, "post-decorations.js") }}" defer></script>
+    <script src="{{ crate::assets::url(base_path, "codeblock-buttons.js") }}" defer></script>
+    <script src="{{ crate::assets::url(base_path, "quote-controls.js") }}" defer></script>
     <script src="{{ crate::assets::url(base_path, "hashtags.js") }}" defer></script>
     <script src="{{ crate::assets::url(base_path, "presence.js") }}"></script>
     <script src="{{ crate::assets::url(base_path, "topic-presence.js") }}"></script>
