@@ -1,0 +1,22 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO muted_users (user_id, muted_user_id, created_at, updated_at) VALUES (4, 3, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A private message to people who screen the sender",
+        "raw": "Hello both, this message checks who takes messages from user1.",
+        "archetype": "private_message",
+        "target_recipients": "user2"
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert",
+    "user_email"
+  ]
+}

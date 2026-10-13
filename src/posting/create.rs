@@ -274,9 +274,10 @@ pub async fn create(
         return Ok(Outcome::Invalid(vec![ctx.t("user_is_suspended")]));
     }
     // The recipients: their number, and whether they take messages from
-    // the sender (UserCommScreener, not ported).
+    // the sender (UserCommScreener).
     if let Some(names) = &args.pm_recipients
         && !names.is_empty()
+        && !args.skip_validations
         && !guardian.is_staff()
     {
         let max = s.get("max_allowed_message_recipients")?.to_i();
@@ -290,21 +291,37 @@ pub async fn create(
                     .unwrap_or_default(),
             ]));
         }
-        let screened: bool = sqlx::query_scalar(
-            "SELECT EXISTS (SELECT 1 FROM users u JOIN user_options o ON o.user_id = u.id \
-               WHERE u.username_lower = ANY($1) AND (NOT o.allow_private_messages \
-                 OR o.enable_allowed_pm_users \
-                 OR EXISTS (SELECT 1 FROM muted_users WHERE user_id = u.id AND muted_user_id = $2) \
-                 OR EXISTS (SELECT 1 FROM ignored_users WHERE user_id = u.id AND ignored_user_id = $2)))",
+        let target_users: Vec<(i32, String)> =
+            sqlx::query_as("SELECT id, username FROM users WHERE username_lower = ANY($1)")
+                .bind(names)
+                .fetch_all(&mut *conn)
+                .await?;
+        let ids: Vec<i32> = target_users.iter().map(|(id, _)| *id).collect();
+        let screener = crate::user_comm_screener::UserCommScreener::new(
+            &mut conn,
+            crate::user_comm_screener::Actor {
+                id: user.id,
+                staff: guardian.is_staff(),
+            },
+            &ids,
         )
-        .bind(names)
-        .bind(user.id)
-        .fetch_one(&mut *conn)
         .await?;
-        if screened {
-            return Err(
-                Unsupported("messages to users who screen the sender (UserCommScreener)").into(),
-            );
+        let errors: Vec<String> = screener
+            .preventing_actor_communication()
+            .into_iter()
+            .map(|id| {
+                let username = target_users
+                    .iter()
+                    .find(|(t, _)| *t == id)
+                    .map(|(_, name)| name.as_str())
+                    .unwrap_or_default();
+                ctx.i18n
+                    .t_with("not_accepting_pms", &[("username", username)])
+                    .unwrap_or_default()
+            })
+            .collect();
+        if !errors.is_empty() {
+            return Ok(Outcome::Invalid(errors));
         }
     }
     let mut plan = None;

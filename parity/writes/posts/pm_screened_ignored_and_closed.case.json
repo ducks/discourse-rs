@@ -1,0 +1,23 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO ignored_users (user_id, ignored_user_id, created_at, updated_at, expiring_at) VALUES (4, 3, now(), now(), now() + interval '4 months')",
+    "UPDATE user_options SET allow_private_messages = false WHERE user_id = 2"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A private message to people who screen the sender",
+        "raw": "Hello both, this message checks who takes messages from user1.",
+        "archetype": "private_message",
+        "target_recipients": "user0,user2"
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert",
+    "user_email"
+  ]
+}

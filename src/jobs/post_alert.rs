@@ -812,16 +812,22 @@ impl Alerter<'_> {
         // The notifier muted or ignored by the user (staff can't be).
         let notifier = opts.user_id.or(post.user_id);
         if let Some(notifier) = notifier {
-            let screened: bool = sqlx::query_scalar(
-                "SELECT NOT COALESCE((SELECT admin OR moderator FROM users WHERE id = $2), FALSE) AND ( \
-                   EXISTS (SELECT 1 FROM muted_users WHERE user_id = $1 AND muted_user_id = $2) \
-                   OR EXISTS (SELECT 1 FROM ignored_users WHERE user_id = $1 AND ignored_user_id = $2))",
+            let staff: bool = sqlx::query_scalar(
+                "SELECT COALESCE((SELECT admin OR moderator FROM users WHERE id = $1), FALSE)",
             )
-            .bind(user_id)
             .bind(notifier)
             .fetch_one(&mut *conn)
             .await?;
-            if screened {
+            let screener = crate::user_comm_screener::UserCommScreener::new(
+                &mut *conn,
+                crate::user_comm_screener::Actor {
+                    id: notifier,
+                    staff,
+                },
+                &[user_id],
+            )
+            .await?;
+            if screener.ignoring_or_muting_actor(user_id)? {
                 return Ok(false);
             }
         }

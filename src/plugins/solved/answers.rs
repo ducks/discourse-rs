@@ -186,18 +186,20 @@ async fn screened(
     conn: &mut PgConnection,
     guardian: &Guardian,
     user_id: i32,
-) -> Result<bool, sqlx::Error> {
-    if guardian.is_staff() {
+) -> Result<bool, AppError> {
+    let Some(actor) = guardian.user_id() else {
         return Ok(false);
-    }
-    sqlx::query_scalar(
-        "SELECT EXISTS (SELECT 1 FROM muted_users WHERE user_id = $1 AND muted_user_id = $2) \
-         OR EXISTS (SELECT 1 FROM ignored_users WHERE user_id = $1 AND ignored_user_id = $2)",
+    };
+    let screener = crate::user_comm_screener::UserCommScreener::new(
+        &mut *conn,
+        crate::user_comm_screener::Actor {
+            id: actor,
+            staff: guardian.is_staff(),
+        },
+        &[user_id],
     )
-    .bind(user_id)
-    .bind(guardian.user_id())
-    .fetch_one(&mut *conn)
-    .await
+    .await?;
+    Ok(screener.ignoring_or_muting_actor(user_id)?)
 }
 
 /// `UserOption.exists?(user_id:, notify_on_solved: true)` (the user

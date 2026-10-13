@@ -1,0 +1,84 @@
+{
+  "name": "pm_screened_ignored_and_closed",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A private message to people who screen the sender",
+        "raw": "Hello both, this message checks who takes messages from user1.",
+        "archetype": "private_message",
+        "target_recipients": "user0,user2"
+      }
+    }
+  ],
+  "started_at": "2026-10-13T06:32:11.229693",
+  "transaction_started_at": "2026-10-13T06:32:10.274396",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "action": "create_post",
+        "errors": [
+          "Sorry, user2 is not accepting messages at the moment.",
+          "Sorry, user0 is not accepting messages at the moment."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 488,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "yflu4iUvCVoUV0wrBMHU1kT/yMk=",
+            "created_at": "2026-10-13T06:32:10.594336",
+            "rotated_at": "2026-10-13T06:32:10.593409",
+            "updated_at": "2026-10-13T06:32:10.594336",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "yflu4iUvCVoUV0wrBMHU1kT/yMk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 488,
+            "seen_at": "2026-10-13T06:32:11.235628",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "yflu4iUvCVoUV0wrBMHU1kT/yMk=",
+            "created_at": "2026-10-13T06:32:10.594336",
+            "rotated_at": "2026-10-13T06:32:10.593409",
+            "updated_at": "2026-10-13T06:32:10.594336",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "yflu4iUvCVoUV0wrBMHU1kT/yMk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO ignored_users (user_id, ignored_user_id, created_at, updated_at, expiring_at) VALUES (4, 3, now(), now(), now() + interval '4 months')",
+    "UPDATE user_options SET allow_private_messages = false WHERE user_id = 2"
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "710ad54214977cfde72c7a961d27f904339538314171c30486d827eb131ab539",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -94,7 +94,7 @@ Bugs or silent gaps in what is merged, small and independent.
 
 ### Phase 3: messages
 
-23. `feat/user-comm-screener` S: gates PM creation, alerts, invites, DMs
+23. ~~`feat/user-comm-screener`~~ (done) S: gates PM creation, alerts, invites, DMs
 24. `feat/pm-tracking-state` S
 25. `feat/group-messages-create` M, 26. `feat/group-messages-alerts` M
 27. `feat/jobs-group-messages` S: unblocks ignored_users_summary and
