@@ -1,0 +1,60 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/hashtags.json",
+      "params": {
+        "slugs": [
+          "general",
+          "general:sub-general",
+          "guide",
+          "guide::tag",
+          "howto::category",
+          "nope",
+          "site-feedback::category",
+          "GENERAL"
+        ],
+        "order": [
+          "category",
+          "tag"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/hashtags.json",
+      "params": {
+        "slugs": [
+          "guide",
+          "general"
+        ],
+        "order": [
+          "tag",
+          "category",
+          "bogus"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/hashtags.json",
+      "params": {
+        "slugs": "general",
+        "order": [
+          "category"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/hashtags.json",
+      "params": {
+        "slugs": [
+          "general"
+        ],
+        "order": "category"
+      }
+    }
+  ]
+}

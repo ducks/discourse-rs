@@ -1,0 +1,106 @@
+{
+  "name": "by_ids_staff_category",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/hashtags/by-ids.json",
+      "params": {
+        "category": [
+          3,
+          4
+        ]
+      }
+    }
+  ],
+  "started_at": "2026-10-13T20:57:53.157938",
+  "transaction_started_at": "2026-10-13T20:57:51.587595",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "category": [
+          {
+            "relative_url": "/c/staff/3",
+            "text": "Staff",
+            "description": "Private category for staff discussions. Topics are only visible to admins and moderators.",
+            "icon": "folder",
+            "colors": [
+              "E45735"
+            ],
+            "type": "category",
+            "ref": "staff",
+            "slug": "staff",
+            "id": 3,
+            "style_type": "emoji",
+            "emoji": "shield"
+          },
+          {
+            "relative_url": "/c/general/4",
+            "text": "General",
+            "description": "Create topics here that don’t fit into any other existing category.",
+            "icon": "folder",
+            "colors": [
+              "25AAE2"
+            ],
+            "type": "category",
+            "ref": "general",
+            "slug": "general",
+            "id": 4,
+            "style_type": "emoji",
+            "emoji": "blue_book"
+          }
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 513,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "8fNjWxvpk+cOXqpnbeGZJIMemXk=",
+            "created_at": "2026-10-13T20:57:51.959692",
+            "rotated_at": "2026-10-13T20:57:51.956396",
+            "updated_at": "2026-10-13T20:57:51.959692",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "8fNjWxvpk+cOXqpnbeGZJIMemXk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 513,
+            "seen_at": "2026-10-13T20:57:53.16541",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "8fNjWxvpk+cOXqpnbeGZJIMemXk=",
+            "created_at": "2026-10-13T20:57:51.959692",
+            "rotated_at": "2026-10-13T20:57:51.956396",
+            "updated_at": "2026-10-13T20:57:51.959692",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "8fNjWxvpk+cOXqpnbeGZJIMemXk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "917c94c6cd58a697c3b9bdca74ad70510ed446475d9b6c350a6662dff7dacf1c",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

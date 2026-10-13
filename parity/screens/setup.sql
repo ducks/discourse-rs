@@ -87,9 +87,12 @@ UPDATE groups SET has_messages = true WHERE id = 2;
 INSERT INTO topic_users (user_id, topic_id, notification_level, notifications_reason_id, posted, last_read_post_number) VALUES (3, 90, 3, 1, true, 1), (1, 90, 2, 2, false, NULL);
 
 -- A post with the cooked content the base stylesheets style (hr, emoji,
--- details, spoiler, footnote, checklist, code, table), cooked by Rails.
+-- details, spoiler, footnote, checklist, code, table, hashtags), cooked by
+-- Rails.
 INSERT INTO topics (id, title, fancy_title, slug, user_id, last_post_user_id, archetype, category_id, created_at, updated_at, bumped_at, last_posted_at, posts_count, highest_post_number, visible) VALUES (91, 'Cooked content basics for the stylesheets', 'Cooked content basics for the stylesheets', 'cooked-content-basics-for-the-stylesheets', 1, 1, 'regular', 4, now() - interval '1 hour', now() - interval '1 hour', now() - interval '1 hour', now() - interval '1 hour', 1, 1, true);
 INSERT INTO posts (id, topic_id, user_id, post_number, raw, cooked, created_at, updated_at, last_version_at, sort_order) VALUES (910, 91, 1, 1, 'Cooked basics, @user1 and @admin.
+
+Hashtags: #general, #general:sub-general, #site-feedback and #guide.
 
 ---
 
@@ -124,6 +127,7 @@ In a list:
 - item :tada:
 
 Text with <small>small :wave:</small> and <sup>up :wave:</sup>.', '<p>Cooked basics, <a class="mention" href="/u/user1">@user1</a> and <a class="mention" href="/u/admin">@admin</a>.</p>
+<p>Hashtags: <a class="hashtag-cooked" href="/c/general/4" data-type="category" data-slug="general" data-id="4" data-style-type="emoji" data-emoji="blue_book"><span class="hashtag-icon-placeholder"><svg class="fa d-icon d-icon-square-full svg-icon svg-node"><use href="#square-full"></use></svg></span><span>General</span></a>, <a class="hashtag-cooked" href="/c/general/sub-general/34" data-type="category" data-slug="sub-general" data-id="34" data-style-type="square" data-ref="general:sub-general"><span class="hashtag-icon-placeholder"><svg class="fa d-icon d-icon-square-full svg-icon svg-node"><use href="#square-full"></use></svg></span><span>General &gt; Sub General</span></a>, <a class="hashtag-cooked" href="/c/site-feedback/2" data-type="category" data-slug="site-feedback" data-id="2" data-style-type="emoji" data-emoji="thought_balloon"><span class="hashtag-icon-placeholder"><svg class="fa d-icon d-icon-square-full svg-icon svg-node"><use href="#square-full"></use></svg></span><span>Site Feedback</span></a> and <a class="hashtag-cooked" href="/tag/guide/2" data-type="tag" data-slug="guide" data-id="2" data-style-type="icon" data-icon="tag"><span class="hashtag-icon-placeholder"><svg class="fa d-icon d-icon-square-full svg-icon svg-node"><use href="#square-full"></use></svg></span><span>guide</span></a>.</p>
 <hr>
 <p><img src="/images/emoji/twitter/smile.png?v=15" title=":smile:" class="emoji only-emoji" alt=":smile:" loading="lazy" width="20" height="20"></p>
 <details><summary>More</summary>Hidden text</details>
@@ -136,8 +140,8 @@ Open details</summary>
 <p>a secret</p>
 </div>
 <p>Footnote here<sup class="footnote-ref"><a href="#fn1" id="fnref1">[1]</a></sup>.</p>
-<p><span class="chcklst-box fa fa-square-o" data-chk-src="18:0"></span> unchecked<br>
-<span class="chcklst-box checked fa fa-square-check-o" data-chk-src="19:0"></span> checked</p>
+<p><span class="chcklst-box fa fa-square-o" data-chk-src="20:0"></span> unchecked<br>
+<span class="chcklst-box checked fa fa-square-check-o" data-chk-src="21:0"></span> checked</p>
 <pre data-code-wrap="ruby"><code class="lang-ruby">def hello
   puts "hi"
 end

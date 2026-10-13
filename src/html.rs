@@ -196,6 +196,16 @@ pub struct Chrome {
     /// Classes a route adds to `<html>` (htmlClass), each with a leading
     /// space.
     pub html_classes: String,
+    /// The hashtag-css-generator initializer's rules for the viewer's site
+    /// categories, and their ids (the ones CategoryHashtagType counts as
+    /// loaded).
+    pub hashtag_css: String,
+    pub hashtag_category_ids: String,
+    /// What hashtags.js makes emoji and the tag icon from: Emoji.url_for's
+    /// location for the set, the images' version, `hashtag_icons.tag`.
+    pub emoji_base: String,
+    pub emoji_version: String,
+    pub hashtag_tag_icon: String,
 }
 
 impl Chrome {
@@ -309,7 +319,43 @@ impl Site {
         } else {
             None
         };
+        // The site's categories, as the sidebar read them or, without one,
+        // as Site serializes them (none for a visitor when login is
+        // required).
+        let site_categories = match &inputs {
+            Some((site, _)) => site["categories"].as_array().cloned().unwrap_or_default(),
+            None if guardian.user().is_none() && settings.get("login_required")?.truthy() => {
+                Vec::new()
+            }
+            None => {
+                crate::categories::Categories {
+                    conn: &mut *conn,
+                    settings,
+                    i18n: &state.i18n,
+                    guardian,
+                    base_path: &self.base_path,
+                    topic_url_via_slug: true,
+                }
+                .for_site()
+                .await?
+            }
+        };
+        self.chrome.hashtag_css = crate::hashtags::generator_css(&site_categories);
+        self.chrome.hashtag_category_ids = site_categories
+            .iter()
+            .filter_map(|c| c["id"].as_i64())
+            .map(|id| id.to_string())
+            .collect::<Vec<_>>()
+            .join(",");
         let emoji_set = settings.get("emoji_set")?.to_s().to_string();
+        self.chrome.emoji_base = match settings.get("external_emoji_url")?.presence() {
+            Some(external) => format!("{external}/{emoji_set}"),
+            None => format!("{}/images/emoji/{emoji_set}", self.base_path),
+        };
+        self.chrome.emoji_version = crate::emoji::image_version().to_string();
+        if settings.get("tagging_enabled")?.truthy() {
+            self.chrome.hashtag_tag_icon = "tag".into();
+        }
         let sidebar_cx = |plugin_sections| {
             inputs.as_ref().map(|(_, member)| crate::sidebar::Context {
                 i18n: &state.i18n,

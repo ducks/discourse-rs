@@ -1,0 +1,15 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/hashtags/by-ids.json",
+      "params": {
+        "category": [
+          3,
+          4
+        ]
+      }
+    }
+  ]
+}

@@ -35,6 +35,7 @@ pub mod group_manager;
 pub mod group_message;
 pub mod groups;
 pub mod guardian;
+pub mod hashtag_decorator;
 pub mod hashtags;
 pub mod html;
 pub mod html_prettify;

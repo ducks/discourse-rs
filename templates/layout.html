@@ -43,6 +43,7 @@
     <meta name="htmx-config" content='{"historyCacheSize": 0}'>
     <meta name="discourse-base-uri" content="{{ base_path }}">
     <script src="{{ crate::assets::url(base_path, "page.js") }}"></script>
+    <script src="{{ crate::assets::url(base_path, "hashtags.js") }}" defer></script>
     <script src="{{ crate::assets::url(base_path, "presence.js") }}"></script>
     <script src="{{ crate::assets::url(base_path, "topic-presence.js") }}"></script>
     <script src="{{ crate::assets::url(base_path, "htmx.min.js") }}" defer></script>
@@ -56,6 +57,8 @@
     {% if let Some(v) = viewer %}
     <style id="current-user-mention-css">.mention[href="{{ base_path }}/u/{{ v.username }}" i] { background: var(--tertiary-400); }</style>
     {% endif %}
+    {#- The hashtag-css-generator initializer, appended to the head after the stylesheets. -#}
+    <style id="hashtag-css-generator" data-category-ids="{{ chrome.hashtag_category_ids }}" data-emoji-base="{{ chrome.emoji_base }}" data-emoji-version="{{ chrome.emoji_version }}" data-tag-icon="{{ chrome.hashtag_tag_icon }}">{{ chrome.hashtag_css|safe }}</style>
   </head>
   {#- A member's htmx requests carry their CSRF token, as Rails' client does;
       links swap the next page in (page.js). -#}

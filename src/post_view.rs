@@ -50,6 +50,13 @@ pub struct PostSettings {
     pub solved: Option<crate::plugins::solved::view::SolvedUi>,
     /// discourse-presence is on: the footer shows who is replying.
     pub presence: bool,
+    /// `site.hashtag_icons.tag` (tagging_enabled), for the hashtag
+    /// decorator.
+    pub hashtag_tag_icon: Option<String>,
+    /// `emoji_set` and `external_emoji_url`, for the emoji the hashtag
+    /// decorator adds.
+    pub emoji_set: String,
+    pub external_emoji_url: Option<String>,
 }
 
 impl PostSettings {
@@ -101,6 +108,12 @@ impl PostSettings {
             reactions: crate::plugins::reactions::view::ReactionsUi::load(settings)?,
             solved: crate::plugins::solved::view::SolvedUi::load(settings)?,
             presence: flag("presence_enabled")?,
+            hashtag_tag_icon: flag("tagging_enabled")?.then(|| "tag".to_string()),
+            emoji_set: settings.get("emoji_set")?.to_s().to_string(),
+            external_emoji_url: settings
+                .get("external_emoji_url")?
+                .presence()
+                .map(|u| u.to_string()),
         })
     }
 }
@@ -514,6 +527,24 @@ fn regular(cx: &PostContext, p: &Value, prev: Option<Prev>) -> String {
     )
 }
 
+/// The cooked content as Ember's post decorations leave it: hashtags'
+/// icons.
+fn decorated_cooked(cx: &PostContext, cooked: &str) -> String {
+    let set = &cx.settings.emoji_set;
+    let emoji_base = match &cx.settings.external_emoji_url {
+        Some(external) => format!("{external}/{set}"),
+        None => format!("{}/images/emoji/{set}", cx.list.base_path),
+    };
+    crate::hashtag_decorator::decorate(
+        cooked,
+        &crate::hashtag_decorator::Icons {
+            tag: cx.settings.hashtag_tag_icon.clone(),
+            emoji_base,
+            emoji_version: crate::emoji::image_version().to_string(),
+        },
+    )
+}
+
 /// A regular post's main row: the avatar and the body.
 pub fn main_row(cx: &PostContext, p: &Value, prev: Option<Prev>) -> String {
     let reply_tab = reply_to_tab(cx, p, prev);
@@ -526,7 +557,7 @@ pub fn main_row(cx: &PostContext, p: &Value, prev: Option<Prev>) -> String {
         "<div class=\"post__row row\">{}<div class=\"post__body topic-body clearfix\">{}<div class=\"{contents_class}\"><div class=\"cooked\">{}<div class=\"cooked-selection-barrier\" aria-hidden=\"true\"><br></div></div>{}<section aria-label=\"{}\" class=\"post__menu-area post-menu-area clearfix\" role=\"group\">{}</section></div><section class=\"post__actions post-actions\">{}</section></div></div>",
         avatar(cx, p),
         meta_data(cx, p, &reply_tab),
-        s(&p["cooked"]),
+        decorated_cooked(cx, s(&p["cooked"])),
         // The post-content-cooked-html outlet: discourse-solved's accepted
         // answers under the first post.
         match cx.settings.solved.as_ref() {
@@ -2161,6 +2192,9 @@ mod tests {
             reactions: None,
             solved: None,
             presence: false,
+            hashtag_tag_icon: None,
+            emoji_set: "twitter".into(),
+            external_emoji_url: None,
         };
         let topic = TopicInfo {
             id: 9,
@@ -2328,6 +2362,9 @@ mod tests {
             reactions: None,
             solved: None,
             presence: false,
+            hashtag_tag_icon: None,
+            emoji_set: "twitter".into(),
+            external_emoji_url: None,
         };
         let topic = TopicInfo {
             id: 9,

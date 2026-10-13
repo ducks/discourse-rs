@@ -1,0 +1,254 @@
+{
+  "name": "lookup",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/hashtags.json",
+      "params": {
+        "slugs": [
+          "general",
+          "general:sub-general",
+          "guide",
+          "guide::tag",
+          "howto::category",
+          "nope",
+          "site-feedback::category",
+          "GENERAL"
+        ],
+        "order": [
+          "category",
+          "tag"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/hashtags.json",
+      "params": {
+        "slugs": [
+          "guide",
+          "general"
+        ],
+        "order": [
+          "tag",
+          "category",
+          "bogus"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/hashtags.json",
+      "params": {
+        "slugs": "general",
+        "order": [
+          "category"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/hashtags.json",
+      "params": {
+        "slugs": [
+          "general"
+        ],
+        "order": "category"
+      }
+    }
+  ],
+  "started_at": "2026-10-13T20:57:55.219252",
+  "transaction_started_at": "2026-10-13T20:57:54.17656",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "category": [
+          {
+            "relative_url": "/c/general/4",
+            "text": "General",
+            "description": "Create topics here that don’t fit into any other existing category.",
+            "style_type": "emoji",
+            "icon": "folder",
+            "emoji": "blue_book",
+            "colors": [
+              "25AAE2"
+            ],
+            "type": "category",
+            "ref": "general",
+            "slug": "general",
+            "id": 4
+          },
+          {
+            "relative_url": "/c/general/4",
+            "text": "General",
+            "description": "Create topics here that don’t fit into any other existing category.",
+            "style_type": "emoji",
+            "icon": "folder",
+            "emoji": "blue_book",
+            "colors": [
+              "25AAE2"
+            ],
+            "type": "category",
+            "ref": "general",
+            "slug": "general",
+            "id": 4
+          },
+          {
+            "relative_url": "/c/general/sub-general/34",
+            "text": "General > Sub General",
+            "description": null,
+            "style_type": "square",
+            "icon": "folder",
+            "emoji": null,
+            "colors": [
+              "25AAE2",
+              "AB9364"
+            ],
+            "type": "category",
+            "ref": "general:sub-general",
+            "slug": "sub-general",
+            "id": 34
+          },
+          {
+            "relative_url": "/c/site-feedback/2",
+            "text": "Site Feedback",
+            "description": "Discussion about this site, its organization, how it works, and how we can improve it.",
+            "style_type": "emoji",
+            "icon": "folder",
+            "emoji": "thought_balloon",
+            "colors": [
+              "808281"
+            ],
+            "type": "category",
+            "ref": "site-feedback::category",
+            "slug": "site-feedback",
+            "id": 2
+          }
+        ],
+        "tag": [
+          {
+            "relative_url": "/tag/guide/2",
+            "text": "guide",
+            "description": null,
+            "style_type": "icon",
+            "icon": "tag",
+            "emoji": null,
+            "colors": null,
+            "type": "tag",
+            "ref": "guide::tag",
+            "slug": "guide",
+            "id": 2,
+            "secondary_text": "x2"
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "tag": [
+          {
+            "relative_url": "/tag/guide/2",
+            "text": "guide",
+            "description": null,
+            "style_type": "icon",
+            "icon": "tag",
+            "emoji": null,
+            "colors": null,
+            "type": "tag",
+            "ref": "guide",
+            "slug": "guide",
+            "id": 2,
+            "secondary_text": "x2"
+          }
+        ],
+        "category": [
+          {
+            "relative_url": "/c/general/4",
+            "text": "General",
+            "description": "Create topics here that don’t fit into any other existing category.",
+            "style_type": "emoji",
+            "icon": "folder",
+            "emoji": "blue_book",
+            "colors": [
+              "25AAE2"
+            ],
+            "type": "category",
+            "ref": "general",
+            "slug": "general",
+            "id": 4
+          }
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: slugs"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: order"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 513,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "NK1bzkE46wNBGSpZfdNwjR5kJLA=",
+            "created_at": "2026-10-13T20:57:54.591338",
+            "rotated_at": "2026-10-13T20:57:54.589331",
+            "updated_at": "2026-10-13T20:57:54.591338",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "NK1bzkE46wNBGSpZfdNwjR5kJLA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 513,
+            "seen_at": "2026-10-13T20:57:55.225366",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "NK1bzkE46wNBGSpZfdNwjR5kJLA=",
+            "created_at": "2026-10-13T20:57:54.591338",
+            "rotated_at": "2026-10-13T20:57:54.589331",
+            "updated_at": "2026-10-13T20:57:54.591338",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "NK1bzkE46wNBGSpZfdNwjR5kJLA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "3913f05a7c86020bfb366e640f44658b8335e10b35b6b3eca6f64b8fcaa6a142",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/hashtags/by-ids.json",
+      "params": {
+        "category": [
+          4,
+          "34",
+          9999
+        ],
+        "tag": [
+          2
+        ],
+        "channel": [
+          1
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/hashtags/by-ids.json"
+    }
+  ]
+}
