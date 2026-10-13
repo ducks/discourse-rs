@@ -61,3 +61,27 @@ INSERT INTO chat_message_reactions (chat_message_id, user_id, emoji, created_at,
 INSERT INTO chat_mentions (chat_message_id, type, target_id, created_at, updated_at) VALUES (2, 'Chat::UserMention', 2, now() - interval '40 minutes', now() - interval '40 minutes');
 INSERT INTO bookmarks (user_id, bookmarkable_id, bookmarkable_type, name, auto_delete_preference, created_at, updated_at) VALUES (3, 1, 'ChatMessage', 'later', 3, now() - interval '45 minutes', now() - interval '45 minutes');
 UPDATE user_chat_channel_memberships SET last_read_message_id = 2 WHERE chat_channel_id = 2 AND user_id = 3;
+
+-- chat direct messages: user1 and user2 (two messages), and a group DM
+-- named "Weekend plans" with user1, user2 and user3 (one message); both
+-- followed by their members so they show in the sidebar.
+INSERT INTO direct_message_channels (id, "group", created_at, updated_at) VALUES (1, false, now() - interval '2 hours', now() - interval '2 hours'), (2, true, now() - interval '2 hours', now() - interval '2 hours');
+SELECT setval('direct_message_channels_id_seq', 2);
+INSERT INTO direct_message_users (direct_message_channel_id, user_id, created_at, updated_at) VALUES (1, 3, now() - interval '2 hours', now() - interval '2 hours'), (1, 4, now() - interval '2 hours', now() - interval '2 hours'), (2, 3, now() - interval '2 hours', now() - interval '2 hours'), (2, 4, now() - interval '2 hours', now() - interval '2 hours'), (2, 5, now() - interval '2 hours', now() - interval '2 hours');
+INSERT INTO chat_channels (id, chatable_type, chatable_id, type, status, user_count, name, messages_count, created_at, updated_at) VALUES (3, 'DirectMessage', 1, 'DirectMessageChannel', 0, 2, NULL, 2, now() - interval '2 hours', now() - interval '2 hours'), (4, 'DirectMessage', 2, 'DirectMessageChannel', 0, 3, 'Weekend plans', 1, now() - interval '2 hours', now() - interval '2 hours');
+SELECT setval('chat_channels_id_seq', 4);
+INSERT INTO user_chat_channel_memberships (user_id, chat_channel_id, following, muted, notification_level, created_at, updated_at) VALUES (3, 3, true, false, 2, now() - interval '2 hours', now() - interval '2 hours'), (4, 3, true, false, 2, now() - interval '2 hours', now() - interval '2 hours'), (3, 4, true, false, 2, now() - interval '2 hours', now() - interval '2 hours'), (4, 4, true, false, 2, now() - interval '2 hours', now() - interval '2 hours'), (5, 4, true, false, 2, now() - interval '2 hours', now() - interval '2 hours');
+INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id) VALUES (7, 3, 3, now() - interval '90 minutes', now() - interval '90 minutes', 'Are you around later?', '<p>Are you around later?</p>', 1, 3), (8, 3, 4, now() - interval '80 minutes', now() - interval '80 minutes', 'Yes, after five', '<p>Yes, after five</p>', 1, 4), (9, 4, 5, now() - interval '70 minutes', now() - interval '70 minutes', 'Hike on Saturday?', '<p>Hike on Saturday?</p>', 1, 5);
+SELECT setval('chat_messages_id_seq', 9);
+UPDATE chat_channels SET last_message_id = 8 WHERE id = 3;
+UPDATE chat_channels SET last_message_id = 9 WHERE id = 4;
+UPDATE user_chat_channel_memberships SET last_read_message_id = 7 WHERE chat_channel_id = 3 AND user_id = 3;
+
+-- A message to the moderators group from user1 (admin a member), for the
+-- group inbox.
+INSERT INTO topics (id, title, fancy_title, slug, user_id, last_post_user_id, archetype, subtype, created_at, updated_at, bumped_at, last_posted_at, posts_count, highest_post_number, visible) VALUES (90, 'A group message the moderators received', 'A group message the moderators received', 'a-group-message-the-moderators-received', 3, 3, 'private_message', 'user_to_user', now() - interval '1 hour', now() - interval '1 hour', now() - interval '1 hour', now() - interval '1 hour', 1, 1, true);
+INSERT INTO posts (id, topic_id, user_id, post_number, raw, cooked, created_at, updated_at, last_version_at, sort_order) VALUES (900, 90, 3, 1, 'The first post of a group message to the moderators.', '<p>The first post of a group message to the moderators.</p>', now() - interval '1 hour', now() - interval '1 hour', now() - interval '1 hour', 1);
+INSERT INTO topic_allowed_users (topic_id, user_id, created_at, updated_at) VALUES (90, 3, now(), now());
+INSERT INTO topic_allowed_groups (topic_id, group_id) VALUES (90, 2);
+UPDATE groups SET has_messages = true WHERE id = 2;
+INSERT INTO topic_users (user_id, topic_id, notification_level, notifications_reason_id, posted, last_read_post_number) VALUES (3, 90, 3, 1, true, 1), (1, 90, 2, 2, false, NULL);

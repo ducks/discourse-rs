@@ -102,6 +102,14 @@ Bugs or silent gaps in what is merged, small and independent.
 28. ~~`feat/pm-archive`~~ (done) S, 29. ~~`feat/pm-small-actions`~~ (done) M,
     30. ~~`feat/pm-likes`~~ (done) S, 31. ~~`feat/pm-destroy`~~ (done) M,
     32. ~~`feat/pm-invite`~~ (done) M, 33. ~~`feat/pm-invite-group`~~ (done) S
+33b. `feat/messages-pages` M: the HTML of /u/:username/messages (inbox,
+    sent, new, unread, archive, group inboxes); the port draws the user's
+    activity page there today (screenshots, 2026-10-13)
+33c. `feat/topic-view-group-messages` S: a group message's topic page
+    refuses its suggested messages (messages_for_groups_or_user), a 500
+33d. `perf/rate-limiter-storage` S/M: every public request performs two
+    limiter statements through a 4-connection pool (BENCH.md,
+    2026-10-13); keep the lists in the process, or size the pool
 
 [messages-dms]
 

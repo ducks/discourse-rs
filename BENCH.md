@@ -23,6 +23,180 @@ Caveats that apply to every run:
 - Same box, same Postgres, client and servers all local; keep-alive off so
   each request carries a connection.
 
+## 2026-10-13, after messages and chat DMs, rate limits on
+
+discourse-rs at eafbcea (release build, RAILS_ENV=production, on a fresh
+db-load of the seed), the rs-prod agent unchanged, c=16, 5 s per row.
+Since the last run the port gained rate limiting (RateLimiter, the
+per-user and per-address request limits of Middleware::RequestTracker),
+all of messages (group messages, archiving, invites, small actions,
+deletes) and chat direct messages.
+
+The first pass found a bug: with rate limits on, anonymous
+/search.json at c=16 answered three requests and then hung until the
+pool's acquire timeout. Handlers hold a connection of the main pool
+while they call the limiter, which took a second connection from the
+same pool; with every connection held by a request waiting on its
+limiter, the pool starved. fix/rate-limiter-pool gives the limiter's
+queries a small pool of their own (one query per connection, nothing
+else waited on). The tables are from after that fix.
+
+Anonymous (rs has its anonymous cache; `cached` and `uncached` are
+Rails'):
+
+| endpoint | target | req/s | p50 ms | p99 ms | non-2xx |
+|---|---|---:|---:|---:|---:|
+| /srv/status | rs | 34488 | 0.4 | 1.2 | 0 |
+| /srv/status | rails-prod (cached) | 3576 | 4.3 | 6.5 | 0 |
+| /srv/status | rails-prod (uncached) | 3501 | 4.4 | 6.8 | 0 |
+| /site.json | rs | 2945 | 5.4 | 7.9 | 0 |
+| /site.json | rails-prod (cached) | 1993 | 7.8 | 12.4 | 0 |
+| /site.json | rails-prod (uncached) | 2107 | 7.4 | 12.2 | 0 |
+| /latest.json | rs | 36343 | 0.4 | 1 | 0 |
+| /latest.json | rails-prod (cached) | 4126 | 3.7 | 5.7 | 0 |
+| /latest.json | rails-prod (uncached) | 252 | 63.4 | 75 | 0 |
+| /latest | rs | 34525 | 0.4 | 1.1 | 0 |
+| /latest | rails-prod (cached) | 3746 | 4.1 | 6.4 | 0 |
+| /latest | rails-prod (uncached) | 172 | 93.3 | 107.9 | 0 |
+| /c/general/4.json | rs | 35387 | 0.4 | 1 | 0 |
+| /c/general/4.json | rails-prod (cached) | 4091 | 3.8 | 6.2 | 0 |
+| /c/general/4.json | rails-prod (uncached) | 235 | 67.9 | 81.2 | 0 |
+| /categories.json | rs | 34972 | 0.4 | 1.1 | 0 |
+| /categories.json | rails-prod (cached) | 4122 | 3.8 | 5.6 | 0 |
+| /categories.json | rails-prod (uncached) | 398 | 40 | 50 | 0 |
+| /t/welcome-to-discourse/5.json | rs | 35629 | 0.4 | 1 | 0 |
+| /t/welcome-to-discourse/5.json | rails-prod (cached) | 4034 | 3.8 | 5.7 | 0 |
+| /t/welcome-to-discourse/5.json | rails-prod (uncached) | 157 | 102.6 | 117.1 | 0 |
+| /t/welcome-to-discourse/5 | rs | 34088 | 0.4 | 1.1 | 0 |
+| /t/welcome-to-discourse/5 | rails-prod (cached) | 3651 | 4.2 | 6.6 | 0 |
+| /t/welcome-to-discourse/5 | rails-prod (uncached) | 106 | 151.6 | 192.8 | 0 |
+| /u/system.json | rs | 7637 | 2 | 4 | 0 |
+| /u/system.json | rails-prod (cached) | 462 | 34.4 | 42 | 0 |
+| /u/system.json | rails-prod (uncached) | 472 | 33.5 | 42.5 | 0 |
+| /search.json?q=Welcome | rs | 34644 | 0.4 | 1.1 | 108 |
+| /search.json?q=Welcome | rails-prod (cached) | 4108 | 3.8 | 5.8 | 42 |
+| /search.json?q=Welcome | rails-prod (uncached) | 1947 | 8 | 13.7 | 9713 |
+| /tag/guide.json | rs | 35465 | 0.4 | 1 | 0 |
+| /tag/guide.json | rails-prod (cached) | 4124 | 3.7 | 5.7 | 0 |
+| /tag/guide.json | rails-prod (uncached) | 252 | 63.2 | 78.7 | 0 |
+
+Unchanged from 2026-10-09 within noise, the limits included: an
+anonymous request from loopback is exempt from the address limits, as
+in Rails, and the cache answers before the limiter would. The search
+row's non-2xx are the search limiter's 429s on cache misses (Rails
+limits anonymous search to 2/s per address too).
+
+Logged in as user1 (no anonymous cache on either side), rs with rate
+limits on (the default) and off (`DISCOURSE_RS_RATE_LIMITS=off`):
+
+| endpoint | target | req/s | p50 ms | p99 ms | non-2xx |
+|---|---|---:|---:|---:|---:|
+| /srv/status | rs-limits-on (user) | 15278 | 0.9 | 2.3 | 0 |
+| /srv/status | rs-limits-off (user) | 17890 | 0.8 | 2 | 0 |
+| /srv/status | rails-prod (user) | 2917 | 5.3 | 9.4 | 0 |
+| /site.json | rs-limits-on (user) | 2481 | 6.1 | 9.7 | 0 |
+| /site.json | rs-limits-off (user) | 2609 | 5.7 | 9.7 | 0 |
+| /site.json | rails-prod (user) | 309 | 50.8 | 74.9 | 0 |
+| /latest.json | rs-limits-on (user) | 2769 | 5.5 | 8.9 | 0 |
+| /latest.json | rs-limits-off (user) | 2848 | 5.4 | 8.7 | 0 |
+| /latest.json | rails-prod (user) | 188 | 84.8 | 99.6 | 0 |
+| /latest | rs-limits-on (user) | 695 | 22.5 | 38.5 | 0 |
+| /latest | rs-limits-off (user) | 701 | 22.3 | 38.7 | 0 |
+| /latest | rails-prod (user) | 138 | 116.3 | 132.2 | 0 |
+| /c/general/4.json | rs-limits-on (user) | 2501 | 6.1 | 9.7 | 0 |
+| /c/general/4.json | rs-limits-off (user) | 2608 | 5.9 | 9.5 | 0 |
+| /c/general/4.json | rails-prod (user) | 166 | 96.6 | 113.6 | 0 |
+| /categories.json | rs-limits-on (user) | 2357 | 6.4 | 10.3 | 0 |
+| /categories.json | rs-limits-off (user) | 2447 | 6.4 | 9.5 | 0 |
+| /categories.json | rails-prod (user) | 266 | 59.7 | 74 | 0 |
+| /t/welcome-to-discourse/5.json | rs-limits-on (user) | 1021 | 15.6 | 24.7 | 0 |
+| /t/welcome-to-discourse/5.json | rs-limits-off (user) | 1042 | 15.7 | 22.1 | 0 |
+| /t/welcome-to-discourse/5.json | rails-prod (user) | 100 | 162 | 190.5 | 0 |
+| /t/welcome-to-discourse/5 | rs-limits-on (user) | 173 | 93 | 154.7 | 0 |
+| /t/welcome-to-discourse/5 | rs-limits-off (user) | 175 | 93.3 | 113.6 | 0 |
+| /t/welcome-to-discourse/5 | rails-prod (user) | 78 | 209.8 | 232.6 | 0 |
+| /u/system.json | rs-limits-on (user) | 3680 | 4 | 9.1 | 0 |
+| /u/system.json | rs-limits-off (user) | 3998 | 3.8 | 6 | 0 |
+| /u/system.json | rails-prod (user) | 227 | 70.4 | 82.6 | 0 |
+| /search.json?q=Welcome | rs-limits-on (user) | 7982 | 1.9 | 3.8 | 39882 |
+| /search.json?q=Welcome | rs-limits-off (user) | 2996 | 5.2 | 7.3 | 0 |
+| /search.json?q=Welcome | rails-prod (user) | 888 | 17.6 | 27.9 | 4396 |
+| /tag/guide.json | rs-limits-on (user) | 2303 | 6.3 | 11 | 0 |
+| /tag/guide.json | rs-limits-off (user) | 2330 | 6.3 | 11.2 | 0 |
+| /tag/guide.json | rails-prod (user) | 183 | 87.6 | 99.5 | 0 |
+| /unread.json | rs-limits-on (user) | 2881 | 5.3 | 8.6 | 0 |
+| /unread.json | rs-limits-off (user) | 2983 | 5.1 | 8.2 | 0 |
+| /unread.json | rails-prod (user) | 256 | 62.4 | 72.1 | 0 |
+| /new.json | rs-limits-on (user) | 2757 | 5.5 | 8.8 | 0 |
+| /new.json | rs-limits-off (user) | 2830 | 5.5 | 8.5 | 0 |
+| /new.json | rails-prod (user) | 215 | 74.3 | 87.5 | 0 |
+
+On and off agree within run-to-run noise except search: a loopback
+address is exempt from Middleware::RequestTracker, as in Rails, so these
+requests perform no request limiter at all; only search's own per-user
+limiter runs, and rs-limits-on and rails-prod answer most of those with
+429s.
+
+To see what the request limits cost, a third server applied them to
+private addresses (`DISCOURSE_MAX_REQS_RATE_LIMIT_ON_PRIVATE=true`) with
+the per-address limits raised to 100,000,000 so nothing is refused
+(`rs-tracked`), next to a rerun of the other two:
+
+| endpoint | target | req/s | p50 ms | p99 ms | non-2xx |
+|---|---|---:|---:|---:|---:|
+| /srv/status | rs-limits-on (user) | 15960 | 0.9 | 2.3 | 0 |
+| /srv/status | rs-limits-off (user) | 18338 | 0.8 | 2 | 0 |
+| /srv/status | rs-tracked (user) | 2773 | 5.4 | 12 | 0 |
+| /site.json | rs-limits-on (user) | 2512 | 6 | 9.6 | 0 |
+| /site.json | rs-limits-off (user) | 2674 | 5.6 | 9.2 | 0 |
+| /site.json | rs-tracked (user) | 979 | 16.1 | 22 | 0 |
+| /latest.json | rs-limits-on (user) | 2724 | 5.6 | 8.9 | 0 |
+| /latest.json | rs-limits-off (user) | 2951 | 5.1 | 8.5 | 0 |
+| /latest.json | rs-tracked (user) | 868 | 18.2 | 24.2 | 0 |
+| /latest | rs-limits-on (user) | 703 | 22.3 | 39 | 0 |
+| /latest | rs-limits-off (user) | 713 | 22 | 37.2 | 0 |
+| /latest | rs-tracked (user) | 569 | 27.6 | 45 | 0 |
+| /c/general/4.json | rs-limits-on (user) | 2610 | 5.9 | 9.3 | 0 |
+| /c/general/4.json | rs-limits-off (user) | 2656 | 5.7 | 9.2 | 0 |
+| /c/general/4.json | rs-tracked (user) | 647 | 24.5 | 31.7 | 0 |
+| /categories.json | rs-limits-on (user) | 2469 | 6.2 | 9.6 | 0 |
+| /categories.json | rs-limits-off (user) | 2325 | 6.6 | 10.9 | 0 |
+| /categories.json | rs-tracked (user) | 590 | 26.8 | 35.3 | 0 |
+| /t/welcome-to-discourse/5.json | rs-limits-on (user) | 1046 | 15.5 | 22.2 | 0 |
+| /t/welcome-to-discourse/5.json | rs-limits-off (user) | 1061 | 15.3 | 21.3 | 0 |
+| /t/welcome-to-discourse/5.json | rs-tracked (user) | 523 | 30.4 | 38.5 | 0 |
+| /t/welcome-to-discourse/5 | rs-limits-on (user) | 180 | 93.4 | 110.7 | 0 |
+| /t/welcome-to-discourse/5 | rs-limits-off (user) | 180 | 92.7 | 112.7 | 0 |
+| /t/welcome-to-discourse/5 | rs-tracked (user) | 171 | 92.7 | 117.8 | 0 |
+| /u/system.json | rs-limits-on (user) | 3850 | 3.9 | 6.5 | 0 |
+| /u/system.json | rs-limits-off (user) | 3976 | 3.9 | 6.2 | 0 |
+| /u/system.json | rs-tracked (user) | 494 | 32.3 | 40.6 | 0 |
+| /search.json?q=Welcome | rs-limits-on (user) | 7758 | 1.9 | 3.9 | 38761 |
+| /search.json?q=Welcome | rs-limits-off (user) | 2955 | 5.3 | 7.5 | 0 |
+| /search.json?q=Welcome | rs-tracked (user) | 461 | 34.6 | 48.7 | 2294 |
+| /tag/guide.json | rs-limits-on (user) | 2284 | 6.5 | 11.3 | 0 |
+| /tag/guide.json | rs-limits-off (user) | 2359 | 6.1 | 10.8 | 0 |
+| /tag/guide.json | rs-tracked (user) | 438 | 36.1 | 50.1 | 0 |
+| /unread.json | rs-limits-on (user) | 2898 | 5.3 | 8.4 | 0 |
+| /unread.json | rs-limits-off (user) | 2981 | 5.1 | 8.1 | 0 |
+| /unread.json | rs-tracked (user) | 423 | 37.7 | 46.2 | 0 |
+| /new.json | rs-limits-on (user) | 2745 | 5.6 | 9.1 | 0 |
+| /new.json | rs-limits-off (user) | 2875 | 5.3 | 8.6 | 0 |
+| /new.json | rs-tracked (user) | 408 | 38.9 | 47.4 | 0 |
+
+Each request now performs the user's 10-second and 60-second limiters.
+Throughput falls 3 to 8 times and keeps falling through the run (the
+last rows are the slowest). This overstates the cost: every request is
+one user, so all of them serialize on one rate_limits row, and with the
+limits raised its stamp list grows to every request of the window
+(tens of thousands of entries, rewritten on each request). Real limits
+(50 per 10 s, 200 a minute) keep the lists short, but would refuse this
+load. What holds in any case: on a public deployment every request makes
+two limiter statements through the limiter's own pool of four
+connections, which caps the request rate where Rails' Redis does not.
+Moving the limiter's storage into the process (a single process serves
+the site) or sizing that pool is the open question.
+
 ## 2026-10-09, with the anonymous cache
 
 The production comparison above, rerun for anonymous visitors once
