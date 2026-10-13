@@ -629,6 +629,10 @@
             Discourse.hashtags.resolve(preview, ["category", "tag", "channel"], updatePreview);
             Discourse.hashtags.decorate(preview);
           }
+          // The post decorators Ember runs on the preview too.
+          if (window.Discourse && Discourse.highlightSyntax) {
+            Discourse.highlightSyntax(preview);
+          }
         } catch (e) {
           preview.textContent = e.message;
         }

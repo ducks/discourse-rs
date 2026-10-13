@@ -69,6 +69,18 @@ const ASSETS: &[(&str, &str, &str)] = &[
     ("page.js", JS, include_str!("../static/js/page.js")),
     ("hashtags.js", JS, include_str!("../static/js/hashtags.js")),
     ("cooked.js", JS, include_str!("../static/js/cooked.js")),
+    (
+        "highlight-syntax.js",
+        JS,
+        include_str!("../static/js/highlight-syntax.js"),
+    ),
+    // highlight.js's core as an ES module, which highlight-syntax.js
+    // imports (static/vendor/README).
+    (
+        "highlightjs-core.min.js",
+        JS,
+        include_str!("../static/vendor/highlightjs/core.min.js"),
+    ),
     ("sidebar.js", JS, include_str!("../static/js/sidebar.js")),
     ("topic.js", JS, include_str!("../static/js/topic.js")),
     (

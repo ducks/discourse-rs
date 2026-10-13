@@ -11,6 +11,7 @@ pub(crate) mod composer;
 mod drafts;
 mod emojis;
 mod hashtags;
+mod highlight_js;
 mod list;
 mod live;
 mod login_required;
@@ -714,6 +715,9 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/page.js", get(asset))
         .route("/assets/hashtags.js", get(asset))
         .route("/assets/cooked.js", get(asset))
+        .route("/assets/highlight-syntax.js", get(asset))
+        .route("/assets/highlightjs-core.min.js", get(asset))
+        .route("/highlight-js/{hostname}/{file}", get(highlight_js::show))
         .route("/assets/sidebar.js", get(asset))
         .route("/assets/topic.js", get(asset))
         .route("/assets/topic-voting.js", get(asset))

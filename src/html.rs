@@ -206,6 +206,10 @@ pub struct Chrome {
     pub emoji_base: String,
     pub emoji_version: String,
     pub hashtag_tag_icon: String,
+    /// What highlight-syntax.js reads: `session.highlightJsPath` with the
+    /// base path, and `autohighlight_all_code`.
+    pub highlight_js_path: String,
+    pub autohighlight_all_code: bool,
 }
 
 impl Chrome {
@@ -356,6 +360,16 @@ impl Site {
         if settings.get("tagging_enabled")?.truthy() {
             self.chrome.hashtag_tag_icon = "tag".into();
         }
+        self.chrome.highlight_js_path = format!(
+            "{}{}",
+            self.base_path,
+            crate::highlight_js::path(
+                &urls.current_hostname()?,
+                &settings.get("highlighted_languages")?.to_s(),
+                state.config.globals.get("asset_url_salt").unwrap_or(""),
+            )
+        );
+        self.chrome.autohighlight_all_code = settings.get("autohighlight_all_code")?.truthy();
         let sidebar_cx = |plugin_sections| {
             inputs.as_ref().map(|(_, member)| crate::sidebar::Context {
                 i18n: &state.i18n,

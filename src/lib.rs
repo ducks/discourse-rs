@@ -37,6 +37,7 @@ pub mod groups;
 pub mod guardian;
 pub mod hashtag_decorator;
 pub mod hashtags;
+pub mod highlight_js;
 pub mod html;
 pub mod html_prettify;
 pub mod i18n;

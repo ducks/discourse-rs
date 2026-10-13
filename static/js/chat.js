@@ -173,6 +173,12 @@
         link.setAttribute("target", "_blank");
       }
     });
+    // decorateChatMessage's highlightSyntax, on the same messages.
+    if (window.Discourse && Discourse.highlightSyntax) {
+      channel.querySelectorAll(".chat-cooked").forEach(function (cooked) {
+        Discourse.highlightSyntax(cooked);
+      });
+    }
   }
 
   function filterCards(select) {

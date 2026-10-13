@@ -1,0 +1,16 @@
+{
+  "user": null,
+  "settings": {
+    "highlighted_languages": "ruby|nope|sql"
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/highlight-js/localhost/76bb8ca4d50f2707d020ad6f0130c42cb8a43efd.js"
+    },
+    {
+      "method": "GET",
+      "path": "/highlight-js/forum.example-host_1/76bb8ca4d50f2707d020ad6f0130c42cb8a43efd.js"
+    }
+  ]
+}

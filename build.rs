@@ -2,8 +2,10 @@
 //! leaves it in OUT_DIR, where src/routes embeds it. A nested cargo with
 //! its own target directory, so it never waits on this build's lock; it
 //! reruns when the markdown crate or the data it embeds changes.
+//!
+//! Also lists the vendored highlight.js languages for src/highlight_js.rs.
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 fn main() {
@@ -12,6 +14,7 @@ fn main() {
         "vendor/discourse-emojis/dist",
         "vendor/discourse/DISCOURSE_REF",
         "Cargo.lock",
+        "static/vendor/highlightjs/languages",
     ] {
         println!("cargo:rerun-if-changed={path}");
     }
@@ -54,4 +57,30 @@ fn main() {
         "cargo:rustc-env=MARKDOWN_WASM_VERSION={:016x}",
         hasher.finish()
     );
+    highlight_js_languages(&out);
+}
+
+/// `HIGHLIGHT_JS_LANGUAGES`: each `<name>.min.js` in
+/// static/vendor/highlightjs/languages as (name, contents), by name.
+fn highlight_js_languages(out: &Path) {
+    let dir = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR"))
+        .join("static/vendor/highlightjs/languages");
+    let mut names: Vec<String> = std::fs::read_dir(&dir)
+        .expect("the highlight.js languages are vendored")
+        .filter_map(|entry| {
+            let name = entry.ok()?.file_name().into_string().ok()?;
+            name.strip_suffix(".min.js").map(str::to_string)
+        })
+        .collect();
+    names.sort();
+    let mut table = String::from("pub const HIGHLIGHT_JS_LANGUAGES: &[(&str, &str)] = &[\n");
+    for name in names {
+        let path = dir.join(format!("{name}.min.js"));
+        table.push_str(&format!(
+            "    ({name:?}, include_str!({:?})),\n",
+            path.display().to_string()
+        ));
+    }
+    table.push_str("];\n");
+    std::fs::write(out.join("highlight_js_languages.rs"), table).expect("OUT_DIR is writable");
 }
