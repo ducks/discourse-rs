@@ -974,14 +974,14 @@ pub async fn create(
                 )
                 .await?;
         }
-        let group_archived: bool = sqlx::query_scalar(
-            "SELECT EXISTS (SELECT 1 FROM group_archived_messages WHERE topic_id = $1)",
-        )
-        .bind(topic_id)
-        .fetch_one(&mut *tx)
-        .await?;
-        if group_archived {
-            return Err(Unsupported("replies to messages a group archived").into());
+        let archiving_groups: Vec<i32> =
+            sqlx::query_scalar("SELECT group_id FROM group_archived_messages WHERE topic_id = $1")
+                .bind(topic_id)
+                .fetch_all(&mut *tx)
+                .await?;
+        for group_id in archiving_groups {
+            super::group_messages::move_to_inbox(ctx.bus, &mut tx, group_id, topic_id, user.id)
+                .await?;
         }
     }
     // DraftSequence.next!(user, draft_key) when the composer asked
@@ -1346,7 +1346,8 @@ async fn create_topic(
                     .unwrap_or_default(),
             ])));
         }
-        super::group_messages::apply_default_levels(conn, group.id, topic_id, user_id).await?;
+        super::group_messages::apply_default_levels(conn, group.id, topic_id, Some(user_id), false)
+            .await?;
     }
     // UserActionManager.topic_created: the row of the other kind goes; the
     // topic's (or the message's, with GOT_PRIVATE_MESSAGE for each

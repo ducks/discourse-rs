@@ -6,8 +6,11 @@
 //! Likes and discourse-reactions' reactions are notified through it too,
 //! with their consolidation plans.
 //!
+//! Messages notify their directly targeted users, and their groups'
+//! members by their level on it, with the groups' inbox summaries.
+//!
 //! Refused rather than approximated: group and @here mentions, quotes,
-//! links to topics, messages, nested replies, push notifications and do
+//! links to topics, group SMTP, nested replies, push notifications and do
 //! not disturb.
 
 use serde_json::{Map, Value, json};
@@ -452,28 +455,65 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
     }
     let s = ctx.settings;
     let private_message = post.archetype == "private_message";
-    if private_message {
-        let groups: bool = sqlx::query_scalar(
-            "SELECT EXISTS (SELECT 1 FROM topic_allowed_groups WHERE topic_id = $1)",
+    // allowed_users and allowed_group_users, neither the author nor a bot
+    // (not_allowed?); the group members once per membership, as the join
+    // gives them.
+    let not_allowed = |u: i32| u <= 0 || Some(u) == post.user_id;
+    let (allowed_users, allowed_group_users): (Vec<(i32, bool)>, Vec<i32>) = if private_message {
+        let users: Vec<(i32, bool)> = sqlx::query_as(
+            "SELECT u.id, u.staged FROM topic_allowed_users tau JOIN users u ON u.id = tau.user_id \
+             WHERE tau.topic_id = $1 ORDER BY tau.id",
         )
         .bind(post.topic_id)
-        .fetch_one(&mut *conn)
+        .fetch_all(&mut *conn)
         .await?;
-        if groups {
-            return Err(Unsupported("alerts for group messages").into());
-        }
-    }
-    // pm_watching_users: the message's watchers.
-    let pm_watching: Vec<i32> = if private_message {
-        sqlx::query_scalar(
-            "SELECT user_id FROM topic_users WHERE topic_id = $1 AND notification_level = 3",
+        let group_users: Vec<i32> = sqlx::query_scalar(
+            "SELECT gu.user_id FROM topic_allowed_groups tag JOIN group_users gu ON gu.group_id = tag.group_id \
+             WHERE tag.topic_id = $1 ORDER BY tag.id, gu.id",
         )
         .bind(post.topic_id)
+        .fetch_all(&mut *conn)
+        .await?;
+        (
+            users
+                .into_iter()
+                .filter(|(u, _)| !not_allowed(*u))
+                .collect(),
+            group_users
+                .into_iter()
+                .filter(|u| !not_allowed(*u))
+                .collect(),
+        )
+    } else {
+        (Vec::new(), Vec::new())
+    };
+    // directly_targeted_users: allowed users outside the allowed groups.
+    let direct: Vec<(i32, bool)> = allowed_users
+        .iter()
+        .filter(|(u, _)| !allowed_group_users.contains(u))
+        .copied()
+        .collect();
+    // pm_watching_users: the directly targeted watching the message.
+    let pm_watching: Vec<i32> = if private_message {
+        let ids: Vec<i32> = direct.iter().map(|(u, _)| *u).collect();
+        sqlx::query_scalar(
+            "SELECT user_id FROM topic_users WHERE topic_id = $1 AND notification_level = 3 \
+             AND user_id = ANY($2)",
+        )
+        .bind(post.topic_id)
+        .bind(&ids)
         .fetch_all(&mut *conn)
         .await?
     } else {
         Vec::new()
     };
+    // all_allowed_users: moderators join them in a flagged message or an
+    // official warning.
+    let all_allowed: Vec<i32> = allowed_users
+        .iter()
+        .map(|(u, _)| *u)
+        .chain(allowed_group_users.iter().copied())
+        .collect();
     if s.get("nested_replies_enabled")?.truthy() {
         return Err(Unsupported("alerts with nested replies").into());
     }
@@ -518,19 +558,24 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
         .fetch_all(&mut *conn)
         .await?;
         // only_allowed_users and, in a message, not its watchers.
-        let allowed: Option<Vec<i32>> = if private_message {
-            Some(
-                sqlx::query_scalar("SELECT user_id FROM topic_allowed_users WHERE topic_id = $1")
-                    .bind(post.topic_id)
-                    .fetch_all(&mut *conn)
-                    .await?,
+        if private_message {
+            let with_moderators: bool = sqlx::query_scalar(
+                "SELECT EXISTS (SELECT 1 FROM topics WHERE id = $1 AND subtype = 'moderator_warning') \
+                 OR EXISTS (SELECT 1 FROM reviewables WHERE topic_id = $1 \
+                            AND type = 'ReviewableFlaggedPost' AND status = 0)",
             )
-        } else {
-            None
-        };
+            .bind(post.topic_id)
+            .fetch_one(&mut *conn)
+            .await?;
+            if with_moderators {
+                return Err(
+                    Unsupported("mentions in flagged messages and official warnings").into(),
+                );
+            }
+        }
         let targets: Vec<i32> = users
             .into_iter()
-            .filter(|u| allowed.as_ref().is_none_or(|a| a.contains(u)))
+            .filter(|u| !private_message || all_allowed.contains(u))
             .filter(|u| !pm_watching.contains(u))
             .filter(|u| !alerter.notified.contains(u))
             .collect();
@@ -622,26 +667,115 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
     .await?;
     alerter.notified.extend(muters);
 
-    if new_record && private_message {
-        // notify_pm_users: each allowed user not yet notified hears of it
-        // when replied to, watching the message, or staged.
-        let direct: Vec<(i32, bool)> = sqlx::query_as(
-            "SELECT u.id, u.staged FROM topic_allowed_users tau JOIN users u ON u.id = tau.user_id \
-             WHERE tau.topic_id = $1 ORDER BY tau.id",
+    // group_watchers: the message's groups' members watching first posts.
+    let group_watchers: Vec<i32> = if private_message {
+        sqlx::query_scalar(
+            "SELECT user_id FROM group_users WHERE notification_level = 4 \
+             AND group_id IN (SELECT group_id FROM topic_allowed_groups WHERE topic_id = $1)",
         )
         .bind(post.topic_id)
         .fetch_all(&mut *conn)
-        .await?;
-        for (user_id, staged) in direct {
-            if alerter.notified.contains(&user_id) {
+        .await?
+    } else {
+        Vec::new()
+    };
+    if new_record && private_message {
+        // notify_pm_users
+        if group_notifying_via_smtp(ctx, conn, &post).await? {
+            return Err(Unsupported("group SMTP").into());
+        }
+        // Each directly targeted user not yet notified hears of it when
+        // replied to, watching the message, or staged.
+        for (user_id, staged) in &direct {
+            if alerter.notified.contains(user_id) {
                 continue;
             }
-            if reply_target == Some(user_id) || pm_watching.contains(&user_id) || staged {
+            if reply_target == Some(*user_id) || pm_watching.contains(user_id) || *staged {
                 alerter
-                    .create_notification(conn, user_id, types::PRIVATE_MESSAGE, &Opts::default())
+                    .create_notification(conn, *user_id, types::PRIVATE_MESSAGE, &Opts::default())
                     .await?;
             }
         }
+        // The groups' members by their level on the message: watching
+        // hear of it, tracking when replied to (or on a new message their
+        // group watches the first post of) or else get their group's
+        // summary, regular when replied to. Those it reached are notified.
+        let indirect: Vec<i32> = allowed_group_users
+            .iter()
+            .copied()
+            .filter(|u| !alerter.notified.contains(u))
+            .collect();
+        if !indirect.is_empty() && post.raw.contains("[quote=") {
+            return Err(Unsupported("quotes in group messages").into());
+        }
+        let mut stats = None;
+        let mut reached = Vec::new();
+        for user_id in indirect {
+            let level: Option<i32> = sqlx::query_scalar(
+                "SELECT notification_level FROM topic_users WHERE topic_id = $1 AND user_id = $2",
+            )
+            .bind(post.topic_id)
+            .bind(user_id)
+            .fetch_optional(&mut *conn)
+            .await?
+            .flatten();
+            let replying = reply_target == Some(user_id);
+            let got = match level {
+                Some(3) => {
+                    alerter
+                        .create_notification(
+                            conn,
+                            user_id,
+                            types::PRIVATE_MESSAGE,
+                            &Opts::default(),
+                        )
+                        .await?
+                }
+                Some(2) => {
+                    if replying || (post.post_number == 1 && group_watchers.contains(&user_id)) {
+                        alerter
+                            .create_notification(
+                                conn,
+                                user_id,
+                                types::PRIVATE_MESSAGE,
+                                &Opts::default(),
+                            )
+                            .await?
+                    } else {
+                        if stats.is_none() {
+                            stats = Some(
+                                crate::posting::group_messages::group_stats(conn, post.topic_id)
+                                    .await?,
+                            );
+                        }
+                        crate::posting::group_messages::notify_group_summary(
+                            ctx,
+                            conn,
+                            stats.as_deref().unwrap_or_default(),
+                            user_id,
+                            post.topic_id,
+                            None,
+                        )
+                        .await?
+                    }
+                }
+                Some(1) if replying => {
+                    alerter
+                        .create_notification(
+                            conn,
+                            user_id,
+                            types::PRIVATE_MESSAGE,
+                            &Opts::default(),
+                        )
+                        .await?
+                }
+                _ => false,
+            };
+            if got {
+                reached.push(user_id);
+            }
+        }
+        alerter.notified.extend(reached);
     } else if new_record && notify_about_reply {
         // Topic watchers, then category and tag watchers.
         alerter.notify_post_users(conn, true, false).await?;
@@ -663,15 +797,21 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
         if tags {
             return Err(Unsupported("first post alerts for tagged topics").into());
         }
-        let watchers: Vec<i32> = sqlx::query_scalar(
+        let mut watchers: Vec<i32> = sqlx::query_scalar(
             "SELECT DISTINCT user_id FROM category_users WHERE category_id = $1 AND notification_level = 4 \
-             AND user_id IS DISTINCT FROM $2 AND user_id IS DISTINCT FROM $3 ORDER BY user_id",
+             ORDER BY user_id",
         )
         .bind(post.category_id)
-        .bind(post.user_id)
-        .bind(post.last_editor_id)
         .fetch_all(&mut *conn)
         .await?;
+        watchers.extend(group_watchers.iter().copied());
+        // In a message, only those who can see it.
+        if private_message {
+            watchers.retain(|u| all_allowed.contains(u));
+        }
+        watchers.retain(|u| Some(*u) != post.user_id && Some(*u) != post.last_editor_id);
+        watchers.sort_unstable();
+        watchers.dedup();
         for user_id in watchers {
             if alerter.notified.contains(&user_id) {
                 continue;
@@ -685,6 +825,31 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
         }
     }
     Ok(())
+}
+
+/// `group_notifying_via_smtp(post)`: with SMTP on, a regular post in a
+/// message to one group that sends by SMTP, or to several when the
+/// message came in by email (the group it was sent to is then looked up,
+/// so any SMTP group there counts).
+async fn group_notifying_via_smtp(
+    ctx: &Ctx<'_>,
+    conn: &mut PgConnection,
+    post: &Post,
+) -> Result<bool, AppError> {
+    if !ctx.settings.get("enable_smtp")?.truthy()
+        || post.post_type != crate::posting::post_types::REGULAR
+    {
+        return Ok(false);
+    }
+    let (groups, smtp, incoming): (i64, bool, bool) = sqlx::query_as(
+        "SELECT COUNT(*), COALESCE(bool_or(g.smtp_enabled), FALSE), \
+                EXISTS (SELECT 1 FROM incoming_emails WHERE topic_id = $1) \
+         FROM topic_allowed_groups tag JOIN groups g ON g.id = tag.group_id WHERE tag.topic_id = $1",
+    )
+    .bind(post.topic_id)
+    .fetch_one(&mut *conn)
+    .await?;
+    Ok(smtp && (groups == 1 || incoming))
 }
 
 struct Alerter<'a> {

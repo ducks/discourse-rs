@@ -216,7 +216,8 @@ fn encode(message: &Message) -> Result<lettre::Message, AppError> {
             "subject" => builder = builder.subject(value.clone()),
             "message-id" => builder = builder.message_id(Some(value.clone())),
             "mime-version" | "content-type" | "content-transfer-encoding" | "date" => {}
-            _ => raw_headers.push((name.clone(), value.clone())),
+            // Unfolded: lettre folds long headers itself.
+            _ => raw_headers.push((name.clone(), value.replace("\r\n ", " "))),
         }
     }
     let text = SinglePart::plain(message.text.clone());

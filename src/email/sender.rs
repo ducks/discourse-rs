@@ -342,7 +342,8 @@ pub async fn send(
                     }
                 }
                 message.set_header("In-Reply-To", Some(in_reply_to.join(" ")));
-                message.set_header("References", Some(references.join(" ")));
+                // Mail's message id fields fold one id per line.
+                message.set_header("References", Some(references.join("\r\n ")));
             }
         }
         // List-ID, Precedence, List-Archive

@@ -150,17 +150,18 @@ pub async fn build(
     // user_private_message: the posted template, no category or tags in
     // the subject.
     let pm_email = req.email_type == "user_private_message";
-    if pm {
-        let groups: bool = sqlx::query_scalar(
-            "SELECT EXISTS (SELECT 1 FROM topic_allowed_groups WHERE topic_id = $1)",
+    // post.topic.allowed_groups.first: what show_group_in_subject names.
+    let first_group: Option<(String, Option<String>)> = if pm {
+        sqlx::query_as(
+            "SELECT g.name, g.full_name FROM topic_allowed_groups tag JOIN groups g ON g.id = tag.group_id \
+             WHERE tag.topic_id = $1 ORDER BY tag.id LIMIT 1",
         )
         .bind(post.topic_id)
-        .fetch_one(&mut *conn)
-        .await?;
-        if groups {
-            return Err(Unsupported("emails for group messages").into());
-        }
-    }
+        .fetch_optional(&mut *conn)
+        .await?
+    } else {
+        None
+    };
     let user: Recipient = sqlx::query_as(
         "SELECT (SELECT email FROM user_emails WHERE user_id = u.id AND \"primary\" LIMIT 1) AS email, \
                 u.staged, COALESCE(u.suspended_till > now(), FALSE) AS suspended, \
@@ -472,11 +473,19 @@ pub async fn build(
     )?;
 
     // subject (use_site_subject)
-    // subject_pm (show_group_in_subject only applies to group messages)
-    let subject_pm = if pm {
-        t(ctx, "subject_pm", &[])?
-    } else {
-        String::new()
+    // subject_pm: a group message's first group (its full name when it
+    // has one) when emailed as a message with group_in_subject.
+    let subject_pm = match &first_group {
+        Some((name, full_name)) if pm_email && s.get("group_in_subject")?.truthy() => {
+            let shown = full_name.as_deref().unwrap_or(name);
+            if s.get("simple_email_subject")?.truthy() {
+                format!("{shown}: ")
+            } else {
+                format!("[{shown}] ")
+            }
+        }
+        _ if pm => t(ctx, "subject_pm", &[])?,
+        _ => String::new(),
     };
     let format_category = show_category_in_subject
         .as_ref()
@@ -827,6 +836,32 @@ async fn pm_participants(
 ) -> Result<String, AppError> {
     let s = ctx.settings;
     let max = s.get("max_participant_names")?.to_i();
+    // The groups first, largest first: name_full_preferred (user_count).
+    let groups: Vec<(String, Option<String>, i32)> = sqlx::query_as(
+        "SELECT g.name, g.full_name, g.user_count FROM topic_allowed_groups tag \
+         JOIN groups g ON g.id = tag.group_id WHERE tag.topic_id = $1 \
+         ORDER BY g.user_count DESC, tag.id",
+    )
+    .bind(topic_id)
+    .fetch_all(&mut *conn)
+    .await?;
+    let mut list: Vec<String> = Vec::new();
+    for (name, full_name, user_count) in &groups {
+        if !name.is_ascii() {
+            return Err(Unsupported(
+                "participants with unicode group names (UrlHelper.encode_component)",
+            )
+            .into());
+        }
+        let shown = full_name
+            .as_deref()
+            .filter(|f| !f.is_empty())
+            .unwrap_or(name);
+        list.push(format!("[{shown} ({user_count})]({base_url}/g/{name})"));
+        if list.len() as i64 >= max {
+            break;
+        }
+    }
     let users: Vec<(String, Option<String>)> = sqlx::query_as(
         "SELECT u.username, u.name FROM topic_allowed_users tau JOIN users u ON u.id = tau.user_id \
          LEFT JOIN (SELECT user_id, MAX(post_number) AS post_number FROM posts \
@@ -843,7 +878,6 @@ async fn pm_participants(
     .fetch_all(&mut *conn)
     .await?;
     let full_name_first = s.get("prioritize_full_name_in_ux")?.truthy();
-    let mut list: Vec<String> = Vec::new();
     for (username, name) in &users {
         if list.len() as i64 >= max {
             break;
@@ -865,7 +899,7 @@ async fn pm_participants(
         list.push(format!("[{display}]({base_url}/u/{username})"));
     }
     let participants = list.join(&t(ctx, "word_connector.comma", &[])?);
-    let others = users.len() as i64 - list.len() as i64;
+    let others = (groups.len() + users.len()) as i64 - list.len() as i64;
     if others > 0 {
         let form = if others == 1 { "one" } else { "other" };
         return t(
