@@ -1524,6 +1524,7 @@ impl TopicView<'_> {
             Some(
                 crate::plugins::poll::PostsData::load(
                     &mut *self.conn,
+                    self.urls,
                     &ids,
                     self.guardian.user_id(),
                 )
@@ -1889,7 +1890,7 @@ impl TopicView<'_> {
             }
             // discourse-poll's.
             if let Some(polls) = &polls {
-                polls.post_keys(g, post.id, post.user_id, &mut p)?;
+                polls.post_keys(g, post.id, &mut p);
             }
             out.push(Value::Object(p));
         }

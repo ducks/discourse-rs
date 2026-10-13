@@ -1,0 +1,86 @@
+{
+  "name": "vote_plugin_off",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/polls/vote",
+      "params": {
+        "post_id": 37,
+        "poll_name": "poll",
+        "options": [
+          "aaa"
+        ]
+      }
+    }
+  ],
+  "started_at": "2026-10-13T19:19:23.539267",
+  "transaction_started_at": "2026-10-13T19:19:22.383988",
+  "responses": [
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 499,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "n3ziIX706Zed/V3QFDWFzRfthW4=",
+            "created_at": "2026-10-13T19:19:22.763747",
+            "rotated_at": "2026-10-13T19:19:22.761918",
+            "updated_at": "2026-10-13T19:19:22.763747",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "n3ziIX706Zed/V3QFDWFzRfthW4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 499,
+            "seen_at": "2026-10-13T19:19:23.545452",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "n3ziIX706Zed/V3QFDWFzRfthW4=",
+            "created_at": "2026-10-13T19:19:22.763747",
+            "rotated_at": "2026-10-13T19:19:22.761918",
+            "updated_at": "2026-10-13T19:19:22.763747",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "n3ziIX706Zed/V3QFDWFzRfthW4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "poll_enabled": false
+  },
+  "setup": [
+    "INSERT INTO polls (id, post_id, name, type, status, results, visibility, chart_type, dynamic, created_at, updated_at) VALUES (9001, 37, 'poll', 0, 0, 0, 0, 0, FALSE, '2026-10-05 10:00:00', '2026-10-05 10:00:00')",
+    "INSERT INTO poll_options (id, poll_id, digest, html, created_at, updated_at) VALUES (9101, 9001, 'aaa', 'AAA', '2026-10-05 10:00:00', '2026-10-05 10:00:00'), (9102, 9001, 'bbb', 'BBB', '2026-10-05 10:00:00', '2026-10-05 10:00:00')"
+  ],
+  "recorded_from": {
+    "case": "bc6b68e6c8587fe6d03dc6f786ead9d1eac37e3707923c578cc03be8c3580aec",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

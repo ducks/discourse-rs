@@ -1,0 +1,67 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO polls (id, post_id, name, type, status, results, visibility, chart_type, dynamic, created_at, updated_at) VALUES (9001, 37, 'poll', 3, 0, 0, 1, 0, FALSE, '2026-10-05 10:00:00', '2026-10-05 10:00:00')",
+    "INSERT INTO poll_options (id, poll_id, digest, html, created_at, updated_at) VALUES (9101, 9001, 'aaa', 'AAA', '2026-10-05 10:00:00', '2026-10-05 10:00:00'), (9102, 9001, 'bbb', 'BBB', '2026-10-05 10:00:00', '2026-10-05 10:00:00'), (9103, 9001, 'ccc', 'CCC', '2026-10-05 10:00:00', '2026-10-05 10:00:00')",
+    "INSERT INTO post_custom_fields (post_id, name, value, created_at, updated_at) SELECT 37, 'has_polls', 't', '2026-10-05 10:00:00', '2026-10-05 10:00:00' WHERE NOT EXISTS (SELECT 1 FROM post_custom_fields WHERE post_id = 37 AND name = 'has_polls')",
+    "INSERT INTO poll_votes (poll_id, poll_option_id, user_id, rank, created_at, updated_at) VALUES (9001, 9101, 4, 2, '2026-10-05 11:00:00', '2026-10-05 11:00:00'), (9001, 9102, 4, 1, '2026-10-05 11:00:01', '2026-10-05 11:00:01'), (9001, 9103, 4, 0, '2026-10-05 11:00:02', '2026-10-05 11:00:02'), (9001, 9101, 5, 1, '2026-10-05 11:00:03', '2026-10-05 11:00:03'), (9001, 9102, 5, 0, '2026-10-05 11:00:04', '2026-10-05 11:00:04'), (9001, 9103, 5, 2, '2026-10-05 11:00:05', '2026-10-05 11:00:05')"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/polls/vote",
+      "params": {
+        "post_id": 37,
+        "poll_name": "poll",
+        "options": {
+          "0": {
+            "digest": "aaa",
+            "rank": "0"
+          },
+          "1": {
+            "digest": "bbb",
+            "rank": "0"
+          },
+          "2": {
+            "digest": "ccc",
+            "rank": "0"
+          }
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/polls/vote",
+      "params": {
+        "post_id": 37,
+        "poll_name": "poll",
+        "options": {
+          "0": {
+            "digest": "aaa",
+            "rank": "1"
+          },
+          "1": {
+            "digest": "bbb",
+            "rank": "2"
+          },
+          "2": {
+            "digest": "ccc",
+            "rank": "0"
+          }
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/t/35.json"
+    },
+    {
+      "method": "GET",
+      "path": "/polls/voters.json",
+      "params": {
+        "post_id": 37,
+        "poll_name": "poll"
+      }
+    }
+  ]
+}

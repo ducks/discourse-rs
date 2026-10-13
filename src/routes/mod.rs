@@ -33,6 +33,7 @@ pub(crate) use topics::not_found_response;
 mod category_notifications;
 mod chat;
 mod chat_pages;
+mod polls;
 mod reactions;
 mod session;
 mod site;
@@ -326,6 +327,23 @@ pub fn router(state: &AppState) -> Router<AppState> {
             get(reactions::reactions_users_list),
         )
         // discourse-topic-voting's VotesController.
+        .route("/polls/vote", put(polls::vote).delete(polls::remove_vote))
+        .route(
+            "/polls/vote.json",
+            put(polls::vote).delete(polls::remove_vote),
+        )
+        .route("/polls/toggle_status", put(polls::toggle_status))
+        .route("/polls/toggle_status.json", put(polls::toggle_status))
+        .route("/polls/voters", get(polls::voters))
+        .route("/polls/voters.json", get(polls::voters))
+        .route(
+            "/polls/grouped_poll_results",
+            get(polls::grouped_poll_results),
+        )
+        .route(
+            "/polls/grouped_poll_results.json",
+            get(polls::grouped_poll_results),
+        )
         .route("/voting/vote", post(topic_voting::vote))
         .route("/voting/vote.json", post(topic_voting::vote))
         .route("/voting/unvote", post(topic_voting::unvote))

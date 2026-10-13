@@ -1,0 +1,23 @@
+{
+  "user": "user1",
+  "settings": {
+    "poll_enabled": false
+  },
+  "setup": [
+    "INSERT INTO polls (id, post_id, name, type, status, results, visibility, chart_type, dynamic, created_at, updated_at) VALUES (9001, 37, 'poll', 0, 0, 0, 0, 0, FALSE, '2026-10-05 10:00:00', '2026-10-05 10:00:00')",
+    "INSERT INTO poll_options (id, poll_id, digest, html, created_at, updated_at) VALUES (9101, 9001, 'aaa', 'AAA', '2026-10-05 10:00:00', '2026-10-05 10:00:00'), (9102, 9001, 'bbb', 'BBB', '2026-10-05 10:00:00', '2026-10-05 10:00:00')"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/polls/vote",
+      "params": {
+        "post_id": 37,
+        "poll_name": "poll",
+        "options": [
+          "aaa"
+        ]
+      }
+    }
+  ]
+}

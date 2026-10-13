@@ -18,8 +18,12 @@ use crate::pretty_text::cleanup::{
     all_elements_within, attr, element_name, fragment_root, has_class, node_html, parse,
 };
 use crate::site_settings::{SettingError, SiteSettings};
-use crate::topic_list::time_json;
 use crate::{AppError, Unsupported};
+
+pub mod serializer;
+pub mod vote;
+
+pub use serializer::PostsData;
 
 /// `DiscoursePoll::DEFAULT_POLL_NAME`
 const DEFAULT_POLL_NAME: &str = "poll";
@@ -534,8 +538,8 @@ pub async fn publish_created(
     guardian: &Guardian,
     post_id: i32,
 ) -> Result<(), AppError> {
-    let (topic_id, post_number, user_id): (i32, i32, Option<i32>) =
-        sqlx::query_as("SELECT topic_id, post_number, user_id FROM posts WHERE id = $1")
+    let (topic_id, post_number): (i32, i32) =
+        sqlx::query_as("SELECT topic_id, post_number FROM posts WHERE id = $1")
             .bind(post_id)
             .fetch_one(&mut *conn)
             .await?;
@@ -551,8 +555,12 @@ pub async fn publish_created(
     if !has_polls {
         return Ok(());
     }
-    let data = PostsData::load(conn, &[post_id], guardian.user_id()).await?;
-    let polls = data.serialize(guardian, post_id, user_id)?;
+    let urls = crate::url::Urls {
+        config: ctx.config,
+        settings: ctx.settings,
+    };
+    let data = PostsData::load(conn, &urls, &[post_id], guardian.user_id()).await?;
+    let polls = data.serialize(guardian, post_id);
     crate::bus::publish_post_message(
         ctx.bus,
         conn,
@@ -587,203 +595,6 @@ pub async fn schedule_jobs(conn: &mut PgConnection, post_id: i32) -> Result<(), 
         }
     }
     Ok(())
-}
-
-#[derive(sqlx::FromRow)]
-struct PollRow {
-    id: i64,
-    post_id: i64,
-    name: String,
-    #[sqlx(rename = "type")]
-    kind: i32,
-    status: i32,
-    results: i32,
-    visibility: i32,
-    min: Option<i32>,
-    max: Option<i32>,
-    step: Option<i32>,
-    close_at: Option<NaiveDateTime>,
-    chart_type: i32,
-    groups: Option<String>,
-    title: Option<String>,
-    dynamic: bool,
-    closed_at: Option<NaiveDateTime>,
-    closed_by_id: Option<i32>,
-    anonymous_voters: Option<i32>,
-    voters: i64,
-    has_voted: bool,
-}
-
-#[derive(sqlx::FromRow)]
-struct OptionRow {
-    poll_id: i64,
-    digest: String,
-    html: String,
-    anonymous_votes: Option<i32>,
-    votes: i64,
-}
-
-/// The polls of a page's posts (`Poll.preload!`), for the post
-/// serializer's keys.
-pub struct PostsData {
-    polls: Vec<PollRow>,
-    options: Vec<OptionRow>,
-}
-
-impl PostsData {
-    pub async fn load(
-        conn: &mut PgConnection,
-        post_ids: &[i32],
-        user_id: Option<i32>,
-    ) -> Result<PostsData, sqlx::Error> {
-        let polls: Vec<PollRow> = sqlx::query_as(
-            "SELECT p.id, p.post_id, p.name, p.type, p.status, p.results, p.visibility, p.min, \
-                    p.max, p.step, p.close_at, p.chart_type, p.groups, p.title, p.dynamic, \
-                    p.closed_at, p.closed_by_id, p.anonymous_voters, \
-                    (SELECT COUNT(DISTINCT v.user_id) FROM poll_votes v WHERE v.poll_id = p.id) AS voters, \
-                    EXISTS (SELECT 1 FROM poll_votes v WHERE v.poll_id = p.id AND v.user_id = $2) AS has_voted \
-             FROM polls p WHERE p.post_id = ANY($1) ORDER BY p.id",
-        )
-        .bind(post_ids)
-        .bind(user_id)
-        .fetch_all(&mut *conn)
-        .await?;
-        let ids: Vec<i64> = polls.iter().map(|p| p.id).collect();
-        let options: Vec<OptionRow> = sqlx::query_as(
-            "SELECT o.poll_id, o.digest, o.html, o.anonymous_votes, \
-                    (SELECT COUNT(*) FROM poll_votes v WHERE v.poll_option_id = o.id) AS votes \
-             FROM poll_options o WHERE o.poll_id = ANY($1) ORDER BY o.id",
-        )
-        .bind(&ids)
-        .fetch_all(&mut *conn)
-        .await?;
-        Ok(PostsData { polls, options })
-    }
-
-    fn post_polls(&self, post_id: i32) -> impl Iterator<Item = &PollRow> {
-        self.polls
-            .iter()
-            .filter(move |p| p.post_id == i64::from(post_id))
-    }
-
-    /// `PollSerializer` for each of the post's polls.
-    pub fn serialize(
-        &self,
-        guardian: &Guardian,
-        post_id: i32,
-        post_user_id: Option<i32>,
-    ) -> Result<Vec<Value>, Unsupported> {
-        let now = crate::clock::now_naive();
-        let mut out = Vec::new();
-        for poll in self.post_polls(post_id) {
-            let closed = poll.status == 1 || poll.close_at.is_some_and(|at| at <= now);
-            let is_me = guardian.user_id().is_some() && guardian.user_id() == post_user_id;
-            // can_see_results?
-            let can_see_results = if poll.results == 3 {
-                guardian.is_staff()
-            } else {
-                poll.results == 0 || (poll.results == 1 && (is_me || poll.has_voted)) || closed
-            };
-            let kind = TYPES[poll.kind as usize];
-            let number_or_multiple = kind == "number" || kind == "multiple";
-            let everyone = poll.visibility == 1;
-            let mut p = Map::new();
-            p.insert("id".into(), json!(poll.id));
-            p.insert("name".into(), json!(poll.name));
-            p.insert("type".into(), json!(kind));
-            p.insert("status".into(), json!(STATUSES[poll.status as usize]));
-            if everyone {
-                p.insert("public".into(), json!(true));
-            }
-            p.insert("dynamic".into(), json!(poll.dynamic));
-            p.insert("results".into(), json!(RESULTS[poll.results as usize]));
-            if let Some(min) = poll.min.filter(|_| number_or_multiple) {
-                p.insert("min".into(), json!(min));
-            }
-            if let Some(max) = poll.max.filter(|_| number_or_multiple) {
-                p.insert("max".into(), json!(max));
-            }
-            if let Some(step) = poll.step.filter(|_| kind == "number") {
-                p.insert("step".into(), json!(step));
-            }
-            let options: Vec<Value> = self
-                .options
-                .iter()
-                .filter(|o| o.poll_id == poll.id)
-                .map(|o| {
-                    let mut option = Map::new();
-                    option.insert("id".into(), json!(o.digest));
-                    option.insert("html".into(), json!(o.html));
-                    if can_see_results {
-                        option.insert(
-                            "votes".into(),
-                            json!(o.votes + i64::from(o.anonymous_votes.unwrap_or(0))),
-                        );
-                    }
-                    Value::Object(option)
-                })
-                .collect();
-            p.insert("options".into(), Value::Array(options));
-            p.insert(
-                "voters".into(),
-                json!(poll.voters + i64::from(poll.anonymous_voters.unwrap_or(0))),
-            );
-            if let Some(close) = poll.close_at {
-                p.insert("close".into(), json!(time_json(close)));
-            }
-            // can_see_voters?: serialized_voters, nil without votes.
-            if everyone && can_see_results {
-                if poll.voters > 0 {
-                    return Err(Unsupported("a public poll's voters"));
-                }
-                p.insert("preloaded_voters".into(), Value::Null);
-            }
-            p.insert(
-                "chart_type".into(),
-                json!(CHART_TYPES[poll.chart_type as usize]),
-            );
-            if let Some(groups) = poll.groups.as_ref().filter(|g| !crate::ruby::is_blank(g)) {
-                p.insert("groups".into(), json!(groups));
-            }
-            p.insert("title".into(), json!(poll.title));
-            // RankedChoice.outcome: nil without ballots.
-            if kind == "ranked_choice" && can_see_results {
-                if poll.voters > 0 {
-                    return Err(Unsupported("a ranked choice poll's outcome"));
-                }
-                p.insert("ranked_choice_outcome".into(), Value::Null);
-            }
-            p.insert("closed_at".into(), json!(poll.closed_at.map(time_json)));
-            if poll.closed_by_id.is_some_and(|id| id != -1) {
-                return Err(Unsupported("a poll closed by a user"));
-            }
-            p.insert("closed_by".into(), Value::Null);
-            out.push(Value::Object(p));
-        }
-        Ok(out)
-    }
-
-    /// The post serializer's `polls` (when the post has any) and
-    /// `polls_votes` (when the viewer voted in one).
-    pub fn post_keys(
-        &self,
-        guardian: &Guardian,
-        post_id: i32,
-        post_user_id: Option<i32>,
-        out: &mut Map<String, Value>,
-    ) -> Result<(), Unsupported> {
-        if self.post_polls(post_id).next().is_none() {
-            return Ok(());
-        }
-        out.insert(
-            "polls".into(),
-            Value::Array(self.serialize(guardian, post_id, post_user_id)?),
-        );
-        if guardian.user_id().is_some() && self.post_polls(post_id).any(|p| p.has_voted) {
-            return Err(Unsupported("the viewer's poll votes"));
-        }
-        Ok(())
-    }
 }
 
 /// The current user's `can_create_poll`.

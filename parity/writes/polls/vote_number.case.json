@@ -1,0 +1,31 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO polls (id, post_id, name, type, status, results, visibility, chart_type, dynamic, created_at, updated_at) VALUES (9001, 37, 'poll', 2, 0, 0, 1, 0, FALSE, '2026-10-05 10:00:00', '2026-10-05 10:00:00')",
+    "UPDATE polls SET min = 1, max = 3, step = 1 WHERE id = 9001",
+    "INSERT INTO poll_options (id, poll_id, digest, html, created_at, updated_at) VALUES (9101, 9001, 'n1', 'N1', '2026-10-05 10:00:00', '2026-10-05 10:00:00'), (9102, 9001, 'n2', 'N2', '2026-10-05 10:00:00', '2026-10-05 10:00:00'), (9103, 9001, 'n3', 'N3', '2026-10-05 10:00:00', '2026-10-05 10:00:00')",
+    "INSERT INTO post_custom_fields (post_id, name, value, created_at, updated_at) SELECT 37, 'has_polls', 't', '2026-10-05 10:00:00', '2026-10-05 10:00:00' WHERE NOT EXISTS (SELECT 1 FROM post_custom_fields WHERE post_id = 37 AND name = 'has_polls')",
+    "INSERT INTO poll_votes (poll_id, poll_option_id, user_id, rank, created_at, updated_at) VALUES (9001, 9102, 4, 0, '2026-10-05 11:00:00', '2026-10-05 11:00:00')"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/polls/vote",
+      "params": {
+        "post_id": 37,
+        "poll_name": "poll",
+        "options": [
+          "n3"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/polls/voters.json",
+      "params": {
+        "post_id": 37,
+        "poll_name": "poll"
+      }
+    }
+  ]
+}

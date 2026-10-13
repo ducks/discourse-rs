@@ -1,0 +1,180 @@
+{
+  "name": "grouped_results",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/polls/grouped_poll_results.json",
+      "params": {
+        "post_id": 37,
+        "poll_name": "poll",
+        "user_field_name": "city"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/polls/grouped_poll_results.json",
+      "params": {
+        "post_id": 37,
+        "poll_name": "poll",
+        "user_field_name": "other"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/polls/grouped_poll_results.json",
+      "params": {
+        "post_id": 37,
+        "poll_name": "ranked",
+        "user_field_name": "city"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/polls/grouped_poll_results.json",
+      "params": {
+        "post_id": 37,
+        "poll_name": "missing",
+        "user_field_name": "city"
+      }
+    }
+  ],
+  "started_at": "2026-10-13T19:19:12.946816",
+  "transaction_started_at": "2026-10-13T19:19:10.470026",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "grouped_results": [
+          {
+            "group": "New York",
+            "options": [
+              {
+                "digest": "aaa",
+                "html": "AAA",
+                "votes": 1
+              },
+              {
+                "digest": "bbb",
+                "html": "BBB",
+                "votes": 1
+              }
+            ]
+          },
+          {
+            "group": "Portland Oregon",
+            "options": [
+              {
+                "digest": "aaa",
+                "html": "AAA",
+                "votes": 1
+              },
+              {
+                "digest": "bbb",
+                "html": "BBB",
+                "votes": 0
+              }
+            ]
+          },
+          {
+            "group": "No Data",
+            "options": [
+              {
+                "digest": "aaa",
+                "html": "AAA",
+                "votes": 0
+              },
+              {
+                "digest": "bbb",
+                "html": "BBB",
+                "votes": 1
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: user_field_name"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "error": "Invalid poll type, ranked_choice does not support grouped results."
+      }
+    },
+    {
+      "status": 404,
+      "body": {
+        "error": "Poll not found, please confirm parameters."
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 499,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "yJRKHaEX5kgFGTPGwsDoTnvj/0U=",
+            "created_at": "2026-10-13T19:19:11.410577",
+            "rotated_at": "2026-10-13T19:19:11.405588",
+            "updated_at": "2026-10-13T19:19:11.410577",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "yJRKHaEX5kgFGTPGwsDoTnvj/0U=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 499,
+            "seen_at": "2026-10-13T19:19:12.989628",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "yJRKHaEX5kgFGTPGwsDoTnvj/0U=",
+            "created_at": "2026-10-13T19:19:11.410577",
+            "rotated_at": "2026-10-13T19:19:11.405588",
+            "updated_at": "2026-10-13T19:19:11.410577",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "yJRKHaEX5kgFGTPGwsDoTnvj/0U=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "poll_groupable_user_fields": "city|team"
+  },
+  "setup": [
+    "INSERT INTO polls (id, post_id, name, type, status, results, visibility, chart_type, dynamic, created_at, updated_at) VALUES (9001, 37, 'poll', 0, 0, 0, 1, 0, FALSE, '2026-10-05 10:00:00', '2026-10-05 10:00:00')",
+    "INSERT INTO poll_options (id, poll_id, digest, html, created_at, updated_at) VALUES (9101, 9001, 'aaa', 'AAA', '2026-10-05 10:00:00', '2026-10-05 10:00:00'), (9102, 9001, 'bbb', 'BBB', '2026-10-05 10:00:00', '2026-10-05 10:00:00')",
+    "INSERT INTO post_custom_fields (post_id, name, value, created_at, updated_at) SELECT 37, 'has_polls', 't', '2026-10-05 10:00:00', '2026-10-05 10:00:00' WHERE NOT EXISTS (SELECT 1 FROM post_custom_fields WHERE post_id = 37 AND name = 'has_polls')",
+    "INSERT INTO poll_votes (poll_id, poll_option_id, user_id, rank, created_at, updated_at) VALUES (9001, 9101, 4, 0, '2026-10-05 11:00:00', '2026-10-05 11:00:00'), (9001, 9102, 5, 0, '2026-10-05 11:00:01', '2026-10-05 11:00:01'), (9001, 9101, 2, 0, '2026-10-05 11:00:02', '2026-10-05 11:00:02'), (9001, 9102, 3, 0, '2026-10-05 11:00:03', '2026-10-05 11:00:03')",
+    "INSERT INTO polls (id, post_id, name, type, status, results, visibility, chart_type, dynamic, created_at, updated_at) VALUES (9002, 37, 'ranked', 3, 0, 0, 0, 0, FALSE, '2026-10-05 10:00:00', '2026-10-05 10:00:00')",
+    "INSERT INTO poll_options (id, poll_id, digest, html, created_at, updated_at) VALUES (9201, 9002, 'ccc', 'CCC', '2026-10-05 10:00:00', '2026-10-05 10:00:00'), (9202, 9002, 'ddd', 'DDD', '2026-10-05 10:00:00', '2026-10-05 10:00:00')",
+    "INSERT INTO user_custom_fields (user_id, name, value, created_at, updated_at) VALUES (4, 'city', 'new york', now(), now()), (5, 'city', 'new york', now(), now()), (2, 'city', 'portlandOregon', now(), now())"
+  ],
+  "recorded_from": {
+    "case": "d56166ac96b119fb3b8c799176d757dfaa659bc0a3f7e438cb2b13bafa63dbf9",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

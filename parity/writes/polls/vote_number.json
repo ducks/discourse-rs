@@ -1,0 +1,178 @@
+{
+  "name": "vote_number",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/polls/vote",
+      "params": {
+        "post_id": 37,
+        "poll_name": "poll",
+        "options": [
+          "n3"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/polls/voters.json",
+      "params": {
+        "post_id": 37,
+        "poll_name": "poll"
+      }
+    }
+  ],
+  "started_at": "2026-10-13T19:19:22.043273",
+  "transaction_started_at": "2026-10-13T19:19:20.9788",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "poll": {
+          "id": 9001,
+          "name": "poll",
+          "type": "number",
+          "status": "open",
+          "public": true,
+          "dynamic": false,
+          "results": "always",
+          "min": 1,
+          "max": 3,
+          "step": 1,
+          "options": [
+            {
+              "id": "n1",
+              "html": "N1",
+              "votes": 0
+            },
+            {
+              "id": "n2",
+              "html": "N2",
+              "votes": 1
+            },
+            {
+              "id": "n3",
+              "html": "N3",
+              "votes": 1
+            }
+          ],
+          "voters": 2,
+          "preloaded_voters": [
+            {
+              "id": 4,
+              "username": "user2",
+              "name": "User2",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+              "title": null
+            },
+            {
+              "id": 3,
+              "username": "user1",
+              "name": "User1",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+              "title": null
+            }
+          ],
+          "chart_type": "bar",
+          "title": null,
+          "closed_at": null,
+          "closed_by": null
+        },
+        "vote": [
+          "n3"
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "voters": [
+          {
+            "id": 4,
+            "username": "user2",
+            "name": "User2",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+            "title": null
+          },
+          {
+            "id": 3,
+            "username": "user1",
+            "name": "User1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+            "title": null
+          }
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "poll_votes": {
+      "inserted": [
+        {
+          "rank": 0,
+          "poll_id": 9001,
+          "user_id": 3,
+          "created_at": "2026-10-13T19:19:22.078402",
+          "updated_at": "2026-10-13T19:19:22.078402",
+          "poll_option_id": 9103
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 499,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "3LOPd8R6uJPEevOSvan2TBOP460=",
+            "created_at": "2026-10-13T19:19:21.329332",
+            "rotated_at": "2026-10-13T19:19:21.328111",
+            "updated_at": "2026-10-13T19:19:21.329332",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "3LOPd8R6uJPEevOSvan2TBOP460=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 499,
+            "seen_at": "2026-10-13T19:19:22.051327",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "3LOPd8R6uJPEevOSvan2TBOP460=",
+            "created_at": "2026-10-13T19:19:21.329332",
+            "rotated_at": "2026-10-13T19:19:21.328111",
+            "updated_at": "2026-10-13T19:19:21.329332",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "3LOPd8R6uJPEevOSvan2TBOP460=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO polls (id, post_id, name, type, status, results, visibility, chart_type, dynamic, created_at, updated_at) VALUES (9001, 37, 'poll', 2, 0, 0, 1, 0, FALSE, '2026-10-05 10:00:00', '2026-10-05 10:00:00')",
+    "UPDATE polls SET min = 1, max = 3, step = 1 WHERE id = 9001",
+    "INSERT INTO poll_options (id, poll_id, digest, html, created_at, updated_at) VALUES (9101, 9001, 'n1', 'N1', '2026-10-05 10:00:00', '2026-10-05 10:00:00'), (9102, 9001, 'n2', 'N2', '2026-10-05 10:00:00', '2026-10-05 10:00:00'), (9103, 9001, 'n3', 'N3', '2026-10-05 10:00:00', '2026-10-05 10:00:00')",
+    "INSERT INTO post_custom_fields (post_id, name, value, created_at, updated_at) SELECT 37, 'has_polls', 't', '2026-10-05 10:00:00', '2026-10-05 10:00:00' WHERE NOT EXISTS (SELECT 1 FROM post_custom_fields WHERE post_id = 37 AND name = 'has_polls')",
+    "INSERT INTO poll_votes (poll_id, poll_option_id, user_id, rank, created_at, updated_at) VALUES (9001, 9102, 4, 0, '2026-10-05 11:00:00', '2026-10-05 11:00:00')"
+  ],
+  "recorded_from": {
+    "case": "069a2cc47b77d089504aace46e37b9f2c45fc77f37b14e3a2f23a07c51bbca14",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
