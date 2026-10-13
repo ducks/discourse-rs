@@ -1,0 +1,17 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE chat_channels SET name = 'Old name' WHERE id = 2"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/chat/api/channels/2.json",
+      "params": {
+        "channel": {
+          "name": ""
+        }
+      }
+    }
+  ]
+}

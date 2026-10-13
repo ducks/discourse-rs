@@ -148,6 +148,11 @@ impl<'a> UserSearch<'a> {
         }))
     }
 
+    /// `scoped_users` for callers that list them (chat's chatables).
+    pub fn scoped_users_sql(&self) -> Result<(String, String), AppError> {
+        self.scoped_users()
+    }
+
     /// `scoped_users` as joins and a condition over `users`.
     fn scoped_users(&self) -> Result<(String, String), AppError> {
         let mut joins = String::new();

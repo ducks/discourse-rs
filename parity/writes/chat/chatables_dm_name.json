@@ -1,0 +1,164 @@
+{
+  "name": "chatables_dm_name",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/chat/api/chatables.json",
+      "params": {
+        "term": "weekend"
+      }
+    }
+  ],
+  "started_at": "2026-10-13T17:26:59.172224",
+  "transaction_started_at": "2026-10-13T17:26:58.339911",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "users": [],
+        "groups": [],
+        "direct_message_channels": [
+          {
+            "identifier": "c-4",
+            "type": "channel",
+            "model": {
+              "id": 4,
+              "allow_channel_wide_mentions": true,
+              "chatable": {
+                "group": true,
+                "users": [
+                  {
+                    "id": 4,
+                    "username": "user2",
+                    "name": "User2",
+                    "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+                    "custom_fields": {},
+                    "can_chat": true,
+                    "has_chat_enabled": true
+                  },
+                  {
+                    "id": 5,
+                    "username": "user3",
+                    "name": "User3",
+                    "avatar_template": "/letter_avatar_proxy/v4/letter/u/ec9cab/{size}.png",
+                    "custom_fields": {},
+                    "can_chat": true,
+                    "has_chat_enabled": true
+                  }
+                ]
+              },
+              "chatable_id": 2,
+              "chatable_type": "DirectMessage",
+              "chatable_url": null,
+              "title": "Weekend plans",
+              "unicode_title": "Weekend plans",
+              "slug": null,
+              "status": "open",
+              "memberships_count": 3,
+              "current_user_membership": {
+                "following": true,
+                "muted": false,
+                "notification_level": "always",
+                "chat_channel_id": 4,
+                "last_read_message_id": null,
+                "last_viewed_at": "2026-10-13T17:26:58.339Z",
+                "last_viewed_pins_at": null,
+                "starred": false,
+                "has_unseen_pins": false
+              },
+              "meta": {
+                "message_bus_last_ids": {
+                  "channel_message_bus_last_id": 0,
+                  "new_messages": 0,
+                  "new_mentions": 0
+                },
+                "can_join_chat_channel": true,
+                "can_flag": true,
+                "user_silenced": false,
+                "can_moderate": false,
+                "can_delete_self": true,
+                "can_delete_others": false,
+                "can_remove_members": false,
+                "can_manage_pins": true
+              },
+              "threading_enabled": false,
+              "pinned_messages_count": 0,
+              "last_message": {
+                "id": null,
+                "message": null,
+                "cooked": null,
+                "created_at": "2026-10-13T17:26:59+00:00",
+                "excerpt": null,
+                "deleted_at": null,
+                "deleted_by_id": null,
+                "thread_id": null,
+                "chat_channel_id": null,
+                "streaming": false
+              }
+            },
+            "match_quality": 3
+          }
+        ],
+        "category_channels": []
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 499,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "2UPT0czNlIeT+Pz0UYp+XnwCljw=",
+            "created_at": "2026-10-13T17:26:58.658547",
+            "rotated_at": "2026-10-13T17:26:58.657383",
+            "updated_at": "2026-10-13T17:26:58.658547",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "2UPT0czNlIeT+Pz0UYp+XnwCljw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 499,
+            "seen_at": "2026-10-13T17:26:59.179447",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "2UPT0czNlIeT+Pz0UYp+XnwCljw=",
+            "created_at": "2026-10-13T17:26:58.658547",
+            "rotated_at": "2026-10-13T17:26:58.657383",
+            "updated_at": "2026-10-13T17:26:58.658547",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "2UPT0czNlIeT+Pz0UYp+XnwCljw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO direct_message_channels (id, \"group\", created_at, updated_at) VALUES (1, false, now() - interval '2 hours', now() - interval '2 hours'), (2, true, now() - interval '2 hours', now() - interval '2 hours')",
+    "INSERT INTO direct_message_users (direct_message_channel_id, user_id, created_at, updated_at) VALUES (1, 3, now(), now()), (1, 4, now(), now()), (2, 3, now(), now()), (2, 4, now(), now()), (2, 5, now(), now())",
+    "INSERT INTO chat_channels (id, chatable_type, chatable_id, type, status, user_count, name, created_at, updated_at) VALUES (3, 'DirectMessage', 1, 'DirectMessageChannel', 0, 2, NULL, now() - interval '2 hours', now() - interval '2 hours'), (4, 'DirectMessage', 2, 'DirectMessageChannel', 0, 3, 'Weekend plans', now() - interval '2 hours', now() - interval '2 hours')",
+    "INSERT INTO user_chat_channel_memberships (user_id, chat_channel_id, following, muted, notification_level, created_at, updated_at) VALUES (3, 3, true, false, 2, now(), now()), (4, 3, true, false, 2, now(), now()), (3, 4, true, false, 2, now(), now()), (4, 4, true, false, 2, now(), now()), (5, 4, true, false, 2, now(), now())",
+    "SELECT setval('chat_channels_id_seq', 4)",
+    "SELECT setval('direct_message_channels_id_seq', 2)"
+  ],
+  "recorded_from": {
+    "case": "4dd8e4ca1456c5f1d3555bcf3fd9ec0d1c3b7b9f0660080b6099517db6b32331",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

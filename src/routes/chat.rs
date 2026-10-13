@@ -132,6 +132,7 @@ pub async fn index(
         starred: false,
         limit: Some(limit),
         offset,
+        skip_category_name: false,
     };
     let channels = context(&state, &mut conn, &settings, &guardian)
         .index(&search)
@@ -988,6 +989,7 @@ fn dm_groups_response(
         Outcome::Refused(error) => {
             (StatusCode::BAD_REQUEST, Json(json!({"error": error}))).into_response()
         }
+        Outcome::RateLimited(refused) => refused.into_response(&state.i18n),
     }
 }
 
@@ -1064,19 +1066,71 @@ pub async fn update_channel(
     let edits: serde_json::Map<String, serde_json::Value> = edits
         .into_iter()
         .filter(|(k, _)| {
-            ["name", "description", "slug", "threading_enabled", "emoji"].contains(&k.as_str())
+            // editable_params: the category-only ones the service drops
+            // for a DM.
+            [
+                "name",
+                "description",
+                "slug",
+                "threading_enabled",
+                "emoji",
+                "auto_join_users",
+                "allow_channel_wide_mentions",
+            ]
+            .contains(&k.as_str())
         })
         .collect();
     let outcome = context(&state, &mut tx, &settings, &guardian)
-        .update_dm_channel(
-            &state.bus,
-            &state.site_setting_defs,
-            path_channel_id(&id),
-            &edits,
-        )
+        .update_channel(&state, path_channel_id(&id), &edits)
         .await?;
     if matches!(outcome, crate::plugins::chat::dm_groups::Outcome::Done(_)) {
         tx.commit().await?;
     }
     Ok(dm_groups_response(&state, outcome))
+}
+
+/// GET /chat/api/chatables: Chat::Api::ChatablesController#index.
+pub async fn chatables(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    // The controller declares ensure_logged_in again, which moves it after
+    // the base controller's ensure_can_chat: anonymous is invalid access.
+    if guardian.is_anonymous() {
+        let settings =
+            SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+        if !crate::plugins::chat::enabled(&settings)? {
+            return Ok(super::topics::not_found_response(&state));
+        }
+        return Ok(super::search::invalid_access(&state));
+    }
+    let settings = match begin(&state, &mut conn, &guardian).await? {
+        Ok(settings) => settings,
+        Err(refused) => return Ok(refused),
+    };
+    let p = params::parse(uri.query(), &headers, &body);
+    let get = |key: &str| p.get(key).and_then(params::scalar);
+    // :boolean attributes defaulting to true: absent is true, a value
+    // casts (blank is nil, so false).
+    let flag = |key: &str| match get(key) {
+        None => true,
+        Some(v) => cast_boolean(Some(&v)) == Some(true),
+    };
+    let params = crate::plugins::chat::chatables::Params {
+        term: get("term").unwrap_or_default(),
+        include_users: flag("include_users"),
+        include_groups: flag("include_groups"),
+        include_category_channels: flag("include_category_channels"),
+        include_direct_message_channels: flag("include_direct_message_channels"),
+        excluded_memberships_channel_id: get("excluded_memberships_channel_id")
+            .and_then(|v| v.trim().parse::<i64>().ok()),
+    };
+    let body = context(&state, &mut conn, &settings, &guardian)
+        .search_chatables(&params)
+        .await?;
+    Ok(Json(body).into_response())
 }

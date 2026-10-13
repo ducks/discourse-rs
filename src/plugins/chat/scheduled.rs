@@ -100,7 +100,7 @@ pub async fn auto_join_users(state: &AppState, args: &Value) -> Result<(), AppEr
     if !super::enabled(&s)? {
         return Ok(());
     }
-    super::auto_join::create_memberships(&mut tx, &state.bus, state, &s, None).await?;
+    super::auto_join::create_memberships(&mut tx, &state.bus, state, &s, None, None).await?;
     let event = args["event"].as_str().unwrap_or("hourly_job").to_string();
     auto_leave_channels(&mut tx, &s, &event).await?;
     tx.commit().await?;

@@ -64,6 +64,8 @@ pub struct Search {
     pub starred: bool,
     pub limit: Option<i64>,
     pub offset: i64,
+    /// `filter_on_category_name: false` (chat's chatables search).
+    pub skip_category_name: bool,
 }
 
 /// `ActiveRecord::Base.sanitize_sql_like`
@@ -174,7 +176,7 @@ impl Context<'_> {
                 " AND (LOWER(chat_channels.name) = $1 OR LOWER(chat_channels.name) LIKE $2 \
                    OR LOWER(chat_channels.name) LIKE $3 OR LOWER(chat_channels.slug) = $1 \
                    OR LOWER(chat_channels.slug) LIKE $2 OR LOWER(chat_channels.slug) LIKE $3 \
-                   OR categories.name ILIKE $3)",
+                   OR ($6 = FALSE AND categories.name ILIKE $3))",
             );
             // MATCH_QUALITY_EXACT, _PREFIX, _PARTIAL
             "CASE WHEN LOWER(chat_channels.name) = $1 OR LOWER(chat_channels.slug) = $1 THEN 1 \
@@ -206,6 +208,7 @@ impl Context<'_> {
             .bind(format!("%{like}%"))
             .bind(self.guardian.user_id().unwrap_or(0))
             .bind(search.starred)
+            .bind(search.skip_category_name)
             .fetch_all(&mut *self.conn)
             .await?)
     }
@@ -686,7 +689,7 @@ impl Context<'_> {
     }
 
     /// The category a channel belongs to, as Category::find gives it.
-    async fn category(
+    pub(crate) async fn category(
         &mut self,
         id: i64,
     ) -> Result<Option<crate::categories::CategoryRow>, AppError> {
