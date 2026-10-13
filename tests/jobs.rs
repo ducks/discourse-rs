@@ -178,7 +178,7 @@ async fn purge_deleted_uploads_removes_files_past_the_grace_period() {
 
 /// PendingReviewablesReminder remembers the newest reviewable it reminded
 /// of (a redis key no recording can seed): a second run sends nothing
-/// until a newer one waits.
+/// until a newer one waits, and then replaces the first reminder.
 #[tokio::test]
 async fn reviewables_reminder_waits_for_a_newer_reviewable() {
     let db = TestDb::new().await;
@@ -213,15 +213,21 @@ async fn reviewables_reminder_waits_for_a_newer_reviewable() {
         .await
         .unwrap();
     assert_eq!(reminders().await, 1);
-    // A newer one would replace the first reminder, which needs
-    // PostDestroyer in messages: refused rather than sent twice.
-    sqlx::query(&reviewable(9302, 53))
+    // A newer one replaces the first reminder: trashed, and a new one sent.
+    sqlx::query(&reviewable(9302, 50))
         .execute(&db.pool)
         .await
         .unwrap();
-    let refused = jobs::run_scheduled(&app, jobs::group_messages::PENDING_REVIEWABLES_REMINDER)
+    jobs::run_scheduled(&app, jobs::group_messages::PENDING_REVIEWABLES_REMINDER)
         .await
-        .unwrap_err();
-    assert!(refused.is_unsupported(), "{refused}");
-    assert_eq!(reminders().await, 1);
+        .unwrap();
+    assert_eq!(reminders().await, 2);
+    let live: i64 = sqlx::query_scalar(
+        "SELECT COUNT(*) FROM topics WHERE user_id = -1 AND subtype = 'system_message' \
+         AND title = 'There are items in the review queue that need reviewing' AND deleted_at IS NULL",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert_eq!(live, 1);
 }

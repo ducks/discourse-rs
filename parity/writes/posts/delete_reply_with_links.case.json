@@ -1,0 +1,16 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO posts (id, topic_id, user_id, post_number, raw, cooked, created_at, updated_at, last_version_at, sort_order) VALUES (950, 35, 3, 6, 'See [the guidelines](/guidelines) and https://example.com/page for more.', '<p>See <a href=\"/guidelines\">the guidelines</a> and <a href=\"https://example.com/page\">https://example.com/page</a> for more.</p>', now() - interval '1 hour', now() - interval '1 hour', now() - interval '1 hour', 6)",
+    "UPDATE topics SET highest_post_number = 6, posts_count = 6 WHERE id = 35",
+    "INSERT INTO topic_links (id, topic_id, post_id, user_id, url, domain, internal, reflection, quote, created_at, updated_at) VALUES (900, 35, 950, 3, '/guidelines', 'localhost', TRUE, FALSE, FALSE, now(), now()), (901, 35, 950, 3, 'https://example.com/page', 'example.com', FALSE, FALSE, FALSE, now(), now())",
+    "INSERT INTO topic_link_clicks (topic_link_id, user_id, ip_address, created_at, updated_at) VALUES (901, 2, '203.0.113.5', now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/posts/950.json",
+      "params": {}
+    }
+  ]
+}

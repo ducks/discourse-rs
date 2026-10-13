@@ -1,0 +1,24 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO reviewables (id, type, type_source, status, created_by_id, reviewable_by_moderator, category_id, topic_id, score, potential_spam, target_id, target_type, target_created_by_id, payload, version, latest_score, force_review, potentially_illegal, created_at, updated_at) VALUES (9301, 'ReviewableFlaggedPost', 'core', 0, 3, TRUE, 4, 35, 10, FALSE, 52, 'Post', 2, '{\"targets_topic\":false}', 0, now() - interval '3 days', FALSE, FALSE, now() - interval '3 days', now() - interval '3 days')",
+    "INSERT INTO topics (id, title, fancy_title, slug, user_id, last_post_user_id, archetype, subtype, created_at, updated_at, bumped_at, posts_count, highest_post_number, visible) VALUES (91, 'There are items in the review queue that need reviewing', 'There are items in the review queue that need reviewing', 'there-are-items-in-the-review-queue-that-need-reviewing', -1, -1, 'private_message', 'system_message', now() - interval '1 day', now() - interval '1 day', now() - interval '1 day', 1, 1, true)",
+    "INSERT INTO posts (id, topic_id, user_id, post_number, raw, cooked, created_at, updated_at, last_version_at, sort_order) VALUES (951, 91, -1, 1, '@admin  Items were submitted over 48 hours ago. [Please review them](http://localhost:3042/review).', '<p>An earlier reminder.</p>', now() - interval '1 day', now() - interval '1 day', now() - interval '1 day', 1)",
+    "INSERT INTO topic_allowed_users (topic_id, user_id, created_at, updated_at) VALUES (91, -1, now(), now())",
+    "INSERT INTO topic_allowed_groups (topic_id, group_id) VALUES (91, 2)",
+    "INSERT INTO user_actions (action_type, user_id, acting_user_id, target_topic_id, target_post_id, created_at, updated_at) VALUES (12, -1, -1, 91, -1, now() - interval '1 day', now() - interval '1 day')"
+  ],
+  "requests": [],
+  "enqueue": [
+    [
+      "pending_reviewables_reminder",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "pending_reviewables_reminder",
+    "post_update_topic_tracking_state",
+    "post_alert",
+    "user_email"
+  ]
+}

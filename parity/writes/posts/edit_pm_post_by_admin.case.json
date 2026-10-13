@@ -1,0 +1,17 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/49.json",
+      "params": {
+        "post": {
+          "raw": "A reply from user0 inside the private message, as an admin rewrote it."
+        }
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert"
+  ]
+}
