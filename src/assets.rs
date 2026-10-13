@@ -68,6 +68,7 @@ const ASSETS: &[(&str, &str, &str)] = &[
     ),
     ("page.js", JS, include_str!("../static/js/page.js")),
     ("hashtags.js", JS, include_str!("../static/js/hashtags.js")),
+    ("cooked.js", JS, include_str!("../static/js/cooked.js")),
     ("sidebar.js", JS, include_str!("../static/js/sidebar.js")),
     ("topic.js", JS, include_str!("../static/js/topic.js")),
     (
