@@ -223,6 +223,29 @@ pub async fn update(
     Ok(Outcome::Done)
 }
 
+/// `SiteSetting.<name> = value` for a boolean (`add_override!`): the
+/// override always saved, and when the value changed, client settings
+/// published.
+pub async fn save_setting(
+    conn: &mut PgConnection,
+    bus: &pg_bus::Bus,
+    def: &crate::site_settings::Definition,
+    previous: &Value,
+    value: bool,
+) -> Result<(), AppError> {
+    save_override(&mut *conn, def, if value { "t" } else { "f" }).await?;
+    if previous.truthy() != value && def.client {
+        bus.publish(
+            &mut *conn,
+            "/client_settings",
+            &serde_json::json!({ "name": def.name, "value": value, "scoped_to": null }),
+            None,
+        )
+        .await?;
+    }
+    Ok(())
+}
+
 /// `SiteSettingExtension#set_and_log` past its early return: the
 /// override saved, client settings published, and the change logged by
 /// `actor_id` (hidden settings unlogged, secret ones without values).

@@ -1,0 +1,85 @@
+{
+  "name": "dm_add_users_too_many",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/chat/api/channels/3/memberships.json",
+      "params": {
+        "usernames": [
+          "user3"
+        ]
+      }
+    }
+  ],
+  "started_at": "2026-10-13T15:34:05.044815",
+  "transaction_started_at": "2026-10-13T15:34:04.057927",
+  "responses": [
+    {
+      "status": 400,
+      "body": {
+        "error": "You can't create a direct message with more than 1 other user."
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 488,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "R73xMKIKcraJwe7n97WhBUI0iYI=",
+            "created_at": "2026-10-13T15:34:04.436975",
+            "rotated_at": "2026-10-13T15:34:04.435676",
+            "updated_at": "2026-10-13T15:34:04.436975",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "R73xMKIKcraJwe7n97WhBUI0iYI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 488,
+            "seen_at": "2026-10-13T15:34:05.053562",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "R73xMKIKcraJwe7n97WhBUI0iYI=",
+            "created_at": "2026-10-13T15:34:04.436975",
+            "rotated_at": "2026-10-13T15:34:04.435676",
+            "updated_at": "2026-10-13T15:34:04.436975",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "R73xMKIKcraJwe7n97WhBUI0iYI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "chat_max_direct_message_users": 1
+  },
+  "setup": [
+    "INSERT INTO direct_message_channels (id, \"group\", created_at, updated_at) VALUES (1, true, now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO direct_message_users (direct_message_channel_id, user_id, created_at, updated_at) VALUES (1, 3, now() - interval '1 day', now() - interval '1 day'), (1, 4, now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO chat_channels (id, chatable_type, chatable_id, type, status, user_count, name, messages_count, created_at, updated_at) VALUES (3, 'DirectMessage', 1, 'DirectMessageChannel', 0, 2, NULL, 0, now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO user_chat_channel_memberships (user_id, chat_channel_id, following, muted, notification_level, created_at, updated_at) VALUES (3, 3, true, false, 2, now() - interval '1 day', now() - interval '1 day'), (4, 3, true, false, 2, now() - interval '1 day', now() - interval '1 day')",
+    "SELECT setval('chat_channels_id_seq', 3)",
+    "SELECT setval('direct_message_channels_id_seq', 1)"
+  ],
+  "recorded_from": {
+    "case": "e2789a1e9f1368b8c8a6075dc6bdde8d3bcd98d6094302fafe34920a351c0871",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -203,14 +203,21 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/chat/api/direct-message-channels.json",
             post(chat::create_direct_message_channel),
         )
-        .route("/chat/api/channels/{id}", get(chat::show))
+        .route(
+            "/chat/api/channels/{id}",
+            get(chat::show).put(chat::update_channel),
+        )
         .route(
             "/chat/api/channels/{id}/memberships",
-            get(chat::memberships),
+            get(chat::memberships).post(chat::add_members),
         )
         .route(
             "/chat/api/channels/{id}/memberships.json",
-            get(chat::memberships),
+            get(chat::memberships).post(chat::add_members),
+        )
+        .route(
+            "/chat/api/channels/{id}/memberships/{user_id}",
+            delete(chat::remove_member),
         )
         .route("/chat/api/channels/read", put(chat::mark_all_read))
         .route("/chat/api/channels/read.json", put(chat::mark_all_read))

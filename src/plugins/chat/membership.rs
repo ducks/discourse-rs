@@ -133,7 +133,7 @@ impl Context<'_> {
 
     /// `ChannelMembershipManager#recalculate_user_count`: stale, recounted by
     /// the job in 3 seconds.
-    async fn mark_user_count_stale(&mut self, channel_id: i64) -> Result<(), AppError> {
+    pub(crate) async fn mark_user_count_stale(&mut self, channel_id: i64) -> Result<(), AppError> {
         let marked = sqlx::query(
             "UPDATE chat_channels SET user_count_stale = TRUE, updated_at = $2 WHERE id = $1 AND NOT user_count_stale",
         )
@@ -242,14 +242,16 @@ impl Context<'_> {
             return Ok(Outcome::NotFound);
         };
         // DirectMessageChannel#leave: a group's member leaves it outright
-        // (membership and participant gone), not ported; a one-to-one is
-        // unfollowed as a category channel is.
+        // (membership and participant gone); a one-to-one is unfollowed as
+        // a category channel is.
         if channel.chatable_type == "DirectMessage"
             && self.direct_message(channel.chatable_id).await?.group
         {
-            return Err(Unsupported("leaving a group direct message").into());
+            let user_id = self.guardian.user_id().unwrap_or(0);
+            self.leave_group_dm(&channel, user_id).await?;
+        } else {
+            self.unfollow_membership(&channel).await?;
         }
-        self.unfollow_membership(&channel).await?;
         let count = self.members_count(&channel).await?;
         sqlx::query(
             "UPDATE chat_channels SET user_count = $2, user_count_stale = FALSE, updated_at = $3 WHERE id = $1",

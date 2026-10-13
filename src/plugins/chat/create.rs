@@ -36,6 +36,9 @@ pub struct Params {
     pub upload_ids: Vec<String>,
     pub blocks: bool,
     pub client_created_at: Option<String>,
+    /// `enforce_membership`: the sender joins the channel first (bots
+    /// always do).
+    pub enforce_membership: bool,
 }
 
 pub enum Outcome {
@@ -86,10 +89,9 @@ impl Context<'_> {
         if g.is_silenced() {
             return Ok(Outcome::Forbidden);
         }
-        if user.id <= 0 {
-            return Err(Unsupported("chat messages sent by bots").into());
-        }
-        if params.blocks {
+        // User#bot?
+        let bot = user.id <= 0;
+        if params.blocks && !bot {
             return Ok(Outcome::Forbidden);
         }
         // The contract.
@@ -135,6 +137,23 @@ impl Context<'_> {
             .is_empty();
         if !can_post {
             return Ok(Outcome::Forbidden);
+        }
+        // enforce_membership: channel.add(user), and a DM's participant.
+        if bot || params.enforce_membership {
+            self.follow(&channel, user.id).await?;
+            if let Some(dm) = &dm
+                && !dm.users.iter().flatten().any(|u| u.id == user.id)
+            {
+                sqlx::query(
+                    "INSERT INTO direct_message_users (direct_message_channel_id, user_id, created_at, updated_at) \
+                     VALUES ($1, $2, $3, $3)",
+                )
+                .bind(channel.chatable_id)
+                .bind(user.id)
+                .bind(crate::clock::now_naive())
+                .execute(&mut *self.conn)
+                .await?;
+            }
         }
         // model :membership (its following, for PublishAndFollow)
         let following: Option<bool> = sqlx::query_scalar(
@@ -422,6 +441,49 @@ impl Context<'_> {
         )
         .await?;
         Ok(Outcome::Created(message_id))
+    }
+
+    /// `ChannelMembershipManager#follow`: a following membership, made or
+    /// turned on, and the count recalculated when it changed.
+    pub(crate) async fn follow(
+        &mut self,
+        channel: &ChannelRow,
+        user_id: i32,
+    ) -> Result<(), AppError> {
+        let following: Option<bool> = sqlx::query_scalar(
+            "SELECT following FROM user_chat_channel_memberships WHERE user_id = $1 AND chat_channel_id = $2",
+        )
+        .bind(user_id)
+        .bind(channel.id)
+        .fetch_optional(&mut *self.conn)
+        .await?;
+        let now = crate::clock::now_naive();
+        match following {
+            None => {
+                sqlx::query(
+                    "INSERT INTO user_chat_channel_memberships (user_id, chat_channel_id, following, created_at, updated_at) \
+                     VALUES ($1, $2, TRUE, $3, $3)",
+                )
+                .bind(user_id)
+                .bind(channel.id)
+                .bind(now)
+                .execute(&mut *self.conn)
+                .await?;
+            }
+            Some(false) => {
+                sqlx::query(
+                    "UPDATE user_chat_channel_memberships SET following = TRUE, updated_at = $3 \
+                     WHERE user_id = $1 AND chat_channel_id = $2",
+                )
+                .bind(user_id)
+                .bind(channel.id)
+                .bind(now)
+                .execute(&mut *self.conn)
+                .await?;
+            }
+            Some(true) => return Ok(()),
+        }
+        self.mark_user_count_stale(channel.id).await
     }
 
     /// `Chat::Channel::Policy::MessageCreation::DirectMessageStrategy`:
