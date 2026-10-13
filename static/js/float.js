@@ -427,7 +427,11 @@
     if (!el) {
       return;
     }
+    // Pressing the trigger is never a click outside its float.
     this.listen(el, "pointerdown", this.trapPointerDown);
+    if (!this.options.listeners) {
+      return;
+    }
     var self = this;
     triggersFor(this.options.triggers).forEach(function (name) {
       if (name === "hover") {
@@ -673,6 +677,7 @@
   // know yet: a new instance, opened now.
   function menu(trigger, options) {
     var instance = new Instance("menu", trigger, merge(MENU, options));
+    instance.setupListeners();
     return instance.show();
   }
 
@@ -680,6 +685,7 @@
   // as DTooltip's instance does (listeners: true).
   function tooltip(inner, options) {
     var o = merge(TOOLTIP, options);
+    o.listeners = true;
     var trigger = document.createElement("span");
     var instance = new Instance("tooltip", trigger, o);
     if (o.identifier) {
