@@ -1,0 +1,9 @@
+{
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/posts/by_number/35/2.json"
+    }
+  ]
+}

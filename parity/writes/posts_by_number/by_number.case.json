@@ -1,0 +1,21 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/posts/by_number/35/2.json"
+    },
+    {
+      "method": "GET",
+      "path": "/posts/by_number/35/1.json"
+    },
+    {
+      "method": "GET",
+      "path": "/posts/by_number/35/999.json"
+    },
+    {
+      "method": "GET",
+      "path": "/posts/by_number/999999/1.json"
+    }
+  ]
+}
