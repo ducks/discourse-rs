@@ -1,0 +1,8 @@
+{
+  "user": null,
+  "settings": { "topic_views_heat_high": 5500 },
+  "setup": ["UPDATE topics SET views = x.v FROM (VALUES (35,9000),(37,5678),(38,4000),(41,3500),(34,2345),(1,2000),(2,1500),(3,1300),(4,1234),(5,10),(6,5)) AS x(id,v) WHERE topics.id = x.id"],
+  "requests": [],
+  "enqueue": [["update_heat_settings", {}]],
+  "run_jobs": ["update_heat_settings"]
+}

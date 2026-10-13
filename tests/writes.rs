@@ -776,9 +776,17 @@ fn short(v: &Value) -> String {
 /// from a rolled-back run of the setup; None when the setup can't run yet
 /// (it needs the login's rows), and the recording's own evidence is used.
 async fn setup_insert_counts(pool: &PgPool, case: &Value) -> Option<HashMap<String, i64>> {
-    let setup = case["setup"].as_array()?;
-    let mut tx = pool.begin().await.ok()?;
     let mut counts = HashMap::new();
+    // apply_settings inserts a site_settings row per setting after the
+    // sequences are aligned, as SiteSetting.set did before Rails' requests.
+    let settings = case["settings"].as_object().map_or(0, |s| s.len() as i64);
+    if settings > 0 {
+        counts.insert("site_settings".to_string(), settings);
+    }
+    let Some(setup) = case["setup"].as_array() else {
+        return (!counts.is_empty()).then_some(counts);
+    };
+    let mut tx = pool.begin().await.ok()?;
     for sql in setup.iter().filter_map(Value::as_str) {
         let rows = sqlx::query(sql)
             .execute(&mut *tx)

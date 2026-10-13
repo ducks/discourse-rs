@@ -110,8 +110,10 @@ fn delimited(n: i64) -> String {
 }
 
 /// `SiteSetting::Update.call` for `id` set to `raw`.
+#[allow(clippy::too_many_arguments)]
 pub async fn update(
     conn: &mut PgConnection,
+    bus: &pg_bus::Bus,
     defs: &Definitions,
     settings: &SiteSettings,
     i18n: &crate::i18n::I18n,
@@ -217,31 +219,46 @@ pub async fn update(
         return Err(Unsupported("client string settings with markup (sanitize_field)").into());
     }
 
-    // add_override!: provider.save
-    let updated = sqlx::query(
-        "UPDATE site_settings SET value = $2, data_type = $3, updated_at = clock_timestamp() WHERE name = $1",
-    )
-    .bind(name)
-    .bind(&db_value)
-    .bind(def.data_type as i32)
-    .execute(&mut *conn)
-    .await?
-    .rows_affected();
-    if updated == 0 {
-        sqlx::query(
-            "INSERT INTO site_settings (name, data_type, value, created_at, updated_at) \
-             VALUES ($1, $2, $3, clock_timestamp(), clock_timestamp())",
+    set_and_log(&mut *conn, bus, def, &previous, &new_value, actor.id).await?;
+    Ok(Outcome::Done)
+}
+
+/// `SiteSettingExtension#set_and_log` past its early return: the
+/// override saved, client settings published, and the change logged by
+/// `actor_id` (hidden settings unlogged, secret ones without values).
+pub async fn set_and_log(
+    conn: &mut PgConnection,
+    bus: &pg_bus::Bus,
+    def: &crate::site_settings::Definition,
+    previous: &Value,
+    new_value: &Value,
+    actor_id: i32,
+) -> Result<(), AppError> {
+    let name = def.name.as_str();
+    let db_value = match new_value {
+        Value::Bool(b) => if *b { "t" } else { "f" }.to_string(),
+        other => other.to_s(),
+    };
+    save_override(&mut *conn, def, &db_value).await?;
+    // notify_clients!: the new value to every client, for client settings.
+    if def.client {
+        let value = match new_value {
+            Value::Bool(b) => serde_json::json!(b),
+            Value::Int(i) => serde_json::json!(i),
+            Value::Float(f) => serde_json::json!(f),
+            other => serde_json::json!(other.to_s()),
+        };
+        bus.publish(
+            &mut *conn,
+            "/client_settings",
+            &serde_json::json!({ "name": name, "value": value, "scoped_to": null }),
+            None,
         )
-        .bind(name)
-        .bind(def.data_type as i32)
-        .bind(&db_value)
-        .execute(&mut *conn)
         .await?;
     }
-    // SiteSettingExtension#log: hidden settings go unlogged, secret ones
-    // without their values.
-    if hidden {
-        return Ok(Outcome::Done);
+    // SiteSettingExtension#log
+    if opt(def, "hidden").is_some_and(|v| matches!(v, Yaml::Bool(true))) {
+        return Ok(());
     }
     let secret = opt(def, "secret").is_some_and(|v| matches!(v, Yaml::Bool(true)));
     let (previous, new_value) = if secret {
@@ -256,13 +273,53 @@ pub async fn update(
          VALUES ($1, $2, $3, $4, $5, TRUE, clock_timestamp(), clock_timestamp())",
     )
     .bind(CHANGE_SITE_SETTING)
-    .bind(actor.id)
+    .bind(actor_id)
     .bind(name)
     .bind(previous)
     .bind(new_value)
     .execute(&mut *conn)
     .await?;
-    Ok(Outcome::Done)
+    Ok(())
+}
+
+/// `DbProvider#save`: a new row (even holding the default), else the
+/// value and type when either changed; an unchanged row is not written.
+async fn save_override(
+    conn: &mut PgConnection,
+    def: &crate::site_settings::Definition,
+    db_value: &str,
+) -> Result<(), sqlx::Error> {
+    let row: Option<(Option<String>, i32)> =
+        sqlx::query_as("SELECT value, data_type FROM site_settings WHERE name = $1")
+            .bind(&def.name)
+            .fetch_optional(&mut *conn)
+            .await?;
+    match row {
+        None => {
+            sqlx::query(
+                "INSERT INTO site_settings (name, data_type, value, created_at, updated_at) \
+                 VALUES ($1, $2, $3, clock_timestamp(), clock_timestamp())",
+            )
+            .bind(&def.name)
+            .bind(def.data_type as i32)
+            .bind(db_value)
+            .execute(&mut *conn)
+            .await?;
+        }
+        Some((value, data_type))
+            if value.as_deref() == Some(db_value) && data_type == def.data_type as i32 => {}
+        Some(_) => {
+            sqlx::query(
+                "UPDATE site_settings SET value = $2, data_type = $3, updated_at = clock_timestamp() WHERE name = $1",
+            )
+            .bind(&def.name)
+            .bind(db_value)
+            .bind(def.data_type as i32)
+            .execute(&mut *conn)
+            .await?;
+        }
+    }
+    Ok(())
 }
 
 /// TypeSupervisor#validate_value: the choices of an enum, then the type's

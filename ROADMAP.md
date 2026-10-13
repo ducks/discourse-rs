@@ -59,7 +59,7 @@ Bugs or silent gaps in what is merged, small and independent.
 
 ### Phase 1: the scheduled jobs left (ready)
 
-7. `feat/jobs-heat-settings` S: SiteSetting set-and-log (a row even for
+7. ~~`feat/jobs-heat-settings`~~ (done) S: SiteSetting set-and-log (a row even for
    a default, unchanged values skipped, /client_settings published),
    then update_heat_settings
 8. `feat/jobs-search-index` M: reindex_search,

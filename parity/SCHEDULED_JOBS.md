@@ -46,13 +46,13 @@ Classes:
 | clean_up_drafts, clean_up_bookmarks, clean_up_user_auth_tokens, clean_up_search_logs | 1w | scheduled/{drafts,bookmarks,user_auth_tokens}_cleanup, scheduled/search_logs_* |
 | clean_up_tags | 1d (tags on live topics and synonyms refused) | scheduled/tags_cleanup* |
 | clean_up_unmatched_emails, CleanUpUnmatchedIPs (with the roll-up) | 1d | scheduled/unmatched_* |
+| update_heat_settings | 1mo (from the worker's start) | scheduled/heat_* |
 
 ## Ready, in porting order
 
 | Job | Every | Missing without it | Size |
 |---|---|---|---|
 | periodical_updates, calculate_scores | 15m, 1w | featured topics, post/topic scores, percent_rank, rebakes | L |
-| update_heat_settings | 1mo | topic list heat thresholds never adapt | S |
 | create_recent_post_search_indexes, reindex_search | 1d, 2h | search's recent-posts offset and stale index rows | S/M |
 | update_animated_uploads, backfill_dominant_colors | 1h, 15m | upload metadata never backfilled | S |
 | clean_up_uploads, purge_deleted_uploads | 1h, 1d | orphaned uploads stay | L |

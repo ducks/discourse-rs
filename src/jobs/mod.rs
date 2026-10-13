@@ -12,6 +12,7 @@ pub mod accounts;
 pub mod bookmark_reminders;
 pub mod cleanup;
 mod handlers;
+pub mod heat;
 pub mod housekeeping;
 pub mod list_stats;
 pub mod moderation;
@@ -313,6 +314,10 @@ const SCHEDULED: &[(&str, Duration)] = &[
         cleanup::CLEAN_UP_UNMATCHED_IPS,
         Duration::from_secs(24 * 3600),
     ),
+    (
+        heat::UPDATE_HEAT_SETTINGS,
+        Duration::from_secs(30 * 24 * 3600),
+    ),
 ];
 
 /// A SCHEDULED job's name: it runs from the queue too (a case enqueues
@@ -379,6 +384,7 @@ pub async fn run_scheduled(state: &AppState, name: &str) -> Result<(), AppError>
         cleanup::CLEAN_UP_TAGS => cleanup::clean_up_tags(state).await,
         cleanup::CLEAN_UP_UNMATCHED_EMAILS => cleanup::clean_up_unmatched_emails(state).await,
         cleanup::CLEAN_UP_UNMATCHED_IPS => cleanup::clean_up_unmatched_ips(state).await,
+        heat::UPDATE_HEAT_SETTINGS => heat::update_heat_settings(state).await,
         _ => unreachable!("every SCHEDULED job has a handler"),
     }
 }

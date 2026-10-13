@@ -302,7 +302,10 @@ cases.each do |c|
     end
     clear_redis_state
     pool.unpin_connection!
-    SiteSetting.refresh! if c["settings"]
+    # Always: a case's requests or jobs may set settings too
+    # (SiteSetting.set_and_log), which the rollback undoes in the database
+    # but not in the in-process cache.
+    SiteSetting.refresh!
     reset_plugin_caches if c["setup"]
   end
 end

@@ -1,0 +1,121 @@
+{
+  "name": "heat_reset",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-13T01:26:58.559803",
+  "transaction_started_at": "2026-10-13T01:26:57.877936",
+  "responses": [],
+  "changes": {
+    "site_settings": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 37,
+            "name": "topic_views_heat_high",
+            "value": "5000",
+            "data_type": 3,
+            "created_at": "2026-10-13T01:26:58.102054",
+            "updated_at": "2026-10-13T01:26:58.102054"
+          },
+          "after": {
+            "id": 37,
+            "name": "topic_views_heat_high",
+            "value": "3500",
+            "data_type": 3,
+            "created_at": "2026-10-13T01:26:58.102054",
+            "updated_at": "2026-10-13T01:26:58.562391"
+          }
+        },
+        {
+          "before": {
+            "id": 38,
+            "name": "topic_post_like_heat_low",
+            "value": "0.9",
+            "data_type": 4,
+            "created_at": "2026-10-13T01:26:58.105204",
+            "updated_at": "2026-10-13T01:26:58.105204"
+          },
+          "after": {
+            "id": 38,
+            "name": "topic_post_like_heat_low",
+            "value": "0.5",
+            "data_type": 4,
+            "created_at": "2026-10-13T01:26:58.105204",
+            "updated_at": "2026-10-13T01:26:58.569037"
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 3,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "topic_views_heat_high",
+          "topic_id": null,
+          "new_value": "3500",
+          "admin_only": true,
+          "created_at": "2026-10-13T01:26:58.565408",
+          "ip_address": null,
+          "updated_at": "2026-10-13T01:26:58.565408",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": -1,
+          "previous_value": "5000",
+          "target_user_id": null
+        },
+        {
+          "id": 75,
+          "email": null,
+          "action": 3,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "topic_post_like_heat_low",
+          "topic_id": null,
+          "new_value": "0.5",
+          "admin_only": true,
+          "created_at": "2026-10-13T01:26:58.572982",
+          "ip_address": null,
+          "updated_at": "2026-10-13T01:26:58.572982",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": -1,
+          "previous_value": "0.9",
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "user_histories": 74
+  },
+  "settings": {
+    "topic_views_heat_high": 5000,
+    "topic_post_like_heat_low": 0.9
+  },
+  "setup": [],
+  "enqueue": [
+    [
+      "update_heat_settings",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "4c58ee9e6709ce4f99b59141f63a92b536142869c9964018c7aec543cc7dcea3",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

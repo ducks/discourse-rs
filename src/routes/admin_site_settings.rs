@@ -52,6 +52,7 @@ pub async fn update(
         SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
     let outcome = site_setting_update::update(
         &mut tx,
+        &state.bus,
         &state.site_setting_defs,
         &settings,
         &state.i18n,
