@@ -1,0 +1,16 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "A post of another topic:\n\nhttp://localhost:3042/t/parity-fixture-liked-and-archived/41/2"
+      }
+    }
+  ],
+  "run_jobs": [
+    "process_post"
+  ]
+}

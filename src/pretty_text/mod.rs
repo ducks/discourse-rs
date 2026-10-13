@@ -35,6 +35,9 @@ pub enum CookError {
     Unsupported(Unsupported),
     /// Reading or writing a stored file (thumbnails).
     Io(std::io::Error),
+    /// What a step built on the application's errors failed with
+    /// (oneboxes); an Unsupported inside still reads as one.
+    App(crate::AppError),
 }
 
 impl std::fmt::Display for CookError {
@@ -45,6 +48,7 @@ impl std::fmt::Display for CookError {
             CookError::Url(e) => e.fmt(f),
             CookError::Unsupported(e) => e.fmt(f),
             CookError::Io(e) => write!(f, "cooking: {e}"),
+            CookError::App(e) => e.fmt(f),
         }
     }
 }

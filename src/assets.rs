@@ -27,6 +27,7 @@ const DISCOURSE_CSS: &str = concat!(
     include_str!("../static/css/categories.css"),
     include_str!("../static/css/sidebar.css"),
     include_str!("../static/css/cooked.css"),
+    include_str!("../static/css/onebox.css"),
     include_str!("../static/css/topic.css"),
     include_str!("../static/css/user.css"),
     include_str!("../static/css/user-stream.css"),

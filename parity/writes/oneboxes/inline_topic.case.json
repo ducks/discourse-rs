@@ -1,0 +1,16 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "Inline, see [http://localhost:3042/t/parity-fixture-liked-and-archived/41](http://localhost:3042/t/parity-fixture-liked-and-archived/41) and http://localhost:3042/t/parity-fixture-liked-and-archived/41/2 in text."
+      }
+    }
+  ],
+  "run_jobs": [
+    "process_post"
+  ]
+}

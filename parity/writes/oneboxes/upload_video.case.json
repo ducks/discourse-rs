@@ -1,0 +1,16 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "A video:\n\nhttp://localhost:3042/uploads/default/original/1X/abcdef0123456789abcdef0123456789abcdef01.mp4"
+      }
+    }
+  ],
+  "run_jobs": [
+    "process_post"
+  ]
+}

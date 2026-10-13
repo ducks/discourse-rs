@@ -1,0 +1,16 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "A topic that is not there:\n\nhttp://localhost:3042/t/nope/99999"
+      }
+    }
+  ],
+  "run_jobs": [
+    "process_post"
+  ]
+}

@@ -337,9 +337,15 @@ impl ImageSteps<'_> {
         }
     }
 
-    /// `get_size(url)`: an upload's own size. Anything else would be read
-    /// over HTTP (FastImage), which is refused.
-    async fn get_size(&self, conn: &mut PgConnection, src: &str) -> Result<(i64, i64), CookError> {
+    /// `get_size(url)`: an upload's own size. Anything else is read over
+    /// HTTP (FastImage): another site's is refused; the site's own (a
+    /// letter avatar, say) counts as unreachable, as the reference's
+    /// container finds its own public URL (FastImage gives nil).
+    async fn get_size(
+        &self,
+        conn: &mut PgConnection,
+        src: &str,
+    ) -> Result<Option<(i64, i64)>, CookError> {
         let mut absolute = src.to_string();
         if src.starts_with('/') && !src.starts_with("//") {
             absolute = format!("{}{src}", self.urls.base_url_no_prefix()?);
@@ -351,9 +357,27 @@ impl ImageSteps<'_> {
             && let (Some(w), Some(h)) = (upload.width, upload.height)
             && w > 0
         {
-            return Ok((i64::from(w), i64::from(h)));
+            return Ok(Some((i64::from(w), i64::from(h))));
+        }
+        let own_host = self.urls.current_hostname()?;
+        let host = absolute
+            .split_once("://")
+            .map(|(_, rest)| rest.split(['/', ':', '?', '#']).next().unwrap_or(""));
+        if host == Some(own_host.as_str()) {
+            return Ok(None);
         }
         Err(Unsupported("sizing images from other sites (FastImage over HTTP)").into())
+    }
+
+    /// Whether an image's URL is on the site's own host (or relative).
+    fn own_site(&self, src: &str) -> Result<bool, CookError> {
+        if src.starts_with('/') && !src.starts_with("//") {
+            return Ok(true);
+        }
+        let host = src
+            .split_once("//")
+            .map(|(_, rest)| rest.split(['/', ':', '?', '#']).next().unwrap_or(""));
+        Ok(host == Some(self.urls.current_hostname()?.as_str()))
     }
 
     /// `get_size_from_attributes(img)`
@@ -367,7 +391,9 @@ impl ImageSteps<'_> {
             return Ok(Some((w, h)));
         }
         if w > 0 || h > 0 {
-            let (ow, oh) = self.get_size(&mut *conn, &img.src).await?;
+            let Some((ow, oh)) = self.get_size(&mut *conn, &img.src).await? else {
+                return Ok(None);
+            };
             let (ow, oh) = (ow as f64, oh as f64);
             return Ok(Some(if w > 0 {
                 (w, (oh * (w as f64 / ow)).floor() as i64)
@@ -402,12 +428,19 @@ impl ImageSteps<'_> {
         };
         // limit_size!
         let limit = match self.size_from_attributes(&mut *conn, img).await? {
-            Some(size) => size,
+            Some(size) => Some(size),
             None => self.get_size(&mut *conn, &img.src.clone()).await?,
         };
-        let (lw, lh) = self.sizer.resize(limit.0, limit.1);
-        set(img, &mut edits, "width", lw.to_string());
-        set(img, &mut edits, "height", lh.to_string());
+        // ImageSizer.resize gives nil without a size: empty attributes.
+        let (lw, lh) = match limit {
+            Some((w, h)) => {
+                let (w, h) = self.sizer.resize(w, h);
+                (w.to_string(), h.to_string())
+            }
+            None => (String::new(), String::new()),
+        };
+        set(img, &mut edits, "width", lw);
+        set(img, &mut edits, "height", lh);
 
         if img.src.trim().is_empty() || img.hyperlinked {
             return Ok(edits);
@@ -427,7 +460,18 @@ impl ImageSteps<'_> {
                     )
                     .into());
                 }
-                user.unwrap_or(limit)
+                // get_size(src): the site's own image can't be reached
+                // ("Can't reach ... to get its dimension"), so it stops here.
+                let own = self
+                    .get_size(&mut *conn, &img.src.clone())
+                    .await
+                    .ok()
+                    .flatten();
+                match (own, user.or(limit)) {
+                    (Some(size), _) => size,
+                    (None, Some(size)) if !self.own_site(&img.src)? => size,
+                    _ => return Ok(edits),
+                }
             }
         };
         if upload.as_ref().is_some_and(|u| u.animated == Some(true)) || gif_source(&img.src) {
@@ -715,12 +759,45 @@ pub(crate) async fn post_process(
         return Err(Unsupported("a CDN in the post processor").into());
     }
     let store = crate::file_store::FileStore::for_site(config, settings)?;
+    // post_process_oneboxes, before the images.
+    let oneboxed;
+    let html = if html.contains("onebox") {
+        let Some(post_id) = post_id else {
+            return Err(Unsupported("oneboxes outside a post").into());
+        };
+        let row: Option<(Option<i32>, Option<i32>, Option<i32>)> = sqlx::query_as(
+            "SELECT p.last_editor_id, p.user_id, t.category_id FROM posts p \
+             LEFT JOIN topics t ON t.id = p.topic_id WHERE p.id = $1",
+        )
+        .bind(post_id)
+        .fetch_optional(&mut *conn)
+        .await?;
+        let (editor_id, author_id, category_id) = row.unwrap_or_default();
+        let site = crate::onebox::Site {
+            settings,
+            i18n,
+            urls: Urls { config, settings },
+            base_path: config.globals.relative_url_root(),
+        };
+        oneboxed = crate::onebox::post_process(
+            conn,
+            &site,
+            html,
+            &crate::onebox::Opts {
+                editor_id,
+                author_id,
+                category_id,
+            },
+        )
+        .await
+        .map_err(CookError::App)?;
+        oneboxed.as_str()
+    } else {
+        html
+    };
     {
         let dom = parse(html);
         for e in all_elements(&dom) {
-            if has_class(&e, "onebox") || has_class(&e, "inline-onebox-loading") {
-                return Err(Unsupported("oneboxes (fetched from the network)").into());
-            }
             if has_class(&e, "video-placeholder-container")
                 && attr(&e, "data-video-src").is_some_and(|s| s != "/404")
             {

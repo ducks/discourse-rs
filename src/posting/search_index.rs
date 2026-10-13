@@ -437,17 +437,52 @@ async fn tsvector(
     Ok((vector, prepared))
 }
 
-static MEDIA_URL: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?i)https?://\S+\.(mov|mp4|webm|m4v|3gp|ogv|avi|mpeg|ogg|mp3|wav|m4a|oga|opus|aac|flac)\b").unwrap()
-});
+/// `Discourse::Utils::URI_REGEXP` (`URI.regexp(%w[http https])`) as far as
+/// the characters a URI may hold.
+static URI_REGEXP: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"(?i)https?://[A-Za-z0-9\-._~!$&'()*+,;=:@/?#%\[\]]+").unwrap());
 
-/// `clean_post_raw_data!`: links to video or audio files are indexed as a
-/// word for the kind of media; not ported.
+/// `clean_post_raw_data!`: each link to a video or audio file
+/// (`Oneboxer::VIDEO_REGEX`, `AUDIO_REGEX` on its extension) indexed as
+/// the word for its kind of media.
 fn clean_post_raw_data(raw: &str) -> Result<String, AppError> {
-    if MEDIA_URL.is_match(raw) {
-        return Err(Unsupported("indexing posts linking to video or audio files").into());
+    const VIDEO: [&str; 8] = ["mov", "mp4", "webm", "m4v", "3gp", "ogv", "avi", "mpeg"];
+    const AUDIO: [&str; 11] = [
+        "mp3", "oga", "ogg", "opus", "wav", "m4a", "m4b", "m4p", "m4r", "aac", "flac",
+    ];
+    let mut urls: Vec<&str> = Vec::new();
+    for m in URI_REGEXP.find_iter(raw) {
+        if !urls.contains(&m.as_str()) {
+            urls.push(m.as_str());
+        }
     }
-    Ok(raw.to_string())
+    let mut out = raw.to_string();
+    for url in urls {
+        let rest = url.split_once("://").map_or("", |(_, r)| r);
+        let path = rest
+            .find('/')
+            .map_or("", |i| &rest[i..])
+            .split(['?', '#'])
+            .next()
+            .unwrap_or("");
+        let name = path.rsplit('/').next().unwrap_or("");
+        // File.extname: a leading dot names no extension.
+        let ext = match name.rfind('.') {
+            Some(i) if i > 0 => name[i + 1..].to_lowercase(),
+            _ => continue,
+        };
+        // I18n.t("search.video"), I18n.t("search.audio") (indexing is
+        // English only).
+        let word = if VIDEO.contains(&ext.as_str()) {
+            "[video]"
+        } else if AUDIO.contains(&ext.as_str()) {
+            "[audio]"
+        } else {
+            continue;
+        };
+        out = out.replace(url, word);
+    }
+    Ok(out)
 }
 
 /// What `UrlHelper.is_local` compares against.

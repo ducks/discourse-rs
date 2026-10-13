@@ -1,0 +1,1348 @@
+/*
+ * Oneboxes, ported from base/onebox.scss as Rails compiles it into
+ * common.css (the core blocks and each engine's). Each rule is the
+ * compiled rule of the source line it names.
+ */
+/* onebox.scss:3 */
+:root {
+  --onebox-shadow-color: var(--primary-100);
+  --onebox-border-color: var(--primary-300);
+}
+/* onebox.scss:20 */
+a.loading-onebox::before {
+  content: "";
+  display: inline-flex;
+  float: left;
+  margin: 3px 5px 0 0;
+  position: relative;
+  height: 10px;
+  width: 10px;
+  border: 2px solid var(--primary-low-mid);
+  border-right-color: rgba(0,0,0,0);
+  border-radius: 50%;
+  animation: rotate-forever 1s infinite linear;
+}
+/* onebox.scss:35 */
+.onebox-result {
+  margin-top: 15px;
+  padding: 12px;
+  font-size: var(--font-0);
+  background: var(--d-post-aside-background);
+  border-left: var(--d-post-aside-border);
+}
+/* onebox.scss:42 */
+.onebox-result .onebox-result-body {
+  padding-top: 5px;
+}
+/* onebox.scss:45 */
+.onebox-result .onebox-result-body img {
+  max-height: 80%;
+  max-width: 25%;
+  height: auto;
+  float: left;
+  margin-right: 1em;
+}
+/* onebox.scss:53 */
+.onebox-result .onebox-result-body h3,
+.onebox-result .onebox-result-body h4 {
+  margin: 0;
+}
+/* onebox.scss:58 */
+.onebox-result .onebox-result-body code {
+  max-height: 400px;
+}
+/* onebox.scss:62 */
+.onebox-result .onebox-result-body .metrics {
+  clear: both;
+  padding-bottom: 25px;
+}
+/* onebox.scss:66 */
+.onebox-result .onebox-result-body .metrics .metric {
+  padding-left: 33px;
+  float: left;
+}
+/* onebox.scss:73 */
+.onebox-result .onebox-result-body img.verdict {
+  float: none;
+  margin-right: 7px;
+}
+/* onebox.scss:79 */
+.onebox-result .onebox-result-body img.popcorn {
+  float: none;
+  margin-left: 20px;
+  margin-right: 5px;
+}
+/* onebox.scss:86 */
+.onebox-result>.source {
+  margin-bottom: 12px;
+  margin-right: 10px;
+  display: block;
+  color: var(--primary);
+  position: relative;
+  height: 20px;
+}
+/* onebox.scss:94 */
+.onebox-result>.source .info {
+  position: absolute;
+  font-size: var(--font-0);
+}
+/* onebox.scss:98 */
+.onebox-result>.source .info a {
+  color: #000;
+  text-decoration: none;
+  padding-right: 10px;
+}
+/* onebox.scss:104 */
+.onebox-result>.source .info img.favicon {
+  margin-right: 3px;
+}
+/* onebox.scss:119 */
+aside.onebox {
+  border: 0;
+  margin-inline: 4px;
+  box-shadow: 0 0 0 1px var(--onebox-border-color),0 0 0 4px var(--onebox-shadow-color);
+  border-radius: calc(var(--d-border-radius) - 2px);
+  margin-bottom: 1em;
+  padding: 1em;
+  font-size: var(--font-0);
+  background: var(--secondary);
+}
+/* onebox.scss:126 */
+aside.onebox:first-child {
+  margin-top: 4px;
+}
+/* onebox.scss:130 */
+aside.onebox header {
+  align-items: center;
+  display: flex;
+  line-height: var(--line-height-medium);
+  margin-bottom: 1em;
+}
+/* onebox.scss:136 */
+aside.onebox header .d-icon {
+  margin-right: 5px;
+  margin-top: 2px;
+}
+/* onebox.scss:140 */
+aside.onebox header .d-icon.d-icon-fab-twitter {
+  color: var(--twitter);
+}
+/* onebox.scss:145 */
+aside.onebox header a[href] {
+  color: var(--primary-med-or-secondary-med);
+  text-decoration: none;
+}
+/* onebox.scss:112 */
+aside.onebox.stackexchange .source {
+  background: url("http://localhost:3042/images/favicons/stackexchange.png") no-repeat 0% 50%;
+  background-size: 16px 16px;
+  padding-left: 20px;
+}
+/* onebox.scss:112 */
+aside.onebox.instagram .source {
+  background: url("http://localhost:3042/images/favicons/instagram.png") no-repeat 0% 50%;
+  background-size: 16px 16px;
+  padding-left: 20px;
+}
+/* onebox.scss:112 */
+aside.onebox.googledocs .source {
+  background: url("http://localhost:3042/images/favicons/google_branding/logo_drive_48px.png") no-repeat 0% 50%;
+  background-size: 16px 16px;
+  padding-left: 20px;
+}
+/* onebox.scss:112 */
+aside.onebox.googledrive .source {
+  background: url("http://localhost:3042/images/favicons/google_branding/logo_drive_48px.png") no-repeat 0% 50%;
+  background-size: 16px 16px;
+  padding-left: 20px;
+}
+/* onebox.scss:156 */
+aside.onebox .onebox-body {
+  clear: both;
+}
+/* onebox.scss:159 */
+aside.onebox .onebox-body h3,
+aside.onebox .onebox-body h4 {
+  font-size: var(--font-up-1);
+  margin: 0 0 10px 0;
+  line-height: var(--line-height-medium);
+}
+/* onebox.scss:166 */
+aside.onebox .onebox-body a[href] {
+  color: var(--tertiary);
+  text-decoration: none;
+}
+/* onebox.scss:171 */
+aside.onebox .onebox-body a[href]:visited {
+  color: var(--tertiary);
+}
+/* onebox.scss:175 */
+aside.onebox .onebox-body img:not(.avatar,.onebox-avatar-inline,.emoji) {
+  max-height: 170px;
+  max-width: 20%;
+  height: auto;
+  float: left;
+  margin-right: 1em;
+}
+/* onebox.scss:175 */
+@media all and (width <= 600px) {
+  aside.onebox .onebox-body img:not(.avatar,.onebox-avatar-inline,.emoji) {
+    max-width: 35%;
+  }
+}
+/* onebox.scss:186 */
+aside.onebox .onebox-body img:not(.avatar,.onebox-avatar-inline,.emoji).onebox-full-image {
+  max-height: none;
+  max-width: none;
+}
+/* onebox.scss:192 */
+aside.onebox .onebox-body [style*="--aspect-ratio"]>:first-child {
+  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+}
+/* onebox.scss:200 */
+aside.onebox .onebox-body [style*="--aspect-ratio"]>img {
+  height: auto;
+}
+/* onebox.scss:206 */
+aside.onebox .onebox-body .aspect-image {
+  max-height: 170px;
+  --magic-ratio: calc(var(--aspect-ratio) + 0.15);
+  width: calc(128px*var(--magic-ratio));
+  max-width: 20%;
+  float: left;
+  margin-right: 1em;
+  height: auto;
+}
+/* onebox.scss:216 */
+aside.onebox .onebox-body .aspect-image img {
+  width: 100%;
+  height: inherit;
+  max-width: initial;
+  max-height: initial;
+  float: none;
+}
+/* onebox.scss:226 */
+aside.onebox .onebox-body .aspect-image-full-size {
+  margin: .5em 0;
+  max-height: 100%;
+  width: calc(500px*var(--aspect-ratio));
+  max-width: 100%;
+}
+/* onebox.scss:232 */
+aside.onebox .onebox-body .aspect-image-full-size img {
+  width: 100%;
+  height: inherit;
+  max-width: initial;
+  max-height: initial;
+  float: none;
+}
+/* onebox.scss:241 */
+aside.onebox .onebox-body [style*="--aspect-ratio"] {
+  position: relative;
+}
+/* onebox.scss:245 */
+aside.onebox .onebox-body [style*="--aspect-ratio"]::before {
+  content: "";
+  display: block;
+  padding-bottom: calc(100%/(var(--aspect-ratio)));
+}
+/* onebox.scss:251 */
+aside.onebox .onebox-body p:last-child {
+  margin-bottom: 0;
+}
+/* onebox.scss:256 */
+aside.onebox .onebox-body .tweet-images {
+  display: block;
+  clear: both;
+}
+/* onebox.scss:260 */
+aside.onebox .onebox-body .tweet-images img.tweet-image {
+  margin-top: 1em;
+  max-width: 100%;
+  max-height: 100%;
+  float: none;
+}
+/* onebox.scss:269 */
+@media (width < 40rem) {
+  aside.onebox .onebox-body .tweet-images iframe {
+    max-height: 70vh;
+  }
+}
+/* onebox.scss:276 */
+aside.onebox .onebox-body.user-onebox .fa {
+  margin-right: 5px;
+}
+/* onebox.scss:280 */
+aside.onebox .onebox-body.user-onebox .full-name,
+aside.onebox .onebox-body.user-onebox .location {
+  margin-right: 10px;
+}
+/* onebox.scss:285 */
+aside.onebox .onebox-body.user-onebox .user-onebox--joined {
+  color: var(--primary-medium);
+  margin-top: 10px;
+}
+/* onebox.scss:290 */
+aside.onebox .onebox-body.user-onebox .aspect-image {
+  width: 80px;
+  height: 80px;
+  float: left;
+  margin-right: 1em;
+}
+/* onebox.scss:299 */
+aside.onebox .onebox-body .instagram-images,
+aside.onebox .onebox-body .scale-images {
+  clear: both;
+  position: relative;
+}
+/* onebox.scss:304 */
+aside.onebox .onebox-body .instagram-images .instagram-image,
+aside.onebox .onebox-body .instagram-images .scale-image,
+aside.onebox .onebox-body .scale-images .instagram-image,
+aside.onebox .onebox-body .scale-images .scale-image {
+  padding: 5px 5px 5px 5px;
+  max-width: 100%;
+  max-height: 100%;
+  float: none;
+}
+/* onebox.scss:313 */
+aside.onebox .onebox-body .image-wrapper {
+  display: block;
+  position: relative;
+}
+/* onebox.scss:318 */
+aside.onebox .onebox-body .video-icon {
+  bottom: 15px;
+  right: 10px;
+  position: absolute;
+}
+/* onebox.scss:323 */
+aside.onebox .onebox-body .video-icon::before {
+  opacity: .8;
+  content: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32px' height='32px' viewBox='0 0 512 512' fill='white'%3E%3Cpath d='M424.4 214.7L72.4 6.6C43.8-10.3 0 6.1 0 47.9V464c0 37.5 40.7 60.1 72.4 41.3l352-208c31.4-18.5 31.5-64.1 0-82.6z'%3E%3C/path%3E%3C/svg%3E");
+}
+/* onebox.scss:335 */
+.chat-drawer-container .chat-message aside.onebox {
+  border: 0;
+  margin-inline: 3px;
+  box-shadow: 0 0 0 1px var(--onebox-border-color),0 0 0 3px var(--onebox-shadow-color);
+  border-radius: calc(var(--d-border-radius) - 1.5px);
+}
+/* onebox.scss:348 */
+.googledocs-onebox-logo {
+  width: 60px;
+  height: 50px;
+  float: left;
+}
+/* onebox.scss:340 */
+.googledocs-onebox-logo.g-docs-logo {
+  background: url("http://localhost:3042/images/favicons/google_branding/logo_docs_48px.png") no-repeat;
+}
+/* onebox.scss:340 */
+.googledocs-onebox-logo.g-forms-logo {
+  background: url("http://localhost:3042/images/favicons/google_branding/logo_forms_48px.png") no-repeat;
+}
+/* onebox.scss:340 */
+.googledocs-onebox-logo.g-sheets-logo {
+  background: url("http://localhost:3042/images/favicons/google_branding/logo_sheets_48px.png") no-repeat;
+}
+/* onebox.scss:340 */
+.googledocs-onebox-logo.g-slides-logo {
+  background: url("http://localhost:3042/images/favicons/google_branding/logo_slides_48px.png") no-repeat;
+}
+/* onebox.scss:340 */
+.googledocs-onebox-logo.g-calendar-logo {
+  background: url("http://localhost:3042/images/favicons/google_branding/logo_calendar_48px.png") no-repeat;
+}
+/* onebox.scss:340 */
+.googledocs-onebox-logo.g-drive-logo {
+  background: url("http://localhost:3042/images/favicons/google_branding/logo_drive_48px.png") no-repeat;
+}
+/* onebox.scss:361 */
+.google-meet-onebox {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 1em;
+  overflow-wrap: anywhere;
+}
+/* onebox.scss:368 */
+.google-meet-onebox__icon {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 3.25em;
+  height: 3.25em;
+  margin-block-start: .15em;
+  color: var(--primary-medium);
+  background: var(--primary-very-low);
+  border: 1px solid var(--primary-low);
+  border-radius: var(--d-border-radius);
+}
+/* onebox.scss:382 */
+.google-meet-onebox__icon .d-icon {
+  width: 1.5em;
+  height: 1.5em;
+}
+/* onebox.scss:387 */
+.google-meet-onebox__content {
+  display: grid;
+  min-width: 0;
+  justify-items: start;
+  gap: .55em;
+}
+/* onebox.scss:394 */
+.google-meet-onebox__code,
+.google-meet-onebox__description {
+  margin: 0;
+  color: var(--primary-high);
+}
+/* onebox.scss:400 */
+.google-meet-onebox__code {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: .35em;
+}
+/* onebox.scss:407 */
+.google-meet-onebox__code-value {
+  padding: .15em .35em;
+  font-family: var(--d-font-family--monospace);
+  background: var(--primary-very-low);
+  border: 1px solid var(--primary-low);
+  border-radius: var(--d-border-radius);
+}
+/* onebox.scss:415 */
+.google-meet-onebox__join {
+  font-weight: 600;
+}
+/* onebox.scss:420 */
+aside.onebox .onebox-body .google-meet-onebox__title {
+  margin: 0;
+}
+/* onebox.scss:425 */
+.gdocs-onebox-splash {
+  background-color: var(--primary-low-mid);
+  color: var(--primary);
+  border: 1px inset var(--primary);
+}
+/* onebox.scss:430 */
+.gdocs-onebox-splash .gdocs-onebox-logo {
+  display: inline-block;
+  width: 128px;
+  height: 128px;
+}
+/* onebox.scss:435 */
+.gdocs-onebox-splash .gdocs-onebox-logo.g-calendar-logo {
+  background: url("http://localhost:3042/images/favicons/google_branding/logo_calendar_128px.png") no-repeat;
+}
+/* onebox.scss:444 */
+aside.onebox .onebox-body .onebox-avatar {
+  max-height: none;
+  max-width: none;
+  height: 60px;
+  width: 60px;
+}
+/* onebox.scss:452 */
+blockquote aside.onebox {
+  background: var(--d-post-aside-background);
+  border-left: var(--d-post-aside-border);
+}
+/* onebox.scss:458 */
+pre.onebox {
+  margin-bottom: 0;
+}
+/* onebox.scss:463 */
+pre.onebox code ol.lines li::before {
+  box-sizing: border-box;
+  position: absolute;
+  display: inline-block;
+  width: 3.5em;
+  left: calc(-3em + 1px);
+  color: var(--primary-600);
+  text-align: right;
+  padding-right: .5em;
+  font-size: var(--font-down-1);
+  line-height: 1.7230769231;
+  content: counter(li-counter);
+  counter-increment: li-counter;
+}
+/* onebox.scss:480 */
+pre.onebox code ol.lines li.selected::before {
+  background-color: var(--highlight-bg);
+}
+/* onebox.scss:486 */
+.onebox.githubblob .onebox-body h4,
+.onebox.gitlabblob .onebox-body h4 {
+  word-break: break-all;
+  margin-bottom: 5px;
+  font-size: 1rem;
+}
+/* onebox.scss:492 */
+.onebox.githubblob .git-blob-info,
+.onebox.gitlabblob .git-blob-info {
+  font-size: var(--font-down-1);
+  line-height: var(--line-height-small);
+}
+/* onebox.scss:497 */
+.onebox.githubblob pre,
+.onebox.gitlabblob pre {
+  margin-bottom: 0;
+}
+/* onebox.scss:502 */
+pre.onebox code ol {
+  margin-left: 0;
+  line-height: var(--line-height-large);
+}
+/* onebox.scss:507 */
+pre.onebox code {
+  white-space: normal;
+}
+/* onebox.scss:512 */
+pre.onebox code li {
+  padding-left: .5em;
+}
+/* onebox.scss:516 */
+pre.onebox code ol.lines {
+  position: relative;
+  margin: 0 0 0 2.5em;
+  padding-left: .5em;
+}
+/* onebox.scss:522 */
+pre.onebox code ol.lines li {
+  list-style-type: none;
+  padding-left: .5em;
+  margin-left: 0;
+  border-left: 1px solid var(--primary-300);
+  min-height: 1.5em;
+  white-space: pre;
+  width: max-content;
+}
+/* onebox.scss:532 */
+pre.onebox code ol.lines li.selected {
+  background-color: var(--highlight-bg);
+  border-left-color: rgb(var(--primary-rgb), 0.2);
+}
+/* onebox.scss:537 */
+.onebox-warning-message {
+  margin-top: 5px;
+  color: var(--primary-med-or-secondary-med);
+}
+/* onebox.scss:541 */
+.onebox-warning-message img.emoji {
+  width: 20px;
+  height: 20px;
+  float: none;
+}
+/* onebox.scss:552 */
+.onebox.githubpullrequest .onebox-body,
+.onebox.githubcommit .onebox-body,
+.onebox.githubissue .onebox-body {
+  display: grid;
+  grid-template-areas: "icon title" "icon branches" "icon info" "body body";
+  grid-template-columns: 2.5em minmax(0, 1fr);
+  gap: .25em .75em;
+}
+/* onebox.scss:552 */
+@media (width < 40rem) {
+  .onebox.githubpullrequest .onebox-body,
+  .onebox.githubcommit .onebox-body,
+  .onebox.githubissue .onebox-body {
+    gap: .25em .5em;
+    grid-template-columns: 1.5em minmax(0, 1fr);
+    grid-template-areas: "icon title" "branches branches" "info info" "body body";
+  }
+}
+/* onebox.scss:572 */
+.onebox.githubpullrequest .onebox-body h4,
+.onebox.githubcommit .onebox-body h4,
+.onebox.githubissue .onebox-body h4 {
+  margin-bottom: 0;
+}
+/* onebox.scss:576 */
+.onebox.githubpullrequest .onebox-body>.github-icon,
+.onebox.githubcommit .onebox-body>.github-icon,
+.onebox.githubissue .onebox-body>.github-icon {
+  float: left;
+  margin-right: 5px;
+}
+/* onebox.scss:583 */
+.onebox.githubpullrequest .github-row,
+.onebox.githubcommit .github-row,
+.onebox.githubissue .github-row {
+  display: contents;
+}
+/* onebox.scss:587 */
+.onebox.githubpullrequest .github-icon-container,
+.onebox.githubpullrequest .github-info-container,
+.onebox.githubcommit .github-icon-container,
+.onebox.githubcommit .github-info-container,
+.onebox.githubissue .github-icon-container,
+.onebox.githubissue .github-info-container {
+  display: contents;
+}
+/* onebox.scss:592 */
+.onebox.githubpullrequest .github-icon,
+.onebox.githubcommit .github-icon,
+.onebox.githubissue .github-icon {
+  grid-area: icon;
+  align-self: stretch;
+  max-width: 1.8em;
+  height: auto;
+  justify-self: center;
+  fill: var(--primary-high);
+}
+/* onebox.scss:601 */
+.onebox.githubpullrequest .branches,
+.onebox.githubcommit .branches,
+.onebox.githubissue .branches {
+  grid-area: branches;
+  font-size: var(--font-down-1);
+  line-height: var(--line-height-medium);
+}
+/* onebox.scss:606 */
+.onebox.githubpullrequest .branches code,
+.onebox.githubcommit .branches code,
+.onebox.githubissue .branches code {
+  word-break: break-all;
+}
+/* onebox.scss:611 */
+.onebox.githubpullrequest .github-info-container,
+.onebox.githubcommit .github-info-container,
+.onebox.githubissue .github-info-container {
+  width: 100%;
+  overflow-x: hidden;
+}
+/* onebox.scss:615 */
+.onebox.githubpullrequest .github-info-container>span,
+.onebox.githubcommit .github-info-container>span,
+.onebox.githubissue .github-info-container>span {
+  grid-area: info;
+}
+/* onebox.scss:622 */
+.onebox.githubpullrequest .github-info,
+.onebox.githubcommit .github-info,
+.onebox.githubissue .github-info {
+  grid-area: info;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  width: 100%;
+  gap: .15em .75em;
+}
+/* onebox.scss:630 */
+.onebox.githubpullrequest .github-info .lines,
+.onebox.githubcommit .github-info .lines,
+.onebox.githubissue .github-info .lines {
+  font-weight: bold;
+}
+/* onebox.scss:633 */
+.onebox.githubpullrequest .github-info .lines .added,
+.onebox.githubcommit .github-info .lines .added,
+.onebox.githubissue .github-info .lines .added {
+  color: var(--success);
+}
+/* onebox.scss:637 */
+.onebox.githubpullrequest .github-info .lines .removed,
+.onebox.githubcommit .github-info .lines .removed,
+.onebox.githubissue .github-info .lines .removed {
+  color: var(--danger);
+}
+/* onebox.scss:642 */
+.onebox.githubpullrequest .github-info .discourse-local-date,
+.onebox.githubcommit .github-info .discourse-local-date,
+.onebox.githubissue .github-info .discourse-local-date {
+  white-space: nowrap;
+}
+/* onebox.scss:647 */
+.onebox.githubpullrequest .github-body-container,
+.onebox.githubcommit .github-body-container,
+.onebox.githubissue .github-body-container {
+  grid-area: body;
+  margin: 1em 0 0 0;
+  color: var(--primary-very-high);
+  max-height: 400px;
+  white-space: pre-wrap;
+  overflow-y: auto;
+  word-break: break-word;
+  font-family: var(--d-font-family--monospace);
+  font-size: .875em;
+  line-height: 1.3076923077;
+  box-sizing: border-box;
+}
+/* onebox.scss:647 */
+@media (width < 40rem) {
+  .onebox.githubpullrequest .github-body-container,
+  .onebox.githubcommit .github-body-container,
+  .onebox.githubissue .github-body-container {
+    max-height: 50vh;
+  }
+}
+/* onebox.scss:664 */
+.onebox.githubpullrequest .github-body-container .show-more,
+.onebox.githubcommit .github-body-container .show-more,
+.onebox.githubissue .github-body-container .show-more {
+  font-family: var(--font-family);
+  padding: .5em 1em 0 .2em;
+}
+/* onebox.scss:672 */
+.onebox.githubpullrequest .onebox-avatar-inline,
+.onebox.githubcommit .onebox-avatar-inline,
+.onebox.githubissue .onebox-avatar-inline {
+  border-radius: 2px;
+  vertical-align: text-bottom;
+}
+/* onebox.scss:677 */
+.onebox.githubpullrequest .labels,
+.onebox.githubcommit .labels,
+.onebox.githubissue .labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .25em;
+}
+/* onebox.scss:682 */
+.onebox.githubpullrequest .labels span,
+.onebox.githubcommit .labels span,
+.onebox.githubissue .labels span {
+  background-color: var(--primary-medium) !important;
+  color: var(--secondary) !important;
+  padding: 2px 4px !important;
+  white-space: nowrap;
+}
+/* onebox.scss:691 */
+.onebox.githubpullrequest .emoji,
+.onebox.githubcommit .emoji,
+.onebox.githubissue .emoji {
+  max-height: 15px;
+  margin: .2em;
+  min-width: 15px;
+}
+/* onebox.scss:699 */
+.onebox.githubrepo .github-row {
+  display: contents;
+}
+/* onebox.scss:705 */
+.onebox.githubactions h4 {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+/* onebox.scss:710 */
+.onebox.githubactions .github-row {
+  display: flex;
+}
+/* onebox.scss:714 */
+.onebox.githubactions .github-icon-container {
+  display: flex;
+  align-items: center;
+  margin-right: 10px;
+}
+/* onebox.scss:720 */
+.onebox.githubactions .github-icon {
+  fill: var(--primary-medium);
+  width: var(--font-up-3);
+  height: var(--font-up-3);
+}
+/* onebox.scss:726 */
+.onebox.githubactions .github-icon-success {
+  fill: var(--success);
+}
+/* onebox.scss:730 */
+.onebox.githubactions .github-icon-failure {
+  fill: var(--danger);
+}
+/* onebox.scss:734 */
+.onebox.githubactions .github-icon-pending {
+  fill: #dbab0a;
+}
+/* onebox.scss:738 */
+.onebox.githubactions .github-info {
+  color: var(--primary-high);
+}
+/* onebox.scss:742 */
+.onebox.githubactions .github-run-number {
+  color: var(--primary-medium);
+}
+/* onebox.scss:748 */
+.onebox-body .github-commit-status {
+  background: #f5f5f5;
+  border-radius: 5px;
+  margin: 0 0 5px 100px;
+  padding: 10px;
+}
+/* onebox.scss:755 */
+.onebox-body .status_tag {
+  display: inline-block;
+  color: #fff;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-weight: bold;
+  margin-bottom: 5px;
+  text-transform: capitalize;
+}
+/* onebox.scss:765 */
+.onebox-body .build_status {
+  padding: 2px;
+  font-size: var(--font-down-1);
+}
+/* onebox.scss:770 */
+.onebox-body .status_tag.open {
+  background-color: #6cc644;
+}
+/* onebox.scss:774 */
+.onebox-body .status_tag.merged {
+  background-color: #6e5494;
+}
+/* onebox.scss:778 */
+.onebox-body .status_tag.closed {
+  background-color: #bd2c00;
+}
+/* onebox.scss:784 */
+aside.onebox.twitterstatus .onebox-body h4 {
+  margin-bottom: 0;
+}
+/* onebox.scss:791 */
+.onebox.twitterstatus .thumbnail,
+.onebox.twitterstatus .thumbnail.onebox-avatar {
+  width: 36px;
+  height: 36px;
+  margin-right: 12px;
+}
+/* onebox.scss:798 */
+.onebox.twitterstatus .twitter-screen-name {
+  font-size: var(--font-down-1);
+}
+/* onebox.scss:802 */
+.onebox.twitterstatus .tweet .tweet-description {
+  white-space: pre-line;
+}
+/* onebox.scss:806 */
+.onebox.twitterstatus p,
+.onebox.twitterstatus .tweet {
+  clear: left;
+  padding: 1em 0;
+}
+/* onebox.scss:811 */
+.onebox.twitterstatus p .quoted,
+.onebox.twitterstatus .tweet .quoted {
+  border: 1px solid var(--content-border-color);
+  padding: .5em 1em;
+  margin-top: 1em;
+  white-space: normal;
+}
+/* onebox.scss:817 */
+.onebox.twitterstatus p .quoted .quoted-link,
+.onebox.twitterstatus .tweet .quoted .quoted-link {
+  color: inherit;
+}
+/* onebox.scss:821 */
+.onebox.twitterstatus p .quoted .quoted-title,
+.onebox.twitterstatus .tweet .quoted .quoted-title {
+  font-weight: bold;
+  margin: .5em 0;
+  padding: 0;
+}
+/* onebox.scss:826 */
+.onebox.twitterstatus p .quoted .quoted-title span,
+.onebox.twitterstatus .tweet .quoted .quoted-title span {
+  font-weight: lighter;
+  color: var(--primary-medium);
+}
+/* onebox.scss:832 */
+.onebox.twitterstatus p .quoted div,
+.onebox.twitterstatus .tweet .quoted div {
+  margin-bottom: 5px;
+}
+/* onebox.scss:838 */
+.onebox.twitterstatus .date {
+  display: flex;
+  line-height: var(--line-height-small);
+}
+/* onebox.scss:842 */
+.onebox.twitterstatus .date .timestamp {
+  color: var(--primary-medium);
+}
+/* onebox.scss:847 */
+.onebox.twitterstatus .like,
+.onebox.twitterstatus .retweet {
+  align-items: center;
+  color: var(--primary-medium);
+  display: flex;
+  margin-left: .75em;
+  white-space: nowrap;
+}
+/* onebox.scss:855 */
+.onebox.twitterstatus .like svg,
+.onebox.twitterstatus .retweet svg {
+  fill: currentcolor;
+  margin-right: .25em;
+}
+/* onebox.scss:861 */
+.onebox.twitterstatus .is-reply {
+  color: var(--primary-medium);
+  margin-right: .25em;
+}
+/* onebox.scss:870 */
+.onebox.imgur-album .outer-box,
+.onebox.google-photos-album .outer-box,
+.onebox.flickr-album .outer-box {
+  position: absolute;
+  z-index: 1;
+  font-size: var(--font-down-1);
+  color: #fff;
+  background-color: rgba(0,0,0,.6);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  padding: 5px 0;
+}
+/* onebox.scss:881 */
+.onebox.imgur-album .outer-box .inner-box,
+.onebox.google-photos-album .outer-box .inner-box,
+.onebox.flickr-album .outer-box .inner-box {
+  padding-left: 10px;
+  padding-right: 10px;
+  overflow: hidden;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+/* onebox.scss:888 */
+.onebox.imgur-album .outer-box .inner-box .album-title,
+.onebox.google-photos-album .outer-box .inner-box .album-title,
+.onebox.flickr-album .outer-box .inner-box .album-title {
+  width: 100%;
+  font-size: var(--font-up-1);
+  line-height: var(--line-height-large);
+  color: #ccc;
+  text-decoration: none;
+}
+/* onebox.scss:901 */
+aside.onebox.stackexchange .onebox-body img:not(.onebox-avatar) {
+  max-height: 60%;
+  max-width: 10%;
+}
+/* onebox.scss:906 */
+aside.onebox.stackexchange .onebox-body .tags {
+  color: gray;
+}
+/* onebox.scss:911 */
+.onebox-metadata {
+  color: var(--primary-med-or-secondary-med);
+}
+/* onebox.scss:915 */
+aside.onebox.xkcd .onebox-body img {
+  float: none;
+  max-height: unset;
+}
+/* onebox.scss:922 */
+.onebox.pdf .onebox-body .pdf-onebox-logo {
+  width: 60px;
+  height: 50px;
+  float: left;
+  background: url("http://localhost:3042/images/favicons/pdf_64px.png") no-repeat;
+  background-size: 48px 48px;
+}
+/* onebox.scss:930 */
+.onebox.pdf .onebox-body .filesize {
+  color: gray;
+}
+/* onebox.scss:939 */
+.onebox.allowlistedgeneric .label1,
+.onebox.allowlistedgeneric .label2,
+.onebox.whitelistedgeneric .label1,
+.onebox.whitelistedgeneric .label2,
+.onebox.discoursetopic .label1,
+.onebox.discoursetopic .label2 {
+  color: var(--primary-med-or-secondary-med);
+}
+/* onebox.scss:944 */
+.onebox.allowlistedgeneric .label1,
+.onebox.whitelistedgeneric .label1,
+.onebox.discoursetopic .label1 {
+  float: left;
+}
+/* onebox.scss:948 */
+.onebox.allowlistedgeneric .label2,
+.onebox.whitelistedgeneric .label2,
+.onebox.discoursetopic .label2 {
+  float: right;
+}
+/* onebox.scss:954 */
+.onebox .site-icon {
+  width: 16px;
+  height: 16px;
+  margin-right: .5em;
+}
+/* onebox.scss:960 */
+.onebox.category-onebox {
+  border: 1px solid var(--content-border-color);
+  padding-left: calc(1em - 5px);
+  margin-left: 5px;
+}
+/* onebox.scss:965 */
+.onebox.category-onebox .subcategories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .625em;
+}
+/* onebox.scss:972 */
+.onebox .badge-category-bg {
+  display: inline-block;
+  width: .625rem;
+  height: .625rem;
+  margin-right: .33em;
+}
+/* onebox.scss:981 */
+.onebox.discoursetopic h3 {
+  width: 100%;
+  margin-bottom: .2rem !important;
+}
+/* onebox.scss:986 */
+.onebox.discoursetopic .topic-category {
+  color: var(--primary-high);
+  line-height: var(--line-height-medium);
+}
+/* onebox.scss:991 */
+.onebox.discoursetopic .discourse-tags {
+  vertical-align: bottom;
+}
+/* onebox.scss:994 */
+.onebox.discoursetopic .discourse-tags .d-icon-tag {
+  font-size: var(--font-down-1);
+  margin-right: .35em;
+  margin-top: .15em;
+  color: var(--primary-medium);
+  align-self: center;
+}
+/* onebox.scss:1003 */
+.onebox.discoursetopic .discourse-tag:not(:last-child)::after {
+  content: ",";
+  margin-right: .15em;
+}
+/* onebox.scss:1010 */
+.onebox.gfycat p span.label1 a {
+  white-space: nowrap;
+}
+/* onebox.scss:1016 */
+.onebox.instagram div.instagram-description {
+  color: var(--primary-med-or-secondary-med);
+  padding-top: 10px;
+}
+/* onebox.scss:1022 */
+iframe.reddit-onebox {
+  width: 100%;
+  max-width: 640px;
+  display: block;
+  margin: 0 auto;
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--d-border-radius);
+}
+/* onebox.scss:1033 */
+.onebox.githubfolder .thumbnail {
+  width: 60px;
+  height: 60px;
+}
+/* onebox.scss:1037 */
+.onebox.githubfolder .thumbnail.onebox-full-image {
+  max-height: 60px;
+  max-width: 60px;
+}
+/* onebox.scss:1043 */
+.onebox.githubfolder .label1 {
+  color: var(--primary-med-or-secondary-med);
+}
+/* onebox.scss:1049 */
+.onebox.githubcommit pre.message {
+  padding: 0;
+}
+/* onebox.scss:1055 */
+.mobile-view article.onebox-body {
+  border-top: none;
+}
+/* onebox.scss:1064 */
+aside.onebox.mixcloud-preview {
+  padding: 0;
+  border: 0;
+  height: 120px;
+  background-color: #1c1f21;
+}
+/* onebox.scss:1070 */
+aside.onebox.mixcloud-preview article.onebox-body img {
+  padding: 0;
+  max-height: 120px;
+}
+/* onebox.scss:1076 */
+aside.onebox.mixcloud-preview .onebox-body a[href],
+aside.onebox.mixcloud-preview .onebox-body a[href]:visited,
+aside.onebox.mixcloud-preview .onebox-body a[href]:hover {
+  color: #d1d1d1;
+}
+/* onebox.scss:1082 */
+aside.onebox.mixcloud-preview .onebox-body .video-icon {
+  position: relative;
+  top: 17px;
+  height: 100%;
+  float: left;
+  padding-left: 6px;
+}
+/* onebox.scss:1090 */
+aside.onebox.mixcloud-preview .onebox-body .mixcloud-text {
+  padding-left: 170px;
+  font-family: sans-serif;
+  color: gray;
+}
+/* onebox.scss:1095 */
+aside.onebox.mixcloud-preview .onebox-body .mixcloud-text h3 {
+  font-size: 13px;
+  font-weight: 300;
+  margin: 0;
+  padding-top: 15px;
+  height: 20px;
+}
+/* onebox.scss:1103 */
+aside.onebox.mixcloud-preview .onebox-body .mixcloud-text h4 {
+  font-size: 12px;
+  font-weight: 200;
+}
+/* onebox.scss:1111 */
+.youtube-onebox {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16/9;
+}
+/* onebox.scss:1118 */
+.onebox.video-onebox,
+.video-container {
+  position: relative;
+  padding: 0 0 56.25% 0;
+  width: 100%;
+  background-color: #000;
+}
+/* onebox.scss:1125 */
+.onebox.video-onebox video,
+.video-container video {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+/* onebox.scss:1132 */
+.video-placeholder-container {
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  padding: 0 0 56.25% 0;
+  width: 100%;
+  background-color: #000;
+}
+/* onebox.scss:1140 */
+.video-placeholder-container .video-placeholder-overlay {
+  background-color: rgba(0,0,0,.25);
+  padding: 1rem;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+/* onebox.scss:1148 */
+.video-placeholder-container .video-placeholder-overlay .d-icon-play {
+  border-radius: var(--d-border-radius);
+  color: #fff;
+  display: flex;
+  filter: drop-shadow(3px 3px 2px rgba(0, 0, 0, 0.25));
+  height: 2.3rem;
+  transition: transform .15s;
+  width: 2.3rem;
+}
+/* onebox.scss:1148 */
+@media (prefers-reduced-motion) {
+  .video-placeholder-container .video-placeholder-overlay .d-icon-play {
+    transition: transform 0s;
+  }
+}
+/* onebox.scss:1162 */
+.video-placeholder-container .video-placeholder-overlay .spinner {
+  border-color: #fff;
+  border-right-color: rgba(0,0,0,0);
+  margin: 0;
+}
+/* onebox.scss:1170 */
+.discourse-no-touch .video-placeholder-container:hover .video-placeholder-overlay .d-icon-play,
+.discourse-no-touch .video-placeholder-container.btn-hover .video-placeholder-overlay .d-icon-play,
+.no-ember .video-placeholder-container:hover .video-placeholder-overlay .d-icon-play,
+.no-ember .video-placeholder-container.btn-hover .video-placeholder-overlay .d-icon-play {
+  transform: scale(1.2);
+}
+/* onebox.scss:1176 */
+iframe.vimeo-onebox,
+iframe.loom-onebox,
+iframe.restream-onebox {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16/9;
+}
+/* onebox.scss:1185 */
+.video-container .notice {
+  background-color: var(--highlight-bg);
+  padding: 10px 20px;
+  position: absolute;
+  width: calc(100% - 40px);
+  animation: .5s fadeIn;
+}
+/* onebox.scss:1185 */
+@media (prefers-reduced-motion) {
+  .video-container .notice {
+    animation-duration: 0s;
+  }
+}
+/* onebox.scss:1199 */
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+}
+/* onebox.scss:1203 */
+@keyframes fadeIn {
+  100% {
+    opacity: 1;
+  }
+}
+/* onebox.scss:1208 */
+.onebox-placeholder-container {
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  width: 100%;
+  padding: 0 0 48.25% 0;
+  background-color: var(--primary-low);
+}
+/* onebox.scss:1216 */
+.onebox-placeholder-container .placeholder-icon {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+/* onebox.scss:1225 */
+.onebox-placeholder-container .placeholder-icon.image::before {
+  opacity: .8;
+  content: url("data:image/svg+xml;charset=utf8,%3Csvg width='128px' height='128px' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='grey' d='M464 448H48c-26.51 0-48-21.49-48-48V112c0-26.51 21.49-48 48-48h416c26.51 0 48 21.49 48 48v288c0 26.51-21.49 48-48 48zM112 120c-30.928 0-56 25.072-56 56s25.072 56 56 56 56-25.072 56-56-25.072-56-56-56zM64 384h384V272l-87.515-87.515c-4.686-4.686-12.284-4.686-16.971 0L208 320l-55.515-55.515c-4.686-4.686-12.284-4.686-16.971 0L64 336v48z'%3E%3C/path%3E%3C/svg%3E");
+}
+/* onebox.scss:1234 */
+.onebox-placeholder-container .placeholder-icon.video::before {
+  opacity: .8;
+  content: url("data:image/svg+xml;charset=utf8,%3Csvg width='128px' height='128px' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 576 512'%3E%3Cpath fill='white' d='M336.2 64H47.8C21.4 64 0 85.4 0 111.8v288.4C0 426.6 21.4 448 47.8 448h288.4c26.4 0 47.8-21.4 47.8-47.8V111.8c0-26.4-21.4-47.8-47.8-47.8zm189.4 37.7L416 177.3v157.4l109.6 75.5c21.2 14.6 50.4-.3 50.4-25.8V127.5c0-25.4-29.1-40.4-50.4-25.8z'%3E%3C/path%3E%3C/svg%3E");
+}
+/* onebox.scss:1243 */
+.onebox-placeholder-container .placeholder-icon.audio::before {
+  opacity: .4;
+  content: url("data:image/svg+xml;charset=utf8,%3Csvg width='128px' height='128px' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='currentColor' d='M511.99 32.01c0-21.71-21.1-37.01-41.6-30.51L150.4 96c-13.3 4.2-22.4 16.5-22.4 30.5v261.42c-10.05-2.38-20.72-3.92-32-3.92-53.02 0-96 28.65-96 64s42.98 64 96 64 96-28.65 96-64V214.31l256-75.02v184.63c-10.05-2.38-20.72-3.92-32-3.92-53.02 0-96 28.65-96 64s42.98 64 96 64 96-28.65 96-64l-.01-351.99z'%3E%3C/path%3E%3C/svg%3E");
+}
+/* onebox.scss:1252 */
+.onebox-placeholder-container .placeholder-icon.map::before {
+  opacity: .4;
+  content: url("data:image/svg+xml;charset=utf8,%3Csvg width='128px' height='128px' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 576 512'%3E%3Cpath fill='currentColor' d='M288 0c-69.59 0-126 56.41-126 126 0 56.26 82.35 158.8 113.9 196.02 6.39 7.54 17.82 7.54 24.2 0C331.65 284.8 414 182.26 414 126 414 56.41 357.59 0 288 0zm0 168c-23.2 0-42-18.8-42-42s18.8-42 42-42 42 18.8 42 42-18.8 42-42 42zM20.12 215.95A32.006 32.006 0 0 0 0 245.66v250.32c0 11.32 11.43 19.06 21.94 14.86L160 448V214.92c-8.84-15.98-16.07-31.54-21.25-46.42L20.12 215.95zM288 359.67c-14.07 0-27.38-6.18-36.51-16.96-19.66-23.2-40.57-49.62-59.49-76.72v182l192 64V266c-18.92 27.09-39.82 53.52-59.49 76.72-9.13 10.77-22.44 16.95-36.51 16.95zm266.06-198.51L416 224v288l139.88-55.95A31.996 31.996 0 0 0 576 426.34V176.02c0-11.32-11.43-19.06-21.94-14.86z'%3E%3C/path%3E%3C/svg%3E");
+}
+/* onebox.scss:1261 */
+.onebox-placeholder-container .placeholder-icon.generic::before {
+  opacity: .4;
+  content: url("data:image/svg+xml;charset=utf8,%3Csvg width='128px' height='128px' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 384 512'%3E%3Cpath fill='currentColor' d='M288 248v28c0 6.6-5.4 12-12 12H108c-6.6 0-12-5.4-12-12v-28c0-6.6 5.4-12 12-12h168c6.6 0 12 5.4 12 12zm-12 72H108c-6.6 0-12 5.4-12 12v28c0 6.6 5.4 12 12 12h168c6.6 0 12-5.4 12-12v-28c0-6.6-5.4-12-12-12zm108-188.1V464c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48V48C0 21.5 21.5 0 48 0h204.1C264.8 0 277 5.1 286 14.1L369.9 98c9 8.9 14.1 21.2 14.1 33.9zm-128-80V128h76.1L256 51.9zM336 464V176H232c-13.3 0-24-10.7-24-24V48H48v416h288z'%3E%3C/path%3E%3C/svg%3E");
+}
+/* onebox.scss:1271 */
+aside.onebox.preview-error .site-icon {
+  width: 16px;
+  height: 16px;
+  margin-right: .5em;
+}
+/* onebox.scss:1278 */
+.onebox.threadsstatus .onebox-body .thumbnail,
+.onebox.threadsstatus .onebox-body .thumbnail.onebox-avatar {
+  width: 36px;
+  height: 36px;
+  margin-right: 12px;
+}
+/* onebox.scss:1285 */
+.onebox.threadsstatus .onebox-body .threads-screen-name {
+  font-size: var(--font-down-1);
+}
+/* onebox.scss:1289 */
+.onebox.threadsstatus .onebox-body h4 {
+  margin-bottom: 0;
+}
+/* onebox.scss:1293 */
+.onebox.threadsstatus .onebox-body .thread-contents .thread-description {
+  white-space: pre-line;
+}
+/* onebox.scss:1297 */
+.onebox.threadsstatus .onebox-body p,
+.onebox.threadsstatus .onebox-body .thread-contents {
+  clear: left;
+  padding: 1em 0;
+}
+/* onebox.scss:1302 */
+.onebox.threadsstatus .onebox-body p .quoted,
+.onebox.threadsstatus .onebox-body .thread-contents .quoted {
+  border: 1px solid var(--content-border-color);
+  padding: .5em 1em;
+  margin-top: 1em;
+  white-space: normal;
+}
+/* onebox.scss:1308 */
+.onebox.threadsstatus .onebox-body p .quoted .quoted-link,
+.onebox.threadsstatus .onebox-body .thread-contents .quoted .quoted-link {
+  color: inherit;
+}
+/* onebox.scss:1312 */
+.onebox.threadsstatus .onebox-body p .quoted .quoted-title,
+.onebox.threadsstatus .onebox-body .thread-contents .quoted .quoted-title {
+  font-weight: bold;
+  margin: .5em 0;
+  padding: 0;
+}
+/* onebox.scss:1317 */
+.onebox.threadsstatus .onebox-body p .quoted .quoted-title span,
+.onebox.threadsstatus .onebox-body .thread-contents .quoted .quoted-title span {
+  font-weight: lighter;
+  color: var(--primary-medium);
+}
+/* onebox.scss:1323 */
+.onebox.threadsstatus .onebox-body p .quoted div,
+.onebox.threadsstatus .onebox-body .thread-contents .quoted div {
+  margin-bottom: 5px;
+}
+/* onebox.scss:1329 */
+.onebox.threadsstatus .onebox-body .date {
+  display: flex;
+  line-height: var(--line-height-small);
+}
+/* onebox.scss:1333 */
+.onebox.threadsstatus .onebox-body .date .timestamp {
+  color: var(--primary-medium);
+}
+/* onebox.scss:1338 */
+.onebox.threadsstatus .onebox-body .like,
+.onebox.threadsstatus .onebox-body .replies {
+  align-items: center;
+  color: var(--primary-medium);
+  display: flex;
+  margin-left: .75em;
+}
+/* onebox.scss:1345 */
+.onebox.threadsstatus .onebox-body .like svg,
+.onebox.threadsstatus .onebox-body .replies svg {
+  fill: currentcolor;
+  margin-right: .25em;
+}
+/* onebox.scss:1351 */
+.onebox.threadsstatus .onebox-body .is-reply {
+  color: var(--primary-medium);
+  margin-right: .25em;
+}

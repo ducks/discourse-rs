@@ -1,0 +1,16 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "Before\nhttp://localhost:3042/t/parity-fixture-liked-and-archived/41\nafter, in one paragraph."
+      }
+    }
+  ],
+  "run_jobs": [
+    "process_post"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "The category:\n\nhttp://localhost:3042/c/general/4"
+      }
+    }
+  ],
+  "run_jobs": [
+    "process_post"
+  ]
+}
