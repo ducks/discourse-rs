@@ -1,0 +1,39 @@
+{
+  "name": "by_ids_login_required",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/hashtags/by-ids.json",
+      "params": {
+        "category": [
+          4
+        ]
+      }
+    }
+  ],
+  "started_at": "2026-10-13T20:57:51.38446",
+  "transaction_started_at": "2026-10-13T20:57:50.561757",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You need to be logged in to do that."
+        ],
+        "error_type": "not_logged_in"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "login_required": true
+  },
+  "recorded_from": {
+    "case": "5e5828da2d3bc1a43e243ca1b412758f92af62bcd124a0c79baf1a6ed5918b25",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

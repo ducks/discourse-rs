@@ -623,6 +623,12 @@
         try {
           preview.innerHTML = render(raw);
           resolveShortUrls();
+          // The topic composer's hashtags (hashtag_configurations'
+          // topic-composer order), linked once looked up, then decorated.
+          if (window.Discourse && Discourse.hashtags) {
+            Discourse.hashtags.resolve(preview, ["category", "tag", "channel"], updatePreview);
+            Discourse.hashtags.decorate(preview);
+          }
         } catch (e) {
           preview.textContent = e.message;
         }

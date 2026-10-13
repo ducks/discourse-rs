@@ -1,0 +1,17 @@
+{
+  "user": null,
+  "settings": {
+    "login_required": true
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/hashtags/by-ids.json",
+      "params": {
+        "category": [
+          4
+        ]
+      }
+    }
+  ]
+}

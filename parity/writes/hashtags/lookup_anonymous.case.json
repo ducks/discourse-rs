@@ -1,0 +1,17 @@
+{
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/hashtags.json",
+      "params": {
+        "slugs": [
+          "general"
+        ],
+        "order": [
+          "category"
+        ]
+      }
+    }
+  ]
+}

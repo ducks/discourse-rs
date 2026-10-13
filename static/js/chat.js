@@ -2280,6 +2280,14 @@
   // The hashtag types' color classes (generateColorCssClasses), added to
   // #hashtag-css-generator as each hashtag loads (onLoad).
   var loadedHashtags = {};
+  // The site's categories, preloaded with the page's style.
+  (function () {
+    var style = document.getElementById("hashtag-css-generator");
+    var ids = style && style.dataset.categoryIds;
+    (ids ? ids.split(",") : []).forEach(function (id) {
+      loadedHashtags["category-" + id] = true;
+    });
+  })();
 
   function hashtagCss(result) {
     var key = result.type + "-" + result.id;

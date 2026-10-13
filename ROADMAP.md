@@ -133,7 +133,7 @@ Bugs or silent gaps in what is merged, small and independent.
 
 41. ~~`feat/cooked-css-basics`~~ (done) S (also the composer textarea's
     line-height: foundation.css ports one of discourse.scss's two
-    textarea blocks), 42. `feat/hashtag-css` S/M
+    textarea blocks), 42. ~~`feat/hashtag-css`~~ (done) S/M
 43. `feat/onebox-local` M: internal topic, post, user and category
     links without fetching; posts with onebox links are refused today
     (posting/validate.rs)
