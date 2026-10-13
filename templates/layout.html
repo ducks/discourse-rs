@@ -64,6 +64,9 @@
     {%- if chrome.user_cards %}
     <script src="{{ crate::assets::url(base_path, "user-card.js") }}" data-show-badges="{{ chrome.enable_badges }}" defer></script>
     {%- endif %}
+    {%- if chrome.inline_footnotes %}
+    <script src="{{ crate::assets::url(base_path, "inline-footnotes.js") }}" defer></script>
+    {%- endif %}
     <script src="{{ crate::assets::url(base_path, "hashtags.js") }}" defer></script>
     <script src="{{ crate::assets::url(base_path, "presence.js") }}"></script>
     <script src="{{ crate::assets::url(base_path, "topic-presence.js") }}"></script>
