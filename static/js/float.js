@@ -138,8 +138,8 @@
 
   function icon(name, cls) {
     return (
-      '<svg class="fa d-icon d-icon-' + name + " svg-icon " + (cls ? cls + " " : "") +
-      'fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" ' +
+      '<svg class="fa d-icon d-icon-' + name + " svg-icon fa-width-auto " + (cls ? cls + " " : "") +
+      'svg-string" width="1em" height="1em" aria-hidden="true" ' +
       'xmlns="http://www.w3.org/2000/svg"><use href="#' + name + '"></use></svg>'
     );
   }
@@ -697,8 +697,9 @@
       trigger.dataset.identifier = o.identifier;
     }
     trigger.dataset.trigger = "";
-    trigger.id = instance.id;
+    // The role before the id, the order Ember's DOM has them in.
     trigger.setAttribute("role", "button");
+    trigger.id = instance.id;
     var container = document.createElement("span");
     container.className = "fk-d-tooltip__trigger-container";
     if (inner) {
