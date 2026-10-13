@@ -1,0 +1,28 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO group_users (group_id, user_id, notification_level, created_at, updated_at) VALUES (2, 4, 3, now(), now()), (2, 5, 4, now(), now()), (2, 2, 1, now(), now())",
+    "UPDATE groups SET user_count = 4 WHERE id = 2",
+    "INSERT INTO topics (id, title, fancy_title, slug, user_id, last_post_user_id, archetype, subtype, created_at, updated_at, bumped_at, posts_count, highest_post_number, visible) VALUES (90, 'A group message the moderators received', 'A group message the moderators received', 'a-group-message-the-moderators-received', 3, 4, 'private_message', 'user_to_user', now() - interval '1 hour', now() - interval '1 hour', now() - interval '1 hour', 2, 2, true)",
+    "INSERT INTO posts (id, topic_id, user_id, post_number, raw, cooked, created_at, updated_at, last_version_at, sort_order) VALUES (900, 90, 3, 1, 'The first post of a group message to the moderators.', '<p>The first post of a group message to the moderators.</p>', now() - interval '1 hour', now() - interval '1 hour', now() - interval '1 hour', 1), (901, 90, 4, 2, 'A reply from user2, a member of the moderators group.', '<p>A reply from user2, a member of the moderators group.</p>', now() - interval '50 minutes', now() - interval '50 minutes', now() - interval '50 minutes', 2)",
+    "INSERT INTO topic_allowed_users (topic_id, user_id, created_at, updated_at) VALUES (90, 3, now(), now())",
+    "INSERT INTO topic_allowed_groups (topic_id, group_id) VALUES (90, 2)",
+    "INSERT INTO topic_users (user_id, topic_id, notification_level, notifications_reason_id, posted, last_read_post_number) VALUES (3, 90, 3, 1, true, 1), (1, 90, 2, 2, false, NULL), (4, 90, 2, 2, true, 2), (5, 90, 2, 2, false, NULL), (2, 90, 1, 2, false, NULL)",
+    "INSERT INTO group_archived_messages (group_id, topic_id, created_at, updated_at) VALUES (2, 90, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 90,
+        "raw": "A reply from user1 to a message the moderators group archived, which moves it back."
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_update_topic_tracking_state",
+    "post_alert",
+    "group_pm_update_summary"
+  ]
+}

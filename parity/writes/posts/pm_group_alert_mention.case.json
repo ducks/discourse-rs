@@ -1,0 +1,24 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO group_users (group_id, user_id, notification_level, created_at, updated_at) VALUES (2, 4, 3, now(), now()), (2, 5, 4, now(), now()), (2, 2, 1, now(), now())",
+    "UPDATE groups SET user_count = 4 WHERE id = 2"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A message to the moderators group, pm group alert mention",
+        "raw": "Hello moderators, this message mentions @user2, a member watching the group's messages.",
+        "archetype": "private_message",
+        "target_recipients": "moderators"
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_update_topic_tracking_state",
+    "post_alert",
+    "user_email"
+  ]
+}

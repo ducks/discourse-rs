@@ -202,3 +202,30 @@ pub async fn publish_read(
     .await?;
     Ok(())
 }
+
+/// `publish_group_archived(topic:, group_id:, acting_user_id:)`: a message
+/// archived by a group or moved back to its inbox, on the group's channel.
+pub async fn publish_group_archived(
+    bus: &pg_bus::Bus,
+    conn: &mut PgConnection,
+    topic_id: i32,
+    group_id: i32,
+    acting_user_id: Option<i32>,
+) -> Result<(), AppError> {
+    let message = json!({
+        "message_type": "group_archive",
+        "topic_id": topic_id,
+        "payload": {
+            "group_ids": [group_id],
+            "acting_user_id": acting_user_id,
+        },
+    });
+    bus.publish(
+        conn,
+        &group_channel(group_id),
+        &message,
+        Some(&[group_tag(group_id)]),
+    )
+    .await?;
+    Ok(())
+}

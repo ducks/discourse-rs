@@ -22,6 +22,7 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         "sync_topic_user_bookmarked" => sync_topic_user_bookmarked(state, &job.args).await,
         "process_post" => process_post(state, &job.args).await,
         "post_alert" => post_alert(state, &job.args).await,
+        "group_pm_update_summary" => group_pm_update_summary(state, &job.args).await,
         "user_email" => user_email(state, &job.args, false).await,
         "critical_user_email" => user_email(state, &job.args, true).await,
         "send_system_message" => send_system_message(state, &job.args).await,
@@ -648,6 +649,72 @@ async fn post_alert(state: &AppState, args: &Value) -> Result<(), AppError> {
     };
     let mut tx = state.pool.begin().await?;
     super::post_alert::run(&ctx, &mut tx, args).await?;
+    tx.commit().await?;
+    Ok(())
+}
+
+/// `Jobs::GroupPmUpdateSummary`: the group's members get their default
+/// levels on the message (but those with one already), then those
+/// tracking by default get their summary of its inbox.
+async fn group_pm_update_summary(state: &AppState, args: &Value) -> Result<(), AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let s = settings(state, &mut conn).await?;
+    drop(conn);
+    let host = crate::pretty_text::Host::from_state(state);
+    let ctx = crate::posting::Ctx {
+        host: &host,
+        settings: &s,
+        config: &state.config,
+        i18n: &state.i18n,
+        bus: &state.bus,
+    };
+    let id = |key: &str| args.get(key).and_then(Value::as_i64).map(|v| v as i32);
+    let (Some(group_id), Some(topic_id)) = (id("group_id"), id("topic_id")) else {
+        return Ok(());
+    };
+    let mut tx = state.pool.begin().await?;
+    let group: Option<(String, i32)> =
+        sqlx::query_as("SELECT name, user_count FROM groups WHERE id = $1")
+            .bind(group_id)
+            .fetch_optional(&mut *tx)
+            .await?;
+    let topic: Option<Option<i32>> =
+        sqlx::query_scalar("SELECT user_id FROM topics WHERE id = $1 AND deleted_at IS NULL")
+            .bind(topic_id)
+            .fetch_optional(&mut *tx)
+            .await?;
+    let (Some((name, user_count)), Some(author)) = (group, topic) else {
+        return Ok(());
+    };
+    let limit = s.get("group_pm_user_limit")?.to_i();
+    if i64::from(user_count) > limit {
+        // GroupPmUserLimitExceededError
+        let message = state
+            .i18n
+            .t_with(
+                "groups.errors.default_notification_level_users_limit",
+                &[("count", &limit.to_string()), ("group_name", &name)],
+            )
+            .unwrap_or_default();
+        return Err(std::io::Error::other(message).into());
+    }
+    crate::posting::group_messages::apply_default_levels(&mut tx, group_id, topic_id, author, true)
+        .await?;
+    let tracking: Vec<i32> = sqlx::query_scalar(
+        "SELECT users.id FROM users INNER JOIN group_users ON users.id = group_users.user_id \
+         WHERE group_users.group_id = $1 AND group_users.notification_level = 2 ORDER BY users.id",
+    )
+    .bind(group_id)
+    .fetch_all(&mut *tx)
+    .await?;
+    let stats = crate::posting::group_messages::group_stats(&mut tx, topic_id).await?;
+    let acting = id("acting_user_id");
+    for user_id in tracking {
+        crate::posting::group_messages::notify_group_summary(
+            &ctx, &mut tx, &stats, user_id, topic_id, acting,
+        )
+        .await?;
+    }
     tx.commit().await?;
     Ok(())
 }
