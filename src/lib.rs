@@ -57,6 +57,7 @@ pub mod posting;
 pub mod presence;
 pub mod pretty_text;
 pub mod promotion;
+pub mod rate_limiter;
 pub mod read_tracking;
 pub mod remote_ip;
 pub mod review;

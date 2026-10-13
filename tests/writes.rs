@@ -138,7 +138,17 @@ struct Client {
     state: AppState,
     cookies: Vec<(String, String)>,
     csrf: Option<String>,
+    /// The last response's rate limit headers, as the recorder keeps them.
+    rate_headers: Map<String, Value>,
 }
+
+/// The response headers recordings keep (when a response has any).
+const RATE_HEADERS: [&str; 4] = [
+    "Retry-After",
+    "Discourse-Rate-Limit-Error-Code",
+    "Discourse-Actions-Remaining",
+    "Discourse-Actions-Max",
+];
 
 impl Client {
     async fn send(&mut self, method: Method, path: &str, body: Option<&Value>) -> (u16, Value) {
@@ -197,6 +207,13 @@ impl Client {
             .await
             .unwrap();
         let status = response.status().as_u16();
+        self.rate_headers = RATE_HEADERS
+            .iter()
+            .filter_map(|name| {
+                let value = response.headers().get(*name)?.to_str().ok()?;
+                Some((name.to_string(), Value::String(value.to_string())))
+            })
+            .collect();
         for value in response.headers().get_all(header::SET_COOKIE) {
             let value = value.to_str().unwrap_or("");
             let (pair, attrs) = value.split_once(';').unwrap_or((value, ""));
@@ -997,6 +1014,8 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
     }
     let mut config = recorded_config();
     config.public_dir = public.clone();
+    // RateLimiter: off, as the recorder runs Rails, unless the case asks.
+    config.rate_limits = case["rate_limits"] == true;
     let app_state = state(db.pool.clone(), config).await;
     // Counted before the sequences are set: the rolled-back run of the
     // setup still advances them.
@@ -1025,6 +1044,7 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
         state: app_state,
         cookies: Vec::new(),
         csrf: None,
+        rate_headers: Map::new(),
     };
     if let Some(user) = case["user"].as_str() {
         client.login(user).await;
@@ -1075,7 +1095,11 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
         let (status, body) = client
             .send_with(method, path.as_str().unwrap(), body, &extra)
             .await;
-        responses.push(serde_json::json!({ "status": status, "body": body }));
+        let mut response = serde_json::json!({ "status": status, "body": body });
+        if !client.rate_headers.is_empty() {
+            response["headers"] = Value::Object(client.rate_headers.clone());
+        }
+        responses.push(response);
     }
     // The jobs the requests enqueued, as the recorder writes them; then
     // the case's run_jobs run, and what they enqueue is listed apart.
@@ -1222,6 +1246,25 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
     // a record not found its exception page; the port renders the
     // production 404. The status is still compared.
     for i in 0..rails["responses"].as_array().map_or(0, Vec::len) {
+        // A rate limit's wait counts wall-clock seconds on Rails: within
+        // two seconds, ours takes Rails' (its words and Retry-After too).
+        let theirs = &rails["responses"][i];
+        if theirs["body"]["error_type"] == "rate_limit"
+            && ours["responses"][i]["body"]["error_type"] == "rate_limit"
+            && let (Some(a), Some(b)) = (
+                theirs["body"]["extras"]["wait_seconds"].as_i64(),
+                ours["responses"][i]["body"]["extras"]["wait_seconds"].as_i64(),
+            )
+            && (a - b).abs() <= 2
+        {
+            let theirs = theirs.clone();
+            let mine = &mut ours["responses"][i];
+            mine["body"]["extras"] = theirs["body"]["extras"].clone();
+            mine["body"]["errors"] = theirs["body"]["errors"].clone();
+            if !theirs["headers"]["Retry-After"].is_null() {
+                mine["headers"]["Retry-After"] = theirs["headers"]["Retry-After"].clone();
+            }
+        }
         let routing_error = rails["responses"][i]["status"] == 404
             && rails["responses"][i]["body"].as_str().is_some_and(|b| {
                 b.starts_with("Routing Error") || b.starts_with("ActiveRecord::RecordNotFound in ")
