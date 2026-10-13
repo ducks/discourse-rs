@@ -1,0 +1,77 @@
+{
+  "name": "invite_ignoring_target",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/t/42/invite.json",
+      "params": {
+        "user": "user2"
+      }
+    }
+  ],
+  "started_at": "2026-10-13T14:09:31.007581",
+  "transaction_started_at": "2026-10-13T14:09:30.047312",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Sorry, user2 is not accepting messages at the moment."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 488,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "SUBRbgDbRZMk+2n38f6zzdZ+0b8=",
+            "created_at": "2026-10-13T14:09:30.431216",
+            "rotated_at": "2026-10-13T14:09:30.430279",
+            "updated_at": "2026-10-13T14:09:30.431216",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "SUBRbgDbRZMk+2n38f6zzdZ+0b8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 488,
+            "seen_at": "2026-10-13T14:09:31.014324",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "SUBRbgDbRZMk+2n38f6zzdZ+0b8=",
+            "created_at": "2026-10-13T14:09:30.431216",
+            "rotated_at": "2026-10-13T14:09:30.430279",
+            "updated_at": "2026-10-13T14:09:30.431216",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "SUBRbgDbRZMk+2n38f6zzdZ+0b8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO ignored_users (user_id, ignored_user_id, created_at, updated_at, expiring_at) VALUES (4, 3, now(), now(), now() + interval '1 year')"
+  ],
+  "recorded_from": {
+    "case": "027d20aa89deed0aab0514e31c5f8fc743752677ed5d0d8c7f9690f79626873c",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

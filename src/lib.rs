@@ -52,6 +52,7 @@ pub mod owned_schema;
 pub mod params;
 pub mod parity;
 pub mod plugins;
+pub mod pm_invite;
 pub mod pm_lists;
 pub mod pm_tracking_state;
 pub mod post_actions;

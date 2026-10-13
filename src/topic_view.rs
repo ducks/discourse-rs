@@ -1222,7 +1222,10 @@ impl TopicView<'_> {
                 ("can_delete", g.can_delete_topic(s, ctx)?),
                 ("can_permanently_delete", false),
                 ("can_recover", g.can_recover_topic(ctx)),
-                ("can_remove_allowed_users", g.can_remove_allowed_users(ctx)),
+                (
+                    "can_remove_allowed_users",
+                    g.can_remove_allowed_users(ctx, None, 0),
+                ),
                 ("can_invite_to", g.can_invite_to(s, ctx, can_see)?),
                 (
                     "can_invite_via_email",
@@ -1264,7 +1267,7 @@ impl TopicView<'_> {
             }
             // can_remove_allowed_users?(topic, scope.user): staff, TL2
             // creators, or any non-creator participant of a 2+ user PM.
-            let can_remove_self = g.can_remove_allowed_users(ctx)
+            let can_remove_self = g.can_remove_allowed_users(ctx, None, 0)
                 || (ctx.private_message()
                     && ctx.pm_member
                     && ctx.recipients > 1
