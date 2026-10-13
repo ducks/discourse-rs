@@ -25,7 +25,7 @@ mod review;
 mod robots;
 mod search;
 mod uploads;
-pub(crate) use search::invalid_access_at;
+pub(crate) use search::{invalid_access, invalid_access_at};
 pub(crate) use sitemap::regenerate_sitemaps;
 pub(crate) use topics::not_found_response;
 mod category_notifications;

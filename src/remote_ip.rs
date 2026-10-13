@@ -206,9 +206,74 @@ pub fn remote_ip(headers: &HeaderMap, peer: Option<SocketAddr>) -> Result<String
         .unwrap_or(remote_addr))
 }
 
+/// Rack's `trusted_proxies` (Request.ip_filter): loopback, private
+/// ranges, localhost and unix sockets, matched on the text.
+fn rack_trusted_proxy(ip: &str) -> bool {
+    static TRUSTED: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
+        let octet = r"\.(25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])";
+        regex::Regex::new(&format!(
+            r"(?i)\A127({octet}){{3}}\z|\A::1\z|\Af[cd][0-9a-f]{{2}}(?::[0-9a-f]{{0,4}}){{0,7}}\z|\A10({octet}){{3}}\z|\A172\.(1[6-9]|2[0-9]|3[01])({octet}){{2}}\z|\A192\.168({octet}){{2}}\z|\Alocalhost\z|\Aunix(\z|:)"
+        ))
+        .expect("Rack's trusted proxies")
+    });
+    TRUSTED.is_match(ip)
+}
+
+/// `request.ip` (Rack::Request#ip), which the request tracker and the
+/// auth cookie limiter key on: the peer unless it is a trusted proxy,
+/// else the nearest untrusted forwarded address (or the furthest when all
+/// are trusted), else the peer.
+pub fn request_ip(headers: &HeaderMap, peer: Option<SocketAddr>) -> String {
+    let remote_addr = peer
+        .map(|p| p.ip().to_string())
+        .unwrap_or_else(|| "127.0.0.1".to_string());
+    if !rack_trusted_proxy(&remote_addr) {
+        return remote_addr;
+    }
+    let forwarded = forwarded_for(headers);
+    if !forwarded.is_empty() {
+        return forwarded
+            .iter()
+            .rev()
+            .find(|ip| !rack_trusted_proxy(ip))
+            .unwrap_or(&forwarded[0])
+            .clone();
+    }
+    remote_addr
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn request_ip_is_racks() {
+        let headers = |xff: &str| {
+            let mut h = HeaderMap::new();
+            h.insert("x-forwarded-for", xff.parse().unwrap());
+            h
+        };
+        let peer = |ip: &str| Some(SocketAddr::new(ip.parse().unwrap(), 443));
+        assert_eq!(request_ip(&headers("1.1.1.1"), peer("8.8.8.8")), "8.8.8.8");
+        assert_eq!(
+            request_ip(&headers("1.1.1.1, 2.2.2.2"), peer("127.0.0.1")),
+            "2.2.2.2"
+        );
+        assert_eq!(
+            request_ip(&headers("1.1.1.1, 10.0.0.2"), peer("10.0.0.1")),
+            "1.1.1.1"
+        );
+        assert_eq!(
+            request_ip(&headers("10.0.0.3, 10.0.0.2"), peer("10.0.0.1")),
+            "10.0.0.3"
+        );
+        assert_eq!(
+            request_ip(&HeaderMap::new(), peer("127.0.0.1")),
+            "127.0.0.1"
+        );
+        assert!(rack_trusted_proxy("172.31.0.1") && !rack_trusted_proxy("172.32.0.1"));
+        assert!(rack_trusted_proxy("fd12:3456::1") && rack_trusted_proxy("unix:/tmp/s"));
+    }
 
     fn ip(pairs: &[(&str, &str)], peer: &str) -> Result<String, IpSpoofAttack> {
         let mut headers = HeaderMap::new();

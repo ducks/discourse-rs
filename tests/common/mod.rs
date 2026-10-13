@@ -263,7 +263,11 @@ pub fn recorded_config() -> Config {
     let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("parity/environment");
     let mut vars = discourse_rs::parity::load_environment(&path).unwrap();
     vars.push(("DATABASE_URL".into(), test_database_url()));
-    Config::from_vars(vars).unwrap()
+    let mut config = Config::from_vars(vars).unwrap();
+    // RateLimiter off, as the recorders run Rails; a test or case turns
+    // it on itself.
+    config.rate_limits = false;
+    config
 }
 
 /// Removes the resized icon copies SiteIconManager.ensure_optimized! made in

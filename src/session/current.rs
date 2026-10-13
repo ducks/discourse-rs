@@ -143,41 +143,68 @@ fn find_auth_token(keys: &Keys, raw: &str, max_age_hours: i64) -> Option<String>
     map.get("token")?.as_str().map(str::to_string)
 }
 
+/// `COOKIE_ATTEMPTS_PER_MIN`: lookups of tokens that find no user, per
+/// `request.ip`.
+const COOKIE_ATTEMPTS_PER_MIN: i64 = 10;
+
 /// `current_user`: the token row's user unless suspended or inactive.
+/// None when a token that finds no user is over its limit
+/// (`Discourse::InvalidAccess` with the cookie deleted). Past the limit,
+/// tokens are not looked up at all.
 pub async fn resolve(
     conn: &mut PgConnection,
-    keys: &Keys,
+    state: &AppState,
     settings: &SiteSettings,
     headers: &HeaderMap,
-) -> Result<Incoming, AppError> {
+    peer: Option<std::net::SocketAddr>,
+) -> Result<Option<Incoming>, AppError> {
+    let keys = &state.keys;
+    let anonymous = |had_token_cookie| Incoming {
+        had_token_cookie,
+        session: None,
+        guardian: crate::guardian::Guardian::anonymous(),
+    };
     let Some(raw) = cookie(headers, TOKEN_COOKIE) else {
-        return Ok(Incoming {
-            had_token_cookie: false,
-            session: None,
-            guardian: crate::guardian::Guardian::anonymous(),
-        });
+        return Ok(Some(anonymous(false)));
     };
     let max_age = settings.get("maximum_session_age")?.to_i();
     let Some(unhashed) = find_auth_token(keys, raw, max_age) else {
-        return Ok(Incoming {
-            had_token_cookie: true,
-            session: None,
-            guardian: crate::guardian::Guardian::anonymous(),
-        });
+        return Ok(Some(anonymous(true)));
     };
-    let Some(token) = token::lookup(conn, &unhashed, &keys.secret_key_base, max_age).await? else {
-        return Ok(Incoming {
-            had_token_cookie: true,
-            session: None,
-            guardian: crate::guardian::Guardian::anonymous(),
-        });
+    let limiter = crate::rate_limiter::RateLimiter::new(
+        None,
+        &format!(
+            "cookie_auth_{}",
+            crate::remote_ip::request_ip(headers, peer)
+        ),
+        COOKIE_ATTEMPTS_PER_MIN,
+        60,
+    );
+    let enabled = state.config.rate_limits;
+    let found = if limiter.can_perform(&state.pool, enabled).await? {
+        match token::lookup(conn, &unhashed, &keys.secret_key_base, max_age).await? {
+            Some(token) => {
+                let user: Option<SessionUser> = sqlx::query_as(&format!(
+                    "SELECT {SESSION_USER_COLUMNS} FROM users WHERE id = $1"
+                ))
+                .bind(token.user_id)
+                .fetch_optional(&mut *conn)
+                .await?;
+                user.map(|user| (token, user))
+            }
+            None => None,
+        }
+    } else {
+        None
     };
-    let user: Option<SessionUser> = sqlx::query_as(&format!(
-        "SELECT {SESSION_USER_COLUMNS} FROM users WHERE id = $1"
-    ))
-    .bind(token.user_id)
-    .fetch_optional(&mut *conn)
-    .await?;
+    // No user for the token: BAD_TOKEN, and the attempt counted.
+    let Some((token, user)) = found else {
+        if limiter.performed(&state.pool, enabled).await?.is_err() {
+            return Ok(None);
+        }
+        return Ok(Some(anonymous(true)));
+    };
+    let user = Some(user);
     let user = user.filter(|u| u.active && !u.suspended());
     let guardian = match &user {
         Some(u) => crate::guardian::Guardian::for_user(&mut *conn, u).await?,
@@ -188,11 +215,11 @@ pub async fn resolve(
         token,
         unhashed_token: unhashed,
     });
-    Ok(Incoming {
+    Ok(Some(Incoming {
         had_token_cookie: true,
         session,
         guardian,
-    })
+    }))
 }
 
 /// The `Set-Cookie` value `set_auth_cookie!` writes.
@@ -290,7 +317,25 @@ pub async fn layer(
                 super::api_key::Resolved::Refused => Ok("invalid_access"),
             };
         let guardian = match refused_key {
-            Err(user) => crate::guardian::Guardian::for_user(&mut conn, &user).await?,
+            Err(user) => {
+                // admin_api_key_limiter: one budget for every key on the
+                // site (GlobalSetting max_admin_api_reqs_per_minute).
+                let limit = state
+                    .config
+                    .globals
+                    .get("max_admin_api_reqs_per_minute")
+                    .map_or(60, crate::ruby::to_i);
+                let limiter =
+                    crate::rate_limiter::RateLimiter::new(None, "admin_api_min", limit, 60)
+                        .error_code("admin_api_key_rate_limit");
+                if let Err(refused) = limiter
+                    .performed(&state.pool, state.config.rate_limits)
+                    .await?
+                {
+                    return Ok(refused.into_response(&state.i18n));
+                }
+                crate::guardian::Guardian::for_user(&mut conn, &user).await?
+            }
             Ok(_) if path.starts_with("/admin/") => {
                 return Ok(crate::routes::not_found_response(&state));
             }
@@ -339,7 +384,22 @@ pub async fn layer(
         let mut conn = state.pool.acquire().await?;
         let settings =
             SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
-        let incoming = resolve(&mut conn, &state.keys, &settings, &headers).await?;
+        let Some(incoming) = resolve(&mut conn, &state, &settings, &headers, peer).await? else {
+            // InvalidAccess with delete_cookie: the 403, the cookie gone.
+            if !crate::routes::wants_json(request.uri().query(), &headers)
+                && !path.ends_with(".json")
+            {
+                return Err(
+                    crate::Unsupported("the invalid access page for a bad auth cookie").into(),
+                );
+            }
+            let mut response = crate::routes::invalid_access(&state);
+            response.headers_mut().append(
+                header::SET_COOKIE,
+                HeaderValue::from_str(&delete_auth_cookie(&settings)?)?,
+            );
+            return Ok(response);
+        };
         (incoming, Some(settings))
     } else {
         let anonymous = Incoming {

@@ -2327,3 +2327,91 @@ async fn chat_unread_state_goes_live_on_every_page() {
         "{html}"
     );
 }
+
+#[tokio::test]
+async fn tokens_that_find_no_user_are_limited_per_ip() {
+    let db = TestDb::new().await;
+    let mut cfg = config(RailsEnv::Test, &[]);
+    cfg.rate_limits = true;
+    let app_state = state(db.pool.clone(), cfg).await;
+    let mut client = Client::new(app_state.clone());
+    client.login("user1", "password").await;
+    let good = client.cookie("_t").unwrap().to_string();
+    // Another login's cookie, its token then gone: a bad token.
+    let mut other = Client::new(app_state.clone());
+    other.login("user2", "password").await;
+    let bad = other.cookie("_t").unwrap().to_string();
+    sqlx::query("DELETE FROM user_auth_tokens WHERE user_id = 4")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let with_cookie = |cookie: &str| {
+        let mut c = Client::new(app_state.clone());
+        c.cookies.push(("_t".into(), cookie.to_string()));
+        c
+    };
+    // Ten lookups that find nobody are anonymous (the cookie cleared).
+    for _ in 0..10 {
+        let reply = with_cookie(&bad).get("/session/current.json").await;
+        assert_eq!(reply.status, StatusCode::NOT_FOUND, "{}", reply.body);
+    }
+    // The eleventh is InvalidAccess, the cookie deleted.
+    let reply = with_cookie(&bad).get("/session/current.json").await;
+    assert_eq!(reply.status, StatusCode::FORBIDDEN, "{}", reply.body);
+    assert_eq!(reply.json()["error_type"], "invalid_access");
+    assert!(
+        reply
+            .set_cookies()
+            .iter()
+            .any(|c| c.starts_with("_t=;") && c.contains("max-age=0"))
+    );
+    // Past the limit no token is looked up: a good one from the same
+    // address is refused too.
+    let reply = with_cookie(&good).get("/session/current.json").await;
+    assert_eq!(reply.status, StatusCode::FORBIDDEN);
+}
+
+#[tokio::test]
+async fn admin_api_keys_share_one_limit() {
+    use sha2::{Digest, Sha256};
+    let db = TestDb::new().await;
+    let mut cfg = config(RailsEnv::Test, &[("max_admin_api_reqs_per_minute", "2")]);
+    cfg.rate_limits = true;
+    let app_state = state(db.pool.clone(), cfg).await;
+    for (id, key) in [(9601, "first-key"), (9602, "second-key")] {
+        sqlx::query(
+            "INSERT INTO api_keys (id, user_id, created_by_id, created_at, updated_at, key_hash, truncated_key, scope_mode) \
+             VALUES ($1, 1, 1, now(), now(), $2, 'abcd', 0)",
+        )
+        .bind(id)
+        .bind(format!("{:x}", Sha256::digest(key.as_bytes())))
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    }
+    let mut client = Client::new(app_state.clone());
+    let get = |key: &'static str| [("api-key", key), ("api-username", "admin")];
+    for key in ["first-key", "second-key"] {
+        let reply = client
+            .send(Method::GET, "/latest.json", &get(key), "")
+            .await;
+        assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    }
+    // A third request, by either key, is over the site's budget.
+    let reply = client
+        .send(Method::GET, "/latest.json", &get("first-key"), "")
+        .await;
+    assert_eq!(
+        reply.status,
+        StatusCode::TOO_MANY_REQUESTS,
+        "{}",
+        reply.body
+    );
+    assert_eq!(reply.json()["error_type"], "rate_limit");
+    assert!(
+        reply
+            .headers
+            .iter()
+            .any(|(k, v)| k == "discourse-rate-limit-error-code" && v == "admin_api_key_rate_limit")
+    );
+}

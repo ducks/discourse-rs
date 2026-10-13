@@ -1,0 +1,144 @@
+{
+  "name": "login_second_factor_per_min",
+  "user": null,
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/session.json",
+      "params": {
+        "login": "nobody",
+        "password": "password",
+        "second_factor_token": "00000000",
+        "second_factor_method": 1
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/session.json",
+      "params": {
+        "login": "nobody",
+        "password": "password",
+        "second_factor_token": "00000000",
+        "second_factor_method": 1
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/session.json",
+      "params": {
+        "login": "nobody",
+        "password": "password",
+        "second_factor_token": "00000000",
+        "second_factor_method": 1
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/session.json",
+      "params": {
+        "login": "nobody",
+        "password": "password",
+        "second_factor_token": "00000000",
+        "second_factor_method": 1
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/session.json",
+      "params": {
+        "login": "nobody",
+        "password": "password",
+        "second_factor_token": "00000000",
+        "second_factor_method": 1
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/session.json",
+      "params": {
+        "login": "nobody",
+        "password": "password",
+        "second_factor_token": "00000000",
+        "second_factor_method": 1
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/session.json",
+      "params": {
+        "login": "nobody",
+        "password": "password",
+        "second_factor_token": "00000000",
+        "second_factor_method": 1
+      }
+    }
+  ],
+  "started_at": "2026-10-13T05:30:14.533115",
+  "transaction_started_at": "2026-10-13T05:30:13.268249",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "error": "Incorrect username, email or password"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "error": "Incorrect username, email or password"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "error": "Incorrect username, email or password"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "error": "Incorrect username, email or password"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "error": "Incorrect username, email or password"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "error": "Incorrect username, email or password"
+      }
+    },
+    {
+      "status": 429,
+      "body": {
+        "errors": [
+          "You’ve performed this action too many times. Please wait 1 minute before trying again."
+        ],
+        "error_type": "rate_limit",
+        "extras": {
+          "wait_seconds": 60,
+          "time_left": "1 minute"
+        }
+      },
+      "headers": {
+        "Retry-After": "60"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "max_logins_per_ip_per_minute": "20"
+  },
+  "rate_limits": true,
+  "recorded_from": {
+    "case": "126425fdaba1a77698dc2044ca5c9bc3d9d6adf5ce8bdc8cb8e5ac944fac453b",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

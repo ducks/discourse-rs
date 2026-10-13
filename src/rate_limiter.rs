@@ -310,6 +310,31 @@ impl RateLimiter {
     }
 }
 
+/// Limiters performed in order (a controller's `performed!` lines); the
+/// first refusal stops the rest, the earlier ones having counted.
+pub async fn perform_each(
+    pool: &PgPool,
+    enabled: bool,
+    limiters: impl IntoIterator<Item = RateLimiter>,
+) -> Result<Result<(), LimitExceeded>, sqlx::Error> {
+    for limiter in limiters {
+        if let Err(refused) = limiter.performed(pool, enabled).await? {
+            return Ok(Err(refused));
+        }
+    }
+    Ok(Ok(()))
+}
+
+/// `rescue RateLimiter::LimitExceeded` ->
+/// `render_json_error(I18n.t("rate_limiter.slow_down"))`: a 422.
+pub fn slow_down(i18n: &I18n) -> Response {
+    (
+        StatusCode::UNPROCESSABLE_ENTITY,
+        Json(json!({"errors": [i18n.t("rate_limiter.slow_down").unwrap_or_default()]})),
+    )
+        .into_response()
+}
+
 /// Expired lists removed (Redis expires them on its own); reads already
 /// treat them as empty.
 pub async fn cleanup(pool: &PgPool) -> Result<(), sqlx::Error> {
