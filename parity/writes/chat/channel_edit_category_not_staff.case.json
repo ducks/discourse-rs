@@ -1,0 +1,14 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/chat/api/channels/2.json",
+      "params": {
+        "channel": {
+          "name": "Mine now"
+        }
+      }
+    }
+  ]
+}

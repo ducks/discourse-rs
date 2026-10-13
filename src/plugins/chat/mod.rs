@@ -10,6 +10,7 @@
 pub mod actions_view;
 pub mod auto_join;
 pub mod channels;
+pub mod chatables;
 pub mod cook;
 pub mod create;
 pub mod direct_messages;

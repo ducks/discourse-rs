@@ -1,0 +1,13 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/chat/api/chatables.json",
+      "params": {
+        "term": "user",
+        "excluded_memberships_channel_id": "2"
+      }
+    }
+  ]
+}

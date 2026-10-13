@@ -1,0 +1,14 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/chat/api/channels/2.json",
+      "params": {
+        "channel": {
+          "threading_enabled": true
+        }
+      }
+    }
+  ]
+}

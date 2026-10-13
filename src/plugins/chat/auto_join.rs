@@ -30,7 +30,7 @@ pub async fn user(
     settings: &SiteSettings,
     user_id: i32,
 ) -> Result<(), AppError> {
-    create_memberships(conn, bus, state, settings, Some(user_id)).await
+    create_memberships(conn, bus, state, settings, Some(user_id), None).await
 }
 
 /// `Chat::AutoJoinChannels#create_memberships`: a following membership
@@ -45,6 +45,7 @@ pub async fn create_memberships(
     state: &crate::AppState,
     settings: &SiteSettings,
     user_id: Option<i32>,
+    channel_id: Option<i64>,
 ) -> Result<(), AppError> {
     if !super::enabled(settings)? {
         return Ok(());
@@ -63,6 +64,10 @@ pub async fn create_memberships(
         Some(id) => format!("AND u.id = {id}"),
         None => String::new(),
     };
+    let channel_sql = match channel_id {
+        Some(id) => format!("AND cc.id = {id}"),
+        None => String::new(),
+    };
     // CategoryGroup create_post (2) and full (1).
     let sql = format!(
         "WITH chat_users AS ( \
@@ -78,7 +83,7 @@ pub async fn create_memberships(
          ), valid_chat_channels AS ( \
            SELECT cc.id, cc.chatable_id FROM chat_channels cc \
            WHERE cc.auto_join_users = TRUE AND cc.chatable_type = 'Category' \
-             AND cc.deleted_at IS NULL AND cc.user_count < $2 \
+             AND cc.deleted_at IS NULL AND cc.user_count < $2 {channel_sql} \
          ), public AS ( \
            SELECT cu.id AS user_id, cc.id AS chat_channel_id FROM valid_chat_channels cc \
            CROSS JOIN chat_users cu \

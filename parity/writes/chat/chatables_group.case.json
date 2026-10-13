@@ -1,0 +1,16 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO groups (id, name, full_name, created_at, updated_at, user_count) VALUES (9501, 'helpers', 'Helpful people', now(), now(), 2)",
+    "INSERT INTO group_users (group_id, user_id, notification_level, created_at, updated_at) VALUES (9501, 4, 3, now(), now()), (9501, 5, 3, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/chat/api/chatables.json",
+      "params": {
+        "term": "help"
+      }
+    }
+  ]
+}

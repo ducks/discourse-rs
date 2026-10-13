@@ -195,6 +195,8 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/chat/api/me/channels.json", get(chat::me_channels))
         .route("/chat/api/channels", get(chat::index))
         .route("/chat/api/channels.json", get(chat::index))
+        .route("/chat/api/chatables", get(chat::chatables))
+        .route("/chat/api/chatables.json", get(chat::chatables))
         .route(
             "/chat/api/direct-message-channels",
             post(chat::create_direct_message_channel),

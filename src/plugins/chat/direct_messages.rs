@@ -197,7 +197,7 @@ impl Context<'_> {
 
     /// Chat::ChatableUserSerializer (UserWithCustomFieldsSerializer with
     /// can_chat and has_chat_enabled); None is Chat::NullUser.
-    async fn chatable_user(&mut self, u: Option<&DmUser>) -> Result<Value, AppError> {
+    pub(crate) async fn chatable_user(&mut self, u: Option<&DmUser>) -> Result<Value, AppError> {
         let s = self.settings;
         let g = self.guardian;
         let mut out = Map::new();

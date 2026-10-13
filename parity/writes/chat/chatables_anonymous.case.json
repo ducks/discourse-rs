@@ -1,0 +1,12 @@
+{
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/chat/api/chatables.json",
+      "params": {
+        "term": "user"
+      }
+    }
+  ]
+}

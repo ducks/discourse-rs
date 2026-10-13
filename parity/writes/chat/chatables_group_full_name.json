@@ -1,0 +1,114 @@
+{
+  "name": "chatables_group_full_name",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/chat/api/chatables.json",
+      "params": {
+        "term": "people"
+      }
+    }
+  ],
+  "started_at": "2026-10-13T17:27:02.732747",
+  "transaction_started_at": "2026-10-13T17:27:01.836948",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "users": [],
+        "groups": [
+          {
+            "identifier": "g-9501",
+            "model": {
+              "id": 9501,
+              "automatic": false,
+              "name": "helpers",
+              "user_count": 2,
+              "mentionable_level": 0,
+              "messageable_level": 0,
+              "visibility_level": 0,
+              "primary_group": false,
+              "title": null,
+              "grant_trust_level": null,
+              "flair_url": null,
+              "flair_bg_color": null,
+              "flair_color": null,
+              "bio_cooked": null,
+              "bio_excerpt": null,
+              "public_admission": false,
+              "public_exit": false,
+              "allow_membership_requests": false,
+              "full_name": "Helpful people",
+              "default_notification_level": 3,
+              "membership_request_template": null,
+              "members_visibility_level": 0,
+              "can_see_members": true,
+              "publish_read_state": false,
+              "chat_enabled": true,
+              "chat_enabled_user_count": 2,
+              "can_chat": true
+            },
+            "type": "group",
+            "match_quality": 3
+          }
+        ],
+        "direct_message_channels": [],
+        "category_channels": []
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 499,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "zbJkN6PnKEnhkIsvS6tAKBnLZk8=",
+            "created_at": "2026-10-13T17:27:02.205801",
+            "rotated_at": "2026-10-13T17:27:02.204898",
+            "updated_at": "2026-10-13T17:27:02.205801",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "zbJkN6PnKEnhkIsvS6tAKBnLZk8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 499,
+            "seen_at": "2026-10-13T17:27:02.739738",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "zbJkN6PnKEnhkIsvS6tAKBnLZk8=",
+            "created_at": "2026-10-13T17:27:02.205801",
+            "rotated_at": "2026-10-13T17:27:02.204898",
+            "updated_at": "2026-10-13T17:27:02.205801",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "zbJkN6PnKEnhkIsvS6tAKBnLZk8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO groups (id, name, full_name, created_at, updated_at, user_count) VALUES (9501, 'helpers', 'Helpful people', now(), now(), 2)",
+    "INSERT INTO group_users (group_id, user_id, notification_level, created_at, updated_at) VALUES (9501, 4, 3, now(), now()), (9501, 5, 3, now(), now())"
+  ],
+  "recorded_from": {
+    "case": "c95bd74eafe58b8b3c3961000e9fb802470b23d3d04f944414edda331f716a42",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

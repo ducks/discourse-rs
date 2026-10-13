@@ -1,0 +1,15 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/chat/api/channels/2.json",
+      "params": {
+        "channel": {
+          "name": "General chat",
+          "description": "Talk about anything here"
+        }
+      }
+    }
+  ]
+}

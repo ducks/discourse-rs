@@ -1,0 +1,77 @@
+{
+  "name": "channel_edit_category_not_staff",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/chat/api/channels/2.json",
+      "params": {
+        "channel": {
+          "name": "Mine now"
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-13T17:35:39.449662",
+  "transaction_started_at": "2026-10-13T17:35:38.463852",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 499,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "lf32pM19tIEW5K4+gmU/gGuoBc0=",
+            "created_at": "2026-10-13T17:35:38.815381",
+            "rotated_at": "2026-10-13T17:35:38.811854",
+            "updated_at": "2026-10-13T17:35:38.815381",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "lf32pM19tIEW5K4+gmU/gGuoBc0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 499,
+            "seen_at": "2026-10-13T17:35:39.456235",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "lf32pM19tIEW5K4+gmU/gGuoBc0=",
+            "created_at": "2026-10-13T17:35:38.815381",
+            "rotated_at": "2026-10-13T17:35:38.811854",
+            "updated_at": "2026-10-13T17:35:38.815381",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "lf32pM19tIEW5K4+gmU/gGuoBc0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "602f106114d08458fc4415c22d6b2f4fb486bc2b811ebb0dc04cd88ec4bf4d5f",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

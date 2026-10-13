@@ -1,6 +1,6 @@
 //! Who is in a direct message: `Chat::AddUsersToChannel`,
 //! `Chat::RemoveUserFromChannel`, a group DM's `leave`, and
-//! `Chat::UpdateChannel` for a direct message channel.
+//! `Chat::UpdateChannel`.
 
 use serde_json::{Value, json};
 
@@ -21,6 +21,8 @@ pub enum Outcome {
     Error(String, u16),
     /// `{error: ...}`, a 400.
     Refused(String),
+    /// RateLimiter::LimitExceeded
+    RateLimited(crate::rate_limiter::LimitExceeded),
     /// Discourse::InvalidAccess
     Forbidden,
 }
@@ -396,17 +398,20 @@ impl Context<'_> {
         Ok(Outcome::Done(json!({ "success": "OK" })))
     }
 
-    /// `Chat::UpdateChannel` for a direct message channel: the editable
-    /// fields (blank ones nil), the hidden chat_threads_enabled setting
-    /// saved, `/chat/channel-edits` to the participants, and the channel
-    /// with the actor's membership back.
-    pub async fn update_dm_channel(
+    /// `Chat::UpdateChannel` (with the controller's channel_from_params
+    /// and auto join limiter): the editable fields (blank text nil; a
+    /// category channel's auto_join_users and allow_channel_wide_mentions
+    /// too), the threads marked read when a category channel turns
+    /// threading on, the hidden chat_threads_enabled setting saved,
+    /// `/chat/channel-edits` to the channel's audience, auto join when on,
+    /// and the channel with the actor's membership back.
+    pub async fn update_channel(
         &mut self,
-        bus: &pg_bus::Bus,
-        defs: &crate::site_settings::Definitions,
+        state: &crate::AppState,
         channel_id: i64,
         edits: &serde_json::Map<String, Value>,
     ) -> Result<Outcome, AppError> {
+        let bus = &state.bus;
         // channel_from_params: Chat::Channel.find, ensure_can_join_chat_channel!
         let Some(channel) = self.live_channel(channel_id).await? else {
             return Ok(Outcome::NotFound);
@@ -414,14 +419,52 @@ impl Context<'_> {
         if !self.can_join(&channel, None).await? {
             return Ok(Outcome::Forbidden);
         }
-        if channel.chatable_type != "DirectMessage" {
-            return Err(Unsupported("editing category chat channels").into());
+        let category = channel.chatable_type == "Category";
+        let flag = |key: &str| -> Option<bool> {
+            edits.get(key).map(|v| {
+                crate::ruby::cast_boolean(crate::params::scalar(v).as_deref()).unwrap_or(false)
+            })
+        };
+        let auto_join = if category {
+            flag("auto_join_users").unwrap_or(channel.auto_join_users)
+        } else {
+            channel.auto_join_users
+        };
+        // auto_join_limiter, staff included, when auto join is asked for.
+        if category && flag("auto_join_users") == Some(true) {
+            let user = self
+                .guardian
+                .user()
+                .ok_or(Unsupported("editing a chat channel anonymously"))?;
+            let limiter = crate::rate_limiter::RateLimiter::new(
+                Some(crate::rate_limiter::LimitUser {
+                    id: user.id,
+                    staff: self.guardian.is_staff(),
+                }),
+                &format!("auto_join_users_channel_{}", channel.id),
+                1,
+                180,
+            )
+            .apply_limit_to_staff();
+            if let Err(refused) = limiter
+                .performed(&state.pool, state.config.rate_limits)
+                .await?
+            {
+                return Ok(Outcome::RateLimited(refused));
+            }
         }
         // check_channel_permission: can preview, and can_edit_chat_channel?
-        let dm = self.direct_message(channel.chatable_id).await?;
-        if !(self.can_preview(&channel).await?
-            && (self.guardian.is_staff() || dm.user_can_access(self.guardian)))
-        {
+        // (a DM's participants or staff; staff for a category channel).
+        let dm = if category {
+            None
+        } else {
+            Some(self.direct_message(channel.chatable_id).await?)
+        };
+        let can_edit = self.guardian.is_staff()
+            || dm
+                .as_ref()
+                .is_some_and(|dm| dm.user_can_access(self.guardian));
+        if !(self.can_preview(&channel).await? && can_edit) {
             return Ok(Outcome::Forbidden);
         }
         let text = |key: &str| -> Option<Option<String>> {
@@ -429,18 +472,19 @@ impl Context<'_> {
                 .get(key)
                 .map(|v| crate::params::scalar(v).filter(|s| !s.trim().is_empty()))
         };
-        if edits.contains_key("slug") {
+        if let Some(slug) = text("slug")
+            && slug != channel.slug
+        {
             return Err(Unsupported("changing a chat channel's slug").into());
         }
         let name = text("name").unwrap_or(channel.name.clone());
         let description = text("description").unwrap_or(channel.description.clone());
         let emoji = text("emoji").unwrap_or(channel.emoji.clone());
-        let threading = match edits
-            .get("threading_enabled")
-            .and_then(crate::params::scalar)
-        {
-            Some(v) => crate::ruby::cast_boolean(Some(&v)).unwrap_or(false),
-            None => channel.threading_enabled,
+        let threading = flag("threading_enabled").unwrap_or(channel.threading_enabled);
+        let wide_mentions = if category {
+            flag("allow_channel_wide_mentions").unwrap_or(channel.allow_channel_wide_mentions)
+        } else {
+            channel.allow_channel_wide_mentions
         };
         let max_title = self.settings.get("max_topic_title_length")?.to_i();
         if name
@@ -456,19 +500,32 @@ impl Context<'_> {
         let changed = name != channel.name
             || description != channel.description
             || emoji != channel.emoji
-            || threading != channel.threading_enabled;
+            || threading != channel.threading_enabled
+            || auto_join != channel.auto_join_users
+            || wide_mentions != channel.allow_channel_wide_mentions;
         if changed {
             sqlx::query(
                 "UPDATE chat_channels SET name = $2, description = $3, emoji = $4, threading_enabled = $5, \
-                   updated_at = $6 WHERE id = $1",
+                   auto_join_users = $6, allow_channel_wide_mentions = $7, updated_at = $8 WHERE id = $1",
             )
             .bind(channel.id)
             .bind(&name)
             .bind(&description)
             .bind(&emoji)
             .bind(threading)
+            .bind(auto_join)
+            .bind(wide_mentions)
             .bind(crate::clock::now_naive())
             .execute(&mut *self.conn)
+            .await?;
+        }
+        // mark_all_threads_as_read_if_needed
+        if category && threading && !channel.threading_enabled {
+            crate::jobs::enqueue(
+                &mut *self.conn,
+                "Jobs::Chat::MarkAllChannelThreadsRead",
+                json!({ "channel_id": channel.id }),
+            )
             .await?;
         }
         // update_site_settings_if_needed: always saved.
@@ -477,7 +534,8 @@ impl Context<'_> {
         )
         .fetch_one(&mut *self.conn)
         .await?;
-        let def = defs
+        let def = state
+            .site_setting_defs
             .get("chat_threads_enabled")
             .ok_or(Unsupported("the chat_threads_enabled setting"))?;
         let previous = self.settings.get("chat_threads_enabled")?.clone();
@@ -489,14 +547,21 @@ impl Context<'_> {
             any_threading,
         )
         .await?;
-        // publish_chat_channel_edit
+        // publish_chat_channel_edit: the channel's title for the actor.
         let channel = self
             .live_channel(channel.id)
             .await?
             .ok_or(Unsupported("a chat channel gone while editing"))?;
-        let title = match &channel.name {
-            Some(name) if dm.group => json!(name),
-            _ => self.dm_title(&channel, &dm)?,
+        let title = match (&dm, &channel.name) {
+            (Some(dm), Some(name)) if dm.group => json!(name),
+            (Some(dm), _) => self.dm_title(&channel, dm)?,
+            (None, Some(name)) => json!(name),
+            (None, None) => json!(
+                self.category(channel.chatable_id)
+                    .await?
+                    .map(|c| c.name)
+                    .unwrap_or_default()
+            ),
         };
         let audience = super::publisher::audience(
             &mut *self.conn,
@@ -517,6 +582,18 @@ impl Context<'_> {
             Some(&audience),
         )
         .await?;
+        // auto_join_users_if_needed
+        if category && channel.auto_join_users {
+            super::auto_join::create_memberships(
+                &mut *self.conn,
+                bus,
+                state,
+                self.settings,
+                None,
+                Some(channel.id),
+            )
+            .await?;
+        }
         let membership: Option<super::channels::MembershipRow> = sqlx::query_as(
             "SELECT chat_channel_id, following, muted, notification_level, last_read_message_id, \
                     last_viewed_at, last_viewed_pins_at, starred \
