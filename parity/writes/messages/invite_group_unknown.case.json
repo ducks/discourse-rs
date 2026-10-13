@@ -1,0 +1,12 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/t/42/invite-group.json",
+      "params": {
+        "group": "nobody_group"
+      }
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "user": "user2",
+  "setup": [
+    "INSERT INTO groups (id, name, created_at, updated_at, messageable_level, user_count) VALUES (9501, 'helpers', now() - interval '1 day', now() - interval '1 day', 99, 3)",
+    "INSERT INTO group_users (group_id, user_id, notification_level, created_at, updated_at) VALUES (9501, 4, 3, now(), now()), (9501, 5, 2, now(), now()), (9501, 2, 4, now(), now())",
+    "INSERT INTO topic_allowed_groups (topic_id, group_id) VALUES (43, 9501)",
+    "INSERT INTO notifications (notification_type, user_id, topic_id, post_number, data, read, high_priority, created_at, updated_at) VALUES (16, 5, NULL, NULL, '{\"group_id\":9501}', false, false, now(), now()), (6, 5, 43, 1, '{\"topic_title\":\"x\"}', false, true, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/43/remove-allowed-group.json",
+      "params": {
+        "name": "helpers"
+      }
+    }
+  ]
+}

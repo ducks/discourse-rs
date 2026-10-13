@@ -1,0 +1,81 @@
+{
+  "name": "remove_allowed_group_forbidden",
+  "user": "user2",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/43/remove-allowed-group.json",
+      "params": {
+        "name": "helpers"
+      }
+    }
+  ],
+  "started_at": "2026-10-13T14:34:33.054464",
+  "transaction_started_at": "2026-10-13T14:34:32.151323",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 488,
+            "seen_at": null,
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "wilAIVa3PeBvrT2798RZvvrn8Bs=",
+            "created_at": "2026-10-13T14:34:32.519652",
+            "rotated_at": "2026-10-13T14:34:32.518888",
+            "updated_at": "2026-10-13T14:34:32.519652",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "wilAIVa3PeBvrT2798RZvvrn8Bs=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 488,
+            "seen_at": "2026-10-13T14:34:33.060475",
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "wilAIVa3PeBvrT2798RZvvrn8Bs=",
+            "created_at": "2026-10-13T14:34:32.519652",
+            "rotated_at": "2026-10-13T14:34:32.518888",
+            "updated_at": "2026-10-13T14:34:32.519652",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "wilAIVa3PeBvrT2798RZvvrn8Bs=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO groups (id, name, created_at, updated_at, messageable_level, user_count) VALUES (9501, 'helpers', now() - interval '1 day', now() - interval '1 day', 99, 3)",
+    "INSERT INTO group_users (group_id, user_id, notification_level, created_at, updated_at) VALUES (9501, 4, 3, now(), now()), (9501, 5, 2, now(), now()), (9501, 2, 4, now(), now())",
+    "INSERT INTO topic_allowed_groups (topic_id, group_id) VALUES (43, 9501)",
+    "INSERT INTO notifications (notification_type, user_id, topic_id, post_number, data, read, high_priority, created_at, updated_at) VALUES (16, 5, NULL, NULL, '{\"group_id\":9501}', false, false, now(), now()), (6, 5, 43, 1, '{\"topic_title\":\"x\"}', false, true, now(), now())"
+  ],
+  "recorded_from": {
+    "case": "ab5828f3ef1cf655cee20ef8621b6b22b381952b7839b0fc079c843ff0bd4a7c",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

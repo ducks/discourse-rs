@@ -1,0 +1,21 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO groups (id, name, created_at, updated_at, messageable_level, user_count) VALUES (9501, 'helpers', now() - interval '1 day', now() - interval '1 day', 99, 3)",
+    "INSERT INTO group_users (group_id, user_id, notification_level, created_at, updated_at) VALUES (9501, 4, 3, now(), now()), (9501, 5, 2, now(), now()), (9501, 2, 4, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/t/42/invite-group.json",
+      "params": {
+        "group": "helpers"
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert",
+    "group_pm_alert",
+    "user_email"
+  ]
+}

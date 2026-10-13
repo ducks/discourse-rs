@@ -23,6 +23,10 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         "process_post" => process_post(state, &job.args).await,
         "post_alert" => post_alert(state, &job.args).await,
         "group_pm_update_summary" => group_pm_update_summary(state, &job.args).await,
+        "group_pm_alert" => group_pm_alert(state, &job.args).await,
+        "delete_inaccessible_notifications" => {
+            delete_inaccessible_notifications(state, &job.args).await
+        }
         "user_email" => user_email(state, &job.args, false).await,
         "critical_user_email" => user_email(state, &job.args, true).await,
         "send_system_message" => send_system_message(state, &job.args).await,
@@ -649,6 +653,148 @@ async fn post_alert(state: &AppState, args: &Value) -> Result<(), AppError> {
     };
     let mut tx = state.pool.begin().await?;
     super::post_alert::run(&ctx, &mut tx, args).await?;
+    tx.commit().await?;
+    Ok(())
+}
+
+/// `Jobs::GroupPmAlert`, in one transaction.
+async fn group_pm_alert(state: &AppState, args: &Value) -> Result<(), AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let s = settings(state, &mut conn).await?;
+    drop(conn);
+    let host = crate::pretty_text::Host::from_state(state);
+    let ctx = crate::posting::Ctx {
+        host: &host,
+        settings: &s,
+        config: &state.config,
+        i18n: &state.i18n,
+        bus: &state.bus,
+    };
+    let id = |key: &str| args.get(key).and_then(Value::as_i64).map(|v| v as i32);
+    let (Some(user_id), Some(group_id), Some(post_id)) =
+        (id("user_id"), id("group_id"), id("post_id"))
+    else {
+        return Ok(());
+    };
+    let mut tx = state.pool.begin().await?;
+    crate::pm_invite::group_pm_alert(&mut tx, &ctx, user_id, group_id, post_id).await?;
+    tx.commit().await?;
+    Ok(())
+}
+
+/// `Jobs::DeleteInaccessibleNotifications`: the notifications on a topic
+/// of the given users (or of everyone notified on it) who can no longer
+/// see it go, and those users' counts are published. For a message,
+/// those outside `all_allowed_users` (admins see it unless secured
+/// categories are hidden from them); otherwise each user's guardian.
+async fn delete_inaccessible_notifications(state: &AppState, args: &Value) -> Result<(), AppError> {
+    let Some(topic_id) = args
+        .get("topic_id")
+        .and_then(Value::as_i64)
+        .map(|v| v as i32)
+    else {
+        return Err(Unsupported(
+            "delete_inaccessible_notifications without a topic (InvalidParameters)",
+        )
+        .into());
+    };
+    let mut conn = state.pool.acquire().await?;
+    let s = settings(state, &mut conn).await?;
+    let mut tx = state.pool.begin().await?;
+    // Topic.find_by: Trashable's default scope leaves a deleted topic out
+    // (so the job's deleted_at branch never runs).
+    let archetype: Option<String> =
+        sqlx::query_scalar("SELECT archetype FROM topics WHERE id = $1 AND deleted_at IS NULL")
+            .bind(topic_id)
+            .fetch_optional(&mut *tx)
+            .await?;
+    let Some(archetype) = archetype else {
+        return Ok(());
+    };
+    let given: Option<Vec<i32>> = args.get("user_ids").and_then(Value::as_array).map(|ids| {
+        ids.iter()
+            .filter_map(Value::as_i64)
+            .map(|v| v as i32)
+            .collect()
+    });
+    let user_ids: Vec<i32> = match given.filter(|ids| !ids.is_empty()) {
+        Some(ids) => ids,
+        None => {
+            sqlx::query_scalar("SELECT DISTINCT user_id FROM notifications WHERE topic_id = $1")
+                .bind(topic_id)
+                .fetch_all(&mut *tx)
+                .await?
+        }
+    };
+    if user_ids.is_empty() {
+        return Ok(());
+    }
+    let mut inaccessible: Vec<i32> = Vec::new();
+    if archetype == "private_message" {
+        let mut accessible: Vec<i32> = sqlx::query_scalar(
+            "SELECT user_id FROM topic_allowed_users WHERE topic_id = $1 AND user_id = ANY($2) \
+             UNION SELECT gu.user_id FROM topic_allowed_groups tag JOIN group_users gu ON gu.group_id = tag.group_id \
+                   WHERE tag.topic_id = $1 AND gu.user_id = ANY($2)",
+        )
+        .bind(topic_id)
+        .bind(&user_ids)
+        .fetch_all(&mut *tx)
+        .await?;
+        let flagged_or_warning: bool = sqlx::query_scalar(
+            "SELECT EXISTS (SELECT 1 FROM topics WHERE id = $1 AND subtype = 'moderator_warning') \
+             OR EXISTS (SELECT 1 FROM reviewables WHERE topic_id = $1 \
+                        AND type = 'ReviewableFlaggedPost' AND status = 0)",
+        )
+        .bind(topic_id)
+        .fetch_one(&mut *tx)
+        .await?;
+        if flagged_or_warning {
+            return Err(Unsupported("moderators' access to flagged messages and warnings").into());
+        }
+        if !s.get("suppress_secured_categories_from_admin")?.truthy() {
+            let admins: Vec<i32> =
+                sqlx::query_scalar("SELECT id FROM users WHERE id = ANY($1) AND admin")
+                    .bind(&user_ids)
+                    .fetch_all(&mut *tx)
+                    .await?;
+            accessible.extend(admins);
+        }
+        inaccessible = user_ids
+            .into_iter()
+            .filter(|u| !accessible.contains(u))
+            .collect();
+    } else {
+        for user_id in user_ids {
+            let Some(user) = crate::session::current::SessionUser::load(&mut tx, user_id).await?
+            else {
+                continue;
+            };
+            let guardian = crate::guardian::Guardian::for_user(&mut tx, &user).await?;
+            let topic = crate::topic_guardian::TopicCtx::load(&mut tx, &s, &guardian, topic_id)
+                .await?
+                .ok_or(Unsupported("checking access to a topic that is gone"))?;
+            let secure = guardian.secure_category_ids(&mut tx, &s).await?;
+            if !guardian.can_see_topic(&s, &topic, true, &secure)? {
+                inaccessible.push(user_id);
+            }
+        }
+    }
+    if inaccessible.is_empty() {
+        return Ok(());
+    }
+    sqlx::query("DELETE FROM notifications WHERE user_id = ANY($1) AND topic_id = $2")
+        .bind(&inaccessible)
+        .bind(topic_id)
+        .execute(&mut *tx)
+        .await?;
+    let mut ids: Vec<i32> = sqlx::query_scalar("SELECT id FROM users WHERE id = ANY($1)")
+        .bind(&inaccessible)
+        .fetch_all(&mut *tx)
+        .await?;
+    ids.sort_unstable();
+    for user_id in ids {
+        crate::bus::publish_notifications_state(&state.bus, &mut tx, &s, user_id).await?;
+    }
     tx.commit().await?;
     Ok(())
 }

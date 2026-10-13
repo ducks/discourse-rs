@@ -263,6 +263,18 @@ async fn create_invite_notification(
         "original_user_id": inviter.id,
         "original_username": inviter.username,
     });
+    notify_invited(conn, ctx, topic_id, target, &data).await
+}
+
+/// An invited_to_private_message notification on the message's first
+/// post, then its after_commit: the user's counts and the invite email.
+async fn notify_invited(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    topic_id: i32,
+    target: i32,
+    data: &serde_json::Value,
+) -> Result<(), AppError> {
     let notification_id: i64 = sqlx::query_scalar(
         "INSERT INTO notifications (notification_type, user_id, topic_id, post_number, data, read, \
                                     high_priority, created_at, updated_at) \
@@ -304,7 +316,7 @@ async fn create_invite_notification(
             "type": "user_invited_to_private_message",
             "user_id": target,
             "notification_id": notification_id,
-            "notification_data_hash": data,
+            "notification_data_hash": data.clone(),
             "notification_type": "invited_to_private_message",
         });
         if let Some((post_id, _)) = first_post {
@@ -395,4 +407,202 @@ pub async fn remove_allowed_user(
         )
         .await?;
     Ok(true)
+}
+
+/// `Topic#invite_group(user, group, should_notify:)`: the group on the
+/// message, a small action on it when it has a visible post (with
+/// post_alert and group_pm_alert when notifying), then the group's members
+/// directly on the message (but its author) taken off by the system.
+pub async fn invite_group(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    user_id: i32,
+    group_id: i32,
+    topic_id: i32,
+    should_notify: bool,
+) -> Result<(), AppError> {
+    sqlx::query("INSERT INTO topic_allowed_groups (topic_id, group_id) VALUES ($1, $2)")
+        .bind(topic_id)
+        .bind(group_id)
+        .execute(&mut *conn)
+        .await?;
+    // update_columns(has_messages: true): no updated_at.
+    sqlx::query("UPDATE groups SET has_messages = TRUE WHERE id = $1 AND NOT has_messages")
+        .bind(group_id)
+        .execute(&mut *conn)
+        .await?;
+    let group_name: String = sqlx::query_scalar("SELECT name FROM groups WHERE id = $1")
+        .bind(group_id)
+        .fetch_one(&mut *conn)
+        .await?;
+    let last_post: Option<i32> = sqlx::query_scalar(
+        "SELECT id FROM posts WHERE topic_id = $1 AND NOT hidden AND deleted_at IS NULL \
+         ORDER BY post_number DESC LIMIT 1",
+    )
+    .bind(topic_id)
+    .fetch_optional(&mut *conn)
+    .await?;
+    if let Some(last_post) = last_post {
+        small_action::add(
+            &mut *conn,
+            ctx,
+            &SmallAction {
+                user_id,
+                topic_id,
+                action_code: "invited_group",
+                bump: false,
+                who: Some(&group_name),
+            },
+        )
+        .await?;
+        if should_notify {
+            crate::jobs::enqueue(&mut *conn, "post_alert", json!({ "post_id": last_post })).await?;
+            crate::jobs::enqueue(
+                &mut *conn,
+                "group_pm_alert",
+                json!({ "user_id": user_id, "group_id": group_id, "post_id": last_post }),
+            )
+            .await?;
+        }
+    }
+    let members: Vec<i32> = sqlx::query_scalar(
+        "SELECT users.id FROM users WHERE users.id IN ( \
+           SELECT topic_allowed_users.user_id FROM topic_allowed_users \
+           INNER JOIN group_users ON group_users.user_id = topic_allowed_users.user_id \
+           INNER JOIN topic_allowed_groups ON topic_allowed_groups.group_id = group_users.group_id \
+           WHERE topic_allowed_groups.group_id = $1 AND topic_allowed_users.topic_id = $2 \
+             AND topic_allowed_users.user_id != (SELECT user_id FROM topics WHERE id = $2)) \
+         ORDER BY users.id",
+    )
+    .bind(group_id)
+    .bind(topic_id)
+    .fetch_all(&mut *conn)
+    .await?;
+    for member in members {
+        remove_allowed_user(&mut *conn, ctx, -1, topic_id, member).await?;
+    }
+    Ok(())
+}
+
+/// `Topic#remove_allowed_group(removed_by, name)`: false when no group of
+/// that name is on the message.
+pub async fn remove_allowed_group(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    removed_by: i32,
+    topic_id: i32,
+    name: &str,
+) -> Result<bool, AppError> {
+    let group: Option<(i32, String)> =
+        sqlx::query_as("SELECT id, name FROM groups WHERE name = $1")
+            .bind(name)
+            .fetch_optional(&mut *conn)
+            .await?;
+    let Some((group_id, group_name)) = group else {
+        return Ok(false);
+    };
+    let removed =
+        sqlx::query("DELETE FROM topic_allowed_groups WHERE topic_id = $1 AND group_id = $2")
+            .bind(topic_id)
+            .bind(group_id)
+            .execute(&mut *conn)
+            .await?
+            .rows_affected();
+    if removed == 0 {
+        return Ok(false);
+    }
+    small_action::add(
+        &mut *conn,
+        ctx,
+        &SmallAction {
+            user_id: removed_by,
+            topic_id,
+            action_code: "removed_group",
+            bump: false,
+            who: Some(&group_name),
+        },
+    )
+    .await?;
+    crate::jobs::enqueue(
+        &mut *conn,
+        "delete_inaccessible_notifications",
+        json!({ "topic_id": topic_id }),
+    )
+    .await?;
+    Ok(true)
+}
+
+/// `Jobs::GroupPmAlert`: the group's default levels on the message (for
+/// members without one), its tracking members' summaries, and an
+/// invitation for its watching members but the inviter.
+pub async fn group_pm_alert(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    user_id: i32,
+    group_id: i32,
+    post_id: i32,
+) -> Result<(), AppError> {
+    let inviter: Option<String> = sqlx::query_scalar("SELECT username FROM users WHERE id = $1")
+        .bind(user_id)
+        .fetch_optional(&mut *conn)
+        .await?;
+    let group: Option<(i32, i32)> =
+        sqlx::query_as("SELECT user_count, id FROM groups WHERE id = $1")
+            .bind(group_id)
+            .fetch_optional(&mut *conn)
+            .await?;
+    let topic: Option<(i32, Option<i32>, String)> = sqlx::query_as(
+        "SELECT t.id, t.user_id, t.title FROM posts p JOIN topics t ON t.id = p.topic_id \
+           AND t.deleted_at IS NULL WHERE p.id = $1 AND p.deleted_at IS NULL",
+    )
+    .bind(post_id)
+    .fetch_optional(&mut *conn)
+    .await?;
+    let (Some(inviter), Some((user_count, _)), Some((topic_id, author, title))) =
+        (inviter, group, topic)
+    else {
+        return Ok(());
+    };
+    let limit = ctx.settings.get("group_pm_user_limit")?.to_i();
+    if i64::from(user_count) > limit {
+        return Err(
+            Unsupported("group_pm_alert for a group over group_pm_user_limit (raises)").into(),
+        );
+    }
+    crate::posting::group_messages::apply_default_levels(
+        &mut *conn, group_id, topic_id, author, true,
+    )
+    .await?;
+    let tracking: Vec<i32> = sqlx::query_scalar(
+        "SELECT users.id FROM users INNER JOIN group_users ON users.id = group_users.user_id \
+         WHERE group_users.group_id = $1 AND group_users.notification_level = 2 ORDER BY users.id",
+    )
+    .bind(group_id)
+    .fetch_all(&mut *conn)
+    .await?;
+    let stats = crate::posting::group_messages::group_stats(&mut *conn, topic_id).await?;
+    for member in tracking {
+        crate::posting::group_messages::notify_group_summary(
+            ctx, &mut *conn, &stats, member, topic_id, None,
+        )
+        .await?;
+    }
+    let watching: Vec<i32> = sqlx::query_scalar(
+        "SELECT users.id FROM users INNER JOIN group_users ON users.id = group_users.user_id \
+         WHERE group_users.group_id = $1 AND group_users.notification_level IN (3, 4) \
+           AND group_users.user_id != $2 ORDER BY users.id",
+    )
+    .bind(group_id)
+    .bind(user_id)
+    .fetch_all(&mut *conn)
+    .await?;
+    let data = json!({
+        "topic_title": title,
+        "display_username": inviter,
+        "group_id": group_id,
+    });
+    for member in watching {
+        notify_invited(&mut *conn, ctx, topic_id, member, &data).await?;
+    }
+    Ok(())
 }

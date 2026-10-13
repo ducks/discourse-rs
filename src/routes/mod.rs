@@ -344,6 +344,16 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/t/{slug}/archive-message", put(archive_message::archive))
         .route("/t/{slug}/invite", post(pm_invite::invite))
         .route("/t/{slug}/invite.json", post(pm_invite::invite))
+        .route("/t/{slug}/invite-group", post(pm_invite::invite_group))
+        .route("/t/{slug}/invite-group.json", post(pm_invite::invite_group))
+        .route(
+            "/t/{slug}/remove-allowed-group",
+            put(pm_invite::remove_allowed_group),
+        )
+        .route(
+            "/t/{slug}/remove-allowed-group.json",
+            put(pm_invite::remove_allowed_group),
+        )
         .route(
             "/t/{slug}/remove-allowed-user",
             put(pm_invite::remove_allowed_user),
