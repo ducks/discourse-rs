@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# Lightboxed images on both sides: scripts/fixtures/lightbox.rb makes the
+# uploads, their thumbnails and a post (topic 9230) in the reference dv
+# agent, cooked and post-processed by Rails; their rows are then copied
+# into our database and their files (originals and thumbnails) into our
+# public dir, so both serve the same post and images. Idempotent; run it
+# again after either side is reset.
+#
+#   scripts/lightbox-fixtures <dv-agent> <our-database-url> [public-dir]
+set -euo pipefail
+
+root=$(cd "$(dirname "$0")/.." && pwd)
+agent=${1:?usage: scripts/lightbox-fixtures <dv-agent> <our-database-url> [public-dir]}
+ours=${2:?our database url}
+public=${3:-$root/public}
+
+ref_psql() {
+  dv run --name "$agent" -- psql discourse_development -v ON_ERROR_STOP=1 -At "$@"
+}
+
+dv run --name "$agent" -- mkdir -p /tmp/lightbox-fixtures
+for f in "$root"/parity/screens/uploads/lightbox-* "$root/scripts/fixtures/lightbox.rb"; do
+  dv cp "$f" "$agent:/tmp/lightbox-fixtures/$(basename "$f")"
+done
+dv run --name "$agent" -- bin/rails runner /tmp/lightbox-fixtures/lightbox.rb
+
+# Each table's rows, in the reference's column order.
+copy_rows() {
+  local table=$1 where=$2 columns
+  columns=$(ref_psql -c "SELECT string_agg(quote_ident(column_name), ',' ORDER BY ordinal_position) FROM information_schema.columns WHERE table_schema = 'public' AND table_name = '$table'")
+  psql "$ours" -v ON_ERROR_STOP=1 -q -c "DELETE FROM $table WHERE $where"
+  ref_psql -c "COPY (SELECT $columns FROM $table WHERE $where) TO STDOUT" |
+    psql "$ours" -v ON_ERROR_STOP=1 -q -c "COPY $table ($columns) FROM STDIN"
+}
+copy_rows posts "id = 92300"
+copy_rows topics "id = 9230"
+copy_rows optimized_images "upload_id BETWEEN 92300 AND 92399"
+copy_rows uploads "id BETWEEN 92300 AND 92399"
+
+for url in $(ref_psql -c "SELECT url FROM uploads WHERE id BETWEEN 92300 AND 92399 UNION ALL SELECT url FROM optimized_images WHERE upload_id BETWEEN 92300 AND 92399"); do
+  mkdir -p "$public$(dirname "$url")"
+  dv cp "$agent:/var/www/discourse/public$url" "$public$url"
+done

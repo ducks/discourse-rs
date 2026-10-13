@@ -27,6 +27,7 @@ const DISCOURSE_CSS: &str = concat!(
     include_str!("../static/css/categories.css"),
     include_str!("../static/css/sidebar.css"),
     include_str!("../static/css/cooked.css"),
+    include_str!("../static/css/lightbox.css"),
     include_str!("../static/css/onebox.css"),
     include_str!("../static/css/topic.css"),
     include_str!("../static/css/user.css"),
@@ -70,6 +71,19 @@ const ASSETS: &[(&str, &str, &str)] = &[
     ("page.js", JS, include_str!("../static/js/page.js")),
     ("hashtags.js", JS, include_str!("../static/js/hashtags.js")),
     ("cooked.js", JS, include_str!("../static/js/cooked.js")),
+    ("lightbox.js", JS, include_str!("../static/js/lightbox.js")),
+    // PhotoSwipe's ES modules, vendored from npm (static/vendor/README),
+    // which lightbox.js imports when a post has lightboxes.
+    (
+        "photoswipe-lightbox.esm.min.js",
+        JS,
+        include_str!("../static/vendor/photoswipe-lightbox.esm.min.js"),
+    ),
+    (
+        "photoswipe.esm.min.js",
+        JS,
+        include_str!("../static/vendor/photoswipe.esm.min.js"),
+    ),
     ("sidebar.js", JS, include_str!("../static/js/sidebar.js")),
     ("topic.js", JS, include_str!("../static/js/topic.js")),
     (
