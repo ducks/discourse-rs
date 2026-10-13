@@ -1,0 +1,29 @@
+{
+  "name": "reindex_chat_off",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-13T01:40:07.450869",
+  "transaction_started_at": "2026-10-13T01:40:06.799575",
+  "responses": [],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "chat_search_enabled": false
+  },
+  "setup": [
+    "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id) VALUES (901, 2, 3, now(), now(), 'hello world', '<p>hello world</p>', 1, 3)"
+  ],
+  "enqueue": [
+    [
+      "reindex_search",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "64aeb7f0bb4ac708ace4804f0f945b4fad37e5f6a8e2dc77faa39effb3068934",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

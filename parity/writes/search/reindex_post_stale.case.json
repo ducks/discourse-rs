@@ -1,0 +1,7 @@
+{
+  "user": null,
+  "setup": ["UPDATE post_search_data SET version = 4, raw_data = '', search_data = ''::tsvector WHERE post_id = 36"],
+  "requests": [],
+  "enqueue": [["reindex_search", {}]],
+  "run_jobs": ["reindex_search"]
+}

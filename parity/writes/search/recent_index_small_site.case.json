@@ -1,0 +1,7 @@
+{
+  "user": null,
+  "setup": [],
+  "requests": [],
+  "enqueue": [["create_recent_post_search_indexes", {}]],
+  "run_jobs": ["create_recent_post_search_indexes"]
+}

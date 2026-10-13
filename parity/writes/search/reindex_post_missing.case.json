@@ -1,0 +1,7 @@
+{
+  "user": null,
+  "setup": ["DELETE FROM post_search_data WHERE post_id IN (35, 36, 48)"],
+  "requests": [],
+  "enqueue": [["reindex_search", {}]],
+  "run_jobs": ["reindex_search"]
+}

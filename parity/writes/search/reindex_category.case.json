@@ -1,0 +1,7 @@
+{
+  "user": null,
+  "setup": ["UPDATE category_search_data SET version = 0, search_data = ''::tsvector, raw_data = '' WHERE category_id = 4", "UPDATE categories SET name = 'General Renamed' WHERE id = 4"],
+  "requests": [],
+  "enqueue": [["reindex_search", {}]],
+  "run_jobs": ["reindex_search"]
+}

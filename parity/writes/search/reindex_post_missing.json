@@ -1,0 +1,57 @@
+{
+  "name": "reindex_post_missing",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-13T01:40:10.326423",
+  "transaction_started_at": "2026-10-13T01:40:09.548813",
+  "responses": [],
+  "changes": {
+    "post_search_data": {
+      "inserted": [
+        {
+          "locale": "en",
+          "post_id": 35,
+          "version": 5,
+          "raw_data": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+          "search_data": "'bodi':23 'enough':17 'excerpt':26 'first':8 'fixtur':2A 'general':6B 'guid':7C 'long':16 'pariti':1A 'post':9,22 'poster':5A 'real':21 'repli':3A 'replier':15 'sever':14 'topic':12",
+          "private_message": false
+        },
+        {
+          "locale": "en",
+          "post_id": 36,
+          "version": 5,
+          "raw_data": "Reply one from user1, also long enough to pass the minimum length check.",
+          "search_data": "'also':12 'check':20 'enough':14 'fixtur':2A 'general':6B 'guid':7C 'length':19 'long':13 'minimum':18 'one':9 'pariti':1A 'pass':16 'poster':5A 'repli':3A,8 'user1':11",
+          "private_message": false
+        },
+        {
+          "locale": "en",
+          "post_id": 48,
+          "version": 5,
+          "raw_data": "A private message from user1 to user0, long enough to be a real post body.",
+          "search_data": "'bodi':21 'enough':15 'fixtur':2A 'long':14 'messag':9 'pariti':1A 'pm':3A 'post':20 'privat':8 'real':19 'user0':6A,13 'user1':4A,11",
+          "private_message": true
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "DELETE FROM post_search_data WHERE post_id IN (35, 36, 48)"
+  ],
+  "enqueue": [
+    [
+      "reindex_search",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "99b4009651e360902e849614854ed7ac46bdf2ecf4038fd637393a774d3cd3a4",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

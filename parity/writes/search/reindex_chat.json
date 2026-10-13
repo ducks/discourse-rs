@@ -1,0 +1,40 @@
+{
+  "name": "reindex_chat",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-13T01:40:06.561524",
+  "transaction_started_at": "2026-10-13T01:40:05.77476",
+  "responses": [],
+  "changes": {
+    "chat_message_search_data": {
+      "inserted": [
+        {
+          "locale": "en",
+          "version": 1,
+          "raw_data": "hello world hello world",
+          "search_data": "'hello':1A,3 'world':2A,4",
+          "chat_message_id": 901
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id) VALUES (901, 2, 3, now(), now(), 'hello world', '<p>hello world</p>', 1, 3)"
+  ],
+  "enqueue": [
+    [
+      "reindex_search",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "e051a64f8f383e160f81b0be36c6de905fcd535b4ccbff0f0f4622aa034d7496",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

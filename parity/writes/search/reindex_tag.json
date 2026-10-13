@@ -1,0 +1,41 @@
+{
+  "name": "reindex_tag",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-13T01:40:12.211066",
+  "transaction_started_at": "2026-10-13T01:40:11.423097",
+  "responses": [],
+  "changes": {
+    "tag_search_data": {
+      "inserted": [
+        {
+          "locale": "en",
+          "tag_id": 1,
+          "version": 3,
+          "raw_data": "howto",
+          "search_data": "'howto':1A"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "DELETE FROM tag_search_data WHERE tag_id = 1",
+    "UPDATE tags SET name = 'HowTo' WHERE id = 1"
+  ],
+  "enqueue": [
+    [
+      "reindex_search",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "26edc78ad2262c27b7ed47dbe91dba1f0eae7f47c5f218116fd6a224bfa74698",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

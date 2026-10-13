@@ -1,0 +1,7 @@
+{
+  "user": null,
+  "setup": ["UPDATE topic_search_data SET version = 0, raw_data = '' WHERE topic_id = 38"],
+  "requests": [],
+  "enqueue": [["reindex_search", {}]],
+  "run_jobs": ["reindex_search"]
+}

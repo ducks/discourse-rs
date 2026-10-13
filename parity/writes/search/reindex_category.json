@@ -1,0 +1,218 @@
+{
+  "name": "reindex_category",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-13T01:40:05.456607",
+  "transaction_started_at": "2026-10-13T01:40:04.712812",
+  "responses": [],
+  "changes": {
+    "category_search_data": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "locale": "en",
+            "version": 0,
+            "raw_data": "",
+            "category_id": 4,
+            "search_data": ""
+          },
+          "after": {
+            "locale": "en",
+            "version": 3,
+            "raw_data": "General Renamed",
+            "category_id": 4,
+            "search_data": "'general':1A 'renam':2A"
+          }
+        }
+      ]
+    },
+    "post_search_data": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "locale": "en",
+            "post_id": 3,
+            "version": 5,
+            "raw_data": "Create topics here that don't fit into any other existing category.",
+            "search_data": "'categori':4A,17 'creat':6 'exist':16 'fit':12 'general':3A,5B 'topic':7",
+            "private_message": false
+          },
+          "after": {
+            "locale": "en",
+            "post_id": 3,
+            "version": 5,
+            "raw_data": "Create topics here that don't fit into any other existing category.",
+            "search_data": "'categori':4A,18 'creat':7 'exist':17 'fit':13 'general':3A,5B 'renam':6B 'topic':8",
+            "private_message": false
+          }
+        },
+        {
+          "before": {
+            "locale": "en",
+            "post_id": 6,
+            "version": 5,
+            "raw_data": "We are so glad you joined us. Here are some things you can do to get started: :speaking_head: Introduce yourself by adding your picture and information about yourself and your interests to /my/preferences/account your profile . What is one thing you'd like to be asked about? :open_book: Get to know the community by /latest browsing discussions that are already happening here. When you find a post interesting, informative, or entertaining, use the :heart: to show your appreciation or support! :handshake: Contribute by commenting, sharing your own perspective, asking questions, or offering feedback in the discussion. Before replying or starting new topics, please review the /faq Community Guidelines . If you need help or have a suggestion, feel free to ask in /c/site-feedback/2 #square-full Site Feedback or /about contact the admins .",
+            "search_data": "'/about':135 '/c/site-feedback/2':128 '/faq':112 '/latest':61 '/my/preferences/account':39 'ad':28 'admin':138 'alreadi':66 'appreci':84 'ask':51,95,126 'book':54 'brows':62 'comment':90 'communiti':59,113 'contact':136 'contribut':88 'd':47 'discours':3A 'discuss':63,102 'entertain':77 'feedback':99,133 'feel':123 'find':71 'free':124 'full':131 'general':5B 'get':21,55 'glad':9 'guidelin':114 'handshak':87 'happen':67 'head':24 'heart':80 'help':118 'inform':32,75 'interest':37,74 'introduc':25 'join':11 'know':57 'like':48 'need':117 'new':107 'offer':98 'one':44 'open':53 'perspect':94 'pictur':30 'pleas':109 'post':73 'profil':41 'question':96 'repli':104 'review':110 'share':91 'show':82 'site':132 'speak':23 'squar':130 'square-ful':129 'start':22,106 'suggest':122 'support':86 'thing':16,45 'topic':108 'us':12 'use':78 'wave':4A 'welcom':1A",
+            "private_message": false
+          },
+          "after": {
+            "locale": "en",
+            "post_id": 6,
+            "version": 5,
+            "raw_data": "We are so glad you joined us. Here are some things you can do to get started: :speaking_head: Introduce yourself by adding your picture and information about yourself and your interests to /my/preferences/account your profile . What is one thing you'd like to be asked about? :open_book: Get to know the community by /latest browsing discussions that are already happening here. When you find a post interesting, informative, or entertaining, use the :heart: to show your appreciation or support! :handshake: Contribute by commenting, sharing your own perspective, asking questions, or offering feedback in the discussion. Before replying or starting new topics, please review the /faq Community Guidelines . If you need help or have a suggestion, feel free to ask in /c/site-feedback/2 #square-full Site Feedback or /about contact the admins .",
+            "search_data": "'/about':136 '/c/site-feedback/2':129 '/faq':113 '/latest':62 '/my/preferences/account':40 'ad':29 'admin':139 'alreadi':67 'appreci':85 'ask':52,96,127 'book':55 'brows':63 'comment':91 'communiti':60,114 'contact':137 'contribut':89 'd':48 'discours':3A 'discuss':64,103 'entertain':78 'feedback':100,134 'feel':124 'find':72 'free':125 'full':132 'general':5B 'get':22,56 'glad':10 'guidelin':115 'handshak':88 'happen':68 'head':25 'heart':81 'help':119 'inform':33,76 'interest':38,75 'introduc':26 'join':12 'know':58 'like':49 'need':118 'new':108 'offer':99 'one':45 'open':54 'perspect':95 'pictur':31 'pleas':110 'post':74 'profil':42 'question':97 'renam':6B 'repli':105 'review':111 'share':92 'show':83 'site':133 'speak':24 'squar':131 'square-ful':130 'start':23,107 'suggest':123 'support':87 'thing':17,46 'topic':109 'us':13 'use':79 'wave':4A 'welcom':1A",
+            "private_message": false
+          }
+        },
+        {
+          "before": {
+            "locale": "en",
+            "post_id": 35,
+            "version": 5,
+            "raw_data": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+            "search_data": "'bodi':23 'enough':17 'excerpt':26 'first':8 'fixtur':2A 'general':6B 'guid':7C 'long':16 'pariti':1A 'post':9,22 'poster':5A 'real':21 'repli':3A 'replier':15 'sever':14 'topic':12",
+            "private_message": false
+          },
+          "after": {
+            "locale": "en",
+            "post_id": 35,
+            "version": 5,
+            "raw_data": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+            "search_data": "'bodi':24 'enough':18 'excerpt':27 'first':9 'fixtur':2A 'general':6B 'guid':8C 'long':17 'pariti':1A 'post':10,23 'poster':5A 'real':22 'renam':7B 'repli':3A 'replier':16 'sever':15 'topic':13",
+            "private_message": false
+          }
+        },
+        {
+          "before": {
+            "locale": "en",
+            "post_id": 36,
+            "version": 5,
+            "raw_data": "Reply one from user1, also long enough to pass the minimum length check.",
+            "search_data": "'also':12 'check':20 'enough':14 'fixtur':2A 'general':6B 'guid':7C 'length':19 'long':13 'minimum':18 'one':9 'pariti':1A 'pass':16 'poster':5A 'repli':3A,8 'user1':11",
+            "private_message": false
+          },
+          "after": {
+            "locale": "en",
+            "post_id": 36,
+            "version": 5,
+            "raw_data": "Reply one from user1, also long enough to pass the minimum length check.",
+            "search_data": "'also':13 'check':21 'enough':15 'fixtur':2A 'general':6B 'guid':8C 'length':20 'long':14 'minimum':19 'one':10 'pariti':1A 'pass':17 'poster':5A 'renam':7B 'repli':3A,9 'user1':12",
+            "private_message": false
+          }
+        },
+        {
+          "before": {
+            "locale": "en",
+            "post_id": 37,
+            "version": 5,
+            "raw_data": "Reply two from user2, also long enough to pass the minimum length check.",
+            "search_data": "'also':12 'check':20 'enough':14 'fixtur':2A 'general':6B 'guid':7C 'length':19 'long':13 'minimum':18 'pariti':1A 'pass':16 'poster':5A 'repli':3A,8 'two':9 'user2':11",
+            "private_message": false
+          },
+          "after": {
+            "locale": "en",
+            "post_id": 37,
+            "version": 5,
+            "raw_data": "Reply two from user2, also long enough to pass the minimum length check.",
+            "search_data": "'also':13 'check':21 'enough':15 'fixtur':2A 'general':6B 'guid':8C 'length':20 'long':14 'minimum':19 'pariti':1A 'pass':17 'poster':5A 'renam':7B 'repli':3A,9 'two':10 'user2':12",
+            "private_message": false
+          }
+        },
+        {
+          "before": {
+            "locale": "en",
+            "post_id": 38,
+            "version": 5,
+            "raw_data": "Reply three from admin, also long enough to pass the minimum length check.",
+            "search_data": "'admin':11 'also':12 'check':20 'enough':14 'fixtur':2A 'general':6B 'guid':7C 'length':19 'long':13 'minimum':18 'pariti':1A 'pass':16 'poster':5A 'repli':3A,8 'three':9",
+            "private_message": false
+          },
+          "after": {
+            "locale": "en",
+            "post_id": 38,
+            "version": 5,
+            "raw_data": "Reply three from admin, also long enough to pass the minimum length check.",
+            "search_data": "'admin':12 'also':13 'check':21 'enough':15 'fixtur':2A 'general':6B 'guid':8C 'length':20 'long':14 'minimum':19 'pariti':1A 'pass':17 'poster':5A 'renam':7B 'repli':3A,9 'three':10",
+            "private_message": false
+          }
+        },
+        {
+          "before": {
+            "locale": "en",
+            "post_id": 43,
+            "version": 5,
+            "raw_data": "This topic is unlisted and must not appear in latest for anonymous users.",
+            "search_data": "'anonym':17 'appear':13 'fixtur':2A 'general':5B 'latest':15 'must':11 'pariti':1A 'topic':4A,7 'unlist':3A,9 'user':18",
+            "private_message": false
+          },
+          "after": {
+            "locale": "en",
+            "post_id": 43,
+            "version": 5,
+            "raw_data": "This topic is unlisted and must not appear in latest for anonymous users.",
+            "search_data": "'anonym':18 'appear':14 'fixtur':2A 'general':5B 'latest':16 'must':12 'pariti':1A 'renam':6B 'topic':4A,8 'unlist':3A,10 'user':19",
+            "private_message": false
+          }
+        },
+        {
+          "before": {
+            "locale": "en",
+            "post_id": 46,
+            "version": 5,
+            "raw_data": "An archived topic whose first post got a like, for like_count and op_like_count.",
+            "search_data": "'archiv':5A,10 'count':20,24 'first':13 'fixtur':2A 'general':6B 'got':15 'guid':8C 'howto':7C 'like':3A,17,19,23 'op':22 'pariti':1A 'post':14 'topic':11 'whose':12",
+            "private_message": false
+          },
+          "after": {
+            "locale": "en",
+            "post_id": 46,
+            "version": 5,
+            "raw_data": "An archived topic whose first post got a like, for like_count and op_like_count.",
+            "search_data": "'archiv':5A,11 'count':21,25 'first':14 'fixtur':2A 'general':6B 'got':16 'guid':9C 'howto':8C 'like':3A,18,20,24 'op':23 'pariti':1A 'post':15 'renam':7B 'topic':12 'whose':13",
+            "private_message": false
+          }
+        },
+        {
+          "before": {
+            "locale": "en",
+            "post_id": 52,
+            "version": 5,
+            "raw_data": "Reply from user0 mentioning @user1 so a mention notification exists.",
+            "search_data": "'exist':17 'fixtur':2A 'general':6B 'guid':7C 'mention':11,15 'notif':16 'pariti':1A 'poster':5A 'repli':3A,8 'user0':10 'user1':12",
+            "private_message": false
+          },
+          "after": {
+            "locale": "en",
+            "post_id": 52,
+            "version": 5,
+            "raw_data": "Reply from user0 mentioning @user1 so a mention notification exists.",
+            "search_data": "'exist':18 'fixtur':2A 'general':6B 'guid':8C 'mention':12,16 'notif':17 'pariti':1A 'poster':5A 'renam':7B 'repli':3A,9 'user0':11 'user1':13",
+            "private_message": false
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE category_search_data SET version = 0, search_data = ''::tsvector, raw_data = '' WHERE category_id = 4",
+    "UPDATE categories SET name = 'General Renamed' WHERE id = 4"
+  ],
+  "enqueue": [
+    [
+      "reindex_search",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "1eeffbee1400f987203be5e83b788f8ac034bb705274d3dcb3d3d151b4cb918e",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

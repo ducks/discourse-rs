@@ -1,0 +1,71 @@
+{
+  "name": "reindex_clean",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-13T01:40:08.299307",
+  "transaction_started_at": "2026-10-13T01:40:07.649445",
+  "responses": [],
+  "changes": {
+    "post_search_data": {
+      "inserted": [],
+      "deleted": [
+        {
+          "locale": "en",
+          "post_id": 45,
+          "version": 5,
+          "raw_data": "x",
+          "search_data": "",
+          "private_message": false
+        },
+        {
+          "locale": "en",
+          "post_id": 41,
+          "version": 5,
+          "raw_data": "x",
+          "search_data": "",
+          "private_message": false
+        }
+      ],
+      "updated": []
+    },
+    "topic_search_data": {
+      "inserted": [],
+      "deleted": [
+        {
+          "locale": "en",
+          "version": 4,
+          "raw_data": "x",
+          "topic_id": 40,
+          "search_data": ""
+        },
+        {
+          "locale": "en",
+          "version": 4,
+          "raw_data": "x",
+          "topic_id": 9999,
+          "search_data": ""
+        }
+      ],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO topic_search_data (topic_id, raw_data, locale, version, search_data) VALUES (40, 'x', 'en', 4, ''), (9999, 'x', 'en', 4, '')",
+    "INSERT INTO post_search_data (post_id, raw_data, locale, version, search_data, private_message) VALUES (45, 'x', 'en', 5, '', false), (41, 'x', 'en', 5, '', false)",
+    "UPDATE posts SET deleted_at = now() - interval '2 hours' WHERE id = 37"
+  ],
+  "enqueue": [
+    [
+      "reindex_search",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "121a43f5577d7841b19f8879bd252b5c158a5686e5899039f13f75f1375d28cf",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

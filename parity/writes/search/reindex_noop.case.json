@@ -1,0 +1,7 @@
+{
+  "user": null,
+  "setup": [],
+  "requests": [],
+  "enqueue": [["reindex_search", {}]],
+  "run_jobs": ["reindex_search"]
+}
