@@ -125,7 +125,7 @@ Bugs or silent gaps in what is merged, small and independent.
     voters, grouped results, ClosePoll, and the serializer's vote-dependent
     keys; the `vote_poll` anonymous action waits on core's
     AnonymousAction, `/anonymous-actions`, not ported), 40.
-    `feat/poll-edit` S/M
+    ~~`feat/poll-edit`~~ (done) S/M
 
 [messages-dms]
 

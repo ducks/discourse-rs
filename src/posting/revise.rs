@@ -237,20 +237,55 @@ pub async fn revise(
     if analysis.has_upload_media {
         return Err(Unsupported("posts with uploaded video or audio").into());
     }
-    // discourse-poll's validate_polls on a changed raw: PollsUpdater, for
-    // polls added, changed or removed.
-    if raw_changed && crate::plugins::poll::enabled(ctx.settings)? {
-        let had_polls: bool =
-            sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM polls WHERE post_id = $1)")
-                .bind(post.id)
-                .fetch_one(&mut *conn)
-                .await?;
-        if analysis.has_polls || had_polls {
-            return Err(Unsupported("editing posts with polls (PollsUpdater)").into());
+    // discourse-poll's validate_polls on a changed raw (none without
+    // validations): PollsValidator, PostValidator for the editor, then
+    // PollsUpdater's plan, written with the revision.
+    let mut poll_errors = Vec::new();
+    let mut poll_plan = None;
+    if raw_changed && !changes.skip_validations && crate::plugins::poll::enabled(ctx.settings)? {
+        let extracted = if new_raw.contains("[/poll]") {
+            crate::plugins::poll::extract(&cooked)
+        } else {
+            Vec::new()
+        };
+        match crate::plugins::poll::validate_polls(ctx.settings, ctx.i18n, extracted)? {
+            Err(errors) => poll_errors = errors,
+            Ok(polls) => {
+                let rights = if polls.is_empty() {
+                    None
+                } else {
+                    crate::plugins::poll::validate_post(
+                        &mut conn,
+                        ctx.settings,
+                        ctx.i18n,
+                        editor,
+                        Some(post.topic_id),
+                    )
+                    .await?
+                };
+                if let Some(error) = rights {
+                    poll_errors.push(error);
+                } else {
+                    let had_polls: bool = sqlx::query_scalar(
+                        "SELECT EXISTS (SELECT 1 FROM polls WHERE post_id = $1)",
+                    )
+                    .bind(i64::from(post.id))
+                    .fetch_one(&mut *conn)
+                    .await?;
+                    if !polls.is_empty() || had_polls {
+                        match crate::plugins::poll::updater::plan(&mut conn, ctx, post.id, &polls)
+                            .await?
+                        {
+                            Ok(plan) => poll_plan = Some(plan),
+                            Err(error) => poll_errors.push(error),
+                        }
+                    }
+                }
+            }
         }
     }
     let private_message = archetype == "private_message";
-    let errors = if changes.skip_validations {
+    let mut errors = if changes.skip_validations {
         Vec::new()
     } else {
         validate::validate_post(
@@ -270,12 +305,24 @@ pub async fn revise(
         )
         .await?
     };
+    errors.extend(poll_errors);
     if !errors.is_empty() {
+        // The failed save is rolled back after advance_draft_sequence,
+        // whose upsert has taken a draft_sequences id all the same.
+        if editor_user.id > 0 {
+            sqlx::query("SELECT nextval('draft_sequences_id_seq')")
+                .execute(&mut *conn)
+                .await?;
+        }
         return Ok(Outcome::Invalid(errors));
     }
     drop(conn);
 
     let mut tx = pool.begin().await?;
+    // The post's validation, where PollsUpdater writes.
+    if let Some(plan) = poll_plan {
+        crate::plugins::poll::updater::apply(&mut tx, ctx, post.id, plan).await?;
+    }
     let version = post.version + 1;
     let public_version = post.public_version + 1;
     let (updated_at,): (NaiveDateTime,) = sqlx::query_as(

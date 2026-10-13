@@ -12,8 +12,8 @@
       }
     }
   ],
-  "started_at": "2026-10-13T00:06:54.49024",
-  "transaction_started_at": "2026-10-13T00:06:53.433605",
+  "started_at": "2026-10-13T19:40:21.810156",
+  "transaction_started_at": "2026-10-13T19:40:20.974938",
   "responses": [
     {
       "status": 200,
@@ -28,7 +28,7 @@
           "post_number": 2,
           "post_type": 1,
           "posts_count": 5,
-          "updated_at": "2026-10-13T00:06:54.604Z",
+          "updated_at": "2026-10-13T19:40:21.915Z",
           "reply_count": 0,
           "reply_to_post_number": null,
           "quote_count": 0,
@@ -164,8 +164,8 @@
           "html": "Yes",
           "digest": "277962ea3b8227e06ed3eb378fbdba0d",
           "poll_id": 1,
-          "created_at": "2026-10-13T00:06:54.556454",
-          "updated_at": "2026-10-13T00:06:54.556454",
+          "created_at": "2026-10-13T19:40:21.877534",
+          "updated_at": "2026-10-13T19:40:21.877534",
           "anonymous_votes": null
         },
         {
@@ -173,8 +173,8 @@
           "html": "No",
           "digest": "720aa6324194f0ccd395b3cd0ed76f0e",
           "poll_id": 1,
-          "created_at": "2026-10-13T00:06:54.558003",
-          "updated_at": "2026-10-13T00:06:54.558003",
+          "created_at": "2026-10-13T19:40:21.879038",
+          "updated_at": "2026-10-13T19:40:21.879038",
           "anonymous_votes": null
         }
       ],
@@ -199,8 +199,8 @@
           "close_at": null,
           "closed_at": null,
           "chart_type": 0,
-          "created_at": "2026-10-13T00:06:54.554618",
-          "updated_at": "2026-10-13T00:06:54.554618",
+          "created_at": "2026-10-13T19:40:21.875901",
+          "updated_at": "2026-10-13T19:40:21.875901",
           "visibility": 0,
           "closed_by_id": null,
           "anonymous_voters": null
@@ -216,8 +216,8 @@
           "name": "has_polls",
           "value": "t",
           "post_id": 36,
-          "created_at": "2026-10-13T00:06:54.571941",
-          "updated_at": "2026-10-13T00:06:54.571941"
+          "created_at": "2026-10-13T19:40:21.888504",
+          "updated_at": "2026-10-13T19:40:21.888504"
         }
       ],
       "deleted": [],
@@ -231,8 +231,8 @@
           "number": 2,
           "post_id": 36,
           "user_id": 3,
-          "created_at": "2026-10-13T00:06:54.616611",
-          "updated_at": "2026-10-13T00:06:54.616611",
+          "created_at": "2026-10-13T19:40:21.923483",
+          "updated_at": "2026-10-13T19:40:21.923483",
           "modifications": "--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\nraw:\n- Reply one from user1, also long enough to pass the minimum length check.\n- |-\n  Edited to add a poll.\n\n  [poll]\n  * Yes\n  * No\n  [/poll]\ncooked:\n- \"<p>Reply one from user1, also long enough to pass the minimum length check.</p>\"\n- |-\n  <p>Edited to add a poll.</p>\n  <div class=\"poll\" data-poll-name=\"poll\" data-poll-status=\"open\">\n  <div class=\"poll-container\">\n  <ul>\n  <li data-poll-option-id=\"277962ea3b8227e06ed3eb378fbdba0d\">Yes</li>\n  <li data-poll-option-id=\"720aa6324194f0ccd395b3cd0ed76f0e\">No</li>\n  </ul>\n  </div>\n  <div class=\"poll-info\">\n  <div class=\"poll-info_counts\">\n  <div class=\"poll-info_counts-count\">\n  <span class=\"info-number\">0</span>\n  <span class=\"info-label\">voters</span>\n  </div>\n  </div>\n  </div>\n  </div>\n"
         }
       ],
@@ -334,7 +334,7 @@
             "locale": null,
             "user_id": 3,
             "version": 2,
-            "baked_at": "2026-10-13T00:06:54.603874",
+            "baked_at": "2026-10-13T19:40:21.915598",
             "topic_id": 35,
             "hidden_at": null,
             "post_type": 1,
@@ -347,7 +347,7 @@
             "self_edits": 1,
             "sort_order": 2,
             "spam_count": 0,
-            "updated_at": "2026-10-13T00:06:54.604098",
+            "updated_at": "2026-10-13T19:40:21.915789",
             "word_count": 9,
             "action_code": null,
             "cook_method": 1,
@@ -367,7 +367,7 @@
             "last_editor_id": 3,
             "public_version": 2,
             "image_upload_id": null,
-            "last_version_at": "2026-10-13T00:06:54.505753",
+            "last_version_at": "2026-10-13T19:40:21.832843",
             "off_topic_count": 0,
             "hidden_reason_id": null,
             "reply_to_user_id": null,
@@ -499,33 +499,33 @@
       "updated": [
         {
           "before": {
-            "id": 484,
+            "id": 499,
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "SDOA/gSSjayfxDpa5OyMJ0NOqfQ=",
-            "created_at": "2026-10-13T00:06:53.797711",
-            "rotated_at": "2026-10-13T00:06:53.796867",
-            "updated_at": "2026-10-13T00:06:53.797711",
+            "auth_token": "rauMmVwGK1o3fsVZjFr62Pyi6ls=",
+            "created_at": "2026-10-13T19:40:21.293863",
+            "rotated_at": "2026-10-13T19:40:21.29306",
+            "updated_at": "2026-10-13T19:40:21.293863",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "SDOA/gSSjayfxDpa5OyMJ0NOqfQ=",
+            "prev_auth_token": "rauMmVwGK1o3fsVZjFr62Pyi6ls=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 484,
-            "seen_at": "2026-10-13T00:06:54.495601",
+            "id": 499,
+            "seen_at": "2026-10-13T19:40:21.816469",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "SDOA/gSSjayfxDpa5OyMJ0NOqfQ=",
-            "created_at": "2026-10-13T00:06:53.797711",
-            "rotated_at": "2026-10-13T00:06:53.796867",
-            "updated_at": "2026-10-13T00:06:53.797711",
+            "auth_token": "rauMmVwGK1o3fsVZjFr62Pyi6ls=",
+            "created_at": "2026-10-13T19:40:21.293863",
+            "rotated_at": "2026-10-13T19:40:21.29306",
+            "updated_at": "2026-10-13T19:40:21.293863",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "SDOA/gSSjayfxDpa5OyMJ0NOqfQ=",
+            "prev_auth_token": "rauMmVwGK1o3fsVZjFr62Pyi6ls=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null

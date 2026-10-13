@@ -1,0 +1,21 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO polls (id, post_id, name, type, status, results, visibility, chart_type, dynamic, created_at, updated_at) VALUES (9001, 36, 'pick', 0, 0, 0, 0, 0, FALSE, '2026-10-05 10:00:00', '2026-10-05 10:00:00')",
+    "INSERT INTO poll_options (id, poll_id, digest, html, created_at, updated_at) VALUES (9101, 9001, 'd704ae0a51c9cb797cdd37d02b1e1886', 'Red', '2026-10-05 10:00:00', '2026-10-05 10:00:00'), (9102, 9001, '3f560561c99e5625ea0a1e039eb5c01f', 'Blue', '2026-10-05 10:00:00', '2026-10-05 10:00:00')",
+    "INSERT INTO post_custom_fields (post_id, name, value, created_at, updated_at) VALUES (36, 'has_polls', 'f', '2026-10-05 10:00:00', '2026-10-05 10:00:00')",
+    "SELECT setval('polls_id_seq', 9001)",
+    "SELECT setval('poll_options_id_seq', 9102)"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/36.json",
+      "params": {
+        "post": {
+          "raw": "A poll to change.\n\n[poll name=pick results=on_close public=true]\n# Now titled\n* Red\n* Blue\n[/poll]\n\n[poll name=added]\n* One\n* Two\n[/poll]"
+        }
+      }
+    }
+  ]
+}

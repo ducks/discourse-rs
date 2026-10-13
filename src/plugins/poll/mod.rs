@@ -21,6 +21,7 @@ use crate::site_settings::{SettingError, SiteSettings};
 use crate::{AppError, Unsupported};
 
 pub mod serializer;
+pub mod updater;
 pub mod vote;
 
 pub use serializer::PostsData;
@@ -484,6 +485,24 @@ pub async fn create(
     if polls.is_empty() {
         return Ok(());
     }
+    insert_polls(conn, post_id, polls).await?;
+    // save_custom_fields(true): the boolean field, written as "t".
+    sqlx::query(
+        "INSERT INTO post_custom_fields (post_id, name, value, created_at, updated_at) \
+         VALUES ($1, 'has_polls', 't', clock_timestamp(), clock_timestamp())",
+    )
+    .bind(post_id)
+    .execute(&mut *conn)
+    .await?;
+    Ok(())
+}
+
+/// `DiscoursePoll::Poll.create!` for each poll: its row and options.
+async fn insert_polls(
+    conn: &mut PgConnection,
+    post_id: i32,
+    polls: &[NewPoll],
+) -> Result<(), sqlx::Error> {
     for poll in polls {
         let poll_id: i64 = sqlx::query_scalar(
             "INSERT INTO polls (post_id, name, close_at, type, status, visibility, title, results, \
@@ -519,14 +538,6 @@ pub async fn create(
             .await?;
         }
     }
-    // save_custom_fields(true): the boolean field, written as "t".
-    sqlx::query(
-        "INSERT INTO post_custom_fields (post_id, name, value, created_at, updated_at) \
-         VALUES ($1, 'has_polls', 't', clock_timestamp(), clock_timestamp())",
-    )
-    .bind(post_id)
-    .execute(&mut *conn)
-    .await?;
     Ok(())
 }
 
