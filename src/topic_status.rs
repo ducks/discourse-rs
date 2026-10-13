@@ -115,9 +115,6 @@ pub async fn update(
     if !allowed {
         return Ok(Outcome::Forbidden);
     }
-    if topic.archetype == "private_message" {
-        return Err(Unsupported("changing the status of messages").into());
-    }
     let user = guardian
         .user()
         .ok_or(Unsupported("changing a topic's status anonymously"))?;
@@ -289,6 +286,24 @@ pub async fn update(
         .bind(topic.id)
         .execute(&mut *conn)
         .await?;
+    }
+    // Topic#update_status: a message closed is archived for each of the
+    // closer's groups it is to (with no acting user).
+    if enabled && status == Status::Closed && topic.archetype == "private_message" {
+        let groups: Vec<i32> = sqlx::query_scalar(
+            "SELECT groups.id FROM groups \
+             INNER JOIN topic_allowed_groups ON groups.id = topic_allowed_groups.group_id \
+             WHERE topic_allowed_groups.topic_id = $1 \
+               AND topic_allowed_groups.group_id IN (SELECT group_id FROM group_users WHERE user_id = $2)",
+        )
+        .bind(topic.id)
+        .bind(user.id)
+        .fetch_all(&mut *conn)
+        .await?;
+        for group_id in groups {
+            crate::archived_messages::group_archive(ctx.bus, &mut *conn, group_id, topic.id, None)
+                .await?;
+        }
     }
     Ok(Outcome::Done)
 }

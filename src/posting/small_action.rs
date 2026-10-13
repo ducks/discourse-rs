@@ -15,7 +15,7 @@ use super::{
     BAKED_VERSION, Ctx, TopicUserAttr, change_topic_user, current_draft_sequence,
     notification_levels, notification_reasons, post_types, record_timing, user_actions,
 };
-use crate::{AppError, Unsupported};
+use crate::AppError;
 
 /// A small action post to add.
 pub struct SmallAction<'a> {
@@ -39,9 +39,7 @@ pub async fn add(
             .bind(topic_id)
             .fetch_one(&mut *conn)
             .await?;
-    if archetype == "private_message" {
-        return Err(Unsupported("small action posts in messages").into());
-    }
+    let private_message = archetype == "private_message";
 
     // build_post_stats: the topic draft's saves.
     let draft_key = format!("topic_{topic_id}");
@@ -100,16 +98,43 @@ pub async fn add(
         .execute(&mut *conn)
         .await?;
     }
-    // UserActionManager.post_created: a reply.
-    super::log_user_action(
-        &mut *conn,
-        user_actions::REPLY,
-        user_id,
-        topic_id,
-        post_id,
-        created_at,
-    )
-    .await?;
+    // UserActionManager.post_created: a reply, or in a message one row per
+    // allowed user (small actions are not filtered out).
+    if private_message {
+        let allowed: Vec<i32> = sqlx::query_scalar(
+            "SELECT user_id FROM topic_allowed_users WHERE topic_id = $1 ORDER BY id",
+        )
+        .bind(topic_id)
+        .fetch_all(&mut *conn)
+        .await?;
+        for allowed_user in allowed {
+            let kind = if allowed_user == user_id {
+                user_actions::NEW_PRIVATE_MESSAGE
+            } else {
+                user_actions::GOT_PRIVATE_MESSAGE
+            };
+            super::log_user_action_by(
+                &mut *conn,
+                kind,
+                allowed_user,
+                user_id,
+                topic_id,
+                post_id,
+                created_at,
+            )
+            .await?;
+        }
+    } else {
+        super::log_user_action(
+            &mut *conn,
+            user_actions::REPLY,
+            user_id,
+            topic_id,
+            post_id,
+            created_at,
+        )
+        .await?;
+    }
 
     // track_topic
     change_topic_user(
@@ -124,21 +149,39 @@ pub async fn add(
     )
     .await?;
     record_timing(&mut *conn, topic_id, user_id, post_number, 5000).await?;
-    let replying_level: Option<i32> = sqlx::query_scalar(
-        "SELECT notification_level_when_replying FROM user_options WHERE user_id = $1",
-    )
-    .bind(user_id)
-    .fetch_optional(&mut *conn)
-    .await?
-    .flatten();
-    super::auto_notification(
-        &mut *conn,
-        user_id,
-        topic_id,
-        notification_reasons::CREATED_POST,
-        replying_level.unwrap_or(notification_levels::TRACKING),
-    )
-    .await?;
+    let staged: bool = sqlx::query_scalar("SELECT staged FROM users WHERE id = $1")
+        .bind(user_id)
+        .fetch_one(&mut *conn)
+        .await?;
+    if staged {
+        // auto_notification_for_staging
+        change_topic_user(
+            &mut *conn,
+            user_id,
+            topic_id,
+            &[TopicUserAttr::NotificationLevel(
+                notification_levels::WATCHING,
+                notification_reasons::AUTO_WATCH,
+            )],
+        )
+        .await?;
+    } else if !private_message {
+        let replying_level: Option<i32> = sqlx::query_scalar(
+            "SELECT notification_level_when_replying FROM user_options WHERE user_id = $1",
+        )
+        .bind(user_id)
+        .fetch_optional(&mut *conn)
+        .await?
+        .flatten();
+        super::auto_notification(
+            &mut *conn,
+            user_id,
+            topic_id,
+            notification_reasons::CREATED_POST,
+            replying_level.unwrap_or(notification_levels::TRACKING),
+        )
+        .await?;
+    }
 
     // update_topic_stats: a small action changes only the time, and the
     // bump when asked.
@@ -194,6 +237,33 @@ pub async fn add(
         &[TopicUserAttr::Bookmarked(bookmarked)],
     )
     .await?;
+    // unarchive_message (ensure_in_allowed_users skips small actions)
+    if private_message {
+        let users: Vec<i32> =
+            sqlx::query_scalar("SELECT user_id FROM user_archived_messages WHERE topic_id = $1")
+                .bind(topic_id)
+                .fetch_all(&mut *conn)
+                .await?;
+        for archiver in users {
+            crate::archived_messages::user_move_to_inbox(ctx.bus, &mut *conn, archiver, topic_id)
+                .await?;
+        }
+        let groups: Vec<i32> =
+            sqlx::query_scalar("SELECT group_id FROM group_archived_messages WHERE topic_id = $1")
+                .bind(topic_id)
+                .fetch_all(&mut *conn)
+                .await?;
+        for group_id in groups {
+            crate::archived_messages::group_move_to_inbox(
+                ctx.bus,
+                &mut *conn,
+                group_id,
+                topic_id,
+                Some(user_id),
+            )
+            .await?;
+        }
+    }
 
     // PostJobsEnqueuer: no after-create jobs for a small action.
     crate::jobs::enqueue(

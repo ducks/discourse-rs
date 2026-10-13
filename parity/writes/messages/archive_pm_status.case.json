@@ -1,0 +1,16 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/43/status",
+      "params": {
+        "status": "archived",
+        "enabled": "true"
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "user": "user2",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 44,
+        "raw": "A reply from user2 that brings the message back to user1's inbox."
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert"
+  ]
+}

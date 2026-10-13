@@ -1,0 +1,16 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 42,
+        "raw": "A reply from the admin, who was not on this message before."
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert"
+  ]
+}

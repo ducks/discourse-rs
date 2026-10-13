@@ -1,0 +1,20 @@
+{
+  "user": "user3",
+  "setup": [
+    "INSERT INTO topic_allowed_users (topic_id, user_id, created_at, updated_at) VALUES (43, 5, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/43/status",
+      "params": {
+        "status": "closed",
+        "enabled": "true"
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert",
+    "user_email"
+  ]
+}

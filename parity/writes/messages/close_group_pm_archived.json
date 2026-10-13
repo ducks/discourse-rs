@@ -1,0 +1,470 @@
+{
+  "name": "close_group_pm_archived",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/90/status",
+      "params": {
+        "status": "closed",
+        "enabled": "true"
+      }
+    }
+  ],
+  "started_at": "2026-10-13T13:12:51.366528",
+  "transaction_started_at": "2026-10-13T13:12:50.339859",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "topic_status_update": null
+      }
+    }
+  ],
+  "changes": {
+    "group_archived_messages": {
+      "inserted": [
+        {
+          "id": 2,
+          "group_id": 2,
+          "topic_id": 90,
+          "created_at": "2026-10-13T13:12:51.48972",
+          "updated_at": "2026-10-13T13:12:51.48972"
+        }
+      ],
+      "deleted": [
+        {
+          "id": 1,
+          "group_id": 2,
+          "topic_id": 90,
+          "created_at": "2026-10-13T13:12:50.339859",
+          "updated_at": "2026-10-13T13:12:50.339859"
+        }
+      ],
+      "updated": []
+    },
+    "post_stats": {
+      "inserted": [
+        {
+          "id": 52,
+          "post_id": 53,
+          "created_at": "2026-10-13T13:12:51.412266",
+          "updated_at": "2026-10-13T13:12:51.412266",
+          "drafts_saved": 0,
+          "writing_device": null,
+          "composer_version": null,
+          "typing_duration_msecs": 0,
+          "writing_device_user_agent": null,
+          "composer_open_duration_msecs": 0
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_timings": {
+      "inserted": [
+        {
+          "msecs": 5000,
+          "user_id": 1,
+          "topic_id": 90,
+          "post_number": 2
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "posts": {
+      "inserted": [
+        {
+          "id": 53,
+          "raw": "",
+          "wiki": false,
+          "reads": 1,
+          "score": null,
+          "cooked": "",
+          "hidden": false,
+          "locale": null,
+          "user_id": 1,
+          "version": 1,
+          "baked_at": "2026-10-13T13:12:51.39",
+          "topic_id": 90,
+          "hidden_at": null,
+          "post_type": 3,
+          "raw_email": null,
+          "via_email": false,
+          "created_at": "2026-10-13T13:12:51.390027",
+          "deleted_at": null,
+          "like_count": 0,
+          "like_score": 0,
+          "self_edits": 0,
+          "sort_order": 2,
+          "spam_count": 0,
+          "updated_at": "2026-10-13T13:12:51.390027",
+          "word_count": 0,
+          "action_code": "closed.enabled",
+          "cook_method": 1,
+          "edit_reason": null,
+          "post_number": 2,
+          "quote_count": 0,
+          "reply_count": 0,
+          "locked_by_id": null,
+          "percent_rank": 1,
+          "reply_quoted": false,
+          "user_deleted": false,
+          "baked_version": 2,
+          "deleted_by_id": null,
+          "illegal_count": 0,
+          "qa_vote_count": 0,
+          "bookmark_count": 0,
+          "last_editor_id": 1,
+          "public_version": 1,
+          "image_upload_id": null,
+          "last_version_at": "2026-10-13T13:12:51.409021",
+          "off_topic_count": 0,
+          "hidden_reason_id": null,
+          "reply_to_user_id": null,
+          "notify_user_count": 0,
+          "inappropriate_count": 0,
+          "incoming_link_count": 0,
+          "outbound_message_id": null,
+          "reply_to_post_number": null,
+          "notify_moderators_count": 0
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_users": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 56,
+            "liked": false,
+            "posted": false,
+            "user_id": 1,
+            "topic_id": 90,
+            "bookmarked": false,
+            "last_posted_at": null,
+            "last_visited_at": null,
+            "first_visited_at": null,
+            "cleared_pinned_at": null,
+            "notification_level": 2,
+            "total_msecs_viewed": 0,
+            "last_read_post_number": null,
+            "notifications_reason_id": 2,
+            "last_emailed_post_number": null,
+            "notifications_changed_at": null
+          },
+          "after": {
+            "id": 56,
+            "liked": false,
+            "posted": true,
+            "user_id": 1,
+            "topic_id": 90,
+            "bookmarked": false,
+            "last_posted_at": "2026-10-13T13:12:51.42591",
+            "last_visited_at": null,
+            "first_visited_at": null,
+            "cleared_pinned_at": null,
+            "notification_level": 2,
+            "total_msecs_viewed": 0,
+            "last_read_post_number": 2,
+            "notifications_reason_id": 2,
+            "last_emailed_post_number": null,
+            "notifications_changed_at": null
+          }
+        }
+      ]
+    },
+    "topics": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 90,
+            "slug": "a-group-message-the-moderators-received",
+            "score": null,
+            "title": "A group message the moderators received",
+            "views": 0,
+            "closed": false,
+            "locale": null,
+            "excerpt": null,
+            "subtype": "user_to_user",
+            "user_id": 3,
+            "visible": true,
+            "archived": false,
+            "archetype": "private_message",
+            "bumped_at": "2026-10-13T12:12:50.339859",
+            "pinned_at": null,
+            "created_at": "2026-10-13T12:12:50.339859",
+            "deleted_at": null,
+            "like_count": 0,
+            "spam_count": 0,
+            "updated_at": "2026-10-13T12:12:50.339859",
+            "word_count": null,
+            "category_id": null,
+            "external_id": null,
+            "fancy_title": "A group message the moderators received",
+            "has_summary": false,
+            "posts_count": 1,
+            "reply_count": 0,
+            "percent_rank": 1,
+            "pinned_until": null,
+            "deleted_by_id": null,
+            "featured_link": null,
+            "bannered_until": null,
+            "last_posted_at": null,
+            "image_upload_id": null,
+            "pinned_globally": false,
+            "reviewable_score": 0,
+            "featured_user1_id": null,
+            "featured_user2_id": null,
+            "featured_user3_id": null,
+            "featured_user4_id": null,
+            "last_post_user_id": 3,
+            "participant_count": 1,
+            "slow_mode_seconds": 0,
+            "og_image_upload_id": null,
+            "highest_post_number": 1,
+            "incoming_link_count": 0,
+            "visibility_reason_id": null,
+            "moderator_posts_count": 0,
+            "notify_moderators_count": 0,
+            "highest_staff_post_number": 0
+          },
+          "after": {
+            "id": 90,
+            "slug": "a-group-message-the-moderators-received",
+            "score": null,
+            "title": "A group message the moderators received",
+            "views": 0,
+            "closed": true,
+            "locale": null,
+            "excerpt": null,
+            "subtype": "user_to_user",
+            "user_id": 3,
+            "visible": true,
+            "archived": false,
+            "archetype": "private_message",
+            "bumped_at": "2026-10-13T12:12:50.339859",
+            "pinned_at": null,
+            "created_at": "2026-10-13T12:12:50.339859",
+            "deleted_at": null,
+            "like_count": 0,
+            "spam_count": 0,
+            "updated_at": "2026-10-13T13:12:51.430764",
+            "word_count": null,
+            "category_id": null,
+            "external_id": null,
+            "fancy_title": "A group message the moderators received",
+            "has_summary": false,
+            "posts_count": 1,
+            "reply_count": 0,
+            "percent_rank": 1,
+            "pinned_until": null,
+            "deleted_by_id": null,
+            "featured_link": null,
+            "bannered_until": null,
+            "last_posted_at": null,
+            "image_upload_id": null,
+            "pinned_globally": false,
+            "reviewable_score": 0,
+            "featured_user1_id": null,
+            "featured_user2_id": null,
+            "featured_user3_id": null,
+            "featured_user4_id": null,
+            "last_post_user_id": 3,
+            "participant_count": 1,
+            "slow_mode_seconds": 0,
+            "og_image_upload_id": null,
+            "highest_post_number": 1,
+            "incoming_link_count": 0,
+            "visibility_reason_id": null,
+            "moderator_posts_count": 1,
+            "notify_moderators_count": 0,
+            "highest_staff_post_number": 0
+          }
+        }
+      ]
+    },
+    "user_actions": {
+      "inserted": [
+        {
+          "id": 65,
+          "user_id": 3,
+          "created_at": "2026-10-13T13:12:51.390027",
+          "updated_at": "2026-10-13T13:12:51.418547",
+          "action_type": 13,
+          "acting_user_id": 1,
+          "target_post_id": 53,
+          "target_user_id": null,
+          "target_topic_id": 90
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_archived_messages": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 2,
+          "user_id": 3,
+          "topic_id": 90,
+          "created_at": "2026-10-13T13:12:50.339859",
+          "updated_at": "2026-10-13T13:12:50.339859"
+        }
+      ],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 488,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "p1PMMqlVXgSi2P9HiNEksqSa+sQ=",
+            "created_at": "2026-10-13T13:12:50.689381",
+            "rotated_at": "2026-10-13T13:12:50.688482",
+            "updated_at": "2026-10-13T13:12:50.689381",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "p1PMMqlVXgSi2P9HiNEksqSa+sQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 488,
+            "seen_at": "2026-10-13T13:12:51.373958",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "p1PMMqlVXgSi2P9HiNEksqSa+sQ=",
+            "created_at": "2026-10-13T13:12:50.689381",
+            "rotated_at": "2026-10-13T13:12:50.688482",
+            "updated_at": "2026-10-13T13:12:50.689381",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "p1PMMqlVXgSi2P9HiNEksqSa+sQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 91,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": null,
+          "topic_id": 90,
+          "new_value": null,
+          "admin_only": false,
+          "created_at": "2026-10-13T13:12:51.484075",
+          "ip_address": null,
+          "updated_at": "2026-10-13T13:12:51.484075",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [
+    [
+      "group_pm_update_summary",
+      {
+        "group_id": 2,
+        "topic_id": 90,
+        "acting_user_id": 1
+      }
+    ],
+    [
+      "bot_input",
+      {
+        "user_id": 1,
+        "post_id": 53,
+        "input": "reply"
+      }
+    ],
+    [
+      "post_alert",
+      {
+        "post_id": 53,
+        "new_record": true,
+        "options": null
+      }
+    ],
+    [
+      "feature_topic_users",
+      {
+        "topic_id": 90
+      }
+    ],
+    [
+      "process_post",
+      {
+        "bypass_bump": false,
+        "cooking_options": null,
+        "new_post": true,
+        "post_id": 53,
+        "skip_pull_hotlinked_images": false
+      }
+    ],
+    [
+      "Jobs::DiscourseTopicVoting::VoteRelease",
+      {
+        "topic_id": 90
+      }
+    ],
+    [
+      "group_pm_update_summary",
+      {
+        "group_id": 2,
+        "topic_id": 90,
+        "acting_user_id": null
+      }
+    ]
+  ],
+  "next_ids": {
+    "group_archived_messages": 2,
+    "post_stats": 52,
+    "posts": 53,
+    "user_actions": 65,
+    "user_histories": 74
+  },
+  "setup": [
+    "INSERT INTO topics (id, title, fancy_title, slug, user_id, last_post_user_id, archetype, subtype, created_at, updated_at, bumped_at, posts_count, highest_post_number, visible) VALUES (90, 'A group message the moderators received', 'A group message the moderators received', 'a-group-message-the-moderators-received', 3, 3, 'private_message', 'user_to_user', now() - interval '1 hour', now() - interval '1 hour', now() - interval '1 hour', 1, 1, true)",
+    "INSERT INTO posts (id, topic_id, user_id, post_number, raw, cooked, created_at, updated_at, last_version_at, sort_order) VALUES (900, 90, 3, 1, 'The first post of a group message to the moderators.', '<p>The first post of a group message to the moderators.</p>', now() - interval '1 hour', now() - interval '1 hour', now() - interval '1 hour', 1)",
+    "INSERT INTO topic_allowed_users (topic_id, user_id, created_at, updated_at) VALUES (90, 3, now(), now())",
+    "INSERT INTO topic_allowed_groups (topic_id, group_id) VALUES (90, 2)",
+    "INSERT INTO topic_users (user_id, topic_id, notification_level, notifications_reason_id, posted, last_read_post_number) VALUES (3, 90, 3, 1, true, 1), (1, 90, 2, 2, false, NULL)",
+    "INSERT INTO group_archived_messages (group_id, topic_id, created_at, updated_at) VALUES (2, 90, now(), now())",
+    "INSERT INTO user_archived_messages (user_id, topic_id, created_at, updated_at) VALUES (3, 90, now(), now())"
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "11e5fc14336d9b6ecaf5627d69bfea12818e0b57cada77317d133c5cbda2f660",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

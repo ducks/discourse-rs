@@ -98,7 +98,7 @@ async fn group_changed(
     group_id: i32,
     topic_id: i32,
     kind: &str,
-    acting_user_id: i32,
+    acting_user_id: Option<i32>,
 ) -> Result<(), AppError> {
     bus.publish(
         conn,
@@ -107,14 +107,8 @@ async fn group_changed(
         Some(&[group_tag(group_id)]),
     )
     .await?;
-    crate::pm_tracking_state::publish_group_archived(
-        bus,
-        conn,
-        topic_id,
-        group_id,
-        Some(acting_user_id),
-    )
-    .await?;
+    crate::pm_tracking_state::publish_group_archived(bus, conn, topic_id, group_id, acting_user_id)
+        .await?;
     crate::jobs::enqueue(
         conn,
         "group_pm_update_summary",
@@ -130,7 +124,7 @@ pub async fn group_archive(
     conn: &mut PgConnection,
     group_id: i32,
     topic_id: i32,
-    acting_user_id: i32,
+    acting_user_id: Option<i32>,
 ) -> Result<(), AppError> {
     if !group_allowed(conn, group_id, topic_id).await? {
         return Ok(());
@@ -157,7 +151,7 @@ pub async fn group_move_to_inbox(
     conn: &mut PgConnection,
     group_id: i32,
     topic_id: i32,
-    acting_user_id: i32,
+    acting_user_id: Option<i32>,
 ) -> Result<(), AppError> {
     if !group_allowed(conn, group_id, topic_id).await? {
         return Ok(());
