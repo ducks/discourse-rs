@@ -37,7 +37,7 @@ Bugs or silent gaps in what is merged, small and independent.
 2. ~~`fix/topic-timers-timerable-id`~~ (done) S: five queries read
    `topic_timers.topic_id`, which Rails no longer writes
    (`timerable_id`); timers are never found on real data [badges-timers]
-3. `fix/poll-guard` S: a `[poll]` post cooks and saves without its
+3. ~~`fix/poll-guard`~~ (done) S: a `[poll]` post cooks and saves without its
    `polls` rows; refuse until poll-create [messages-dms]
 4. `fix/search-recent-offset` S: search refuses every query once
    `search_recent_regular_posts_offset_post_id` is set (any site past

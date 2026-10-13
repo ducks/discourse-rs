@@ -1,0 +1,14 @@
+{
+  "not_yet": "posts with polls (discourse-poll's poll rows)",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "Which one?\n\n[poll type=regular results=always]\n* Red\n* Blue\n[/poll]"
+      }
+    }
+  ]
+}

@@ -110,13 +110,17 @@ pub struct Analysis {
     pub attachments: usize,
     pub links: Vec<String>,
     pub has_oneboxes: bool,
+    /// A `div.poll`: discourse-poll would write its polls and options
+    /// (DiscoursePoll::Poll.create!), which is not ported.
+    pub has_polls: bool,
     /// An upload shown as video or audio, which the post processor would
     /// optimize (post_process_videos is not ported).
     pub has_upload_media: bool,
     pub has_quotes: bool,
 }
 
-/// `PostAnalyzer` counts, refusing what cooking leaves for oneboxing.
+/// `PostAnalyzer` counts, refusing what cooking leaves for oneboxing
+/// and posts with polls.
 pub fn analyze(cooked: &str, base_path: &str) -> Result<Analysis, Unsupported> {
     let dom = parse(cooked);
     let mut a = Analysis::default();
@@ -135,6 +139,9 @@ pub fn analyze(cooked: &str, base_path: &str) -> Result<Analysis, Unsupported> {
     if a.has_oneboxes {
         return Err(Unsupported("posts with oneboxes"));
     }
+    if a.has_polls {
+        return Err(Unsupported("posts with polls (discourse-poll's poll rows)"));
+    }
     Ok(a)
 }
 
@@ -145,6 +152,9 @@ fn walk(node: &Handle, bp: &str, stripped: bool, a: &mut Analysis, mentions: &mu
     if let Some(name) = name {
         if has_class(node, "onebox") || has_class(node, "inline-onebox-loading") {
             a.has_oneboxes = true;
+        }
+        if name == "div" && has_class(node, "poll") {
+            a.has_polls = true;
         }
         if has_class(node, "elided") || has_class(node, "onebox") {
             return;

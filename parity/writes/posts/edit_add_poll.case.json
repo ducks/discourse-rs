@@ -1,0 +1,13 @@
+{
+  "not_yet": "posts with polls (discourse-poll's poll rows)",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/36.json",
+      "params": {
+        "post": { "raw": "Edited to add a poll.\n\n[poll]\n* Yes\n* No\n[/poll]" }
+      }
+    }
+  ]
+}
