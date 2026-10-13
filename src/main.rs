@@ -77,6 +77,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
     };
     let mailer = discourse_rs::email::Mailer::from_globals(&config.globals)?;
     tracing::info!(mailer = ?mailer, "outgoing mail");
+    let pool_for_limits = pool.clone();
     let state = AppState {
         pool,
         anonymous_cache: Arc::new(discourse_rs::anonymous_cache::Cache::new(&config)),
@@ -87,6 +88,7 @@ async fn run() -> Result<(), Box<dyn Error>> {
         keys: Arc::new(keys),
         mailer,
         bus,
+        rate_limits: discourse_rs::rate_limiter::MemoryStore::load(&pool_for_limits).await?,
     };
     // SiteIconManager.ensure_optimized! at boot: the sized icons' files.
     {
@@ -116,12 +118,15 @@ async fn run() -> Result<(), Box<dyn Error>> {
             )))
         }
     };
+    let rate_limits = state.rate_limits.clone();
     axum::serve(
         listener,
         app(state).into_make_service_with_connect_info::<std::net::SocketAddr>(),
     )
     .with_graceful_shutdown(shutdown_signal())
     .await?;
+    // The tracker's lists, kept for the next start.
+    rate_limits.save(&pool_for_limits).await?;
     if let Some(worker) = worker {
         worker.await?;
     }

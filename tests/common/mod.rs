@@ -217,6 +217,7 @@ pub async fn state_with_bus_on(bus_pool: PgPool, pool: PgPool, config: Config) -
         search_log_cache: Default::default(),
         keys: Arc::new(discourse_rs::session::current::Keys::ephemeral()),
         mailer: discourse_rs::email::Mailer::memory(),
+        rate_limits: Default::default(),
     }
 }
 

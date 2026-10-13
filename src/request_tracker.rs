@@ -192,8 +192,17 @@ fn active_limiter(
     (format!("ip/{ip}"), "ip", true)
 }
 
-fn limiter(key: String, max: i64, secs: i64, code: String, global: bool) -> RateLimiter {
-    let limiter = RateLimiter::new(None, &key, max, secs).error_code(&code);
+fn limiter(
+    store: &crate::rate_limiter::MemoryStore,
+    key: String,
+    max: i64,
+    secs: i64,
+    code: String,
+    global: bool,
+) -> RateLimiter {
+    let limiter = RateLimiter::new(None, &key, max, secs)
+        .error_code(&code)
+        .in_memory(store);
     if global { limiter.global() } else { limiter }
 }
 
@@ -252,7 +261,8 @@ async fn crawler_limit(
         1,
         settings.get("slow_down_crawler_rate")?.to_i(),
     )
-    .error_code(&key);
+    .error_code(&key)
+    .in_memory(&state.rate_limits);
     match limiter.performed(&state.pool, true).await? {
         Ok(()) => Ok(None),
         Err(refused) => {
@@ -302,6 +312,7 @@ pub async fn layer(
         let hostname = std::env::var("HOSTNAME").unwrap_or_default();
         let (key, code, global) = active_limiter(&limits, cookie.as_ref(), &path, &ip, &hostname);
         let limiter10 = limiter(
+            &state.rate_limits,
             format!("global_limit_10_{key}"),
             limits.per_10_seconds,
             10,
@@ -310,6 +321,7 @@ pub async fn layer(
         )
         .aggressive();
         let limiter60 = limiter(
+            &state.rate_limits,
             format!("global_limit_60_{key}"),
             limits.per_minute,
             60,
@@ -318,6 +330,7 @@ pub async fn layer(
         )
         .aggressive();
         let assets10 = limiter(
+            &state.rate_limits,
             format!("global_limit_10_assets_{key}"),
             limits.assets_per_10_seconds,
             10,

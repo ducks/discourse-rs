@@ -10,9 +10,14 @@
 //! queries run on a small pool of their own (`own_pool`): with every
 //! connection of the main pool held by a request waiting on its limiter,
 //! one shared pool would starve.
+//!
+//! The request tracker's limiters run on every request; they keep their
+//! lists in the process instead (`MemoryStore`, `.in_memory`), with the
+//! same rules, saved to the table on a graceful shutdown and read back at
+//! startup. Their windows are seconds long; a crash loses at most that.
 
-use std::collections::HashMap;
-use std::sync::{Mutex, OnceLock};
+use std::collections::{HashMap, VecDeque};
+use std::sync::{Arc, Mutex, OnceLock};
 
 use axum::Json;
 use axum::http::{HeaderValue, StatusCode};
@@ -52,6 +57,115 @@ fn own_pool(pool: &PgPool) -> PgPool {
                 .connect_lazy_with((*options).clone())
         })
         .clone()
+}
+
+/// Lists a tracker keeps in the process: key -> (stamps, newest first;
+/// expiry in epoch seconds), as rate_limit_perform keeps them in the table.
+#[derive(Clone, Default)]
+pub struct MemoryStore(Arc<Mutex<Lists>>);
+
+/// key -> (stamps, newest first; expiry in epoch seconds)
+type Lists = HashMap<String, (VecDeque<i64>, i64)>;
+
+impl std::fmt::Debug for MemoryStore {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("MemoryStore")
+    }
+}
+
+/// The keys `load` takes back: the request tracker's lists.
+const MEMORY_KEYS: &str =
+    "key LIKE 'l-rate-limit3:::global_limit_%' OR key LIKE '%_crawler_rate_limit'";
+
+impl MemoryStore {
+    fn lists(&self) -> std::sync::MutexGuard<'_, Lists> {
+        self.0
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
+    }
+
+    /// rate_limit_perform: None when allowed, else the wait. Expired lists
+    /// are swept as the map grows.
+    fn perform(&self, key: &str, now: i64, secs: i64, max: i64, aggressive: bool) -> Option<i64> {
+        let mut lists = self.lists();
+        if lists.len() >= 4096 && lists.len().is_power_of_two() {
+            lists.retain(|_, (_, expires)| *expires > now);
+        }
+        let entry = lists.entry(key.to_string()).or_insert((VecDeque::new(), 0));
+        if entry.1 <= now {
+            entry.0.clear();
+        }
+        let s = &mut entry.0;
+        let allowed = (s.len() as i64) < max || s.back().is_some_and(|oldest| now - oldest >= secs);
+        if allowed || aggressive {
+            s.push_front(now);
+            s.truncate(max.max(0) as usize);
+            entry.1 = now + secs * 2;
+        }
+        if allowed {
+            return None;
+        }
+        Some(secs - (now - entry.0.back().copied().unwrap_or(0)))
+    }
+
+    fn stamps(&self, key: &str, now: i64) -> Vec<i64> {
+        match self.lists().get(key) {
+            Some((stamps, expires)) if *expires > now => stamps.iter().copied().collect(),
+            _ => Vec::new(),
+        }
+    }
+
+    fn rollback(&self, key: &str) {
+        if let Some((stamps, _)) = self.lists().get_mut(key) {
+            stamps.pop_front();
+        }
+    }
+
+    fn clear(&self, key: &str) {
+        self.lists().remove(key);
+    }
+
+    /// The live lists written to discourse_rs.rate_limits (a graceful
+    /// shutdown).
+    pub async fn save(&self, pool: &PgPool) -> Result<(), sqlx::Error> {
+        let now = crate::clock::now().timestamp();
+        let live: Vec<(String, Vec<i64>, i64)> = self
+            .lists()
+            .iter()
+            .filter(|(_, (_, expires))| *expires > now)
+            .map(|(k, (s, e))| (k.clone(), s.iter().copied().collect(), *e))
+            .collect();
+        for (key, stamps, expires) in live {
+            sqlx::query(
+                "INSERT INTO discourse_rs.rate_limits (key, stamps, expires_at) VALUES ($1, $2, $3) \
+                 ON CONFLICT (key) DO UPDATE SET stamps = EXCLUDED.stamps, expires_at = EXCLUDED.expires_at",
+            )
+            .bind(&key)
+            .bind(&stamps)
+            .bind(expires)
+            .execute(pool)
+            .await?;
+        }
+        Ok(())
+    }
+
+    /// The tracker's live lists read back from the table (startup).
+    pub async fn load(pool: &PgPool) -> Result<MemoryStore, sqlx::Error> {
+        let rows: Vec<(String, Vec<i64>, i64)> = sqlx::query_as(&format!(
+            "SELECT key, stamps, expires_at FROM discourse_rs.rate_limits WHERE expires_at > $1 AND ({MEMORY_KEYS})"
+        ))
+        .bind(crate::clock::now().timestamp())
+        .fetch_all(pool)
+        .await?;
+        let store = MemoryStore::default();
+        {
+            let mut lists = store.lists();
+            for (key, stamps, expires) in rows {
+                lists.insert(key, (stamps.into(), expires));
+            }
+        }
+        Ok(store)
+    }
 }
 
 /// `RateLimiter.key_prefix`
@@ -171,6 +285,8 @@ pub struct RateLimiter {
     /// the global switch).
     staff_unlimited: bool,
     staff: bool,
+    /// The process's lists instead of the table.
+    memory: Option<MemoryStore>,
 }
 
 impl RateLimiter {
@@ -187,6 +303,7 @@ impl RateLimiter {
             error_code: None,
             staff_unlimited: user.is_some_and(|u| u.staff),
             staff: user.is_some_and(|u| u.staff),
+            memory: None,
         }
     }
 
@@ -197,6 +314,12 @@ impl RateLimiter {
     }
 
     /// `aggressive: true`: a refused attempt counts too.
+    /// Lists kept in the process (the request tracker's).
+    pub fn in_memory(mut self, store: &MemoryStore) -> RateLimiter {
+        self.memory = Some(store.clone());
+        self
+    }
+
     pub fn aggressive(mut self) -> RateLimiter {
         self.aggressive = true;
         self
@@ -268,6 +391,14 @@ impl RateLimiter {
             let oldest = self.oldest(pool, now).await?.unwrap_or(0);
             return Ok(Err(self.exceeded(self.secs - (now - oldest))));
         }
+        if let Some(store) = &self.memory {
+            return Ok(
+                match store.perform(&self.key, now, self.secs, self.max, self.aggressive) {
+                    None => Ok(()),
+                    Some(wait) => Err(self.exceeded(wait)),
+                },
+            );
+        }
         let wait: Option<i64> =
             sqlx::query_scalar("SELECT discourse_rs.rate_limit_perform($1, $2, $3, $4, $5)")
                 .bind(&self.key)
@@ -285,6 +416,9 @@ impl RateLimiter {
 
     /// The stamps, an expired list read as empty.
     async fn stamps(&self, pool: &PgPool, now: i64) -> Result<Vec<i64>, sqlx::Error> {
+        if let Some(store) = &self.memory {
+            return Ok(store.stamps(&self.key, now));
+        }
         let pool = &own_pool(pool);
         let stamps: Option<Vec<i64>> = sqlx::query_scalar(
             "SELECT stamps FROM discourse_rs.rate_limits WHERE key = $1 AND expires_at > $2",
@@ -330,6 +464,10 @@ impl RateLimiter {
         if !enabled {
             return Ok(());
         }
+        if let Some(store) = &self.memory {
+            store.rollback(&self.key);
+            return Ok(());
+        }
         let pool = &own_pool(pool);
         sqlx::query("UPDATE discourse_rs.rate_limits SET stamps = stamps[2:] WHERE key = $1")
             .bind(&self.key)
@@ -356,6 +494,10 @@ impl RateLimiter {
 
     /// `clear!`
     pub async fn clear(&self, pool: &PgPool) -> Result<(), sqlx::Error> {
+        if let Some(store) = &self.memory {
+            store.clear(&self.key);
+            return Ok(());
+        }
         let pool = &own_pool(pool);
         sqlx::query("DELETE FROM discourse_rs.rate_limits WHERE key = $1")
             .bind(&self.key)

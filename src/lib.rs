@@ -138,6 +138,8 @@ pub struct AppState {
     pub bus: pg_bus::Bus,
     /// Anonymous responses kept for the actions that allow it.
     pub anonymous_cache: Arc<anonymous_cache::Cache>,
+    /// The request tracker's rate limit lists, kept in the process.
+    pub rate_limits: rate_limiter::MemoryStore,
 }
 
 pub fn app(state: AppState) -> Router {

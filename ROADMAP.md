@@ -107,7 +107,7 @@ Bugs or silent gaps in what is merged, small and independent.
     activity page there today (screenshots, 2026-10-13)
 33c. `feat/topic-view-group-messages` S: a group message's topic page
     refuses its suggested messages (messages_for_groups_or_user), a 500
-33d. `perf/rate-limiter-storage` S/M: every public request performs two
+33d. ~~`perf/rate-limiter-storage`~~ (done) S/M: every public request performs two
     limiter statements through a 4-connection pool (BENCH.md,
     2026-10-13); keep the lists in the process, or size the pool
 
