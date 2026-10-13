@@ -1,0 +1,29 @@
+{
+  "name": "stale_version",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/highlight-js/localhost/d125c3422119592da271b68fa9500c957dd748c0.js"
+    }
+  ],
+  "started_at": "2026-10-13T22:50:21.186631",
+  "transaction_started_at": "2026-10-13T22:50:20.519212",
+  "responses": [
+    {
+      "status": 302,
+      "body": ""
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "highlighted_languages": "ruby|nope|sql"
+  },
+  "recorded_from": {
+    "case": "fc95e4d84c9d2f9fb9243ad4da346c98fbf5fc1e10093829e3910cc9a8733a5f",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
