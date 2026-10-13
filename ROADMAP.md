@@ -72,7 +72,7 @@ Bugs or silent gaps in what is merged, small and independent.
 11. ~~`feat/post-rebake`~~ (done) M/L
 12. ~~`feat/jobs-consistency-counters`~~ (done) M, 13. ~~`feat/jobs-consistency-users`~~
     (done, one branch) M: ensure_db_consistency, refusals checked before any write
-14. `feat/harness-upload-files` S, 15. `feat/jobs-upload-metadata` S,
+14. ~~`feat/harness-upload-files`~~ (done) S, 15. `feat/jobs-upload-metadata` S,
     16. `feat/jobs-clean-up-uploads` M (Upload#destroy; cases never
     destroy fixture uploads)
 
