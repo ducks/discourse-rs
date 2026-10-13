@@ -220,9 +220,17 @@ pub async fn build(
         "email_from",
         &[("user_name", &user_name), ("site_name", &email_site_title)],
     )?;
-    if req.data.get("group_id").is_some() {
-        return Err(Unsupported("group notification emails").into());
-    }
+    // group_name: the group a group's invitation is for.
+    let group_name: Option<String> = match req.data.get("group_id").and_then(Value::as_i64) {
+        Some(_) if !invite => return Err(Unsupported("group notification emails").into()),
+        Some(id) => {
+            sqlx::query_scalar("SELECT name FROM groups WHERE id = $1")
+                .bind(id as i32)
+                .fetch_optional(&mut *conn)
+                .await?
+        }
+        None => None,
+    };
 
     // send_notification_email
     let add_re_to_subject = add_re && post.post_number > 1;
@@ -232,7 +240,8 @@ pub async fn build(
         req.notification_type
     };
     let template = if pm {
-        format!("user_notifications.user_{notification_type}_pm")
+        let group = if group_name.is_some() { "_group" } else { "" };
+        format!("user_notifications.user_{notification_type}_pm{group}")
     } else {
         format!("user_notifications.user_{notification_type}")
     };
@@ -358,11 +367,17 @@ pub async fn build(
             post.slug.as_deref().unwrap_or_default(),
             post.topic_id
         );
+        let body = if group_name.is_some() {
+            "user_notifications.invited_group_to_private_message_body"
+        } else {
+            "user_notifications.invited_to_private_message_body"
+        };
         t(
             ctx,
-            "user_notifications.invited_to_private_message_body",
+            body,
             &[
                 ("username", &original_username),
+                ("group_name", group_name.as_deref().unwrap_or_default()),
                 (
                     "topic_title",
                     &crate::emoji::gsub_emoji_to_unicode(&topic_title),
@@ -566,6 +581,7 @@ pub async fn build(
             &[
                 ("email_prefix", &email_prefix),
                 ("username", &original_username),
+                ("group_name", group_name.as_deref().unwrap_or_default()),
                 ("topic_title", &topic_title_unicode),
             ],
         )?

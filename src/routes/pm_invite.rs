@@ -255,3 +255,156 @@ pub async fn remove_allowed_user(
     tx.commit().await?;
     Ok(Json(json!({"success": "OK"})).into_response())
 }
+
+/// POST /t/:topic_id/invite-group
+pub async fn invite_group(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(topic_id): Path<String>,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    let p = params::parse(uri.query(), &headers, &body);
+    if !csrf_ok(&state, &headers, &form_pairs(&p), uri.path(), "POST") {
+        return Ok(bad_csrf());
+    }
+    let Some(user_id) = guardian.user_id() else {
+        return Ok(super::login_required::not_logged_in(&state));
+    };
+    // :topic_id is constrained to digits.
+    if topic_id.is_empty() || !topic_id.bytes().all(|b| b.is_ascii_digit()) {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    let mut tx = state.pool.begin().await?;
+    let settings =
+        SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
+    // Group.find_by(name: params[:group])
+    let name = p.get("group").and_then(params::scalar).unwrap_or_default();
+    let group: Option<crate::posting::group_messages::AllowedGroup> =
+        sqlx::query_as("SELECT id, name, user_count, has_messages FROM groups WHERE name = $1")
+            .bind(&name)
+            .fetch_optional(&mut *tx)
+            .await?;
+    let Some(group) = group else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    let Some((topic_id, archetype)) = find_topic(&mut tx, &topic_id).await? else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    let topic = TopicCtx::load(&mut tx, &settings, &guardian, topic_id)
+        .await?
+        .ok_or(Unsupported("loading a message to invite a group to"))?;
+    // pm_has_slots? (reached_recipients_limit? is false outside messages)
+    let limit = settings.get("max_allowed_message_recipients")?.to_i();
+    if !guardian.is_staff() && archetype == "private_message" && topic.recipients >= limit {
+        let limit = limit.to_string();
+        return Ok(errors(
+            state
+                .i18n
+                .t_with(
+                    "pm_reached_recipients_limit",
+                    &[("recipients_limit", &limit)],
+                )
+                .unwrap_or_default(),
+        ));
+    }
+    if archetype != "private_message" {
+        return Ok(failed());
+    }
+    // ensure_can_invite_group_to_private_message!
+    let secure = guardian.secure_category_ids(&mut tx, &settings).await?;
+    let can_see = guardian.can_see_topic(&settings, &topic, true, &secure)?;
+    let can_send = crate::posting::group_messages::can_send_to(
+        &mut tx,
+        &guardian,
+        guardian.can_send_private_messages(&settings)?,
+        false,
+        &group,
+    )
+    .await?;
+    if !(can_see && can_send) {
+        return Ok(super::search::invalid_access(&state));
+    }
+    let should_notify = match p.get("should_notify").and_then(params::scalar) {
+        Some(v) if !v.trim().is_empty() => v == "true",
+        _ => true,
+    };
+    let host = Host::from_state(&state);
+    let ctx = Ctx {
+        host: &host,
+        settings: &settings,
+        config: &state.config,
+        i18n: &state.i18n,
+        bus: &state.bus,
+    };
+    pm_invite::invite_group(&mut tx, &ctx, user_id, group.id, topic_id, should_notify).await?;
+    // BasicGroupSerializer, root "group"
+    let basic: crate::groups::BasicGroup = sqlx::query_as(&format!(
+        "SELECT {} FROM groups g LEFT JOIN uploads u ON u.id = g.flair_upload_id WHERE g.id = $1",
+        crate::groups::BASIC_GROUP_COLUMNS
+    ))
+    .bind(group.id)
+    .fetch_one(&mut *tx)
+    .await?;
+    let owner: Option<bool> =
+        sqlx::query_scalar("SELECT owner FROM group_users WHERE group_id = $1 AND user_id = $2")
+            .bind(group.id)
+            .bind(user_id)
+            .fetch_optional(&mut *tx)
+            .await?;
+    let json = basic.json(&state.i18n, &guardian, &settings, owner.map(|o| (true, o)))?;
+    tx.commit().await?;
+    Ok(Json(json!({ "group": json })).into_response())
+}
+
+/// PUT /t/:topic_id/remove-allowed-group
+pub async fn remove_allowed_group(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(topic_id): Path<String>,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    let p = params::parse(uri.query(), &headers, &body);
+    if !csrf_ok(&state, &headers, &form_pairs(&p), uri.path(), "PUT") {
+        return Ok(bad_csrf());
+    }
+    let Some(actor) = guardian.user_id() else {
+        return Ok(super::login_required::not_logged_in(&state));
+    };
+    let Some(name) = p
+        .get("name")
+        .and_then(params::scalar)
+        .filter(|v| !v.is_empty())
+    else {
+        return Ok(super::accounts::param_missing("name"));
+    };
+    let mut tx = state.pool.begin().await?;
+    let settings =
+        SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
+    let Some((topic_id, _)) = find_topic(&mut tx, &topic_id).await? else {
+        // Rails goes on with a nil topic and fails with a NoMethodError.
+        return Err(Unsupported("removing a group from a missing topic (a 500 in Rails)").into());
+    };
+    let topic = TopicCtx::load(&mut tx, &settings, &guardian, topic_id)
+        .await?
+        .ok_or(Unsupported("loading a message to remove a group from"))?;
+    if !guardian.can_remove_allowed_users(&topic, None, 0) {
+        return Ok(super::search::invalid_access(&state));
+    }
+    let host = Host::from_state(&state);
+    let ctx = Ctx {
+        host: &host,
+        settings: &settings,
+        config: &state.config,
+        i18n: &state.i18n,
+        bus: &state.bus,
+    };
+    if !pm_invite::remove_allowed_group(&mut tx, &ctx, actor, topic_id, &name).await? {
+        return Ok(failed());
+    }
+    tx.commit().await?;
+    Ok(Json(json!({"success": "OK"})).into_response())
+}

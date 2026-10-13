@@ -101,7 +101,7 @@ Bugs or silent gaps in what is merged, small and independent.
     pending_reviewables_reminder
 28. ~~`feat/pm-archive`~~ (done) S, 29. ~~`feat/pm-small-actions`~~ (done) M,
     30. ~~`feat/pm-likes`~~ (done) S, 31. ~~`feat/pm-destroy`~~ (done) M,
-    32. ~~`feat/pm-invite`~~ (done) M, 33. `feat/pm-invite-group` S
+    32. ~~`feat/pm-invite`~~ (done) M, 33. ~~`feat/pm-invite-group`~~ (done) S
 
 [messages-dms]
 
