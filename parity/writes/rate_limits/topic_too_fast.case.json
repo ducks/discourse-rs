@@ -1,0 +1,28 @@
+{
+  "user": "user1",
+  "rate_limits": true,
+  "settings": {
+    "rate_limit_create_topic": "600",
+    "rate_limit_create_post": "0"
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A topic user1 creates while the limits are on",
+        "category": 4,
+        "raw": "The first post of a topic created with the topic limit on."
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "Another topic user1 creates straight after",
+        "category": 4,
+        "raw": "The first post of a topic created too soon after the last."
+      }
+    }
+  ]
+}

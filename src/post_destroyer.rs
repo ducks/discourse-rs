@@ -117,6 +117,36 @@ pub enum Outcome {
     Done,
     NotFound,
     Forbidden,
+    /// A delete or edit limit refused it.
+    RateLimited(crate::rate_limiter::LimitExceeded),
+}
+
+/// PostsController#destroy's and #recover's limits, unless the user can
+/// moderate the topic (`can_moderate_topic?`).
+async fn delete_limits(
+    pool: &PgPool,
+    ctx: &Ctx<'_>,
+    guardian: &Guardian,
+    can_see_topic: bool,
+) -> Result<Result<(), crate::rate_limiter::LimitExceeded>, AppError> {
+    let Some(user) = guardian.user() else {
+        return Ok(Ok(()));
+    };
+    if !ctx.config.rate_limits
+        || guardian.can_perform_action_available_to_group_moderators(ctx.settings, can_see_topic)?
+    {
+        return Ok(Ok(()));
+    }
+    let user = crate::rate_limiter::LimitUser {
+        id: user.id,
+        staff: guardian.is_staff(),
+    };
+    for limiter in crate::posting::limits::delete_limiters(ctx.settings, user)? {
+        if let Err(refused) = limiter.performed(pool, true).await? {
+            return Ok(Err(refused));
+        }
+    }
+    Ok(Ok(()))
 }
 
 /// `PostsController#destroy` from the guardian check on.
@@ -134,6 +164,9 @@ pub async fn destroy_post(
         access.can_see_post,
     )? {
         return Ok(Outcome::Forbidden);
+    }
+    if let Err(refused) = delete_limits(pool, ctx, guardian, access.can_see_topic).await? {
+        return Ok(Outcome::RateLimited(refused));
     }
     destroy(
         pool,
@@ -357,6 +390,10 @@ async fn mark_for_deletion(
         },
     )
     .await?;
+    // PostDestroyer lets EditRateLimiter's refusal out of its transaction.
+    if let crate::posting::revise::Outcome::RateLimited(_) = outcome {
+        return Err(Unsupported("deleting a post the edit limit refuses marking deleted").into());
+    }
     if let crate::posting::revise::Outcome::Invalid(errors) = outcome {
         return Err(Unsupported(if errors.is_empty() {
             "marking a post deleted failed"
@@ -887,6 +924,7 @@ async fn reset_bumped_at(conn: &mut PgConnection, topic_id: i32) -> Result<(), s
 /// `PostsController#recover` from the guardian check on: a deleted reply,
 /// recovered by staff.
 pub async fn recover_post(
+    pool: &PgPool,
     conn: &mut PgConnection,
     ctx: &Ctx<'_>,
     guardian: &Guardian,
@@ -895,6 +933,9 @@ pub async fn recover_post(
     let s = ctx.settings;
     if !guardian.can_recover_post(s, &access.post, access.can_see_topic)? {
         return Ok(Outcome::Forbidden);
+    }
+    if let Err(refused) = delete_limits(pool, ctx, guardian, access.can_see_topic).await? {
+        return Ok(Outcome::RateLimited(refused));
     }
     let user = guardian
         .user()

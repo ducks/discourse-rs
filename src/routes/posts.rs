@@ -146,6 +146,7 @@ pub async fn create(
             .into_response()),
         Outcome::Forbidden => Ok(super::search::invalid_access(&state)),
         Outcome::InvalidParameter(name) => Ok(super::search::invalid_parameters(&state, name)),
+        Outcome::RateLimited(refused) => Ok(refused.into_response(&state.i18n)),
     }
 }
 
@@ -329,6 +330,7 @@ pub async fn update(
         revise::Outcome::Invalid(errors) => {
             Ok(json_error(StatusCode::UNPROCESSABLE_ENTITY, errors))
         }
+        revise::Outcome::RateLimited(refused) => Ok(refused.into_response(&state.i18n)),
         revise::Outcome::Revised => {
             let post = serialize_post(&state, &settings, &guardian, post_id, true, true).await?;
             Ok((StatusCode::OK, Json(json!({"post": post}))).into_response())

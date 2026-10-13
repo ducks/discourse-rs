@@ -844,6 +844,11 @@ async fn process_internal(
         crate::posting::create::Outcome::InvalidParameter(_) => {
             Err(Unsupported("posts by email with invalid parameters").into())
         }
+        // Email::Processor re-enqueues the mail (retry_on_rate_limit) or
+        // raises.
+        crate::posting::create::Outcome::RateLimited(_) => {
+            Err(Unsupported("posts by email a rate limit refused").into())
+        }
     }
 }
 

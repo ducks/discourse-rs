@@ -1,0 +1,29 @@
+{
+  "user": "admin",
+  "rate_limits": true,
+  "settings": {
+    "limit_admin_personal_messages_per_day": "1"
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A first message from the admin to user2 today",
+        "raw": "The only personal message the admin may send today.",
+        "archetype": "private_message",
+        "target_recipients": "user2"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A second message from the admin to user2 today",
+        "raw": "A personal message over the admin message limit.",
+        "archetype": "private_message",
+        "target_recipients": "user2"
+      }
+    }
+  ]
+}

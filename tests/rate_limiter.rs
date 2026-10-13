@@ -7,6 +7,7 @@ mod common;
 use chrono::{TimeZone, Utc};
 use common::{TestDb, recorded_config, state};
 use discourse_rs::clock;
+use discourse_rs::posting::limits::Performed;
 use discourse_rs::rate_limiter::{LimitExceeded, LimitUser, RateLimiter, time_left};
 
 const T0: i64 = 1_800_000_000;
@@ -201,4 +202,77 @@ async fn refusals_are_worded_and_rendered_as_rails_does() {
         body["extras"],
         serde_json::json!({"wait_seconds": 30, "time_left": "30 seconds"})
     );
+}
+
+#[tokio::test]
+async fn a_refused_create_rolls_back_what_it_performed() {
+    let db = TestDb::new().await;
+    let _app = state(db.pool.clone(), recorded_config()).await;
+    let create_topic = RateLimiter::new(member(), "create_topic", 1, 60);
+    let create_post = RateLimiter::new(member(), "create_post", 1, 60);
+    at(0);
+    // A reply a moment ago, then a new topic: the topic's limit performs,
+    // the first post's refuses, and the topic's is popped again.
+    assert!(create_post.performed(&db.pool, true).await.unwrap().is_ok());
+    at(3);
+    let mut performed = Performed::new(&db.pool, true);
+    assert!(
+        performed
+            .perform(vec![create_topic.clone()])
+            .await
+            .unwrap()
+            .is_ok()
+    );
+    let refused = performed
+        .perform(vec![create_post.clone()])
+        .await
+        .unwrap()
+        .unwrap_err();
+    assert_eq!(
+        (refused.type_.as_str(), refused.available_in),
+        ("create_post", 57)
+    );
+    performed.undo().await.unwrap();
+    assert!(create_topic.can_perform(&db.pool, true).await.unwrap());
+    // An error path drops it instead: popped on a spawned task.
+    let mut performed = Performed::new(&db.pool, true);
+    assert!(
+        performed
+            .perform(vec![create_topic.clone()])
+            .await
+            .unwrap()
+            .is_ok()
+    );
+    assert!(!create_topic.can_perform(&db.pool, true).await.unwrap());
+    drop(performed);
+    let mut popped = false;
+    for _ in 0..50 {
+        if create_topic.can_perform(&db.pool, true).await.unwrap() {
+            popped = true;
+            break;
+        }
+        tokio::time::sleep(std::time::Duration::from_millis(20)).await;
+    }
+    assert!(popped);
+    // A committed create keeps its stamps; a disabled one performs nothing.
+    let mut performed = Performed::new(&db.pool, true);
+    at(100);
+    assert!(
+        performed
+            .perform(vec![create_post.clone()])
+            .await
+            .unwrap()
+            .is_ok()
+    );
+    performed.commit();
+    assert!(!create_post.can_perform(&db.pool, true).await.unwrap());
+    let mut performed = Performed::new(&db.pool, false);
+    assert!(
+        performed
+            .perform(vec![create_post.clone()])
+            .await
+            .unwrap()
+            .is_ok()
+    );
+    clock::pin(None);
 }

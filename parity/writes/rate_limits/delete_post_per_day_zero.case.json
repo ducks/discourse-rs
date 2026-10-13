@@ -1,0 +1,14 @@
+{
+  "user": "user1",
+  "rate_limits": true,
+  "settings": {
+    "max_post_deletions_per_day": "0"
+  },
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/posts/36.json",
+      "params": {}
+    }
+  ]
+}

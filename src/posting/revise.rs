@@ -36,6 +36,9 @@ pub struct Changes {
 #[derive(Debug)]
 pub enum Outcome {
     Revised,
+    /// EditRateLimiter refused it (raised in the transaction: the edit
+    /// rolled back).
+    RateLimited(crate::rate_limiter::LimitExceeded),
     /// The post's validation errors: a 422 `render_json_error(post)`.
     Invalid(Vec<String>),
 }
@@ -396,6 +399,22 @@ pub async fn revise(
                 json!({ "user_ids": user_ids, "post_revision_id": revision_id }),
             )
             .await?;
+        }
+    }
+    // perform_edit: once the new version is saved (create_or_update_revision
+    // and its notification are before it).
+    if ctx.config.rate_limits {
+        let limiter = super::limits::edit_limiter(
+            s,
+            crate::rate_limiter::LimitUser {
+                id: editor_user.id,
+                staff: editor.is_staff(),
+            },
+            editor_user.trust_level,
+        )?;
+        if let Err(refused) = limiter.performed(pool, true).await? {
+            tx.rollback().await?;
+            return Ok(Outcome::RateLimited(refused));
         }
     }
     // revise_topic: a first post's excerpt.
