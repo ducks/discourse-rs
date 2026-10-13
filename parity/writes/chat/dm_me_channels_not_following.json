@@ -1,0 +1,103 @@
+{
+  "name": "dm_me_channels_not_following",
+  "user": "user2",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/chat/api/me/channels.json"
+    }
+  ],
+  "started_at": "2026-10-13T00:36:30.038638",
+  "transaction_started_at": "2026-10-13T00:36:29.005375",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "public_channels": [],
+        "direct_message_channels": [],
+        "tracking": {
+          "channel_tracking": {},
+          "thread_tracking": {}
+        },
+        "meta": {
+          "message_bus_last_ids": {
+            "channel_metadata": 0,
+            "channel_edits": 0,
+            "channel_status": 0,
+            "new_channel": 0,
+            "archive_status": 0,
+            "user_tracking_state": 0,
+            "user_has_threads": 0
+          }
+        },
+        "unread_thread_overview": {},
+        "has_threads": false,
+        "global_presence_channel_state": {
+          "count": 0,
+          "last_message_id": null,
+          "users": []
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 484,
+            "seen_at": null,
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "A0tJb6hF1unB1uEUBRQzTTMVhfo=",
+            "created_at": "2026-10-13T00:36:29.500523",
+            "rotated_at": "2026-10-13T00:36:29.499511",
+            "updated_at": "2026-10-13T00:36:29.500523",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "A0tJb6hF1unB1uEUBRQzTTMVhfo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 484,
+            "seen_at": "2026-10-13T00:36:30.045358",
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "A0tJb6hF1unB1uEUBRQzTTMVhfo=",
+            "created_at": "2026-10-13T00:36:29.500523",
+            "rotated_at": "2026-10-13T00:36:29.499511",
+            "updated_at": "2026-10-13T00:36:29.500523",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "A0tJb6hF1unB1uEUBRQzTTMVhfo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO direct_message_channels (id, \"group\", created_at, updated_at) VALUES (1, false, now() - interval '2 hours', now() - interval '2 hours')",
+    "INSERT INTO direct_message_users (direct_message_channel_id, user_id, created_at, updated_at) VALUES (1, 3, now() - interval '2 hours', now() - interval '2 hours'), (1, 4, now() - interval '2 hours', now() - interval '2 hours')",
+    "INSERT INTO chat_channels (id, chatable_type, chatable_id, type, status, user_count, name, created_at, updated_at) VALUES (3, 'DirectMessage', 1, 'DirectMessageChannel', 0, 2, NULL, now() - interval '2 hours', now() - interval '2 hours')",
+    "INSERT INTO user_chat_channel_memberships (user_id, chat_channel_id, following, muted, notification_level, last_viewed_at, created_at, updated_at) VALUES (3, 3, true, false, 2, now() - interval '2 hours', now() - interval '2 hours', now() - interval '2 hours'), (4, 3, false, false, 2, now() - interval '2 hours', now() - interval '2 hours', now() - interval '2 hours')",
+    "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id) VALUES (1, 3, 4, now() - interval '30 minutes', now() - interval '30 minutes', 'hi there', '<p>hi there</p>', 1, 4)",
+    "UPDATE chat_channels SET last_message_id = 1, messages_count = 1 WHERE id = 3",
+    "SELECT setval('chat_channels_id_seq', 20)",
+    "SELECT setval('direct_message_channels_id_seq', 20)",
+    "SELECT setval('chat_messages_id_seq', 20)"
+  ],
+  "recorded_from": {
+    "case": "4dda3ce20fff608fde982b9a9b0089e775923e397969e42dab3f8c3c91d137cc",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

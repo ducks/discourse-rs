@@ -46,9 +46,12 @@ Bugs or silent gaps in what is merged, small and independent.
    `search_recent_regular_posts_offset_post_id` is set (any site past
    the offset size); port Search#aggregate_post_sql's `min_id`
    [scheduled-jobs-rest]
-5. `feat/chat-dm-reads` L: a DM channel row (restored backups have
+5. ~~`feat/chat-dm-reads`~~ (done) L: a DM channel row (restored backups have
    them) makes chat's channel list refuse, failing every page of that
    member; the DM reads, serializers and drawer list [messages-dms]
+5b. `feat/chat-dm-page` M: the full-page DM channel (header, title,
+   avatars, messages and composer for a DM), refused today once the
+   sidebar links to it [messages-dms]
 6. ~~`feat/harness-fixture-dates`~~ (not needed): replay shifts each
    case's clocks to when Rails recorded it (tests/writes.rs), so
    recordings do not age with the seed; new windowed cases date their

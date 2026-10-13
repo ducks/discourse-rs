@@ -1245,15 +1245,11 @@ fn basic_user(ctx: &Ctx<'_>, urls: &Urls<'_>, u: &UserRow) -> Result<Value, AppE
     Ok(Value::Object(v))
 }
 
-/// `User.allowed_user_custom_fields(guardian)` with the user's values
-/// that are present.
-async fn custom_fields(
-    conn: &mut PgConnection,
-    ctx: &Ctx<'_>,
+/// `User.allowed_user_custom_fields(guardian)`
+pub(crate) fn allowed_user_custom_fields(
+    s: &crate::site_settings::SiteSettings,
     guardian: &Guardian,
-    user_id: i32,
-) -> Result<Value, AppError> {
-    let s = ctx.settings;
+) -> Result<Vec<String>, crate::site_settings::SettingError> {
     let mut fields: Vec<String> = Vec::new();
     let split = |v: String| -> Vec<String> {
         v.split('|')
@@ -1270,6 +1266,18 @@ async fn custom_fields(
                 .map(|f| f.to_string()),
         );
     }
+    Ok(fields)
+}
+
+/// `User.allowed_user_custom_fields(guardian)` with the user's values
+/// that are present.
+async fn custom_fields(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    guardian: &Guardian,
+    user_id: i32,
+) -> Result<Value, AppError> {
+    let fields = allowed_user_custom_fields(ctx.settings, guardian)?;
     let rows: Vec<(String, Option<String>)> = sqlx::query_as(
         "SELECT name, value FROM user_custom_fields WHERE user_id = $1 AND name = ANY($2) ORDER BY id",
     )

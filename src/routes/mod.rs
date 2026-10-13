@@ -44,7 +44,7 @@ mod topic_status;
 mod topic_voting;
 mod topics;
 mod user_avatars;
-mod user_menu;
+pub(crate) mod user_menu;
 mod user_search;
 mod user_update;
 mod users;
@@ -179,6 +179,16 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/chat/browse/{tab}/page", get(chat_pages::browse_more))
         .route("/chat/c/{slug}/{id}", get(chat_pages::channel))
         .route("/chat/c/{slug}/{id}/{message_id}", get(chat_pages::channel))
+        .route("/chat/direct_messages", get(chat::direct_messages))
+        .route("/chat/direct_messages.json", get(chat::direct_messages))
+        .route(
+            "/chat/dismiss-retention-reminder",
+            post(chat::dismiss_retention_reminder),
+        )
+        .route(
+            "/chat/dismiss-retention-reminder.json",
+            post(chat::dismiss_retention_reminder),
+        )
         .route("/chat/api/me/channels", get(chat::me_channels))
         .route("/chat/api/me/channels.json", get(chat::me_channels))
         .route("/chat/api/channels", get(chat::index))

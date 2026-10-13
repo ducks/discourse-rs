@@ -214,7 +214,7 @@ fn chat_mention_item(i18n: &crate::i18n::I18n, base_path: &str, n: &Value) -> Me
 /// chat's slugifyChannel: the slug, else the title slugified (utilities'
 /// slugify, else the title lower cased and dashed), a hundred characters
 /// at most; "-" for none.
-fn slugify_channel(slug: Option<&str>, title: &str) -> String {
+pub(crate) fn slugify_channel(slug: Option<&str>, title: &str) -> String {
     if let Some(slug) = slug.filter(|s| !s.is_empty()) {
         return slug.to_string();
     }

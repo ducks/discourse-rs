@@ -1,0 +1,24 @@
+{
+  "user": "user1",
+  "settings": {
+    "chat_dm_retention_days": 30
+  },
+  "setup": [
+    "SELECT setval('chat_channels_id_seq', 20)",
+    "SELECT setval('direct_message_channels_id_seq', 20)",
+    "SELECT setval('chat_messages_id_seq', 20)"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/chat/dismiss-retention-reminder.json",
+      "params": {
+        "chatable_type": "DirectMessage"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/session/current.json"
+    }
+  ]
+}

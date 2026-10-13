@@ -1,0 +1,76 @@
+{
+  "name": "dm_dismiss_retention_missing",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/chat/dismiss-retention-reminder.json"
+    }
+  ],
+  "started_at": "2026-10-13T00:42:21.30783",
+  "transaction_started_at": "2026-10-13T00:42:20.433879",
+  "responses": [
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "param is missing or the value is empty or invalid: chatable_type"
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 484,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "XRm1KH+JvGPv3aAZHE1891RkSjo=",
+            "created_at": "2026-10-13T00:42:20.775923",
+            "rotated_at": "2026-10-13T00:42:20.775122",
+            "updated_at": "2026-10-13T00:42:20.775923",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "XRm1KH+JvGPv3aAZHE1891RkSjo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 484,
+            "seen_at": "2026-10-13T00:42:21.314398",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "XRm1KH+JvGPv3aAZHE1891RkSjo=",
+            "created_at": "2026-10-13T00:42:20.775923",
+            "rotated_at": "2026-10-13T00:42:20.775122",
+            "updated_at": "2026-10-13T00:42:20.775923",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "XRm1KH+JvGPv3aAZHE1891RkSjo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "SELECT setval('chat_channels_id_seq', 20)",
+    "SELECT setval('direct_message_channels_id_seq', 20)",
+    "SELECT setval('chat_messages_id_seq', 20)"
+  ],
+  "recorded_from": {
+    "case": "05e023ab28d83dba2bf77b2b3bb1b627d1939e0665a6aa080cd6d8cb5e5d8b2b",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

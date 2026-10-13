@@ -258,6 +258,16 @@ pub(crate) enum Prefix {
         colors: Vec<String>,
         color: Option<String>,
     },
+    /// An image (`prefixType` image), with `@prefixCSSClass`.
+    Image {
+        src: String,
+        class: Option<String>,
+    },
+    /// Text (`prefixType` text), with `@prefixCSSClass`.
+    Text {
+        text: String,
+        class: Option<String>,
+    },
 }
 
 /// What a link counts: the countable that is active (the first with
@@ -470,6 +480,22 @@ pub(crate) fn prefix_html(prefix: &Prefix, badge: Option<&str>, cx: &Context) ->
                 stops.join(", ")
             )
         }
+        Prefix::Image { src, class } => format!(
+            "<span class=\"sidebar-section-link-prefix image{}\"><img alt=\"\" class=\"prefix-image\" src=\"{}\">{badge}</span>",
+            class
+                .as_deref()
+                .map(|c| format!(" {}", escape(c)))
+                .unwrap_or_default(),
+            attr(src)
+        ),
+        Prefix::Text { text, class } => format!(
+            "<span class=\"sidebar-section-link-prefix text{}\"><span class=\"prefix-text\">{}</span>{badge}</span>",
+            class
+                .as_deref()
+                .map(|c| format!(" {}", escape(c)))
+                .unwrap_or_default(),
+            escape(text)
+        ),
     }
 }
 

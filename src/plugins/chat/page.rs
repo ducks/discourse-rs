@@ -57,7 +57,7 @@ struct View<'a> {
 
 impl Context<'_> {
     /// The members in /chat/online (PresenceChannel#user_ids).
-    async fn online_ids(&mut self) -> Result<Vec<i64>, AppError> {
+    pub(crate) async fn online_ids(&mut self) -> Result<Vec<i64>, AppError> {
         Ok(sqlx::query_scalar(
             "SELECT DISTINCT user_id::bigint FROM discourse_rs.presence_clients WHERE channel = '/chat/online'",
         )

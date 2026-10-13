@@ -226,6 +226,10 @@ impl Context<'_> {
         if g.is_staff() {
             return Ok(true);
         }
+        // Category group moderators moderate category channels only.
+        if channel.chatable_type != "Category" {
+            return Ok(false);
+        }
         if !self
             .settings
             .get("enable_category_group_moderation")?
