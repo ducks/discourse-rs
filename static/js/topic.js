@@ -97,9 +97,21 @@
     var stream = JSON.parse(container.dataset.stream);
     var lookup = JSON.parse(container.dataset.lookup);
     var total = Math.max(stream.length, 1);
+    // displayTimeLineScrollArea: a lone post under 1000px tall gets no
+    // scroll area, and no footer controls with it; the container still
+    // docks.
+    var postsWrapper = document.querySelector(".posts-wrapper");
+    var bare = stream.length === 1 && postsWrapper && postsWrapper.offsetHeight < 1000;
+    if (bare) {
+      container
+        .querySelectorAll(".timeline-scrollarea-wrapper, .timeline-footer-controls")
+        .forEach(function (el) {
+          el.remove();
+        });
+    }
     var chunk = parseInt(container.dataset.chunkSize, 10) || 20;
     var area = container.querySelector(".timeline-scrollarea");
-    var paddings = area.querySelectorAll(".timeline-padding");
+    var paddings = area ? area.querySelectorAll(".timeline-padding") : [];
     var replies = container.querySelector(".timeline-replies");
     var scrollerContent = container.querySelector(".timeline-scroller-content");
     var SCROLLER = 50;
@@ -204,7 +216,7 @@
       pending = true;
       window.requestAnimationFrame(function () {
         pending = false;
-        var percent = percentNow();
+        var percent = bare ? null : percentNow();
         if (percent !== null) {
           render(percent);
         }
@@ -213,36 +225,40 @@
     }
 
     function resize() {
-      height = clamp((window.innerHeight - headerHeight()) / 2, 170, 300);
-      area.style.height = height + "px";
+      if (area) {
+        height = clamp((window.innerHeight - headerHeight()) / 2, 170, 300);
+        area.style.height = height + "px";
+      }
       onScroll();
     }
 
     // A click on the scroll area: to that post, on this page or its own.
-    area.addEventListener("click", function (event) {
-      if (!event.target.closest(".timeline-padding")) {
-        return;
-      }
-      var areaTop = area.getBoundingClientRect().top;
-      var percent = clamp(
-        (event.clientY - (areaTop + SCROLLER / 2)) / (height - SCROLLER),
-        0,
-        1
-      );
-      var index = clamp(Math.floor(total * percent) + 1, 1, total);
-      var post = document.querySelector(
-        '#posts article[data-post-id="' + stream[index - 1] + '"]'
-      );
-      if (post) {
-        window.scrollTo({
-          top: post.getBoundingClientRect().top + window.scrollY - headerHeight(),
-        });
-      } else {
-        var page = Math.floor((index - 1) / chunk) + 1;
-        location.href =
-          container.dataset.topicUrl + (page > 1 ? "?page=" + page : "");
-      }
-    });
+    if (area) {
+      area.addEventListener("click", function (event) {
+        if (!event.target.closest(".timeline-padding")) {
+          return;
+        }
+        var areaTop = area.getBoundingClientRect().top;
+        var percent = clamp(
+          (event.clientY - (areaTop + SCROLLER / 2)) / (height - SCROLLER),
+          0,
+          1
+        );
+        var index = clamp(Math.floor(total * percent) + 1, 1, total);
+        var post = document.querySelector(
+          '#posts article[data-post-id="' + stream[index - 1] + '"]'
+        );
+        if (post) {
+          window.scrollTo({
+            top: post.getBoundingClientRect().top + window.scrollY - headerHeight(),
+          });
+        } else {
+          var page = Math.floor((index - 1) / chunk) + 1;
+          location.href =
+            container.dataset.topicUrl + (page > 1 ? "?page=" + page : "");
+        }
+      });
+    }
 
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", resize);
