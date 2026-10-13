@@ -159,11 +159,6 @@ impl Context<'_> {
                 .is_empty())
     }
 
-    /// `can_preview_chat_channel?`
-    async fn can_preview(&mut self, channel: &ChannelRow) -> Result<bool, AppError> {
-        self.can_see_category(channel.chatable_id).await
-    }
-
     /// The guardian's user, refused when a bot.
     fn acting_user(&self) -> Result<Option<crate::session::current::SessionUser>, AppError> {
         let Some(user) = self.guardian.user().cloned() else {

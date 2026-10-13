@@ -1,0 +1,80 @@
+{
+  "name": "dm_dismiss_retention_bad_type",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/chat/dismiss-retention-reminder.json",
+      "params": {
+        "chatable_type": "Topic"
+      }
+    }
+  ],
+  "started_at": "2026-10-13T00:42:18.894149",
+  "transaction_started_at": "2026-10-13T00:42:18.045789",
+  "responses": [
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 484,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "YcQ/AQ8aPHpZS/DJU699mGuYYgo=",
+            "created_at": "2026-10-13T00:42:18.384697",
+            "rotated_at": "2026-10-13T00:42:18.384468",
+            "updated_at": "2026-10-13T00:42:18.384697",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "YcQ/AQ8aPHpZS/DJU699mGuYYgo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 484,
+            "seen_at": "2026-10-13T00:42:18.90262",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "YcQ/AQ8aPHpZS/DJU699mGuYYgo=",
+            "created_at": "2026-10-13T00:42:18.384697",
+            "rotated_at": "2026-10-13T00:42:18.384468",
+            "updated_at": "2026-10-13T00:42:18.384697",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "YcQ/AQ8aPHpZS/DJU699mGuYYgo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "SELECT setval('chat_channels_id_seq', 20)",
+    "SELECT setval('direct_message_channels_id_seq', 20)",
+    "SELECT setval('chat_messages_id_seq', 20)"
+  ],
+  "recorded_from": {
+    "case": "b2792b59571ed1d93583b977fc665df32980bee9351d5a0371caf2eea4d21c08",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

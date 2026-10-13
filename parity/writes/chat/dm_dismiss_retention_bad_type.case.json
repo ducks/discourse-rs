@@ -1,0 +1,17 @@
+{
+  "user": "user1",
+  "setup": [
+    "SELECT setval('chat_channels_id_seq', 20)",
+    "SELECT setval('direct_message_channels_id_seq', 20)",
+    "SELECT setval('chat_messages_id_seq', 20)"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/chat/dismiss-retention-reminder.json",
+      "params": {
+        "chatable_type": "Topic"
+      }
+    }
+  ]
+}

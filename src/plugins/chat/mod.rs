@@ -12,6 +12,7 @@ pub mod auto_join;
 pub mod channels;
 pub mod cook;
 pub mod create;
+pub mod direct_messages;
 pub mod membership;
 pub mod mentions;
 pub mod messages;
@@ -194,6 +195,7 @@ pub(crate) struct ChatOptions {
     pub(crate) chat_quick_reaction_type: i32,
     pub(crate) chat_quick_reactions_custom: Option<String>,
     pub(crate) dismissed_channel_retention_reminder: Option<bool>,
+    pub(crate) dismissed_dm_retention_reminder: Option<bool>,
 }
 
 pub(crate) async fn options(
@@ -206,7 +208,8 @@ pub(crate) async fn options(
                 chat_channel_list_sort_starred, chat_channel_list_sort_dms, chat_channel_list_filter_starred, \
                 chat_channel_list_filter_dms, chat_new_message_sound, chat_email_frequency, \
                 chat_header_indicator_preference, chat_separate_sidebar_mode, send_shortcut, \
-                chat_quick_reaction_type, chat_quick_reactions_custom, dismissed_channel_retention_reminder \
+                chat_quick_reaction_type, chat_quick_reactions_custom, dismissed_channel_retention_reminder, \
+                dismissed_dm_retention_reminder \
          FROM user_options WHERE user_id = $1",
     )
     .bind(user_id)
@@ -438,8 +441,13 @@ pub async fn current_user_keys(
         {
             out.insert("needs_channel_retention_reminder".into(), json!(true));
         }
-        if settings.get("chat_dm_retention_days")?.to_i() != 0 {
-            return Err(Unsupported("chat's direct message retention reminder").into());
+        if !o
+            .as_ref()
+            .and_then(|o| o.dismissed_dm_retention_reminder)
+            .unwrap_or(false)
+            && settings.get("chat_dm_retention_days")?.to_i() != 0
+        {
+            out.insert("needs_dm_retention_reminder".into(), json!(true));
         }
     }
     out.insert(

@@ -733,3 +733,115 @@ pub async fn rebake_message(
         .await?;
     finish(&state, tx, outcome).await
 }
+
+/// POST /chat/dismiss-retention-reminder: ChatController#
+/// dismiss_retention_reminder, the reminder of a category channel's or a
+/// direct message's retention set dismissed for the member.
+pub async fn dismiss_retention_reminder(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    let (mut tx, _, p) = match begin_write(&state, &guardian, &headers, &uri, "POST", &body).await?
+    {
+        Ok(begun) => begun,
+        Err(refused) => return Ok(refused),
+    };
+    let Some(chatable_type) = p
+        .get("chatable_type")
+        .and_then(params::scalar)
+        .filter(|t| !t.is_empty())
+    else {
+        return Ok(super::accounts::param_missing("chatable_type"));
+    };
+    let field = match chatable_type.as_str() {
+        "Category" => "dismissed_channel_retention_reminder",
+        "DirectMessage" => "dismissed_dm_retention_reminder",
+        _ => {
+            return Ok(super::search::invalid_parameters(
+                &state,
+                "Discourse::InvalidParameters",
+            ));
+        }
+    };
+    sqlx::query(&format!(
+        "UPDATE user_options SET {field} = TRUE WHERE user_id = $1 AND {field} IS DISTINCT FROM TRUE"
+    ))
+    .bind(guardian.user_id().unwrap_or(0))
+    .execute(&mut *tx)
+    .await?;
+    tx.commit().await?;
+    Ok(Json(json!({"success": "OK"})).into_response())
+}
+
+/// GET /chat/direct_messages(.json): Chat::DirectMessagesController#index,
+/// the one-to-one (or self) direct message of the member and the named
+/// users, with the member's membership; an empty 404 when there is none.
+pub async fn direct_messages(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    uri: Uri,
+) -> Result<Response, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let settings = match begin(&state, &mut conn, &guardian).await? {
+        Ok(settings) => settings,
+        Err(refused) => return Ok(refused),
+    };
+    let p = params::parse(uri.query(), &headers, &[]);
+    let usernames: Vec<String> = match p.get("usernames") {
+        Some(serde_json::Value::Array(names)) => names.iter().filter_map(params::scalar).collect(),
+        Some(v) => params::scalar(v)
+            .unwrap_or_default()
+            .split(',')
+            .map(str::to_string)
+            .collect(),
+        None => Vec::new(),
+    };
+    if usernames.iter().all(|u| u.is_empty()) {
+        return Ok(super::accounts::param_missing("usernames"));
+    }
+    let Some(me) = guardian.user() else {
+        return Ok(super::login_required::not_logged_in(&state));
+    };
+    // users = [current_user] + User.where(username: others)
+    let others: Vec<String> = usernames
+        .into_iter()
+        .filter(|u| *u != me.username)
+        .collect();
+    let mut ids: Vec<i32> = vec![me.id];
+    if !others.is_empty() {
+        ids.extend(
+            sqlx::query_scalar::<_, i32>("SELECT id FROM users WHERE username = ANY($1)")
+                .bind(&others)
+                .fetch_all(&mut *conn)
+                .await?,
+        );
+    }
+    ids.sort();
+    ids.dedup();
+    // Chat::DirectMessage.for_user_ids(ids): the participants exactly.
+    let sql = format!(
+        "SELECT {} FROM chat_channels WHERE chat_channels.deleted_at IS NULL \
+           AND chat_channels.chatable_type = 'DirectMessage' AND chat_channels.chatable_id = ( \
+             SELECT direct_message_channels.id FROM direct_message_channels \
+             JOIN direct_message_users ON direct_message_users.direct_message_channel_id = direct_message_channels.id \
+             JOIN users ON users.id = direct_message_users.user_id \
+             WHERE direct_message_channels.\"group\" = FALSE \
+             GROUP BY direct_message_channels.id \
+             HAVING ARRAY_AGG(users.id ORDER BY users.id) = $1::int[] \
+             ORDER BY direct_message_channels.id LIMIT 1)",
+        crate::plugins::chat::channels::CHANNEL_COLUMNS
+    );
+    let channel: Option<crate::plugins::chat::channels::ChannelRow> = sqlx::query_as(&sql)
+        .bind(&ids)
+        .fetch_optional(&mut *conn)
+        .await?;
+    let Some(channel) = channel else {
+        return Ok(axum::http::StatusCode::NOT_FOUND.into_response());
+    };
+    let mut cx = context(&state, &mut conn, &settings, &guardian);
+    Ok(Json(cx.show(&channel).await?).into_response())
+}

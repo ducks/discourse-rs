@@ -335,6 +335,9 @@ pub async fn channel(
         Found::Channel(channel) => channel,
         Found::NotFound | Found::Forbidden => return Ok(redirect(format!("{base_path}/chat"))),
     };
+    if channel.chatable_type == "DirectMessage" {
+        return Err(crate::Unsupported("the direct message channel page").into());
+    }
     let Some(own_slug) = channel.slug.clone().filter(|s| !s.is_empty()) else {
         return Err(crate::Unsupported("chat channels without a slug").into());
     };

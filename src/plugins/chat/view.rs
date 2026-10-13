@@ -5,9 +5,9 @@
 //! GET /chat/api/me/channels gives (the preloaded channels).
 //!
 //! The sections' menus (channel list options, a channel's menu) are drawn
-//! as their buttons. Direct message channels and threads are refused
-//! upstream (channels.rs) until their slices, and only the "never"
-//! separate sidebar mode (chat's sections in the main sidebar) is drawn.
+//! as their buttons. Threads are refused upstream (channels.rs) until
+//! their slice, and only the "never" separate sidebar mode (chat's
+//! sections in the main sidebar) is drawn.
 
 use std::cmp::Ordering;
 
@@ -28,11 +28,22 @@ pub struct ChatChrome {
     pub sidebar_sections: String,
 }
 
+/// A direct message channel's part of its sidebar link.
+struct DmLink {
+    group: bool,
+    /// The chatable's users (the viewer left out unless alone).
+    users: Vec<Value>,
+    memberships_count: i64,
+    unicode_title: Option<String>,
+}
+
 /// A followed channel as the sidebar reads it.
 struct SidebarChannel {
     id: i64,
     title: String,
+    /// slugifiedTitle: the slug, else the title slugified.
     slug: String,
+    dm: Option<DmLink>,
     emoji: Option<String>,
     description: Option<String>,
     color: Option<String>,
@@ -55,12 +66,19 @@ impl SidebarChannel {
         Ok(SidebarChannel {
             id,
             title: c["title"].as_str().unwrap_or_default().to_string(),
-            // slugifiedTitle: the slug; a channel without one is not drawn.
-            slug: c["slug"]
-                .as_str()
-                .filter(|s| !s.is_empty())
-                .ok_or(Unsupported("chat channels without a slug"))?
-                .to_string(),
+            slug: crate::routes::user_menu::slugify_channel(
+                c["slug"].as_str(),
+                &escape(c["title"].as_str().unwrap_or_default()),
+            ),
+            dm: (c["chatable_type"] == "DirectMessage").then(|| DmLink {
+                group: c["chatable"]["group"] == true,
+                users: c["chatable"]["users"]
+                    .as_array()
+                    .cloned()
+                    .unwrap_or_default(),
+                memberships_count: c["memberships_count"].as_i64().unwrap_or(0),
+                unicode_title: c["unicode_title"].as_str().map(str::to_string),
+            }),
             emoji: c["emoji"].as_str().map(str::to_string),
             description: c["description"].as_str().map(str::to_string),
             color: c["chatable"]["color"].as_str().map(str::to_string),
@@ -85,6 +103,42 @@ impl SidebarChannel {
     fn urgent(&self) -> i64 {
         self.mentions + self.watched_threads
     }
+
+    /// `#compareChannelsAlphabetically`'s name: a DM's title, else the
+    /// slug.
+    fn sort_name(&self) -> &str {
+        if self.dm.is_some() {
+            &self.title
+        } else {
+            &self.slug
+        }
+    }
+}
+
+/// `#compareChannelsAlphabetically`
+fn alphabetical(a: &SidebarChannel, b: &SidebarChannel) -> Ordering {
+    a.sort_name().cmp(b.sort_name()).then(a.id.cmp(&b.id))
+}
+
+/// `#compareDirectMessageChannelsByActivity`, without unread threads
+/// (not ported): channels with a message first; urgent ones (any unread
+/// in a DM) before the rest, by count, both urgent by their last message;
+/// then by the last message.
+fn dm_activity(a: &SidebarChannel, b: &SidebarChannel) -> Ordering {
+    let (Some(at_a), Some(at_b)) = (&a.last_activity, &b.last_activity) else {
+        return match (&a.last_activity, &b.last_activity) {
+            (None, None) => Ordering::Equal,
+            (None, _) => Ordering::Greater,
+            _ => Ordering::Less,
+        };
+    };
+    let urgent = |c: &SidebarChannel| c.unread + c.mentions + c.watched_threads;
+    let (ua, ub) = (urgent(a), urgent(b));
+    // Only one urgent: it first. Both or neither: the latest message.
+    if (ua > 0) != (ub > 0) {
+        return ub.cmp(&ua);
+    }
+    at_b.cmp(at_a)
 }
 
 /// A section's list preferences (ChatChannelListPreferences).
@@ -118,6 +172,17 @@ fn active_channel(active: &Active) -> Option<i64> {
 /// `#filterSidebarChannels` and `#compareSidebarChannels`. The active
 /// filter's 30 days are measured from the page's clock.
 fn filter_and_sort(
+    channels: Vec<&SidebarChannel>,
+    p: ListPrefs,
+    active: Option<i64>,
+) -> Vec<&SidebarChannel> {
+    let mut channels = filter(channels, p, active);
+    sort(&mut channels, p);
+    channels
+}
+
+/// `#filterSidebarChannels`
+fn filter(
     mut channels: Vec<&SidebarChannel>,
     p: ListPrefs,
     active: Option<i64>,
@@ -138,8 +203,11 @@ fn filter_and_sort(
                 _ => true,
             }
     });
-    let alphabetical =
-        |a: &SidebarChannel, b: &SidebarChannel| a.slug.cmp(&b.slug).then(a.id.cmp(&b.id));
+    channels
+}
+
+/// `#compareSidebarChannels`, sorting stably.
+fn sort(channels: &mut [&SidebarChannel], p: ListPrefs) {
     let priority = |c: &SidebarChannel| {
         if c.muted {
             2
@@ -166,7 +234,6 @@ fn filter_and_sort(
             .then_with(|| alphabetical(a, b)),
         _ => recency(a, b).then_with(|| alphabetical(a, b)),
     });
-    channels
 }
 
 impl Context<'_> {
@@ -208,18 +275,22 @@ impl Context<'_> {
 
         let me = self.me_channels().await?;
         let tracking = &me["tracking"]["channel_tracking"];
-        let channels: Vec<SidebarChannel> = me["public_channels"]
-            .as_array()
-            .into_iter()
-            .flatten()
-            .map(|c| SidebarChannel::from_json(c, tracking))
-            .collect::<Result<_, _>>()?;
+        let read = |key: &str| -> Result<Vec<SidebarChannel>, AppError> {
+            me[key]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .map(|c| SidebarChannel::from_json(c, tracking))
+                .collect()
+        };
+        let channels = read("public_channels")?;
+        let dms = read("direct_message_channels")?;
         let full_page = matches!(active, Active::Chat | Active::ChatChannel(_));
 
-        let header_icon = self.header_icon(&channels, &options, full_page)?;
+        let header_icon = self.header_icon(&channels, &dms, &options, full_page)?;
         let sidebar_sections = match sidebar {
             Some(cx) => {
-                self.sidebar_sections(&channels, &options, active, cx)
+                self.sidebar_sections(&channels, &dms, &options, active, cx)
                     .await?
             }
             None => String::new(),
@@ -239,18 +310,22 @@ impl Context<'_> {
     fn header_icon(
         &self,
         channels: &[SidebarChannel],
+        dms: &[SidebarChannel],
         options: &super::ChatOptions,
         full_page: bool,
     ) -> Result<String, AppError> {
         let mut indicator = String::new();
         if !full_page {
-            // ChatHeaderIconUnreadIndicator; no direct messages or threads.
+            // ChatHeaderIconUnreadIndicator, without threads: a DM's
+            // unread messages are urgent; the unread dot counts public
+            // channels only.
             let preference = super::HEADER_INDICATORS
                 .get(usize::try_from(options.chat_header_indicator_preference).unwrap_or(0))
                 .copied()
                 .unwrap_or("all_new");
-            let urgent: i64 = channels.iter().map(SidebarChannel::urgent).sum();
-            let mentions: i64 = channels.iter().map(|c| c.mentions).sum();
+            let urgent: i64 = channels.iter().map(SidebarChannel::urgent).sum::<i64>()
+                + dms.iter().map(|c| c.urgent() + c.unread).sum::<i64>();
+            let mentions: i64 = channels.iter().chain(dms).map(|c| c.mentions).sum();
             let unread: i64 = channels.iter().map(|c| c.unread).sum();
             let label = |n: i64| {
                 if n > 99 {
@@ -284,6 +359,7 @@ impl Context<'_> {
     async fn sidebar_sections(
         &mut self,
         channels: &[SidebarChannel],
+        dms: &[SidebarChannel],
         options: &super::ChatOptions,
         active: &Active,
         cx: &crate::sidebar::Context<'_>,
@@ -319,13 +395,28 @@ impl Context<'_> {
             ));
         }
 
-        // Starred channels.
-        let starred: Vec<&SidebarChannel> = channels.iter().filter(|c| c.starred).collect();
+        // Presence on /chat/online marks a DM's avatar active.
+        let online = if dms.is_empty() {
+            Vec::new()
+        } else {
+            self.online_ids().await?
+        };
+
+        // Starred channels: public ones by slug, then DMs by title; left
+        // in that order when sorted alphabetically.
+        let mut starred: Vec<&SidebarChannel> = channels.iter().filter(|c| c.starred).collect();
+        starred.sort_by(|a, b| a.slug.cmp(&b.slug));
+        let mut starred_dms: Vec<&SidebarChannel> = dms.iter().filter(|c| c.starred).collect();
+        starred_dms.sort_by(|a, b| a.title.cmp(&b.title));
+        starred.extend(starred_dms);
         let starred_prefs = prefs(
             options.chat_channel_list_filter_starred,
             options.chat_channel_list_sort_starred,
         );
-        let starred_links = filter_and_sort(starred.clone(), starred_prefs, active_id);
+        let mut starred_links = filter(starred.clone(), starred_prefs, active_id);
+        if starred_prefs.sort != "alphabetical" {
+            sort(&mut starred_links, starred_prefs);
+        }
         if !starred_links.is_empty() || (!starred.is_empty() && starred_prefs.filter != "all") {
             out.push_str(&self.channels_section(
                 "chat-starred-channels",
@@ -333,6 +424,7 @@ impl Context<'_> {
                 &starred_links,
                 starred_prefs,
                 active_id,
+                &online,
                 cx,
             ));
         }
@@ -353,44 +445,87 @@ impl Context<'_> {
                     &links,
                     channel_prefs,
                     active_id,
+                    &online,
                     cx,
                 ));
             }
         }
 
-        // Direct messages: none yet (refused upstream), so the header is
-        // hidden and the section offers a new one.
+        // Direct messages: the unstarred ones by activity, filtered and
+        // sorted by the member's DM list preferences, fifty at most (the
+        // active one kept); with none, the header hides and the section
+        // offers a new one.
         if super::can_direct_message(settings, g)? {
-            let title = self.t("sidebar.start_new_dm.title");
-            let link = Link {
-                link_name: Some("new-chat-dm".into()),
-                attributes: String::new(),
-                plain: false,
-                href: format!("{}/chat/new-message", self.base_path),
-                title: Some(title),
-                content: escape(&self.t("sidebar.start_new_dm.text")),
-                prefix: Prefix::Icon {
-                    name: "plus".into(),
-                    color: None,
-                },
-                prefix_badge: None,
-                active: false,
-                badge: None,
-                suffix: None,
-            };
-            out.push_str(&crate::sidebar::section_html_with(
-                "chat-dms",
-                None,
-                "",
-                &crate::sidebar::link_html(&link, cx),
-                cx,
-            ));
+            let mut unstarred: Vec<&SidebarChannel> = dms.iter().filter(|c| !c.starred).collect();
+            unstarred.sort_by(|a, b| dm_activity(a, b));
+            let dm_prefs = prefs(
+                options.chat_channel_list_filter_dms,
+                options.chat_channel_list_sort_dms,
+            );
+            let mut links = filter_and_sort(unstarred.clone(), dm_prefs, active_id);
+            if links.len() > DIRECT_MESSAGE_CHANNELS_LIMIT {
+                let active = links.iter().copied().find(|c| Some(c.id) == active_id);
+                links.truncate(DIRECT_MESSAGE_CHANNELS_LIMIT);
+                if let Some(active) = active
+                    && !links.iter().any(|c| c.id == active.id)
+                {
+                    links.pop();
+                    links.push(active);
+                }
+            }
+            if !links.is_empty() {
+                out.push_str(&self.channels_section(
+                    "chat-dms",
+                    &self.t("chat.direct_messages.title"),
+                    &links,
+                    dm_prefs,
+                    active_id,
+                    &online,
+                    cx,
+                ));
+            } else if unstarred.is_empty() {
+                let title = self.t("sidebar.start_new_dm.title");
+                let link = Link {
+                    link_name: Some("new-chat-dm".into()),
+                    attributes: String::new(),
+                    plain: false,
+                    href: format!("{}/chat/new-message", self.base_path),
+                    title: Some(title),
+                    content: escape(&self.t("sidebar.start_new_dm.text")),
+                    prefix: Prefix::Icon {
+                        name: "plus".into(),
+                        color: None,
+                    },
+                    prefix_badge: None,
+                    active: false,
+                    badge: None,
+                    suffix: None,
+                };
+                out.push_str(&crate::sidebar::section_html_with(
+                    "chat-dms",
+                    None,
+                    "",
+                    &crate::sidebar::link_html(&link, cx),
+                    cx,
+                ));
+            } else if dm_prefs.filter != "all" {
+                out.push_str(&self.channels_section(
+                    "chat-dms",
+                    &self.t("chat.direct_messages.title"),
+                    &[],
+                    dm_prefs,
+                    active_id,
+                    &online,
+                    cx,
+                ));
+            }
         }
         Ok(out)
     }
 
     /// A section of channel links with its list options button (and the
     /// show-all toggle when a filter leaves it empty).
+    #[allow(clippy::too_many_arguments)]
     fn channels_section(
         &self,
         name: &str,
@@ -398,6 +533,7 @@ impl Context<'_> {
         channels: &[&SidebarChannel],
         p: ListPrefs,
         active: Option<i64>,
+        online: &[i64],
         cx: &crate::sidebar::Context<'_>,
     ) -> String {
         let mut buttons = String::new();
@@ -415,7 +551,21 @@ impl Context<'_> {
             d_icon("ellipsis-vertical", None),
             t = escape(&title)
         ));
+        let links = self.channel_links(channels, active, online, cx);
+        crate::sidebar::section_html_with(name, Some(header), &buttons, &links, cx)
+    }
+
+    /// The channels' links: a category channel's, or a DM's
+    /// (SidebarChatDirectMessagesSectionLink).
+    fn channel_links(
+        &self,
+        channels: &[&SidebarChannel],
+        active: Option<i64>,
+        online: &[i64],
+        cx: &crate::sidebar::Context<'_>,
+    ) -> String {
         let list = crate::topic_list_view::ListSettings::load(self.settings).ok();
+        let tiny = raw_avatar_size(self.settings, 20);
         let mut links = String::new();
         for c in channels {
             let is_active = Some(c.id) == active;
@@ -427,42 +577,17 @@ impl Context<'_> {
                 classes.push("sidebar-section-link--active".into());
             }
             classes.push(format!("channel-{}", c.id));
-            let text = match &list {
-                Some(l) => {
-                    crate::topic_list_view::emoji_unescape(&escape(&c.title), l, self.base_path)
-                }
-                None => escape(&c.title),
+            let link = match &c.dm {
+                Some(dm) => self.dm_link(c, dm, is_active, online, tiny),
+                None => self.category_link(c, is_active, list.as_ref()),
             };
-            let link = Link {
-                link_name: Some(c.slug.clone()),
-                attributes: String::new(),
-                plain: false,
-                href: format!("{}/chat/c/{}/{}", self.base_path, c.slug, c.id),
-                title: Some(match &c.description {
-                    Some(d) => d.clone(),
-                    None => format!("{} {}", c.title, self.t("chat.title")),
-                }),
-                content: text,
-                prefix: match &c.emoji {
-                    Some(emoji) => Prefix::Emoji {
-                        name: emoji.clone(),
-                        color: c.color.as_deref().map(|c| format!("#{c}")),
-                    },
-                    None => Prefix::Icon {
-                        name: "d-chat".into(),
-                        color: c.color.as_deref().map(|c| format!("#{c}")),
-                    },
-                },
-                prefix_badge: c.read_restricted.then_some("lock"),
-                active: is_active,
-                badge: None,
-                suffix: None,
-            };
-            // ChatSidebarIndicators
+            // ChatSidebarIndicators: urgent for mentions, watched threads
+            // and any unread in a DM.
             let suffix_html = if c.unread_total() > 0 {
+                let urgent = c.urgent() > 0 || (c.dm.is_some() && c.unread > 0);
                 format!(
                     "<span class=\"sidebar-section-link-content-badge icon {}\">{}</span>",
-                    if c.urgent() > 0 { "urgent" } else { "unread" },
+                    if urgent { "urgent" } else { "unread" },
                     d_icon("circle", None)
                 )
             } else {
@@ -475,9 +600,144 @@ impl Context<'_> {
             };
             links.push_str(&crate::sidebar::link_html_with(&link, &extra, cx));
         }
-        crate::sidebar::section_html_with(name, Some(header), &buttons, &links, cx)
+        links
+    }
+
+    /// A category channel's link.
+    fn category_link(
+        &self,
+        c: &SidebarChannel,
+        is_active: bool,
+        list: Option<&crate::topic_list_view::ListSettings>,
+    ) -> Link {
+        let text = match list {
+            Some(l) => crate::topic_list_view::emoji_unescape(&escape(&c.title), l, self.base_path),
+            None => escape(&c.title),
+        };
+        Link {
+            link_name: Some(c.slug.clone()),
+            attributes: String::new(),
+            plain: false,
+            href: format!("{}/chat/c/{}/{}", self.base_path, c.slug, c.id),
+            title: Some(match &c.description {
+                Some(d) => d.clone(),
+                None => format!("{} {}", c.title, self.t("chat.title")),
+            }),
+            content: text,
+            prefix: match &c.emoji {
+                Some(emoji) => Prefix::Emoji {
+                    name: emoji.clone(),
+                    color: c.color.as_deref().map(|c| format!("#{c}")),
+                },
+                None => Prefix::Icon {
+                    name: "d-chat".into(),
+                    color: c.color.as_deref().map(|c| format!("#{c}")),
+                },
+            },
+            prefix_badge: c.read_restricted.then_some("lock"),
+            active: is_active,
+            badge: None,
+            suffix: None,
+        }
+    }
+
+    /// A DM's link: "Chat in" a group or "Chat with" the users; a 1:1's
+    /// text is its title without "@"; an avatar prefix (tiny) for a 1:1
+    /// or a group of one, else the member count, an emoji when set,
+    /// active when the first user is on /chat/online.
+    fn dm_link(
+        &self,
+        c: &SidebarChannel,
+        dm: &DmLink,
+        is_active: bool,
+        online: &[i64],
+        tiny: i64,
+    ) -> Link {
+        let escaped_title = escape(&c.title);
+        let title = if dm.group {
+            self.i18n.t_with(
+                "js.chat.placeholder_channel",
+                &[("channelName", &escaped_title)],
+            )
+        } else {
+            self.i18n.t_with(
+                "js.chat.placeholder_users",
+                &[("commaSeparatedNames", &escaped_title)],
+            )
+        }
+        .unwrap_or_else(|| escaped_title.clone());
+        let content = if dm.group {
+            escape(dm.unicode_title.as_deref().unwrap_or(&c.title))
+        } else {
+            escape(&escaped_title.replace('@', ""))
+        };
+        let first = dm.users.first();
+        let class = first
+            .and_then(|u| u["id"].as_i64())
+            .filter(|id| online.contains(id))
+            .map(|_| "active".to_string());
+        let avatar = |u: &Value| {
+            u["avatar_template"]
+                .as_str()
+                .unwrap_or_default()
+                .replace("{size}", &tiny.to_string())
+        };
+        let prefix = match (&c.emoji, dm.group, first) {
+            (Some(emoji), _, _) => Prefix::Emoji {
+                name: emoji.clone(),
+                color: None,
+            },
+            (None, true, Some(u)) if dm.users.len() == 1 => Prefix::Image {
+                src: avatar(u),
+                class,
+            },
+            (None, true, _) => Prefix::Text {
+                text: dm.memberships_count.to_string(),
+                class,
+            },
+            (None, false, Some(u)) => Prefix::Image {
+                src: avatar(u),
+                class,
+            },
+            (None, false, None) => Prefix::None,
+        };
+        Link {
+            link_name: Some(c.slug.clone()),
+            attributes: String::new(),
+            plain: false,
+            href: format!("{}/chat/c/{}/{}", self.base_path, c.slug, c.id),
+            title: Some(title),
+            content,
+            prefix,
+            prefix_badge: None,
+            active: is_active,
+            badge: None,
+            suffix: None,
+        }
     }
 }
+
+/// `getRawAvatarSize(size)` at a device pixel ratio of 1: the first of
+/// avatar_sizes at least that size, else the largest.
+fn raw_avatar_size(settings: &crate::site_settings::SiteSettings, size: i64) -> i64 {
+    let mut sizes: Vec<i64> = settings
+        .get("avatar_sizes")
+        .map(|v| v.to_s().to_string())
+        .unwrap_or_default()
+        .split('|')
+        .filter_map(|s| s.trim().parse().ok())
+        .collect();
+    sizes.sort_unstable();
+    sizes
+        .iter()
+        .copied()
+        .find(|s| *s >= size)
+        .or(sizes.last().copied())
+        .unwrap_or(size)
+}
+
+/// `DIRECT_MESSAGE_CHANNELS_LIMIT`
+const DIRECT_MESSAGE_CHANNELS_LIMIT: usize = 50;
 
 fn urgent_indicator(label: &str) -> String {
     format!(

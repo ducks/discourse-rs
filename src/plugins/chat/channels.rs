@@ -433,15 +433,8 @@ impl Context<'_> {
         // ChannelFetcher.structured
         let memberships = self.memberships().await?;
         let mut public = self.followed_public_channels(false).await?;
-        let dms: bool = sqlx::query_scalar(
-            "SELECT EXISTS (SELECT 1 FROM direct_message_users WHERE user_id = $1)",
-        )
-        .bind(user_id)
-        .fetch_one(&mut *self.conn)
-        .await?;
-        if dms {
-            return Err(Unsupported("chat direct messages").into());
-        }
+        let _ = user_id;
+        let mut dms = self.followed_dm_channels(false).await?;
         if public.len() as i64 == MAX_PUBLIC_CHANNEL_RESULTS {
             for starred in self.followed_public_channels(true).await? {
                 if !public.iter().any(|c| c.id == starred.id) {
@@ -449,7 +442,14 @@ impl Context<'_> {
                 }
             }
         }
-        let ids: Vec<i64> = public.iter().map(|c| c.id).collect();
+        if dms.len() as i64 == super::direct_messages::MAX_DM_CHANNEL_RESULTS {
+            for starred in self.followed_dm_channels(true).await? {
+                if !dms.iter().any(|c| c.id == starred.id) {
+                    dms.push(starred);
+                }
+            }
+        }
+        let ids: Vec<i64> = public.iter().chain(dms.iter()).map(|c| c.id).collect();
         let channel_tracking = self.channel_tracking(&ids).await?;
         // inject_unread_thread_overview, inject_has_threads
         self.refuse_threads().await?;
@@ -464,9 +464,14 @@ impl Context<'_> {
                     .await?,
             );
         }
+        let mut dm_json = Vec::new();
+        for channel in &dms {
+            let membership = memberships.iter().find(|m| m.chat_channel_id == channel.id);
+            dm_json.push(self.dm_channel(channel, membership).await?);
+        }
         let mut out = Map::new();
         out.insert("public_channels".into(), Value::Array(public_json));
-        out.insert("direct_message_channels".into(), json!([]));
+        out.insert("direct_message_channels".into(), Value::Array(dm_json));
         out.insert(
             "tracking".into(),
             json!({"channel_tracking": channel_tracking, "thread_tracking": {}}),
@@ -524,8 +529,8 @@ impl Context<'_> {
         let Some(channel) = channel else {
             return Ok(Found::NotFound);
         };
-        if channel.chatable_type != "Category" {
-            return Err(Unsupported("chat direct messages").into());
+        if channel.chatable_type != "Category" && channel.chatable_type != "DirectMessage" {
+            return Err(Unsupported("chat channels of other chatables").into());
         }
         if !self.can_join(&channel, None).await? {
             return Ok(Found::Forbidden);
@@ -697,8 +702,11 @@ impl Context<'_> {
         can_join: Option<bool>,
         post_allowed_category_ids: Option<&[i64]>,
     ) -> Result<Value, AppError> {
+        if channel.chatable_type == "DirectMessage" {
+            return self.dm_channel(channel, membership).await;
+        }
         if channel.chatable_type != "Category" {
-            return Err(Unsupported("chat direct messages").into());
+            return Err(Unsupported("chat channels of other chatables").into());
         }
         let g = self.guardian;
         let staff = g.is_staff();
@@ -901,9 +909,22 @@ impl Context<'_> {
         Ok(Value::Object(out))
     }
 
-    /// `can_join_chat_channel?`: a member who can chat, see the channel's
-    /// category and post in it (can_post_in_chatable?: the post-allowed
-    /// ids when given, else can_post_in_category?).
+    /// `can_preview_chat_channel?`: seeing the chatable, a category or a
+    /// direct message the viewer may access.
+    pub async fn can_preview(&mut self, channel: &ChannelRow) -> Result<bool, AppError> {
+        match channel.chatable_type.as_str() {
+            "Category" => self.can_see_category(channel.chatable_id).await,
+            "DirectMessage" => Ok(self
+                .direct_message(channel.chatable_id)
+                .await?
+                .user_can_access(self.guardian)),
+            _ => Ok(true),
+        }
+    }
+
+    /// `can_join_chat_channel?`: a member who can chat, preview the
+    /// channel and post in it (can_post_in_chatable?: in a category, the
+    /// post-allowed ids when given, else can_post_in_category?).
     pub async fn can_join(
         &mut self,
         channel: &ChannelRow,
@@ -913,8 +934,12 @@ impl Context<'_> {
         if !g.is_authenticated() || !super::can_chat(&mut *self.conn, self.settings, g).await? {
             return Ok(false);
         }
-        if !self.can_see_category(channel.chatable_id).await? {
+        if !self.can_preview(channel).await? {
             return Ok(false);
+        }
+        // can_post_in_chatable?: always, in a direct message.
+        if channel.chatable_type == "DirectMessage" {
+            return Ok(true);
         }
         Ok(match post_allowed_category_ids {
             Some(ids) => g.is_admin() || ids.contains(&channel.chatable_id),
@@ -927,7 +952,7 @@ impl Context<'_> {
 
     /// The serializer's `meta`: the message bus ids and the viewer's
     /// permissions on the channel.
-    async fn meta(
+    pub(crate) async fn meta(
         &mut self,
         channel: &ChannelRow,
         can_join: Option<bool>,
@@ -940,10 +965,16 @@ impl Context<'_> {
         if g.is_authenticated() {
             ids.insert("new_messages".into(), json!(0));
             ids.insert("new_mentions".into(), json!(0));
-            ids.insert("kick".into(), json!(0));
+            if channel.chatable_type != "DirectMessage" {
+                ids.insert("kick".into(), json!(0));
+            }
         }
+        let dm_group = match channel.chatable_type.as_str() {
+            "DirectMessage" => Some(self.direct_message(channel.chatable_id).await?.group),
+            _ => None,
+        };
         let can_chat = super::can_chat(&mut *self.conn, settings, g).await?;
-        let can_preview = self.can_see_category(channel.chatable_id).await?;
+        let can_preview = self.can_preview(channel).await?;
         let joinable = self.can_join(channel, post_allowed_category_ids).await?;
         let mut meta = Map::new();
         meta.insert("message_bus_last_ids".into(), Value::Object(ids));
@@ -983,11 +1014,16 @@ impl Context<'_> {
             json!(settings.get("max_post_deletions_per_day")?.to_i() >= 1),
         );
         meta.insert("can_delete_others".into(), json!(can_moderate));
-        meta.insert("can_remove_members".into(), json!(g.is_admin()));
-        // can_manage_chat_channel_pins?
+        // can_remove_members?: a category channel or a group DM, for admins.
+        meta.insert(
+            "can_remove_members".into(),
+            json!(g.is_admin() && dm_group.unwrap_or(true)),
+        );
+        // can_manage_chat_channel_pins?: anyone who can see a DM.
         let pins = can_chat
             && can_preview
-            && g.in_setting_groups(settings, "chat_pinning_messages_allowed_groups")?;
+            && (dm_group.is_some()
+                || g.in_setting_groups(settings, "chat_pinning_messages_allowed_groups")?);
         meta.insert("can_manage_pins".into(), json!(pins));
         Ok(Value::Object(meta))
     }
