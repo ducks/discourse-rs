@@ -108,7 +108,9 @@ INCLUDED_TABLES = []
 def clear_redis_state
   # user-last-seen: UserStat.update_time_read!, which would count the
   # seconds since the previous case read a topic.
-  %w[unique-post-* rejection_email:* user-last-seen:* hot_score_6_hourly].each do |pattern|
+  # __SEARCH__LOG_: SearchLog.log updates the log of a search made in the
+  # last 5 seconds (a previous case's) instead of inserting one.
+  %w[unique-post-* rejection_email:* user-last-seen:* hot_score_6_hourly __SEARCH__LOG_*].each do |pattern|
     Discourse.redis.keys(pattern).each { |k| Discourse.redis.del(k) }
   end
   # Presence lives in Redis too, members and cached configs alike.

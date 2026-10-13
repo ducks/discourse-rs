@@ -1,0 +1,5 @@
+{
+  "user": "user1",
+  "settings": { "search_recent_regular_posts_offset_post_id": 35 },
+  "requests": [{ "method": "GET", "path": "/search.json?q=parity%20fixture" }]
+}
