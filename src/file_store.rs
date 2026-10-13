@@ -233,6 +233,47 @@ impl FileStore {
         }
     }
 
+    /// `LocalStore#purge_tombstone(grace_period)`: `find <tombstone>
+    /// -mtime +<days> -type f -delete`, files a whole `days` or more past
+    /// their last day removed (age in whole days over `days`),
+    /// directories kept.
+    pub async fn purge_tombstone(&self, days: i64) -> std::io::Result<()> {
+        match self {
+            FileStore::Local(s) => {
+                let tombstone = s
+                    .relative_base_url
+                    .replacen("/uploads/", "/uploads/tombstone/", 1);
+                let dir = s.public_dir.join(tombstone.trim_start_matches('/'));
+                if !tokio::fs::try_exists(&dir).await? {
+                    return Ok(());
+                }
+                let now = std::time::SystemTime::now();
+                let mut pending = vec![dir];
+                while let Some(dir) = pending.pop() {
+                    let mut entries = tokio::fs::read_dir(&dir).await?;
+                    while let Some(entry) = entries.next_entry().await? {
+                        let meta = entry.metadata().await?;
+                        if meta.is_dir() {
+                            pending.push(entry.path());
+                            continue;
+                        }
+                        if !meta.is_file() {
+                            continue;
+                        }
+                        let age = now
+                            .duration_since(meta.modified()?)
+                            .unwrap_or_default()
+                            .as_secs() as i64;
+                        if age / 86_400 > days {
+                            tokio::fs::remove_file(entry.path()).await?;
+                        }
+                    }
+                }
+                Ok(())
+            }
+        }
+    }
+
     /// `has_been_uploaded?`: a url of this store, relative or absolute
     /// (protocol-relative ones take the site's scheme), or the CDN's.
     pub fn has_been_uploaded(&self, url: &str) -> bool {

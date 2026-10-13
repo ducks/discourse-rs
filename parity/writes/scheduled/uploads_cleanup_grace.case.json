@@ -1,0 +1,19 @@
+{
+  "user": null,
+  "settings": {
+    "clean_orphan_uploads_grace_period_hours": 0
+  },
+  "setup": [
+    "INSERT INTO uploads (id, user_id, original_filename, filesize, url, sha1, extension, retain_hours, secure, access_control_post_id, created_at, updated_at) VALUES (9621, 3, 'o9621.png', 100, '/uploads/default/original/1X/0000000000000000000000000000000000002595.png', '0000000000000000000000000000000000002595', 'png', NULL, false, NULL, now() - interval '2 hours', now() - interval '2 hours'), (9622, 3, 'o9622.png', 100, '/uploads/default/original/1X/0000000000000000000000000000000000002596.png', '0000000000000000000000000000000000002596', 'png', NULL, false, NULL, now() - interval '30 minutes', now() - interval '30 minutes')"
+  ],
+  "requests": [],
+  "enqueue": [
+    [
+      "clean_up_uploads",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "clean_up_uploads"
+  ]
+}
