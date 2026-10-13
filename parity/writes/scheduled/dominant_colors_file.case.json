@@ -1,0 +1,21 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO uploads (id, user_id, original_filename, filesize, url, sha1, extension, dominant_color, animated, created_at, updated_at) VALUES (9636, 3, 'photo.png', 100, '/uploads/default/original/1X/photo9636.png', '00000000000000000000000000000000000025a4', 'png', NULL, NULL, now() - interval '3 days', now() - interval '3 days'), (9637, 3, 'photo.jpg', 100, '/uploads/default/original/1X/photo9637.jpg', '00000000000000000000000000000000000025a5', 'jpg', NULL, NULL, now() - interval '3 days', now() - interval '3 days'), (9638, 3, 'animated.gif', 100, '/uploads/default/original/1X/anim9638.gif', '00000000000000000000000000000000000025a6', 'gif', NULL, NULL, now() - interval '3 days', now() - interval '3 days')"
+  ],
+  "requests": [],
+  "enqueue": [
+    [
+      "backfill_dominant_colors",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "backfill_dominant_colors"
+  ],
+  "files": {
+    "/uploads/default/original/1X/photo9636.png": "photo.png",
+    "/uploads/default/original/1X/photo9637.jpg": "photo.jpg",
+    "/uploads/default/original/1X/anim9638.gif": "animated.gif"
+  }
+}

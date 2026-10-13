@@ -1,0 +1,16 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO uploads (id, user_id, original_filename, filesize, url, sha1, extension, dominant_color, animated, created_at, updated_at) VALUES (9631, 3, 'a.svg', 100, '/uploads/default/original/1X/a.svg', '000000000000000000000000000000000000259f', 'svg', NULL, NULL, now() - interval '3 days', now() - interval '3 days'), (9632, 3, 'b', 100, '/uploads/default/original/1X/b', '00000000000000000000000000000000000025a0', NULL, NULL, NULL, now() - interval '3 days', now() - interval '3 days'), (9633, 3, 'c.ico', 100, '/uploads/default/original/1X/c.ico', '00000000000000000000000000000000000025a1', 'ico', NULL, NULL, now() - interval '3 days', now() - interval '3 days'), (9634, 3, 'd.png', 100, '/uploads/default/original/1X/missing.png', '00000000000000000000000000000000000025a2', 'png', NULL, NULL, now() - interval '3 days', now() - interval '3 days'), (9635, 3, 'e.txt', 100, '/uploads/default/original/1X/e.txt', '00000000000000000000000000000000000025a3', 'txt', NULL, NULL, now() - interval '3 days', now() - interval '3 days')"
+  ],
+  "requests": [],
+  "enqueue": [
+    [
+      "backfill_dominant_colors",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "backfill_dominant_colors"
+  ]
+}
