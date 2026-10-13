@@ -16,6 +16,7 @@ pub mod heat;
 pub mod housekeeping;
 pub mod list_stats;
 pub mod moderation;
+pub mod scores;
 pub mod search_jobs;
 pub(crate) use handlers::choose_featured_users;
 pub(crate) mod post_alert;
@@ -324,6 +325,7 @@ const SCHEDULED: &[(&str, Duration)] = &[
         search_jobs::CREATE_RECENT_POST_SEARCH_INDEXES,
         Duration::from_secs(24 * 3600),
     ),
+    (scores::CALCULATE_SCORES, Duration::from_secs(7 * 24 * 3600)),
 ];
 
 /// A SCHEDULED job's name: it runs from the queue too (a case enqueues
@@ -395,6 +397,7 @@ pub async fn run_scheduled(state: &AppState, name: &str) -> Result<(), AppError>
         search_jobs::CREATE_RECENT_POST_SEARCH_INDEXES => {
             search_jobs::create_recent_post_search_indexes(state).await
         }
+        scores::CALCULATE_SCORES => scores::calculate_scores(state).await,
         _ => unreachable!("every SCHEDULED job has a handler"),
     }
 }

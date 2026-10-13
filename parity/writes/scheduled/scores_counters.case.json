@@ -1,0 +1,8 @@
+{
+  "user": null,
+  "setup": ["UPDATE posts SET reads = 3, like_score = 2, reply_count = 1, bookmark_count = 1 WHERE id = 36", "UPDATE posts SET reads = 7, incoming_link_count = 2 WHERE id = 37", "UPDATE posts SET score = NULL, percent_rank = NULL WHERE id = 38"],
+  "requests": [],
+  "enqueue": [["calculate_scores", {}]],
+  "run_jobs": ["calculate_scores"],
+  "approximate": ["topics.score"]
+}

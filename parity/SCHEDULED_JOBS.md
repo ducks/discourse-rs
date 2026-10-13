@@ -48,13 +48,14 @@ Classes:
 | clean_up_unmatched_emails, CleanUpUnmatchedIPs (with the roll-up) | 1d | scheduled/unmatched_* |
 | update_heat_settings | 1mo (from the worker's start) | scheduled/heat_* |
 | reindex_search | 2h | search/reindex_* |
+| calculate_scores | 1w | scheduled/scores_* |
 | create_recent_post_search_indexes | 1d (CREATE INDEX CONCURRENTLY can't be recorded in a transaction) | search/recent_index_small_site, tests/jobs.rs |
 
 ## Ready, in porting order
 
 | Job | Every | Missing without it | Size |
 |---|---|---|---|
-| periodical_updates, calculate_scores | 15m, 1w | featured topics, post/topic scores, percent_rank, rebakes | L |
+| periodical_updates | 15m | featured topics, recent scores, rebakes, min_new_topics_time, auto bumps | L |
 | update_animated_uploads, backfill_dominant_colors | 1h, 15m | upload metadata never backfilled | S |
 | clean_up_uploads, purge_deleted_uploads | 1h, 1d | orphaned uploads stay | L |
 | ensure_db_consistency | 12h | denormalized counters drift | L |
