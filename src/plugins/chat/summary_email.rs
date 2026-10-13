@@ -205,19 +205,12 @@ pub async fn build(
     } else {
         Vec::new()
     };
-    if allow_dms {
-        let dms: bool = sqlx::query_scalar(
-            "SELECT EXISTS (SELECT 1 FROM user_chat_channel_memberships uccm \
-               JOIN chat_channels cc ON cc.id = uccm.chat_channel_id AND cc.chatable_type = 'DirectMessage' \
-               WHERE uccm.user_id = $1)",
-        )
-        .bind(user_id)
-        .fetch_one(&mut *conn)
-        .await?;
-        if dms {
-            return Err(Unsupported("chat direct messages").into());
-        }
-    }
+    let dms = if allow_dms {
+        let unread = unread_messages(conn, user_id).await?;
+        messages_for(conn, ctx, &guardian, &unread).await?
+    } else {
+        Vec::new()
+    };
     if allow_mentions {
         let watched: bool = sqlx::query_scalar(
             "SELECT EXISTS (SELECT 1 FROM user_chat_thread_memberships WHERE user_id = $1 AND notification_level = $2)",
@@ -230,7 +223,11 @@ pub async fn build(
             return Err(Unsupported("chat threads").into());
         }
     }
-    let count: usize = channels.iter().map(|(_, m)| m.len()).sum();
+    let count: usize = channels
+        .iter()
+        .chain(dms.iter())
+        .map(|(_, m)| m.len())
+        .sum();
     if count == 0 {
         return Ok(None);
     }
@@ -253,8 +250,8 @@ pub async fn build(
         i18n.t_count(key, n as i64, args).unwrap_or_default()
     };
 
-    // The subject (chat_summary_subject): channels only, direct messages
-    // and threads refused above.
+    // The subject (chat_summary_subject): DMs of more than two members
+    // count as channels; watched threads are refused above.
     let subject_key = |kind: &str| {
         let key = format!("user_notifications.chat_summary.subject.{kind}");
         let improved = format!("{key}_improved");
@@ -272,25 +269,73 @@ pub async fn build(
             &[("site_name", &site_name)],
         )
     } else {
-        match channels.len() {
-            1 => tc(
-                &subject_key("chat_channel_1"),
-                channels[0].1.len(),
-                &[("site_name", &site_name), ("channel", &channels[0].0.title)],
-            ),
-            2 => t(
-                &subject_key("chat_channel_2"),
-                &[
-                    ("site_name", &site_name),
-                    ("channel_1", &channels[0].0.title),
-                    ("channel_2", &channels[1].0.title),
-                ],
-            ),
-            n => tc(
-                &subject_key("chat_channel_3_or_more"),
-                n - 1,
-                &[("site_name", &site_name), ("channel", &channels[0].0.title)],
-            ),
+        let (one_to_one, group_dms): (Vec<_>, Vec<_>) =
+            dms.iter().partition(|(c, _)| c.memberships == 2);
+        let as_channels: Vec<&(SummaryChannel, Vec<SummaryMessage>)> =
+            channels.iter().chain(group_dms).collect();
+        if !as_channels.is_empty() {
+            if let Some((dm, _)) = one_to_one.first() {
+                t(
+                    &subject_key("chat_channel_and_dm"),
+                    &[
+                        ("site_name", &site_name),
+                        ("channel", &as_channels[0].0.title),
+                        ("name", &dm.title),
+                    ],
+                )
+            } else {
+                match as_channels.len() {
+                    1 => tc(
+                        &subject_key("chat_channel_1"),
+                        as_channels[0].1.len(),
+                        &[
+                            ("site_name", &site_name),
+                            ("channel", &as_channels[0].0.title),
+                        ],
+                    ),
+                    2 => t(
+                        &subject_key("chat_channel_2"),
+                        &[
+                            ("site_name", &site_name),
+                            ("channel_1", &as_channels[0].0.title),
+                            ("channel_2", &as_channels[1].0.title),
+                        ],
+                    ),
+                    // A plain string: count only interpolates.
+                    n => t(
+                        &subject_key("chat_channel_3_or_more"),
+                        &[
+                            ("site_name", &site_name),
+                            ("channel", &as_channels[0].0.title),
+                            ("count", &(n - 1).to_string()),
+                        ],
+                    ),
+                }
+            }
+        } else {
+            match one_to_one.len() {
+                1 => tc(
+                    &subject_key("chat_dm_1"),
+                    one_to_one[0].1.len(),
+                    &[("site_name", &site_name), ("name", &one_to_one[0].0.title)],
+                ),
+                2 => t(
+                    &subject_key("chat_dm_2"),
+                    &[
+                        ("site_name", &site_name),
+                        ("name_1", &one_to_one[0].0.title),
+                        ("name_2", &one_to_one[1].0.title),
+                    ],
+                ),
+                n => t(
+                    &subject_key("chat_dm_3_or_more"),
+                    &[
+                        ("site_name", &site_name),
+                        ("name", &one_to_one[0].0.title),
+                        ("count", &(n - 1).to_string()),
+                    ],
+                ),
+            }
         }
     };
 
@@ -366,7 +411,7 @@ pub async fn build(
     let prioritize_username = s.get("prioritize_username_in_ux")?.truthy();
     let enable_names = s.get("enable_names")?.truthy();
     let logo_small = crate::admin_users::logo_small_url(&mut *conn, s).await?;
-    for (channel, messages) in &channels {
+    for (channel, messages) in channels.iter().chain(dms.iter()) {
         let other = messages.len() as i64 - 2;
         html.push_str("      <table class=\"chat-summary-content\" style=\"padding:1em;margin-top:20px;width:100%;min-width:100%;background-color:#f7f7f7;\">\n        <tbody>\n          <tr>\n            <td colspan=\"100%\">\n              <h5 style=\"margin:0.5em 0 0.5em 0;font-size:0.9em;\">\n");
         let heading = if private_email {
@@ -509,6 +554,47 @@ pub async fn build(
 struct SummaryChannel {
     id: i64,
     title: String,
+    /// Its memberships (`user_chat_channel_memberships.count`).
+    memberships: i64,
+}
+
+/// `#unread_messages`: per unmuted DM membership, the first unread message
+/// of the last day from someone else not yet emailed (thread replies
+/// aside), the membership marked emailed up to the last.
+async fn unread_messages(
+    conn: &mut PgConnection,
+    user_id: i32,
+) -> Result<Vec<(i64, i64)>, AppError> {
+    Ok(sqlx::query_as(
+        "WITH unread_messages AS ( \
+           SELECT uccm.id membership_id, uccm.chat_channel_id, MIN(chat_messages.id) first_chat_message_id, MAX(chat_messages.id) last_chat_message_id \
+           FROM user_chat_channel_memberships uccm \
+           JOIN chat_channels ON chat_channels.id = uccm.chat_channel_id \
+           JOIN chat_messages ON chat_messages.chat_channel_id = chat_channels.id \
+           JOIN users ON users.id = chat_messages.user_id \
+           LEFT JOIN chat_threads om ON om.original_message_id = chat_messages.id \
+           WHERE uccm.user_id = $1 \
+           AND NOT uccm.muted \
+           AND chat_channels.deleted_at IS NULL \
+           AND chat_channels.chatable_type = 'DirectMessage' \
+           AND chat_messages.deleted_at IS NULL \
+           AND chat_messages.user_id != uccm.user_id \
+           AND chat_messages.created_at > now() - interval '1 day' \
+           AND (uccm.last_read_message_id IS NULL OR uccm.last_read_message_id < chat_messages.id) \
+           AND (uccm.last_unread_mention_when_emailed_id IS NULL OR uccm.last_unread_mention_when_emailed_id < chat_messages.id) \
+           AND (chat_messages.thread_id IS NULL OR chat_messages.thread_id IN (SELECT id FROM chat_threads WHERE original_message_id = chat_messages.id)) \
+           GROUP BY uccm.id \
+         ) \
+         UPDATE user_chat_channel_memberships uccm \
+         SET last_unread_mention_when_emailed_id = um.last_chat_message_id \
+         FROM unread_messages um \
+         WHERE uccm.id = um.membership_id \
+         AND uccm.user_id = $1 \
+         RETURNING um.chat_channel_id, um.first_chat_message_id",
+    )
+    .bind(user_id)
+    .fetch_all(&mut *conn)
+    .await?)
 }
 
 /// `#unread_mentions`: per followed, unmuted category channel, the first
@@ -612,27 +698,49 @@ async fn messages_for(
                     .bind(m.chat_channel_id)
                     .fetch_one(&mut *conn)
                     .await?;
-                // CategoryChannel#title
-                let title = match row.name.clone().filter(|n| !n.is_empty()) {
-                    Some(name) => name,
-                    None => {
-                        sqlx::query_scalar("SELECT name FROM categories WHERE id = $1")
-                            .bind(row.chatable_id as i32)
-                            .fetch_one(&mut *conn)
-                            .await?
-                    }
-                };
-                let joinable = super::channels::Context {
+                let mut cx = super::channels::Context {
                     conn: &mut *conn,
                     settings: ctx.settings,
                     i18n: ctx.i18n,
                     guardian,
                     base_path: ctx.config.globals.relative_url_root(),
                     config: ctx.config,
-                }
-                .can_join(&row, None)
+                };
+                // Channel#title(user): a category channel's name or its
+                // category's; a DM's name (a group's) or its title for the
+                // recipient.
+                let title = if row.chatable_type == "DirectMessage" {
+                    let dm = cx.direct_message(row.chatable_id).await?;
+                    match row.name.clone().filter(|n| !n.is_empty()) {
+                        Some(name) if dm.group => name,
+                        _ => match cx.dm_title(&row, &dm)? {
+                            serde_json::Value::String(s) => s,
+                            other => other.to_string(),
+                        },
+                    }
+                } else {
+                    match row.name.clone().filter(|n| !n.is_empty()) {
+                        Some(name) => name,
+                        None => {
+                            sqlx::query_scalar("SELECT name FROM categories WHERE id = $1")
+                                .bind(row.chatable_id as i32)
+                                .fetch_one(&mut *cx.conn)
+                                .await?
+                        }
+                    }
+                };
+                let joinable = cx.can_join(&row, None).await?;
+                let memberships: i64 = sqlx::query_scalar(
+                    "SELECT COUNT(*) FROM user_chat_channel_memberships WHERE chat_channel_id = $1",
+                )
+                .bind(row.id)
+                .fetch_one(&mut *conn)
                 .await?;
-                let channel = SummaryChannel { id: row.id, title };
+                let channel = SummaryChannel {
+                    id: row.id,
+                    title,
+                    memberships,
+                };
                 let mut list = vec![m];
                 if !joinable {
                     list.clear();

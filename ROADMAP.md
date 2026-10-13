@@ -119,7 +119,7 @@ Bugs or silent gaps in what is merged, small and independent.
     warnings fold in), 36. ~~`feat/chat-dm-groups`~~ (done) M,
     36b. ~~`feat/chat-chatables`~~ (done) M (GET /chat/api/chatables, the new
     message modal's search; category channel edits with it),
-    37. `feat/chat-dm-summary-email` S
+    37. ~~`feat/chat-dm-summary-email`~~ (done) S
 38. `feat/poll-create` M, 39. `feat/poll-vote` M, 40. `feat/poll-edit`
     S/M
 

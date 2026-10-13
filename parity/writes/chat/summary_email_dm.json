@@ -1,0 +1,459 @@
+{
+  "name": "summary_email_dm",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-13T17:52:39.642109",
+  "transaction_started_at": "2026-10-13T17:52:38.873622",
+  "responses": [],
+  "changes": {
+    "email_logs": {
+      "inserted": [
+        {
+          "id": 1,
+          "raw": null,
+          "bounced": false,
+          "post_id": null,
+          "user_id": 2,
+          "topic_id": null,
+          "bounce_key": null,
+          "created_at": "2026-10-13T17:52:39.674903",
+          "email_type": "chat_summary",
+          "message_id": "7e2e4697-b0d0-434d-90a4-0180420be350@localhost",
+          "to_address": "user0@example.com",
+          "updated_at": "2026-10-13T17:52:39.674903",
+          "cc_user_ids": null,
+          "cc_addresses": null,
+          "bcc_addresses": null,
+          "smtp_group_id": null,
+          "bounce_error_code": null,
+          "smtp_transaction_response": null
+        },
+        {
+          "id": 2,
+          "raw": null,
+          "bounced": false,
+          "post_id": null,
+          "user_id": 3,
+          "topic_id": null,
+          "bounce_key": null,
+          "created_at": "2026-10-13T17:52:39.698617",
+          "email_type": "chat_summary",
+          "message_id": "2f4440c5-3ad6-451a-893b-246933e11d68@localhost",
+          "to_address": "user1@example.com",
+          "updated_at": "2026-10-13T17:52:39.698617",
+          "cc_user_ids": null,
+          "cc_addresses": null,
+          "bcc_addresses": null,
+          "smtp_group_id": null,
+          "bounce_error_code": null,
+          "smtp_transaction_response": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_chat_channel_memberships": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 5,
+            "muted": false,
+            "starred": false,
+            "user_id": 2,
+            "following": true,
+            "join_mode": 0,
+            "created_at": "2026-10-12T17:52:38.873622",
+            "updated_at": "2026-10-12T17:52:38.873622",
+            "last_viewed_at": "2026-10-13T17:52:38.873622",
+            "chat_channel_id": 10,
+            "notification_level": 2,
+            "last_viewed_pins_at": null,
+            "last_read_message_id": null,
+            "mobile_notification_level": 1,
+            "desktop_notification_level": 1,
+            "last_unread_mention_when_emailed_id": null
+          },
+          "after": {
+            "id": 5,
+            "muted": false,
+            "starred": false,
+            "user_id": 2,
+            "following": true,
+            "join_mode": 0,
+            "created_at": "2026-10-12T17:52:38.873622",
+            "updated_at": "2026-10-12T17:52:38.873622",
+            "last_viewed_at": "2026-10-13T17:52:38.873622",
+            "chat_channel_id": 10,
+            "notification_level": 2,
+            "last_viewed_pins_at": null,
+            "last_read_message_id": null,
+            "mobile_notification_level": 1,
+            "desktop_notification_level": 1,
+            "last_unread_mention_when_emailed_id": 13
+          }
+        },
+        {
+          "before": {
+            "id": 6,
+            "muted": false,
+            "starred": false,
+            "user_id": 3,
+            "following": true,
+            "join_mode": 0,
+            "created_at": "2026-10-12T17:52:38.873622",
+            "updated_at": "2026-10-12T17:52:38.873622",
+            "last_viewed_at": "2026-10-13T17:52:38.873622",
+            "chat_channel_id": 10,
+            "notification_level": 2,
+            "last_viewed_pins_at": null,
+            "last_read_message_id": null,
+            "mobile_notification_level": 1,
+            "desktop_notification_level": 1,
+            "last_unread_mention_when_emailed_id": null
+          },
+          "after": {
+            "id": 6,
+            "muted": false,
+            "starred": false,
+            "user_id": 3,
+            "following": true,
+            "join_mode": 0,
+            "created_at": "2026-10-12T17:52:38.873622",
+            "updated_at": "2026-10-12T17:52:38.873622",
+            "last_viewed_at": "2026-10-13T17:52:38.873622",
+            "chat_channel_id": 10,
+            "notification_level": 2,
+            "last_viewed_pins_at": null,
+            "last_read_message_id": null,
+            "mobile_notification_level": 1,
+            "desktop_notification_level": 1,
+            "last_unread_mention_when_emailed_id": 12
+          }
+        }
+      ]
+    },
+    "users": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 2,
+            "name": "User0",
+            "admin": false,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": false,
+            "username": "user0",
+            "moderator": false,
+            "created_at": "2026-07-25T05:59:15.831079",
+            "flag_level": 0,
+            "ip_address": "172.17.0.1",
+            "updated_at": "2026-10-01T15:39:52.016889",
+            "approved_at": null,
+            "trust_level": 1,
+            "last_seen_at": "2026-10-13T16:52:38.873622",
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": "2026-10-01T06:40:59.592885",
+            "silenced_till": null,
+            "approved_by_id": null,
+            "flair_group_id": null,
+            "last_posted_at": "2026-10-01T15:39:51.834549",
+            "suspended_till": null,
+            "username_lower": "user0",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": "2026-10-01T15:44:57.254251",
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          },
+          "after": {
+            "id": 2,
+            "name": "User0",
+            "admin": false,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": false,
+            "username": "user0",
+            "moderator": false,
+            "created_at": "2026-07-25T05:59:15.831079",
+            "flag_level": 0,
+            "ip_address": "172.17.0.1",
+            "updated_at": "2026-10-01T15:39:52.016889",
+            "approved_at": null,
+            "trust_level": 1,
+            "last_seen_at": "2026-10-13T16:52:38.873622",
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": "2026-10-01T06:40:59.592885",
+            "silenced_till": null,
+            "approved_by_id": null,
+            "flair_group_id": null,
+            "last_posted_at": "2026-10-01T15:39:51.834549",
+            "suspended_till": null,
+            "username_lower": "user0",
+            "last_emailed_at": "2026-10-13T17:52:38.873622",
+            "primary_group_id": null,
+            "previous_visit_at": "2026-10-01T15:44:57.254251",
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          }
+        },
+        {
+          "before": {
+            "id": 3,
+            "name": "User1",
+            "admin": false,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": false,
+            "username": "user1",
+            "moderator": false,
+            "created_at": "2026-07-25T05:59:16.250829",
+            "flag_level": 0,
+            "ip_address": "172.17.0.1",
+            "updated_at": "2026-10-01T15:45:00.822146",
+            "approved_at": null,
+            "trust_level": 2,
+            "last_seen_at": "2026-10-01T22:32:51.040203",
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": "2026-10-01T15:42:53.259339",
+            "silenced_till": null,
+            "approved_by_id": null,
+            "flair_group_id": null,
+            "last_posted_at": "2026-09-30T07:28:29.580198",
+            "suspended_till": null,
+            "username_lower": "user1",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": "2026-10-01T15:50:01.377372",
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          },
+          "after": {
+            "id": 3,
+            "name": "User1",
+            "admin": false,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": false,
+            "username": "user1",
+            "moderator": false,
+            "created_at": "2026-07-25T05:59:16.250829",
+            "flag_level": 0,
+            "ip_address": "172.17.0.1",
+            "updated_at": "2026-10-01T15:45:00.822146",
+            "approved_at": null,
+            "trust_level": 2,
+            "last_seen_at": "2026-10-01T22:32:51.040203",
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": "2026-10-01T15:42:53.259339",
+            "silenced_till": null,
+            "approved_by_id": null,
+            "flair_group_id": null,
+            "last_posted_at": "2026-09-30T07:28:29.580198",
+            "suspended_till": null,
+            "username_lower": "user1",
+            "last_emailed_at": "2026-10-13T17:52:38.873622",
+            "primary_group_id": null,
+            "previous_visit_at": "2026-10-01T15:50:01.377372",
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "email_logs": 1
+  },
+  "setup": [
+    "INSERT INTO direct_message_channels (id, \"group\", created_at, updated_at) VALUES (1, false, now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO direct_message_users (direct_message_channel_id, user_id, created_at, updated_at) VALUES (1, 2, now() - interval '1 day', now() - interval '1 day'), (1, 3, now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO chat_channels (id, chatable_type, chatable_id, type, status, user_count, name, created_at, updated_at) VALUES (10, 'DirectMessage', 1, 'DirectMessageChannel', 0, 2, NULL, now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO user_chat_channel_memberships (user_id, chat_channel_id, following, muted, notification_level, created_at, updated_at) VALUES (2, 10, true, false, 2, now() - interval '1 day', now() - interval '1 day'), (3, 10, true, false, 2, now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id, excerpt) VALUES (11, 10, 3, now() - interval '90 minutes', now() - interval '90 minutes', 'are you free tonight', '<p>are you free tonight</p>', 1, 3, 'are you free tonight')",
+    "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id, excerpt) VALUES (12, 10, 2, now() - interval '80 minutes', now() - interval '80 minutes', 'maybe, what time', '<p>maybe, what time</p>', 1, 2, 'maybe, what time')",
+    "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id, excerpt) VALUES (13, 10, 3, now() - interval '70 minutes', now() - interval '70 minutes', 'around seven', '<p>around seven</p>', 1, 3, 'around seven')",
+    "UPDATE chat_channels SET last_message_id = 13 WHERE id = 10",
+    "SELECT setval('chat_channels_id_seq', 20)",
+    "SELECT setval('direct_message_channels_id_seq', 20)",
+    "SELECT setval('chat_messages_id_seq', 40)",
+    "UPDATE users SET last_seen_at = now() - interval '1 hour' WHERE id = 2"
+  ],
+  "enqueue": [
+    [
+      "Jobs::Chat::EmailNotifications",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [
+    [
+      "user_email",
+      {
+        "type": "chat_summary",
+        "user_id": 2,
+        "to_address": "user0@example.com",
+        "force_respect_seen_recently": true
+      }
+    ],
+    [
+      "user_email",
+      {
+        "type": "chat_summary",
+        "user_id": 3,
+        "to_address": "user1@example.com",
+        "force_respect_seen_recently": true
+      }
+    ]
+  ],
+  "emails": [
+    {
+      "headers": [
+        [
+          "From",
+          "\"Discourse\" <noreply@unconfigured.discourse.org>"
+        ],
+        [
+          "Reply-To",
+          "\"Discourse\" <noreply@unconfigured.discourse.org>"
+        ],
+        [
+          "To",
+          "user0@example.com"
+        ],
+        [
+          "Message-ID",
+          "<7e2e4697-b0d0-434d-90a4-0180420be350@localhost>"
+        ],
+        [
+          "Subject",
+          "[Discourse] New messages from user1"
+        ],
+        [
+          "MIME-Version",
+          "1.0"
+        ],
+        [
+          "Content-Type",
+          "multipart/alternative; boundary=\"--==_mimepart_6ace6fe7a3303_4bc50f287761\"; charset=UTF-8"
+        ],
+        [
+          "Content-Transfer-Encoding",
+          "7bit"
+        ],
+        [
+          "X-Auto-Response-Suppress",
+          "All"
+        ],
+        [
+          "x-ms-reactions",
+          "disallow"
+        ],
+        [
+          "Auto-Submitted",
+          "auto-generated"
+        ]
+      ],
+      "text": "You have new chat messages\n[View 3 messages][2]\n       This chat summary is sent from [Discourse][1] when you are away. Change your [chat email preference][3].\n[1]: http://localhost:3042/\n[2]: http://localhost:3042/chat\n[3]: http://localhost:3042/my/preferences/emails\n",
+      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    <div class=\"summary-email\" style=\"-moz-box-sizing:border-box;-ms-text-size-adjust:100%;-webkit-box-sizing:border-box;-webkit-text-size-adjust:100%;box-sizing:border-box;color:#0a0a0a;font-family:Arial,sans-serif;font-size:14px;font-weight:400;line-height:1.3;margin:0;min-width:100%;padding:0;width:100%\">\n  <table class=\"chat-summary-header text-header with-dir\" style=\"text-align:left;background-color:#fff;width:100%;min-width:100%\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" dir=\"ltr\" dm=\"header\">\n    <tbody><tr>\n      <td align=\"center\" style=\"text-align:center;padding:20px 0;font-family:Arial,sans-serif\">\n        <a href=\"http://localhost:3042\" style=\"text-decoration:none;font-weight:bold;color:#333;font-size:22px\">\n            <img src=\"http://localhost:3042/images/discourse-logo-sketch.png\" height=\"40\" style=\"clear:both;display:block;height:40px;margin:auto;max-width:100%;outline:0;text-decoration:none\" alt=\"Discourse\">\n        </a>\n      </td>\n    </tr>\n    <tr>\n      <td align=\"center\" style=\"font-weight:bold;font-size:22px;color:#333\">\n        You have new chat messages\n      </td>\n    </tr>\n  </tbody></table>\n\n      <table class=\"chat-summary-content\" style=\"padding:1em;margin-top:20px;width:100%;min-width:100%;background-color:#f7f7f7\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" dm=\"body\">\n        <tbody>\n          <tr>\n            <td colspan=\"100%\">\n              <h5 style=\"margin:0.5em 0 0.5em 0;font-size:0.9em\">\n                  user1\n              </h5>\n            </td>\n          </tr>\n\n              <tr class=\"message-row\">\n                <td style=\"white-space:nowrap;vertical-align:top;padding:1em 0 0 2em\">\n                  <img src=\"http://localhost:3042/letter_avatar_proxy/v4/letter/u/5daacb/45.png\" style=\"height:20px;width:20px;margin:0 5px 0 0;border-radius:50%;clear:both;display:inline-block;outline:0;text-decoration:none;vertical-align:top\" alt=\"user1\">\n                  <span style=\"display:inline-block;color:#0a0a0a;vertical-align:top;font-weight:bold\">\n                    user1                  </span>\n                  <span style=\"display:inline-block;color:#0a0a0a;font-size:0.8em\">\n                    October 13, 2026, 10:22am                  </span>\n                </td>\n              </tr>\n              <tr>\n                <td style=\"width:99%;margin:0;padding:0 0 0 2em;vertical-align:top\">\n                  <p>are you free tonight</p>\n                </td>\n              </tr>\n              <tr class=\"message-row\">\n                <td style=\"white-space:nowrap;vertical-align:top;padding:1em 0 0 2em\">\n                  <img src=\"http://localhost:3042/letter_avatar_proxy/v4/letter/u/94ad74/45.png\" style=\"height:20px;width:20px;margin:0 5px 0 0;border-radius:50%;clear:both;display:inline-block;outline:0;text-decoration:none;vertical-align:top\" alt=\"user0\">\n                  <span style=\"display:inline-block;color:#0a0a0a;vertical-align:top;font-weight:bold\">\n                    user0                  </span>\n                  <span style=\"display:inline-block;color:#0a0a0a;font-size:0.8em\">\n                    October 13, 2026, 10:32am                  </span>\n                </td>\n              </tr>\n              <tr>\n                <td style=\"width:99%;margin:0;padding:0 0 0 2em;vertical-align:top\">\n                  <p>maybe, what time</p>\n                </td>\n              </tr>\n\n          <tr>\n            <td colspan=\"100%\" style=\"padding:2em 0 0 2em\">\n              <a class=\"more-messages-link\" href=\"http://localhost:3042/chat/c/-/10/11\" style=\"text-decoration:none;font-weight:bold;color:#006699\">\n                  View 1 more message\n              </a>\n            </td>\n          </tr>\n        </tbody>\n      </table>\n</div>\n\n<table class=\"summary-footer with-dir\" style=\"text-align:left;margin-top:2em;width:100%\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" dir=\"ltr\" dm=\"text-color\">\n  <tbody><tr>\n    <td align=\"center\">\n         This chat summary is sent from <a href=\"http://localhost:3042\" style=\"text-decoration:none;font-weight:bold;color:#006699\">Discourse</a> when you are away. Change your <a href=\"http://localhost:3042/my/preferences/emails\" style=\"text-decoration:none;font-weight:bold;color:#006699\">chat email preference</a>.\n    </td>\n  </tr>\n</tbody></table>\n\n    \n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
+    },
+    {
+      "headers": [
+        [
+          "From",
+          "\"Discourse\" <noreply@unconfigured.discourse.org>"
+        ],
+        [
+          "Reply-To",
+          "\"Discourse\" <noreply@unconfigured.discourse.org>"
+        ],
+        [
+          "To",
+          "user1@example.com"
+        ],
+        [
+          "Message-ID",
+          "<2f4440c5-3ad6-451a-893b-246933e11d68@localhost>"
+        ],
+        [
+          "Subject",
+          "[Discourse] New messages from user0"
+        ],
+        [
+          "MIME-Version",
+          "1.0"
+        ],
+        [
+          "Content-Type",
+          "multipart/alternative; boundary=\"--==_mimepart_6ace6fe7a9138_4bc50f287849\"; charset=UTF-8"
+        ],
+        [
+          "Content-Transfer-Encoding",
+          "7bit"
+        ],
+        [
+          "X-Auto-Response-Suppress",
+          "All"
+        ],
+        [
+          "x-ms-reactions",
+          "disallow"
+        ],
+        [
+          "Auto-Submitted",
+          "auto-generated"
+        ]
+      ],
+      "text": "You have new chat messages\n[View 2 messages][2]\n       This chat summary is sent from [Discourse][1] when you are away. Change your [chat email preference][3].\n[1]: http://localhost:3042/\n[2]: http://localhost:3042/chat\n[3]: http://localhost:3042/my/preferences/emails\n",
+      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    <div class=\"summary-email\" style=\"-moz-box-sizing:border-box;-ms-text-size-adjust:100%;-webkit-box-sizing:border-box;-webkit-text-size-adjust:100%;box-sizing:border-box;color:#0a0a0a;font-family:Arial,sans-serif;font-size:14px;font-weight:400;line-height:1.3;margin:0;min-width:100%;padding:0;width:100%\">\n  <table class=\"chat-summary-header text-header with-dir\" style=\"text-align:left;background-color:#fff;width:100%;min-width:100%\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" dir=\"ltr\" dm=\"header\">\n    <tbody><tr>\n      <td align=\"center\" style=\"text-align:center;padding:20px 0;font-family:Arial,sans-serif\">\n        <a href=\"http://localhost:3042\" style=\"text-decoration:none;font-weight:bold;color:#333;font-size:22px\">\n            <img src=\"http://localhost:3042/images/discourse-logo-sketch.png\" height=\"40\" style=\"clear:both;display:block;height:40px;margin:auto;max-width:100%;outline:0;text-decoration:none\" alt=\"Discourse\">\n        </a>\n      </td>\n    </tr>\n    <tr>\n      <td align=\"center\" style=\"font-weight:bold;font-size:22px;color:#333\">\n        You have new chat messages\n      </td>\n    </tr>\n  </tbody></table>\n\n      <table class=\"chat-summary-content\" style=\"padding:1em;margin-top:20px;width:100%;min-width:100%;background-color:#f7f7f7\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" dm=\"body\">\n        <tbody>\n          <tr>\n            <td colspan=\"100%\">\n              <h5 style=\"margin:0.5em 0 0.5em 0;font-size:0.9em\">\n                  user0\n              </h5>\n            </td>\n          </tr>\n\n              <tr class=\"message-row\">\n                <td style=\"white-space:nowrap;vertical-align:top;padding:1em 0 0 2em\">\n                  <img src=\"http://localhost:3042/letter_avatar_proxy/v4/letter/u/94ad74/45.png\" style=\"height:20px;width:20px;margin:0 5px 0 0;border-radius:50%;clear:both;display:inline-block;outline:0;text-decoration:none;vertical-align:top\" alt=\"user0\">\n                  <span style=\"display:inline-block;color:#0a0a0a;vertical-align:top;font-weight:bold\">\n                    user0                  </span>\n                  <span style=\"display:inline-block;color:#0a0a0a;font-size:0.8em\">\n                    October 13, 2026,  4:32pm                  </span>\n                </td>\n              </tr>\n              <tr>\n                <td style=\"width:99%;margin:0;padding:0 0 0 2em;vertical-align:top\">\n                  <p>maybe, what time</p>\n                </td>\n              </tr>\n              <tr class=\"message-row\">\n                <td style=\"white-space:nowrap;vertical-align:top;padding:1em 0 0 2em\">\n                  <img src=\"http://localhost:3042/letter_avatar_proxy/v4/letter/u/5daacb/45.png\" style=\"height:20px;width:20px;margin:0 5px 0 0;border-radius:50%;clear:both;display:inline-block;outline:0;text-decoration:none;vertical-align:top\" alt=\"user1\">\n                  <span style=\"display:inline-block;color:#0a0a0a;vertical-align:top;font-weight:bold\">\n                    user1                  </span>\n                  <span style=\"display:inline-block;color:#0a0a0a;font-size:0.8em\">\n                    October 13, 2026,  4:42pm                  </span>\n                </td>\n              </tr>\n              <tr>\n                <td style=\"width:99%;margin:0;padding:0 0 0 2em;vertical-align:top\">\n                  <p>around seven</p>\n                </td>\n              </tr>\n\n          <tr>\n            <td colspan=\"100%\" style=\"padding:2em 0 0 2em\">\n              <a class=\"more-messages-link\" href=\"http://localhost:3042/chat/c/-/10/12\" style=\"text-decoration:none;font-weight:bold;color:#006699\">\n                  View 2 messages\n              </a>\n            </td>\n          </tr>\n        </tbody>\n      </table>\n</div>\n\n<table class=\"summary-footer with-dir\" style=\"text-align:left;margin-top:2em;width:100%\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" dir=\"ltr\" dm=\"text-color\">\n  <tbody><tr>\n    <td align=\"center\">\n         This chat summary is sent from <a href=\"http://localhost:3042\" style=\"text-decoration:none;font-weight:bold;color:#006699\">Discourse</a> when you are away. Change your <a href=\"http://localhost:3042/my/preferences/emails\" style=\"text-decoration:none;font-weight:bold;color:#006699\">chat email preference</a>.\n    </td>\n  </tr>\n</tbody></table>\n\n    \n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
+    }
+  ],
+  "recorded_from": {
+    "case": "deb0b735357276e9e1e1121f5b9ae560957483111f9797964b0ee2796f166cac",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
