@@ -959,7 +959,11 @@ pub async fn create(
                 .await?;
         for group_id in archiving_groups {
             crate::archived_messages::group_move_to_inbox(
-                ctx.bus, &mut tx, group_id, topic_id, user.id,
+                ctx.bus,
+                &mut tx,
+                group_id,
+                topic_id,
+                Some(user.id),
             )
             .await?;
         }

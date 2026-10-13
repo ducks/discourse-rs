@@ -1,0 +1,13 @@
+{
+  "user": "user0",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/42/status",
+      "params": {
+        "status": "closed",
+        "enabled": "true"
+      }
+    }
+  ]
+}

@@ -101,12 +101,22 @@ async fn toggle(
     let mut archived_for = None;
     for group_id in groups {
         if archive {
-            archived_messages::group_archive(&state.bus, &mut tx, group_id, topic_id, user_id)
-                .await?;
+            archived_messages::group_archive(
+                &state.bus,
+                &mut tx,
+                group_id,
+                topic_id,
+                Some(user_id),
+            )
+            .await?;
             archived_for = Some(group_id);
         } else {
             archived_messages::group_move_to_inbox(
-                &state.bus, &mut tx, group_id, topic_id, user_id,
+                &state.bus,
+                &mut tx,
+                group_id,
+                topic_id,
+                Some(user_id),
             )
             .await?;
         }
