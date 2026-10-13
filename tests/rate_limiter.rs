@@ -276,3 +276,24 @@ async fn a_refused_create_rolls_back_what_it_performed() {
     );
     clock::pin(None);
 }
+
+/// A request holding the pool's last connection can still be limited:
+/// the limiter's queries run on a pool of their own, so a full main pool
+/// (every request waiting on its limiter) does not starve it.
+#[tokio::test]
+async fn limiting_while_holding_the_last_connection() {
+    let db = TestDb::new().await;
+    let _app = state(db.pool.clone(), recorded_config()).await;
+    let pool = sqlx::postgres::PgPoolOptions::new()
+        .max_connections(1)
+        .acquire_timeout(std::time::Duration::from_secs(2))
+        .connect_with((*db.pool.connect_options()).clone())
+        .await
+        .unwrap();
+    let mut held = pool.acquire().await.unwrap();
+    sqlx::query("SELECT 1").execute(&mut *held).await.unwrap();
+    let limiter = RateLimiter::new(member(), "search", 1, 60);
+    assert!(limiter.performed(&pool, true).await.unwrap().is_ok());
+    assert!(limiter.performed(&pool, true).await.unwrap().is_err());
+    drop(held);
+}
