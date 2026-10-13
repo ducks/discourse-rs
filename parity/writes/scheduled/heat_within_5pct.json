@@ -1,0 +1,103 @@
+{
+  "name": "heat_within_5pct",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-13T01:27:00.404215",
+  "transaction_started_at": "2026-10-13T01:26:59.655123",
+  "responses": [],
+  "changes": {
+    "site_settings": {
+      "inserted": [
+        {
+          "id": 38,
+          "name": "topic_views_heat_medium",
+          "value": "2300",
+          "data_type": 3,
+          "created_at": "2026-10-13T01:27:00.406661",
+          "updated_at": "2026-10-13T01:27:00.406661"
+        },
+        {
+          "id": 39,
+          "name": "topic_views_heat_low",
+          "value": "1200",
+          "data_type": 3,
+          "created_at": "2026-10-13T01:27:00.412493",
+          "updated_at": "2026-10-13T01:27:00.412493"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 3,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "topic_views_heat_medium",
+          "topic_id": null,
+          "new_value": "2300",
+          "admin_only": true,
+          "created_at": "2026-10-13T01:27:00.409954",
+          "ip_address": null,
+          "updated_at": "2026-10-13T01:27:00.409954",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": -1,
+          "previous_value": "2000",
+          "target_user_id": null
+        },
+        {
+          "id": 75,
+          "email": null,
+          "action": 3,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "topic_views_heat_low",
+          "topic_id": null,
+          "new_value": "1200",
+          "admin_only": true,
+          "created_at": "2026-10-13T01:27:00.415837",
+          "ip_address": null,
+          "updated_at": "2026-10-13T01:27:00.415837",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": -1,
+          "previous_value": "1000",
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "site_settings": 38,
+    "user_histories": 74
+  },
+  "settings": {
+    "topic_views_heat_high": 5500
+  },
+  "setup": [
+    "UPDATE topics SET views = x.v FROM (VALUES (35,9000),(37,5678),(38,4000),(41,3500),(34,2345),(1,2000),(2,1500),(3,1300),(4,1234),(5,10),(6,5)) AS x(id,v) WHERE topics.id = x.id"
+  ],
+  "enqueue": [
+    [
+      "update_heat_settings",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "236e67172eacf1d0ea98e6a8a929b69c15914e03ad3ac304035cd4005cc1a80e",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "name": "heat_noop",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-13T01:26:56.662307",
+  "transaction_started_at": "2026-10-13T01:26:55.863392",
+  "responses": [],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "setup": [],
+  "enqueue": [
+    [
+      "update_heat_settings",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "f0ea58d30c2125e491cc05876674172d0bb6a81db66bbce0e54090689ea5ac8c",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

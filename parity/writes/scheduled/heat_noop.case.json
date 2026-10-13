@@ -1,0 +1,7 @@
+{
+  "user": null,
+  "setup": [],
+  "requests": [],
+  "enqueue": [["update_heat_settings", {}]],
+  "run_jobs": ["update_heat_settings"]
+}

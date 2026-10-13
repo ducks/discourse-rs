@@ -1,0 +1,7 @@
+{
+  "user": null,
+  "setup": ["UPDATE topics SET posts_count = x.p, like_count = x.l FROM (VALUES (35,10,30),(37,10,25),(38,10,21),(41,10,18),(34,10,15),(1,10,12),(2,10,11),(3,10,7),(4,12,7)) AS x(id,p,l) WHERE topics.id = x.id"],
+  "requests": [],
+  "enqueue": [["update_heat_settings", {}]],
+  "run_jobs": ["update_heat_settings"]
+}

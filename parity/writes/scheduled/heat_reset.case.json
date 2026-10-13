@@ -1,0 +1,8 @@
+{
+  "user": null,
+  "settings": { "topic_views_heat_high": 5000, "topic_post_like_heat_low": 0.9 },
+  "setup": [],
+  "requests": [],
+  "enqueue": [["update_heat_settings", {}]],
+  "run_jobs": ["update_heat_settings"]
+}

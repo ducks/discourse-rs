@@ -1,0 +1,129 @@
+{
+  "name": "heat_likes",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-13T01:26:55.593653",
+  "transaction_started_at": "2026-10-13T01:26:54.376811",
+  "responses": [],
+  "changes": {
+    "site_settings": {
+      "inserted": [
+        {
+          "id": 37,
+          "name": "topic_post_like_heat_high",
+          "value": "2.5",
+          "data_type": 4,
+          "created_at": "2026-10-13T01:26:55.608502",
+          "updated_at": "2026-10-13T01:26:55.608502"
+        },
+        {
+          "id": 38,
+          "name": "topic_post_like_heat_medium",
+          "value": "1.5",
+          "data_type": 4,
+          "created_at": "2026-10-13T01:26:55.624349",
+          "updated_at": "2026-10-13T01:26:55.624349"
+        },
+        {
+          "id": 39,
+          "name": "topic_post_like_heat_low",
+          "value": "0.58",
+          "data_type": 4,
+          "created_at": "2026-10-13T01:26:55.629009",
+          "updated_at": "2026-10-13T01:26:55.629009"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 3,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "topic_post_like_heat_high",
+          "topic_id": null,
+          "new_value": "2.5",
+          "admin_only": true,
+          "created_at": "2026-10-13T01:26:55.622061",
+          "ip_address": null,
+          "updated_at": "2026-10-13T01:26:55.622061",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": -1,
+          "previous_value": "2.0",
+          "target_user_id": null
+        },
+        {
+          "id": 75,
+          "email": null,
+          "action": 3,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "topic_post_like_heat_medium",
+          "topic_id": null,
+          "new_value": "1.5",
+          "admin_only": true,
+          "created_at": "2026-10-13T01:26:55.626476",
+          "ip_address": null,
+          "updated_at": "2026-10-13T01:26:55.626476",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": -1,
+          "previous_value": "1.0",
+          "target_user_id": null
+        },
+        {
+          "id": 76,
+          "email": null,
+          "action": 3,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "topic_post_like_heat_low",
+          "topic_id": null,
+          "new_value": "0.58",
+          "admin_only": true,
+          "created_at": "2026-10-13T01:26:55.632239",
+          "ip_address": null,
+          "updated_at": "2026-10-13T01:26:55.632239",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": -1,
+          "previous_value": "0.5",
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "site_settings": 37,
+    "user_histories": 74
+  },
+  "setup": [
+    "UPDATE topics SET posts_count = x.p, like_count = x.l FROM (VALUES (35,10,30),(37,10,25),(38,10,21),(41,10,18),(34,10,15),(1,10,12),(2,10,11),(3,10,7),(4,12,7)) AS x(id,p,l) WHERE topics.id = x.id"
+  ],
+  "enqueue": [
+    [
+      "update_heat_settings",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "91d174ddbe996f2c5b43acc39b37df48db75466c2e3b495cd1c8f1b06740408e",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

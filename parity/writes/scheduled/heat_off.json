@@ -1,0 +1,29 @@
+{
+  "name": "heat_off",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-13T01:26:57.653092",
+  "transaction_started_at": "2026-10-13T01:26:56.879941",
+  "responses": [],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "automatic_topic_heat_values": false
+  },
+  "setup": [
+    "UPDATE topics SET views = x.v FROM (VALUES (35,9000),(37,5678),(38,4000),(41,3500),(34,2345),(1,2000),(2,1500),(3,1300),(4,1234),(5,10),(6,5)) AS x(id,v) WHERE topics.id = x.id"
+  ],
+  "enqueue": [
+    [
+      "update_heat_settings",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "76acbb1c7f4680d7b2984e23979eb5160fe6c834b69a96d28d5364d7f05eb687",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
