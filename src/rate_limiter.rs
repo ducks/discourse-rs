@@ -5,15 +5,54 @@
 //! renders it: a 429 with the wait, its words and Retry-After.
 //!
 //! Limiters write outside the request's transaction (Redis is not rolled
-//! back with it): perform on the pool, never on a transaction.
+//! back with it): perform on the pool, never on a transaction. Callers
+//! often hold a connection of that pool while they do, so the limiter's
+//! queries run on a small pool of their own (`own_pool`): with every
+//! connection of the main pool held by a request waiting on its limiter,
+//! one shared pool would starve.
+
+use std::collections::HashMap;
+use std::sync::{Mutex, OnceLock};
 
 use axum::Json;
 use axum::http::{HeaderValue, StatusCode};
 use axum::response::{IntoResponse, Response};
 use serde_json::json;
 use sqlx::PgPool;
+use sqlx::postgres::PgPoolOptions;
 
 use crate::i18n::I18n;
+
+/// Connections of the limiter's own pool, each held for one query.
+const OWN_POOL_SIZE: u32 = 4;
+
+/// The limiter's pool for the database `pool` connects to, made lazily
+/// from its connect options and kept per database.
+fn own_pool(pool: &PgPool) -> PgPool {
+    static POOLS: OnceLock<Mutex<HashMap<String, PgPool>>> = OnceLock::new();
+    let options = pool.connect_options();
+    let key = format!(
+        "{}|{:?}|{}|{}",
+        options.get_host(),
+        options.get_socket(),
+        options.get_port(),
+        options.get_database().unwrap_or_default()
+    );
+    let mut pools = POOLS
+        .get_or_init(|| Mutex::new(HashMap::new()))
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    pools
+        .entry(key)
+        .or_insert_with(|| {
+            PgPoolOptions::new()
+                .max_connections(OWN_POOL_SIZE)
+                .acquire_timeout(std::time::Duration::from_secs(5))
+                .idle_timeout(std::time::Duration::from_secs(30))
+                .connect_lazy_with((*options).clone())
+        })
+        .clone()
+}
 
 /// `RateLimiter.key_prefix`
 const KEY_PREFIX: &str = "l-rate-limit3:";
@@ -221,6 +260,7 @@ impl RateLimiter {
         if self.unlimited(enabled) {
             return Ok(Ok(()));
         }
+        let pool = &own_pool(pool);
         let now = crate::clock::now().timestamp();
         // max <= 0: refused without touching the list; the oldest stamp of
         // an empty list reads as 0.
@@ -245,6 +285,7 @@ impl RateLimiter {
 
     /// The stamps, an expired list read as empty.
     async fn stamps(&self, pool: &PgPool, now: i64) -> Result<Vec<i64>, sqlx::Error> {
+        let pool = &own_pool(pool);
         let stamps: Option<Vec<i64>> = sqlx::query_scalar(
             "SELECT stamps FROM discourse_rs.rate_limits WHERE key = $1 AND expires_at > $2",
         )
@@ -289,6 +330,7 @@ impl RateLimiter {
         if !enabled {
             return Ok(());
         }
+        let pool = &own_pool(pool);
         sqlx::query("UPDATE discourse_rs.rate_limits SET stamps = stamps[2:] WHERE key = $1")
             .bind(&self.key)
             .execute(pool)
@@ -314,6 +356,7 @@ impl RateLimiter {
 
     /// `clear!`
     pub async fn clear(&self, pool: &PgPool) -> Result<(), sqlx::Error> {
+        let pool = &own_pool(pool);
         sqlx::query("DELETE FROM discourse_rs.rate_limits WHERE key = $1")
             .bind(&self.key)
             .execute(pool)
