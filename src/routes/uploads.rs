@@ -161,6 +161,27 @@ pub async fn create(
     let Some(user_id) = guardian.user_id() else {
         return Ok(super::login_required::not_logged_in(&state));
     };
+    // uploads-per-minute, the action's first line.
+    {
+        let mut conn = state.pool.acquire().await?;
+        let settings =
+            SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+        let limiter = crate::rate_limiter::RateLimiter::new(
+            Some(crate::rate_limiter::LimitUser {
+                id: user_id,
+                staff: guardian.is_staff(),
+            }),
+            "uploads-per-minute",
+            settings.get("max_uploads_per_minute")?.to_i(),
+            60,
+        );
+        if let Err(refused) = limiter
+            .performed(&state.pool, state.config.rate_limits)
+            .await?
+        {
+            return Ok(refused.into_response(&state.i18n));
+        }
+    }
     let upload_type = match form.get("upload_type").filter(|t| !t.trim().is_empty()) {
         Some(t) => t,
         None if form.get("type").is_some_and(|t| !t.trim().is_empty()) => {

@@ -1,0 +1,25 @@
+{
+  "user": "user1",
+  "rate_limits": true,
+  "settings": {
+    "max_bookmarks_per_day": "1"
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/bookmarks.json",
+      "params": {
+        "bookmarkable_id": 37,
+        "bookmarkable_type": "Post"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/bookmarks.json",
+      "params": {
+        "bookmarkable_id": 38,
+        "bookmarkable_type": "Post"
+      }
+    }
+  ]
+}

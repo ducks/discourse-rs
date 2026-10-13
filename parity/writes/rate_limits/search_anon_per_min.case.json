@@ -1,0 +1,9 @@
+{
+  "user": null,
+  "rate_limits": true,
+  "settings": {"rate_limit_search_anon_user_per_minute": "1"},
+  "requests": [
+    {"method": "GET", "path": "/search.json?q=fixture"},
+    {"method": "GET", "path": "/search.json?q=fixture"}
+  ]
+}

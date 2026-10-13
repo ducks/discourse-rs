@@ -91,6 +91,24 @@ async fn handle(
             else {
                 return Ok(super::accounts::param_missing("bookmarkable_type"));
             };
+            // Counted before the manager, a failed bookmark too.
+            if let Some(user) = guardian.user() {
+                let limiter = crate::rate_limiter::RateLimiter::new(
+                    Some(crate::rate_limiter::LimitUser {
+                        id: user.id,
+                        staff: guardian.is_staff(),
+                    }),
+                    "create_bookmark",
+                    settings.get("max_bookmarks_per_day")?.to_i(),
+                    86_400,
+                );
+                if let Err(refused) = limiter
+                    .performed(&state.pool, state.config.rate_limits)
+                    .await?
+                {
+                    return Ok(refused.into_response(&state.i18n));
+                }
+            }
             bookmark_manager::create(
                 &mut tx,
                 &ctx,

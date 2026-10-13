@@ -1,0 +1,133 @@
+{
+  "name": "bookmark_daily",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/bookmarks.json",
+      "params": {
+        "bookmarkable_id": 37,
+        "bookmarkable_type": "Post"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/bookmarks.json",
+      "params": {
+        "bookmarkable_id": 38,
+        "bookmarkable_type": "Post"
+      }
+    }
+  ],
+  "started_at": "2026-10-13T05:49:25.333379",
+  "transaction_started_at": "2026-10-13T05:49:22.532973",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "id": 8
+      }
+    },
+    {
+      "status": 429,
+      "body": {
+        "errors": [
+          "You’ve reached the maximum number of daily bookmarks. You can create more bookmarks in 24 hours."
+        ],
+        "error_type": "rate_limit",
+        "extras": {
+          "wait_seconds": 86400,
+          "time_left": "24 hours"
+        }
+      },
+      "headers": {
+        "Retry-After": "86400"
+      }
+    }
+  ],
+  "changes": {
+    "bookmarks": {
+      "inserted": [
+        {
+          "id": 8,
+          "name": null,
+          "pinned": null,
+          "user_id": 3,
+          "created_at": "2026-10-13T05:49:25.39225",
+          "updated_at": "2026-10-13T05:49:25.39225",
+          "reminder_at": null,
+          "bookmarkable_id": 37,
+          "reminder_set_at": "2026-10-13T05:49:25.382841",
+          "bookmarkable_type": "Post",
+          "reminder_last_sent_at": null,
+          "auto_delete_preference": 3
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 488,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "dx9n2aFfeULbIVLuURI1nH9t2tc=",
+            "created_at": "2026-10-13T05:49:23.761373",
+            "rotated_at": "2026-10-13T05:49:23.757014",
+            "updated_at": "2026-10-13T05:49:23.761373",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "dx9n2aFfeULbIVLuURI1nH9t2tc=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 488,
+            "seen_at": "2026-10-13T05:49:25.358732",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "dx9n2aFfeULbIVLuURI1nH9t2tc=",
+            "created_at": "2026-10-13T05:49:23.761373",
+            "rotated_at": "2026-10-13T05:49:23.757014",
+            "updated_at": "2026-10-13T05:49:23.761373",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "dx9n2aFfeULbIVLuURI1nH9t2tc=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "bot_input",
+      {
+        "user_id": 3,
+        "post_id": 37,
+        "input": "bookmark"
+      }
+    ]
+  ],
+  "next_ids": {
+    "bookmarks": 8
+  },
+  "settings": {
+    "max_bookmarks_per_day": "1"
+  },
+  "rate_limits": true,
+  "recorded_from": {
+    "case": "8c53bc845c67af06e712706c6f6e16828b4b50ab6019015f2a79a6d09414d8ea",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -116,6 +116,15 @@ pub async fn update(
         Some(Value::String(id)) if !crate::ruby::is_blank(id) => id.clone(),
         _ => return Ok(super::search::invalid_parameters(&state, "client_id")),
     };
+    // 20 updates in 10 seconds, staff too (a user-less key).
+    let limiter =
+        crate::rate_limiter::RateLimiter::new(None, &format!("update-presence-{user_id}"), 20, 10);
+    if let Err(refused) = limiter
+        .performed(&state.pool, state.config.rate_limits)
+        .await?
+    {
+        return Ok(refused.into_response(&state.i18n));
+    }
     let list = |key: &str| -> Result<Option<Vec<String>>, ()> {
         match p.get(key) {
             None | Some(Value::Null) => Ok(None),

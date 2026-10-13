@@ -1,0 +1,29 @@
+{
+  "user": "user1",
+  "rate_limits": true,
+  "settings": {
+    "max_uploads_per_minute": "1"
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/uploads.json",
+      "params": {
+        "upload_type": "composer",
+        "file": {
+          "fixture": "static.gif"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/uploads.json",
+      "params": {
+        "upload_type": "composer",
+        "file": {
+          "fixture": "static.gif"
+        }
+      }
+    }
+  ]
+}

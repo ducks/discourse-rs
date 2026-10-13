@@ -487,6 +487,9 @@ pub async fn create_message(
             Ok(begun) => begun,
             Err(refused) => return Ok(refused),
         };
+    if let Some(refused) = message_rate_limiter(&state, &settings, &guardian).await? {
+        return Ok(refused);
+    }
     let scalar = |key: &str| p.get(key).and_then(params::scalar);
     let upload_ids = match p.get("upload_ids") {
         Some(serde_json::Value::Array(ids)) => ids.iter().filter_map(params::scalar).collect(),
@@ -526,6 +529,70 @@ pub async fn create_message(
             .into_response(),
     };
     Ok(response)
+}
+
+/// `Chat::MessageRateLimiter.run!`, before the service (an invalid message
+/// counts too): not for staff, nor when the trust level's allowance is
+/// 0. The message that finds none left silences its sender
+/// (chat_auto_silence_duration minutes, by the system user) and is
+/// refused.
+async fn message_rate_limiter(
+    state: &AppState,
+    settings: &SiteSettings,
+    guardian: &crate::guardian::Guardian,
+) -> Result<Option<Response>, AppError> {
+    let Some(user) = guardian.user() else {
+        return Ok(None);
+    };
+    if guardian.is_staff() {
+        return Ok(None);
+    }
+    let allowed = if user.trust_level == 0 {
+        settings.get("chat_allowed_messages_for_trust_level_0")?
+    } else {
+        settings.get("chat_allowed_messages_for_other_trust_levels")?
+    }
+    .to_i();
+    if allowed == 0 {
+        return Ok(None);
+    }
+    let limiter = crate::rate_limiter::RateLimiter::new(
+        Some(crate::rate_limiter::LimitUser {
+            id: user.id,
+            staff: false,
+        }),
+        "create_chat_message",
+        allowed,
+        30,
+    );
+    if limiter.remaining(&state.pool).await? == 0 {
+        let minutes = settings.get("chat_auto_silence_duration")?.to_i();
+        if minutes != 0 {
+            let host = crate::pretty_text::Host::from_state(state);
+            let ctx = crate::posting::Ctx {
+                host: &host,
+                settings,
+                config: &state.config,
+                i18n: &state.i18n,
+                bus: &state.bus,
+            };
+            let until = crate::clock::now_naive() + chrono::Duration::minutes(minutes);
+            let reason = state
+                .i18n
+                .t("chat.errors.rate_limit_exceeded")
+                .unwrap_or_default()
+                .to_string();
+            crate::user_penalties::silencer_silence(&state.pool, &ctx, -1, user.id, until, &reason)
+                .await?;
+        }
+    }
+    if let Err(refused) = limiter
+        .performed(&state.pool, state.config.rate_limits)
+        .await?
+    {
+        return Ok(Some(refused.into_response(&state.i18n)));
+    }
+    Ok(None)
 }
 
 /// POST /chat/api/channels/:channel_id/drafts: Chat::UpsertDraft.

@@ -381,6 +381,67 @@ pub async fn silence(
     })))
 }
 
+/// `UserSilencer.silence(user, by_user, silenced_till:, reason:)`, the
+/// bare silencer (no service, no email): nothing for staff or a user with
+/// a silence on record; else the silence, the staff action logged for
+/// `by_user_id` and the silenced_by_staff system message. A trust level 0
+/// user's recent posts would be hidden too (hide_posts), refused here.
+pub async fn silencer_silence(
+    pool: &sqlx::PgPool,
+    ctx: &Ctx<'_>,
+    by_user_id: i32,
+    user_id: i32,
+    until: NaiveDateTime,
+    reason: &str,
+) -> Result<bool, AppError> {
+    let (staff, trust_level, silenced_till): (bool, i32, Option<NaiveDateTime>) = sqlx::query_as(
+        "SELECT admin OR moderator, trust_level, silenced_till FROM users WHERE id = $1",
+    )
+    .bind(user_id)
+    .fetch_one(pool)
+    .await?;
+    if staff {
+        return Ok(false);
+    }
+    if trust_level == 0 {
+        return Err(Unsupported("silencing a trust level 0 user (hide_posts)").into());
+    }
+    if silenced_till.is_some() {
+        return Ok(false);
+    }
+    let mut tx = pool.begin().await?;
+    sqlx::query(
+        "UPDATE users SET silenced_till = $2, updated_at = clock_timestamp() WHERE id = $1",
+    )
+    .bind(user_id)
+    .bind(until)
+    .execute(&mut *tx)
+    .await?;
+    sqlx::query(
+        "INSERT INTO user_histories (action, acting_user_id, target_user_id, context, details, admin_only, \
+                                     created_at, updated_at) \
+         VALUES ($1, $2, $3, $4, $5, FALSE, clock_timestamp(), clock_timestamp())",
+    )
+    .bind(SILENCE_USER)
+    .bind(by_user_id)
+    .bind(user_id)
+    .bind(format!("silenced_by_staff: {reason}"))
+    .bind(staff_message(reason, None))
+    .execute(&mut *tx)
+    .await?;
+    tx.commit().await?;
+    crate::system_message::create(
+        pool,
+        ctx,
+        user_id,
+        "silenced_by_staff",
+        &[],
+        Some(json!({ "skip_send_email": true })),
+    )
+    .await?;
+    Ok(true)
+}
+
 /// `UserSilencer#unsilence` for a silenced user: the silence lifted, the
 /// unsilenced system message, and the staff action logged for whoever
 /// lifted it (the system user when it ran out, Jobs::UnsilenceUsers).

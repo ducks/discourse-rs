@@ -3,8 +3,8 @@
 //! bookmarked flag), updating, pinning and destroying one.
 //!
 //! Refused: bookmarkables other than posts and topics (chat messages),
-//! reminder times in formats other than ISO 8601. The bookmark rate limit
-//! (RateLimiter, Redis) is not ported.
+//! reminder times in formats other than ISO 8601. The controller's
+//! create_bookmark limit is in the route.
 
 use chrono::NaiveDateTime;
 use sqlx::PgConnection;

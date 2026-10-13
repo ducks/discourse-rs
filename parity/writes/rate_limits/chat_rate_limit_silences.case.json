@@ -1,0 +1,28 @@
+{
+  "user": "user1",
+  "rate_limits": true,
+  "settings": {
+    "chat_allowed_messages_for_other_trust_levels": "1"
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/chat/2.json",
+      "params": {
+        "message": "A first chat message under the chat rate limit",
+        "staged_id": "staged-1"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/chat/2.json",
+      "params": {
+        "message": "A second chat message over the chat rate limit",
+        "staged_id": "staged-2"
+      }
+    }
+  ],
+  "run_jobs": [
+    "Jobs::Chat::ProcessMessage"
+  ]
+}
