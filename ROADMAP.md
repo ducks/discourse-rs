@@ -107,7 +107,7 @@ Bugs or silent gaps in what is merged, small and independent.
 
 ### Phase 4: chat DMs and polls
 
-34. `feat/chat-dm-create` M, 35. `feat/chat-dm-messages` M (mention
+34. ~~`feat/chat-dm-create`~~ (done) M, 35. `feat/chat-dm-messages` M (mention
     warnings fold in), 36. `feat/chat-dm-groups` M,
     37. `feat/chat-dm-summary-email` S
 38. `feat/poll-create` M, 39. `feat/poll-vote` M, 40. `feat/poll-edit`

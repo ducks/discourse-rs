@@ -1,0 +1,17 @@
+{
+  "user": "user1",
+  "settings": {
+    "chat_max_direct_message_users": 0
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/chat/api/direct-message-channels.json",
+      "params": {
+        "target_usernames": [
+          "user2"
+        ]
+      }
+    }
+  ]
+}

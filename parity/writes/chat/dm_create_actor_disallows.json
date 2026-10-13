@@ -1,0 +1,79 @@
+{
+  "name": "dm_create_actor_disallows",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/chat/api/direct-message-channels.json",
+      "params": {
+        "target_usernames": [
+          "user2"
+        ]
+      }
+    }
+  ],
+  "started_at": "2026-10-13T14:52:38.791464",
+  "transaction_started_at": "2026-10-13T14:52:37.814724",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "You have chosen to prevent users from sending you personal and direct messages, so you cannot create new direct messages."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 488,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "lkL9cZ2iVkC/E6T+njsuTBH7Wpg=",
+            "created_at": "2026-10-13T14:52:38.138154",
+            "rotated_at": "2026-10-13T14:52:38.137206",
+            "updated_at": "2026-10-13T14:52:38.138154",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "lkL9cZ2iVkC/E6T+njsuTBH7Wpg=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 488,
+            "seen_at": "2026-10-13T14:52:38.79898",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "lkL9cZ2iVkC/E6T+njsuTBH7Wpg=",
+            "created_at": "2026-10-13T14:52:38.138154",
+            "rotated_at": "2026-10-13T14:52:38.137206",
+            "updated_at": "2026-10-13T14:52:38.138154",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "lkL9cZ2iVkC/E6T+njsuTBH7Wpg=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE user_options SET allow_private_messages = FALSE WHERE user_id = 3"
+  ],
+  "recorded_from": {
+    "case": "d7d7c79b12cf94e1c2a0439f247d28f682ace3f9c51806b0fd5a54dd1e616608",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

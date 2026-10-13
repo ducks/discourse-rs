@@ -1,0 +1,79 @@
+{
+  "name": "dm_create_allowed_pm_users",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/chat/api/direct-message-channels.json",
+      "params": {
+        "target_usernames": [
+          "user2"
+        ]
+      }
+    }
+  ],
+  "started_at": "2026-10-13T14:52:41.9395",
+  "transaction_started_at": "2026-10-13T14:52:41.120481",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Sorry, user2 is not accepting messages at the moment."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 488,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "lQpsrDApoiyosvpmumXvVShR7v0=",
+            "created_at": "2026-10-13T14:52:41.432932",
+            "rotated_at": "2026-10-13T14:52:41.432124",
+            "updated_at": "2026-10-13T14:52:41.432932",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "lQpsrDApoiyosvpmumXvVShR7v0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 488,
+            "seen_at": "2026-10-13T14:52:41.944919",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "lQpsrDApoiyosvpmumXvVShR7v0=",
+            "created_at": "2026-10-13T14:52:41.432932",
+            "rotated_at": "2026-10-13T14:52:41.432124",
+            "updated_at": "2026-10-13T14:52:41.432932",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "lQpsrDApoiyosvpmumXvVShR7v0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE user_options SET enable_allowed_pm_users = TRUE WHERE user_id = 4"
+  ],
+  "recorded_from": {
+    "case": "8a3dfc52fa4b1df82882eb15d5c67b71973031a3a64a7d3fa1d30a21e911487b",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

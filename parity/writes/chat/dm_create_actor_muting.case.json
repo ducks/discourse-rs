@@ -1,0 +1,17 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO muted_users (user_id, muted_user_id, created_at, updated_at) VALUES (3, 4, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/chat/api/direct-message-channels.json",
+      "params": {
+        "target_usernames": [
+          "user2"
+        ]
+      }
+    }
+  ]
+}

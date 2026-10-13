@@ -1,0 +1,79 @@
+{
+  "name": "dm_create_actor_muting",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/chat/api/direct-message-channels.json",
+      "params": {
+        "target_usernames": [
+          "user2"
+        ]
+      }
+    }
+  ],
+  "started_at": "2026-10-13T14:52:40.899966",
+  "transaction_started_at": "2026-10-13T14:52:40.089695",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "You are muting user2, so you cannot send messages to them."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 488,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "ec1lbv8E5IkE6dTOWhmme1BwHCU=",
+            "created_at": "2026-10-13T14:52:40.390342",
+            "rotated_at": "2026-10-13T14:52:40.389403",
+            "updated_at": "2026-10-13T14:52:40.390342",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "ec1lbv8E5IkE6dTOWhmme1BwHCU=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 488,
+            "seen_at": "2026-10-13T14:52:40.905404",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "ec1lbv8E5IkE6dTOWhmme1BwHCU=",
+            "created_at": "2026-10-13T14:52:40.390342",
+            "rotated_at": "2026-10-13T14:52:40.389403",
+            "updated_at": "2026-10-13T14:52:40.390342",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "ec1lbv8E5IkE6dTOWhmme1BwHCU=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO muted_users (user_id, muted_user_id, created_at, updated_at) VALUES (3, 4, now(), now())"
+  ],
+  "recorded_from": {
+    "case": "091b7ddcb6e06f5a733056fb99beff1c0a15f3c806c87dc2f81cb6bdf2aaf789",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
