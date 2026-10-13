@@ -1,0 +1,17 @@
+{
+  "user": "user0",
+  "rate_limits": true,
+  "settings": {
+    "max_likes_per_day": "0"
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/post_actions.json",
+      "params": {
+        "id": 37,
+        "post_action_type_id": 2
+      }
+    }
+  ]
+}

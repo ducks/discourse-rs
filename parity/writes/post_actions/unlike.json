@@ -18,8 +18,8 @@
       }
     }
   ],
-  "started_at": "2026-10-03T08:12:12.157706",
-  "transaction_started_at": "2026-10-03T08:12:10.863371",
+  "started_at": "2026-10-13T04:27:28.337143",
+  "transaction_started_at": "2026-10-13T04:27:27.510723",
   "responses": [
     {
       "status": 200,
@@ -108,7 +108,6 @@
         "can_view_edit_history": true,
         "wiki": false,
         "post_url": "/t/parity-fixture-replies-and-posters/35/5",
-        "event": null,
         "reactions": [
           {
             "id": "heart",
@@ -127,6 +126,10 @@
         "can_unaccept_answer": false,
         "accepted_answer": false,
         "topic_accepted_answer": null
+      },
+      "headers": {
+        "Discourse-Actions-Remaining": "75",
+        "Discourse-Actions-Max": "75"
       }
     },
     {
@@ -214,7 +217,6 @@
         "can_view_edit_history": true,
         "wiki": false,
         "post_url": "/t/parity-fixture-replies-and-posters/35/5",
-        "event": null,
         "reactions": [],
         "current_user_reaction": null,
         "reaction_users_count": 0,
@@ -231,7 +233,7 @@
       "inserted": [
         {
           "user_id": 3,
-          "given_date": "2026-10-03",
+          "given_date": "2026-10-13",
           "likes_given": 0,
           "limit_reached": false
         }
@@ -246,9 +248,9 @@
           "post_id": 52,
           "user_id": 3,
           "agreed_at": null,
-          "created_at": "2026-10-03T08:12:12.177098",
-          "deleted_at": "2026-10-03T08:12:12.350014",
-          "updated_at": "2026-10-03T08:12:12.185677",
+          "created_at": "2026-10-13T04:27:28.352531",
+          "deleted_at": "2026-10-13T04:27:28.508975",
+          "updated_at": "2026-10-13T04:27:28.360289",
           "deferred_at": null,
           "agreed_by_id": null,
           "disagreed_at": null,
@@ -270,33 +272,33 @@
       "updated": [
         {
           "before": {
-            "id": 86,
+            "id": 488,
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "KCX87BxezBf0HPoMv38UOFLLt04=",
-            "created_at": "2026-10-03T08:12:11.481101",
-            "rotated_at": "2026-10-03T08:12:11.480768",
-            "updated_at": "2026-10-03T08:12:11.481101",
+            "auth_token": "p96WTkZ8yhn0wVDheSrOU6SksQ4=",
+            "created_at": "2026-10-13T04:27:27.835113",
+            "rotated_at": "2026-10-13T04:27:27.833783",
+            "updated_at": "2026-10-13T04:27:27.835113",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "KCX87BxezBf0HPoMv38UOFLLt04=",
+            "prev_auth_token": "p96WTkZ8yhn0wVDheSrOU6SksQ4=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 86,
-            "seen_at": "2026-10-03T08:12:12.165655",
+            "id": 488,
+            "seen_at": "2026-10-13T04:27:28.343359",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "KCX87BxezBf0HPoMv38UOFLLt04=",
-            "created_at": "2026-10-03T08:12:11.481101",
-            "rotated_at": "2026-10-03T08:12:11.480768",
-            "updated_at": "2026-10-03T08:12:11.481101",
+            "auth_token": "p96WTkZ8yhn0wVDheSrOU6SksQ4=",
+            "created_at": "2026-10-13T04:27:27.835113",
+            "rotated_at": "2026-10-13T04:27:27.833783",
+            "updated_at": "2026-10-13T04:27:27.835113",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "KCX87BxezBf0HPoMv38UOFLLt04=",
+            "prev_auth_token": "p96WTkZ8yhn0wVDheSrOU6SksQ4=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -315,6 +317,9 @@
       }
     ]
   ],
+  "next_ids": {
+    "post_actions": 3
+  },
   "recorded_from": {
     "case": "d3b95fe17ce8fb39799ed3d8a4753ad2357be597c79f141b9b1dda2eb3155c05",
     "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",

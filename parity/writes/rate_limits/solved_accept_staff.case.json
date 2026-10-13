@@ -1,0 +1,44 @@
+{
+  "user": "admin",
+  "rate_limits": true,
+  "settings": {
+    "allow_solved_on_all_topics": "true"
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/solution/accept",
+      "params": {
+        "id": "36"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/solution/unaccept",
+      "params": {
+        "id": "36"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/solution/accept",
+      "params": {
+        "id": "37"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/solution/unaccept",
+      "params": {
+        "id": "37"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/solution/accept",
+      "params": {
+        "id": "36"
+      }
+    }
+  ]
+}

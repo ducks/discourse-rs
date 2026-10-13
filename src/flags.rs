@@ -9,8 +9,8 @@
 //! illegal), queueing for review as staff, flagging topics, flags on posts
 //! already in review, flags in messages, and the rules when they would
 //! close the topic, hide on a trusted spam flag or silence the author. The
-//! flag rate limit (RateLimiter, Redis) and the badge queue are not
-//! ported; flags write no user actions or notifications.
+//! badge queue is not ported; flags write no user actions or
+//! notifications.
 
 use sqlx::{PgConnection, PgPool};
 
@@ -143,6 +143,19 @@ pub async fn flag(
             },
         ));
     }
+    if let Err(refused) = crate::likes::perform(
+        pool,
+        ctx,
+        post_actions::action_limiter(
+            crate::likes::limit_user(guardian, &user),
+            post.id,
+            req.type_id,
+        ),
+    )
+    .await?
+    {
+        return Ok(Outcome::RateLimited(refused));
+    }
     if req.queue_for_review {
         return Err(Unsupported("queueing a post for review as staff").into());
     }
@@ -186,6 +199,21 @@ pub async fn flag(
         .bind(take_action)
         .execute(&mut *tx)
         .await?;
+        // PostAction.create's after_create: the day's flags.
+        if let Err(refused) = crate::likes::perform(
+            pool,
+            ctx,
+            post_actions::daily_limiter(
+                ctx.settings,
+                crate::likes::limit_user(guardian, &user),
+                user.trust_level,
+                "flag",
+            )?,
+        )
+        .await?
+        {
+            return Ok(Outcome::RateLimited(refused));
+        }
     }
     // after_save
     update_counters(&mut tx, &types, post.id, req.type_id).await?;

@@ -1,0 +1,152 @@
+{
+  "name": "solved_accept_per_min",
+  "user": "user0",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/solution/accept",
+      "params": {
+        "id": "36"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/solution/unaccept",
+      "params": {
+        "id": "36"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/solution/accept",
+      "params": {
+        "id": "37"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/solution/unaccept",
+      "params": {
+        "id": "37"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/solution/accept",
+      "params": {
+        "id": "36"
+      }
+    }
+  ],
+  "started_at": "2026-10-13T04:33:55.20378",
+  "transaction_started_at": "2026-10-13T04:33:52.654817",
+  "responses": [
+    {
+      "status": 200,
+      "body": [
+        {
+          "id": 36,
+          "username": "user1",
+          "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+          "created_at": "2026-09-30T07:28:29.079Z",
+          "cooked": "<p>Reply one from user1, also long enough to pass the minimum length check.</p>",
+          "post_number": 2,
+          "topic_id": 35,
+          "url": "/t/parity-fixture-replies-and-posters/35/2"
+        }
+      ]
+    },
+    {
+      "status": 200,
+      "body": null
+    },
+    {
+      "status": 200,
+      "body": [
+        {
+          "id": 37,
+          "username": "user2",
+          "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+          "created_at": "2026-09-30T07:28:29.179Z",
+          "cooked": "<p>Reply two from user2, also long enough to pass the minimum length check.</p>",
+          "post_number": 3,
+          "topic_id": 35,
+          "url": "/t/parity-fixture-replies-and-posters/35/3"
+        }
+      ]
+    },
+    {
+      "status": 200,
+      "body": null
+    },
+    {
+      "status": 429,
+      "body": {
+        "errors": [
+          "You’ve performed this action too many times. Please wait 30 seconds before trying again."
+        ],
+        "error_type": "rate_limit",
+        "extras": {
+          "wait_seconds": 30,
+          "time_left": "30 seconds"
+        }
+      },
+      "headers": {
+        "Retry-After": "30"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 488,
+            "seen_at": null,
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "sIGSW8ld8G6WrkwJ+nprZB6zCCk=",
+            "created_at": "2026-10-13T04:33:53.710086",
+            "rotated_at": "2026-10-13T04:33:53.705942",
+            "updated_at": "2026-10-13T04:33:53.710086",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "sIGSW8ld8G6WrkwJ+nprZB6zCCk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 488,
+            "seen_at": "2026-10-13T04:33:55.233414",
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "sIGSW8ld8G6WrkwJ+nprZB6zCCk=",
+            "created_at": "2026-10-13T04:33:53.710086",
+            "rotated_at": "2026-10-13T04:33:53.705942",
+            "updated_at": "2026-10-13T04:33:53.710086",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "sIGSW8ld8G6WrkwJ+nprZB6zCCk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "allow_solved_on_all_topics": "true"
+  },
+  "rate_limits": true,
+  "recorded_from": {
+    "case": "7a62e40cf24bd70e1fc2e0a8e1734cd7ea087840e3dde880685a80d084e09aa2",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

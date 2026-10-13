@@ -206,6 +206,11 @@ impl AppError {
         self.0.downcast_ref::<Unsupported>().is_some()
             || self.0.to_string().starts_with("not ported yet:")
     }
+
+    /// The rate limit refusal raised, if that is what this is.
+    pub fn rate_limited(&self) -> Option<&rate_limiter::LimitExceeded> {
+        self.0.downcast_ref::<rate_limiter::LimitExceeded>()
+    }
 }
 
 impl IntoResponse for AppError {

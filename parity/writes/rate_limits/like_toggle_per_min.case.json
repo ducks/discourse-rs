@@ -1,0 +1,44 @@
+{
+  "user": "user1",
+  "rate_limits": true,
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/post_actions.json",
+      "params": {
+        "id": 37,
+        "post_action_type_id": 2
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/post_actions/37.json",
+      "params": {
+        "post_action_type_id": 2
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/post_actions.json",
+      "params": {
+        "id": 37,
+        "post_action_type_id": 2
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/post_actions/37.json",
+      "params": {
+        "post_action_type_id": 2
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/post_actions.json",
+      "params": {
+        "id": 37,
+        "post_action_type_id": 2
+      }
+    }
+  ]
+}

@@ -4,8 +4,8 @@
 //! the topic's owner and those tracking it. The caller holds the
 //! transaction, then renders and publishes the accepted answers.
 //!
-//! Not ported: the controller's rate limits (RateLimiter, Redis, as for
-//! likes), web hooks for accepted_solution and unaccepted_solution, and
+//! The controller's rate limits are in the route. Not ported: web hooks
+//! for accepted_solution and unaccepted_solution, and
 //! the auto-close topic timer a solved topic gets when
 //! solved_topics_auto_close_hours is set; each is refused when it would
 //! apply.

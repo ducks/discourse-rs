@@ -64,6 +64,7 @@ async fn respond(
             Json(json!({"errors": [state.i18n.t(key).unwrap_or(key)]})),
         )
             .into_response()),
+        Outcome::RateLimited(refused) => Ok(refused.into_response(&state.i18n)),
     }
 }
 
@@ -129,7 +130,25 @@ pub async fn create(
         bus: &state.bus,
     };
     let outcome = if type_id == crate::post_actions::LIKE {
-        likes::like(&state.pool, &ctx, &guardian, post_id).await?
+        let outcome = likes::like(&state.pool, &ctx, &guardian, post_id).await?;
+        if let Outcome::Done = outcome
+            && let Some(user) = guardian.user()
+        {
+            // The like's limiter: what is left of the day's likes.
+            let limiter = crate::post_actions::daily_limiter(
+                &settings,
+                likes::limit_user(&guardian, user),
+                user.trust_level,
+                "like",
+            )?;
+            let remaining = limiter.remaining(&state.pool).await?;
+            let mut response = respond(&state, &settings, &guardian, outcome, post_id).await?;
+            let headers = response.headers_mut();
+            headers.insert("Discourse-Actions-Remaining", remaining.into());
+            headers.insert("Discourse-Actions-Max", limiter.max().into());
+            return Ok(response);
+        }
+        outcome
     } else {
         let request = FlagRequest {
             type_id,
