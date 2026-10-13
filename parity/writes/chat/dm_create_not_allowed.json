@@ -1,0 +1,77 @@
+{
+  "name": "dm_create_not_allowed",
+  "user": "user0",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/chat/api/direct-message-channels.json",
+      "params": {
+        "target_usernames": [
+          "user2"
+        ]
+      }
+    }
+  ],
+  "started_at": "2026-10-13T14:52:52.760337",
+  "transaction_started_at": "2026-10-13T14:52:51.902597",
+  "responses": [
+    {
+      "status": 400,
+      "body": {
+        "error": "You are not allowed to create this direct message."
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 488,
+            "seen_at": null,
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "gkralpje7NaOqARrH9YvWG3bZEI=",
+            "created_at": "2026-10-13T14:52:52.239281",
+            "rotated_at": "2026-10-13T14:52:52.238041",
+            "updated_at": "2026-10-13T14:52:52.239281",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "gkralpje7NaOqARrH9YvWG3bZEI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 488,
+            "seen_at": "2026-10-13T14:52:52.767704",
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "gkralpje7NaOqARrH9YvWG3bZEI=",
+            "created_at": "2026-10-13T14:52:52.239281",
+            "rotated_at": "2026-10-13T14:52:52.238041",
+            "updated_at": "2026-10-13T14:52:52.239281",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "gkralpje7NaOqARrH9YvWG3bZEI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "direct_message_enabled_groups": "12"
+  },
+  "recorded_from": {
+    "case": "5ff3ecd0adc5ce2c2b07b95b54a7b4a4ab4e02fba445f34acc1b559632333cf3",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

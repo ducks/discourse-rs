@@ -912,3 +912,49 @@ pub async fn direct_messages(
     let mut cx = context(&state, &mut conn, &settings, &guardian);
     Ok(Json(cx.show(&channel).await?).into_response())
 }
+
+/// POST /chat/api/direct-message-channels:
+/// Chat::Api::DirectMessagesController#create.
+pub async fn create_direct_message_channel(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    use crate::plugins::chat::dm_create::{Outcome, Params, cast_array};
+    let (mut tx, settings, p) =
+        match begin_write(&state, &guardian, &headers, &uri, "POST", &body).await? {
+            Ok(begun) => begun,
+            Err(refused) => return Ok(refused),
+        };
+    let params = Params {
+        name: p.get("name").and_then(params::scalar),
+        target_usernames: cast_array(p.get("target_usernames")),
+        target_groups: cast_array(p.get("target_groups")),
+        upsert: p
+            .get("upsert")
+            .and_then(params::scalar)
+            .is_some_and(|v| cast_boolean(Some(&v)) == Some(true)),
+    };
+    let outcome = context(&state, &mut tx, &settings, &guardian)
+        .create_direct_message_channel(&params)
+        .await?;
+    Ok(match outcome {
+        Outcome::Created(body) => {
+            tx.commit().await?;
+            Json(body).into_response()
+        }
+        Outcome::NotFound => super::topics::not_found_response(&state),
+        Outcome::Refused(error) => (
+            axum::http::StatusCode::BAD_REQUEST,
+            Json(json!({ "error": error })),
+        )
+            .into_response(),
+        Outcome::Unprocessable(error) => (
+            axum::http::StatusCode::UNPROCESSABLE_ENTITY,
+            Json(json!({ "errors": [error] })),
+        )
+            .into_response(),
+    })
+}

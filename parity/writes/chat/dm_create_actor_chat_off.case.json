@@ -1,0 +1,17 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE user_options SET chat_enabled = FALSE WHERE user_id = 3"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/chat/api/direct-message-channels.json",
+      "params": {
+        "target_usernames": [
+          "user2"
+        ]
+      }
+    }
+  ]
+}
