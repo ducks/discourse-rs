@@ -1,0 +1,19 @@
+{
+  "user": "user1",
+  "rate_limits": true,
+  "settings": {
+    "max_likes_per_day": "1"
+  },
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/discourse-reactions/posts/37/custom-reactions/heart/toggle.json",
+      "params": {}
+    },
+    {
+      "method": "PUT",
+      "path": "/discourse-reactions/posts/38/custom-reactions/heart/toggle.json",
+      "params": {}
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "user": "user1",
+  "rate_limits": true,
+  "settings": {
+    "max_flags_per_day": "1"
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/post_actions.json",
+      "params": {
+        "id": 52,
+        "post_action_type_id": 3
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/post_actions.json",
+      "params": {
+        "id": 37,
+        "post_action_type_id": 3
+      }
+    }
+  ]
+}

@@ -82,6 +82,20 @@ impl LimitExceeded {
     }
 }
 
+impl std::fmt::Display for LimitExceeded {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "rate limit {} exceeded, {}s to wait",
+            self.type_, self.available_in
+        )
+    }
+}
+
+/// Raised (as an AppError) where Rails lets it out of a nested call, and
+/// rescued with `AppError::rate_limited`.
+impl std::error::Error for LimitExceeded {}
+
 /// `LimitExceeded.time_left(available_in)`: whole units, floored.
 pub fn time_left(i18n: &I18n, available_in: i64) -> String {
     let count = |key: &str, n: i64| {
@@ -174,6 +188,11 @@ impl RateLimiter {
     pub fn key_suffix(mut self, suffix: &str) -> RateLimiter {
         self.key.push_str(suffix);
         self
+    }
+
+    /// `max`
+    pub fn max(&self) -> i64 {
+        self.max
     }
 
     pub fn key(&self) -> &str {

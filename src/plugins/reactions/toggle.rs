@@ -38,10 +38,14 @@ pub enum Outcome {
     InvalidAccess,
     /// `on_failed_policy(:reaction_is_valid)`: `render_json_error(post)`.
     InvalidReaction,
+    /// The shadow like's limit, raised out of the toggle's transaction.
+    RateLimited(crate::rate_limiter::LimitExceeded),
 }
 
 /// What the manager read before acting.
 struct Manager<'a> {
+    /// The limiters' pool, outside the caller's transaction.
+    pool: &'a sqlx::PgPool,
     ctx: &'a Ctx<'a>,
     guardian: &'a Guardian,
     reactions: &'a Reactions,
@@ -103,6 +107,7 @@ async fn first_or_create_reaction(
 /// PUT /discourse-reactions/posts/:post_id/custom-reactions/:reaction/toggle,
 /// in the caller's transaction.
 pub async fn toggle(
+    pool: &sqlx::PgPool,
     conn: &mut PgConnection,
     ctx: &Ctx<'_>,
     guardian: &Guardian,
@@ -211,6 +216,7 @@ pub async fn toggle(
 
     let reaction_id = first_or_create_reaction(&mut *conn, post_id, value).await?;
     let mut manager = Manager {
+        pool,
         ctx,
         guardian,
         reactions: &reactions,
@@ -221,12 +227,18 @@ pub async fn toggle(
         reaction_id,
         like_count,
     };
-    if value == reactions.main {
-        manager.toggle_like(&mut *conn, existing).await?;
+    let toggled = if value == reactions.main {
+        manager.toggle_like(&mut *conn, existing).await
     } else {
         manager
             .toggle_reaction(&mut *conn, existing, previous.as_deref())
-            .await?;
+            .await
+    };
+    if let Err(e) = toggled {
+        return match e.rate_limited() {
+            Some(refused) => Ok(Outcome::RateLimited(refused.clone())),
+            None => Err(e),
+        };
     }
 
     // publish_post_acted
@@ -292,13 +304,24 @@ impl Manager<'_> {
     }
 
     /// `add_shadow_like`: PostActionCreator.like, silent; its failures
-    /// (already liked, not allowed) are ignored.
+    /// (already liked, not allowed) are ignored, a rate limit raises.
     async fn add_shadow_like(
         &mut self,
         conn: &mut PgConnection,
         notify: bool,
     ) -> Result<(), AppError> {
-        likes::create(&mut *conn, self.ctx, self.guardian, self.post_id, true).await?;
+        if let likes::Outcome::RateLimited(refused) = likes::create(
+            self.pool,
+            &mut *conn,
+            self.ctx,
+            self.guardian,
+            self.post_id,
+            true,
+        )
+        .await?
+        {
+            return Err(refused.into());
+        }
         if notify {
             self.add_notification(&mut *conn).await?;
         }
@@ -309,9 +332,12 @@ impl Manager<'_> {
     /// the main reaction's rows go and the notification is reconsidered.
     async fn remove_shadow_like(&mut self, conn: &mut PgConnection) -> Result<(), AppError> {
         // `result.post = @post.reload` once a like is removed.
-        if let likes::Outcome::Done =
-            likes::destroy(&mut *conn, self.ctx, self.guardian, self.post_id).await?
-        {
+        let outcome =
+            likes::destroy(self.pool, &mut *conn, self.ctx, self.guardian, self.post_id).await?;
+        if let likes::Outcome::RateLimited(refused) = outcome {
+            return Err(refused.into());
+        }
+        if let likes::Outcome::Done = outcome {
             self.like_count = sqlx::query_scalar("SELECT like_count FROM posts WHERE id = $1")
                 .bind(self.post_id)
                 .fetch_one(&mut *conn)

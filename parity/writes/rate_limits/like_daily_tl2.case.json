@@ -1,0 +1,41 @@
+{
+  "user": "user1",
+  "rate_limits": true,
+  "settings": {
+    "max_likes_per_day": "2"
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/post_actions.json",
+      "params": {
+        "id": 35,
+        "post_action_type_id": 2
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/post_actions.json",
+      "params": {
+        "id": 37,
+        "post_action_type_id": 2
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/post_actions.json",
+      "params": {
+        "id": 38,
+        "post_action_type_id": 2
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/post_actions.json",
+      "params": {
+        "id": 52,
+        "post_action_type_id": 2
+      }
+    }
+  ]
+}

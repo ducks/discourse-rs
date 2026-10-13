@@ -16,6 +16,7 @@ use serde_json::{Map, Value, json};
 use super::session::{bad_csrf, csrf_ok};
 use crate::params;
 use crate::plugins::solved::answers::{self, Outcome};
+use crate::rate_limiter::RateLimiter;
 use crate::session::current::AuthGuardian;
 use crate::site_settings::SiteSettings;
 use crate::topic_view::{Options, TopicView};
@@ -74,6 +75,23 @@ async fn run(
     // requires_plugin
     if !crate::plugins::solved::enabled(&settings)? {
         return Ok(super::topics::not_found_response(&state));
+    }
+    // limit_accepts, for accept and unaccept: not for staff (nor when a
+    // plugin's solved_answers_controller_run_rate_limiter says so).
+    if let Some(user) = guardian.user()
+        && !guardian.is_staff()
+    {
+        for limiter in [
+            RateLimiter::new(None, &format!("accept-hr-{}", user.id), 20, 3600),
+            RateLimiter::new(None, &format!("accept-min-{}", user.id), 4, 30),
+        ] {
+            if let Err(refused) = limiter
+                .performed(&state.pool, state.config.rate_limits)
+                .await?
+            {
+                return Ok(refused.into_response(&state.i18n));
+            }
+        }
     }
     // The contract: `post_id`, an integer, present.
     let post_id = p
@@ -243,6 +261,23 @@ pub async fn shared_issue(
     }
     if guardian.is_anonymous() {
         return Ok(super::login_required::not_logged_in(&state));
+    }
+    // rate_limit_shared_issue: not for staff, nor without a topic_id
+    // (keyed by the param as sent).
+    if let Some(user) = guardian.user()
+        && !guardian.is_staff()
+        && let Some(raw) = p
+            .get("topic_id")
+            .and_then(params::scalar)
+            .filter(|v| !v.trim().is_empty())
+    {
+        let limiter = RateLimiter::new(None, &format!("shared-issue-{}-{raw}", user.id), 5, 3600);
+        if let Err(refused) = limiter
+            .performed(&state.pool, state.config.rate_limits)
+            .await?
+        {
+            return Ok(refused.into_response(&state.i18n));
+        }
     }
     // The contract: `topic_id`, an integer, present.
     let topic_id = p

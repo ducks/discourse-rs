@@ -15,6 +15,49 @@ use crate::topic_guardian::{PostCtx, TopicCtx};
 /// `PostActionType::LIKE_POST_ACTION_ID`
 pub const LIKE: i64 = 2;
 
+/// `PostAction.limit_action!`: one post's action, taken or undone, at
+/// most 4 times a minute.
+pub fn action_limiter(
+    user: crate::rate_limiter::LimitUser,
+    post_id: i32,
+    type_id: i64,
+) -> crate::rate_limiter::RateLimiter {
+    crate::rate_limiter::RateLimiter::new(
+        Some(user),
+        &format!("post_action-{post_id}_{type_id}"),
+        4,
+        60,
+    )
+}
+
+/// `PostAction#post_action_rate_limiter` for a like or a flag
+/// (`kind`): max_<kind>s_per_day, times the trust level's multiplier
+/// (floored at 1) from TL2.
+pub fn daily_limiter(
+    s: &SiteSettings,
+    user: crate::rate_limiter::LimitUser,
+    trust_level: i32,
+    kind: &str,
+) -> Result<crate::rate_limiter::RateLimiter, crate::site_settings::SettingError> {
+    let mut limit = s.get(&format!("max_{kind}s_per_day"))?.to_i();
+    if trust_level >= 2 {
+        let multiplier = crate::ruby::to_f(
+            &s.get(&format!(
+                "tl{trust_level}_additional_{kind}s_per_day_multiplier"
+            ))?
+            .to_s(),
+        )
+        .max(1.0);
+        limit = (limit as f64 * multiplier) as i64;
+    }
+    Ok(crate::rate_limiter::RateLimiter::new(
+        Some(user),
+        &format!("create_{kind}"),
+        limit,
+        86_400,
+    ))
+}
+
 #[derive(Debug, Clone, sqlx::FromRow)]
 struct FlagRow {
     id: i64,

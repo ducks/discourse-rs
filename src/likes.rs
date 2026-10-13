@@ -5,8 +5,7 @@
 //! notification and its refresh when a like goes).
 //!
 //! Flags and other action types are refused, as are likes in messages and
-//! anonymous mode. The like rate limit (RateLimiter, Redis) and the badge
-//! queue are not ported.
+//! anonymous mode. The badge queue is not ported.
 
 use sqlx::{PgConnection, PgPool};
 
@@ -27,6 +26,28 @@ pub enum Outcome {
     NoContent,
     /// `render_json_error(result)` for a forbidden result: the message.
     Forbidden(&'static str),
+    /// RateLimiter::LimitExceeded, out of the creator or destroyer.
+    RateLimited(crate::rate_limiter::LimitExceeded),
+}
+
+/// The acting user as the limiters key them.
+pub(crate) fn limit_user(
+    guardian: &Guardian,
+    user: &crate::session::current::SessionUser,
+) -> crate::rate_limiter::LimitUser {
+    crate::rate_limiter::LimitUser {
+        id: user.id,
+        staff: guardian.is_staff(),
+    }
+}
+
+/// A limiter performed outside the transaction when the limits are on.
+pub(crate) async fn perform(
+    pool: &PgPool,
+    ctx: &Ctx<'_>,
+    limiter: crate::rate_limiter::RateLimiter,
+) -> Result<Result<(), crate::rate_limiter::LimitExceeded>, AppError> {
+    Ok(limiter.performed(pool, ctx.config.rate_limits).await?)
 }
 
 /// The day GivenDailyLike counts in (`Date.today`, the server's UTC day).
@@ -146,7 +167,7 @@ pub async fn like(
     post_id: i32,
 ) -> Result<Outcome, AppError> {
     let mut tx = pool.begin().await?;
-    let outcome = create(&mut tx, ctx, guardian, post_id, false).await?;
+    let outcome = create(pool, &mut tx, ctx, guardian, post_id, false).await?;
     if matches!(outcome, Outcome::Done) {
         tx.commit().await?;
     }
@@ -157,6 +178,7 @@ pub async fn like(
 /// creator's `silent:`: no liked notification (discourse-reactions'
 /// shadow likes).
 pub(crate) async fn create(
+    pool: &PgPool,
     tx: &mut PgConnection,
     ctx: &Ctx<'_>,
     guardian: &Guardian,
@@ -204,6 +226,15 @@ pub(crate) async fn create(
             },
         ));
     }
+    if let Err(refused) = perform(
+        pool,
+        ctx,
+        post_actions::action_limiter(limit_user(guardian, &user), post.id, LIKE),
+    )
+    .await?
+    {
+        return Ok(Outcome::RateLimited(refused));
+    }
 
     // create_post_action: a trashed like that was never reviewed comes
     // back (dated now, as action_attrs' created_at sets it), else a new one.
@@ -234,6 +265,23 @@ pub(crate) async fn create(
         .fetch_one(&mut *tx)
         .await?,
     };
+    // PostAction.create's after_create (a revived like is only saved):
+    // the day's likes.
+    if revived.is_none()
+        && let Err(refused) = perform(
+            pool,
+            ctx,
+            post_actions::daily_limiter(
+                ctx.settings,
+                limit_user(guardian, &user),
+                user.trust_level,
+                "like",
+            )?,
+        )
+        .await?
+    {
+        return Ok(Outcome::RateLimited(refused));
+    }
     // GivenDailyLike.increment_for
     let updated = sqlx::query(&format!(
         "UPDATE given_daily_likes SET likes_given = likes_given + 1 WHERE user_id = $1 AND given_date = {TODAY}"
@@ -381,7 +429,7 @@ pub async fn unlike(
     post_id: i32,
 ) -> Result<Outcome, AppError> {
     let mut tx = pool.begin().await?;
-    let outcome = destroy(&mut tx, ctx, guardian, post_id).await?;
+    let outcome = destroy(pool, &mut tx, ctx, guardian, post_id).await?;
     if !matches!(outcome, Outcome::Done) {
         return Ok(outcome);
     }
@@ -399,6 +447,7 @@ pub async fn unlike(
 
 /// The destroyer's perform in the caller's transaction.
 pub(crate) async fn destroy(
+    pool: &PgPool,
     tx: &mut PgConnection,
     ctx: &Ctx<'_>,
     guardian: &Guardian,
@@ -451,6 +500,15 @@ pub(crate) async fn destroy(
     }
     if !guardian.can_delete_post_action(ctx.settings, &topic, action_user, action_created_at)? {
         return Ok(Outcome::Forbidden("invalid_access"));
+    }
+    if let Err(refused) = perform(
+        pool,
+        ctx,
+        post_actions::action_limiter(limit_user(guardian, &user), post_id, LIKE),
+    )
+    .await?
+    {
+        return Ok(Outcome::RateLimited(refused));
     }
     // remove_act!: trash!, then save's update_counters.
     sqlx::query(

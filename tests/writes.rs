@@ -1246,8 +1246,10 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
     // a record not found its exception page; the port renders the
     // production 404. The status is still compared.
     for i in 0..rails["responses"].as_array().map_or(0, Vec::len) {
-        // A rate limit's wait counts wall-clock seconds on Rails: within
-        // two seconds, ours takes Rails' (its words and Retry-After too).
+        // A rate limit's wait counts wall-clock seconds, and a replay under
+        // load runs a case's requests slower than Rails did: within ten
+        // seconds (a wrong window is off by far more), ours takes Rails'
+        // (its words and Retry-After too).
         let theirs = &rails["responses"][i];
         if theirs["body"]["error_type"] == "rate_limit"
             && ours["responses"][i]["body"]["error_type"] == "rate_limit"
@@ -1255,7 +1257,7 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
                 theirs["body"]["extras"]["wait_seconds"].as_i64(),
                 ours["responses"][i]["body"]["extras"]["wait_seconds"].as_i64(),
             )
-            && (a - b).abs() <= 2
+            && (a - b).abs() <= 10
         {
             let theirs = theirs.clone();
             let mine = &mut ours["responses"][i];

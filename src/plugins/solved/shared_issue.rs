@@ -1,8 +1,7 @@
 //! discourse-solved's SharedIssue::Toggle (POST /solution/shared_issue):
 //! a member says they have the same problem ("Me too"), or takes it back.
 //! Saying it starts tracking the topic for them. The topic's channel
-//! hears the count. The per-topic rate limit (RateLimiter, Redis) is not
-//! ported, as likes' isn't.
+//! hears the count. The controller's per-topic rate limit is in the route.
 
 use serde_json::{Map, json};
 use sqlx::PgConnection;

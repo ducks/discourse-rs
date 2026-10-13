@@ -57,7 +57,7 @@ pub async fn toggle(
         i18n: &state.i18n,
         bus: &state.bus,
     };
-    match toggle::toggle(&mut tx, &ctx, &guardian, post_id, &reaction).await? {
+    match toggle::toggle(&state.pool, &mut tx, &ctx, &guardian, post_id, &reaction).await? {
         Outcome::Done(like_count) => {
             tx.commit().await?;
             let mut post =
@@ -67,6 +67,7 @@ pub async fn toggle(
         }
         Outcome::NotFound => Ok(super::topics::not_found_response(&state)),
         Outcome::InvalidAccess => Ok(super::search::invalid_access(&state)),
+        Outcome::RateLimited(refused) => Ok(refused.into_response(&state.i18n)),
         // render_json_error(post): a post without errors gets
         // JsonError.generic_error.
         Outcome::InvalidReaction => Ok((
