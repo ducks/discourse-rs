@@ -160,7 +160,7 @@ fn number(cx: &ListContext, n: i64) -> String {
 }
 
 /// `duration(seconds, {format})`
-fn duration(cx: &ListContext, seconds: i64, format: &str) -> String {
+pub(crate) fn duration(cx: &ListContext, seconds: i64, format: &str) -> String {
     let minutes = ((seconds as f64 / 60.0).round() as i64).max(1);
     let key = |k: &str| format!("dates.{format}.{k}");
     match () {
@@ -203,7 +203,7 @@ fn duration(cx: &ListContext, seconds: i64, format: &str) -> String {
 
 /// `dAgeWithTooltip(date, format="medium")`: relativeAgeMedium unwrapped.
 /// `relativeAge(format: "medium")`; `leave_ago` is "medium-with-ago".
-fn age_medium(cx: &ListContext, at: DateTime<Utc>, leave_ago: bool) -> String {
+pub(crate) fn age_medium(cx: &ListContext, at: DateTime<Utc>, leave_ago: bool) -> String {
     let distance = ((cx.now - at).num_milliseconds() as f64 / 1000.0).round() as i64;
     let text = if distance < 60 {
         t(cx, "now")
@@ -262,7 +262,7 @@ fn labeled_icon(name: &str, label: &str) -> String {
     )
 }
 
-fn avatar(cx: &ListContext, template: &str, size: u32) -> String {
+pub(crate) fn avatar(cx: &ListContext, template: &str, size: u32) -> String {
     format!(
         "<img alt=\"\" width=\"{size}\" height=\"{size}\" src=\"{}{}\" class=\"avatar\">",
         if template.starts_with('/') && !template.starts_with("//") {

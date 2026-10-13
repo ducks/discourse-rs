@@ -48,6 +48,7 @@ mod topic_status;
 mod topic_voting;
 mod topics;
 mod user_avatars;
+pub(crate) mod user_card;
 pub(crate) mod user_menu;
 mod user_search;
 mod user_update;
@@ -101,6 +102,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/bus/poll", get(bus::poll))
         .route("/live", get(live::page))
         .route("/user-menu", get(user_menu::show))
+        .route("/user-card/{username}", get(user_card::show))
         .route("/live/post/{id}", get(live::post))
         .route(
             "/live/chat/{channel_id}/{message_id}",
@@ -733,6 +735,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/floating-ui.core.umd.min.js", get(asset))
         .route("/assets/floating-ui.dom.umd.min.js", get(asset))
         .route("/assets/float.js", get(asset))
+        .route("/assets/user-card.js", get(asset))
         .route("/assets/sidebar.js", get(asset))
         .route("/assets/topic.js", get(asset))
         .route("/assets/topic-voting.js", get(asset))

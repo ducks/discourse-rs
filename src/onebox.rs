@@ -674,7 +674,7 @@ async fn local_user_html(
     opts: &Opts,
 ) -> Result<Option<String>, AppError> {
     let s = site.settings;
-    let Some(user) = crate::users::User::find_by_username(&mut *conn, username).await? else {
+    let Some(user) = crate::users::User::find_any(&mut *conn, username).await? else {
         return Ok(None);
     };
     if s.get("allow_users_to_hide_profile")?.truthy() && user.hide_profile.unwrap_or(false) {

@@ -216,6 +216,11 @@ pub struct Chrome {
     /// What the cooked decorators read (cooked.js): the site settings
     /// that gate them and their strings, as JSON for a script element.
     pub cooked_config: String,
+    /// The user card opens (static/js/user-card.js): not for an anonymous
+    /// visitor under hide_user_profiles_from_public (CardContentsBase#_show).
+    pub user_cards: bool,
+    /// enable_badges, the card's showBadges.
+    pub enable_badges: bool,
 }
 
 /// The site settings the cooked decorators check, as the Ember client
@@ -373,6 +378,9 @@ impl Site {
             }
         }
         self.chrome.powered_by = settings.get("enable_powered_by_discourse")?.truthy();
+        self.chrome.user_cards =
+            guardian.user().is_some() || !settings.get("hide_user_profiles_from_public")?.truthy();
+        self.chrome.enable_badges = settings.get("enable_badges")?.truthy();
         self.chrome.can_signup = !settings.get("invite_only")?.truthy()
             && settings.get("allow_new_registrations")?.truthy()
             && !settings.get("enable_discourse_connect")?.truthy();

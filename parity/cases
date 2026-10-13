@@ -102,6 +102,18 @@ GET /u/user0.json ignore=/user/can_chat_user,/user/profile_view_count
 GET /u/nobody.json
 GET /u/user1/badges.json ignore=/user/can_chat_user,/user/profile_view_count
 GET /u/user1/activity/topics.json ignore=/user/can_chat_user,/user/profile_view_count
+# users#show_card (UserCardSerializer, HiddenProfileSerializer,
+# InactiveUserSerializer), with topic_post_count for a topic the viewer may
+# see (35) or not (42, a message between user1 and user0).
+GET /u/user1/card.json?skip_track_visit=true
+GET /u/user1/card.json?include_post_count_for=35&skip_track_visit=true
+GET /u/discobot/card.json?skip_track_visit=true
+GET /u/nobody/card.json
+GET /u/user0/card.json?include_post_count_for=42&skip_track_visit=true as=user1
+GET /u/user0/card.json?include_post_count_for=42&skip_track_visit=true as=user2
+GET /u/user1/card.json?include_post_count_for=35 as=user1 ignore=/user/last_seen_at
+GET /u/user1/card.json?include_post_count_for=35&skip_track_visit=true as=admin
+GET /u/user1.json?include_post_count_for=35&skip_track_visit=true ignore=/user/can_chat_user,/user/profile_view_count
 # users#summary
 GET /u/user1/summary.json ignore=/user_summary/top_categories
 # user1's top categories tie (one post each in General and Sub General);

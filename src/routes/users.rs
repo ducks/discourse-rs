@@ -21,8 +21,8 @@ use crate::{AppError, AppState, Unsupported};
 
 #[derive(Deserialize, Default)]
 pub struct ShowParams {
-    skip_track_visit: Option<String>,
-    include_post_count_for: Option<String>,
+    pub(crate) skip_track_visit: Option<String>,
+    pub(crate) include_post_count_for: Option<String>,
 }
 
 #[derive(Deserialize, Default)]
@@ -50,6 +50,8 @@ fn invalid_access(state: &AppState) -> Response {
 enum Action {
     Show,
     Summary,
+    /// `/u/:username/card.json`, users#show_card.
+    Card,
     /// The HTML of a user stream route (`/activity`, `/activity/replies`
     /// ...): users#show, drawn as that tab.
     Activity(ActivityFilter),
@@ -62,6 +64,8 @@ enum Routed {
     Profile(String, Action, bool),
     /// `/activity.json`, PostsController#user_posts_feed: the username.
     PostsFeed(String),
+    /// No route matches (`/u/:username/card` has only a .json route).
+    NotFound,
 }
 
 /// `/u/:username(/...)`: which action the tail selects, and whether the
@@ -101,7 +105,8 @@ fn route(username: &str, rest: Option<&str>) -> Result<Routed, Unsupported> {
         {
             Action::Show
         }
-        "card" => return Err(Unsupported("/u/:username/card.json")),
+        "card" if json => Action::Card,
+        "card" => return Ok(Routed::NotFound),
         _ => return Err(Unsupported("unknown /u/:username route")),
     };
     Ok(Routed::Profile(username, action, json))
@@ -151,6 +156,7 @@ pub async fn show_with_tail(
         Routed::PostsFeed(username) => {
             return posts_feed(&state, &incoming.guardian, &username).await;
         }
+        Routed::NotFound => return Ok(super::topics::not_found_response(&state)),
     };
     respond(
         state,
@@ -175,6 +181,71 @@ struct Target {
     json: bool,
 }
 
+/// users#show_card's document for `username`: UserCardSerializer, or
+/// HiddenProfileSerializer, or InactiveUserSerializer for a viewer who
+/// isn't staff, with `topic_post_count`; the visit is tracked unless
+/// `skip_track_visit` or one's own. Err is the refusal to send instead
+/// (invalid access, not found). The card's HTML (super::user_card) draws
+/// on it too.
+pub(crate) async fn card_doc(
+    state: &AppState,
+    incoming: &crate::session::current::Incoming,
+    username: &str,
+    params: &ShowParams,
+    headers: &HeaderMap,
+    peer: Option<std::net::SocketAddr>,
+) -> Result<Result<Value, Response>, AppError> {
+    let guardian = &incoming.guardian;
+    let auth_token: Option<String> = incoming
+        .session
+        .as_ref()
+        .map(|s| s.token.auth_token.clone());
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let noindex = [("x-robots-tag", "noindex")];
+    // ensure_public_can_see_profiles!
+    if settings.get("hide_user_profiles_from_public")?.truthy() && guardian.is_anonymous() {
+        return Ok(Err((noindex, invalid_access(state)).into_response()));
+    }
+    // fetch_user_from_params(include_inactive: true)
+    let Some(user) = User::find_any(&mut conn, username).await? else {
+        return Ok(Err(
+            (noindex, super::topics::not_found_response(state)).into_response()
+        ));
+    };
+    let urls = Urls {
+        config: &state.config,
+        settings: &settings,
+    };
+    let mut users = Users {
+        conn: &mut conn,
+        settings: &settings,
+        i18n: &state.i18n,
+        guardian,
+        urls: &urls,
+        base_path: state.config.globals.relative_url_root(),
+        auth_token: auth_token.as_deref(),
+    };
+    // assign_topic_post_count: `include_post_count_for.to_i`.
+    let topic_id = params
+        .include_post_count_for
+        .as_deref()
+        .map(crate::ruby::to_i)
+        .unwrap_or(0) as i32;
+    let count = users.topic_post_count(&user, topic_id).await?;
+    let doc = if !guardian.is_staff() && !user.active {
+        users.inactive_card(&user, count).await?
+    } else {
+        users.card(&user, count).await?
+    };
+    if params.skip_track_visit.is_none() && !guardian.is_me(user.id) {
+        let ip = crate::remote_ip::remote_ip(headers, peer)?;
+        users.track_view(&user, &ip).await?;
+    }
+    Ok(Ok(doc))
+}
+
 async fn respond(
     state: AppState,
     incoming: crate::session::current::Incoming,
@@ -184,6 +255,15 @@ async fn respond(
     peer: Option<std::net::SocketAddr>,
     uri: axum::http::Uri,
 ) -> Result<Response, AppError> {
+    if matches!(target.action, Action::Card) {
+        let noindex = [("x-robots-tag", "noindex")];
+        return Ok(
+            match card_doc(&state, &incoming, &target.username, &params, &headers, peer).await? {
+                Ok(doc) => (noindex, Json(doc)).into_response(),
+                Err(refused) => refused,
+            },
+        );
+    }
     // Before the page's data is read (crate::bus::page_position).
     let bus_position = if target.json {
         String::new()
@@ -200,15 +280,18 @@ async fn respond(
         action,
         json,
     } = target;
-    if params.include_post_count_for.is_some() {
-        return Err(Unsupported("include_post_count_for").into());
-    }
+    // assign_topic_post_count: `include_post_count_for.to_i`.
+    let post_count_for = params
+        .include_post_count_for
+        .as_deref()
+        .map(crate::ruby::to_i)
+        .unwrap_or(0) as i32;
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
     let noindex = [("x-robots-tag", "noindex")];
     // ensure_public_can_see_profiles!
-    if settings.get("hide_user_profiles_from_public")?.truthy() {
+    if settings.get("hide_user_profiles_from_public")?.truthy() && guardian.is_anonymous() {
         return Ok((noindex, invalid_access(&state)).into_response());
     }
     let not_found = || (noindex, super::topics::not_found_response(&state)).into_response();
@@ -230,8 +313,15 @@ async fn respond(
         auth_token: auth_token.as_deref(),
     };
     let doc = match action {
-        Action::Show | Action::Activity(_) => {
-            let doc = users.show(&user).await?;
+        Action::Show | Action::Activity(_) | Action::Card => {
+            let mut doc = users.show(&user).await?;
+            // UserSerializer gets the post count too, HiddenProfileSerializer
+            // only on the card.
+            if doc["user"]["profile_hidden"] != true
+                && let Some(count) = users.topic_post_count(&user, post_count_for).await?
+            {
+                doc["user"]["topic_post_count"] = count;
+            }
             // Viewing one's own profile isn't tracked.
             if params.skip_track_visit.is_none() && !guardian.is_me(user.id) {
                 let ip = crate::remote_ip::remote_ip(&headers, peer)?;
@@ -252,13 +342,13 @@ async fn respond(
     // The HTML profile draws on the show document, the summary and the
     // public activity stream.
     let show_doc = match action {
-        Action::Show | Action::Activity(_) => doc,
+        Action::Show | Action::Activity(_) | Action::Card => doc,
         Action::Summary => users.show(&user).await?,
     };
     // user/index: one's own profile opens the activity stream, others
     // view_user_route.
     let filter = match action {
-        Action::Summary => None,
+        Action::Summary | Action::Card => None,
         Action::Activity(filter) => Some(filter),
         Action::Show if guardian.is_me(user.id) => Some(ActivityFilter::All),
         Action::Show => match settings.get("view_user_route")?.to_s().as_str() {
