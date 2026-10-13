@@ -1,0 +1,10 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/43/remove-allowed-user.json",
+      "params": {}
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO ignored_users (user_id, ignored_user_id, created_at, updated_at, expiring_at) VALUES (4, 3, now(), now(), now() + interval '1 year')"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/t/42/invite.json",
+      "params": {
+        "user": "user2"
+      }
+    }
+  ]
+}

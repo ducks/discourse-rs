@@ -268,6 +268,7 @@ async fn auto_bump_topic(
             topic_id,
             action_code: "autobumped",
             bump: true,
+            who: None,
         },
     )
     .await?;

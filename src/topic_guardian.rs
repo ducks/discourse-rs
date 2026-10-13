@@ -469,8 +469,18 @@ impl Guardian {
     }
 
     /// `can_remove_allowed_users?(topic, target = nil)`
-    pub fn can_remove_allowed_users(&self, topic: &TopicCtx) -> bool {
-        self.is_staff() || (self.is_me_opt(topic.user_id) && self.has_trust_level(2))
+    /// `allowed_users`: the message's directly allowed users.
+    pub fn can_remove_allowed_users(
+        &self,
+        topic: &TopicCtx,
+        target: Option<i32>,
+        allowed_users: i64,
+    ) -> bool {
+        self.is_staff()
+            || (self.is_me_opt(topic.user_id) && self.has_trust_level(2))
+            || (allowed_users > 1
+                && topic.user_id != target
+                && target.is_some_and(|t| self.is_me(t)))
     }
 
     /// `can_invite_to?(topic)`

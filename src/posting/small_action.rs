@@ -24,6 +24,8 @@ pub struct SmallAction<'a> {
     pub action_code: &'a str,
     /// `bump:` (TopicStatusUpdater bumps only when opening a topic).
     pub bump: bool,
+    /// `add_small_action`'s `who`: the action_code_who custom field.
+    pub who: Option<&'a str>,
 }
 
 /// Creates the post and its trail, then `increment!(:moderator_posts_count)`.
@@ -88,6 +90,16 @@ pub async fn add(
     .bind(drafts_saved)
     .execute(&mut *conn)
     .await?;
+    if let Some(who) = action.who.filter(|w| !w.is_empty()) {
+        sqlx::query(
+            "INSERT INTO post_custom_fields (post_id, name, value, created_at, updated_at) \
+             VALUES ($1, 'action_code_who', $2, clock_timestamp(), clock_timestamp())",
+        )
+        .bind(post_id)
+        .bind(who)
+        .execute(&mut *conn)
+        .await?;
+    }
     if let Some(notice) = notice {
         sqlx::query(
             "INSERT INTO post_custom_fields (post_id, name, value, created_at, updated_at) \

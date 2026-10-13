@@ -1,0 +1,74 @@
+{
+  "name": "invite_existing_participant",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/t/43/invite.json",
+      "params": {
+        "user": "user1"
+      }
+    }
+  ],
+  "started_at": "2026-10-13T14:09:29.802803",
+  "transaction_started_at": "2026-10-13T14:09:28.948583",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Sorry, that user has already been invited. You may only invite a user to a topic once."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 488,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "YLn74YECso7FDUnmOl2HRXVATg4=",
+            "created_at": "2026-10-13T14:09:29.276171",
+            "rotated_at": "2026-10-13T14:09:29.274843",
+            "updated_at": "2026-10-13T14:09:29.276171",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "YLn74YECso7FDUnmOl2HRXVATg4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 488,
+            "seen_at": "2026-10-13T14:09:29.809717",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "YLn74YECso7FDUnmOl2HRXVATg4=",
+            "created_at": "2026-10-13T14:09:29.276171",
+            "rotated_at": "2026-10-13T14:09:29.274843",
+            "updated_at": "2026-10-13T14:09:29.276171",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "YLn74YECso7FDUnmOl2HRXVATg4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "a4b6939114fe0ba6d4c33e8d895b962da17633ac75e0acaf7f2adaeaff8ff46f",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

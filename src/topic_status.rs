@@ -255,6 +255,7 @@ pub async fn update(
                 topic_id: topic.id,
                 action_code: &action_code,
                 bump: status == Status::Closed && !enabled,
+                who: None,
             },
         )
         .await?;

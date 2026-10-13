@@ -17,6 +17,7 @@ mod login_required;
 mod messages;
 mod not_found;
 mod notifications;
+mod pm_invite;
 mod post_actions;
 mod post_destroy;
 mod posts;
@@ -341,6 +342,16 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/t/{slug}/status", put(topic_status::status))
         // {slug} holds the topic id.
         .route("/t/{slug}/archive-message", put(archive_message::archive))
+        .route("/t/{slug}/invite", post(pm_invite::invite))
+        .route("/t/{slug}/invite.json", post(pm_invite::invite))
+        .route(
+            "/t/{slug}/remove-allowed-user",
+            put(pm_invite::remove_allowed_user),
+        )
+        .route(
+            "/t/{slug}/remove-allowed-user.json",
+            put(pm_invite::remove_allowed_user),
+        )
         .route(
             "/t/{slug}/move-to-inbox",
             put(archive_message::move_to_inbox),

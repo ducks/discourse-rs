@@ -1,0 +1,15 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/t/42/invite.json",
+      "params": {
+        "user": "user2"
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert"
+  ]
+}

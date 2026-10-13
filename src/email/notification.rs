@@ -132,6 +132,8 @@ pub async fn build(
     let add_re = match req.email_type {
         "user_replied" | "user_quoted" | "user_linked" | "user_mentioned" => false,
         "user_posted" | "user_watching_first_post" | "user_private_message" => true,
+        // user_invited_to_private_message: the invite template.
+        "user_invited_to_private_message" => false,
         other => {
             tracing::warn!(email_type = other, "notification email type not ported");
             return Err(Unsupported("this notification email type").into());
@@ -184,17 +186,26 @@ pub async fn build(
 
     // notification_email
     let data_str = |k: &str| req.data.get(k).and_then(Value::as_str).map(str::to_string);
+    let invite = req.email_type == "user_invited_to_private_message";
     let mut user_name = data_str("original_username").unwrap_or_default();
-    if s.get("enable_names")?.truthy()
-        && s.get("display_name_on_email_from")?.truthy()
-        && let Some(name) = post.name.clone().filter(|n| !n.trim().is_empty())
-    {
-        if req.data.get("original_user_id").is_some() {
-            return Err(Unsupported("original_user_id in notification data").into());
+    if s.get("enable_names")?.truthy() && s.get("display_name_on_email_from")?.truthy() {
+        // The name of original_user_id, else the post's author.
+        let named = req
+            .data
+            .get("original_user_id")
+            .and_then(Value::as_i64)
+            .map_or(post.user_id, |id| id as i32);
+        let name: Option<String> = sqlx::query_scalar("SELECT name FROM users WHERE id = $1")
+            .bind(named)
+            .fetch_optional(&mut *conn)
+            .await?
+            .flatten();
+        if let Some(name) = name.filter(|n| !n.trim().is_empty()) {
+            user_name = name;
         }
-        user_name = name;
     }
-    let allow_reply_by_email = !user.suspended;
+    // user_invited_to_private_message: allow_reply_by_email false.
+    let allow_reply_by_email = !invite && !user.suspended;
     let original_username = data_str("original_username")
         .or_else(|| Some(post.username.clone()))
         .unwrap_or_default();
@@ -330,7 +341,41 @@ pub async fn build(
     if user.email_in_reply_to && post.reply_to_post_number.is_some() {
         return Err(Unsupported("in-reply-to excerpts in notification emails").into());
     }
-    let message = format!("{}\n\n", post.raw);
+    let message = if invite {
+        // use_invite_template: the first post's excerpt and the topic.
+        let excerpt = if post.post_number == 1 {
+            crate::excerpt::excerpt(
+                &post.cooked,
+                s.get("post_excerpt_maxlength")?.to_i().max(0) as usize,
+                &crate::excerpt::Options::default(),
+            )
+            .replace('\n', " ")
+        } else {
+            String::new()
+        };
+        let topic_url = format!(
+            "{base_url}/t/{}/{}",
+            post.slug.as_deref().unwrap_or_default(),
+            post.topic_id
+        );
+        t(
+            ctx,
+            "user_notifications.invited_to_private_message_body",
+            &[
+                ("username", &original_username),
+                (
+                    "topic_title",
+                    &crate::emoji::gsub_emoji_to_unicode(&topic_title),
+                ),
+                ("topic_excerpt", &excerpt),
+                ("site_title", &site_title),
+                ("site_description", &s.get("site_description")?.to_s()),
+                ("topic_url", &topic_url),
+            ],
+        )?
+    } else {
+        format!("{}\n\n", post.raw)
+    };
     let slug = post.slug.clone().unwrap_or_default();
     // Post#url: the post number even for the first post (only share_url
     // leaves it off).
@@ -505,15 +550,35 @@ pub async fn build(
         String::new()
     };
     let topic_title_unicode = crate::emoji::gsub_emoji_to_unicode(&topic_title);
-    let subject = s
-        .get("email_subject")?
-        .to_s()
-        .replace("%{site_name}", &email_prefix)
-        .replace("%{optional_re}", &subject_re)
-        .replace("%{optional_pm}", &subject_pm)
-        .replace("%{optional_cat}", &format_category)
-        .replace("%{optional_tags}", &format_tags)
-        .replace("%{topic_title}", &topic_title_unicode);
+    // The invite's own subject template (no use_site_subject).
+    let subject = if invite {
+        let key = format!("{template}.subject_template");
+        let key = if s.get("simple_email_subject")?.truthy()
+            && ctx.i18n.t(&format!("{key}_improved")).is_some()
+        {
+            format!("{key}_improved")
+        } else {
+            key
+        };
+        t(
+            ctx,
+            &key,
+            &[
+                ("email_prefix", &email_prefix),
+                ("username", &original_username),
+                ("topic_title", &topic_title_unicode),
+            ],
+        )?
+    } else {
+        s.get("email_subject")?
+            .to_s()
+            .replace("%{site_name}", &email_prefix)
+            .replace("%{optional_re}", &subject_re)
+            .replace("%{optional_pm}", &subject_pm)
+            .replace("%{optional_cat}", &format_category)
+            .replace("%{optional_tags}", &format_tags)
+            .replace("%{topic_title}", &topic_title_unicode)
+    };
 
     // body: the text template, then the unsubscribe instructions.
     let context = String::new();
@@ -537,7 +602,12 @@ pub async fn build(
             pretty_text::cook(ctx.host, &raw, &MarkdownOptions::default()).await?,
         )
     };
-    let mut html = notification_html;
+    // The invite's html_override: its message cooked, nothing else.
+    let mut html = if invite {
+        cook(message.clone()).await?
+    } else {
+        notification_html
+    };
     html = html.replace(
         "%{unsubscribe_instructions}",
         &cook(unsubscribe_instructions.clone()).await?,

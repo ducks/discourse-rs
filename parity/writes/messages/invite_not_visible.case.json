@@ -1,0 +1,12 @@
+{
+  "user": "user0",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/t/43/invite.json",
+      "params": {
+        "user": "user3"
+      }
+    }
+  ]
+}
