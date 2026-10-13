@@ -210,16 +210,21 @@ async fn post_update_topic_tracking_state(state: &AppState, args: &Value) -> Res
             crate::pm_tracking_state::publish_unread(&state.bus, &s, &mut tx, post_id as i32)
                 .await?;
         }
-        // TopicGroup.new_message_update: nothing for a message without
-        // groups.
-        let groups: bool = sqlx::query_scalar(
-            "SELECT EXISTS (SELECT 1 FROM topic_allowed_groups WHERE topic_id = $1)",
-        )
-        .bind(topic_id)
-        .fetch_one(&mut *tx)
-        .await?;
-        if groups {
-            return Err(Unsupported("group messages' read counts (TopicGroup)").into());
+        // TopicGroup.new_message_update for the topic's last poster.
+        let last_poster: Option<i32> =
+            sqlx::query_scalar("SELECT last_post_user_id FROM topics WHERE id = $1")
+                .bind(topic_id)
+                .fetch_one(&mut *tx)
+                .await?;
+        if let Some(last_poster) = last_poster {
+            crate::posting::group_messages::new_message_update(
+                &state.bus,
+                &mut tx,
+                last_poster,
+                topic_id,
+                post_number,
+            )
+            .await?;
         }
         tx.commit().await?;
         return Ok(());

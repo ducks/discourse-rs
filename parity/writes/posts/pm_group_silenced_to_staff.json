@@ -1,0 +1,595 @@
+{
+  "name": "pm_group_silenced_to_staff",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A message to the moderators group",
+        "raw": "Hello moderators, this message for the case pm group silenced to staff goes to the group.",
+        "archetype": "private_message",
+        "target_recipients": "moderators"
+      }
+    }
+  ],
+  "started_at": "2026-10-13T07:12:28.798681",
+  "transaction_started_at": "2026-10-13T07:12:27.922282",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "id": 53,
+        "name": "User1",
+        "username": "user1",
+        "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+        "created_at": "2026-10-13T07:12:28.998Z",
+        "cooked": "<p>Hello moderators, this message for the case pm group silenced to staff goes to the group.</p>",
+        "post_number": 1,
+        "post_type": 1,
+        "posts_count": 1,
+        "updated_at": "2026-10-13T07:12:28.998Z",
+        "reply_count": 0,
+        "reply_to_post_number": null,
+        "quote_count": 0,
+        "incoming_link_count": 0,
+        "reads": 0,
+        "readers_count": 0,
+        "score": 0,
+        "yours": true,
+        "topic_id": 45,
+        "topic_slug": "a-message-to-the-moderators-group",
+        "display_username": "User1",
+        "primary_group_name": null,
+        "flair_name": null,
+        "flair_url": null,
+        "flair_bg_color": null,
+        "flair_color": null,
+        "flair_group_id": null,
+        "badges_granted": [],
+        "version": 1,
+        "can_edit": false,
+        "can_delete": false,
+        "can_recover": false,
+        "can_see_hidden_post": true,
+        "can_wiki": false,
+        "user_title": null,
+        "bookmarked": false,
+        "raw": "Hello moderators, this message for the case pm group silenced to staff goes to the group.",
+        "actions_summary": [],
+        "moderator": false,
+        "admin": false,
+        "staff": false,
+        "user_id": 3,
+        "draft_sequence": 1,
+        "hidden": false,
+        "trust_level": 2,
+        "deleted_at": null,
+        "user_deleted": false,
+        "edit_reason": null,
+        "can_view_edit_history": true,
+        "wiki": false,
+        "post_url": "/t/a-message-to-the-moderators-group/45/1",
+        "reactions": [],
+        "current_user_reaction": null,
+        "reaction_users_count": 0,
+        "current_user_used_main_reaction": false,
+        "can_accept_answer": false,
+        "can_unaccept_answer": false,
+        "accepted_answer": false,
+        "topic_accepted_answer": null,
+        "can_vote": false
+      }
+    }
+  ],
+  "changes": {
+    "draft_sequences": {
+      "inserted": [
+        {
+          "id": 1,
+          "user_id": 3,
+          "sequence": 1,
+          "draft_key": "topic_45"
+        },
+        {
+          "id": 2,
+          "user_id": 3,
+          "sequence": 1,
+          "draft_key": "new_topic"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "groups": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 2,
+            "name": "moderators",
+            "title": null,
+            "bio_raw": null,
+            "imap_ssl": null,
+            "automatic": true,
+            "full_name": "Moderators",
+            "imap_port": null,
+            "smtp_port": null,
+            "bio_cooked": null,
+            "created_at": "2026-07-25T05:58:06.795937",
+            "flair_icon": null,
+            "updated_at": "2026-07-25T05:58:06.80035",
+            "user_count": 1,
+            "flair_color": null,
+            "imap_server": null,
+            "public_exit": false,
+            "smtp_server": null,
+            "has_messages": false,
+            "imap_enabled": false,
+            "smtp_enabled": false,
+            "imap_last_uid": 0,
+            "primary_group": false,
+            "smtp_ssl_mode": 0,
+            "email_password": null,
+            "email_username": null,
+            "flair_bg_color": null,
+            "incoming_email": null,
+            "flair_upload_id": null,
+            "imap_last_error": null,
+            "imap_new_emails": null,
+            "imap_old_emails": null,
+            "imap_updated_at": null,
+            "smtp_updated_at": null,
+            "assignable_level": 0,
+            "email_from_alias": null,
+            "public_admission": false,
+            "visibility_level": 1,
+            "grant_trust_level": null,
+            "imap_mailbox_name": "",
+            "imap_uid_validity": 0,
+            "mentionable_level": 0,
+            "messageable_level": 99,
+            "imap_updated_by_id": null,
+            "publish_read_state": false,
+            "smtp_updated_by_id": null,
+            "members_visibility_level": 0,
+            "allow_membership_requests": false,
+            "default_notification_level": 2,
+            "membership_request_template": null,
+            "allow_unknown_sender_topic_replies": false,
+            "automatic_membership_email_domains": null
+          },
+          "after": {
+            "id": 2,
+            "name": "moderators",
+            "title": null,
+            "bio_raw": null,
+            "imap_ssl": null,
+            "automatic": true,
+            "full_name": "Moderators",
+            "imap_port": null,
+            "smtp_port": null,
+            "bio_cooked": null,
+            "created_at": "2026-07-25T05:58:06.795937",
+            "flair_icon": null,
+            "updated_at": "2026-07-25T05:58:06.80035",
+            "user_count": 1,
+            "flair_color": null,
+            "imap_server": null,
+            "public_exit": false,
+            "smtp_server": null,
+            "has_messages": true,
+            "imap_enabled": false,
+            "smtp_enabled": false,
+            "imap_last_uid": 0,
+            "primary_group": false,
+            "smtp_ssl_mode": 0,
+            "email_password": null,
+            "email_username": null,
+            "flair_bg_color": null,
+            "incoming_email": null,
+            "flair_upload_id": null,
+            "imap_last_error": null,
+            "imap_new_emails": null,
+            "imap_old_emails": null,
+            "imap_updated_at": null,
+            "smtp_updated_at": null,
+            "assignable_level": 0,
+            "email_from_alias": null,
+            "public_admission": false,
+            "visibility_level": 1,
+            "grant_trust_level": null,
+            "imap_mailbox_name": "",
+            "imap_uid_validity": 0,
+            "mentionable_level": 0,
+            "messageable_level": 99,
+            "imap_updated_by_id": null,
+            "publish_read_state": false,
+            "smtp_updated_by_id": null,
+            "members_visibility_level": 0,
+            "allow_membership_requests": false,
+            "default_notification_level": 2,
+            "membership_request_template": null,
+            "allow_unknown_sender_topic_replies": false,
+            "automatic_membership_email_domains": null
+          }
+        }
+      ]
+    },
+    "post_search_data": {
+      "inserted": [
+        {
+          "locale": "en",
+          "post_id": 53,
+          "version": 5,
+          "raw_data": "Hello moderators, this message for the case pm group silenced to staff goes to the group.",
+          "search_data": "'case':13 'goe':19 'group':6A,15,22 'hello':7 'messag':2A,10 'moder':5A,8 'pm':14 'silenc':16 'staff':18",
+          "private_message": true
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_stats": {
+      "inserted": [
+        {
+          "id": 52,
+          "post_id": 53,
+          "created_at": "2026-10-13T07:12:29.016772",
+          "updated_at": "2026-10-13T07:12:29.016772",
+          "drafts_saved": 0,
+          "writing_device": "unknown",
+          "composer_version": null,
+          "typing_duration_msecs": 0,
+          "writing_device_user_agent": null,
+          "composer_open_duration_msecs": 0
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_timings": {
+      "inserted": [
+        {
+          "msecs": 5000,
+          "user_id": 3,
+          "topic_id": 45,
+          "post_number": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "posts": {
+      "inserted": [
+        {
+          "id": 53,
+          "raw": "Hello moderators, this message for the case pm group silenced to staff goes to the group.",
+          "wiki": false,
+          "reads": 1,
+          "score": null,
+          "cooked": "<p>Hello moderators, this message for the case pm group silenced to staff goes to the group.</p>",
+          "hidden": false,
+          "locale": null,
+          "user_id": 3,
+          "version": 1,
+          "baked_at": "2026-10-13T07:12:28.998517",
+          "topic_id": 45,
+          "hidden_at": null,
+          "post_type": 1,
+          "raw_email": null,
+          "via_email": false,
+          "created_at": "2026-10-13T07:12:28.998551",
+          "deleted_at": null,
+          "like_count": 0,
+          "like_score": 0,
+          "self_edits": 0,
+          "sort_order": 1,
+          "spam_count": 0,
+          "updated_at": "2026-10-13T07:12:28.998551",
+          "word_count": 16,
+          "action_code": null,
+          "cook_method": 1,
+          "edit_reason": null,
+          "post_number": 1,
+          "quote_count": 0,
+          "reply_count": 0,
+          "locked_by_id": null,
+          "percent_rank": 1,
+          "reply_quoted": false,
+          "user_deleted": false,
+          "baked_version": 2,
+          "deleted_by_id": null,
+          "illegal_count": 0,
+          "qa_vote_count": 0,
+          "bookmark_count": 0,
+          "last_editor_id": 3,
+          "public_version": 1,
+          "image_upload_id": null,
+          "last_version_at": "2026-10-13T07:12:29.014276",
+          "off_topic_count": 0,
+          "hidden_reason_id": null,
+          "reply_to_user_id": null,
+          "notify_user_count": 0,
+          "inappropriate_count": 0,
+          "incoming_link_count": 0,
+          "outbound_message_id": null,
+          "reply_to_post_number": null,
+          "notify_moderators_count": 0
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_allowed_groups": {
+      "inserted": [
+        {
+          "id": 1,
+          "group_id": 2,
+          "topic_id": 45
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_allowed_users": {
+      "inserted": [
+        {
+          "id": 9,
+          "user_id": 3,
+          "topic_id": 45,
+          "created_at": "2026-10-13T07:12:28.958699",
+          "updated_at": "2026-10-13T07:12:28.958699"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_search_data": {
+      "inserted": [
+        {
+          "locale": "en",
+          "version": 4,
+          "raw_data": "A message to the moderators group Hello moderators, this message for the case pm group silenced to staff goes to the group.",
+          "topic_id": 45,
+          "search_data": "'case':13B 'goe':19B 'group':6A,15B,22B 'hello':7B 'messag':2A,10B 'moder':5A,8B 'pm':14B 'silenc':16B 'staff':18B"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_users": {
+      "inserted": [
+        {
+          "id": 56,
+          "liked": false,
+          "posted": false,
+          "user_id": 1,
+          "topic_id": 45,
+          "bookmarked": false,
+          "last_posted_at": null,
+          "last_visited_at": "2026-10-13T07:12:28.981412",
+          "first_visited_at": "2026-10-13T07:12:28.981412",
+          "cleared_pinned_at": null,
+          "notification_level": 2,
+          "total_msecs_viewed": 0,
+          "last_read_post_number": null,
+          "notifications_reason_id": 2,
+          "last_emailed_post_number": null,
+          "notifications_changed_at": "2026-10-13T07:12:28.980424"
+        },
+        {
+          "id": 55,
+          "liked": false,
+          "posted": true,
+          "user_id": 3,
+          "topic_id": 45,
+          "bookmarked": false,
+          "last_posted_at": "2026-10-13T07:12:29.020065",
+          "last_visited_at": "2026-10-13T07:12:28.97139",
+          "first_visited_at": "2026-10-13T07:12:28.97139",
+          "cleared_pinned_at": null,
+          "notification_level": 3,
+          "total_msecs_viewed": 0,
+          "last_read_post_number": 1,
+          "notifications_reason_id": 1,
+          "last_emailed_post_number": null,
+          "notifications_changed_at": "2026-10-13T07:12:28.970018"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topics": {
+      "inserted": [
+        {
+          "id": 45,
+          "slug": "a-message-to-the-moderators-group",
+          "score": null,
+          "title": "A message to the moderators group",
+          "views": 0,
+          "closed": false,
+          "locale": null,
+          "excerpt": "Hello moderators, this message for the case pm group silenced to staff goes to the group.",
+          "subtype": "user_to_user",
+          "user_id": 3,
+          "visible": true,
+          "archived": false,
+          "archetype": "private_message",
+          "bumped_at": "2026-10-13T07:12:28.998551",
+          "pinned_at": null,
+          "created_at": "2026-10-13T07:12:28.954157",
+          "deleted_at": null,
+          "like_count": 0,
+          "spam_count": 0,
+          "updated_at": "2026-10-13T07:12:29.025217",
+          "word_count": 16,
+          "category_id": null,
+          "external_id": null,
+          "fancy_title": "A message to the moderators group",
+          "has_summary": false,
+          "posts_count": 1,
+          "reply_count": 0,
+          "percent_rank": 1,
+          "pinned_until": null,
+          "deleted_by_id": null,
+          "featured_link": null,
+          "bannered_until": null,
+          "last_posted_at": "2026-10-13T07:12:28.998551",
+          "image_upload_id": null,
+          "pinned_globally": false,
+          "reviewable_score": 0,
+          "featured_user1_id": null,
+          "featured_user2_id": null,
+          "featured_user3_id": null,
+          "featured_user4_id": null,
+          "last_post_user_id": 3,
+          "participant_count": 1,
+          "slow_mode_seconds": 0,
+          "og_image_upload_id": null,
+          "highest_post_number": 1,
+          "incoming_link_count": 0,
+          "visibility_reason_id": null,
+          "moderator_posts_count": 0,
+          "notify_moderators_count": 0,
+          "highest_staff_post_number": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_actions": {
+      "inserted": [
+        {
+          "id": 65,
+          "user_id": 3,
+          "created_at": "2026-10-13T07:12:28.954157",
+          "updated_at": "2026-10-13T07:12:28.988866",
+          "action_type": 12,
+          "acting_user_id": 3,
+          "target_post_id": -1,
+          "target_user_id": null,
+          "target_topic_id": 45
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 488,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "enyD5PYQs+vfftpUTxyuEjMFcYQ=",
+            "created_at": "2026-10-13T07:12:28.244532",
+            "rotated_at": "2026-10-13T07:12:28.243729",
+            "updated_at": "2026-10-13T07:12:28.244532",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "enyD5PYQs+vfftpUTxyuEjMFcYQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 488,
+            "seen_at": "2026-10-13T07:12:28.813896",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "enyD5PYQs+vfftpUTxyuEjMFcYQ=",
+            "created_at": "2026-10-13T07:12:28.244532",
+            "rotated_at": "2026-10-13T07:12:28.243729",
+            "updated_at": "2026-10-13T07:12:28.244532",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "enyD5PYQs+vfftpUTxyuEjMFcYQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "bot_input",
+      {
+        "user_id": 3,
+        "topic_id": 45,
+        "input": "topic_notification_level_changed"
+      }
+    ],
+    [
+      "bot_input",
+      {
+        "user_id": 1,
+        "topic_id": 45,
+        "input": "topic_notification_level_changed"
+      }
+    ],
+    [
+      "bot_input",
+      {
+        "user_id": 3,
+        "post_id": 53,
+        "input": "reply"
+      }
+    ],
+    [
+      "post_alert",
+      {
+        "post_id": 53,
+        "new_record": true,
+        "options": null
+      }
+    ],
+    [
+      "feature_topic_users",
+      {
+        "topic_id": 45
+      }
+    ],
+    [
+      "process_post",
+      {
+        "bypass_bump": false,
+        "cooking_options": null,
+        "new_post": true,
+        "post_id": 53,
+        "skip_pull_hotlinked_images": false
+      }
+    ],
+    [
+      "post_update_topic_tracking_state",
+      {
+        "post_id": 53
+      }
+    ]
+  ],
+  "next_ids": {
+    "draft_sequences": 1,
+    "post_stats": 52,
+    "posts": 53,
+    "topic_allowed_groups": 1,
+    "topic_allowed_users": 9,
+    "topic_users": 55,
+    "topics": 45,
+    "user_actions": 65
+  },
+  "setup": [
+    "UPDATE users SET silenced_till = now() + interval '1 day' WHERE id = 3"
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "aa708cbba2bc2132819877c74ab66356ada3976d14eb2b2fc3f0d640bb902752",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

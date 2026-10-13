@@ -5,6 +5,7 @@
 //! tests/writes.rs compares.
 
 pub mod create;
+pub mod group_messages;
 pub mod limits;
 pub mod links;
 pub mod rebake;
@@ -105,6 +106,7 @@ pub mod user_actions {
 
 /// `TopicUser.notification_levels`
 pub mod notification_levels {
+    pub const MUTED: i32 = 0;
     pub const REGULAR: i32 = 1;
     pub const TRACKING: i32 = 2;
     pub const WATCHING: i32 = 3;

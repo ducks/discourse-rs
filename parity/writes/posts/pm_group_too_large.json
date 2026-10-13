@@ -1,0 +1,94 @@
+{
+  "name": "pm_group_too_large",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A message to the moderators group",
+        "raw": "Hello moderators, this message for the case pm group too large goes to the group.",
+        "archetype": "private_message",
+        "target_recipients": "moderators"
+      }
+    }
+  ],
+  "started_at": "2026-10-13T07:12:30.11167",
+  "transaction_started_at": "2026-10-13T07:12:29.297067",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "action": "create_post",
+        "errors": [
+          "The group: moderators, has too many users to receive a message. Limit is 1."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 488,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "WYLzb2DpeTI6fr0j9MG7IOOb/1c=",
+            "created_at": "2026-10-13T07:12:29.610322",
+            "rotated_at": "2026-10-13T07:12:29.609392",
+            "updated_at": "2026-10-13T07:12:29.610322",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "WYLzb2DpeTI6fr0j9MG7IOOb/1c=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 488,
+            "seen_at": "2026-10-13T07:12:30.11782",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "WYLzb2DpeTI6fr0j9MG7IOOb/1c=",
+            "created_at": "2026-10-13T07:12:29.610322",
+            "rotated_at": "2026-10-13T07:12:29.609392",
+            "updated_at": "2026-10-13T07:12:29.610322",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "WYLzb2DpeTI6fr0j9MG7IOOb/1c=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "bot_input",
+      {
+        "user_id": 3,
+        "topic_id": 45,
+        "input": "topic_notification_level_changed"
+      }
+    ]
+  ],
+  "next_ids": {},
+  "settings": {
+    "group_pm_user_limit": "1"
+  },
+  "setup": [
+    "UPDATE groups SET user_count = 2 WHERE id = 2"
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "71f413982484cf8df8d3b8dc982191cd5b3c34a97db9870c43f5a7463e4a37b0",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

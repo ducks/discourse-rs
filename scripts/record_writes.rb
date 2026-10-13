@@ -113,7 +113,8 @@ def clear_redis_state
   # LAST_UPLOAD_CLEANUP: CleanUpUploads skips orphans for a day after the
   # reference's own scheduler ran it.
   # l-rate-limit3: the rate limiters' lists, for cases that turn them on.
-  %w[unique-post-* rejection_email:* user-last-seen:* hot_score_6_hourly __SEARCH__LOG_* LAST_UPLOAD_CLEANUP l-rate-limit3:*].each do |pattern|
+  # unique-pm-post: the duplicate check's key for posts in messages.
+  %w[unique-post-* unique-pm-post-* rejection_email:* user-last-seen:* hot_score_6_hourly __SEARCH__LOG_* LAST_UPLOAD_CLEANUP l-rate-limit3:*].each do |pattern|
     Discourse.redis.keys(pattern).each { |k| Discourse.redis.del(k) }
   end
   # Presence lives in Redis too, members and cached configs alike.

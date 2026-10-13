@@ -1,0 +1,21 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE group_users SET notification_level = 3 WHERE group_id = 2 AND user_id = 1"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A message to the moderators group",
+        "raw": "Hello moderators, this message for the case pm group watching member goes to the group.",
+        "archetype": "private_message",
+        "target_recipients": "moderators"
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_update_topic_tracking_state"
+  ]
+}

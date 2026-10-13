@@ -83,7 +83,9 @@ pub async fn create(
     let integer = |k: &str| params::integer(&p, k);
     let api = headers.contains_key(crate::session::api_key::HEADER_API_KEY);
     // archetype: a private message to target_recipients, split as
-    // create_params does (usernames, then groups and emails, refused).
+    // create_params does: the groups the user may message, then the rest
+    // as usernames (emails among them refused later).
+    let mut pm_groups = Vec::new();
     let pm_recipients = match params::string(&p, "archetype").as_deref() {
         None | Some("") | Some("regular") => None,
         Some("private_message") => {
@@ -93,6 +95,11 @@ pub async fn create(
             while names.last().is_some_and(String::is_empty) {
                 names.pop();
             }
+            let mut conn = state.pool.acquire().await?;
+            pm_groups =
+                crate::posting::group_messages::messageable_names(&mut conn, &guardian, &names)
+                    .await?;
+            names.retain(|n| !pm_groups.contains(n));
             Some(names)
         }
         Some(_) => return Err(Unsupported("archetypes other than private messages").into()),
@@ -111,6 +118,7 @@ pub async fn create(
             .and_then(|v| v.to_str().ok())
             .map(str::to_string),
         pm_recipients,
+        pm_groups,
         email: None,
         // is_api?: an admin API key (the session middleware checked it).
         advance_draft: !api,

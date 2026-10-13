@@ -1,0 +1,79 @@
+{
+  "name": "pm_group_not_messageable",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A message to the moderators group",
+        "raw": "Hello moderators, this message for the case pm group not messageable goes to the group.",
+        "archetype": "private_message",
+        "target_recipients": "staff"
+      }
+    }
+  ],
+  "started_at": "2026-10-13T07:12:23.755078",
+  "transaction_started_at": "2026-10-13T07:12:22.769333",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "action": "create_post",
+        "errors": [
+          "One of the users you are sending this message to could not be found."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 488,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "jQSBx8nWwtXrlXoKMFrBhlkEIeo=",
+            "created_at": "2026-10-13T07:12:23.253119",
+            "rotated_at": "2026-10-13T07:12:23.252288",
+            "updated_at": "2026-10-13T07:12:23.253119",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "jQSBx8nWwtXrlXoKMFrBhlkEIeo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 488,
+            "seen_at": "2026-10-13T07:12:23.760133",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "jQSBx8nWwtXrlXoKMFrBhlkEIeo=",
+            "created_at": "2026-10-13T07:12:23.253119",
+            "rotated_at": "2026-10-13T07:12:23.252288",
+            "updated_at": "2026-10-13T07:12:23.253119",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "jQSBx8nWwtXrlXoKMFrBhlkEIeo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "0dda57485fe70bbea8007626fefff066988c53b27e9f79f1ac0b23f2a7124772",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

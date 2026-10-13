@@ -1,0 +1,18 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A message to the moderators group",
+        "raw": "Hello moderators, this message for the case pm group and user goes to the group.",
+        "archetype": "private_message",
+        "target_recipients": "moderators,user0"
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_update_topic_tracking_state"
+  ]
+}

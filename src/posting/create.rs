@@ -39,6 +39,9 @@ pub struct NewPost {
     /// A new private message to these usernames, lowercased (`archetype`
     /// and `target_recipients`).
     pub pm_recipients: Option<Vec<String>>,
+    /// `target_group_names`: the recipients that are groups the sender may
+    /// message, lowercased.
+    pub pm_groups: Vec<String>,
     /// Set for a post Email::Receiver creates.
     pub email: Option<EmailOrigin>,
     /// `advance_draft`: the composer's draft sequence moves on (not for API
@@ -100,6 +103,13 @@ struct ReplyTopic {
     closed: bool,
 }
 
+/// Why TopicCreator stopped a new topic, its transaction rolled back.
+enum TopicRefused {
+    RateLimited(crate::rate_limiter::LimitExceeded),
+    /// `rollback_with!`: the topic's errors.
+    Invalid(Vec<String>),
+}
+
 /// What a new topic is created with.
 struct TopicPlan {
     title: String,
@@ -107,6 +117,8 @@ struct TopicPlan {
     category_id: Option<i32>,
     /// A message's recipients, by id order, as add_users_from_scope adds them.
     pm_recipients: Option<Vec<i32>>,
+    /// A message's allowed groups, in id order.
+    pm_groups: Vec<super::group_messages::AllowedGroup>,
     slow_mode_seconds: Option<i32>,
     all_topics_wiki: bool,
     /// A message's subtype.
@@ -169,6 +181,7 @@ async fn regular_topic_plan(
         title,
         category_id: Some(category_id),
         pm_recipients: None,
+        pm_groups: Vec::new(),
         slow_mode_seconds: slow_mode,
         all_topics_wiki,
         subtype: None,
@@ -351,6 +364,7 @@ pub async fn create(
                 title,
                 category_id: None,
                 pm_recipients: None,
+                pm_groups: Vec::new(),
                 slow_mode_seconds: None,
                 all_topics_wiki: false,
                 subtype: args.subtype.clone(),
@@ -475,21 +489,13 @@ pub async fn create(
     if new_pm {
         let names = args.pm_recipients.clone().unwrap_or_default();
         let base = "activerecord.errors.models.topic.attributes.base";
-        if names.is_empty() {
+        if names.is_empty() && args.pm_groups.is_empty() {
             return Ok(Outcome::Invalid(vec![
                 ctx.t(&format!("{base}.no_user_selected")),
             ]));
         }
         if names.iter().any(|n| n.contains('@')) {
             return Err(Unsupported("messages to email addresses").into());
-        }
-        let groups: bool =
-            sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM groups WHERE lower(name) = ANY($1))")
-                .bind(&names)
-                .fetch_one(&mut *conn)
-                .await?;
-        if groups {
-            return Err(Unsupported("messages to groups").into());
         }
         #[derive(sqlx::FromRow)]
         struct Target {
@@ -527,8 +533,34 @@ pub async fn create(
                 ctx.t(&format!("{base}.target_user_not_found")),
             ]));
         }
+        // add_groups: each group the sender may message (unless
+        // skip_validations), all of them found.
+        let groups = super::group_messages::find(&mut conn, &args.pm_groups).await?;
+        let notify_moderators = args.subtype.as_deref() == Some("notify_moderators");
+        for group in &groups {
+            if !args.skip_validations
+                && !super::group_messages::can_send_to(
+                    &mut conn,
+                    guardian,
+                    sender_can,
+                    notify_moderators,
+                    group,
+                )
+                .await?
+            {
+                return Ok(Outcome::Invalid(vec![
+                    ctx.t(&format!("{base}.cant_send_pm")),
+                ]));
+            }
+        }
+        if groups.len() != args.pm_groups.len() {
+            return Ok(Outcome::Invalid(vec![
+                ctx.t(&format!("{base}.target_group_not_found")),
+            ]));
+        }
         if let Some(plan) = plan.as_mut() {
             plan.pm_recipients = Some(targets.iter().map(|t| t.id).collect());
+            plan.pm_groups = groups;
         }
     }
     let poster = Poster::load(&mut conn, &user).await?;
@@ -576,7 +608,10 @@ pub async fn create(
                     Err(refused) => {
                         tx.rollback().await?;
                         performed.undo().await?;
-                        return Ok(Outcome::RateLimited(refused));
+                        return Ok(match refused {
+                            TopicRefused::RateLimited(refused) => Outcome::RateLimited(refused),
+                            TopicRefused::Invalid(errors) => Outcome::Invalid(errors),
+                        });
                     }
                 };
             (
@@ -1173,7 +1208,7 @@ async fn create_topic(
     poster: &Poster,
     plan: &TopicPlan,
     performed: &mut Performed,
-) -> Result<Result<i32, crate::rate_limiter::LimitExceeded>, AppError> {
+) -> Result<Result<i32, TopicRefused>, AppError> {
     let s = ctx.settings;
     let user_id = poster.id;
     if s.get("slug_generation_method")?.to_s() != "ascii" {
@@ -1212,7 +1247,7 @@ async fn create_topic(
         )?)
         .await?
     {
-        return Ok(Err(refused));
+        return Ok(Err(TopicRefused::RateLimited(refused)));
     }
     // process_private_message: the recipients, then the sender.
     if let Some(recipients) = &plan.pm_recipients {
@@ -1229,6 +1264,21 @@ async fn create_topic(
             .bind(allowed_user)
             .execute(&mut *conn)
             .await?;
+        }
+    }
+    // add_groups: the allowed groups, each marked as having messages
+    // (update_columns: updated_at stays).
+    for group in &plan.pm_groups {
+        sqlx::query("INSERT INTO topic_allowed_groups (topic_id, group_id) VALUES ($1, $2)")
+            .bind(topic_id)
+            .bind(group.id)
+            .execute(&mut *conn)
+            .await?;
+        if !group.has_messages {
+            sqlx::query("UPDATE groups SET has_messages = TRUE WHERE id = $1")
+                .bind(group.id)
+                .execute(&mut *conn)
+                .await?;
         }
     }
     // after_create: changed_to_category, then the draft sequence.
@@ -1281,6 +1331,22 @@ async fn create_topic(
             )],
         )
         .await?;
+    }
+    // Then each allowed group's members at their group level, unless the
+    // group is over group_pm_user_limit (rollback_with! too_large_group).
+    let limit = s.get("group_pm_user_limit")?.to_i();
+    for group in &plan.pm_groups {
+        if i64::from(group.user_count) > limit {
+            return Ok(Err(TopicRefused::Invalid(vec![
+                ctx.i18n
+                    .t_with(
+                        "activerecord.errors.models.topic.attributes.base.too_large_group",
+                        &[("group_name", &group.name), ("limit", &limit.to_string())],
+                    )
+                    .unwrap_or_default(),
+            ])));
+        }
+        super::group_messages::apply_default_levels(conn, group.id, topic_id, user_id).await?;
     }
     // UserActionManager.topic_created: the row of the other kind goes; the
     // topic's (or the message's, with GOT_PRIVATE_MESSAGE for each

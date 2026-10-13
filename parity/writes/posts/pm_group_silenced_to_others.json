@@ -1,0 +1,83 @@
+{
+  "name": "pm_group_silenced_to_others",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A message to the moderators group",
+        "raw": "Hello moderators, this message for the case pm group silenced to others goes to the group.",
+        "archetype": "private_message",
+        "target_recipients": "trust_level_2"
+      }
+    }
+  ],
+  "started_at": "2026-10-13T07:12:27.647768",
+  "transaction_started_at": "2026-10-13T07:12:26.665943",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "action": "create_post",
+        "errors": [
+          "Sorry, you cannot send a personal message to that user."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 488,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "K1PBO5sBCirbX42uIl+gUcTvGAw=",
+            "created_at": "2026-10-13T07:12:26.993944",
+            "rotated_at": "2026-10-13T07:12:26.99307",
+            "updated_at": "2026-10-13T07:12:26.993944",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "K1PBO5sBCirbX42uIl+gUcTvGAw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 488,
+            "seen_at": "2026-10-13T07:12:27.653486",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "K1PBO5sBCirbX42uIl+gUcTvGAw=",
+            "created_at": "2026-10-13T07:12:26.993944",
+            "rotated_at": "2026-10-13T07:12:26.99307",
+            "updated_at": "2026-10-13T07:12:26.993944",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "K1PBO5sBCirbX42uIl+gUcTvGAw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE users SET silenced_till = now() + interval '1 day' WHERE id = 3",
+    "UPDATE groups SET messageable_level = 99 WHERE id = 12"
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "e322cf81f9a1fd9deef12e08afe011dac3d426c030ba50e2f122ab37a8eee020",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
