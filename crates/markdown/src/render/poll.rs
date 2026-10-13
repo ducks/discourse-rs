@@ -164,18 +164,19 @@ pub fn build(
             .filter(|s| *s >= 1)
             .unwrap_or(1);
         if min <= max {
-            let mut list = String::from("<ul>\n");
+            // The JS pushes these tokens without block, so no newlines.
+            let mut list = String::from("<ul>");
             let mut i = min;
             let mut count = 0;
             while i <= max && count < maximum + 1 {
                 list.push_str(&format!(
-                    "<li data-poll-option-id=\"{}\">{i}</li>\n",
+                    "<li data-poll-option-id=\"{}\">{i}</li>",
                     option_id(&i.to_string())
                 ));
                 i += step;
                 count += 1;
             }
-            list.push_str("</ul>\n");
+            list.push_str("</ul>");
             generated = Some(list);
         }
     }

@@ -834,7 +834,10 @@ async fn process_internal(
     .await?;
     match outcome {
         crate::posting::create::Outcome::Created { .. } => Ok(Ended::Done),
-        crate::posting::create::Outcome::Invalid(errors) => {
+        // PostCreator directly: poll errors are the post's validation
+        // errors.
+        crate::posting::create::Outcome::Invalid(errors)
+        | crate::posting::create::Outcome::Refused { errors, .. } => {
             Ok(Ended::Rejected(invalid_post(state, s, &errors)?))
         }
         // The guardian's can_create_post?(topic), checked first in Rails.

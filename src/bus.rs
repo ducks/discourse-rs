@@ -253,6 +253,53 @@ fn audience(tags: Vec<String>) -> Option<Option<Vec<String>>> {
     }
 }
 
+/// Who hears a post's messages (`Post#publish_message!`): the topic's
+/// audience for the types everyone sees (Topic.visible_post_types:
+/// regular, moderator_action, small_action), else human staff and the
+/// author.
+async fn post_audience(
+    conn: &mut PgConnection,
+    topic_id: i32,
+    post_type: i32,
+    user_id: Option<i32>,
+) -> Result<Option<Option<Vec<String>>>, AppError> {
+    if [1, 2, 3].contains(&post_type) {
+        return topic_audience(conn, topic_id).await;
+    }
+    let users: Vec<i32> = sqlx::query_scalar(
+        "SELECT id FROM users WHERE id > 0 AND (admin OR moderator OR id = $1) ORDER BY id",
+    )
+    .bind(user_id)
+    .fetch_all(&mut *conn)
+    .await?;
+    Ok(audience(users.into_iter().map(user_tag).collect()))
+}
+
+/// `Post#publish_message!(channel, message)`, skipped for a post without
+/// its topic.
+pub async fn publish_post_message(
+    bus: &pg_bus::Bus,
+    conn: &mut PgConnection,
+    post_id: i32,
+    channel: &str,
+    message: &Value,
+) -> Result<(), AppError> {
+    let post: Option<(i32, i32, Option<i32>)> = sqlx::query_as(
+        "SELECT p.topic_id, p.post_type, p.user_id FROM posts p \
+         JOIN topics t ON t.id = p.topic_id WHERE p.id = $1",
+    )
+    .bind(post_id)
+    .fetch_optional(&mut *conn)
+    .await?;
+    let Some((topic_id, post_type, user_id)) = post else {
+        return Ok(());
+    };
+    if let Some(tags) = post_audience(conn, topic_id, post_type, user_id).await? {
+        bus.publish(conn, channel, message, tags.as_deref()).await?;
+    }
+    Ok(())
+}
+
 /// `Post#publish_change_to_clients!(type, opts)`: the change on
 /// `/topic/<id>`, `opts` merged over the message, then the topic's stats
 /// unless `skip_topic_stats`. Posts of a type everyone sees go to the
@@ -293,19 +340,7 @@ pub async fn publish_post_change(
     }
     message.extend(opts);
 
-    // Topic.visible_post_types: regular, moderator_action, small_action.
-    let tags = if [1, 2, 3].contains(&post_type) {
-        topic_audience(conn, topic_id).await?
-    } else {
-        let users: Vec<i32> = sqlx::query_scalar(
-            "SELECT id FROM users WHERE id > 0 AND (admin OR moderator OR id = $1) ORDER BY id",
-        )
-        .bind(user_id)
-        .fetch_all(&mut *conn)
-        .await?;
-        audience(users.into_iter().map(user_tag).collect())
-    };
-    if let Some(tags) = tags {
+    if let Some(tags) = post_audience(conn, topic_id, post_type, user_id).await? {
         ctx.bus
             .publish(
                 conn,

@@ -93,8 +93,8 @@ fn only_plugin_category_fields(value: &Value) -> bool {
 const PLUGIN_USER_KEYS: [&str; 1] = ["event_reminder_preference"];
 
 /// Keys the reference's unported plugins add to CurrentUserSerializer
-/// (chat, discourse-templates, poll).
-const PLUGIN_CURRENT_USER_KEYS: [&str; 2] = ["can_use_templates", "can_create_poll"];
+/// (discourse-templates).
+const PLUGIN_CURRENT_USER_KEYS: [&str; 1] = ["can_use_templates"];
 
 /// User serializer keys that follow what the reference does in the
 /// background between seeding and recording (profile views, other

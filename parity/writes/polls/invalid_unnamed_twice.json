@@ -1,0 +1,93 @@
+{
+  "name": "invalid_unnamed_twice",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "Two unnamed polls.\n\n[poll]\n* A\n* B\n[/poll]\n\n[poll]\n* C\n* D\n[/poll]"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "Two polls named alike.\n\n[poll name=same]\n* A\n* B\n[/poll]\n\n[poll name=same]\n* C\n* D\n[/poll]"
+      }
+    }
+  ],
+  "started_at": "2026-10-13T18:18:36.25965",
+  "transaction_started_at": "2026-10-13T18:18:35.330297",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "action": "poll",
+        "errors": [
+          "When creating multiple polls, include unique names by adding <code>name=example</code> to your <code>[poll]</code> tags."
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "action": "poll",
+        "errors": [
+          "There are multiple polls with the same name: <strong>same</strong>. Use the '<code>name</code>' attribute to uniquely identify your polls."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 499,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "vk3gl/h/e9wma6t0B36K0nLexfo=",
+            "created_at": "2026-10-13T18:18:35.66306",
+            "rotated_at": "2026-10-13T18:18:35.662194",
+            "updated_at": "2026-10-13T18:18:35.66306",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "vk3gl/h/e9wma6t0B36K0nLexfo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 499,
+            "seen_at": "2026-10-13T18:18:36.272088",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "vk3gl/h/e9wma6t0B36K0nLexfo=",
+            "created_at": "2026-10-13T18:18:35.66306",
+            "rotated_at": "2026-10-13T18:18:35.662194",
+            "updated_at": "2026-10-13T18:18:35.66306",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "vk3gl/h/e9wma6t0B36K0nLexfo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "295f7e0eed82b2480fe3765c81cb9c7e846ae24f69c57a582c8cd3c2d596f071",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

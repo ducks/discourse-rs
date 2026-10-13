@@ -1,0 +1,12 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO polls (id, post_id, name, type, status, results, visibility, chart_type, dynamic, created_at, updated_at) VALUES (9001, 37, 'poll', 0, 0, 1, 1, 0, FALSE, '2026-10-05 10:00:00', '2026-10-05 10:00:00'), (9002, 37, 'closed', 1, 1, 2, 0, 1, FALSE, '2026-10-05 10:00:00', '2026-10-05 10:00:00')",
+    "UPDATE polls SET min = 1, max = 2, groups = 'staff', title = 'A <em>title</em>' WHERE id = 9002",
+    "INSERT INTO poll_options (id, poll_id, digest, html, created_at, updated_at) VALUES (9101, 9001, 'aaa', 'Yes', '2026-10-05 10:00:00', '2026-10-05 10:00:00'), (9102, 9001, 'bbb', 'No', '2026-10-05 10:00:00', '2026-10-05 10:00:00'), (9103, 9002, 'ccc', 'One', '2026-10-05 10:00:00', '2026-10-05 10:00:00'), (9104, 9002, 'ddd', 'Two', '2026-10-05 10:00:00', '2026-10-05 10:00:00'), (9105, 9002, 'eee', 'Three', '2026-10-05 10:00:00', '2026-10-05 10:00:00')",
+    "INSERT INTO post_custom_fields (post_id, name, value, created_at, updated_at) VALUES (37, 'has_polls', 't', '2026-10-05 10:00:00', '2026-10-05 10:00:00')"
+  ],
+  "requests": [
+    { "method": "GET", "path": "/t/35.json" }
+  ]
+}

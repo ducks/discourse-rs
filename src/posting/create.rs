@@ -82,6 +82,11 @@ pub enum Outcome {
     },
     /// `NewPostResult` errors: a 422 with `{action: "create_post", errors}`.
     Invalid(Vec<String>),
+    /// A NewPostManager handler's failed result: a 422 with its action.
+    Refused {
+        action: &'static str,
+        errors: Vec<String>,
+    },
     /// `Discourse::InvalidAccess` from the guardian.
     Forbidden,
     /// `Discourse::InvalidParameters`
@@ -203,6 +208,23 @@ pub async fn create(
     if s.get("site_archived")?.truthy() {
         return Err(Unsupported("site_archived").into());
     }
+    // discourse-poll's NewPostManager handler: the polls must be valid.
+    // Without validations (PostCreator's save(validate: false)) none are
+    // extracted or written.
+    let polls = if !args.skip_validations && crate::plugins::poll::enabled(s)? {
+        let extracted = crate::plugins::poll::extract_raw(ctx, &args.raw).await?;
+        match crate::plugins::poll::validate_polls(s, ctx.i18n, extracted)? {
+            Ok(polls) => polls,
+            Err(errors) => {
+                return Ok(Outcome::Refused {
+                    action: "poll",
+                    errors,
+                });
+            }
+        }
+    } else {
+        Vec::new()
+    };
     let mut conn = pool.acquire().await?;
     let new_topic = args.topic_id.is_none();
     // A new private message: no category (find_category drops it), and no
@@ -442,7 +464,7 @@ pub async fn create(
         return Err(Unsupported("posts with quotes (QuotedPost)").into());
     }
     let mut conn = pool.acquire().await?;
-    let errors = validate::validate_post(
+    let mut errors = validate::validate_post(
         &mut conn,
         ctx,
         guardian,
@@ -458,9 +480,21 @@ pub async fn create(
         &analysis,
     )
     .await?;
+    // discourse-poll's validate_polls: PostValidator, who may create them.
+    if !polls.is_empty()
+        && let Some(error) =
+            crate::plugins::poll::validate_post(&mut conn, s, ctx.i18n, guardian, topic_id_for_cook)
+                .await?
+    {
+        errors.push(error);
+    }
     if !errors.is_empty() && !args.skip_validations {
         return Ok(Outcome::Invalid(errors));
     }
+    let new_polls = polls
+        .iter()
+        .map(crate::plugins::poll::NewPoll::from_extracted)
+        .collect::<Result<Vec<_>, _>>()?;
     if new_topic {
         // Saving the post validates again with the topic in place, which
         // makes it a first post.
@@ -715,6 +749,13 @@ pub async fn create(
     .bind(args.composer_version)
     .execute(&mut *tx)
     .await?;
+    // discourse-poll's after_save. Its :post_created schedules the
+    // ClosePoll jobs, pushed at once (Jobs.enqueue_at), ahead of the jobs
+    // the transaction defers.
+    crate::plugins::poll::create(&mut tx, post_id, &new_polls).await?;
+    if !new_polls.is_empty() {
+        crate::plugins::poll::schedule_jobs(&mut tx, post_id).await?;
+    }
     if let Some(notice) = notice {
         sqlx::query(
             "INSERT INTO post_custom_fields (post_id, name, value, created_at, updated_at) \
@@ -1088,6 +1129,10 @@ pub async fn create(
                 .execute(&mut *conn)
                 .await?;
         }
+    }
+    // DiscourseEvent :post_created, to discourse-poll: a reply's polls.
+    if !new_polls.is_empty() {
+        crate::plugins::poll::publish_created(ctx, &mut conn, guardian, post_id).await?;
     }
     let posts_count: i32 = sqlx::query_scalar("SELECT posts_count FROM topics WHERE id = $1")
         .bind(topic_id)

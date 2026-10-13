@@ -1,0 +1,17 @@
+{
+  "user": "user1",
+  "settings": { "poll_create_allowed_groups": "3" },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": { "topic_id": 35, "raw": "Not allowed to poll.\n\n[poll]\n* A\n* B\n[/poll]" }
+    },
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": { "topic_id": 35, "raw": "A plain reply." }
+    },
+    { "method": "GET", "path": "/session/current.json" }
+  ]
+}

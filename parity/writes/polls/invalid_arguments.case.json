@@ -1,0 +1,30 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": { "topic_id": 35, "raw": "Bad arguments.\n\n[poll type=bogus status=maybe results=never]\n* A\n* B\n[/poll]" }
+    },
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": { "topic_id": 35, "raw": "Bad multiple.\n\n[poll type=multiple min=3 max=2]\n* A\n* B\n* C\n[/poll]" }
+    },
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": { "topic_id": 35, "raw": "Bad multiple named.\n\n[poll name=m type=multiple min=1 max=3]\n* A\n* B\n[/poll]" }
+    },
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": { "topic_id": 35, "raw": "Bad number.\n\n[poll type=number min=5 max=2 step=0]\n[/poll]" }
+    },
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": { "topic_id": 35, "raw": "Too few numbers.\n\n[poll name=n type=number min=1 max=2 step=5]\n[/poll]" }
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "Two unnamed polls.\n\n[poll]\n* A\n* B\n[/poll]\n\n[poll]\n* C\n* D\n[/poll]"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "Two polls named alike.\n\n[poll name=same]\n* A\n* B\n[/poll]\n\n[poll name=same]\n* C\n* D\n[/poll]"
+      }
+    }
+  ]
+}

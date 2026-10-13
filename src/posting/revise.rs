@@ -237,6 +237,18 @@ pub async fn revise(
     if analysis.has_upload_media {
         return Err(Unsupported("posts with uploaded video or audio").into());
     }
+    // discourse-poll's validate_polls on a changed raw: PollsUpdater, for
+    // polls added, changed or removed.
+    if raw_changed && crate::plugins::poll::enabled(ctx.settings)? {
+        let had_polls: bool =
+            sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM polls WHERE post_id = $1)")
+                .bind(post.id)
+                .fetch_one(&mut *conn)
+                .await?;
+        if analysis.has_polls || had_polls {
+            return Err(Unsupported("editing posts with polls (PollsUpdater)").into());
+        }
+    }
     let private_message = archetype == "private_message";
     let errors = if changes.skip_validations {
         Vec::new()

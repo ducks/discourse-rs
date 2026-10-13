@@ -1,0 +1,14 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "Which colors do you like best",
+        "category": 4,
+        "raw": "Pick some.\n\n[poll name=colors type=multiple min=1 max=2 public=true results=on_vote chartType=pie close=2027-01-01T10:00:00.000Z]\n# Favorite colors\n* Red\n* Green\n* Blue\n[/poll]"
+      }
+    }
+  ]
+}
