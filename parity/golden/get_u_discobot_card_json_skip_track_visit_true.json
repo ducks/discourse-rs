@@ -1,0 +1,8 @@
+{
+  "request": "GET /u/discobot/card.json?skip_track_visit=true",
+  "source": "http://127.0.0.1:3042",
+  "recorded_at": "2026-10-13T23:13:59.480690918+00:00",
+  "status": 200,
+  "content_type": "application/json; charset=utf-8",
+  "body": "{\"user_badges\":[],\"user\":{\"id\":-2,\"username\":\"discobot\",\"name\":\"discobot\",\"avatar_template\":\"/user_avatar/localhost/discobot/{size}/35_2.png\",\"last_posted_at\":null,\"last_seen_at\":null,\"created_at\":\"2026-07-25T05:58:29.385Z\",\"ignored\":false,\"muted\":false,\"can_ignore_user\":false,\"can_mute_user\":false,\"can_send_private_messages\":false,\"can_send_private_message_to_user\":false,\"trust_level\":4,\"moderator\":false,\"admin\":true,\"title\":null,\"badge_count\":0,\"custom_fields\":{},\"time_read\":0,\"recent_time_read\":0,\"primary_group_id\":null,\"primary_group_name\":null,\"flair_group_id\":null,\"flair_name\":null,\"flair_url\":null,\"flair_bg_color\":null,\"flair_color\":null,\"bio_excerpt\":\"Hi, I’m not a real person. I’m a bot that can teach you about this site. To interact with me, send me a message or mention me by name.\",\"can_chat_user\":false,\"accepted_answers\":0,\"featured_user_badge_ids\":[]}}"
+}
