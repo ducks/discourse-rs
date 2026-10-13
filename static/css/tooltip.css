@@ -1,0 +1,104 @@
+/*
+ * Float-kit's tooltips (DTooltip: its trigger and the content it floats in
+ * #d-tooltip-portals, static/js/float.js), ported from
+ * float-kit/d-tooltip.scss. The arrow is the tippy-rounded-arrow icon.
+ */
+
+/* d-tooltip.scss:1 */
+@keyframes d-tooltip-opening {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+/* d-tooltip.scss:12 */
+.fk-d-tooltip__trigger {
+  display: inline-flex;
+  cursor: pointer;
+}
+/* d-tooltip.scss:16 */
+.touch .fk-d-tooltip__trigger {
+  cursor: default;
+  -webkit-user-select: none;
+  user-select: none;
+}
+/* d-tooltip.scss:20 */
+.fk-d-tooltip__trigger-container {
+  display: flex;
+}
+/* d-tooltip.scss:25 */
+.fk-d-tooltip__inner-content {
+  box-sizing: border-box;
+  display: flex;
+  max-height: 60dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  overflow-wrap: break-word;
+  padding: .5rem;
+  align-items: safe center;
+}
+/* d-tooltip.scss:40 */
+.fk-d-tooltip__content {
+  background-color: var(--secondary);
+  border-radius: var(--d-border-radius);
+  border: 1px solid var(--content-border-color);
+  box-shadow: var(--shadow-dropdown);
+  z-index: 9999;
+  width: max-content;
+  position: absolute;
+  top: 0;
+  display: flex !important;
+  padding: 0;
+}
+/* d-tooltip.scss:52 */
+.fk-d-tooltip__content.-animated {
+  animation: d-tooltip-opening .15s ease-in;
+}
+/* d-tooltip.scss:55 */
+.fk-d-tooltip__content.-animated[data-placement^=bottom] {
+  transform-origin: top center;
+}
+/* d-tooltip.scss:59 */
+.fk-d-tooltip__content.-animated[data-placement^=top] {
+  transform-origin: bottom center;
+}
+/* d-tooltip.scss:63 */
+.fk-d-tooltip__content.-animated[data-placement^=right] {
+  transform-origin: center left;
+}
+/* d-tooltip.scss:67 */
+.fk-d-tooltip__content.-animated[data-placement^=left] {
+  transform-origin: center right;
+}
+/* d-tooltip.scss:72 */
+.fk-d-tooltip__content .arrow {
+  z-index: 9999;
+  position: absolute;
+}
+/* d-tooltip.scss:78 */
+.fk-d-tooltip__content[data-placement^=top] .arrow {
+  bottom: -11px;
+  rotate: 180deg;
+}
+/* d-tooltip.scss:85 */
+.fk-d-tooltip__content[data-placement^=top-start] .arrow {
+  margin-left: 10px;
+}
+/* d-tooltip.scss:91 */
+.fk-d-tooltip__content[data-placement^=bottom] .arrow {
+  top: -11px;
+}
+/* d-tooltip.scss:97 */
+.fk-d-tooltip__content[data-placement^=right] .arrow {
+  rotate: -90deg;
+  left: -11px;
+}
+/* d-tooltip.scss:104 */
+.fk-d-tooltip__content[data-placement^=left] .arrow {
+  rotate: 90deg;
+  right: -11px;
+}

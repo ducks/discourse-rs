@@ -23,6 +23,14 @@ frontend/discourse/package.json (exactly 11.12.0): the bundle's digest
 (HighlightJs.version) is a sha1 over these files, so another version gives
 other urls than Rails'.
 
+  floating-ui.core.umd.min.js @floating-ui/core@1.8.0, dist/floating-ui.core.umd.min.js
+  floating-ui.dom.umd.min.js  @floating-ui/dom@1.8.0, dist/floating-ui.dom.umd.min.js
+
+@floating-ui/dom is the version Discourse's pnpm-lock.yaml resolves for
+float-kit (MIT, Copyright (c) 2021-present Floating UI contributors). The
+UMD builds are plain scripts: core defines window.FloatingUICore (with
+@floating-ui/utils inlined) and dom, loaded after it, window.FloatingUIDOM.
+
 Each was checked against the package tarball's npm integrity (sha512) and
 compared byte for byte with the file in the tarball. To update, fetch the
 new versions the same way and check them again:
