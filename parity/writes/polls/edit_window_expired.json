@@ -1,0 +1,700 @@
+{
+  "name": "edit_window_expired",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/36.json",
+      "params": {
+        "post": {
+          "raw": "Edited with a poll in it.\n\n[poll results=on_vote]\n* Yes\n* No\n[/poll]"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/posts/36.json",
+      "params": {
+        "post": {
+          "raw": "Edited with a named poll.\n\n[poll name=named]\n* Yes\n* No\n[/poll]"
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-13T19:40:19.029014",
+  "transaction_started_at": "2026-10-13T19:40:18.181312",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "You cannot change a poll after the first 5 minutes."
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "post": {
+          "id": 36,
+          "name": "User1",
+          "username": "user1",
+          "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+          "created_at": "2026-09-30T07:28:29.079Z",
+          "cooked": "<p>Edited with a named poll.</p>\n<div class=\"poll\" data-poll-name=\"named\" data-poll-status=\"open\">\n<div class=\"poll-container\">\n<ul>\n<li data-poll-option-id=\"277962ea3b8227e06ed3eb378fbdba0d\">Yes</li>\n<li data-poll-option-id=\"720aa6324194f0ccd395b3cd0ed76f0e\">No</li>\n</ul>\n</div>\n<div class=\"poll-info\">\n<div class=\"poll-info_counts\">\n<div class=\"poll-info_counts-count\">\n<span class=\"info-number\">0</span>\n<span class=\"info-label\">voters</span>\n</div>\n</div>\n</div>\n</div>",
+          "post_number": 2,
+          "post_type": 1,
+          "posts_count": 5,
+          "updated_at": "2026-10-13T19:40:19.307Z",
+          "reply_count": 0,
+          "reply_to_post_number": null,
+          "quote_count": 0,
+          "incoming_link_count": 0,
+          "reads": 1,
+          "readers_count": 0,
+          "score": 15.2,
+          "yours": true,
+          "topic_id": 35,
+          "topic_slug": "parity-fixture-replies-and-posters",
+          "display_username": "User1",
+          "primary_group_name": null,
+          "flair_name": null,
+          "flair_url": null,
+          "flair_bg_color": null,
+          "flair_color": null,
+          "flair_group_id": null,
+          "badges_granted": [],
+          "version": 2,
+          "can_edit": true,
+          "can_delete": true,
+          "can_recover": false,
+          "can_see_hidden_post": true,
+          "can_wiki": false,
+          "user_title": null,
+          "bookmarked": true,
+          "bookmark_reminder_at": "2031-01-15T09:30:00.000Z",
+          "bookmark_id": 3,
+          "bookmark_name": "Parity fixture: with a reminder",
+          "bookmark_auto_delete_preference": 3,
+          "raw": "Edited with a named poll.\n\n[poll name=named]\n* Yes\n* No\n[/poll]",
+          "actions_summary": [
+            {
+              "id": 2,
+              "count": 1
+            },
+            {
+              "id": 3,
+              "can_act": true
+            },
+            {
+              "id": 4,
+              "can_act": true
+            },
+            {
+              "id": 8,
+              "can_act": true
+            },
+            {
+              "id": 10,
+              "can_act": true
+            },
+            {
+              "id": 7,
+              "can_act": true
+            }
+          ],
+          "moderator": false,
+          "admin": false,
+          "staff": false,
+          "user_id": 3,
+          "draft_sequence": 1,
+          "hidden": false,
+          "trust_level": 2,
+          "deleted_at": null,
+          "user_deleted": false,
+          "edit_reason": null,
+          "can_view_edit_history": true,
+          "wiki": false,
+          "post_url": "/t/parity-fixture-replies-and-posters/35/2",
+          "reactions": [
+            {
+              "id": "heart",
+              "type": "emoji",
+              "count": 1
+            }
+          ],
+          "current_user_reaction": null,
+          "reaction_users_count": 1,
+          "current_user_used_main_reaction": false,
+          "can_accept_answer": false,
+          "can_unaccept_answer": false,
+          "accepted_answer": false,
+          "topic_accepted_answer": null,
+          "polls": [
+            {
+              "id": 1,
+              "name": "named",
+              "type": "regular",
+              "status": "open",
+              "dynamic": false,
+              "results": "always",
+              "options": [
+                {
+                  "id": "277962ea3b8227e06ed3eb378fbdba0d",
+                  "html": "Yes",
+                  "votes": 0
+                },
+                {
+                  "id": "720aa6324194f0ccd395b3cd0ed76f0e",
+                  "html": "No",
+                  "votes": 0
+                }
+              ],
+              "voters": 0,
+              "chart_type": "bar",
+              "title": null,
+              "closed_at": null,
+              "closed_by": null
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "changes": {
+    "draft_sequences": {
+      "inserted": [
+        {
+          "id": 2,
+          "user_id": 3,
+          "sequence": 1,
+          "draft_key": "topic_35"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "poll_options": {
+      "inserted": [
+        {
+          "id": 1,
+          "html": "Yes",
+          "digest": "277962ea3b8227e06ed3eb378fbdba0d",
+          "poll_id": 1,
+          "created_at": "2026-10-13T19:40:19.207288",
+          "updated_at": "2026-10-13T19:40:19.207288",
+          "anonymous_votes": null
+        },
+        {
+          "id": 2,
+          "html": "No",
+          "digest": "720aa6324194f0ccd395b3cd0ed76f0e",
+          "poll_id": 1,
+          "created_at": "2026-10-13T19:40:19.210957",
+          "updated_at": "2026-10-13T19:40:19.210957",
+          "anonymous_votes": null
+        }
+      ],
+      "deleted": [
+        {
+          "id": 9101,
+          "html": "AAA",
+          "digest": "aaa",
+          "poll_id": 9001,
+          "created_at": "2026-10-05T10:00:00",
+          "updated_at": "2026-10-05T10:00:00",
+          "anonymous_votes": null
+        },
+        {
+          "id": 9102,
+          "html": "BBB",
+          "digest": "bbb",
+          "poll_id": 9001,
+          "created_at": "2026-10-05T10:00:00",
+          "updated_at": "2026-10-05T10:00:00",
+          "anonymous_votes": null
+        }
+      ],
+      "updated": []
+    },
+    "poll_votes": {
+      "inserted": [],
+      "deleted": [
+        {
+          "rank": 0,
+          "poll_id": 9001,
+          "user_id": 4,
+          "created_at": "2026-10-05T10:00:00",
+          "updated_at": "2026-10-05T10:00:00",
+          "poll_option_id": 9101
+        }
+      ],
+      "updated": []
+    },
+    "polls": {
+      "inserted": [
+        {
+          "id": 1,
+          "max": null,
+          "min": null,
+          "name": "named",
+          "step": null,
+          "type": 0,
+          "title": null,
+          "groups": null,
+          "status": 0,
+          "dynamic": false,
+          "post_id": 36,
+          "results": 0,
+          "close_at": null,
+          "closed_at": null,
+          "chart_type": 0,
+          "created_at": "2026-10-13T19:40:19.203721",
+          "updated_at": "2026-10-13T19:40:19.203721",
+          "visibility": 0,
+          "closed_by_id": null,
+          "anonymous_voters": null
+        }
+      ],
+      "deleted": [
+        {
+          "id": 9001,
+          "max": null,
+          "min": null,
+          "name": "poll",
+          "step": null,
+          "type": 0,
+          "title": null,
+          "groups": null,
+          "status": 0,
+          "dynamic": false,
+          "post_id": 36,
+          "results": 0,
+          "close_at": null,
+          "closed_at": null,
+          "chart_type": 0,
+          "created_at": "2026-10-05T10:00:00",
+          "updated_at": "2026-10-05T10:00:00",
+          "visibility": 0,
+          "closed_by_id": null,
+          "anonymous_voters": null
+        }
+      ],
+      "updated": []
+    },
+    "post_revisions": {
+      "inserted": [
+        {
+          "id": 1,
+          "hidden": false,
+          "number": 2,
+          "post_id": 36,
+          "user_id": 3,
+          "created_at": "2026-10-13T19:40:19.338152",
+          "updated_at": "2026-10-13T19:40:19.338152",
+          "modifications": "--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\nraw:\n- Reply one from user1, also long enough to pass the minimum length check.\n- |-\n  Edited with a named poll.\n\n  [poll name=named]\n  * Yes\n  * No\n  [/poll]\ncooked:\n- \"<p>Reply one from user1, also long enough to pass the minimum length check.</p>\"\n- |-\n  <p>Edited with a named poll.</p>\n  <div class=\"poll\" data-poll-name=\"named\" data-poll-status=\"open\">\n  <div class=\"poll-container\">\n  <ul>\n  <li data-poll-option-id=\"277962ea3b8227e06ed3eb378fbdba0d\">Yes</li>\n  <li data-poll-option-id=\"720aa6324194f0ccd395b3cd0ed76f0e\">No</li>\n  </ul>\n  </div>\n  <div class=\"poll-info\">\n  <div class=\"poll-info_counts\">\n  <div class=\"poll-info_counts-count\">\n  <span class=\"info-number\">0</span>\n  <span class=\"info-label\">voters</span>\n  </div>\n  </div>\n  </div>\n  </div>\n"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_search_data": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "locale": "en",
+            "post_id": 36,
+            "version": 5,
+            "raw_data": "Reply one from user1, also long enough to pass the minimum length check.",
+            "search_data": "'also':12 'check':20 'enough':14 'fixtur':2A 'general':6B 'guid':7C 'length':19 'long':13 'minimum':18 'one':9 'pariti':1A 'pass':16 'poster':5A 'repli':3A,8 'user1':11",
+            "private_message": false
+          },
+          "after": {
+            "locale": "en",
+            "post_id": 36,
+            "version": 5,
+            "raw_data": "Edited with a named poll. Yes No 0 voters",
+            "search_data": "'0':15 'edit':8 'fixtur':2A 'general':6B 'guid':7C 'name':11 'pariti':1A 'poll':12 'poster':5A 'repli':3A 'voter':16 'yes':13",
+            "private_message": false
+          }
+        }
+      ]
+    },
+    "posts": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 36,
+            "raw": "Reply one from user1, also long enough to pass the minimum length check.",
+            "wiki": false,
+            "reads": 1,
+            "score": 15.2,
+            "cooked": "<p>Reply one from user1, also long enough to pass the minimum length check.</p>",
+            "hidden": false,
+            "locale": null,
+            "user_id": 3,
+            "version": 1,
+            "baked_at": "2026-09-30T07:28:29.079363",
+            "topic_id": 35,
+            "hidden_at": null,
+            "post_type": 1,
+            "raw_email": null,
+            "via_email": false,
+            "created_at": "2026-09-30T07:28:29.079439",
+            "deleted_at": null,
+            "like_count": 1,
+            "like_score": 1,
+            "self_edits": 0,
+            "sort_order": 2,
+            "spam_count": 0,
+            "updated_at": "2026-09-30T07:28:29.079439",
+            "word_count": 13,
+            "action_code": null,
+            "cook_method": 1,
+            "edit_reason": null,
+            "post_number": 2,
+            "quote_count": 0,
+            "reply_count": 0,
+            "locked_by_id": null,
+            "percent_rank": 0,
+            "reply_quoted": false,
+            "user_deleted": false,
+            "baked_version": 2,
+            "deleted_by_id": null,
+            "illegal_count": 0,
+            "qa_vote_count": 0,
+            "bookmark_count": 0,
+            "last_editor_id": 3,
+            "public_version": 1,
+            "image_upload_id": null,
+            "last_version_at": "2026-09-30T07:28:29.094067",
+            "off_topic_count": 0,
+            "hidden_reason_id": null,
+            "reply_to_user_id": null,
+            "notify_user_count": 0,
+            "inappropriate_count": 0,
+            "incoming_link_count": 0,
+            "outbound_message_id": "discourse/post/36@localhost",
+            "reply_to_post_number": null,
+            "notify_moderators_count": 0
+          },
+          "after": {
+            "id": 36,
+            "raw": "Edited with a named poll.\n\n[poll name=named]\n* Yes\n* No\n[/poll]",
+            "wiki": false,
+            "reads": 1,
+            "score": 15.2,
+            "cooked": "<p>Edited with a named poll.</p>\n<div class=\"poll\" data-poll-name=\"named\" data-poll-status=\"open\">\n<div class=\"poll-container\">\n<ul>\n<li data-poll-option-id=\"277962ea3b8227e06ed3eb378fbdba0d\">Yes</li>\n<li data-poll-option-id=\"720aa6324194f0ccd395b3cd0ed76f0e\">No</li>\n</ul>\n</div>\n<div class=\"poll-info\">\n<div class=\"poll-info_counts\">\n<div class=\"poll-info_counts-count\">\n<span class=\"info-number\">0</span>\n<span class=\"info-label\">voters</span>\n</div>\n</div>\n</div>\n</div>",
+            "hidden": false,
+            "locale": null,
+            "user_id": 3,
+            "version": 2,
+            "baked_at": "2026-10-13T19:40:19.307208",
+            "topic_id": 35,
+            "hidden_at": null,
+            "post_type": 1,
+            "raw_email": null,
+            "via_email": false,
+            "created_at": "2026-09-30T07:28:29.079439",
+            "deleted_at": null,
+            "like_count": 1,
+            "like_score": 1,
+            "self_edits": 1,
+            "sort_order": 2,
+            "spam_count": 0,
+            "updated_at": "2026-10-13T19:40:19.307393",
+            "word_count": 11,
+            "action_code": null,
+            "cook_method": 1,
+            "edit_reason": null,
+            "post_number": 2,
+            "quote_count": 0,
+            "reply_count": 0,
+            "locked_by_id": null,
+            "percent_rank": 0,
+            "reply_quoted": false,
+            "user_deleted": false,
+            "baked_version": 2,
+            "deleted_by_id": null,
+            "illegal_count": 0,
+            "qa_vote_count": 0,
+            "bookmark_count": 0,
+            "last_editor_id": 3,
+            "public_version": 2,
+            "image_upload_id": null,
+            "last_version_at": "2026-10-13T19:40:19.131716",
+            "off_topic_count": 0,
+            "hidden_reason_id": null,
+            "reply_to_user_id": null,
+            "notify_user_count": 0,
+            "inappropriate_count": 0,
+            "incoming_link_count": 0,
+            "outbound_message_id": "discourse/post/36@localhost",
+            "reply_to_post_number": null,
+            "notify_moderators_count": 0
+          }
+        }
+      ]
+    },
+    "topics": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 35,
+            "slug": "parity-fixture-replies-and-posters",
+            "score": 3.2,
+            "title": "Parity fixture: replies and posters",
+            "views": 0,
+            "closed": false,
+            "locale": null,
+            "excerpt": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+            "subtype": null,
+            "user_id": 2,
+            "visible": true,
+            "archived": false,
+            "archetype": "regular",
+            "bumped_at": "2026-10-01T15:39:51.834549",
+            "pinned_at": null,
+            "created_at": "2026-09-30T07:28:28.864868",
+            "deleted_at": null,
+            "like_count": 1,
+            "spam_count": 0,
+            "updated_at": "2026-10-01T15:39:52.00791",
+            "word_count": 68,
+            "category_id": 4,
+            "external_id": null,
+            "fancy_title": "Parity fixture: replies and posters",
+            "has_summary": false,
+            "posts_count": 5,
+            "reply_count": 0,
+            "percent_rank": 1,
+            "pinned_until": null,
+            "deleted_by_id": null,
+            "featured_link": null,
+            "bannered_until": null,
+            "last_posted_at": "2026-10-01T15:39:51.834549",
+            "image_upload_id": null,
+            "pinned_globally": false,
+            "reviewable_score": 0,
+            "featured_user1_id": 3,
+            "featured_user2_id": null,
+            "featured_user3_id": 1,
+            "featured_user4_id": 4,
+            "last_post_user_id": 2,
+            "participant_count": 4,
+            "slow_mode_seconds": 0,
+            "og_image_upload_id": null,
+            "highest_post_number": 5,
+            "incoming_link_count": 0,
+            "visibility_reason_id": null,
+            "moderator_posts_count": 0,
+            "notify_moderators_count": 0,
+            "highest_staff_post_number": 5
+          },
+          "after": {
+            "id": 35,
+            "slug": "parity-fixture-replies-and-posters",
+            "score": 3.2,
+            "title": "Parity fixture: replies and posters",
+            "views": 0,
+            "closed": false,
+            "locale": null,
+            "excerpt": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+            "subtype": null,
+            "user_id": 2,
+            "visible": true,
+            "archived": false,
+            "archetype": "regular",
+            "bumped_at": "2026-10-01T15:39:51.834549",
+            "pinned_at": null,
+            "created_at": "2026-09-30T07:28:28.864868",
+            "deleted_at": null,
+            "like_count": 1,
+            "spam_count": 0,
+            "updated_at": "2026-10-01T15:39:52.00791",
+            "word_count": 66,
+            "category_id": 4,
+            "external_id": null,
+            "fancy_title": "Parity fixture: replies and posters",
+            "has_summary": false,
+            "posts_count": 5,
+            "reply_count": 0,
+            "percent_rank": 1,
+            "pinned_until": null,
+            "deleted_by_id": null,
+            "featured_link": null,
+            "bannered_until": null,
+            "last_posted_at": "2026-10-01T15:39:51.834549",
+            "image_upload_id": null,
+            "pinned_globally": false,
+            "reviewable_score": 0,
+            "featured_user1_id": 3,
+            "featured_user2_id": null,
+            "featured_user3_id": 1,
+            "featured_user4_id": 4,
+            "last_post_user_id": 2,
+            "participant_count": 4,
+            "slow_mode_seconds": 0,
+            "og_image_upload_id": null,
+            "highest_post_number": 5,
+            "incoming_link_count": 0,
+            "visibility_reason_id": null,
+            "moderator_posts_count": 0,
+            "notify_moderators_count": 0,
+            "highest_staff_post_number": 5
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 499,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "rlTYeZcE4kOKh9F5Yf5Ny+j5ZB8=",
+            "created_at": "2026-10-13T19:40:18.486005",
+            "rotated_at": "2026-10-13T19:40:18.48452",
+            "updated_at": "2026-10-13T19:40:18.486005",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "rlTYeZcE4kOKh9F5Yf5Ny+j5ZB8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 499,
+            "seen_at": "2026-10-13T19:40:19.035575",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "rlTYeZcE4kOKh9F5Yf5Ny+j5ZB8=",
+            "created_at": "2026-10-13T19:40:18.486005",
+            "rotated_at": "2026-10-13T19:40:18.48452",
+            "updated_at": "2026-10-13T19:40:18.486005",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "rlTYeZcE4kOKh9F5Yf5Ny+j5ZB8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_stats": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "user_id": 3,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:16.445924",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 1,
+            "topic_count": 1,
+            "bounce_score": 0,
+            "days_visited": 1,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 1,
+            "topics_entered": 0,
+            "first_unread_at": "2026-10-01T15:39:52.00791",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 2,
+            "first_unread_pm_at": "2026-10-01T15:39:51.342717",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 4,
+            "first_post_created_at": "2026-09-30T07:28:29.079439",
+            "reset_bounce_score_after": null
+          },
+          "after": {
+            "user_id": 3,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:16.445924",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 1,
+            "topic_count": 1,
+            "bounce_score": 0,
+            "days_visited": 1,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 1,
+            "topics_entered": 0,
+            "first_unread_at": "2026-10-01T15:39:52.00791",
+            "flags_disagreed": 0,
+            "post_edits_count": 1,
+            "posts_read_count": 2,
+            "first_unread_pm_at": "2026-10-01T15:39:51.342717",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 4,
+            "first_post_created_at": "2026-09-30T07:28:29.079439",
+            "reset_bounce_score_after": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "process_post",
+      {
+        "bypass_bump": false,
+        "cooking_options": null,
+        "new_post": false,
+        "post_id": 36,
+        "skip_pull_hotlinked_images": false,
+        "invalidate_oneboxes": true
+      }
+    ],
+    [
+      "bot_input",
+      {
+        "user_id": 3,
+        "post_id": 36,
+        "input": "edit"
+      }
+    ],
+    [
+      "post_alert",
+      {
+        "post_id": 36
+      }
+    ]
+  ],
+  "next_ids": {
+    "draft_sequences": 1,
+    "poll_options": 1,
+    "polls": 1,
+    "post_revisions": 1
+  },
+  "setup": [
+    "INSERT INTO polls (id, post_id, name, type, status, results, visibility, chart_type, dynamic, created_at, updated_at) VALUES (9001, 36, 'poll', 0, 0, 0, 0, 0, FALSE, '2026-10-05 10:00:00', '2026-10-05 10:00:00')",
+    "INSERT INTO poll_options (id, poll_id, digest, html, anonymous_votes, created_at, updated_at) VALUES (9101, 9001, 'aaa', 'AAA', NULL, '2026-10-05 10:00:00', '2026-10-05 10:00:00'), (9102, 9001, 'bbb', 'BBB', NULL, '2026-10-05 10:00:00', '2026-10-05 10:00:00')",
+    "INSERT INTO post_custom_fields (post_id, name, value, created_at, updated_at) VALUES (36, 'has_polls', 't', '2026-10-05 10:00:00', '2026-10-05 10:00:00')",
+    "INSERT INTO poll_votes (poll_id, poll_option_id, user_id, rank, created_at, updated_at) VALUES (9001, 9101, 4, 0, '2026-10-05 10:00:00', '2026-10-05 10:00:00')"
+  ],
+  "recorded_from": {
+    "case": "1d50bff8e74f4dda0269ca678ed7d7bf0750472265d0735b91b661f559d7871e",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/36.json",
+      "params": {
+        "post": {
+          "raw": "Edited, invalid poll.\n\n[poll]\n* Same\n* Same\n[/poll]"
+        }
+      }
+    }
+  ]
+}

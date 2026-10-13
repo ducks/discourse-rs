@@ -1,0 +1,17 @@
+{
+  "user": "user1",
+  "settings": {
+    "poll_create_allowed_groups": "3"
+  },
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/36.json",
+      "params": {
+        "post": {
+          "raw": "Edited with a poll in it.\n\n[poll results=on_vote]\n* Yes\n* No\n[/poll]"
+        }
+      }
+    }
+  ]
+}
