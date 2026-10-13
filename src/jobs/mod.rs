@@ -348,6 +348,8 @@ const SCHEDULED: &[(&str, Duration)] = &[
         upload_cleanup::PURGE_DELETED_UPLOADS,
         Duration::from_secs(24 * 3600),
     ),
+    // The rate limiters' expired lists (Redis expires them itself).
+    ("rate_limits_cleanup", Duration::from_secs(15 * 60)),
 ];
 
 /// A SCHEDULED job's name: it runs from the queue too (a case enqueues
@@ -426,6 +428,7 @@ pub async fn run_scheduled(state: &AppState, name: &str) -> Result<(), AppError>
         upload_jobs::BACKFILL_DOMINANT_COLORS => upload_jobs::backfill_dominant_colors(state).await,
         upload_cleanup::CLEAN_UP_UPLOADS => upload_cleanup::clean_up_uploads(state).await,
         upload_cleanup::PURGE_DELETED_UPLOADS => upload_cleanup::purge_deleted_uploads(state).await,
+        "rate_limits_cleanup" => Ok(crate::rate_limiter::cleanup(&state.pool).await?),
         _ => unreachable!("every SCHEDULED job has a handler"),
     }
 }

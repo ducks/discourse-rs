@@ -80,7 +80,7 @@ Bugs or silent gaps in what is merged, small and independent.
 
 ### Phase 2: rate limiting
 
-17. `feat/rate-limiter-core` M: a Postgres limiter in discourse_rs, the
+17. ~~`feat/rate-limiter-core`~~ (done) M: a Postgres limiter in discourse_rs, the
     429/422 shapes and headers, off for existing cases; the recorder's
     per-case `"rate_limits": true` (Rails dev enforces them; the recorder
     disables them today)

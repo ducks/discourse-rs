@@ -112,7 +112,8 @@ def clear_redis_state
   # last 5 seconds (a previous case's) instead of inserting one.
   # LAST_UPLOAD_CLEANUP: CleanUpUploads skips orphans for a day after the
   # reference's own scheduler ran it.
-  %w[unique-post-* rejection_email:* user-last-seen:* hot_score_6_hourly __SEARCH__LOG_* LAST_UPLOAD_CLEANUP].each do |pattern|
+  # l-rate-limit3: the rate limiters' lists, for cases that turn them on.
+  %w[unique-post-* rejection_email:* user-last-seen:* hot_score_6_hourly __SEARCH__LOG_* LAST_UPLOAD_CLEANUP l-rate-limit3:*].each do |pattern|
     Discourse.redis.keys(pattern).each { |k| Discourse.redis.del(k) }
   end
   # Presence lives in Redis too, members and cached configs alike.
@@ -231,6 +232,9 @@ cases.each do |c|
     # `setup`: SQL for fixture rows a case needs (a reply key), run the same way.
     (c["setup"] || []).each { |sql| db.execute(sql) }
     reset_plugin_caches if c["setup"]
+    # `rate_limits`: the limiter on for the case's requests and jobs only
+    # (after the login and setup, which would count otherwise).
+    RateLimiter.enable if c["rate_limits"]
     INCLUDED_TABLES.replace(c["include_tables"] || [])
     ENQUEUED.clear
     before_sums = checksums
@@ -251,7 +255,11 @@ cases.each do |c|
         options[:env] = { "REQUEST_PATH" => path.split("?").first }
         session.public_send(r["method"].downcase, path, **options)
         body = session.response.body
-        responses << { status: session.response.status, body: (JSON.parse(body) rescue body) }
+        response = { status: session.response.status, body: (JSON.parse(body) rescue body) }
+        # The rate limit headers, kept only when a response has them.
+        kept = session.response.headers.to_h.slice("Retry-After", "Discourse-Rate-Limit-Error-Code", "Discourse-Actions-Remaining", "Discourse-Actions-Max")
+        response[:headers] = kept if kept.any?
+        responses << response
       end
     # run_jobs: the named jobs run in order (delayed ones too), as Sidekiq
     # would, including those the jobs themselves enqueue; what the jobs
@@ -300,6 +308,7 @@ cases.each do |c|
     record[:approximate] = c["approximate"] if c["approximate"]
     record[:job_clock] = c["job_clock"] if c["job_clock"]
     record[:files] = c["files"] if c["files"]
+    record[:rate_limits] = c["rate_limits"] if c["rate_limits"]
     record[:jobs_from_jobs] = ENQUEUED.dup if c["run_jobs"]
     record[:emails] = emails if emails.any?
     File.write("#{out}/#{c["name"]}.json", JSON.pretty_generate(record) + "\n")
@@ -317,6 +326,7 @@ cases.each do |c|
       path = File.join(Rails.root, "public", u["url"].to_s)
       File.delete(path) if u["url"].to_s.start_with?("/uploads/") && File.file?(path)
     end
+    RateLimiter.disable
     clear_redis_state
     pool.unpin_connection!
     # Always: a case's requests or jobs may set settings too

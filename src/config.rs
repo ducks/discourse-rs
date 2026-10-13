@@ -24,6 +24,10 @@ pub struct Config {
     /// tests can stand in for the CDN.
     pub letter_avatar_cdn: String,
     pub globals: GlobalSettings,
+    /// RateLimiter on (not `RateLimiter.disabled?`): on unless
+    /// DISCOURSE_RS_RATE_LIMITS is "off"; the writes replay turns it off
+    /// unless a case asks for it, as Rails' recorder does.
+    pub rate_limits: bool,
 }
 
 /// The CDN `UserAvatarsController#show_proxy_letter` proxies.
@@ -188,6 +192,7 @@ impl Config {
                 .trim_end_matches('/')
                 .to_string(),
             globals,
+            rate_limits: var("DISCOURSE_RS_RATE_LIMITS") != Some("off"),
         })
     }
 }

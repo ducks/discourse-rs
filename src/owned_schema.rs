@@ -43,6 +43,37 @@ pub async fn migrate(pool: &PgPool) -> Result<(), sqlx::Error> {
            expires_at timestamptz NOT NULL, \
            PRIMARY KEY (channel, user_id, client_id))",
         "CREATE INDEX IF NOT EXISTS presence_clients_expiring ON discourse_rs.presence_clients (expires_at)",
+        // RateLimiter's Redis lists: epoch-second stamps, newest first, at
+        // most max; gone (as an EXPIRE) at the last push plus twice the
+        // window. Unlogged, as Redis without persistence.
+        "CREATE UNLOGGED TABLE IF NOT EXISTS discourse_rs.rate_limits ( \
+           key text PRIMARY KEY, \
+           stamps bigint[] NOT NULL, \
+           expires_at bigint NOT NULL)",
+        "CREATE INDEX IF NOT EXISTS rate_limits_expiring ON discourse_rs.rate_limits (expires_at)",
+        // PERFORM_LUA (and _AGGRESSIVE): allowed when under max or the
+        // oldest stamp is a window old; pushed when allowed (always when
+        // aggressive) and trimmed to max. NULL when allowed, else the
+        // seconds to wait, read after the push as Ruby reads them.
+        "CREATE OR REPLACE FUNCTION discourse_rs.rate_limit_perform( \
+           p_key text, p_now bigint, p_secs bigint, p_max int, p_aggressive bool) \
+         RETURNS bigint LANGUAGE plpgsql AS $$ \
+         DECLARE s bigint[]; n bigint[]; allowed bool; \
+         BEGIN \
+           INSERT INTO discourse_rs.rate_limits (key, stamps, expires_at) VALUES (p_key, '{}', 0) \
+             ON CONFLICT (key) DO NOTHING; \
+           SELECT CASE WHEN expires_at <= p_now THEN '{}' ELSE stamps END INTO s \
+             FROM discourse_rs.rate_limits WHERE key = p_key FOR UPDATE; \
+           allowed := cardinality(s) < p_max OR p_now - s[cardinality(s)] >= p_secs; \
+           n := s; \
+           IF allowed OR p_aggressive THEN \
+             n := (ARRAY[p_now] || s)[1:p_max]; \
+             UPDATE discourse_rs.rate_limits SET stamps = n, expires_at = p_now + p_secs * 2 \
+               WHERE key = p_key; \
+           END IF; \
+           IF allowed THEN RETURN NULL; END IF; \
+           RETURN p_secs - (p_now - COALESCE(n[cardinality(n)], 0)); \
+         END $$",
     ] {
         sqlx::query(statement).execute(&mut *conn).await?;
     }
