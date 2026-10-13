@@ -1,0 +1,406 @@
+{
+  "name": "presence_per_10s_staff",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/chat/online"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/chat/online"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/chat/online"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/chat/online"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/chat/online"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/chat/online"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/chat/online"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/chat/online"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/chat/online"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/chat/online"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/chat/online"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/chat/online"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/chat/online"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/chat/online"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/chat/online"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/chat/online"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/chat/online"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/chat/online"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/chat/online"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/chat/online"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/chat/online"
+        ]
+      }
+    }
+  ],
+  "started_at": "2026-10-13T05:49:29.585383",
+  "transaction_started_at": "2026-10-13T05:49:28.56765",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "/chat/online": true
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "/chat/online": true
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "/chat/online": true
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "/chat/online": true
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "/chat/online": true
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "/chat/online": true
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "/chat/online": true
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "/chat/online": true
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "/chat/online": true
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "/chat/online": true
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "/chat/online": true
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "/chat/online": true
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "/chat/online": true
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "/chat/online": true
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "/chat/online": true
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "/chat/online": true
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "/chat/online": true
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "/chat/online": true
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "/chat/online": true
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "/chat/online": true
+      }
+    },
+    {
+      "status": 429,
+      "body": {
+        "errors": [
+          "You’ve performed this action too many times. Please wait 10 seconds before trying again."
+        ],
+        "error_type": "rate_limit",
+        "extras": {
+          "wait_seconds": 10,
+          "time_left": "10 seconds"
+        }
+      },
+      "headers": {
+        "Retry-After": "10"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 488,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "8Ls7/h4W10EoAljWC3xvEqiYRio=",
+            "created_at": "2026-10-13T05:49:28.944471",
+            "rotated_at": "2026-10-13T05:49:28.939328",
+            "updated_at": "2026-10-13T05:49:28.944471",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "8Ls7/h4W10EoAljWC3xvEqiYRio=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 488,
+            "seen_at": "2026-10-13T05:49:29.593866",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "8Ls7/h4W10EoAljWC3xvEqiYRio=",
+            "created_at": "2026-10-13T05:49:28.944471",
+            "rotated_at": "2026-10-13T05:49:28.939328",
+            "updated_at": "2026-10-13T05:49:28.944471",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "8Ls7/h4W10EoAljWC3xvEqiYRio=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "rate_limits": true,
+  "recorded_from": {
+    "case": "db0f0c68403d65f6da926a70a7edb4441b8ca87ac80097ce9ccf6ff3bc7a13cc",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

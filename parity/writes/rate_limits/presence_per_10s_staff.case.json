@@ -1,0 +1,216 @@
+{
+  "user": "admin",
+  "rate_limits": true,
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/chat/online"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/chat/online"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/chat/online"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/chat/online"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/chat/online"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/chat/online"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/chat/online"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/chat/online"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/chat/online"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/chat/online"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/chat/online"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/chat/online"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/chat/online"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/chat/online"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/chat/online"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/chat/online"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/chat/online"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/chat/online"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/chat/online"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/chat/online"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/presence/update",
+      "params": {
+        "client_id": "tab-a",
+        "present_channels": [
+          "/chat/online"
+        ]
+      }
+    }
+  ]
+}

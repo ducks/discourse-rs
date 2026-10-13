@@ -1,5 +1,5 @@
 //! Port of app/controllers/search_controller.rb#show and #query for
-//! anonymous users. Rate limiting (redis) is not ported.
+//! anonymous users, with rate_limit_search.
 
 use std::net::SocketAddr;
 
@@ -103,6 +103,73 @@ pub(crate) async fn invalid_access_at(
         Json(json!({"errors": [text], "error_type": "invalid_access", "extras": extras})),
     )
         .into_response())
+}
+
+/// `rate_limit_search`: per user a minute, or for anonymous searches per
+/// IP and site-wide, a second and a minute, in that order. A refusal is
+/// a 429 with failed_json and slow_down.
+async fn rate_limit_search(
+    state: &AppState,
+    guardian: &Guardian,
+    ip: &str,
+) -> Result<Option<Response>, crate::AppError> {
+    use crate::rate_limiter::{LimitUser, RateLimiter};
+    let mut conn = state.pool.acquire().await?;
+    let s = SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let limit = |name: &str| s.get(name).map(|v| v.to_i());
+    let limiters = match guardian.user() {
+        Some(user) => vec![RateLimiter::new(
+            Some(LimitUser {
+                id: user.id,
+                staff: guardian.is_staff(),
+            }),
+            "search-min",
+            limit("rate_limit_search_user")?,
+            60,
+        )],
+        None => vec![
+            RateLimiter::new(
+                None,
+                &format!("search-min-{ip}-per-sec"),
+                limit("rate_limit_search_anon_user_per_second")?,
+                1,
+            ),
+            RateLimiter::new(
+                None,
+                &format!("search-min-{ip}-per-min"),
+                limit("rate_limit_search_anon_user_per_minute")?,
+                60,
+            ),
+            RateLimiter::new(
+                None,
+                "search-min-anon-global-per-sec",
+                limit("rate_limit_search_anon_global_per_second")?,
+                1,
+            ),
+            RateLimiter::new(
+                None,
+                "search-min-anon-global-per-min",
+                limit("rate_limit_search_anon_global_per_minute")?,
+                60,
+            ),
+        ],
+    };
+    if crate::rate_limiter::perform_each(&state.pool, state.config.rate_limits, limiters)
+        .await?
+        .is_ok()
+    {
+        return Ok(None);
+    }
+    Ok(Some(
+        (
+            StatusCode::TOO_MANY_REQUESTS,
+            Json(json!({
+                "failed": "FAILED",
+                "message": state.i18n.t("rate_limiter.slow_down").unwrap_or_default(),
+            })),
+        )
+            .into_response(),
+    ))
 }
 
 /// The peer address when the server was started with connect info.
@@ -295,6 +362,9 @@ async fn show_response(
         page = n.max(1);
     }
     let (ip_address, user_agent, session_id) = request_context(&headers, peer)?;
+    if let Some(refused) = rate_limit_search(&state, &guardian, &ip_address).await? {
+        return Ok(refused);
+    }
     let args = SearchArgs {
         term: term.clone(),
         type_filter: Some(TypeFilter::Topic),
@@ -393,6 +463,9 @@ pub async fn query(
         Some(_) => return Ok(invalid_access(&state)),
     };
     let (ip_address, user_agent, session_id) = request_context(&headers, peer)?;
+    if let Some(refused) = rate_limit_search(&state, &guardian, &ip_address).await? {
+        return Ok(refused);
+    }
     let args = SearchArgs {
         term,
         type_filter,

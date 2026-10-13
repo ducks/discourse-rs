@@ -1,0 +1,17 @@
+{
+  "user": "user1",
+  "rate_limits": true,
+  "settings": {
+    "rate_limit_search_user": "1"
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/search/query.json?term=fixture"
+    },
+    {
+      "method": "GET",
+      "path": "/search/query.json?term=fixture"
+    }
+  ]
+}

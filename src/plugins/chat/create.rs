@@ -7,7 +7,8 @@
 //! in channels without threading too: the thread stays hidden there. Not
 //! ported yet, and refused: uploads, blocks, threads proper (threading on,
 //! forced threads, a thread_id), bots, group and channel-wide mentions,
-//! oneboxes and images in a message, and the per-user rate limiter.
+//! oneboxes and images in a message. The controller's
+//! Chat::MessageRateLimiter is in the route.
 
 use chrono::NaiveDateTime;
 use serde_json::{Value, json};
