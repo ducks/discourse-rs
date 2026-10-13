@@ -102,3 +102,76 @@ async fn recent_post_search_index_sets_the_offset_and_swaps_the_index() {
     .unwrap();
     assert!(!temp, "the temporary index is renamed");
 }
+
+/// CleanUpUploads runs at most once per half grace period (the
+/// LAST_UPLOAD_CLEANUP key), which no recording can show.
+#[tokio::test]
+async fn clean_up_uploads_waits_half_the_grace_period() {
+    let db = TestDb::new().await;
+    let public = std::env::temp_dir().join(format!("discourse-rs-cleanup-{}", std::process::id()));
+    let mut config = recorded_config();
+    config.public_dir = public.clone();
+    let app = state(db.pool.clone(), config).await;
+    let orphan = |id: i32| {
+        format!(
+            "INSERT INTO uploads (id, user_id, original_filename, filesize, url, sha1, extension, created_at, updated_at) \
+             VALUES ({id}, 3, 'o.png', 1, '/uploads/default/original/1X/{id}.png', '{id:040x}', 'png', \
+                     now() - interval '3 days', now() - interval '3 days')"
+        )
+    };
+    sqlx::query(&orphan(9701)).execute(&db.pool).await.unwrap();
+    jobs::run_scheduled(&app, jobs::upload_cleanup::CLEAN_UP_UPLOADS)
+        .await
+        .unwrap();
+    sqlx::query(&orphan(9702)).execute(&db.pool).await.unwrap();
+    jobs::run_scheduled(&app, jobs::upload_cleanup::CLEAN_UP_UPLOADS)
+        .await
+        .unwrap();
+    let left: Vec<i32> = sqlx::query_scalar("SELECT id FROM uploads WHERE id > 9700 ORDER BY id")
+        .fetch_all(&db.pool)
+        .await
+        .unwrap();
+    assert_eq!(
+        left,
+        vec![9702],
+        "the second run within 24 hours keeps the new orphan"
+    );
+    let _ = std::fs::remove_dir_all(&public);
+}
+
+/// PurgeDeletedUploads: `find -mtime +30`, a whole 31 days old removed, a
+/// day younger kept.
+#[tokio::test]
+async fn purge_deleted_uploads_removes_files_past_the_grace_period() {
+    let db = TestDb::new().await;
+    let public = std::env::temp_dir().join(format!("discourse-rs-purge-{}", std::process::id()));
+    let tombstone = public.join("uploads/tombstone/default/original/1X");
+    std::fs::create_dir_all(&tombstone).unwrap();
+    let day = std::time::Duration::from_secs(86_400);
+    let now = std::time::SystemTime::now();
+    for (name, age) in [
+        ("old.png", day * 31 + std::time::Duration::from_secs(60)),
+        (
+            "young.png",
+            day * 30 + std::time::Duration::from_secs(23 * 3600),
+        ),
+    ] {
+        let path = tombstone.join(name);
+        std::fs::write(&path, b"x").unwrap();
+        std::fs::File::options()
+            .write(true)
+            .open(&path)
+            .unwrap()
+            .set_modified(now - age)
+            .unwrap();
+    }
+    let mut config = recorded_config();
+    config.public_dir = public.clone();
+    let app = state(db.pool.clone(), config).await;
+    jobs::run_scheduled(&app, jobs::upload_cleanup::PURGE_DELETED_UPLOADS)
+        .await
+        .unwrap();
+    assert!(!tombstone.join("old.png").exists());
+    assert!(tombstone.join("young.png").exists());
+    let _ = std::fs::remove_dir_all(&public);
+}

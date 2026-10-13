@@ -1,0 +1,62 @@
+{
+  "name": "uploads_cleanup_grace",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-13T03:09:42.637064",
+  "transaction_started_at": "2026-10-13T03:09:41.872379",
+  "responses": [],
+  "changes": {
+    "uploads": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 9621,
+          "url": "/uploads/default/original/1X/0000000000000000000000000000000000002595.png",
+          "etag": null,
+          "sha1": "0000000000000000000000000000000000002595",
+          "width": null,
+          "height": null,
+          "origin": null,
+          "secure": false,
+          "user_id": 3,
+          "animated": null,
+          "filesize": 100,
+          "extension": "png",
+          "created_at": "2026-10-13T01:09:41.872379",
+          "updated_at": "2026-10-13T01:09:41.872379",
+          "retain_hours": null,
+          "original_sha1": null,
+          "dominant_color": null,
+          "thumbnail_width": null,
+          "thumbnail_height": null,
+          "original_filename": "o9621.png",
+          "verification_status": 1,
+          "access_control_post_id": null,
+          "security_last_changed_at": null,
+          "security_last_changed_reason": null
+        }
+      ],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "clean_orphan_uploads_grace_period_hours": 0
+  },
+  "setup": [
+    "INSERT INTO uploads (id, user_id, original_filename, filesize, url, sha1, extension, retain_hours, secure, access_control_post_id, created_at, updated_at) VALUES (9621, 3, 'o9621.png', 100, '/uploads/default/original/1X/0000000000000000000000000000000000002595.png', '0000000000000000000000000000000000002595', 'png', NULL, false, NULL, now() - interval '2 hours', now() - interval '2 hours'), (9622, 3, 'o9622.png', 100, '/uploads/default/original/1X/0000000000000000000000000000000000002596.png', '0000000000000000000000000000000000002596', 'png', NULL, false, NULL, now() - interval '30 minutes', now() - interval '30 minutes')"
+  ],
+  "enqueue": [
+    [
+      "clean_up_uploads",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "3d0f6b4b8e16131697b319b86745359fe3ff80e992b4ead9dd8872526998d234",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

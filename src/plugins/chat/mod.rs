@@ -576,3 +576,32 @@ pub async fn user_can_direct_message(
         .is_some_and(|o| o.chat_enabled);
     Ok(chat_enabled && can_direct_message(settings, guardian)?)
 }
+
+/// Chat's `register_upload_in_use`: an upload a live message or a draft
+/// names (by sha1 or its base62 form), or a message's hotlinked media.
+pub async fn upload_in_use(
+    conn: &mut PgConnection,
+    upload_id: i32,
+    sha1: &str,
+) -> Result<bool, AppError> {
+    let base62 = crate::pretty_text::helpers::base62_sha1(sha1).unwrap_or_default();
+    let like = |s: &str| {
+        format!(
+            "%{}%",
+            s.replace('\\', "\\\\")
+                .replace('%', "\\%")
+                .replace('_', "\\_")
+        )
+    };
+    Ok(sqlx::query_scalar(
+        "SELECT EXISTS (SELECT 1 FROM chat_messages WHERE deleted_at IS NULL \
+                          AND (message LIKE $1 OR message LIKE $2)) \
+             OR EXISTS (SELECT 1 FROM chat_drafts WHERE data LIKE $1 OR data LIKE $2) \
+             OR EXISTS (SELECT 1 FROM chat_message_hotlinked_media WHERE upload_id = $3)",
+    )
+    .bind(like(sha1))
+    .bind(like(&base62))
+    .bind(upload_id)
+    .fetch_one(conn)
+    .await?)
+}

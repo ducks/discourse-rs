@@ -20,6 +20,7 @@ pub mod moderation;
 pub mod periodical;
 pub mod scores;
 pub mod search_jobs;
+pub mod upload_cleanup;
 pub mod upload_jobs;
 pub(crate) use handlers::choose_featured_users;
 pub(crate) mod post_alert;
@@ -342,6 +343,11 @@ const SCHEDULED: &[(&str, Duration)] = &[
         upload_jobs::BACKFILL_DOMINANT_COLORS,
         Duration::from_secs(15 * 60),
     ),
+    (upload_cleanup::CLEAN_UP_UPLOADS, Duration::from_secs(3600)),
+    (
+        upload_cleanup::PURGE_DELETED_UPLOADS,
+        Duration::from_secs(24 * 3600),
+    ),
 ];
 
 /// A SCHEDULED job's name: it runs from the queue too (a case enqueues
@@ -418,6 +424,8 @@ pub async fn run_scheduled(state: &AppState, name: &str) -> Result<(), AppError>
         consistency::ENSURE_DB_CONSISTENCY => consistency::ensure_db_consistency(state).await,
         upload_jobs::UPDATE_ANIMATED_UPLOADS => upload_jobs::update_animated_uploads(state).await,
         upload_jobs::BACKFILL_DOMINANT_COLORS => upload_jobs::backfill_dominant_colors(state).await,
+        upload_cleanup::CLEAN_UP_UPLOADS => upload_cleanup::clean_up_uploads(state).await,
+        upload_cleanup::PURGE_DELETED_UPLOADS => upload_cleanup::purge_deleted_uploads(state).await,
         _ => unreachable!("every SCHEDULED job has a handler"),
     }
 }

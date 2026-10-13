@@ -1,0 +1,20 @@
+{
+  "user": null,
+  "settings": {
+    "clean_up_uploads": false
+  },
+  "setup": [
+    "INSERT INTO uploads (id, user_id, original_filename, filesize, url, sha1, extension, retain_hours, secure, access_control_post_id, created_at, updated_at) VALUES (9611, 3, 'o9611.png', 100, '', '000000000000000000000000000000000000258b', 'png', NULL, false, NULL, now() - interval '3 days', now() - interval '3 days'), (9612, 3, 'o9612.png', 100, '/uploads/default/original/1X/000000000000000000000000000000000000258c.png', '000000000000000000000000000000000000258c', 'png', NULL, false, NULL, now() - interval '3 days', now() - interval '3 days')",
+    "INSERT INTO external_upload_stubs (id, key, original_filename, status, unique_identifier, created_by_id, upload_type, filesize, created_at, updated_at) VALUES (9601, 'k1', 'a.png', 1, '00000000-0000-4000-8000-000000000001', 3, 'composer', 10, now() - interval '2 hours', now()), (9602, 'k2', 'b.png', 1, '00000000-0000-4000-8000-000000000002', 3, 'composer', 10, now() - interval '30 minutes', now()), (9603, 'k3', 'c.png', 2, '00000000-0000-4000-8000-000000000003', 3, 'composer', 10, now() - interval '2 hours', now()), (9604, 'k4', 'd.png', 2, '00000000-0000-4000-8000-000000000004', 3, 'composer', 10, now() - interval '25 hours', now()), (9605, 'k5', 'e.png', 3, '00000000-0000-4000-8000-000000000005', 3, 'composer', 10, now() - interval '100 hours', now())"
+  ],
+  "requests": [],
+  "enqueue": [
+    [
+      "clean_up_uploads",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "clean_up_uploads"
+  ]
+}

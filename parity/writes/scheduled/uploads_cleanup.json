@@ -1,0 +1,393 @@
+{
+  "name": "uploads_cleanup",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-13T03:09:41.582656",
+  "transaction_started_at": "2026-10-13T03:09:40.359766",
+  "responses": [],
+  "changes": {
+    "badges": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "icon": "user",
+            "name": "Basic User",
+            "query": "SELECT u.id user_id, current_timestamp granted_at FROM users u\nWHERE trust_level >= 1 AND (\n  :backfill OR u.id IN (:user_ids)\n)\n",
+            "system": true,
+            "enabled": true,
+            "trigger": 4,
+            "listable": true,
+            "created_at": "2026-07-25T05:58:07.276666",
+            "show_posts": false,
+            "updated_at": "2026-09-30T06:20:02.759062",
+            "allow_title": false,
+            "auto_revoke": true,
+            "description": null,
+            "grant_count": 5,
+            "target_posts": false,
+            "badge_type_id": 3,
+            "multiple_grant": false,
+            "image_upload_id": 9606,
+            "long_description": null,
+            "badge_grouping_id": 4,
+            "show_in_post_header": false
+          },
+          "after": {
+            "id": 1,
+            "icon": "user",
+            "name": "Basic User",
+            "query": "SELECT u.id user_id, current_timestamp granted_at FROM users u\nWHERE trust_level >= 1 AND (\n  :backfill OR u.id IN (:user_ids)\n)\n",
+            "system": true,
+            "enabled": true,
+            "trigger": 4,
+            "listable": true,
+            "created_at": "2026-07-25T05:58:07.276666",
+            "show_posts": false,
+            "updated_at": "2026-09-30T06:20:02.759062",
+            "allow_title": false,
+            "auto_revoke": true,
+            "description": null,
+            "grant_count": 5,
+            "target_posts": false,
+            "badge_type_id": 3,
+            "multiple_grant": false,
+            "image_upload_id": null,
+            "long_description": null,
+            "badge_grouping_id": 4,
+            "show_in_post_header": false
+          }
+        }
+      ]
+    },
+    "external_upload_stubs": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 9601,
+          "key": "k1",
+          "status": 1,
+          "filesize": 10,
+          "multipart": false,
+          "created_at": "2026-10-13T01:09:40.359766",
+          "updated_at": "2026-10-13T03:09:40.359766",
+          "upload_type": "composer",
+          "created_by_id": 3,
+          "original_filename": "a.png",
+          "unique_identifier": "00000000-0000-4000-8000-000000000001",
+          "external_upload_identifier": null
+        },
+        {
+          "id": 9604,
+          "key": "k4",
+          "status": 2,
+          "filesize": 10,
+          "multipart": false,
+          "created_at": "2026-10-12T02:09:40.359766",
+          "updated_at": "2026-10-13T03:09:40.359766",
+          "upload_type": "composer",
+          "created_by_id": 3,
+          "original_filename": "d.png",
+          "unique_identifier": "00000000-0000-4000-8000-000000000004",
+          "external_upload_identifier": null
+        }
+      ],
+      "updated": []
+    },
+    "optimized_images": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 9601,
+          "url": "/uploads/default/optimized/1X/x_20x20.png",
+          "etag": null,
+          "sha1": "x",
+          "width": 20,
+          "height": 20,
+          "version": null,
+          "filesize": 10,
+          "extension": ".png",
+          "upload_id": 9606,
+          "created_at": "2026-10-13T03:09:40.359766",
+          "updated_at": "2026-10-13T03:09:40.359766"
+        }
+      ],
+      "updated": []
+    },
+    "uploads": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 9601,
+          "url": "/uploads/default/original/1X/0000000000000000000000000000000000002581.png",
+          "etag": null,
+          "sha1": "0000000000000000000000000000000000002581",
+          "width": null,
+          "height": null,
+          "origin": null,
+          "secure": false,
+          "user_id": 3,
+          "animated": null,
+          "filesize": 100,
+          "extension": "png",
+          "created_at": "2026-10-10T03:09:40.359766",
+          "updated_at": "2026-10-10T03:09:40.359766",
+          "retain_hours": null,
+          "original_sha1": null,
+          "dominant_color": null,
+          "thumbnail_width": null,
+          "thumbnail_height": null,
+          "original_filename": "o9601.png",
+          "verification_status": 1,
+          "access_control_post_id": null,
+          "security_last_changed_at": null,
+          "security_last_changed_reason": null
+        },
+        {
+          "id": 9606,
+          "url": "/uploads/default/original/1X/0000000000000000000000000000000000002586.png",
+          "etag": null,
+          "sha1": "0000000000000000000000000000000000002586",
+          "width": null,
+          "height": null,
+          "origin": null,
+          "secure": false,
+          "user_id": 3,
+          "animated": null,
+          "filesize": 100,
+          "extension": "png",
+          "created_at": "2026-10-10T03:09:40.359766",
+          "updated_at": "2026-10-10T03:09:40.359766",
+          "retain_hours": null,
+          "original_sha1": null,
+          "dominant_color": null,
+          "thumbnail_width": null,
+          "thumbnail_height": null,
+          "original_filename": "o9606.png",
+          "verification_status": 1,
+          "access_control_post_id": null,
+          "security_last_changed_at": null,
+          "security_last_changed_reason": null
+        },
+        {
+          "id": 9608,
+          "url": "/uploads/default/original/1X/0000000000000000000000000000000000002588.png",
+          "etag": null,
+          "sha1": "0000000000000000000000000000000000002588",
+          "width": null,
+          "height": null,
+          "origin": null,
+          "secure": false,
+          "user_id": 3,
+          "animated": null,
+          "filesize": 100,
+          "extension": "png",
+          "created_at": "2026-10-10T03:09:40.359766",
+          "updated_at": "2026-10-10T03:09:40.359766",
+          "retain_hours": null,
+          "original_sha1": null,
+          "dominant_color": null,
+          "thumbnail_width": null,
+          "thumbnail_height": null,
+          "original_filename": "o9608.png",
+          "verification_status": 1,
+          "access_control_post_id": null,
+          "security_last_changed_at": null,
+          "security_last_changed_reason": null
+        }
+      ],
+      "updated": []
+    },
+    "user_avatars": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 6,
+            "user_id": 4,
+            "created_at": "2026-07-25T05:59:16.981004",
+            "updated_at": "2026-09-30T06:19:59.156242",
+            "custom_upload_id": 9606,
+            "gravatar_upload_id": null,
+            "last_gravatar_download_attempt": "2026-09-30T06:19:59.155437"
+          },
+          "after": {
+            "id": 6,
+            "user_id": 4,
+            "created_at": "2026-07-25T05:59:16.981004",
+            "updated_at": "2026-09-30T06:19:59.156242",
+            "custom_upload_id": null,
+            "gravatar_upload_id": null,
+            "last_gravatar_download_attempt": "2026-09-30T06:19:59.155437"
+          }
+        }
+      ]
+    },
+    "user_profiles": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "views": 3,
+            "bio_raw": null,
+            "user_id": 3,
+            "website": null,
+            "location": null,
+            "bio_cooked": null,
+            "featured_topic_id": null,
+            "bio_cooked_version": 1,
+            "dismissed_banner_key": null,
+            "granted_title_badge_id": null,
+            "card_background_upload_id": 9606,
+            "profile_background_upload_id": 9606
+          },
+          "after": {
+            "views": 3,
+            "bio_raw": null,
+            "user_id": 3,
+            "website": null,
+            "location": null,
+            "bio_cooked": null,
+            "featured_topic_id": null,
+            "bio_cooked_version": 1,
+            "dismissed_banner_key": null,
+            "granted_title_badge_id": null,
+            "card_background_upload_id": null,
+            "profile_background_upload_id": null
+          }
+        }
+      ]
+    },
+    "user_uploads": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 36,
+          "user_id": 3,
+          "upload_id": 9606,
+          "created_at": "2026-10-13T03:09:40.359766"
+        }
+      ],
+      "updated": []
+    },
+    "users": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 4,
+            "name": "User2",
+            "admin": false,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": false,
+            "username": "user2",
+            "moderator": false,
+            "created_at": "2026-07-25T05:59:16.733827",
+            "flag_level": 0,
+            "ip_address": null,
+            "updated_at": "2026-09-30T07:28:29.889848",
+            "approved_at": null,
+            "trust_level": 2,
+            "last_seen_at": null,
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": null,
+            "silenced_till": null,
+            "approved_by_id": null,
+            "flair_group_id": null,
+            "last_posted_at": "2026-09-30T07:28:29.179534",
+            "suspended_till": null,
+            "username_lower": "user2",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": null,
+            "secure_identifier": null,
+            "uploaded_avatar_id": 9606,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          },
+          "after": {
+            "id": 4,
+            "name": "User2",
+            "admin": false,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": false,
+            "username": "user2",
+            "moderator": false,
+            "created_at": "2026-07-25T05:59:16.733827",
+            "flag_level": 0,
+            "ip_address": null,
+            "updated_at": "2026-09-30T07:28:29.889848",
+            "approved_at": null,
+            "trust_level": 2,
+            "last_seen_at": null,
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": null,
+            "silenced_till": null,
+            "approved_by_id": null,
+            "flair_group_id": null,
+            "last_posted_at": "2026-09-30T07:28:29.179534",
+            "suspended_till": null,
+            "username_lower": "user2",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": null,
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO uploads (id, user_id, original_filename, filesize, url, sha1, extension, retain_hours, secure, access_control_post_id, created_at, updated_at) VALUES (9601, 3, 'o9601.png', 100, '/uploads/default/original/1X/0000000000000000000000000000000000002581.png', '0000000000000000000000000000000000002581', 'png', NULL, false, NULL, now() - interval '3 days', now() - interval '3 days'), (9602, 3, 'o9602.png', 100, '/uploads/default/original/1X/0000000000000000000000000000000000002582.png', '0000000000000000000000000000000000002582', 'png', NULL, false, NULL, now() - interval '3 days', now() - interval '3 days'), (9603, 3, 'o9603.png', 100, '/uploads/default/original/1X/0000000000000000000000000000000000002583.png', '0000000000000000000000000000000000002583', 'png', NULL, false, NULL, now() - interval '1 hour', now() - interval '1 hour'), (9604, 3, 'o9604.png', 100, '/uploads/default/original/1X/0000000000000000000000000000000000002584.png', '0000000000000000000000000000000000002584', 'png', 1000, false, NULL, now() - interval '3 days', now() - interval '3 days'), (9605, 3, 'o9605.png', 100, '/uploads/default/original/1X/0000000000000000000000000000000000002585.png', '0000000000000000000000000000000000002585', 'png', NULL, true, 35, now() - interval '3 days', now() - interval '3 days'), (9606, 3, 'o9606.png', 100, '/uploads/default/original/1X/0000000000000000000000000000000000002586.png', '0000000000000000000000000000000000002586', 'png', NULL, false, NULL, now() - interval '3 days', now() - interval '3 days'), (9607, 3, 'o9607.png', 100, '/uploads/default/original/1X/0000000000000000000000000000000000002587.png', '0000000000000000000000000000000000002587', 'png', NULL, false, NULL, now() - interval '3 days', now() - interval '3 days'), (9608, 3, 'o9608.png', 100, '/uploads/default/original/1X/0000000000000000000000000000000000002588.png', '0000000000000000000000000000000000002588', 'png', NULL, false, NULL, now() - interval '3 days', now() - interval '3 days')",
+    "INSERT INTO upload_references (upload_id, target_type, target_id, created_at, updated_at) VALUES (9602, 'Post', 35, now(), now())",
+    "INSERT INTO optimized_images (id, sha1, extension, width, height, upload_id, url, filesize, created_at, updated_at) VALUES (9601, 'x', '.png', 20, 20, 9606, '/uploads/default/optimized/1X/x_20x20.png', 10, now(), now())",
+    "INSERT INTO user_uploads (upload_id, user_id, created_at) VALUES (9606, 3, now())",
+    "UPDATE user_profiles SET card_background_upload_id = 9606, profile_background_upload_id = 9606 WHERE user_id = 3",
+    "UPDATE badges SET image_upload_id = 9606 WHERE id = 1",
+    "UPDATE users SET uploaded_avatar_id = 9606 WHERE id = 4",
+    "UPDATE user_avatars SET custom_upload_id = 9606 WHERE user_id = 4",
+    "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id) VALUES (9601, 2, 3, now(), now(), 'see 0000000000000000000000000000000000002587', '<p>x</p>', 1, 3), (9602, 2, 3, now(), now(), 'see 0000000000000000000000000000000000002588', '<p>x</p>', 1, 3)",
+    "UPDATE chat_messages SET deleted_at = now() WHERE id = 9602",
+    "INSERT INTO external_upload_stubs (id, key, original_filename, status, unique_identifier, created_by_id, upload_type, filesize, created_at, updated_at) VALUES (9601, 'k1', 'a.png', 1, '00000000-0000-4000-8000-000000000001', 3, 'composer', 10, now() - interval '2 hours', now()), (9602, 'k2', 'b.png', 1, '00000000-0000-4000-8000-000000000002', 3, 'composer', 10, now() - interval '30 minutes', now()), (9603, 'k3', 'c.png', 2, '00000000-0000-4000-8000-000000000003', 3, 'composer', 10, now() - interval '2 hours', now()), (9604, 'k4', 'd.png', 2, '00000000-0000-4000-8000-000000000004', 3, 'composer', 10, now() - interval '25 hours', now()), (9605, 'k5', 'e.png', 3, '00000000-0000-4000-8000-000000000005', 3, 'composer', 10, now() - interval '100 hours', now())"
+  ],
+  "enqueue": [
+    [
+      "clean_up_uploads",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "e5525a4e6bedbcceea3b7ca89abe5b340ba85c29c4b1fdb9041c1cddc3b9078b",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "name": "uploads_cleanup_off",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-13T03:09:43.606596",
+  "transaction_started_at": "2026-10-13T03:09:42.849688",
+  "responses": [],
+  "changes": {
+    "uploads": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 9611,
+          "url": "",
+          "etag": null,
+          "sha1": "000000000000000000000000000000000000258b",
+          "width": null,
+          "height": null,
+          "origin": null,
+          "secure": false,
+          "user_id": 3,
+          "animated": null,
+          "filesize": 100,
+          "extension": "png",
+          "created_at": "2026-10-10T03:09:42.849688",
+          "updated_at": "2026-10-10T03:09:42.849688",
+          "retain_hours": null,
+          "original_sha1": null,
+          "dominant_color": null,
+          "thumbnail_width": null,
+          "thumbnail_height": null,
+          "original_filename": "o9611.png",
+          "verification_status": 1,
+          "access_control_post_id": null,
+          "security_last_changed_at": null,
+          "security_last_changed_reason": null
+        }
+      ],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "clean_up_uploads": false
+  },
+  "setup": [
+    "INSERT INTO uploads (id, user_id, original_filename, filesize, url, sha1, extension, retain_hours, secure, access_control_post_id, created_at, updated_at) VALUES (9611, 3, 'o9611.png', 100, '', '000000000000000000000000000000000000258b', 'png', NULL, false, NULL, now() - interval '3 days', now() - interval '3 days'), (9612, 3, 'o9612.png', 100, '/uploads/default/original/1X/000000000000000000000000000000000000258c.png', '000000000000000000000000000000000000258c', 'png', NULL, false, NULL, now() - interval '3 days', now() - interval '3 days')",
+    "INSERT INTO external_upload_stubs (id, key, original_filename, status, unique_identifier, created_by_id, upload_type, filesize, created_at, updated_at) VALUES (9601, 'k1', 'a.png', 1, '00000000-0000-4000-8000-000000000001', 3, 'composer', 10, now() - interval '2 hours', now()), (9602, 'k2', 'b.png', 1, '00000000-0000-4000-8000-000000000002', 3, 'composer', 10, now() - interval '30 minutes', now()), (9603, 'k3', 'c.png', 2, '00000000-0000-4000-8000-000000000003', 3, 'composer', 10, now() - interval '2 hours', now()), (9604, 'k4', 'd.png', 2, '00000000-0000-4000-8000-000000000004', 3, 'composer', 10, now() - interval '25 hours', now()), (9605, 'k5', 'e.png', 3, '00000000-0000-4000-8000-000000000005', 3, 'composer', 10, now() - interval '100 hours', now())"
+  ],
+  "enqueue": [
+    [
+      "clean_up_uploads",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "1a989e4e988245a3f1bd0efd4fef6f87007ca7287dc75df10f1333aa57665168",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
