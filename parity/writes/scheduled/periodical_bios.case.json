@@ -1,0 +1,8 @@
+{
+  "user": null,
+  "setup": ["UPDATE user_profiles SET bio_cooked_version = 0, bio_raw = 'Hello **world**, see https://example.com/page' WHERE user_id IN (1, 3)"],
+  "requests": [],
+  "enqueue": [["periodical_updates", {}]],
+  "run_jobs": ["periodical_updates"],
+  "approximate": ["topics.score"]
+}

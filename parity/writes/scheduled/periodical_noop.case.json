@@ -1,0 +1,8 @@
+{
+  "user": null,
+  "setup": [],
+  "requests": [],
+  "enqueue": [["periodical_updates", {}]],
+  "run_jobs": ["periodical_updates"],
+  "approximate": ["topics.score"]
+}

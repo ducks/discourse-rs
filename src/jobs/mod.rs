@@ -16,6 +16,7 @@ pub mod heat;
 pub mod housekeeping;
 pub mod list_stats;
 pub mod moderation;
+pub mod periodical;
 pub mod scores;
 pub mod search_jobs;
 pub(crate) use handlers::choose_featured_users;
@@ -326,6 +327,7 @@ const SCHEDULED: &[(&str, Duration)] = &[
         Duration::from_secs(24 * 3600),
     ),
     (scores::CALCULATE_SCORES, Duration::from_secs(7 * 24 * 3600)),
+    (periodical::PERIODICAL_UPDATES, Duration::from_secs(15 * 60)),
 ];
 
 /// A SCHEDULED job's name: it runs from the queue too (a case enqueues
@@ -398,6 +400,7 @@ pub async fn run_scheduled(state: &AppState, name: &str) -> Result<(), AppError>
             search_jobs::create_recent_post_search_indexes(state).await
         }
         scores::CALCULATE_SCORES => scores::calculate_scores(state).await,
+        periodical::PERIODICAL_UPDATES => periodical::periodical_updates(state).await,
         _ => unreachable!("every SCHEDULED job has a handler"),
     }
 }

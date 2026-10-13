@@ -1,0 +1,9 @@
+{
+  "not_yet": "rebaking old posts (Post#rebake!)",
+  "user": null,
+  "setup": ["UPDATE posts SET baked_version = 1 WHERE id = 36"],
+  "requests": [],
+  "enqueue": [["periodical_updates", {}]],
+  "run_jobs": ["periodical_updates"],
+  "approximate": ["topics.score"]
+}

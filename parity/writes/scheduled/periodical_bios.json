@@ -1,0 +1,96 @@
+{
+  "name": "periodical_bios",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-13T02:01:20.529637",
+  "transaction_started_at": "2026-10-13T02:01:19.78372",
+  "responses": [],
+  "changes": {
+    "user_profiles": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "views": 3,
+            "bio_raw": "Hello **world**, see https://example.com/page",
+            "user_id": 3,
+            "website": null,
+            "location": null,
+            "bio_cooked": null,
+            "featured_topic_id": null,
+            "bio_cooked_version": 0,
+            "dismissed_banner_key": null,
+            "granted_title_badge_id": null,
+            "card_background_upload_id": null,
+            "profile_background_upload_id": null
+          },
+          "after": {
+            "views": 3,
+            "bio_raw": "Hello **world**, see https://example.com/page",
+            "user_id": 3,
+            "website": null,
+            "location": null,
+            "bio_cooked": "<p>Hello <strong>world</strong>, see <a href=\"https://example.com/page\" class=\"inline-onebox-loading\" rel=\"noopener nofollow ugc\">https://example.com/page</a></p>",
+            "featured_topic_id": null,
+            "bio_cooked_version": 1,
+            "dismissed_banner_key": null,
+            "granted_title_badge_id": null,
+            "card_background_upload_id": null,
+            "profile_background_upload_id": null
+          }
+        },
+        {
+          "before": {
+            "views": 3,
+            "bio_raw": "Hello **world**, see https://example.com/page",
+            "user_id": 1,
+            "website": null,
+            "location": null,
+            "bio_cooked": null,
+            "featured_topic_id": null,
+            "bio_cooked_version": 0,
+            "dismissed_banner_key": null,
+            "granted_title_badge_id": null,
+            "card_background_upload_id": null,
+            "profile_background_upload_id": null
+          },
+          "after": {
+            "views": 3,
+            "bio_raw": "Hello **world**, see https://example.com/page",
+            "user_id": 1,
+            "website": null,
+            "location": null,
+            "bio_cooked": "<p>Hello <strong>world</strong>, see <a href=\"https://example.com/page\" class=\"inline-onebox-loading\">https://example.com/page</a></p>",
+            "featured_topic_id": null,
+            "bio_cooked_version": 1,
+            "dismissed_banner_key": null,
+            "granted_title_badge_id": null,
+            "card_background_upload_id": null,
+            "profile_background_upload_id": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE user_profiles SET bio_cooked_version = 0, bio_raw = 'Hello **world**, see https://example.com/page' WHERE user_id IN (1, 3)"
+  ],
+  "enqueue": [
+    [
+      "periodical_updates",
+      {}
+    ]
+  ],
+  "approximate": [
+    "topics.score"
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "e560df4f9ab355bde7ce0c79046885c6b52f033574efb684e9e0ef6f5247df94",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

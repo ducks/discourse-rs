@@ -1,0 +1,8 @@
+{
+  "user": null,
+  "setup": ["UPDATE topics SET bumped_at = now() - interval '2 days' WHERE id = 41", "UPDATE topics SET bumped_at = now() - interval '3 days' WHERE id = 35"],
+  "requests": [],
+  "enqueue": [["periodical_updates", {}]],
+  "run_jobs": ["periodical_updates"],
+  "approximate": ["topics.score"]
+}

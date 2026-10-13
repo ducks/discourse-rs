@@ -1,0 +1,27 @@
+{
+  "name": "periodical_noop",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-13T02:01:23.342765",
+  "transaction_started_at": "2026-10-13T02:01:22.711149",
+  "responses": [],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "setup": [],
+  "enqueue": [
+    [
+      "periodical_updates",
+      {}
+    ]
+  ],
+  "approximate": [
+    "topics.score"
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "0e94ec721e864d5117de258c968606fc9c34abbfef54a50d3218c90d6b48284d",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

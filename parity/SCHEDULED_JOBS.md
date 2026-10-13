@@ -49,13 +49,13 @@ Classes:
 | update_heat_settings | 1mo (from the worker's start) | scheduled/heat_* |
 | reindex_search | 2h | search/reindex_* |
 | calculate_scores | 1w | scheduled/scores_* |
+| periodical_updates | 15m (stale post rebakes, tag descriptions with text and auto bumps refused) | scheduled/periodical_* |
 | create_recent_post_search_indexes | 1d (CREATE INDEX CONCURRENTLY can't be recorded in a transaction) | search/recent_index_small_site, tests/jobs.rs |
 
 ## Ready, in porting order
 
 | Job | Every | Missing without it | Size |
 |---|---|---|---|
-| periodical_updates | 15m | featured topics, recent scores, rebakes, min_new_topics_time, auto bumps | L |
 | update_animated_uploads, backfill_dominant_colors | 1h, 15m | upload metadata never backfilled | S |
 | clean_up_uploads, purge_deleted_uploads | 1h, 1d | orphaned uploads stay | L |
 | ensure_db_consistency | 12h | denormalized counters drift | L |

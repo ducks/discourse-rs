@@ -1,0 +1,104 @@
+{
+  "name": "periodical_featured",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-13T02:01:21.58657",
+  "transaction_started_at": "2026-10-13T02:01:20.833979",
+  "responses": [],
+  "changes": {
+    "category_featured_topics": {
+      "inserted": [
+        {
+          "id": 59,
+          "rank": 0,
+          "topic_id": 5,
+          "created_at": "2026-10-13T02:01:21.61911",
+          "updated_at": "2026-10-13T02:01:21.61911",
+          "category_id": 4
+        },
+        {
+          "id": 60,
+          "rank": 1,
+          "topic_id": 41,
+          "created_at": "2026-10-13T02:01:21.619973",
+          "updated_at": "2026-10-13T02:01:21.619973",
+          "category_id": 4
+        },
+        {
+          "id": 61,
+          "rank": 2,
+          "topic_id": 35,
+          "created_at": "2026-10-13T02:01:21.620595",
+          "updated_at": "2026-10-13T02:01:21.620595",
+          "category_id": 4
+        },
+        {
+          "id": 62,
+          "rank": 3,
+          "topic_id": 38,
+          "created_at": "2026-10-13T02:01:21.621199",
+          "updated_at": "2026-10-13T02:01:21.621199",
+          "category_id": 4
+        }
+      ],
+      "deleted": [
+        {
+          "id": 55,
+          "rank": 0,
+          "topic_id": 5,
+          "created_at": "2026-10-01T15:44:18.466364",
+          "updated_at": "2026-10-01T15:44:18.466364",
+          "category_id": 4
+        },
+        {
+          "id": 56,
+          "rank": 1,
+          "topic_id": 35,
+          "created_at": "2026-10-01T15:44:18.467717",
+          "updated_at": "2026-10-01T15:44:18.467717",
+          "category_id": 4
+        },
+        {
+          "id": 57,
+          "rank": 2,
+          "topic_id": 41,
+          "created_at": "2026-10-01T15:44:18.468742",
+          "updated_at": "2026-10-01T15:44:18.468742",
+          "category_id": 4
+        },
+        {
+          "id": 58,
+          "rank": 3,
+          "topic_id": 38,
+          "created_at": "2026-10-01T15:44:18.46946",
+          "updated_at": "2026-10-01T15:44:18.46946",
+          "category_id": 4
+        }
+      ],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "category_featured_topics": 59
+  },
+  "setup": [
+    "UPDATE topics SET bumped_at = now() - interval '2 days' WHERE id = 41",
+    "UPDATE topics SET bumped_at = now() - interval '3 days' WHERE id = 35"
+  ],
+  "enqueue": [
+    [
+      "periodical_updates",
+      {}
+    ]
+  ],
+  "approximate": [
+    "topics.score"
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "5447ab0ec9797fb62e0db39749c1a32a41c50774e7dd6535f7574556231bb358",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

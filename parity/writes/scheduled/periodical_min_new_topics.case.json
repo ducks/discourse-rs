@@ -1,0 +1,9 @@
+{
+  "user": null,
+  "settings": { "max_new_topics": 3 },
+  "setup": [],
+  "requests": [],
+  "enqueue": [["periodical_updates", {}]],
+  "run_jobs": ["periodical_updates"],
+  "approximate": ["topics.score"]
+}

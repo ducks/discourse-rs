@@ -1108,7 +1108,7 @@ async fn create_topic(
                 .bind(category_id)
                 .execute(&mut *conn)
                 .await?;
-            feature_topics_for(conn, s, category_id).await?;
+            feature_topics_for(conn, s, category_id, None).await?;
         }
     }
     next_draft_sequence(conn, user_id, &format!("topic_{topic_id}")).await?;
@@ -1181,12 +1181,14 @@ async fn create_topic(
     Ok(topic_id)
 }
 
-/// `CategoryFeaturedTopic.feature_topics_for(category)`: the system
-/// user's list, then the anonymous one, rewritten in rank order.
+/// `CategoryFeaturedTopic.feature_topics_for(category, existing)`: the
+/// system user's list, then the anonymous one, rewritten in rank order
+/// unless it equals `existing` (only the periodical updates pass it).
 pub async fn feature_topics_for(
     conn: &mut PgConnection,
     s: &crate::site_settings::SiteSettings,
     category_id: i32,
+    existing: Option<&[i32]>,
 ) -> Result<(), AppError> {
     let (num_featured, definition, sort_order): (i32, Option<i32>, Option<String>) =
         sqlx::query_as(
@@ -1255,6 +1257,9 @@ pub async fn feature_topics_for(
                 results.push(id);
             }
         }
+    }
+    if existing.is_some_and(|e| e == results.as_slice()) {
+        return Ok(());
     }
     sqlx::query("DELETE FROM category_featured_topics WHERE category_id = $1")
         .bind(category_id)
