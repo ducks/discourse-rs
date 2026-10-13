@@ -539,9 +539,7 @@ impl Search<'_> {
         if s.get("search_ranking_weights")?.presence().is_some() {
             return Err(Unsupported("search_ranking_weights").into());
         }
-        if s.get("search_prefer_recent_posts")?.truthy()
-            || s.get("search_recent_regular_posts_offset_post_id")?.to_i() > 0
-        {
+        if s.get("search_prefer_recent_posts")?.truthy() {
             return Err(Unsupported("search_prefer_recent_posts").into());
         }
         if s.get("search_tokenize_chinese")?.truthy() || s.get("search_tokenize_japanese")?.truthy()
@@ -567,6 +565,12 @@ impl Search<'_> {
 
     /// `topic_search` -> `aggregate_search`: one row per topic with its
     /// lowest matching post number, topics ranked by their best post.
+    /// With search_recent_regular_posts_offset_post_id set (large sites,
+    /// by create_recent_post_search_indexes), `aggregate_post_sql` splits
+    /// at that post: topics matched by recent posts first, the older ones
+    /// only when those fall short of the limit. Neither before:/after: nor
+    /// the all-topics and message searches, which search everything, are
+    /// ported.
     async fn topic_search(
         &mut self,
         term: &str,
@@ -659,7 +663,7 @@ impl Search<'_> {
              WHERE posts.deleted_at IS NULL AND posts.post_type IN ({post_types}) AND posts.hidden = FALSE \
              AND (topics.visible) \
              AND (topics.archetype <> 'private_message' AND NOT post_search_data.private_message) \
-             AND (post_search_data.search_data @@ {}){phrase_clauses} \
+             AND (post_search_data.search_data @@ {}){phrase_clauses}{{split}} \
              AND ((categories.search_priority IS NULL OR categories.search_priority IS NOT NULL AND categories.search_priority <> 1)) \
              AND ((categories.id IS NULL) OR (NOT categories.read_restricted){secure}) \
              GROUP BY topics.id ORDER BY {} LIMIT $3 OFFSET $4",
@@ -675,15 +679,41 @@ impl Search<'_> {
              JOIN post_search_data psd ON psd.post_id = posts.id \
              WHERE posts.deleted_at IS NULL ORDER BY x.row_number"
         );
-        let mut query = sqlx::query_as::<_, PostHit>(&sql)
-            .bind(ts_query_value(term, weights, true))
-            .bind(ts_query_value(term, "A", false))
-            .bind(limit)
-            .bind(offset);
-        for phrase in &phrases {
-            query = query.bind(format!("%{phrase}%"));
+        let min_id = self
+            .settings
+            .get("search_recent_regular_posts_offset_post_id")?
+            .to_i();
+        let min_bind = 5 + phrases.len();
+        let parts: Vec<String> = if min_id > 0 {
+            vec![
+                format!(" AND post_search_data.post_id >= ${min_bind}"),
+                format!(" AND post_search_data.post_id < ${min_bind}"),
+            ]
+        } else {
+            vec![String::new()]
+        };
+        for (i, split) in parts.iter().enumerate() {
+            // aggregate_search: the remaining set only when the default
+            // set came up short.
+            if i > 0 && results.posts.len() as i64 >= limit {
+                break;
+            }
+            let sql = sql.replace("{split}", split);
+            let mut query = sqlx::query_as::<_, PostHit>(&sql)
+                .bind(ts_query_value(term, weights, true))
+                .bind(ts_query_value(term, "A", false))
+                .bind(limit)
+                .bind(offset);
+            for phrase in &phrases {
+                query = query.bind(format!("%{phrase}%"));
+            }
+            if min_id > 0 {
+                query = query.bind(min_id as i32);
+            }
+            results
+                .posts
+                .extend(query.fetch_all(&mut *self.conn).await?);
         }
-        results.posts = query.fetch_all(&mut *self.conn).await?;
         Ok(())
     }
 

@@ -39,7 +39,7 @@ Bugs or silent gaps in what is merged, small and independent.
    (`timerable_id`); timers are never found on real data [badges-timers]
 3. ~~`fix/poll-guard`~~ (done) S: a `[poll]` post cooks and saves without its
    `polls` rows; refuse until poll-create [messages-dms]
-4. `fix/search-recent-offset` S: search refuses every query once
+4. ~~`fix/search-recent-offset`~~ (done) S: search refuses every query once
    `search_recent_regular_posts_offset_post_id` is set (any site past
    the offset size); port Search#aggregate_post_sql's `min_id`
    [scheduled-jobs-rest]
