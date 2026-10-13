@@ -2,9 +2,8 @@
 //! client reports as posts scroll by: post timings and reads, the time
 //! read, the notifications on those posts, the topic user's last read post
 //! and auto tracking, the day's visit) and `NotificationsController
-//! #mark_read`.
-//!
-//! Refused: messages read through a group (TopicGroup.update_last_read).
+//! #mark_read`; on a message to groups, the groups' read counts
+//! (TopicGroup.update_last_read).
 
 use serde_json::json;
 use sqlx::PgConnection;
@@ -147,17 +146,6 @@ pub async fn process_timings(
     let Some(highest) = highest else {
         return Ok(false);
     };
-    let (allowed_groups, archetype): (bool, String) = sqlx::query_as(
-        "SELECT EXISTS (SELECT 1 FROM topic_allowed_groups WHERE topic_id = $1), archetype \
-         FROM topics WHERE id = $1",
-    )
-    .bind(topic_id)
-    .fetch_one(&mut *conn)
-    .await?;
-    if allowed_groups && archetype == "private_message" {
-        return Err(Unsupported("group messages read (TopicGroup.update_last_read)").into());
-    }
-
     update_time_read(&mut *conn, user.id).await?;
 
     // The most one batch may count per post: no more than the account's age.
@@ -237,6 +225,8 @@ pub async fn process_timings(
         topic_time,
     )
     .await?;
+    crate::posting::group_messages::update_last_read(bus, conn, user.id, topic_id, highest_seen)
+        .await?;
     Ok(notifications_read > 0)
 }
 
