@@ -123,6 +123,76 @@ pub const PUBLIC_TYPES: &[i32] = &[1, 4, 5, 12, 13, 15, 16, 17];
 const MAX_SUMMARY_RESULTS: i64 = 6;
 const MAX_BADGES: i64 = 6;
 
+/// UserCardSerializer's attributes in order: BasicUserSerializer's, the
+/// card's own, its untrusted and staff attributes, then the plugins'
+/// (chat, discourse-solved) and the featured badges' ids.
+const USER_CARD_KEYS: &[&str] = &[
+    "id",
+    "username",
+    "name",
+    "avatar_template",
+    "status",
+    "email",
+    "secondary_emails",
+    "unconfirmed_emails",
+    "last_posted_at",
+    "last_seen_at",
+    "created_at",
+    "ignored",
+    "muted",
+    "can_ignore_user",
+    "can_mute_user",
+    "can_send_private_messages",
+    "can_send_private_message_to_user",
+    "trust_level",
+    "moderator",
+    "admin",
+    "title",
+    "suspend_reason",
+    "suspended_till",
+    "silence_reason",
+    "silenced_till",
+    "badge_count",
+    "user_fields",
+    "custom_fields",
+    "topic_post_count",
+    "time_read",
+    "recent_time_read",
+    "primary_group_id",
+    "primary_group_name",
+    "flair_group_id",
+    "flair_name",
+    "flair_url",
+    "flair_bg_color",
+    "flair_color",
+    "featured_topic",
+    "timezone",
+    "pending_posts_count",
+    "bio_excerpt",
+    "website",
+    "website_name",
+    "location",
+    "card_background_upload_url",
+    "staged",
+    "can_chat_user",
+    "accepted_answers",
+    "featured_user_badge_ids",
+];
+
+/// HiddenProfileSerializer's attributes in order, and chat's.
+const HIDDEN_PROFILE_KEYS: &[&str] = &[
+    "id",
+    "username",
+    "name",
+    "avatar_template",
+    "profile_hidden",
+    "title",
+    "topic_post_count",
+    "primary_group_name",
+    "can_send_private_message_to_user",
+    "can_chat_user",
+];
+
 /// A user with what the profile serializers read from users, user_stats,
 /// user_profiles and user_options.
 #[derive(Debug, Clone, sqlx::FromRow)]
@@ -137,6 +207,7 @@ pub struct User {
     pub moderator: bool,
     pub trust_level: i32,
     pub staged: bool,
+    pub active: bool,
     pub title: Option<String>,
     pub last_posted_at: Option<NaiveDateTime>,
     pub last_seen_at: Option<NaiveDateTime>,
@@ -167,7 +238,7 @@ pub struct User {
 
 const USER_COLUMNS: &str = "users.id, users.username, users.name, users.uploaded_avatar_id, \
     users.primary_group_id, users.flair_group_id, users.admin, users.moderator, users.trust_level, \
-    users.staged, users.title, users.last_posted_at, users.last_seen_at, users.created_at, \
+    users.staged, users.active, users.title, users.last_posted_at, users.last_seen_at, users.created_at, \
     users.suspended_till, users.silenced_till, \
     us.post_count, us.topic_count, us.distinct_badge_count, us.time_read, us.likes_given, \
     us.likes_received, us.topics_entered, us.posts_read_count, us.days_visited, \
@@ -189,6 +260,20 @@ impl User {
     ) -> Result<Option<User>, sqlx::Error> {
         sqlx::query_as(&format!(
             "SELECT {USER_COLUMNS} {USER_FROM} WHERE users.username_lower = $1 AND users.active = TRUE LIMIT 1"
+        ))
+        .bind(username.to_lowercase())
+        .fetch_optional(conn)
+        .await
+    }
+
+    /// `fetch_user_from_params(include_inactive: true)`: by username_lower,
+    /// active or not.
+    pub async fn find_any(
+        conn: &mut PgConnection,
+        username: &str,
+    ) -> Result<Option<User>, sqlx::Error> {
+        sqlx::query_as(&format!(
+            "SELECT {USER_COLUMNS} {USER_FROM} WHERE users.username_lower = $1 LIMIT 1"
         ))
         .bind(username.to_lowercase())
         .fetch_optional(conn)
@@ -587,12 +672,19 @@ impl Users<'_> {
         if user.featured_topic_id.is_some() {
             return Err(Unsupported("featured_topic on profiles").into());
         }
+        // include_timezone?: display_local_time_in_user_card.
         if self
             .settings
             .get("display_local_time_in_user_card")?
             .truthy()
         {
-            return Err(Unsupported("display_local_time_in_user_card").into());
+            let timezone: Option<String> =
+                sqlx::query_scalar("SELECT timezone FROM user_options WHERE user_id = $1")
+                    .bind(user.id)
+                    .fetch_optional(&mut *self.conn)
+                    .await?
+                    .flatten();
+            u.insert("timezone".into(), json!(timezone));
         }
         // untrusted_attributes: only with profile details and a value.
         let bio = user.bio_cooked.as_deref().filter(|b| !b.trim().is_empty());
@@ -804,6 +896,96 @@ impl Users<'_> {
         }
         out.insert("user".into(), Value::Object(u));
         Ok(Value::Object(out))
+    }
+
+    /// users#show_card: UserCardSerializer, or HiddenProfileSerializer for
+    /// a profile the viewer may not see, with `topic_post_count` when
+    /// given (assign_topic_post_count). UserSerializer extends the card's
+    /// serializer, so the card is show's document cut down to the card's
+    /// attributes, in their order. An inactive user is `inactive_card`.
+    pub async fn card(
+        &mut self,
+        user: &User,
+        topic_post_count: Option<Value>,
+    ) -> Result<Value, UsersError> {
+        let mut doc = self.show(user).await?;
+        let Some(Value::Object(mut full)) = doc.get_mut("user").map(Value::take) else {
+            return Ok(doc);
+        };
+        if let Some(count) = topic_post_count {
+            full.insert("topic_post_count".into(), count);
+        }
+        let keys = if full.get("profile_hidden") == Some(&Value::Bool(true)) {
+            HIDDEN_PROFILE_KEYS
+        } else {
+            USER_CARD_KEYS
+        };
+        let mut card = Map::new();
+        for key in keys {
+            if let Some(value) = full.remove(*key) {
+                card.insert((*key).into(), value);
+            }
+        }
+        doc["user"] = Value::Object(card);
+        Ok(doc)
+    }
+
+    /// InactiveUserSerializer, for a viewer who isn't staff.
+    pub async fn inactive_card(
+        &mut self,
+        user: &User,
+        topic_post_count: Option<Value>,
+    ) -> Result<Value, UsersError> {
+        let mut u = Map::new();
+        u.insert("id".into(), json!(user.id));
+        u.insert("username".into(), json!(user.username));
+        if self.settings.get("enable_names")?.truthy() {
+            u.insert("name".into(), json!(user.name));
+        }
+        u.insert(
+            "avatar_template".into(),
+            json!(self.avatar_template(&user.lookup_user()).await?),
+        );
+        u.insert("inactive".into(), json!(true));
+        if let Some(count) = topic_post_count {
+            u.insert("topic_post_count".into(), count);
+        }
+        Ok(json!({ "user": u }))
+    }
+
+    /// assign_topic_post_count: `{topic_id => count}` of the user's posts
+    /// in the topic the viewer may see (Post.secured), or None.
+    pub async fn topic_post_count(
+        &mut self,
+        user: &User,
+        topic_id: i32,
+    ) -> Result<Option<Value>, UsersError> {
+        if topic_id == 0 {
+            return Ok(None);
+        }
+        let g = self.guardian;
+        let Some(topic) =
+            crate::topic_guardian::TopicCtx::load(&mut *self.conn, self.settings, g, topic_id)
+                .await?
+        else {
+            return Ok(None);
+        };
+        let secure = g
+            .secure_category_ids(&mut *self.conn, self.settings)
+            .await?;
+        if !g.can_see_topic(self.settings, &topic, true, &secure)? {
+            return Ok(None);
+        }
+        let count: i64 = sqlx::query_scalar(
+            "SELECT COUNT(*) FROM posts WHERE topic_id = $1 AND user_id = $2 \
+             AND deleted_at IS NULL AND post_type = ANY($3)",
+        )
+        .bind(topic_id)
+        .bind(user.id)
+        .bind(g.visible_post_types(self.settings)?)
+        .fetch_one(&mut *self.conn)
+        .await?;
+        Ok(Some(json!({ topic_id.to_string(): count })))
     }
 
     fn private(&mut self) -> crate::user_private::Private<'_> {

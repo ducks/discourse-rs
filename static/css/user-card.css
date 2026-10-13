@@ -1,0 +1,849 @@
+/*
+ * The user card (static/js/user-card.js, user_card_view), ported from
+ * components/user-card.scss and user-badges.scss, base/discourse.scss's
+ * loading shimmer, and the parts of topic-post.scss and user.scss the
+ * card's avatar flair, user fields and staged label use.
+ */
+
+/* base/discourse.scss's loading shimmer */
+
+/* discourse.scss:197 */
+@keyframes placeHolderShimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+
+  100% {
+    background-position: 1100px 0;
+  }
+}
+/* discourse.scss:208 */
+@media (prefers-reduced-motion: no-preference) {
+  .placeholder-animation {
+    animation-duration: 4s;
+    animation-fill-mode: forwards;
+    animation-iteration-count: infinite;
+    animation-name: placeHolderShimmer;
+    animation-timing-function: linear;
+    background: linear-gradient(to right, var(--primary-very-low) 10%, var(--primary-low) 18%, var(--primary-very-low) 33%);
+  }
+}
+
+/* components/user-card.scss */
+
+/* user-card.scss:21 */
+.animated-placeholder {
+  height: 20px;
+  position: relative;
+}
+/* user-card.scss:4 */
+.fk-d-menu[data-identifier=usercard],
+.fk-d-menu[data-identifier=category-card] {
+  max-width: calc(100vw - 2em);
+  width: auto;
+}
+/* user-card.scss:9 */
+.fk-d-menu[data-identifier=usercard] .fk-d-menu__inner-content,
+.fk-d-menu[data-identifier=category-card] .fk-d-menu__inner-content {
+  min-width: 0;
+  overflow: visible;
+}
+/* user-card.scss:15 */
+@media (width < 40rem) {
+  .fk-d-menu[data-identifier=usercard][data-content],
+  .fk-d-menu[data-identifier=category-card][data-content] {
+    z-index: 9999;
+  }
+}
+/* user-card.scss:26 */
+.card-avatar-placeholder {
+  width: var(--avatar-width);
+  height: var(--avatar-width);
+  border-radius: 100%;
+  position: relative;
+  overflow: hidden;
+}
+/* user-card.scss:33 */
+.card-avatar-placeholder::before {
+  position: absolute;
+  left: 0;
+  content: "";
+  background: linear-gradient(to right, var(--primary-very-low) 10%, var(--primary-low) 18%, var(--primary-very-low) 33%);
+  height: var(--avatar-width);
+  width: var(--card-width);
+}
+/* user-card.scss:33 */
+@media (prefers-reduced-motion: no-preference) {
+  .card-avatar-placeholder::before {
+    animation: placeHolderShimmer 4s linear infinite forwards;
+  }
+}
+/* user-card.scss:53 */
+.user-card,
+.group-card,
+.category-card {
+  --card-width: 39em;
+  --avatar-width: 8em;
+  --avatar-margin: -3.3em;
+  min-width: 0;
+  width: var(--card-width);
+  color: var(--primary);
+  background: var(--secondary) center center;
+  background-size: cover;
+  position: unset !important;
+  margin: 0 !important;
+  border-radius: var(--d-border-radius) !important;
+  box-shadow: unset !important;
+  z-index: unset !important;
+}
+/* user-card.scss:53 */
+@media (width < 40rem) {
+  .user-card,
+  .group-card,
+  .category-card {
+    box-sizing: border-box;
+    max-width: 95vw;
+    max-height: 85vh;
+  }
+}
+/* user-card.scss:76 */
+.user-card .card-content,
+.group-card .card-content,
+.category-card .card-content {
+  padding: 10px;
+  background: rgb(var(--secondary-rgb), 0.85);
+  border-radius: var(--d-border-radius);
+}
+/* user-card.scss:81 */
+.user-card .card-content::after,
+.group-card .card-content::after,
+.category-card .card-content::after {
+  content: "";
+  display: block;
+  clear: both;
+}
+/* user-card.scss:87 */
+.user-card .card-content a.card-huge-avatar,
+.group-card .card-content a.card-huge-avatar,
+.category-card .card-content a.card-huge-avatar {
+  border-radius: 50%;
+  display: block;
+}
+/* user-card.scss:92 */
+.user-card .card-content .bio,
+.group-card .card-content .bio,
+.category-card .card-content .bio {
+  display: -webkit-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  overflow-wrap: break-word;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+/* user-card.scss:97 */
+.user-card .card-row:not(.first-row),
+.group-card .card-row:not(.first-row),
+.category-card .card-row:not(.first-row) {
+  margin-top: .5em;
+}
+/* user-card.scss:102 */
+.user-card .first-row,
+.group-card .first-row,
+.category-card .first-row {
+  display: flex;
+}
+/* user-card.scss:102 */
+@media (width < 40rem) {
+  .user-card .first-row,
+  .group-card .first-row,
+  .category-card .first-row {
+    flex-wrap: wrap;
+  }
+}
+/* user-card.scss:109 */
+.user-card .first-row .names,
+.group-card .first-row .names,
+.category-card .first-row .names {
+  padding-left: 1.25em;
+  flex: 1 1 auto;
+}
+/* user-card.scss:109 */
+@media (width < 40rem) {
+  .user-card .first-row .names,
+  .group-card .first-row .names,
+  .category-card .first-row .names {
+    box-sizing: border-box;
+    flex: 1 1 0;
+  }
+}
+/* user-card.scss:118 */
+.user-card .first-row .names .user-profile-link,
+.group-card .first-row .names .user-profile-link,
+.category-card .first-row .names .user-profile-link {
+  display: flex;
+  align-items: center;
+  outline: none;
+}
+/* user-card.scss:123 */
+.user-card .first-row .names .user-profile-link:focus-visible,
+.group-card .first-row .names .user-profile-link:focus-visible,
+.category-card .first-row .names .user-profile-link:focus-visible {
+  border: 1px solid;
+  border-color: var(--d-input-focused-color);
+  outline: 2px solid var(--d-input-focused-color);
+  outline-offset: -2px;
+}
+/* user-card.scss:130 */
+.user-card .first-row .names .d-icon,
+.group-card .first-row .names .d-icon,
+.category-card .first-row .names .d-icon {
+  margin: 0 .25em;
+}
+/* user-card.scss:134 */
+.user-card .first-row .names .name-username-wrapper,
+.group-card .first-row .names .name-username-wrapper,
+.category-card .first-row .names .name-username-wrapper {
+  margin-right: 0;
+  flex: 0 1 auto;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+/* user-card.scss:141 */
+.user-card .first-row .names span,
+.group-card .first-row .names span,
+.category-card .first-row .names span {
+  display: block;
+}
+/* user-card.scss:146 */
+.user-card .first-row .usercard-controls,
+.group-card .first-row .usercard-controls,
+.category-card .first-row .usercard-controls {
+  list-style-type: none;
+  margin: 0;
+}
+/* user-card.scss:146 */
+@media (width < 40rem) {
+  .user-card .first-row .usercard-controls,
+  .group-card .first-row .usercard-controls,
+  .category-card .first-row .usercard-controls {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 1em;
+    gap: .5em;
+  }
+}
+/* user-card.scss:157 */
+@media (width < 40rem) {
+  .user-card .first-row .usercard-controls li,
+  .group-card .first-row .usercard-controls li,
+  .category-card .first-row .usercard-controls li {
+    flex: 1 0 45%;
+    min-width: 8em;
+  }
+}
+/* user-card.scss:161 */
+@media (width < 40rem) {
+  .user-card .first-row .usercard-controls li:empty,
+  .group-card .first-row .usercard-controls li:empty,
+  .category-card .first-row .usercard-controls li:empty {
+    display: none;
+  }
+}
+/* user-card.scss:165 */
+@media (width < 40rem) {
+  .user-card .first-row .usercard-controls li button,
+  .group-card .first-row .usercard-controls li button,
+  .category-card .first-row .usercard-controls li button {
+    margin: 0;
+  }
+}
+/* user-card.scss:168 */
+@media (width < 40rem) {
+  .user-card .first-row .usercard-controls li button .d-button-label,
+  .group-card .first-row .usercard-controls li button .d-button-label,
+  .category-card .first-row .usercard-controls li button .d-button-label {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+}
+/* user-card.scss:146 */
+@media (width >= 40rem) {
+  .user-card .first-row .usercard-controls,
+  .group-card .first-row .usercard-controls,
+  .category-card .first-row .usercard-controls {
+    max-width: 225px;
+  }
+}
+/* user-card.scss:179 */
+.user-card .first-row .usercard-controls button,
+.group-card .first-row .usercard-controls button,
+.category-card .first-row .usercard-controls button {
+  width: 100%;
+}
+/* user-card.scss:179 */
+@media (width >= 40rem) {
+  .user-card .first-row .usercard-controls button,
+  .group-card .first-row .usercard-controls button,
+  .category-card .first-row .usercard-controls button {
+    min-width: 150px;
+  }
+}
+/* user-card.scss:189 */
+.user-card .btn,
+.user-card .d-modal.json-schema-editor-modal .je-ready button,
+.d-modal.json-schema-editor-modal .je-ready .user-card button,
+.user-card .d-modal.json-schema-editor-modal .je-ready .json-editor-btn-add,
+.d-modal.json-schema-editor-modal .je-ready .user-card .json-editor-btn-add,
+.group-card .btn,
+.group-card .d-modal.json-schema-editor-modal .je-ready button,
+.d-modal.json-schema-editor-modal .je-ready .group-card button,
+.group-card .d-modal.json-schema-editor-modal .je-ready .json-editor-btn-add,
+.d-modal.json-schema-editor-modal .je-ready .group-card .json-editor-btn-add,
+.category-card .btn,
+.category-card .d-modal.json-schema-editor-modal .je-ready button,
+.d-modal.json-schema-editor-modal .je-ready .category-card button,
+.category-card .d-modal.json-schema-editor-modal .je-ready .json-editor-btn-add,
+.d-modal.json-schema-editor-modal .je-ready .category-card .json-editor-btn-add {
+  margin-bottom: 5px;
+}
+/* user-card.scss:193 */
+.user-card .names__primary,
+.group-card .names__primary,
+.category-card .names__primary {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  line-height: var(--line-height-medium);
+  font-size: var(--font-up-3);
+  font-weight: bold;
+}
+/* user-card.scss:193 */
+@media (width >= 40rem) {
+  .user-card .names__primary,
+  .group-card .names__primary,
+  .category-card .names__primary {
+    font-size: var(--font-up-5);
+  }
+}
+/* user-card.scss:203 */
+.user-card .names__primary .d-icon,
+.group-card .names__primary .d-icon,
+.category-card .names__primary .d-icon {
+  color: var(--primary);
+  font-size: var(--font-down-1);
+}
+/* user-card.scss:203 */
+@media (width < 40rem) {
+  .user-card .names__primary .d-icon,
+  .group-card .names__primary .d-icon,
+  .category-card .names__primary .d-icon {
+    font-size: var(--font-down-2);
+  }
+}
+/* user-card.scss:213 */
+.user-card .names__secondary,
+.group-card .names__secondary,
+.category-card .names__secondary {
+  font-size: var(--font-up-1);
+}
+/* user-card.scss:213 */
+@media (width < 40rem) {
+  .user-card .names__secondary,
+  .group-card .names__secondary,
+  .category-card .names__secondary {
+    font-size: var(--font-0);
+  }
+}
+/* user-card.scss:221 */
+.user-card .metadata,
+.group-card .metadata,
+.category-card .metadata {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .15em .5em;
+  color: var(--primary);
+}
+/* user-card.scss:227 */
+.user-card .metadata.email,
+.user-card .metadata .desc,
+.group-card .metadata.email,
+.group-card .metadata .desc,
+.category-card .metadata.email,
+.category-card .metadata .desc {
+  color: var(--primary-high);
+}
+/* user-card.scss:233 */
+.user-card .names__secondary,
+.user-card [class*=metadata__],
+.group-card .names__secondary,
+.group-card [class*=metadata__],
+.category-card .names__secondary,
+.category-card [class*=metadata__] {
+  margin: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+/* user-card.scss:242 */
+.user-card .names__primary a,
+.user-card .names__secondary a,
+.group-card .names__primary a,
+.group-card .names__secondary a,
+.category-card .names__primary a,
+.category-card .names__secondary a {
+  color: var(--primary);
+}
+/* user-card.scss:247 */
+.user-card p,
+.group-card p,
+.category-card p {
+  margin: 0 0 5px 0;
+}
+/* user-card.scss:254 */
+.user-card:focus-visible {
+  outline: none;
+}
+/* user-card.scss:261 */
+.user-card .first-row .avatar-placeholder {
+  width: var(--avatar-width);
+  height: var(--avatar-width);
+}
+/* user-card.scss:266 */
+.user-card .first-row .user-card-avatar {
+  margin-top: var(--avatar-margin);
+  max-height: var(--avatar-width);
+  position: relative;
+}
+/* user-card.scss:266 */
+@media (width < 40rem) {
+  .user-card .first-row .user-card-avatar {
+    flex: 0 0 auto;
+  }
+}
+/* user-card.scss:275 */
+.user-card .first-row .user-card-avatar .own-avatar-pencil {
+  opacity: 0;
+  position: absolute;
+  width: 80%;
+  height: 85%;
+  right: 0%;
+  bottom: 0%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: opacity .2s;
+  z-index: 1;
+}
+/* user-card.scss:288 */
+.user-card .first-row .user-card-avatar .own-avatar-pencil--icon {
+  position: absolute;
+  bottom: -4px;
+  right: -6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgb(var(--secondary-rgb), 1);
+  border-radius: 50%;
+  padding: .75rem;
+  font-size: 1.25rem;
+  color: var(--primary);
+  box-shadow: var(--shadow-dropdown);
+  box-sizing: border-box;
+}
+/* user-card.scss:304 */
+.user-card .first-row .user-card-avatar .own-avatar-pencil:hover {
+  opacity: 1;
+}
+/* user-card.scss:310 */
+.user-card .first-row .avatar {
+  width: var(--avatar-width);
+  height: var(--avatar-width);
+}
+/* user-card.scss:315 */
+.user-card .first-row .new-user a {
+  color: var(--primary-low-mid);
+}
+/* user-card.scss:321 */
+.user-card .second-row {
+  max-height: 150px;
+  overflow: auto;
+}
+/* user-card.scss:326 */
+.user-card .second-row .bio a:not(.mention) {
+  color: var(--tertiary);
+}
+/* user-card.scss:330 */
+.user-card .second-row .bio .overflow {
+  max-height: 60px;
+  overflow: hidden;
+}
+/* user-card.scss:336 */
+.user-card .second-row .suspended {
+  color: var(--danger);
+}
+/* user-card.scss:339 */
+.user-card .second-row .suspended .suspension-reason-title,
+.user-card .second-row .suspended .suspension-date {
+  font-weight: bold;
+}
+/* user-card.scss:345 */
+.user-card .second-row .silenced {
+  color: var(--danger);
+}
+/* user-card.scss:348 */
+.user-card .second-row .silenced .silence-reason-title,
+.user-card .second-row .silenced .silence-date {
+  font-weight: bold;
+}
+/* user-card.scss:354 */
+.user-card .second-row .profile-hidden,
+.user-card .second-row .inactive-user {
+  font-size: var(--font-up-1);
+  margin-top: .5em;
+}
+/* user-card.scss:361 */
+.user-card .featured-topic {
+  text-align: left;
+}
+/* user-card.scss:364 */
+.user-card .featured-topic .desc {
+  color: var(--primary-high);
+}
+/* user-card.scss:368 */
+.user-card .featured-topic a {
+  color: var(--primary);
+  text-decoration: underline;
+}
+/* user-card.scss:375 */
+.user-card .location-and-website {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  align-items: center;
+}
+/* user-card.scss:381 */
+.user-card .location-and-website .location,
+.user-card .location-and-website .website-name {
+  display: flex;
+  overflow: hidden;
+  align-items: center;
+}
+/* user-card.scss:387 */
+.user-card .location-and-website .location .d-icon,
+.user-card .location-and-website .website-name .d-icon {
+  margin-right: .25em;
+}
+/* user-card.scss:392 */
+.user-card .location-and-website .website-name a,
+.user-card .location-and-website .location span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--primary);
+}
+/* user-card.scss:398 */
+.user-card .location-and-website .location,
+.user-card .location-and-website .local-time,
+.user-card .location-and-website .website-name {
+  margin-right: .5em;
+}
+/* user-card.scss:404 */
+.user-card .location-and-website .website-name a {
+  text-decoration: underline;
+}
+/* user-card.scss:410 */
+.user-card .public-user-fields {
+  margin: 0;
+  text-align: left;
+}
+/* user-card.scss:410 */
+@media (width < 40rem) {
+  .user-card .public-user-fields {
+    max-height: 40vh;
+    overflow-y: auto;
+  }
+}
+/* user-card.scss:418 */
+@media (width < 40rem) {
+  .user-card .public-user-fields .public-user-field {
+    display: -webkit-box;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    overflow-wrap: break-word;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+  }
+}
+/* user-card.scss:410 */
+@media screen and (height <= 550px) {
+  .user-card .public-user-fields {
+    max-height: 12vh;
+  }
+}
+/* user-card.scss:428 */
+.user-card .public-user-fields .user-field-value-list-item:not(:last-of-type)::after {
+  content: ",";
+}
+/* user-card.scss:436 */
+.user-card .badge-section {
+  line-height: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+/* user-card.scss:436 */
+@media (width < 40rem) {
+  .user-card .badge-section {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+/* user-card.scss:447 */
+.user-card .badge-section .user-badge,
+.user-card .badge-section .more-user-badges a {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  background: var(--primary-very-low);
+  border: 1px solid var(--content-border-color);
+  color: var(--primary);
+  border-radius: var(--d-border-radius);
+}
+/* user-card.scss:447 */
+@media (width < 40rem) {
+  .user-card .badge-section .user-badge,
+  .user-card .badge-section .more-user-badges a {
+    display: flex;
+    margin: 0;
+    width: 100%;
+  }
+}
+/* user-card.scss:459 */
+@media (width < 40rem) {
+  .user-card .badge-section .user-badge .badge-display-name,
+  .user-card .badge-section .more-user-badges a .badge-display-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+/* user-card.scss:447 */
+@media (width >= 40rem) {
+  .user-card .badge-section .user-badge,
+  .user-card .badge-section .more-user-badges a {
+    display: block;
+    max-width: 185px;
+  }
+}
+/* user-card.scss:471 */
+.user-card .badge-section .user-card-badge-link {
+  overflow: hidden;
+}
+/* user-card.scss:475 */
+.user-card .badge-section .user-card-badge-link,
+.user-card .badge-section .more-user-badges {
+  vertical-align: top;
+  display: inline-block;
+}
+/* user-card.scss:475 */
+@media (width < 40rem) {
+  .user-card .badge-section .user-card-badge-link,
+  .user-card .badge-section .more-user-badges {
+    display: flex;
+    box-sizing: border-box;
+  }
+}
+/* user-card.scss:484 */
+@media (width < 40rem) {
+  .user-card .badge-section .user-card-badge-link a,
+  .user-card .badge-section .more-user-badges a {
+    width: 100%;
+    display: flex;
+  }
+}
+/* user-card.scss:491 */
+@media (width >= 40rem) {
+  .user-card .badge-section .more-user-badges {
+    max-width: 125px;
+  }
+}
+/* user-card.scss:502 */
+.user-card .user-status {
+  display: flex;
+  align-items: center;
+}
+/* user-card.scss:502 */
+@media (width < 40rem) {
+  .user-card .user-status {
+    font-size: var(--font-down-1);
+  }
+}
+/* user-card.scss:510 */
+.user-card .user-status img.emoji {
+  margin-right: .3em;
+}
+/* user-card.scss:514 */
+.user-card .user-status .relative-date {
+  flex: 1 0 auto;
+  text-align: left;
+  font-size: var(--font-down-3);
+  padding-top: .5em;
+  margin-left: .6em;
+  color: var(--primary-medium);
+}
+/* user-card.scss:523 */
+.user-card .user-status__description {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+/* user-card.scss:580 */
+@media (width < 40rem) {
+  .card-cloak {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1101;
+    height: 100vh;
+    width: 100vw;
+    background-color: #000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .3s,visibility 0s .3s;
+  }
+}
+/* user-card.scss:594 */
+@media (width < 40rem) {
+  .card-cloak.--visible {
+    pointer-events: all;
+    opacity: .6;
+    visibility: visible;
+    transition: opacity .3s,visibility 0s;
+  }
+}
+/* user-card.scss:580 */
+@media (width < 40rem)and (prefers-reduced-motion) {
+  .card-cloak {
+    transition-duration: 0s;
+  }
+}
+
+/* components/user-badges.scss */
+
+/* user-badges.scss:6 */
+.user-badge,
+.user-card .badge-section .more-user-badges a {
+  padding: 3px 8px;
+  color: var(--primary);
+  border: 1px solid var(--content-border-color);
+  line-height: var(--line-height-large);
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--secondary);
+}
+/* user-badges.scss:15 */
+.user-badge img,
+.user-card .badge-section .more-user-badges a img {
+  height: 16px;
+  width: 16px;
+}
+/* user-badges.scss:20 */
+.user-badge .badge-display-name,
+.user-card .badge-section .more-user-badges a .badge-display-name {
+  margin-left: .25em;
+}
+/* user-badges.scss:24 */
+.user-badge.badge-type-gold .fa,
+.user-card .badge-section .more-user-badges a.badge-type-gold .fa {
+  color: var(--gold) !important;
+}
+/* user-badges.scss:28 */
+.user-badge.badge-type-silver .fa,
+.user-card .badge-section .more-user-badges a.badge-type-silver .fa {
+  color: var(--silver) !important;
+}
+/* user-badges.scss:32 */
+.user-badge.badge-type-bronze .fa,
+.user-card .badge-section .more-user-badges a.badge-type-bronze .fa {
+  color: var(--bronze) !important;
+}
+/* user-badges.scss:36 */
+.user-badge.disabled,
+.user-card .badge-section .more-user-badges a.disabled {
+  color: var(--primary-medium);
+  background-color: var(--primary-very-low);
+}
+/* user-badges.scss:40 */
+.user-badge.disabled .fa,
+.user-card .badge-section .more-user-badges a.disabled .fa {
+  opacity: .4;
+}
+
+/* topic-post.scss's avatar flair, for the card's avatar */
+
+/* topic-post.scss:1041 */
+.user-card-avatar {
+  position: relative;
+}
+/* topic-post.scss:1053 */
+.user-card-avatar .avatar-flair {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-repeat: no-repeat;
+  background-position: center;
+  position: absolute;
+  bottom: 0;
+  right: -6px;
+}
+/* topic-post.scss:1084 */
+.user-card-avatar .avatar-flair,
+.user-profile-avatar .avatar-flair {
+  background-size: 40px 40px;
+  width: 40px;
+  height: 40px;
+}
+/* topic-post.scss:1090 */
+.user-card-avatar .avatar-flair.rounded,
+.user-profile-avatar .avatar-flair.rounded {
+  background-size: 30px 30px;
+  border-radius: 24px;
+  width: 40px;
+  height: 40px;
+  bottom: -2px;
+  right: -4px;
+}
+/* topic-post.scss:1099 */
+.user-card-avatar .avatar-flair .fa,
+.user-profile-avatar .avatar-flair .fa {
+  font-size: var(--font-up-4);
+}
+
+/* user.scss's public user fields and staged users, for the card */
+
+/* user.scss:540 */
+.public-user-fields {
+  margin-top: 8px;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+/* user.scss:540 */
+@media (width < 48rem) {
+  .public-user-fields {
+    text-align: center;
+  }
+}
+/* user.scss:549 */
+.public-user-fields .user-field-name {
+  font-weight: bold;
+}
+/* user.scss:558 */
+.public-user-fields .user-field-value-list-item:not(:last-of-type)::after {
+  content: ",";
+}
+/* user.scss:1212 */
+.user-card .staged {
+  font-style: italic;
+}

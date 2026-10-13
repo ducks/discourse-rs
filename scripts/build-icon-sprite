@@ -120,6 +120,33 @@ ICONS=(
   rotate
   circle-xmark
   tippy-rounded-arrow
+  # The user card: the local time, and the badges' icons (badges.icon).
+  far-clock
+  at
+  bullhorn
+  cake-candles
+  calendar
+  calendar-week
+  circle-nodes
+  compass
+  cube
+  face-smile
+  file-lines
+  file-signature
+  handshake
+  house
+  magnet
+  medal
+  microphone
+  moon
+  pen
+  people-group
+  share-nodes
+  stamp
+  sun
+  trophy
+  user-pen
+  user-plus
 )
 
 root="$(cd "$(dirname "$0")/.." && pwd)"

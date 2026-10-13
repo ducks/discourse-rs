@@ -206,6 +206,11 @@ pub struct Chrome {
     pub emoji_base: String,
     pub emoji_version: String,
     pub hashtag_tag_icon: String,
+    /// The user card opens (static/js/user-card.js): not for an anonymous
+    /// visitor under hide_user_profiles_from_public (CardContentsBase#_show).
+    pub user_cards: bool,
+    /// enable_badges, the card's showBadges.
+    pub enable_badges: bool,
 }
 
 impl Chrome {
@@ -294,6 +299,9 @@ impl Site {
             }
         }
         self.chrome.powered_by = settings.get("enable_powered_by_discourse")?.truthy();
+        self.chrome.user_cards =
+            guardian.user().is_some() || !settings.get("hide_user_profiles_from_public")?.truthy();
+        self.chrome.enable_badges = settings.get("enable_badges")?.truthy();
         self.chrome.can_signup = !settings.get("invite_only")?.truthy()
             && settings.get("allow_new_registrations")?.truthy()
             && !settings.get("enable_discourse_connect")?.truthy();
