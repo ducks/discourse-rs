@@ -505,6 +505,7 @@ pub async fn create_message(
         upload_ids,
         blocks: p.contains_key("blocks"),
         client_created_at: scalar("client_created_at"),
+        enforce_membership: false,
     };
     let host = crate::pretty_text::Host::from_state(&state);
     let outcome = context(&state, &mut tx, &settings, &guardian)
@@ -957,4 +958,125 @@ pub async fn create_direct_message_channel(
         )
             .into_response(),
     })
+}
+
+fn dm_groups_response(
+    state: &AppState,
+    outcome: crate::plugins::chat::dm_groups::Outcome,
+) -> Response {
+    use crate::plugins::chat::dm_groups::Outcome;
+    use axum::http::StatusCode;
+    match outcome {
+        Outcome::Done(body) => Json(body).into_response(),
+        Outcome::NotFound => super::topics::not_found_response(state),
+        Outcome::Forbidden => super::search::invalid_access(state),
+        Outcome::Failed => (
+            StatusCode::UNPROCESSABLE_ENTITY,
+            Json(json!({"failed": "FAILED"})),
+        )
+            .into_response(),
+        Outcome::Invalid(errors) => (
+            StatusCode::BAD_REQUEST,
+            Json(json!({"failed": "FAILED", "errors": errors})),
+        )
+            .into_response(),
+        Outcome::Error(error, status) => (
+            StatusCode::from_u16(status).unwrap_or(StatusCode::UNPROCESSABLE_ENTITY),
+            Json(json!({"errors": [error]})),
+        )
+            .into_response(),
+        Outcome::Refused(error) => {
+            (StatusCode::BAD_REQUEST, Json(json!({"error": error}))).into_response()
+        }
+    }
+}
+
+/// POST /chat/api/channels/:channel_id/memberships: Chat::AddUsersToChannel.
+pub async fn add_members(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    Path(id): Path<String>,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    use crate::plugins::chat::dm_create::cast_array;
+    let (mut tx, settings, p) =
+        match begin_write(&state, &guardian, &headers, &uri, "POST", &body).await? {
+            Ok(begun) => begun,
+            Err(refused) => return Ok(refused),
+        };
+    let usernames = cast_array(p.get("usernames"));
+    let groups = cast_array(p.get("groups"));
+    let host = crate::pretty_text::Host::from_state(&state);
+    let outcome = context(&state, &mut tx, &settings, &guardian)
+        .add_users_to_channel(&host, &state.bus, path_channel_id(&id), &usernames, &groups)
+        .await?;
+    if matches!(outcome, crate::plugins::chat::dm_groups::Outcome::Done(_)) {
+        tx.commit().await?;
+    }
+    Ok(dm_groups_response(&state, outcome))
+}
+
+/// DELETE /chat/api/channels/:channel_id/memberships/:user_id:
+/// Chat::RemoveUserFromChannel.
+pub async fn remove_member(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    Path((id, user_id)): Path<(String, String)>,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    let (mut tx, settings, _p) =
+        match begin_write(&state, &guardian, &headers, &uri, "DELETE", &body).await? {
+            Ok(begun) => begun,
+            Err(refused) => return Ok(refused),
+        };
+    let user_id = crate::ruby::to_i(strip_format(&user_id));
+    let outcome = context(&state, &mut tx, &settings, &guardian)
+        .remove_user_from_channel(path_channel_id(&id), user_id)
+        .await?;
+    if matches!(outcome, crate::plugins::chat::dm_groups::Outcome::Done(_)) {
+        tx.commit().await?;
+    }
+    Ok(dm_groups_response(&state, outcome))
+}
+
+/// PUT /chat/api/channels/:channel_id: Chat::UpdateChannel.
+pub async fn update_channel(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: axum::http::HeaderMap,
+    Path(id): Path<String>,
+    uri: Uri,
+    body: axum::body::Bytes,
+) -> Result<Response, AppError> {
+    let (mut tx, settings, p) =
+        match begin_write(&state, &guardian, &headers, &uri, "PUT", &body).await? {
+            Ok(begun) => begun,
+            Err(refused) => return Ok(refused),
+        };
+    // params.require(:channel)
+    let Some(serde_json::Value::Object(edits)) = p.get("channel").cloned() else {
+        return Ok(super::accounts::param_missing("channel"));
+    };
+    let edits: serde_json::Map<String, serde_json::Value> = edits
+        .into_iter()
+        .filter(|(k, _)| {
+            ["name", "description", "slug", "threading_enabled", "emoji"].contains(&k.as_str())
+        })
+        .collect();
+    let outcome = context(&state, &mut tx, &settings, &guardian)
+        .update_dm_channel(
+            &state.bus,
+            &state.site_setting_defs,
+            path_channel_id(&id),
+            &edits,
+        )
+        .await?;
+    if matches!(outcome, crate::plugins::chat::dm_groups::Outcome::Done(_)) {
+        tx.commit().await?;
+    }
+    Ok(dm_groups_response(&state, outcome))
 }

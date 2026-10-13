@@ -1,0 +1,75 @@
+{
+  "name": "dm_add_users_missing_channel",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/chat/api/channels/99/memberships.json",
+      "params": {
+        "usernames": [
+          "user3"
+        ]
+      }
+    }
+  ],
+  "started_at": "2026-10-13T15:34:02.396465",
+  "transaction_started_at": "2026-10-13T15:34:01.271929",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "failed": "FAILED"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 488,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "XBC0rC2jw3e9bvvR826Kvvb1wNI=",
+            "created_at": "2026-10-13T15:34:01.798187",
+            "rotated_at": "2026-10-13T15:34:01.797168",
+            "updated_at": "2026-10-13T15:34:01.798187",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "XBC0rC2jw3e9bvvR826Kvvb1wNI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 488,
+            "seen_at": "2026-10-13T15:34:02.405735",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "XBC0rC2jw3e9bvvR826Kvvb1wNI=",
+            "created_at": "2026-10-13T15:34:01.798187",
+            "rotated_at": "2026-10-13T15:34:01.797168",
+            "updated_at": "2026-10-13T15:34:01.798187",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "XBC0rC2jw3e9bvvR826Kvvb1wNI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [],
+  "recorded_from": {
+    "case": "087363bec6372979138f6d4ad3ba346973fdcbbcbfeff71f6d4e559a85706d4e",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

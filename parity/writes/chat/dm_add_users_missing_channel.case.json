@@ -1,0 +1,15 @@
+{
+  "user": "user1",
+  "setup": [],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/chat/api/channels/99/memberships.json",
+      "params": {
+        "usernames": [
+          "user3"
+        ]
+      }
+    }
+  ]
+}

@@ -121,6 +121,9 @@ def clear_redis_state
   end
   # Presence lives in Redis too, members and cached configs alike.
   PresenceChannel.clear_all!
+  # MessageBus backlogs: responses carry channels' last ids (chat's
+  # message_bus_last_ids), which an earlier case's publishes would raise.
+  MessageBus.reset!
 end
 
 # Caches of rows a case's setup inserts (and the rollback removes): the
@@ -309,6 +312,7 @@ cases.each do |c|
     record[:enqueue] = c["enqueue"] if c["enqueue"]
     record[:include_tables] = c["include_tables"] if c["include_tables"]
     record[:approximate] = c["approximate"] if c["approximate"]
+    record[:unordered] = c["unordered"] if c["unordered"]
     record[:job_clock] = c["job_clock"] if c["job_clock"]
     record[:files] = c["files"] if c["files"]
     record[:rate_limits] = c["rate_limits"] if c["rate_limits"]

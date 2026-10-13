@@ -1,5 +1,4 @@
 {
-  "not_yet": "leaving a group direct message",
   "user": "user1",
   "setup": [
     "INSERT INTO direct_message_channels (id, \"group\", created_at, updated_at) VALUES (1, true, now() - interval '2 hours', now() - interval '2 hours')",

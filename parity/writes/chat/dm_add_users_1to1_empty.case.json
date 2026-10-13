@@ -1,0 +1,27 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO direct_message_channels (id, \"group\", created_at, updated_at) VALUES (1, false, now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO direct_message_users (direct_message_channel_id, user_id, created_at, updated_at) VALUES (1, 3, now() - interval '1 day', now() - interval '1 day'), (1, 4, now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO chat_channels (id, chatable_type, chatable_id, type, status, user_count, name, messages_count, created_at, updated_at) VALUES (3, 'DirectMessage', 1, 'DirectMessageChannel', 0, 2, NULL, 0, now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO user_chat_channel_memberships (user_id, chat_channel_id, following, muted, notification_level, created_at, updated_at) VALUES (3, 3, true, false, 2, now() - interval '1 day', now() - interval '1 day'), (4, 3, true, false, 2, now() - interval '1 day', now() - interval '1 day')",
+    "SELECT setval('chat_channels_id_seq', 3)",
+    "SELECT setval('direct_message_channels_id_seq', 1)"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/chat/api/channels/3/memberships.json",
+      "params": {
+        "usernames": [
+          "user3"
+        ]
+      }
+    }
+  ],
+  "run_jobs": [
+    "Jobs::Chat::ProcessMessage",
+    "Jobs::Chat::NotifyMentioned",
+    "Jobs::Chat::NotifyWatching"
+  ]
+}

@@ -454,6 +454,32 @@ fn approximate(doc: &mut Value, case: &Value) {
     }
 }
 
+/// The tables a case names in `unordered` (`{table: [columns]}`): rows
+/// Rails inserts in an order it leaves to the database (an unordered
+/// lookup), compared without those columns (the ids that order gives).
+fn unordered(doc: &mut Value, case: &Value) {
+    let Some(tables) = case["unordered"].as_object() else {
+        return;
+    };
+    for (table, columns) in tables {
+        let columns: Vec<&str> = columns
+            .as_array()
+            .into_iter()
+            .flatten()
+            .filter_map(Value::as_str)
+            .collect();
+        if let Some(Value::Array(rows)) = doc["changes"][table].get_mut("inserted") {
+            for row in rows.iter_mut() {
+                if let Value::Object(r) = row {
+                    for column in &columns {
+                        r.remove(*column);
+                    }
+                }
+            }
+        }
+    }
+}
+
 /// Per-run secrets a document carries in its own jobs and responses (email
 /// tokens, login codes, honeypots), replaced wherever they appear in it.
 fn hide_secrets(doc: &mut Value) {
@@ -1356,6 +1382,7 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
                 &{
                     hide_secrets(&mut rails);
                     approximate(&mut rails, case);
+                    unordered(&mut rails, case);
                     rails
                 },
                 rails_started,
@@ -1367,6 +1394,7 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
                 &{
                     hide_secrets(&mut ours);
                     approximate(&mut ours, case);
+                    unordered(&mut ours, case);
                     ours
                 },
                 started,

@@ -14,6 +14,7 @@ pub mod cook;
 pub mod create;
 pub mod direct_messages;
 pub mod dm_create;
+pub mod dm_groups;
 pub mod membership;
 pub mod mentions;
 pub mod messages;

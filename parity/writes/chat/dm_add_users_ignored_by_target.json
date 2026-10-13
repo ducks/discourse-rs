@@ -1,0 +1,85 @@
+{
+  "name": "dm_add_users_ignored_by_target",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/chat/api/channels/3/memberships.json",
+      "params": {
+        "usernames": [
+          "user3"
+        ]
+      }
+    }
+  ],
+  "started_at": "2026-10-13T15:34:00.991582",
+  "transaction_started_at": "2026-10-13T15:33:59.957088",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Sorry, user3 is not accepting messages at the moment."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 488,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "HcEN+78b9w8yseo++8OUtWDhDwE=",
+            "created_at": "2026-10-13T15:34:00.38192",
+            "rotated_at": "2026-10-13T15:34:00.381062",
+            "updated_at": "2026-10-13T15:34:00.38192",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "HcEN+78b9w8yseo++8OUtWDhDwE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 488,
+            "seen_at": "2026-10-13T15:34:01.000693",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "HcEN+78b9w8yseo++8OUtWDhDwE=",
+            "created_at": "2026-10-13T15:34:00.38192",
+            "rotated_at": "2026-10-13T15:34:00.381062",
+            "updated_at": "2026-10-13T15:34:00.38192",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "HcEN+78b9w8yseo++8OUtWDhDwE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO direct_message_channels (id, \"group\", created_at, updated_at) VALUES (1, true, now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO direct_message_users (direct_message_channel_id, user_id, created_at, updated_at) VALUES (1, 3, now() - interval '1 day', now() - interval '1 day'), (1, 4, now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO chat_channels (id, chatable_type, chatable_id, type, status, user_count, name, messages_count, created_at, updated_at) VALUES (3, 'DirectMessage', 1, 'DirectMessageChannel', 0, 2, NULL, 0, now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO user_chat_channel_memberships (user_id, chat_channel_id, following, muted, notification_level, created_at, updated_at) VALUES (3, 3, true, false, 2, now() - interval '1 day', now() - interval '1 day'), (4, 3, true, false, 2, now() - interval '1 day', now() - interval '1 day')",
+    "SELECT setval('chat_channels_id_seq', 3)",
+    "SELECT setval('direct_message_channels_id_seq', 1)",
+    "INSERT INTO ignored_users (user_id, ignored_user_id, created_at, updated_at, expiring_at) VALUES (5, 3, now(), now(), now() + interval '1 year')"
+  ],
+  "recorded_from": {
+    "case": "7a0a2e12107cc35b4a6829fd1989bc71a2d3d36912a6b9773f725277586b8b8b",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
