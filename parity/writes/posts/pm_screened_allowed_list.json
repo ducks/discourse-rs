@@ -1,0 +1,82 @@
+{
+  "name": "pm_screened_allowed_list",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A private message to people who screen the sender",
+        "raw": "Hello both, this message checks who takes messages from user1.",
+        "archetype": "private_message",
+        "target_recipients": "user2"
+      }
+    }
+  ],
+  "started_at": "2026-10-13T06:32:10.060434",
+  "transaction_started_at": "2026-10-13T06:32:09.070168",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "action": "create_post",
+        "errors": [
+          "Sorry, user2 is not accepting messages at the moment."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 488,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "PASTm82dsHUPfgUYtlAaxes9VfM=",
+            "created_at": "2026-10-13T06:32:09.421281",
+            "rotated_at": "2026-10-13T06:32:09.420322",
+            "updated_at": "2026-10-13T06:32:09.421281",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "PASTm82dsHUPfgUYtlAaxes9VfM=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 488,
+            "seen_at": "2026-10-13T06:32:10.067567",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "PASTm82dsHUPfgUYtlAaxes9VfM=",
+            "created_at": "2026-10-13T06:32:09.421281",
+            "rotated_at": "2026-10-13T06:32:09.420322",
+            "updated_at": "2026-10-13T06:32:09.421281",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "PASTm82dsHUPfgUYtlAaxes9VfM=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE user_options SET enable_allowed_pm_users = true WHERE user_id = 4"
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "c22407357a65465753193824d9bb9eb10a7ad53cea1200d601f622e68141042a",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

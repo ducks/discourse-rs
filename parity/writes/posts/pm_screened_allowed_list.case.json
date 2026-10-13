@@ -1,0 +1,22 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE user_options SET enable_allowed_pm_users = true WHERE user_id = 4"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A private message to people who screen the sender",
+        "raw": "Hello both, this message checks who takes messages from user1.",
+        "archetype": "private_message",
+        "target_recipients": "user2"
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert",
+    "user_email"
+  ]
+}

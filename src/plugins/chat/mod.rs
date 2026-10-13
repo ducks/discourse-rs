@@ -539,23 +539,16 @@ pub async fn can_chat_user(
     if !allows || suspended {
         return Ok(false);
     }
-    // UserCommScreener#disallowing_pms_from_actor?: the target ignores or
-    // mutes the viewer, or only allows some users and not them. The acting
-    // user is never among its targets.
-    if target_id == viewer_id {
-        return Ok(true);
-    }
-    let disallowing: bool = sqlx::query_scalar(
-        "SELECT EXISTS (SELECT 1 FROM ignored_users WHERE user_id = $1 AND ignored_user_id = $2) \
-             OR EXISTS (SELECT 1 FROM muted_users WHERE user_id = $1 AND muted_user_id = $2) \
-             OR (COALESCE((SELECT enable_allowed_pm_users FROM user_options WHERE user_id = $1), FALSE) \
-                 AND NOT EXISTS (SELECT 1 FROM allowed_pm_users WHERE user_id = $1 AND allowed_pm_user_id = $2))",
+    let screener = crate::user_comm_screener::UserCommScreener::new(
+        &mut *conn,
+        crate::user_comm_screener::Actor {
+            id: viewer_id,
+            staff: false,
+        },
+        &[target_id],
     )
-    .bind(target_id)
-    .bind(viewer_id)
-    .fetch_one(&mut *conn)
     .await?;
-    Ok(!disallowing)
+    Ok(!screener.disallowing_pms_from_actor(target_id)?)
 }
 
 /// The chat service's `userCanDirectMessage`: `userCanChat` (the plugin
