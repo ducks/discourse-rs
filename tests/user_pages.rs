@@ -192,3 +192,53 @@ async fn profile_page_renders_summary_and_activity() {
     let (_, _, html) = get(&db.pool, "/latest").await;
     assert!(html.contains(r#"href="/u/user1""#));
 }
+
+#[tokio::test]
+async fn user_cards_for_anonymous_readers() {
+    let db = TestDb::new().await;
+    // UserCardSerializer: the card's attributes only, with the post count
+    // in a topic the reader may see.
+    let (status, headers, body) = get(
+        &db.pool,
+        "/u/user1/card.json?include_post_count_for=35&skip_track_visit=1",
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(noindex(&headers));
+    let doc: Value = serde_json::from_str(&body).unwrap();
+    let user = doc["user"].as_object().unwrap();
+    assert_eq!(doc["user"]["topic_post_count"]["35"], 1);
+    for key in ["badge_count", "recent_time_read", "featured_user_badge_ids"] {
+        assert!(user.contains_key(key), "{key}");
+    }
+    for key in ["bio_cooked", "can_edit", "groups", "profile_view_count"] {
+        assert!(!user.contains_key(key), "{key}");
+    }
+    assert!(doc["user_badges"].is_array());
+
+    // An inactive user is shown, as InactiveUserSerializer.
+    sqlx::query("UPDATE users SET active = FALSE WHERE id = 3")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let (status, _, body) = get(&db.pool, "/u/user1/card.json?skip_track_visit=1").await;
+    assert_eq!(status, StatusCode::OK);
+    let doc: Value = serde_json::from_str(&body).unwrap();
+    let keys: Vec<&String> = doc["user"].as_object().unwrap().keys().collect();
+    assert_eq!(
+        keys,
+        ["id", "username", "name", "avatar_template", "inactive"]
+    );
+
+    // The card's HTML, and no route for /card without .json.
+    let (status, _, html) = get(&db.pool, "/user-card/user2").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(html.starts_with(
+        r#"<div aria-label="User card" id="user-card" class="user-card show show-badges no-bg user-card-user2 group-null" role="dialog">"#
+    ));
+    assert!(html.contains(r#"class="user-profile-link" href="/u/user2""#));
+    for path in ["/user-card/nobody", "/u/nobody/card.json", "/u/user2/card"] {
+        let (status, _, _) = get(&db.pool, path).await;
+        assert_eq!(status, StatusCode::NOT_FOUND, "{path}");
+    }
+}
