@@ -114,17 +114,27 @@ pub async fn create_memberships(
             .filter(|(c, _)| *c == channel_id)
             .map(|(_, u)| *u)
             .collect();
-        publish_new_channel(&mut *conn, bus, state, settings, channel_id, &users).await?;
+        publish_new_channel(
+            &mut *conn,
+            bus,
+            &state.i18n,
+            &state.config,
+            settings,
+            channel_id,
+            &users,
+        )
+        .await?;
     }
     Ok(())
 }
 
 /// `Chat::Publisher.publish_new_channel`: the channel, as each new member
 /// sees it (with their membership), on /chat/new-channel to them alone.
-async fn publish_new_channel(
+pub(crate) async fn publish_new_channel(
     conn: &mut PgConnection,
     bus: &pg_bus::Bus,
-    state: &crate::AppState,
+    i18n: &crate::i18n::I18n,
+    config: &crate::config::Config,
     settings: &SiteSettings,
     channel_id: i64,
     user_ids: &[i32],
@@ -167,10 +177,10 @@ async fn publish_new_channel(
         let serialized = Context {
             conn: &mut *conn,
             settings,
-            i18n: &state.i18n,
+            i18n,
             guardian: &guardian,
-            base_path: state.config.globals.relative_url_root(),
-            config: &state.config,
+            base_path: config.globals.relative_url_root(),
+            config,
         }
         .channel(&channel, membership.as_ref(), None, None)
         .await?;

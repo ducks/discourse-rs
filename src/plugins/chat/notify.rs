@@ -86,9 +86,7 @@ pub async fn notify_mentioned(
     .bind(message.chat_channel_id)
     .fetch_one(&mut *conn)
     .await?;
-    if channel.chatable_type != "Category" {
-        return Err(Unsupported("chat direct messages").into());
-    }
+    let direct_message = channel.chatable_type == "DirectMessage";
     // Chat::Message#in_thread?: a thread that shows.
     let in_thread = match message.thread_id {
         Some(thread_id) => {
@@ -116,6 +114,7 @@ pub async fn notify_mentioned(
         state,
         settings,
         message_id,
+        direct_message,
         channel_id: message.chat_channel_id,
         creator: &creator,
         title: channel
@@ -146,6 +145,7 @@ struct Job<'a> {
     state: &'a AppState,
     settings: &'a SiteSettings,
     message_id: i64,
+    direct_message: bool,
     channel_id: i64,
     creator: &'a str,
     title: String,
@@ -154,8 +154,8 @@ struct Job<'a> {
 }
 
 impl Job<'_> {
-    /// process_mentions: each member (following, the channel being public)
-    /// whose mention the message holds.
+    /// process_mentions: each member (following, the channel being public;
+    /// any member of a DM) whose mention the message holds.
     async fn process(
         &self,
         conn: &mut PgConnection,
@@ -164,10 +164,11 @@ impl Job<'_> {
     ) -> Result<(), AppError> {
         let memberships: Vec<Membership> = sqlx::query_as(
             "SELECT user_id, notification_level, muted, last_read_message_id FROM user_chat_channel_memberships \
-             WHERE user_id = ANY($1) AND chat_channel_id = $2 AND following ORDER BY id",
+             WHERE user_id = ANY($1) AND chat_channel_id = $2 AND (following OR $3) ORDER BY id",
         )
         .bind(user_ids.iter().map(|id| *id as i32).collect::<Vec<i32>>())
         .bind(self.channel_id)
+        .bind(self.direct_message)
         .fetch_all(&mut *conn)
         .await?;
         for membership in memberships {
@@ -229,9 +230,14 @@ impl Job<'_> {
         data.insert("chat_message_id".into(), json!(self.message_id));
         data.insert("chat_channel_id".into(), json!(self.channel_id));
         data.insert("mentioned_by_username".into(), json!(self.creator));
-        data.insert("is_direct_message_channel".into(), json!(false));
-        data.insert("chat_channel_title".into(), json!(self.title));
-        data.insert("chat_channel_slug".into(), json!(self.slug));
+        data.insert(
+            "is_direct_message_channel".into(),
+            json!(self.direct_message),
+        );
+        if !self.direct_message {
+            data.insert("chat_channel_title".into(), json!(self.title));
+            data.insert("chat_channel_slug".into(), json!(self.slug));
+        }
         match mention_type {
             "direct_mentions" => {}
             "here_mentions" => {
@@ -299,20 +305,31 @@ impl Job<'_> {
             "global_mentions" => "@all".to_string(),
             group => format!("@{group}"),
         };
-        let key = if mention_type == "direct_mentions" {
-            "discourse_push_notifications.popup.chat_mention.direct"
+        let prefix = if self.direct_message {
+            "discourse_push_notifications.popup.direct_message_chat_mention"
         } else {
-            "discourse_push_notifications.popup.chat_mention.other_type"
+            "discourse_push_notifications.popup.chat_mention"
+        };
+        let key = if mention_type == "direct_mentions" {
+            format!("{prefix}.direct")
+        } else {
+            format!("{prefix}.other_type")
+        };
+        // @chat_channel.title(membership.user): a DM's is per member.
+        let channel_title = if self.direct_message {
+            self.dm_title_for(conn, membership.user_id).await?
+        } else {
+            self.title.clone()
         };
         let title = self
             .state
             .i18n
             .t_with(
-                key,
+                &key,
                 &[
                     ("username", self.creator),
                     ("identifier", &identifier),
-                    ("channel", &self.title),
+                    ("channel", &channel_title),
                 ],
             )
             .unwrap_or_default();
@@ -329,7 +346,7 @@ impl Job<'_> {
                 self.message_id
             ),
             "channel_id": self.channel_id,
-            "is_direct_message_channel": false,
+            "is_direct_message_channel": self.direct_message,
             "actions": [{
                 "action": "chat-reply",
                 "title": self.state.i18n.t("discourse_push_notifications.actions.chat_reply.title").unwrap_or_default(),
@@ -363,6 +380,63 @@ impl Job<'_> {
         }
         Ok(())
     }
+}
+
+impl Job<'_> {
+    /// `DirectMessageChannel#title(user)` for a member.
+    async fn dm_title_for(
+        &self,
+        conn: &mut PgConnection,
+        user_id: i32,
+    ) -> Result<String, AppError> {
+        dm_title_for(self.state, self.settings, conn, self.channel_id, user_id).await
+    }
+}
+
+/// `DirectMessageChannel#title(user)` as text for `user_id`.
+async fn dm_title_for(
+    state: &AppState,
+    settings: &SiteSettings,
+    conn: &mut PgConnection,
+    channel_id: i64,
+    user_id: i32,
+) -> Result<String, AppError> {
+    let channel: super::channels::ChannelRow = sqlx::query_as(&format!(
+        "SELECT {} FROM chat_channels WHERE id = $1",
+        super::channels::CHANNEL_COLUMNS
+    ))
+    .bind(channel_id)
+    .fetch_one(&mut *conn)
+    .await?;
+    if let Some(name) = channel.name.clone().filter(|n| !n.is_empty()) {
+        let group: bool =
+            sqlx::query_scalar("SELECT \"group\" FROM direct_message_channels WHERE id = $1")
+                .bind(channel.chatable_id)
+                .fetch_one(&mut *conn)
+                .await?;
+        if group {
+            return Ok(name);
+        }
+    }
+    let user = crate::session::current::SessionUser::load(&mut *conn, user_id)
+        .await?
+        .ok_or(Unsupported(
+            "a direct message title for a user that is gone",
+        ))?;
+    let guardian = crate::guardian::Guardian::for_user(&mut *conn, &user).await?;
+    let mut cx = super::channels::Context {
+        conn: &mut *conn,
+        settings,
+        i18n: &state.i18n,
+        guardian: &guardian,
+        base_path: state.config.globals.relative_url_root(),
+        config: &state.config,
+    };
+    let dm = cx.direct_message(channel.chatable_id).await?;
+    Ok(match cx.dm_title(&channel, &dm)? {
+        Value::String(s) => s,
+        other => other.to_string(),
+    })
 }
 
 /// ActiveSupport's String#truncate: at most `max` characters, the last
@@ -412,9 +486,7 @@ pub async fn notify_watching(
         .bind(message.chat_channel_id)
         .fetch_one(&mut *conn)
         .await?;
-    if channel.chatable_type != "Category" {
-        return Err(Unsupported("chat direct messages").into());
-    }
+    let direct_message = channel.chatable_type == "DirectMessage";
     if message.thread_id.is_some() {
         let force: bool = sqlx::query_scalar("SELECT force FROM chat_threads WHERE id = $1")
             .bind(message.thread_id)
@@ -455,14 +527,57 @@ pub async fn notify_watching(
     .fetch_all(&mut *conn)
     .await?;
     // CategoryChannel#title: its name, else its category's.
-    let channel_title = match channel.name.clone().filter(|n| !n.is_empty()) {
+    let category_title = match channel.name.clone().filter(|n| !n.is_empty()) {
         Some(name) => name,
+        None if direct_message => String::new(),
         None => {
             sqlx::query_scalar("SELECT name FROM categories WHERE id = $1")
                 .bind(channel.chatable_id as i32)
                 .fetch_one(&mut *conn)
                 .await?
         }
+    };
+    // A DM's: those who take communication from the creator, in the
+    // screener's order.
+    let members: Vec<Membership> = if direct_message {
+        let ids: Vec<i32> = members.iter().map(|m| m.user_id).collect();
+        let staff: bool = sqlx::query_scalar(
+            "SELECT COALESCE((SELECT admin OR moderator FROM users WHERE id = $1), FALSE)",
+        )
+        .bind(creator_id)
+        .fetch_one(&mut *conn)
+        .await?;
+        let screener = crate::user_comm_screener::UserCommScreener::new(
+            &mut *conn,
+            crate::user_comm_screener::Actor {
+                id: creator_id,
+                staff,
+            },
+            &ids,
+        )
+        .await?;
+        let mut by_id: Vec<Option<Membership>> = members.into_iter().map(Some).collect();
+        let mut ordered = Vec::new();
+        for id in screener.allowing_actor_communication() {
+            if let Some(slot) = by_id
+                .iter_mut()
+                .find(|m| m.as_ref().is_some_and(|m| m.user_id == id))
+                && let Some(m) = slot.take()
+            {
+                ordered.push(m);
+            }
+        }
+        ordered
+    } else {
+        members
+    };
+    let group_dm: bool = if direct_message {
+        sqlx::query_scalar("SELECT \"group\" FROM direct_message_channels WHERE id = $1")
+            .bind(channel.chatable_id)
+            .fetch_one(&mut *conn)
+            .await?
+    } else {
+        false
     };
     for membership in members {
         let Some(user) =
@@ -492,25 +607,45 @@ pub async fn notify_watching(
             settings,
         };
         let base_path = state.config.globals.relative_url_root();
+        // A 1:1 DM's title names no channel.
+        let translated_title = if direct_message && !group_dm {
+            state
+                .i18n
+                .t_with(
+                    "discourse_push_notifications.popup.new_direct_chat_message",
+                    &[("username", creator.as_str())],
+                )
+                .unwrap_or_default()
+        } else {
+            let channel_title = if direct_message {
+                dm_title_for(state, settings, conn, channel.id, membership.user_id).await?
+            } else {
+                category_title.clone()
+            };
+            state
+                .i18n
+                .t_with(
+                    "discourse_push_notifications.popup.new_chat_message",
+                    &[
+                        ("username", creator.as_str()),
+                        ("channel", channel_title.as_str()),
+                    ],
+                )
+                .unwrap_or_default()
+        };
         let payload = json!({
             "username": creator,
             "notification_type": CHAT_MESSAGE,
             "chat_message_id": message_id,
             "post_url": format!("{base_path}/chat/c/-/{}/{message_id}", channel.id),
-            "translated_title": state
-                .i18n
-                .t_with(
-                    "discourse_push_notifications.popup.new_chat_message",
-                    &[("username", creator.as_str()), ("channel", channel_title.as_str())],
-                )
-                .unwrap_or_default(),
+            "translated_title": translated_title,
             "tag": format!("{}-chat-message-{}", urls.current_hostname()?, channel.id),
             "excerpt": truncate(
                 &crate::emoji::gsub_emoji_to_unicode(message.message.as_deref().unwrap_or_default()),
                 400
             ),
             "channel_id": channel.id,
-            "is_direct_message_channel": false,
+            "is_direct_message_channel": direct_message,
             "actions": [{
                 "action": "chat-reply",
                 "title": state.i18n.t("discourse_push_notifications.actions.chat_reply.title").unwrap_or_default(),

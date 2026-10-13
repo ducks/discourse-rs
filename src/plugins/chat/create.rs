@@ -117,10 +117,14 @@ impl Context<'_> {
         let Some(channel) = self.find_by_id_or_slug(&params.chat_channel_id).await? else {
             return Ok(Outcome::NotFound);
         };
-        if channel.chatable_type != "Category" {
-            return Err(Unsupported("chat direct messages").into());
-        }
-        let can_post = g.is_admin()
+        // can_post_in_chatable?: always in a direct message.
+        let dm = if channel.chatable_type == "DirectMessage" {
+            Some(self.direct_message(channel.chatable_id).await?)
+        } else {
+            None
+        };
+        let can_post = dm.is_some()
+            || g.is_admin()
             || !sqlx::query_scalar::<_, i32>(&format!(
                 "SELECT categories.id FROM categories WHERE categories.id = $1 AND {}",
                 super::categories_scoped_to(g, "1, 2")
@@ -132,24 +136,28 @@ impl Context<'_> {
         if !can_post {
             return Ok(Outcome::Forbidden);
         }
-        // model :membership
-        let has_membership: bool = sqlx::query_scalar(
-            "SELECT EXISTS (SELECT 1 FROM user_chat_channel_memberships WHERE user_id = $1 AND chat_channel_id = $2)",
+        // model :membership (its following, for PublishAndFollow)
+        let following: Option<bool> = sqlx::query_scalar(
+            "SELECT following FROM user_chat_channel_memberships WHERE user_id = $1 AND chat_channel_id = $2",
         )
         .bind(user.id)
         .bind(channel.id)
-        .fetch_one(&mut *self.conn)
+        .fetch_optional(&mut *self.conn)
         .await?;
-        if !has_membership {
+        let Some(was_following) = following else {
             return Ok(Outcome::NotFound);
-        }
+        };
         // policy :channel_allows_message_creation (can_create_channel_message?)
         let status = super::channels::STATUSES
             .get(channel.status as usize)
             .copied()
             .unwrap_or("open");
         let allowed = status == "open" || (g.is_staff() && status == "closed");
-        if !allowed {
+        if let Some(dm) = &dm {
+            if let Some(reason) = self.dm_creation_refusal(dm, allowed).await? {
+                return Ok(Outcome::Unprocessable(reason));
+            }
+        } else if !allowed {
             return Ok(Outcome::Unprocessable(t(
                 self.i18n,
                 &format!("chat.errors.channel_new_message_disallowed.{status}"),
@@ -332,10 +340,22 @@ impl Context<'_> {
                 json!({ "thread_id": thread_id }),
             )
             .await?;
-            let original_user = r.2.map(i64::from).unwrap_or(0);
-            self.add_to_thread(thread_id, original_user, now).await?;
-            self.add_to_thread(thread_id, i64::from(user.id), now)
-                .await?;
+            match &dm {
+                // Every participant joins a DM's thread, for unread
+                // tracking, when the channel has no threading.
+                Some(dm) if !channel.threading_enabled => {
+                    for participant in dm.users.iter().flatten() {
+                        self.add_to_thread(thread_id, i64::from(participant.id), now)
+                            .await?;
+                    }
+                }
+                _ => {
+                    let original_user = r.2.map(i64::from).unwrap_or(0);
+                    self.add_to_thread(thread_id, original_user, now).await?;
+                    self.add_to_thread(thread_id, i64::from(user.id), now)
+                        .await?;
+                }
+            }
             sqlx::query(
                 "UPDATE user_chat_thread_memberships SET last_read_message_id = $3, updated_at = $4 \
                  WHERE thread_id = $1 AND user_id = $2",
@@ -366,6 +386,11 @@ impl Context<'_> {
         .execute(&mut *self.conn)
         .await?;
 
+        // process_direct_message_channel: PublishAndFollowDirectMessageChannel.
+        if dm.is_some() {
+            self.publish_and_follow(bus, &channel, user.id, g.is_staff(), was_following)
+                .await?;
+        }
         // process: publish_new!, then the processing job.
         super::publisher::publish_new(self, bus, &channel, message_id, params.staged_id.as_deref())
             .await?;
@@ -397,6 +422,175 @@ impl Context<'_> {
         )
         .await?;
         Ok(Outcome::Created(message_id))
+    }
+
+    /// `Chat::Channel::Policy::MessageCreation::DirectMessageStrategy`:
+    /// the reason the actor may not post in the DM, None when they may.
+    async fn dm_creation_refusal(
+        &mut self,
+        dm: &super::direct_messages::DirectMessage,
+        can_create: bool,
+    ) -> Result<Option<String>, AppError> {
+        let g = self.guardian;
+        let Some(actor) = g.user().cloned() else {
+            return Ok(Some(t(
+                self.i18n,
+                "chat.errors.user_cannot_send_direct_messages",
+            )));
+        };
+        let with = |key: &str, username: &str| {
+            self.i18n
+                .t_with(key, &[("username", username)])
+                .unwrap_or_else(|| key.to_string())
+        };
+        if !can_create {
+            return Ok(Some(t(
+                self.i18n,
+                "chat.errors.channel_new_message_disallowed.closed",
+            )));
+        }
+        // can_send_direct_message?
+        let bot = actor.id < 0;
+        if !(g.is_staff() || bot || (dm.user_can_access(g) && !actor.suspended())) {
+            return Ok(Some(t(
+                self.i18n,
+                "chat.errors.user_cannot_send_direct_messages",
+            )));
+        }
+        // allowing_direct_messages?
+        let allows: bool = sqlx::query_scalar(
+            "SELECT COALESCE((SELECT allow_private_messages FROM user_options WHERE user_id = $1), TRUE)",
+        )
+        .bind(actor.id)
+        .fetch_one(&mut *self.conn)
+        .await?;
+        if !allows {
+            return Ok(Some(t(self.i18n, "chat.errors.actor_disallowed_dms")));
+        }
+        let participants: Vec<&super::direct_messages::DmUser> =
+            dm.users.iter().flatten().collect();
+        if participants.len() == 1 || dm.group || actor.id == -1 || bot {
+            return Ok(None);
+        }
+        let Some(target) = participants.into_iter().find(|u| u.id != actor.id) else {
+            return Ok(Some(t(
+                self.i18n,
+                "chat.errors.user_cannot_send_direct_messages",
+            )));
+        };
+        let (muting, ignoring): (bool, bool) = sqlx::query_as(
+            "SELECT EXISTS (SELECT 1 FROM muted_users WHERE user_id = $1 AND muted_user_id = $2), \
+                    EXISTS (SELECT 1 FROM ignored_users WHERE user_id = $1 AND ignored_user_id = $2)",
+        )
+        .bind(actor.id)
+        .bind(target.id)
+        .fetch_one(&mut *self.conn)
+        .await?;
+        if muting {
+            return Ok(Some(with(
+                "chat.errors.actor_muting_target_user",
+                &target.username,
+            )));
+        }
+        if ignoring {
+            return Ok(Some(with(
+                "chat.errors.actor_ignoring_target_user",
+                &target.username,
+            )));
+        }
+        // recipient_can_chat?
+        let target_user = crate::session::current::SessionUser::load(&mut *self.conn, target.id)
+            .await?
+            .ok_or(Unsupported("a direct message to a user that is gone"))?;
+        let target_guardian =
+            crate::guardian::Guardian::for_user(&mut *self.conn, &target_user).await?;
+        let can_chat = super::can_chat(&mut *self.conn, self.settings, &target_guardian).await?
+            && target.chat_enabled.unwrap_or(false);
+        if !can_chat {
+            return Ok(Some(with("chat.errors.not_reachable", &target.username)));
+        }
+        // recipient_allows_direct_messages?
+        if !g.is_staff() {
+            let target_allows: bool = sqlx::query_scalar(
+                "SELECT COALESCE((SELECT allow_private_messages FROM user_options WHERE user_id = $1), TRUE)",
+            )
+            .bind(target.id)
+            .fetch_one(&mut *self.conn)
+            .await?;
+            let screener = crate::user_comm_screener::UserCommScreener::new(
+                &mut *self.conn,
+                crate::user_comm_screener::Actor {
+                    id: actor.id,
+                    staff: false,
+                },
+                &[target.id],
+            )
+            .await?;
+            if !target_allows
+                || screener.disallowing_pms_from_actor(target.id)?
+                || target_user.suspended()
+            {
+                return Ok(Some(with(
+                    "chat.errors.not_accepting_dms",
+                    &target.username,
+                )));
+            }
+        }
+        Ok(None)
+    }
+
+    /// `Chat::Action::PublishAndFollowDirectMessageChannel`: the members
+    /// not following who take communication from the actor (and the actor,
+    /// when not following) follow, and each is told of the channel.
+    async fn publish_and_follow(
+        &mut self,
+        bus: &pg_bus::Bus,
+        channel: &ChannelRow,
+        actor: i32,
+        actor_staff: bool,
+        actor_following: bool,
+    ) -> Result<(), AppError> {
+        let not_following: Vec<i32> = sqlx::query_scalar(
+            "SELECT user_id FROM user_chat_channel_memberships WHERE chat_channel_id = $1 AND NOT following \
+             ORDER BY id",
+        )
+        .bind(channel.id)
+        .fetch_all(&mut *self.conn)
+        .await?;
+        let screener = crate::user_comm_screener::UserCommScreener::new(
+            &mut *self.conn,
+            crate::user_comm_screener::Actor {
+                id: actor,
+                staff: actor_staff,
+            },
+            &not_following,
+        )
+        .await?;
+        let mut user_ids = screener.allowing_actor_communication();
+        if !actor_following {
+            user_ids.push(actor);
+        }
+        if user_ids.is_empty() {
+            return Ok(());
+        }
+        sqlx::query(
+            "UPDATE user_chat_channel_memberships SET following = TRUE \
+             WHERE chat_channel_id = $1 AND user_id = ANY($2)",
+        )
+        .bind(channel.id)
+        .bind(&user_ids)
+        .execute(&mut *self.conn)
+        .await?;
+        super::auto_join::publish_new_channel(
+            &mut *self.conn,
+            bus,
+            self.i18n,
+            self.config,
+            self.settings,
+            channel.id,
+            &user_ids,
+        )
+        .await
     }
 
     /// `Chat::Thread#add(user)`: a tracking membership, unless there is one.
@@ -523,9 +717,6 @@ pub async fn process_message(
         .bind(channel_id)
         .fetch_one(&mut *conn)
         .await?;
-    if channel.chatable_type != "Category" {
-        return Err(Unsupported("chat direct messages").into());
-    }
     let notifier = super::mentions::Notifier {
         state,
         settings,

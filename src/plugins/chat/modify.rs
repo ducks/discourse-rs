@@ -106,11 +106,6 @@ impl Context<'_> {
         if deleted {
             return Err(Unsupported("messages of deleted chat channels").into());
         }
-        if let Some(c) = &channel
-            && c.chatable_type != "Category"
-        {
-            return Err(Unsupported("chat direct messages").into());
-        }
         Ok(channel)
     }
 
@@ -147,8 +142,11 @@ impl Context<'_> {
         status == "open" || (self.guardian.is_staff() && status == "closed")
     }
 
-    /// `can_post_in_chatable?` for a category channel.
+    /// `can_post_in_chatable?`: always in a direct message.
     async fn can_post_in(&mut self, channel: &ChannelRow) -> Result<bool, AppError> {
+        if channel.chatable_type == "DirectMessage" {
+            return Ok(true);
+        }
         if !self.guardian.is_authenticated() {
             return Ok(false);
         }
@@ -690,9 +688,6 @@ impl Context<'_> {
         let Some(channel) = self.find_by_id_or_slug(channel_id_or_slug).await? else {
             return Ok(Outcome::NotFound);
         };
-        if channel.chatable_type != "Category" {
-            return Err(Unsupported("chat direct messages").into());
-        }
         if !self.can_join(&channel, None).await? {
             return Ok(Outcome::Forbidden(None));
         }
@@ -858,9 +853,6 @@ impl Context<'_> {
         let Some(channel) = channel else {
             return Ok(Outcome::NotFound);
         };
-        if channel.chatable_type != "Category" {
-            return Err(Unsupported("chat direct messages").into());
-        }
         if !self.can_join(&channel, None).await? {
             return Ok(Outcome::Forbidden(None));
         }

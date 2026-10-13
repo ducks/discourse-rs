@@ -1,0 +1,101 @@
+{
+  "name": "react_dm",
+  "user": "user2",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/chat/3/react/1.json",
+      "params": {
+        "emoji": "heart",
+        "react_action": "add"
+      }
+    }
+  ],
+  "started_at": "2026-10-13T15:13:42.439156",
+  "transaction_started_at": "2026-10-13T15:13:41.482532",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    }
+  ],
+  "changes": {
+    "chat_message_reactions": {
+      "inserted": [
+        {
+          "id": 1,
+          "emoji": "heart",
+          "user_id": 4,
+          "created_at": "2026-10-13T15:13:42.487926",
+          "updated_at": "2026-10-13T15:13:42.487926",
+          "chat_message_id": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 488,
+            "seen_at": null,
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "grLqtcGiJVs9vMRir+U5K/A/Hls=",
+            "created_at": "2026-10-13T15:13:41.950629",
+            "rotated_at": "2026-10-13T15:13:41.949731",
+            "updated_at": "2026-10-13T15:13:41.950629",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "grLqtcGiJVs9vMRir+U5K/A/Hls=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 488,
+            "seen_at": "2026-10-13T15:13:42.450024",
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "grLqtcGiJVs9vMRir+U5K/A/Hls=",
+            "created_at": "2026-10-13T15:13:41.950629",
+            "rotated_at": "2026-10-13T15:13:41.949731",
+            "updated_at": "2026-10-13T15:13:41.950629",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "grLqtcGiJVs9vMRir+U5K/A/Hls=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "chat_message_reactions": 1
+  },
+  "setup": [
+    "INSERT INTO direct_message_channels (id, \"group\", created_at, updated_at) VALUES (1, false, now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO direct_message_users (direct_message_channel_id, user_id, created_at, updated_at) VALUES (1, 3, now() - interval '1 day', now() - interval '1 day'), (1, 4, now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO chat_channels (id, chatable_type, chatable_id, type, status, user_count, name, created_at, updated_at) VALUES (3, 'DirectMessage', 1, 'DirectMessageChannel', 0, 2, NULL, now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO user_chat_channel_memberships (user_id, chat_channel_id, following, muted, notification_level, created_at, updated_at) VALUES (3, 3, true, false, 2, now() - interval '1 day', now() - interval '1 day'), (4, 3, true, false, 2, now() - interval '1 day', now() - interval '1 day')",
+    "SELECT setval('chat_channels_id_seq', 3)",
+    "SELECT setval('direct_message_channels_id_seq', 1)",
+    "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id) VALUES (1, 3, 3, now() - interval '30 minutes', now() - interval '30 minutes', 'earlier in the dm', '<p>earlier in the dm</p>', 1, 3)",
+    "SELECT setval('chat_messages_id_seq', 1)",
+    "UPDATE chat_channels SET last_message_id = 1, messages_count = 1 WHERE id = 3",
+    "UPDATE user_chat_channel_memberships SET following = true WHERE chat_channel_id = 3"
+  ],
+  "recorded_from": {
+    "case": "d31bfcd0f285d91b42c7ac06fe93878d468195db444e8017cf7ae0630c76c360",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
