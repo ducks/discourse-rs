@@ -48,3 +48,12 @@
 /chat/c/general/2 as=admin wait=3000 mask=.chat-time
 /chat/browse/open as=user1 wait=3000
 /chat/browse/all as=admin wait=3000
+
+# Messages and chat direct messages
+/u/user1/messages as=user1
+/u/user1/messages/sent as=user1
+/u/admin/messages/group/moderators as=admin
+/t/a-group-message-the-moderators-received/90 as=admin wait=4000
+/latest as=user1
+/chat/c/-/3 as=user1 wait=3000 mask=.chat-time
+/chat/c/-/4 as=user2 wait=3000 mask=.chat-time
