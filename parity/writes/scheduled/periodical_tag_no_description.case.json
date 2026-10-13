@@ -1,0 +1,8 @@
+{
+  "user": null,
+  "setup": ["UPDATE tags SET description_cooked_version = 0 WHERE id = 1"],
+  "requests": [],
+  "enqueue": [["periodical_updates", {}]],
+  "run_jobs": ["periodical_updates"],
+  "approximate": ["topics.score"]
+}

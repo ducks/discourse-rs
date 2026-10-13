@@ -1,0 +1,47 @@
+{
+  "name": "periodical_min_new_topics",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-13T02:01:22.469043",
+  "transaction_started_at": "2026-10-13T02:01:21.827655",
+  "responses": [],
+  "changes": {
+    "site_settings": {
+      "inserted": [
+        {
+          "id": 38,
+          "name": "min_new_topics_time",
+          "value": "1790753310",
+          "data_type": 3,
+          "created_at": "2026-10-13T02:01:22.505214",
+          "updated_at": "2026-10-13T02:01:22.505214"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "site_settings": 38
+  },
+  "settings": {
+    "max_new_topics": 3
+  },
+  "setup": [],
+  "enqueue": [
+    [
+      "periodical_updates",
+      {}
+    ]
+  ],
+  "approximate": [
+    "topics.score"
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "212169e788c16305afd1cdea9483dec0ae008351484e4286117b6b0c575bdf08",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
