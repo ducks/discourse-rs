@@ -762,21 +762,36 @@ pub async fn create(
     )
     .await?;
     record_timing(&mut tx, topic_id, user.id, post_number, 5000).await?;
-    let replying_level: Option<i32> = sqlx::query_scalar(
-        "SELECT notification_level_when_replying FROM user_options WHERE user_id = $1",
-    )
-    .bind(user.id)
-    .fetch_optional(&mut *tx)
-    .await?
-    .flatten();
-    super::auto_notification(
-        &mut tx,
-        user.id,
-        topic_id,
-        notification_reasons::CREATED_POST,
-        replying_level.unwrap_or(notification_levels::TRACKING),
-    )
-    .await?;
+    // A staged user watches (auto_notification_for_staging); in a message
+    // the level is left as the topic user was made.
+    if user.staged {
+        change_topic_user(
+            &mut tx,
+            user.id,
+            topic_id,
+            &[TopicUserAttr::NotificationLevel(
+                notification_levels::WATCHING,
+                notification_reasons::AUTO_WATCH,
+            )],
+        )
+        .await?;
+    } else if !private_message {
+        let replying_level: Option<i32> = sqlx::query_scalar(
+            "SELECT notification_level_when_replying FROM user_options WHERE user_id = $1",
+        )
+        .bind(user.id)
+        .fetch_optional(&mut *tx)
+        .await?
+        .flatten();
+        super::auto_notification(
+            &mut tx,
+            user.id,
+            topic_id,
+            notification_reasons::CREATED_POST,
+            replying_level.unwrap_or(notification_levels::TRACKING),
+        )
+        .await?;
+    }
     // update_topic_stats
     let excerpt = if new_topic {
         Some(crate::excerpt::excerpt(
@@ -875,6 +890,65 @@ pub async fn create(
         &cooked,
     )
     .await?;
+    if private_message {
+        // ensure_in_allowed_users: a staff author not allowed (nor in an
+        // allowed group) joins the message.
+        if guardian.is_staff() {
+            sqlx::query(
+                "INSERT INTO topic_allowed_users (topic_id, user_id, created_at, updated_at) \
+                 SELECT $1, $2, clock_timestamp(), clock_timestamp() \
+                 WHERE NOT EXISTS (SELECT 1 FROM topic_allowed_users WHERE topic_id = $1 AND user_id = $2) \
+                   AND NOT EXISTS (SELECT 1 FROM topic_allowed_groups WHERE topic_id = $1 \
+                     AND group_id IN (SELECT group_id FROM group_users WHERE user_id = $2))",
+            )
+            .bind(topic_id)
+            .bind(user.id)
+            .execute(&mut *tx)
+            .await?;
+        }
+        // unarchive_message: back in each archiver's inbox, unless they
+        // muted it.
+        let archivers: Vec<i32> =
+            sqlx::query_scalar("SELECT user_id FROM user_archived_messages WHERE topic_id = $1")
+                .bind(topic_id)
+                .fetch_all(&mut *tx)
+                .await?;
+        for archiver in archivers {
+            let muted: bool = sqlx::query_scalar(
+                "SELECT EXISTS (SELECT 1 FROM topic_users WHERE user_id = $1 AND topic_id = $2 \
+                   AND notification_level = 0)",
+            )
+            .bind(archiver)
+            .bind(topic_id)
+            .fetch_one(&mut *tx)
+            .await?;
+            if muted {
+                continue;
+            }
+            sqlx::query("DELETE FROM user_archived_messages WHERE user_id = $1 AND topic_id = $2")
+                .bind(archiver)
+                .bind(topic_id)
+                .execute(&mut *tx)
+                .await?;
+            ctx.bus
+                .publish(
+                    &mut tx,
+                    &format!("/topic/{topic_id}"),
+                    &json!({"type": "move_to_inbox"}),
+                    Some(&[crate::bus::user_tag(archiver)]),
+                )
+                .await?;
+        }
+        let group_archived: bool = sqlx::query_scalar(
+            "SELECT EXISTS (SELECT 1 FROM group_archived_messages WHERE topic_id = $1)",
+        )
+        .bind(topic_id)
+        .fetch_one(&mut *tx)
+        .await?;
+        if group_archived {
+            return Err(Unsupported("replies to messages a group archived").into());
+        }
+    }
     // DraftSequence.next!(user, draft_key) when the composer asked
     // (advance_draft).
     if args.advance_draft {
@@ -929,9 +1003,13 @@ pub async fn create(
         crate::bus::publish_post_change(ctx, &mut tx, post_id, "created", Map::new(), false)
             .await?;
     } else {
-        // PostJobsEnqueuer#after_topic_create (regular topics; messages'
-        // tracking state is not ported).
-        crate::topic_tracking_state::publish_new(ctx.bus, ctx.settings, &mut tx, topic_id).await?;
+        // PostJobsEnqueuer#after_topic_create
+        if private_message {
+            crate::pm_tracking_state::publish_new(ctx.bus, &mut tx, topic_id).await?;
+        } else {
+            crate::topic_tracking_state::publish_new(ctx.bus, ctx.settings, &mut tx, topic_id)
+                .await?;
+        }
     }
     // PostJobsEnqueuer#enqueue_jobs, committed with the post.
     crate::jobs::enqueue(

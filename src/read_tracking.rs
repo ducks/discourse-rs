@@ -285,9 +285,19 @@ async fn update_last_read(
     .fetch_optional(&mut *conn)
     .await?;
     if let Some((after, before, before_last_read, archetype)) = row {
-        // The user read at least one new post. Messages' read state
-        // (PrivateMessageTopicTrackingState) is not ported.
-        if before_last_read.unwrap_or(0) < post_number && archetype == "regular" {
+        // The user read at least one new post.
+        if before_last_read.unwrap_or(0) < post_number && archetype == "private_message" {
+            crate::pm_tracking_state::publish_read(
+                bus,
+                s,
+                &mut *conn,
+                topic_id,
+                Some(post_number),
+                user_id,
+                Some(after),
+            )
+            .await?;
+        } else if before_last_read.unwrap_or(0) < post_number && archetype == "regular" {
             crate::topic_tracking_state::publish_read(
                 bus,
                 s,
@@ -329,7 +339,18 @@ async fn update_last_read(
     .bind(topic_id)
     .fetch_one(&mut *conn)
     .await?;
-    if !private_message {
+    if private_message {
+        crate::pm_tracking_state::publish_read(
+            bus,
+            s,
+            &mut *conn,
+            topic_id,
+            Some(post_number),
+            user_id,
+            Some(new_status),
+        )
+        .await?;
+    } else {
         crate::topic_tracking_state::publish_read(
             bus,
             s,

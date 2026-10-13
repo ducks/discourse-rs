@@ -1,0 +1,21 @@
+{
+  "user": "user0",
+  "setup": [
+    "INSERT INTO topic_allowed_users (topic_id, user_id, created_at, updated_at) VALUES (44, 2, now(), now())",
+    "INSERT INTO notifications (notification_type, user_id, topic_id, post_number, data, created_at, updated_at) VALUES (7, 2, 44, 1, '{}', now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 44,
+        "raw": "A reply from user0, who was invited to this message by notification."
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert",
+    "user_email"
+  ]
+}

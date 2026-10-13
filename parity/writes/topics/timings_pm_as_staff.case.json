@@ -1,0 +1,16 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/topics/timings",
+      "params": {
+        "topic_id": 44,
+        "topic_time": 4000,
+        "timings": {
+          "1": 4000
+        }
+      }
+    }
+  ]
+}

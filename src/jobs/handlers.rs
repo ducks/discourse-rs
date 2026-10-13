@@ -201,10 +201,29 @@ async fn post_update_topic_tracking_state(state: &AppState, args: &Value) -> Res
     let Some((topic_id, post_number, post_type, archetype)) = post else {
         return Ok(());
     };
-    if post_type == crate::posting::post_types::SMALL_ACTION || archetype == "private_message" {
+    if post_type == crate::posting::post_types::SMALL_ACTION {
         return Ok(());
     }
     let s = settings(state, &mut tx).await?;
+    if archetype == "private_message" {
+        if post_number > 1 {
+            crate::pm_tracking_state::publish_unread(&state.bus, &s, &mut tx, post_id as i32)
+                .await?;
+        }
+        // TopicGroup.new_message_update: nothing for a message without
+        // groups.
+        let groups: bool = sqlx::query_scalar(
+            "SELECT EXISTS (SELECT 1 FROM topic_allowed_groups WHERE topic_id = $1)",
+        )
+        .bind(topic_id)
+        .fetch_one(&mut *tx)
+        .await?;
+        if groups {
+            return Err(Unsupported("group messages' read counts (TopicGroup)").into());
+        }
+        tx.commit().await?;
+        return Ok(());
+    }
     use crate::topic_tracking_state as tracking;
     tracking::publish_unmuted(&state.bus, &mut tx, topic_id).await?;
     if post_number > 1 {

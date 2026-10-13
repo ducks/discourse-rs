@@ -1,0 +1,17 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 44,
+        "raw": "A reply from the admin in a message the admin is not part of."
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert",
+    "user_email"
+  ]
+}

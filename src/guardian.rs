@@ -474,33 +474,7 @@ impl Guardian {
         let Some(u) = &self.user else {
             return Ok(None);
         };
-        let row: Option<NewTopicRow> = sqlx::query_as(
-            "SELECT u.created_at, u.previous_visit_at, us.new_since, uo.new_topic_duration_minutes \
-             FROM users u LEFT JOIN user_stats us ON us.user_id = u.id \
-             LEFT JOIN user_options uo ON uo.user_id = u.id WHERE u.id = $1",
-        )
-        .bind(u.user.id)
-        .fetch_optional(&mut *conn)
-        .await?;
-        let Some((created_at, previous_visit_at, new_since, minutes)) = row else {
-            return Ok(None);
-        };
-        let duration = minutes.map(i64::from).unwrap_or(
-            settings
-                .get("default_other_new_topic_duration_minutes")?
-                .to_i(),
-        );
-        let now = crate::clock::now_naive();
-        let base = match duration {
-            -1 => created_at,
-            -2 => previous_visit_at.or(new_since).unwrap_or(created_at),
-            minutes => now - chrono::Duration::minutes(minutes),
-        };
-        let min_new =
-            chrono::DateTime::from_timestamp(settings.get("min_new_topics_time")?.to_i(), 0)
-                .map(|t| t.naive_utc())
-                .unwrap_or(created_at);
-        Ok(Some(base.max(created_at).max(min_new)))
+        treat_as_new_topic_start_date_for(conn, settings, u.user.id).await
     }
 
     /// `UpcomingChanges.enabled_for_user?(name, user)`: the setting is on
@@ -655,4 +629,38 @@ impl From<SettingError> for GuardianError {
     fn from(e: SettingError) -> Self {
         GuardianError::Setting(e)
     }
+}
+
+/// `UserOption#treat_as_new_topic_start_date` for a user.
+pub async fn treat_as_new_topic_start_date_for(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    user_id: i32,
+) -> Result<Option<NaiveDateTime>, GuardianError> {
+    let row: Option<NewTopicRow> = sqlx::query_as(
+        "SELECT u.created_at, u.previous_visit_at, us.new_since, uo.new_topic_duration_minutes \
+         FROM users u LEFT JOIN user_stats us ON us.user_id = u.id \
+         LEFT JOIN user_options uo ON uo.user_id = u.id WHERE u.id = $1",
+    )
+    .bind(user_id)
+    .fetch_optional(&mut *conn)
+    .await?;
+    let Some((created_at, previous_visit_at, new_since, minutes)) = row else {
+        return Ok(None);
+    };
+    let duration = minutes.map(i64::from).unwrap_or(
+        settings
+            .get("default_other_new_topic_duration_minutes")?
+            .to_i(),
+    );
+    let now = crate::clock::now_naive();
+    let base = match duration {
+        -1 => created_at,
+        -2 => previous_visit_at.or(new_since).unwrap_or(created_at),
+        minutes => now - chrono::Duration::minutes(minutes),
+    };
+    let min_new = chrono::DateTime::from_timestamp(settings.get("min_new_topics_time")?.to_i(), 0)
+        .map(|t| t.naive_utc())
+        .unwrap_or(created_at);
+    Ok(Some(base.max(created_at).max(min_new)))
 }
