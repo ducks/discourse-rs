@@ -10,6 +10,19 @@ Vendored from npm, served at /assets/ (src/routes/mod.rs):
   photoswipe-LICENSE.txt
                     photoswipe@5.4.4, LICENSE (MIT)
 
+  highlightjs/core.min.js       @highlightjs/cdn-assets@11.12.0, es/core.min.js
+                                (served as /assets/highlightjs-core.min.js)
+  highlightjs/languages/*.js    @highlightjs/cdn-assets@11.12.0, languages/*
+                                (all 193, embedded by build.rs; bundled for
+                                highlighted_languages at /highlight-js/...)
+  highlightjs/LICENSE           @highlightjs/cdn-assets@11.12.0, LICENSE
+                                (BSD-3-Clause)
+
+highlight.js must stay at the version Discourse pins in
+frontend/discourse/package.json (exactly 11.12.0): the bundle's digest
+(HighlightJs.version) is a sha1 over these files, so another version gives
+other urls than Rails'.
+
 Each was checked against the package tarball's npm integrity (sha512) and
 compared byte for byte with the file in the tarball. To update, fetch the
 new versions the same way and check them again:

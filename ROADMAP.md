@@ -146,7 +146,9 @@ Bugs or silent gaps in what is merged, small and independent.
 44. `feat/cooked-decorators-js` M: run once per post, swapped-in posts
     included
 45. `feat/float-positioner` S, 46. `feat/user-card` M
-47. `feat/lightbox` M (PhotoSwipe), 48. `feat/highlight-js` M,
+47. `feat/lightbox` M (PhotoSwipe), 48. ~~`feat/highlight-js`~~ (done) M (posts, the
+    composer's preview and chat messages; the rich editor's code blocks
+    wait on the rich editor),
     49. `feat/local-dates` M (moment and moment-timezone vendored, as
     Discourse renders), 50. `feat/inline-footnotes` S
 51. `feat/onebox-endpoints` S, 52. `feat/onebox-fetch` L (SSRF guard

@@ -1,0 +1,13 @@
+{
+  "user": null,
+  "settings": {
+    "login_required": true,
+    "highlighted_languages": "ruby|nope|sql"
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/highlight-js/localhost/76bb8ca4d50f2707d020ad6f0130c42cb8a43efd.js"
+    }
+  ]
+}
