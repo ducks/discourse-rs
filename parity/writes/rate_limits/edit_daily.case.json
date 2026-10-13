@@ -1,0 +1,10 @@
+{
+  "user": "user1",
+  "rate_limits": true,
+  "setup": ["UPDATE posts SET user_id = 3 WHERE id = 37"],
+  "settings": {"max_edits_per_day": "1", "editing_grace_period": "0", "tl2_post_edit_time_limit": "0"},
+  "requests": [
+    {"method": "PUT", "path": "/posts/36.json", "params": {"post": {"raw": "Reply one from user1, edited once while the daily edit limit is on."}}},
+    {"method": "PUT", "path": "/posts/37.json", "params": {"post": {"raw": "Another reply of user1, edited over the daily edit limit."}}}
+  ]
+}

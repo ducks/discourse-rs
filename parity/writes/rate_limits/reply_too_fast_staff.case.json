@@ -1,0 +1,25 @@
+{
+  "user": "admin",
+  "rate_limits": true,
+  "settings": {
+    "rate_limit_create_post": "90"
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "A first reply from the admin, posted while the rate limits are on."
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "A second reply from the admin, which staff are allowed to post at once."
+      }
+    }
+  ]
+}

@@ -61,6 +61,7 @@ fn respond(state: &AppState, outcome: Outcome) -> Response {
         Outcome::Done => StatusCode::OK.into_response(),
         Outcome::NotFound => super::topics::not_found_response(state),
         Outcome::Forbidden => super::search::invalid_access(state),
+        Outcome::RateLimited(refused) => refused.into_response(&state.i18n),
     }
 }
 
@@ -151,7 +152,8 @@ pub async fn recover_post(
     let Some(access) = find_post_with_deleted(&mut tx, &ctx, &guardian, post_id).await? else {
         return Ok(super::topics::not_found_response(&state));
     };
-    let outcome = post_destroyer::recover_post(&mut tx, &ctx, &guardian, &access).await?;
+    let outcome =
+        post_destroyer::recover_post(&state.pool, &mut tx, &ctx, &guardian, &access).await?;
     if !matches!(outcome, Outcome::Done) {
         return Ok(respond(&state, outcome));
     }
@@ -225,5 +227,6 @@ pub async fn destroy_topic(
             Json(json!({ "errors": [ctx.t("delete_topic_failed")] })),
         )
             .into_response(),
+        Outcome::RateLimited(refused) => refused.into_response(&state.i18n),
     })
 }

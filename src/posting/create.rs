@@ -7,6 +7,7 @@ use chrono::NaiveDateTime;
 use serde_json::{Map, json};
 use sqlx::{PgConnection, PgPool};
 
+use super::limits::{self, Performed, Poster};
 use super::links::{self, LinkPost};
 use super::search_index::{self, BaseUrls, PostIndex};
 use super::text::{TitleOptions, clean_title, normalize_whitespaces, slug_for, word_count};
@@ -82,6 +83,9 @@ pub enum Outcome {
     Forbidden,
     /// `Discourse::InvalidParameters`
     InvalidParameter(&'static str),
+    /// A topic or post limit refused it (RateLimiter::LimitExceeded out of
+    /// the transaction, everything rolled back).
+    RateLimited(crate::rate_limiter::LimitExceeded),
 }
 
 /// The topic a reply goes to, as PostCreator reads it.
@@ -510,8 +514,12 @@ pub async fn create(
             plan.pm_recipients = Some(targets.iter().map(|t| t.id).collect());
         }
     }
+    let poster = Poster::load(&mut conn, &user).await?;
     drop(conn);
 
+    // The limits after_create performs (disable_rate_limits! with
+    // skip_validations), rolled back when the create fails.
+    let mut performed = Performed::new(pool, ctx.config.rate_limits && !args.skip_validations);
     // PostCreator#create's transaction.
     let mut tx = pool.begin().await?;
     let urls = Urls {
@@ -545,7 +553,15 @@ pub async fn create(
             false,
         ),
         (None, Some(plan)) => {
-            let id = create_topic(&mut tx, ctx, guardian, user.id, plan).await?;
+            let id =
+                match create_topic(&mut tx, ctx, guardian, &poster, plan, &mut performed).await? {
+                    Ok(id) => id,
+                    Err(refused) => {
+                        tx.rollback().await?;
+                        performed.undo().await?;
+                        return Ok(Outcome::RateLimited(refused));
+                    }
+                };
             (
                 id,
                 plan.title.clone(),
@@ -623,6 +639,15 @@ pub async fn create(
     .bind(args.email.as_ref().map(|e| e.raw_email.as_str()))
     .fetch_one(&mut *tx)
     .await?;
+    // Post's after_create: its limits.
+    if let Err(refused) = performed
+        .perform(limits::post_limiters(s, &poster, post_number)?)
+        .await?
+    {
+        tx.rollback().await?;
+        performed.undo().await?;
+        return Ok(Outcome::RateLimited(refused));
+    }
     sqlx::query(
         "INSERT INTO post_stats (post_id, drafts_saved, typing_duration_msecs, composer_open_duration_msecs, \
                                  writing_device, writing_device_user_agent, composer_version, created_at, updated_at) \
@@ -927,6 +952,7 @@ pub async fn create(
         .await?;
     }
     tx.commit().await?;
+    performed.commit();
 
     // After the transaction: track_latest_on_category, auto_close, then
     // the deferred search index.
@@ -1049,10 +1075,12 @@ async fn create_topic(
     conn: &mut PgConnection,
     ctx: &Ctx<'_>,
     guardian: &Guardian,
-    user_id: i32,
+    poster: &Poster,
     plan: &TopicPlan,
-) -> Result<i32, AppError> {
+    performed: &mut Performed,
+) -> Result<Result<i32, crate::rate_limiter::LimitExceeded>, AppError> {
     let s = ctx.settings;
+    let user_id = poster.id;
     if s.get("slug_generation_method")?.to_s() != "ascii" {
         return Err(Unsupported("slug_generation_method other than ascii").into());
     }
@@ -1079,6 +1107,18 @@ async fn create_topic(
     .bind(pm.then(|| plan.subtype.as_deref().unwrap_or("user_to_user")))
     .fetch_one(&mut *conn)
     .await?;
+    // Topic's after_create: its limits, before the other callbacks.
+    if let Err(refused) = performed
+        .perform(limits::topic_limiters(
+            s,
+            poster,
+            pm,
+            pm.then(|| plan.subtype.as_deref().unwrap_or("user_to_user")),
+        )?)
+        .await?
+    {
+        return Ok(Err(refused));
+    }
     // process_private_message: the recipients, then the sender.
     if let Some(recipients) = &plan.pm_recipients {
         let mut allowed = recipients.clone();
@@ -1178,7 +1218,7 @@ async fn create_topic(
         .await?;
     }
     let _ = guardian;
-    Ok(topic_id)
+    Ok(Ok(topic_id))
 }
 
 /// `CategoryFeaturedTopic.feature_topics_for(category, existing)`: the

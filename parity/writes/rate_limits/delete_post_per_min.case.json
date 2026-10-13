@@ -1,0 +1,10 @@
+{
+  "user": "user1",
+  "rate_limits": true,
+  "setup": ["UPDATE posts SET user_id = 3 WHERE id IN (37, 38)"],
+  "settings": {"max_post_deletions_per_minute": "1"},
+  "requests": [
+    {"method": "DELETE", "path": "/posts/37.json", "params": {}},
+    {"method": "DELETE", "path": "/posts/38.json", "params": {}}
+  ]
+}

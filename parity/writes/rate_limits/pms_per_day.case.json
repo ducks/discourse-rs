@@ -1,0 +1,31 @@
+{
+  "user": "user1",
+  "rate_limits": true,
+  "settings": {
+    "rate_limit_create_topic": "0",
+    "rate_limit_create_post": "0",
+    "max_personal_messages_per_day": "1"
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A first message from user1 to user2 today",
+        "raw": "The only personal message user1 may send today.",
+        "archetype": "private_message",
+        "target_recipients": "user2"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A second message from user1 to user2 today",
+        "raw": "A personal message over the daily message limit.",
+        "archetype": "private_message",
+        "target_recipients": "user2"
+      }
+    }
+  ]
+}

@@ -170,6 +170,12 @@ impl RateLimiter {
         self
     }
 
+    /// A subclass's `build_key` adding to the key (EditRateLimiter's date).
+    pub fn key_suffix(mut self, suffix: &str) -> RateLimiter {
+        self.key.push_str(suffix);
+        self
+    }
+
     pub fn key(&self) -> &str {
         &self.key
     }

@@ -1,0 +1,30 @@
+{
+  "user": "user0",
+  "rate_limits": true,
+  "setup": [
+    "UPDATE users SET created_at = now() - interval '2 hours' WHERE id = 2"
+  ],
+  "settings": {
+    "rate_limit_create_post": "0",
+    "rate_limit_new_user_create_post": "0",
+    "tl1_max_replies_in_first_day": "1"
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "The first reply of a trust level one user on their first day."
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "The second reply of a trust level one user on their first day."
+      }
+    }
+  ]
+}

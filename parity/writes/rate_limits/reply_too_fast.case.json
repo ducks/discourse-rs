@@ -1,0 +1,26 @@
+{
+  "user": "user1",
+  "rate_limits": true,
+  "settings": {
+    "rate_limit_create_post": "90",
+    "rate_limit_new_user_create_post": "90"
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "A first reply from user1, posted while the rate limits are on."
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "A second reply from user1, posted right after the first one."
+      }
+    }
+  ]
+}

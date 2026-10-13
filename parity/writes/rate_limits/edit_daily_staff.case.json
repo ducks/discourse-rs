@@ -1,0 +1,19 @@
+{
+  "user": "admin",
+  "rate_limits": true,
+  "settings": {
+    "max_edits_per_day": "0",
+    "editing_grace_period": "0"
+  },
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/36.json",
+      "params": {
+        "post": {
+          "raw": "Reply one from user1, as an admin rewrote it with edits limited to none."
+        }
+      }
+    }
+  ]
+}

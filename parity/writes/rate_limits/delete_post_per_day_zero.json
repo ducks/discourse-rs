@@ -1,0 +1,77 @@
+{
+  "name": "delete_post_per_day_zero",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/posts/36.json",
+      "params": {}
+    }
+  ],
+  "started_at": "2026-10-13T04:10:36.175433",
+  "transaction_started_at": "2026-10-13T04:10:33.605955",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 488,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "7TYF7QXvi0t/Z2v/65rR7aCrAyo=",
+            "created_at": "2026-10-13T04:10:34.663034",
+            "rotated_at": "2026-10-13T04:10:34.658987",
+            "updated_at": "2026-10-13T04:10:34.663034",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "7TYF7QXvi0t/Z2v/65rR7aCrAyo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 488,
+            "seen_at": "2026-10-13T04:10:36.187438",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "7TYF7QXvi0t/Z2v/65rR7aCrAyo=",
+            "created_at": "2026-10-13T04:10:34.663034",
+            "rotated_at": "2026-10-13T04:10:34.658987",
+            "updated_at": "2026-10-13T04:10:34.663034",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "7TYF7QXvi0t/Z2v/65rR7aCrAyo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "max_post_deletions_per_day": "0"
+  },
+  "rate_limits": true,
+  "recorded_from": {
+    "case": "732b555c9cc0936d91f60c06cb0b03eb20dd4a53e59760a938101b47e8f3dbdf",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

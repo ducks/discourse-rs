@@ -5,6 +5,7 @@
 //! tests/writes.rs compares.
 
 pub mod create;
+pub mod limits;
 pub mod links;
 pub mod rebake;
 pub mod revise;
