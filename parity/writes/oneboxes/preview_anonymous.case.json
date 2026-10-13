@@ -1,0 +1,12 @@
+{
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/onebox",
+      "params": {
+        "url": "http://localhost:3042/u/user2"
+      }
+    }
+  ]
+}

@@ -629,6 +629,13 @@
             Discourse.hashtags.resolve(preview, ["category", "tag", "channel"], updatePreview);
             Discourse.hashtags.decorate(preview);
           }
+          // Oneboxes: the cached ones now, the rest loaded after 450ms of
+          // quiet (composer-editor's _loadOneboxes).
+          if (window.Discourse && Discourse.oneboxes) {
+            Discourse.oneboxes.applyCached(preview);
+            clearTimeout(oneboxTimer);
+            oneboxTimer = setTimeout(loadPreviewOneboxes, 450);
+          }
           // The post decorators Ember runs on the preview too.
           if (window.Discourse && Discourse.highlightSyntax) {
             Discourse.highlightSyntax(preview);
@@ -640,6 +647,25 @@
       .catch(function (e) {
         preview.textContent = "The preview could not load: " + e.message;
       });
+  }
+
+  // _loadOneboxes: an edited post's oneboxes are refreshed once.
+  var oneboxTimer = null;
+  function loadPreviewOneboxes() {
+    if (!state) {
+      return;
+    }
+    var category = state.mode === "create-topic" ? chooser.querySelector("summary").dataset.value : null;
+    var refresh = state.mode === "edit" && !state.refreshedPost;
+    var painted = Discourse.oneboxes.load(preview, {
+      topicId: state.topicId || null,
+      categoryId: category ? parseInt(category, 10) : null,
+      maxOneboxes: parseInt(data.maxOneboxes, 10) || 50,
+      refresh: refresh,
+    });
+    if (refresh && painted > 0) {
+      state.refreshedPost = true;
+    }
   }
 
   function schedulePreview() {

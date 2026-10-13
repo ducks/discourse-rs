@@ -778,6 +778,7 @@ pub(crate) async fn post_process(
             i18n,
             urls: Urls { config, settings },
             base_path: config.globals.relative_url_root(),
+            host: None,
         };
         oneboxed = crate::onebox::post_process(
             conn,
@@ -787,6 +788,7 @@ pub(crate) async fn post_process(
                 editor_id,
                 author_id,
                 category_id,
+                topic_id: None,
             },
         )
         .await

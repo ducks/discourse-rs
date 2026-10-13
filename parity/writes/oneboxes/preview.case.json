@@ -1,0 +1,58 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/onebox",
+      "params": {
+        "url": "http://localhost:3042/t/parity-fixture-liked-and-archived/41"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/onebox",
+      "params": {
+        "url": "http://localhost:3042/u/user2"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/onebox",
+      "params": {
+        "url": "http://localhost:3042/c/general/4",
+        "category_id": "4"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/onebox",
+      "params": {
+        "url": "http://localhost:3042/latest"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/onebox",
+      "params": {
+        "url": "http://localhost:3042/t/nope/99999",
+        "refresh": "true"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/onebox",
+      "params": {
+        "url": "http://localhost:3042/t/parity-fixture-replies-and-posters/35/2",
+        "topic_id": "35"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/onebox",
+      "params": {
+        "url": "http://localhost:3042/t/parity-fixture-replies-and-posters/35/2",
+        "topic_id": "41"
+      }
+    }
+  ]
+}

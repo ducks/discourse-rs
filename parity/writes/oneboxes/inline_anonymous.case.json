@@ -1,0 +1,14 @@
+{
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/inline-onebox",
+      "params": {
+        "urls": [
+          "http://localhost:3042/t/x/41"
+        ]
+      }
+    }
+  ]
+}

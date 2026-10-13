@@ -151,7 +151,7 @@ Bugs or silent gaps in what is merged, small and independent.
     wait on the rich editor),
     49. `feat/local-dates` M (moment and moment-timezone vendored, as
     Discourse renders), 50. `feat/inline-footnotes` S
-51. `feat/onebox-endpoints` S, 52. `feat/onebox-fetch` L (SSRF guard
+51. ~~`feat/onebox-endpoints`~~ (done) S, 52. `feat/onebox-fetch` L (SSRF guard
     with DNS pinning), 53. `feat/onebox-engines-nofetch` M,
     54. `feat/onebox-generic` L, 55. `feat/onebox-engines-api` L
 

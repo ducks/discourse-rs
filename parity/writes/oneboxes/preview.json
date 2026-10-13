@@ -1,0 +1,140 @@
+{
+  "name": "preview",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/onebox",
+      "params": {
+        "url": "http://localhost:3042/t/parity-fixture-liked-and-archived/41"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/onebox",
+      "params": {
+        "url": "http://localhost:3042/u/user2"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/onebox",
+      "params": {
+        "url": "http://localhost:3042/c/general/4",
+        "category_id": "4"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/onebox",
+      "params": {
+        "url": "http://localhost:3042/latest"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/onebox",
+      "params": {
+        "url": "http://localhost:3042/t/nope/99999",
+        "refresh": "true"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/onebox",
+      "params": {
+        "url": "http://localhost:3042/t/parity-fixture-replies-and-posters/35/2",
+        "topic_id": "35"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/onebox",
+      "params": {
+        "url": "http://localhost:3042/t/parity-fixture-replies-and-posters/35/2",
+        "topic_id": "41"
+      }
+    }
+  ],
+  "started_at": "2026-10-13T23:24:10.803753",
+  "transaction_started_at": "2026-10-13T23:24:09.511489",
+  "responses": [
+    {
+      "status": 200,
+      "body": "<aside class='quote' data-post=\"1\" data-topic=\"41\">\n  <div class='title'>\n    <div class='quote-controls'></div>\n    <img alt='' width='24' height='24' src='//localhost:3042/letter_avatar_proxy/v4/letter/u/94ad74/48.png' class='avatar'>\n    <div class=\"quote-title__text-content\">\n      <a href=\"http://localhost:3042/t/parity-fixture-liked-and-archived/41\">Parity fixture: liked and archived</a> <a class='badge-category__wrapper ' href='/c/general/4'><span data-category-id='4' style='--category-badge-color: #25AAE2; --category-badge-text-color: #FFFFFF;' data-drop-close='true' class='badge-category --style-emoji '><img src=\"/images/emoji/twitter/blue_book.png?v=15\" title=\"blue_book\" class=\"emoji\" alt=\"blue_book\" loading=\"lazy\" width=\"20\" height=\"20\"><span class='badge-category__name'>General</span></span></a>\n    </div>\n  </div>\n  <blockquote>\n    An archived topic whose first post got a like, for like_count and op_like_count.\n  </blockquote>\n</aside>"
+    },
+    {
+      "status": 200,
+      "body": "<aside class=\"onebox\">\n  <article class=\"onebox-body user-onebox\">\n    <img alt='' width='144' height='144' src='/letter_avatar_proxy/v4/letter/u/ecb155/288.png' class='avatar'>\n    <h3><a href=\"http://localhost:3042/u/user2\">@user2</a></h3>\n    <div>\n        <span class=\"full-name\">User2</span>\n    </div>\n    <div class=\"user-onebox--joined\">Joined July 25, 2026</div>\n  </article>\n  <div class=\"clearfix\"></div>\n</aside>"
+    },
+    {
+      "status": 200,
+      "body": "<aside class=\"onebox category-onebox\" style=\"box-shadow: -5px 0px #25AAE2;\">\n  <article class=\"onebox-body category-onebox-body\">\n    <h3>\n      <a class=\"badge-category__wrapper\" href=\"/c/general/4\">\n         <span class=\"badge-category__name\">General</span>\n       </span>\n      </a>\n    </h3>\n      <div>\n        <span class=\"description\">\n          <p>Create topics here that don’t fit into any other existing category.</p>\n        </span>\n      </div>\n      <div class=\"subcategories\">\n          <span class=\"subcategory\">\n            <a class=\"badge-category__wrapper\" href=\"/c/general/sub-general/34\">\n              <span class=\"badge-category-bg\" style=\"background-color: #AB9364\"></span>\n              <span class=\"badge-category clear-badge\"><span class=\"category-name\">Sub General</span></span>\n            </a>\n          </span>\n      </div>\n      <div class=\"clearfix\"></div>\n  </article>\n  <div class=\"clearfix\"></div>\n</aside>"
+    },
+    {
+      "status": 200,
+      "body": "<a href='http://localhost:3042/latest'>http://localhost:3042/latest</a>"
+    },
+    {
+      "status": 200,
+      "body": "<a href='http://localhost:3042/t/nope/99999'>http://localhost:3042/t/nope/99999</a>"
+    },
+    {
+      "status": 200,
+      "body": "<aside class=\"quote no-group\" data-username=\"user1\" data-post=\"2\" data-topic=\"35\">\n<div class=\"title\">\n<div class=\"quote-controls\"></div>\n<img alt=\"\" width=\"24\" height=\"24\" src=\"//localhost:3042/letter_avatar_proxy/v4/letter/u/5daacb/48.png\" class=\"avatar\"> user1:</div>\n<blockquote>\n<p>Reply one from user1, also long enough to pass the minimum length check.</p>\n</blockquote>\n</aside>"
+    },
+    {
+      "status": 200,
+      "body": "<aside class='quote' data-post=\"2\" data-topic=\"35\">\n  <div class='title'>\n    <div class='quote-controls'></div>\n    <img alt='' width='24' height='24' src='//localhost:3042/letter_avatar_proxy/v4/letter/u/5daacb/48.png' class='avatar'>\n    <div class=\"quote-title__text-content\">\n      <a href=\"http://localhost:3042/t/parity-fixture-replies-and-posters/35/2\">Parity fixture: replies and posters</a> <a class='badge-category__wrapper ' href='/c/general/4'><span data-category-id='4' style='--category-badge-color: #25AAE2; --category-badge-text-color: #FFFFFF;' data-drop-close='true' class='badge-category --style-emoji '><img src=\"/images/emoji/twitter/blue_book.png?v=15\" title=\"blue_book\" class=\"emoji\" alt=\"blue_book\" loading=\"lazy\" width=\"20\" height=\"20\"><span class='badge-category__name'>General</span></span></a>\n    </div>\n  </div>\n  <blockquote>\n    Reply one from user1, also long enough to pass the minimum length check.\n  </blockquote>\n</aside>"
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 527,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "5PEaQK7Ugh+aHu14i6srcTOe9rA=",
+            "created_at": "2026-10-13T23:24:10.03223",
+            "rotated_at": "2026-10-13T23:24:10.030386",
+            "updated_at": "2026-10-13T23:24:10.03223",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "5PEaQK7Ugh+aHu14i6srcTOe9rA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 527,
+            "seen_at": "2026-10-13T23:24:10.813508",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "5PEaQK7Ugh+aHu14i6srcTOe9rA=",
+            "created_at": "2026-10-13T23:24:10.03223",
+            "rotated_at": "2026-10-13T23:24:10.030386",
+            "updated_at": "2026-10-13T23:24:10.03223",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "5PEaQK7Ugh+aHu14i6srcTOe9rA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "c74622b4a4619c6fa5ec01e62a563cb34eefcc8179244223e484e22e41fd351d",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

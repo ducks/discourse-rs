@@ -95,6 +95,7 @@ const ASSETS: &[(&str, &str, &str)] = &[
         include_str!("../static/js/inline-footnotes.js"),
     ),
     ("hashtags.js", JS, include_str!("../static/js/hashtags.js")),
+    ("oneboxes.js", JS, include_str!("../static/js/oneboxes.js")),
     ("cooked.js", JS, include_str!("../static/js/cooked.js")),
     ("lightbox.js", JS, include_str!("../static/js/lightbox.js")),
     // PhotoSwipe's ES modules, vendored from npm (static/vendor/README),

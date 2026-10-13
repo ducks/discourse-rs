@@ -233,6 +233,9 @@ fn route_for(url: &str, hostname: &str, base_path: &str) -> Result<Option<Route>
             Err(Unsupported("oneboxes of chat channels and messages"))
         }
         Some(route) => Ok(Some(route)),
+        // A relative path no route knows: route_for gives nil and the
+        // callers treat it as a URL without a host.
+        None if host.is_none() => Ok(None),
         // Rails would fetch the page as another site's.
         None => Err(Unsupported(
             "oneboxing a page of the site no route recognizes",
@@ -264,6 +267,9 @@ pub struct Opts {
     pub author_id: Option<i32>,
     /// The topic's category.
     pub category_id: Option<i32>,
+    /// The topic being written in (`topic_id:`), which post processing
+    /// doesn't pass; the composer's previews do.
+    pub topic_id: Option<i32>,
 }
 
 /// The site the oneboxes are made for.
@@ -272,6 +278,8 @@ pub struct Site<'a> {
     pub i18n: &'a crate::i18n::I18n,
     pub urls: Urls<'a>,
     pub base_path: &'a str,
+    /// For cooking a same-topic quote (previews only).
+    pub host: Option<&'a crate::pretty_text::Host>,
 }
 
 fn escape(s: &str) -> String {
@@ -404,7 +412,7 @@ fn avatar_img(settings: &SiteSettings, template: &str, size: &str) -> Result<Str
         .or_else(|| sizes.iter().copied().max())
         .unwrap_or(px * 2);
     Ok(format!(
-        "<img alt=\"\" width=\"{px}\" height=\"{px}\" src=\"{}\" class=\"avatar\">",
+        "<img alt='' width='{px}' height='{px}' src='{}' class='avatar'>",
         escape(&template.replace("{size}", &raw.to_string()))
     ))
 }
@@ -512,6 +520,7 @@ async fn local_topic(
     id: &str,
     viewer_id: Option<i32>,
     category_id: Option<i32>,
+    current_topic_id: Option<i32>,
 ) -> Result<Option<TopicRow>, AppError> {
     let s = site.settings;
     let mut current_category = None;
@@ -520,6 +529,21 @@ async fn local_topic(
             .bind(viewer)
             .fetch_one(&mut *conn)
             .await?;
+        // The topic being written in must be one the viewer sees.
+        if exists && let Some(current) = current_topic_id {
+            let found: bool = sqlx::query_scalar(
+                "SELECT EXISTS (SELECT 1 FROM topics WHERE id = $1 AND deleted_at IS NULL)",
+            )
+            .bind(current)
+            .fetch_one(&mut *conn)
+            .await?;
+            if found {
+                let guardian = guardian_for(conn, Some(viewer)).await?;
+                if !can_see_topic(conn, s, &guardian, current).await? {
+                    return Ok(None);
+                }
+            }
+        }
         if exists && let Some(category) = category_id {
             let found: bool =
                 sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM categories WHERE id = $1)")
@@ -574,7 +598,16 @@ async fn local_topic_html(
     post_number: Option<&str>,
     opts: &Opts,
 ) -> Result<Option<String>, AppError> {
-    let Some(topic) = local_topic(conn, site, id, opts.editor_id, opts.category_id).await? else {
+    let Some(topic) = local_topic(
+        conn,
+        site,
+        id,
+        opts.editor_id,
+        opts.category_id,
+        opts.topic_id,
+    )
+    .await?
+    else {
         return Ok(None);
     };
     if site.settings.get("content_localization_enabled")?.truthy() {
@@ -628,6 +661,22 @@ async fn local_topic_html(
     let Some((user_id, username, uploaded_avatar_id)) = user else {
         return Err(Unsupported("a topic onebox of a post without its user").into());
     };
+    // A later post of the topic being written in: a quote of it.
+    if post_number > 1 && opts.topic_id == Some(topic.id) {
+        static NEWLINES: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"[\r\n]+").unwrap());
+        let excerpt = NEWLINES
+            .replace_all(&excerpt, " ")
+            .replace("[/quote]", "[quote]");
+        let quote = format!(
+            "[quote=\"{username}, topic:{}, post:{}\"]\n{excerpt}\n[/quote]",
+            topic.id, post.post_number
+        );
+        let host = site
+            .host
+            .ok_or(Unsupported("a same-topic quote onebox outside a preview"))?;
+        let cooked = crate::pretty_text::cook(host, &quote, &Default::default()).await?;
+        return Ok(Some(cooked));
+    }
     let template =
         crate::avatar::avatar_template(&site.urls, user_id, &username, uploaded_avatar_id, None)?;
     let absolute = site.urls.absolute(&template)?;
@@ -948,8 +997,15 @@ async fn inline_title(
     let route = route_for(url, &hostname, site.base_path)?;
     match route {
         Some(Route::Topic { id, post_number }) => {
-            let Some(topic) =
-                local_topic(conn, site, &id, opts.author_id, opts.category_id).await?
+            let Some(topic) = local_topic(
+                conn,
+                site,
+                &id,
+                opts.author_id,
+                opts.category_id,
+                opts.topic_id,
+            )
+            .await?
             else {
                 return Ok(None);
             };
@@ -1207,6 +1263,43 @@ fn apply(element: &Handle, onebox: &RcDom) {
         }
         _ => replace_node(element, nodes),
     }
+}
+
+/// `Oneboxer.preview(url, user_id:, category_id:, topic_id:)` for the
+/// composer: the same HTML as the onebox, the site's own pages only.
+pub async fn preview(
+    conn: &mut PgConnection,
+    site: &Site<'_>,
+    url: &str,
+    opts: &Opts,
+) -> Result<String, AppError> {
+    onebox(conn, site, url, opts).await
+}
+
+/// `InlineOneboxer.lookup(url, user_id:, category_id:, topic_id:)`:
+/// `{url, title}` for a topic of the site the viewer may see.
+pub async fn inline_lookup(
+    conn: &mut PgConnection,
+    site: &Site<'_>,
+    url: &str,
+    opts: &Opts,
+) -> Result<Option<serde_json::Value>, AppError> {
+    let hostname = site.urls.current_hostname()?;
+    // No host and no route: lookup returns nil before any title.
+    if !url.contains("://") && recognize(url.split(['?', '#']).next().unwrap_or(url)).is_none() {
+        return Ok(None);
+    }
+    let title = inline_title(conn, site, url, opts).await?;
+    // A topic it can't see gives nothing at all; a link without a host,
+    // a title of nil.
+    let topic = matches!(
+        route_for(url, &hostname, site.base_path)?,
+        Some(Route::Topic { .. })
+    );
+    Ok(match (topic, title) {
+        (true, None) => None,
+        (_, title) => Some(serde_json::json!({ "url": url, "title": title })),
+    })
 }
 
 /// What one marked link becomes.
