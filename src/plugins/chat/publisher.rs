@@ -17,8 +17,22 @@ use crate::{AppError, Unsupported};
 pub async fn audience(
     conn: &mut PgConnection,
     settings: &SiteSettings,
+    chatable_type: &str,
     chatable_id: i64,
 ) -> Result<Vec<String>, AppError> {
+    // A direct message's: its participants (allowed_user_ids).
+    if chatable_type == "DirectMessage" {
+        let ids: Vec<i32> = sqlx::query_scalar(
+            "SELECT user_id FROM direct_message_users WHERE direct_message_channel_id = $1 ORDER BY id",
+        )
+        .bind(chatable_id)
+        .fetch_all(&mut *conn)
+        .await?;
+        return Ok(ids.into_iter().map(crate::bus::user_tag).collect());
+    }
+    if chatable_type != "Category" {
+        return Err(Unsupported("chat channels of other chatables").into());
+    }
     let restricted: bool =
         sqlx::query_scalar("SELECT COALESCE(read_restricted, FALSE) FROM categories WHERE id = $1")
             .bind(chatable_id as i32)
@@ -93,7 +107,13 @@ pub async fn publish_new(
     message_id: i64,
     staged_id: Option<&str>,
 ) -> Result<(), AppError> {
-    let tags = audience(&mut *cx.conn, cx.settings, channel.chatable_id).await?;
+    let tags = audience(
+        &mut *cx.conn,
+        cx.settings,
+        &channel.chatable_type,
+        channel.chatable_id,
+    )
+    .await?;
     let (mut payload, message) = message_payload(cx, channel, message_id, "sent").await?;
     payload["staged_id"] = json!(staged_id);
     bus.publish(
@@ -128,7 +148,13 @@ pub async fn publish_message(
     message_id: i64,
     kind: &str,
 ) -> Result<(), AppError> {
-    let tags = audience(&mut *cx.conn, cx.settings, channel.chatable_id).await?;
+    let tags = audience(
+        &mut *cx.conn,
+        cx.settings,
+        &channel.chatable_type,
+        channel.chatable_id,
+    )
+    .await?;
     let (payload, _) = message_payload(cx, channel, message_id, kind).await?;
     bus.publish(
         &mut *cx.conn,
@@ -147,7 +173,13 @@ pub async fn publish_to_channel(
     channel: &ChannelRow,
     payload: &Value,
 ) -> Result<(), AppError> {
-    let tags = audience(&mut *cx.conn, cx.settings, channel.chatable_id).await?;
+    let tags = audience(
+        &mut *cx.conn,
+        cx.settings,
+        &channel.chatable_type,
+        channel.chatable_id,
+    )
+    .await?;
     bus.publish(
         &mut *cx.conn,
         &format!("/chat/{}", channel.id),
@@ -412,10 +444,11 @@ pub async fn publish_channel_metadata(
     bus: &pg_bus::Bus,
     settings: &SiteSettings,
     channel_id: i64,
+    chatable_type: &str,
     chatable_id: i64,
     memberships_count: i64,
 ) -> Result<(), AppError> {
-    let tags = audience(&mut *conn, settings, chatable_id).await?;
+    let tags = audience(&mut *conn, settings, chatable_type, chatable_id).await?;
     bus.publish(
         &mut *conn,
         "/chat/channel-metadata",

@@ -66,14 +66,12 @@ pub async fn periodical_updates(state: &AppState) -> Result<(), AppError> {
                 .bind(channel_id)
                 .fetch_one(&mut *conn)
                 .await?;
-        if kind != "Category" {
-            return Err(crate::Unsupported("chat direct messages").into());
-        }
         super::publisher::publish_channel_metadata(
             &mut conn,
             &state.bus,
             &s,
             channel_id,
+            &kind,
             chatable_id,
             i64::from(user_count),
         )

@@ -2559,6 +2559,15 @@
     if (!channel) {
       return;
     }
+    // ChatChannel#setup: opening a DM one doesn't follow follows it.
+    if (
+      channel.dataset.directMessage === "true" &&
+      channel.dataset.following !== "true" &&
+      !channel.dataset.followRequested
+    ) {
+      channel.dataset.followRequested = "true";
+      api("POST", "/channels/" + channel.dataset.id + "/memberships/me").then(refresh);
+    }
     setupAutocomplete();
     drawTimes(channel);
     drawSeparators(channel);

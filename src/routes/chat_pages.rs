@@ -335,11 +335,35 @@ pub async fn channel(
         Found::Channel(channel) => channel,
         Found::NotFound | Found::Forbidden => return Ok(redirect(format!("{base_path}/chat"))),
     };
-    if channel.chatable_type == "DirectMessage" {
-        return Err(crate::Unsupported("the direct message channel page").into());
-    }
-    let Some(own_slug) = channel.slug.clone().filter(|s| !s.is_empty()) else {
-        return Err(crate::Unsupported("chat channels without a slug").into());
+    // slugifiedTitle: a DM has no slug; its title (for the viewer) is
+    // slugified, and titles the page without the channel's "#".
+    let dm_title = if channel.chatable_type == "DirectMessage" {
+        let title = match &channel.name {
+            Some(name) => name.clone(),
+            None => {
+                let dm = cx.direct_message(channel.chatable_id).await?;
+                cx.dm_title(&channel, &dm)?
+                    .as_str()
+                    .map(str::to_string)
+                    .ok_or(crate::Unsupported(
+                        "a direct message whose participants are all deleted",
+                    ))?
+            }
+        };
+        Some(title)
+    } else {
+        None
+    };
+    let own_slug = match &dm_title {
+        Some(title) => super::user_menu::slugify_channel(
+            channel.slug.as_deref(),
+            &crate::topic_list_view::escape(title),
+        ),
+        None => channel
+            .slug
+            .clone()
+            .filter(|s| !s.is_empty())
+            .ok_or(crate::Unsupported("chat channels without a slug"))?,
     };
     let target = match &message_id {
         None => None,
@@ -357,9 +381,14 @@ pub async fn channel(
     }
     let content = cx.channel_page(&channel, target).await?;
     let channel_title = channel.name.clone().filter(|n| !n.is_empty());
-    let title = match channel_title {
-        Some(name) => format!("#{name} - {} - ", chat_title(&state)),
-        None => format!("{} - ", chat_title(&state)),
+    let title = match (dm_title, channel_title) {
+        (Some(dm), _) => format!(
+            "{} - {} - ",
+            crate::emoji::gsub_emoji_to_unicode(&dm),
+            chat_title(&state)
+        ),
+        (None, Some(name)) => format!("#{name} - {} - ", chat_title(&state)),
+        (None, None) => format!("{} - ", chat_title(&state)),
     };
     render(
         &state,

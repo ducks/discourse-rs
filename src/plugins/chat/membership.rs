@@ -40,9 +40,9 @@ impl Context<'_> {
             .await?;
         if channel
             .as_ref()
-            .is_some_and(|c| c.chatable_type != "Category")
+            .is_some_and(|c| c.chatable_type != "Category" && c.chatable_type != "DirectMessage")
         {
-            return Err(Unsupported("chat direct messages").into());
+            return Err(Unsupported("chat channels of other chatables").into());
         }
         Ok(channel)
     }
@@ -241,6 +241,14 @@ impl Context<'_> {
         let Some(channel) = self.find_channel(channel_id).await? else {
             return Ok(Outcome::NotFound);
         };
+        // DirectMessageChannel#leave: a group's member leaves it outright
+        // (membership and participant gone), not ported; a one-to-one is
+        // unfollowed as a category channel is.
+        if channel.chatable_type == "DirectMessage"
+            && self.direct_message(channel.chatable_id).await?.group
+        {
+            return Err(Unsupported("leaving a group direct message").into());
+        }
         self.unfollow_membership(&channel).await?;
         let count = self.members_count(&channel).await?;
         sqlx::query(
@@ -254,11 +262,12 @@ impl Context<'_> {
         Ok(Outcome::Done(json!({ "success": "OK" })))
     }
 
-    /// `ChannelMembershipsQuery.count`
+    /// `ChannelMembershipsQuery.count`: followers of a category channel,
+    /// every member of a DM.
     async fn members_count(&mut self, channel: &ChannelRow) -> Result<i64, AppError> {
         Ok(sqlx::query_scalar(
             "SELECT COUNT(*) FROM user_chat_channel_memberships m JOIN users ON users.id = m.user_id \
-             WHERE m.chat_channel_id = $1 AND m.following AND users.id > 0 \
+             WHERE m.chat_channel_id = $1 AND (m.following OR $3 = 'DirectMessage') AND users.id > 0 \
                AND NOT EXISTS (SELECT 1 FROM anonymous_users a WHERE a.user_id = users.id) \
                AND users.active AND NOT users.staged \
                AND (users.suspended_till IS NULL OR users.suspended_till <= $2) \
@@ -266,6 +275,7 @@ impl Context<'_> {
         )
         .bind(channel.id)
         .bind(crate::clock::now_naive())
+        .bind(&channel.chatable_type)
         .fetch_one(&mut *self.conn)
         .await?)
     }
@@ -289,7 +299,7 @@ impl Context<'_> {
             return Ok(Outcome::NotFound);
         }
         // can_preview_chat_channel?
-        if !self.can_see_category(channel.chatable_id).await? {
+        if !self.can_preview(&channel).await? {
             return Ok(Outcome::Forbidden);
         }
         sqlx::query(

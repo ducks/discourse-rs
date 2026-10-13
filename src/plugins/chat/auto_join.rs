@@ -228,12 +228,11 @@ pub async fn update_user_count(
     let Some((true, chatable_id, chatable_type)) = row else {
         return Ok(());
     };
-    if chatable_type != "Category" {
-        return Err(crate::Unsupported("chat direct messages").into());
-    }
+    // ChannelMembershipsQuery.count: followers of a category channel,
+    // every member of a DM.
     let count: i64 = sqlx::query_scalar(
         "SELECT COUNT(*) FROM user_chat_channel_memberships m JOIN users ON users.id = m.user_id \
-         WHERE m.chat_channel_id = $1 AND m.following AND users.id > 0 \
+         WHERE m.chat_channel_id = $1 AND (m.following OR $3 = 'DirectMessage') AND users.id > 0 \
            AND NOT EXISTS (SELECT 1 FROM anonymous_users a WHERE a.user_id = users.id) \
            AND users.active AND NOT users.staged \
            AND (users.suspended_till IS NULL OR users.suspended_till <= $2) \
@@ -241,6 +240,7 @@ pub async fn update_user_count(
     )
     .bind(channel_id)
     .bind(crate::clock::now_naive())
+    .bind(&chatable_type)
     .fetch_one(&mut *conn)
     .await?;
     sqlx::query(
@@ -259,6 +259,7 @@ pub async fn update_user_count(
         bus,
         settings,
         channel_id,
+        &chatable_type,
         chatable_id,
         count,
     )
