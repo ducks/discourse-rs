@@ -206,6 +206,9 @@ pub struct Chrome {
     pub emoji_base: String,
     pub emoji_version: String,
     pub hashtag_tag_icon: String,
+    /// What lightbox.js needs besides PhotoSwipe's urls, as data
+    /// attributes for its script tag (`lightbox_attrs`).
+    pub lightbox_attrs: String,
 }
 
 impl Chrome {
@@ -216,6 +219,28 @@ impl Chrome {
             form_urlencoded::byte_serialize(value.as_bytes()).collect::<String>()
         ));
     }
+}
+
+/// lightbox.js's script tag attributes: whether the viewer may download
+/// (`!prevent_anons_from_downloading_files || currentUser`) and the
+/// `lightbox.*` titles its buttons and messages take.
+fn lightbox_attrs(i18n: &I18n, can_download: bool) -> String {
+    let mut out = format!(" data-can-download=\"{can_download}\"");
+    for (attr, key) in [
+        ("previous", "previous"),
+        ("next", "next"),
+        ("close", "close"),
+        ("zoom", "zoom"),
+        ("error", "error"),
+        ("download", "download"),
+        ("open", "open"),
+        ("image-info", "image_info"),
+    ] {
+        let key = format!("js.lightbox.{key}");
+        let title = crate::topic_list_view::escape(i18n.t(&key).unwrap_or(&key));
+        out.push_str(&format!(" data-title-{attr}=\"{title}\""));
+    }
+    out
 }
 
 /// DMenu's trigger for the topic drafts menu, with what composer.js needs
@@ -356,6 +381,13 @@ impl Site {
         if settings.get("tagging_enabled")?.truthy() {
             self.chrome.hashtag_tag_icon = "tag".into();
         }
+        self.chrome.lightbox_attrs = lightbox_attrs(
+            &state.i18n,
+            !settings
+                .get("prevent_anons_from_downloading_files")?
+                .truthy()
+                || guardian.user().is_some(),
+        );
         let sidebar_cx = |plugin_sections| {
             inputs.as_ref().map(|(_, member)| crate::sidebar::Context {
                 i18n: &state.i18n,
@@ -1473,6 +1505,16 @@ mod tests {
         assert_eq!(category_url("", &cats, &cats[0]), "/c/general/1");
         assert_eq!(category_url("/f", &cats, &cats[1]), "/f/c/general/sub/2");
         assert!(badge("", &cats, Some(9)).is_none());
+    }
+
+    #[test]
+    fn lightbox_attrs_carry_the_titles_and_download() {
+        let i18n = I18n::vendored().unwrap();
+        let attrs = lightbox_attrs(&i18n, false);
+        assert!(attrs.starts_with(" data-can-download=\"false\""));
+        assert!(attrs.contains(" data-title-previous=\"Previous (Left arrow key)\""));
+        assert!(attrs.contains(" data-title-image-info=\"Image information\""));
+        assert!(lightbox_attrs(&i18n, true).contains("data-can-download=\"true\""));
     }
 }
 
