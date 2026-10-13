@@ -1,0 +1,1076 @@
+{
+  "name": "pending_reviewables_reminder_replaces_previous",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-13T13:47:25.563442",
+  "transaction_started_at": "2026-10-13T13:47:24.769044",
+  "responses": [],
+  "changes": {
+    "email_logs": {
+      "inserted": [
+        {
+          "id": 1,
+          "raw": null,
+          "bounced": false,
+          "post_id": 53,
+          "user_id": 1,
+          "topic_id": 45,
+          "bounce_key": null,
+          "created_at": "2026-10-13T13:47:25.925511",
+          "email_type": "user_mentioned",
+          "message_id": "discourse/post/53@localhost",
+          "to_address": "admin@example.com",
+          "updated_at": "2026-10-13T13:47:25.925511",
+          "cc_user_ids": null,
+          "cc_addresses": null,
+          "bcc_addresses": null,
+          "smtp_group_id": null,
+          "bounce_error_code": null,
+          "smtp_transaction_response": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "groups": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 2,
+            "name": "moderators",
+            "title": null,
+            "bio_raw": null,
+            "imap_ssl": null,
+            "automatic": true,
+            "full_name": "Moderators",
+            "imap_port": null,
+            "smtp_port": null,
+            "bio_cooked": null,
+            "created_at": "2026-07-25T05:58:06.795937",
+            "flair_icon": null,
+            "updated_at": "2026-07-25T05:58:06.80035",
+            "user_count": 1,
+            "flair_color": null,
+            "imap_server": null,
+            "public_exit": false,
+            "smtp_server": null,
+            "has_messages": false,
+            "imap_enabled": false,
+            "smtp_enabled": false,
+            "imap_last_uid": 0,
+            "primary_group": false,
+            "smtp_ssl_mode": 0,
+            "email_password": null,
+            "email_username": null,
+            "flair_bg_color": null,
+            "incoming_email": null,
+            "flair_upload_id": null,
+            "imap_last_error": null,
+            "imap_new_emails": null,
+            "imap_old_emails": null,
+            "imap_updated_at": null,
+            "smtp_updated_at": null,
+            "assignable_level": 0,
+            "email_from_alias": null,
+            "public_admission": false,
+            "visibility_level": 1,
+            "grant_trust_level": null,
+            "imap_mailbox_name": "",
+            "imap_uid_validity": 0,
+            "mentionable_level": 0,
+            "messageable_level": 99,
+            "imap_updated_by_id": null,
+            "publish_read_state": false,
+            "smtp_updated_by_id": null,
+            "members_visibility_level": 0,
+            "allow_membership_requests": false,
+            "default_notification_level": 2,
+            "membership_request_template": null,
+            "allow_unknown_sender_topic_replies": false,
+            "automatic_membership_email_domains": null
+          },
+          "after": {
+            "id": 2,
+            "name": "moderators",
+            "title": null,
+            "bio_raw": null,
+            "imap_ssl": null,
+            "automatic": true,
+            "full_name": "Moderators",
+            "imap_port": null,
+            "smtp_port": null,
+            "bio_cooked": null,
+            "created_at": "2026-07-25T05:58:06.795937",
+            "flair_icon": null,
+            "updated_at": "2026-07-25T05:58:06.80035",
+            "user_count": 1,
+            "flair_color": null,
+            "imap_server": null,
+            "public_exit": false,
+            "smtp_server": null,
+            "has_messages": true,
+            "imap_enabled": false,
+            "smtp_enabled": false,
+            "imap_last_uid": 0,
+            "primary_group": false,
+            "smtp_ssl_mode": 0,
+            "email_password": null,
+            "email_username": null,
+            "flair_bg_color": null,
+            "incoming_email": null,
+            "flair_upload_id": null,
+            "imap_last_error": null,
+            "imap_new_emails": null,
+            "imap_old_emails": null,
+            "imap_updated_at": null,
+            "smtp_updated_at": null,
+            "assignable_level": 0,
+            "email_from_alias": null,
+            "public_admission": false,
+            "visibility_level": 1,
+            "grant_trust_level": null,
+            "imap_mailbox_name": "",
+            "imap_uid_validity": 0,
+            "mentionable_level": 0,
+            "messageable_level": 99,
+            "imap_updated_by_id": null,
+            "publish_read_state": false,
+            "smtp_updated_by_id": null,
+            "members_visibility_level": 0,
+            "allow_membership_requests": false,
+            "default_notification_level": 2,
+            "membership_request_template": null,
+            "allow_unknown_sender_topic_replies": false,
+            "automatic_membership_email_domains": null
+          }
+        }
+      ]
+    },
+    "notifications": {
+      "inserted": [
+        {
+          "id": 53,
+          "data": "{\"topic_title\":\"There are items in the review queue that need reviewing\",\"original_post_id\":53,\"original_post_type\":1,\"original_username\":\"system\",\"revision_number\":null,\"display_username\":\"system\",\"display_name\":\"system\"}",
+          "read": false,
+          "user_id": 1,
+          "topic_id": 45,
+          "created_at": "2026-10-13T13:47:25.813988",
+          "updated_at": "2026-10-13T13:47:25.813988",
+          "post_number": 1,
+          "high_priority": false,
+          "post_action_id": null,
+          "notification_type": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_search_data": {
+      "inserted": [
+        {
+          "locale": "en",
+          "post_id": 53,
+          "version": 5,
+          "raw_data": "@admin Items were submitted over 48 hours ago. Please review them .",
+          "search_data": "'48':16 'admin':11 'ago':18 'hour':17 'item':3A,12 'need':9A 'pleas':19 'queue':7A 'review':6A,20 'submit':14",
+          "private_message": true
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_stats": {
+      "inserted": [
+        {
+          "id": 52,
+          "post_id": 53,
+          "created_at": "2026-10-13T13:47:25.735634",
+          "updated_at": "2026-10-13T13:47:25.735634",
+          "drafts_saved": 0,
+          "writing_device": null,
+          "composer_version": null,
+          "typing_duration_msecs": 0,
+          "writing_device_user_agent": null,
+          "composer_open_duration_msecs": 0
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_timings": {
+      "inserted": [
+        {
+          "msecs": 5000,
+          "user_id": -1,
+          "topic_id": 45,
+          "post_number": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "posts": {
+      "inserted": [
+        {
+          "id": 53,
+          "raw": "@admin  Items were submitted over 48 hours ago. [Please review them](http://localhost:3042/review).",
+          "wiki": false,
+          "reads": 1,
+          "score": null,
+          "cooked": "<p><a class=\"mention\" href=\"/u/admin\">@admin</a>  Items were submitted over 48 hours ago. <a href=\"http://localhost:3042/review\">Please review them</a>.</p>",
+          "hidden": false,
+          "locale": null,
+          "user_id": -1,
+          "version": 1,
+          "baked_at": "2026-10-13T13:47:25.713308",
+          "topic_id": 45,
+          "hidden_at": null,
+          "post_type": 1,
+          "raw_email": null,
+          "via_email": false,
+          "created_at": "2026-10-13T13:47:25.713344",
+          "deleted_at": null,
+          "like_count": 0,
+          "like_score": 0,
+          "self_edits": 0,
+          "sort_order": 1,
+          "spam_count": 0,
+          "updated_at": "2026-10-13T13:47:25.713344",
+          "word_count": 15,
+          "action_code": null,
+          "cook_method": 1,
+          "edit_reason": null,
+          "post_number": 1,
+          "quote_count": 0,
+          "reply_count": 0,
+          "locked_by_id": null,
+          "percent_rank": 1,
+          "reply_quoted": false,
+          "user_deleted": false,
+          "baked_version": 2,
+          "deleted_by_id": null,
+          "illegal_count": 0,
+          "qa_vote_count": 0,
+          "bookmark_count": 0,
+          "last_editor_id": -1,
+          "public_version": 1,
+          "image_upload_id": null,
+          "last_version_at": "2026-10-13T13:47:25.734245",
+          "off_topic_count": 0,
+          "hidden_reason_id": null,
+          "reply_to_user_id": null,
+          "notify_user_count": 0,
+          "inappropriate_count": 0,
+          "incoming_link_count": 0,
+          "outbound_message_id": "discourse/post/53@localhost",
+          "reply_to_post_number": null,
+          "notify_moderators_count": 0
+        }
+      ],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 951,
+            "raw": "@admin  Items were submitted over 48 hours ago. [Please review them](http://localhost:3042/review).",
+            "wiki": false,
+            "reads": 0,
+            "score": null,
+            "cooked": "<p>An earlier reminder.</p>",
+            "hidden": false,
+            "locale": null,
+            "user_id": -1,
+            "version": 1,
+            "baked_at": null,
+            "topic_id": 91,
+            "hidden_at": null,
+            "post_type": 1,
+            "raw_email": null,
+            "via_email": false,
+            "created_at": "2026-10-12T13:47:24.769044",
+            "deleted_at": null,
+            "like_count": 0,
+            "like_score": 0,
+            "self_edits": 0,
+            "sort_order": 1,
+            "spam_count": 0,
+            "updated_at": "2026-10-12T13:47:24.769044",
+            "word_count": null,
+            "action_code": null,
+            "cook_method": 1,
+            "edit_reason": null,
+            "post_number": 1,
+            "quote_count": 0,
+            "reply_count": 0,
+            "locked_by_id": null,
+            "percent_rank": 1,
+            "reply_quoted": false,
+            "user_deleted": false,
+            "baked_version": null,
+            "deleted_by_id": null,
+            "illegal_count": 0,
+            "qa_vote_count": 0,
+            "bookmark_count": 0,
+            "last_editor_id": null,
+            "public_version": 1,
+            "image_upload_id": null,
+            "last_version_at": "2026-10-12T13:47:24.769044",
+            "off_topic_count": 0,
+            "hidden_reason_id": null,
+            "reply_to_user_id": null,
+            "notify_user_count": 0,
+            "inappropriate_count": 0,
+            "incoming_link_count": 0,
+            "outbound_message_id": null,
+            "reply_to_post_number": null,
+            "notify_moderators_count": 0
+          },
+          "after": {
+            "id": 951,
+            "raw": "@admin  Items were submitted over 48 hours ago. [Please review them](http://localhost:3042/review).",
+            "wiki": false,
+            "reads": 0,
+            "score": null,
+            "cooked": "<p>An earlier reminder.</p>",
+            "hidden": false,
+            "locale": null,
+            "user_id": -1,
+            "version": 1,
+            "baked_at": null,
+            "topic_id": 91,
+            "hidden_at": null,
+            "post_type": 1,
+            "raw_email": null,
+            "via_email": false,
+            "created_at": "2026-10-12T13:47:24.769044",
+            "deleted_at": "2026-10-13T13:47:25.575322",
+            "like_count": 0,
+            "like_score": 0,
+            "self_edits": 0,
+            "sort_order": 1,
+            "spam_count": 0,
+            "updated_at": "2026-10-12T13:47:24.769044",
+            "word_count": null,
+            "action_code": null,
+            "cook_method": 1,
+            "edit_reason": null,
+            "post_number": 1,
+            "quote_count": 0,
+            "reply_count": 0,
+            "locked_by_id": null,
+            "percent_rank": 1,
+            "reply_quoted": false,
+            "user_deleted": false,
+            "baked_version": null,
+            "deleted_by_id": -1,
+            "illegal_count": 0,
+            "qa_vote_count": 0,
+            "bookmark_count": 0,
+            "last_editor_id": null,
+            "public_version": 1,
+            "image_upload_id": null,
+            "last_version_at": "2026-10-12T13:47:24.769044",
+            "off_topic_count": 0,
+            "hidden_reason_id": null,
+            "reply_to_user_id": null,
+            "notify_user_count": 0,
+            "inappropriate_count": 0,
+            "incoming_link_count": 0,
+            "outbound_message_id": null,
+            "reply_to_post_number": null,
+            "notify_moderators_count": 0
+          }
+        }
+      ]
+    },
+    "topic_allowed_groups": {
+      "inserted": [
+        {
+          "id": 2,
+          "group_id": 2,
+          "topic_id": 45
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_allowed_users": {
+      "inserted": [
+        {
+          "id": 10,
+          "user_id": -1,
+          "topic_id": 45,
+          "created_at": "2026-10-13T13:47:25.68942",
+          "updated_at": "2026-10-13T13:47:25.68942"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_groups": {
+      "inserted": [
+        {
+          "id": 1,
+          "group_id": 2,
+          "topic_id": 45,
+          "created_at": "2026-10-13T13:47:25.84196",
+          "updated_at": "2026-10-13T13:47:25.84196",
+          "last_read_post_number": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_links": {
+      "inserted": [
+        {
+          "id": 20,
+          "url": "http://localhost:3042/review",
+          "quote": false,
+          "title": null,
+          "clicks": 0,
+          "domain": "localhost",
+          "post_id": 53,
+          "user_id": -1,
+          "internal": true,
+          "topic_id": 45,
+          "extension": null,
+          "crawled_at": null,
+          "created_at": "2026-10-13T13:47:25.739093",
+          "reflection": false,
+          "updated_at": "2026-10-13T13:47:25.739093",
+          "link_post_id": null,
+          "link_topic_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_search_data": {
+      "inserted": [
+        {
+          "locale": "en",
+          "version": 4,
+          "raw_data": "There are items in the review queue that need reviewing @admin Items were submitted over 48 hours ago. Please review them .",
+          "topic_id": 45,
+          "search_data": "'48':16B 'admin':11B 'ago':18B 'hour':17B 'item':3A,12B 'need':9A 'pleas':19B 'queue':7A 'review':6A,20B 'submit':14B"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_users": {
+      "inserted": [
+        {
+          "id": 55,
+          "liked": false,
+          "posted": true,
+          "user_id": -1,
+          "topic_id": 45,
+          "bookmarked": false,
+          "last_posted_at": "2026-10-13T13:47:25.740602",
+          "last_visited_at": "2026-10-13T13:47:25.694949",
+          "first_visited_at": "2026-10-13T13:47:25.694949",
+          "cleared_pinned_at": null,
+          "notification_level": 3,
+          "total_msecs_viewed": 0,
+          "last_read_post_number": 1,
+          "notifications_reason_id": 1,
+          "last_emailed_post_number": null,
+          "notifications_changed_at": "2026-10-13T13:47:25.694501"
+        },
+        {
+          "id": 56,
+          "liked": false,
+          "posted": false,
+          "user_id": 1,
+          "topic_id": 45,
+          "bookmarked": false,
+          "last_posted_at": null,
+          "last_visited_at": "2026-10-13T13:47:25.704868",
+          "first_visited_at": "2026-10-13T13:47:25.704868",
+          "cleared_pinned_at": null,
+          "notification_level": 2,
+          "total_msecs_viewed": 0,
+          "last_read_post_number": null,
+          "notifications_reason_id": 2,
+          "last_emailed_post_number": 1,
+          "notifications_changed_at": "2026-10-13T13:47:25.704438"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topics": {
+      "inserted": [
+        {
+          "id": 45,
+          "slug": "there-are-items-in-the-review-queue-that-need-reviewing",
+          "score": null,
+          "title": "There are items in the review queue that need reviewing",
+          "views": 0,
+          "closed": false,
+          "locale": null,
+          "excerpt": "@admin  Items were submitted over 48 hours ago. Please review them.",
+          "subtype": "system_message",
+          "user_id": -1,
+          "visible": true,
+          "archived": false,
+          "archetype": "private_message",
+          "bumped_at": "2026-10-13T13:47:25.713344",
+          "pinned_at": null,
+          "created_at": "2026-10-13T13:47:25.686687",
+          "deleted_at": null,
+          "like_count": 0,
+          "spam_count": 0,
+          "updated_at": "2026-10-13T13:47:25.744109",
+          "word_count": 15,
+          "category_id": null,
+          "external_id": null,
+          "fancy_title": "There are items in the review queue that need reviewing",
+          "has_summary": false,
+          "posts_count": 1,
+          "reply_count": 0,
+          "percent_rank": 1,
+          "pinned_until": null,
+          "deleted_by_id": null,
+          "featured_link": null,
+          "bannered_until": null,
+          "last_posted_at": "2026-10-13T13:47:25.713344",
+          "image_upload_id": null,
+          "pinned_globally": false,
+          "reviewable_score": 0,
+          "featured_user1_id": null,
+          "featured_user2_id": null,
+          "featured_user3_id": null,
+          "featured_user4_id": null,
+          "last_post_user_id": -1,
+          "participant_count": 1,
+          "slow_mode_seconds": 0,
+          "og_image_upload_id": null,
+          "highest_post_number": 1,
+          "incoming_link_count": 0,
+          "visibility_reason_id": null,
+          "moderator_posts_count": 0,
+          "notify_moderators_count": 0,
+          "highest_staff_post_number": 1
+        }
+      ],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 91,
+            "slug": "there-are-items-in-the-review-queue-that-need-reviewing",
+            "score": null,
+            "title": "There are items in the review queue that need reviewing",
+            "views": 0,
+            "closed": false,
+            "locale": null,
+            "excerpt": null,
+            "subtype": "system_message",
+            "user_id": -1,
+            "visible": true,
+            "archived": false,
+            "archetype": "private_message",
+            "bumped_at": "2026-10-12T13:47:24.769044",
+            "pinned_at": null,
+            "created_at": "2026-10-12T13:47:24.769044",
+            "deleted_at": null,
+            "like_count": 0,
+            "spam_count": 0,
+            "updated_at": "2026-10-12T13:47:24.769044",
+            "word_count": null,
+            "category_id": null,
+            "external_id": null,
+            "fancy_title": "There are items in the review queue that need reviewing",
+            "has_summary": false,
+            "posts_count": 1,
+            "reply_count": 0,
+            "percent_rank": 1,
+            "pinned_until": null,
+            "deleted_by_id": null,
+            "featured_link": null,
+            "bannered_until": null,
+            "last_posted_at": null,
+            "image_upload_id": null,
+            "pinned_globally": false,
+            "reviewable_score": 0,
+            "featured_user1_id": null,
+            "featured_user2_id": null,
+            "featured_user3_id": null,
+            "featured_user4_id": null,
+            "last_post_user_id": -1,
+            "participant_count": 1,
+            "slow_mode_seconds": 0,
+            "og_image_upload_id": null,
+            "highest_post_number": 1,
+            "incoming_link_count": 0,
+            "visibility_reason_id": null,
+            "moderator_posts_count": 0,
+            "notify_moderators_count": 0,
+            "highest_staff_post_number": 0
+          },
+          "after": {
+            "id": 91,
+            "slug": "there-are-items-in-the-review-queue-that-need-reviewing",
+            "score": null,
+            "title": "There are items in the review queue that need reviewing",
+            "views": 0,
+            "closed": false,
+            "locale": null,
+            "excerpt": null,
+            "subtype": "system_message",
+            "user_id": -1,
+            "visible": true,
+            "archived": false,
+            "archetype": "private_message",
+            "bumped_at": "2026-10-12T13:47:24.769044",
+            "pinned_at": null,
+            "created_at": "2026-10-12T13:47:24.769044",
+            "deleted_at": "2026-10-13T13:47:25.583005",
+            "like_count": 0,
+            "spam_count": 0,
+            "updated_at": "2026-10-13T13:47:25.576727",
+            "word_count": null,
+            "category_id": null,
+            "external_id": null,
+            "fancy_title": "There are items in the review queue that need reviewing",
+            "has_summary": false,
+            "posts_count": 0,
+            "reply_count": 0,
+            "percent_rank": 1,
+            "pinned_until": null,
+            "deleted_by_id": -1,
+            "featured_link": null,
+            "bannered_until": null,
+            "last_posted_at": null,
+            "image_upload_id": null,
+            "pinned_globally": false,
+            "reviewable_score": 0,
+            "featured_user1_id": null,
+            "featured_user2_id": null,
+            "featured_user3_id": null,
+            "featured_user4_id": null,
+            "last_post_user_id": -1,
+            "participant_count": 1,
+            "slow_mode_seconds": 0,
+            "og_image_upload_id": null,
+            "highest_post_number": 0,
+            "incoming_link_count": 0,
+            "visibility_reason_id": null,
+            "moderator_posts_count": 0,
+            "notify_moderators_count": 0,
+            "highest_staff_post_number": 0
+          }
+        }
+      ]
+    },
+    "unsubscribe_keys": {
+      "inserted": [
+        {
+          "key": "1c144a9fa52db8f5a52afac04d293277953cc8fc9a8ecb1fdff96d53a3403e29",
+          "post_id": 53,
+          "user_id": 1,
+          "topic_id": 45,
+          "created_at": "2026-10-13T13:47:25.872663",
+          "updated_at": "2026-10-13T13:47:25.872663",
+          "unsubscribe_key_type": "topic"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_actions": {
+      "inserted": [
+        {
+          "id": 66,
+          "user_id": -1,
+          "created_at": "2026-10-13T13:47:25.686687",
+          "updated_at": "2026-10-13T13:47:25.70889",
+          "action_type": 12,
+          "acting_user_id": -1,
+          "target_post_id": -1,
+          "target_user_id": null,
+          "target_topic_id": 45
+        },
+        {
+          "id": 67,
+          "user_id": 1,
+          "created_at": "2026-10-13T13:47:25.806694",
+          "updated_at": "2026-10-13T13:47:25.806694",
+          "action_type": 7,
+          "acting_user_id": -1,
+          "target_post_id": 53,
+          "target_user_id": null,
+          "target_topic_id": 45
+        }
+      ],
+      "deleted": [
+        {
+          "id": 65,
+          "user_id": -1,
+          "created_at": "2026-10-12T13:47:24.769044",
+          "updated_at": "2026-10-12T13:47:24.769044",
+          "action_type": 12,
+          "acting_user_id": -1,
+          "target_post_id": -1,
+          "target_user_id": null,
+          "target_topic_id": 91
+        }
+      ],
+      "updated": []
+    },
+    "user_stats": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "user_id": -1,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:58:08.03156",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 0,
+            "topic_count": 3,
+            "bounce_score": 0,
+            "days_visited": 0,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 0,
+            "topics_entered": 0,
+            "first_unread_at": "2026-07-25T05:58:07.777918",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 4,
+            "first_unread_pm_at": "2026-07-25T05:58:07.777918",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 0,
+            "first_post_created_at": "2026-07-25T05:58:27.915472",
+            "reset_bounce_score_after": null
+          },
+          "after": {
+            "user_id": -1,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:58:08.03156",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 0,
+            "topic_count": 2,
+            "bounce_score": 0,
+            "days_visited": 0,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 0,
+            "topics_entered": 0,
+            "first_unread_at": "2026-07-25T05:58:07.777918",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 4,
+            "first_unread_pm_at": "2026-07-25T05:58:07.777918",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 0,
+            "first_post_created_at": "2026-07-25T05:58:27.915472",
+            "reset_bounce_score_after": null
+          }
+        }
+      ]
+    },
+    "users": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "name": "Admin",
+            "admin": true,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": true,
+            "username": "admin",
+            "moderator": true,
+            "created_at": "2026-07-25T05:59:14.988794",
+            "flag_level": 0,
+            "ip_address": "127.0.0.1",
+            "updated_at": "2026-10-01T15:45:01.064998",
+            "approved_at": "2026-07-25T05:59:15.471236",
+            "trust_level": 4,
+            "last_seen_at": "2026-10-01T22:32:51.276926",
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": "2026-10-01T15:42:53.401171",
+            "silenced_till": null,
+            "approved_by_id": -1,
+            "flair_group_id": null,
+            "last_posted_at": "2026-09-30T07:28:29.674309",
+            "suspended_till": null,
+            "username_lower": "admin",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": "2026-10-01T15:44:57.175128",
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          },
+          "after": {
+            "id": 1,
+            "name": "Admin",
+            "admin": true,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": true,
+            "username": "admin",
+            "moderator": true,
+            "created_at": "2026-07-25T05:59:14.988794",
+            "flag_level": 0,
+            "ip_address": "127.0.0.1",
+            "updated_at": "2026-10-01T15:45:01.064998",
+            "approved_at": "2026-07-25T05:59:15.471236",
+            "trust_level": 4,
+            "last_seen_at": "2026-10-01T22:32:51.276926",
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": "2026-10-01T15:42:53.401171",
+            "silenced_till": null,
+            "approved_by_id": -1,
+            "flair_group_id": null,
+            "last_posted_at": "2026-09-30T07:28:29.674309",
+            "suspended_till": null,
+            "username_lower": "admin",
+            "last_emailed_at": "2026-10-13T13:47:24.769044",
+            "primary_group_id": null,
+            "previous_visit_at": "2026-10-01T15:44:57.175128",
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "email_logs": 1,
+    "notifications": 53,
+    "post_stats": 52,
+    "posts": 53,
+    "topic_allowed_groups": 2,
+    "topic_allowed_users": 10,
+    "topic_groups": 1,
+    "topic_links": 20,
+    "topic_users": 55,
+    "topics": 45,
+    "user_actions": 66
+  },
+  "setup": [
+    "INSERT INTO reviewables (id, type, type_source, status, created_by_id, reviewable_by_moderator, category_id, topic_id, score, potential_spam, target_id, target_type, target_created_by_id, payload, version, latest_score, force_review, potentially_illegal, created_at, updated_at) VALUES (9301, 'ReviewableFlaggedPost', 'core', 0, 3, TRUE, 4, 35, 10, FALSE, 52, 'Post', 2, '{\"targets_topic\":false}', 0, now() - interval '3 days', FALSE, FALSE, now() - interval '3 days', now() - interval '3 days')",
+    "INSERT INTO topics (id, title, fancy_title, slug, user_id, last_post_user_id, archetype, subtype, created_at, updated_at, bumped_at, posts_count, highest_post_number, visible) VALUES (91, 'There are items in the review queue that need reviewing', 'There are items in the review queue that need reviewing', 'there-are-items-in-the-review-queue-that-need-reviewing', -1, -1, 'private_message', 'system_message', now() - interval '1 day', now() - interval '1 day', now() - interval '1 day', 1, 1, true)",
+    "INSERT INTO posts (id, topic_id, user_id, post_number, raw, cooked, created_at, updated_at, last_version_at, sort_order) VALUES (951, 91, -1, 1, '@admin  Items were submitted over 48 hours ago. [Please review them](http://localhost:3042/review).', '<p>An earlier reminder.</p>', now() - interval '1 day', now() - interval '1 day', now() - interval '1 day', 1)",
+    "INSERT INTO topic_allowed_users (topic_id, user_id, created_at, updated_at) VALUES (91, -1, now(), now())",
+    "INSERT INTO topic_allowed_groups (topic_id, group_id) VALUES (91, 2)",
+    "INSERT INTO user_actions (action_type, user_id, acting_user_id, target_topic_id, target_post_id, created_at, updated_at) VALUES (12, -1, -1, 91, -1, now() - interval '1 day', now() - interval '1 day')"
+  ],
+  "enqueue": [
+    [
+      "pending_reviewables_reminder",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [
+    [
+      "Jobs::DiscourseTopicVoting::VoteRelease",
+      {
+        "topic_id": 91,
+        "trashed": true
+      }
+    ],
+    [
+      "feature_topic_users",
+      {
+        "topic_id": 91
+      }
+    ],
+    [
+      "sync_topic_user_bookmarked",
+      {
+        "topic_id": 91
+      }
+    ],
+    [
+      "bot_input",
+      {
+        "user_id": 1,
+        "topic_id": 45,
+        "input": "topic_notification_level_changed"
+      }
+    ],
+    [
+      "post_alert",
+      {
+        "post_id": 53,
+        "new_record": true,
+        "options": null
+      }
+    ],
+    [
+      "feature_topic_users",
+      {
+        "topic_id": 45
+      }
+    ],
+    [
+      "process_post",
+      {
+        "bypass_bump": false,
+        "cooking_options": null,
+        "new_post": true,
+        "post_id": 53,
+        "skip_pull_hotlinked_images": false
+      }
+    ],
+    [
+      "post_update_topic_tracking_state",
+      {
+        "post_id": 53
+      }
+    ],
+    [
+      "crawl_topic_link",
+      {
+        "topic_link_id": 20
+      }
+    ],
+    [
+      "user_email in 600s",
+      {
+        "type": "user_mentioned",
+        "user_id": 1,
+        "notification_id": 53,
+        "notification_data_hash": {
+          "topic_title": "There are items in the review queue that need reviewing",
+          "original_post_id": 53,
+          "original_post_type": 1,
+          "original_username": "system",
+          "revision_number": null,
+          "display_username": "system",
+          "display_name": "system"
+        },
+        "notification_type": "mentioned",
+        "post_id": 53
+      }
+    ]
+  ],
+  "emails": [
+    {
+      "headers": [
+        [
+          "From",
+          "\"system\" <noreply@unconfigured.discourse.org>"
+        ],
+        [
+          "Reply-To",
+          "\"system\" <noreply@unconfigured.discourse.org>"
+        ],
+        [
+          "To",
+          "admin@example.com"
+        ],
+        [
+          "Message-ID",
+          "<discourse/post/53@localhost>"
+        ],
+        [
+          "Subject",
+          "[Discourse] [PM] There are items in the review queue that need reviewing"
+        ],
+        [
+          "MIME-Version",
+          "1.0"
+        ],
+        [
+          "Content-Type",
+          "multipart/alternative; boundary=--==_mimepart_6ace366dddf24_464aff28686c4"
+        ],
+        [
+          "Content-Transfer-Encoding",
+          "7bit"
+        ],
+        [
+          "List-Unsubscribe",
+          "<http://localhost:3042/email/unsubscribe/1c144a9fa52db8f5a52afac04d293277953cc8fc9a8ecb1fdff96d53a3403e29>"
+        ],
+        [
+          "List-Unsubscribe-Post",
+          "List-Unsubscribe=One-Click"
+        ],
+        [
+          "X-Discourse-Post-Id",
+          "53"
+        ],
+        [
+          "X-Discourse-Topic-Id",
+          "45"
+        ],
+        [
+          "X-Discourse-Sender",
+          "system"
+        ],
+        [
+          "X-Auto-Response-Suppress",
+          "All"
+        ],
+        [
+          "x-ms-reactions",
+          "disallow"
+        ],
+        [
+          "Auto-Submitted",
+          "auto-generated"
+        ],
+        [
+          "Precedence",
+          "list"
+        ],
+        [
+          "List-ID",
+          "Discourse <localhost>"
+        ],
+        [
+          "List-Archive",
+          "http://localhost:3042/t/there-are-items-in-the-review-queue-that-need-reviewing/45"
+        ]
+      ],
+      "text": "\n\n@admin  Items were submitted over 48 hours ago. [Please review them](http://localhost:3042/review).\n\n\n\n\n\n---\n[Visit Message](http://localhost:3042/t/there-are-items-in-the-review-queue-that-need-reviewing/45/1)\n\nTo unsubscribe from these emails, [click here](http://localhost:3042/email/unsubscribe/1c144a9fa52db8f5a52afac04d293277953cc8fc9a8ecb1fdff96d53a3403e29).\n",
+      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <div id=\"main\" class=\"\">\n\n  <div class=\"email-preview\" style=\"display:none\"></div>\n\n  <div class=\"header-instructions\"></div>\n\n    <div class=\"post-wrapper  \" style=\"margin-bottom:25px\">\n  <table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n    <tbody><tr>\n      <td class=\"user-avatar\" style=\"vertical-align:top;width:55px\">\n        <img src=\"http://localhost:3042/images/discourse-logo-sketch-small.png\" title=\"system\" width=\"45\" height=\"45\">\n      </td>\n      <td>\n          <a rel=\"nofollow\" class=\"username username-link\" href=\"http://localhost:3042/u/system\" target=\"_blank\" style=\"color:#006699;font-size:13px;font-family:'lucida grande',tahoma,verdana,arial,sans-serif;text-decoration:none;font-weight:bold\">system</a>\n        <br>\n        <span class=\"notification-date\" style=\"text-align:right;color:#999999;padding-right:5px;font-family:'lucida grande',tahoma,verdana,arial,sans-serif;font-size:11px\">October 13</span>\n      </td>\n    </tr>\n  </tbody></table>\n  <div class=\"body\" style=\"padding-top:5px\" dm=\"body\"><p style=\"margin-top:0;border:0\"><a class=\"mention\" href=\"http://localhost:3042/u/admin\" style=\"text-decoration:none;font-weight:bold;color:#006699\">@admin</a>  Items were submitted over 48 hours ago. <a href=\"http://localhost:3042/review\" style=\"text-decoration:none;font-weight:bold;color:#006699\">Please review them</a>.</p></div>\n</div>\n\n\n\n\n\n\n  <div class=\"footer undecorated-link-footer highlight\" style=\"color:#666\"><hr style=\"background-color:#ddd;height:1px;border:1px\">\n<p><a href=\"http://localhost:3042/t/there-are-items-in-the-review-queue-that-need-reviewing/45/1\" style=\"font-weight:bold;text-decoration:none;color:#FFFFFF;background-color:#2F70AC;border-top:4px solid #2F70AC;border-right:6px solid #2F70AC;border-bottom:4px solid #2F70AC;border-left:6px solid #2F70AC;display:inline-block\">Visit Message</a></p></div>\n  <div class=\"footer\" style=\"color:#666\"><p>To unsubscribe from these emails, <a href=\"http://localhost:3042/email/unsubscribe/1c144a9fa52db8f5a52afac04d293277953cc8fc9a8ecb1fdff96d53a3403e29\" style=\"text-decoration:none;font-weight:bold;color:#666\">click here</a>.</p></div>\n\n</div>\n\n<div itemscope=\"\" itemtype=\"http://schema.org/EmailMessage\" style=\"display:none\">\n  <div itemprop=\"action\" itemscope=\"\" itemtype=\"http://schema.org/ViewAction\">\n    <link itemprop=\"url\" href=\"http://localhost:3042/t/there-are-items-in-the-review-queue-that-need-reviewing/45/1\">\n    <meta itemprop=\"name\" content=\"Read full topic\">\n  </div>\n</div>\n\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
+    }
+  ],
+  "recorded_from": {
+    "case": "caa5e327c2d9f2595809451d175bf0d5fdd15b72c52b04b8a4ca3d0495246471",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

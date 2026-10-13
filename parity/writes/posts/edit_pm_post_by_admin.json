@@ -1,0 +1,566 @@
+{
+  "name": "edit_pm_post_by_admin",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/49.json",
+      "params": {
+        "post": {
+          "raw": "A reply from user0 inside the private message, as an admin rewrote it."
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-13T13:50:53.798333",
+  "transaction_started_at": "2026-10-13T13:50:51.132513",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "post": {
+          "id": 49,
+          "name": "User0",
+          "username": "user0",
+          "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+          "created_at": "2026-10-01T15:39:51.295Z",
+          "cooked": "<p>A reply from user0 inside the private message, as an admin rewrote it.</p>",
+          "post_number": 2,
+          "post_type": 1,
+          "posts_count": 2,
+          "updated_at": "2026-10-13T13:50:55.092Z",
+          "reply_count": 0,
+          "reply_to_post_number": null,
+          "quote_count": 0,
+          "incoming_link_count": 0,
+          "reads": 1,
+          "readers_count": 0,
+          "score": 0.2,
+          "yours": false,
+          "topic_id": 42,
+          "topic_slug": "parity-fixture-pm-user1-to-user0",
+          "display_username": "User0",
+          "primary_group_name": null,
+          "flair_name": null,
+          "flair_url": null,
+          "flair_bg_color": null,
+          "flair_color": null,
+          "flair_group_id": null,
+          "badges_granted": [],
+          "version": 2,
+          "can_edit": true,
+          "can_delete": true,
+          "can_recover": false,
+          "can_see_hidden_post": true,
+          "can_wiki": true,
+          "user_title": null,
+          "bookmarked": false,
+          "raw": "A reply from user0 inside the private message, as an admin rewrote it.",
+          "actions_summary": [
+            {
+              "id": 2,
+              "can_act": true
+            },
+            {
+              "id": 6,
+              "can_act": true
+            },
+            {
+              "id": 3,
+              "can_act": true
+            },
+            {
+              "id": 4,
+              "can_act": true
+            },
+            {
+              "id": 8,
+              "can_act": true
+            },
+            {
+              "id": 10,
+              "can_act": true
+            },
+            {
+              "id": 7,
+              "can_act": true
+            }
+          ],
+          "moderator": false,
+          "admin": false,
+          "staff": false,
+          "user_id": 2,
+          "draft_sequence": 1,
+          "hidden": false,
+          "trust_level": 1,
+          "deleted_at": null,
+          "user_deleted": false,
+          "edit_reason": null,
+          "can_view_edit_history": true,
+          "wiki": false,
+          "reviewable_id": null,
+          "reviewable_score_count": 0,
+          "reviewable_score_pending_count": 0,
+          "post_url": "/t/parity-fixture-pm-user1-to-user0/42/2",
+          "reactions": [],
+          "current_user_reaction": null,
+          "reaction_users_count": 0,
+          "current_user_used_main_reaction": false,
+          "can_accept_answer": false,
+          "can_unaccept_answer": false,
+          "accepted_answer": false,
+          "topic_accepted_answer": null
+        }
+      }
+    }
+  ],
+  "changes": {
+    "draft_sequences": {
+      "inserted": [
+        {
+          "id": 1,
+          "user_id": 1,
+          "sequence": 1,
+          "draft_key": "topic_42"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_revisions": {
+      "inserted": [
+        {
+          "id": 1,
+          "hidden": false,
+          "number": 2,
+          "post_id": 49,
+          "user_id": 1,
+          "created_at": "2026-10-13T13:50:55.102402",
+          "updated_at": "2026-10-13T13:50:55.102402",
+          "modifications": "--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\nraw:\n- A reply from user0 inside the private message, long enough too.\n- A reply from user0 inside the private message, as an admin rewrote it.\ncooked:\n- \"<p>A reply from user0 inside the private message, long enough too.</p>\"\n- \"<p>A reply from user0 inside the private message, as an admin rewrote it.</p>\"\n"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_search_data": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "locale": "en",
+            "post_id": 49,
+            "version": 5,
+            "raw_data": "A reply from user0 inside the private message, long enough too.",
+            "search_data": "'enough':16 'fixtur':2A 'insid':11 'long':15 'messag':14 'pariti':1A 'pm':3A 'privat':13 'repli':8 'user0':6A,10 'user1':4A",
+            "private_message": true
+          },
+          "after": {
+            "locale": "en",
+            "post_id": 49,
+            "version": 5,
+            "raw_data": "A reply from user0 inside the private message, as an admin rewrote it.",
+            "search_data": "'admin':17 'fixtur':2A 'insid':11 'messag':14 'pariti':1A 'pm':3A 'privat':13 'repli':8 'rewrot':18 'user0':6A,10 'user1':4A",
+            "private_message": true
+          }
+        }
+      ]
+    },
+    "posts": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 49,
+            "raw": "A reply from user0 inside the private message, long enough too.",
+            "wiki": false,
+            "reads": 1,
+            "score": 0.2,
+            "cooked": "<p>A reply from user0 inside the private message, long enough too.</p>",
+            "hidden": false,
+            "locale": null,
+            "user_id": 2,
+            "version": 1,
+            "baked_at": "2026-10-01T15:39:51.295059",
+            "topic_id": 42,
+            "hidden_at": null,
+            "post_type": 1,
+            "raw_email": null,
+            "via_email": false,
+            "created_at": "2026-10-01T15:39:51.295091",
+            "deleted_at": null,
+            "like_count": 0,
+            "like_score": 0,
+            "self_edits": 0,
+            "sort_order": 2,
+            "spam_count": 0,
+            "updated_at": "2026-10-01T15:39:51.295091",
+            "word_count": 11,
+            "action_code": null,
+            "cook_method": 1,
+            "edit_reason": null,
+            "post_number": 2,
+            "quote_count": 0,
+            "reply_count": 0,
+            "locked_by_id": null,
+            "percent_rank": 0,
+            "reply_quoted": false,
+            "user_deleted": false,
+            "baked_version": 2,
+            "deleted_by_id": null,
+            "illegal_count": 0,
+            "qa_vote_count": 0,
+            "bookmark_count": 0,
+            "last_editor_id": 2,
+            "public_version": 1,
+            "image_upload_id": null,
+            "last_version_at": "2026-10-01T15:39:51.318046",
+            "off_topic_count": 0,
+            "hidden_reason_id": null,
+            "reply_to_user_id": null,
+            "notify_user_count": 0,
+            "inappropriate_count": 0,
+            "incoming_link_count": 0,
+            "outbound_message_id": null,
+            "reply_to_post_number": null,
+            "notify_moderators_count": 0
+          },
+          "after": {
+            "id": 49,
+            "raw": "A reply from user0 inside the private message, as an admin rewrote it.",
+            "wiki": false,
+            "reads": 1,
+            "score": 0.2,
+            "cooked": "<p>A reply from user0 inside the private message, as an admin rewrote it.</p>",
+            "hidden": false,
+            "locale": null,
+            "user_id": 2,
+            "version": 2,
+            "baked_at": "2026-10-13T13:50:55.092102",
+            "topic_id": 42,
+            "hidden_at": null,
+            "post_type": 1,
+            "raw_email": null,
+            "via_email": false,
+            "created_at": "2026-10-01T15:39:51.295091",
+            "deleted_at": null,
+            "like_count": 0,
+            "like_score": 0,
+            "self_edits": 0,
+            "sort_order": 2,
+            "spam_count": 0,
+            "updated_at": "2026-10-13T13:50:55.092334",
+            "word_count": 13,
+            "action_code": null,
+            "cook_method": 1,
+            "edit_reason": null,
+            "post_number": 2,
+            "quote_count": 0,
+            "reply_count": 0,
+            "locked_by_id": null,
+            "percent_rank": 0,
+            "reply_quoted": false,
+            "user_deleted": false,
+            "baked_version": 2,
+            "deleted_by_id": null,
+            "illegal_count": 0,
+            "qa_vote_count": 0,
+            "bookmark_count": 0,
+            "last_editor_id": 1,
+            "public_version": 2,
+            "image_upload_id": null,
+            "last_version_at": "2026-10-13T13:50:53.839445",
+            "off_topic_count": 0,
+            "hidden_reason_id": null,
+            "reply_to_user_id": null,
+            "notify_user_count": 0,
+            "inappropriate_count": 0,
+            "incoming_link_count": 0,
+            "outbound_message_id": null,
+            "reply_to_post_number": null,
+            "notify_moderators_count": 0
+          }
+        }
+      ]
+    },
+    "topics": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 42,
+            "slug": "parity-fixture-pm-user1-to-user0",
+            "score": 0.2,
+            "title": "Parity fixture: PM user1 to user0",
+            "views": 0,
+            "closed": false,
+            "locale": null,
+            "excerpt": "A private message from user1 to user0, long enough to be a real post body.",
+            "subtype": "user_to_user",
+            "user_id": 3,
+            "visible": true,
+            "archived": false,
+            "archetype": "private_message",
+            "bumped_at": "2026-10-01T15:39:51.295091",
+            "pinned_at": null,
+            "created_at": "2026-10-01T15:39:51.071813",
+            "deleted_at": null,
+            "like_count": 0,
+            "spam_count": 0,
+            "updated_at": "2026-10-01T15:39:51.342717",
+            "word_count": 26,
+            "category_id": null,
+            "external_id": null,
+            "fancy_title": "Parity fixture: PM user1 to user0",
+            "has_summary": false,
+            "posts_count": 2,
+            "reply_count": 0,
+            "percent_rank": 1,
+            "pinned_until": null,
+            "deleted_by_id": null,
+            "featured_link": null,
+            "bannered_until": null,
+            "last_posted_at": "2026-10-01T15:39:51.295091",
+            "image_upload_id": null,
+            "pinned_globally": false,
+            "reviewable_score": 0,
+            "featured_user1_id": null,
+            "featured_user2_id": null,
+            "featured_user3_id": null,
+            "featured_user4_id": null,
+            "last_post_user_id": 2,
+            "participant_count": 2,
+            "slow_mode_seconds": 0,
+            "og_image_upload_id": null,
+            "highest_post_number": 2,
+            "incoming_link_count": 0,
+            "visibility_reason_id": null,
+            "moderator_posts_count": 0,
+            "notify_moderators_count": 0,
+            "highest_staff_post_number": 2
+          },
+          "after": {
+            "id": 42,
+            "slug": "parity-fixture-pm-user1-to-user0",
+            "score": 0.2,
+            "title": "Parity fixture: PM user1 to user0",
+            "views": 0,
+            "closed": false,
+            "locale": null,
+            "excerpt": "A private message from user1 to user0, long enough to be a real post body.",
+            "subtype": "user_to_user",
+            "user_id": 3,
+            "visible": true,
+            "archived": false,
+            "archetype": "private_message",
+            "bumped_at": "2026-10-01T15:39:51.295091",
+            "pinned_at": null,
+            "created_at": "2026-10-01T15:39:51.071813",
+            "deleted_at": null,
+            "like_count": 0,
+            "spam_count": 0,
+            "updated_at": "2026-10-01T15:39:51.342717",
+            "word_count": 28,
+            "category_id": null,
+            "external_id": null,
+            "fancy_title": "Parity fixture: PM user1 to user0",
+            "has_summary": false,
+            "posts_count": 2,
+            "reply_count": 0,
+            "percent_rank": 1,
+            "pinned_until": null,
+            "deleted_by_id": null,
+            "featured_link": null,
+            "bannered_until": null,
+            "last_posted_at": "2026-10-01T15:39:51.295091",
+            "image_upload_id": null,
+            "pinned_globally": false,
+            "reviewable_score": 0,
+            "featured_user1_id": null,
+            "featured_user2_id": null,
+            "featured_user3_id": null,
+            "featured_user4_id": null,
+            "last_post_user_id": 2,
+            "participant_count": 2,
+            "slow_mode_seconds": 0,
+            "og_image_upload_id": null,
+            "highest_post_number": 2,
+            "incoming_link_count": 0,
+            "visibility_reason_id": null,
+            "moderator_posts_count": 0,
+            "notify_moderators_count": 0,
+            "highest_staff_post_number": 2
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 488,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "Soib2zOSM1dSjH+Qs0Vz/4aiFrw=",
+            "created_at": "2026-10-13T13:50:52.217904",
+            "rotated_at": "2026-10-13T13:50:52.213943",
+            "updated_at": "2026-10-13T13:50:52.217904",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "Soib2zOSM1dSjH+Qs0Vz/4aiFrw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 488,
+            "seen_at": "2026-10-13T13:50:53.808985",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "Soib2zOSM1dSjH+Qs0Vz/4aiFrw=",
+            "created_at": "2026-10-13T13:50:52.217904",
+            "rotated_at": "2026-10-13T13:50:52.213943",
+            "updated_at": "2026-10-13T13:50:52.217904",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "Soib2zOSM1dSjH+Qs0Vz/4aiFrw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 53,
+          "context": null,
+          "details": "A reply from user0 inside the private message, long enough too.\n\n---\n\nA reply from user0 inside the private message, as an admin rewrote it.",
+          "post_id": 49,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": false,
+          "created_at": "2026-10-13T13:50:55.145213",
+          "ip_address": null,
+          "updated_at": "2026-10-13T13:50:55.145213",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_stats": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "user_id": 1,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:15.188025",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 0,
+            "topic_count": 1,
+            "bounce_score": 0,
+            "days_visited": 1,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 0,
+            "topics_entered": 0,
+            "first_unread_at": "2026-10-01T15:39:52.00791",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 6,
+            "first_unread_pm_at": "2026-10-01T18:21:56.284939",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 4,
+            "first_post_created_at": "2026-09-30T07:28:29.25168",
+            "reset_bounce_score_after": null
+          },
+          "after": {
+            "user_id": 1,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:15.188025",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 0,
+            "topic_count": 1,
+            "bounce_score": 0,
+            "days_visited": 1,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 0,
+            "topics_entered": 0,
+            "first_unread_at": "2026-10-01T15:39:52.00791",
+            "flags_disagreed": 0,
+            "post_edits_count": 1,
+            "posts_read_count": 6,
+            "first_unread_pm_at": "2026-10-01T18:21:56.284939",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 4,
+            "first_post_created_at": "2026-09-30T07:28:29.25168",
+            "reset_bounce_score_after": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "process_post",
+      {
+        "bypass_bump": false,
+        "cooking_options": null,
+        "new_post": false,
+        "post_id": 49,
+        "skip_pull_hotlinked_images": false,
+        "invalidate_oneboxes": true
+      }
+    ],
+    [
+      "bot_input",
+      {
+        "user_id": 2,
+        "post_id": 49,
+        "input": "edit"
+      }
+    ],
+    [
+      "post_alert",
+      {
+        "post_id": 49
+      }
+    ]
+  ],
+  "next_ids": {
+    "draft_sequences": 1,
+    "post_revisions": 1,
+    "user_histories": 74
+  },
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "2310790be21bc9a45aff124aa738435b658b4a16022660da5c15e8a83d011ace",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

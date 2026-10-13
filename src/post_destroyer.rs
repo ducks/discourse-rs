@@ -261,9 +261,7 @@ async fn destroy(
     let mut conn = pool.acquire().await?;
     let post = load_post(&mut conn, post_id).await?;
     let topic = load_topic(&mut conn, post.topic_id).await?;
-    if topic.archetype == "private_message" {
-        return Err(Unsupported("deleting posts in messages").into());
-    }
+    let pm = topic.archetype == "private_message";
     let should_reset_bumped_at = topic.highest_post_number == post.post_number
         && post.post_number != 1
         && post.post_type != post_types::WHISPER;
@@ -313,21 +311,15 @@ async fn destroy(
         }
     }
 
-    // UserActionManager.post_destroyed: a reply's REPLY row (already gone
-    // with the post's user actions when deleted outright).
+    // UserActionManager.post_destroyed: a reply's rows (already gone with
+    // the post's user actions when deleted outright).
     if !post.is_first_post()
         && let Some(author) = post.user_id
     {
-        remove_user_action(
-            &mut tx,
-            user_actions::REPLY,
-            author,
-            author,
-            topic.id,
-            post.id,
-            false,
-        )
-        .await?;
+        for (action_type, user_id) in post_rows(&mut tx, &topic, author).await? {
+            remove_user_action(&mut tx, action_type, user_id, author, topic.id, post.id, pm)
+                .await?;
+        }
     }
     crate::jobs::enqueue(
         &mut tx,
@@ -342,18 +334,39 @@ async fn destroy(
         .bind(topic.id)
         .execute(&mut *tx)
         .await?;
-        // UserActionManager.topic_destroyed: the NEW_TOPIC row.
+        // UserActionManager.topic_destroyed: topic_rows first removes the
+        // row of the other kind (normally none), then the topic's own: the
+        // NEW_TOPIC row, or a message's NEW_PRIVATE_MESSAGE and each other
+        // recipient's GOT_PRIVATE_MESSAGE.
         if let Some(owner) = topic.user_id {
-            remove_user_action(
-                &mut tx,
-                user_actions::NEW_TOPIC,
-                owner,
-                owner,
-                topic.id,
-                -1,
-                false,
-            )
-            .await?;
+            let (own, other) = if pm {
+                (user_actions::NEW_PRIVATE_MESSAGE, user_actions::NEW_TOPIC)
+            } else {
+                (user_actions::NEW_TOPIC, user_actions::NEW_PRIVATE_MESSAGE)
+            };
+            remove_user_action(&mut tx, other, owner, owner, topic.id, -1, pm).await?;
+            remove_user_action(&mut tx, own, owner, owner, topic.id, -1, pm).await?;
+            if pm {
+                let recipients: Vec<i32> = sqlx::query_scalar(
+                    "SELECT user_id FROM topic_allowed_users WHERE topic_id = $1 AND user_id <> $2 ORDER BY id",
+                )
+                .bind(topic.id)
+                .bind(owner)
+                .fetch_all(&mut *tx)
+                .await?;
+                for recipient in recipients {
+                    remove_user_action(
+                        &mut tx,
+                        user_actions::GOT_PRIVATE_MESSAGE,
+                        recipient,
+                        owner,
+                        topic.id,
+                        -1,
+                        pm,
+                    )
+                    .await?;
+                }
+            }
         }
     }
     if should_reset_bumped_at {
@@ -424,11 +437,9 @@ async fn refuse_unported_deletion(
     post: &Post,
     topic: &Topic,
 ) -> Result<(), AppError> {
-    let (links, linked_to, likes, flagged, embed, published): (bool, bool, bool, bool, bool, bool) =
+    let (likes, flagged, embed, published): (bool, bool, bool, bool) =
         sqlx::query_as(
-            "SELECT EXISTS (SELECT 1 FROM topic_links WHERE post_id = $1), \
-                    EXISTS (SELECT 1 FROM topic_links WHERE link_post_id = $1), \
-                    EXISTS (SELECT 1 FROM post_actions WHERE post_id = $1 AND post_action_type_id = 2 \
+            "SELECT EXISTS (SELECT 1 FROM post_actions WHERE post_id = $1 AND post_action_type_id = 2 \
                             AND deleted_at IS NULL), \
                     EXISTS (SELECT 1 FROM reviewables WHERE target_type = 'Post' AND target_id = $1 \
                             AND type = 'ReviewableFlaggedPost' AND status = 0), \
@@ -439,9 +450,7 @@ async fn refuse_unported_deletion(
         .bind(topic.id)
         .fetch_one(conn)
         .await?;
-    let reason = if links || linked_to {
-        "deleting posts with links (TopicLink)"
-    } else if likes {
+    let reason = if likes {
         "deleting liked posts (deleted_public_actions)"
     } else if flagged {
         "deleting flagged posts (agreeing with the flags)"
@@ -451,6 +460,69 @@ async fn refuse_unported_deletion(
         return Ok(());
     };
     Err(Unsupported(reason).into())
+}
+
+/// `TopicLink#destroy` for each link whose `column` is `post_id`: its
+/// clicks go with it, and its after_commit crawl_link_title enqueues
+/// crawl_topic_link for the gone row (Rails' callback has no `on:`).
+async fn destroy_topic_links(
+    conn: &mut PgConnection,
+    column: &str,
+    post_id: i32,
+) -> Result<(), sqlx::Error> {
+    let ids: Vec<i32> = sqlx::query_scalar(&format!(
+        "SELECT id FROM topic_links WHERE {column} = $1 ORDER BY id"
+    ))
+    .bind(post_id)
+    .fetch_all(&mut *conn)
+    .await?;
+    for id in ids {
+        sqlx::query("DELETE FROM topic_link_clicks WHERE topic_link_id = $1")
+            .bind(id)
+            .execute(&mut *conn)
+            .await?;
+        sqlx::query("DELETE FROM topic_links WHERE id = $1")
+            .bind(id)
+            .execute(&mut *conn)
+            .await?;
+        crate::jobs::enqueue(
+            &mut *conn,
+            "crawl_topic_link",
+            json!({ "topic_link_id": id }),
+        )
+        .await?;
+    }
+    Ok(())
+}
+
+/// `UserActionManager.post_rows(post)` for a reply by `author`: the REPLY
+/// row, or in a message one row per allowed user (NEW_PRIVATE_MESSAGE for
+/// the author, GOT_PRIVATE_MESSAGE for the rest), as (type, user).
+async fn post_rows(
+    conn: &mut PgConnection,
+    topic: &Topic,
+    author: i32,
+) -> Result<Vec<(i32, i32)>, sqlx::Error> {
+    if topic.archetype != "private_message" {
+        return Ok(vec![(user_actions::REPLY, author)]);
+    }
+    let allowed: Vec<i32> = sqlx::query_scalar(
+        "SELECT user_id FROM topic_allowed_users WHERE topic_id = $1 ORDER BY id",
+    )
+    .bind(topic.id)
+    .fetch_all(conn)
+    .await?;
+    Ok(allowed
+        .into_iter()
+        .map(|user_id| {
+            let kind = if user_id == author {
+                user_actions::NEW_PRIVATE_MESSAGE
+            } else {
+                user_actions::GOT_PRIVATE_MESSAGE
+            };
+            (kind, user_id)
+        })
+        .collect())
 }
 
 /// `UserAction.remove_action!(row)`: the first matching row goes, and the
@@ -491,7 +563,9 @@ async fn perform_delete(
     topic: &Topic,
     req: &Request<'_>,
 ) -> Result<(), AppError> {
-    // Post#trash!: the notice goes, then the row is trashed.
+    // Post#trash!: its links destroyed, the notice goes, then the row is
+    // trashed.
+    destroy_topic_links(&mut *conn, "post_id", post.id).await?;
     sqlx::query("DELETE FROM post_custom_fields WHERE post_id = $1 AND name = 'notice'")
         .bind(post.id)
         .execute(&mut *conn)
@@ -571,7 +645,7 @@ async fn perform_delete(
             acting_user_id,
             topic_id,
             post_id,
-            false,
+            topic.archetype == "private_message",
         )
         .await?;
     }
@@ -700,6 +774,8 @@ async fn perform_delete(
         .await?;
     }
 
+    // TopicLink.where(link_post_id:).destroy_all
+    destroy_topic_links(&mut *conn, "link_post_id", post.id).await?;
     update_category_latest(&mut *conn, post, topic).await?;
     update_user_counts(&mut *conn, post, topic).await?;
     // TopicUser.update_post_action_cache(post_id:): no likes to recount
@@ -951,9 +1027,7 @@ pub async fn recover_post(
     if post.is_first_post() {
         return Err(Unsupported("recovering topics").into());
     }
-    if topic.archetype == "private_message" {
-        return Err(Unsupported("recovering posts in messages").into());
-    }
+    let pm = topic.archetype == "private_message";
     let (deleted_likes, quotes): (bool, bool) = sqlx::query_as(
         "SELECT EXISTS (SELECT 1 FROM post_custom_fields WHERE post_id = $1 AND name = 'deleted_public_actions'), \
                 $2 LIKE '%[quote=%'",
@@ -1012,7 +1086,8 @@ pub async fn recover_post(
         .bind(topic.id)
         .execute(&mut *conn)
         .await?;
-    if let Some(author) = post.user_id {
+    // No counts for messages.
+    if !pm && let Some(author) = post.user_id {
         sqlx::query("UPDATE user_stats SET post_count = post_count + 1 WHERE user_id = $1")
             .bind(author)
             .execute(&mut *conn)
@@ -1052,17 +1127,20 @@ pub async fn recover_post(
         .execute(&mut *conn)
         .await?;
     }
-    // UserActionManager.post_created: the reply row again.
+    // UserActionManager.post_created: the reply's rows again.
     if let Some(author) = post.user_id {
-        crate::posting::log_user_action(
-            &mut *conn,
-            user_actions::REPLY,
-            author,
-            topic.id,
-            post.id,
-            post.created_at,
-        )
-        .await?;
+        for (action_type, user_id) in post_rows(&mut *conn, &topic, author).await? {
+            crate::posting::log_user_action_by(
+                &mut *conn,
+                action_type,
+                user_id,
+                author,
+                topic.id,
+                post.id,
+                post.created_at,
+            )
+            .await?;
+        }
     }
     // skip_topic_stats, as Rails does here.
     crate::bus::publish_post_change(

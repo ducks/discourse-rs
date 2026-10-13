@@ -1,0 +1,77 @@
+{
+  "name": "edit_pm_post",
+  "user": "user0",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/49.json",
+      "params": {
+        "post": {
+          "raw": "A reply from user0 inside the private message, edited by its author later on."
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-13T13:50:56.49879",
+  "transaction_started_at": "2026-10-13T13:50:55.448802",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "That post was created too long ago. It can no longer be edited or deleted."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 488,
+            "seen_at": null,
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "14mj5dcSGSJqOhwdMi53mFzG8Ck=",
+            "created_at": "2026-10-13T13:50:55.848263",
+            "rotated_at": "2026-10-13T13:50:55.847088",
+            "updated_at": "2026-10-13T13:50:55.848263",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "14mj5dcSGSJqOhwdMi53mFzG8Ck=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 488,
+            "seen_at": "2026-10-13T13:50:56.505829",
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "14mj5dcSGSJqOhwdMi53mFzG8Ck=",
+            "created_at": "2026-10-13T13:50:55.848263",
+            "rotated_at": "2026-10-13T13:50:55.847088",
+            "updated_at": "2026-10-13T13:50:55.848263",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "14mj5dcSGSJqOhwdMi53mFzG8Ck=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "d76fab7c9efc26de27e3b4cf23bdf6ac96ecfadbeabecc2dd759614797a9a452",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

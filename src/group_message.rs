@@ -128,8 +128,7 @@ impl GroupMessage<'_> {
 
     /// `delete_previous!(respect_sent_recently: true, match_raw:)`: the
     /// system's recent one-post messages to the group with this title (and
-    /// body) would be destroyed, which needs PostDestroyer in messages;
-    /// refused when there are any.
+    /// body) destroyed by the system user.
     pub async fn delete_previous(
         &self,
         pool: &PgPool,
@@ -150,8 +149,9 @@ impl GroupMessage<'_> {
         } else {
             None
         };
-        let previous: bool = sqlx::query_scalar(&format!(
-            "SELECT EXISTS (SELECT 1 FROM posts \
+        // find_each: in id order.
+        let previous: Vec<i32> = sqlx::query_scalar(&format!(
+            "SELECT posts.id FROM posts \
              INNER JOIN topics ON topics.id = posts.topic_id \
              INNER JOIN topic_allowed_groups ON topic_allowed_groups.topic_id = topics.id \
              INNER JOIN groups ON groups.id = topic_allowed_groups.group_id \
@@ -160,18 +160,18 @@ impl GroupMessage<'_> {
                AND topics.archetype = 'private_message' AND topics.subtype = 'system_message' \
                AND topics.title = $1 AND groups.name = $2 \
                AND posts.created_at > now() - interval '{RECENT_MESSAGE_PERIOD}' \
-               AND ($3::text IS NULL OR posts.raw = $3))"
+               AND ($3::text IS NULL OR posts.raw = $3) \
+             ORDER BY posts.id"
         ))
         .bind(&title)
         .bind(self.group_name)
         .bind(&raw)
-        .fetch_one(&mut *conn)
+        .fetch_all(&mut *conn)
         .await?;
-        if previous {
-            return Err(Unsupported(
-                "replacing an earlier group message (PostDestroyer in messages)",
-            )
-            .into());
+        drop(conn);
+        let context = ctx.t("staff_action_logs.reminder_deleted");
+        for post_id in previous {
+            crate::post_destroyer::destroy_as_system(pool, ctx, post_id, &context).await?;
         }
         Ok(())
     }

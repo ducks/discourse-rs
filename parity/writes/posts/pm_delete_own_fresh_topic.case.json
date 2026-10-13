@@ -1,0 +1,14 @@
+{
+  "user": "user2",
+  "setup": [
+    "UPDATE topics SET created_at = now() - interval '1 hour' WHERE id = 44",
+    "UPDATE posts SET created_at = now() - interval '1 hour' WHERE id = 51"
+  ],
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/t/44.json",
+      "params": {}
+    }
+  ]
+}

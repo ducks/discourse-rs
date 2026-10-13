@@ -1,0 +1,485 @@
+{
+  "name": "delete_reply_with_links",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/posts/950.json",
+      "params": {}
+    }
+  ],
+  "started_at": "2026-10-13T13:47:15.931158",
+  "transaction_started_at": "2026-10-13T13:47:13.351926",
+  "responses": [
+    {
+      "status": 200,
+      "body": ""
+    }
+  ],
+  "changes": {
+    "posts": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 950,
+            "raw": "See [the guidelines](/guidelines) and https://example.com/page for more.",
+            "wiki": false,
+            "reads": 0,
+            "score": null,
+            "cooked": "<p>See <a href=\"/guidelines\">the guidelines</a> and <a href=\"https://example.com/page\">https://example.com/page</a> for more.</p>",
+            "hidden": false,
+            "locale": null,
+            "user_id": 3,
+            "version": 1,
+            "baked_at": null,
+            "topic_id": 35,
+            "hidden_at": null,
+            "post_type": 1,
+            "raw_email": null,
+            "via_email": false,
+            "created_at": "2026-10-13T12:47:13.351926",
+            "deleted_at": null,
+            "like_count": 0,
+            "like_score": 0,
+            "self_edits": 0,
+            "sort_order": 6,
+            "spam_count": 0,
+            "updated_at": "2026-10-13T12:47:13.351926",
+            "word_count": null,
+            "action_code": null,
+            "cook_method": 1,
+            "edit_reason": null,
+            "post_number": 6,
+            "quote_count": 0,
+            "reply_count": 0,
+            "locked_by_id": null,
+            "percent_rank": 1,
+            "reply_quoted": false,
+            "user_deleted": false,
+            "baked_version": null,
+            "deleted_by_id": null,
+            "illegal_count": 0,
+            "qa_vote_count": 0,
+            "bookmark_count": 0,
+            "last_editor_id": null,
+            "public_version": 1,
+            "image_upload_id": null,
+            "last_version_at": "2026-10-13T12:47:13.351926",
+            "off_topic_count": 0,
+            "hidden_reason_id": null,
+            "reply_to_user_id": null,
+            "notify_user_count": 0,
+            "inappropriate_count": 0,
+            "incoming_link_count": 0,
+            "outbound_message_id": null,
+            "reply_to_post_number": null,
+            "notify_moderators_count": 0
+          },
+          "after": {
+            "id": 950,
+            "raw": "See [the guidelines](/guidelines) and https://example.com/page for more.",
+            "wiki": false,
+            "reads": 0,
+            "score": null,
+            "cooked": "<p>See <a href=\"/guidelines\">the guidelines</a> and <a href=\"https://example.com/page\">https://example.com/page</a> for more.</p>",
+            "hidden": false,
+            "locale": null,
+            "user_id": 3,
+            "version": 1,
+            "baked_at": null,
+            "topic_id": 35,
+            "hidden_at": null,
+            "post_type": 1,
+            "raw_email": null,
+            "via_email": false,
+            "created_at": "2026-10-13T12:47:13.351926",
+            "deleted_at": "2026-10-13T13:47:16.001571",
+            "like_count": 0,
+            "like_score": 0,
+            "self_edits": 0,
+            "sort_order": 6,
+            "spam_count": 0,
+            "updated_at": "2026-10-13T12:47:13.351926",
+            "word_count": null,
+            "action_code": null,
+            "cook_method": 1,
+            "edit_reason": null,
+            "post_number": 6,
+            "quote_count": 0,
+            "reply_count": 0,
+            "locked_by_id": null,
+            "percent_rank": 1,
+            "reply_quoted": false,
+            "user_deleted": false,
+            "baked_version": null,
+            "deleted_by_id": 1,
+            "illegal_count": 0,
+            "qa_vote_count": 0,
+            "bookmark_count": 0,
+            "last_editor_id": null,
+            "public_version": 1,
+            "image_upload_id": null,
+            "last_version_at": "2026-10-13T12:47:13.351926",
+            "off_topic_count": 0,
+            "hidden_reason_id": null,
+            "reply_to_user_id": null,
+            "notify_user_count": 0,
+            "inappropriate_count": 0,
+            "incoming_link_count": 0,
+            "outbound_message_id": null,
+            "reply_to_post_number": null,
+            "notify_moderators_count": 0
+          }
+        }
+      ]
+    },
+    "topic_link_clicks": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 1,
+          "user_id": 2,
+          "created_at": "2026-10-13T13:47:13.351926",
+          "ip_address": "203.0.113.5",
+          "updated_at": "2026-10-13T13:47:13.351926",
+          "topic_link_id": 901
+        }
+      ],
+      "updated": []
+    },
+    "topic_links": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 900,
+          "url": "/guidelines",
+          "quote": false,
+          "title": null,
+          "clicks": 0,
+          "domain": "localhost",
+          "post_id": 950,
+          "user_id": 3,
+          "internal": true,
+          "topic_id": 35,
+          "extension": null,
+          "crawled_at": null,
+          "created_at": "2026-10-13T13:47:13.351926",
+          "reflection": false,
+          "updated_at": "2026-10-13T13:47:13.351926",
+          "link_post_id": null,
+          "link_topic_id": null
+        },
+        {
+          "id": 901,
+          "url": "https://example.com/page",
+          "quote": false,
+          "title": null,
+          "clicks": 0,
+          "domain": "example.com",
+          "post_id": 950,
+          "user_id": 3,
+          "internal": false,
+          "topic_id": 35,
+          "extension": null,
+          "crawled_at": null,
+          "created_at": "2026-10-13T13:47:13.351926",
+          "reflection": false,
+          "updated_at": "2026-10-13T13:47:13.351926",
+          "link_post_id": null,
+          "link_topic_id": null
+        }
+      ],
+      "updated": []
+    },
+    "topics": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 35,
+            "slug": "parity-fixture-replies-and-posters",
+            "score": 3.2,
+            "title": "Parity fixture: replies and posters",
+            "views": 0,
+            "closed": false,
+            "locale": null,
+            "excerpt": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+            "subtype": null,
+            "user_id": 2,
+            "visible": true,
+            "archived": false,
+            "archetype": "regular",
+            "bumped_at": "2026-10-01T15:39:51.834549",
+            "pinned_at": null,
+            "created_at": "2026-09-30T07:28:28.864868",
+            "deleted_at": null,
+            "like_count": 1,
+            "spam_count": 0,
+            "updated_at": "2026-10-01T15:39:52.00791",
+            "word_count": 68,
+            "category_id": 4,
+            "external_id": null,
+            "fancy_title": "Parity fixture: replies and posters",
+            "has_summary": false,
+            "posts_count": 6,
+            "reply_count": 0,
+            "percent_rank": 1,
+            "pinned_until": null,
+            "deleted_by_id": null,
+            "featured_link": null,
+            "bannered_until": null,
+            "last_posted_at": "2026-10-01T15:39:51.834549",
+            "image_upload_id": null,
+            "pinned_globally": false,
+            "reviewable_score": 0,
+            "featured_user1_id": 3,
+            "featured_user2_id": null,
+            "featured_user3_id": 1,
+            "featured_user4_id": 4,
+            "last_post_user_id": 2,
+            "participant_count": 4,
+            "slow_mode_seconds": 0,
+            "og_image_upload_id": null,
+            "highest_post_number": 6,
+            "incoming_link_count": 0,
+            "visibility_reason_id": null,
+            "moderator_posts_count": 0,
+            "notify_moderators_count": 0,
+            "highest_staff_post_number": 5
+          },
+          "after": {
+            "id": 35,
+            "slug": "parity-fixture-replies-and-posters",
+            "score": 3.2,
+            "title": "Parity fixture: replies and posters",
+            "views": 0,
+            "closed": false,
+            "locale": null,
+            "excerpt": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+            "subtype": null,
+            "user_id": 2,
+            "visible": true,
+            "archived": false,
+            "archetype": "regular",
+            "bumped_at": "2026-10-01T15:39:51.834549",
+            "pinned_at": null,
+            "created_at": "2026-09-30T07:28:28.864868",
+            "deleted_at": null,
+            "like_count": 1,
+            "spam_count": 0,
+            "updated_at": "2026-10-13T13:47:16.017393",
+            "word_count": 68,
+            "category_id": 4,
+            "external_id": null,
+            "fancy_title": "Parity fixture: replies and posters",
+            "has_summary": false,
+            "posts_count": 5,
+            "reply_count": 0,
+            "percent_rank": 1,
+            "pinned_until": null,
+            "deleted_by_id": null,
+            "featured_link": null,
+            "bannered_until": null,
+            "last_posted_at": "2026-10-01T15:39:51.834549",
+            "image_upload_id": null,
+            "pinned_globally": false,
+            "reviewable_score": 0,
+            "featured_user1_id": 3,
+            "featured_user2_id": null,
+            "featured_user3_id": 1,
+            "featured_user4_id": 4,
+            "last_post_user_id": 2,
+            "participant_count": 4,
+            "slow_mode_seconds": 0,
+            "og_image_upload_id": null,
+            "highest_post_number": 5,
+            "incoming_link_count": 0,
+            "visibility_reason_id": null,
+            "moderator_posts_count": 0,
+            "notify_moderators_count": 0,
+            "highest_staff_post_number": 5
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 488,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "8cUbC60fMZ7n1PnA/s8cvauY+o4=",
+            "created_at": "2026-10-13T13:47:14.435329",
+            "rotated_at": "2026-10-13T13:47:14.431326",
+            "updated_at": "2026-10-13T13:47:14.435329",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "8cUbC60fMZ7n1PnA/s8cvauY+o4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 488,
+            "seen_at": "2026-10-13T13:47:15.943155",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "8cUbC60fMZ7n1PnA/s8cvauY+o4=",
+            "created_at": "2026-10-13T13:47:14.435329",
+            "rotated_at": "2026-10-13T13:47:14.431326",
+            "updated_at": "2026-10-13T13:47:14.435329",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "8cUbC60fMZ7n1PnA/s8cvauY+o4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 17,
+          "context": null,
+          "details": "id: 950\ncreated_at: 2026-10-13 12:47:13 UTC\nuser: user1 (User1)\ntopic: Parity fixture: replies and posters\npost_number: 6\nraw: See [the guidelines](/guidelines) and https://example.com/page for more.",
+          "post_id": 950,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": false,
+          "created_at": "2026-10-13T13:47:16.036068",
+          "ip_address": null,
+          "updated_at": "2026-10-13T13:47:16.036068",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_stats": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "user_id": 3,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:16.445924",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 1,
+            "topic_count": 1,
+            "bounce_score": 0,
+            "days_visited": 1,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 1,
+            "topics_entered": 0,
+            "first_unread_at": "2026-10-01T15:39:52.00791",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 2,
+            "first_unread_pm_at": "2026-10-01T15:39:51.342717",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 4,
+            "first_post_created_at": "2026-09-30T07:28:29.079439",
+            "reset_bounce_score_after": null
+          },
+          "after": {
+            "user_id": 3,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:16.445924",
+            "time_read": 0,
+            "post_count": 0,
+            "draft_count": 0,
+            "likes_given": 1,
+            "topic_count": 1,
+            "bounce_score": 0,
+            "days_visited": 1,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 1,
+            "topics_entered": 0,
+            "first_unread_at": "2026-10-01T15:39:52.00791",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 2,
+            "first_unread_pm_at": "2026-10-01T15:39:51.342717",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 4,
+            "first_post_created_at": "2026-09-30T07:28:29.079439",
+            "reset_bounce_score_after": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "crawl_topic_link",
+      {
+        "topic_link_id": 900
+      }
+    ],
+    [
+      "crawl_topic_link",
+      {
+        "topic_link_id": 901
+      }
+    ],
+    [
+      "feature_topic_users",
+      {
+        "topic_id": 35
+      }
+    ],
+    [
+      "bot_input",
+      {
+        "user_id": 1,
+        "post_id": 950,
+        "topic_id": 35,
+        "input": "delete"
+      }
+    ],
+    [
+      "sync_topic_user_bookmarked",
+      {
+        "topic_id": 35
+      }
+    ]
+  ],
+  "next_ids": {
+    "user_histories": 74
+  },
+  "setup": [
+    "INSERT INTO posts (id, topic_id, user_id, post_number, raw, cooked, created_at, updated_at, last_version_at, sort_order) VALUES (950, 35, 3, 6, 'See [the guidelines](/guidelines) and https://example.com/page for more.', '<p>See <a href=\"/guidelines\">the guidelines</a> and <a href=\"https://example.com/page\">https://example.com/page</a> for more.</p>', now() - interval '1 hour', now() - interval '1 hour', now() - interval '1 hour', 6)",
+    "UPDATE topics SET highest_post_number = 6, posts_count = 6 WHERE id = 35",
+    "INSERT INTO topic_links (id, topic_id, post_id, user_id, url, domain, internal, reflection, quote, created_at, updated_at) VALUES (900, 35, 950, 3, '/guidelines', 'localhost', TRUE, FALSE, FALSE, now(), now()), (901, 35, 950, 3, 'https://example.com/page', 'example.com', FALSE, FALSE, FALSE, now(), now())",
+    "INSERT INTO topic_link_clicks (topic_link_id, user_id, ip_address, created_at, updated_at) VALUES (901, 2, '203.0.113.5', now(), now())"
+  ],
+  "recorded_from": {
+    "case": "b9ce8551ff8eb5642e507584f47e48191778921c6c4a6ccc77be737575500252",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

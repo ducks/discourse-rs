@@ -97,9 +97,6 @@ pub async fn revise(
     .bind(post.topic_id)
     .fetch_one(&mut *conn)
     .await?;
-    if archetype == "private_message" {
-        return Err(Unsupported("editing messages").into());
-    }
     if post.hidden {
         return Err(Unsupported("editing hidden posts").into());
     }
@@ -240,7 +237,7 @@ pub async fn revise(
     if analysis.has_upload_media {
         return Err(Unsupported("posts with uploaded video or audio").into());
     }
-    let private_message = false;
+    let private_message = archetype == "private_message";
     let errors = if changes.skip_validations {
         Vec::new()
     } else {
@@ -363,8 +360,9 @@ pub async fn revise(
     // PostActionNotifier.after_create_post_revision: the author when
     // someone else edits, and the topic's watchers when a wiki or freely
     // editable first post changes; told once the edit commits.
-    let notify_disabled =
-        s.get("disable_system_edit_notifications")?.truthy() && editor_user.id == -1;
+    // None for edits in messages.
+    let notify_disabled = archetype == "private_message"
+        || (s.get("disable_system_edit_notifications")?.truthy() && editor_user.id == -1);
     if !notify_disabled {
         let mut user_ids: Vec<i32> = Vec::new();
         if let Some(author) = post.user_id
