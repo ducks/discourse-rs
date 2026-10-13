@@ -49,7 +49,7 @@ Bugs or silent gaps in what is merged, small and independent.
 5. ~~`feat/chat-dm-reads`~~ (done) L: a DM channel row (restored backups have
    them) makes chat's channel list refuse, failing every page of that
    member; the DM reads, serializers and drawer list [messages-dms]
-5b. `feat/chat-dm-page` M: the full-page DM channel (header, title,
+5b. ~~`feat/chat-dm-page`~~ (done) M: the full-page DM channel (header, title,
    avatars, messages and composer for a DM), refused today once the
    sidebar links to it [messages-dms]
 6. ~~`feat/harness-fixture-dates`~~ (not needed): replay shifts each

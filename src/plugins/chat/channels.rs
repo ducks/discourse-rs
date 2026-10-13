@@ -563,14 +563,14 @@ impl Context<'_> {
         let by_username = settings.get("prioritize_username_in_ux")?.truthy()
             || !settings.get("enable_names")?.truthy();
         // Real, active, unstaged, unsuspended, unsilenced users following
-        // the channel.
+        // the channel (any member, in a DM).
         let mut sql = String::from(
             "SELECT users.id, users.username, users.name, users.uploaded_avatar_id, \
                     COALESCE(user_options.chat_enabled, FALSE) AS chat_enabled \
              FROM user_chat_channel_memberships m \
              JOIN users ON users.id = m.user_id \
              LEFT JOIN user_options ON user_options.user_id = users.id \
-             WHERE m.chat_channel_id = $1 AND m.following \
+             WHERE m.chat_channel_id = $1 AND (m.following OR $6 = 'DirectMessage') \
                AND users.id > 0 \
                AND NOT EXISTS (SELECT 1 FROM anonymous_users a WHERE a.user_id = users.id) \
                AND users.active AND NOT users.staged \
@@ -617,6 +617,7 @@ impl Context<'_> {
             .bind(format!("%{}%", username.unwrap_or_default()))
             .bind(offset)
             .bind(limit)
+            .bind(&channel.chatable_type)
             .fetch_all(&mut *self.conn)
             .await?;
 

@@ -138,14 +138,14 @@ impl Context<'_> {
         };
 
         let mut out = String::from("<div class=\"c-routes --channel\">");
-        out.push_str(&self.navbar(&channel_json, following)?);
+        out.push_str(&self.navbar(&channel_json, following, &view.online)?);
 
         let mut classes = String::from("chat-channel --loaded");
         if messages.is_empty() {
             classes.push_str(" is-empty");
         }
         out.push_str(&format!(
-            "<div class=\"{classes}\" data-id=\"{}\" data-label-today=\"{}\" data-label-yesterday=\"{}\" data-label-last-visit=\"{}\" data-format-time=\"{}\" data-format-tiny=\"{}\" data-format-title=\"{}\" data-format-date=\"{}\" data-last-read=\"{}\" data-following=\"{}\" data-viewer-id=\"{}\" data-staff=\"{}\" data-can-moderate=\"{}\" data-label-deleted-one=\"{}\" data-label-deleted-other=\"{}\">",
+            "<div class=\"{classes}\" data-id=\"{}\" data-label-today=\"{}\" data-label-yesterday=\"{}\" data-label-last-visit=\"{}\" data-format-time=\"{}\" data-format-tiny=\"{}\" data-format-title=\"{}\" data-format-date=\"{}\" data-last-read=\"{}\" data-following=\"{}\" data-viewer-id=\"{}\" data-staff=\"{}\" data-can-moderate=\"{}\" data-label-deleted-one=\"{}\" data-label-deleted-other=\"{}\" data-direct-message=\"{}\">",
             channel.id,
             escape(&t("chat.chat_message_separator.today")),
             escape(&t("chat.chat_message_separator.yesterday")),
@@ -162,11 +162,12 @@ impl Context<'_> {
             channel_json["meta"]["can_moderate"] == true,
             escape(&t("chat.deleted.one")),
             escape(&t("chat.deleted.other")),
+            channel.chatable_type == "DirectMessage",
         ));
         out.push_str(&channel_status(&channel_json, &t));
         out.push_str(&format!(
             "<div class=\"chat-notices\">{}</div>",
-            self.retention_reminder().await?
+            self.retention_reminder(&channel_json).await?
         ));
         out.push_str(
             "<div class=\"chat-messages-scroller\"><div class=\"chat-messages-container\">",
@@ -251,7 +252,9 @@ impl Context<'_> {
             "<div class=\"chat-scroll-to-bottom\"><button class=\"btn no-text btn-flat chat-scroll-to-bottom__button\" type=\"button\"><span class=\"chat-scroll-to-bottom__arrow\">{}</span></button></div>",
             d_icon("arrow-down", None)
         ));
-        if !following {
+        // The preview card is a category channel's; a DM always has the
+        // composer (chat.js follows it on opening).
+        if !following && channel.chatable_type != "DirectMessage" {
             out.push_str(&preview_card(&channel_json, &t));
         } else {
             out.push_str(&self.composer(channel, &channel_json).await?);
@@ -360,10 +363,7 @@ impl Context<'_> {
         let Some(channel) = channel else {
             return Ok(None);
         };
-        if channel.chatable_type != "Category" {
-            return Err(Unsupported("chat direct messages").into());
-        }
-        if !self.can_see_category(channel.chatable_id).await? {
+        if !self.can_preview(&channel).await? {
             return Ok(None);
         }
         let found: Option<(Option<i32>, bool)> = sqlx::query_as(
@@ -455,19 +455,35 @@ impl Context<'_> {
     /// ChatRetentionReminder on a category channel, for staff who haven't
     /// dismissed it while channel messages expire
     /// (`needs_channel_retention_reminder`).
-    async fn retention_reminder(&mut self) -> Result<String, AppError> {
+    async fn retention_reminder(&mut self, c: &Value) -> Result<String, AppError> {
         let i18n = self.i18n;
         let t = move |key: &str| js(i18n, key);
-        let days = self.settings.get("chat_channel_retention_days")?.to_i();
+        let dm = c["chatable_type"] == "DirectMessage";
+        // needs_dm_retention_reminder (anyone) or
+        // needs_channel_retention_reminder (staff), with the type's days.
+        let days = self
+            .settings
+            .get(if dm {
+                "chat_dm_retention_days"
+            } else {
+                "chat_channel_retention_days"
+            })?
+            .to_i();
         let Some(user_id) = self.guardian.user_id() else {
             return Ok(String::new());
         };
-        if !self.guardian.is_staff() || days == 0 {
+        if (!dm && !self.guardian.is_staff()) || days == 0 {
             return Ok(String::new());
         }
         let dismissed = super::options(&mut *self.conn, user_id)
             .await?
-            .and_then(|o| o.dismissed_channel_retention_reminder)
+            .and_then(|o| {
+                if dm {
+                    o.dismissed_dm_retention_reminder
+                } else {
+                    o.dismissed_channel_retention_reminder
+                }
+            })
             .unwrap_or(false);
         if dismissed {
             return Ok(String::new());
@@ -497,17 +513,17 @@ impl Context<'_> {
 
     /// ChatNavbar on the channel route: the title (linking to the
     /// channel's settings), the star, and the actions.
-    fn navbar(&self, c: &Value, following: bool) -> Result<String, AppError> {
+    fn navbar(&self, c: &Value, following: bool, online: &[i64]) -> Result<String, AppError> {
         let i18n = self.i18n;
         let t = move |key: &str| js(i18n, key);
-        let slug = s(&c["slug"]);
+        let slug = &slugified_title(c);
         let id = c["id"].as_i64().unwrap_or(0);
         let mut out = String::from("<div class=\"c-navbar-container\"><nav class=\"c-navbar\">");
         out.push_str(&format!(
             "<a class=\"c-navbar__channel-title\" href=\"{}/chat/c/{}/{id}/info/settings\">{}</a>",
             self.base_path,
             escape(slug),
-            channel_title(c, &self.emoji_set()?, self.base_path)
+            channel_title(c, &self.emoji_set()?, self.base_path, online)
         ));
         if following {
             let starred = c["current_user_membership"]["starred"] == true;
@@ -566,6 +582,33 @@ impl Context<'_> {
     ) -> Result<String, AppError> {
         let i18n = self.i18n;
         let t = move |key: &str| js(i18n, key);
+        // A one-to-one DM: the other user's face, its own title, no tip
+        // or facepile.
+        if c["chatable_type"] == "DirectMessage" && c["chatable"]["group"] != true {
+            let image = match c["chatable"]["users"].get(0) {
+                Some(u) => avatar(u, 96),
+                None => String::new(),
+            };
+            let mut out = String::from(
+                "<div class=\"empty-state__container --chat-channel --with-image\"><div class=\"empty-state\">",
+            );
+            out.push_str(&format!("<div class=\"empty-state__image\">{image}</div>"));
+            out.push_str(&format!(
+                "<div class=\"empty-state__title\" data-test-title=\"\">{}</div>",
+                escape(
+                    &t("chat.channel.empty_state.direct_message_title")
+                        .replace("%{name}", s(&c["title"]))
+                )
+            ));
+            if let Some(description) = c["description"].as_str() {
+                out.push_str(&format!(
+                    "<div class=\"empty-state__body\"><p data-test-body=\"\">{}</p></div>",
+                    escape(description)
+                ));
+            }
+            out.push_str("<div class=\"empty-state__tip\"></div></div></div>");
+            return Ok(out);
+        }
         let channel_name = format!("#{}", s(&c["title"]));
         let total = c["memberships_count"].as_i64().unwrap_or(0);
         let count = (if following { total - 1 } else { total }).max(0);
@@ -658,6 +701,30 @@ impl Context<'_> {
             t(&format!("chat.placeholder_new_message_disallowed.{status}"))
         } else if !can_interact {
             t("chat.placeholder_silenced")
+        } else if c["chatable_type"] == "DirectMessage" {
+            // #messageRecipients for a DM: a group's, the viewer alone, or
+            // the others by name (else @username).
+            let users = c["chatable"]["users"]
+                .as_array()
+                .cloned()
+                .unwrap_or_default();
+            let viewer = i64::from(self.guardian.user_id().unwrap_or(0));
+            if c["chatable"]["group"] == true {
+                t("chat.placeholder_group")
+            } else if users.len() == 1 && users[0]["id"].as_i64() == Some(viewer) {
+                t("chat.placeholder_self")
+            } else {
+                let comma = self.i18n.t("js.word_connector.comma").unwrap_or(", ");
+                let names = users
+                    .iter()
+                    .map(|u| match u["name"].as_str().filter(|n| !n.is_empty()) {
+                        Some(name) => name.to_string(),
+                        None => format!("@{}", s(&u["username"])),
+                    })
+                    .collect::<Vec<_>>()
+                    .join(comma);
+                t("chat.placeholder_users").replace("%{commaSeparatedNames}", &names)
+            }
         } else {
             t("chat.placeholder_channel").replace("%{channelName}", &format!("#{}", s(&c["title"])))
         };
@@ -881,7 +948,60 @@ impl Context<'_> {
 
 /// ChatChannelTitle: the channel's icon (its emoji, else the chat icon in
 /// the category's color, locked for a restricted category) and its name.
-fn channel_title(c: &Value, emoji_set: &str, base_path: &str) -> String {
+/// ChatChannel#slugifiedTitle: the slug, else the title slugified.
+pub(crate) fn slugified_title(c: &Value) -> String {
+    crate::routes::user_menu::slugify_channel(c["slug"].as_str(), &escape(s(&c["title"])))
+}
+
+/// ChatUserAvatar, not interactive: the avatar in a span, marked online
+/// when the user is on /chat/online.
+fn static_user_avatar(user: &Value, size: u32, online: &[i64]) -> String {
+    let is_online = user["id"].as_i64().is_some_and(|id| online.contains(&id));
+    format!(
+        "<div class=\"chat-user-avatar{}\" data-username=\"{}\"><span class=\"chat-user-avatar__container\">{}</span></div>",
+        if is_online { " is-online" } else { "" },
+        escape(s(&user["username"])),
+        avatar(user, size)
+    )
+}
+
+/// ChatChannelTitle: the channel's icon (ChannelIcon) and its name.
+fn channel_title(c: &Value, emoji_set: &str, base_path: &str, online: &[i64]) -> String {
+    if c["chatable_type"] == "DirectMessage" {
+        let users = c["chatable"]["users"]
+            .as_array()
+            .cloned()
+            .unwrap_or_default();
+        let first = users.first();
+        let face = |u: Option<&Value>| match u {
+            Some(u) => format!(
+                "<div class=\"chat-channel-icon --avatar\">{}</div>",
+                static_user_avatar(u, 24, online)
+            ),
+            None => "<div class=\"chat-channel-icon --avatar\"></div>".to_string(),
+        };
+        let icon = if c["chatable"]["group"] == true {
+            if let Some(emoji) = c["emoji"].as_str() {
+                format!(
+                    "<div class=\"chat-channel-icon --emoji\">{}</div>",
+                    emoji_img(emoji_set, base_path, emoji)
+                )
+            } else if users.len() == 1 {
+                face(first)
+            } else {
+                format!(
+                    "<div class=\"chat-channel-icon --users-count\">{}</div>",
+                    c["memberships_count"].as_i64().unwrap_or(0)
+                )
+            }
+        } else {
+            face(first)
+        };
+        return format!(
+            "<div class=\"chat-channel-title is-dm\">{icon}<div class=\"chat-channel-name\"><div class=\"chat-channel-name__label\">{}</div></div></div>",
+            escape(c["unicode_title"].as_str().unwrap_or(s(&c["title"])))
+        );
+    }
     let icon = match c["emoji"].as_str() {
         Some(emoji) => emoji_img(emoji_set, base_path, emoji),
         None => d_icon("d-chat", None),

@@ -1,0 +1,145 @@
+{
+  "name": "dm_star",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/chat/api/channels/3/memberships/me.json",
+      "params": {
+        "starred": "true"
+      }
+    }
+  ],
+  "started_at": "2026-10-13T01:10:02.912847",
+  "transaction_started_at": "2026-10-13T01:10:02.067962",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "membership": {
+          "following": true,
+          "muted": false,
+          "notification_level": "always",
+          "chat_channel_id": 3,
+          "last_read_message_id": null,
+          "last_viewed_at": "2026-10-12T23:10:02.067Z",
+          "last_viewed_pins_at": null,
+          "starred": true,
+          "has_unseen_pins": false,
+          "user": {
+            "id": 3,
+            "username": "user1",
+            "name": "User1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+            "can_chat": true,
+            "has_chat_enabled": true
+          }
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 488,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "JbFl8lGfv9GZq7OhvSJoZImUYuw=",
+            "created_at": "2026-10-13T01:10:02.411185",
+            "rotated_at": "2026-10-13T01:10:02.410958",
+            "updated_at": "2026-10-13T01:10:02.411185",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "JbFl8lGfv9GZq7OhvSJoZImUYuw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 488,
+            "seen_at": "2026-10-13T01:10:02.921662",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "JbFl8lGfv9GZq7OhvSJoZImUYuw=",
+            "created_at": "2026-10-13T01:10:02.411185",
+            "rotated_at": "2026-10-13T01:10:02.410958",
+            "updated_at": "2026-10-13T01:10:02.411185",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "JbFl8lGfv9GZq7OhvSJoZImUYuw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_chat_channel_memberships": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 5,
+            "muted": false,
+            "starred": false,
+            "user_id": 3,
+            "following": true,
+            "join_mode": 0,
+            "created_at": "2026-10-12T23:10:02.067962",
+            "updated_at": "2026-10-12T23:10:02.067962",
+            "last_viewed_at": "2026-10-12T23:10:02.067962",
+            "chat_channel_id": 3,
+            "notification_level": 2,
+            "last_viewed_pins_at": null,
+            "last_read_message_id": null,
+            "mobile_notification_level": 1,
+            "desktop_notification_level": 1,
+            "last_unread_mention_when_emailed_id": null
+          },
+          "after": {
+            "id": 5,
+            "muted": false,
+            "starred": true,
+            "user_id": 3,
+            "following": true,
+            "join_mode": 0,
+            "created_at": "2026-10-12T23:10:02.067962",
+            "updated_at": "2026-10-13T01:10:02.937133",
+            "last_viewed_at": "2026-10-12T23:10:02.067962",
+            "chat_channel_id": 3,
+            "notification_level": 2,
+            "last_viewed_pins_at": null,
+            "last_read_message_id": null,
+            "mobile_notification_level": 1,
+            "desktop_notification_level": 1,
+            "last_unread_mention_when_emailed_id": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO direct_message_channels (id, \"group\", created_at, updated_at) VALUES (1, false, now() - interval '2 hours', now() - interval '2 hours')",
+    "INSERT INTO direct_message_users (direct_message_channel_id, user_id, created_at, updated_at) VALUES (1, 3, now() - interval '2 hours', now() - interval '2 hours'), (1, 4, now() - interval '2 hours', now() - interval '2 hours')",
+    "INSERT INTO chat_channels (id, chatable_type, chatable_id, type, status, user_count, name, created_at, updated_at) VALUES (3, 'DirectMessage', 1, 'DirectMessageChannel', 0, 2, NULL, now() - interval '2 hours', now() - interval '2 hours')",
+    "INSERT INTO user_chat_channel_memberships (user_id, chat_channel_id, following, muted, notification_level, last_viewed_at, created_at, updated_at) VALUES (3, 3, true, false, 2, now() - interval '2 hours', now() - interval '2 hours', now() - interval '2 hours'), (4, 3, false, false, 2, now() - interval '2 hours', now() - interval '2 hours', now() - interval '2 hours')",
+    "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id) VALUES (1, 3, 4, now() - interval '30 minutes', now() - interval '30 minutes', 'hi there', '<p>hi there</p>', 1, 4)",
+    "UPDATE chat_channels SET last_message_id = 1, messages_count = 1 WHERE id = 3",
+    "SELECT setval('chat_channels_id_seq', 20)",
+    "SELECT setval('direct_message_channels_id_seq', 20)",
+    "SELECT setval('chat_messages_id_seq', 20)"
+  ],
+  "recorded_from": {
+    "case": "43a8b73579f457e9e189d82b1a7e50024ce418b5fef7ae68cb9b0466daf0a531",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
