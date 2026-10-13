@@ -52,6 +52,10 @@
     <link rel="stylesheet" href="{{ crate::assets::url(base_path, "discourse.css") }}">
     {#- Styles of the pages not ported to Discourse's look yet. -#}
     <link rel="stylesheet" href="{{ crate::assets::url(base_path, "site.css") }}">
+    {#- The current-user-mention-css initializer: the viewer's own mentions. -#}
+    {% if let Some(v) = viewer %}
+    <style id="current-user-mention-css">.mention[href="{{ base_path }}/u/{{ v.username }}" i] { background: var(--tertiary-400); }</style>
+    {% endif %}
   </head>
   {#- A member's htmx requests carry their CSRF token, as Rails' client does;
       links swap the next page in (page.js). -#}

@@ -1,0 +1,180 @@
+/*
+ * Cooked content's pieces outside topic-post.scss, ported from
+ * base/d-image-grid.scss, base/emoji.scss and components/hashtag.scss as
+ * Rails compiles them into common.css, in import order. Each rule is the
+ * compiled rule of the source line it names.
+ */
+/* common/base/d-image-grid.scss */
+
+/* d-image-grid.scss:4 */
+.d-image-grid:not([data-disabled])[data-columns] {
+  display: flex;
+  flex-wrap: wrap;
+}
+/* d-image-grid.scss:9 */
+.d-image-grid:not([data-disabled])[data-columns="2"]>* {
+  flex-basis: calc(50% - 3px);
+  margin-right: 6px;
+}
+/* d-image-grid.scss:14 */
+.d-image-grid:not([data-disabled])[data-columns="3"]>* {
+  flex-basis: calc(33.33% - 4.002px);
+  margin-right: 6px;
+}
+/* d-image-grid.scss:19 */
+.d-image-grid:not([data-disabled]) .d-image-grid-column {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+/* d-image-grid.scss:29 */
+.d-image-grid:not([data-disabled]) .d-image-grid-column .button-wrapper {
+  bottom: 0;
+  min-width: unset;
+}
+/* d-image-grid.scss:34 */
+.d-image-grid:not([data-disabled]) .d-image-grid-column>div,
+.d-image-grid:not([data-disabled]) .d-image-grid-column>span {
+  flex-grow: 1;
+  overflow: hidden;
+  max-height: 1200px;
+}
+/* d-image-grid.scss:43 */
+.d-image-grid:not([data-disabled]) .d-image-grid-column>div img:not(.thumbnail,.ytp-thumbnail-image,.emoji),
+.d-image-grid:not([data-disabled]) .d-image-grid-column>span img:not(.thumbnail,.ytp-thumbnail-image,.emoji) {
+  height: 100%;
+  object-fit: cover;
+}
+/* d-image-grid.scss:49 */
+.d-image-grid:not([data-disabled]) .d-image-grid-column:last-child {
+  margin-right: 0;
+}
+/* d-image-grid.scss:53 */
+.d-image-grid:not([data-disabled]) .d-image-grid-column>img,
+.d-image-grid:not([data-disabled]) .d-image-grid-column>div {
+  margin-bottom: 6px;
+}
+/* d-image-grid.scss:59 */
+.d-image-grid:not([data-disabled]) .d-image-grid-column img,
+.d-image-grid:not([data-disabled]) .d-image-grid-column>.lightbox-wrapper,
+.d-image-grid:not([data-disabled]) .d-image-grid-column>.lightbox-wrapper>.lightbox {
+  width: 100%;
+}
+/* d-image-grid.scss:66 */
+.d-image-grid:not([data-disabled]) .d-image-grid-column .lightbox-wrapper .meta .informations {
+  display: none;
+}
+/* d-image-grid.scss:70 */
+.d-image-grid:not([data-disabled]) .d-image-grid-column .lightbox-wrapper .meta .filename {
+  flex-grow: 3;
+}
+/* d-image-grid.scss:75 */
+.d-image-grid:not([data-disabled]) .d-image-grid-column .lightbox-wrapper>.lightbox {
+  height: 100%;
+}
+/* d-image-grid.scss:81 */
+.d-image-grid:not([data-disabled]) .d-image-grid-column .image-wrapper {
+  display: block;
+  margin-bottom: 6px;
+  padding-bottom: 0;
+}
+
+/* common/base/emoji.scss */
+
+/* emoji.scss:1 */
+img.emoji {
+  width: 1em;
+  height: 1em;
+  vertical-align: text-bottom;
+}
+/* emoji.scss:6 */
+h1 img.emoji,
+h2 img.emoji,
+h3 img.emoji,
+h4 img.emoji,
+h5 img.emoji,
+h6 img.emoji {
+  vertical-align: middle;
+}
+/* emoji.scss:16 */
+img.emoji.only-emoji {
+  width: 32px;
+  height: 32px;
+  margin: .5em 0;
+}
+/* emoji.scss:26 */
+a img.emoji.only-emoji,
+.md-table img.emoji.only-emoji,
+.poll img.emoji.only-emoji,
+li img.emoji.only-emoji {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+}
+/* emoji.scss:33 */
+small img.emoji,
+sub img.emoji,
+sup img.emoji {
+  height: 1.1em;
+  width: 1.1em;
+}
+
+/* common/components/hashtag.scss */
+
+/* hashtag.scss:1 */
+.hashtag-cooked {
+  display: inline-block;
+  font-size: .93em;
+  font-weight: normal;
+  color: var(--primary);
+  padding: .2em .34em;
+  background: var(--mention-background-color);
+  border-radius: .6em;
+  text-decoration: none;
+  text-wrap: nowrap;
+  line-height: 1;
+  unicode-bidi: plaintext;
+}
+/* mixins.scss:257 */
+.hashtag-cooked[data-valid=false] {
+  background: unset;
+  padding: 0;
+}
+/* mixins.scss:262 */
+.hashtag-cooked.--bot {
+  background: var(--success-low);
+}
+/* mixins.scss:266 */
+.hashtag-cooked.--wide {
+  background: var(--highlight-low-or-medium);
+}
+/* hashtag.scss:4 */
+.hashtag-cooked:visited,
+.hashtag-cooked:hover {
+  color: var(--primary);
+}
+/* hashtag.scss:9 */
+.hashtag-cooked .hashtag-icon-placeholder {
+  width: .72em;
+  height: .72em;
+  display: inline-block;
+  color: var(--primary-medium);
+  margin-right: var(--space-1);
+}
+/* hashtag.scss:17 */
+.hashtag-cooked img.emoji,
+.hashtag-cooked svg {
+  width: .93em;
+  height: .93em;
+  vertical-align: -0.125em;
+  margin-right: var(--space-1);
+}
+/* hashtag.scss:25 */
+.hashtag-cooked .hashtag-category-square {
+  display: inline-block;
+  width: .72em;
+  height: .72em;
+  margin-left: .1em;
+  margin-right: var(--space-1);
+}

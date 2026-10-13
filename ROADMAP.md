@@ -131,7 +131,7 @@ Bugs or silent gaps in what is merged, small and independent.
 
 ### Phase 5: the client's infrastructure
 
-41. `feat/cooked-css-basics` S (also the composer textarea's
+41. ~~`feat/cooked-css-basics`~~ (done) S (also the composer textarea's
     line-height: foundation.css ports one of discourse.scss's two
     textarea blocks), 42. `feat/hashtag-css` S/M
 43. `feat/onebox-local` M: internal topic, post, user and category

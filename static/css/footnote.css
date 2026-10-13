@@ -1,0 +1,105 @@
+/* footnote's footnotes.scss, as Rails compiles it. */
+
+/* footnotes.scss:1 */
+.inline-footnotes {
+  counter-reset: inline-footnote;
+}
+/* footnotes.scss:4 */
+.inline-footnotes a.expand-footnote {
+  -webkit-user-select: none;
+  user-select: none;
+  display: inline-block;
+}
+/* footnotes.scss:8 */
+.inline-footnotes a.expand-footnote::after {
+  padding: 0 .125em;
+  display: inline-block;
+  content: "[" counter(inline-footnote) "]";
+  vertical-align: super;
+  font-size: .75rem;
+  line-height: 1;
+  counter-increment: inline-footnote;
+}
+/* footnotes.scss:19 */
+.inline-footnotes .inline-footnote {
+  display: inline-block;
+}
+/* footnotes.scss:25 */
+.inline-footnotes .footnotes-list,
+.inline-footnotes .footnotes-sep {
+  position: absolute;
+  left: 0;
+  right: 0;
+}
+/* footnotes.scss:35 */
+.inline-footnotes .footnotes-sep,
+.inline-footnotes .footnotes-list,
+.inline-footnotes .footnote-ref {
+  display: none;
+}
+/* footnotes.scss:42 */
+.fk-d-tooltip__content[data-identifier=inline-footnote] {
+  overflow-wrap: break-word;
+  font-size: var(--font-down-1);
+}
+/* footnotes.scss:46 */
+.fk-d-tooltip__content[data-identifier=inline-footnote] .fk-d-tooltip__inner-content {
+  flex-direction: column;
+}
+/* footnotes.scss:50 */
+.fk-d-tooltip__content[data-identifier=inline-footnote] img {
+  object-fit: cover;
+  max-width: 100%;
+}
+/* footnotes.scss:55 */
+.fk-d-tooltip__content[data-identifier=inline-footnote] p {
+  margin: 0;
+  min-width: 0;
+  max-width: 100%;
+}
+/* footnotes.scss:62 */
+.ProseMirror {
+  counter-reset: prosemirror-footnote;
+}
+/* footnotes.scss:65 */
+.ProseMirror .footnote {
+  display: inline-block;
+}
+/* footnotes.scss:68 */
+.ProseMirror .footnote::after {
+  padding: 0 .125em;
+  display: inline-block;
+  content: "[" counter(prosemirror-footnote) "]";
+  vertical-align: super;
+  font-size: .75rem;
+  line-height: 1;
+  counter-increment: prosemirror-footnote;
+}
+/* footnotes.scss:79 */
+.ProseMirror .footnote-tooltip {
+  cursor: auto;
+  position: fixed;
+  max-height: 40%;
+  overflow: auto;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: .5rem;
+  padding-top: .5rem;
+  background-color: var(--primary-50);
+  border-radius: var(--d-border-radius);
+  z-index: 1600;
+}
+/* footnotes.scss:96 */
+.ProseMirror .footnote-tooltip:focus-within {
+  outline: 1px solid var(--content-border-color);
+}
+/* footnotes.scss:100 */
+.ProseMirror .footnote-tooltip::before {
+  top: .1rem;
+  left: .25rem;
+  position: absolute;
+  content: "[" var(--footnote-counter) "]:";
+  font-size: .75rem;
+  color: var(--primary-low-mid);
+}

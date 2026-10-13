@@ -15,13 +15,6 @@
   --below-topic-margin: 0.75em;
 }
 
-/* emoji.scss */
-img.emoji {
-  width: 1em;
-  height: 1em;
-  vertical-align: text-bottom;
-}
-
 /* _topic-list.scss */
 #header-list-area {
   background: var(--d-content-background);
