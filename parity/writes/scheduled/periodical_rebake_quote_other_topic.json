@@ -1,0 +1,232 @@
+{
+  "name": "periodical_rebake_quote_other_topic",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-13T02:17:20.699577",
+  "transaction_started_at": "2026-10-13T02:17:20.074537",
+  "responses": [],
+  "changes": {
+    "posts": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 52,
+            "raw": "[quote=\"user0, post:1, topic:38\"]\nquoted text\n[/quote]\n\nAnd my reply.",
+            "wiki": false,
+            "reads": 1,
+            "score": 0.2,
+            "cooked": "<p>Reply from user0 mentioning <a class=\"mention\" href=\"/u/user1\">@user1</a> so a mention notification exists.</p>",
+            "hidden": false,
+            "locale": null,
+            "user_id": 2,
+            "version": 1,
+            "baked_at": "2026-10-01T15:39:51.83451",
+            "topic_id": 35,
+            "hidden_at": null,
+            "post_type": 1,
+            "raw_email": null,
+            "via_email": false,
+            "created_at": "2026-10-01T15:39:51.834549",
+            "deleted_at": null,
+            "like_count": 0,
+            "like_score": 0,
+            "self_edits": 0,
+            "sort_order": 5,
+            "spam_count": 0,
+            "updated_at": "2026-10-01T15:39:51.834549",
+            "word_count": 10,
+            "action_code": null,
+            "cook_method": 1,
+            "edit_reason": null,
+            "post_number": 5,
+            "quote_count": 0,
+            "reply_count": 0,
+            "locked_by_id": null,
+            "percent_rank": 0.25,
+            "reply_quoted": false,
+            "user_deleted": false,
+            "baked_version": 1,
+            "deleted_by_id": null,
+            "illegal_count": 0,
+            "qa_vote_count": 0,
+            "bookmark_count": 0,
+            "last_editor_id": 2,
+            "public_version": 1,
+            "image_upload_id": null,
+            "last_version_at": "2026-10-01T15:39:51.872879",
+            "off_topic_count": 0,
+            "hidden_reason_id": null,
+            "reply_to_user_id": null,
+            "notify_user_count": 0,
+            "inappropriate_count": 0,
+            "incoming_link_count": 0,
+            "outbound_message_id": null,
+            "reply_to_post_number": null,
+            "notify_moderators_count": 0
+          },
+          "after": {
+            "id": 52,
+            "raw": "[quote=\"user0, post:1, topic:38\"]\nquoted text\n[/quote]\n\nAnd my reply.",
+            "wiki": false,
+            "reads": 1,
+            "score": 0.2,
+            "cooked": "<aside class=\"quote no-group\" data-username=\"user0\" data-post=\"1\" data-topic=\"38\">\n<div class=\"title\">\n<div class=\"quote-controls\"></div>\n<img alt=\"\" width=\"24\" height=\"24\" src=\"//localhost:3042/letter_avatar_proxy/v4/letter/u/94ad74/48.png\" class=\"avatar\"><a href=\"http://localhost:3042/t/parity-fixture-tagged-in-a-subcategory/38/1\">Parity fixture: tagged in a subcategory</a></div>\n<blockquote>\n<p>quoted text</p>\n</blockquote>\n</aside>\n<p>And my reply.</p>",
+            "hidden": false,
+            "locale": null,
+            "user_id": 2,
+            "version": 1,
+            "baked_at": "2026-10-13T02:17:20.764052",
+            "topic_id": 35,
+            "hidden_at": null,
+            "post_type": 1,
+            "raw_email": null,
+            "via_email": false,
+            "created_at": "2026-10-01T15:39:51.834549",
+            "deleted_at": null,
+            "like_count": 0,
+            "like_score": 0,
+            "self_edits": 0,
+            "sort_order": 5,
+            "spam_count": 0,
+            "updated_at": "2026-10-01T15:39:51.834549",
+            "word_count": 10,
+            "action_code": null,
+            "cook_method": 1,
+            "edit_reason": null,
+            "post_number": 5,
+            "quote_count": 0,
+            "reply_count": 0,
+            "locked_by_id": null,
+            "percent_rank": 0.25,
+            "reply_quoted": false,
+            "user_deleted": false,
+            "baked_version": 2,
+            "deleted_by_id": null,
+            "illegal_count": 0,
+            "qa_vote_count": 0,
+            "bookmark_count": 0,
+            "last_editor_id": 2,
+            "public_version": 1,
+            "image_upload_id": null,
+            "last_version_at": "2026-10-01T15:39:51.872879",
+            "off_topic_count": 0,
+            "hidden_reason_id": null,
+            "reply_to_user_id": null,
+            "notify_user_count": 0,
+            "inappropriate_count": 0,
+            "incoming_link_count": 0,
+            "outbound_message_id": null,
+            "reply_to_post_number": null,
+            "notify_moderators_count": 0
+          }
+        }
+      ]
+    },
+    "quoted_posts": {
+      "inserted": [
+        {
+          "id": 1,
+          "post_id": 52,
+          "created_at": "2026-10-13T02:17:20.074537",
+          "updated_at": "2026-10-13T02:17:20.074537",
+          "quoted_post_id": 42
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_links": {
+      "inserted": [
+        {
+          "id": 20,
+          "url": "http://localhost:3042/t/parity-fixture-tagged-in-a-subcategory/38",
+          "quote": true,
+          "title": null,
+          "clicks": 0,
+          "domain": "localhost",
+          "post_id": 52,
+          "user_id": 2,
+          "internal": true,
+          "topic_id": 35,
+          "extension": null,
+          "crawled_at": null,
+          "created_at": "2026-10-13T02:17:20.770457",
+          "reflection": false,
+          "updated_at": "2026-10-13T02:17:20.770457",
+          "link_post_id": 42,
+          "link_topic_id": 38
+        },
+        {
+          "id": 21,
+          "url": "http://localhost:3042/t/parity-fixture-replies-and-posters/35/5",
+          "quote": false,
+          "title": null,
+          "clicks": 0,
+          "domain": "localhost",
+          "post_id": 42,
+          "user_id": 2,
+          "internal": true,
+          "topic_id": 38,
+          "extension": null,
+          "crawled_at": null,
+          "created_at": "2026-10-13T02:17:20.772227",
+          "reflection": true,
+          "updated_at": "2026-10-13T02:17:20.772227",
+          "link_post_id": 52,
+          "link_topic_id": 35
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "quoted_posts": 1,
+    "topic_links": 20
+  },
+  "setup": [
+    "UPDATE posts SET baked_version = 1, raw = E'[quote=\"user0, post:1, topic:38\"]\\nquoted text\\n[/quote]\\n\\nAnd my reply.' WHERE id = 52"
+  ],
+  "enqueue": [
+    [
+      "periodical_updates",
+      {}
+    ]
+  ],
+  "approximate": [
+    "topics.score"
+  ],
+  "jobs_from_jobs": [
+    [
+      "crawl_topic_link",
+      {
+        "topic_link_id": 20
+      }
+    ],
+    [
+      "crawl_topic_link",
+      {
+        "topic_link_id": 21
+      }
+    ],
+    [
+      "process_post",
+      {
+        "bypass_bump": true,
+        "cooking_options": null,
+        "new_post": false,
+        "post_id": 52,
+        "skip_pull_hotlinked_images": false,
+        "queue": "ultra_low"
+      }
+    ]
+  ],
+  "recorded_from": {
+    "case": "f1bf2fc26ecb05440413410580d7af771285630635b53fab0ca9439d03ec5166",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

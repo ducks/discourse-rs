@@ -1,0 +1,175 @@
+{
+  "name": "periodical_rebake_quote",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-13T02:17:19.722262",
+  "transaction_started_at": "2026-10-13T02:17:19.071162",
+  "responses": [],
+  "changes": {
+    "posts": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 52,
+            "raw": "[quote=\"user1, post:2, topic:35\"]\nquoted text\n[/quote]\n\nAnd my reply.",
+            "wiki": false,
+            "reads": 1,
+            "score": 0.2,
+            "cooked": "<p>Reply from user0 mentioning <a class=\"mention\" href=\"/u/user1\">@user1</a> so a mention notification exists.</p>",
+            "hidden": false,
+            "locale": null,
+            "user_id": 2,
+            "version": 1,
+            "baked_at": "2026-10-01T15:39:51.83451",
+            "topic_id": 35,
+            "hidden_at": null,
+            "post_type": 1,
+            "raw_email": null,
+            "via_email": false,
+            "created_at": "2026-10-01T15:39:51.834549",
+            "deleted_at": null,
+            "like_count": 0,
+            "like_score": 0,
+            "self_edits": 0,
+            "sort_order": 5,
+            "spam_count": 0,
+            "updated_at": "2026-10-01T15:39:51.834549",
+            "word_count": 10,
+            "action_code": null,
+            "cook_method": 1,
+            "edit_reason": null,
+            "post_number": 5,
+            "quote_count": 0,
+            "reply_count": 0,
+            "locked_by_id": null,
+            "percent_rank": 0.25,
+            "reply_quoted": false,
+            "user_deleted": false,
+            "baked_version": 1,
+            "deleted_by_id": null,
+            "illegal_count": 0,
+            "qa_vote_count": 0,
+            "bookmark_count": 0,
+            "last_editor_id": 2,
+            "public_version": 1,
+            "image_upload_id": null,
+            "last_version_at": "2026-10-01T15:39:51.872879",
+            "off_topic_count": 0,
+            "hidden_reason_id": null,
+            "reply_to_user_id": null,
+            "notify_user_count": 0,
+            "inappropriate_count": 0,
+            "incoming_link_count": 0,
+            "outbound_message_id": null,
+            "reply_to_post_number": 2,
+            "notify_moderators_count": 0
+          },
+          "after": {
+            "id": 52,
+            "raw": "[quote=\"user1, post:2, topic:35\"]\nquoted text\n[/quote]\n\nAnd my reply.",
+            "wiki": false,
+            "reads": 1,
+            "score": 0.2,
+            "cooked": "<aside class=\"quote no-group\" data-username=\"user1\" data-post=\"2\" data-topic=\"35\">\n<div class=\"title\">\n<div class=\"quote-controls\"></div>\n<img alt=\"\" width=\"24\" height=\"24\" src=\"//localhost:3042/letter_avatar_proxy/v4/letter/u/5daacb/48.png\" class=\"avatar\"> user1:</div>\n<blockquote>\n<p>quoted text</p>\n</blockquote>\n</aside>\n<p>And my reply.</p>",
+            "hidden": false,
+            "locale": null,
+            "user_id": 2,
+            "version": 1,
+            "baked_at": "2026-10-13T02:17:19.781752",
+            "topic_id": 35,
+            "hidden_at": null,
+            "post_type": 1,
+            "raw_email": null,
+            "via_email": false,
+            "created_at": "2026-10-01T15:39:51.834549",
+            "deleted_at": null,
+            "like_count": 0,
+            "like_score": 0,
+            "self_edits": 0,
+            "sort_order": 5,
+            "spam_count": 0,
+            "updated_at": "2026-10-01T15:39:51.834549",
+            "word_count": 10,
+            "action_code": null,
+            "cook_method": 1,
+            "edit_reason": null,
+            "post_number": 5,
+            "quote_count": 0,
+            "reply_count": 0,
+            "locked_by_id": null,
+            "percent_rank": 0.25,
+            "reply_quoted": true,
+            "user_deleted": false,
+            "baked_version": 2,
+            "deleted_by_id": null,
+            "illegal_count": 0,
+            "qa_vote_count": 0,
+            "bookmark_count": 0,
+            "last_editor_id": 2,
+            "public_version": 1,
+            "image_upload_id": null,
+            "last_version_at": "2026-10-01T15:39:51.872879",
+            "off_topic_count": 0,
+            "hidden_reason_id": null,
+            "reply_to_user_id": null,
+            "notify_user_count": 0,
+            "inappropriate_count": 0,
+            "incoming_link_count": 0,
+            "outbound_message_id": null,
+            "reply_to_post_number": 2,
+            "notify_moderators_count": 0
+          }
+        }
+      ]
+    },
+    "quoted_posts": {
+      "inserted": [
+        {
+          "id": 1,
+          "post_id": 52,
+          "created_at": "2026-10-13T02:17:19.071162",
+          "updated_at": "2026-10-13T02:17:19.071162",
+          "quoted_post_id": 36
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "quoted_posts": 1
+  },
+  "setup": [
+    "UPDATE posts SET baked_version = 1, raw = E'[quote=\"user1, post:2, topic:35\"]\\nquoted text\\n[/quote]\\n\\nAnd my reply.', reply_to_post_number = 2 WHERE id = 52"
+  ],
+  "enqueue": [
+    [
+      "periodical_updates",
+      {}
+    ]
+  ],
+  "approximate": [
+    "topics.score"
+  ],
+  "jobs_from_jobs": [
+    [
+      "process_post",
+      {
+        "bypass_bump": true,
+        "cooking_options": null,
+        "new_post": false,
+        "post_id": 52,
+        "skip_pull_hotlinked_images": false,
+        "queue": "ultra_low"
+      }
+    ]
+  ],
+  "recorded_from": {
+    "case": "d52728b827294db4a675e9679989c9945999f2cdc2feff45783bd513d1b97733",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

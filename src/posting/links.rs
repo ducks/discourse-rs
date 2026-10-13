@@ -55,6 +55,8 @@ fn topic_route(rest: &str) -> Result<TopicRoute, Unsupported> {
         [slug, id] if digits(slug).is_none() && digits(id).is_some() => {
             (digits(id), Some((*slug).to_string()), None)
         }
+        // t/:topic_id/:post_number
+        [id, n] if digits(id).is_some() && digits(n).is_some() => (digits(id), None, digits(n)),
         // t/:slug/:topic_id/:post_number
         [slug, id, n] if digits(id).is_some() && digits(n).is_some() => {
             (digits(id), Some((*slug).to_string()), digits(n))
@@ -168,23 +170,24 @@ async fn topic_target(
     }))
 }
 
-/// `PrettyText.extract_links(html)`: hrefs outside quotes, oneboxes,
-/// elided parts and image lightboxes.
-pub(crate) fn extract(cooked: &str) -> Result<Vec<String>, Unsupported> {
-    let dom = parse(cooked);
-    let mut links = Vec::new();
-    collect(&fragment_root(&dom), false, false, &mut links)?;
-    Ok(links)
-}
-
 /// `PrettyText.extract_links(html)` with its quotes' links too (after the
 /// others, `/t/:topic_id/:post_number`), for callers that only keep links
 /// with a host, as chat's Chat::MessageLink.extract_from does.
 pub(crate) fn extract_with_quotes(cooked: &str) -> Result<Vec<String>, Unsupported> {
+    Ok(detected_links(cooked)?
+        .into_iter()
+        .map(|(url, _)| url)
+        .collect())
+}
+
+/// `PrettyText.extract_links(html)`'s DetectedLinks: the links outside
+/// quotes, then each quote's `/t/:topic_id/:post_number` (is_quote).
+fn detected_links(cooked: &str) -> Result<Vec<(String, bool)>, Unsupported> {
     let dom = parse(cooked);
     let root = fragment_root(&dom);
     let mut links = Vec::new();
-    collect(&root, false, true, &mut links)?;
+    collect(&root, false, &mut links)?;
+    let mut out: Vec<(String, bool)> = links.into_iter().map(|l| (l, false)).collect();
     for node in crate::pretty_text::cleanup::all_elements(&dom) {
         if element_name(&node) == Some("aside") && has_class(&node, "quote") {
             let topic = attr(&node, "data-topic").filter(|t| !t.trim().is_empty());
@@ -193,31 +196,18 @@ pub(crate) fn extract_with_quotes(cooked: &str) -> Result<Vec<String>, Unsupport
                 if let Some(post) = attr(&node, "data-post").filter(|p| !p.trim().is_empty()) {
                     url.push_str(&format!("/{post}"));
                 }
-                links.push(url);
+                out.push((url, true));
             }
         }
     }
-    Ok(links)
+    Ok(out)
 }
 
-fn collect(
-    node: &Handle,
-    skip: bool,
-    quotes: bool,
-    links: &mut Vec<String>,
-) -> Result<(), Unsupported> {
+/// The hrefs outside quotes, oneboxes, elided parts and image lightboxes.
+fn collect(node: &Handle, skip: bool, links: &mut Vec<String>) -> Result<(), Unsupported> {
     let name = element_name(node);
     let mut skip = skip;
     if let Some(name) = name {
-        if !quotes
-            && name == "aside"
-            && has_class(node, "quote")
-            && attr(node, "data-topic").is_some()
-        {
-            return Err(Unsupported(
-                "links from quotes (topic links and QuotedPost)",
-            ));
-        }
         if name == "aside" && has_class(node, "onebox") {
             return Err(Unsupported("links from oneboxes"));
         }
@@ -243,7 +233,7 @@ fn collect(
         }
     }
     for child in node.children.borrow().iter() {
-        collect(child, skip, quotes, links)?;
+        collect(child, skip, links)?;
     }
     Ok(())
 }
@@ -346,6 +336,8 @@ struct NewLink<'a> {
     link_post_id: Option<i32>,
     extension: Option<String>,
     reflection: bool,
+    /// A quote's link (DetectedLink#is_quote).
+    quote: bool,
 }
 
 /// `TopicLink.safe_create_topic_link`: inserted unless it exists; the id
@@ -358,7 +350,7 @@ async fn safe_create_topic_link(
     let created: Option<i32> = sqlx::query_scalar(
         "INSERT INTO topic_links (post_id, user_id, topic_id, url, domain, internal, link_topic_id, \
                                   link_post_id, quote, extension, reflection, created_at, updated_at) \
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, FALSE, $9, $10, clock_timestamp(), clock_timestamp()) \
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $11, $9, $10, clock_timestamp(), clock_timestamp()) \
          ON CONFLICT DO NOTHING RETURNING id",
     )
     .bind(link.post_id)
@@ -371,6 +363,7 @@ async fn safe_create_topic_link(
     .bind(link.link_post_id)
     .bind(&link.extension)
     .bind(link.reflection)
+    .bind(link.quote)
     .fetch_optional(&mut *conn)
     .await?;
     if let Some(id) = created {
@@ -402,7 +395,7 @@ pub async fn extract_from(
     let mut seen: Vec<String> = Vec::new();
     let mut current_urls: Vec<String> = Vec::new();
     let mut reflected_ids: Vec<i32> = Vec::new();
-    for url in extract(post.cooked)? {
+    for (url, is_quote) in detected_links(post.cooked)? {
         let Some(parsed) = parse_url(&url) else {
             continue;
         };
@@ -477,6 +470,7 @@ pub async fn extract_from(
                 link_post_id,
                 extension: extension(parsed.path),
                 reflection: false,
+                quote: is_quote,
             },
         )
         .await?;
@@ -517,6 +511,7 @@ pub async fn extract_from(
                         link_post_id: Some(post.id),
                         extension: None,
                         reflection: true,
+                        quote: false,
                     },
                 )
                 .await?;

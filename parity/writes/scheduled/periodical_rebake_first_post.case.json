@@ -1,0 +1,8 @@
+{
+  "user": null,
+  "setup": ["UPDATE posts SET baked_version = NULL, cooked = '<p>stale</p>' WHERE id = 35"],
+  "requests": [],
+  "enqueue": [["periodical_updates", {}]],
+  "run_jobs": ["periodical_updates"],
+  "approximate": ["topics.score"]
+}

@@ -2,8 +2,8 @@
   "name": "periodical_rebake_old",
   "user": null,
   "requests": [],
-  "started_at": "2026-10-13T02:01:24.390102",
-  "transaction_started_at": "2026-10-13T02:01:23.592749",
+  "started_at": "2026-10-13T02:17:18.799088",
+  "transaction_started_at": "2026-10-13T02:17:18.12074",
   "responses": [],
   "changes": {
     "posts": {
@@ -77,7 +77,7 @@
             "locale": null,
             "user_id": 3,
             "version": 1,
-            "baked_at": "2026-10-13T02:01:24.447062",
+            "baked_at": "2026-10-13T02:17:18.852393",
             "topic_id": 35,
             "hidden_at": null,
             "post_type": 1,

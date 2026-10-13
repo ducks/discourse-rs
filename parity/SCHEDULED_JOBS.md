@@ -49,7 +49,7 @@ Classes:
 | update_heat_settings | 1mo (from the worker's start) | scheduled/heat_* |
 | reindex_search | 2h | search/reindex_* |
 | calculate_scores | 1w | scheduled/scores_* |
-| periodical_updates | 15m (stale post rebakes, tag descriptions with text and auto bumps refused) | scheduled/periodical_* |
+| periodical_updates | 15m (tag descriptions with text and auto bumps refused) | scheduled/periodical_* |
 | create_recent_post_search_indexes | 1d (CREATE INDEX CONCURRENTLY can't be recorded in a transaction) | search/recent_index_small_site, tests/jobs.rs |
 
 ## Ready, in porting order

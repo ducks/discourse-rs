@@ -6,6 +6,7 @@
 
 pub mod create;
 pub mod links;
+pub mod rebake;
 pub mod revise;
 pub mod revisions;
 pub mod search_index;
