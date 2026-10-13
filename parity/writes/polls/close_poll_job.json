@@ -1,0 +1,120 @@
+{
+  "name": "close_poll_job",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-13T19:19:10.145876",
+  "transaction_started_at": "2026-10-13T19:19:08.902102",
+  "responses": [],
+  "changes": {
+    "polls": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 9001,
+            "max": null,
+            "min": null,
+            "name": "poll",
+            "step": null,
+            "type": 0,
+            "title": null,
+            "groups": null,
+            "status": 0,
+            "dynamic": false,
+            "post_id": 37,
+            "results": 0,
+            "close_at": null,
+            "closed_at": null,
+            "chart_type": 0,
+            "created_at": "2026-10-05T10:00:00",
+            "updated_at": "2026-10-05T10:00:00",
+            "visibility": 0,
+            "closed_by_id": null,
+            "anonymous_voters": null
+          },
+          "after": {
+            "id": 9001,
+            "max": null,
+            "min": null,
+            "name": "poll",
+            "step": null,
+            "type": 0,
+            "title": null,
+            "groups": null,
+            "status": 1,
+            "dynamic": false,
+            "post_id": 37,
+            "results": 0,
+            "close_at": null,
+            "closed_at": "2026-10-13T19:19:10.18321",
+            "chart_type": 0,
+            "created_at": "2026-10-05T10:00:00",
+            "updated_at": "2026-10-13T19:19:10.183765",
+            "visibility": 0,
+            "closed_by_id": -1,
+            "anonymous_voters": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 23,
+          "context": null,
+          "details": "",
+          "post_id": 37,
+          "subject": "poll",
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-13T19:19:10.195736",
+          "ip_address": null,
+          "updated_at": "2026-10-13T19:19:10.195736",
+          "category_id": null,
+          "custom_type": "poll_closed",
+          "reviewable_id": null,
+          "acting_user_id": -1,
+          "previous_value": null,
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "user_histories": 74
+  },
+  "setup": [
+    "INSERT INTO polls (id, post_id, name, type, status, results, visibility, chart_type, dynamic, created_at, updated_at) VALUES (9001, 37, 'poll', 0, 0, 0, 0, 0, FALSE, '2026-10-05 10:00:00', '2026-10-05 10:00:00')",
+    "INSERT INTO poll_options (id, poll_id, digest, html, created_at, updated_at) VALUES (9101, 9001, 'aaa', 'AAA', '2026-10-05 10:00:00', '2026-10-05 10:00:00'), (9102, 9001, 'bbb', 'BBB', '2026-10-05 10:00:00', '2026-10-05 10:00:00')",
+    "INSERT INTO post_custom_fields (post_id, name, value, created_at, updated_at) SELECT 37, 'has_polls', 't', '2026-10-05 10:00:00', '2026-10-05 10:00:00' WHERE NOT EXISTS (SELECT 1 FROM post_custom_fields WHERE post_id = 37 AND name = 'has_polls')"
+  ],
+  "enqueue": [
+    [
+      "close_poll",
+      {
+        "post_id": 37,
+        "poll_name": "poll"
+      }
+    ],
+    [
+      "close_poll",
+      {
+        "post_id": 37,
+        "poll_name": "missing"
+      }
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "33252ef1b4b56397d67338029a9898e06d1496b70128ca978b4e6df4cb17401e",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

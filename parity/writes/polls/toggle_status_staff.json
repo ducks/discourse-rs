@@ -1,0 +1,202 @@
+{
+  "name": "toggle_status_staff",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/polls/toggle_status",
+      "params": {
+        "post_id": 37,
+        "poll_name": "poll",
+        "status": "closed"
+      }
+    }
+  ],
+  "started_at": "2026-10-13T19:19:16.275515",
+  "transaction_started_at": "2026-10-13T19:19:15.168068",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "poll": {
+          "id": 9002,
+          "name": "poll",
+          "type": "regular",
+          "status": "closed",
+          "public": true,
+          "dynamic": false,
+          "results": "always",
+          "options": [
+            {
+              "id": "ccc",
+              "html": "CCC",
+              "votes": 1
+            },
+            {
+              "id": "ddd",
+              "html": "DDD",
+              "votes": 0
+            }
+          ],
+          "voters": 1,
+          "preloaded_voters": {
+            "ccc": [
+              {
+                "id": 4,
+                "username": "user2",
+                "name": "User2",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+                "title": null
+              }
+            ]
+          },
+          "chart_type": "bar",
+          "title": null,
+          "closed_at": "2026-10-13T19:19:16.297Z",
+          "closed_by": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png"
+          }
+        }
+      }
+    }
+  ],
+  "changes": {
+    "polls": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 9002,
+            "max": null,
+            "min": null,
+            "name": "poll",
+            "step": null,
+            "type": 0,
+            "title": null,
+            "groups": null,
+            "status": 0,
+            "dynamic": false,
+            "post_id": 37,
+            "results": 0,
+            "close_at": null,
+            "closed_at": null,
+            "chart_type": 0,
+            "created_at": "2026-10-05T10:00:00",
+            "updated_at": "2026-10-05T10:00:00",
+            "visibility": 1,
+            "closed_by_id": null,
+            "anonymous_voters": null
+          },
+          "after": {
+            "id": 9002,
+            "max": null,
+            "min": null,
+            "name": "poll",
+            "step": null,
+            "type": 0,
+            "title": null,
+            "groups": null,
+            "status": 1,
+            "dynamic": false,
+            "post_id": 37,
+            "results": 0,
+            "close_at": null,
+            "closed_at": "2026-10-13T19:19:16.297515",
+            "chart_type": 0,
+            "created_at": "2026-10-05T10:00:00",
+            "updated_at": "2026-10-13T19:19:16.297713",
+            "visibility": 1,
+            "closed_by_id": 1,
+            "anonymous_voters": null
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 499,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "clOT6N9JR+fVdNSHCcUynh2pCBE=",
+            "created_at": "2026-10-13T19:19:15.584638",
+            "rotated_at": "2026-10-13T19:19:15.582866",
+            "updated_at": "2026-10-13T19:19:15.584638",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "clOT6N9JR+fVdNSHCcUynh2pCBE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 499,
+            "seen_at": "2026-10-13T19:19:16.286764",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "clOT6N9JR+fVdNSHCcUynh2pCBE=",
+            "created_at": "2026-10-13T19:19:15.584638",
+            "rotated_at": "2026-10-13T19:19:15.582866",
+            "updated_at": "2026-10-13T19:19:15.584638",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "clOT6N9JR+fVdNSHCcUynh2pCBE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 23,
+          "context": null,
+          "details": "",
+          "post_id": 37,
+          "subject": "poll",
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-13T19:19:16.299481",
+          "ip_address": null,
+          "updated_at": "2026-10-13T19:19:16.299481",
+          "category_id": null,
+          "custom_type": "poll_closed",
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "user_histories": 74
+  },
+  "setup": [
+    "INSERT INTO polls (id, post_id, name, type, status, results, visibility, chart_type, dynamic, created_at, updated_at) VALUES (9002, 37, 'poll', 0, 0, 0, 1, 0, FALSE, '2026-10-05 10:00:00', '2026-10-05 10:00:00')",
+    "INSERT INTO poll_options (id, poll_id, digest, html, created_at, updated_at) VALUES (9201, 9002, 'ccc', 'CCC', '2026-10-05 10:00:00', '2026-10-05 10:00:00'), (9202, 9002, 'ddd', 'DDD', '2026-10-05 10:00:00', '2026-10-05 10:00:00')",
+    "INSERT INTO post_custom_fields (post_id, name, value, created_at, updated_at) SELECT 37, 'has_polls', 't', '2026-10-05 10:00:00', '2026-10-05 10:00:00' WHERE NOT EXISTS (SELECT 1 FROM post_custom_fields WHERE post_id = 37 AND name = 'has_polls')",
+    "INSERT INTO poll_votes (poll_id, poll_option_id, user_id, rank, created_at, updated_at) VALUES (9002, 9201, 4, 0, '2026-10-05 11:00:00', '2026-10-05 11:00:00')"
+  ],
+  "recorded_from": {
+    "case": "61b9b0d71585055817cb5a6d3bf9b4f015ebb61358cc17dd684c82963fd6d1c0",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -1,0 +1,218 @@
+{
+  "name": "vote_refused",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/polls/vote",
+      "params": {
+        "post_id": 37,
+        "poll_name": "poll",
+        "options": [
+          "aaa"
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/polls/vote",
+      "params": {
+        "post_id": 37,
+        "poll_name": "staffonly",
+        "options": [
+          "ccc"
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/polls/vote",
+      "params": {
+        "post_id": 37,
+        "poll_name": "expired",
+        "options": [
+          "eee"
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/polls/vote",
+      "params": {
+        "post_id": 37,
+        "poll_name": "missing",
+        "options": [
+          "aaa"
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/polls/vote",
+      "params": {
+        "post_id": 99999,
+        "poll_name": "poll",
+        "options": [
+          "aaa"
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/polls/vote",
+      "params": {
+        "post_id": 37,
+        "options": [
+          "aaa"
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/polls/vote",
+      "params": {
+        "poll_name": "poll",
+        "options": [
+          "aaa"
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/polls/toggle_status",
+      "params": {
+        "post_id": 37,
+        "poll_name": "poll",
+        "status": "open"
+      }
+    }
+  ],
+  "started_at": "2026-10-13T19:19:26.577594",
+  "transaction_started_at": "2026-10-13T19:19:25.460713",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Poll must be open to vote."
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "You need to be a member of staff,Moderators to vote in this poll."
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Poll must be open to vote."
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "No poll named <strong>missing</strong> associated with this post."
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Cannot act on a deleted post."
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "param is missing or the value is empty or invalid: poll_name"
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "param is missing or the value is empty or invalid: post_id"
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Only a staff member or the original poster can toggle a poll status."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 499,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "ktgY1f17wS9cZ+Rh9CK2E5xQtKY=",
+            "created_at": "2026-10-13T19:19:25.862221",
+            "rotated_at": "2026-10-13T19:19:25.858483",
+            "updated_at": "2026-10-13T19:19:25.862221",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "ktgY1f17wS9cZ+Rh9CK2E5xQtKY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 499,
+            "seen_at": "2026-10-13T19:19:26.585213",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "ktgY1f17wS9cZ+Rh9CK2E5xQtKY=",
+            "created_at": "2026-10-13T19:19:25.862221",
+            "rotated_at": "2026-10-13T19:19:25.858483",
+            "updated_at": "2026-10-13T19:19:25.862221",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "ktgY1f17wS9cZ+Rh9CK2E5xQtKY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO polls (id, post_id, name, type, status, results, visibility, chart_type, dynamic, created_at, updated_at) VALUES (9001, 37, 'poll', 0, 1, 0, 0, 0, FALSE, '2026-10-05 10:00:00', '2026-10-05 10:00:00')",
+    "INSERT INTO poll_options (id, poll_id, digest, html, created_at, updated_at) VALUES (9101, 9001, 'aaa', 'AAA', '2026-10-05 10:00:00', '2026-10-05 10:00:00'), (9102, 9001, 'bbb', 'BBB', '2026-10-05 10:00:00', '2026-10-05 10:00:00')",
+    "INSERT INTO polls (id, post_id, name, type, status, results, visibility, chart_type, dynamic, created_at, updated_at) VALUES (9002, 37, 'staffonly', 0, 0, 0, 0, 0, FALSE, '2026-10-05 10:00:00', '2026-10-05 10:00:00')",
+    "UPDATE polls SET groups = 'staff,Moderators' WHERE id = 9002",
+    "INSERT INTO poll_options (id, poll_id, digest, html, created_at, updated_at) VALUES (9201, 9002, 'ccc', 'CCC', '2026-10-05 10:00:00', '2026-10-05 10:00:00'), (9202, 9002, 'ddd', 'DDD', '2026-10-05 10:00:00', '2026-10-05 10:00:00')",
+    "INSERT INTO polls (id, post_id, name, type, status, results, visibility, chart_type, dynamic, created_at, updated_at) VALUES (9003, 37, 'expired', 0, 0, 0, 0, 0, FALSE, '2026-10-05 10:00:00', '2026-10-05 10:00:00')",
+    "UPDATE polls SET close_at = '2026-01-01 00:00:00' WHERE id = 9003",
+    "INSERT INTO poll_options (id, poll_id, digest, html, created_at, updated_at) VALUES (9301, 9003, 'eee', 'EEE', '2026-10-05 10:00:00', '2026-10-05 10:00:00'), (9302, 9003, 'fff', 'FFF', '2026-10-05 10:00:00', '2026-10-05 10:00:00')",
+    "INSERT INTO post_custom_fields (post_id, name, value, created_at, updated_at) SELECT 37, 'has_polls', 't', '2026-10-05 10:00:00', '2026-10-05 10:00:00' WHERE NOT EXISTS (SELECT 1 FROM post_custom_fields WHERE post_id = 37 AND name = 'has_polls')"
+  ],
+  "recorded_from": {
+    "case": "4926f60d9c781faca695c691fb0ce55aefac73394f29c6f8a103c5725723a107",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

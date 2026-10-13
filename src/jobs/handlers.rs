@@ -24,6 +24,7 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         "post_alert" => post_alert(state, &job.args).await,
         "group_pm_update_summary" => group_pm_update_summary(state, &job.args).await,
         "group_pm_alert" => group_pm_alert(state, &job.args).await,
+        "close_poll" => close_poll(state, &job.args).await,
         "delete_inaccessible_notifications" => {
             delete_inaccessible_notifications(state, &job.args).await
         }
@@ -678,6 +679,38 @@ async fn group_pm_alert(state: &AppState, args: &Value) -> Result<(), AppError> 
     };
     let mut tx = state.pool.begin().await?;
     crate::pm_invite::group_pm_alert(&mut tx, &ctx, user_id, group_id, post_id).await?;
+    tx.commit().await?;
+    Ok(())
+}
+
+/// `Jobs::ClosePoll`: the poll closed by the system user, quietly not
+/// when it may not be.
+async fn close_poll(state: &AppState, args: &Value) -> Result<(), AppError> {
+    let post_id = args.get("post_id").and_then(Value::as_i64);
+    let poll_name = args.get("poll_name").and_then(Value::as_str);
+    let (Some(post_id), Some(poll_name)) = (post_id, poll_name.filter(|n| !n.is_empty())) else {
+        return Err(Unsupported("ClosePoll without its post_id or poll_name").into());
+    };
+    let mut conn = state.pool.acquire().await?;
+    let s = settings(state, &mut conn).await?;
+    let system = crate::session::current::SessionUser::load(&mut conn, -1)
+        .await?
+        .ok_or(Unsupported("a site without its system user"))?;
+    let guardian = crate::guardian::Guardian::for_user(&mut conn, &system).await?;
+    drop(conn);
+    let host = crate::pretty_text::Host::from_state(state);
+    let ctx = crate::posting::Ctx {
+        host: &host,
+        settings: &s,
+        config: &state.config,
+        i18n: &state.i18n,
+        bus: &state.bus,
+    };
+    let mut tx = state.pool.begin().await?;
+    crate::plugins::poll::vote::toggle_status(
+        &mut tx, &ctx, &guardian, post_id, poll_name, "closed", false,
+    )
+    .await?;
     tx.commit().await?;
     Ok(())
 }

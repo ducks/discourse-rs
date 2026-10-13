@@ -59,6 +59,22 @@ impl From<SettingError> for PluginError {
     }
 }
 
+impl From<crate::avatar::AvatarError> for PluginError {
+    fn from(e: crate::avatar::AvatarError) -> Self {
+        use crate::avatar::AvatarError;
+        use crate::url::UrlError;
+        match e {
+            AvatarError::Setting(e) | AvatarError::Url(UrlError::Setting(e)) => {
+                PluginError::Setting(e)
+            }
+            AvatarError::Url(UrlError::S3Unsupported) => {
+                PluginError::Unsupported(crate::Unsupported("S3 upload stores"))
+            }
+            AvatarError::Unsupported(e) => PluginError::Unsupported(e),
+        }
+    }
+}
+
 impl From<crate::guardian::GuardianError> for PluginError {
     fn from(e: crate::guardian::GuardianError) -> Self {
         match e {

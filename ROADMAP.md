@@ -120,9 +120,12 @@ Bugs or silent gaps in what is merged, small and independent.
     36b. ~~`feat/chat-chatables`~~ (done) M (GET /chat/api/chatables, the new
     message modal's search; category channel edits with it),
     37. ~~`feat/chat-dm-summary-email`~~ (done) S
-38. ~~`feat/poll-create`~~ (done) M (votes-dependent output, a public
-    poll's voters and a ranked outcome, left to poll-vote),
-    39. `feat/poll-vote` M, 40. `feat/poll-edit` S/M
+38. ~~`feat/poll-create`~~ (done) M,
+    39. ~~`feat/poll-vote`~~ (done) M (vote, remove, toggle_status,
+    voters, grouped results, ClosePoll, and the serializer's vote-dependent
+    keys; the `vote_poll` anonymous action waits on core's
+    AnonymousAction, `/anonymous-actions`, not ported), 40.
+    `feat/poll-edit` S/M
 
 [messages-dms]
 
