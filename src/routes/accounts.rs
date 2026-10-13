@@ -11,6 +11,7 @@ use serde_json::{Map, Value, json};
 use super::session::{bad_csrf, csrf_ok};
 use crate::accounts::{self, token_scopes};
 use crate::params;
+use crate::rate_limiter::RateLimiter;
 use crate::session::current::AuthGuardian;
 use crate::site_settings::SiteSettings;
 use crate::{AppError, AppState};
@@ -39,6 +40,7 @@ pub async fn email_login(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
     headers: HeaderMap,
+    super::search::Peer(peer): super::search::Peer,
     uri: Uri,
     body: Bytes,
 ) -> Result<Response, AppError> {
@@ -68,7 +70,46 @@ pub async fn email_login(
     let Some(login) = params::string(&p, "login").filter(|l| !l.trim().is_empty()) else {
         return Ok(param_missing("login"));
     };
+    // Per IP, then per user found; a refusal is rescued as slow_down
+    // (after expires_now).
+    let slow_down = || {
+        let mut response = crate::rate_limiter::slow_down(&state.i18n);
+        response.headers_mut().insert(
+            header::CACHE_CONTROL,
+            header::HeaderValue::from_static(NO_STORE),
+        );
+        response
+    };
+    let ip = crate::remote_ip::remote_ip(&headers, peer)?;
+    let enabled = state.config.rate_limits;
+    if crate::rate_limiter::perform_each(
+        &state.pool,
+        enabled,
+        [
+            RateLimiter::new(None, &format!("email-login-hour-{ip}"), 6, 3600),
+            RateLimiter::new(None, &format!("email-login-min-{ip}"), 3, 60),
+        ],
+    )
+    .await?
+    .is_err()
+    {
+        return Ok(slow_down());
+    }
     let user = accounts::find_by_username_or_email(&mut conn, &login).await?;
+    if let Some(user) = &user
+        && crate::rate_limiter::perform_each(
+            &state.pool,
+            enabled,
+            [
+                RateLimiter::new(None, &format!("email-login-hour-{}", user.id), 6, 3600),
+                RateLimiter::new(None, &format!("email-login-min-{}", user.id), 3, 60),
+            ],
+        )
+        .await?
+        .is_err()
+    {
+        return Ok(slow_down());
+    }
     let user_presence = user.as_ref().is_some_and(|u| !u.staged);
     if let Some(user) = user.filter(|u| !u.staged) {
         let email = user.email.clone().unwrap_or_default();
@@ -98,6 +139,9 @@ pub async fn email_login(
     )
         .into_response())
 }
+
+/// `SessionController::FORGOT_PASSWORD_EMAIL_LIMIT_PER_DAY`
+const FORGOT_PASSWORD_EMAIL_LIMIT_PER_DAY: i64 = 6;
 
 /// The `password_reset_code` server-session value.
 const RESET_CODE_KEY: &str = "password_reset_code";
@@ -170,6 +214,21 @@ pub async fn forgot_password(
             ],
         ));
     }
+    let enabled = state.config.rate_limits;
+    if crate::rate_limiter::perform_each(
+        &state.pool,
+        enabled,
+        [
+            RateLimiter::new(None, &format!("forgot-password-hr-{ip}"), 6, 3600),
+            RateLimiter::new(None, &format!("forgot-password-min-{ip}"), 3, 60),
+        ],
+    )
+    .await?
+    .is_err()
+    {
+        tx.commit().await?;
+        return Ok(crate::rate_limiter::slow_down(&state.i18n));
+    }
     let hide_taken = settings.get("hide_email_address_taken")?.truthy();
     let user = if hide_taken && !guardian.is_staff() {
         if !accounts::valid_email(&login) {
@@ -181,6 +240,26 @@ pub async fn forgot_password(
         accounts::find_by_username_or_email(&mut tx, &login).await?
     }
     .filter(|u| !u.staged);
+    // enqueue_password_reset_for_user's limit for a user found, the
+    // login's for one not.
+    let limiter = match &user {
+        Some(user) => RateLimiter::new(
+            None,
+            &format!("forgot-password-login-day-{}", user.username),
+            FORGOT_PASSWORD_EMAIL_LIMIT_PER_DAY,
+            86_400,
+        ),
+        None => RateLimiter::new(
+            None,
+            &format!("forgot-password-login-hour-{login}"),
+            5,
+            3600,
+        ),
+    };
+    if limiter.performed(&state.pool, enabled).await?.is_err() {
+        tx.commit().await?;
+        return Ok(crate::rate_limiter::slow_down(&state.i18n));
+    }
     // password_reset_via_code?: the upcoming change, for the requester.
     let via_code = guardian
         .upcoming_change_enabled(&mut tx, &settings, "enable_local_logins_via_code")
@@ -264,6 +343,7 @@ pub async fn redeem_password_reset_code(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
     headers: HeaderMap,
+    super::search::Peer(peer): super::search::Peer,
     uri: Uri,
     body: Bytes,
 ) -> Result<Response, AppError> {
@@ -276,6 +356,20 @@ pub async fn redeem_password_reset_code(
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
     if let Some(forbidden) = super::session::check_local_login_allowed(&state, &settings)? {
         return Ok(forbidden);
+    }
+    // rate_limit_login_code_verify
+    let ip = crate::remote_ip::remote_ip(&headers, peer)?;
+    if let Err(refused) = crate::rate_limiter::perform_each(
+        &state.pool,
+        state.config.rate_limits,
+        [
+            RateLimiter::new(None, &format!("login-code-verify-hour-{ip}"), 30, 3600),
+            RateLimiter::new(None, &format!("login-code-verify-min-{ip}"), 6, 60),
+        ],
+    )
+    .await?
+    {
+        return Ok(refused.into_response(&state.i18n));
     }
     if !guardian
         .upcoming_change_enabled(&mut conn, &settings, "enable_local_logins_via_code")

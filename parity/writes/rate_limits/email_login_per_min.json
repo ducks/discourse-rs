@@ -1,0 +1,76 @@
+{
+  "name": "email_login_per_min",
+  "user": null,
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/u/email-login.json",
+      "params": {
+        "login": "nobody"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/u/email-login.json",
+      "params": {
+        "login": "nobody"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/u/email-login.json",
+      "params": {
+        "login": "nobody"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/u/email-login.json",
+      "params": {
+        "login": "nobody"
+      }
+    }
+  ],
+  "started_at": "2026-10-13T04:51:26.911942",
+  "transaction_started_at": "2026-10-13T04:51:25.704696",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "hide_taken": true
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "hide_taken": true
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "hide_taken": true
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "You’ve performed this action too many times, please try again later."
+        ]
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "rate_limits": true,
+  "recorded_from": {
+    "case": "91963d189b7780b1295b503aa182c4492fcc8e347ca33e1e1aac3346aa49c737",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "name": "login_per_min",
+  "user": null,
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/session.json",
+      "params": {
+        "login": "user1",
+        "password": "wrong-password"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/session.json",
+      "params": {
+        "login": "user1",
+        "password": "wrong-password"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/session.json",
+      "params": {
+        "login": "user1",
+        "password": "wrong-password"
+      }
+    }
+  ],
+  "started_at": "2026-10-13T04:51:29.013595",
+  "transaction_started_at": "2026-10-13T04:51:28.399229",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "error": "Incorrect username, email or password"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "error": "Incorrect username, email or password"
+      }
+    },
+    {
+      "status": 429,
+      "body": {
+        "errors": [
+          "You’ve performed this action too many times. Please wait 1 minute before trying again."
+        ],
+        "error_type": "rate_limit",
+        "extras": {
+          "wait_seconds": 60,
+          "time_left": "1 minute"
+        }
+      },
+      "headers": {
+        "Retry-After": "60"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "max_logins_per_ip_per_minute": "2"
+  },
+  "rate_limits": true,
+  "recorded_from": {
+    "case": "90f938080f8ad9d63cec9b31048f0a5e40e14d61d3a85ec8c4b8988a18d077ee",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

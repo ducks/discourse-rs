@@ -1,5 +1,5 @@
 //! Port of session_controller.rb (#create, #destroy, #csrf, #current) and
-//! static_controller.rb#enter for local logins. Rate limits (redis) and
+//! static_controller.rb#enter for local logins. Successful
 //! second factors are not ported; a user with 2FA enabled gets Rails'
 //! failure payload so the client shows its 2FA prompt, which then fails.
 
@@ -13,6 +13,7 @@ use serde_json::json;
 
 use super::search::Peer;
 use crate::guardian::Guardian;
+use crate::rate_limiter::RateLimiter;
 use crate::session::cookie::Scalar;
 use crate::session::current::{self, Incoming, SESSION_USER_COLUMNS, SessionUser};
 use crate::session::forum::load_forum_session;
@@ -253,6 +254,30 @@ pub async fn create(
     if let Some(forbidden) = check_local_login_allowed(&state, &settings)? {
         return Ok(forbidden);
     }
+    // rate_limit_login: per IP, failed logins too.
+    let ip = crate::remote_ip::remote_ip(&headers, peer)?;
+    if let Err(refused) = crate::rate_limiter::perform_each(
+        &state.pool,
+        state.config.rate_limits,
+        [
+            RateLimiter::new(
+                None,
+                &format!("login-hr-{ip}"),
+                settings.get("max_logins_per_ip_per_hour")?.to_i(),
+                3600,
+            ),
+            RateLimiter::new(
+                None,
+                &format!("login-min-{ip}"),
+                settings.get("max_logins_per_ip_per_minute")?.to_i(),
+                60,
+            ),
+        ],
+    )
+    .await?
+    {
+        return Ok(refused.into_response(&state.i18n));
+    }
     for required in ["login", "password"] {
         if param(&form, required).is_none_or(|v| v.trim().is_empty()) {
             return Ok((
@@ -288,6 +313,30 @@ pub async fn create(
         .fetch_optional(&mut *conn)
         .await?
     };
+    // rate_limit_second_factor!(user), with a token sent: per IP, and per
+    // username when the login found one.
+    if param(&form, "second_factor_token").is_some_and(|t| !t.trim().is_empty()) {
+        let mut limiters = vec![RateLimiter::new(
+            None,
+            &format!("second-factor-min-{ip}"),
+            6,
+            60,
+        )];
+        if let Some(user) = &user {
+            limiters.push(RateLimiter::new(
+                None,
+                &format!("second-factor-min-{}", user.username),
+                6,
+                60,
+            ));
+        }
+        if let Err(refused) =
+            crate::rate_limiter::perform_each(&state.pool, state.config.rate_limits, limiters)
+                .await?
+        {
+            return Ok(refused.into_response(&state.i18n));
+        }
+    }
     let Some(mut user) = user else {
         return Ok(invalid_credentials(&state));
     };

@@ -1,0 +1,79 @@
+{
+  "user": null,
+  "rate_limits": true,
+  "settings": {
+    "max_logins_per_ip_per_minute": "20"
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/session.json",
+      "params": {
+        "login": "nobody",
+        "password": "password",
+        "second_factor_token": "00000000",
+        "second_factor_method": 1
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/session.json",
+      "params": {
+        "login": "nobody",
+        "password": "password",
+        "second_factor_token": "00000000",
+        "second_factor_method": 1
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/session.json",
+      "params": {
+        "login": "nobody",
+        "password": "password",
+        "second_factor_token": "00000000",
+        "second_factor_method": 1
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/session.json",
+      "params": {
+        "login": "nobody",
+        "password": "password",
+        "second_factor_token": "00000000",
+        "second_factor_method": 1
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/session.json",
+      "params": {
+        "login": "nobody",
+        "password": "password",
+        "second_factor_token": "00000000",
+        "second_factor_method": 1
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/session.json",
+      "params": {
+        "login": "nobody",
+        "password": "password",
+        "second_factor_token": "00000000",
+        "second_factor_method": 1
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/session.json",
+      "params": {
+        "login": "nobody",
+        "password": "password",
+        "second_factor_token": "00000000",
+        "second_factor_method": 1
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "user": null,
+  "rate_limits": true,
+  "settings": {
+    "max_logins_per_ip_per_minute": "2"
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/session.json",
+      "params": {
+        "login": "user1",
+        "password": "wrong-password"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/session.json",
+      "params": {
+        "login": "user1",
+        "password": "wrong-password"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/session.json",
+      "params": {
+        "login": "user1",
+        "password": "wrong-password"
+      }
+    }
+  ]
+}
