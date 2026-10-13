@@ -33,6 +33,7 @@ const DISCOURSE_CSS: &str = concat!(
     include_str!("../static/css/composer.css"),
     include_str!("../static/css/kit.css"),
     include_str!("../static/css/menus.css"),
+    include_str!("../static/css/tooltip.css"),
     include_str!("../static/css/filter-controls.css"),
     include_str!("../static/css/not-found.css"),
     include_str!("../static/css/powered-by.css"),
@@ -66,7 +67,19 @@ const ASSETS: &[(&str, &str, &str)] = &[
         JS,
         include_str!("../static/vendor/htmx-ext-sse.js"),
     ),
+    // @floating-ui/dom, which float-kit positions with (static/vendor/README).
+    (
+        "floating-ui.core.umd.min.js",
+        JS,
+        include_str!("../static/vendor/floating-ui.core.umd.min.js"),
+    ),
+    (
+        "floating-ui.dom.umd.min.js",
+        JS,
+        include_str!("../static/vendor/floating-ui.dom.umd.min.js"),
+    ),
     ("page.js", JS, include_str!("../static/js/page.js")),
+    ("float.js", JS, include_str!("../static/js/float.js")),
     ("hashtags.js", JS, include_str!("../static/js/hashtags.js")),
     ("cooked.js", JS, include_str!("../static/js/cooked.js")),
     ("sidebar.js", JS, include_str!("../static/js/sidebar.js")),

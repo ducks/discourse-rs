@@ -119,6 +119,7 @@ ICONS=(
   circle-exclamation
   rotate
   circle-xmark
+  tippy-rounded-arrow
 )
 
 root="$(cd "$(dirname "$0")/.." && pwd)"
@@ -147,8 +148,9 @@ out="$root/static/vendor/icons.svg"
   for icon in "${ICONS[@]}"; do
     name="${icon%%=*}"
     file="${icon#*=}"
-    # Discourse's own icons (discourse-*), from its vendored sprite.
-    if [[ $file == discourse-* ]]; then
+    # Discourse's own icons (discourse-*, and float-kit's arrow), from its
+    # vendored sprite.
+    if [[ $file == discourse-* || $file == tippy-rounded-arrow ]]; then
       tr -d '\n' < "$root/vendor/discourse/vendor/assets/svg-icons/discourse-additional.svg" \
         | grep -o "<symbol id=[\"']$file[\"'][^>]*>.*" | sed 's|</symbol>.*|</symbol>|' | sed "s/^/  /"
       continue
