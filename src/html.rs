@@ -211,6 +211,9 @@ pub struct Chrome {
     pub user_cards: bool,
     /// enable_badges, the card's showBadges.
     pub enable_badges: bool,
+    /// discourse-footnote's inline footnotes (static/js/inline-footnotes.js):
+    /// the plugin is on and display_footnotes_inline.
+    pub inline_footnotes: bool,
 }
 
 impl Chrome {
@@ -302,6 +305,8 @@ impl Site {
         self.chrome.user_cards =
             guardian.user().is_some() || !settings.get("hide_user_profiles_from_public")?.truthy();
         self.chrome.enable_badges = settings.get("enable_badges")?.truthy();
+        self.chrome.inline_footnotes = settings.get("enable_markdown_footnotes")?.truthy()
+            && settings.get("display_footnotes_inline")?.truthy();
         self.chrome.can_signup = !settings.get("invite_only")?.truthy()
             && settings.get("allow_new_registrations")?.truthy()
             && !settings.get("enable_discourse_connect")?.truthy();

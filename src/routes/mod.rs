@@ -720,6 +720,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/floating-ui.dom.umd.min.js", get(asset))
         .route("/assets/float.js", get(asset))
         .route("/assets/user-card.js", get(asset))
+        .route("/assets/inline-footnotes.js", get(asset))
         .route("/assets/sidebar.js", get(asset))
         .route("/assets/topic.js", get(asset))
         .route("/assets/topic-voting.js", get(asset))
