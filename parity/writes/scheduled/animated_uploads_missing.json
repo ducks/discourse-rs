@@ -1,0 +1,26 @@
+{
+  "name": "animated_uploads_missing",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-13T02:56:20.682227",
+  "transaction_started_at": "2026-10-13T02:56:19.932937",
+  "responses": [],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO uploads (id, user_id, original_filename, filesize, url, sha1, extension, dominant_color, animated, created_at, updated_at) VALUES (9621, 3, 'a.gif', 100, '/uploads/default/original/1X/missing1.gif', '0000000000000000000000000000000000002595', 'gif', '', NULL, now() - interval '3 days', now() - interval '3 days'), (9622, 3, 'x.gif', 100, '/uploads/default/original/1X/missing2.gif', '0000000000000000000000000000000000002596', NULL, '', NULL, now() - interval '3 days', now() - interval '3 days'), (9623, 3, 'p.png', 100, '/uploads/default/original/1X/missing3.png', '0000000000000000000000000000000000002597', 'png', '', NULL, now() - interval '3 days', now() - interval '3 days')"
+  ],
+  "enqueue": [
+    [
+      "update_animated_uploads",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "e5311c1a507a4763a0859015fa7baf3d727ad8abc55a8b35149ef327fc590267",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

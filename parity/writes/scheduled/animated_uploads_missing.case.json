@@ -1,0 +1,16 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO uploads (id, user_id, original_filename, filesize, url, sha1, extension, dominant_color, animated, created_at, updated_at) VALUES (9621, 3, 'a.gif', 100, '/uploads/default/original/1X/missing1.gif', '0000000000000000000000000000000000002595', 'gif', '', NULL, now() - interval '3 days', now() - interval '3 days'), (9622, 3, 'x.gif', 100, '/uploads/default/original/1X/missing2.gif', '0000000000000000000000000000000000002596', NULL, '', NULL, now() - interval '3 days', now() - interval '3 days'), (9623, 3, 'p.png', 100, '/uploads/default/original/1X/missing3.png', '0000000000000000000000000000000000002597', 'png', '', NULL, now() - interval '3 days', now() - interval '3 days')"
+  ],
+  "requests": [],
+  "enqueue": [
+    [
+      "update_animated_uploads",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "update_animated_uploads"
+  ]
+}

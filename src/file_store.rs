@@ -202,6 +202,37 @@ impl FileStore {
         }
     }
 
+    /// `LocalStore#remove_file`: a stored file moved to the tombstone
+    /// (`/uploads/` -> `/uploads/tombstone/`, replacing an older copy) and
+    /// touched, where purge_tombstone later finds it; nothing for a url
+    /// not the store's or a file already gone.
+    pub async fn remove_file(&self, url: &str) -> std::io::Result<()> {
+        match self {
+            FileStore::Local(s) => {
+                if url.is_empty() || !url.starts_with(&s.relative_base_url) {
+                    return Ok(());
+                }
+                let source = s.public_dir.join(url.trim_start_matches('/'));
+                if !tokio::fs::try_exists(&source).await? {
+                    return Ok(());
+                }
+                let tombstone = url.replacen("/uploads/", "/uploads/tombstone/", 1);
+                let destination = s.public_dir.join(tombstone.trim_start_matches('/'));
+                if let Some(dir) = destination.parent() {
+                    tokio::fs::create_dir_all(dir).await?;
+                }
+                if tokio::fs::try_exists(&destination).await? {
+                    tokio::fs::remove_file(&destination).await?;
+                }
+                tokio::fs::rename(&source, &destination).await?;
+                // FileUtils.touch: the move keeps the old mtime.
+                let file = std::fs::File::options().write(true).open(&destination)?;
+                file.set_modified(std::time::SystemTime::now())?;
+                Ok(())
+            }
+        }
+    }
+
     /// `has_been_uploaded?`: a url of this store, relative or absolute
     /// (protocol-relative ones take the site's scheme), or the CDN's.
     pub fn has_been_uploaded(&self, url: &str) -> bool {

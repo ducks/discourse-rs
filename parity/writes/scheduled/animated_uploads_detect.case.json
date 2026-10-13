@@ -1,0 +1,22 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO uploads (id, user_id, original_filename, filesize, url, sha1, extension, dominant_color, animated, created_at, updated_at) VALUES (9624, 3, 'anim.gif', 100, '/uploads/default/original/1X/anim9624.gif', '0000000000000000000000000000000000002598', 'gif', '', NULL, now() - interval '3 days', now() - interval '3 days'), (9625, 3, 'static.gif', 100, '/uploads/default/original/1X/static9625.gif', '0000000000000000000000000000000000002599', 'gif', '', NULL, now() - interval '3 days', now() - interval '3 days'), (9626, 3, 'y.gif', 100, '/uploads/default/original/1X/anim9626.gif', '000000000000000000000000000000000000259a', NULL, '', NULL, now() - interval '3 days', now() - interval '3 days')",
+    "INSERT INTO optimized_images (id, sha1, extension, width, height, upload_id, url, filesize, created_at, updated_at) VALUES (9601, 'a', '.gif', 20, 20, 9624, '/uploads/default/optimized/1X/x_20x20.gif', 10, now(), now()), (9602, 'b', '.gif', 20, 20, 9625, '/uploads/default/optimized/1X/y_20x20.gif', 10, now(), now())"
+  ],
+  "requests": [],
+  "enqueue": [
+    [
+      "update_animated_uploads",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "update_animated_uploads"
+  ],
+  "files": {
+    "/uploads/default/original/1X/anim9624.gif": "animated.gif",
+    "/uploads/default/original/1X/static9625.gif": "static.gif",
+    "/uploads/default/original/1X/anim9626.gif": "animated.gif"
+  }
+}

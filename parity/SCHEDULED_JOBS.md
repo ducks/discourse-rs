@@ -51,13 +51,13 @@ Classes:
 | calculate_scores | 1w | scheduled/scores_* |
 | periodical_updates | 15m (tag descriptions with text and auto bumps refused) | scheduled/periodical_* |
 | ensure_db_consistency | 12h (expired banners, category definitions and unused avatar thumbnails refused) | scheduled/consistency_* |
+| update_animated_uploads, backfill_dominant_colors | 1h, 15m (remote uploads refused) | scheduled/animated_uploads_*, scheduled/dominant_colors_* |
 | create_recent_post_search_indexes | 1d (CREATE INDEX CONCURRENTLY can't be recorded in a transaction) | search/recent_index_small_site, tests/jobs.rs |
 
 ## Ready, in porting order
 
 | Job | Every | Missing without it | Size |
 |---|---|---|---|
-| update_animated_uploads, backfill_dominant_colors | 1h, 15m | upload metadata never backfilled | S |
 | clean_up_uploads, purge_deleted_uploads | 1h, 1d | orphaned uploads stay | L |
 
 ## Blocked

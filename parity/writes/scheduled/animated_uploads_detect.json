@@ -1,0 +1,221 @@
+{
+  "name": "animated_uploads_detect",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-13T02:56:19.690472",
+  "transaction_started_at": "2026-10-13T02:56:18.515518",
+  "responses": [],
+  "changes": {
+    "optimized_images": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 9601,
+          "url": "/uploads/default/optimized/1X/x_20x20.gif",
+          "etag": null,
+          "sha1": "a",
+          "width": 20,
+          "height": 20,
+          "version": null,
+          "filesize": 10,
+          "extension": ".gif",
+          "upload_id": 9624,
+          "created_at": "2026-10-13T02:56:18.515518",
+          "updated_at": "2026-10-13T02:56:18.515518"
+        }
+      ],
+      "updated": []
+    },
+    "uploads": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 9624,
+            "url": "/uploads/default/original/1X/anim9624.gif",
+            "etag": null,
+            "sha1": "0000000000000000000000000000000000002598",
+            "width": null,
+            "height": null,
+            "origin": null,
+            "secure": false,
+            "user_id": 3,
+            "animated": null,
+            "filesize": 100,
+            "extension": "gif",
+            "created_at": "2026-10-10T02:56:18.515518",
+            "updated_at": "2026-10-10T02:56:18.515518",
+            "retain_hours": null,
+            "original_sha1": null,
+            "dominant_color": "",
+            "thumbnail_width": null,
+            "thumbnail_height": null,
+            "original_filename": "anim.gif",
+            "verification_status": 1,
+            "access_control_post_id": null,
+            "security_last_changed_at": null,
+            "security_last_changed_reason": null
+          },
+          "after": {
+            "id": 9624,
+            "url": "/uploads/default/original/1X/anim9624.gif",
+            "etag": null,
+            "sha1": "0000000000000000000000000000000000002598",
+            "width": null,
+            "height": null,
+            "origin": null,
+            "secure": false,
+            "user_id": 3,
+            "animated": true,
+            "filesize": 100,
+            "extension": "gif",
+            "created_at": "2026-10-10T02:56:18.515518",
+            "updated_at": "2026-10-13T02:56:19.699192",
+            "retain_hours": null,
+            "original_sha1": null,
+            "dominant_color": "",
+            "thumbnail_width": null,
+            "thumbnail_height": null,
+            "original_filename": "anim.gif",
+            "verification_status": 1,
+            "access_control_post_id": null,
+            "security_last_changed_at": null,
+            "security_last_changed_reason": null
+          }
+        },
+        {
+          "before": {
+            "id": 9625,
+            "url": "/uploads/default/original/1X/static9625.gif",
+            "etag": null,
+            "sha1": "0000000000000000000000000000000000002599",
+            "width": null,
+            "height": null,
+            "origin": null,
+            "secure": false,
+            "user_id": 3,
+            "animated": null,
+            "filesize": 100,
+            "extension": "gif",
+            "created_at": "2026-10-10T02:56:18.515518",
+            "updated_at": "2026-10-10T02:56:18.515518",
+            "retain_hours": null,
+            "original_sha1": null,
+            "dominant_color": "",
+            "thumbnail_width": null,
+            "thumbnail_height": null,
+            "original_filename": "static.gif",
+            "verification_status": 1,
+            "access_control_post_id": null,
+            "security_last_changed_at": null,
+            "security_last_changed_reason": null
+          },
+          "after": {
+            "id": 9625,
+            "url": "/uploads/default/original/1X/static9625.gif",
+            "etag": null,
+            "sha1": "0000000000000000000000000000000000002599",
+            "width": null,
+            "height": null,
+            "origin": null,
+            "secure": false,
+            "user_id": 3,
+            "animated": false,
+            "filesize": 100,
+            "extension": "gif",
+            "created_at": "2026-10-10T02:56:18.515518",
+            "updated_at": "2026-10-13T02:56:19.709113",
+            "retain_hours": null,
+            "original_sha1": null,
+            "dominant_color": "",
+            "thumbnail_width": null,
+            "thumbnail_height": null,
+            "original_filename": "static.gif",
+            "verification_status": 1,
+            "access_control_post_id": null,
+            "security_last_changed_at": null,
+            "security_last_changed_reason": null
+          }
+        },
+        {
+          "before": {
+            "id": 9626,
+            "url": "/uploads/default/original/1X/anim9626.gif",
+            "etag": null,
+            "sha1": "000000000000000000000000000000000000259a",
+            "width": null,
+            "height": null,
+            "origin": null,
+            "secure": false,
+            "user_id": 3,
+            "animated": null,
+            "filesize": 100,
+            "extension": null,
+            "created_at": "2026-10-10T02:56:18.515518",
+            "updated_at": "2026-10-10T02:56:18.515518",
+            "retain_hours": null,
+            "original_sha1": null,
+            "dominant_color": "",
+            "thumbnail_width": null,
+            "thumbnail_height": null,
+            "original_filename": "y.gif",
+            "verification_status": 1,
+            "access_control_post_id": null,
+            "security_last_changed_at": null,
+            "security_last_changed_reason": null
+          },
+          "after": {
+            "id": 9626,
+            "url": "/uploads/default/original/1X/anim9626.gif",
+            "etag": null,
+            "sha1": "000000000000000000000000000000000000259a",
+            "width": null,
+            "height": null,
+            "origin": null,
+            "secure": false,
+            "user_id": 3,
+            "animated": true,
+            "filesize": 100,
+            "extension": null,
+            "created_at": "2026-10-10T02:56:18.515518",
+            "updated_at": "2026-10-13T02:56:19.710556",
+            "retain_hours": null,
+            "original_sha1": null,
+            "dominant_color": "",
+            "thumbnail_width": null,
+            "thumbnail_height": null,
+            "original_filename": "y.gif",
+            "verification_status": 1,
+            "access_control_post_id": null,
+            "security_last_changed_at": null,
+            "security_last_changed_reason": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO uploads (id, user_id, original_filename, filesize, url, sha1, extension, dominant_color, animated, created_at, updated_at) VALUES (9624, 3, 'anim.gif', 100, '/uploads/default/original/1X/anim9624.gif', '0000000000000000000000000000000000002598', 'gif', '', NULL, now() - interval '3 days', now() - interval '3 days'), (9625, 3, 'static.gif', 100, '/uploads/default/original/1X/static9625.gif', '0000000000000000000000000000000000002599', 'gif', '', NULL, now() - interval '3 days', now() - interval '3 days'), (9626, 3, 'y.gif', 100, '/uploads/default/original/1X/anim9626.gif', '000000000000000000000000000000000000259a', NULL, '', NULL, now() - interval '3 days', now() - interval '3 days')",
+    "INSERT INTO optimized_images (id, sha1, extension, width, height, upload_id, url, filesize, created_at, updated_at) VALUES (9601, 'a', '.gif', 20, 20, 9624, '/uploads/default/optimized/1X/x_20x20.gif', 10, now(), now()), (9602, 'b', '.gif', 20, 20, 9625, '/uploads/default/optimized/1X/y_20x20.gif', 10, now(), now())"
+  ],
+  "enqueue": [
+    [
+      "update_animated_uploads",
+      {}
+    ]
+  ],
+  "files": {
+    "/uploads/default/original/1X/anim9624.gif": "animated.gif",
+    "/uploads/default/original/1X/static9625.gif": "static.gif",
+    "/uploads/default/original/1X/anim9626.gif": "animated.gif"
+  },
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "163364203a9f53e0243a1d29117224215632495f2deefe940780f89faabcc66b",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
