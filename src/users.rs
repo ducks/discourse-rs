@@ -195,6 +195,19 @@ impl User {
         .await
     }
 
+    /// `User.find_by(username_lower:)`, active or not.
+    pub async fn find_by_username(
+        conn: &mut PgConnection,
+        username: &str,
+    ) -> Result<Option<User>, sqlx::Error> {
+        sqlx::query_as(&format!(
+            "SELECT {USER_COLUMNS} {USER_FROM} WHERE users.username_lower = $1 LIMIT 1"
+        ))
+        .bind(username.to_lowercase())
+        .fetch_optional(conn)
+        .await
+    }
+
     /// The user by id, active or not.
     pub async fn find_by_id(conn: &mut PgConnection, id: i32) -> Result<Option<User>, sqlx::Error> {
         sqlx::query_as(&format!(
@@ -1865,7 +1878,7 @@ fn slug_for(name: &str) -> String {
 }
 
 /// `UserSerializer#website_name`: the host without `www.` plus the path.
-fn website_name(website: &str) -> Option<String> {
+pub(crate) fn website_name(website: &str) -> Option<String> {
     let rest = website
         .strip_prefix("https://")
         .or_else(|| website.strip_prefix("http://"))?;

@@ -1,0 +1,16 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "The subcategory:\n\nhttp://localhost:3042/c/general/sub-general/34"
+      }
+    }
+  ],
+  "run_jobs": [
+    "process_post"
+  ]
+}

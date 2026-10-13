@@ -185,9 +185,16 @@ pub(crate) fn extract_with_quotes(cooked: &str) -> Result<Vec<String>, Unsupport
 fn detected_links(cooked: &str) -> Result<Vec<(String, bool)>, Unsupported> {
     let dom = parse(cooked);
     let root = fragment_root(&dom);
+    // The oneboxes' sources first.
+    let mut out: Vec<(String, bool)> = crate::pretty_text::cleanup::all_elements(&dom)
+        .into_iter()
+        .filter(|n| element_name(n) == Some("aside") && has_class(n, "onebox"))
+        .filter_map(|n| attr(&n, "data-onebox-src"))
+        .map(|src| (src, false))
+        .collect();
     let mut links = Vec::new();
     collect(&root, false, &mut links)?;
-    let mut out: Vec<(String, bool)> = links.into_iter().map(|l| (l, false)).collect();
+    out.extend(links.into_iter().map(|l| (l, false)));
     for node in crate::pretty_text::cleanup::all_elements(&dom) {
         if element_name(&node) == Some("aside") && has_class(&node, "quote") {
             let topic = attr(&node, "data-topic").filter(|t| !t.trim().is_empty());
@@ -208,13 +215,12 @@ fn collect(node: &Handle, skip: bool, links: &mut Vec<String>) -> Result<(), Uns
     let name = element_name(node);
     let mut skip = skip;
     if let Some(name) = name {
-        if name == "aside" && has_class(node, "onebox") {
-            return Err(Unsupported("links from oneboxes"));
-        }
         if name == "div" && attr(node, "data-video-id").is_some() {
             return Err(Unsupported("links from video embeds"));
         }
-        if (name == "aside" && has_class(node, "quote")) || has_class(node, "elided") {
+        if (name == "aside" && (has_class(node, "quote") || has_class(node, "onebox")))
+            || has_class(node, "elided")
+        {
             skip = true;
         }
         if name == "a" && !skip {

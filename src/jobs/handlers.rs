@@ -386,6 +386,27 @@ pub(crate) async fn featured_users(
 
 /// `Badge::FirstEmoji`
 const FIRST_EMOJI_BADGE: i32 = 41;
+/// `Badge::FirstOnebox`
+const FIRST_ONEBOX_BADGE: i32 = 42;
+
+/// `has_emoji?`: an emoji image outside the quotes.
+fn has_emoji_outside_quotes(html: &str) -> bool {
+    use crate::pretty_text::cleanup::{all_elements, element_name, has_class, parse};
+    let dom = parse(html);
+    let mut in_quote = std::collections::HashSet::new();
+    for e in all_elements(&dom) {
+        if has_class(&e, "quote") {
+            for inner in crate::pretty_text::cleanup::all_elements_within(&e) {
+                in_quote.insert(std::rc::Rc::as_ptr(&inner));
+            }
+        }
+    }
+    all_elements(&dom).iter().any(|e| {
+        element_name(e) == Some("img")
+            && has_class(e, "emoji")
+            && !in_quote.contains(&std::rc::Rc::as_ptr(e))
+    })
+}
 
 /// `Jobs::ProcessPost`: CookedPostProcessor over the post's cooked HTML,
 /// the cooked column updated when it changes, then pull_hotlinked_images.
@@ -415,8 +436,11 @@ async fn process_post(state: &AppState, args: &Value) -> Result<(), AppError> {
         topic_image_upload_id: Option<i64>,
         omit_nofollow: bool,
         author_staff_or_staged: bool,
-        has_first_emoji: bool,
-        first_emoji_enabled: bool,
+        reply_to_post_number: Option<i32>,
+        reply_quoted: bool,
+        post_type: i32,
+        hidden: bool,
+        via_email: bool,
     }
     let tl3_no_follow = s.get("tl3_links_no_follow")?.truthy();
     let post: Option<Row> = sqlx::query_as(
@@ -424,15 +448,13 @@ async fn process_post(state: &AppState, args: &Value) -> Result<(), AppError> {
                 t.image_upload_id AS topic_image_upload_id, \
                 COALESCE(u.admin OR u.moderator OR (NOT $2 AND (u.staged OR u.trust_level >= 3)), FALSE) AS omit_nofollow, \
                 COALESCE(u.admin OR u.moderator OR u.staged, FALSE) AS author_staff_or_staged, \
-                EXISTS (SELECT 1 FROM user_badges WHERE user_id = p.user_id AND badge_id = $3) AS has_first_emoji, \
-                EXISTS (SELECT 1 FROM badges WHERE id = $3 AND enabled) AS first_emoji_enabled \
+                p.reply_to_post_number, p.reply_quoted, p.post_type, p.hidden, p.via_email \
          FROM posts p JOIN topics t ON t.id = p.topic_id AND t.deleted_at IS NULL \
          LEFT JOIN users u ON u.id = p.user_id \
          WHERE p.id = $1",
     )
     .bind(post_id)
     .bind(tl3_no_follow)
-    .bind(FIRST_EMOJI_BADGE)
     .fetch_optional(&mut *conn)
     .await?;
     // Nothing to do for a missing post or one whose topic is gone.
@@ -529,9 +551,42 @@ async fn process_post(state: &AppState, args: &Value) -> Result<(), AppError> {
         }
     }
     // grant_badges: the first emoji badge is a write.
-    let has_emoji = html.contains("class=\"emoji");
-    if has_emoji && post.first_emoji_enabled && !post.has_first_emoji && post.user_id.is_some() {
-        return Err(Unsupported("granting the first emoji badge").into());
+    // grant_badges: for a post anyone may see.
+    if let Some(user_id) = post.user_id {
+        let anonymous = crate::guardian::Guardian::anonymous();
+        let visible = [1, 2, 3].contains(&post.post_type)
+            && !post.hidden
+            && crate::onebox::can_see_topic(&mut conn, &s, &anonymous, post.topic_id).await?;
+        if visible {
+            if has_emoji_outside_quotes(&html) {
+                crate::badge_granter::grant(
+                    &mut conn,
+                    &state.bus,
+                    &s,
+                    &state.i18n,
+                    FIRST_EMOJI_BADGE,
+                    user_id,
+                    Some(post_id),
+                )
+                .await?;
+            }
+            if crate::onebox::has_oneboxes(&post.cooked, s.get("max_oneboxes_per_post")?.to_i()) {
+                crate::badge_granter::grant(
+                    &mut conn,
+                    &state.bus,
+                    &s,
+                    &state.i18n,
+                    FIRST_ONEBOX_BADGE,
+                    user_id,
+                    Some(post_id),
+                )
+                .await?;
+            }
+            // is_reply_by_email?: FirstReplyByEmail
+            if post.via_email && post.post_number > 1 {
+                return Err(Unsupported("the first reply by email badge").into());
+            }
+        }
     }
     // @post.link_post_uploads(fragments: @doc)
     crate::upload_references::link_post_uploads(&mut conn, &s, &hostname, &store, post_id, &html)
@@ -601,6 +656,17 @@ async fn process_post(state: &AppState, args: &Value) -> Result<(), AppError> {
             i18n: &state.i18n,
             bus: &state.bus,
         };
+        // QuotedPost.extract_from: oneboxes may have quoted posts.
+        crate::posting::rebake::extract_quoted_posts(
+            &mut conn,
+            post_id,
+            post.topic_id,
+            post.post_number,
+            post.reply_to_post_number,
+            post.reply_quoted,
+            &html,
+        )
+        .await?;
         crate::bus::publish_post_change(
             &ctx,
             &mut conn,

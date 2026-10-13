@@ -134,9 +134,15 @@ Bugs or silent gaps in what is merged, small and independent.
 41. ~~`feat/cooked-css-basics`~~ (done) S (also the composer textarea's
     line-height: foundation.css ports one of discourse.scss's two
     textarea blocks), 42. ~~`feat/hashtag-css`~~ (done) S/M
-43. `feat/onebox-local` M: internal topic, post, user and category
-    links without fetching; posts with onebox links are refused today
-    (posting/validate.rs)
+43. ~~`feat/onebox-local`~~ (done) M: the site's own topics, users,
+    categories and uploads, inline topic titles, the onebox limit, the
+    FirstOnebox and FirstEmoji badges (BadgeGranter.grant), QuotedPost
+    after post processing, onebox.scss. Still refused until onebox-fetch:
+    other sites' oneboxes and inline titles, own-site pages no route
+    recognizes, chat's local oneboxes. Images of the site's own that
+    aren't uploads (letter avatars) are treated as unreachable for
+    FastImage, as the reference's container finds them; production Rails
+    would size them
 44. `feat/cooked-decorators-js` M: run once per post, swapped-in posts
     included
 45. `feat/float-positioner` S, 46. `feat/user-card` M

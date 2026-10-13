@@ -234,6 +234,15 @@ pub async fn revise(
     };
     let base_path = ctx.config.globals.relative_url_root().to_string();
     let analysis = validate::analyze(&cooked, &base_path)?;
+    crate::onebox::refuse_unported(
+        &analysis.onebox_links,
+        &crate::url::Urls {
+            config: ctx.config,
+            settings: ctx.settings,
+        }
+        .current_hostname()?,
+        &base_path,
+    )?;
     if analysis.has_upload_media {
         return Err(Unsupported("posts with uploaded video or audio").into());
     }

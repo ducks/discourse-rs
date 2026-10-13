@@ -16,6 +16,9 @@ FILES=(
   config/locales/server.en.yml
   config/locales/client.en.yml
   lib/common_passwords/10-char-common-passwords.txt
+  lib/onebox/templates/discourse_topic_onebox.mustache
+  lib/onebox/templates/discourse_user_onebox.mustache
+  lib/onebox/templates/discourse_category_onebox.mustache
   vendor/assets/svg-icons/discourse-additional.svg
   vendor/assets/svg-icons/fontawesome/solid.svg
   vendor/assets/svg-icons/fontawesome/regular.svg

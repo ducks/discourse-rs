@@ -136,61 +136,16 @@ pub async fn rebake(pool: &PgPool, ctx: &Ctx<'_>, post_id: i32) -> Result<(), Ap
         )
         .await?;
     }
-    // QuotedPost.extract_from
-    let quotes = quoted(&cooked, post.topic_id, post.post_number);
-    if quotes.is_empty() {
-        sqlx::query("DELETE FROM quoted_posts WHERE post_id = $1")
-            .bind(post_id)
-            .execute(&mut *tx)
-            .await?;
-    } else {
-        let topic_ids: Vec<i32> = quotes.iter().map(|(t, _)| *t).collect();
-        let post_numbers: Vec<i32> = quotes.iter().map(|(_, n)| *n).collect();
-        sqlx::query(
-            "INSERT INTO quoted_posts (post_id, quoted_post_id, created_at, updated_at) \
-             SELECT $1, p.id, current_timestamp, current_timestamp FROM posts p \
-             JOIN (SELECT unnest($2::int[]) topic_id, unnest($3::int[]) post_number) X \
-               ON X.topic_id = p.topic_id AND X.post_number = p.post_number \
-             LEFT JOIN quoted_posts q ON q.post_id = $1 AND q.quoted_post_id = p.id \
-             WHERE q.id IS NULL",
-        )
-        .bind(post_id)
-        .bind(&topic_ids)
-        .bind(&post_numbers)
-        .execute(&mut *tx)
-        .await?;
-        sqlx::query(
-            "DELETE FROM quoted_posts WHERE post_id = $1 AND id IN ( \
-               SELECT q1.id FROM quoted_posts q1 LEFT JOIN posts p1 ON p1.id = q1.quoted_post_id \
-               LEFT JOIN (SELECT unnest($2::int[]) topic_id, unnest($3::int[]) post_number) X \
-                 ON X.topic_id = p1.topic_id AND X.post_number = p1.post_number \
-               WHERE q1.post_id = $1 AND X.topic_id IS NULL)",
-        )
-        .bind(post_id)
-        .bind(&topic_ids)
-        .bind(&post_numbers)
-        .execute(&mut *tx)
-        .await?;
-    }
-    let reply_quoted = match post.reply_to_post_number {
-        Some(n) => sqlx::query_scalar::<_, bool>(
-            "SELECT EXISTS (SELECT 1 FROM quoted_posts q JOIN posts p ON p.id = q.quoted_post_id \
-             WHERE q.post_id = $1 AND p.topic_id = $2 AND p.post_number = $3)",
-        )
-        .bind(post_id)
-        .bind(post.topic_id)
-        .bind(n)
-        .fetch_one(&mut *tx)
-        .await?,
-        None => false,
-    };
-    if reply_quoted != post.reply_quoted {
-        sqlx::query("UPDATE posts SET reply_quoted = $2 WHERE id = $1")
-            .bind(post_id)
-            .bind(reply_quoted)
-            .execute(&mut *tx)
-            .await?;
-    }
+    extract_quoted_posts(
+        &mut tx,
+        post_id,
+        post.topic_id,
+        post.post_number,
+        post.reply_to_post_number,
+        post.reply_quoted,
+        &cooked,
+    )
+    .await?;
     // trigger_post_process(bypass_bump: true, priority: :ultra_low)
     crate::jobs::enqueue(
         &mut tx,
@@ -209,6 +164,74 @@ pub async fn rebake(pool: &PgPool, ctx: &Ctx<'_>, post_id: i32) -> Result<(), Ap
     crate::bus::publish_post_change(ctx, &mut tx, post_id, "rebaked", Default::default(), false)
         .await?;
     tx.commit().await?;
+    Ok(())
+}
+
+/// `QuotedPost.extract_from(post)`: the posts the cooked quotes, and
+/// whether the post quotes the one it replies to (`reply_quoted`).
+pub(crate) async fn extract_quoted_posts(
+    conn: &mut sqlx::PgConnection,
+    post_id: i32,
+    topic_id: i32,
+    post_number: i32,
+    reply_to_post_number: Option<i32>,
+    was_reply_quoted: bool,
+    cooked: &str,
+) -> Result<(), sqlx::Error> {
+    let quotes = quoted(cooked, topic_id, post_number);
+    if quotes.is_empty() {
+        sqlx::query("DELETE FROM quoted_posts WHERE post_id = $1")
+            .bind(post_id)
+            .execute(&mut *conn)
+            .await?;
+    } else {
+        let topic_ids: Vec<i32> = quotes.iter().map(|(t, _)| *t).collect();
+        let post_numbers: Vec<i32> = quotes.iter().map(|(_, n)| *n).collect();
+        sqlx::query(
+            "INSERT INTO quoted_posts (post_id, quoted_post_id, created_at, updated_at) \
+             SELECT $1, p.id, current_timestamp, current_timestamp FROM posts p \
+             JOIN (SELECT unnest($2::int[]) topic_id, unnest($3::int[]) post_number) X \
+               ON X.topic_id = p.topic_id AND X.post_number = p.post_number \
+             LEFT JOIN quoted_posts q ON q.post_id = $1 AND q.quoted_post_id = p.id \
+             WHERE q.id IS NULL",
+        )
+        .bind(post_id)
+        .bind(&topic_ids)
+        .bind(&post_numbers)
+        .execute(&mut *conn)
+        .await?;
+        sqlx::query(
+            "DELETE FROM quoted_posts WHERE post_id = $1 AND id IN ( \
+               SELECT q1.id FROM quoted_posts q1 LEFT JOIN posts p1 ON p1.id = q1.quoted_post_id \
+               LEFT JOIN (SELECT unnest($2::int[]) topic_id, unnest($3::int[]) post_number) X \
+                 ON X.topic_id = p1.topic_id AND X.post_number = p1.post_number \
+               WHERE q1.post_id = $1 AND X.topic_id IS NULL)",
+        )
+        .bind(post_id)
+        .bind(&topic_ids)
+        .bind(&post_numbers)
+        .execute(&mut *conn)
+        .await?;
+    }
+    let reply_quoted = match reply_to_post_number {
+        Some(n) => sqlx::query_scalar::<_, bool>(
+            "SELECT EXISTS (SELECT 1 FROM quoted_posts q JOIN posts p ON p.id = q.quoted_post_id \
+             WHERE q.post_id = $1 AND p.topic_id = $2 AND p.post_number = $3)",
+        )
+        .bind(post_id)
+        .bind(topic_id)
+        .bind(n)
+        .fetch_one(&mut *conn)
+        .await?,
+        None => false,
+    };
+    if reply_quoted != was_reply_quoted {
+        sqlx::query("UPDATE posts SET reply_quoted = $2 WHERE id = $1")
+            .bind(post_id)
+            .bind(reply_quoted)
+            .execute(&mut *conn)
+            .await?;
+    }
     Ok(())
 }
 

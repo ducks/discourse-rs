@@ -1,0 +1,19 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "Two oneboxes with a limit of one:\n\nhttp://localhost:3042/u/user2\n\nhttp://localhost:3042/u/user0"
+      }
+    }
+  ],
+  "run_jobs": [
+    "process_post"
+  ],
+  "settings": {
+    "max_oneboxes_per_post": 1
+  }
+}

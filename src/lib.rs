@@ -48,6 +48,7 @@ pub mod message_format;
 pub mod modifications;
 pub mod not_found_page;
 pub mod notifications;
+pub mod onebox;
 pub mod optimized_images;
 pub mod owned_schema;
 pub mod params;

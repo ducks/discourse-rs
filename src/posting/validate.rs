@@ -110,6 +110,9 @@ pub struct Analysis {
     pub attachments: usize,
     pub links: Vec<String>,
     pub has_oneboxes: bool,
+    /// The links cooking left for oneboxing: each href, and whether the
+    /// onebox is an inline one (`.inline-onebox-loading`).
+    pub onebox_links: Vec<(String, bool)>,
     /// A `div.poll`: one of discourse-poll's polls.
     pub has_polls: bool,
     /// An upload shown as video or audio, which the post processor would
@@ -118,7 +121,8 @@ pub struct Analysis {
     pub has_quotes: bool,
 }
 
-/// `PostAnalyzer` counts, refusing what cooking leaves for oneboxing.
+/// `PostAnalyzer` counts, refusing what cooking leaves for oneboxing
+/// that the post processor can't onebox (see `onebox::refuse_unported`).
 pub fn analyze(cooked: &str, base_path: &str) -> Result<Analysis, Unsupported> {
     let dom = parse(cooked);
     let mut a = Analysis::default();
@@ -134,9 +138,6 @@ pub fn analyze(cooked: &str, base_path: &str) -> Result<Analysis, Unsupported> {
     mentions.dedup();
     a.mentions = mentions.len();
     a.mention_names = mentions;
-    if a.has_oneboxes {
-        return Err(Unsupported("posts with oneboxes"));
-    }
     Ok(a)
 }
 
@@ -145,8 +146,14 @@ pub fn analyze(cooked: &str, base_path: &str) -> Result<Analysis, Unsupported> {
 fn walk(node: &Handle, bp: &str, stripped: bool, a: &mut Analysis, mentions: &mut Vec<String>) {
     let name = element_name(node);
     if let Some(name) = name {
-        if has_class(node, "onebox") || has_class(node, "inline-onebox-loading") {
+        let inline = has_class(node, "inline-onebox-loading");
+        if has_class(node, "onebox") || inline {
             a.has_oneboxes = true;
+            if name == "a"
+                && let Some(href) = attr(node, "href").filter(|h| !h.is_empty())
+            {
+                a.onebox_links.push((href, inline));
+            }
         }
         if name == "div" && has_class(node, "poll") {
             a.has_polls = true;
