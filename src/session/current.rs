@@ -334,6 +334,15 @@ pub async fn layer(
                 {
                     return Ok(refused.into_response(&state.i18n));
                 }
+                // Not the per-IP limits for an authenticated admin API
+                // request: the tracker's counts given back.
+                let counted = request
+                    .extensions()
+                    .get::<crate::request_tracker::Limiters>()
+                    .cloned();
+                for l in counted.map(|c| c.0).unwrap_or_default() {
+                    l.rollback(&state.pool, true).await?;
+                }
                 crate::guardian::Guardian::for_user(&mut conn, &user).await?
             }
             Ok(_) if path.starts_with("/admin/") => {

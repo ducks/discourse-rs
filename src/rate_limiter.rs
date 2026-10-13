@@ -272,6 +272,18 @@ impl RateLimiter {
                 .is_some_and(|oldest| now - oldest >= self.secs))
     }
 
+    /// `seconds_to_wait(now)`: the window less the oldest stamp's age.
+    pub async fn seconds_to_wait(&self, pool: &PgPool) -> Result<i64, sqlx::Error> {
+        let now = crate::clock::now().timestamp();
+        let oldest = self.oldest(pool, now).await?.unwrap_or(0);
+        Ok(self.secs - (now - oldest))
+    }
+
+    /// The refusal `performed!` would raise now.
+    pub async fn exceeded_now(&self, pool: &PgPool) -> Result<LimitExceeded, sqlx::Error> {
+        Ok(self.exceeded(self.seconds_to_wait(pool).await?))
+    }
+
     /// `rollback!`: the newest stamp popped, whoever pushed it.
     pub async fn rollback(&self, pool: &PgPool, enabled: bool) -> Result<(), sqlx::Error> {
         if !enabled {

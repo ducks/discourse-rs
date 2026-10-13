@@ -950,38 +950,13 @@ impl Search<'_> {
         Ok(Some(id))
     }
 
-    /// `CrawlerDetection.crawler?`: a missing or unfamiliar user agent is a
-    /// crawler; a browser-like one is a crawler only when it names one.
+    /// `CrawlerDetection.crawler?`
     fn crawler(&self, user_agent: Option<&str>) -> Result<bool, SearchError> {
-        let Some(ua) = user_agent.filter(|u| !u.is_empty()) else {
-            return Ok(true);
-        };
-        let lower = ua.to_lowercase();
-        let list = |name: &str| -> Result<Vec<String>, SearchError> {
-            Ok(self
-                .settings
-                .get(name)?
-                .to_s()
-                .split('|')
-                .filter(|s| !s.is_empty())
-                .map(|s| s.to_lowercase())
-                .collect())
-        };
-        let possibly_real = list("non_crawler_user_agents")?
-            .iter()
-            .any(|s| lower.contains(s.as_str()));
-        if !possibly_real {
-            return Ok(true);
-        }
-        if list("crawler_check_bypass_agents")?
-            .iter()
-            .any(|s| lower.contains(s.as_str()))
-        {
-            return Ok(false);
-        }
-        Ok(list("crawler_user_agents")?
-            .iter()
-            .any(|s| lower.contains(s.as_str())))
+        Ok(crate::crawler_detection::crawler(
+            self.settings,
+            user_agent,
+            None,
+        )?)
     }
 
     /// GroupedSearchResultSerializer with its side-loaded associations, in
