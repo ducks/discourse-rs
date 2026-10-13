@@ -1,0 +1,15 @@
+{
+  "user": "user1",
+  "settings": { "poll_enabled": false },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "Which one, with polls off?\n\n[poll type=regular results=always]\n* Red\n* Blue\n[/poll]"
+      }
+    }
+  ],
+  "run_jobs": ["post_alert"]
+}
