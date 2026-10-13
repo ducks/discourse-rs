@@ -23,6 +23,56 @@ Caveats that apply to every run:
 - Same box, same Postgres, client and servers all local; keep-alive off so
   each request carries a connection.
 
+## 2026-10-13, the request limits kept in the process
+
+perf/rate-limiter-storage: Middleware::RequestTracker's limiters (the 10
+and 60 second request limits, the asset budget, the crawler slow-down)
+keep their lists in the process instead of discourse_rs.rate_limits,
+with the same rules (a VecDeque per key, newest first, trimmed to max).
+A graceful shutdown writes the live lists to the table and startup reads
+them back; a crash loses at most a minute of counts. Every other limiter
+(posting, likes, logins, search, the daily ones) stays in the table, off
+the request path.
+
+The run below repeats the tracked comparison from the entry after this
+one (same build flags, user1, c=16, 5 s, the request limits applied to
+private addresses with the per-address limits raised so nothing is
+refused):
+
+| endpoint | target | req/s | p50 ms | p99 ms | non-2xx |
+|---|---|---:|---:|---:|---:|
+| /srv/status | rs-limits-off (user) | 15707 | 0.9 | 2.4 | 0 |
+| /srv/status | rs-tracked (user) | 12815 | 1.1 | 2.8 | 0 |
+| /site.json | rs-limits-off (user) | 2536 | 5.9 | 10.4 | 0 |
+| /site.json | rs-tracked (user) | 2500 | 6.1 | 9.5 | 0 |
+| /latest.json | rs-limits-off (user) | 2905 | 5.2 | 8.7 | 0 |
+| /latest.json | rs-tracked (user) | 2753 | 5.5 | 9.1 | 0 |
+| /latest | rs-limits-off (user) | 703 | 22.2 | 39.5 | 0 |
+| /latest | rs-tracked (user) | 692 | 22.6 | 43.2 | 0 |
+| /c/general/4.json | rs-limits-off (user) | 2645 | 5.8 | 9.4 | 0 |
+| /c/general/4.json | rs-tracked (user) | 2539 | 6.1 | 9.6 | 0 |
+| /categories.json | rs-limits-off (user) | 2487 | 6.3 | 9.3 | 0 |
+| /categories.json | rs-tracked (user) | 2385 | 6.5 | 10 | 0 |
+| /t/welcome-to-discourse/5.json | rs-limits-off (user) | 1044 | 15.5 | 24.8 | 0 |
+| /t/welcome-to-discourse/5.json | rs-tracked (user) | 1022 | 15.8 | 23.9 | 0 |
+| /t/welcome-to-discourse/5 | rs-limits-off (user) | 176 | 93.9 | 113.1 | 0 |
+| /t/welcome-to-discourse/5 | rs-tracked (user) | 175 | 94 | 114.8 | 0 |
+| /u/system.json | rs-limits-off (user) | 4023 | 3.8 | 5.9 | 0 |
+| /u/system.json | rs-tracked (user) | 3745 | 4.1 | 6.6 | 0 |
+| /search.json?q=Welcome | rs-limits-off (user) | 3029 | 5.2 | 7 | 0 |
+| /search.json?q=Welcome | rs-tracked (user) | 7805 | 1.9 | 3.8 | 38995 |
+| /tag/guide.json | rs-limits-off (user) | 2377 | 6 | 10.9 | 0 |
+| /tag/guide.json | rs-tracked (user) | 2266 | 6.5 | 11.3 | 0 |
+| /unread.json | rs-limits-off (user) | 3035 | 5.1 | 7.9 | 0 |
+| /unread.json | rs-tracked (user) | 2886 | 5.3 | 8.3 | 0 |
+| /new.json | rs-limits-off (user) | 2909 | 5.3 | 8.3 | 0 |
+| /new.json | rs-tracked (user) | 2765 | 5.5 | 8.8 | 0 |
+
+Within 1 to 7% of limits off on every row (18% on /srv/status, where the
+two limiter checks are most of a near-empty request), against 3 to 8
+times slower with the lists in the table. The search row's non-2xx are
+the per-user search limiter's 429s, which stays in the table.
+
 ## 2026-10-13, after messages and chat DMs, rate limits on
 
 discourse-rs at eafbcea (release build, RAILS_ENV=production, on a fresh

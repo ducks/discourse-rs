@@ -297,3 +297,69 @@ async fn limiting_while_holding_the_last_connection() {
     assert!(limiter.performed(&pool, true).await.unwrap().is_err());
     drop(held);
 }
+
+/// A limiter on the process's lists answers as one on the table does,
+/// waits included, plain and aggressive.
+#[tokio::test]
+async fn memory_lists_follow_the_table() {
+    use discourse_rs::rate_limiter::MemoryStore;
+    let db = TestDb::new().await;
+    let _app = state(db.pool.clone(), recorded_config()).await;
+    let store = MemoryStore::default();
+    for aggressive in [false, true] {
+        let make = |kind: &str| {
+            let l = RateLimiter::new(member(), kind, 2, 60);
+            if aggressive { l.aggressive() } else { l }
+        };
+        let table = make(if aggressive { "agg_table" } else { "table" });
+        let memory = make(if aggressive { "agg_memory" } else { "memory" }).in_memory(&store);
+        for secs in [0, 10, 20, 30, 65, 75, 200] {
+            at(secs);
+            let a = table.performed(&db.pool, true).await.unwrap();
+            let b = memory.performed(&db.pool, true).await.unwrap();
+            assert_eq!(
+                a.as_ref().map_err(|e| e.available_in).err(),
+                b.as_ref().map_err(|e| e.available_in).err(),
+                "at {secs}s, aggressive {aggressive}"
+            );
+            assert_eq!(
+                table.remaining(&db.pool).await.unwrap(),
+                memory.remaining(&db.pool).await.unwrap()
+            );
+        }
+        table.rollback(&db.pool, true).await.unwrap();
+        memory.rollback(&db.pool, true).await.unwrap();
+        assert_eq!(
+            table.can_perform(&db.pool, true).await.unwrap(),
+            memory.can_perform(&db.pool, true).await.unwrap()
+        );
+    }
+    // Nothing of the memory limiters reached the table.
+    let rows: i64 = sqlx::query_scalar(
+        "SELECT COUNT(*) FROM discourse_rs.rate_limits WHERE key LIKE '%memory'",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert_eq!(rows, 0);
+}
+
+/// The process's lists survive a graceful restart: saved to the table,
+/// and the tracker's read back.
+#[tokio::test]
+async fn memory_lists_are_saved_and_loaded() {
+    use discourse_rs::rate_limiter::MemoryStore;
+    let db = TestDb::new().await;
+    let _app = state(db.pool.clone(), recorded_config()).await;
+    at(0);
+    let store = MemoryStore::default();
+    let tracker = RateLimiter::new(None, "global_limit_10_ip/203.0.113.9", 1, 10).in_memory(&store);
+    assert!(tracker.performed(&db.pool, true).await.unwrap().is_ok());
+    store.save(&db.pool).await.unwrap();
+    let loaded = MemoryStore::load(&db.pool).await.unwrap();
+    let again = RateLimiter::new(None, "global_limit_10_ip/203.0.113.9", 1, 10).in_memory(&loaded);
+    at(3);
+    let refused = again.performed(&db.pool, true).await.unwrap().unwrap_err();
+    assert_eq!(refused.available_in, 7);
+    clock::pin(None);
+}

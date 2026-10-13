@@ -290,3 +290,18 @@ async fn admin_api_requests_give_back_the_address_count() {
         assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
     }
 }
+
+#[tokio::test]
+async fn the_tracker_keeps_its_lists_in_the_process() {
+    let (db, st) = tracked(&[("max_reqs_per_ip_per_10_seconds", "3")]).await;
+    for _ in 0..2 {
+        get(&st, "/session/csrf.json", "203.0.113.9").await;
+    }
+    let rows: i64 = sqlx::query_scalar(
+        "SELECT COUNT(*) FROM discourse_rs.rate_limits WHERE key LIKE '%global_limit%'",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert_eq!(rows, 0);
+}
