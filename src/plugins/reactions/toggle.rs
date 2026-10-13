@@ -131,9 +131,6 @@ pub async fn toggle(
     let Some(access) = find_post(&mut *conn, ctx, guardian, post_id).await? else {
         return Ok(Outcome::InvalidAccess);
     };
-    if access.topic.private_message() {
-        return Err(Unsupported("reactions in messages").into());
-    }
     // policy :reaction_is_valid
     let reactions = Reactions::load(ctx.settings)?;
     if !reactions.is_valid(&mut *conn, value).await? {
@@ -195,6 +192,7 @@ pub async fn toggle(
             &access.topic,
             like_user,
             like_created_at,
+            crate::post_actions::LIKE,
         )?
     {
         return Ok(Outcome::InvalidAccess);

@@ -304,6 +304,7 @@ impl Guardian {
                     opts.topic,
                     action.user_id,
                     action.created_at,
+                    *id,
                 )? {
                     summary.insert("can_undo".into(), json!(true));
                 }

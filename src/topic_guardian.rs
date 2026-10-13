@@ -892,8 +892,11 @@ impl Guardian {
         topic: &TopicCtx,
         action_user_id: i32,
         action_created_at: NaiveDateTime,
+        action_type_id: i64,
     ) -> Result<bool, GuardianError> {
-        if !self.is_me(action_user_id) || topic.private_message() {
+        // PostAction#is_private_message?: a notify_user or
+        // notify_moderators flag, not an action in a message.
+        if !self.is_me(action_user_id) || matches!(action_type_id, 6 | 7) {
             return Ok(false);
         }
         if settings.get("allow_anonymous_mode")?.truthy() {
