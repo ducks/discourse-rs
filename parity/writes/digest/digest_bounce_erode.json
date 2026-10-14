@@ -1,0 +1,107 @@
+{
+  "name": "digest_bounce_erode",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-14T02:37:15.494442",
+  "transaction_started_at": "2026-10-14T02:37:14.860188",
+  "responses": [],
+  "changes": {
+    "unsubscribe_keys": {
+      "inserted": [
+        {
+          "key": "3c3c81e70ae1483d124053f629f21c1bf8f0852bec5cf91aa42500779dd916a7",
+          "post_id": null,
+          "user_id": 2,
+          "topic_id": null,
+          "created_at": "2026-10-14T02:37:15.501511",
+          "updated_at": "2026-10-14T02:37:15.501511",
+          "unsubscribe_key_type": "digest"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_stats": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "user_id": 2,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:16.023001",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 1,
+            "topic_count": 2,
+            "bounce_score": 2,
+            "days_visited": 1,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 1,
+            "topics_entered": 0,
+            "first_unread_at": "2026-10-01T18:21:56.278874",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 3,
+            "first_unread_pm_at": "2026-10-01T18:21:56.284939",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 3,
+            "first_post_created_at": "2026-09-30T07:28:28.901913",
+            "reset_bounce_score_after": null
+          },
+          "after": {
+            "user_id": 2,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:16.023001",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 1,
+            "topic_count": 2,
+            "bounce_score": 1.9,
+            "days_visited": 1,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 1,
+            "topics_entered": 0,
+            "first_unread_at": "2026-10-01T18:21:56.278874",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 3,
+            "first_unread_pm_at": "2026-10-01T18:21:56.284939",
+            "digest_attempted_at": "2026-10-14T02:37:15.520458",
+            "pending_posts_count": 0,
+            "distinct_badge_count": 3,
+            "first_post_created_at": "2026-09-30T07:28:28.901913",
+            "reset_bounce_score_after": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE user_stats SET digest_attempted_at = NULL WHERE user_id = 2",
+    "UPDATE users SET last_seen_at = now() - interval '8 days' WHERE id = 2",
+    "UPDATE user_stats SET bounce_score = 2 WHERE user_id = 2"
+  ],
+  "enqueue": [
+    [
+      "user_email",
+      {
+        "type": "digest",
+        "user_id": 2
+      }
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "06297ef149080046317e2c2fa443abb4cbdd90cbdb967c4104a9d8775cd0f56b",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

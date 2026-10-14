@@ -118,7 +118,8 @@ def clear_redis_state
   # grpmsg, last_notified_reviewable_id: what GroupMessage and the
   # reviewables reminder remember having sent.
   # _CACHE:inline_onebox: crawled titles (InlineOneboxer), kept a day.
-  %w[unique-post-* unique-pm-post-* rejection_email:* user-last-seen:* hot_score_6_hourly __SEARCH__LOG_* LAST_UPLOAD_CLEANUP l-rate-limit3:* grpmsg:* last_notified_reviewable_id _CACHE:inline_onebox:*].each do |pattern|
+  # summary-new-users: the digest's new users count, kept a day.
+  %w[unique-post-* unique-pm-post-* rejection_email:* user-last-seen:* hot_score_6_hourly __SEARCH__LOG_* LAST_UPLOAD_CLEANUP l-rate-limit3:* grpmsg:* last_notified_reviewable_id _CACHE:inline_onebox:* summary-new-users:*].each do |pattern|
     Discourse.redis.keys(pattern).each { |k| Discourse.redis.del(k) }
   end
   # FinalDestination's https domains, outside the namespace.

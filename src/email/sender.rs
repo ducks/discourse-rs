@@ -406,6 +406,24 @@ pub async fn send(
             return Err(Unsupported("email attachments").into());
         }
     }
+    // A digest attaches its first posts' images (digest_posts).
+    if post_id.is_none() && email_type == "digest" {
+        let digest_posts: Vec<i32> = message
+            .header("X-Discourse-Post-Ids")
+            .unwrap_or("")
+            .split(',')
+            .filter_map(|id| id.trim().parse().ok())
+            .collect();
+        let uploads: bool = sqlx::query_scalar(
+            "SELECT EXISTS (SELECT 1 FROM upload_references WHERE target_type = 'Post' AND target_id = ANY($1))",
+        )
+        .bind(&digest_posts)
+        .fetch_one(&mut *conn)
+        .await?;
+        if uploads && s.get("email_total_attachment_size_limit_kb")?.to_i() > 0 {
+            return Err(Unsupported("email attachments").into());
+        }
+    }
     // A bounceable reply address: a VERP Return-Path with the log's key.
     let reply_address = s.get("reply_by_email_address")?.to_s();
     let bounce_key = if reply_address.contains('+') {

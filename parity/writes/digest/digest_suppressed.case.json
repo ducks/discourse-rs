@@ -1,0 +1,27 @@
+{
+  "user": null,
+  "settings": {
+    "digest_suppress_categories": "34",
+    "digest_suppress_tags": "Guide"
+  },
+  "setup": [
+    "UPDATE user_stats SET digest_attempted_at = NULL WHERE user_id = 2",
+    "UPDATE users SET last_seen_at = now() - interval '8 days' WHERE id = 2",
+    "UPDATE topics SET created_at = now() - interval '3 hours', bumped_at = now() - interval '3 hours' WHERE id = 38",
+    "UPDATE topics SET created_at = now() - interval '5 hours', bumped_at = now() - interval '2 hours' WHERE id = 35",
+    "UPDATE topics SET created_at = now() - interval '6 hours', bumped_at = now() - interval '6 hours' WHERE id = 5"
+  ],
+  "requests": [],
+  "enqueue": [
+    [
+      "user_email",
+      {
+        "type": "digest",
+        "user_id": 2
+      }
+    ]
+  ],
+  "run_jobs": [
+    "user_email"
+  ]
+}

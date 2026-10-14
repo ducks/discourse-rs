@@ -466,7 +466,13 @@ pub async fn build(
                     html_escape(&name),
                     html_escape(&name),
                     html_escape(&when),
-                    email_excerpt(s, &urls, ctx.i18n, m.cooked.as_deref().unwrap_or_default())?
+                    crate::email::digest::email_excerpt(
+                        s,
+                        &urls,
+                        ctx.i18n,
+                        m.cooked.as_deref().unwrap_or_default(),
+                        None
+                    )?
                 ));
             }
         }
@@ -752,41 +758,4 @@ async fn messages_for(
     // The channels the user can't join, left out.
     out.retain(|(_, list)| !list.is_empty());
     Ok(out)
-}
-
-/// `email_excerpt`: the first paragraphs (first_paragraphs_from), formatted
-/// for email.
-fn email_excerpt(
-    s: &crate::site_settings::SiteSettings,
-    urls: &Urls<'_>,
-    i18n: &crate::i18n::I18n,
-    cooked: &str,
-) -> Result<String, AppError> {
-    use crate::pretty_text::cleanup;
-    let dom = cleanup::parse(cooked);
-    let root = cleanup::fragment_root(&dom);
-    let min = s.get("digest_min_excerpt_length")?.to_i();
-    let mut result = String::new();
-    let mut length = 0i64;
-    for node in root.children.borrow().iter() {
-        let name = cleanup::element_name(node);
-        let wanted = matches!(name, Some("p" | "ul" | "blockquote"))
-            || (name == Some("aside") && cleanup::has_class(node, "onebox"));
-        if !wanted {
-            continue;
-        }
-        let text = cleanup::text(node);
-        if text.trim().is_empty() {
-            continue;
-        }
-        result.push_str(&cleanup::node_html(node));
-        length += text.chars().count() as i64;
-        if length >= min {
-            break;
-        }
-    }
-    if result.is_empty() {
-        return Err(Unsupported("chat summaries of messages without text").into());
-    }
-    crate::email::notification::format_for_email(&result, urls, i18n, None)
 }

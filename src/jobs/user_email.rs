@@ -1,7 +1,8 @@
 //! `Jobs::UserEmail` (app/jobs/regular/user_email.rb) for notification
 //! emails: whether to send at all (each refusal a `skipped_email_logs`
-//! row, as Rails keeps them), then the mailer and Email::Sender. Digests,
-//! account emails and messages are not ported.
+//! row, as Rails keeps them), then the mailer and Email::Sender: the
+//! notification types, account emails, chat's summary and digests (whose
+//! every attempt is stamped on user_stats).
 
 use serde_json::Value;
 use sqlx::PgConnection;
@@ -44,6 +45,30 @@ pub async fn run(
     args: &Value,
     critical: bool,
 ) -> Result<(), AppError> {
+    let quit = !critical && ctx.settings.get("disable_emails")?.to_s() == "yes";
+    send_user_email(conn, ctx, posting, args, critical).await?;
+    // Every attempt at a digest is recorded, skipped or not.
+    if !quit && args.get("type").and_then(Value::as_str) == Some("digest") {
+        sqlx::query("UPDATE user_stats SET digest_attempted_at = $2 WHERE user_id = $1")
+            .bind(
+                args.get("user_id")
+                    .and_then(Value::as_i64)
+                    .map(|v| v as i32),
+            )
+            .bind(crate::clock::now_naive())
+            .execute(&mut *conn)
+            .await?;
+    }
+    Ok(())
+}
+
+async fn send_user_email(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    posting: &crate::posting::Ctx<'_>,
+    args: &Value,
+    critical: bool,
+) -> Result<(), AppError> {
     let s = ctx.settings;
     let user_id = args
         .get("user_id")
@@ -60,7 +85,8 @@ pub async fn run(
     let account = crate::email::account::template_for(email_type, true).is_some();
     // Chat's UserNotifications#chat_summary.
     let chat_summary = email_type == "chat_summary";
-    if !NOTIFICATION_TYPES.contains(&email_type) && !account && !chat_summary {
+    let digest = email_type == "digest";
+    if !NOTIFICATION_TYPES.contains(&email_type) && !account && !chat_summary && !digest {
         return Err(Unsupported("this email type").into());
     }
     let given_address = args
@@ -189,6 +215,9 @@ pub async fn run(
         )
         .await;
     }
+    if digest {
+        return digest_email(conn, ctx, user_id, &to_address, &user).await;
+    }
     // email_level always (0) sends even to someone online.
     let always = user.email_level == 0;
     // force_respect_seen_recently (chat's summary) keeps it even then.
@@ -216,7 +245,9 @@ pub async fn run(
     let Some(notification_type) = notification_type else {
         return Err(Unsupported("notification emails without a notification type").into());
     };
+    // UserOption#mailing_list_mode reads false while the site disables it.
     if user.mailing_list_mode
+        && !s.get("disable_mailing_list_mode")?.truthy()
         && user.mailing_list_mode_frequency > 0
         && [
             "posted",
@@ -500,6 +531,113 @@ async fn chat_summary_email(
         return Ok(());
     };
     sender::send(&mut *conn, ctx, built, email_type, Some(user_id)).await?;
+    let erode = s.get("bounce_score_erode_on_send")?.to_f();
+    if bounce_score > erode {
+        sqlx::query("UPDATE user_stats SET bounce_score = bounce_score - $2 WHERE user_id = $1")
+            .bind(user_id)
+            .bind(erode)
+            .execute(&mut *conn)
+            .await?;
+    }
+    Ok(())
+}
+
+/// The digest's own checks in message_for_email (those of
+/// enqueue_digest_emails again, in case something changed since): each
+/// fails with no skipped log at all. Then the daily limit, and the mailer,
+/// which builds nothing when there is nothing popular; the bounce score
+/// erodes all the same, as the mailer's (empty) message still counts.
+async fn digest_email(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    user_id: i32,
+    to_address: &str,
+    user: &Recipient,
+) -> Result<(), AppError> {
+    let s = ctx.settings;
+    if s.get("disable_digest_emails")?.truthy() || s.get("private_email")?.truthy() {
+        return Ok(());
+    }
+    #[derive(sqlx::FromRow)]
+    struct DigestRecipient {
+        active: bool,
+        staged: bool,
+        has_stat: bool,
+        has_option: bool,
+        email_digests: Option<bool>,
+        mailing_list_mode: Option<bool>,
+        delay: i64,
+        attempted_recently: bool,
+        seen_recently: bool,
+    }
+    let default_delay = s.get("default_email_digest_frequency")?.to_i();
+    let now = crate::clock::now_naive();
+    let d: DigestRecipient = sqlx::query_as(
+        "SELECT u.active, u.staged, s.user_id IS NOT NULL AS has_stat, o.user_id IS NOT NULL AS has_option, \
+                o.email_digests, o.mailing_list_mode, \
+                COALESCE(o.digest_after_minutes, $2)::int8 AS delay, \
+                COALESCE(s.digest_attempted_at > $3 - make_interval(mins => COALESCE(o.digest_after_minutes, $2)::int), FALSE) AS attempted_recently, \
+                COALESCE(u.last_seen_at > $3 - make_interval(mins => COALESCE(o.digest_after_minutes, $2)::int), FALSE) AS seen_recently \
+         FROM users u LEFT JOIN user_stats s ON s.user_id = u.id \
+         LEFT JOIN user_options o ON o.user_id = u.id WHERE u.id = $1",
+    )
+    .bind(user_id)
+    .bind(default_delay as i32)
+    .bind(now)
+    .fetch_one(&mut *conn)
+    .await?;
+    // bot, anonymous (skipped before), inactive, suspended (skipped
+    // before), staged
+    if user_id < 0 || user.anonymous || !d.active || user.suspended || d.staged {
+        return Ok(());
+    }
+    if !d.has_stat {
+        return Ok(());
+    }
+    let bounce_score = user.bounce_score.unwrap_or(0.0);
+    if bounce_score >= s.get("bounce_score_threshold")?.to_f() {
+        return Ok(());
+    }
+    // UserOption#mailing_list_mode reads false while the site disables it.
+    let mailing_list_mode =
+        d.mailing_list_mode == Some(true) && !s.get("disable_mailing_list_mode")?.truthy();
+    if !d.has_option || d.email_digests != Some(true) || mailing_list_mode {
+        return Ok(());
+    }
+    if d.delay <= 0 || d.attempted_recently || d.seen_recently {
+        return Ok(());
+    }
+    let max = s.get("max_emails_per_day_per_user")?.to_i();
+    if max > 0 {
+        let sent: i64 = sqlx::query_scalar(
+            "SELECT COUNT(*) FROM email_logs WHERE created_at > now() - interval '1 day' AND user_id = $1",
+        )
+        .bind(user_id)
+        .fetch_one(&mut *conn)
+        .await?;
+        if sent >= max {
+            return skip(
+                conn,
+                "digest",
+                to_address,
+                Some(user_id),
+                None,
+                r::EXCEEDED_EMAILS_LIMIT,
+            )
+            .await;
+        }
+    }
+    let built = crate::email::digest::build(
+        &mut *conn,
+        ctx,
+        user_id,
+        to_address,
+        &crate::email::digest::Options::default(),
+    )
+    .await?;
+    if let Some(built) = built {
+        sender::send(&mut *conn, ctx, built, "digest", Some(user_id)).await?;
+    }
     let erode = s.get("bounce_score_erode_on_send")?.to_f();
     if bounce_score > erode {
         sqlx::query("UPDATE user_stats SET bounce_score = bounce_score - $2 WHERE user_id = $1")

@@ -1,0 +1,26 @@
+{
+  "user": null,
+  "settings": {
+    "disable_mailing_list_mode": false
+  },
+  "setup": [
+    "UPDATE user_stats SET digest_attempted_at = NULL WHERE user_id = 2",
+    "UPDATE users SET last_seen_at = now() - interval '8 days' WHERE id = 2",
+    "UPDATE topics SET created_at = now() - interval '3 hours', bumped_at = now() - interval '3 hours' WHERE id = 38",
+    "UPDATE topics SET created_at = now() - interval '5 hours', bumped_at = now() - interval '2 hours' WHERE id = 35",
+    "UPDATE user_options SET mailing_list_mode = true WHERE user_id = 2"
+  ],
+  "requests": [],
+  "enqueue": [
+    [
+      "user_email",
+      {
+        "type": "digest",
+        "user_id": 2
+      }
+    ]
+  ],
+  "run_jobs": [
+    "user_email"
+  ]
+}
