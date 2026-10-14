@@ -4,6 +4,7 @@ pub mod accounts;
 pub mod admin_site_settings;
 pub mod admin_user_show;
 pub mod admin_users;
+pub mod age_words;
 pub mod anonymous_cache;
 pub mod archived_messages;
 pub mod assets;

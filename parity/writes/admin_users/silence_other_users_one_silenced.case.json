@@ -1,0 +1,19 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE users SET silenced_till = now() + interval '30 days' WHERE id = 4"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/3/silence.json",
+      "params": {
+        "reason": "Breaking the rules",
+        "silenced_till": "2027-01-01T00:00:00Z",
+        "other_user_ids": [
+          "4"
+        ]
+      }
+    }
+  ]
+}

@@ -361,6 +361,7 @@ async fn editing_a_wiki_first_post_bumps_the_topic() {
                     edit_reason: None,
                     force_new_version: true,
                     skip_validations: true,
+                    skip_revision: false,
                 },
             )
             .await

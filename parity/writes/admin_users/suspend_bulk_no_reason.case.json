@@ -1,0 +1,15 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/suspend-bulk.json",
+      "params": {
+        "suspend_until": "2027-01-01T00:00:00Z",
+        "user_ids": [
+          "4"
+        ]
+      }
+    }
+  ]
+}

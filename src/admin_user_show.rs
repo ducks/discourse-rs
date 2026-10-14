@@ -151,6 +151,7 @@ pub async fn show(
     let logo_small_url = admin_users::logo_small_url(conn, s).await?;
     let opts = EntryOptions {
         emails_desired: false,
+        can_be_deleted: true,
         can_be_suspended: false,
         silence_reason: options.show.then(|| first_line(&full_silence_reason)),
         suspend_reason: None,

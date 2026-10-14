@@ -297,6 +297,22 @@ pub async fn destroy_as(
     .await
 }
 
+/// `PostDestroyer.new(staff, post, opts).destroy` with no guardian check
+/// before it (PostDestroyer.delete_with_replies on the replies).
+pub async fn destroy_by_staff(
+    pool: &PgPool,
+    ctx: &Ctx<'_>,
+    guardian: &Guardian,
+    post_id: i32,
+    req: &Request<'_>,
+) -> Result<(), AppError> {
+    if !guardian.is_staff() {
+        return Err(Unsupported("deleting replies as a non-staff user").into());
+    }
+    // Staff moderate every topic, whatever they see.
+    destroy(pool, ctx, guardian, post_id, true, req).await
+}
+
 /// `PostDestroyer#destroy`: deleted outright by those who moderate the
 /// topic (or anyone, with delete_removed_posts_after below 1), marked for
 /// deletion when the author removes their own.
@@ -524,6 +540,7 @@ async fn mark_for_deletion(
             edit_reason: None,
             force_new_version: true,
             skip_validations: true,
+            skip_revision: false,
         },
     )
     .await?;
@@ -809,7 +826,8 @@ async fn perform_delete(
     for parent in parents {
         sqlx::query(
             "UPDATE posts SET reply_count = (SELECT COUNT(*) FROM post_replies pr JOIN posts r ON r.id = pr.reply_post_id \
-                                             WHERE pr.post_id = $1 AND r.deleted_at IS NULL) WHERE id = $1",
+                                             WHERE pr.post_id = $1 AND r.deleted_at IS NULL) \
+             WHERE id = $1 AND deleted_at IS NULL",
         )
         .bind(parent)
         .execute(&mut *conn)

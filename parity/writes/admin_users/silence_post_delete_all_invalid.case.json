@@ -1,0 +1,15 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/4/silence.json",
+      "params": {
+        "reason": "Breaking the rules",
+        "silenced_till": "2027-01-01T00:00:00Z",
+        "post_id": "37",
+        "post_action": "delete_all"
+      }
+    }
+  ]
+}

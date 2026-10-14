@@ -351,6 +351,7 @@ pub async fn update(
         edit_reason: post_params.get("edit_reason").and_then(params::scalar),
         force_new_version: false,
         skip_validations: false,
+        skip_revision: false,
     };
     match revise::revise(&state.pool, &ctx, &guardian, post_id, changes).await? {
         revise::Outcome::Invalid(errors) => {

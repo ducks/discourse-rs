@@ -1,0 +1,17 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/suspend-bulk.json",
+      "params": {
+        "reason": "Spam wave",
+        "suspend_until": "2027-01-01T00:00:00Z",
+        "user_ids": [
+          "99998",
+          "99999"
+        ]
+      }
+    }
+  ]
+}

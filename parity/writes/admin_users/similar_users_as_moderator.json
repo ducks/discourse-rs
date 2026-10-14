@@ -1,0 +1,129 @@
+{
+  "name": "similar_users_as_moderator",
+  "user": "user2",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/users/3/similar-users.json"
+    }
+  ],
+  "started_at": "2026-10-14T10:28:44.176903",
+  "transaction_started_at": "2026-10-14T10:28:38.803778",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "users": [
+          {
+            "id": 5,
+            "username": "user3",
+            "name": "User3",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/ec9cab/{size}.png",
+            "active": true,
+            "admin": false,
+            "moderator": false,
+            "last_seen_at": null,
+            "last_emailed_at": null,
+            "created_at": "2026-07-25T05:59:17.199Z",
+            "last_seen_age": null,
+            "last_emailed_age": null,
+            "created_at_age": 7014566.998667978,
+            "trust_level": 4,
+            "manual_locked_trust_level": null,
+            "title": null,
+            "time_read": 0,
+            "staged": false,
+            "can_be_suspended": true,
+            "days_visited": 0,
+            "posts_read_count": 0,
+            "topics_entered": 0,
+            "post_count": 0,
+            "can_be_silenced": true
+          },
+          {
+            "id": 2,
+            "username": "user0",
+            "name": "User0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+            "active": true,
+            "admin": false,
+            "moderator": false,
+            "last_seen_at": "2026-10-01T22:32:51.475Z",
+            "last_emailed_at": null,
+            "created_at": "2026-07-25T05:59:15.831Z",
+            "last_seen_age": 1079752.727129463,
+            "last_emailed_age": null,
+            "created_at_age": 7014568.37131528,
+            "trust_level": 1,
+            "manual_locked_trust_level": null,
+            "title": null,
+            "time_read": 0,
+            "staged": false,
+            "can_be_suspended": true,
+            "days_visited": 1,
+            "posts_read_count": 3,
+            "topics_entered": 0,
+            "post_count": 1,
+            "can_be_silenced": true
+          }
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "uPLv0B5tManbkKiAeTCUOx670vI=",
+            "created_at": "2026-10-14T10:28:41.2265",
+            "rotated_at": "2026-10-14T10:28:41.218986",
+            "updated_at": "2026-10-14T10:28:41.2265",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "uPLv0B5tManbkKiAeTCUOx670vI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T10:28:44.186019",
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "uPLv0B5tManbkKiAeTCUOx670vI=",
+            "created_at": "2026-10-14T10:28:41.2265",
+            "rotated_at": "2026-10-14T10:28:41.218986",
+            "updated_at": "2026-10-14T10:28:41.2265",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "uPLv0B5tManbkKiAeTCUOx670vI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE users SET ip_address = '203.0.113.9' WHERE id IN (1, 2, 3, 4, 5, 92100)",
+    "UPDATE users SET moderator = TRUE WHERE id = 4"
+  ],
+  "unordered_responses": [
+    "/responses/0/body/users"
+  ],
+  "recorded_from": {
+    "case": "106b5e12b42d6f48a233645138660226f7470beef54283b7064e3b2352ccb6f3",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

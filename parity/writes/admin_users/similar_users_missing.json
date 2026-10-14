@@ -1,0 +1,75 @@
+{
+  "name": "similar_users_missing",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/users/99999/similar-users.json"
+    }
+  ],
+  "started_at": "2026-10-14T10:28:49.392",
+  "transaction_started_at": "2026-10-14T10:28:46.849801",
+  "responses": [
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "Vvi6E9uzvmFeNuPupcue22Cf5vY=",
+            "created_at": "2026-10-14T10:28:47.898145",
+            "rotated_at": "2026-10-14T10:28:47.895956",
+            "updated_at": "2026-10-14T10:28:47.898145",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "Vvi6E9uzvmFeNuPupcue22Cf5vY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T10:28:49.397934",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "Vvi6E9uzvmFeNuPupcue22Cf5vY=",
+            "created_at": "2026-10-14T10:28:47.898145",
+            "rotated_at": "2026-10-14T10:28:47.895956",
+            "updated_at": "2026-10-14T10:28:47.898145",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "Vvi6E9uzvmFeNuPupcue22Cf5vY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE users SET ip_address = '203.0.113.9' WHERE id IN (1, 2, 3, 4, 5, 92100)"
+  ],
+  "recorded_from": {
+    "case": "79a3f76f1103cb24ab8b810c65687195c4d4fc6b14126eecb352a8dc64d8536b",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

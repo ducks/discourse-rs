@@ -338,7 +338,13 @@ then by what running a forum needs (milestone 6). Briefs:
 85. `feat/admin-badges` M: creating, editing, deleting badges and
     groupings, badge SQL with its preview, the badges pages' HTML
 86. `feat/admin-users-rest` M: granting admin (second factor or email
-    confirmation), impersonation, penalties on several users
+    confirmation), impersonation, penalties on several users, split:
+    86a. ~~`feat/admin-users-penalties`~~ (done) M (other_user_ids,
+    the post action: delete, delete_replies, edit without a revision,
+    delete_all as Rails' no-op; reviewable_id on the log, the 409 for
+    an already suspended or silenced user with AgeWords, suspend-bulk,
+    penalty_history, similar-users; refused: a post delete for an
+    existing reviewable (notify_deletion)),
 87. `feat/admin-lists` M: permalinks, embeddable hosts, user fields,
     form templates, custom flags, search term and incoming email details
 88. `feat/admin-email` M: the settings test, previews, templates, email

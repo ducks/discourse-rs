@@ -32,20 +32,11 @@ enum Action {
     Unsilence,
 }
 
-/// The params the services take that are not ported.
-fn unported(p: &Map<String, Value>) -> Option<&'static str> {
-    let present = |k: &str| {
-        p.get(k)
-            .is_some_and(|v| !v.is_null() && params::scalar(v).is_none_or(|s| !s.is_empty()))
-    };
-    if present("other_user_ids") {
-        Some("penalizing several users at once (other_user_ids)")
-    } else if present("post_id") || present("post_action") || present("post_edit") {
-        Some("acting on a post with a penalty")
-    } else if present("reviewable_id") {
-        Some("penalties from the review queue")
-    } else {
-        None
+/// A param as ActiveModel's `:integer` attribute casts it.
+fn integer_param(p: &Map<String, Value>, key: &str) -> Option<i64> {
+    match p.get(key)? {
+        Value::Number(n) => n.as_i64().or_else(|| n.as_f64().map(|f| f.trunc() as i64)),
+        v => params::scalar(v).and_then(|s| user_penalties::cast_integer(&s)),
     }
 }
 
@@ -98,19 +89,19 @@ async fn handle(
         reason: reason.as_deref(),
         message: message.as_deref(),
         until: until.as_deref(),
-        unported: unported(&p),
+        other_user_ids: user_penalties::cast_array(p.get("other_user_ids"))?,
+        post_id: integer_param(&p, "post_id"),
+        post_action: text("post_action"),
+        post_edit: text("post_edit"),
+        reviewable_id: integer_param(&p, "reviewable_id"),
     };
-    // Suspending is one transaction; silencing sends a system message,
-    // which PostCreator commits on its own.
     let outcome = match action {
-        Action::Suspend | Action::Unsuspend => {
+        Action::Suspend => {
+            user_penalties::suspend(&state.pool, &ctx, &guardian, user_id, &penalty).await?
+        }
+        Action::Unsuspend => {
             let mut tx = state.pool.begin().await?;
-            let outcome = match action {
-                Action::Suspend => {
-                    user_penalties::suspend(&mut tx, &ctx, &guardian, user_id, &penalty).await?
-                }
-                _ => user_penalties::unsuspend(&mut tx, &guardian, user_id).await?,
-            };
+            let outcome = user_penalties::unsuspend(&mut tx, &guardian, user_id).await?;
             if matches!(outcome, Outcome::Done(_)) {
                 tx.commit().await?;
             }
@@ -130,6 +121,11 @@ async fn handle(
         Outcome::Invalid(errors) => (
             StatusCode::BAD_REQUEST,
             Json(json!({ "failed": "FAILED", "errors": errors })),
+        )
+            .into_response(),
+        Outcome::Conflict(message) => (
+            StatusCode::CONFLICT,
+            Json(json!({ "failed": "FAILED", "message": message })),
         )
             .into_response(),
     })
@@ -1709,4 +1705,237 @@ pub async fn merge(
     .await?;
     tx.commit().await?;
     Ok(Json(json!({ "success": "OK" })).into_response())
+}
+
+/// PUT /admin/users/suspend-bulk(.json): Admin::UsersController#suspend_bulk
+/// (User::BulkSuspend): each user suspended in the order given, the
+/// progress published to the actor on /bulk-user-suspend.
+pub async fn suspend_bulk(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    let p = params::parse(uri.query(), &headers, &body);
+    if !csrf_ok(&state, &headers, &form_pairs(&p), uri.path(), "PUT") {
+        return Ok(bad_csrf());
+    }
+    if !guardian.is_staff() {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    let failed = |status: StatusCode, errors: Option<Vec<String>>| {
+        let mut body = json!({ "failed": "FAILED" });
+        if let Some(errors) = errors {
+            body["errors"] = json!(errors);
+        }
+        (status, Json(body)).into_response()
+    };
+    // attribute :user_ids, :array, compact_blank: true
+    let ids: Vec<user_penalties::ArrayItem> = user_penalties::cast_array(p.get("user_ids"))?
+        .into_iter()
+        .filter(|item| !item.is_blank())
+        .collect();
+    let text = |k: &str| p.get(k).and_then(params::scalar);
+    let (reason, until, message) = (text("reason"), text("suspend_until"), text("message"));
+    let until_at = user_penalties::cast_time(until.as_deref())?;
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let host = Host::from_state(&state);
+    let ctx = Ctx {
+        host: &host,
+        settings: &settings,
+        config: &state.config,
+        i18n: &state.i18n,
+        bus: &state.bus,
+    };
+    let mut errors = Vec::new();
+    if ids.is_empty() {
+        errors.push("User ids is too short (minimum is 1 character)".to_string());
+    } else if ids.len() > 100 {
+        errors.push("User ids is too long (maximum is 100 characters)".to_string());
+    }
+    errors.extend(user_penalties::contract_errors(
+        &ctx,
+        reason.as_deref(),
+        "Suspend until",
+        until_at,
+    ));
+    if !errors.is_empty() {
+        return Ok(failed(StatusCode::BAD_REQUEST, Some(errors)));
+    }
+    let ids: Vec<i32> = ids
+        .iter()
+        .map(|item| match item {
+            user_penalties::ArrayItem::Int(n) => i32::try_from(*n).ok(),
+            // array_position(ARRAY['x'], users.id) fails in Postgres.
+            user_penalties::ArrayItem::Text(_) => None,
+        })
+        .collect::<Option<_>>()
+        .ok_or(crate::Unsupported(
+            "suspend-bulk user_ids that are not integers",
+        ))?;
+    let users: Vec<(i32, String, bool, bool, Option<chrono::NaiveDateTime>)> = sqlx::query_as(
+        "SELECT id, username, admin, moderator, suspended_till FROM users WHERE id = ANY($1) \
+         ORDER BY array_position($1, users.id)",
+    )
+    .bind(&ids)
+    .fetch_all(&mut *conn)
+    .await?;
+    drop(conn);
+    if users.is_empty() {
+        return Ok(failed(StatusCode::NOT_FOUND, None));
+    }
+    // can_suspend_users: can_suspend? && !suspended?
+    let now = crate::clock::now_naive();
+    let suspendable = users.iter().all(|(_, _, admin, moderator, till)| {
+        let staff = *admin || *moderator;
+        guardian.is_staff() && !staff && !till.is_some_and(|t| t > now)
+    });
+    if !suspendable {
+        let message = state.i18n.t("user.cannot_bulk_suspend").unwrap_or_default();
+        return Ok(failed(StatusCode::FORBIDDEN, Some(vec![message.into()])));
+    }
+    let actor = guardian
+        .user()
+        .ok_or(crate::Unsupported("suspending users anonymously"))?
+        .clone();
+    let suspension = user_penalties::Suspension {
+        actor_id: actor.id,
+        until: until_at.unwrap_or_default(),
+        reason: reason.as_deref().unwrap_or_default(),
+        message: message.as_deref(),
+        post_id: None,
+        reviewable_id: None,
+    };
+    let total = users.len();
+    for (position, (id, username, ..)) in users.iter().enumerate() {
+        // User::Action::SuspendAndPublish
+        user_penalties::suspend_user(&state.pool, *id, &suspension).await?;
+        let data = json!({ "position": position + 1, "username": username, "total": total, "success": true });
+        let mut conn = state.pool.acquire().await?;
+        state
+            .bus
+            .publish(
+                &mut conn,
+                "/bulk-user-suspend",
+                &data,
+                Some(&[crate::bus::user_tag(actor.id)]),
+            )
+            .await?;
+    }
+    Ok(Json(json!({ "suspended": true })).into_response())
+}
+
+/// DELETE /admin/users/:user_id/penalty_history(.json): the user's
+/// suspensions and silences relabeled as removed, so TL3 promotion no
+/// longer counts them (they stay in the logs). Admins only; no user
+/// lookup, so any id answers success.
+pub async fn penalty_history(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(user_id): Path<String>,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    let p = params::parse(uri.query(), &headers, &body);
+    if !csrf_ok(&state, &headers, &form_pairs(&p), uri.path(), "DELETE") {
+        return Ok(bad_csrf());
+    }
+    // AdminConstraint: anyone else misses the route.
+    if !guardian.is_admin() {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    let user_id = crate::ruby::to_i(user_id.strip_suffix(".json").unwrap_or(&user_id));
+    let Ok(user_id) = i32::try_from(user_id) else {
+        return Err(crate::Unsupported("a user id out of range").into());
+    };
+    sqlx::query(
+        "UPDATE user_histories SET action = CASE \
+           WHEN action = 30 THEN 60 \
+           WHEN action = 31 THEN 62 \
+           WHEN action = 10 THEN 61 \
+           WHEN action = 11 THEN 63 \
+         END \
+         WHERE target_user_id = $1 AND action IN (30, 10, 31, 11)",
+    )
+    .bind(user_id)
+    .execute(&state.pool)
+    .await?;
+    Ok(Json(json!({ "success": "OK" })).into_response())
+}
+
+/// GET /admin/users/:user_id/similar-users.json: up to ten other real,
+/// non-staff users on the user's last IP, as SimilarAdminUserSerializer.
+pub async fn similar_users(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(user_id): Path<String>,
+) -> Result<Response, AppError> {
+    if !guardian.is_staff() {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    let Some(user_id) = crate::ruby::integer(&user_id).and_then(|n| i32::try_from(n).ok()) else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    let mut conn = state.pool.acquire().await?;
+    let ip: Option<Option<String>> =
+        sqlx::query_scalar("SELECT host(ip_address) FROM users WHERE id = $1")
+            .bind(user_id)
+            .fetch_optional(&mut *conn)
+            .await?;
+    let Some(ip) = ip else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let urls = crate::url::Urls {
+        config: &state.config,
+        settings: &settings,
+    };
+    let mut out = Vec::new();
+    if ip.is_some() {
+        // No ORDER BY in Rails: heap order (the cases compare it unordered).
+        let rows: Vec<crate::admin_users::Row> = sqlx::query_as(&format!(
+            "{} WHERE users.id > 0 \
+               AND NOT EXISTS (SELECT 1 FROM anonymous_users a WHERE a.user_id = users.id) \
+               AND users.id <> $1 \
+               AND users.ip_address = (SELECT ip_address FROM users WHERE id = $1) \
+               AND NOT users.admin AND NOT users.moderator \
+             ORDER BY users.id LIMIT {}",
+            crate::admin_users::ROW_SELECT,
+            user_penalties::MAX_SIMILAR_USERS
+        ))
+        .bind(user_id)
+        .fetch_all(&mut *conn)
+        .await?;
+        let logo_small_url = crate::admin_users::logo_small_url(&mut conn, &settings).await?;
+        let opts = crate::admin_users::EntryOptions {
+            emails_desired: false,
+            can_be_deleted: false,
+            can_be_suspended: false,
+            silence_reason: None,
+            suspend_reason: None,
+        };
+        for r in &rows {
+            let mut u = crate::admin_users::entry(
+                &mut conn,
+                &settings,
+                &urls,
+                &guardian,
+                r,
+                logo_small_url.as_deref(),
+                &opts,
+            )
+            .await?;
+            // can_suspend? and can_silence_user?: staff on a regular user
+            // (none of these is staff).
+            u.insert("can_be_suspended".into(), json!(guardian.is_staff()));
+            u.insert("can_be_silenced".into(), json!(guardian.is_staff()));
+            out.push(Value::Object(u));
+        }
+    }
+    Ok(Json(json!({ "users": out })).into_response())
 }

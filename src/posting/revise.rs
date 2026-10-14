@@ -31,6 +31,9 @@ pub struct Changes {
     pub force_new_version: bool,
     /// `skip_validations:` the post is saved without PostValidator.
     pub skip_validations: bool,
+    /// `skip_revision:` the edit goes into the current version: no new
+    /// version and no PostRevision (the original kept in Redis).
+    pub skip_revision: bool,
 }
 
 #[derive(Debug)]
@@ -165,12 +168,14 @@ pub async fn revise(
     let edited_by_another = post.last_editor_id != Some(editor_user.id);
     let edit_reason_specified =
         edit_reason.is_some() && edit_reason.as_ref() != post.edit_reason.as_ref();
-    let new_version = edited_by_another
-        || flagged
-        || !grace_period_edit
-        || changes.force_new_version
-        || edit_reason_specified;
-    if !new_version {
+    // should_create_new_version?
+    let new_version = !changes.skip_revision
+        && (edited_by_another
+            || flagged
+            || !grace_period_edit
+            || changes.force_new_version
+            || edit_reason_specified);
+    if !new_version && !changes.skip_revision {
         return Err(
             Unsupported("edits within the editing grace period (original kept in Redis)").into(),
         );
@@ -182,7 +187,11 @@ pub async fn revise(
     .bind(post.version - 1)
     .fetch_one(&mut *conn)
     .await?;
-    if !edited_by_another && !previous_revision_exists && elapsed <= (grace + 1) as f64 {
+    if new_version
+        && !edited_by_another
+        && !previous_revision_exists
+        && elapsed <= (grace + 1) as f64
+    {
         // use_cached_original_for_created_revision? with the cache
         // possibly still alive.
         return Err(Unsupported(
@@ -193,7 +202,11 @@ pub async fn revise(
 
     // update_post
     let new_raw = raw.clone().unwrap_or_else(|| post.raw.clone());
-    let new_edit_reason = edit_reason.clone();
+    let new_edit_reason = if new_version {
+        edit_reason.clone()
+    } else {
+        post.edit_reason.clone()
+    };
     let self_edit = post.user_id == Some(editor_user.id);
     let words = word_count(&new_raw);
     if new_raw.contains("[quote=") {
@@ -325,8 +338,8 @@ pub async fn revise(
     if let Some(plan) = poll_plan {
         crate::plugins::poll::updater::apply(&mut tx, ctx, post.id, plan).await?;
     }
-    let version = post.version + 1;
-    let public_version = post.public_version + 1;
+    let version = post.version + i32::from(new_version);
+    let public_version = post.public_version + i32::from(new_version);
     let (updated_at,): (NaiveDateTime,) = sqlx::query_as(
         "UPDATE posts SET raw = $2, cooked = $3, edit_reason = $4, last_editor_id = $5, word_count = $6, \
                 self_edits = self_edits + $7, version = $8, public_version = $9, last_version_at = $10, \
@@ -344,7 +357,7 @@ pub async fn revise(
     .bind(i32::from(self_edit))
     .bind(version)
     .bind(public_version)
-    .bind(revised_at)
+    .bind(if new_version { revised_at } else { last_version_at })
     .bind(raw_changed)
     .bind(BAKED_VERSION)
     .fetch_one(&mut *tx)
@@ -408,7 +421,11 @@ pub async fn revise(
         ));
     }
     let yaml = modifications::dump(&fields)?;
-    let revision_id: i32 = sqlx::query_scalar(
+    // create_or_update_revision: none with skip_revision.
+    let revision_id: i32 = if !new_version {
+        0
+    } else {
+        sqlx::query_scalar(
         "INSERT INTO post_revisions (user_id, post_id, number, modifications, hidden, created_at, updated_at) \
          VALUES ($1, $2, $3, $4, FALSE, clock_timestamp(), clock_timestamp()) RETURNING id",
     )
@@ -417,12 +434,14 @@ pub async fn revise(
     .bind(version)
     .bind(&yaml)
     .fetch_one(&mut *tx)
-    .await?;
+    .await?
+    };
     // PostActionNotifier.after_create_post_revision: the author when
     // someone else edits, and the topic's watchers when a wiki or freely
     // editable first post changes; told once the edit commits.
     // None for edits in messages.
-    let notify_disabled = archetype == "private_message"
+    let notify_disabled = !new_version
+        || archetype == "private_message"
         || (s.get("disable_system_edit_notifications")?.truthy() && editor_user.id == -1);
     if !notify_disabled {
         let mut user_ids: Vec<i32> = Vec::new();
@@ -522,7 +541,7 @@ pub async fn revise(
     // bump_topic, after the transaction as Rails does. should_bump?: a new
     // version that changed the post (every edit that gets this far) of a
     // wiki first post; bypass_bump is refused by the route.
-    if post.post_number == 1 && post.wiki {
+    if new_version && post.post_number == 1 && post.wiki {
         let mut tx = pool.begin().await?;
         sqlx::query("UPDATE topics SET bumped_at = clock_timestamp() WHERE id = $1")
             .bind(post.topic_id)

@@ -1,0 +1,89 @@
+{
+  "name": "suspend_other_users_too_many",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/3/suspend.json",
+      "params": {
+        "reason": "Breaking the rules",
+        "suspend_until": "2027-01-01T00:00:00Z",
+        "other_user_ids": [
+          "10",
+          "11",
+          "12",
+          "13",
+          "14",
+          "15",
+          "16",
+          "17",
+          "18",
+          "19",
+          "20"
+        ]
+      }
+    }
+  ],
+  "started_at": "2026-10-14T10:14:35.415912",
+  "transaction_started_at": "2026-10-14T10:14:22.367165",
+  "responses": [
+    {
+      "status": 400,
+      "body": {
+        "failed": "FAILED",
+        "errors": [
+          "Other user ids is too long (maximum is 10 characters)"
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "J9x/6Q+tZuaiA35u3ilCVKzZgS0=",
+            "created_at": "2026-10-14T10:14:23.458129",
+            "rotated_at": "2026-10-14T10:14:23.456176",
+            "updated_at": "2026-10-14T10:14:23.458129",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "J9x/6Q+tZuaiA35u3ilCVKzZgS0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T10:14:35.423015",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "J9x/6Q+tZuaiA35u3ilCVKzZgS0=",
+            "created_at": "2026-10-14T10:14:23.458129",
+            "rotated_at": "2026-10-14T10:14:23.456176",
+            "updated_at": "2026-10-14T10:14:23.458129",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "J9x/6Q+tZuaiA35u3ilCVKzZgS0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "ddc6ddb9484bfd6c61849be1f26af4ba65ec241d05f617718173cbd2a6b2e9ba",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
