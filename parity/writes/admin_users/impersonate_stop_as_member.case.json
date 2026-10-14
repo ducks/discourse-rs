@@ -1,0 +1,9 @@
+{
+  "user": "user2",
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/admin/impersonate.json"
+    }
+  ]
+}

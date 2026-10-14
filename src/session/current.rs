@@ -67,6 +67,10 @@ pub struct SessionUser {
     pub uploaded_avatar_id: Option<i32>,
     pub name: Option<String>,
     pub previous_visit_at: Option<NaiveDateTime>,
+    /// Set on the puppet of a live impersonation (`is_impersonating` and
+    /// `impersonation_expires_at`): the user an admin acts as.
+    #[sqlx(skip)]
+    pub impersonation_expires_at: Option<NaiveDateTime>,
 }
 
 pub const SESSION_USER_COLUMNS: &str = "users.id, users.username, users.trust_level, users.admin, users.moderator, users.staged, users.active, \
@@ -89,6 +93,11 @@ impl SessionUser {
     pub fn suspended(&self) -> bool {
         self.suspended_till
             .is_some_and(|t| t > crate::clock::now_naive())
+    }
+
+    /// `is_impersonating`
+    pub fn is_impersonating(&self) -> bool {
+        self.impersonation_expires_at.is_some()
     }
 }
 
@@ -190,7 +199,15 @@ pub async fn resolve(
                 .bind(token.user_id)
                 .fetch_optional(&mut *conn)
                 .await?;
-                user.map(|user| (token, user))
+                match user {
+                    Some(acting) => {
+                        let user = impersonated_user(conn, state, &token, &acting)
+                            .await?
+                            .unwrap_or(acting);
+                        Some((token, user))
+                    }
+                    None => None,
+                }
             }
             None => None,
         }
@@ -220,6 +237,43 @@ pub async fn resolve(
         session,
         guardian,
     }))
+}
+
+/// `UserAuthToken#impersonated_user`: the puppet while the impersonation
+/// is live and the acting admin may still impersonate them (checked on
+/// every request), marked as impersonated.
+async fn impersonated_user(
+    conn: &mut PgConnection,
+    state: &AppState,
+    token: &AuthToken,
+    acting: &SessionUser,
+) -> Result<Option<SessionUser>, AppError> {
+    let (Some(puppet_id), Some(expires_at)) =
+        (token.impersonated_user_id, token.impersonation_expires_at)
+    else {
+        return Ok(None);
+    };
+    if expires_at <= crate::clock::now_naive() {
+        return Ok(None);
+    }
+    let Some(mut puppet) = SessionUser::load(&mut *conn, puppet_id).await? else {
+        return Ok(None);
+    };
+    let development = state.config.rails_env == crate::config::RailsEnv::Development;
+    if !crate::impersonation::can_impersonate(
+        conn,
+        &state.config.globals,
+        development,
+        acting.id,
+        acting.admin,
+        puppet.admin,
+    )
+    .await?
+    {
+        return Ok(None);
+    }
+    puppet.impersonation_expires_at = Some(expires_at);
+    Ok(Some(puppet))
 }
 
 /// The `Set-Cookie` value `set_auth_cookie!` writes.
@@ -530,6 +584,7 @@ pub async fn layer(
     // (chat's auto-join on a first sight).
     if let (Some(settings), Some(session)) = (&settings, &incoming.session)
         && !mode.postgres
+        && !session.user.is_impersonating()
         && should_update_last_seen(&headers, &method)
     {
         let mut conn = state.pool.acquire().await?;

@@ -219,14 +219,23 @@ fn admin_only(route: &str) -> bool {
                 | "/admin/users/{user_id}/penalty_history.json"
                 | "/admin/users/{user_id}/grant_admin"
                 | "/admin/users/{user_id}/grant_admin.json"
+                | "/admin/impersonate"
+                | "/admin/impersonate.json"
         )
 }
 
 /// Whether Rails' routing turns the request away before any filter runs:
-/// the admin namespace is StaffConstraint, some of it AdminConstraint.
-fn routing_refuses(route: &str, guardian: &crate::guardian::Guardian) -> bool {
+/// the admin namespace is StaffConstraint, some of it AdminConstraint;
+/// DELETE /admin/impersonate is ImpersonatorConstraint (an admin, or the
+/// puppet of an impersonating one).
+fn routing_refuses(method: &Method, route: &str, guardian: &crate::guardian::Guardian) -> bool {
     if !route.starts_with("/admin/") {
         return false;
+    }
+    if *method == Method::DELETE
+        && matches!(route, "/admin/impersonate" | "/admin/impersonate.json")
+    {
+        return !guardian.is_admin() && !guardian.user().is_some_and(|u| u.is_impersonating());
     }
     !guardian.is_staff() || (!guardian.is_admin() && admin_only(route))
 }
@@ -276,7 +285,7 @@ pub async fn gate(
 
     let blocked = writes
         && mode.readonly
-        && !routing_refuses(&route, &guardian)
+        && !routing_refuses(&method, &route, &guardian)
         && !(mode.staff_writes_only
             && (allowed_in_staff_writes_only_mode(&method, &route) || guardian.is_staff()))
         && !allowed_in_readonly_mode(&method, &route);
@@ -480,9 +489,10 @@ mod tests {
     fn admin_routes_refuse_by_constraint() {
         let anonymous = crate::guardian::Guardian::anonymous();
         assert!(routing_refuses(
+            &Method::PUT,
             "/admin/users/{user_id}/silence",
             &anonymous
         ));
-        assert!(!routing_refuses("/posts.json", &anonymous));
+        assert!(!routing_refuses(&Method::POST, "/posts.json", &anonymous));
     }
 }

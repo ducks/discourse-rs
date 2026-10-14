@@ -827,8 +827,14 @@ pub async fn serialize(
     if user.admin || (user.moderator && settings.get("moderators_view_ips")?.truthy()) {
         out.insert("can_see_ip".into(), json!(true));
     }
-    out.insert("is_impersonating".into(), json!(false));
-    out.insert("impersonation_expires_at".into(), Value::Null);
+    out.insert("is_impersonating".into(), json!(user.is_impersonating()));
+    out.insert(
+        "impersonation_expires_at".into(),
+        json!(
+            user.impersonation_expires_at
+                .map(crate::topic_list::time_json)
+        ),
+    );
     if user.admin
         || (settings.get("moderators_change_post_ownership")?.truthy() && user.moderator)
         || g.in_setting_groups("change_post_ownership_allowed_groups")?

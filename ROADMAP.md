@@ -350,6 +350,13 @@ then by what running a forum needs (milestone 6). Briefs:
     its job and mail, /u/confirm-admin JSON and page; the 2FA challenge
     in the server session, GET and POST /session/2fa with TOTP; refused:
     security keys and passkeys (webauthn), the 2FA page's HTML),
+    86c. ~~`feat/impersonation`~~ (done) S (POST, GET and DELETE
+    /admin/impersonate with their logs; the session's token resolving
+    to the puppet while live and still allowed, is_impersonating and
+    impersonation_expires_at on the current user, no last seen for the
+    puppet; left for later: 3.5's smaller actions
+    (disable_second_factor, reset-bounce-score, delete_posts_batch,
+    delete_posts_decider, total-others-with-same-ip, approve-bulk))
 87. `feat/admin-lists` M: permalinks, embeddable hosts, user fields,
     form templates, custom flags, search term and incoming email details
 88. `feat/admin-email` M: the settings test, previews, templates, email

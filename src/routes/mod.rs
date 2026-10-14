@@ -48,6 +48,7 @@ pub(crate) use topics::not_found_response;
 mod category_notifications;
 mod chat;
 mod chat_pages;
+mod impersonate;
 mod onebox;
 mod polls;
 mod reactions;
@@ -786,6 +787,18 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route(
             "/admin/users/{user_id}/unsilence.json",
             put(admin_users::unsilence),
+        )
+        .route(
+            "/admin/impersonate",
+            get(impersonate::index)
+                .post(impersonate::create)
+                .delete(impersonate::destroy),
+        )
+        .route(
+            "/admin/impersonate.json",
+            get(impersonate::index)
+                .post(impersonate::create)
+                .delete(impersonate::destroy),
         )
         .route(
             "/admin/users/{user_id}/grant_admin",

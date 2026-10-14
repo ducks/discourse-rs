@@ -550,42 +550,26 @@ pub(crate) async fn basic_user(
 
 /// GlobalSetting.allow_impersonation, true by default.
 fn allow_impersonation(cx: &Context<'_>) -> bool {
-    cx.globals
-        .get("allow_impersonation")
-        .is_none_or(|v| !matches!(v, "false" | "0" | ""))
+    crate::impersonation::allowed(cx.globals)
 }
 
-/// `is_developer?`: in development, a Developer row, or a developer email.
+/// `is_developer?` for the viewer.
 async fn is_developer(
     conn: &mut PgConnection,
     cx: &Context<'_>,
     guardian: &Guardian,
 ) -> Result<bool, AppError> {
-    if cx.development {
-        return Ok(true);
-    }
     let Some(uid) = guardian.user_id() else {
         return Ok(false);
     };
-    if guardian.is_admin() {
-        let developer: bool =
-            sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM developers WHERE user_id = $1)")
-                .bind(uid)
-                .fetch_one(&mut *conn)
-                .await?;
-        if developer {
-            return Ok(true);
-        }
-    }
-    if let Some(emails) = cx.globals.get("developer_emails").filter(|e| !e.is_empty()) {
-        let email: Option<String> =
-            sqlx::query_scalar("SELECT email FROM user_emails WHERE user_id = $1 AND \"primary\"")
-                .bind(uid)
-                .fetch_optional(&mut *conn)
-                .await?;
-        return Ok(email.is_some_and(|e| emails.split(',').any(|d| d.trim() == e)));
-    }
-    Ok(false)
+    Ok(crate::impersonation::is_developer(
+        conn,
+        cx.globals,
+        cx.development,
+        uid,
+        guardian.is_admin(),
+    )
+    .await?)
 }
 
 /// TrustLevel3Requirements#penalty_counts: penalties of the last six
