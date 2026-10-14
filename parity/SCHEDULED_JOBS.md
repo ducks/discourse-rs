@@ -45,6 +45,7 @@ Classes:
 | clean_up_api_keys_max_life, clean_up_unused_api_keys | 1d | scheduled/api_keys_* |
 | clean_up_email_tokens, clean_up_email_login_codes, clean_up_email_change_requests, clean_up_unsubscribe_keys, clean_up_post_reply_keys, clean_up_email_logs | 1d | scheduled/{email_tokens,email_login_codes,email_change_requests,unsubscribe_keys,post_reply_keys,email_logs}_* |
 | delete_rejected_emails | 1w | scheduled/rejected_emails_purge |
+| enqueue_digest_emails | 30m | scheduled/digest_enqueue* |
 | clean_dismissed_topic_users | 1d | scheduled/dismissed_topic_users* |
 | clean_up_drafts, clean_up_bookmarks, clean_up_user_auth_tokens, clean_up_search_logs | 1w | scheduled/{drafts,bookmarks,user_auth_tokens}_cleanup, scheduled/search_logs_* |
 | clean_up_tags | 1d (tags on live topics and synonyms refused) | scheduled/tags_cleanup* |
@@ -72,7 +73,6 @@ the features below (ROADMAP.md's queue has them).
 |---|---|
 | ignored_users_summary, pending_reviewables_reminder | messages to a group (PostCreator target_group_names; group message alerts are refused) |
 | process_shelved_notifications, process_user_notification_schedules | do not disturb |
-| enqueue_digest_emails | digest emails |
 | pending_queued_posts_reminder, pending_users_reminder, enqueue_suspect_users | queued posts, user review |
 | fix_user_usernames_and_groups_names_clash | username changes |
 | aggregate_web_hooks_events, cleanup_redelivering_web_hook_events, redeliver_web_hook_events, purge_old_web_hook_events, purge_old_web_hook_events_daily_aggregate | web hooks |

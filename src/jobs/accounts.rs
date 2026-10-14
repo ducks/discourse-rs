@@ -354,3 +354,75 @@ pub async fn delete_rejected_emails(state: &AppState) -> Result<(), AppError> {
     .await?;
     Ok(())
 }
+
+/// `Jobs::EnqueueDigestEmails`, every 30 minutes.
+pub const ENQUEUE_DIGEST_EMAILS: &str = "enqueue_digest_emails";
+
+/// `GlobalSetting.max_digests_enqueued_per_30_mins_per_site`'s default.
+const MAX_DIGESTS_ENQUEUED: i64 = 10_000;
+
+/// Jobs::EnqueueDigestEmails: a digest user_email for each real, active,
+/// unstaged, unsuspended user with a primary address whose digests are on
+/// and due (neither tried nor seen within their frequency, seen within
+/// suppress_digest_email_after_days), the longest waiting first, up to the
+/// global limit.
+pub async fn enqueue_digest_emails(state: &AppState) -> Result<(), AppError> {
+    let mut tx = state.pool.begin().await?;
+    let s = settings(state, &mut tx).await?;
+    if s.get("disable_emails")?.to_s() == "yes"
+        || s.get("disable_digest_emails")?.truthy()
+        || s.get("private_email")?.truthy()
+    {
+        return Ok(());
+    }
+    let limit = match state
+        .config
+        .globals
+        .get("max_digests_enqueued_per_30_mins_per_site")
+    {
+        Some(v) => crate::ruby::to_i(v),
+        None => MAX_DIGESTS_ENQUEUED,
+    };
+    let approval = if s.get("must_approve_users")?.truthy() {
+        " AND (approved OR moderator OR admin)"
+    } else {
+        ""
+    };
+    let sql = format!(
+        "SELECT users.id FROM users \
+         INNER JOIN user_options ON user_options.user_id = users.id \
+         INNER JOIN user_stats ON user_stats.user_id = users.id \
+         INNER JOIN user_emails ON user_emails.user_id = users.id \
+         WHERE users.id > 0 \
+           AND NOT EXISTS (SELECT 1 FROM anonymous_users a WHERE a.user_id = users.id) \
+           AND users.active = TRUE AND users.staged = FALSE \
+           AND (users.suspended_till IS NULL OR users.suspended_till <= $1) \
+           AND user_options.email_digests \
+           AND COALESCE(user_options.digest_after_minutes, $2) > 0 \
+           AND user_stats.bounce_score < $3 \
+           AND user_emails.primary \
+           AND COALESCE(user_stats.digest_attempted_at, '2010-01-01') <= CURRENT_TIMESTAMP - ('1 MINUTE'::INTERVAL * COALESCE(user_options.digest_after_minutes, $2)) \
+           AND COALESCE(last_seen_at, '2010-01-01') <= CURRENT_TIMESTAMP - ('1 MINUTE'::INTERVAL * COALESCE(user_options.digest_after_minutes, $2)) \
+           AND COALESCE(last_seen_at, '2010-01-01') >= CURRENT_TIMESTAMP - ('1 DAY'::INTERVAL * $4){approval} \
+         ORDER BY user_stats.digest_attempted_at ASC NULLS FIRST \
+         LIMIT $5"
+    );
+    let ids: Vec<i32> = sqlx::query_scalar(&sql)
+        .bind(crate::clock::now_naive())
+        .bind(s.get("default_email_digest_frequency")?.to_i() as i32)
+        .bind(s.get("bounce_score_threshold")?.to_f())
+        .bind(s.get("suppress_digest_email_after_days")?.to_i() as i32)
+        .bind(limit)
+        .fetch_all(&mut *tx)
+        .await?;
+    for user_id in ids {
+        crate::jobs::enqueue(
+            &mut tx,
+            "user_email",
+            json!({"type": "digest", "user_id": user_id}),
+        )
+        .await?;
+    }
+    tx.commit().await?;
+    Ok(())
+}

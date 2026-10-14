@@ -326,6 +326,7 @@ const SCHEDULED: &[(&str, Duration)] = &[
         accounts::CLEAN_UP_UNSUBSCRIBE_KEYS,
         Duration::from_secs(24 * 3600),
     ),
+    (accounts::ENQUEUE_DIGEST_EMAILS, Duration::from_secs(1800)),
     (
         accounts::CLEAN_UP_POST_REPLY_KEYS,
         Duration::from_secs(24 * 3600),
@@ -470,6 +471,7 @@ pub async fn run_scheduled(state: &AppState, name: &str) -> Result<(), AppError>
             accounts::clean_up_email_change_requests(state).await
         }
         accounts::CLEAN_UP_UNSUBSCRIBE_KEYS => accounts::clean_up_unsubscribe_keys(state).await,
+        accounts::ENQUEUE_DIGEST_EMAILS => accounts::enqueue_digest_emails(state).await,
         accounts::CLEAN_UP_POST_REPLY_KEYS => accounts::clean_up_post_reply_keys(state).await,
         accounts::CLEAN_UP_EMAIL_LOGS => accounts::clean_up_email_logs(state).await,
         accounts::DELETE_REJECTED_EMAILS => accounts::delete_rejected_emails(state).await,
