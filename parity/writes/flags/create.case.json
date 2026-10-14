@@ -1,0 +1,15 @@
+{
+  "user": "admin",
+  "setup": ["SELECT setval('flags_id_seq', 1000, true)"],
+  "requests": [
+    {"method": "POST", "path": "/admin/config/flags.json", "params": {"name": "Too  loud!", "description": "Shouting in <b>caps</b>", "applies_to": ["Post", "Topic"], "require_message": false, "enabled": true, "auto_action_type": false}},
+    {"method": "POST", "path": "/admin/config/flags.json", "params": {"name": "Too  loud!", "description": "Again", "applies_to": ["Post"], "require_message": false, "enabled": true, "auto_action_type": false}},
+    {"method": "POST", "path": "/admin/config/flags.json", "params": {"name": "Too loud", "description": "Same key", "applies_to": ["Topic"], "require_message": "true", "enabled": "false", "auto_action_type": "true"}},
+    {"method": "POST", "path": "/admin/config/flags.json", "params": {"name": "", "description": "", "applies_to": ["Post"], "require_message": false, "enabled": true, "auto_action_type": false}},
+    {"method": "POST", "path": "/admin/config/flags.json", "params": {"name": "Odd", "description": "Bad target", "applies_to": ["Nope"], "require_message": false, "enabled": true, "auto_action_type": false}},
+    {"method": "POST", "path": "/admin/config/flags.json", "params": {"name": "Spam", "description": "Same name as a system flag", "applies_to": ["Chat::Message"], "require_message": false, "enabled": true, "auto_action_type": false}},
+    {"method": "GET", "path": "/admin/config/flags.json"},
+    {"method": "GET", "path": "/admin/config/flags/new.json"},
+    {"method": "GET", "path": "/admin/config/flags/1001.json"}
+  ]
+}

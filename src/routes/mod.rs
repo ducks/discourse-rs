@@ -4,6 +4,7 @@ mod admin_api_keys;
 mod admin_badges;
 mod admin_email;
 mod admin_emoji;
+mod admin_flags;
 mod admin_groups;
 mod admin_logs;
 mod admin_site_settings;
@@ -622,6 +623,32 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route(
             "/admin/config/user-fields/{id}/edit.json",
             get(admin_user_fields::edit),
+        )
+        .route(
+            "/admin/config/flags",
+            get(admin_flags::empty).post(admin_flags::create),
+        )
+        .route(
+            "/admin/config/flags.json",
+            get(admin_flags::empty).post(admin_flags::create),
+        )
+        .route(
+            "/admin/config/flags/{id}",
+            get(admin_flags::empty_member)
+                .put(admin_flags::update)
+                .delete(admin_flags::destroy),
+        )
+        .route(
+            "/admin/config/flags/{flag_id}/toggle",
+            put(admin_flags::toggle),
+        )
+        .route(
+            "/admin/config/flags/{flag_id}/toggle.json",
+            put(admin_flags::toggle),
+        )
+        .route(
+            "/admin/config/flags/{flag_id}/reorder/{direction}",
+            put(admin_flags::reorder),
         )
         .route("/site/emoji", get(admin_emoji::site_emoji))
         .route("/site/emoji.json", get(admin_emoji::site_emoji))

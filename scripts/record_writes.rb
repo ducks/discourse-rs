@@ -157,6 +157,10 @@ def reset_plugin_caches
   DiscourseSolved::AcceptedAnswerCache.reset_accepted_answer_cache if defined?(DiscourseSolved::AcceptedAnswerCache)
   # WordWatcher's word lists (Discourse.cache, in Redis).
   WordWatcher.clear_cache!
+  # PostActionType's flag caches (FlagSettings in process, Redis keys),
+  # which a flags case's after_commit fills with a flag the rollback
+  # removes.
+  PostActionType.reload_types
 end
 
 def checksums

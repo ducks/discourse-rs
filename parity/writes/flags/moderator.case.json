@@ -1,0 +1,14 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE users SET moderator = true WHERE id = 3",
+    "SELECT setval('flags_id_seq', 1000, true)"
+  ],
+  "requests": [
+    {"method": "POST", "path": "/admin/config/flags.json", "params": {"name": "Mod flag", "description": "By a moderator", "applies_to": ["Post"], "require_message": false, "enabled": true, "auto_action_type": false}},
+    {"method": "PUT", "path": "/admin/config/flags/3/toggle.json"},
+    {"method": "PUT", "path": "/admin/config/flags/4/reorder/down.json"},
+    {"method": "DELETE", "path": "/admin/config/flags/3.json"},
+    {"method": "GET", "path": "/admin/config/flags.json"}
+  ]
+}

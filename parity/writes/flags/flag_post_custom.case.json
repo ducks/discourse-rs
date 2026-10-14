@@ -1,0 +1,12 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO flags (id, name, name_key, description, notify_type, auto_action_type, applies_to, position, enabled, require_message, score_type, created_at, updated_at) VALUES (1001, 'Too loud', 'custom_too_loud', 'Shouting', true, false, '{Post,Topic}', 9, true, false, false, now() - interval '1 day', now() - interval '1 day')",
+    "SELECT setval('flags_id_seq', 1001, true)"
+  ],
+  "requests": [
+    {"method": "POST", "path": "/post_actions.json", "params": {"id": 52, "post_action_type_id": 1001}},
+    {"method": "GET", "path": "/site.json"}
+  ],
+  "ignore": ["/responses/1/body/markdown_additional_options", "/responses/1/body/hashtag_configurations", "/responses/1/body/hashtag_icons", "/responses/1/body/access_control", "/responses/1/body/categories/*/custom_fields", "/responses/1/body/valid_flag_applies_to_types", "/responses/1/body/admin_config_login_routes", "/responses/1/body/permanent_upcoming_change_names", "/responses/1/body/topic_admin_button_workflows", "/responses/1/body/post_button_workflows", "/responses/1/body/users_on_holiday"]
+}
