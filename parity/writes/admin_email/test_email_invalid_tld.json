@@ -1,0 +1,91 @@
+{
+  "name": "test_email_invalid_tld",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/email/test.json",
+      "params": {
+        "email_address": "x@example.invalid"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T13:57:39.799529",
+  "transaction_started_at": "2026-10-14T13:57:37.896052",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "sent_test_email_message": "sent!"
+      }
+    }
+  ],
+  "changes": {
+    "skipped_email_logs": {
+      "inserted": [
+        {
+          "id": 2,
+          "post_id": null,
+          "user_id": null,
+          "created_at": "2026-10-14T13:57:39.823885",
+          "email_type": "test_message",
+          "to_address": "x@example.invalid",
+          "updated_at": "2026-10-14T13:57:39.823885",
+          "reason_type": 21,
+          "custom_reason": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "wSm13p15uzQjsj1cR8VERsOY1Zo=",
+            "created_at": "2026-10-14T13:57:38.40535",
+            "rotated_at": "2026-10-14T13:57:38.404129",
+            "updated_at": "2026-10-14T13:57:38.40535",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "wSm13p15uzQjsj1cR8VERsOY1Zo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T13:57:39.806383",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "wSm13p15uzQjsj1cR8VERsOY1Zo=",
+            "created_at": "2026-10-14T13:57:38.40535",
+            "rotated_at": "2026-10-14T13:57:38.404129",
+            "updated_at": "2026-10-14T13:57:38.40535",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "wSm13p15uzQjsj1cR8VERsOY1Zo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "skipped_email_logs": 2
+  },
+  "recorded_from": {
+    "case": "cb7f896d5969e429858a1f7b01b6a9af0f4caa18bf14f13fa4f9ea68728ed9a3",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

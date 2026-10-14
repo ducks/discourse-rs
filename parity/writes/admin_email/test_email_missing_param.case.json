@@ -1,0 +1,10 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/email/test.json",
+      "params": {}
+    }
+  ]
+}

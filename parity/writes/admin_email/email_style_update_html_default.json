@@ -1,0 +1,97 @@
+{
+  "name": "email_style_update_html_default",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/customize/email_style.json",
+      "params": {
+        "email_style": {
+          "html": "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n<html\n  xmlns=\"http://www.w3.org/1999/xhtml\"\n  lang=\"%{html_lang}\"\n  xml:lang=\"%{html_lang}\"\n>\n  <head>\n    <meta\n      http-equiv=\"Content-type\"\n      name=\"viewport\"\n      content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\"\n    />\n    %{dark_mode_meta_tags}\n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\" />\n    <title></title>\n  </head>\n\n  <body>\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style='display: none'>%{email_preview}</div>\n\n    %{email_content}\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div\n      style=\"\n        display: none;\n        white-space: nowrap;\n        font: 15px courier;\n        line-height: 0;\n      \"\n    >\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    %{dark_mode_styles}\n  </body>\n</html>\n"
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-14T13:57:11.758743",
+  "transaction_started_at": "2026-10-14T13:57:10.404415",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "email_style": {
+          "id": "email-style",
+          "html": "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n<html\n  xmlns=\"http://www.w3.org/1999/xhtml\"\n  lang=\"%{html_lang}\"\n  xml:lang=\"%{html_lang}\"\n>\n  <head>\n    <meta\n      http-equiv=\"Content-type\"\n      name=\"viewport\"\n      content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\"\n    />\n    %{dark_mode_meta_tags}\n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\" />\n    <title></title>\n  </head>\n\n  <body>\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style='display: none'>%{email_preview}</div>\n\n    %{email_content}\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div\n      style=\"\n        display: none;\n        white-space: nowrap;\n        font: 15px courier;\n        line-height: 0;\n      \"\n    >\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    %{dark_mode_styles}\n  </body>\n</html>\n",
+          "css": "",
+          "default_html": "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n<html\n  xmlns=\"http://www.w3.org/1999/xhtml\"\n  lang=\"%{html_lang}\"\n  xml:lang=\"%{html_lang}\"\n>\n  <head>\n    <meta\n      http-equiv=\"Content-type\"\n      name=\"viewport\"\n      content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\"\n    />\n    %{dark_mode_meta_tags}\n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\" />\n    <title></title>\n  </head>\n\n  <body>\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style='display: none'>%{email_preview}</div>\n\n    %{email_content}\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div\n      style=\"\n        display: none;\n        white-space: nowrap;\n        font: 15px courier;\n        line-height: 0;\n      \"\n    >\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    %{dark_mode_styles}\n  </body>\n</html>\n",
+          "default_css": ""
+        }
+      }
+    }
+  ],
+  "changes": {
+    "site_settings": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 37,
+          "name": "email_custom_template",
+          "value": "<html><body>%{email_content}</body></html>",
+          "data_type": 1,
+          "created_at": "2026-10-14T13:57:10.99201",
+          "updated_at": "2026-10-14T13:57:10.99201"
+        }
+      ],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "zIGun9W/hU1VYFWf76t3dK+nLyA=",
+            "created_at": "2026-10-14T13:57:10.843133",
+            "rotated_at": "2026-10-14T13:57:10.842069",
+            "updated_at": "2026-10-14T13:57:10.843133",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "zIGun9W/hU1VYFWf76t3dK+nLyA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T13:57:11.76931",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "zIGun9W/hU1VYFWf76t3dK+nLyA=",
+            "created_at": "2026-10-14T13:57:10.843133",
+            "rotated_at": "2026-10-14T13:57:10.842069",
+            "updated_at": "2026-10-14T13:57:10.843133",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "zIGun9W/hU1VYFWf76t3dK+nLyA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "email_custom_template": "<html><body>%{email_content}</body></html>"
+  },
+  "recorded_from": {
+    "case": "eee1c40ec398345e915c7b05b49e8505fd502eb0891d603cf2f41c27f73cac33",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

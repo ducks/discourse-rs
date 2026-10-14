@@ -1,0 +1,9 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/email/templates/user_notifications.user_replied"
+    }
+  ]
+}

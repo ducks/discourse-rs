@@ -1,0 +1,22 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "## A heading\n\nWith **bold**, a mention of @user0, #general and :smile:, and a [link](https://example.com/page)."
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert",
+    "user_email"
+  ],
+  "settings": {
+    "email_custom_template": "<html lang=\"%{html_lang}\"><head>%{dark_mode_meta_tags}</head><body><table class=\"wrap\"><tr><td>%{email_content}</td></tr></table>%{dark_mode_styles}</body></html>",
+    "email_custom_css": ".username { color: #123456 }\ndiv.body p, .wrap td { padding: 3px; }\nh2{margin:0 !important}",
+    "email_custom_css_compiled": ".username{color:#123456}div.body p,.wrap td{padding:3px}h2{margin:0 !important}\n"
+  }
+}

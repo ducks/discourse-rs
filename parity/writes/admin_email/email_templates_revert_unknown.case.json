@@ -1,0 +1,13 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/admin/email/templates/nope.nothing"
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/email/templates/test_mailer.json"
+    }
+  ]
+}

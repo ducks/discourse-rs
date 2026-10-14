@@ -1,0 +1,67 @@
+{
+  "name": "email_index_json",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/email.json"
+    }
+  ],
+  "started_at": "2026-10-14T13:56:51.322572",
+  "transaction_started_at": "2026-10-14T13:56:49.969042",
+  "responses": [
+    {
+      "status": 204,
+      "body": ""
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "ZCbYc86ahLqm7euMllKzTL73Al0=",
+            "created_at": "2026-10-14T13:56:50.355223",
+            "rotated_at": "2026-10-14T13:56:50.354468",
+            "updated_at": "2026-10-14T13:56:50.355223",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "ZCbYc86ahLqm7euMllKzTL73Al0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T13:56:51.333618",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "ZCbYc86ahLqm7euMllKzTL73Al0=",
+            "created_at": "2026-10-14T13:56:50.355223",
+            "rotated_at": "2026-10-14T13:56:50.354468",
+            "updated_at": "2026-10-14T13:56:50.355223",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "ZCbYc86ahLqm7euMllKzTL73Al0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "8c3d5218673970f0af7a87728f55e01f96e81ad18f1cf827542bb26848e37ff2",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

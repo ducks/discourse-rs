@@ -1,0 +1,130 @@
+{
+  "name": "email_templates_revert_none",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/admin/email/templates/test_mailer"
+    }
+  ],
+  "started_at": "2026-10-14T13:57:20.124568",
+  "transaction_started_at": "2026-10-14T13:57:18.729936",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "email_template": {
+          "id": "test_mailer",
+          "title": "Test Mailer",
+          "subject": "[%{email_prefix}] Email Deliverability Test",
+          "body": "This is a test email from\n\n[**%{base_url}**][0]\n\nWe hope you received this email deliverability test OK!\n\nHere is a [handy checklist for verifying email delivery configuration][1].\n\nGood luck,\n\nYour friends at [Discourse](https://www.discourse.org)\n\n[0]: %{base_url}\n[1]: https://meta.discourse.org/t/email-delivery-configuration-checklist/209839\n",
+          "can_revert": false,
+          "interpolation_keys": [
+            "base_url",
+            "email_prefix"
+          ]
+        },
+        "__rest_serializer": "1"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "0nnf0/KUI6J9gfFI1Qe7E7s5E0I=",
+            "created_at": "2026-10-14T13:57:19.251486",
+            "rotated_at": "2026-10-14T13:57:19.247523",
+            "updated_at": "2026-10-14T13:57:19.251486",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "0nnf0/KUI6J9gfFI1Qe7E7s5E0I=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T13:57:20.132243",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "0nnf0/KUI6J9gfFI1Qe7E7s5E0I=",
+            "created_at": "2026-10-14T13:57:19.251486",
+            "rotated_at": "2026-10-14T13:57:19.247523",
+            "updated_at": "2026-10-14T13:57:19.251486",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "0nnf0/KUI6J9gfFI1Qe7E7s5E0I=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 29,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "test_mailer.subject_template",
+          "topic_id": null,
+          "new_value": "[%{email_prefix}] Email Deliverability Test",
+          "admin_only": true,
+          "created_at": "2026-10-14T13:57:20.290959",
+          "ip_address": null,
+          "updated_at": "2026-10-14T13:57:20.290959",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "[%{email_prefix}] Email Deliverability Test",
+          "target_user_id": null
+        },
+        {
+          "id": 75,
+          "email": null,
+          "action": 29,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "test_mailer.text_body_template",
+          "topic_id": null,
+          "new_value": "This is a test email from\n\n[**%{base_url}**][0]\n\nWe hope you received this email deliverability test OK!\n\nHere is a [handy checklist for verifying email delivery configuration][1].\n\nGood luck,\n\nYour friends at [Discourse](https://www.discourse.org)\n\n[0]: %{base_url}\n[1]: https://meta.discourse.org/t/email-delivery-configuration-checklist/209839\n",
+          "admin_only": true,
+          "created_at": "2026-10-14T13:57:20.295651",
+          "ip_address": null,
+          "updated_at": "2026-10-14T13:57:20.295651",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "This is a test email from\n\n[**%{base_url}**][0]\n\nWe hope you received this email deliverability test OK!\n\nHere is a [handy checklist for verifying email delivery configuration][1].\n\nGood luck,\n\nYour friends at [Discourse](https://www.discourse.org)\n\n[0]: %{base_url}\n[1]: https://meta.discourse.org/t/email-delivery-configuration-checklist/209839\n",
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "user_histories": 74
+  },
+  "recorded_from": {
+    "case": "22071dfd7215787b089f5bbed849ccb876e6b832d1a38fe1778214e3950bb6aa",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

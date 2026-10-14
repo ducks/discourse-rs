@@ -737,7 +737,7 @@ pub async fn grouped_poll_results(
 
 /// ActiveSupport's `String#titleize` (no acronyms or human inflections):
 /// underscore, humanize, then each word's first letter up.
-fn titleize(word: &str) -> Result<String, Unsupported> {
+pub(crate) fn titleize(word: &str) -> Result<String, Unsupported> {
     if !word.is_ascii() {
         return Err(Unsupported("titleizing a non-ASCII user field value"));
     }

@@ -46,6 +46,17 @@ pub mod skip_reasons {
     pub const USER_EMAIL_NO_EMAIL: i32 = 24;
 }
 
+/// `BYPASS_DISABLE_TYPES`: sent even with `disable_emails` on.
+pub const BYPASS_DISABLE_TYPES: [&str; 7] = [
+    "admin_login",
+    "test_message",
+    "new_version",
+    "group_smtp",
+    "invite_password_instructions",
+    "download_backup_message",
+    "admin_confirmation_message",
+];
+
 /// `SkippedEmailLog.create!`
 pub async fn skip(
     conn: &mut PgConnection,
@@ -170,20 +181,10 @@ pub async fn send(
     let s = ctx.settings;
     let mut message = built.message;
     let view_rendered = built.view_rendered;
-    match s.get("disable_emails")?.to_s().as_str() {
-        "yes" => return Ok(()),
-        "non-staff" => {
-            let staff: bool = sqlx::query_scalar(
-                "SELECT COALESCE((SELECT admin OR moderator FROM users WHERE id = $1), FALSE)",
-            )
-            .bind(user_id)
-            .fetch_one(&mut *conn)
-            .await?;
-            if !staff {
-                return Ok(());
-            }
-        }
-        _ => {}
+    let bypass_disable = BYPASS_DISABLE_TYPES.contains(&email_type);
+    let disable_emails = s.get("disable_emails")?.to_s();
+    if disable_emails == "yes" && !bypass_disable {
+        return Ok(());
     }
     let to_address = message.header("To").unwrap_or("").to_string();
     if to_address.is_empty() {
@@ -196,6 +197,22 @@ pub async fn send(
             skip_reasons::SENDER_MESSAGE_TO_BLANK,
         )
         .await;
+    }
+    if disable_emails == "non-staff" && !bypass_disable {
+        // find_user: the sender's user, else whoever has the address.
+        let staff: bool = sqlx::query_scalar(
+            "SELECT COALESCE((SELECT admin OR moderator FROM users WHERE id = $1), \
+                             (SELECT u.admin OR u.moderator FROM user_emails e JOIN users u ON u.id = e.user_id \
+                              WHERE $1::int IS NULL AND lower(e.email) = lower($2) ORDER BY e.id LIMIT 1), \
+                             FALSE)",
+        )
+        .bind(user_id)
+        .bind(&to_address)
+        .fetch_one(&mut *conn)
+        .await?;
+        if !staff {
+            return Ok(());
+        }
     }
     if to_address.ends_with(".invalid") {
         return skip(
