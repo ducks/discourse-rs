@@ -22,6 +22,8 @@
   // showBadges (enable_badges), from the layout's script tag.
   var script = document.currentScript;
   var showBadges = !script || script.dataset.showBadges !== "false";
+  // The card's label (`user.card`, site texts included).
+  var cardLabel = (script && script.dataset.label) || "User card";
 
   function basePath() {
     var meta = document.querySelector('meta[name="discourse-base-uri"]');
@@ -49,7 +51,7 @@
   function placeholder(username) {
     var element = document.createElement("div");
     // The attributes in the order Ember renders them.
-    element.setAttribute("aria-label", "User card");
+    element.setAttribute("aria-label", cardLabel);
     element.id = "user-card";
     element.className =
       "user-card show" +

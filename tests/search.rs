@@ -231,6 +231,7 @@ async fn renders_a_results_page() {
     assert!(
         html.contains("<title>Search results for &#x27;fixture&#x27; - Discourse</title>")
             || html.contains("<title>Search results for &#39;fixture&#x27; - Discourse</title>")
+            || html.contains("<title>Search results for &#39;fixture&#39; - Discourse</title>")
             || html.contains("<title>Search results for 'fixture' - Discourse</title>"),
         "{html}"
     );
@@ -255,7 +256,7 @@ async fn renders_a_results_page() {
 
     let (status, _, html) = get(&db.pool, "/search").await;
     assert_eq!(status, StatusCode::OK);
-    assert!(html.contains("<title>Search results for '' - Discourse</title>"));
+    assert!(html.contains("<title>Search results for &#39;&#39; - Discourse</title>"));
     assert!(!html.contains("No results found"));
     assert!(html.contains(r#"<div aria-label="results" class="search-results" role="region">"#));
 

@@ -397,3 +397,43 @@ async fn links_swap_pages_in() {
     let htmx = html.find("/assets/htmx.min.js").expect("htmx");
     assert!(page_js < htmx && htmx < html.find("<body").unwrap());
 }
+
+/// The templates' client strings come from the locale, so an admin's site
+/// text reaches the page as it does in the Ember client.
+#[tokio::test]
+async fn site_texts_reach_the_templates_client_strings() {
+    let db = TestDb::new().await;
+    for (key, value) in [
+        ("js.sign_up", "Join us"),
+        ("js.log_in", "Enter"),
+        ("js.sr_topic_list_caption", "All the topics"),
+        ("js.replies", "Answers"),
+        ("js.filters.latest.title", "Newest"),
+        ("js.user.card", "Member card"),
+        ("js.tagging.tags", "Labels"),
+    ] {
+        sqlx::query(
+            "INSERT INTO translation_overrides (locale, translation_key, value, \
+             original_translation, status, created_at, updated_at) \
+             VALUES ('en', $1, $2, '', 0, now(), now())",
+        )
+        .bind(key)
+        .bind(value)
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    }
+    let (_, _, html) = get(&db.pool, "/latest").await;
+    assert!(
+        html.contains("<title>Newest topics - Discourse</title>"),
+        "{html}"
+    );
+    assert!(html.contains(r#"<span class="d-button-label">Join us</span>"#));
+    assert!(html.contains(r#"<span class="d-button-label">Enter</span>"#));
+    assert!(html.contains(r#"<caption class="sr-only">All the topics</caption>"#));
+    assert!(html.contains("<button>Answers</button>"));
+    assert!(html.contains(r#"data-label="Member card""#));
+    assert!(!html.contains(">Sign Up<"));
+    let (_, _, tags) = get(&db.pool, "/tags").await;
+    assert!(tags.contains("<title>Labels - Discourse</title>"), "{tags}");
+}

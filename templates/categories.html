@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% import "macros.html" as m %}
-{% block title %}Categories - {{ site_title }}{% endblock %}
+{% block title %}{{ chrome.t("filters.categories.title") }} - {{ site_title }}{% endblock %}
 {% block content %}
 {{ banner|safe }}
 {% if !main.is_empty() %}
@@ -25,9 +25,9 @@
 <table class="category-list legacy-category-list">
   <thead>
     <tr>
-      <th class="category">Category</th>
-      <th class="topics">Topics</th>
-      <th class="latest">Latest</th>
+      <th class="category">{{ chrome.t("categories.category") }}</th>
+      <th class="topics">{{ chrome.t("categories.topics") }}</th>
+      <th class="latest">{{ chrome.t("categories.latest") }}</th>
     </tr>
   </thead>
   <tbody>

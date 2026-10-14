@@ -192,10 +192,6 @@ pub struct Chrome {
     pub composer: String,
     /// `canCreateTopic`: the lists' New Topic button.
     pub can_create_topic: bool,
-    /// The button's label (`topic.create`) and its group's
-    /// (`topic.create_group`), site texts included.
-    pub create_topic_label: String,
-    pub create_topic_group_label: String,
     /// TopicDraftsDropdown's menu trigger beside New Topic, while the
     /// member has drafts (`draft_count`); empty otherwise.
     pub drafts_menu_trigger: String,
@@ -259,6 +255,48 @@ pub struct Chrome {
     /// The chat channel route's back button indicator in the mobile view
     /// (plugins::chat::view).
     pub chat_back_indicator: String,
+    /// The translations the templates' client strings come from (site
+    /// texts included); the vendored files when the page loaded no chrome.
+    pub i18n: Option<std::sync::Arc<I18n>>,
+}
+
+/// The vendored strings, for chrome that has no translations of its own.
+fn vendored_i18n() -> &'static I18n {
+    static I18N: std::sync::OnceLock<I18n> = std::sync::OnceLock::new();
+    I18N.get_or_init(|| I18n::vendored().expect("the vendored locales parse"))
+}
+
+impl Chrome {
+    fn i18n(&self) -> &I18n {
+        match &self.i18n {
+            Some(i18n) => i18n,
+            None => vendored_i18n(),
+        }
+    }
+
+    /// The Ember client's `i18n(key)`: the `js.` string, an admin's site
+    /// text first; I18n.js's `[en.key]` for a missing one.
+    pub fn t(&self, key: &str) -> String {
+        self.i18n()
+            .t(&format!("js.{key}"))
+            .map(str::to_string)
+            .unwrap_or_else(|| format!("[en.{key}]"))
+    }
+
+    /// `i18n(key, { name: value })`.
+    pub fn t_with(&self, key: &str, name: &str, value: impl AsRef<str>) -> String {
+        self.i18n()
+            .t_with(&format!("js.{key}"), &[(name, value.as_ref())])
+            .unwrap_or_else(|| format!("[en.{key}]"))
+    }
+
+    /// A server string (`I18n.t` in an ERB view), site texts included.
+    pub fn server_t(&self, key: &str) -> String {
+        self.i18n()
+            .t(key)
+            .map(str::to_string)
+            .unwrap_or_else(|| format!("Translation missing: en.{key}"))
+    }
 }
 
 /// The client strings local-dates.js shows, by their js.* key.
@@ -480,6 +518,7 @@ impl Site {
         guardian: &crate::guardian::Guardian,
         active: crate::sidebar::Active,
     ) -> Result<(), crate::AppError> {
+        self.chrome.i18n = Some(state.i18n.clone());
         let urls = crate::url::Urls {
             config: &state.config,
             settings,
@@ -667,16 +706,6 @@ impl Site {
         }
         if let Some(user_id) = guardian.user_id() {
             self.chrome.can_create_topic = guardian.can_create_topic(&mut *conn, settings).await?;
-            self.chrome.create_topic_label = state
-                .i18n
-                .t("js.topic.create")
-                .unwrap_or("New Topic")
-                .to_string();
-            self.chrome.create_topic_group_label = state
-                .i18n
-                .t("js.topic.create_group")
-                .unwrap_or("New topic and drafts")
-                .to_string();
             let draft_count: Option<i32> =
                 sqlx::query_scalar("SELECT draft_count FROM user_stats WHERE user_id = $1")
                     .bind(user_id)

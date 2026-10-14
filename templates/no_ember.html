@@ -66,9 +66,9 @@
               <span class="header-buttons">
                 <span class="auth-buttons">
                   {%- if chrome.can_signup %}
-                  <a href="{{ base_path }}/signup" class="btn btn-text btn-primary btn-small sign-up-button">Sign Up</a>
+                  <a href="{{ base_path }}/signup" class="btn btn-text btn-primary btn-small sign-up-button">{{ chrome.server_t("sign_up") }}</a>
                   {%- endif %}
-                  <a href="{{ base_path }}/login" class="btn btn-icon-text btn-primary btn-small login-button"><svg class="fa d-icon d-icon-user svg-icon svg-string" xmlns="http://www.w3.org/2000/svg"><use href="#user"></use></svg>Log In</a>
+                  <a href="{{ base_path }}/login" class="btn btn-icon-text btn-primary btn-small login-button"><svg class="fa d-icon d-icon-user svg-icon svg-string" xmlns="http://www.w3.org/2000/svg"><use href="#user"></use></svg>{{ chrome.server_t("log_in") }}</a>
                 </span>
               </span>
               {%- endif %}

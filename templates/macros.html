@@ -53,16 +53,16 @@
       {%- if chrome.can_create_topic || !admin_controls.is_empty() || category_nav || mobile %}
       <div class="navigation-controls">
         {%- if mobile && bulk_select %}
-        <button class="btn no-text btn-icon btn-default bulk-select" title="Bulk select" type="button"><svg class="fa d-icon d-icon-list svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#list"></use></svg> <span aria-hidden="true"> &#8203; </span> </button>
+        <button class="btn no-text btn-icon btn-default bulk-select" title="{{ chrome.t("topics.bulk.select") }}" type="button"><svg class="fa d-icon d-icon-list svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#list"></use></svg> <span aria-hidden="true"> &#8203; </span> </button>
         {%- endif %}
         {%- if category_nav || mobile %}<div class="row dismiss-container-top"></div>{% endif %}
         {{ admin_controls|safe }}
         {%- if chrome.can_create_topic %}
-        <div class="d-combo-button{% if !chrome.drafts_menu_trigger.is_empty() %} --has-menu{% endif %} topic-create-button__combo" role="group" aria-label="{{ chrome.create_topic_group_label }}">
+        <div class="d-combo-button{% if !chrome.drafts_menu_trigger.is_empty() %} --has-menu{% endif %} topic-create-button__combo" role="group" aria-label="{{ chrome.t("topic.create_group") }}">
           {%- if mobile %}
           <button class="btn no-text btn-icon d-combo-button-button btn-primary" id="create-topic" type="button"{% if let Some(id) = category_id %} data-category="{{ id }}"{% endif %}><svg class="fa d-icon d-icon-far-pen-to-square svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#far-pen-to-square"></use></svg></button>{{ chrome.drafts_menu_trigger|safe }}
           {%- else %}
-          <button aria-label="{{ chrome.create_topic_label }}" class="btn btn-icon-text d-combo-button-button btn-primary" id="create-topic" type="button"{% if let Some(id) = category_id %} data-category="{{ id }}"{% endif %}><svg class="fa d-icon d-icon-far-pen-to-square svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#far-pen-to-square"></use></svg><span class="d-button-label">{{ chrome.create_topic_label }}</span></button>{{ chrome.drafts_menu_trigger|safe }}
+          <button aria-label="{{ chrome.t("topic.create") }}" class="btn btn-icon-text d-combo-button-button btn-primary" id="create-topic" type="button"{% if let Some(id) = category_id %} data-category="{{ id }}"{% endif %}><svg class="fa d-icon d-icon-far-pen-to-square svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#far-pen-to-square"></use></svg><span class="d-button-label">{{ chrome.t("topic.create") }}</span></button>{{ chrome.drafts_menu_trigger|safe }}
           {%- endif %}
         </div>
         {%- endif %}
