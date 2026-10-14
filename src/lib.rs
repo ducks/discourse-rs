@@ -59,6 +59,7 @@ pub mod html;
 pub mod html_prettify;
 pub mod i18n;
 pub mod images;
+pub mod impersonation;
 pub mod jobs;
 pub mod letter_avatar;
 pub mod likes;

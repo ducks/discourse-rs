@@ -1,0 +1,16 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/impersonate.json",
+      "params": {
+        "username_or_email": "user1@example.com"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/session/current.json"
+    }
+  ]
+}

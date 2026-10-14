@@ -123,6 +123,9 @@ pub struct AuthToken {
     pub auth_token_seen: bool,
     pub rotated_at: NaiveDateTime,
     pub authenticated_with_oauth: Option<bool>,
+    /// The user an admin is acting as, until impersonation_expires_at.
+    pub impersonated_user_id: Option<i32>,
+    pub impersonation_expires_at: Option<NaiveDateTime>,
 }
 
 /// `UserAuthToken.generate!`: a new row and its unhashed token for the
@@ -141,7 +144,8 @@ pub async fn generate(
         "INSERT INTO user_auth_tokens (user_id, user_agent, client_ip, auth_token, prev_auth_token, \
                                        rotated_at, authenticated_with_oauth, created_at, updated_at) \
          VALUES ($1, $2, $3::inet, $4, $4, now(), FALSE, now(), now()) \
-         RETURNING id, user_id, auth_token, prev_auth_token, auth_token_seen, rotated_at, authenticated_with_oauth",
+         RETURNING id, user_id, auth_token, prev_auth_token, auth_token_seen, rotated_at, authenticated_with_oauth, \
+                   impersonated_user_id, impersonation_expires_at",
     )
     .bind(user_id)
     .bind(user_agent)
@@ -212,7 +216,8 @@ pub async fn lookup(
 ) -> Result<Option<AuthToken>, sqlx::Error> {
     let hashed = hash_token(unhashed, secret_key_base);
     let row: Option<AuthToken> = sqlx::query_as(
-        "SELECT id, user_id, auth_token, prev_auth_token, auth_token_seen, rotated_at, authenticated_with_oauth \
+        "SELECT id, user_id, auth_token, prev_auth_token, auth_token_seen, rotated_at, authenticated_with_oauth, \
+                impersonated_user_id, impersonation_expires_at \
          FROM user_auth_tokens \
          WHERE rotated_at > now() - ($1 * interval '1 hour') AND (auth_token = $2 OR prev_auth_token = $2) \
          LIMIT 1",

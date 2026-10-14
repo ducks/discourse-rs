@@ -1,0 +1,15 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE users SET admin = TRUE WHERE id = 3"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/impersonate.json",
+      "params": {
+        "username_or_email": "user1"
+      }
+    }
+  ]
+}

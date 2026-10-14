@@ -1,0 +1,102 @@
+{
+  "name": "impersonate_admin_target",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/impersonate.json",
+      "params": {
+        "username_or_email": "user1"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T11:24:42.988042",
+  "transaction_started_at": "2026-10-14T11:24:39.867641",
+  "responses": [
+    {
+      "status": 200,
+      "body": ""
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "LE1G4L52iB+XohzfQihEzRBvUwk=",
+            "created_at": "2026-10-14T11:24:41.298027",
+            "rotated_at": "2026-10-14T11:24:41.292393",
+            "updated_at": "2026-10-14T11:24:41.298027",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "LE1G4L52iB+XohzfQihEzRBvUwk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T11:24:43.000544",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "LE1G4L52iB+XohzfQihEzRBvUwk=",
+            "created_at": "2026-10-14T11:24:41.298027",
+            "rotated_at": "2026-10-14T11:24:41.292393",
+            "updated_at": "2026-10-14T11:24:43.023675",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "LE1G4L52iB+XohzfQihEzRBvUwk=",
+            "impersonated_user_id": 3,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": "2026-10-14T11:39:43.023385"
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 19,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-14T11:24:43.019811",
+          "ip_address": null,
+          "updated_at": "2026-10-14T11:24:43.019811",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": 3
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "user_histories": 74
+  },
+  "setup": [
+    "UPDATE users SET admin = TRUE WHERE id = 3"
+  ],
+  "recorded_from": {
+    "case": "6b07f92a279b9c4a07cab494a1f70ffc059eae4eec36337e74f28d17e85b74c1",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
