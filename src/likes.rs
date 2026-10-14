@@ -189,8 +189,6 @@ pub(crate) async fn create(
     let Some(Target { access }) = target(&mut *tx, ctx, guardian, post_id).await? else {
         return Ok(Outcome::NotFound);
     };
-    // like_created: post_liked.
-    crate::web_hooks::refuse(&mut *tx, "post_liked", "post_liked web hooks").await?;
     let post = &access.post;
     let types = ActionTypes::load(&mut *tx).await?;
     let taken = post_actions::taken_actions(&mut *tx, &[post.id], Some(user.id)).await?;
@@ -318,6 +316,43 @@ pub(crate) async fn create(
     }
     // after_save update_counters
     update_counters(&mut *tx, ctx, post.id, user.id, access.topic_id).await?;
+    // DiscourseEvent :like_created: post_liked's web hooks, with the
+    // liker's groups and the topic's category and tags.
+    if crate::web_hooks::active(&mut *tx, "post_liked").await? {
+        let group_ids: Vec<i32> = sqlx::query_scalar(
+            "SELECT g.id FROM groups g JOIN group_users gu ON gu.group_id = g.id \
+             WHERE gu.user_id = $1 ORDER BY g.ctid",
+        )
+        .bind(user.id)
+        .fetch_all(&mut *tx)
+        .await?;
+        let (category_id, tag_ids): (Option<i32>, Vec<i32>) = sqlx::query_as(
+            "SELECT t.category_id, ARRAY(SELECT tag_id FROM topic_tags WHERE topic_id = t.id ORDER BY ctid) \
+             FROM topics t WHERE t.id = $1",
+        )
+        .bind(access.topic_id)
+        .fetch_one(&mut *tx)
+        .await?;
+        let mut opts = serde_json::Map::new();
+        opts.insert("group_ids".into(), serde_json::json!(group_ids));
+        opts.insert("category_id".into(), serde_json::json!(category_id));
+        opts.insert("tag_ids".into(), serde_json::json!(tag_ids));
+        let payloads = crate::web_hooks::Payloads {
+            settings: ctx.settings,
+            i18n: ctx.i18n,
+            config: ctx.config,
+        };
+        let (post_id, liker) = (post.id, user.id);
+        crate::web_hooks::enqueue_object_hooks(
+            &mut *tx,
+            "like",
+            "post_liked",
+            i64::from(action_id),
+            async |conn| payloads.like(conn, post_id, liker).await,
+            opts,
+        )
+        .await?;
+    }
     // UserActionManager.post_action_created: UserAction.log_action! per row.
     for (action_type, user_id) in action_rows(user.id, post.user_id) {
         let inserted = sqlx::query(

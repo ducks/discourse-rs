@@ -48,8 +48,6 @@ pub async fn add_with_message(
     message: Option<&str>,
     silent: bool,
 ) -> Result<i32, AppError> {
-    // PostCreator#trigger_after_events: post_created.
-    crate::web_hooks::refuse(&mut *conn, "post_created", "post_created web hooks").await?;
     let (topic_id, user_id) = (action.topic_id, action.user_id);
     let raw = message.unwrap_or("").trim_end().to_string();
     let cooked = if raw.is_empty() {
@@ -321,6 +319,23 @@ pub async fn add_with_message(
         }
     }
 
+    // PostCreator#trigger_after_events: post_created's web hooks.
+    crate::web_hooks::enqueue_post_hooks(
+        &mut *conn,
+        &crate::web_hooks::Payloads {
+            settings: ctx.settings,
+            i18n: ctx.i18n,
+            config: ctx.config,
+        },
+        "post_created",
+        post_id,
+        crate::topic_view::Held {
+            topic_loaded: true,
+            just_created: true,
+            topic_posts_count: None,
+        },
+    )
+    .await?;
     // PostJobsEnqueuer: no after-create jobs for a small action.
     crate::jobs::enqueue(
         &mut *conn,

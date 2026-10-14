@@ -99,6 +99,172 @@ pub async fn system_guardian(conn: &mut PgConnection) -> Result<Guardian, AppErr
     Ok(Guardian::for_user(&mut *conn, &system).await?)
 }
 
+/// What the payload serializers read.
+#[derive(Clone, Copy)]
+pub struct Payloads<'a> {
+    pub settings: &'a crate::site_settings::SiteSettings,
+    pub i18n: &'a crate::i18n::I18n,
+    pub config: &'a crate::config::Config,
+}
+
+impl Payloads<'_> {
+    /// A TopicView seen by the system user.
+    async fn with_view<T>(
+        &self,
+        conn: &mut PgConnection,
+        f: impl AsyncFnOnce(
+            &mut crate::topic_view::TopicView<'_>,
+        ) -> Result<T, crate::topic_view::TopicViewError>,
+    ) -> Result<T, AppError> {
+        let guardian = system_guardian(&mut *conn).await?;
+        let urls = crate::url::Urls {
+            config: self.config,
+            settings: self.settings,
+        };
+        let mut view = crate::topic_view::TopicView {
+            conn,
+            settings: self.settings,
+            i18n: self.i18n,
+            guardian: &guardian,
+            urls: &urls,
+            options: crate::topic_view::Options {
+                page: 0,
+                post_number: None,
+            },
+            post_types: Vec::new(),
+        };
+        Ok(f(&mut view).await?)
+    }
+
+    /// WebHookPostSerializer's JSON for a post.
+    pub async fn post(
+        &self,
+        conn: &mut PgConnection,
+        post_id: i32,
+        held: crate::topic_view::Held,
+    ) -> Result<Value, AppError> {
+        self.with_view(conn, async |v| v.web_hook_post(post_id, held).await)
+            .await
+    }
+
+    /// WebHookLikeSerializer: the liked post and who liked it.
+    pub async fn like(
+        &self,
+        conn: &mut PgConnection,
+        post_id: i32,
+        user_id: i32,
+    ) -> Result<Value, AppError> {
+        self.with_view(conn, async |v| v.web_hook_like(post_id, user_id).await)
+            .await
+    }
+
+    /// WebHookTopicViewSerializer's JSON for a topic.
+    pub async fn topic(
+        &self,
+        conn: &mut PgConnection,
+        topic_id: i32,
+        held: Option<crate::topic_view::HeldTopic>,
+    ) -> Result<Value, AppError> {
+        self.with_view(conn, async |v| v.web_hook_topic(topic_id, held).await)
+            .await
+    }
+}
+
+/// The topic's tag ids as `topic.tags.pluck(:id)` gives them.
+async fn topic_tag_ids(conn: &mut PgConnection, topic_id: i32) -> Result<Vec<i32>, sqlx::Error> {
+    sqlx::query_scalar(
+        "SELECT tags.id FROM tags JOIN topic_tags ON topic_tags.tag_id = tags.id \
+         WHERE topic_tags.topic_id = $1 ORDER BY tags.ctid",
+    )
+    .bind(topic_id)
+    .fetch_all(conn)
+    .await
+}
+
+/// `WebHook.enqueue_post_hooks(event, post, payload)`: with the post's
+/// topic (deleted or not) and its category and tags.
+pub async fn enqueue_post_hooks(
+    conn: &mut PgConnection,
+    p: &Payloads<'_>,
+    event: &str,
+    post_id: i32,
+    held: crate::topic_view::Held,
+) -> Result<(), AppError> {
+    if !active(&mut *conn, event).await? {
+        return Ok(());
+    }
+    let topic: Option<(i32, Option<i32>)> = sqlx::query_as(
+        "SELECT t.id, t.category_id FROM posts p JOIN topics t ON t.id = p.topic_id WHERE p.id = $1",
+    )
+    .bind(post_id)
+    .fetch_optional(&mut *conn)
+    .await?;
+    let Some((topic_id, category_id)) = topic else {
+        return Ok(());
+    };
+    let payload = to_json(&p.post(&mut *conn, post_id, held).await?);
+    let mut opts = Map::new();
+    opts.insert("id".into(), json!(post_id));
+    opts.insert("category_id".into(), json!(category_id));
+    opts.insert(
+        "tag_ids".into(),
+        json!(topic_tag_ids(conn, topic_id).await?),
+    );
+    opts.insert("payload".into(), json!(payload));
+    enqueue_hooks(conn, "post", event, opts).await
+}
+
+/// `WebHook.enqueue_topic_hooks(event, topic, payload)`
+pub async fn enqueue_topic_hooks(
+    conn: &mut PgConnection,
+    p: &Payloads<'_>,
+    event: &str,
+    topic_id: i32,
+    held: Option<crate::topic_view::HeldTopic>,
+) -> Result<(), AppError> {
+    if !active(&mut *conn, event).await? {
+        return Ok(());
+    }
+    let category_id: Option<Option<i32>> =
+        sqlx::query_scalar("SELECT category_id FROM topics WHERE id = $1")
+            .bind(topic_id)
+            .fetch_optional(&mut *conn)
+            .await?;
+    let Some(category_id) = category_id else {
+        return Ok(());
+    };
+    let payload = to_json(&p.topic(&mut *conn, topic_id, held).await?);
+    let mut opts = Map::new();
+    opts.insert("id".into(), json!(topic_id));
+    opts.insert("category_id".into(), json!(category_id));
+    opts.insert(
+        "tag_ids".into(),
+        json!(topic_tag_ids(conn, topic_id).await?),
+    );
+    opts.insert("payload".into(), json!(payload));
+    enqueue_hooks(conn, "topic", event, opts).await
+}
+
+/// `WebHook.enqueue_object_hooks(type, object, event, serializer, opts)`:
+/// the payload built only when a hook will receive it.
+pub async fn enqueue_object_hooks(
+    conn: &mut PgConnection,
+    kind: &str,
+    event: &str,
+    id: i64,
+    payload: impl AsyncFnOnce(&mut PgConnection) -> Result<Value, AppError>,
+    opts: Map<String, Value>,
+) -> Result<(), AppError> {
+    if !active(&mut *conn, event).await? {
+        return Ok(());
+    }
+    let payload = to_json(&payload(&mut *conn).await?);
+    let mut all = opts;
+    all.insert("id".into(), json!(id));
+    all.insert("payload".into(), json!(payload));
+    enqueue_hooks(conn, kind, event, all).await
+}
+
 /// An event whose web hooks are not ported yet: refused when a hook would
 /// receive it, so nothing is written that Rails would follow with a
 /// delivery.

@@ -496,6 +496,41 @@ pub async fn last_visible(
     })
 }
 
+/// NotificationSerializer for one notification, its topic as the
+/// association loads it (a trashed topic is none).
+pub async fn serialize_by_id(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    id: i64,
+) -> Result<Option<Value>, NotificationsError> {
+    let row: Option<Row> = sqlx::query_as(&format!(
+        "SELECT {COLUMNS} FROM notifications LEFT JOIN topics ON notifications.topic_id = topics.id \
+         AND topics.deleted_at IS NULL WHERE notifications.id = $1"
+    ))
+    .bind(id)
+    .fetch_optional(&mut *conn)
+    .await?;
+    // A trashed topic: no slug (Slug.for only runs with a topic).
+    const NO_TOPIC: &str = "\u{0}";
+    Ok(match row {
+        Some(mut row) => {
+            if row.topic_id.is_some() && row.slug.is_none() {
+                row.slug = Some(NO_TOPIC.into());
+            }
+            match serialize(settings, &[row])? {
+                Value::Array(mut items) => items.pop().map(|mut n| {
+                    if n["slug"] == NO_TOPIC {
+                        n["slug"] = Value::Null;
+                    }
+                    n
+                }),
+                _ => None,
+            }
+        }
+        None => None,
+    })
+}
+
 /// NotificationSerializer for each row.
 fn serialize(settings: &SiteSettings, rows: &[Row]) -> Result<Value, NotificationsError> {
     let enable_names = settings.get("enable_names")?.truthy();

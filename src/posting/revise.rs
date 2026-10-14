@@ -132,9 +132,6 @@ pub async fn revise(
         }
         return Ok(Outcome::Revised);
     }
-    // post_process_post: post_edited (topic_edited when the topic changed,
-    // which these fields never do).
-    crate::web_hooks::refuse(&mut conn, "post_edited", "post_edited web hooks").await?;
 
     let (revised_at,): (NaiveDateTime,) = sqlx::query_as("SELECT clock_timestamp()::timestamp")
         .fetch_one(&mut *conn)
@@ -522,6 +519,21 @@ pub async fn revise(
         &mut tx,
         "process_post",
         json!({"bypass_bump": false, "cooking_options": null, "new_post": false, "post_id": post.id, "skip_pull_hotlinked_images": false, "invalidate_oneboxes": true}),
+    )
+    .await?;
+    // DiscourseEvent :post_edited: post_edited's web hooks (`post.topic&.
+    // trashed?` never holds: a trashed topic is no topic to the post), as
+    // these fields never change the topic (topic_edited).
+    crate::web_hooks::enqueue_post_hooks(
+        &mut tx,
+        &crate::web_hooks::Payloads {
+            settings: s,
+            i18n: ctx.i18n,
+            config: ctx.config,
+        },
+        "post_edited",
+        post.id,
+        crate::topic_view::Held::default(),
     )
     .await?;
     if editor_user.id != -1 {

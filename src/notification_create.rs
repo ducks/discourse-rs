@@ -94,12 +94,6 @@ async fn insert(
     n: &NewNotification,
     data: &Map<String, Value>,
 ) -> Result<i64, AppError> {
-    crate::web_hooks::refuse(
-        &mut *conn,
-        "notification_created",
-        "notification_created web hooks",
-    )
-    .await?;
     let high_priority = n.high_priority || HIGH_PRIORITY_TYPES.contains(&n.notification_type);
     Ok(sqlx::query_scalar(
         "INSERT INTO notifications (notification_type, user_id, topic_id, post_number, data, read, \
@@ -144,20 +138,42 @@ async fn after_create(
     data_hash: &Map<String, Value>,
 ) -> Result<(), AppError> {
     crate::bus::publish_notifications_state(bus, &mut *conn, settings, n.user_id).await?;
-    if n.skip_send_email {
-        return Ok(());
+    if !n.skip_send_email {
+        send_email(
+            &mut *conn,
+            settings,
+            &notification_emailer::Notification {
+                id,
+                notification_type: n.notification_type,
+                user_id: n.user_id,
+                topic_id: n.topic_id,
+                post_number: n.post_number,
+                data: data_hash,
+            },
+        )
+        .await?;
     }
-    send_email(
+    notification_created(conn, settings, id).await
+}
+
+/// `DiscourseEvent.trigger(:notification_created)`, after the commit
+/// callbacks before it: the web hooks, NotificationSerializer's payload.
+pub async fn notification_created(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    id: i64,
+) -> Result<(), AppError> {
+    crate::web_hooks::enqueue_object_hooks(
         conn,
-        settings,
-        &notification_emailer::Notification {
-            id,
-            notification_type: n.notification_type,
-            user_id: n.user_id,
-            topic_id: n.topic_id,
-            post_number: n.post_number,
-            data: data_hash,
+        "notification",
+        "notification_created",
+        id,
+        async |conn| {
+            Ok(crate::notifications::serialize_by_id(conn, settings, id)
+                .await?
+                .unwrap_or(Value::Null))
         },
+        Map::new(),
     )
     .await
 }

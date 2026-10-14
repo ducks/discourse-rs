@@ -685,11 +685,6 @@ pub async fn create(
             plan.pm_groups = groups;
         }
     }
-    // trigger_after_events: topic_created, post_created.
-    if new_topic {
-        crate::web_hooks::refuse(&mut conn, "topic_created", "topic_created web hooks").await?;
-    }
-    crate::web_hooks::refuse(&mut conn, "post_created", "post_created web hooks").await?;
     let poster = Poster::load(&mut conn, &user).await?;
     drop(conn);
 
@@ -1180,6 +1175,12 @@ pub async fn create(
                 .await?;
         }
     }
+    // trigger_after_events: topic_created, then post_created, to the web
+    // hooks listening (their jobs come before PostJobsEnqueuer's).
+    // Email::Receiver skips them and triggers both after the jobs.
+    if args.email.is_none() {
+        after_events(&mut tx, ctx, new_topic, topic_id, post_id).await?;
+    }
     // PostJobsEnqueuer#enqueue_jobs, committed with the post.
     crate::jobs::enqueue(
         &mut tx,
@@ -1214,6 +1215,9 @@ pub async fn create(
             json!({"post_id": post_id}),
         )
         .await?;
+    }
+    if args.email.is_some() {
+        after_events(&mut tx, ctx, new_topic, topic_id, post_id).await?;
     }
     crate::badge_granter::queue(
         &mut tx,
@@ -1290,6 +1294,44 @@ pub async fn create(
     )
     .await?;
     Ok(Outcome::Created { post_id })
+}
+
+/// DiscourseEvent :topic_created (a new topic) and :post_created, to the
+/// web hooks: the payloads of PostCreator's objects.
+async fn after_events(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    new_topic: bool,
+    topic_id: i32,
+    post_id: i32,
+) -> Result<(), AppError> {
+    let payloads = crate::web_hooks::Payloads {
+        settings: ctx.settings,
+        i18n: ctx.i18n,
+        config: ctx.config,
+    };
+    if new_topic {
+        crate::web_hooks::enqueue_topic_hooks(
+            &mut *conn,
+            &payloads,
+            "topic_created",
+            topic_id,
+            None,
+        )
+        .await?;
+    }
+    crate::web_hooks::enqueue_post_hooks(
+        conn,
+        &payloads,
+        "post_created",
+        post_id,
+        crate::topic_view::Held {
+            topic_loaded: true,
+            just_created: true,
+            topic_posts_count: None,
+        },
+    )
+    .await
 }
 
 /// `Post#omit_nofollow?` for the author.

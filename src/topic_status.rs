@@ -159,15 +159,26 @@ pub async fn apply(
             .bind(topic_id)
             .fetch_one(&mut *conn)
             .await?;
-    // topic_status_updated: topic_<status>_status_updated (topic_edited).
-    crate::web_hooks::refuse(
-        &mut *conn,
-        &format!("topic_{}_status_updated", status.name()),
-        "topic status web hooks",
-    )
-    .await?;
     // @topic_timer: closing and opening act on the public timer.
     let topic_timer = crate::topic_timer::public_topic_timer(&mut *conn, topic.id).await?;
+    // previous_pin, for a pin's change.
+    let pin_sql = "SELECT pinned_at, pinned_globally, pinned_until FROM topics WHERE id = $1";
+    type Pin = (
+        Option<chrono::NaiveDateTime>,
+        bool,
+        Option<chrono::NaiveDateTime>,
+    );
+    let is_pin = matches!(status, Status::Pinned | Status::PinnedGlobally);
+    let previous_pin: Option<Pin> = if is_pin {
+        Some(
+            sqlx::query_as(pin_sql)
+                .bind(topic.id)
+                .fetch_one(&mut *conn)
+                .await?,
+        )
+    } else {
+        None
+    };
 
     // change
     let updated = match status {
@@ -337,9 +348,44 @@ pub async fn apply(
         )
         .await?;
     }
-    // DiscourseEvent :topic_status_updated (pins compare the pin instead,
-    // and no plugin listens for them).
-    if updated && !matches!(status, Status::Pinned | Status::PinnedGlobally) {
+    // DiscourseEvent :topic_status_updated when it changed (a pin compares
+    // the pin; unpinning names the pin it was): the web hooks first.
+    let changed = match &previous_pin {
+        Some(previous) => {
+            let now: Pin = sqlx::query_as(pin_sql)
+                .bind(topic.id)
+                .fetch_one(&mut *conn)
+                .await?;
+            *previous != now
+        }
+        None => updated,
+    };
+    if changed {
+        let event_status = match &previous_pin {
+            Some((_, globally, _)) if !enabled => {
+                if *globally {
+                    "pinned_globally"
+                } else {
+                    "pinned"
+                }
+            }
+            _ => status.name(),
+        };
+        crate::web_hooks::enqueue_topic_hooks(
+            &mut *conn,
+            &crate::web_hooks::Payloads {
+                settings: s,
+                i18n: ctx.i18n,
+                config: ctx.config,
+            },
+            &format!("topic_{event_status}_status_updated"),
+            topic.id,
+            None,
+        )
+        .await?;
+    }
+    // No plugin listens for pins.
+    if updated && !is_pin {
         crate::plugins::topic_status_updated(&mut *conn, s, topic.id, status.name(), enabled)
             .await?;
     }

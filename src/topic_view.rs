@@ -23,6 +23,9 @@ use crate::topic_list::{Mode, TopicListError, TopicListSerializer, time_json};
 use crate::topic_query::{Filter, TOPIC_COLUMNS, TopicQuery, TopicRow};
 use crate::url::{UrlError, Urls};
 
+mod web_hook;
+pub use web_hook::{Held, HeldTopic};
+
 /// `TopicView::CHUNK_SIZE`
 pub const CHUNK_SIZE: i64 = 20;
 
@@ -136,7 +139,7 @@ impl From<GuardianError> for TopicViewError {
 }
 
 /// The extra `topics` columns the view reads beyond TopicRow.
-#[derive(sqlx::FromRow)]
+#[derive(Clone, sqlx::FromRow)]
 struct TopicExtra {
     word_count: Option<i32>,
     deleted_at: Option<NaiveDateTime>,
@@ -181,6 +184,7 @@ struct PostRow {
     spam_count: i32,
     illegal_count: i32,
     notify_moderators_count: i32,
+    via_email: bool,
 }
 
 #[derive(Debug, Clone, sqlx::FromRow)]
@@ -928,7 +932,7 @@ impl TopicView<'_> {
         hidden, hidden_reason_id, user_deleted, reply_to_user_id, edit_reason, wiki, reply_quoted, \
         public_version, action_code, like_count, hidden_at, locked_by_id, deleted_at, version, \
         notify_user_count, off_topic_count, inappropriate_count, spam_count, illegal_count, \
-        notify_moderators_count FROM posts";
+        notify_moderators_count, via_email FROM posts";
 
     /// `filter_posts_paged`: chunk `page` of the visible posts.
     async fn filter_posts_paged(
@@ -1830,6 +1834,19 @@ impl TopicView<'_> {
             // The first post of the ToS, guidelines and privacy topics.
             if post.post_number == 1 && viewer.ctx.static_doc {
                 p.insert("static_doc".into(), json!(true));
+            }
+            if post.via_email {
+                p.insert("via_email".into(), json!(true));
+                let auto: Option<bool> = sqlx::query_scalar(
+                    "SELECT is_auto_generated FROM incoming_emails WHERE post_id = $1 ORDER BY id LIMIT 1",
+                )
+                .bind(post.id)
+                .fetch_optional(&mut *self.conn)
+                .await?
+                .flatten();
+                if auto == Some(true) {
+                    p.insert("is_auto_generated".into(), json!(true));
+                }
             }
             if let Some(code) = &post.action_code {
                 p.insert("action_code".into(), json!(code));
