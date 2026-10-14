@@ -596,7 +596,8 @@ impl Users<'_> {
         );
         let profile_details = !user.restrict_fields_for(self.settings, g)?;
         if profile_details {
-            let fields = self.user_fields(user.id).await?;
+            let staff_or_me = g.is_staff() || g.is_me(user.id);
+            let fields = self.user_fields(user.id, staff_or_me).await?;
             if !fields.is_empty() {
                 u.insert("user_fields".into(), Value::Object(fields));
             }
@@ -1032,26 +1033,38 @@ impl Users<'_> {
             .await?)
     }
 
-    /// `user_fields`: the fields shown on the profile or card, keyed by id.
-    async fn user_fields(&mut self, user_id: i32) -> Result<Map<String, Value>, UsersError> {
-        let fields: Vec<(i32, String)> = sqlx::query_as(
-            "SELECT id, field_type FROM user_fields WHERE show_on_profile OR show_on_user_card ORDER BY position, id",
-        )
+    /// `User#user_fields(guardian.allowed_user_field_ids(user))`: every
+    /// field for staff and the user, else those shown on the profile or
+    /// card, keyed by id. `field_type` is the legacy varchar Rails ignores
+    /// (rows it creates leave it NULL); the type is `field_type_enum`
+    /// (confirm = 1), whose value is the custom field read as a boolean.
+    /// No ORDER BY: Rails' pluck has none, so the keys follow the scan.
+    async fn user_fields(
+        &mut self,
+        user_id: i32,
+        staff_or_me: bool,
+    ) -> Result<Map<String, Value>, UsersError> {
+        let fields: Vec<(i32, i32)> = sqlx::query_as(if staff_or_me {
+            "SELECT id, field_type_enum FROM user_fields"
+        } else {
+            "SELECT id, field_type_enum FROM user_fields WHERE show_on_profile OR show_on_user_card"
+        })
         .fetch_all(&mut *self.conn)
         .await?;
         let mut out = Map::new();
         for (id, field_type) in fields {
-            if field_type == "confirm" {
-                return Err(Unsupported("confirm user fields").into());
-            }
-            let value: Option<String> = sqlx::query_scalar(
-                "SELECT value FROM user_custom_fields WHERE user_id = $1 AND name = $2 LIMIT 1",
-            )
-            .bind(user_id)
-            .bind(format!("user_field_{id}"))
-            .fetch_optional(&mut *self.conn)
-            .await?;
-            out.insert(id.to_string(), json!(value));
+            let value =
+                crate::user_fields::custom_field_value(&mut *self.conn, user_id, id).await?;
+            let value = if field_type == 1 {
+                json!(
+                    value
+                        .as_str()
+                        .is_some_and(|v| crate::user_fields::CUSTOM_FIELD_TRUE.contains(&v))
+                )
+            } else {
+                value
+            };
+            out.insert(id.to_string(), value);
         }
         Ok(out)
     }

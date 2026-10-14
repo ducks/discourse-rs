@@ -139,6 +139,7 @@ pub mod user_api_key_crypto;
 pub mod user_card_view;
 pub mod user_comm_screener;
 pub mod user_destroyer;
+pub mod user_fields;
 pub mod user_info_view;
 pub mod user_merger;
 pub mod user_penalties;
