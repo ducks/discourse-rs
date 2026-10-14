@@ -1,0 +1,16 @@
+{
+  "user": null,
+  "setup": [],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/email/unsubscribe/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "params": {
+        "unsubscribe_all": "1"
+      }
+    }
+  ],
+  "keep_headers": [
+    "Location"
+  ]
+}

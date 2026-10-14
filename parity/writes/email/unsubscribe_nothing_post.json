@@ -1,0 +1,36 @@
+{
+  "name": "unsubscribe_nothing_post",
+  "user": null,
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/email/unsubscribe/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "params": {}
+    }
+  ],
+  "started_at": "2026-10-14T01:57:41.984657",
+  "transaction_started_at": "2026-10-14T01:57:41.241636",
+  "responses": [
+    {
+      "status": 302,
+      "body": "",
+      "headers": {
+        "Location": "/"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO unsubscribe_keys (key, user_id, unsubscribe_key_type, topic_id, post_id, created_at, updated_at) VALUES ('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 2, 'digest', NULL, NULL, now(), now())"
+  ],
+  "keep_headers": [
+    "Location"
+  ],
+  "recorded_from": {
+    "case": "2821a85d0969a0b123cc401525db2caec8a94982b0c9230142b083584c359599",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

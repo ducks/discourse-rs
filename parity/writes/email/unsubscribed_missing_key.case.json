@@ -1,0 +1,17 @@
+{
+  "user": null,
+  "setup": [],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/email/unsubscribed?key=unsub_nope"
+    }
+  ],
+  "keep_headers": [
+    "Location"
+  ],
+  "fragment": [
+    "<div class='container unsubscribe'>",
+    "\n</div>\n"
+  ]
+}

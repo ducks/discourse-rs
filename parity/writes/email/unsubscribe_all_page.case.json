@@ -1,0 +1,20 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO unsubscribe_keys (key, user_id, unsubscribe_key_type, topic_id, post_id, created_at, updated_at) VALUES ('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 2, 'all', NULL, NULL, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/email/unsubscribe/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "headers": {
+        "Accept": "text/html",
+        "X-Requested-With": ""
+      }
+    }
+  ],
+  "fragment": [
+    "<div class='container unsubscribe'>",
+    "\n</div>\n"
+  ]
+}

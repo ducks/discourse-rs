@@ -1,0 +1,32 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO unsubscribe_keys (key, user_id, unsubscribe_key_type, topic_id, post_id, created_at, updated_at) VALUES ('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 2, 'topic', 35, 35, now(), now())",
+    "INSERT INTO category_users (category_id, user_id, notification_level) VALUES (4, 2, 3)",
+    "UPDATE user_options SET mailing_list_mode = true WHERE user_id = 2"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/email/unsubscribe/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "params": {
+        "List-Unsubscribe": "One-Click"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "{{responses.0.headers.Location}}",
+      "headers": {
+        "Accept": "text/html",
+        "X-Requested-With": ""
+      }
+    }
+  ],
+  "keep_headers": [
+    "Location"
+  ],
+  "fragment": [
+    "<div class='container unsubscribe'>",
+    "\n</div>\n"
+  ]
+}

@@ -34,6 +34,8 @@ fn exempt(path: &str) -> bool {
         || path.starts_with("/letter_avatar_proxy/")
         || path.starts_with("/images/")
         || path.starts_with("/uploads/")
+        // EmailController
+        || path.starts_with("/email/unsubscribe")
 }
 
 pub async fn gate(

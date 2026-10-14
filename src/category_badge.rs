@@ -31,7 +31,20 @@ pub async fn html_for(
     base_path: &str,
     category_id: i32,
 ) -> Result<String, AppError> {
-    if i64::from(category_id) == settings.get("uncategorized_category_id")?.to_i() {
+    html_for_with(conn, settings, base_path, category_id, false).await
+}
+
+/// `CategoryBadge.html_for(category, show_uncategorized:)`
+pub async fn html_for_with(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    base_path: &str,
+    category_id: i32,
+    show_uncategorized: bool,
+) -> Result<String, AppError> {
+    if !show_uncategorized
+        && i64::from(category_id) == settings.get("uncategorized_category_id")?.to_i()
+    {
         return Ok(String::new());
     }
     #[derive(sqlx::FromRow)]

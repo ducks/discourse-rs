@@ -12,6 +12,7 @@ mod bus;
 pub(crate) mod composer;
 mod directory;
 mod drafts;
+mod email;
 mod emojis;
 mod hashtags;
 mod highlight_js;
@@ -744,6 +745,11 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/posts/{id}/revisions/{revision}", get(posts::revision))
         .route("/session", post(session::create))
         .route("/session.json", post(session::create))
+        .route(
+            "/email/unsubscribe/{key}",
+            get(email::unsubscribe).post(email::perform_unsubscribe),
+        )
+        .route("/email/unsubscribed", get(email::unsubscribed))
         .route("/session/csrf", get(session::csrf))
         .route("/session/csrf.json", get(session::csrf))
         .route("/session/current", get(session::current))

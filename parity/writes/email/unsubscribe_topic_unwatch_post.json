@@ -1,0 +1,101 @@
+{
+  "name": "unsubscribe_topic_unwatch_post",
+  "user": null,
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/email/unsubscribe/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "params": {
+        "unwatch_topic": "1"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "{{responses.0.headers.Location}}",
+      "headers": {
+        "Accept": "text/html",
+        "X-Requested-With": ""
+      }
+    }
+  ],
+  "started_at": "2026-10-14T01:58:09.121397",
+  "transaction_started_at": "2026-10-14T01:58:06.962522",
+  "responses": [
+    {
+      "status": 302,
+      "body": "",
+      "headers": {
+        "Location": "/email/unsubscribed?key=unsub_865ca9eb50fe73de5cb5d48057ff6e18&topic_id=35"
+      }
+    },
+    {
+      "status": 200,
+      "body": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\">\n  <title>Discourse</title>\n  <meta name=\"description\" content=\"\">\n  <meta name=\"generator\" content=\"Discourse 2026.10.0-latest - https://github.com/discourse/discourse version bf55a44c2872738f7ae2664d6fec3d6d8779190f\">\n<link rel=\"icon\" type=\"image/png\" href=\"http://localhost:3049/uploads/default/optimized/1X/_129430568242d1b7f853bb13ebea28b3f6af4e7_2_32x32.png\">\n<link rel=\"apple-touch-icon\" type=\"image/png\" href=\"http://localhost:3049/uploads/default/optimized/1X/_129430568242d1b7f853bb13ebea28b3f6af4e7_2_180x180.png\">\n<meta name=\"theme-color\" media=\"(prefers-color-scheme: light)\" content=\"#fff\">\n<meta name=\"theme-color\" media=\"(prefers-color-scheme: dark)\" content=\"#111111\">\n\n<meta name=\"color-scheme\" content=\"light dark\">\n\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, minimum-scale=1.0, viewport-fit=cover\">\n<link rel=\"canonical\" href=\"http://localhost:3049/email/unsubscribed\" />\n\n\n  <link rel=\"search\" type=\"application/opensearchdescription+xml\" href=\"http://localhost:3049/opensearch.xml\" title=\"Discourse Search\">\n\n  <link href=\"/stylesheets/color_definitions_light-default_-1_-1_52d22e96ca4d7c5494a46562d0df099f8b6caa0b.css?__ws=localhost\" media=\"(prefers-color-scheme: light)\" rel=\"stylesheet\" class=\"light-scheme\"/><link href=\"/stylesheets/color_definitions_dark_13_-1_db96197b363568a3e5c31b0004bd50f2cf5856a7.css?__ws=localhost\" media=\"(prefers-color-scheme: dark)\" rel=\"stylesheet\" class=\"dark-scheme\" data-scheme-id=\"13\"/>\n\n<link href=\"/stylesheets/common_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"common\"  />\n\n\n\n  <link href=\"/stylesheets/chat_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"chat\"  />\n  <link href=\"/stylesheets/checklist_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"checklist\"  />\n  <link href=\"/stylesheets/discourse-details_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-details\"  />\n  <link href=\"/stylesheets/discourse-lazy-videos_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-lazy-videos\"  />\n  <link href=\"/stylesheets/discourse-local-dates_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-local-dates\"  />\n  <link href=\"/stylesheets/discourse-narrative-bot_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-narrative-bot\"  />\n  <link href=\"/stylesheets/discourse-presence_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-presence\"  />\n  <link href=\"/stylesheets/discourse-reactions_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-reactions\"  />\n  <link href=\"/stylesheets/discourse-solved_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-solved\"  />\n  <link href=\"/stylesheets/discourse-templates_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-templates\"  />\n  <link href=\"/stylesheets/discourse-topic-voting_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-topic-voting\"  />\n  <link href=\"/stylesheets/discourse-workflows_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-workflows\"  />\n  <link href=\"/stylesheets/footnote_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"footnote\"  />\n  <link href=\"/stylesheets/poll_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"poll\"  />\n  <link href=\"/stylesheets/spoiler-alert_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"spoiler-alert\"  />\n  <link href=\"/stylesheets/chat_mobile_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"(width < 40rem)\" rel=\"stylesheet\" data-target=\"chat_mobile\"  />\n  <link href=\"/stylesheets/discourse-reactions_mobile_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"(width < 40rem)\" rel=\"stylesheet\" data-target=\"discourse-reactions_mobile\"  />\n  <link href=\"/stylesheets/chat_desktop_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"(width >= 40rem)\" rel=\"stylesheet\" data-target=\"chat_desktop\"  />\n  <link href=\"/stylesheets/discourse-reactions_desktop_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"(width >= 40rem)\" rel=\"stylesheet\" data-target=\"discourse-reactions_desktop\"  />\n  <link href=\"/stylesheets/poll_desktop_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"(width >= 40rem)\" rel=\"stylesheet\" data-target=\"poll_desktop\"  />\n\n  \n  \n  \n\n  \n\n    \n\n  \n  \n\n    \n\n\n\n  <script defer src=\"/assets/js/pageview-de2d5660.js\" data-discourse-entrypoint=\"js/pageview\" nonce=\"DcT7V7M2LeIq0PcXoLh6i37b2\"></script>\n\n</head>\n<body class=\"no-ember \">\n    \n\n    \n\n    \n\n  <section id='main'>\n    \n  <header class=\"d-header\">\n    <div class=\"wrap\">\n      <div class=\"contents clearfix\">\n        <div class=\"title\">\n          <a href=\"/\">\n              <picture>\n                <img src=\"http://localhost:3049/images/discourse-logo-sketch.png\" alt=\"Discourse\" id=\"site-logo\" />\n              </picture>\n          </a>\n        </div>\n        <div class=\"panel clearfix\">\n            <span class='header-buttons'>\n              <span class='auth-buttons'>\n                  <a href=\"/signup\" class='btn btn-text btn-primary btn-small sign-up-button'>Sign Up</a>\n                <a href=\"/login\" class='btn btn-icon-text btn-primary btn-small login-button'><svg class=\"fa d-icon svg-icon svg-node\" aria-hidden=\"true\"><svg id=\"user\" viewBox=\"0 0 448 512\">\n  <path d=\"M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512l388.6 0c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304l-91.4 0z\"/>\n</svg></svg>\nLog In</a>\n              </span>\n            </span>\n        </div>\n      </div>\n    </div>\n  </header>\n\n    <div id=\"main-outlet\" class=\"wrap\">\n      <div class='container unsubscribe'>\n  <br>\n  <h2>Email preferences updated!</h2>\n  <br>\n  <p>\n    Email preferences for <b>user0@example.com</b> were updated. To change your email settings <a href='/my/preferences'>visit your user preferences</a>.\n  </p>\n\n    <p>To re-subscribe to <a href=\"/t/parity-fixture-replies-and-posters/35\">Parity fixture: replies and posters</a>, use the notification control at the bottom or right of the topic.</p>\n</div>\n\n    </div>\n  </section>\n\n    \n    \n\n    \n    \n<script async nonce=\"DcT7V7M2LeIq0PcXoLh6i37b2\" type=\"text/javascript\" id=\"mini-profiler\" src=\"/mini-profiler-resources/includes.js?v=0ab236f63a9cce6719807f4cd6470f29\" data-css-url=\"/mini-profiler-resources/includes.css?v=0ab236f63a9cce6719807f4cd6470f29\" data-version=\"0ab236f63a9cce6719807f4cd6470f29\" data-path=\"/mini-profiler-resources/\" data-current-id=\"piftscoc4q4wrs5jo1p\" data-ids=\"piftscoc4q4wrs5jo1p,n4y9sbth6mncsd72txuu,7pho74gvt40c16jlj6lv,3wzt6apadmgeflylj0u0,o2qssq5vi2vccsx6zn8y,sdox3xfwtpcynpussl7d,42xhg4nb96wg0jrm5xba,d53zsupaph6aoy66v0g1,z4fs3k243fseyz0v090d,tzxpwrrhmqtej2moteup,mu5r3gc60221pjoxzzxm,m4hdgthkl4ucah1w0f56,lz9jqrqzysqxeil2mzft,lxcl8rr21df5wwvo7an2,irg58okk7ew76ex0w7j3,bonwte6y6ikhrffp1ual,b7lpf8d2k02lmxl2vxyq,a4ca1qu08h4a3pqnzdxl,7scjy4i0aghubp8jeg4z,bd3fbfpdvyraqbogad4b,9aroulrt0inrkgwupag6,sye37efgq8asu7mpqvux,3zi5vtd75m3yruh9datt,fcr5hifzexlg59mvhi73,a9pqvvojlddylb3sh7f6,rl6mx5bt44n9zv06pkw8,mn35uz5tfeoffswavxq6,s6a5co93nzk6cju9m0ei,mebr25zqsq9yrp6r57xr,c45866m24gpnyr4qcjw4,fpkc1vsm451oq4zxxd2k,mvhxcn6wu6fo59p5q8rf,xa7itwo7coeyh1o7ktu3,z3zxiq1h00xptdtjyo68,yp3suqqcxx1f1g3i6e4y,dff013pr4094wf2k24fo,xrfbqoqlolmvpyw85xnf,3l4fpa690j37jw41qz3k,zkpzfyx7ws8qattug2mo,r945yi1awcgjgizxggrk,hm3xzwf8dxuy90l3r4hs,lu33uc98sdvrqsszgwhg,2q997ig58xlp45ec5xqi,11xuy9061ggogxmcatxw,jsweakmfr1dx5v7p1ymj,w4nwr9uyc8mqa8p35xg6,kt51bbi25fa0txq1codt,2hrfpb67kmplyhkyf8r9,dns62bpozmbdpv3a799o,r4rby7gobpqmx40v97v3,7lomo71n1mucup3n87au,k7o4s9gvveednqgv1uuv,mfbct0fxdjpbnzozq0uz,pt777fpo0mikx499sz4,zybzs7lgxxn01s3o62mi,vbg6vzyiqvj6xpx61np9,qdn2fzrt0o5w6dw72gin,pmnh8umq9dwllo9972r9,okef9u1m6vh2js9a8kqe,l4sdmxg4nkkzo5yhjnzy,j0egvz0jih7skvpqpclt,iu4utv6sc1ow97l718ln,dvuquw7rckl65o2qtluo,cyx07z1fqgzrsrqnwe88,3r9aeditxf2pk55lc1ye,tzcqq9mpmje8fi8e9iz0,anxc3cjfw4x1dembhrmz,jikm7fcylfyrwlceh2w8,9v9kho7pfomporo59gtw,i5hqdavxd86ip3sd7kq6,gbiwrntigz8bzo992qt3,yej2oobx6tl6h4d51udv,prk0nk3zhbgl5v95vazx,ngg9r2vwjbe82affe10w,323lmc8847mbbbfjvebw,7djour1l9lux9r5ilhce,lgvkorlzxcu70hslvjgv,f1o98emg34xj9n671hk4,519xt3rumcfxvhnmv22e,jm2g5rw29eeopukwzny8,nr1o6e5gxc51uy426jbw,keccgghjndwdq4c5xd4e,tzimepqtmzvtccxbjz8c,99lv2z4dy02jmhi2u605,iqpf2bug3yp47t00nitu,h0yyup4wwjtwo0adjdwy,90o1nf7v2sp6hhbwtsrv,qkxi312jrbbz57svg9kz,wrskotbjmlhb6wiq9kwz,obrxue6tt5wp5doq518f,o4rmw9yzbyu6vqi77y4g,9sdrxxsdrl0o68f5yysp,wssr899t71r5gvy4v4qr,wcoxdsj0tqm0ic4b2w3q,vkujn78lvmfmwjgu17xj,ugqxkzxjgs0hi9dphwvl,ugpd3imh3ugv5x0no121,jp7co0r26rajj2mb71ng,744lmafnlzrqb8f2n6w7,23v7axd9uo6975sfwx1g\" data-horizontal-position=\"right\" data-vertical-position=\"top\" data-trivial=\"false\" data-children=\"false\" data-max-traces=\"100\" data-controls=\"false\" data-total-sql-count=\"false\" data-authorized=\"true\" data-toggle-shortcut=\"alt+p\" data-start-hidden=\"false\" data-collapse-results=\"true\" data-html-container=\"body\" data-hidden-custom-fields=\"\" data-turbo-permanent=\"false\"></script>\n</body>\n</html>\n"
+    }
+  ],
+  "changes": {
+    "topic_users": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 34,
+            "liked": true,
+            "posted": true,
+            "user_id": 2,
+            "topic_id": 35,
+            "bookmarked": false,
+            "last_posted_at": "2026-10-01T15:39:51.997065",
+            "last_visited_at": "2026-09-30T07:28:28.88399",
+            "first_visited_at": "2026-09-30T07:28:28.88399",
+            "cleared_pinned_at": null,
+            "notification_level": 3,
+            "total_msecs_viewed": 0,
+            "last_read_post_number": 5,
+            "notifications_reason_id": 1,
+            "last_emailed_post_number": 4,
+            "notifications_changed_at": "2026-09-30T07:28:28.883194"
+          },
+          "after": {
+            "id": 34,
+            "liked": true,
+            "posted": true,
+            "user_id": 2,
+            "topic_id": 35,
+            "bookmarked": false,
+            "last_posted_at": "2026-10-01T15:39:51.997065",
+            "last_visited_at": "2026-09-30T07:28:28.88399",
+            "first_visited_at": "2026-09-30T07:28:28.88399",
+            "cleared_pinned_at": null,
+            "notification_level": 2,
+            "total_msecs_viewed": 0,
+            "last_read_post_number": 5,
+            "notifications_reason_id": 1,
+            "last_emailed_post_number": 4,
+            "notifications_changed_at": "2026-09-30T07:28:28.883194"
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO unsubscribe_keys (key, user_id, unsubscribe_key_type, topic_id, post_id, created_at, updated_at) VALUES ('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 2, 'topic', 35, 35, now(), now())",
+    "INSERT INTO category_users (category_id, user_id, notification_level) VALUES (4, 2, 3)",
+    "UPDATE user_options SET mailing_list_mode = true WHERE user_id = 2"
+  ],
+  "keep_headers": [
+    "Location"
+  ],
+  "fragment": [
+    "<div class='container unsubscribe'>",
+    "\n</div>\n"
+  ],
+  "recorded_from": {
+    "case": "3a3060754c5fa00e3ebef12ca5444f144a8ee74ff23aa13532b7eca9f1a2d1f4",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
