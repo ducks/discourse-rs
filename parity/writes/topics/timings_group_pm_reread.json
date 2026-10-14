@@ -1,0 +1,291 @@
+{
+  "name": "timings_group_pm_reread",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/topics/timings",
+      "params": {
+        "topic_id": 90,
+        "topic_time": 4000,
+        "timings": {
+          "1": 4000
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-14T01:14:01.477476",
+  "transaction_started_at": "2026-10-14T01:14:00.553786",
+  "responses": [
+    {
+      "status": 200,
+      "body": ""
+    }
+  ],
+  "changes": {
+    "post_timings": {
+      "inserted": [
+        {
+          "msecs": 4000,
+          "user_id": 1,
+          "topic_id": 90,
+          "post_number": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "posts": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 900,
+            "raw": "The first post of a group message to the moderators.",
+            "wiki": false,
+            "reads": 0,
+            "score": null,
+            "cooked": "<p>The first post of a group message to the moderators.</p>",
+            "hidden": false,
+            "locale": null,
+            "user_id": 3,
+            "version": 1,
+            "baked_at": null,
+            "topic_id": 90,
+            "hidden_at": null,
+            "post_type": 1,
+            "raw_email": null,
+            "via_email": false,
+            "created_at": "2026-10-14T00:14:00.553786",
+            "deleted_at": null,
+            "like_count": 0,
+            "like_score": 0,
+            "self_edits": 0,
+            "sort_order": 1,
+            "spam_count": 0,
+            "updated_at": "2026-10-14T00:14:00.553786",
+            "word_count": null,
+            "action_code": null,
+            "cook_method": 1,
+            "edit_reason": null,
+            "post_number": 1,
+            "quote_count": 0,
+            "reply_count": 0,
+            "locked_by_id": null,
+            "percent_rank": 1,
+            "reply_quoted": false,
+            "user_deleted": false,
+            "baked_version": null,
+            "deleted_by_id": null,
+            "illegal_count": 0,
+            "qa_vote_count": 0,
+            "bookmark_count": 0,
+            "last_editor_id": null,
+            "public_version": 1,
+            "image_upload_id": null,
+            "last_version_at": "2026-10-14T00:14:00.553786",
+            "off_topic_count": 0,
+            "hidden_reason_id": null,
+            "reply_to_user_id": null,
+            "notify_user_count": 0,
+            "inappropriate_count": 0,
+            "incoming_link_count": 0,
+            "outbound_message_id": null,
+            "reply_to_post_number": null,
+            "notify_moderators_count": 0
+          },
+          "after": {
+            "id": 900,
+            "raw": "The first post of a group message to the moderators.",
+            "wiki": false,
+            "reads": 1,
+            "score": null,
+            "cooked": "<p>The first post of a group message to the moderators.</p>",
+            "hidden": false,
+            "locale": null,
+            "user_id": 3,
+            "version": 1,
+            "baked_at": null,
+            "topic_id": 90,
+            "hidden_at": null,
+            "post_type": 1,
+            "raw_email": null,
+            "via_email": false,
+            "created_at": "2026-10-14T00:14:00.553786",
+            "deleted_at": null,
+            "like_count": 0,
+            "like_score": 0,
+            "self_edits": 0,
+            "sort_order": 1,
+            "spam_count": 0,
+            "updated_at": "2026-10-14T00:14:00.553786",
+            "word_count": null,
+            "action_code": null,
+            "cook_method": 1,
+            "edit_reason": null,
+            "post_number": 1,
+            "quote_count": 0,
+            "reply_count": 0,
+            "locked_by_id": null,
+            "percent_rank": 1,
+            "reply_quoted": false,
+            "user_deleted": false,
+            "baked_version": null,
+            "deleted_by_id": null,
+            "illegal_count": 0,
+            "qa_vote_count": 0,
+            "bookmark_count": 0,
+            "last_editor_id": null,
+            "public_version": 1,
+            "image_upload_id": null,
+            "last_version_at": "2026-10-14T00:14:00.553786",
+            "off_topic_count": 0,
+            "hidden_reason_id": null,
+            "reply_to_user_id": null,
+            "notify_user_count": 0,
+            "inappropriate_count": 0,
+            "incoming_link_count": 0,
+            "outbound_message_id": null,
+            "reply_to_post_number": null,
+            "notify_moderators_count": 0
+          }
+        }
+      ]
+    },
+    "topic_groups": {
+      "inserted": [
+        {
+          "id": 2,
+          "group_id": 3,
+          "topic_id": 90,
+          "created_at": "2026-10-14T01:14:01.495141",
+          "updated_at": "2026-10-14T01:14:01.495141",
+          "last_read_post_number": 1
+        }
+      ],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "group_id": 2,
+            "topic_id": 90,
+            "created_at": "2026-10-14T00:14:00.553786",
+            "updated_at": "2026-10-14T00:14:00.553786",
+            "last_read_post_number": 0
+          },
+          "after": {
+            "id": 1,
+            "group_id": 2,
+            "topic_id": 90,
+            "created_at": "2026-10-14T00:14:00.553786",
+            "updated_at": "2026-10-14T01:14:01.494281",
+            "last_read_post_number": 1
+          }
+        }
+      ]
+    },
+    "topic_users": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 56,
+            "liked": false,
+            "posted": false,
+            "user_id": 1,
+            "topic_id": 90,
+            "bookmarked": false,
+            "last_posted_at": null,
+            "last_visited_at": null,
+            "first_visited_at": null,
+            "cleared_pinned_at": null,
+            "notification_level": 2,
+            "total_msecs_viewed": 0,
+            "last_read_post_number": null,
+            "notifications_reason_id": 2,
+            "last_emailed_post_number": null,
+            "notifications_changed_at": null
+          },
+          "after": {
+            "id": 56,
+            "liked": false,
+            "posted": false,
+            "user_id": 1,
+            "topic_id": 90,
+            "bookmarked": false,
+            "last_posted_at": null,
+            "last_visited_at": null,
+            "first_visited_at": null,
+            "cleared_pinned_at": null,
+            "notification_level": 2,
+            "total_msecs_viewed": 4000,
+            "last_read_post_number": 1,
+            "notifications_reason_id": 2,
+            "last_emailed_post_number": null,
+            "notifications_changed_at": null
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 527,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "PbTvd9JUIP0l/Tka8gEjkGVhNFA=",
+            "created_at": "2026-10-14T01:14:00.920103",
+            "rotated_at": "2026-10-14T01:14:00.919152",
+            "updated_at": "2026-10-14T01:14:00.920103",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "PbTvd9JUIP0l/Tka8gEjkGVhNFA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 527,
+            "seen_at": "2026-10-14T01:14:01.483309",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "PbTvd9JUIP0l/Tka8gEjkGVhNFA=",
+            "created_at": "2026-10-14T01:14:00.920103",
+            "rotated_at": "2026-10-14T01:14:00.919152",
+            "updated_at": "2026-10-14T01:14:00.920103",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "PbTvd9JUIP0l/Tka8gEjkGVhNFA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "topic_groups": 2
+  },
+  "setup": [
+    "INSERT INTO topics (id, title, fancy_title, slug, user_id, last_post_user_id, archetype, subtype, created_at, updated_at, bumped_at, posts_count, highest_post_number, visible) VALUES (90, 'A group message the moderators received', 'A group message the moderators received', 'a-group-message-the-moderators-received', 3, 3, 'private_message', 'user_to_user', now() - interval '1 hour', now() - interval '1 hour', now() - interval '1 hour', 1, 1, true)",
+    "INSERT INTO posts (id, topic_id, user_id, post_number, raw, cooked, created_at, updated_at, last_version_at, sort_order) VALUES (900, 90, 3, 1, 'The first post of a group message to the moderators.', '<p>The first post of a group message to the moderators.</p>', now() - interval '1 hour', now() - interval '1 hour', now() - interval '1 hour', 1)",
+    "INSERT INTO topic_allowed_users (topic_id, user_id, created_at, updated_at) VALUES (90, 3, now(), now())",
+    "INSERT INTO topic_allowed_groups (topic_id, group_id) VALUES (90, 2), (90, 3)",
+    "INSERT INTO topic_users (user_id, topic_id, notification_level, notifications_reason_id, posted, last_read_post_number) VALUES (3, 90, 3, 1, true, 1), (1, 90, 2, 2, false, NULL)",
+    "INSERT INTO topic_groups (topic_id, group_id, last_read_post_number, created_at, updated_at) VALUES (90, 2, 0, now() - interval '1 hour', now() - interval '1 hour')"
+  ],
+  "recorded_from": {
+    "case": "48090dc0e9483db38457ce6360a4f6b72a52beac48c2d5f486fdbf85d95530e0",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

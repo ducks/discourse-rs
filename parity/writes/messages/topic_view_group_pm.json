@@ -1,0 +1,462 @@
+{
+  "name": "topic_view_group_pm",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/t/90.json",
+      "params": {}
+    }
+  ],
+  "started_at": "2026-10-14T01:13:57.539542",
+  "transaction_started_at": "2026-10-14T01:13:51.24279",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "post_stream": {
+          "posts": [
+            {
+              "id": 900,
+              "name": "User1",
+              "username": "user1",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+              "created_at": "2026-10-14T00:13:51.242Z",
+              "cooked": "<p>The first post of a group message to the moderators.</p>",
+              "post_number": 1,
+              "post_type": 1,
+              "posts_count": 1,
+              "updated_at": "2026-10-14T00:13:51.242Z",
+              "reply_count": 0,
+              "reply_to_post_number": null,
+              "quote_count": 0,
+              "incoming_link_count": 0,
+              "reads": 0,
+              "readers_count": 0,
+              "score": 0,
+              "yours": false,
+              "topic_id": 90,
+              "topic_slug": "a-group-message-the-moderators-received",
+              "display_username": "User1",
+              "primary_group_name": null,
+              "flair_name": null,
+              "flair_url": null,
+              "flair_bg_color": null,
+              "flair_color": null,
+              "flair_group_id": null,
+              "badges_granted": [],
+              "version": 1,
+              "can_edit": true,
+              "can_delete": false,
+              "can_recover": false,
+              "can_see_hidden_post": true,
+              "can_wiki": true,
+              "read": false,
+              "user_title": null,
+              "bookmarked": false,
+              "actions_summary": [
+                {
+                  "id": 2,
+                  "can_act": true
+                },
+                {
+                  "id": 6,
+                  "can_act": true
+                },
+                {
+                  "id": 3,
+                  "can_act": true
+                },
+                {
+                  "id": 4,
+                  "can_act": true
+                },
+                {
+                  "id": 8,
+                  "can_act": true
+                },
+                {
+                  "id": 10,
+                  "can_act": true
+                },
+                {
+                  "id": 7,
+                  "can_act": true
+                }
+              ],
+              "moderator": false,
+              "admin": false,
+              "staff": false,
+              "user_id": 3,
+              "hidden": false,
+              "trust_level": 2,
+              "deleted_at": null,
+              "user_deleted": false,
+              "edit_reason": null,
+              "can_view_edit_history": true,
+              "wiki": false,
+              "reviewable_id": 0,
+              "reviewable_score_count": 0,
+              "reviewable_score_pending_count": 0,
+              "post_url": "/t/a-group-message-the-moderators-received/90/1",
+              "reactions": [],
+              "current_user_reaction": null,
+              "reaction_users_count": 0,
+              "current_user_used_main_reaction": false,
+              "can_accept_answer": false,
+              "can_unaccept_answer": false,
+              "accepted_answer": false,
+              "topic_accepted_answer": null,
+              "can_vote": false
+            }
+          ],
+          "stream": [
+            900
+          ]
+        },
+        "timeline_lookup": [
+          [
+            1,
+            0
+          ]
+        ],
+        "related_messages": [
+          {
+            "fancy_title": "Another message the moderators received",
+            "id": 92,
+            "title": "Another message the moderators received",
+            "slug": "another-message-the-moderators-received",
+            "posts_count": 1,
+            "reply_count": 0,
+            "highest_post_number": 1,
+            "image_url": null,
+            "created_at": "2026-10-14T00:43:51.242Z",
+            "last_posted_at": null,
+            "bumped": false,
+            "bumped_at": "2026-10-14T00:43:51.242Z",
+            "archetype": "private_message",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "like_count": 0,
+            "views": 0,
+            "category_id": null,
+            "featured_link": null,
+            "op_like_count": 0,
+            "has_accepted_answer": false,
+            "posters": [
+              {
+                "extras": "latest single",
+                "description": "Original Poster, Most Recent Poster",
+                "user": {
+                  "id": 3,
+                  "username": "user1",
+                  "name": "User1",
+                  "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+                  "trust_level": 2
+                }
+              }
+            ]
+          }
+        ],
+        "suggested_topics": [
+          {
+            "fancy_title": "Another message the moderators received",
+            "id": 92,
+            "title": "Another message the moderators received",
+            "slug": "another-message-the-moderators-received",
+            "posts_count": 1,
+            "reply_count": 0,
+            "highest_post_number": 1,
+            "image_url": null,
+            "created_at": "2026-10-14T00:43:51.242Z",
+            "last_posted_at": null,
+            "bumped": false,
+            "bumped_at": "2026-10-14T00:43:51.242Z",
+            "archetype": "private_message",
+            "unseen": true,
+            "pinned": false,
+            "unpinned": null,
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "like_count": 0,
+            "views": 0,
+            "category_id": null,
+            "featured_link": null,
+            "op_like_count": 0,
+            "has_accepted_answer": false,
+            "posters": [
+              {
+                "extras": "latest single",
+                "description": "Original Poster, Most Recent Poster",
+                "user": {
+                  "id": 3,
+                  "username": "user1",
+                  "name": "User1",
+                  "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+                  "trust_level": 2
+                }
+              }
+            ]
+          }
+        ],
+        "suggested_group_name": "moderators",
+        "fancy_title": "A group message the moderators received",
+        "id": 90,
+        "title": "A group message the moderators received",
+        "posts_count": 1,
+        "created_at": "2026-10-14T00:13:51.242Z",
+        "views": 0,
+        "reply_count": 0,
+        "like_count": 0,
+        "last_posted_at": null,
+        "visible": true,
+        "closed": false,
+        "archived": false,
+        "has_summary": false,
+        "archetype": "private_message",
+        "slug": "a-group-message-the-moderators-received",
+        "category_id": null,
+        "word_count": null,
+        "deleted_at": null,
+        "user_id": 3,
+        "featured_link": null,
+        "pinned_globally": false,
+        "pinned_at": null,
+        "pinned_until": null,
+        "image_url": null,
+        "slow_mode_seconds": 0,
+        "draft": null,
+        "draft_key": "topic_90",
+        "draft_sequence": 0,
+        "posted": false,
+        "unpinned": null,
+        "pinned": false,
+        "current_post_number": 1,
+        "highest_post_number": 1,
+        "last_read_post_number": null,
+        "last_read_post_id": null,
+        "deleted_by": null,
+        "has_deleted": false,
+        "actions_summary": [
+          {
+            "id": 4,
+            "count": 0,
+            "hidden": false,
+            "can_act": true
+          },
+          {
+            "id": 8,
+            "count": 0,
+            "hidden": false,
+            "can_act": true
+          },
+          {
+            "id": 10,
+            "count": 0,
+            "hidden": false,
+            "can_act": true
+          },
+          {
+            "id": 7,
+            "count": 0,
+            "hidden": false,
+            "can_act": true
+          }
+        ],
+        "chunk_size": 20,
+        "bookmarked": false,
+        "message_archived": false,
+        "topic_timer": null,
+        "message_bus_last_id": 0,
+        "participant_count": 1,
+        "pm_with_non_human_user": false,
+        "queued_posts_count": 0,
+        "show_read_indicator": false,
+        "thumbnails": null,
+        "slow_mode_enabled_until": null,
+        "valid_reactions": [
+          "heart",
+          "+1",
+          "laughing",
+          "open_mouth",
+          "clap",
+          "confetti_ball",
+          "hugs"
+        ],
+        "has_accepted_answer": false,
+        "can_create_shared_issue": false,
+        "shared_issue_visible": false,
+        "can_vote": false,
+        "vote_count": 0,
+        "user_voted": false,
+        "discourse_zendesk_plugin_zendesk_id": null,
+        "discourse_zendesk_plugin_zendesk_url": "https://your-url.zendesk.com/agent/tickets/",
+        "details": {
+          "can_edit": true,
+          "notification_level": 2,
+          "notifications_reason_id": 2,
+          "can_move_posts": true,
+          "can_delete": true,
+          "can_remove_allowed_users": true,
+          "can_invite_to": true,
+          "can_invite_via_email": true,
+          "can_create_post": true,
+          "can_reply_as_new_topic": true,
+          "can_flag_topic": true,
+          "can_convert_topic": true,
+          "can_review_topic": true,
+          "can_close_topic": true,
+          "can_archive_topic": true,
+          "can_split_merge_topic": true,
+          "can_edit_staff_notes": true,
+          "can_toggle_topic_visibility": true,
+          "can_pin_unpin_topic": true,
+          "can_moderate_category": true,
+          "can_remove_self_id": 1,
+          "participants": [
+            {
+              "id": 3,
+              "username": "user1",
+              "name": "User1",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+              "post_count": 1,
+              "primary_group_name": null,
+              "flair_name": null,
+              "flair_url": null,
+              "flair_color": null,
+              "flair_bg_color": null,
+              "flair_group_id": null,
+              "trust_level": 2
+            }
+          ],
+          "allowed_users": [
+            {
+              "id": 3,
+              "username": "user1",
+              "name": "User1",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png"
+            }
+          ],
+          "created_by": {
+            "id": 3,
+            "username": "user1",
+            "name": "User1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png"
+          },
+          "last_poster": {
+            "id": 3,
+            "username": "user1",
+            "name": "User1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png"
+          },
+          "allowed_groups": [
+            {
+              "id": 2,
+              "automatic": true,
+              "name": "moderators",
+              "display_name": "moderators",
+              "user_count": 1,
+              "mentionable_level": 0,
+              "messageable_level": 99,
+              "visibility_level": 1,
+              "primary_group": false,
+              "title": null,
+              "grant_trust_level": null,
+              "incoming_email": null,
+              "has_messages": true,
+              "flair_url": null,
+              "flair_bg_color": null,
+              "flair_color": null,
+              "bio_raw": null,
+              "bio_cooked": "Responsible for responding to flags, moderating discussions, and helping members with their accounts",
+              "bio_excerpt": "Responsible for responding to flags, moderating discussions, and helping members with their accounts",
+              "public_admission": false,
+              "public_exit": false,
+              "allow_membership_requests": false,
+              "full_name": "Moderators",
+              "default_notification_level": 2,
+              "membership_request_template": null,
+              "members_visibility_level": 0,
+              "can_see_members": true,
+              "can_admin_group": true,
+              "publish_read_state": false
+            }
+          ]
+        },
+        "pending_posts": [],
+        "bookmarks": []
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 527,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "nWOVtzvR/qkXYQFHhsyVEfpMY+I=",
+            "created_at": "2026-10-14T01:13:53.053884",
+            "rotated_at": "2026-10-14T01:13:53.018333",
+            "updated_at": "2026-10-14T01:13:53.053884",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "nWOVtzvR/qkXYQFHhsyVEfpMY+I=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 527,
+            "seen_at": "2026-10-14T01:13:57.561825",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "nWOVtzvR/qkXYQFHhsyVEfpMY+I=",
+            "created_at": "2026-10-14T01:13:53.053884",
+            "rotated_at": "2026-10-14T01:13:53.018333",
+            "updated_at": "2026-10-14T01:13:53.053884",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "nWOVtzvR/qkXYQFHhsyVEfpMY+I=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO topics (id, title, fancy_title, slug, user_id, last_post_user_id, archetype, subtype, created_at, updated_at, bumped_at, posts_count, highest_post_number, visible) VALUES (90, 'A group message the moderators received', 'A group message the moderators received', 'a-group-message-the-moderators-received', 3, 3, 'private_message', 'user_to_user', now() - interval '1 hour', now() - interval '1 hour', now() - interval '1 hour', 1, 1, true)",
+    "INSERT INTO posts (id, topic_id, user_id, post_number, raw, cooked, created_at, updated_at, last_version_at, sort_order) VALUES (900, 90, 3, 1, 'The first post of a group message to the moderators.', '<p>The first post of a group message to the moderators.</p>', now() - interval '1 hour', now() - interval '1 hour', now() - interval '1 hour', 1)",
+    "INSERT INTO topic_allowed_users (topic_id, user_id, created_at, updated_at) VALUES (90, 3, now(), now())",
+    "INSERT INTO topic_allowed_groups (topic_id, group_id) VALUES (90, 2)",
+    "INSERT INTO topic_users (user_id, topic_id, notification_level, notifications_reason_id, posted, last_read_post_number) VALUES (3, 90, 3, 1, true, 1), (1, 90, 2, 2, false, NULL)",
+    "UPDATE groups SET has_messages = true WHERE id = 2",
+    "INSERT INTO topics (id, title, fancy_title, slug, user_id, last_post_user_id, archetype, subtype, created_at, updated_at, bumped_at, posts_count, highest_post_number, visible) VALUES (92, 'Another message the moderators received', 'Another message the moderators received', 'another-message-the-moderators-received', 3, 3, 'private_message', 'user_to_user', now() - interval '30 minutes', now() - interval '30 minutes', now() - interval '30 minutes', 1, 1, true)",
+    "INSERT INTO posts (id, topic_id, user_id, post_number, raw, cooked, created_at, updated_at, last_version_at, sort_order) VALUES (920, 92, 3, 1, 'The first post of another message to the moderators.', '<p>The first post of another message to the moderators.</p>', now() - interval '30 minutes', now() - interval '30 minutes', now() - interval '30 minutes', 1)",
+    "INSERT INTO topic_allowed_users (topic_id, user_id, created_at, updated_at) VALUES (92, 3, now(), now())",
+    "INSERT INTO topic_allowed_groups (topic_id, group_id) VALUES (92, 2)",
+    "INSERT INTO topic_users (user_id, topic_id, notification_level, notifications_reason_id, posted, last_read_post_number) VALUES (3, 92, 3, 1, true, 1)"
+  ],
+  "recorded_from": {
+    "case": "8a2962f4cdca18f4b9193eab66c410f32851965c6b3f741167d585e54406b291",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
