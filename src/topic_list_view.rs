@@ -1154,8 +1154,15 @@ mod tests {
                 crate::emoji::image_version()
             )
         );
-        // The server's unescape_emoji keeps denied emoji.
-        assert!(unescape_emoji(":heart:", &e, "").contains("title='heart'"));
+        // The server's unescape_emoji keeps denied emoji: a topic onebox's
+        // title on the reference with heart denied.
+        assert_eq!(
+            unescape_emoji("Liked :party_parrot: and :heart: archived", &e, ""),
+            format!(
+                "Liked <img width=\"20\" height=\"20\" src='/uploads/default/original/1X/abc.gif?v={v}' title='party_parrot' alt='party_parrot' class='emoji emoji-custom'> and <img width=\"20\" height=\"20\" src='/images/emoji/twitter/heart.png?v={v}' title='heart' alt='heart' class='emoji'> archived",
+                v = crate::emoji::image_version()
+            )
+        );
         e.enabled = false;
         assert_eq!(emoji_unescape(":heart: :smile:", &e, ""), ":heart: :smile:");
     }

@@ -1,7 +1,8 @@
 {
   "user": "user1",
   "setup": [
-    "INSERT INTO custom_emojis (name, upload_id, created_at, updated_at, \"group\", user_id) VALUES ('party_parrot', 34, now(), now(), 'party', 1), ('smile', 35, now(), now(), NULL, 1)"
+    "INSERT INTO custom_emojis (name, upload_id, created_at, updated_at, \"group\", user_id) VALUES ('party_parrot', 34, now(), now(), 'party', 1), ('smile', 35, now(), now(), NULL, 1)",
+    "UPDATE user_badges SET featured_rank = CASE id WHEN 3 THEN 4 WHEN 16 THEN 3 WHEN 17 THEN 2 WHEN 18 THEN 3 END WHERE id IN (3, 16, 17, 18)"
   ],
   "requests": [
     {

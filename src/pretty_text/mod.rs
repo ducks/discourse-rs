@@ -277,7 +277,7 @@ pub async fn markdown(host: &Host, raw: &str, opts: &MarkdownOptions) -> Result<
     let mut conn = host.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &host.site_setting_defs, &host.config.globals).await?;
-    // What `options` refuses (watched words, custom emoji...) the renderer
+    // What `options` refuses (watched words...) the renderer
     // does not handle either.
     let options = options(host, &mut conn, &settings).await?;
     let mut hashtag_types = options["hashtagTypesInPriorityOrder"].clone();

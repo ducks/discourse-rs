@@ -8,8 +8,8 @@
       "params": {}
     }
   ],
-  "started_at": "2026-10-14T05:38:57.792596",
-  "transaction_started_at": "2026-10-14T05:38:57.207604",
+  "started_at": "2026-10-14T05:52:06.748618",
+  "transaction_started_at": "2026-10-14T05:52:06.056002",
   "responses": [
     {
       "status": 200,
@@ -390,8 +390,8 @@
           1,
           3,
           2,
-          4,
-          34
+          34,
+          4
         ],
         "user_themes": [
           {
@@ -643,7 +643,7 @@
             "emoji": "blue_book",
             "slug": "general",
             "topic_count": 3,
-            "post_count": 7,
+            "post_count": 6,
             "position": 3,
             "description": "<p>Create topics here that don’t fit into any other existing category.</p>",
             "description_text": "Create topics here that don’t fit into any other existing category.",

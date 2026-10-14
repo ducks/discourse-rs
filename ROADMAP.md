@@ -250,8 +250,13 @@ then by what running a forum needs (milestone 6). Briefs:
 80. `feat/watched-words` L: the four cooking actions (censor, replace,
     link, tag) and the posting ones (block, require approval, silence,
     flag), the admin CRUD and its regex/case rules,
-    81. `feat/custom-emoji` M (admin upload and list, cooking and
-    emojiUnescape with custom emoji, emoji_deny_list)
+    81. ~~`feat/custom-emoji`~~ (done) M (admin index, create, destroy,
+    /site/emoji, the rebake job; custom emoji and the deny list in
+    cooking, emojiUnescape, codes_to_img, unicode titles and every emoji
+    url; static images refused until the crop: 81b), 81b.
+    `feat/custom-emoji-crop` S (the 100x100> downsize of static custom
+    emoji uploads), 81c. `feat/custom-emoji-import-export` S/M (zip and
+    CSV export, import preview and confirm)
 82. `feat/admin-groups` L: creating, editing, deleting groups, members
     and owners in bulk, automatic membership by email domain
 83. `feat/web-hooks` L: web hooks, their events from core, deliveries

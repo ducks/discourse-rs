@@ -16,8 +16,8 @@
       "path": "/admin/config/emoji.json"
     }
   ],
-  "started_at": "2026-10-14T05:38:46.196023",
-  "transaction_started_at": "2026-10-14T05:38:45.183919",
+  "started_at": "2026-10-14T05:51:41.604295",
+  "transaction_started_at": "2026-10-14T05:51:38.540169",
   "responses": [
     {
       "status": 200,
@@ -48,8 +48,8 @@
           "group": null,
           "user_id": 1,
           "upload_id": 36,
-          "created_at": "2026-10-14T05:38:46.310376",
-          "updated_at": "2026-10-14T05:38:46.310376"
+          "created_at": "2026-10-14T05:51:41.745903",
+          "updated_at": "2026-10-14T05:51:41.745903"
         }
       ],
       "deleted": [],
@@ -61,8 +61,8 @@
           "id": 36,
           "target_id": 1,
           "upload_id": 36,
-          "created_at": "2026-10-14T05:38:46.311745",
-          "updated_at": "2026-10-14T05:38:46.311756",
+          "created_at": "2026-10-14T05:51:41.750687",
+          "updated_at": "2026-10-14T05:51:41.750731",
           "target_type": "CustomEmoji"
         }
       ],
@@ -84,8 +84,8 @@
           "animated": true,
           "filesize": 93,
           "extension": "gif",
-          "created_at": "2026-10-14T05:38:46.287628",
-          "updated_at": "2026-10-14T05:38:46.296358",
+          "created_at": "2026-10-14T05:51:41.693055",
+          "updated_at": "2026-10-14T05:51:41.709965",
           "retain_hours": null,
           "original_sha1": null,
           "dominant_color": "FF0000",
@@ -111,29 +111,29 @@
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "AGvCagNdGzyBsoF6bVYcLjXwsTg=",
-            "created_at": "2026-10-14T05:38:45.606419",
-            "rotated_at": "2026-10-14T05:38:45.604712",
-            "updated_at": "2026-10-14T05:38:45.606419",
+            "auth_token": "7+Z48YxsaLUT4MQB+KVW7twOYtw=",
+            "created_at": "2026-10-14T05:51:39.125802",
+            "rotated_at": "2026-10-14T05:51:39.123861",
+            "updated_at": "2026-10-14T05:51:39.125802",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "AGvCagNdGzyBsoF6bVYcLjXwsTg=",
+            "prev_auth_token": "7+Z48YxsaLUT4MQB+KVW7twOYtw=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
             "id": 1,
-            "seen_at": "2026-10-14T05:38:46.250873",
+            "seen_at": "2026-10-14T05:51:41.624431",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "AGvCagNdGzyBsoF6bVYcLjXwsTg=",
-            "created_at": "2026-10-14T05:38:45.606419",
-            "rotated_at": "2026-10-14T05:38:45.604712",
-            "updated_at": "2026-10-14T05:38:45.606419",
+            "auth_token": "7+Z48YxsaLUT4MQB+KVW7twOYtw=",
+            "created_at": "2026-10-14T05:51:39.125802",
+            "rotated_at": "2026-10-14T05:51:39.123861",
+            "updated_at": "2026-10-14T05:51:39.125802",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "AGvCagNdGzyBsoF6bVYcLjXwsTg=",
+            "prev_auth_token": "7+Z48YxsaLUT4MQB+KVW7twOYtw=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -154,9 +154,9 @@
           "topic_id": null,
           "new_value": "animated",
           "admin_only": true,
-          "created_at": "2026-10-14T05:38:46.322505",
+          "created_at": "2026-10-14T05:51:41.774844",
           "ip_address": null,
-          "updated_at": "2026-10-14T05:38:46.322505",
+          "updated_at": "2026-10-14T05:51:41.774844",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -174,7 +174,7 @@
           "id": 36,
           "user_id": 1,
           "upload_id": 36,
-          "created_at": "2026-10-14T05:38:46.303114"
+          "created_at": "2026-10-14T05:51:41.728144"
         }
       ],
       "deleted": [],

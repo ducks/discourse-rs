@@ -252,6 +252,42 @@ pub fn codes_to_img(emojis: &crate::emojis::Emojis, base_path: &str, s: &str) ->
 mod tests {
     use super::*;
 
+    /// A category's custom emoji as the reference drew it in a topic
+    /// onebox's badge (the upload's url, no version, plain `emoji` class),
+    /// and a standard one with its tone.
+    #[test]
+    fn codes_to_img_draws_custom_emoji() {
+        let emojis = crate::emojis::Emojis {
+            enabled: true,
+            set: "twitter".into(),
+            custom: vec![crate::emojis::Custom {
+                name: "party_parrot".into(),
+                url: Some(
+                    "/uploads/default/original/1X/c992b9f1e934fb321456b9b2b1c6928ac81ad3ad.png"
+                        .into(),
+                ),
+                cdn_url: Some(
+                    "/uploads/default/original/1X/c992b9f1e934fb321456b9b2b1c6928ac81ad3ad.png"
+                        .into(),
+                ),
+                group: "party".into(),
+                created_by: None,
+            }],
+            ..Default::default()
+        };
+        assert_eq!(
+            codes_to_img(&emojis, "", ":party_parrot:"),
+            "<img src=\"/uploads/default/original/1X/c992b9f1e934fb321456b9b2b1c6928ac81ad3ad.png\" title=\"party_parrot\" class=\"emoji\" alt=\"party_parrot\" loading=\"lazy\" width=\"20\" height=\"20\">"
+        );
+        assert_eq!(
+            codes_to_img(&emojis, "/forum", "a :wave:t2: & :nope:"),
+            format!(
+                "a <img src=\"/forum/images/emoji/twitter/wave/2.png?v={}\" title=\"wave:t2\" class=\"emoji\" alt=\"wave:t2\" loading=\"lazy\" width=\"20\" height=\"20\"> &amp; :nope:",
+                crate::emoji::image_version()
+            )
+        );
+    }
+
     #[test]
     fn escape_once_keeps_entities() {
         assert_eq!(

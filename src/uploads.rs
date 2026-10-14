@@ -5,7 +5,8 @@
 //! UploadCreator's steps (conversion to JPEG, re-encoding, orientation,
 //! optimization, downsizing) with the in-process tools of src/images.rs,
 //! which make Rails' decisions but not always its bytes. Refused: SVG
-//! cleaning, HEIF conversion, cropped upload types.
+//! cleaning, HEIF conversion, cropped upload types (an animated custom emoji
+//! passes: it skips the crop).
 
 use std::path::Path;
 

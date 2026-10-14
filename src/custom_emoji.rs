@@ -83,7 +83,7 @@ fn action(name: &str) -> Result<i32, AppError> {
         .ok_or_else(|| crate::Unsupported("a UserHistory action missing from enums.json").into())
 }
 
-/// StaffActionLogger#log_custom_emoji_create / _destroy (neither is in
+/// StaffActionLogger#log_custom_emoji_create / _destroy (both in
 /// `UserHistory.admin_only_action_ids`).
 async fn log(
     conn: &mut PgConnection,
@@ -96,7 +96,7 @@ async fn log(
     sqlx::query(
         "INSERT INTO user_histories (action, acting_user_id, previous_value, new_value, details, \
                                      admin_only, created_at, updated_at) \
-         VALUES ($1, $2, $3, $4, $5, FALSE, clock_timestamp(), clock_timestamp())",
+         VALUES ($1, $2, $3, $4, $5, TRUE, clock_timestamp(), clock_timestamp())",
     )
     .bind(action(action_name)?)
     .bind(acting_user_id)
