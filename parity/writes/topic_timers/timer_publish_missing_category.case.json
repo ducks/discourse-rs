@@ -1,0 +1,14 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/t/35/timer",
+      "params": {
+        "status_type": "publish_to_category",
+        "time": "24",
+        "category_id": "9999"
+      }
+    }
+  ]
+}

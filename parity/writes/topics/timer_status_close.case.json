@@ -1,6 +1,16 @@
 {
-  "not_yet": "topics with timers (closing acts on the topic's timer)",
   "user": "admin",
-  "setup": ["INSERT INTO topic_timers (id, execute_at, status_type, user_id, created_at, updated_at, public_type, type, timerable_id, based_on_last_post) VALUES (9601, now() + interval '2 days', 1, 1, now(), now(), TRUE, 'TopicTimer', 35, FALSE)"],
-  "requests": [{ "method": "PUT", "path": "/t/35/status", "params": { "status": "closed", "enabled": "true" } }]
+  "setup": [
+    "INSERT INTO topic_timers (id, execute_at, status_type, user_id, created_at, updated_at, public_type, type, timerable_id, based_on_last_post) VALUES (9601, now() + interval '2 days', 1, 1, now(), now(), TRUE, 'TopicTimer', 35, FALSE)"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/35/status",
+      "params": {
+        "status": "closed",
+        "enabled": "true"
+      }
+    }
+  ]
 }

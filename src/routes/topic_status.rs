@@ -104,11 +104,12 @@ async fn update(
         i18n: &state.i18n,
         bus: &state.bus,
     };
+    let topic_id = crate::ruby::to_i(&topic_id) as i32;
     let outcome = topic_status::update(
         &mut tx,
         &ctx,
         &guardian,
-        crate::ruby::to_i(&topic_id) as i32,
+        topic_id,
         category_id,
         status,
         cast_bool(&enabled),
@@ -117,8 +118,9 @@ async fn update(
     .await?;
     Ok(match outcome {
         Outcome::Done => {
+            let body = topic_status::response(&mut tx, topic_id).await?;
             tx.commit().await?;
-            (StatusCode::OK, Json(topic_status::response())).into_response()
+            (StatusCode::OK, Json(body)).into_response()
         }
         Outcome::Forbidden => super::search::invalid_access(&state),
     })

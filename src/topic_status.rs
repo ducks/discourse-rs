@@ -4,10 +4,10 @@
 //! takes with it (featured topics, the category's count, hot scores), and
 //! the staff action log.
 //!
-//! Refused: messages, topics with timers, pinning until a time, and
+//! Refused: pinning until a time, and
 //! `autoclosed` (not a status the controller takes).
 
-use serde_json::json;
+use serde_json::{Value, json};
 use sqlx::PgConnection;
 
 use crate::guardian::Guardian;
@@ -118,16 +118,30 @@ pub async fn update(
     let user = guardian
         .user()
         .ok_or(Unsupported("changing a topic's status anonymously"))?;
-    // @topic_timer: closing and opening act on it.
-    let timers: bool = sqlx::query_scalar(
-        "SELECT EXISTS (SELECT 1 FROM topic_timers WHERE timerable_id = $1 AND type = 'TopicTimer' AND deleted_at IS NULL)",
-    )
-    .bind(topic.id)
-    .fetch_one(&mut *conn)
-    .await?;
-    if timers {
-        return Err(Unsupported("topics with timers").into());
-    }
+    apply(conn, ctx, topic.id, user.id, status, enabled, until).await?;
+    Ok(Outcome::Done)
+}
+
+/// `Topic#update_status(status, enabled, user)`: TopicStatusUpdater, the
+/// staff action log, and a closed message's group archives, for a topic
+/// that exists.
+pub async fn apply(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    topic_id: i32,
+    user_id: i32,
+    status: Status,
+    enabled: bool,
+    until: Option<&str>,
+) -> Result<(), AppError> {
+    let s = ctx.settings;
+    let topic: Topic =
+        sqlx::query_as("SELECT id, archetype, category_id FROM topics WHERE id = $1")
+            .bind(topic_id)
+            .fetch_one(&mut *conn)
+            .await?;
+    // @topic_timer: closing and opening act on the public timer.
+    let topic_timer = crate::topic_timer::public_topic_timer(&mut *conn, topic.id).await?;
 
     // change
     let updated = match status {
@@ -224,6 +238,25 @@ pub async fn update(
         .execute(&mut *conn)
         .await?;
     }
+    // The public timer: closing finishes close timers, opening finishes
+    // the open timer and takes the category's auto close again.
+    if topic_timer.is_some() && status == Status::Closed {
+        use crate::topic_timer::{delete_topic_timer, types};
+        let by = Some(user_id);
+        if enabled {
+            delete_topic_timer(&mut *conn, topic.id, types::CLOSE, by).await?;
+            delete_topic_timer(&mut *conn, topic.id, types::SILENT_CLOSE, by).await?;
+        } else {
+            delete_topic_timer(&mut *conn, topic.id, types::OPEN, by).await?;
+            crate::topic_timer::inherit_auto_close_from_category(
+                &mut *conn,
+                ctx,
+                topic.id,
+                types::CLOSE,
+            )
+            .await?;
+        }
+    }
     // Featured topics go when a topic is closed, archived or unlisted.
     if (enabled && matches!(status, Status::Closed | Status::Archived))
         || (!enabled && status == Status::Visible)
@@ -251,7 +284,7 @@ pub async fn update(
             &mut *conn,
             ctx,
             &SmallAction {
-                user_id: user.id,
+                user_id,
                 topic_id: topic.id,
                 action_code: &action_code,
                 bump: status == Status::Closed && !enabled,
@@ -283,7 +316,7 @@ pub async fn update(
              VALUES ($1, $2, $3, FALSE, clock_timestamp(), clock_timestamp())",
         )
         .bind(action)
-        .bind(user.id)
+        .bind(user_id)
         .bind(topic.id)
         .execute(&mut *conn)
         .await?;
@@ -298,7 +331,7 @@ pub async fn update(
                AND topic_allowed_groups.group_id IN (SELECT group_id FROM group_users WHERE user_id = $2)",
         )
         .bind(topic.id)
-        .bind(user.id)
+        .bind(user_id)
         .fetch_all(&mut *conn)
         .await?;
         for group_id in groups {
@@ -306,11 +339,15 @@ pub async fn update(
                 .await?;
         }
     }
-    Ok(Outcome::Done)
+    Ok(())
 }
 
-/// The response's body: success, with the topic's timer (none, as topics
-/// with timers are refused).
-pub fn response() -> serde_json::Value {
-    json!({ "success": "OK", "topic_status_update": null })
+/// The response's body: success, with `TopicTimer.find_by(topic:)`, any
+/// live timer of the topic (private ones too).
+pub async fn response(conn: &mut PgConnection, topic_id: i32) -> Result<Value, AppError> {
+    let timer = crate::topic_timer::any_topic_timer(conn, topic_id).await?;
+    Ok(json!({
+        "success": "OK",
+        "topic_status_update": timer.map(|t| t.serialize()),
+    }))
 }

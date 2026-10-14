@@ -1,0 +1,77 @@
+{
+  "name": "timer_publish_missing_category",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/t/35/timer",
+      "params": {
+        "status_type": "publish_to_category",
+        "time": "24",
+        "category_id": "9999"
+      }
+    }
+  ],
+  "started_at": "2026-10-13T23:15:47.860768",
+  "transaction_started_at": "2026-10-13T23:15:46.968228",
+  "responses": [
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "oylpRZu8Klq0dSLm8soNFIvCfp4=",
+            "created_at": "2026-10-13T23:15:47.346012",
+            "rotated_at": "2026-10-13T23:15:47.345137",
+            "updated_at": "2026-10-13T23:15:47.346012",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "oylpRZu8Klq0dSLm8soNFIvCfp4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 1,
+            "seen_at": "2026-10-13T23:15:47.866753",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "oylpRZu8Klq0dSLm8soNFIvCfp4=",
+            "created_at": "2026-10-13T23:15:47.346012",
+            "rotated_at": "2026-10-13T23:15:47.345137",
+            "updated_at": "2026-10-13T23:15:47.346012",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "oylpRZu8Klq0dSLm8soNFIvCfp4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "f8fc31bc23ee522509f25861d4d6e1b90e0f4f71f2b32cb37bca21f14b1792a9",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

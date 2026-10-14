@@ -206,7 +206,7 @@ pub async fn add(
     .bind(action.bump)
     .execute(&mut *conn)
     .await?;
-    super::refuse_topic_auto_close(&mut *conn, topic_id).await?;
+    crate::topic_timer::update_topic_auto_close(&mut *conn, ctx, topic_id).await?;
     // update_user_counts: only the first post's date (no count for a
     // small action, no last_posted_at).
     sqlx::query(

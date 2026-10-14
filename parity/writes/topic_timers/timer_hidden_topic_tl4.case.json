@@ -1,0 +1,13 @@
+{
+  "user": "user3",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/t/2/timer",
+      "params": {
+        "status_type": "close",
+        "time": "24"
+      }
+    }
+  ]
+}

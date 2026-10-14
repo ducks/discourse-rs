@@ -1,0 +1,13 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/t/35/timer",
+      "params": {
+        "status_type": "delete_replies",
+        "duration_minutes": "1440"
+      }
+    }
+  ]
+}

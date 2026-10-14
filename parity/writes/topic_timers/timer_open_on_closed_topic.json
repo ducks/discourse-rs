@@ -1,0 +1,215 @@
+{
+  "name": "timer_open_on_closed_topic",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/t/37/timer",
+      "params": {
+        "status_type": "open",
+        "time": "24"
+      }
+    }
+  ],
+  "started_at": "2026-10-13T23:15:27.103587",
+  "transaction_started_at": "2026-10-13T23:15:24.074712",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "execute_at": "2026-10-14T23:15:27.119Z",
+        "duration_minutes": null,
+        "based_on_last_post": false,
+        "closed": true,
+        "category_id": null
+      }
+    }
+  ],
+  "changes": {
+    "topic_timers": {
+      "inserted": [
+        {
+          "id": 1,
+          "type": "TopicTimer",
+          "user_id": 1,
+          "topic_id": null,
+          "created_at": "2026-10-13T23:15:27.122019",
+          "deleted_at": null,
+          "execute_at": "2026-10-14T23:15:27.119393",
+          "updated_at": "2026-10-13T23:15:27.122081",
+          "category_id": null,
+          "public_type": true,
+          "status_type": 2,
+          "timerable_id": 37,
+          "deleted_by_id": null,
+          "duration_minutes": null,
+          "based_on_last_post": false
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topics": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 37,
+            "slug": "parity-fixture-pinned-and-closed",
+            "score": 0.2,
+            "title": "Parity fixture: pinned and closed",
+            "views": 0,
+            "closed": true,
+            "locale": null,
+            "excerpt": "A pinned, closed topic in Site Feedback with an excerpt that should be shown in the list.",
+            "subtype": null,
+            "user_id": 1,
+            "visible": true,
+            "archived": false,
+            "archetype": "regular",
+            "bumped_at": "2026-09-30T07:28:29.358281",
+            "pinned_at": "2026-09-30T07:28:29.406348",
+            "created_at": "2026-09-30T07:28:29.32536",
+            "deleted_at": null,
+            "like_count": 0,
+            "spam_count": 0,
+            "updated_at": "2026-09-30T07:28:29.440782",
+            "word_count": 17,
+            "category_id": 2,
+            "external_id": null,
+            "fancy_title": "Parity fixture: pinned and closed",
+            "has_summary": false,
+            "posts_count": 1,
+            "reply_count": 0,
+            "percent_rank": 1,
+            "pinned_until": null,
+            "deleted_by_id": null,
+            "featured_link": null,
+            "bannered_until": null,
+            "last_posted_at": "2026-09-30T07:28:29.358281",
+            "image_upload_id": null,
+            "pinned_globally": false,
+            "reviewable_score": 0,
+            "featured_user1_id": null,
+            "featured_user2_id": null,
+            "featured_user3_id": null,
+            "featured_user4_id": null,
+            "last_post_user_id": 1,
+            "participant_count": 1,
+            "slow_mode_seconds": 0,
+            "og_image_upload_id": null,
+            "highest_post_number": 1,
+            "incoming_link_count": 0,
+            "visibility_reason_id": null,
+            "moderator_posts_count": 1,
+            "notify_moderators_count": 0,
+            "highest_staff_post_number": 1
+          },
+          "after": {
+            "id": 37,
+            "slug": "parity-fixture-pinned-and-closed",
+            "score": 0.2,
+            "title": "Parity fixture: pinned and closed",
+            "views": 0,
+            "closed": true,
+            "locale": null,
+            "excerpt": "A pinned, closed topic in Site Feedback with an excerpt that should be shown in the list.",
+            "subtype": null,
+            "user_id": 1,
+            "visible": true,
+            "archived": false,
+            "archetype": "regular",
+            "bumped_at": "2026-09-30T07:28:29.358281",
+            "pinned_at": "2026-09-30T07:28:29.406348",
+            "created_at": "2026-09-30T07:28:29.32536",
+            "deleted_at": null,
+            "like_count": 0,
+            "spam_count": 0,
+            "updated_at": "2026-10-13T23:15:27.126112",
+            "word_count": 17,
+            "category_id": 2,
+            "external_id": null,
+            "fancy_title": null,
+            "has_summary": false,
+            "posts_count": 1,
+            "reply_count": 0,
+            "percent_rank": 1,
+            "pinned_until": null,
+            "deleted_by_id": null,
+            "featured_link": null,
+            "bannered_until": null,
+            "last_posted_at": "2026-09-30T07:28:29.358281",
+            "image_upload_id": null,
+            "pinned_globally": false,
+            "reviewable_score": 0,
+            "featured_user1_id": null,
+            "featured_user2_id": null,
+            "featured_user3_id": null,
+            "featured_user4_id": null,
+            "last_post_user_id": 1,
+            "participant_count": 1,
+            "slow_mode_seconds": 0,
+            "og_image_upload_id": null,
+            "highest_post_number": 1,
+            "incoming_link_count": 0,
+            "visibility_reason_id": null,
+            "moderator_posts_count": 1,
+            "notify_moderators_count": 0,
+            "highest_staff_post_number": 1
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "Z2qXI5j87Uhrba0M+qAqx68bHvQ=",
+            "created_at": "2026-10-13T23:15:25.923953",
+            "rotated_at": "2026-10-13T23:15:25.920646",
+            "updated_at": "2026-10-13T23:15:25.923953",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "Z2qXI5j87Uhrba0M+qAqx68bHvQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 1,
+            "seen_at": "2026-10-13T23:15:27.110556",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "Z2qXI5j87Uhrba0M+qAqx68bHvQ=",
+            "created_at": "2026-10-13T23:15:25.923953",
+            "rotated_at": "2026-10-13T23:15:25.920646",
+            "updated_at": "2026-10-13T23:15:25.923953",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "Z2qXI5j87Uhrba0M+qAqx68bHvQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "topic_timers": 1
+  },
+  "recorded_from": {
+    "case": "01ada25a280f7b80d7b4cfeb2fcebf1b5c5d1e2dd08f9fee78c299ef4e0cba5b",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

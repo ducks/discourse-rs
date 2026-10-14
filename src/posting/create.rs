@@ -902,7 +902,7 @@ pub async fn create(
     .bind(excerpt)
     .execute(&mut *tx)
     .await?;
-    super::refuse_topic_auto_close(&mut tx, topic_id).await?;
+    crate::topic_timer::update_topic_auto_close(&mut tx, ctx, topic_id).await?;
     // update_user_counts
     sqlx::query(
         "UPDATE user_stats SET first_post_created_at = COALESCE(first_post_created_at, $2) WHERE user_id = $1",

@@ -1082,19 +1082,25 @@ impl TopicView<'_> {
         })
     }
 
-    /// `topic.topic_timers.find_by(public_type: true)`; serializing one
-    /// isn't ported.
+    /// `topic.public_topic_timer` through TopicTimerSerializer; a timer
+    /// publishing to a category the viewer can't see is left out.
     async fn topic_timer(&mut self, topic_id: i32) -> Result<Value, TopicViewError> {
-        let count: i64 = sqlx::query_scalar(
-            "SELECT count(*) FROM topic_timers WHERE timerable_id = $1 AND type = 'TopicTimer' AND public_type AND deleted_at IS NULL",
-        )
-        .bind(topic_id)
-        .fetch_one(&mut *self.conn)
-        .await?;
-        if count > 0 {
-            return Err(Unsupported("topic timers (TopicTimerSerializer)").into());
+        let Some(timer) = crate::topic_timer::public_topic_timer(self.conn, topic_id).await? else {
+            return Ok(Value::Null);
+        };
+        if timer.status_type == crate::topic_timer::types::PUBLISH_TO_CATEGORY {
+            let visible = match timer.category_id {
+                Some(id) => {
+                    crate::onebox::can_see_category(self.conn, self.settings, self.guardian, id)
+                        .await?
+                }
+                None => false,
+            };
+            if !visible {
+                return Ok(Value::Null);
+            }
         }
-        Ok(Value::Null)
+        Ok(timer.serialize())
     }
 
     /// The clear_slow_mode timer's execute_at, if any (status_type 9).
