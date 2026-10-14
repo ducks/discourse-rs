@@ -15,6 +15,7 @@ mod do_not_disturb;
 mod drafts;
 mod email;
 mod emojis;
+mod groups;
 mod hashtags;
 mod highlight_js;
 mod list;
@@ -814,6 +815,43 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/site/basic-info.json", get(site::basic_info))
         .route("/about", get(about::page))
         .route("/about.json", get(about::show))
+        .route("/groups", get(groups::index_page))
+        .route("/groups.json", get(groups::index))
+        .route("/g", get(groups::index_page))
+        .route("/g.json", get(groups::index))
+        .route("/groups/search", get(groups::search))
+        .route("/groups/search.json", get(groups::search))
+        .route("/groups/check-name", get(groups::check_name))
+        .route("/groups/check-name.json", get(groups::check_name))
+        .route("/groups/by-id/{id}", get(groups::show_by_id))
+        .route("/g/by-id/{id}", get(groups::show_by_id))
+        .route("/groups/{name}", get(groups::show))
+        .route("/g/{name}", get(groups::show))
+        .route("/groups/{name}/{*tab}", get(groups::show_tab))
+        .route("/g/{name}/{*tab}", get(groups::show_tab))
+        .route("/groups/{name}/members", get(groups::members))
+        .route("/groups/{name}/members.json", get(groups::members))
+        .route("/g/{name}/members", get(groups::members))
+        .route("/g/{name}/members.json", get(groups::members))
+        .route("/groups/{name}/logs", get(groups::histories))
+        .route("/groups/{name}/logs.json", get(groups::histories))
+        .route("/g/{name}/logs", get(groups::histories))
+        .route("/g/{name}/logs.json", get(groups::histories))
+        .route("/groups/{name}/mentionable", get(groups::mentionable))
+        .route("/groups/{name}/mentionable.json", get(groups::mentionable))
+        .route("/g/{name}/mentionable", get(groups::mentionable))
+        .route("/g/{name}/mentionable.json", get(groups::mentionable))
+        .route("/groups/{name}/messageable", get(groups::messageable_route))
+        .route(
+            "/groups/{name}/messageable.json",
+            get(groups::messageable_route),
+        )
+        .route("/g/{name}/messageable", get(groups::messageable_route))
+        .route("/g/{name}/messageable.json", get(groups::messageable_route))
+        .route("/groups/{name}/permissions", get(groups::permissions))
+        .route("/groups/{name}/permissions.json", get(groups::permissions))
+        .route("/g/{name}/permissions", get(groups::permissions))
+        .route("/g/{name}/permissions.json", get(groups::permissions))
         .route("/directory_items", cached!(get(directory::index)))
         .route("/directory_items.json", cached!(get(directory::index)))
         .route("/about/live_post_counts", get(about::live_post_counts))
@@ -871,6 +909,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/tracking-menu.js", get(asset))
         .route("/assets/messages-dropdown.js", get(asset))
         .route("/assets/users-directory.js", get(asset))
+        .route("/assets/groups.js", get(asset))
         .route("/assets/composer.js", get(asset))
         .route("/assets/screen-track.js", get(asset))
         .route("/assets/js/onpopstate-handler.js", get(asset))

@@ -40,6 +40,8 @@ pub enum Active {
     About,
     /// The users directory: the community section's Users link.
     Users,
+    /// The groups directory: the More section's Groups link.
+    Groups,
 }
 
 impl Active {
@@ -58,6 +60,7 @@ impl Active {
             Active::ChatChannel(id) => format!("chat-channel:{id}"),
             Active::About => "about".into(),
             Active::Users => "users".into(),
+            Active::Groups => "groups".into(),
         }
     }
 
@@ -77,6 +80,7 @@ impl Active {
                 "chat" => Active::Chat,
                 "about" => Active::About,
                 "users" => Active::Users,
+                "groups" => Active::Groups,
                 _ => Active::None,
             },
         }
@@ -757,6 +761,7 @@ fn community_link(link: &Value, cx: &Context) -> Result<Option<Link>, SettingErr
             "everything" => *cx.active == Active::Discovery,
             "about" => *cx.active == Active::About,
             "users" => *cx.active == Active::Users,
+            "groups" => *cx.active == Active::Groups,
             _ => false,
         },
         ..Default::default()

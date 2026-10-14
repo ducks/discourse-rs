@@ -129,12 +129,15 @@ th {
 }
 
 .clearfix::before,
-.clearfix::after {
+.container::before,
+.clearfix::after,
+.container::after {
   display: table;
   content: " ";
 }
 
-.clearfix::after {
+.clearfix::after,
+.container::after {
   clear: both;
 }
 

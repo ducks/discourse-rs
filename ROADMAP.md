@@ -255,7 +255,22 @@ then by what running a forum needs (milestone 6). Briefs:
     81. `feat/custom-emoji` M (admin upload and list, cooking and
     emojiUnescape with custom emoji, emoji_deny_list)
 82. `feat/admin-groups` L: creating, editing, deleting groups, members
-    and owners in bulk, automatic membership by email domain
+    and owners in bulk, automatic membership by email domain. Split:
+    82a. ~~`feat/groups-read`~~ (done) M: groups#index, search,
+    check_name, show, members (and requesters), histories, mentionable,
+    messageable and permissions as JSON; /groups and a group's members
+    page (/g/:name) as HTML (permissions with categories refused until
+    CategorySerializer; the activity, requests, messages and manage tabs
+    refused until their routes),
+    82b. `feat/group-manager-bulk` M (GroupManager over many users,
+    notification defaults, category publishes, next_best_title, chat
+    auto join and leave on membership changes, bulk_grant_trust_level),
+    82c. `feat/admin-groups` M (create, update, destroy, members and
+    owners, primary, automatic_membership_count, their logs and jobs),
+    82d. `feat/group-email-domains` S (automatic_group_membership,
+    set_automatic_groups on confirmation),
+    82e. `feat/group-membership-requests` S (join, leave,
+    request_membership, handle_membership_request, set_notifications)
 83. `feat/web-hooks` L: web hooks, their events from core, deliveries
     and the scheduled jobs, 84. `feat/user-api-keys` M (and their jobs)
 85. `feat/admin-badges` M: creating, editing, deleting badges and
