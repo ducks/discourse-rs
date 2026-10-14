@@ -256,9 +256,12 @@ pub async fn create(
         .get("suppress_notification")
         .and_then(params::scalar)
         .is_some_and(|v| v == "true");
-    let granted_by = guardian
-        .user_id()
-        .ok_or(Unsupported("granting badges with a master API key"))?;
+    // can_assign_badge_to_user?'s master_api_call (no current user, an
+    // API request) never holds: an API key without a user is invalid
+    // credentials before the action runs, so a granter is always here.
+    let Some(granted_by) = guardian.user_id() else {
+        return Ok(super::search::invalid_access(&state));
+    };
     // The badge as fetched, before the grant's count increment.
     let badge_row = BadgeRow::load(&mut tx, badge.id).await?;
     let user_badge_id = badge_granter::grant(

@@ -1,0 +1,25 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO api_keys (id, user_id, created_by_id, created_at, updated_at, last_used_at, description, key_hash, truncated_key, scope_mode, revoked_at, hidden) VALUES (9304, NULL, 1, now() - interval '5 days', now() - interval '5 days', NULL, 'scoped', encode(sha256(convert_to('scoped-9304', 'UTF8')), 'hex'), 'scop', 2, NULL, false)",
+    "INSERT INTO api_key_scopes (id, api_key_id, resource, action, allowed_parameters, created_at, updated_at) VALUES (9304, 9304, 'users', 'list', NULL, now() - interval '5 days', now() - interval '5 days')"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/users/list/active.json",
+      "headers": {
+        "Api-Key": "scoped-9304",
+        "Api-Username": "admin"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/api/keys.json",
+      "headers": {
+        "Api-Key": "scoped-9304",
+        "Api-Username": "admin"
+      }
+    }
+  ]
+}

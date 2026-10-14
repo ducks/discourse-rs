@@ -1,0 +1,273 @@
+{
+  "name": "api_key_create_granular",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/api/keys.json",
+      "params": {
+        "key": {
+          "description": "granular",
+          "scope_mode": "granular",
+          "scopes": [
+            {
+              "scope_id": "topics:write",
+              "topic_id": "35, 36"
+            },
+            {
+              "scope_id": "users:show",
+              "username": ""
+            },
+            {
+              "scope_id": "categories:list"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-14T09:14:22.668898",
+  "transaction_started_at": "2026-10-14T09:14:19.453921",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "key": {
+          "id": 1,
+          "key": "08db6fc18c11bc5415a8e2eb68f7f74d5db20888bcd1a7203cb786a08cd936ce",
+          "truncated_key": "08db",
+          "description": "granular",
+          "scope_mode": "granular",
+          "last_used_at": null,
+          "created_at": "2026-10-14T09:14:23.318Z",
+          "updated_at": "2026-10-14T09:14:23.318Z",
+          "revoked_at": null,
+          "user": null,
+          "created_by": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png"
+          },
+          "api_key_scopes": [
+            {
+              "resource": "topics",
+              "action": "write",
+              "parameters": [
+                "topic_id"
+              ],
+              "urls": [
+                "/posts (POST)"
+              ],
+              "allowed_parameters": {
+                "topic_id": [
+                  "35",
+                  " 36"
+                ]
+              },
+              "key": "write"
+            },
+            {
+              "resource": "users",
+              "action": "show",
+              "parameters": [
+                "username",
+                "external_id",
+                "external_provider"
+              ],
+              "urls": [
+                "/users/:username/private-messages (GET)",
+                "/users/:username/private-messages/:filter (GET)",
+                "/users/:username/messages (GET)",
+                "/users/:username/messages/:filter (GET)",
+                "/users/:username/messages/group/:group_name (GET)",
+                "/users/:username/messages/group/:group_name/:filter (GET)",
+                "/users/:username.json (GET)",
+                "/users/:username (GET)",
+                "/users/:username/activity (GET)",
+                "/users/:username/activity/:filter (GET)",
+                "/users/:username/notifications (GET)",
+                "/users/:username/notifications/:filter (GET)",
+                "/users/by-external/:external_id (GET)",
+                "/users/by-external/:external_provider/:external_id (GET)",
+                "/users/:username/deleted-posts (GET)",
+                "/u/:username/private-messages (GET)",
+                "/u/:username/private-messages/:filter (GET)",
+                "/u/:username/messages (GET)",
+                "/u/:username/messages/:filter (GET)",
+                "/u/:username/messages/group/:group_name (GET)",
+                "/u/:username/messages/group/:group_name/:filter (GET)",
+                "/u/:username.json (GET)",
+                "/u/:username (GET)",
+                "/u/:username/activity (GET)",
+                "/u/:username/activity/:filter (GET)",
+                "/u/:username/notifications (GET)",
+                "/u/:username/notifications/:filter (GET)",
+                "/u/by-external/:external_id (GET)",
+                "/u/by-external/:external_provider/:external_id (GET)",
+                "/u/:username/deleted-posts (GET)",
+                "/u/:username/billing (GET)",
+                "/u/:username/billing/:id (GET)",
+                "/u/:username/billing/subscriptions/card/:subscription_id (GET)"
+              ],
+              "allowed_parameters": {},
+              "key": "show"
+            },
+            {
+              "resource": "categories",
+              "action": "list",
+              "parameters": [],
+              "urls": [
+                "/categories (GET)",
+                "/categories/:parent_category_id (GET)",
+                "/c/*category_slug_path_with_id/subcategories (GET)",
+                "/ (GET)"
+              ],
+              "allowed_parameters": null,
+              "key": "list"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "changes": {
+    "api_key_scopes": {
+      "inserted": [
+        {
+          "id": 1,
+          "action": "write",
+          "resource": "topics",
+          "api_key_id": 1,
+          "created_at": "2026-10-14T09:14:23.321164",
+          "updated_at": "2026-10-14T09:14:23.321164",
+          "allowed_parameters": {
+            "topic_id": [
+              "35",
+              " 36"
+            ]
+          }
+        },
+        {
+          "id": 2,
+          "action": "show",
+          "resource": "users",
+          "api_key_id": 1,
+          "created_at": "2026-10-14T09:14:23.323833",
+          "updated_at": "2026-10-14T09:14:23.323833",
+          "allowed_parameters": {}
+        },
+        {
+          "id": 3,
+          "action": "list",
+          "resource": "categories",
+          "api_key_id": 1,
+          "created_at": "2026-10-14T09:14:23.326137",
+          "updated_at": "2026-10-14T09:14:23.326137",
+          "allowed_parameters": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "api_keys": {
+      "inserted": [
+        {
+          "id": 1,
+          "hidden": false,
+          "user_id": null,
+          "key_hash": "1367895bc749716efb01848f9767d001917d066d1fc439b161e88469316b5457",
+          "created_at": "2026-10-14T09:14:23.318637",
+          "revoked_at": null,
+          "scope_mode": 2,
+          "updated_at": "2026-10-14T09:14:23.318637",
+          "allowed_ips": null,
+          "description": "granular",
+          "last_used_at": null,
+          "created_by_id": 1,
+          "truncated_key": "08db"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "k/dLAdjyTC7BF/Fa3rCH9r/Myhs=",
+            "created_at": "2026-10-14T09:14:20.701879",
+            "rotated_at": "2026-10-14T09:14:20.698928",
+            "updated_at": "2026-10-14T09:14:20.701879",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "k/dLAdjyTC7BF/Fa3rCH9r/Myhs=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T09:14:22.678379",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "k/dLAdjyTC7BF/Fa3rCH9r/Myhs=",
+            "created_at": "2026-10-14T09:14:20.701879",
+            "rotated_at": "2026-10-14T09:14:20.698928",
+            "updated_at": "2026-10-14T09:14:20.701879",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "k/dLAdjyTC7BF/Fa3rCH9r/Myhs=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 80,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "08db",
+          "topic_id": null,
+          "new_value": "created_at: 2026-10-14 09:14:23 UTC, created_by_id: 1, description: granular, id: 1, key_hash: 1367895bc749716efb01848f9767d001917d066d1fc439b161e88469316b5457, scope_mode: granular, truncated_key: 08db",
+          "admin_only": true,
+          "created_at": "2026-10-14T09:14:23.328615",
+          "ip_address": null,
+          "updated_at": "2026-10-14T09:14:23.328615",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "api_key_scopes": 1,
+    "api_keys": 1,
+    "user_histories": 74
+  },
+  "recorded_from": {
+    "case": "68ef8a6fd95dbb5c1a5e07dee783390650cded8bff89d3d3be5f984e5537725c",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -328,8 +328,13 @@ then by what running a forum needs (milestone 6). Briefs:
     (done) M (the device authorization flow: requests, polls, the
     activation page by code or request link, approval tokens, authorize
     and deny, its limiters; Redis's grants, indexes and locks as owned
-    rows. Not ported: the debug traces, which only log), 84d. `feat/admin-api-keys` S/M
-    (`/admin/api/keys`, ApiKeyScope mappings)
+    rows. Not ported: the debug traces, which only log),
+    84d. ~~`feat/admin-api-keys`~~ (done) S/M (`/admin/api/keys` with
+    its staff logs, every ApiKeyScope
+    mapping matched against Rails' route table recorded from the
+    reference, allowed parameters; the master-key badge refusal was dead
+    code. Refused: scopes on routes behind home page, permalink or
+    markdown constraints, the Ember admin page itself)
 85. `feat/admin-badges` M: creating, editing, deleting badges and
     groupings, badge SQL with its preview, the badges pages' HTML
 86. `feat/admin-users-rest` M: granting admin (second factor or email

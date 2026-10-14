@@ -3,12 +3,11 @@
 //! ApiKey#request_allowed?.
 //!
 //! The key's own user, or for an all-users key the one `Api-Username` or
-//! `Api-User-Id` names. Granular scopes are matched for the one route
-//! this port serves API clients on purpose, handle_mail (the email
-//! resource's receive_emails); a scoped key anywhere else is refused.
-//! User API keys are crate::session::user_api_key; keys in query
-//! parameters and external ids are not ported. The admin API rate limit
-//! is the session layer's.
+//! `Api-User-Id` names. Granular scopes are matched as ApiKeyScope does
+//! (crate::api_key_scopes, against Rails' route table). User API keys
+//! are crate::session::user_api_key; keys in query parameters and
+//! external ids are not ported. The admin API rate limit is the session
+//! layer's.
 
 use axum::http::{HeaderMap, Method};
 use sha2::{Digest, Sha256};
@@ -37,27 +36,37 @@ fn header<'a>(headers: &'a HeaderMap, name: &str) -> Option<&'a str> {
         .filter(|v| !v.is_empty())
 }
 
-/// `ApiKey#request_allowed?`'s scopes: does one permit this request?
+/// `ApiKey#request_allowed?` past the address check: GET session#scopes
+/// and about#index always; else no scopes, or one that permits the
+/// request.
 fn scopes_permit(
-    scopes: &[(String, String)],
-    method: &Method,
-    path: &str,
+    scopes: &[(String, String, Option<String>)],
+    request: &crate::api_key_scopes::Request,
 ) -> Result<bool, Unsupported> {
+    // No scopes allow everything (the route table needn't be read).
     if scopes.is_empty() {
         return Ok(true);
     }
-    let handle_mail = method == Method::POST
-        && matches!(
-            path,
-            "/admin/email/handle_mail" | "/admin/email/handle_mail.json"
-        );
-    if !handle_mail {
-        return Err(Unsupported("granular API key scopes on this route"));
+    if *request.method == Method::GET
+        && crate::api_key_scopes::recognize(request.method, request.path)
+            .ok()
+            .flatten()
+            .is_some_and(|(action, _)| action == "session#scopes" || action == "about#index")
+    {
+        return Ok(true);
     }
-    // Only email:receive_emails maps to admin/email#handle_mail.
-    Ok(scopes
-        .iter()
-        .any(|(resource, action)| resource == "email" && action == "receive_emails"))
+    for (resource, action, allowed) in scopes {
+        let Some(mapping) = crate::api_key_scopes::mapping(resource, action) else {
+            continue;
+        };
+        let allowed: Option<serde_json::Map<String, serde_json::Value>> = allowed
+            .as_deref()
+            .and_then(|a| serde_json::from_str(a).ok());
+        if crate::api_key_scopes::matches(mapping, allowed.as_ref(), request)? {
+            return Ok(true);
+        }
+    }
+    Ok(false)
 }
 
 /// `lookup_api_user`, then the suspended and inactive check.
@@ -65,8 +74,7 @@ pub async fn resolve(
     conn: &mut PgConnection,
     headers: &HeaderMap,
     ip: &str,
-    method: &Method,
-    path: &str,
+    request: &crate::api_key_scopes::Request<'_>,
 ) -> Result<Resolved, AppError> {
     let Some(key) = header(headers, HEADER_API_KEY) else {
         return Ok(Resolved::Invalid);
@@ -88,12 +96,14 @@ pub async fn resolve(
     if !ip_allowed {
         return Ok(Resolved::Invalid);
     }
-    let scopes: Vec<(String, String)> =
-        sqlx::query_as("SELECT resource, action FROM api_key_scopes WHERE api_key_id = $1")
-            .bind(key_id)
-            .fetch_all(&mut *conn)
-            .await?;
-    if !scopes_permit(&scopes, method, path)? {
+    let scopes: Vec<(String, String, Option<String>)> = sqlx::query_as(
+        "SELECT resource, action, allowed_parameters::text FROM api_key_scopes \
+         WHERE api_key_id = $1 ORDER BY id",
+    )
+    .bind(key_id)
+    .fetch_all(&mut *conn)
+    .await?;
+    if !scopes_permit(&scopes, request)? {
         return Ok(Resolved::Invalid);
     }
     let username = header(headers, "api-username");

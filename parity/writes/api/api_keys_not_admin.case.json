@@ -1,0 +1,18 @@
+{
+  "user": "user3",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/api/keys.json"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/api/keys.json",
+      "params": {
+        "key": {
+          "description": "x"
+        }
+      }
+    }
+  ]
+}

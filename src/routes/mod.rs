@@ -1,5 +1,6 @@
 mod about;
 mod accounts;
+mod admin_api_keys;
 mod admin_email;
 mod admin_emoji;
 mod admin_groups;
@@ -833,6 +834,38 @@ pub fn router(state: &AppState) -> Router<AppState> {
         )
         .route("/admin/backups/readonly", put(backups::readonly))
         .route("/admin/backups/readonly.json", put(backups::readonly))
+        // Admin::ApiController
+        .route("/admin/api", get(admin_api_keys::index))
+        .route("/admin/api.json", get(admin_api_keys::index))
+        .route(
+            "/admin/api/keys",
+            get(admin_api_keys::index).post(admin_api_keys::create),
+        )
+        .route(
+            "/admin/api/keys.json",
+            get(admin_api_keys::index).post(admin_api_keys::create),
+        )
+        .route("/admin/api/keys/scopes", get(admin_api_keys::scopes))
+        .route("/admin/api/keys/scopes.json", get(admin_api_keys::scopes))
+        .route(
+            "/admin/api/keys/{id}",
+            get(admin_api_keys::show)
+                .put(admin_api_keys::update)
+                .delete(admin_api_keys::destroy),
+        )
+        .route("/admin/api/keys/{id}/revoke", post(admin_api_keys::revoke))
+        .route(
+            "/admin/api/keys/{id}/revoke.json",
+            post(admin_api_keys::revoke),
+        )
+        .route(
+            "/admin/api/keys/{id}/undo-revoke",
+            post(admin_api_keys::undo_revoke),
+        )
+        .route(
+            "/admin/api/keys/{id}/undo-revoke.json",
+            post(admin_api_keys::undo_revoke),
+        )
         .route("/admin/email/handle_mail", post(admin_email::handle_mail))
         .route(
             "/admin/email/preview-digest",

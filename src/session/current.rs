@@ -341,9 +341,9 @@ pub async fn layer(
             Some(key) => {
                 // The revoke matcher reads the request's `id`.
                 let id_param = if super::user_api_key::wants_id_param(&method, &path) {
-                    let (id, rebuilt) = id_param(request).await;
+                    let (params, rebuilt) = request_params(request).await;
                     request = rebuilt;
-                    id
+                    params.get("id").cloned()
                 } else {
                     None
                 };
@@ -371,7 +371,18 @@ pub async fn layer(
                 }
             }
             None => {
-                match super::api_key::resolve(&mut conn, &headers, &ip, &method, &path).await? {
+                // Granular scopes may restrict the request's parameters.
+                let (params, rebuilt) = request_params(request).await;
+                request = rebuilt;
+                let format = request_format(&path, request.uri().query(), &headers);
+                let matched = crate::api_key_scopes::Request {
+                    method: &method,
+                    path: &path,
+                    query: request.uri().query(),
+                    params: &params,
+                    format: &format,
+                };
+                match super::api_key::resolve(&mut conn, &headers, &ip, &matched).await? {
                     super::api_key::Resolved::User(user) => Err(user),
                     super::api_key::Resolved::Invalid => Ok("invalid_api_credentials"),
                     super::api_key::Resolved::Refused => Ok("invalid_access"),
@@ -590,37 +601,58 @@ pub async fn layer(
     Ok(response)
 }
 
-/// `request.parameters["id"]` (the query string over the body, a JSON
-/// body's values keeping their type), with the request rebuilt around
-/// the body it read.
-async fn id_param(request: Request) -> (Option<serde_json::Value>, Request) {
+/// `request.parameters` less the path's: the query string over a JSON or
+/// form body (a JSON body's values keeping their type), with the request
+/// rebuilt around the body it read. Other bodies (uploads) are not read.
+async fn request_params(request: Request) -> (serde_json::Map<String, serde_json::Value>, Request) {
     use serde_json::Value;
-    let from_query = request.uri().query().and_then(|q| {
-        form_urlencoded::parse(q.as_bytes())
-            .find(|(k, _)| k == "id")
-            .map(|(_, v)| Value::String(v.into_owned()))
-    });
     let content_type = request
         .headers()
         .get(header::CONTENT_TYPE)
         .and_then(|v| v.to_str().ok())
         .unwrap_or("")
         .to_string();
-    let (parts, body) = request.into_parts();
-    let bytes = axum::body::to_bytes(body, 1 << 20)
-        .await
-        .unwrap_or_default();
-    let from_body = if content_type.starts_with("application/json") {
-        serde_json::from_slice::<Value>(&bytes)
-            .ok()
-            .and_then(|v| v.get("id").cloned())
+    let json = content_type.starts_with("application/json");
+    let form = content_type.starts_with("application/x-www-form-urlencoded");
+    let query = request.uri().query().map(crate::params::parse_query);
+    let (request, mut params) = if json || form {
+        let (parts, body) = request.into_parts();
+        let bytes = match axum::body::to_bytes(body, 16 << 20).await {
+            Ok(bytes) => bytes,
+            Err(_) => axum::body::Bytes::new(),
+        };
+        let params = if json {
+            match serde_json::from_slice::<Value>(&bytes) {
+                Ok(Value::Object(map)) => map,
+                _ => serde_json::Map::new(),
+            }
+        } else {
+            crate::params::parse_query(std::str::from_utf8(&bytes).unwrap_or_default())
+        };
+        (Request::from_parts(parts, Body::from(bytes)), params)
     } else {
-        form_urlencoded::parse(&bytes)
-            .find(|(k, _)| k == "id")
-            .map(|(_, v)| Value::String(v.into_owned()))
+        (request, serde_json::Map::new())
     };
-    let request = Request::from_parts(parts, Body::from(bytes));
-    (from_query.or(from_body), request)
+    for (k, v) in query.unwrap_or_default() {
+        params.insert(k, v);
+    }
+    (params, request)
+}
+
+/// `request.formats.first.symbol`, as far as scopes ask: the path's
+/// extension, else JSON by the format param or Accept header, else html.
+fn request_format(path: &str, query: Option<&str>, headers: &HeaderMap) -> String {
+    let last = path.rsplit('/').next().unwrap_or("");
+    if let Some((_, ext)) = last.rsplit_once('.')
+        && !ext.is_empty()
+    {
+        return ext.to_string();
+    }
+    if crate::routes::wants_json(query, headers) {
+        "json".to_string()
+    } else {
+        "html".to_string()
+    }
 }
 
 /// `cookies.delete("cn")`

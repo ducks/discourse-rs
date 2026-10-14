@@ -1,0 +1,45 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/api/keys.json",
+      "params": {
+        "key": {
+          "description": "ro",
+          "scope_mode": "read_only"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/api/keys.json",
+      "params": {
+        "key": {
+          "description": "ro",
+          "scope_mode": "read_only",
+          "scopes": [
+            {
+              "scope_id": "global:read"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/api/keys.json",
+      "params": {
+        "key": {
+          "description": "ro2",
+          "scope_mode": "read_only",
+          "scopes": [
+            {
+              "scope_id": "topics:read"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

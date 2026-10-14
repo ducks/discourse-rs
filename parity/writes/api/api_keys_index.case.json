@@ -1,0 +1,25 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO api_keys (id, user_id, created_by_id, created_at, updated_at, last_used_at, description, key_hash, truncated_key, scope_mode, revoked_at, hidden) VALUES (9201, NULL, 1, now() - interval '5 days', now() - interval '5 days', NULL, 'all users', encode(sha256(convert_to('k9201aaaa', 'UTF8')), 'hex'), 'k920', NULL, NULL, false)",
+    "INSERT INTO api_keys (id, user_id, created_by_id, created_at, updated_at, last_used_at, description, key_hash, truncated_key, scope_mode, revoked_at, hidden) VALUES (9202, 3, 1, now() - interval '4 days', now() - interval '4 days', now() - interval '1 day', 'user1 key', encode(sha256(convert_to('k9202bbbb', 'UTF8')), 'hex'), 'k920', 2, NULL, false)",
+    "INSERT INTO api_keys (id, user_id, created_by_id, created_at, updated_at, last_used_at, description, key_hash, truncated_key, scope_mode, revoked_at, hidden) VALUES (9203, NULL, 1, now() - interval '6 days', now() - interval '6 days', NULL, 'revoked', encode(sha256(convert_to('k9203cccc', 'UTF8')), 'hex'), 'k920', 0, now() - interval '2 days', false)",
+    "INSERT INTO api_keys (id, user_id, created_by_id, created_at, updated_at, last_used_at, description, key_hash, truncated_key, scope_mode, revoked_at, hidden) VALUES (9204, NULL, 1, now() - interval '3 days', now() - interval '3 days', NULL, 'hidden', encode(sha256(convert_to('k9204dddd', 'UTF8')), 'hex'), 'k920', NULL, NULL, true)",
+    "INSERT INTO api_key_scopes (id, api_key_id, resource, action, allowed_parameters, created_at, updated_at) VALUES (9201, 9202, 'topics', 'write', '{\"topic_id\":[\"1\",\"2\"]}', now() - interval '5 days', now() - interval '5 days')",
+    "INSERT INTO api_key_scopes (id, api_key_id, resource, action, allowed_parameters, created_at, updated_at) VALUES (9202, 9202, 'users', 'show', NULL, now() - interval '5 days', now() - interval '5 days')"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/api/keys.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/api/keys.json?offset=1&limit=1"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/api.json"
+    }
+  ]
+}

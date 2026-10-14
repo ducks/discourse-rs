@@ -1,0 +1,16 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/api/keys.json",
+      "params": {
+        "key": {
+          "description": "user key",
+          "username": "user1",
+          "scope_mode": "global"
+        }
+      }
+    }
+  ]
+}
