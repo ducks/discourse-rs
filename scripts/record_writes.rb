@@ -119,7 +119,8 @@ def clear_redis_state
   # reviewables reminder remember having sent.
   # _CACHE:inline_onebox, _CACHE:onebox__, _CACHE:onebox_failed__: crawled
   # titles and oneboxes (InlineOneboxer, Oneboxer), kept up to a day.
-  %w[unique-post-* unique-pm-post-* rejection_email:* user-last-seen:* hot_score_6_hourly __SEARCH__LOG_* LAST_UPLOAD_CLEANUP l-rate-limit3:* grpmsg:* last_notified_reviewable_id _CACHE:inline_onebox:* _CACHE:onebox__* _CACHE:onebox_failed__*].each do |pattern|
+  # about-stats: the about page's cached stats (About.fetch_cached_stats).
+  %w[unique-post-* unique-pm-post-* rejection_email:* user-last-seen:* hot_score_6_hourly __SEARCH__LOG_* LAST_UPLOAD_CLEANUP l-rate-limit3:* grpmsg:* last_notified_reviewable_id _CACHE:inline_onebox:* _CACHE:onebox__* _CACHE:onebox_failed__* about-stats].each do |pattern|
     Discourse.redis.keys(pattern).each { |k| Discourse.redis.del(k) }
   end
   # Oneboxer's preferred strategies, outside the namespace.

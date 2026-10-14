@@ -1,0 +1,17 @@
+{
+  "user": "user1",
+  "settings": {
+    "about_page_hidden_groups": "1|3",
+    "allow_users_to_hide_profile": true
+  },
+  "setup": [
+    "UPDATE users SET moderator = true WHERE username = 'user2'",
+    "INSERT INTO user_options (user_id, hide_profile) SELECT id, true FROM users WHERE username = 'user2' ON CONFLICT (user_id) DO UPDATE SET hide_profile = true"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/about.json"
+    }
+  ]
+}

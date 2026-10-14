@@ -1,0 +1,88 @@
+{
+  "name": "hidden_profiles",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/about.json"
+    }
+  ],
+  "started_at": "2026-10-14T01:57:41.074559",
+  "transaction_started_at": "2026-10-14T01:57:40.087023",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "users": [],
+        "about": {
+          "stats": {
+            "topics_last_day": 0,
+            "topics_7_days": 0,
+            "topics_30_days": 6,
+            "topics_count": 12,
+            "posts_last_day": 0,
+            "posts_7_days": 0,
+            "posts_30_days": 18,
+            "posts_count": 25,
+            "users_last_day": 0,
+            "users_7_days": 0,
+            "users_30_days": 0,
+            "users_count": 5,
+            "active_users_last_day": 0,
+            "active_users_7_days": 0,
+            "active_users_30_days": 3,
+            "likes_last_day": 0,
+            "likes_7_days": 0,
+            "likes_30_days": 2,
+            "likes_count": 2,
+            "participating_users_last_day": 0,
+            "participating_users_7_days": 0,
+            "participating_users_30_days": 4,
+            "chat_messages_last_day": 0,
+            "chat_messages_7_days": 0,
+            "chat_messages_30_days": 0,
+            "chat_messages_previous_30_days": 0,
+            "chat_messages_count": 0,
+            "chat_users_last_day": 0,
+            "chat_users_7_days": 0,
+            "chat_users_30_days": 0,
+            "chat_users_previous_30_days": 0,
+            "chat_users_count": 0,
+            "chat_channels_last_day": 0,
+            "chat_channels_7_days": 0,
+            "chat_channels_30_days": 0,
+            "chat_channels_previous_30_days": 0,
+            "chat_channels_count": 2
+          },
+          "description": "",
+          "extended_site_description": "",
+          "banner_image": null,
+          "site_creation_date": "2026-07-25T05:58:05.975Z",
+          "title": "Discourse",
+          "locale": "en",
+          "version": "2026.10.0-latest",
+          "https": false,
+          "can_see_about_stats": true,
+          "contact_url": "https://example.com/contact",
+          "contact_email": "staff@example.com",
+          "moderator_ids": [],
+          "admin_ids": [],
+          "category_moderators": []
+        }
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "hide_user_profiles_from_public": true,
+    "contact_email": "staff@example.com",
+    "contact_url": "https://example.com/contact"
+  },
+  "recorded_from": {
+    "case": "e2272271249698a4aaf9c05f0a92baaf5a2be83a4c083fc3f217055163ae50ee",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
