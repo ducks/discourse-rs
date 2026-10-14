@@ -1,0 +1,11 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "POST", "path": "/admin/config/emoji.json", "params": {"name": "party", "group": "Fun Stuff", "file": {"fixture": "animated.gif"}}},
+    {"method": "POST", "path": "/admin/config/emoji.json", "params": {"name": "plain", "file": {"fixture": "animated.gif"}}},
+    {"method": "POST", "path": "/admin/config/emoji/export", "params": {"names": ["party", "plain", "", "nothing"]}},
+    {"method": "POST", "path": "/admin/config/emoji/export", "params": {"names": ["", " "]}},
+    {"method": "POST", "path": "/admin/config/emoji/export", "params": {}},
+    {"method": "POST", "path": "/admin/config/emoji/export", "params": {"names": ["nothing"]}}
+  ]
+}

@@ -91,6 +91,24 @@ def fixtures(value, files_dir)
   end
 end
 
+# A zip response (the custom emoji export) as its entries, by name: each
+# one's size and SHA-256, and a CSV's text. Its bytes carry the archive's
+# timestamps and compression, which the port needn't match.
+def zip_entries(bytes)
+  require "zip"
+  entries = []
+  Zip::File.open_buffer(StringIO.new(bytes)) do |zip|
+    zip.each do |entry|
+      next if entry.directory?
+      data = entry.get_input_stream.read
+      item = { "name" => entry.name, "size" => data.bytesize, "sha256" => Digest::SHA256.hexdigest(data) }
+      item["text"] = data.force_encoding(Encoding::UTF_8) if entry.name.end_with?(".csv")
+      entries << item
+    end
+  end
+  { "zip" => entries.sort_by { |e| e["name"] } }
+end
+
 def multipart?(value)
   value.is_a?(Hash) && value.values.any? { |v| v.is_a?(Rack::Test::UploadedFile) || multipart?(v) }
 end
@@ -381,7 +399,13 @@ cases.each do |c|
         options[:env] = { "REQUEST_PATH" => path.split("?").first }
         session.public_send(r["method"].downcase, path, **options)
         body = session.response.body
-        response = { status: session.response.status, body: (JSON.parse(body) rescue body) }
+        body =
+          if session.response.media_type == "application/zip"
+            zip_entries(body)
+          else
+            (JSON.parse(body) rescue body)
+          end
+        response = { status: session.response.status, body: body }
         # The rate limit headers, kept only when a response has them, and
         # those the case names in `keep_headers` (a redirect's Location, as
         # its path, the host being each side's own).

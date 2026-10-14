@@ -1,0 +1,7 @@
+{
+  "user": "user1",
+  "requests": [
+    {"method": "POST", "path": "/admin/config/emoji/export", "params": {"names": ["party"]}},
+    {"method": "POST", "path": "/admin/config/emoji/import_confirm.json", "params": {"token": "abc"}}
+  ]
+}

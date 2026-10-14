@@ -21,6 +21,7 @@ clap = { version = "4", features = ["derive", "env"] }
 form_urlencoded = "1"
 flate2 = "1"
 crc32fast = "1"
+zip = { version = "2", default-features = false, features = ["deflate-flate2", "flate2"] }
 futures-util = "0.3"
 hmac = "0.12"
 html-escape = "0.2"

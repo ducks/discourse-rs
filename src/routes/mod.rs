@@ -613,6 +613,24 @@ pub fn router(state: &AppState) -> Router<AppState> {
         )
         .route("/admin/config/emoji/new", get(admin_emoji::page))
         .route("/admin/config/emoji/settings", get(admin_emoji::page))
+        .route("/admin/config/emoji/export", post(admin_emoji::export))
+        .route("/admin/config/emoji/export.json", post(admin_emoji::export))
+        .route(
+            "/admin/config/emoji/import_preview",
+            post(admin_emoji::import_preview),
+        )
+        .route(
+            "/admin/config/emoji/import_preview.json",
+            post(admin_emoji::import_preview),
+        )
+        .route(
+            "/admin/config/emoji/import_confirm",
+            post(admin_emoji::import_confirm),
+        )
+        .route(
+            "/admin/config/emoji/import_confirm.json",
+            post(admin_emoji::import_confirm),
+        )
         .route("/admin/config/emoji/import", get(admin_emoji::page))
         .route("/admin/config/emoji/{id}", delete(admin_emoji::destroy))
         .route(

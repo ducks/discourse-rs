@@ -1,0 +1,9 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "POST", "path": "/admin/config/emoji/import_preview.json", "params": {"file": {"fixture": "emoji_import_wrapped.zip"}}},
+    {"method": "POST", "path": "/admin/config/emoji/import_confirm.json", "params": {"token": "{{responses.0.body.token}}"}},
+    {"method": "GET", "path": "/admin/config/emoji.json"}
+  ],
+  "ignore": ["/responses/0/body/token"]
+}

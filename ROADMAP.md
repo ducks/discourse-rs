@@ -280,8 +280,10 @@ then by what running a forum needs (milestone 6). Briefs:
     ~~`feat/custom-emoji-crop`~~ (done) S (the 100x100> downsize of
     static custom emoji uploads, admin asset types kept in their format;
     a resampled image's dominant colour can be one off ImageMagick's),
-    81c. `feat/custom-emoji-import-export` S/M (zip and
-    CSV export, import preview and confirm)
+    81c. ~~`feat/custom-emoji-import-export`~~ (done) S/M (zip and
+    CSV export, import preview and confirm; the preview's rows kept in
+    discourse_rs.cached_values; a file that isn't a zip and a manifest
+    that isn't UTF-8 refused)
 82. `feat/admin-groups` L: creating, editing, deleting groups, members
     and owners in bulk, automatic membership by email domain. Split:
     82a. ~~`feat/groups-read`~~ (done) M: groups#index, search,
