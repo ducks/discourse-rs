@@ -4,8 +4,7 @@
 //! takes with it (featured topics, the category's count, hot scores), and
 //! the staff action log.
 //!
-//! Refused: pinning until a time, and
-//! `autoclosed` (not a status the controller takes).
+//! Refused: pinning until a time.
 
 use serde_json::{Value, json};
 use sqlx::PgConnection;
@@ -60,6 +59,17 @@ impl Status {
             Status::Autoclosed => "autoclosed",
         }
     }
+}
+
+/// `update_status`'s options.
+#[derive(Default)]
+pub struct StatusOpts<'a> {
+    /// `until:` for a pin.
+    pub until: Option<&'a str>,
+    /// `silent:`: the small action leaves the bump alone.
+    pub silent: bool,
+    /// `message:`: the small action's raw text.
+    pub message: Option<&'a str>,
 }
 
 /// How a status update ends when it isn't a server error.
@@ -122,14 +132,17 @@ pub async fn update(
     let user = guardian
         .user()
         .ok_or(Unsupported("changing a topic's status anonymously"))?;
-    apply(conn, ctx, topic.id, user.id, status, enabled, until, false).await?;
+    let opts = StatusOpts {
+        until,
+        ..Default::default()
+    };
+    apply(conn, ctx, topic.id, user.id, status, enabled, &opts).await?;
     Ok(Outcome::Done)
 }
 
 /// `Topic#update_status(status, enabled, user)`: TopicStatusUpdater, the
 /// staff action log, and a closed message's group archives, for a topic
 /// that exists.
-#[allow(clippy::too_many_arguments)]
 pub async fn apply(
     conn: &mut PgConnection,
     ctx: &Ctx<'_>,
@@ -137,9 +150,9 @@ pub async fn apply(
     user_id: i32,
     status: Status,
     enabled: bool,
-    until: Option<&str>,
-    silent: bool,
+    opts: &StatusOpts<'_>,
 ) -> Result<(), AppError> {
+    let until = opts.until;
     let s = ctx.settings;
     let topic: Topic =
         sqlx::query_as("SELECT id, archetype, category_id FROM topics WHERE id = $1")
@@ -293,8 +306,10 @@ pub async fn apply(
             status.name(),
             if enabled { "enabled" } else { "disabled" }
         );
-        let message = match status {
-            Status::Autoclosed => Some(
+        // opts[:message] || message_for(status)
+        let message = match (opts.message, status) {
+            (Some(m), _) => Some(m.to_string()),
+            (None, Status::Autoclosed) => Some(
                 autoclosed_message(&mut *conn, ctx, topic.id, enabled, topic_timer.as_ref())
                     .await?,
             ),
@@ -311,7 +326,7 @@ pub async fn apply(
                 who: None,
             },
             message.as_deref(),
-            silent,
+            opts.silent,
         )
         .await?;
     }

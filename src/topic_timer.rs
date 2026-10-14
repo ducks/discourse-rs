@@ -544,8 +544,7 @@ pub async fn set_or_create_timer(
                 timer.user_id,
                 crate::topic_status::Status::Closed,
                 enabled,
-                None,
-                false,
+                &Default::default(),
             ))
             .await?;
         }

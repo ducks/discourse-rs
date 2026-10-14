@@ -176,7 +176,7 @@ Bugs or silent gaps in what is merged, small and independent.
     site gets a backlog case), 58. `feat/badge-jobs` M,
     59. `feat/badges-read` M
 60. ~~`feat/topic-timers`~~ (done) L, 61. ~~`feat/topic-timer-jobs`~~ (done) M,
-    62. `feat/category-auto-close` M
+    62. ~~`feat/category-auto-close`~~ (done) M
 
 [badges-timers]
 

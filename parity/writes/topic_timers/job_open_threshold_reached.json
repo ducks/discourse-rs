@@ -1,0 +1,78 @@
+{
+  "name": "job_open_threshold_reached",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-14T01:32:38.396413",
+  "transaction_started_at": "2026-10-14T01:32:37.598387",
+  "responses": [],
+  "changes": {
+    "topic_timers": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 9601,
+            "type": "TopicTimer",
+            "user_id": 1,
+            "topic_id": null,
+            "created_at": "2026-10-13T21:32:37.598387",
+            "deleted_at": null,
+            "execute_at": "2026-10-14T01:31:37.598387",
+            "updated_at": "2026-10-13T21:32:37.598387",
+            "category_id": null,
+            "public_type": true,
+            "status_type": 2,
+            "timerable_id": 37,
+            "deleted_by_id": null,
+            "duration_minutes": null,
+            "based_on_last_post": false
+          },
+          "after": {
+            "id": 9601,
+            "type": "TopicTimer",
+            "user_id": -1,
+            "topic_id": null,
+            "created_at": "2026-10-13T21:32:37.598387",
+            "deleted_at": null,
+            "execute_at": "2026-10-14T05:32:38.422348",
+            "updated_at": "2026-10-14T01:32:38.424747",
+            "category_id": null,
+            "public_type": true,
+            "status_type": 2,
+            "timerable_id": 37,
+            "deleted_by_id": null,
+            "duration_minutes": null,
+            "based_on_last_post": false
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "num_flaggers_to_close_topic": 1,
+    "auto_close_topic_sensitivity": 3
+  },
+  "setup": [
+    "INSERT INTO topic_timers (id, execute_at, status_type, user_id, created_at, updated_at, public_type, type, timerable_id, based_on_last_post, duration_minutes, category_id) VALUES (9601, now() - interval '1 minute', 2, 1, now() - interval '4 hours', now() - interval '4 hours', TRUE, 'TopicTimer', 37, FALSE, NULL, NULL)",
+    "UPDATE topics SET user_id = 3 WHERE id = 37",
+    "INSERT INTO reviewables (id, type, status, created_by_id, reviewable_by_moderator, score, target_id, target_type, topic_id, category_id, target_created_by_id, potential_spam, version, created_at, updated_at, type_source) VALUES (9701, 'ReviewableFlaggedPost', 0, 4, TRUE, 20.0, 37, 'Post', 37, 2, 4, FALSE, 0, now(), now(), 'unknown')",
+    "INSERT INTO reviewable_scores (id, reviewable_id, user_id, reviewable_score_type, status, score, take_action_bonus, created_at, updated_at, user_accuracy_bonus) VALUES (9701, 9701, 4, 8, 0, 20.0, 0, now(), now(), 0)"
+  ],
+  "enqueue": [
+    [
+      "open_topic",
+      {
+        "topic_timer_id": 9601
+      }
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "476124b6cba87caec7860c370ce357ba18b45ae4cd025abd40d3a16ec26d5bd0",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

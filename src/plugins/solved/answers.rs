@@ -4,11 +4,10 @@
 //! the topic's owner and those tracking it. The caller holds the
 //! transaction, then renders and publishes the accepted answers.
 //!
-//! The controller's rate limits are in the route. Not ported: web hooks
-//! for accepted_solution and unaccepted_solution, and
-//! the auto-close topic timer a solved topic gets when
-//! solved_topics_auto_close_hours is set; each is refused when it would
-//! apply.
+//! The controller's rate limits are in the route. A new solved topic gets
+//! a silent close timer when solved_topics_auto_close_hours is set. Not
+//! ported: web hooks for accepted_solution and unaccepted_solution,
+//! refused when they would apply.
 
 use serde_json::json;
 use sqlx::PgConnection;
@@ -18,6 +17,9 @@ use crate::guardian::Guardian;
 use crate::site_settings::SiteSettings;
 use crate::topic_guardian::{PostCtx, TopicCtx};
 use crate::{AppError, Unsupported};
+
+/// `DiscourseSolved::MAX_AUTO_CLOSE_HOURS` (20.years in hours).
+const MAX_AUTO_CLOSE_HOURS: i64 = 631_152_000 / 3600;
 
 /// `UserAction::SOLVED`
 const SOLVED: i32 = 15;
@@ -166,8 +168,12 @@ async fn destroy_solved(conn: &mut PgConnection, view: &TopicView) -> Result<(),
     let Some(solved_id) = view.solved_id else {
         return Ok(());
     };
-    if view.topic_timer_id.is_some() {
-        return Err(Unsupported("a solved topic's auto-close timer").into());
+    // belongs_to :topic_timer, dependent: :destroy (deleted outright).
+    if let Some(timer_id) = view.topic_timer_id {
+        sqlx::query("DELETE FROM topic_timers WHERE id = $1")
+            .bind(timer_id)
+            .execute(&mut *conn)
+            .await?;
     }
     sqlx::query("DELETE FROM discourse_solved_topic_answers WHERE solved_topic_id = $1")
         .bind(solved_id)
@@ -244,11 +250,11 @@ async fn notify(
 /// `DiscourseSolved::AcceptAnswer`
 pub async fn accept(
     conn: &mut PgConnection,
-    bus: &pg_bus::Bus,
-    settings: &SiteSettings,
+    ctx: &crate::posting::Ctx<'_>,
     guardian: &Guardian,
     post_id: i32,
 ) -> Result<Outcome, AppError> {
+    let (bus, settings) = (ctx.bus, ctx.settings);
     let Some(t) = target(conn, settings, guardian, post_id, false).await? else {
         return Ok(Outcome::NotFound);
     };
@@ -311,19 +317,53 @@ pub async fn accept(
                     .await?
                     .map(|v| crate::ruby::to_i(&v))
                     .unwrap_or(0);
+            // Category#solved_auto_close_hours caps at MAX_AUTO_CLOSE_HOURS.
+            let category_hours = category_hours.min(MAX_AUTO_CLOSE_HOURS);
             let hours = if category_hours == 0 {
                 settings.get("solved_topics_auto_close_hours")?.to_i()
             } else {
                 category_hours
             };
+            // before_create auto_close_topic_timer: a silent close based on
+            // the last post.
+            let mut timer_id = None;
             if hours != 0 && !t.topic.closed {
-                return Err(Unsupported("solved_topics_auto_close_hours (topic timers)").into());
+                use crate::topic_timer::{
+                    SetOptions, SetOutcome, When, set_or_create_timer, types,
+                };
+                let outcome = set_or_create_timer(
+                    &mut *conn,
+                    ctx,
+                    topic_id,
+                    types::SILENT_CLOSE,
+                    When::Blank,
+                    &SetOptions {
+                        based_on_last_post: true,
+                        duration_minutes: Some(hours * 60),
+                        ..Default::default()
+                    },
+                )
+                .await?;
+                match outcome {
+                    SetOutcome::Saved { timer, .. } => timer_id = Some(timer.id),
+                    SetOutcome::Nothing => {}
+                    SetOutcome::Invalid(message) => {
+                        return Err(std::io::Error::other(format!(
+                            "ActiveRecord::RecordInvalid: {message}"
+                        ))
+                        .into());
+                    }
+                    SetOutcome::InvalidParameters => {
+                        return Err(std::io::Error::other("Discourse::InvalidParameters").into());
+                    }
+                }
             }
             sqlx::query_scalar(
-                "INSERT INTO discourse_solved_solved_topics (topic_id, created_at, updated_at) \
-                 VALUES ($1, clock_timestamp(), clock_timestamp()) RETURNING id",
+                "INSERT INTO discourse_solved_solved_topics (topic_id, topic_timer_id, created_at, updated_at) \
+                 VALUES ($1, $2, clock_timestamp(), clock_timestamp()) RETURNING id",
             )
             .bind(topic_id)
+            .bind(timer_id)
             .fetch_one(&mut *conn)
             .await?
         }

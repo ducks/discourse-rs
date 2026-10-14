@@ -299,28 +299,38 @@ async fn enforce_rules(
     take_action: bool,
 ) -> Result<(), AppError> {
     let s = ctx.settings;
-    // auto_close_if_threshold_reached: Topic#auto_close_threshold_reached?
-    let topic_owner_staff = author(&mut *conn, access.topic.user_id)
-        .await?
-        .is_some_and(|a| a.staff);
-    if !access.topic.closed && !topic_owner_staff {
-        let min = reviewables::min_score_for_priority(&mut *conn, s).await?;
-        let (flaggers, total): (i64, f64) = sqlx::query_as(
-            "SELECT COUNT(DISTINCT rs.user_id), COALESCE(SUM(rs.score), 0.0) \
-             FROM reviewable_scores rs JOIN reviewables r ON r.id = rs.reviewable_id \
-             WHERE rs.status = $1 AND rs.score >= $2 AND r.topic_id = $3",
+    // auto_close_if_threshold_reached: closed by system, with an open
+    // timer num_hours_to_close_topic away.
+    if !access.topic.closed
+        && crate::topic_timer::auto_close_threshold_reached(&mut *conn, s, access.topic_id).await?
+    {
+        let hours = s.get("num_hours_to_close_topic")?.to_i();
+        let message = ctx.t_count("temporarily_closed_due_to_flags", hours);
+        crate::topic_status::apply(
+            &mut *conn,
+            ctx,
+            access.topic_id,
+            crate::topic_timer::SYSTEM_USER_ID,
+            crate::topic_status::Status::Closed,
+            true,
+            &crate::topic_status::StatusOpts {
+                message: Some(&message),
+                ..Default::default()
+            },
         )
-        .bind(reviewables::PENDING)
-        .bind(min)
-        .bind(access.topic_id)
-        .fetch_one(&mut *conn)
         .await?;
-        let to_close =
-            reviewables::sensitivity_score(&mut *conn, s, "auto_close_topic_sensitivity", 2.5)
-                .await?;
-        if flaggers >= s.get("num_flaggers_to_close_topic")?.to_i() && total >= to_close {
-            return Err(Unsupported("closing a topic on flags").into());
-        }
+        crate::topic_timer::set_or_create_timer(
+            &mut *conn,
+            ctx,
+            access.topic_id,
+            crate::topic_timer::types::OPEN,
+            crate::topic_timer::When::Hours(hours as f64),
+            &crate::topic_timer::SetOptions {
+                by_user: Some(crate::topic_timer::SYSTEM_USER_ID),
+                ..Default::default()
+            },
+        )
+        .await?;
     }
 
     // auto_hide_if_needed

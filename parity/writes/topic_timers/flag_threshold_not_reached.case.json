@@ -1,0 +1,22 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO reviewables (id, type, status, created_by_id, reviewable_by_moderator, score, target_id, target_type, topic_id, category_id, target_created_by_id, potential_spam, version, created_at, updated_at, type_source) VALUES (9701, 'ReviewableFlaggedPost', 0, 4, TRUE, 20.0, 37, 'Post', 35, 4, 4, FALSE, 0, now(), now(), 'unknown')",
+    "INSERT INTO reviewable_scores (id, reviewable_id, user_id, reviewable_score_type, status, score, take_action_bonus, created_at, updated_at, user_accuracy_bonus) VALUES (9701, 9701, 4, 8, 0, 20.0, 0, now(), now(), 0)",
+    "INSERT INTO post_actions (id, post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (9701, 37, 4, 8, now(), now())"
+  ],
+  "settings": {
+    "num_flaggers_to_close_topic": 3,
+    "auto_close_topic_sensitivity": 3
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/post_actions.json",
+      "params": {
+        "id": 52,
+        "post_action_type_id": 8
+      }
+    }
+  ]
+}
