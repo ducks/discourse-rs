@@ -10,8 +10,8 @@ use markup5ever_rcdom::Handle;
 use serde_json::{Map, Value, json};
 
 use super::engines::{Ctx, Fail, Rendered, https_host, layout, link};
-use super::fetch::{Fetch, FetchError, FetchOpts};
-use super::html_doc::{fetch_html_doc, parse, root};
+use super::fetch::Fetch;
+use super::html_doc::{parse, root};
 use super::normalize_url_for_output;
 use super::ruby_time;
 use super::uri::{RubyUri, absolute_url, cgi_unescape};
@@ -31,7 +31,7 @@ const MAX_URL_LENGTH: usize = 2000;
 
 /// `blank?` for a JSON value: nil, false, an empty or whitespace string,
 /// an empty list or hash.
-fn blank(v: &Value) -> bool {
+pub(super) fn blank(v: &Value) -> bool {
     match v {
         Value::Null | Value::Bool(false) => true,
         Value::String(s) => crate::ruby::is_blank(s),
@@ -41,11 +41,11 @@ fn blank(v: &Value) -> bool {
     }
 }
 
-fn present(v: Option<&Value>) -> bool {
+pub(super) fn present(v: Option<&Value>) -> bool {
     v.is_some_and(|v| !blank(v))
 }
 
-fn str_of(v: Option<&Value>) -> Option<&str> {
+pub(super) fn str_of(v: Option<&Value>) -> Option<&str> {
     v.and_then(Value::as_str)
 }
 
@@ -81,7 +81,7 @@ pub fn active_support_truncate(s: &str, length: usize, omission: &str) -> String
 }
 
 /// `value.to_s` for a parsed JSON value, where Ruby's matches.
-fn ruby_to_s(v: &Value) -> Result<String, Unsupported> {
+pub(super) fn ruby_to_s(v: &Value) -> Result<String, Unsupported> {
     Ok(match v {
         Value::Null => String::new(),
         Value::Bool(b) => b.to_string(),
@@ -105,12 +105,12 @@ fn ruby_to_s(v: &Value) -> Result<String, Unsupported> {
     })
 }
 
-fn decode(s: &str) -> Result<String, Unsupported> {
+pub(super) fn decode(s: &str) -> Result<String, Unsupported> {
     super::entities::decode(s)
 }
 
 /// `Sanitize.fragment(value)` with the default config: the text, escaped.
-fn sanitize_default(s: &str) -> Result<String, Unsupported> {
+pub(super) fn sanitize_default(s: &str) -> Result<String, Unsupported> {
     crate::sanitize::fragment(s, &crate::sanitize::config::Config::default_config())
         .map_err(|_| Unsupported("onebox values past Gumbo's limits"))
 }
@@ -118,7 +118,7 @@ fn sanitize_default(s: &str) -> Result<String, Unsupported> {
 // ---- Onebox::Normalizer and its kinds ----
 
 #[derive(Clone, Copy, PartialEq)]
-enum Kind {
+pub(super) enum Kind {
     OpenGraph,
     Oembed,
     JsonLd,
@@ -161,9 +161,9 @@ const OBJECT_METHODS: &[&str] = &[
     "singleton_class",
 ];
 
-struct Normalizer {
-    kind: Kind,
-    data: Map<String, Value>,
+pub(super) struct Normalizer {
+    pub(super) kind: Kind,
+    pub(super) data: Map<String, Value>,
 }
 
 impl Normalizer {
@@ -185,7 +185,12 @@ impl Normalizer {
     }
 
     /// `get(attr, length, sanitize)`
-    fn get(&self, key: &str, length: Option<usize>, sanitize: bool) -> Result<Value, Unsupported> {
+    pub(super) fn get(
+        &self,
+        key: &str,
+        length: Option<usize>,
+        sanitize: bool,
+    ) -> Result<Value, Unsupported> {
         let Some(value) = self.data.get(key).filter(|v| !blank(v)) else {
             return Ok(Value::Null);
         };
@@ -203,7 +208,7 @@ impl Normalizer {
     }
 
     /// `normalizer.public_send(key)`; Err(Fail::Raised) where Ruby raises.
-    fn value(&self, key: &str) -> Result<Value, Fail> {
+    pub(super) fn value(&self, key: &str) -> Result<Value, Fail> {
         if OBJECT_METHODS.contains(&key) || key.ends_with(['?', '!', '=']) {
             return Err(Unsupported("onebox data keys that name Ruby methods").into());
         }
@@ -247,7 +252,7 @@ impl Normalizer {
 }
 
 /// `OpenGraph#extract(doc)`
-fn open_graph(root: &Handle) -> Map<String, Value> {
+pub(super) fn open_graph(root: &Handle) -> Map<String, Value> {
     static KEY: LazyLock<regex::Regex> =
         LazyLock::new(|| regex::Regex::new(r"(?i)\A(?:og|article|product):(.+)\z").unwrap());
     const COLLECTIONS: [&str; 3] = ["article_section", "article_section_color", "article_tag"];
@@ -284,7 +289,7 @@ fn open_graph(root: &Handle) -> Map<String, Value> {
 }
 
 /// `StandardEmbed#get_twitter`
-fn twitter(root: &Handle) -> Map<String, Value> {
+pub(super) fn twitter(root: &Handle) -> Map<String, Value> {
     static KEY: LazyLock<regex::Regex> =
         LazyLock::new(|| regex::Regex::new(r"(?im)^twitter:(.+)$").unwrap());
     let mut data = Map::new();
@@ -307,7 +312,7 @@ fn twitter(root: &Handle) -> Map<String, Value> {
 }
 
 /// `JsonLd#extract(doc)`: a Movie's data, else nothing.
-fn json_ld(root: &Handle) -> Result<Map<String, Value>, Fail> {
+pub(super) fn json_ld(root: &Handle) -> Result<Map<String, Value>, Fail> {
     for script in select(root, "script[type=\"application/ld+json\"]") {
         let Ok(parsed) = serde_json::from_str::<Value>(&text(&script)) else {
             continue;
@@ -388,7 +393,7 @@ fn movie_data(m: &Map<String, Value>) -> Result<Map<String, Value>, Fail> {
 }
 
 /// `StandardEmbed#get_favicon`
-fn favicon(root: &Handle, url: &str) -> Option<String> {
+pub(super) fn favicon(root: &Handle, url: &str) -> Option<String> {
     let link = select_first(
         root,
         "link[rel=\"shortcut icon\"], link[rel=\"icon shortcut\"], link[rel=\"shortcut\"], link[rel=\"icon\"]",
@@ -403,7 +408,7 @@ fn favicon(root: &Handle, url: &str) -> Option<String> {
 }
 
 /// `StandardEmbed#get_description`
-fn description(root: &Handle) -> Option<String> {
+pub(super) fn description(root: &Handle) -> Option<String> {
     select_first(root, "meta[name='description']")
         .and_then(|m| attr(&m, "content"))
         .or_else(|| {
@@ -524,25 +529,25 @@ fn section_description(root: &Handle, fragment: &str) -> Option<String> {
 }
 
 /// `gsub(/\s+/, " ").strip`
-fn squish(s: &str) -> String {
+pub(super) fn squish(s: &str) -> String {
     static WS: LazyLock<regex::Regex> =
         LazyLock::new(|| regex::Regex::new(r"[ \t\r\n\x0b\x0c]+").unwrap());
     crate::ruby::strip(&WS.replace_all(s, " ")).to_string()
 }
 
 /// What the page itself gives, read before the oEmbed fetch.
-struct Page {
-    og: Map<String, Value>,
-    twitter: Map<String, Value>,
-    oembed_links: (Option<String>, Option<String>),
-    json_ld: Result<Map<String, Value>, Fail>,
-    favicon: Option<String>,
-    description: Option<String>,
-    section_title: Option<String>,
-    section_description: Option<String>,
+pub(super) struct Page {
+    pub(super) og: Map<String, Value>,
+    pub(super) twitter: Map<String, Value>,
+    pub(super) oembed_links: (Option<String>, Option<String>),
+    pub(super) json_ld: Result<Map<String, Value>, Fail>,
+    pub(super) favicon: Option<String>,
+    pub(super) description: Option<String>,
+    pub(super) section_title: Option<String>,
+    pub(super) section_description: Option<String>,
 }
 
-fn read_page(html: Option<&str>, url: &str) -> Result<Page, Fail> {
+pub(super) fn read_page(html: Option<&str>, url: &str) -> Result<Page, Fail> {
     let dom = parse(html.unwrap_or(""));
     let root = root(&dom);
     let fragment = match RubyUri::parse(url).and_then(|u| u.fragment) {
@@ -576,7 +581,7 @@ fn read_page(html: Option<&str>, url: &str) -> Result<Page, Fail> {
 }
 
 /// `StandardEmbed.oembed_providers`
-static OEMBED_PROVIDERS: LazyLock<Vec<(regex::Regex, &str)>> = LazyLock::new(|| {
+pub(super) static OEMBED_PROVIDERS: LazyLock<Vec<(regex::Regex, &str)>> = LazyLock::new(|| {
     [
         (r"www\.meetup\.com/", "http://api.meetup.com/oembed"),
         (r"www\.mixcloud\.com/", "https://www.mixcloud.com/oembed/"),
@@ -590,7 +595,7 @@ static OEMBED_PROVIDERS: LazyLock<Vec<(regex::Regex, &str)>> = LazyLock::new(|| 
 });
 
 /// `set_from_normalizer_data(normalizer, skip_dimensions:)`
-fn set_from(
+pub(super) fn set_from(
     raw: &mut Map<String, Value>,
     normalizer: &Normalizer,
     skip_dimensions: bool,
@@ -610,118 +615,8 @@ fn set_from(
     Ok(())
 }
 
-/// `StandardEmbed#raw`
-/// (`@raw` is set before it is filled: what was filled stands when it
-/// raises, and a second call returns it.)
-async fn standard_embed_raw<F: Fetch>(
-    url: &str,
-    ctx: &Ctx<'_>,
-    fetch: &mut F,
-    raw: &mut Map<String, Value>,
-) -> Result<(), Fail> {
-    let headers: Vec<(String, String)> = ctx
-        .cookie
-        .map(|c| vec![("Cookie".to_string(), c.to_string())])
-        .unwrap_or_default();
-    let html = fetch_html_doc(fetch, url, &headers).await?;
-    let page = read_page(html.as_deref(), url)?;
-    set_from(
-        raw,
-        &Normalizer {
-            kind: Kind::OpenGraph,
-            data: page.og,
-        },
-        false,
-    )?;
-    raw.remove("title_attr");
-    for (k, v) in page.twitter {
-        if !raw.get(&k).is_some_and(|e| !e.is_null()) {
-            raw.insert(k, v);
-        }
-    }
-    // get_oembed_url
-    let mut oembed_url = OEMBED_PROVIDERS
-        .iter()
-        .find(|(r, _)| r.is_match(url))
-        .map(|(_, endpoint)| format!("{endpoint}?url={url}"));
-    if oembed_url.as_deref().is_none_or(crate::ruby::is_blank) {
-        oembed_url = page.oembed_links.0.clone();
-    }
-    if oembed_url.as_deref().is_none_or(crate::ruby::is_blank) {
-        oembed_url = page.oembed_links.1.clone();
-    }
-    let response = match oembed_url.filter(|u| !crate::ruby::is_blank(u)) {
-        None => "{}".to_string(),
-        Some(u) => match fetch.fetch_response(&u, &FetchOpts::default()).await? {
-            Ok(body) => body,
-            Err(FetchError::Refused(e)) => return Err(e.into()),
-            Err(_) => "{}".to_string(),
-        },
-    };
-    let oembed = oembed_data(&response)?;
-    let skip = oembed.get("type").and_then(Value::as_str) == Some("rich");
-    set_from(
-        raw,
-        &Normalizer {
-            kind: Kind::Oembed,
-            data: oembed,
-        },
-        skip,
-    )?;
-    set_from(
-        raw,
-        &Normalizer {
-            kind: Kind::JsonLd,
-            data: page.json_ld?,
-        },
-        false,
-    )?;
-    if let Some(f) = page.favicon.filter(|f| !crate::ruby::is_blank(f)) {
-        raw.insert("favicon".into(), json!(f));
-    }
-    if !raw.get("description").is_some_and(|d| !d.is_null())
-        && let Some(d) = page.description.filter(|d| !crate::ruby::is_blank(d))
-    {
-        raw.insert("description".into(), json!(d));
-    }
-    // enhance_title_with_anchor
-    if let Some(title) = str_of(raw.get("title")).filter(|t| !crate::ruby::is_blank(t))
-        && let Some(section) = page.section_title.filter(|s| !crate::ruby::is_blank(s))
-    {
-        static MARKS: LazyLock<regex::Regex> =
-            LazyLock::new(|| regex::Regex::new("[\u{00B6}\u{00A7}#]").unwrap());
-        let cleaned = active_support_truncate(&squish(&MARKS.replace_all(&section, "")), 80, "...");
-        if !crate::ruby::is_blank(&cleaned) && !title.contains(&cleaned) {
-            let enhanced = format!("{cleaned} - {title}");
-            raw.insert("title".into(), json!(enhanced));
-        }
-    }
-    // enhance_description_with_anchor
-    if let Some(section) = page
-        .section_description
-        .filter(|s| !crate::ruby::is_blank(s))
-    {
-        let cleaned = active_support_truncate(&squish(&section), 300, "\u{2026}");
-        let existing = str_of(raw.get("description"))
-            .filter(|d| !crate::ruby::is_blank(d))
-            .map(str::to_string);
-        if !crate::ruby::is_blank(&cleaned) {
-            match existing {
-                Some(d) if d.contains(&cleaned) => {}
-                Some(d) => {
-                    raw.insert("description".into(), json!(format!("{cleaned} | {d}")));
-                }
-                None => {
-                    raw.insert("description".into(), json!(cleaned));
-                }
-            }
-        }
-    }
-    Ok(())
-}
-
 /// `Onebox::Oembed.new(response).data`
-fn oembed_data(response: &str) -> Result<Map<String, Value>, Fail> {
+pub(super) fn oembed_data(response: &str) -> Result<Map<String, Value>, Fail> {
     let parsed: Value = serde_json::from_str(response)
         .map_err(|e| Fail::Raised(format!("MultiJson::ParseError: {e}")))?;
     let Value::Object(mut data) = parsed else {
@@ -742,7 +637,7 @@ fn oembed_data(response: &str) -> Result<Map<String, Value>, Fail> {
     Ok(data)
 }
 
-fn host_matches(host: &str, list: &[&str]) -> bool {
+pub(super) fn host_matches(host: &str, list: &[&str]) -> bool {
     list.iter()
         .any(|h| host == *h || host.ends_with(&format!(".{h}")))
 }
@@ -1176,12 +1071,13 @@ pub async fn preview<F: Fetch>(url: &str, ctx: &Ctx<'_>, fetch: &mut F) -> Resul
     } else {
         url.to_string()
     };
-    let mut raw = Map::new();
-    let raw_error = match standard_embed_raw(&url, ctx, fetch, &mut raw).await {
-        Ok(()) => None,
+    let mut embed = super::embed::Embed::new(&url, ctx);
+    let raw_error = match embed.raw(fetch).await {
+        Ok(_) => None,
         Err(Fail::App(e)) => return Err(Fail::App(e)),
         Err(e) => Some(e),
     };
+    let raw = embed.raw_so_far();
     let mut rendered = Rendered::default();
     // `data` is memoized only once it returns; `raw` from its first call.
     let mut generic: Option<Generic> = None;

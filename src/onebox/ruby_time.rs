@@ -15,13 +15,29 @@ pub enum Parsed {
     Raised,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Fields {
     pub year: i64,
     pub month: i64,
     pub day: i64,
     pub hour: i64,
     pub minute: i64,
+    pub second: i64,
+    /// What `%Z` prints: "UTC" for UTC and for the server's local time
+    /// (which is UTC); None for an offset (not ported).
+    pub zone: Option<&'static str>,
+}
+
+/// What `%Z` prints for a time Time.parse read with this zone.
+fn zone_name(zone: Option<&str>) -> Option<&'static str> {
+    static UTC: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
+        regex::Regex::new(r"(?i)\A(?:[-+]00:?00|[-+]00|UTC|Z|UT|GMT)\z").unwrap()
+    });
+    match zone {
+        None => Some("UTC"),
+        Some(z) if UTC.is_match(z) => Some("UTC"),
+        Some(_) => None,
+    }
 }
 
 fn days_in_month(year: i64, month: i64) -> i64 {
@@ -125,6 +141,8 @@ pub fn parse(s: &str) -> Result<Parsed, Unsupported> {
         day,
         hour,
         minute,
+        second: sec,
+        zone: zone_name(h.zone.as_deref()),
     }))
 }
 
@@ -155,6 +173,8 @@ pub fn duration(s: &str) -> Result<Parsed, Unsupported> {
         day: h.mday.unwrap_or(1),
         hour,
         minute,
+        second: sec,
+        zone: None,
     }))
 }
 
@@ -208,6 +228,85 @@ impl Fields {
     pub fn hours_minutes(&self) -> String {
         format!("{:02}:{:02}", self.hour, self.minute)
     }
+
+    /// `strftime(format)` for the directives the engines use; refused for
+    /// `%Z` where the zone's name isn't known.
+    pub fn strftime(&self, format: &str) -> Result<String, Unsupported> {
+        let hour12 = match self.hour % 12 {
+            0 => 12,
+            h => h,
+        };
+        let mut out = String::new();
+        let mut chars = format.chars();
+        while let Some(c) = chars.next() {
+            if c != '%' {
+                out.push(c);
+                continue;
+            }
+            let mut d = chars.next().unwrap_or('%');
+            let unpadded = d == '-';
+            if unpadded {
+                d = chars.next().unwrap_or('%');
+            }
+            let num = |n: i64, width: usize| {
+                if unpadded {
+                    n.to_string()
+                } else {
+                    format!("{n:0width$}")
+                }
+            };
+            match d {
+                'Y' => out.push_str(&num(self.year, 4)),
+                'y' => out.push_str(&num(self.year.rem_euclid(100), 2)),
+                'm' => out.push_str(&num(self.month, 2)),
+                'd' => out.push_str(&num(self.day, 2)),
+                'e' => out.push_str(&format!("{:>2}", self.day)),
+                'H' => out.push_str(&num(self.hour, 2)),
+                'I' => out.push_str(&num(hour12, 2)),
+                'l' => out.push_str(&if unpadded {
+                    hour12.to_string()
+                } else {
+                    format!("{hour12:>2}")
+                }),
+                'M' => out.push_str(&num(self.minute, 2)),
+                'S' => out.push_str(&num(self.second, 2)),
+                'p' => out.push_str(if self.hour < 12 { "AM" } else { "PM" }),
+                'b' => out.push_str(MONTH_ABBR[self.month as usize - 1]),
+                'B' => out.push_str(MONTH_NAME[self.month as usize - 1]),
+                'F' => out.push_str(&format!(
+                    "{:04}-{:02}-{:02}",
+                    self.year, self.month, self.day
+                )),
+                'T' => out.push_str(&format!(
+                    "{:02}:{:02}:{:02}",
+                    self.hour, self.minute, self.second
+                )),
+                'Z' => out.push_str(
+                    self.zone
+                        .ok_or(Unsupported("time zones whose name isn't known"))?,
+                ),
+                '%' => out.push('%'),
+                _ => return Err(Unsupported("strftime directives not ported")),
+            }
+        }
+        Ok(out)
+    }
+}
+
+/// `Time.at(seconds)` in the server's zone (UTC).
+pub fn at(seconds: i64) -> Result<Fields, Unsupported> {
+    use chrono::{Datelike, Timelike};
+    let t = chrono::DateTime::from_timestamp(seconds, 0)
+        .ok_or(Unsupported("times past chrono's range"))?;
+    Ok(Fields {
+        year: i64::from(t.year()),
+        month: i64::from(t.month()),
+        day: i64::from(t.day()),
+        hour: i64::from(t.hour()),
+        minute: i64::from(t.minute()),
+        second: i64::from(t.second()),
+        zone: Some("UTC"),
+    })
 }
 
 #[cfg(test)]

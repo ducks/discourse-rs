@@ -97,6 +97,62 @@ FinalDestination.prepend(
   end,
 )
 
+
+# The GitHub API client's request (no etag cache, no rate-limit state):
+# the fixture's body, or the error its status raises.
+Discourse::GithubApi.prepend(
+  Module.new do
+    private
+
+    def request(_method, path, params: {}, body: nil, accept:, cache_etag: true)
+      url = path.start_with?("http") ? path : "#{Discourse::GithubApi::API_ROOT}#{path}"
+      host = URI.parse(url).host
+      if Discourse::GithubApi::ALLOWED_HOSTS.exclude?(host)
+        raise ArgumentError, "Refusing to call non-GitHub host: #{host.inspect}"
+      end
+      page = FixtureFetch.page(url)
+      raise Discourse::GithubApi::Error.new("GitHub API request failed: refused") if page.nil?
+      status = page["status"] || 200
+      case status
+      when 200..299
+        page["file"] ? File.read(File.join(FIXTURE_DIR, page["file"])) : +""
+      when 401
+        raise Discourse::GithubApi::Unauthorized.new(status: 401)
+      when 404
+        raise Discourse::GithubApi::NotFound.new(status: 404)
+      else
+        raise Discourse::GithubApi::Error.new(status: status)
+      end
+    end
+  end,
+)
+
+# FinalDestination::HTTP connections, for the HEAD requests GoogleMapsOnebox
+# makes: the fixture's status and Location for the path.
+FixtureHead = Struct.new(:code, :location) do
+  def [](name)
+    name.to_s.downcase == "location" ? location : nil
+  end
+end
+FixtureHttp = Struct.new(:scheme, :host, :port) do
+  def head(path)
+    default = (scheme == "https" && port == 443) || (scheme == "http" && port == 80)
+    url = default ? "#{scheme}://#{host}#{path}" : "#{scheme}://#{host}:#{port}#{path}"
+    page = FixtureFetch.page(url)
+    raise Errno::ECONNREFUSED, url if page.nil?
+    FixtureHead.new((page["status"] || 200).to_s, page["location"])
+  end
+
+  def finish
+  end
+end
+FinalDestination::HTTP.singleton_class.prepend(
+  Module.new do
+    def start(host, port, use_ssl: false, **_opts)
+      FixtureHttp.new(use_ssl ? "https" : "http", host, port)
+    end
+  end,
+)
 Oneboxer.singleton_class.prepend(Module.new { def cache_preferred_strategy(*); end })
 
 urls = []
@@ -221,6 +277,15 @@ result = {
     enable_emoji: SiteSetting.enable_emoji,
     enable_inline_emoji_translation: SiteSetting.enable_inline_emoji_translation,
     emoji_set: SiteSetting.emoji_set,
+    github_onebox_access_tokens: SiteSetting.github_onebox_access_tokens,
+    github_pr_status_enabled:
+      SiteSetting.respond_to?(:github_pr_status_enabled) && SiteSetting.github_pr_status_enabled,
+    facebook_app_access_token: SiteSetting.facebook_app_access_token,
+    twitter_credentials: !TwitterApi.twitter_credentials_missing?,
+    base_path: Discourse.base_path,
+    lazy_youtube: SiteSetting.lazy_videos_enabled && SiteSetting.lazy_youtube_enabled,
+    lazy_vimeo: SiteSetting.lazy_videos_enabled && SiteSetting.lazy_vimeo_enabled,
+    lazy_tiktok: SiteSetting.lazy_videos_enabled && SiteSetting.lazy_tiktok_enabled,
   },
   engines: engines,
   previews: previews,

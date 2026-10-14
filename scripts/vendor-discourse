@@ -25,6 +25,32 @@ FILES=(
   lib/onebox/templates/preview_error_fragment_onebox.mustache
   lib/onebox/templates/allowlistedgeneric.mustache
   lib/onebox/templates/json_ld_partials/movie.mustache
+  lib/onebox/templates/amazon.mustache
+  lib/onebox/templates/discoursetopic.mustache
+  lib/onebox/templates/github/github_body.mustache
+  lib/onebox/templates/githubactions.mustache
+  lib/onebox/templates/githubblob.mustache
+  lib/onebox/templates/githubcommit.mustache
+  lib/onebox/templates/githubfolder.mustache
+  lib/onebox/templates/githubgist.mustache
+  lib/onebox/templates/githubissue.mustache
+  lib/onebox/templates/githubpullrequest.mustache
+  lib/onebox/templates/githubrepo.mustache
+  lib/onebox/templates/gitlabblob.mustache
+  lib/onebox/templates/googledocs.mustache
+  lib/onebox/templates/googledrive.mustache
+  lib/onebox/templates/googleplayapp.mustache
+  lib/onebox/templates/hackernews.mustache
+  lib/onebox/templates/instagram.mustache
+  lib/onebox/templates/pastebin.mustache
+  lib/onebox/templates/pdf.mustache
+  lib/onebox/templates/pubmed.mustache
+  lib/onebox/templates/stackexchange.mustache
+  lib/onebox/templates/threadsstatus.mustache
+  lib/onebox/templates/twitterstatus.mustache
+  lib/onebox/templates/wikimedia.mustache
+  lib/onebox/templates/wikipedia.mustache
+  lib/onebox/templates/xkcd.mustache
   vendor/assets/svg-icons/discourse-additional.svg
   vendor/assets/svg-icons/fontawesome/solid.svg
   vendor/assets/svg-icons/fontawesome/regular.svg

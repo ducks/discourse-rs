@@ -86,6 +86,22 @@ pub trait Fetch {
         &mut self,
         url: &str,
     ) -> impl Future<Output = Result<Result<Option<String>, FetchError>, AppError>> + Send;
+
+    /// `Discourse::GithubApi.for(token:)`'s `get` or `raw_get`: the
+    /// body; an error status (or the backoff) is the OpenURI::HTTPError
+    /// the onebox mixin turns it into.
+    fn github(
+        &mut self,
+        url: &str,
+        token: Option<&str>,
+    ) -> impl Future<Output = Result<Result<String, FetchError>, AppError>> + Send;
+
+    /// `FinalDestination::HTTP.start(host, port).head(uri.path)`: the
+    /// status and Location.
+    fn head(
+        &mut self,
+        url: &str,
+    ) -> impl Future<Output = Result<Result<(u16, Option<String>), FetchError>, AppError>> + Send;
 }
 
 /// What a response's status raises when it is neither the page nor a
@@ -367,6 +383,82 @@ impl Fetch for Live<'_> {
             header(&response, "content-length").filter(|v| !v.trim().is_empty())
         ))
     }
+
+    async fn github(
+        &mut self,
+        url: &str,
+        token: Option<&str>,
+    ) -> Result<Result<String, FetchError>, AppError> {
+        let Some(uri) = Uri::parse(url) else {
+            return Ok(Err(FetchError::Other(format!("bad URI: {url}"))));
+        };
+        // Discourse::GithubApi::ALLOWED_HOSTS
+        if !matches!(
+            uri.host.as_str(),
+            "api.github.com" | "raw.githubusercontent.com"
+        ) {
+            return Ok(Err(FetchError::Other(format!(
+                "Refusing to call non-GitHub host: {}",
+                uri.host
+            ))));
+        }
+        let client = match self.client(&uri).await? {
+            Ok(c) => c,
+            Err(e) => return Ok(Err(e)),
+        };
+        let mut request = client
+            .get(uri.to_s().split('#').next().unwrap_or("").to_string())
+            .header("Accept", "application/vnd.github+json")
+            .header("User-Agent", crate::schema::user_agent());
+        if let Some(t) = token.filter(|t| !t.trim().is_empty()) {
+            request = request.header("Authorization", format!("Bearer {t}"));
+        }
+        let response = match tokio::time::timeout(Duration::from_secs(5), request.send()).await {
+            Err(_) => return Ok(Err(FetchError::Web("GitHub API request failed".into()))),
+            Ok(Err(e)) => return Ok(Err(FetchError::Web(e.to_string()))),
+            Ok(Ok(r)) => r,
+        };
+        if !response.status().is_success() {
+            return Ok(Err(FetchError::Web(format!(
+                "GitHub API error (status {})",
+                response.status().as_u16()
+            ))));
+        }
+        Ok(match response.bytes().await {
+            Ok(b) => utf8(b.to_vec()),
+            Err(e) => Err(FetchError::Web(e.to_string())),
+        })
+    }
+
+    async fn head(
+        &mut self,
+        url: &str,
+    ) -> Result<Result<(u16, Option<String>), FetchError>, AppError> {
+        let Some(uri) = Uri::parse(url) else {
+            return Ok(Err(FetchError::Other(format!("bad URI: {url}"))));
+        };
+        let client = match self.client(&uri).await? {
+            Ok(c) => c,
+            Err(e) => return Ok(Err(e)),
+        };
+        // `http.head(uri.path)`: the path alone, its query left off.
+        let default =
+            (uri.scheme == "http" && uri.port == 80) || (uri.scheme == "https" && uri.port == 443);
+        let target = if default {
+            format!("{}://{}{}", uri.scheme, uri.host, uri.path())
+        } else {
+            format!("{}://{}:{}{}", uri.scheme, uri.host, uri.port, uri.path())
+        };
+        let response = match tokio::time::timeout(TIMEOUT, client.head(target).send()).await {
+            Err(_) => return Ok(Err(FetchError::Web("timeout".into()))),
+            Ok(Err(e)) => return Ok(Err(client_error(&e))),
+            Ok(Ok(r)) => r,
+        };
+        Ok(Ok((
+            response.status().as_u16(),
+            header(&response, "location"),
+        )))
+    }
 }
 
 /// A recorded answer for a URL.
@@ -386,6 +478,9 @@ pub struct Fixture {
     /// "" when it doesn't resolve).
     #[serde(default)]
     pub resolves_to: Option<String>,
+    /// The Location a HEAD request answers with.
+    #[serde(default)]
+    pub location: Option<String>,
 }
 
 /// The fetches answered from recorded pages: an unknown URL raises as a
@@ -456,5 +551,29 @@ impl Fetch for Fixtures {
         Ok(Ok((page.status.unwrap_or(200) == 200)
             .then(|| page.content_length.clone())
             .flatten()))
+    }
+
+    async fn github(
+        &mut self,
+        url: &str,
+        _token: Option<&str>,
+    ) -> Result<Result<String, FetchError>, AppError> {
+        Ok(self.body(url).map_err(|e| match e {
+            FetchError::Refused(u) => FetchError::Refused(u),
+            // Every GitHub API error is the mixin's OpenURI::HTTPError.
+            FetchError::Web(m) | FetchError::Other(m) => FetchError::Web(m),
+        }))
+    }
+
+    async fn head(
+        &mut self,
+        url: &str,
+    ) -> Result<Result<(u16, Option<String>), FetchError>, AppError> {
+        // `head(uri.path)`: the query isn't asked for.
+        let url = url.split(['?', '#']).next().unwrap_or(url);
+        let Some(page) = self.page(url) else {
+            return Ok(Err(FetchError::Web(format!("connection refused: {url}"))));
+        };
+        Ok(Ok((page.status.unwrap_or(200), page.location.clone())))
     }
 }

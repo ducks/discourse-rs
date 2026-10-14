@@ -76,11 +76,6 @@ fn normalize_component(
         if b[i] == b'%' && hex(i + 1) && hex(i + 2) {
             let byte = u8::from_str_radix(&s[i + 1..i + 3], 16).unwrap_or(0);
             if !(query && byte == b'+') {
-                if byte >= 0x80 {
-                    return Err(Unsupported(
-                        "canonical links that need Addressable's normalizing",
-                    ));
-                }
                 decoded.push(byte);
                 i += 3;
                 continue;
@@ -89,6 +84,13 @@ fn normalize_component(
         decoded.push(b[i]);
         i += 1;
     }
+    // unicode_normalize(:nfc); invalid UTF-8 is encoded another way.
+    let decoded: Vec<u8> = {
+        use unicode_normalization::UnicodeNormalization;
+        let text = String::from_utf8(decoded)
+            .map_err(|_| Unsupported("canonical links that aren't UTF-8 decoded"))?;
+        text.nfc().collect::<String>().into_bytes()
+    };
     let mut out = String::new();
     for (j, &c) in decoded.iter().enumerate() {
         let kept_plus = query
@@ -112,7 +114,7 @@ fn pchar(b: u8) -> bool {
 /// normalizing is ported: ASCII, nothing percent-encoded, no dot
 /// segments, no userinfo. None where Addressable raises.
 pub fn normalize(url: &str) -> Result<Option<Normalized>, Unsupported> {
-    if !url.is_ascii() || url.chars().any(|c| c.is_ascii_whitespace()) {
+    if url.chars().any(|c| c.is_ascii_whitespace()) {
         return Err(Unsupported(
             "canonical links that need Addressable's normalizing",
         ));
@@ -143,6 +145,9 @@ pub fn normalize(url: &str) -> Result<Option<Normalized>, Unsupported> {
             }
             None => (authority, None),
         };
+        if !h.is_ascii() || h.contains('%') {
+            return Err(Unsupported("canonical links to IDN hosts"));
+        }
         let mut h = h.to_ascii_lowercase();
         if h.len() > 1 && h.ends_with('.') && !h.ends_with("..") {
             h.pop();
