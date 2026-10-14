@@ -176,7 +176,14 @@ Bugs or silent gaps in what is merged, small and independent.
     fixture pages through the stubbed fetch boundary. Refused: pages that
     aren't UTF-8, dates Time.parse would read against today or roll over
     with a zone, canonical links Addressable would normalize past ASCII),
-    55. `feat/onebox-engines-api` L
+    55. ~~`feat/onebox-engines-api`~~ (done) L (every engine: GitHub
+    and GitLab over the GitHub API client, the StandardEmbed media
+    engines, the JSON and HTML ones, X/Twitter without API credentials,
+    Wikipedia, Amazon, PubMed's XML, Google Maps' redirects;
+    discourse-lazy-videos' YouTube, Vimeo and TikTok overrides; inline
+    titles from Google Meet and GitHub with tokens. Refused: X posts
+    through the Twitter API, inline pull requests with discourse-github's
+    status, and the dates, URLs and values noted in the engines)
 
 [client-infra]
 

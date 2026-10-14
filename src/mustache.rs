@@ -175,6 +175,34 @@ fn lookup<'a>(stack: &[&'a Value], name: &str) -> Option<&'a Value> {
     Some(value)
 }
 
+/// `lookup` for an interpolation, where a dotted part may also be one of
+/// the Ruby methods the templates call on a list or a string (`length`,
+/// `size`, `first`, `last`, `lines`).
+fn lookup_value(stack: &[&Value], name: &str) -> Option<Value> {
+    if name == "." {
+        return stack.last().map(|v| (*v).clone());
+    }
+    let mut parts = name.split('.');
+    let first = parts.next()?;
+    let mut value = stack.iter().rev().find_map(|ctx| ctx.get(first))?.clone();
+    for part in parts {
+        value = match (&value, part) {
+            (Value::Object(o), _) => o.get(part)?.clone(),
+            (Value::Array(a), "length" | "size" | "count") => Value::from(a.len()),
+            (Value::Array(a), "first") => a.first().cloned().unwrap_or(Value::Null),
+            (Value::Array(a), "last") => a.last().cloned().unwrap_or(Value::Null),
+            (Value::String(s), "length" | "size") => Value::from(s.chars().count()),
+            (Value::String(s), "lines") => Value::Array(
+                s.split_inclusive('\n')
+                    .map(|l| Value::String(l.to_string()))
+                    .collect(),
+            ),
+            _ => return None,
+        };
+    }
+    Some(value)
+}
+
 /// `value.to_s`
 fn to_s(value: Option<&Value>) -> String {
     match value {
@@ -191,9 +219,9 @@ fn render_nodes(nodes: &[Node], stack: &mut Vec<&Value>, out: &mut String, parti
         match node {
             Node::Text(t) => out.push_str(t),
             Node::Escaped(name) => out.push_str(&crate::discourse_diff::escape_html(&to_s(
-                lookup(stack, name),
+                lookup_value(stack, name).as_ref(),
             ))),
-            Node::Raw(name) => out.push_str(&to_s(lookup(stack, name))),
+            Node::Raw(name) => out.push_str(&to_s(lookup_value(stack, name).as_ref())),
             Node::Section(name, children) => match lookup(stack, name) {
                 None | Some(Value::Null) | Some(Value::Bool(false)) => {}
                 Some(Value::Bool(true)) => render_nodes(children, stack, out, partials),

@@ -18,6 +18,7 @@
 //! functions here, called where Rails triggers them.
 
 pub mod chat;
+pub mod lazy_videos;
 pub mod local_dates;
 pub mod poll;
 pub mod presence;

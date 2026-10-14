@@ -12,6 +12,39 @@ fn recording() -> Value {
     serde_json::from_str(&std::fs::read_to_string(path).unwrap()).unwrap()
 }
 
+/// What differs by chance: GithubRepoOnebox's thumbnail URL holds
+/// SecureRandom.hex.
+fn scrub(v: &Value) -> Value {
+    static HEX: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
+        regex::Regex::new(r"opengraph\.githubassets\.com/[0-9a-f]{32}/").unwrap()
+    });
+    match v {
+        Value::String(s) => Value::String(
+            HEX.replace_all(s, "opengraph.githubassets.com/HEX/")
+                .into_owned(),
+        ),
+        Value::Array(a) => Value::Array(a.iter().map(scrub).collect()),
+        Value::Object(o) => Value::Object(o.iter().map(|(k, v)| (k.clone(), scrub(v))).collect()),
+        v => v.clone(),
+    }
+}
+
+/// The settings the engines read, as recorded.
+fn engine_settings(s: &Value) -> discourse_rs::onebox::engines::EngineSettings {
+    let text = |k: &str| s[k].as_str().unwrap_or("").to_string();
+    discourse_rs::onebox::engines::EngineSettings {
+        github_tokens: text("github_onebox_access_tokens"),
+        github_pr_status: s["github_pr_status_enabled"] == true,
+        facebook_token: text("facebook_app_access_token"),
+        twitter_credentials: s["twitter_credentials"] == true,
+        emoji_set: text("emoji_set"),
+        base_path: text("base_path"),
+        lazy_youtube: s["lazy_youtube"] == true,
+        lazy_vimeo: s["lazy_vimeo"] == true,
+        lazy_tiktok: s["lazy_tiktok"] == true,
+    }
+}
+
 /// `Oneboxer.allowed_iframe_origins` from the recorded settings.
 fn iframe_regexes(settings: &Value) -> Vec<regex::Regex> {
     let split = |v: &Value| -> Vec<String> {
@@ -68,6 +101,7 @@ fn renders_engines_like_rails() {
         hostname: s["current_hostname"].as_str().unwrap(),
         disable_media_download_controls: s["disable_onebox_media_download_controls"] == true,
         i18n: &i18n,
+        settings: engine_settings(s),
     };
     let mut failures = Vec::new();
     let previews = rec["previews"].as_array().unwrap();
@@ -172,6 +206,7 @@ async fn fetches_like_rails() {
         hostname: s["current_hostname"].as_str().unwrap(),
         disable_media_download_controls: s["disable_onebox_media_download_controls"] == true,
         i18n: &i18n,
+        settings: engine_settings(s),
     };
     let errors = Errors {
         i18n: &i18n,
@@ -212,7 +247,7 @@ async fn fetches_like_rails() {
             }
         };
         let mut differ = |key: &str, ours: Value| {
-            if ours != case[key] {
+            if scrub(&ours) != scrub(&case[key]) {
                 failures.push(format!(
                     "{url} [{key}]\n  ours  {ours}\n  rails {}",
                     case[key]
@@ -275,7 +310,7 @@ async fn fetches_like_rails() {
         } else {
             case["external"].clone()
         };
-        if external != rails_external {
+        if scrub(&external) != scrub(&rails_external) {
             failures.push(format!(
                 "{url} [external]\n  ours  {external}\n  rails {rails_external}"
             ));

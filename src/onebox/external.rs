@@ -196,6 +196,80 @@ impl<'a> Errors<'a> {
     }
 }
 
+/// The engines' fetches on the network, FinalDestination taking
+/// `Oneboxer.get_final_destination_options` under the default strategy.
+pub(super) fn live<'a>(
+    conn: &'a mut PgConnection,
+    site: &Site<'a>,
+    locale: &str,
+) -> Result<Live<'a>, AppError> {
+    let s = site.settings;
+    Ok(Live {
+        conn,
+        fetcher: Fetcher {
+            settings: s,
+            urls: crate::url::Urls {
+                config: site.urls.config,
+                settings: s,
+            },
+        },
+        user_agent: onebox_user_agent(site)?,
+        accept_language: accept_language(locale),
+        resolve_options: ResolveOptions {
+            timeout: Duration::from_secs(5),
+            max_redirects: 5,
+            https_redirect_ignore_limit: false,
+            stop_at_blocked_pages: false,
+            ignore_redirects: ignore_redirects(site)?,
+            force_get_hosts: force_get_hosts(site)?,
+            force_custom_user_agent_hosts: setting_list(site, "force_custom_user_agent_hosts")?,
+            preserve_fragment_url_hosts: vec!["http://github.com".to_string()],
+            custom_user_agent: onebox_user_agent(site)?,
+            headers: vec![("Accept-Language".into(), accept_language(locale))],
+        },
+    })
+}
+
+/// `Oneboxer.inline_data_for(url)`: the title an engine gives an inline
+/// onebox (Google Meet's, GitHub's with an access token), if it does.
+pub async fn inline_data(
+    conn: &mut PgConnection,
+    site: &Site<'_>,
+    url: &str,
+    locale: &str,
+) -> Result<Option<String>, AppError> {
+    let s = site.settings;
+    let regexes = origins_to_regexes(&allowed_iframe_origins(s)?);
+    let Some(engine) = oneboxed(url, None, &regexes) else {
+        return Ok(None);
+    };
+    match engine.name {
+        "GoogleMeetOnebox" => Ok(Some(
+            site.i18n
+                .t("onebox.google_meet.title")
+                .unwrap_or("")
+                .to_string(),
+        )),
+        "GithubIssueOnebox"
+        | "GithubCommitOnebox"
+        | "GithubRepoOnebox"
+        | "GithubPullRequestOnebox" => {
+            let hostname = site.urls.current_hostname()?;
+            let ctx = Ctx {
+                iframes: &regexes,
+                cookie: None,
+                hostname: &hostname,
+                disable_media_download_controls: false,
+                i18n: site.i18n,
+                settings: engines::EngineSettings::of(s, site.base_path)?,
+            };
+            let mut fetch = live(conn, site, locale)?;
+            super::github::inline_data(engine, url, &ctx, &mut fetch).await
+        }
+        _ => Ok(None),
+    }
+}
+
 /// `Oneboxer.preview_error_onebox(link:, error_message:)`
 fn preview_error(site: &Site, link: &str, message: Option<String>) -> Result<String, AppError> {
     let mut args = serde_json::Map::new();
@@ -302,15 +376,19 @@ async fn compute(
         let strategy = remaining.next().unwrap_or("default");
         let forced = strategy == "force_get_and_ua";
         let host_url = vec![format!("https://{}", start.host)];
-        if s.get("github_onebox_access_tokens")?.to_s().trim() != "" && start.host == "github.com" {
-            return Err(crate::Unsupported("oneboxes with GitHub access tokens").into());
+        // A private repository 404s without the token: GitHub isn't asked.
+        let mut ignored = ignore_redirects(site)?;
+        if !crate::ruby::is_blank(&s.get("github_onebox_access_tokens")?.to_s())
+            && start.host == "github.com"
+        {
+            ignored.push("https://github.com".into());
         }
         let opts = ResolveOptions {
             timeout: Duration::from_secs(5),
             max_redirects: if block_redirects { 0 } else { 5 },
             https_redirect_ignore_limit: block_redirects,
             stop_at_blocked_pages: true,
-            ignore_redirects: ignore_redirects(site)?,
+            ignore_redirects: ignored,
             force_get_hosts: if forced {
                 host_url.clone()
             } else {
@@ -375,27 +453,9 @@ async fn compute(
                         .get("disable_onebox_media_download_controls")?
                         .truthy(),
                     i18n: site.i18n,
+                    settings: engines::EngineSettings::of(s, site.base_path)?,
                 };
-                let mut default_options = opts.clone();
-                default_options.max_redirects = 5;
-                default_options.https_redirect_ignore_limit = false;
-                default_options.stop_at_blocked_pages = false;
-                default_options.force_get_hosts = force_get_hosts(site)?;
-                default_options.force_custom_user_agent_hosts =
-                    setting_list(site, "force_custom_user_agent_hosts")?;
-                let mut live = Live {
-                    conn: &mut *conn,
-                    fetcher: Fetcher {
-                        settings: s,
-                        urls: crate::url::Urls {
-                            config: site.urls.config,
-                            settings: s,
-                        },
-                    },
-                    user_agent: onebox_user_agent(site)?,
-                    accept_language: accept_language(&locale),
-                    resolve_options: default_options,
-                };
+                let mut live = live(&mut *conn, site, &locale)?;
                 let errors = Errors::of(site)?;
                 match engine_onebox(engine, &final_url, &ctx, &mut live, &errors).await {
                     Ok(result) => result,

@@ -131,6 +131,340 @@
     },
     "https://down.example.com/page": {
       "status": 503
+    },
+    "https://www.amazon.com/dp/193609620X": {
+      "file": "amazon.response"
+    },
+    "https://www.amazon.com/dp/193435659X": {
+      "file": "amazon-ebook.response"
+    },
+    "https://www.amazon.com/dp/B01MFXN4Y2": {
+      "file": "amazon-og.response"
+    },
+    "https://www.amazon.com/dp/B07FQ7M16H": {
+      "file": "amazon-alternate.response"
+    },
+    "https://www.amazon.com/dp/B0123ABCD3210": {
+      "file": "amazon-error.response"
+    },
+    "https://gph.is/15bRbWf": {
+      "file": "giphy.response"
+    },
+    "https://tenor.com/view/happy-dance-gif-123": {
+      "file": "tenor.response"
+    },
+    "https://audioboom.com/posts/12345": {
+      "file": "e_audioboom.html"
+    },
+    "https://audioboom.com/publishing/oembed/v4.json?url=https%3A%2F%2Faudioboom.com%2Fposts%2F12345": {
+      "file": "e_audioboom.json"
+    },
+    "https://api.audio.com/oembed?url=https://audio.com/agilov/audio/discourse-onebox-test-audio&maxheight=228": {
+      "file": "audio_com_audio_oembed.response"
+    },
+    "https://api.audio.com/oembed?url=https://audio.com/agilov/collections/discourse-test-collection": {
+      "file": "audio_com_collection_oembed.response"
+    },
+    "https://artist.bandcamp.com/album/some-album": {
+      "file": "e_bandcamp.html"
+    },
+    "https://cl.ly/0m2a2u2k440O": {
+      "file": "cloudapp-gif.response"
+    },
+    "https://cl.ly/0T0c2J3S373X": {
+      "file": "cloudapp-mp4.response"
+    },
+    "https://cl.ly/2C0E1V451J0C": {
+      "file": "cloudapp-jpg.response"
+    },
+    "https://cl.ly/1x1f2g253l03": {
+      "file": "cloudapp-others.response"
+    },
+    "https://coub.com/view/abc123": {
+      "file": "e_coub.html"
+    },
+    "https://coub.com/api/oembed.json?url=coub.com/view/abc123": {
+      "file": "e_coub.json"
+    },
+    "https://www.facebook.com/watch/?v=1": {
+      "file": "e_facebook_player.html"
+    },
+    "https://www.facebook.com/examplepage": {
+      "file": "e_facebook_page.html"
+    },
+    "https://500px.com/photo/123/sunrise": {
+      "file": "e_500px.html"
+    },
+    "https://www.flickr.com/photos/someone/123456": {
+      "file": "e_flickr.html"
+    },
+    "https://www.flickr.com/photos/someone/albums/72157": {
+      "file": "e_flickr_set.html"
+    },
+    "https://flic.kr/p/abc123": {
+      "file": "e_flickr.html"
+    },
+    "https://gfycat.com/shrillnegativearrowana": {
+      "file": "gfycat.response"
+    },
+    "https://docs.google.com/document/d/DOC_KEY/pub": {
+      "file": "googledocs.response"
+    },
+    "https://docs.google.com/spreadsheets/d/SHEET_KEY/edit": {
+      "status": 404
+    },
+    "https://drive.google.com/file/d/1FgMt06wENEUfC6_-1tImXaNCH7vM9QsA/view": {
+      "file": "googledrive.response"
+    },
+    "https://photos.app.goo.gl/pXA7T8zBX4WZWVMT7": {
+      "file": "googlephotos.response"
+    },
+    "https://photos.google.com/share/AF1QipOV3gcu_edA8lyjJEpS9sC1g3AeCUtaZox11ylYZId7wJ7cthZ8M1kZXeAp5vhEPg": {
+      "file": "googlephotos.response"
+    },
+    "https://play.google.com/store/apps/details?id=com.hulu.plus&hl=en": {
+      "file": "googleplayapp.response"
+    },
+    "https://hacker-news.firebaseio.com/v0/item/30181167.json": {
+      "file": "hackernews_comment.response"
+    },
+    "https://hacker-news.firebaseio.com/v0/item/5172905.json": {
+      "file": "hackernews_story.response"
+    },
+    "https://imgur.com/gallery/Sdc0Klc": {
+      "file": "imgur.response"
+    },
+    "https://api.imgur.com/oembed.json?url=https://imgur.com/gallery/Sdc0Klc": {
+      "file": "e_imgur_oembed.json"
+    },
+    "https://api.instagram.com/oembed/?url=https://www.instagram.com/p/CARbvuYDm3Q": {
+      "file": "instagram.response"
+    },
+    "https://api.instagram.com/oembed/?url=https://www.instagram.com/p/CHLkBERAiLa": {
+      "file": "instagram_old.response"
+    },
+    "https://videos.kaltura.com/id/0_e2ea6ygt": {
+      "file": "kaltura.response"
+    },
+    "https://www.mixcloud.com/djexample/late-night-mix/": {
+      "file": "e_coub.html"
+    },
+    "https://www.mixcloud.com/oembed/?url=https://www.mixcloud.com/djexample/late-night-mix/": {
+      "file": "e_mixcloud.json"
+    },
+    "https://embed.smartcontracts.org/services/onebox?url=https://embed.motoko.org": {
+      "file": "e_motoko.json"
+    },
+    "https://replit.com/@username/project-name": {
+      "file": "e_replit.html"
+    },
+    "https://replit.com/data/oembed?url=https%3A%2F%2Freplit.com%2F%40username%2Fproject-name": {
+      "file": "e_replit.json"
+    },
+    "https://api.simplecast.com/oembed?url=https://simplecast.com/episodes/example-episode": {
+      "file": "e_simplecast.json"
+    },
+    "https://sketchfab.com/models/1234567890abcdef1234567890abcdef": {
+      "file": "e_sketchfab.html"
+    },
+    "https://slides.com/drksephy/ecmascript-2015": {
+      "file": "slides.response"
+    },
+    "https://soundcloud.com/oembed.json?url=https://soundcloud.com/artist/track&maxheight=166": {
+      "file": "e_soundcloud.json"
+    },
+    "https://soundcloud.com/oembed.json?url=https://soundcloud.com/artist/sets/album": {
+      "file": "e_soundcloud.json"
+    },
+    "https://open.spotify.com/oembed?url=https://open.spotify.com/show/5eXZwvvxt3K2dxha3BSaAe": {
+      "file": "spotify.response"
+    },
+    "https://store.steampowered.com/app/123456": {
+      "file": "e_steam.html"
+    },
+    "https://www.tiktok.com/oembed?url=https://www.tiktok.com/@user123/video/1234567890": {
+      "file": "e_tiktok.json"
+    },
+    "https://vimeo.com/api/oembed.json?url=https://vimeo.com/123456789": {
+      "file": "e_vimeo.json"
+    },
+    "https://vimeo.com/api/oembed.json?url=https://vimeo.com/76979871": {
+      "file": "e_vimeo_noframe.json"
+    },
+    "https://fast.wistia.com/oembed?embedType=iframe&url=https://support.wistia.com/medias/26sk4lmiix": {
+      "file": "e_wistia.json"
+    },
+    "https://www.youtube.com/watch?v=21Lk4YiASMo": {
+      "file": "youtube.response"
+    },
+    "https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=21Lk4YiASMo": {
+      "file": "e_youtube_oembed.json"
+    },
+    "https://youtu.be/21Lk4YiASMo": {
+      "file": "youtube.response"
+    },
+    "https://www.youtube.com/oembed?url=https://youtu.be/21Lk4YiASMo?t=1h2m3s": {
+      "file": "e_youtube_oembed.json"
+    },
+    "https://www.youtube.com/channel/UCL8ZULXASCc1I_oaOT0NaOQ": {
+      "file": "youtube-channel.response"
+    },
+    "https://www.youtube.com/playlist?list=PL5308B2E5749D1696": {
+      "file": "youtube-playlist.response"
+    },
+    "https://www.youtube.com/shorts/VvoFuaLAslw": {
+      "file": "youtube-shorts.response"
+    },
+    "https://www.youtube.com/embed/VvoFuaLAslw": {
+      "file": "youtube-shorts.response"
+    },
+    "https://hacker-news.firebaseio.com/v0/item/1.json": {
+      "file": "e_motoko.json"
+    },
+    "http://pastebin.com/raw/abc123": {
+      "file": "e_pastebin.txt"
+    },
+    "https://acrobatusers.com/assets/uploads/public_downloads/2217/adobe-acrobat-xi-merge-pdf-files-tutorial-ue.pdf": {
+      "content_length": "8697"
+    },
+    "https://dspace.lboro.ac.uk/dspace-jspui/bitstream/2134/14294/3/greiffenhagen-ca_and_consumption.pdf": {
+      "content_length": "2734581"
+    },
+    "https://example.com/missing.pdf": {
+      "status": 404
+    },
+    "http://www.ncbi.nlm.nih.gov/pubmed/7288891?report=xml&format=text": {
+      "file": "pubmed-xml.response"
+    },
+    "http://www.ncbi.nlm.nih.gov/pubmed/24737116?report=xml&format=text": {
+      "file": "pubmed-electronic-xml.response"
+    },
+    "https://api.stackexchange.com/2.2/questions/17992553?site=stackoverflow.com&filter=!5-duuxrJa-iw9oVvOA(JNimB5VIisYwZgwcfNI": {
+      "file": "stackexchange-question.response"
+    },
+    "https://api.stackexchange.com/2.2/answers/17992906?site=stackoverflow.com&filter=!.FjueITQdx6-Rq3Ue9PWG.QZ2WNdW": {
+      "file": "stackexchange-answer.response"
+    },
+    "https://www.threads.net/t/CuVvRcttG57": {
+      "file": "threadsstatus_without_image.response"
+    },
+    "https://www.threads.net/@rafael_falco": {
+      "file": "e_threads_avatar.html"
+    },
+    "https://www.threads.net/t/CuWRRrQuql9": {
+      "file": "threadsstatus_featured_image.response"
+    },
+    "https://www.threads.net/@joyqiuu": {
+      "file": "threadsstatus_profile.response"
+    },
+    "https://twitter.com/MKBHD/status/1625192182859632661": {
+      "file": "twitterstatus.response"
+    },
+    "https://twitter.com/Metallica/status/1128068672289890305": {
+      "file": "twitterstatus_quoted.response"
+    },
+    "https://twitter.com/codinghorror/status/1409351083177046020": {
+      "file": "twitterstatus_noclient.response"
+    },
+    "https://x.com/codinghorror/status/1409351083177046020": {
+      "file": "xstatus_noclient.response"
+    },
+    "https://en.wikipedia.org/w/api.php?action=query&titles=File:Stones_members_montage2.jpg&prop=imageinfo&iilimit=50&iiprop=timestamp|user|url&iiurlwidth=500&format=json": {
+      "file": "wikimedia.response"
+    },
+    "https://en.wikipedia.org/wiki/Billy_Jack": {
+      "file": "wikipedia.response"
+    },
+    "https://fr.wikipedia.org/wiki/Th%C3%A9ologie": {
+      "file": "wikipedia_url_encoded.response"
+    },
+    "https://xkcd.com/327/info.0.json": {
+      "file": "xkcd.response"
+    },
+    "https://api.github.com/repos/discourse/discourse/actions/runs/873214216": {
+      "file": "githubactions_actions_run.response"
+    },
+    "https://api.github.com/repos/discourse/discourse/check-runs/2660861130": {
+      "file": "githubactions_pr_run.response"
+    },
+    "https://api.github.com/repos/discourse/discourse/pulls/13128": {
+      "file": "githubactions_pr.response"
+    },
+    "https://raw.githubusercontent.com/discourse/onebox/master/lib/onebox/engine/github_blob_onebox.rb": {
+      "file": "githubblob.response"
+    },
+    "https://raw.githubusercontent.com/discourse/example/main/lib/thing.rb": {
+      "file": "e_blob.rb"
+    },
+    "https://api.github.com/repos/discourse/discourse/commits/803d023e2307309f8b776ab3b8b7e38ba91c0919": {
+      "file": "githubcommit.response"
+    },
+    "https://github.com/discourse/discourse/tree/main/spec/fixtures": {
+      "file": "githubfolder.response"
+    },
+    "https://github.com/discourse/discourse": {
+      "file": "githubfolder-discourse-root.response"
+    },
+    "https://github.com/ruby/rdoc": {
+      "file": "githubfolder-rdoc-root.response"
+    },
+    "https://github.com/organization/repo-foobar/tree/main/models": {
+      "file": "githubfolder-no-og.response"
+    },
+    "https://api.github.com/gists/208fdd59fc4b4c39283b": {
+      "file": "githubgist.response"
+    },
+    "https://api.github.com/gists/1234abcd": {
+      "file": "e_gist_many.json"
+    },
+    "https://api.github.com/gists/dead0000": {
+      "status": 403
+    },
+    "https://api.github.com/repos/discourse/discourse/issues/1": {
+      "file": "github_issue_onebox.response"
+    },
+    "https://api.github.com/repos/discourse/discourse": {
+      "file": "githubrepo.response"
+    },
+    "https://api.github.com/repos/discourse/discourse/pulls/1253": {
+      "file": "githubpullrequest.response"
+    },
+    "https://api.github.com/repos/discourse/discourse/commits/d7d3be1130c665cc7fab9f05dbf32335229137a6": {
+      "file": "githubpullrequest_commit.response"
+    },
+    "https://api.github.com/repos/discourse/discourse/issues/comments/21597425": {
+      "file": "githubpullrequest_comment.response"
+    },
+    "https://api.github.com/repos/discourse/missing/issues/9": {
+      "status": 404
+    },
+    "https://gitlab.com/discourse/onebox/raw/master/lib/onebox/engine/gitlab_blob_onebox.rb": {
+      "file": "gitlabblob.response"
+    },
+    "https://goo.gl/maps/rEG3D": {
+      "status": 302,
+      "location": "https://www.google.de/maps/place/Statue+of+Liberty+National+Monument/@40.689249,-74.0445,17z/data=!3m1!4b1!4m2!3m1!1s0x89c25090129c363d:0x40c6a5770d25022b"
+    },
+    "https://www.google.de/maps/place/Statue+of+Liberty+National+Monument/@40.689249,-74.0445,17z/data=!3m1!4b1!4m2!3m1!1s0x89c25090129c363d:0x40c6a5770d25022b": {
+      "status": 301,
+      "location": "https://maps.google.de/maps?sll=40.689249,-74.0445&sspn=0.0062479,0.0109864&cid=4667599994556318251&q=Statue+of+Liberty+National+Monument&output=classic&dg=ntvb"
+    },
+    "https://www.google.com/maps/place/Den+Abattoir/@51.2285173,4.4336702,17.5z/data=!4m7!1m4!3m3!1s0x47c3f7a5ac48e237:0x63d716018f584a33!2zUGnDqXRyYWlu!3b1!3m1!1s0x0000000000000000:0xfbfac0c41c32471a": {
+      "status": 302,
+      "location": "https://www.google.com/maps/place/Den+Abattoir/@51.2285173,4.4336702,17.5z/data=!4m7!1m4!3m3!1s0x47c3f7a5ac48e237:0x63d716018f584a33!2zUGnDqXRyYWlu!3b1!3m1!1s0x0000000000000000:0xfbfac0c41c32471a?dg=dbrw&newdg=1"
+    },
+    "https://www.google.de/maps/@40.6894264,-74.0449146,758m/data=!3m1!1e3": {
+      "status": 302,
+      "location": "https://www.google.de/maps/@40.6894264,-74.0449146,758m/data=!3m1!1e3?dg=dbrw&newdg=1"
+    },
+    "https://vimeo.com/123456789": {
+      "file": "e_vimeo.html"
+    },
+    "https://vimeo.com/76979871": {
+      "file": "e_vimeo.html"
+    },
+    "https://videos.kaltura.com/id/0e2ea6ygt": {
+      "file": "kaltura.response"
     }
   },
   "cases": [
@@ -181,7 +515,118 @@
     "https://dates.example.com/bad",
     "https://gone.example.com/page",
     "https://down.example.com/page",
-    "https://unknown.example.com/nowhere"
+    "https://unknown.example.com/nowhere",
+    "https://www.amazon.com/Knit-Noro-Accessories-Colorful-Little/dp/193609620X",
+    "https://www.amazon.com/dp/193435659X",
+    "https://www.amazon.com/dp/B01MFXN4Y2",
+    "https://www.amazon.com/dp/B07FQ7M16H",
+    "https://www.amazon.com/dp/B0123ABCD3210",
+    "http://gph.is/15bRbWf",
+    "https://tenor.com/view/happy-dance-gif-123",
+    "https://asciinema.org/a/abc123",
+    "https://asciinema.org/a/abc123?x=1",
+    "https://audioboom.com/posts/12345",
+    "https://audio.com/agilov/audio/discourse-onebox-test-audio",
+    "https://audio.com/agilov/collections/discourse-test-collection",
+    "https://artist.bandcamp.com/album/some-album",
+    "https://cl.ly/0m2a2u2k440O",
+    "https://cl.ly/0T0c2J3S373X",
+    "https://cl.ly/2C0E1V451J0C",
+    "https://cl.ly/1x1f2g253l03",
+    "https://coub.com/view/abc123",
+    "https://meta.discourse.org/t/congratulations-most-stars-in-2013-github-octoverse/12483",
+    "https://meta.discourse.org/t/congratulations-most-stars-in-2013-github-octoverse/12483/2",
+    "https://www.facebook.com/watch/?v=1",
+    "https://www.facebook.com/examplepage",
+    "https://500px.com/photo/123/sunrise",
+    "https://www.flickr.com/photos/someone/123456",
+    "https://www.flickr.com/photos/someone/albums/72157",
+    "https://flic.kr/p/abc123",
+    "https://gfycat.com/shrillnegativearrowana",
+    "https://docs.google.com/document/d/DOC_KEY/pub",
+    "https://docs.google.com/spreadsheets/d/SHEET_KEY/edit",
+    "https://drive.google.com/file/d/1FgMt06wENEUfC6_-1tImXaNCH7vM9QsA/view",
+    "https://photos.app.goo.gl/pXA7T8zBX4WZWVMT7",
+    "https://play.google.com/store/apps/details?id=com.hulu.plus&hl=en",
+    "https://news.ycombinator.com/item?id=30181167",
+    "https://news.ycombinator.com/item?id=5172905",
+    "https://news.ycombinator.com/item?id=1",
+    "https://imgur.com/gallery/Sdc0Klc",
+    "https://www.instagram.com/p/CARbvuYDm3Q",
+    "https://www.instagram.com/p/CHLkBERAiLa",
+    "https://videos.kaltura.com/id/0_e2ea6ygt",
+    "https://www.loom.com/share/abc123def",
+    "https://www.mixcloud.com/djexample/late-night-mix/",
+    "https://embed.motoko.org",
+    "https://www.reddit.com/r/colors/comments/b4d5xm/literally_nothing_black_edition",
+    "https://www.reddit.com/r/cats/comments/abc123/my_cat_doing_a_backflip/def456",
+    "https://replit.com/@username/project-name",
+    "https://player.restream.io/?token=624a83cddea44b6788cc52b38ce78748",
+    "https://simplecast.com/episodes/example-episode",
+    "https://sketchfab.com/models/1234567890abcdef1234567890abcdef",
+    "https://slides.com/drksephy/ecmascript-2015",
+    "https://soundcloud.com/artist/track",
+    "https://soundcloud.com/artist/sets/album",
+    "https://open.spotify.com/show/5eXZwvvxt3K2dxha3BSaAe",
+    "https://store.steampowered.com/app/123456",
+    "https://www.tiktok.com/@user123/video/1234567890",
+    "https://trello.com/b/nC8QJJoZ/trello-development-roadmap",
+    "https://trello.com/c/NIRpzVDM/1211-what-can-you-expect-from-this-board",
+    "https://vimeo.com/123456789",
+    "https://vimeo.com/76979871",
+    "https://support.wistia.com/medias/26sk4lmiix",
+    "https://www.youtube.com/watch?v=21Lk4YiASMo&t=1h2m3s&loop&rel=1",
+    "https://youtu.be/21Lk4YiASMo?t=1h2m3s",
+    "https://www.youtube.com/channel/UCL8ZULXASCc1I_oaOT0NaOQ",
+    "https://www.youtube.com/playlist?list=PL5308B2E5749D1696",
+    "https://www.youtube.com/shorts/VvoFuaLAslw",
+    "http://pastebin.com/abc123",
+    "https://acrobatusers.com/assets/uploads/public_downloads/2217/adobe-acrobat-xi-merge-pdf-files-tutorial-ue.pdf",
+    "https://dspace.lboro.ac.uk/dspace-jspui/bitstream/2134/14294/3/greiffenhagen-ca_and_consumption.pdf",
+    "https://example.com/missing.pdf",
+    "http://www.ncbi.nlm.nih.gov/pubmed/7288891",
+    "http://www.ncbi.nlm.nih.gov/pubmed/24737116",
+    "http://stackoverflow.com/questions/17992553/concept-behind-these-four-lines-of-tricky-c-code",
+    "http://stackoverflow.com/questions/17992553/concept-behind-these-four-lines-of-tricky-c-code/17992906#17992906",
+    "https://www.threads.net/t/CuVvRcttG57",
+    "https://www.threads.net/t/CuWRRrQuql9",
+    "https://twitter.com/MKBHD/status/1625192182859632661",
+    "https://twitter.com/Metallica/status/1128068672289890305",
+    "https://twitter.com/codinghorror/status/1409351083177046020",
+    "https://x.com/codinghorror/status/1409351083177046020",
+    "https://commons.wikimedia.org/wiki/File:Stones_members_montage2.jpg",
+    "https://en.wikipedia.org/wiki/Billy_Jack",
+    "https://en.wikipedia.org/wiki/Billy_Jack#Soundtrack",
+    "https://fr.wikipedia.org/wiki/Th%C3%A9ologie#L'ontoth%C3%A9ologie",
+    "https://xkcd.com/327/",
+    "https://github.com/discourse/discourse/actions/runs/873214216",
+    "https://github.com/discourse/discourse/pull/13128/checks?check_run_id=2660861130",
+    "https://github.com/discourse/onebox/blob/master/lib/onebox/engine/github_blob_onebox.rb",
+    "https://github.com/discourse/onebox/blob/master/lib/onebox/engine/github_blob_onebox.rb#L5-L12",
+    "https://github.com/discourse/example/blob/main/lib/thing.rb#L12",
+    "https://github.com/discourse/example/blob/main/lib/thing.rb",
+    "https://github.com/discourse/example/blob/main/models/part.stl",
+    "https://github.com/discourse/discourse/commit/803d023e2307309f8b776ab3b8b7e38ba91c0919",
+    "https://github.com/discourse/discourse/pull/4662/commit/803d023e2307309f8b776ab3b8b7e38ba91c0919",
+    "https://github.com/discourse/discourse/tree/main/spec/fixtures",
+    "https://github.com/organization/repo-foobar/tree/main/models",
+    "https://gist.github.com/karreiro/208fdd59fc4b4c39283b",
+    "https://gist.github.com/someone/1234abcd",
+    "https://gist.github.com/someone/dead0000",
+    "https://github.com/discourse/discourse/issues/1",
+    "https://github.com/discourse/missing/issues/9",
+    "https://github.com/discourse/discourse/pull/1253/",
+    "https://github.com/discourse/discourse/pull/1253/commits/d7d3be1130c665cc7fab9f05dbf32335229137a6",
+    "https://github.com/discourse/discourse/pull/1253/#issuecomment-21597425",
+    "https://github.com/discourse/discourse",
+    "https://gitlab.com/discourse/onebox/blob/master/lib/onebox/engine/gitlab_blob_onebox.rb",
+    "https://goo.gl/maps/rEG3D",
+    "https://www.google.com/maps/d/edit?mid=zPYyZFrHi1MU.kX85W_Y2y2_E",
+    "https://www.google.com/maps/@46.414384,10.013947,3a,75y,232.83h,99.08t/data=!3m5!1e1!3m3!1s9WgYUb5quXDjqqFd3DWI6A!2e0!3e5?hl=de",
+    "https://www.google.com/maps/place/Den+Abattoir/@51.2285173,4.4336702,17.5z/data=!4m7!1m4!3m3!1s0x47c3f7a5ac48e237:0x63d716018f584a33!2zUGnDqXRyYWlu!3b1!3m1!1s0x0000000000000000:0xfbfac0c41c32471a",
+    "https://www.google.de/maps/@40.6894264,-74.0449146,758m/data=!3m1!1e3",
+    "https://xkcd.com/327",
+    "https://videos.kaltura.com/id/0e2ea6ygt"
   ],
   "times": [
     "2023-01-15T10:30:00+05:00",

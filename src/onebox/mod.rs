@@ -11,16 +11,21 @@
 //! refused, as are own-site paths no route here knows (Rails would fetch
 //! the page) and chat's local oneboxes.
 
+pub mod api_engines;
+pub mod embed;
+pub mod embed_engines;
 pub mod engines;
 pub mod entities;
 pub mod external;
 pub mod fetch;
 pub mod generic;
+pub mod github;
 pub mod html_doc;
 pub mod matcher;
 pub mod preview;
 pub mod ruby_time;
 pub mod uri;
+pub mod xml;
 
 use std::sync::LazyLock;
 
@@ -1040,14 +1045,9 @@ async fn crawled_title(
     if fetcher.blocked_domain(&uri.host)? {
         return Ok(None);
     }
-    // Oneboxer.inline_data_for: the GitHub and Google Meet engines give
-    // titles of their own.
-    if uri.host == "github.com" || uri.host == "meet.google.com" {
-        return Err(Unsupported(
-            "inline oneboxes of GitHub and Google Meet links (onebox engines)",
-        )
-        .into());
-    }
+    // Oneboxer.inline_data_for: the engines that give titles of their own
+    // (Google Meet, GitHub with an access token), else the page's.
+    let data_title = external::inline_data(conn, site, url, &locale).await?;
     let block_redirects = s.get("block_onebox_on_redirect")?.truthy();
     let mut headers = vec![(
         "Accept-Language".to_string(),
@@ -1057,16 +1057,19 @@ async fn crawled_title(
     if !agent.trim().is_empty() {
         headers.push(("User-Agent".into(), agent));
     }
-    let title = crate::retrieve_title::crawl(
-        conn,
-        &fetcher,
-        url,
-        if block_redirects { 0 } else { 5 },
-        block_redirects,
-        headers,
-    )
-    .await?
-    .filter(|t| t.chars().count() >= 2)
+    let title = match data_title {
+        Some(t) => Some(t),
+        None => crate::retrieve_title::crawl(
+            conn,
+            &fetcher,
+            url,
+            if block_redirects { 0 } else { 5 },
+            block_redirects,
+            headers,
+        )
+        .await?
+        .filter(|t| t.chars().count() >= 2),
+    }
     // onebox_for
     .map(|t| crate::emoji::gsub_emoji_to_unicode(&t));
     let title = match title {
@@ -1117,15 +1120,8 @@ pub fn refuse_unported(
             return Err(Unsupported("onebox URLs that need encoding").into());
         }
         if *inline {
-            // A topic's title, or a page's crawled (RetrieveTitle), except
-            // where an onebox engine gives the title.
-            let host = crate::final_destination::Uri::parse(url).map(|u| u.host);
-            if matches!(host.as_deref(), Some("github.com" | "meet.google.com")) {
-                return Err(Unsupported(
-                    "inline oneboxes of GitHub and Google Meet links (onebox engines)",
-                )
-                .into());
-            }
+            // A topic's title, an engine's (Oneboxer.inline_data_for), or a
+            // page's crawled (RetrieveTitle).
             continue;
         }
         // Another site's: only the ported engines (a redirect to another

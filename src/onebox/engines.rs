@@ -24,6 +24,66 @@ pub struct Ctx<'a> {
     /// `disable_onebox_media_download_controls`
     pub disable_media_download_controls: bool,
     pub i18n: &'a crate::i18n::I18n,
+    pub settings: EngineSettings,
+}
+
+/// The site settings the engines read.
+#[derive(Debug, Clone, Default)]
+pub struct EngineSettings {
+    /// `github_onebox_access_tokens`
+    pub github_tokens: String,
+    /// `github_pr_status_enabled` (discourse-github)
+    pub github_pr_status: bool,
+    /// `facebook_app_access_token`
+    pub facebook_token: String,
+    /// TwitterApi has its consumer key and secret.
+    pub twitter_credentials: bool,
+    pub emoji_set: String,
+    /// `Discourse.base_path`
+    pub base_path: String,
+    /// discourse-lazy-videos for YouTube, Vimeo and TikTok.
+    pub lazy_youtube: bool,
+    pub lazy_vimeo: bool,
+    pub lazy_tiktok: bool,
+}
+
+impl EngineSettings {
+    pub fn of(
+        settings: &crate::site_settings::SiteSettings,
+        base_path: &str,
+    ) -> Result<EngineSettings, AppError> {
+        let s = |k: &str| -> Result<String, AppError> { Ok(settings.get(k)?.to_s().to_string()) };
+        let on = |k: &str| settings.get(k).map(|v| v.truthy()).unwrap_or(false);
+        Ok(EngineSettings {
+            github_tokens: s("github_onebox_access_tokens")?,
+            github_pr_status: settings
+                .get("github_pr_status_enabled")
+                .map(|v| v.truthy())
+                .unwrap_or(false),
+            facebook_token: s("facebook_app_access_token")?,
+            twitter_credentials: !crate::ruby::is_blank(&s("twitter_consumer_key")?)
+                && !crate::ruby::is_blank(&s("twitter_consumer_secret")?),
+            emoji_set: s("emoji_set")?,
+            base_path: base_path.to_string(),
+            lazy_youtube: on("lazy_videos_enabled") && on("lazy_youtube_enabled"),
+            lazy_vimeo: on("lazy_videos_enabled") && on("lazy_vimeo_enabled"),
+            lazy_tiktok: on("lazy_videos_enabled") && on("lazy_tiktok_enabled"),
+        })
+    }
+
+    /// `Onebox::GithubAccess.token(org)`
+    pub fn github_token(&self, org: Option<&str>) -> Option<String> {
+        let map: Vec<(&str, &str)> = self
+            .github_tokens
+            .split('\n')
+            .filter_map(|l| l.split_once('|'))
+            .collect();
+        let find = |k: &str| map.iter().rev().find(|(o, _)| *o == k).map(|(_, t)| *t);
+        org.and_then(find)
+            .or_else(|| find("default"))
+            .filter(|t| !crate::ruby::is_blank(t))
+            .map(str::to_string)
+    }
 }
 
 /// An engine's HTML and its placeholder.
@@ -324,6 +384,9 @@ fn partial(name: &str) -> Option<&'static str> {
         "json_ld_partials/movie" => Some(include_str!(
             "../../vendor/discourse/lib/onebox/templates/json_ld_partials/movie.mustache"
         )),
+        "github/github_body" => Some(include_str!(
+            "../../vendor/discourse/lib/onebox/templates/github/github_body.mustache"
+        )),
         _ => None,
     }
 }
@@ -398,7 +461,77 @@ fn google_meet(url: &str, ctx: &Ctx) -> Result<Html, Unsupported> {
     })
 }
 
-/// The engines `render` ports.
+/// The engines over StandardEmbed (embed_engines.rs).
+const EMBED_ENGINES: &[&str] = &[
+    "AnimatedImageOnebox",
+    "AsciinemaOnebox",
+    "AudioboomOnebox",
+    "AudioComOnebox",
+    "BandCampOnebox",
+    "CloudAppOnebox",
+    "CoubOnebox",
+    "DiscourseTopicOnebox",
+    "FacebookMediaOnebox",
+    "FiveHundredPxOnebox",
+    "FlickrOnebox",
+    "FlickrShortenedOnebox",
+    "GithubFolderOnebox",
+    "GoogleDocsOnebox",
+    "GoogleDriveOnebox",
+    "GooglePhotosOnebox",
+    "ImgurOnebox",
+    "InstagramOnebox",
+    "KalturaOnebox",
+    "LoomOnebox",
+    "MixcloudOnebox",
+    "MotokoOnebox",
+    "RedditMediaOnebox",
+    "ReplitOnebox",
+    "RestreamOnebox",
+    "SimplecastOnebox",
+    "SketchFabOnebox",
+    "SlidesOnebox",
+    "SoundCloudOnebox",
+    "SpotifyOnebox",
+    "SteamStoreOnebox",
+    "TiktokOnebox",
+    "TrelloOnebox",
+    "VimeoOnebox",
+    "WistiaOnebox",
+    "YoutubeOnebox",
+];
+
+/// The GitHub and GitLab engines (github.rs).
+const GITHUB_ENGINES: &[&str] = &[
+    "GithubActionsOnebox",
+    "GithubBlobOnebox",
+    "GithubCommitOnebox",
+    "GithubGistOnebox",
+    "GithubIssueOnebox",
+    "GithubPullRequestOnebox",
+    "GithubRepoOnebox",
+    "GitlabBlobOnebox",
+];
+
+/// The JSON and HTML engines (api_engines.rs).
+const API_ENGINES: &[&str] = &[
+    "AmazonOnebox",
+    "GfycatOnebox",
+    "GoogleMapsOnebox",
+    "GooglePlayAppOnebox",
+    "HackernewsOnebox",
+    "PastebinOnebox",
+    "PdfOnebox",
+    "PubmedOnebox",
+    "StackExchangeOnebox",
+    "ThreadsStatusOnebox",
+    "TwitterStatusOnebox",
+    "WikimediaOnebox",
+    "WikipediaOnebox",
+    "XkcdOnebox",
+];
+
+/// The engines ported: every engine but the ones UNPORTED names.
 pub const PORTED: &[&str] = &[
     "AudioOnebox",
     "VideoOnebox",
@@ -411,6 +544,64 @@ pub const PORTED: &[&str] = &[
     "GoogleCalendarOnebox",
     "GoogleMeetOnebox",
     "AllowlistedGenericOnebox",
+    "AnimatedImageOnebox",
+    "AsciinemaOnebox",
+    "AudioboomOnebox",
+    "AudioComOnebox",
+    "BandCampOnebox",
+    "CloudAppOnebox",
+    "CoubOnebox",
+    "DiscourseTopicOnebox",
+    "FacebookMediaOnebox",
+    "FiveHundredPxOnebox",
+    "FlickrOnebox",
+    "FlickrShortenedOnebox",
+    "GithubFolderOnebox",
+    "GoogleDocsOnebox",
+    "GoogleDriveOnebox",
+    "GooglePhotosOnebox",
+    "ImgurOnebox",
+    "InstagramOnebox",
+    "KalturaOnebox",
+    "LoomOnebox",
+    "MixcloudOnebox",
+    "MotokoOnebox",
+    "RedditMediaOnebox",
+    "ReplitOnebox",
+    "RestreamOnebox",
+    "SimplecastOnebox",
+    "SketchFabOnebox",
+    "SlidesOnebox",
+    "SoundCloudOnebox",
+    "SpotifyOnebox",
+    "SteamStoreOnebox",
+    "TiktokOnebox",
+    "TrelloOnebox",
+    "VimeoOnebox",
+    "WistiaOnebox",
+    "YoutubeOnebox",
+    "GithubActionsOnebox",
+    "GithubBlobOnebox",
+    "GithubCommitOnebox",
+    "GithubGistOnebox",
+    "GithubIssueOnebox",
+    "GithubPullRequestOnebox",
+    "GithubRepoOnebox",
+    "GitlabBlobOnebox",
+    "AmazonOnebox",
+    "GfycatOnebox",
+    "GoogleMapsOnebox",
+    "GooglePlayAppOnebox",
+    "HackernewsOnebox",
+    "PastebinOnebox",
+    "PdfOnebox",
+    "PubmedOnebox",
+    "StackExchangeOnebox",
+    "ThreadsStatusOnebox",
+    "TwitterStatusOnebox",
+    "WikimediaOnebox",
+    "WikipediaOnebox",
+    "XkcdOnebox",
 ];
 
 /// `Onebox::Engine#to_html` and `#placeholder_html` for the engine that
@@ -483,6 +674,15 @@ pub async fn preview<F: Fetch>(
 ) -> Result<Rendered, Fail> {
     let result = match engine.name {
         "AllowlistedGenericOnebox" => super::generic::preview(url, ctx, fetch).await,
+        name if EMBED_ENGINES.contains(&name) => {
+            super::embed_engines::preview(engine, url, ctx, fetch).await
+        }
+        name if GITHUB_ENGINES.contains(&name) => {
+            super::github::preview(engine, url, ctx, fetch).await
+        }
+        name if API_ENGINES.contains(&name) => {
+            super::api_engines::preview(engine, url, ctx, fetch).await
+        }
         _ => render(engine, url, ctx)
             .map(|h| Rendered {
                 html: Some(h.html),

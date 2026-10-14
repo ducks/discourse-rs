@@ -213,9 +213,17 @@ fn is_entity(rest: &str) -> bool {
 /// text between escaped once. Custom emojis are not consulted: callers
 /// refuse sites that have them.
 pub fn codes_to_img(settings: &SiteSettings, base_path: &str, s: &str) -> Result<String, AppError> {
+    Ok(codes_to_img_with(
+        &settings.get("emoji_set")?.to_s(),
+        base_path,
+        s,
+    ))
+}
+
+/// `codes_to_img` with the emoji set given.
+pub fn codes_to_img_with(set: &str, base_path: &str, s: &str) -> String {
     static CODE: std::sync::OnceLock<regex::Regex> = std::sync::OnceLock::new();
     let code_re = CODE.get_or_init(|| regex::Regex::new(r":([\w\-+]+(?::t\d)?):").unwrap());
-    let set = settings.get("emoji_set")?.to_s();
     let mut out = String::new();
     let mut last = 0;
     for m in code_re.captures_iter(s) {
@@ -246,7 +254,7 @@ pub fn codes_to_img(settings: &SiteSettings, base_path: &str, s: &str) -> Result
         last = whole.end();
     }
     out.push_str(&html_escape_once(&s[last..]));
-    Ok(out)
+    out
 }
 
 #[cfg(test)]
