@@ -1,0 +1,22 @@
+{
+  "user": "user1",
+  "settings": {"watched_words_regular_expressions": true},
+  "setup": [
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (961, 'ru+de', 4, NULL, FALSE, FALSE, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (962, '^Crude', 4, NULL, TRUE, FALSE, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "A Ruuude reply, crude and rude again,\nCrude at a line start, that a flag word catches.",
+        "typing_duration_msecs": 5000
+      }
+    }
+  ],
+  "run_jobs": [
+    "process_post"
+  ]
+}

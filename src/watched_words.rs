@@ -3,7 +3,8 @@
 //! staff action logs, and WatchedWordListSerializer.
 //!
 //! Refused: the tag action (topic tagging writes aren't ported), and
-//! `watched_words_regular_expressions` (see `word_watcher`).
+//! admin regexps the port can't read as Ruby and JavaScript do (see
+//! `word_watcher`).
 
 use serde_json::{Map, Value, json};
 use sqlx::PgConnection;
@@ -508,14 +509,14 @@ pub async fn list_json(
     s: &SiteSettings,
     words: &[Row],
 ) -> Result<Value, AppError> {
-    ww::refuse_unported(s)?;
+    let regex = ww::regex_mode(s)?;
     let tagging = s.get("tagging_enabled")?.truthy();
     let actions: Vec<&str> = ACTIONS
         .iter()
         .map(|(k, _)| *k)
         .filter(|k| tagging || *k != "tag")
         .collect();
-    let words: Vec<Value> = words.iter().map(word_json).collect();
+    let words: Vec<Value> = words.iter().map(|w| word_json(w, regex)).collect();
     let mut compiled = Map::new();
     for key in &actions {
         let action = ww::action_id(key).unwrap_or_default();
@@ -532,11 +533,14 @@ pub async fn list_json(
 }
 
 /// WatchedWordSerializer
-fn word_json(row: &Row) -> Value {
+fn word_json(row: &Row, regex: bool) -> Value {
     let mut out = Map::new();
     out.insert("id".into(), json!(row.id));
     out.insert("word".into(), json!(row.word));
-    out.insert("regexp".into(), json!(ww::word_to_regexp(&row.word, true)));
+    out.insert(
+        "regexp".into(),
+        json!(ww::word_regexp(&row.word, true, regex)),
+    );
     if ww::has_replacement(row.action) {
         out.insert("replacement".into(), json!(row.replacement));
     }

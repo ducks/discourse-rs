@@ -1,0 +1,28 @@
+{
+  "user": "user1",
+  "settings": {"watched_words_regular_expressions": true},
+  "setup": [
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (931, 'sp[a4]+m', 1, NULL, FALSE, FALSE, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (932, 'fr(ee|33) mon(ey)?', 1, NULL, FALSE, FALSE, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "This reply is pure SPAAAM and sp4m, with fr33 money and free mon offers inside.",
+        "typing_duration_msecs": 5000
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "A reply mentioning free money only, which the second word catches alone.",
+        "typing_duration_msecs": 5000
+      }
+    }
+  ]
+}

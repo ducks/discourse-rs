@@ -7,6 +7,8 @@
 //! The regexps are the server's sources, run as JavaScript runs them with
 //! the `u` flag (`gu`, `gui`): by code point, simple case folding. The
 //! server refuses words whose case folding JavaScript and Ruby disagree on.
+//! Admin regexps (`watched_words_regular_expressions`) go through
+//! crate::regexp first, as JavaScript reads them.
 
 use fancy_regex::{Regex, RegexBuilder};
 use markdown_it::parser::inline::Text;
@@ -29,6 +31,10 @@ pub struct WatchedWord {
     pub replacement: String,
     pub case_sensitive: bool,
     pub html: bool,
+    /// `watched_words_regular_expressions`: the word is an admin regexp,
+    /// read as JavaScript reads it (crate::regexp).
+    #[serde(default)]
+    pub regex: bool,
 }
 
 /// One of `censoredRegexp`: the source and whether it is case-sensitive.
@@ -36,9 +42,17 @@ pub struct WatchedWord {
 pub struct Censored {
     pub regexp: String,
     pub case_sensitive: bool,
+    #[serde(default)]
+    pub regex: bool,
 }
 
-fn compile(source: &str, case_sensitive: bool) -> Result<Regex, &'static str> {
+fn compile(source: &str, case_sensitive: bool, regex: bool) -> Result<Regex, &'static str> {
+    if regex {
+        let t =
+            crate::regexp::translate(source, crate::regexp::Dialect::JsUnicode, case_sensitive)?;
+        return Regex::new(&t.source)
+            .map_err(|_| "a watched word regexp the renderer can't compile");
+    }
     // An inline flag: fancy_regex's builder flag misses the parts its own
     // VM runs (those around lookarounds).
     let source = if case_sensitive {
@@ -50,7 +64,9 @@ fn compile(source: &str, case_sensitive: bool) -> Result<Regex, &'static str> {
 }
 
 /// `censorFn(list, "■")` over a text: each match's first group becomes ■
-/// per UTF-16 unit.
+/// per UTF-16 unit. Without a group taking part (an admin regexp without
+/// one), `groupMatches.find` lands on the replaced string itself, so the
+/// match is censored only when it is that whole string.
 fn censor_text(text: &str, regexps: &[Regex]) -> Result<String, &'static str> {
     let mut text = text.to_string();
     for re in regexps {
@@ -60,16 +76,11 @@ fn censor_text(text: &str, regexps: &[Regex]) -> Result<String, &'static str> {
             let caps = caps.map_err(|_| "watched word regexp backtracking limit")?;
             let full = caps.get(0).expect("match");
             out.push_str(&text[last..full.start()]);
-            let group = (1..caps.len())
+            let g = (1..caps.len())
                 .find_map(|i| caps.get(i))
-                .map(|g| g.as_str());
-            match group {
-                Some(g) => {
-                    let bars = "\u{25A0}".repeat(g.encode_utf16().count());
-                    out.push_str(&full.as_str().replacen(g, &bars, 1));
-                }
-                None => out.push_str(full.as_str()),
-            }
+                .map_or(text.as_str(), |g| g.as_str());
+            let bars = "\u{25A0}".repeat(g.encode_utf16().count());
+            out.push_str(&full.as_str().replacen(g, &bars, 1));
             last = full.end();
         }
         out.push_str(&text[last..]);
@@ -86,7 +97,7 @@ pub fn censor(root: &mut Node, settings: &RenderSettings) -> Result<(), &'static
     let regexps = settings
         .censored
         .iter()
-        .map(|c| compile(&c.regexp, c.case_sensitive))
+        .map(|c| compile(&c.regexp, c.case_sensitive, c.regex))
         .collect::<Result<Vec<_>, _>>()?;
     let mut failed = None;
     root.walk_mut(|node, _| {
@@ -242,7 +253,7 @@ pub fn apply(
     ] {
         for w in words {
             matchers.push(Matcher {
-                pattern: compile(&w.regexp, w.case_sensitive)?,
+                pattern: compile(&w.regexp, w.case_sensitive, w.regex)?,
                 replacement: w.replacement.clone(),
                 link,
                 html: !link && w.html,
@@ -344,9 +355,12 @@ pub fn apply(
 pub fn emoji_replace(content: &str, words: &[WatchedWord]) -> Result<String, &'static str> {
     let mut content = content.to_string();
     for w in words {
-        let source = w
-            .regexp
-            .replace(r"[\p{L}\p{M}\p{N}\p{Pc}]", r"[p\{L\}MNPc]");
+        let source = if w.regex {
+            crate::regexp::translate(&w.regexp, crate::regexp::Dialect::JsLegacy, true)?.source
+        } else {
+            w.regexp
+                .replace(r"[\p{L}\p{M}\p{N}\p{Pc}]", r"[p\{L\}MNPc]")
+        };
         let re = RegexBuilder::new(&source)
             .build()
             .map_err(|_| "a watched word regexp the renderer can't compile")?;
@@ -403,6 +417,7 @@ mod tests {
             replacement: "dog".into(),
             case_sensitive: false,
             html: false,
+            regex: false,
         };
         assert_eq!(
             emoji_replace("concatenate :smile:", std::slice::from_ref(&w)).unwrap(),
@@ -416,10 +431,38 @@ mod tests {
 
     #[test]
     fn censor_counts_utf16_units() {
-        let re = compile(&CAT.replace("(cat)", r"(shit\S*)"), false).unwrap();
+        let re = compile(&CAT.replace("(cat)", r"(shit\S*)"), false, false).unwrap();
         assert_eq!(
             censor_text("shit\u{1D482}", &[re]).unwrap(),
             "\u{25A0}".repeat(6)
+        );
+    }
+
+    #[test]
+    fn regex_censor_without_groups_only_takes_whole_strings() {
+        let re = compile(r"secret\d+", false, true).unwrap();
+        let re = std::slice::from_ref(&re);
+        assert_eq!(censor_text("a secret42 b", re).unwrap(), "a secret42 b");
+        assert_eq!(censor_text("SECRET42", re).unwrap(), "\u{25A0}".repeat(8));
+        let re = compile(r"darn(it)?", false, true).unwrap();
+        assert_eq!(
+            censor_text("darn darnit", &[re]).unwrap(),
+            "darn darn\u{25A0}\u{25A0}"
+        );
+    }
+
+    #[test]
+    fn regex_emoji_quirk() {
+        let w = WatchedWord {
+            regexp: "(cat)".into(),
+            replacement: "dog".into(),
+            case_sensitive: false,
+            html: false,
+            regex: true,
+        };
+        assert_eq!(
+            emoji_replace("concatenate :smile:", &[w]).unwrap(),
+            "condogenate :smile:"
         );
     }
 }

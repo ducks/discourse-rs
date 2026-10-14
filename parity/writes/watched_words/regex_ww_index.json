@@ -1,0 +1,155 @@
+{
+  "name": "regex_ww_index",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/customize/watched_words.json"
+    }
+  ],
+  "started_at": "2026-10-14T18:08:09.839",
+  "transaction_started_at": "2026-10-14T18:08:06.840555",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "actions": [
+          "block",
+          "censor",
+          "require_approval",
+          "flag",
+          "link",
+          "replace",
+          "tag",
+          "silence"
+        ],
+        "words": [
+          {
+            "id": 904,
+            "word": "sp[a4]+m",
+            "regexp": "(sp[a4]+m)",
+            "action": "block",
+            "case_sensitive": false,
+            "watched_word_group_id": null
+          },
+          {
+            "id": 901,
+            "word": "b[a4]d",
+            "regexp": "(b[a4]d)",
+            "action": "censor",
+            "case_sensitive": false,
+            "watched_word_group_id": null
+          },
+          {
+            "id": 902,
+            "word": "Sh(ou)?t",
+            "regexp": "(Sh(ou)?t)",
+            "action": "censor",
+            "case_sensitive": true,
+            "watched_word_group_id": null
+          },
+          {
+            "id": 903,
+            "word": "colou?r",
+            "regexp": "(colou?r)",
+            "replacement": "hue",
+            "action": "replace",
+            "case_sensitive": false,
+            "watched_word_group_id": null
+          }
+        ],
+        "compiled_regular_expressions": {
+          "block": [
+            {
+              "(sp[a4]+m)": {
+                "case_sensitive": false
+              }
+            }
+          ],
+          "censor": [
+            {
+              "(b[a4]d)": {
+                "case_sensitive": false
+              }
+            },
+            {
+              "(Sh(ou)?t)": {
+                "case_sensitive": true
+              }
+            }
+          ],
+          "require_approval": [],
+          "flag": [],
+          "link": [],
+          "replace": [
+            {
+              "(colou?r)": {
+                "case_sensitive": false
+              }
+            }
+          ],
+          "tag": [],
+          "silence": []
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "mU39ppMTfr9MxHK0u8iGjwgpI/I=",
+            "created_at": "2026-10-14T18:08:07.761071",
+            "rotated_at": "2026-10-14T18:08:07.754268",
+            "updated_at": "2026-10-14T18:08:07.761071",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "mU39ppMTfr9MxHK0u8iGjwgpI/I=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T18:08:09.864678",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "mU39ppMTfr9MxHK0u8iGjwgpI/I=",
+            "created_at": "2026-10-14T18:08:07.761071",
+            "rotated_at": "2026-10-14T18:08:07.754268",
+            "updated_at": "2026-10-14T18:08:07.761071",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "mU39ppMTfr9MxHK0u8iGjwgpI/I=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "watched_words_regular_expressions": true
+  },
+  "setup": [
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (901, 'b[a4]d', 2, NULL, FALSE, FALSE, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (902, 'Sh(ou)?t', 2, NULL, TRUE, FALSE, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (903, 'colou?r', 5, 'hue', FALSE, FALSE, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (904, 'sp[a4]+m', 1, NULL, FALSE, FALSE, now(), now())"
+  ],
+  "recorded_from": {
+    "case": "2ade60e79492158aad522c652f2d25bd34048c2066f7b4a4a45f893f5ca2940e",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

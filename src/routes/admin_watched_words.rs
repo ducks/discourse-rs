@@ -82,7 +82,6 @@ pub async fn create(
     let user_id = guardian.user_id().ok_or(Unsupported("anonymous staff"))?;
     let mut tx = state.pool.begin().await?;
     let s = SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
-    ww::refuse_unported(&s)?;
     let base_url = crate::url::Urls {
         config: &state.config,
         settings: &s,

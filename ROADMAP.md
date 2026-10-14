@@ -275,8 +275,12 @@ then by what running a forum needs (milestone 6). Briefs:
     Addressable::URI.encode would change
 80. ~~`feat/watched-words`~~ (done) L (the tag action, the CSV upload
     and words Ruby case-folds to several characters stay refused),
-    80b. `feat/watched-words-regex` M (watched_words_regular_expressions:
-    admin regexps run as Ruby and as JavaScript),
+    80b. ~~`feat/watched-words-regex`~~ (done) M (watched_words_regular_expressions:
+    admin regexps run as Ruby and as JavaScript; regexps outside the
+    grammar the engines share are refused: backreferences, named groups,
+    inline flags, atomic groups, possessive or nested quantifiers, class
+    sets and POSIX brackets, variable lookbehinds, Ruby-only or JS-only
+    escapes, patterns that can match nothing),
     81. ~~`feat/custom-emoji`~~ (done) M (admin index, create, destroy,
     /site/emoji, the rebake job; custom emoji and the deny list in
     cooking, emojiUnescape, codes_to_img, unicode titles and every emoji
@@ -701,8 +705,8 @@ how often a backup trips them.
 - [ ] Hidden and deleted posts (`hidden`, `deleted_at`, staff whispers stay
       hidden)
 - [ ] Topic thumbnails and topic images behind a CDN, secure uploads
-- [x] Watched words (`WordWatcher` regexps and actions; regular expression
-      mode in 80b)
+- [x] Watched words (`WordWatcher` regexps and actions and regular
+      expression mode)
 - [ ] Topic timers, topic links with clicks (`TopicLink.topic_map`)
 - [ ] Featured links (`featured_link_root_domain`)
 - [ ] `subcategory_list` styles, paginated category lists
