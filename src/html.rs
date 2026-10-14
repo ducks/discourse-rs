@@ -85,6 +85,8 @@ pub struct Viewer {
     pub staff: bool,
     /// `currentUser.can_send_private_messages`
     pub can_send_private_messages: bool,
+    /// `currentUser.previous_visit_at`, for the lists' last visit marker.
+    pub previous_visit_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
 impl Viewer {
@@ -160,6 +162,11 @@ pub struct Chrome {
     /// The header's logo (`SiteSetting.site_logo_url`), empty for the site
     /// title as text.
     pub logo_url: String,
+    /// `SiteSetting.site_mobile_logo_url` in the mobile view, empty
+    /// otherwise or for none (HomeLogo#showMobileLogo).
+    pub mobile_logo_url: String,
+    /// `site.can_search`: the mobile header's search button.
+    pub can_search: bool,
     /// `SiteSetting.site_favicon_url` and its type (MiniMime by filename),
     /// empty for no icon link (layouts/_head).
     pub favicon_url: String,
@@ -177,6 +184,10 @@ pub struct Chrome {
     /// The sidebar's markup, empty when the page has none
     /// (ApplicationController#sidebarEnabled).
     pub sidebar: String,
+    /// The mobile view's header menu with the sidebar's sections
+    /// (sidebar::hamburger), which the hamburger button opens; empty on
+    /// the desktop view.
+    pub hamburger: String,
     /// A member's composer (composer_view), empty for a visitor.
     pub composer: String,
     /// `canCreateTopic`: the lists' New Topic button.
@@ -452,6 +463,12 @@ impl Site {
         self.chrome.global_notice =
             crate::readonly::notice(&state.i18n, mode, guardian.user().is_some());
         self.chrome.logo_url = crate::site_icons::site_url(&mut *conn, &urls, "logo").await?;
+        // HomeLogo#showMobileLogo
+        if crate::mobile::mobile_view() {
+            self.chrome.mobile_logo_url =
+                crate::site_icons::site_url(&mut *conn, &urls, "mobile_logo").await?;
+        }
+        self.chrome.can_search = guardian.can_search(settings)?;
         self.chrome.favicon_url = crate::site_icons::site_url(&mut *conn, &urls, "favicon").await?;
         self.chrome.favicon_type = crate::site_icons::mime_type(&self.chrome.favicon_url);
         self.chrome.apple_touch_icon_url =
@@ -473,13 +490,17 @@ impl Site {
             && !settings.get("enable_discourse_connect")?.truthy();
 
         // sidebarEnabled: canDisplaySidebar (not for anonymous visitors
-        // when login is required) and the sidebar navigation menu.
-        let sidebar_enabled = (guardian.user().is_some()
-            || !settings.get("login_required")?.truthy())
-            && settings.get("navigation_menu")?.to_s() == "sidebar";
+        // when login is required) and the sidebar navigation menu, never in
+        // the mobile view, whose header menu shows the same sections.
+        let mobile = crate::mobile::mobile_view();
+        let can_display_sidebar =
+            guardian.user().is_some() || !settings.get("login_required")?.truthy();
+        let sidebar_enabled =
+            can_display_sidebar && !mobile && settings.get("navigation_menu")?.to_s() == "sidebar";
+        let hamburger = can_display_sidebar && mobile;
         self.chrome.tracking =
             crate::topic_tracking_report::load(&mut *conn, settings, guardian).await?;
-        let inputs = if sidebar_enabled {
+        let inputs = if sidebar_enabled || hamburger {
             Some(
                 sidebar_inputs(
                     &mut *conn,
@@ -595,7 +616,11 @@ impl Site {
             .as_ref()
             .map(|c| c.sidebar_sections.clone())
             .unwrap_or_default();
-        if let (Some((site, _)), Some(cx)) = (&inputs, sidebar_cx(&chat_sections)) {
+        if let (Some((site, _)), Some(cx)) = (&inputs, sidebar_cx(&chat_sections))
+            && hamburger
+        {
+            self.chrome.hamburger = crate::sidebar::hamburger(site, &cx)?;
+        } else if let (Some((site, _)), Some(cx)) = (&inputs, sidebar_cx(&chat_sections)) {
             self.chrome.sidebar = crate::sidebar::render(site, &cx)?;
             if self.chrome.tracking.is_some() {
                 self.chrome.live_param("sidebar", &active.key());
@@ -822,7 +847,12 @@ pub fn breadcrumbs(i18n: &I18n, settings: &SiteSettings) -> Result<String, Setti
             icon("angle-right", Some("angle-icon"))
         )
     };
-    let mut out = String::from("<ol class=\"category-breadcrumb\">");
+    // BreadCrumbs#hidden: in the mobile view, outside a category.
+    let mut out = String::from(if crate::mobile::mobile_view() {
+        "<ol class=\"category-breadcrumb hidden\">"
+    } else {
+        "<ol class=\"category-breadcrumb\">"
+    });
     out.push_str(&drop(
         "category",
         " category-breadcrumb__category-selector",
@@ -1037,9 +1067,11 @@ fn category_nav_label(
     category_id: i32,
     no_subcategories: bool,
 ) -> String {
-    let count = tracking
-        .map(|t| t.lookup_in(name, category_id, no_subcategories))
-        .unwrap_or(0);
+    let count = match tracking {
+        Some(_) if name == "latest" && !crate::mobile::mobile_view() => 0,
+        Some(t) => t.lookup_in(name, category_id, no_subcategories),
+        None => 0,
+    };
     let title = || {
         i18n.t(&format!("js.filters.{name}.title"))
             .unwrap_or(name)
@@ -1285,7 +1317,12 @@ pub fn nav_label(
     name: &str,
     tracking: Option<&crate::topic_tracking_report::Tracking>,
 ) -> String {
-    let count = tracking.map(|t| t.lookup(name)).unwrap_or(0);
+    // Latest counts only in the mobile view.
+    let count = match tracking {
+        Some(_) if name == "latest" && !crate::mobile::mobile_view() => 0,
+        Some(t) => t.lookup(name),
+        None => 0,
+    };
     let title = || {
         i18n.t(&format!("js.filters.{name}.title"))
             .unwrap_or(name)
@@ -1391,7 +1428,9 @@ fn s(v: &Value) -> String {
 }
 
 /// The latest page from the /latest.json document. `expand_all_pinned` is
-/// a category's or a tag's list, which shows every pinned topic's excerpt.
+/// a category's or a tag's list, which shows every pinned topic's excerpt;
+/// `highlight_last_visited` a list in the default order, which marks where
+/// the member's last visit was (TopicList#lastVisitedTopic).
 pub async fn latest_page(
     conn: &mut PgConnection,
     site: Site,
@@ -1399,6 +1438,7 @@ pub async fn latest_page(
     i18n: &I18n,
     settings: &SiteSettings,
     expand_all_pinned: bool,
+    highlight_last_visited: bool,
 ) -> Result<LatestPage, HtmlError> {
     let categories = crate::topic_list_view::categories(conn).await?;
     let cx = crate::topic_list_view::ListContext {
@@ -1411,12 +1451,26 @@ pub async fn latest_page(
         settings: crate::topic_list_view::ListSettings::load(settings)?,
     };
     let users = list["users"].as_array().cloned().unwrap_or_default();
+    let previous_visit_at = site
+        .viewer
+        .as_ref()
+        .and_then(|v| v.previous_visit_at)
+        .filter(|_| highlight_last_visited);
     let rows = list["topic_list"]["topics"]
         .as_array()
         .map(|topics| {
+            let last_visited = previous_visit_at
+                .and_then(|at| crate::topic_list_view::last_visited_topic(topics, at));
             topics
                 .iter()
-                .map(|t| crate::topic_list_view::row(&cx, t, &users))
+                .enumerate()
+                .map(|(i, t)| {
+                    if last_visited == Some(i) {
+                        crate::topic_list_view::last_visited_row(&cx, t, &users)
+                    } else {
+                        crate::topic_list_view::row(&cx, t, &users)
+                    }
+                })
                 .collect()
         })
         .unwrap_or_default();

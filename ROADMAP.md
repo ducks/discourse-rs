@@ -302,6 +302,34 @@ then by what running a forum needs (milestone 6). Briefs:
 
 [phase-8]
 
+The mobile view, by page traffic. Discourse switches below a 40rem
+viewport (Site#mobileView); the port renders the layout the
+`mobile_view` cookie names, which the layout's head script keeps in step
+with the viewport, guessing from the user agent without it
+(src/mobile.rs). Measured with `scripts/parity-screenshots --mobile`.
+
+92. ~~`feat/mobile-layout`~~ (done) L: the decision, `<html>` classes,
+    the mobile stylesheets (mobile.css, menu-panel.css), the header with
+    the hamburger's slide-in sidebar, the nav items as a bottom sheet,
+    the topic list's mobile rows and last visit marker, the categories
+    page's mobile style
+93. `feat/mobile-topic-page` M: the progress bar for the timeline, the
+    topic map, posts' meta data and menu, footer buttons, suggested rows
+94. `feat/mobile-search-menu` M: the header's search button opens the
+    search menu panel (today it goes to /search)
+95. `feat/mobile-user-menu` M: the user menu as the mobile panel, the
+    notification tabs
+96. `feat/mobile-composer` L: the mobile composer (fullscreen, its
+    toolbar and preview toggle, the keyboard-visible states)
+97. `feat/mobile-user-pages` M: profile, activity, messages and their
+    nav as a menu, the users directory
+98. `feat/mobile-menus` M: the remaining menus as bottom sheets
+    (tracking, drafts, post and topic admin menus), the user card as a
+    modal, live label updates of the mobile nav trigger
+99. `feat/mobile-chat` M: chat's mobile layout and `chat_mobile` bundle
+
+[mobile-layout]
+
 ## Milestone 1: a hostable read-only mirror
 
 Serve an anonymous, read-only copy of a Discourse backup that someone

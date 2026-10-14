@@ -126,7 +126,8 @@ impl Tracking {
     }
 
     /// `lookupCount` for the `new` and `unread` nav items in a category
-    /// (with its subcategories unless `no_subcategories`).
+    /// (with its subcategories unless `no_subcategories`), and `latest`,
+    /// their sum (new alone counts the unread under unified new).
     pub fn lookup_in(&self, filter: &str, category_id: i32, no_subcategories: bool) -> i64 {
         let count = |kind: Kind| {
             if no_subcategories {
@@ -146,7 +147,8 @@ impl Tracking {
             }
         };
         match filter {
-            "new" if self.unified_new => count(Kind::New) + count(Kind::Unread),
+            "latest" | "new" if self.unified_new => count(Kind::New) + count(Kind::Unread),
+            "latest" => count(Kind::New) + count(Kind::Unread),
             "new" => count(Kind::New),
             "unread" => count(Kind::Unread),
             _ => 0,
@@ -156,9 +158,10 @@ impl Tracking {
     /// `lookupCount` for the `new` and `unread` nav items, unscoped.
     pub fn lookup(&self, filter: &str) -> i64 {
         match filter {
-            "new" if self.unified_new => {
+            "latest" | "new" if self.unified_new => {
                 self.count(Kind::New, None, None) + self.count(Kind::Unread, None, None)
             }
+            "latest" => self.count(Kind::New, None, None) + self.count(Kind::Unread, None, None),
             "new" => self.count(Kind::New, None, None),
             "unread" => self.count(Kind::Unread, None, None),
             _ => 0,

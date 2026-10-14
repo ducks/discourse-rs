@@ -18,26 +18,52 @@
 {#- The list controls (discovery navigation): the breadcrumbs, the nav pills and
     the new topic button; category_id preselects the composer category.
     On a category's list (`category_nav`), `category_controls` is the
-    member's notification level in it. -#}
-{% macro list_controls(nav, breadcrumbs, chrome, category_id, admin_controls, category_controls, category_nav) %}
+    member's notification level in it. In the mobile view the nav items are
+    a menu (NavigationBar#showDropdown, opened by navigation-bar.js), bulk
+    select moves here from the list's header (`bulk_select`,
+    showBulkSelectInNavControls) and New Topic is an icon. -#}
+{% macro list_controls(nav, breadcrumbs, chrome, category_id, admin_controls, category_controls, category_nav, bulk_select) %}
+{%- let mobile = crate::mobile::mobile_view() %}
 <div class="list-controls">
   <div class="container">
     <section class="navigation-container{% if category_nav %} category-navigation{% endif %}">
       {{ breadcrumbs|safe }}
       <ul class="nav nav-pills" id="navigation-bar">
+        {%- if mobile %}
+        <li>
+          <button aria-expanded="false" class="btn no-text fk-d-menu__trigger list-control-toggle-link-trigger" data-identifier="list-control-toggle-link" data-trigger="" type="button"><span class="list-control-toggle-link__text">{% for item in nav %}{% if item.active %}{{ item.label }}{% endif %}{% endfor %}</span><svg class="fa d-icon d-icon-discourse-chevron-expand svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#discourse-chevron-expand"></use></svg></button>
+          <template class="list-control-toggle-link-menu"><ul class="dropdown-menu">
+            {%- for item in nav %}
+            <li class="{% if item.active %}active {% endif %}{% if item.has_icon %}has-icon {% endif %}{{ item.name }} nav-item_{{ item.name }}" title="{{ item.title }}">
+              <a{% if item.active %} aria-current="page"{% endif %} class="{% if item.active %}active{% endif %}" href="{{ item.href }}">{{ item.label }}</a>
+            </li>
+            {%- endfor %}
+            <li class="dropdown-menu__item"></li>
+          </ul></template>
+        </li>
+        <li></li>
+        {%- else %}
         {%- for item in nav %}
         <li class="{% if item.active %}active {% endif %}{% if item.has_icon %}has-icon {% endif %}{{ item.name }} nav-item_{{ item.name }}" title="{{ item.title }}">
           <a{% if item.active %} aria-current="page"{% endif %} class="{% if item.active %}active{% endif %}" href="{{ item.href }}">{{ item.label }}</a>
         </li>
         {%- endfor %}
+        {%- endif %}
       </ul>
-      {%- if chrome.can_create_topic || !admin_controls.is_empty() || category_nav %}
+      {%- if chrome.can_create_topic || !admin_controls.is_empty() || category_nav || mobile %}
       <div class="navigation-controls">
-        {%- if category_nav %}<div class="row dismiss-container-top"></div>{% endif %}
+        {%- if mobile && bulk_select %}
+        <button class="btn no-text btn-icon btn-default bulk-select" title="Bulk select" type="button"><svg class="fa d-icon d-icon-list svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#list"></use></svg> <span aria-hidden="true"> &#8203; </span> </button>
+        {%- endif %}
+        {%- if category_nav || mobile %}<div class="row dismiss-container-top"></div>{% endif %}
         {{ admin_controls|safe }}
         {%- if chrome.can_create_topic %}
         <div class="d-combo-button{% if !chrome.drafts_menu_trigger.is_empty() %} --has-menu{% endif %} topic-create-button__combo" role="group" aria-label="New topic and drafts">
+          {%- if mobile %}
+          <button class="btn no-text btn-icon d-combo-button-button btn-primary" id="create-topic" type="button"{% if let Some(id) = category_id %} data-category="{{ id }}"{% endif %}><svg class="fa d-icon d-icon-far-pen-to-square svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#far-pen-to-square"></use></svg></button>{{ chrome.drafts_menu_trigger|safe }}
+          {%- else %}
           <button aria-label="New Topic" class="btn btn-icon-text d-combo-button-button btn-primary" id="create-topic" type="button"{% if let Some(id) = category_id %} data-category="{{ id }}"{% endif %}><svg class="fa d-icon d-icon-far-pen-to-square svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#far-pen-to-square"></use></svg><span class="d-button-label">New Topic</span></button>{{ chrome.drafts_menu_trigger|safe }}
+          {%- endif %}
         </div>
         {%- endif %}
         {{ category_controls|safe }}

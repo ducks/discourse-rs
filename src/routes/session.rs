@@ -219,6 +219,7 @@ pub(crate) fn viewer_state(
             trust_level: user.trust_level,
             name: user.name.clone(),
             first_visit: user.previous_visit_at.is_none(),
+            previous_visit_at: user.previous_visit_at.map(|at| at.and_utc()),
             staff: user.admin || user.moderator,
             can_send_private_messages: guardian.can_send_private_messages(settings)?,
         }),

@@ -109,19 +109,31 @@ html:not(.composer-has-preview) .sidebar-wrapper .sidebar-container {
 
 /* sidebar-section.scss */
 .sidebar-section-wrapper {
-  padding-block: var(--space-1);
-  border-bottom: 1px solid var(--d-sidebar-section-border-color);
   position: relative;
 }
 
-.sidebar-section-wrapper:first-child {
-  padding-top: 0;
+@media (width >= 40rem) {
+  .sidebar-section-wrapper {
+    padding-block: var(--space-1);
+    border-bottom: 1px solid var(--d-sidebar-section-border-color);
+  }
+}
+
+@media (width >= 40rem) {
+  .sidebar-section-wrapper:first-child {
+    padding-top: 0;
+  }
 }
 
 .sidebar-section-wrapper .sidebar-section-header-wrapper {
   display: flex;
   border-radius: var(--d-border-radius);
-  padding-right: var(--d-sidebar-row-horizontal-padding);
+}
+
+@media (width >= 40rem) {
+  .sidebar-section-wrapper .sidebar-section-header-wrapper {
+    padding-right: var(--d-sidebar-row-horizontal-padding);
+  }
 }
 
 .sidebar-section-wrapper .sidebar-section-header-wrapper:focus-within {
@@ -481,8 +493,9 @@ body.has-sidebar-page #main-outlet-wrapper {
 }
 
 /* Ember leaves a hidden sidebar, a collapsed section and a closed menu out
-   of the DOM; here they are hidden. */
-.sidebar-wrapper [hidden] {
+   of the DOM; here they are hidden, in the mobile view's menu too. */
+.sidebar-wrapper [hidden],
+.sidebar-hamburger-dropdown [hidden] {
   display: none;
 }
 

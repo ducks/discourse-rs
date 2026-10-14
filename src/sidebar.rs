@@ -146,10 +146,28 @@ impl Context<'_> {
 /// Sidebar.gjs with the anonymous or the user sections, inside
 /// SidebarWrapper.
 pub fn render(site: &Value, cx: &Context) -> Result<String, SettingError> {
+    Ok(format!(
+        "<div class=\"sidebar-wrapper\"><nav aria-label=\"{}\" class=\"sidebar-container\" id=\"d-sidebar\">{}</nav></div>",
+        escape(&cx.t("sidebar.title")),
+        sections(site, cx)?
+    ))
+}
+
+/// The mobile view's navigation menu: SidebarHamburgerDropdown, the same
+/// sections in the header's slide-in panel (HamburgerDropdownWrapper),
+/// then the cloak over the page behind it.
+pub fn hamburger(site: &Value, cx: &Context) -> Result<String, SettingError> {
+    Ok(format!(
+        "<div class=\"hamburger-dropdown-wrapper\"><div class=\"hamburger-panel\"><div class=\"revamped menu-panel slide-in\" data-max-width=\"320\"><div class=\"panel-body\"><div class=\"panel-body-contents\"><div class=\"sidebar-hamburger-dropdown\">{}</div></div></div></div></div></div><div class=\"header-cloak\" style=\"display: block;\"></div>",
+        sections(site, cx)?
+    ))
+}
+
+/// The sections and the footer, as both menus show them.
+fn sections(site: &Value, cx: &Context) -> Result<String, SettingError> {
     let mut out = String::new();
     out.push_str(&format!(
-        "<div class=\"sidebar-wrapper\"><nav aria-label=\"{}\" class=\"sidebar-container\" id=\"d-sidebar\"><div class=\"sidebar-sections{}\">",
-        escape(&cx.t("sidebar.title")),
+        "<div class=\"sidebar-sections{}\">",
         if cx.member.is_some() {
             ""
         } else {
@@ -179,7 +197,6 @@ pub fn render(site: &Value, cx: &Context) -> Result<String, SettingError> {
     // The footer's only anonymous action, keyboard shortcuts, opens a modal
     // that is not ported, so its bar is empty.
     out.push_str("<div class=\"sidebar-footer-wrapper\"><div class=\"sidebar-footer-container\"><div class=\"sidebar-footer-actions\"></div></div></div>");
-    out.push_str("</nav></div>");
     Ok(out)
 }
 

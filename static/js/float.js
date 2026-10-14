@@ -12,7 +12,9 @@
 //   Discourse.float.menu(trigger, options) -> instance
 //       the menu service's show(trigger, options): a DMenu content
 //       (div.fk-d-menu) in #d-menu-portals, closed on a click outside or
-//       Escape. options.content is an element or HTML.
+//       Escape. options.content is an element or HTML. With
+//       options.modalForMobile in the mobile view, a bottom sheet instead
+//       (renderInModal: a DModal.fk-d-menu-modal, static/js/modal.js).
 //   Discourse.float.tooltip(trigger, options) -> instance
 //       a DTooltip: wraps trigger in its span.fk-d-tooltip__trigger and
 //       opens its content (div.fk-d-tooltip__content in #d-tooltip-portals)
@@ -96,6 +98,7 @@
     autoUpdate: true,
     trapTab: true,
     contentRole: "dialog",
+    modalForMobile: false,
     onClose: null,
     onShow: null,
     inline: null,
@@ -680,9 +683,76 @@
   // The menu service's show(trigger, options) for a trigger it does not
   // know yet: a new instance, opened now.
   function menu(trigger, options) {
-    var instance = new Instance("menu", trigger, merge(MENU, options));
+    var o = merge(MENU, options);
+    if (o.modalForMobile && mobileView() && Discourse.modal) {
+      return modalMenu(trigger, o);
+    }
+    var instance = new Instance("menu", trigger, o);
     instance.setupListeners();
     return instance.show();
+  }
+
+  // DMenu's renderInModal: the content in a DModal without its header,
+  // classed fk-d-menu-modal and <identifier>-content, after a grip.
+  function modalMenu(trigger, o) {
+    var el = trigger instanceof HTMLElement ? trigger : null;
+    var instance = { expanded: true, options: o, content: null };
+    if (el) {
+      el.setAttribute("aria-expanded", "true");
+      el.classList.add("-expanded");
+    }
+    var classes = ["fk-d-menu-modal"];
+    if (o.identifier) {
+      classes.push(o.identifier + "-content");
+    }
+    if (o.mainClass) {
+      classes.push(o.mainClass);
+    }
+    var attributes = { "data-content": "" };
+    if (o.identifier) {
+      attributes["data-identifier"] = o.identifier;
+    }
+    var close = Discourse.modal.show({
+      className: classes.join(" "),
+      hideHeader: true,
+      ariaLabel: o.ariaLabel,
+      attributes: attributes,
+      body: function (body) {
+        var grip = document.createElement("div");
+        grip.setAttribute("aria-hidden", "true");
+        grip.className = "fk-d-menu-modal__grip";
+        body.appendChild(grip);
+        if (o.content instanceof Node) {
+          body.appendChild(o.content);
+        } else if (o.content != null) {
+          body.insertAdjacentHTML("beforeend", o.content);
+        }
+        instance.content = body.closest(".d-modal");
+      },
+      onClose: function () {
+        instance.expanded = false;
+        instance.content = null;
+        if (el) {
+          el.setAttribute("aria-expanded", "false");
+          el.classList.remove("-expanded");
+        }
+        if (o.onClose) {
+          o.onClose();
+        }
+      },
+    });
+    instance.close = function () {
+      close();
+      return Promise.resolve();
+    };
+    instance.destroy = instance.close;
+    instance.show = function () {
+      return instance;
+    };
+    if (o.onShow) {
+      o.onShow(instance);
+    }
+    return instance;
   }
 
   // DTooltip: the trigger span around what the caller gives, listening

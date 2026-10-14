@@ -374,8 +374,16 @@ pub async fn latest(
     )
     .await?;
     site.bus_position = bus_position;
-    let mut page =
-        crate::html::latest_page(&mut conn, site, &json, &state.i18n, &settings, false).await?;
+    let mut page = crate::html::latest_page(
+        &mut conn,
+        site,
+        &json,
+        &state.i18n,
+        &settings,
+        false,
+        highlights_last_visited(ListKind::Latest, &params),
+    )
+    .await?;
     page.banner = crate::html::welcome_banner(
         &state.i18n,
         &settings,
@@ -590,8 +598,16 @@ pub async fn category(
     )
     .await?;
     site.bus_position = bus_position;
-    let mut page =
-        crate::html::latest_page(&mut conn, site, &doc, &state.i18n, &settings, true).await?;
+    let mut page = crate::html::latest_page(
+        &mut conn,
+        site,
+        &doc,
+        &state.i18n,
+        &settings,
+        true,
+        highlights_last_visited(kind, &params),
+    )
+    .await?;
     page.heading = Some(
         crate::html::category_heading(&mut conn, &base_path, &category, params.page.is_none())
             .await?,
@@ -745,37 +761,51 @@ async fn categories_response(
     let mut page =
         crate::html::categories_page(&mut conn, &state.i18n, settings.emojis(), site, &doc).await?;
     let base_path = state.config.globals.relative_url_root();
+    // CategoriesDisplay#style: the mobile view has its own setting.
+    let mobile = crate::mobile::mobile_view();
     let style = settings.get("desktop_category_page_style")?.to_s();
+    let mobile_style = settings.get("mobile_category_page_style")?.to_s();
     let created_order = style == "categories_and_latest_topics_created_date";
-    if (style == "categories_and_latest_topics" || created_order) && !has_parent {
-        // CategoriesController#fetch_topic_list: latest, topics_per_page.
-        let latest_params = ListParams {
-            per_page: Some(
-                topics_per_page(&mut conn, &settings, &guardian)
-                    .await?
-                    .to_string(),
-            ),
-            order: created_order.then(|| "created".to_string()),
-            ..Default::default()
+    let ported = if mobile {
+        mobile_style == "categories_with_featured_topics" || mobile_style == "categories_only"
+    } else {
+        style == "categories_and_latest_topics" || created_order
+    };
+    if ported && !has_parent {
+        // CategoriesController#fetch_topic_list: latest, topics_per_page,
+        // which the mobile view's styles don't show.
+        let latest = if mobile {
+            serde_json::Value::Null
+        } else {
+            let latest_params = ListParams {
+                per_page: Some(
+                    topics_per_page(&mut conn, &settings, &guardian)
+                        .await?
+                        .to_string(),
+                ),
+                order: created_order.then(|| "created".to_string()),
+                ..Default::default()
+            };
+            // list_document takes its own connection: this one is put back
+            // meanwhile.
+            drop(conn);
+            let latest = match list_document(
+                &state,
+                &guardian,
+                &latest_params,
+                None,
+                false,
+                ListKind::Latest,
+                &format!("{base_path}/latest"),
+            )
+            .await?
+            {
+                Ok((latest, _)) => latest,
+                Err(message) => return Ok(invalid_list_params(&state, &message, false)),
+            };
+            conn = state.pool.acquire().await?;
+            latest
         };
-        // list_document takes its own connection: this one is put back
-        // meanwhile.
-        drop(conn);
-        let latest = match list_document(
-            &state,
-            &guardian,
-            &latest_params,
-            None,
-            false,
-            ListKind::Latest,
-            &format!("{base_path}/latest"),
-        )
-        .await?
-        {
-            Ok((latest, _)) => latest,
-            Err(message) => return Ok(invalid_list_params(&state, &message, false)),
-        };
-        conn = state.pool.acquire().await?;
         let categories = crate::topic_list_view::categories(&mut conn).await?;
         let cx = crate::topic_list_view::ListContext {
             i18n: &state.i18n,
@@ -796,7 +826,16 @@ async fn categories_response(
             .await?,
             None => Vec::new(),
         };
-        page.main = crate::categories_view::render(&cx, &doc, &latest, &muted)?;
+        page.main = if mobile {
+            crate::categories_view::render_mobile(
+                &cx,
+                &doc,
+                &muted,
+                mobile_style == "categories_with_featured_topics",
+            )?
+        } else {
+            crate::categories_view::render(&cx, &doc, &latest, &muted)?
+        };
         page.nav = crate::html::nav_items(
             &state.i18n,
             &settings,
@@ -810,10 +849,16 @@ async fn categories_response(
         if doc["category_list"]["can_create_category"] == true
             && !settings.get("fixed_category_positions")?.truthy()
         {
+            // Labelled "Category" in the mobile view.
+            let label = if mobile {
+                "js.categories.category"
+            } else {
+                "js.category.create"
+            };
             page.admin_controls = format!(
                 "<button class=\"btn btn-icon-text btn-default\" id=\"create-category\" type=\"button\">{}<span class=\"d-button-label\">{}</span></button>",
                 crate::topic_list_view::icon("plus", None),
-                state.i18n.t("js.category.create").unwrap_or_default()
+                state.i18n.t(label).unwrap_or_default()
             );
         }
         // discovery/categories.gjs: bodyClass "categories-list"
@@ -843,6 +888,17 @@ pub struct CategoriesParams {
     include_subcategories: Option<String>,
     parent_category_id: Option<String>,
     page: Option<String>,
+}
+
+/// The list conditions of TopicList#lastVisitedTopic: not top or hot, in
+/// the default order (activity), descending.
+pub(crate) fn highlights_last_visited(kind: ListKind, params: &ListParams) -> bool {
+    !matches!(kind, ListKind::Top | ListKind::Hot)
+        && params
+            .order
+            .as_deref()
+            .is_none_or(|o| o.is_empty() || o == "activity")
+        && params.ascending.as_deref() != Some("true")
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -1093,8 +1149,16 @@ async fn front_list(
     )
     .await?;
     site.bus_position = bus_position;
-    let mut page =
-        crate::html::latest_page(&mut conn, site, &doc, &state.i18n, &settings, false).await?;
+    let mut page = crate::html::latest_page(
+        &mut conn,
+        site,
+        &doc,
+        &state.i18n,
+        &settings,
+        false,
+        highlights_last_visited(kind, &params),
+    )
+    .await?;
     page.banner = crate::html::welcome_banner(
         &state.i18n,
         &settings,

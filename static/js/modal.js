@@ -2,7 +2,8 @@
 // decorators' fullscreen views:
 //
 //   Discourse.modal.show({ className, title, body: fn(bodyEl, close),
-//                          footer: fn(footerEl, close), onClose })
+//                          footer: fn(footerEl, close), onClose,
+//                          hideHeader, ariaLabel, attributes })
 //       renders the modal into .modal-container (ModalContainer, the
 //       application template's, inside .discourse-root) with html.modal-open,
 //       and returns its close function. body fills .d-modal__body, footer
@@ -60,21 +61,34 @@
     var icon = Discourse.cooked ? Discourse.cooked.icon : function () { return ""; };
 
     var modal = document.createElement("div");
-    modal.setAttribute("aria-labelledby", "discourse-modal-title");
+    if (opts.ariaLabel) {
+      modal.setAttribute("aria-label", opts.ariaLabel);
+    } else if (!opts.hideHeader) {
+      modal.setAttribute("aria-labelledby", "discourse-modal-title");
+    }
     modal.setAttribute("aria-modal", "true");
     modal.className = "modal d-modal" + (opts.className ? " " + opts.className : "");
     modal.setAttribute("data-keyboard", "false");
     modal.setAttribute("role", "dialog");
+    Object.keys(opts.attributes || {}).forEach(function (name) {
+      modal.setAttribute(name, opts.attributes[name]);
+    });
+    // @hideHeader leaves out the title and the close button.
     modal.innerHTML =
-      '<div class="d-modal__container"><div class="d-modal__header">' +
-      '<div class="d-modal__title"><h1 class="d-modal__title-text" id="discourse-modal-title"></h1></div>' +
-      '<button class="btn no-text btn-icon btn-transparent modal-close" type="button">' +
-      icon("xmark") +
-      '<span aria-hidden="true">&#8203;</span></button></div>' +
+      '<div class="d-modal__container">' +
+      (opts.hideHeader
+        ? ""
+        : '<div class="d-modal__header">' +
+          '<div class="d-modal__title"><h1 class="d-modal__title-text" id="discourse-modal-title"></h1></div>' +
+          '<button class="btn no-text btn-icon btn-transparent modal-close" type="button">' +
+          icon("xmark") +
+          '<span aria-hidden="true">&#8203;</span></button></div>') +
       '<div class="d-modal__body" tabindex="-1"></div></div>';
-    modal.querySelector(".d-modal__title-text").textContent = opts.title || "";
     var closeButton = modal.querySelector(".modal-close");
-    closeButton.title = t("modal.close");
+    if (closeButton) {
+      modal.querySelector(".d-modal__title-text").textContent = opts.title || "";
+      closeButton.title = t("modal.close");
+    }
     var modalContainer = modal.querySelector(".d-modal__container");
     var body = modal.querySelector(".d-modal__body");
 
@@ -147,7 +161,9 @@
       }
     }
 
-    closeButton.addEventListener("click", close);
+    if (closeButton) {
+      closeButton.addEventListener("click", close);
+    }
     backdrop.addEventListener("click", function (event) {
       if (event.button === 0) {
         close();

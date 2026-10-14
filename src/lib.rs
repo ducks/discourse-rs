@@ -56,6 +56,7 @@ pub mod letter_avatar;
 pub mod likes;
 pub mod message_format;
 pub mod messages_view;
+pub mod mobile;
 pub mod modifications;
 pub mod mustache;
 pub mod not_found_page;
@@ -178,10 +179,12 @@ pub fn app(state: AppState) -> Router {
     // The method override and the request format must run before routing
     // (a POST becomes a DELETE, an Accept-led JSON request its `.json`
     // route), and the session is resolved before anything else, so they
-    // wrap the routed app from the outside.
+    // wrap the routed app from the outside. The mobile layer scopes the
+    // request's layout (mobile::mobile_view) around everything it renders.
     let routed = routes::router(&state).with_state(state.clone());
     Router::new()
         .fallback_service(routed)
+        .layer(axum::middleware::from_fn(mobile::layer))
         .layer(axum::middleware::from_fn(routes::method_override))
         .layer(axum::middleware::from_fn(routes::request_format))
         .layer(axum::middleware::from_fn_with_state(

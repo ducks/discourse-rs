@@ -1,0 +1,289 @@
+/*
+ * The menu panels the header opens (menu-panel.scss) and the hamburger's
+ * slide-in panel with the sidebar's sections in the mobile view
+ * (HamburgerDropdownWrapper, sidebar-hamburger-dropdown), with the cloak
+ * over the page behind it. The search and user menus' rules are not here.
+ */
+
+/* header.scss:130, without the user and search menus the port styles apart */
+.d-header .hamburger-panel {
+  width: 0;
+}
+
+/* header.scss:157 */
+.header-dropdown-toggle .flags,
+.header-dropdown-toggle .reviewables,
+.drop-down .flags,
+.drop-down .reviewables,
+.panel-body .flags,
+.panel-body .reviewables {
+  background: var(--danger);
+  min-width: 6px;
+}
+
+/* menu-panel.scss:12 */
+.menu-panel.slide-in {
+  position: fixed;
+  right: 0;
+  top: 0;
+  box-sizing: border-box;
+  max-width: 90vw;
+  box-shadow: 0 0 30px -2px rgba(0,0,0,.5);
+  height: 100dvh;
+}
+
+/* menu-panel.scss:23 */
+.menu-panel.slide-in .panel-body {
+  width: 100%;
+}
+
+/* menu-panel.scss:28 */
+.header-cloak {
+  height: 100%;
+  width: 100%;
+  position: fixed;
+  background-color: rgba(0,0,0,.3);
+  top: 0;
+  left: 0;
+  display: none;
+  touch-action: pan-y pinch-zoom;
+}
+
+/* menu-panel.scss:39 */
+.menu-panel.drop-down {
+  position: absolute;
+  top: 100%;
+  right: 5px;
+  max-height: calc(100dvh - var(--header-offset) - 1em);
+  border-radius: var(--d-border-radius);
+}
+
+/* menu-panel.scss:48 */
+.menu-panel.drop-down .panel-body {
+  max-width: calc(100vw - 2em);
+}
+
+/* menu-panel.scss:39 */
+.menu-panel.drop-down {
+  animation: float-down 250ms ease forwards;
+}
+
+/* menu-panel.scss:39 */
+@media (prefers-reduced-motion) {
+  .menu-panel.drop-down {
+    animation-duration: 0s;
+  }
+}
+
+/* menu-panel.scss:56 */
+.menu-panel {
+  --shadow-dropdown: 0 4px 6px -1px #0000001a, 0 2px 4px -2px #0000001a;
+  --list-item-padding: 0.5em 1rem;
+  border: 1px solid var(--content-border-color);
+  box-shadow: var(--shadow-dropdown);
+  background-color: var(--secondary);
+  z-index: 1000;
+  padding: .5em;
+  width: 320px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  max-height: 100vh;
+}
+
+/* menu-panel.scss:190 */
+.menu-panel hr {
+  margin: 0;
+  height: auto;
+}
+
+/* menu-panel.scss:200 */
+.menu-panel ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* menu-panel.scss:204 */
+.menu-panel .panel-body {
+  display: flex;
+  touch-action: pan-y pinch-zoom;
+  overflow: hidden;
+  height: 100%;
+}
+
+/* menu-panel.scss:211 */
+.menu-panel .panel-body-contents {
+  max-height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* menu-panel.scss:221 */
+.menu-panel .panel-body-bottom {
+  display: flex;
+  flex: 1 0 0;
+  flex-wrap: wrap;
+  padding: .75em .75em max(env(safe-area-inset-bottom),.75em);
+}
+
+/* menu-panel.scss:227 */
+.menu-panel .panel-body-bottom .show-all {
+  display: flex;
+  flex: 1 1 auto;
+}
+
+/* menu-panel.scss:231 */
+.menu-panel .panel-body-bottom .show-all button {
+  width: 100%;
+}
+
+/* menu-panel.scss:236 */
+.menu-panel .panel-body-bottom .notifications-dismiss {
+  margin-left: .5em;
+}
+
+/* menu-panel.scss:241 */
+.menu-panel .badge-notification {
+  vertical-align: text-bottom;
+}
+
+/* menu-panel.scss:441 */
+.hamburger-panel .panel-body {
+  overflow-y: auto;
+}
+
+/* menu-panel.scss:446 */
+@media (width < 40rem) {
+  .hamburger-panel .sidebar-section-wrapper {
+    margin-bottom: 1.2em;
+  }
+}
+
+/* menu-panel.scss:453 */
+@media (width >= 40rem) {
+  .hamburger-panel .revamped {
+    --d-sidebar-row-height: 1.875rem;
+    width: 22.5rem;
+  }
+}
+
+/* menu-panel.scss:457 */
+@media (width >= 40rem) {
+  .hamburger-panel .revamped .panel-body-content {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+/* menu-panel.scss:463 */
+@media (width >= 40rem) {
+  .hamburger-panel .revamped .sidebar-section-wrapper .sidebar-section-header-button {
+    opacity: 1;
+  }
+}
+
+/* menu-panel.scss:467 */
+@media (width >= 40rem) {
+  .hamburger-panel .revamped .sidebar-section-wrapper .sidebar-section-link.active {
+    font-weight: normal;
+    background: var(--d-hover);
+  }
+}
+
+/* menu-panel.scss:472 */
+@media (width >= 40rem) {
+  .hamburger-panel .revamped .sidebar-section-wrapper .sidebar-section-header-wrapper .select-kit .btn:hover,
+  .hamburger-panel .revamped .sidebar-section-wrapper .sidebar-section-header-wrapper .select-kit .d-modal.json-schema-editor-modal .je-ready .json-editor-btn-add:hover,
+  .d-modal.json-schema-editor-modal .je-ready .hamburger-panel .revamped .sidebar-section-wrapper .sidebar-section-header-wrapper .select-kit .json-editor-btn-add:hover,
+  .hamburger-panel .revamped .sidebar-section-wrapper .sidebar-section-header-wrapper .select-kit .d-modal.json-schema-editor-modal .je-ready button:hover,
+  .d-modal.json-schema-editor-modal .je-ready .hamburger-panel .revamped .sidebar-section-wrapper .sidebar-section-header-wrapper .select-kit button:hover {
+    background: rgba(0,0,0,0);
+  }
+}
+
+/* menu-panel.scss:476 */
+@media (width >= 40rem) {
+  .hamburger-panel .revamped .sidebar-section-wrapper.sidebar-section {
+    padding-top: .5em;
+  }
+}
+
+/* menu-panel.scss:479 */
+@media (width >= 40rem) {
+  .hamburger-panel .revamped .sidebar-section-wrapper.sidebar-section .sidebar-section-header-wrapper {
+    margin: 0 0 .5em;
+    padding-bottom: .25em;
+  }
+}
+
+/* menu-panel.scss:484 */
+@media (width >= 40rem) {
+  .hamburger-panel .revamped .sidebar-section-wrapper.sidebar-section .sidebar-section-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* menu-panel.scss:488 */
+@media (width >= 40rem) {
+  .hamburger-panel .revamped .sidebar-section-wrapper.sidebar-section .sidebar-section-content li {
+    min-width: 0;
+  }
+}
+
+/* menu-panel.scss:495 */
+@media (width >= 40rem) {
+  .hamburger-panel .revamped .sidebar-section-link-wrapper .sidebar-section-link-hover:hover .sidebar-section-hover-button {
+    background: rgba(0,0,0,0);
+  }
+}
+
+/* menu-panel.scss:501 */
+@media (width >= 40rem) {
+  .hamburger-panel .revamped .sidebar-footer-wrapper {
+    padding: 0;
+    margin-top: 1em;
+  }
+}
+
+/* menu-panel.scss:505 */
+@media (width >= 40rem) {
+  .hamburger-panel .revamped .sidebar-footer-wrapper .sidebar-footer-container {
+    padding: 0;
+    border: none;
+    background: var(--secondary);
+  }
+}
+
+/* menu-panel.scss:510 */
+@media (width >= 40rem) {
+  .hamburger-panel .revamped .sidebar-footer-wrapper .sidebar-footer-container::before {
+    top: -1.5em;
+    background: linear-gradient(to bottom, transparent, rgb(var(--secondary-rgb), 1));
+  }
+}
+
+/* menu-panel.scss:814 */
+.hamburger-panel .menu-panel.slide-in {
+  left: 0;
+}
+
+/* menu-panel.scss:817 */
+.hamburger-panel .menu-panel.slide-in .panel-body {
+  display: block;
+}
+
+/* menu-panel.scss:821 */
+.hamburger-panel .menu-panel.slide-in .panel-body-contents {
+  max-height: unset;
+  min-height: 100%;
+}
+
+/* menu-panel.scss:837 */
+.discourse-no-touch .sidebar-hamburger-dropdown .sidebar-section-wrapper .sidebar-section-header-wrapper:hover,
+.discourse-no-touch .sidebar-hamburger-dropdown .sidebar-section-wrapper .sidebar-section-header-wrapper:focus-within {
+  background: rgba(0,0,0,0);
+}

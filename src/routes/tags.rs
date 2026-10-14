@@ -474,8 +474,16 @@ async fn show_list(
     site.load_chrome(&mut conn, &state, &settings, &guardian, active)
         .await?;
     site.bus_position = bus_position;
-    let mut page =
-        crate::html::latest_page(&mut conn, site, &doc, &state.i18n, &settings, true).await?;
+    let mut page = crate::html::latest_page(
+        &mut conn,
+        site,
+        &doc,
+        &state.i18n,
+        &settings,
+        true,
+        super::list::highlights_last_visited(kind, &params),
+    )
+    .await?;
     if let Some(c) = &category {
         page.heading = Some(
             crate::html::category_heading(&mut conn, &base_path, c, params.page.is_none()).await?,

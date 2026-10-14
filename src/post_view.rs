@@ -2138,6 +2138,7 @@ mod tests {
             member_trust_level: None,
             settings: crate::topic_list_view::ListSettings {
                 show_pinned_excerpt_desktop: true,
+                show_pinned_excerpt_mobile: true,
                 suppress_uncategorized_badge: true,
                 uncategorized_category_id: 1,
                 tag_style: "simple".into(),
@@ -2147,6 +2148,7 @@ mod tests {
                 cold_age_days: [14.0, 30.0, 60.0],
                 relative_date_duration: 30,
                 avatar_size_24: 24,
+                avatar_size_48: 48,
                 prioritize_name: false,
                 emojis: std::sync::Arc::new(crate::emojis::Emojis {
                     enabled: true,
@@ -2310,6 +2312,7 @@ mod tests {
             member_trust_level: None,
             settings: crate::topic_list_view::ListSettings {
                 show_pinned_excerpt_desktop: true,
+                show_pinned_excerpt_mobile: true,
                 suppress_uncategorized_badge: true,
                 uncategorized_category_id: 1,
                 tag_style: "simple".into(),
@@ -2319,6 +2322,7 @@ mod tests {
                 cold_age_days: [14.0, 30.0, 60.0],
                 relative_date_duration: 30,
                 avatar_size_24: 24,
+                avatar_size_48: 48,
                 prioritize_name: false,
                 emojis: std::sync::Arc::new(crate::emojis::Emojis {
                     enabled: true,
