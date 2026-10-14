@@ -456,7 +456,13 @@ with the viewport, guessing from the user agent without it
     menu has no admin menu, the drafts menu floats), the jump to post
     prompt, the fullscreen timeline's swipe, discourse-solved's
     notification level descriptions (desktop too)
-99. `feat/mobile-chat` M: chat's mobile layout and `chat_mobile` bundle
+99. ~~`feat/mobile-chat`~~ (done) M: chat's mobile layout and
+    `chat_mobile` bundle: the chat header (back to the forum), the
+    channel navbar's back button with the other channels' unread count,
+    the mobile composer's layout, /chat as the channels list with the
+    chat footer. Left: the footer's DMs, search, starred and threads
+    routes, the channel list options menu (desktop's too), swipe and long
+    press on a row, the list's empty states (refused)
 
 [mobile-layout]
 

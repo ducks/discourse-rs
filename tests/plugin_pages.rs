@@ -886,3 +886,42 @@ async fn the_composer_carries_its_autocompletes() {
     assert_eq!(cfg["moreEmoji"], "more…");
     assert!(html.contains("/assets/autocomplete.js"));
 }
+
+#[tokio::test]
+async fn the_mobile_view_lists_chat_channels() {
+    let db = TestDb::new().await;
+    chat_messages(&db).await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Client::logged_in(st, "user1").await;
+    user1.cookies.push(("mobile_view".into(), "1".into()));
+    // ChatIndexRoute replaces /chat with the channels list, which the
+    // mobile view keeps (no last channel redirect).
+    user1.page("/chat/c/general/2").await;
+    assert_eq!(
+        user1.head("/chat").await,
+        (302, Some("/chat/channels".into()))
+    );
+    let html = user1.page("/chat/channels").await;
+    assert!(
+        html.contains("<div class=\"c-routes --channels\">"),
+        "{html}"
+    );
+    assert!(html.contains("<div class=\"chat-channel-row__content is-category\"><div class=\"chat-channel-icon --icon\" style=\"color: #25AAE2\">"));
+    assert!(html.contains("data-chat-channel-id=\"2\" href=\"/chat/c/general/2\""));
+    assert!(html.contains("<div class=\"chat-channel-name__label\">General</div>"));
+    assert!(html.contains("<div class=\"chat-channel__metadata-date\" data-at=\""));
+    // The chat header in the logo's place, and the footer on channels.
+    assert!(html.contains(
+        "<div class=\"c-header\"><a class=\"btn-flat back-to-forum\" href=\"/\" title=\"Forum\">"
+    ));
+    assert!(html.contains(
+        "class=\"btn btn-icon-text btn-transparent c-footer__item --active\" id=\"c-footer-channels\""
+    ));
+    assert!(!html.contains("chat-header-icon"));
+    // A channel's navbar goes back to the list.
+    let channel = user1.page("/chat/c/general/2").await;
+    assert!(
+        channel.contains("<a class=\"c-navbar__back-button no-text btn-transparent btn\" title=\"Back\" href=\"/chat/channels\">"),
+        "{channel}"
+    );
+}

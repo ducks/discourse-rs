@@ -172,6 +172,9 @@
                 </span>
                 {%- endif %}
                 <div class="home-logo-wrapper-outlet">
+                  {%- if !chrome.chat_header.is_empty() %}
+                  {{ chrome.chat_header|safe }}
+                  {%- else %}
                   <div class="title">
                     <a href="{{ base_path }}/">
                       {%- if !chrome.mobile_logo_url.is_empty() -%}
@@ -183,6 +186,7 @@
                       {%- endif -%}
                     </a>
                   </div>
+                  {%- endif %}
                 </div>
                 <div class="panel" role="navigation" aria-label="Header">
                   {% if let Some(v) = viewer %}

@@ -115,6 +115,19 @@ async fn render(
         .push_str(" has-chat has-full-page-chat");
     // The chat routes leave out the application footer.
     site.chrome.powered_by = false;
+    // ChatHeader in the mobile view: back to the forum and the Chat
+    // heading in the logo's place.
+    if crate::mobile::mobile_view() {
+        let t = |key: &str| {
+            crate::topic_list_view::escape(state.i18n.t(&format!("js.{key}")).unwrap_or_default())
+        };
+        let forum = t("chat.back_to_forum");
+        site.chrome.chat_header = format!(
+            "<div class=\"c-header\"><a class=\"btn-flat back-to-forum\" href=\"{base_path}/\" title=\"{forum}\">{}{forum}</a><a class=\"c-heading\" href=\"{base_path}/chat\">{}</a></div>",
+            crate::topic_list_view::icon("arrow-left", None),
+            t("chat.heading")
+        );
+    }
     let hide_presence: bool = match guardian.user_id() {
         Some(id) => sqlx::query_scalar("SELECT hide_presence FROM user_options WHERE user_id = $1")
             .bind(id)
@@ -123,6 +136,8 @@ async fn render(
             .unwrap_or(false),
         None => false,
     };
+    let content = content.replace(page::BACK_INDICATOR, &site.chrome.chat_back_indicator);
+    let content = content.as_str();
     let page = ChatPage {
         site_title: site.site_title,
         lang: site.lang,
@@ -164,11 +179,14 @@ fn chat_title(state: &AppState) -> String {
 }
 
 /// GET /chat and /chat/channels: ChatIndexRoute#redirect with the
-/// default preferred index (channels), then ChatChannelsRoute on desktop:
-/// the member's last channel, else the browser's open tab.
+/// default preferred index (channels), then ChatChannelsRoute: in the
+/// mobile view the channels list, on desktop the member's last channel,
+/// else the browser's open tab.
 pub async fn index(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    uri: Uri,
 ) -> Result<Response, AppError> {
     let mut conn = state.pool.acquire().await?;
     let settings = match gate(&state, &mut conn, &guardian, false).await? {
@@ -180,6 +198,28 @@ pub async fn index(
     let public = settings.get("enable_public_channels")?.truthy();
     if preferred != "channels" || !public {
         return Err(crate::Unsupported("chat's direct messages and threads indexes").into());
+    }
+    if crate::mobile::mobile_view() {
+        // ChatIndexRoute replaces /chat with chat.channels.
+        if !uri.path().ends_with("/chat/channels") {
+            return Ok(redirect(format!("{base_path}/chat/channels")));
+        }
+        let content = context(&state, &mut conn, &settings, &guardian)
+            .channels_route()
+            .await?;
+        let title = format!("{} - ", chat_title(&state));
+        return render(
+            &state,
+            &headers,
+            &mut conn,
+            &settings,
+            &guardian,
+            Active::Chat,
+            title,
+            &content,
+            true,
+        )
+        .await;
     }
     let last: Option<Option<String>> = sqlx::query_scalar(
         "SELECT value FROM user_custom_fields WHERE user_id = $1 AND name = $2 ORDER BY id LIMIT 1",
