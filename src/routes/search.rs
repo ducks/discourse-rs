@@ -374,6 +374,7 @@ async fn show_response(
         ip_address,
         user_agent,
         session_id,
+        log: true,
     };
     let doc = run(&state, &guardian, &args).await?;
     let noindex = [("x-robots-tag", "noindex")];
@@ -475,6 +476,7 @@ pub async fn query(
         ip_address,
         user_agent,
         session_id,
+        log: true,
     };
     let doc = run(&state, &guardian, &args).await?;
     Ok(([("x-robots-tag", "noindex")], Json(doc)).into_response())

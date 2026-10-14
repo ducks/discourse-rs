@@ -334,7 +334,76 @@ pub async fn search_logs(
     let period = crate::params::string(&p, "period").unwrap_or_else(|| "all".into());
     let search_type = crate::params::string(&p, "search_type").unwrap_or_else(|| "all".into());
     let mut conn = state.pool.acquire().await?;
-    Ok(Json(crate::search_logs::trending(&mut conn, &period, &search_type).await?).into_response())
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    Ok(Json(
+        crate::search_logs::trending(&mut conn, &settings, &period, &search_type).await?,
+    )
+    .into_response())
+}
+
+/// GET /admin/logs/search_logs/term(.json)?term=: staff. The details
+/// always exist (never the NotFound), with `Search.execute(term,
+/// guardian:)`'s results: no search type, so header limits and no log.
+pub async fn search_log_term(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    uri: Uri,
+    headers: HeaderMap,
+    super::search::Peer(peer): super::search::Peer,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    if let Some(r) = staff_only(&state, &guardian) {
+        return Ok(r);
+    }
+    let p = crate::params::parse(uri.query(), &headers, &body);
+    let Some(term) = crate::params::string(&p, "term").filter(|t| !t.is_empty()) else {
+        return Ok(super::accounts::param_missing("term"));
+    };
+    let period = crate::params::string(&p, "period").unwrap_or_else(|| "quarterly".into());
+    let search_type = crate::params::string(&p, "search_type").unwrap_or_else(|| "all".into());
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let mut details = crate::search_logs::term_details(
+        &mut conn,
+        &settings,
+        &state.i18n,
+        &term,
+        &period,
+        &search_type,
+    )
+    .await?;
+    let urls = crate::url::Urls {
+        config: &state.config,
+        settings: &settings,
+    };
+    let args = crate::search::SearchArgs {
+        term,
+        type_filter: None,
+        full_page: false,
+        page: 1,
+        blurb_length: crate::search::BLURB_LENGTH,
+        ip_address: crate::remote_ip::remote_ip(&headers, peer)?,
+        user_agent: None,
+        session_id: None,
+        log: false,
+    };
+    let mut search = crate::search::Search {
+        conn: &mut conn,
+        settings: &settings,
+        i18n: &state.i18n,
+        guardian: &guardian,
+        urls: &urls,
+        base_path: state.config.globals.relative_url_root(),
+        log_cache: &state.search_log_cache,
+    };
+    let result = search
+        .execute(&args)
+        .await?
+        .unwrap_or_else(|| json!({ "grouped_search_result": null }));
+    details.insert("search_result".into(), result);
+    Ok(Json(json!({ "term": details })).into_response())
 }
 
 /// GET /admin/email-logs/{sent,bounced,skipped,received,rejected}(.json):

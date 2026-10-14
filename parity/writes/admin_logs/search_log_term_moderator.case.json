@@ -1,0 +1,7 @@
+{
+  "user": "user1",
+  "setup": ["UPDATE users SET moderator = true WHERE id = 3"],
+  "requests": [
+    {"method": "GET", "path": "/admin/logs/search_logs/term.json", "params": {"term": "parity", "period": "all"}}
+  ]
+}
