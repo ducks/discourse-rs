@@ -22,6 +22,8 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         "refresh_users_reviewable_counts" => Ok(()),
         "cleanup_acls_for_deleted" => cleanup_acls_for_deleted(state, &job.args).await,
         "bulk_grant_trust_level" => bulk_grant_trust_level(state, &job.args).await,
+        "notify_users_added_to_group" => notify_users_added_to_group(state, &job.args).await,
+        "update_group_mentions" => update_group_mentions(state, &job.args).await,
         crate::plugins::chat::membership::DELETE_USER_MESSAGES_JOB => {
             chat_delete_user_messages(state, &job.args).await
         }
@@ -128,6 +130,94 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         }
     };
     Ok(result?)
+}
+
+/// Jobs::NotifyUsersAddedToGroup: each user (by id) sent the
+/// user_added_to_group_as_member system message.
+async fn notify_users_added_to_group(state: &AppState, args: &Value) -> Result<(), AppError> {
+    let Some(group_id) = int_arg(args, "group_id")? else {
+        return Ok(());
+    };
+    let user_ids: Vec<i32> = args["user_ids"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(|v| v.as_i64().map(|n| n as i32))
+        .collect();
+    if user_ids.is_empty() {
+        return Ok(());
+    }
+    let mut conn = state.pool.acquire().await?;
+    let group: Option<(String, Option<String>)> =
+        sqlx::query_as("SELECT name, full_name FROM groups WHERE id = $1")
+            .bind(group_id)
+            .fetch_optional(&mut *conn)
+            .await?;
+    let Some((name, full_name)) = group else {
+        return Ok(());
+    };
+    let users: Vec<i32> = sqlx::query_scalar("SELECT id FROM users WHERE id = ANY($1) ORDER BY id")
+        .bind(&user_ids)
+        .fetch_all(&mut *conn)
+        .await?;
+    let s = settings(state, &mut conn).await?;
+    drop(conn);
+    let host = crate::pretty_text::Host::from_state(state);
+    let ctx = crate::posting::Ctx {
+        host: &host,
+        settings: &s,
+        config: &state.config,
+        i18n: &state.i18n,
+        bus: &state.bus,
+    };
+    let preferred = full_name
+        .filter(|f| !f.trim().is_empty())
+        .unwrap_or_else(|| name.clone());
+    for user_id in users {
+        crate::system_message::create_from_system_user(
+            &state.pool,
+            &ctx,
+            user_id,
+            "user_added_to_group_as_member",
+            &[
+                ("group_name".to_string(), preferred.clone()),
+                ("group_path".to_string(), format!("/g/{name}")),
+            ],
+        )
+        .await?;
+    }
+    Ok(())
+}
+
+/// Jobs::UpdateGroupMentions (GroupMentionsUpdater): the renamed group's
+/// mentions rewritten in the posts that have one. Rewriting a post's raw
+/// (a save without validation or revision) is not ported, so a group
+/// with mentions to rewrite is refused.
+async fn update_group_mentions(state: &AppState, args: &Value) -> Result<(), AppError> {
+    let Some(group_id) = int_arg(args, "group_id")? else {
+        return Ok(());
+    };
+    let previous = args["previous_name"].as_str().unwrap_or_default();
+    let mut conn = state.pool.acquire().await?;
+    let exists: bool = sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM groups WHERE id = $1)")
+        .bind(group_id)
+        .fetch_one(&mut *conn)
+        .await?;
+    if !exists {
+        return Ok(());
+    }
+    let posts: bool = sqlx::query_scalar(
+        "SELECT EXISTS (SELECT 1 FROM posts WHERE cooked LIKE '%class=\"mention-group%' AND raw LIKE $1)",
+    )
+    .bind(format!("%@{previous}%"))
+    .fetch_one(&mut *conn)
+    .await?;
+    if posts {
+        return Err(
+            Unsupported("rewriting a renamed group's mentions (GroupMentionsUpdater)").into(),
+        );
+    }
+    Ok(())
 }
 
 /// Jobs::BulkGrantTrustLevel: each user (by id) recalculated from their

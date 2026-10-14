@@ -1,0 +1,266 @@
+{
+  "name": "admin_update_owner",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/groups/9001.json",
+      "params": {
+        "group": {
+          "full_name": "Owned",
+          "title": "Ignored",
+          "visibility_level": "2",
+          "public_admission": "true"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/groups/9002.json",
+      "params": {
+        "group": {
+          "full_name": "Nope"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/groups/11.json",
+      "params": {
+        "group": {
+          "full_name": "Nope"
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-14T08:20:09.8946",
+  "transaction_started_at": "2026-10-14T08:20:07.050478",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {
+    "group_histories": {
+      "inserted": [
+        {
+          "id": 1,
+          "action": 1,
+          "subject": "full_name",
+          "group_id": 9001,
+          "new_value": "Owned",
+          "created_at": "2026-10-14T08:20:09.93054",
+          "prev_value": null,
+          "updated_at": "2026-10-14T08:20:09.93054",
+          "acting_user_id": 3,
+          "target_user_id": null
+        },
+        {
+          "id": 2,
+          "action": 1,
+          "subject": "public_admission",
+          "group_id": 9001,
+          "new_value": "t",
+          "created_at": "2026-10-14T08:20:09.9519",
+          "prev_value": "f",
+          "updated_at": "2026-10-14T08:20:09.9519",
+          "acting_user_id": 3,
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "groups": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 9001,
+            "name": "testers",
+            "title": null,
+            "bio_raw": null,
+            "imap_ssl": null,
+            "automatic": false,
+            "full_name": null,
+            "imap_port": null,
+            "smtp_port": null,
+            "bio_cooked": null,
+            "created_at": "2026-10-01T10:00:00",
+            "flair_icon": null,
+            "updated_at": "2026-10-01T10:00:00",
+            "user_count": 1,
+            "flair_color": null,
+            "imap_server": null,
+            "public_exit": false,
+            "smtp_server": null,
+            "has_messages": false,
+            "imap_enabled": false,
+            "smtp_enabled": false,
+            "imap_last_uid": 0,
+            "primary_group": false,
+            "smtp_ssl_mode": 0,
+            "email_password": null,
+            "email_username": null,
+            "flair_bg_color": null,
+            "incoming_email": null,
+            "flair_upload_id": null,
+            "imap_last_error": null,
+            "imap_new_emails": null,
+            "imap_old_emails": null,
+            "imap_updated_at": null,
+            "smtp_updated_at": null,
+            "assignable_level": 0,
+            "email_from_alias": null,
+            "public_admission": false,
+            "visibility_level": 0,
+            "grant_trust_level": null,
+            "imap_mailbox_name": "",
+            "imap_uid_validity": 0,
+            "mentionable_level": 0,
+            "messageable_level": 0,
+            "imap_updated_by_id": null,
+            "publish_read_state": false,
+            "smtp_updated_by_id": null,
+            "members_visibility_level": 0,
+            "allow_membership_requests": false,
+            "default_notification_level": 3,
+            "membership_request_template": null,
+            "allow_unknown_sender_topic_replies": false,
+            "automatic_membership_email_domains": null
+          },
+          "after": {
+            "id": 9001,
+            "name": "testers",
+            "title": null,
+            "bio_raw": null,
+            "imap_ssl": null,
+            "automatic": false,
+            "full_name": "Owned",
+            "imap_port": null,
+            "smtp_port": null,
+            "bio_cooked": null,
+            "created_at": "2026-10-01T10:00:00",
+            "flair_icon": null,
+            "updated_at": "2026-10-14T08:20:09.917519",
+            "user_count": 1,
+            "flair_color": null,
+            "imap_server": null,
+            "public_exit": false,
+            "smtp_server": null,
+            "has_messages": false,
+            "imap_enabled": false,
+            "smtp_enabled": false,
+            "imap_last_uid": 0,
+            "primary_group": false,
+            "smtp_ssl_mode": 0,
+            "email_password": null,
+            "email_username": null,
+            "flair_bg_color": null,
+            "incoming_email": null,
+            "flair_upload_id": null,
+            "imap_last_error": null,
+            "imap_new_emails": null,
+            "imap_old_emails": null,
+            "imap_updated_at": null,
+            "smtp_updated_at": null,
+            "assignable_level": 0,
+            "email_from_alias": null,
+            "public_admission": true,
+            "visibility_level": 0,
+            "grant_trust_level": null,
+            "imap_mailbox_name": "",
+            "imap_uid_validity": 0,
+            "mentionable_level": 0,
+            "messageable_level": 0,
+            "imap_updated_by_id": null,
+            "publish_read_state": false,
+            "smtp_updated_by_id": null,
+            "members_visibility_level": 0,
+            "allow_membership_requests": false,
+            "default_notification_level": 3,
+            "membership_request_template": null,
+            "allow_unknown_sender_topic_replies": false,
+            "automatic_membership_email_domains": null
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 82,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "FD/QdDJYhKgd2N1ZFwNtHWtHQT4=",
+            "created_at": "2026-10-14T08:20:07.847225",
+            "rotated_at": "2026-10-14T08:20:07.84467",
+            "updated_at": "2026-10-14T08:20:07.847225",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "FD/QdDJYhKgd2N1ZFwNtHWtHQT4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 82,
+            "seen_at": "2026-10-14T08:20:09.901823",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "FD/QdDJYhKgd2N1ZFwNtHWtHQT4=",
+            "created_at": "2026-10-14T08:20:07.847225",
+            "rotated_at": "2026-10-14T08:20:07.84467",
+            "updated_at": "2026-10-14T08:20:07.847225",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "FD/QdDJYhKgd2N1ZFwNtHWtHQT4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "group_histories": 1
+  },
+  "setup": [
+    "INSERT INTO groups (id, name, user_count, created_at, updated_at) VALUES (9001, 'testers', 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO group_users (id, group_id, user_id, owner, notification_level, created_at, updated_at) VALUES (90001, 9001, 3, TRUE, 3, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO groups (id, name, created_at, updated_at) VALUES (9002, 'others', '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "recorded_from": {
+    "case": "c672f466de6dc53fdc426201dc660a3f51dfb4d7ca79574607c883200e173e4d",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

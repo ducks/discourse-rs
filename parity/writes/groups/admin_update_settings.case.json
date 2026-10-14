@@ -1,0 +1,53 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO groups (id, name, title, user_count, full_name, created_at, updated_at) VALUES (9001, 'testers', 'Tester', 2, 'Old', '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO group_users (id, group_id, user_id, owner, notification_level, created_at, updated_at) VALUES (90001, 9001, 3, FALSE, 3, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO group_users (id, group_id, user_id, owner, notification_level, created_at, updated_at) VALUES (90002, 9001, 4, FALSE, 3, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "UPDATE users SET title = 'Tester' WHERE id = 3",
+    "UPDATE users SET title = 'Other' WHERE id = 4"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/groups/9001.json",
+      "params": {
+        "group": {
+          "full_name": "New Name",
+          "bio_raw": "A *new* bio",
+          "mentionable_level": "3",
+          "title": "Renamed",
+          "visibility_level": "1",
+          "flair_icon": "heart"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/groups/9001.json",
+      "params": {
+        "group": {
+          "full_name": ""
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/groups/9001.json",
+      "params": {
+        "group": {
+          "name": "user1"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/groups/9999.json",
+      "params": {
+        "group": {
+          "full_name": "x"
+        }
+      }
+    }
+  ]
+}

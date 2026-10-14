@@ -269,8 +269,12 @@ then by what running a forum needs (milestone 6). Briefs:
     member may now see refused until CategorySerializer; the automatic
     groups' refreshes in promotion.rs, signup.rs and roles.rs still
     refuse titled, flaired, granting or defaulted groups),
-    82c. `feat/admin-groups` M (create, update, destroy, members and
-    owners, primary, automatic_membership_count, their logs and jobs),
+    82c. ~~`feat/admin-groups`~~ (done) M (create, update, destroy,
+    members and owners, primary, automatic_membership_count, their logs
+    and jobs; refused: adding non-users by email (invites), group SMTP,
+    flair uploads, rewriting a renamed group's mentions, an editor who
+    can no longer see the group (the redirect), the admin's group forms
+    and manage pages),
     82d. `feat/group-email-domains` S (automatic_group_membership,
     set_automatic_groups on confirmation),
     82e. `feat/group-membership-requests` S (join, leave,

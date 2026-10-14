@@ -1,0 +1,18 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO groups (id, name, grant_trust_level, created_at, updated_at) VALUES (9001, 'trusted', 3, '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/groups/9001/members.json",
+      "params": {
+        "usernames": "user1,user2"
+      }
+    }
+  ],
+  "run_jobs": [
+    "bulk_grant_trust_level"
+  ]
+}

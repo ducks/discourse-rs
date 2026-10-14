@@ -1,0 +1,32 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/groups.json",
+      "params": {
+        "group": {
+          "name": "fullgroup",
+          "full_name": "Full Group",
+          "title": "Full",
+          "primary_group": "true",
+          "grant_trust_level": "3",
+          "flair_icon": "heart",
+          "flair_bg_color": "ff0000",
+          "flair_color": "ffffff",
+          "bio_raw": "Hello **world**",
+          "mentionable_level": "99",
+          "messageable_level": "99",
+          "visibility_level": "0",
+          "members_visibility_level": "1",
+          "public_admission": "true",
+          "public_exit": "true",
+          "default_notification_level": "2",
+          "incoming_email": "Full@Example.COM",
+          "usernames": "user1,user2",
+          "owner_usernames": "user2"
+        }
+      }
+    }
+  ]
+}

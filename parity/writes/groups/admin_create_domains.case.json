@@ -1,0 +1,15 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/groups.json",
+      "params": {
+        "group": {
+          "name": "domaingroup",
+          "automatic_membership_email_domains": "https://Example.com/x|example.com|user@Other.org:80"
+        }
+      }
+    }
+  ]
+}

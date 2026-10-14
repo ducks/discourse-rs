@@ -1,0 +1,279 @@
+{
+  "name": "admin_create_errors",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/groups.json",
+      "params": {
+        "group": {
+          "name": "a"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/groups.json",
+      "params": {
+        "group": {
+          "name": "user1"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/groups.json",
+      "params": {
+        "group": {
+          "name": "Moderators"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/groups.json",
+      "params": {
+        "group": {
+          "name": "by-id"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/groups.json",
+      "params": {
+        "group": {
+          "name": "bad name!"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/groups.json",
+      "params": {
+        "group": {
+          "name": "baddomain",
+          "automatic_membership_email_domains": "not a domain|ok.com"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/groups.json",
+      "params": {
+        "group": {
+          "name": "reqgroup",
+          "allow_membership_requests": "true"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/groups.json",
+      "params": {
+        "group": {
+          "full_name": "No name"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/groups.json",
+      "params": {
+        "group": {
+          "name": "badlevel",
+          "default_notification_level": "7"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/groups.json",
+      "params": {
+        "group": {
+          "name": "badtl",
+          "grant_trust_level": "9"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/groups.json",
+      "params": {
+        "group": {
+          "name": "longfull",
+          "full_name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/groups.json",
+      "params": {
+        "group": {
+          "name": "bademail",
+          "incoming_email": "notanemail"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/groups.json",
+      "params": {}
+    }
+  ],
+  "started_at": "2026-10-14T08:19:32.019144",
+  "transaction_started_at": "2026-10-14T08:19:30.641351",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Name must be at least 3 characters"
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Name has already been taken"
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Name has already been taken"
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Name by-id group name is reserved, choose a different name"
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Name must only include numbers, letters, dashes, dots, and underscores"
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "'not a domain' is not a valid domain."
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "failed": "FAILED",
+        "errors": [
+          "You cannot allow membership requests for a group without any owners."
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "failed": "FAILED"
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "failed": "FAILED"
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "'9' is not a valid trust level."
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Full name is too long (maximum is 100 characters)"
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "'notanemail' is not a valid email address."
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "param is missing or the value is empty or invalid: group"
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 82,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "eHz75yKaLnRw7bQelMNl0bprHW8=",
+            "created_at": "2026-10-14T08:19:31.235501",
+            "rotated_at": "2026-10-14T08:19:31.231637",
+            "updated_at": "2026-10-14T08:19:31.235501",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "eHz75yKaLnRw7bQelMNl0bprHW8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 82,
+            "seen_at": "2026-10-14T08:19:32.025496",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "eHz75yKaLnRw7bQelMNl0bprHW8=",
+            "created_at": "2026-10-14T08:19:31.235501",
+            "rotated_at": "2026-10-14T08:19:31.231637",
+            "updated_at": "2026-10-14T08:19:31.235501",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "eHz75yKaLnRw7bQelMNl0bprHW8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "57796e7358d5ed29d910ca8dc972375438cab0015c2f9183370e0f6a5195203e",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

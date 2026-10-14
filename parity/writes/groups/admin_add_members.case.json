@@ -1,0 +1,62 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO groups (id, name, title, created_at, updated_at) VALUES (9001, 'testers', 'Tester', '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/groups/9001/members.json",
+      "params": {
+        "usernames": "user1,USER2"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/groups/9001/members.json",
+      "params": {
+        "usernames": "user1,user2"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/groups/9001/members.json",
+      "params": {
+        "user_ids": "5"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/groups/9001/members.json",
+      "params": {
+        "emails": "user0@example.com"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/groups/9001/members.json",
+      "params": {}
+    },
+    {
+      "method": "PUT",
+      "path": "/groups/9001/members.json",
+      "params": {
+        "usernames": "nobody"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/groups/11/members.json",
+      "params": {
+        "usernames": "user1"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/groups/9999/members.json",
+      "params": {
+        "usernames": "user1"
+      }
+    }
+  ]
+}

@@ -1,0 +1,202 @@
+{
+  "name": "admin_set_primary",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/groups/9001/primary.json",
+      "params": {
+        "group": {
+          "usernames": "user1,user2"
+        },
+        "primary": "true"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/groups/9001/primary.json",
+      "params": {
+        "group": {
+          "usernames": "user1"
+        },
+        "primary": "false"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/groups/11/primary.json",
+      "params": {
+        "group": {
+          "usernames": "user1"
+        },
+        "primary": "true"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T08:20:00.445493",
+  "transaction_started_at": "2026-10-14T08:19:59.207677",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 82,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "xRSO/L1H0llr/KMrisXdBzmTRY8=",
+            "created_at": "2026-10-14T08:19:59.863563",
+            "rotated_at": "2026-10-14T08:19:59.86243",
+            "updated_at": "2026-10-14T08:19:59.863563",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "xRSO/L1H0llr/KMrisXdBzmTRY8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 82,
+            "seen_at": "2026-10-14T08:20:00.453215",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "xRSO/L1H0llr/KMrisXdBzmTRY8=",
+            "created_at": "2026-10-14T08:19:59.863563",
+            "rotated_at": "2026-10-14T08:19:59.86243",
+            "updated_at": "2026-10-14T08:19:59.863563",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "xRSO/L1H0llr/KMrisXdBzmTRY8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "users": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 4,
+            "name": "User2",
+            "admin": false,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": false,
+            "username": "user2",
+            "moderator": false,
+            "created_at": "2026-07-25T05:59:16.733827",
+            "flag_level": 0,
+            "ip_address": null,
+            "updated_at": "2026-09-30T07:28:29.889848",
+            "approved_at": null,
+            "trust_level": 2,
+            "last_seen_at": null,
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": null,
+            "silenced_till": null,
+            "approved_by_id": null,
+            "flair_group_id": null,
+            "last_posted_at": "2026-09-30T07:28:29.179534",
+            "suspended_till": null,
+            "username_lower": "user2",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": null,
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          },
+          "after": {
+            "id": 4,
+            "name": "User2",
+            "admin": false,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": false,
+            "username": "user2",
+            "moderator": false,
+            "created_at": "2026-07-25T05:59:16.733827",
+            "flag_level": 0,
+            "ip_address": null,
+            "updated_at": "2026-09-30T07:28:29.889848",
+            "approved_at": null,
+            "trust_level": 2,
+            "last_seen_at": null,
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": null,
+            "silenced_till": null,
+            "approved_by_id": null,
+            "flair_group_id": null,
+            "last_posted_at": "2026-09-30T07:28:29.179534",
+            "suspended_till": null,
+            "username_lower": "user2",
+            "last_emailed_at": null,
+            "primary_group_id": 9001,
+            "previous_visit_at": null,
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO groups (id, name, user_count, created_at, updated_at) VALUES (9001, 'testers', 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO group_users (id, group_id, user_id, owner, notification_level, created_at, updated_at) VALUES (90001, 9001, 3, FALSE, 3, '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "recorded_from": {
+    "case": "b00ef24f434c9f505a60702596414edc6e9393a4b8cba156b4b7c3cedab4a1ae",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

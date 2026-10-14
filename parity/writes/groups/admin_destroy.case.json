@@ -1,0 +1,27 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO groups (id, name, title, primary_group, user_count, flair_icon, created_at, updated_at) VALUES (9001, 'testers', 'Tester', TRUE, 2, 'heart', '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO group_users (id, group_id, user_id, owner, notification_level, created_at, updated_at) VALUES (90001, 9001, 3, TRUE, 3, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO group_users (id, group_id, user_id, owner, notification_level, created_at, updated_at) VALUES (90002, 9001, 4, FALSE, 3, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "UPDATE users SET title = 'Tester', primary_group_id = 9001, flair_group_id = 9001 WHERE id IN (3, 4)",
+    "INSERT INTO category_groups (id, category_id, group_id, permission_type, created_at, updated_at) VALUES (9001, 4, 9001, 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO group_histories (id, group_id, acting_user_id, target_user_id, action, created_at, updated_at) VALUES (9001, 9001, 1, 3, 2, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO group_requests (id, group_id, user_id, reason, created_at, updated_at) VALUES (9001, 9001, 2, 'Please', '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO group_category_notification_defaults (id, group_id, category_id, notification_level) VALUES (9001, 9001, 4, 3)"
+  ],
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/admin/groups/9001.json"
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/groups/9001.json"
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/groups/11.json"
+    }
+  ]
+}

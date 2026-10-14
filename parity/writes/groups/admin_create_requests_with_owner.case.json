@@ -1,0 +1,27 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/groups.json",
+      "params": {
+        "group": {
+          "name": "reqgroup",
+          "allow_membership_requests": "true",
+          "membership_request_template": "Why?",
+          "owner_usernames": "user1"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/groups.json",
+      "params": {
+        "group": {
+          "name": "notemplate",
+          "membership_request_template": "Dropped"
+        }
+      }
+    }
+  ]
+}
