@@ -19,6 +19,9 @@ FILES=(
   lib/onebox/templates/discourse_topic_onebox.mustache
   lib/onebox/templates/discourse_user_onebox.mustache
   lib/onebox/templates/discourse_category_onebox.mustache
+  lib/onebox/templates/_layout.mustache
+  lib/onebox/templates/googlemeet.mustache
+  lib/onebox/templates/preview_error_onebox.mustache
   vendor/assets/svg-icons/discourse-additional.svg
   vendor/assets/svg-icons/fontawesome/solid.svg
   vendor/assets/svg-icons/fontawesome/regular.svg
@@ -103,9 +106,13 @@ done < <(git -C "$src" ls-tree -r --name-only "$commit" plugins \
   | grep -E '^plugins/[^/]+/svg-icons/[^/]+\.svg$' | LC_ALL=C sort)
 echo "vendored $sprites plugin icon sprites"
 
+# Discourse::VERSION::STRING, for the user agent it fetches with.
+version="$(git -C "$src" show "$commit:lib/version.rb" | sed -n 's/^ *STRING = "\(.*\)"$/\1/p')"
+
 cat > "$dest/DISCOURSE_REF" <<EOF
 commit=$commit
 committed_at=$committed_at
+version=$version
 EOF
 
 versions="$(grep -cE "^\('[0-9]+'\)[,;]$" "$dest/db/structure.sql")"

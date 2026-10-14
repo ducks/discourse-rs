@@ -21,6 +21,23 @@ pub fn discourse_commit() -> &'static str {
         .unwrap_or("unknown")
 }
 
+/// `Discourse::VERSION::STRING` of the vendored commit.
+pub fn discourse_version() -> &'static str {
+    DISCOURSE_REF
+        .lines()
+        .find_map(|l| l.strip_prefix("version="))
+        .unwrap_or("unknown")
+}
+
+/// `Discourse.user_agent`
+pub fn user_agent() -> String {
+    format!(
+        "Discourse/{}-{}; +https://www.discourse.org/",
+        discourse_version(),
+        discourse_commit()
+    )
+}
+
 /// Schema versions listed in the trailing `INSERT INTO schema_migrations`
 /// block of structure.sql, one `('20120311163914'),` per line.
 pub fn expected_versions() -> Vec<&'static str> {

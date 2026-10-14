@@ -59,11 +59,10 @@ pub async fn show(
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
     // Oneboxer.cached_preview: only other sites' previews are cached.
     if !refresh
-        && let Some(cached) =
-            crate::owned_schema::cached_get(&mut conn, &format!("onebox__{url}")).await?
-        && !cached.trim().is_empty()
+        && let Some(cached) = crate::onebox::external::cached(&mut conn, &url).await?
+        && !cached.preview.trim().is_empty()
     {
-        return Ok(plain(cached.trim()));
+        return Ok(plain(cached.preview.trim()));
     }
     // Only one preview at a time per member.
     let lock = format!("onebox:preview:{user_id}");
@@ -94,6 +93,10 @@ pub async fn show(
         category_id: int(&p, "category_id"),
         topic_id: int(&p, "topic_id"),
     };
+    // invalidate_oneboxes
+    if refresh {
+        crate::onebox::external::invalidate(&mut conn, &url).await?;
+    }
     let preview = crate::onebox::preview(&mut conn, &site, &url, &opts).await;
     released(&mut conn, &lock).await?;
     let preview = preview?;

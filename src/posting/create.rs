@@ -455,8 +455,7 @@ pub async fn create(
         &crate::url::Urls {
             config: ctx.config,
             settings: ctx.settings,
-        }
-        .current_hostname()?,
+        },
         &base_path,
     )?;
     if analysis.has_upload_media {

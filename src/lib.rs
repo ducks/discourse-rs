@@ -50,6 +50,7 @@ pub mod likes;
 pub mod message_format;
 pub mod messages_view;
 pub mod modifications;
+pub mod mustache;
 pub mod not_found_page;
 pub mod notifications;
 pub mod onebox;

@@ -10,6 +10,11 @@
 //! engines) and are refused, as are own-site paths no route here knows
 //! (Rails would fetch the page) and chat's local oneboxes.
 
+pub mod engines;
+pub mod external;
+pub mod matcher;
+pub mod preview;
+
 use std::sync::LazyLock;
 
 use markup5ever_rcdom::{Handle, NodeData, RcDom};
@@ -25,11 +30,11 @@ use crate::url::Urls;
 use crate::{AppError, Unsupported};
 
 const TOPIC_TEMPLATE: &str =
-    include_str!("../vendor/discourse/lib/onebox/templates/discourse_topic_onebox.mustache");
+    include_str!("../../vendor/discourse/lib/onebox/templates/discourse_topic_onebox.mustache");
 const USER_TEMPLATE: &str =
-    include_str!("../vendor/discourse/lib/onebox/templates/discourse_user_onebox.mustache");
+    include_str!("../../vendor/discourse/lib/onebox/templates/discourse_user_onebox.mustache");
 const CATEGORY_TEMPLATE: &str =
-    include_str!("../vendor/discourse/lib/onebox/templates/discourse_category_onebox.mustache");
+    include_str!("../../vendor/discourse/lib/onebox/templates/discourse_category_onebox.mustache");
 
 /// `Oneboxer::AUDIO_REGEX` and `VIDEO_REGEX`, on the path's extension.
 const AUDIO: [&str; 11] = [
@@ -244,7 +249,7 @@ fn route_for(url: &str, hostname: &str, base_path: &str) -> Result<Option<Route>
 }
 
 /// `Onebox::Helpers.normalize_url_for_output`
-fn normalize_url_for_output(url: &str) -> String {
+pub(crate) fn normalize_url_for_output(url: &str) -> String {
     let url = url
         .replace(' ', "%20")
         .replace('\'', "&apos;")
@@ -253,9 +258,12 @@ fn normalize_url_for_output(url: &str) -> String {
         .chars()
         .filter(|c| c.is_alphanumeric() || *c == '_' || "-`.~:/?#[]@!$&'()*+,;=%’".contains(*c))
         .collect();
+    // Addressable finds a host after a scheme or in a protocol-relative URL.
     let has_host = url
         .split_once("://")
-        .is_some_and(|(_, rest)| !rest.is_empty() && !rest.starts_with('/'));
+        .map(|(_, rest)| rest)
+        .or_else(|| url.strip_prefix("//"))
+        .is_some_and(|rest| !rest.is_empty() && !rest.starts_with('/'));
     if has_host { url } else { String::new() }
 }
 
@@ -286,106 +294,19 @@ fn escape(s: &str) -> String {
     crate::discourse_diff::escape_html(s)
 }
 
-/// A mustache template's values: text, an HTML-escaped value, or a section.
-enum Value {
-    Text(String),
-    Section(bool),
-    List(Vec<Vec<(&'static str, Value)>>),
-}
-
-/// Mustache, as the onebox templates use it: `{{name}}` escaped,
-/// `{{{name}}}` as is, `{{#name}}...{{/name}}` sections over a boolean, a
-/// present value or a list; a line holding only a section tag is dropped
-/// (the spec's standalone tags).
-fn render(template: &str, values: &[(&'static str, Value)]) -> String {
-    let mut out = String::new();
-    let lines: Vec<&str> = template.split_inclusive('\n').collect();
-    render_lines(&lines, values, &mut out);
-    out
-}
-
-fn section_tag(line: &str) -> Option<(char, &str)> {
-    let t = line.trim();
-    let inner = t.strip_prefix("{{")?.strip_suffix("}}")?;
-    let kind = inner.chars().next()?;
-    if kind == '#' || kind == '/' || kind == '^' {
-        Some((kind, inner[1..].trim()))
+/// A template value: a blank one is nil to the template, as Rails passes
+/// nil for what isn't there.
+fn text(s: impl Into<String>) -> serde_json::Value {
+    let s = s.into();
+    if s.is_empty() {
+        serde_json::Value::Null
     } else {
-        None
+        serde_json::Value::String(s)
     }
 }
 
-fn render_lines(lines: &[&str], values: &[(&'static str, Value)], out: &mut String) {
-    let mut i = 0;
-    while i < lines.len() {
-        let line = lines[i];
-        if let Some(('#', name)) = section_tag(line) {
-            let end = (i + 1..lines.len())
-                .find(|&j| section_tag(lines[j]) == Some(('/', name)))
-                .unwrap_or(lines.len());
-            let body = &lines[i + 1..end];
-            match values.iter().find(|(n, _)| *n == name).map(|(_, v)| v) {
-                Some(Value::Section(true)) => render_lines(body, values, out),
-                Some(Value::Text(t)) if !t.is_empty() => render_lines(body, values, out),
-                Some(Value::List(items)) => {
-                    for item in items {
-                        let mut scope: Vec<(&'static str, Value)> = Vec::new();
-                        for (n, v) in item {
-                            scope.push((n, clone_value(v)));
-                        }
-                        for (n, v) in values {
-                            if !scope.iter().any(|(s, _)| s == n) {
-                                scope.push((n, clone_value(v)));
-                            }
-                        }
-                        render_lines(body, &scope, out);
-                    }
-                }
-                _ => {}
-            }
-            i = end + 1;
-            continue;
-        }
-        out.push_str(&interpolate(line, values));
-        i += 1;
-    }
-}
-
-fn clone_value(v: &Value) -> Value {
-    match v {
-        Value::Text(t) => Value::Text(t.clone()),
-        Value::Section(b) => Value::Section(*b),
-        Value::List(_) => Value::Section(true),
-    }
-}
-
-fn interpolate(line: &str, values: &[(&'static str, Value)]) -> String {
-    let lookup = |name: &str| -> String {
-        match values.iter().find(|(n, _)| *n == name).map(|(_, v)| v) {
-            Some(Value::Text(t)) => t.clone(),
-            _ => String::new(),
-        }
-    };
-    let mut out = String::new();
-    let mut rest = line;
-    while let Some(start) = rest.find("{{") {
-        out.push_str(&rest[..start]);
-        let after = &rest[start..];
-        if let Some(inner) = after.strip_prefix("{{{")
-            && let Some(end) = inner.find("}}}")
-        {
-            out.push_str(&lookup(inner[..end].trim()));
-            rest = &inner[end + 3..];
-        } else if let Some(end) = after.find("}}") {
-            out.push_str(&escape(&lookup(after[2..end].trim())));
-            rest = &after[end + 2..];
-        } else {
-            out.push_str(after);
-            rest = "";
-        }
-    }
-    out.push_str(rest);
-    out
+fn context(pairs: Vec<(&str, serde_json::Value)>) -> serde_json::Value {
+    serde_json::Value::Object(pairs.into_iter().map(|(k, v)| (k.to_string(), v)).collect())
 }
 
 /// `PrettyText.avatar_img(template, size)`: the size's pixels, the URL at
@@ -703,17 +624,17 @@ async fn local_topic_html(
             t.to_string()
         })
     };
-    Ok(Some(render(
+    Ok(Some(crate::mustache::render(
         TOPIC_TEMPLATE,
-        &[
-            ("topic_id", Value::Text(topic.id.to_string())),
-            ("post_number", Value::Text(post.post_number.to_string())),
-            ("avatar", Value::Text(avatar_img(s, schemaless, "tiny")?)),
-            ("original_url", Value::Text(url.to_string())),
-            ("title", Value::Text(unescape(&escape(&topic.title))?)),
-            ("category_html", Value::Text(category_html)),
-            ("quote", Value::Text(unescape(&excerpt)?)),
-        ],
+        &context(vec![
+            ("topic_id", text(topic.id.to_string())),
+            ("post_number", text(post.post_number.to_string())),
+            ("avatar", text(avatar_img(s, schemaless, "tiny")?)),
+            ("original_url", text(url.to_string())),
+            ("title", text(unescape(&escape(&topic.title))?)),
+            ("category_html", text(category_html)),
+            ("quote", text(unescape(&excerpt)?)),
+        ]),
     )))
 }
 
@@ -771,20 +692,20 @@ async fn local_user_html(
             &[("date", &user.created_at.format("%B %-d, %Y").to_string())],
         )
         .unwrap_or_default();
-    Ok(Some(render(
+    Ok(Some(crate::mustache::render(
         USER_TEMPLATE,
-        &[
-            ("user_id", Value::Text(user.id.to_string())),
-            ("username", Value::Text(user.username.clone())),
-            ("avatar", Value::Text(avatar_img(s, &template, "huge")?)),
-            ("name", Value::Text(name)),
-            ("bio", Value::Text(bio)),
-            ("location", Value::Text(location)),
-            ("joined", Value::Text(joined)),
-            ("website", Value::Text(website)),
-            ("website_name", Value::Text(website_name)),
-            ("original_url", Value::Text(url.to_string())),
-        ],
+        &context(vec![
+            ("user_id", text(user.id.to_string())),
+            ("username", text(user.username.clone())),
+            ("avatar", text(avatar_img(s, &template, "huge")?)),
+            ("name", text(name)),
+            ("bio", text(bio)),
+            ("location", text(location)),
+            ("joined", text(joined)),
+            ("website", text(website)),
+            ("website_name", text(website_name)),
+            ("original_url", text(url.to_string())),
+        ]),
     )))
 }
 
@@ -887,11 +808,11 @@ async fn local_category_html(
     for sub in subcategories {
         if can_see_category(conn, s, &anonymous, sub.id).await? {
             let url = category_url(conn, site.base_path, &sub).await?;
-            visible.push(vec![
-                ("name", Value::Text(sub.name.clone())),
-                ("color", Value::Text(sub.color.clone())),
-                ("url", Value::Text(url)),
-            ]);
+            visible.push(context(vec![
+                ("name", text(sub.name.clone())),
+                ("color", text(sub.color.clone())),
+                ("url", text(url)),
+            ]));
         }
     }
     let logo_url = match category.uploaded_logo_id {
@@ -911,17 +832,20 @@ async fn local_category_html(
         .map(sanitize_text)
         .unwrap_or_default();
     let url = category_url(conn, site.base_path, &category).await?;
-    Ok(Some(render(
+    Ok(Some(crate::mustache::render(
         CATEGORY_TEMPLATE,
-        &[
-            ("url", Value::Text(url)),
-            ("name", Value::Text(category.name.clone())),
-            ("color", Value::Text(category.color.clone())),
-            ("logo_url", Value::Text(logo_url)),
-            ("description", Value::Text(description)),
-            ("has_subcategories", Value::Section(has_subcategories)),
-            ("subcategories", Value::List(visible)),
-        ],
+        &context(vec![
+            ("url", text(url)),
+            ("name", text(category.name.clone())),
+            ("color", text(category.color.clone())),
+            ("logo_url", text(logo_url)),
+            ("description", text(description)),
+            (
+                "has_subcategories",
+                serde_json::Value::Bool(has_subcategories),
+            ),
+            ("subcategories", serde_json::Value::Array(visible)),
+        ]),
     )))
 }
 
@@ -955,20 +879,21 @@ fn local_upload_html(settings: &SiteSettings, url: &str) -> Result<Option<String
     })
 }
 
-/// `Oneboxer.onebox(url, user_id:, category_id:)`: the site's own pages'
-/// HTML (a plain link when there is none), another site's refused.
-async fn onebox(
+/// `Oneboxer.onebox_raw(url, user_id:, category_id:)`: the site's own
+/// pages' HTML (a plain link when there is none), else another site's
+/// onebox (`external_onebox`).
+async fn onebox_raw(
     conn: &mut PgConnection,
     site: &Site<'_>,
     url: &str,
     opts: &Opts,
-) -> Result<String, AppError> {
+) -> Result<external::Onebox, AppError> {
     if !url.is_ascii() || url.chars().any(char::is_whitespace) {
         return Err(Unsupported("onebox URLs that need encoding").into());
     }
     let hostname = site.urls.current_hostname()?;
     let Some(route) = route_for(url, &hostname, site.base_path)? else {
-        return Err(Unsupported("oneboxes of other sites (fetched from the network)").into());
+        return external::external_onebox(conn, site, url).await;
     };
     let html = match route {
         Route::Upload => local_upload_html(site.settings, url)?,
@@ -982,9 +907,13 @@ async fn onebox(
         Route::Other => None,
     };
     let normalized = normalize_url_for_output(url);
-    Ok(html
+    let html = html
         .filter(|h| !h.trim().is_empty())
-        .unwrap_or_else(|| format!("<a href='{normalized}'>{normalized}</a>")))
+        .unwrap_or_else(|| format!("<a href='{normalized}'>{normalized}</a>"));
+    Ok(external::Onebox {
+        onebox: html.clone(),
+        preview: html,
+    })
 }
 
 /// `InlineOneboxer.lookup(url, user_id:, category_id:)`: none when it
@@ -1107,12 +1036,10 @@ async fn crawled_title(
         .into());
     }
     let block_redirects = s.get("block_onebox_on_redirect")?.truthy();
-    let accept_language = if locale == "en" {
-        "en;q=0.9, *;q=0.5".to_string()
-    } else {
-        format!("{};q=0.9, en;q=0.8, *;q=0.5", locale.replace('_', "-"))
-    };
-    let mut headers = vec![("Accept-Language".to_string(), accept_language)];
+    let mut headers = vec![(
+        "Accept-Language".to_string(),
+        external::accept_language(&locale),
+    )];
     let agent = s.get("inline_onebox_user_agent")?.to_s().to_string();
     if !agent.trim().is_empty() {
         headers.push(("User-Agent".into(), agent));
@@ -1142,18 +1069,24 @@ async fn crawled_title(
     Ok(Some(title))
 }
 
-/// `WordWatcher.censor_text`, which onebox_for runs on a title: refused
-/// while there are words to censor.
+/// `WordWatcher.censor_text`, which onebox_for runs on a title.
 async fn censored(conn: &mut PgConnection, title: String) -> Result<String, AppError> {
+    refuse_censored(conn).await?;
+    Ok(title)
+}
+
+/// `WordWatcher.censor` on onebox HTML or titles: refused while there are
+/// words to censor.
+async fn refuse_censored(conn: &mut PgConnection) -> Result<(), AppError> {
     // WatchedWord.actions: censor 2.
     let censor: bool =
         sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM watched_words WHERE action = 2)")
             .fetch_one(&mut *conn)
             .await?;
     if censor {
-        return Err(Unsupported("censored watched words in inline onebox titles").into());
+        return Err(Unsupported("censored watched words in oneboxes").into());
     }
-    Ok(title)
+    Ok(())
 }
 
 /// What the post processor would refuse to onebox, refused before the post
@@ -1161,12 +1094,14 @@ async fn censored(conn: &mut PgConnection, title: String) -> Result<String, AppE
 /// inline oneboxes of anything but the site's topics.
 pub fn refuse_unported(
     links: &[(String, bool)],
-    hostname: &str,
+    urls: &Urls,
     base_path: &str,
-) -> Result<(), Unsupported> {
+) -> Result<(), AppError> {
+    let hostname = &urls.current_hostname()?;
+    let iframes = matcher::origins_to_regexes(&external::allowed_iframe_origins(urls.settings)?);
     for (url, inline) in links {
         if !url.is_ascii() || url.chars().any(char::is_whitespace) {
-            return Err(Unsupported("onebox URLs that need encoding"));
+            return Err(Unsupported("onebox URLs that need encoding").into());
         }
         if *inline {
             // A topic's title, or a page's crawled (RetrieveTitle), except
@@ -1175,14 +1110,18 @@ pub fn refuse_unported(
             if matches!(host.as_deref(), Some("github.com" | "meet.google.com")) {
                 return Err(Unsupported(
                     "inline oneboxes of GitHub and Google Meet links (onebox engines)",
-                ));
+                )
+                .into());
             }
             continue;
         }
-        if route_for(url, hostname, base_path)?.is_none() {
-            return Err(Unsupported(
-                "oneboxes of other sites (fetched from the network)",
-            ));
+        // Another site's: only the engines that render from the URL (a
+        // redirect elsewhere is refused when the post is processed).
+        if route_for(url, hostname, base_path)?.is_none()
+            && !matcher::oneboxed(url, None, &iframes)
+                .is_some_and(|e| engines::PORTED.contains(&e.name))
+        {
+            return Err(Unsupported("oneboxes of other sites that fetch the page").into());
         }
     }
     Ok(())
@@ -1370,7 +1309,7 @@ pub async fn preview(
     url: &str,
     opts: &Opts,
 ) -> Result<String, AppError> {
-    onebox(conn, site, url, opts).await
+    Ok(onebox_raw(conn, site, url, opts).await?.preview)
 }
 
 /// `InlineOneboxer.lookup(url, user_id:, category_id:, topic_id:)`:
@@ -1487,7 +1426,9 @@ pub async fn post_process(
         limit -= 1;
         if is_onebox {
             oneboxes.push(url.clone());
-            outcomes.push(Some(Outcome::Onebox(onebox(conn, site, &url, opts).await?)));
+            outcomes.push(Some(Outcome::Onebox(
+                onebox_raw(conn, site, &url, opts).await?.onebox,
+            )));
         } else {
             inlines.push(url.clone());
             outcomes.push(Some(Outcome::Inline(
@@ -1670,30 +1611,5 @@ mod tests {
             Some(Route::Upload)
         );
         assert_eq!(recognize("/no-such-page"), None);
-    }
-
-    #[test]
-    fn renders_sections_as_standalone_lines() {
-        let t = "<div>\n  {{#name}}\n    <b>{{name}}</b>\n  {{/name}}\n  {{{raw}}}\n</div>\n";
-        assert_eq!(
-            render(
-                t,
-                &[
-                    ("name", Value::Text("A & B".into())),
-                    ("raw", Value::Text("<i>x</i>".into())),
-                ]
-            ),
-            "<div>\n    <b>A &amp; B</b>\n  <i>x</i>\n</div>\n"
-        );
-        assert_eq!(
-            render(
-                t,
-                &[
-                    ("name", Value::Text(String::new())),
-                    ("raw", Value::Text(String::new()))
-                ]
-            ),
-            "<div>\n  \n</div>\n"
-        );
     }
 }
