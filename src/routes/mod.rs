@@ -59,6 +59,7 @@ mod topic_status;
 mod topic_timer;
 mod topic_voting;
 mod topics;
+mod user_api_key_auth;
 mod user_api_keys;
 mod user_avatars;
 mod user_badges;
@@ -479,6 +480,22 @@ pub fn router(state: &AppState) -> Router<AppState> {
         )
         .route("/user_actions.json", get(users::actions))
         // UserApiKeysController and UserApiKeyClientsController.
+        .route("/user-api-key/new", get(user_api_key_auth::new))
+        .route("/user-api-key/new.json", get(user_api_key_auth::new))
+        .route("/user-api-key", post(user_api_key_auth::create))
+        .route("/user-api-key.json", post(user_api_key_auth::create))
+        .route(
+            "/user-api-key/otp",
+            get(user_api_key_auth::otp).post(user_api_key_auth::create_otp),
+        )
+        .route(
+            "/user-api-key/otp.json",
+            get(user_api_key_auth::otp).post(user_api_key_auth::create_otp),
+        )
+        .route(
+            "/session/otp/{token}",
+            get(user_api_key_auth::session_otp).post(user_api_key_auth::session_otp),
+        )
         .route("/user-api-key/revoke", post(user_api_keys::revoke))
         .route("/user-api-key/revoke.json", post(user_api_keys::revoke))
         .route(

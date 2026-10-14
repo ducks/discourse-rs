@@ -2448,3 +2448,146 @@ async fn user_api_keys_unknown_or_with_a_cookie() {
         .await;
     assert_eq!(reply.status, StatusCode::INTERNAL_SERVER_ERROR);
 }
+
+/// The cases' private key (parity/writes/files), for what the
+/// authorization encrypts to its public half.
+fn decrypt_with_case_key(base64_text: &str) -> String {
+    use base64::Engine;
+    use rsa::pkcs1::DecodeRsaPrivateKey;
+    let pem = std::fs::read_to_string(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("parity/writes/files/user_api_key_private.pem"),
+    )
+    .unwrap();
+    let key = rsa::RsaPrivateKey::from_pkcs1_pem(&pem).unwrap();
+    let compact: String = base64_text.chars().filter(|c| !c.is_whitespace()).collect();
+    let bytes = base64::engine::general_purpose::STANDARD
+        .decode(compact)
+        .unwrap();
+    String::from_utf8(key.decrypt(rsa::Pkcs1v15Encrypt, &bytes).unwrap()).unwrap()
+}
+
+/// The authorization page as HTML, its form posted back (a redirect to
+/// the application with the key and a one-time password), the key used,
+/// and the one-time password logging the member in once.
+#[tokio::test]
+async fn user_api_key_authorization_and_one_time_password() {
+    let db = TestDb::new().await;
+    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let pem = std::fs::read_to_string(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("parity/writes/files/user_api_key_public.pem"),
+    )
+    .unwrap();
+    let fields = [
+        ("nonce", "n1"),
+        ("scopes", "read,one_time_password"),
+        ("client_id", "test-app"),
+        ("application_name", "Test App"),
+        ("public_key", pem.as_str()),
+        ("auth_redirect", "discourse://auth_redirect"),
+    ];
+    let query: String = form_urlencoded::Serializer::new(String::new())
+        .extend_pairs(fields)
+        .finish();
+
+    // Anonymous: off to the login page, the request kept for after it.
+    let mut anonymous = Client::new(app_state.clone());
+    let reply = anonymous.get(&format!("/user-api-key/new?{query}")).await;
+    assert_eq!(reply.status, StatusCode::FOUND);
+    assert!(
+        reply
+            .set_cookies()
+            .iter()
+            .any(|c| c.starts_with("destination_url=%2Fuser-api-key%2Fnew%3F"))
+    );
+
+    let mut member = Client::new(app_state.clone());
+    assert_eq!(
+        member.login("user1", "password").await.status,
+        StatusCode::OK
+    );
+    let reply = member.get(&format!("/user-api-key/new?{query}")).await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    assert!(
+        reply.body.contains("Authorize &quot;Test App&quot;")
+            || reply.body.contains("Authorize &#34;Test App&#34;"),
+        "{}",
+        reply.body
+    );
+    assert!(
+        reply
+            .body
+            .contains("<li>Create a one-time login token</li>")
+    );
+    assert!(reply.body.contains(r#"name="authenticity_token""#));
+    assert!(
+        reply
+            .headers
+            .iter()
+            .any(|(k, v)| k == "cache-control" && v == "no-store")
+    );
+
+    let reply = member
+        .send(
+            Method::POST,
+            "/user-api-key",
+            &[("accept", "text/html")],
+            &query,
+        )
+        .await;
+    assert_eq!(reply.status, StatusCode::FOUND, "{}", reply.body);
+    let location = reply
+        .headers
+        .iter()
+        .find(|(k, _)| k == "location")
+        .map(|(_, v)| v.clone())
+        .unwrap();
+    let (base, params) = location.split_once('?').unwrap();
+    assert_eq!(base, "discourse://auth_redirect");
+    let params: std::collections::HashMap<String, String> =
+        form_urlencoded::parse(params.as_bytes())
+            .into_owned()
+            .collect();
+    let payload: Value = serde_json::from_str(&decrypt_with_case_key(&params["payload"])).unwrap();
+    assert_eq!(payload["nonce"], "n1");
+    assert_eq!(payload["api"], 4);
+    let key = payload["key"].as_str().unwrap().to_string();
+    let otp = decrypt_with_case_key(&params["oneTimePassword"]);
+
+    // The key reads as its member.
+    let mut app = Client::new(app_state.clone());
+    let reply = app
+        .send(
+            Method::GET,
+            "/session/current.json",
+            &[("user-api-key", key.as_str())],
+            "",
+        )
+        .await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    assert_eq!(reply.json()["current_user"]["username"], "user1");
+
+    // The one-time password: a confirmation page, then the login.
+    let mut browser = Client::new(app_state.clone());
+    let reply = browser.get(&format!("/session/otp/{otp}")).await;
+    assert_eq!(reply.status, StatusCode::OK);
+    assert!(reply.body.contains("Logging in as user1"), "{}", reply.body);
+    browser.fetch_csrf().await;
+    let reply = browser
+        .send(
+            Method::POST,
+            &format!("/session/otp/{otp}"),
+            &[],
+            "commit=1",
+        )
+        .await;
+    assert_eq!(reply.status, StatusCode::FOUND, "{}", reply.body);
+    assert!(reply.set_cookies().iter().any(|c| c.starts_with("_t=")));
+    let reply = browser.get("/session/current.json").await;
+    assert_eq!(reply.json()["current_user"]["username"], "user1");
+    // Used once.
+    let mut again = Client::new(app_state);
+    let reply = again.get(&format!("/session/otp/{otp}")).await;
+    assert!(reply.body.contains("alert-error"), "{}", reply.body);
+}

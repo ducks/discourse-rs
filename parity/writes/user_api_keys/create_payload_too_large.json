@@ -1,0 +1,140 @@
+{
+  "name": "create_payload_too_large",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/user-api-key.json",
+      "params": {
+        "nonce": "nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn",
+        "scopes": "read,write",
+        "client_id": "new-app",
+        "application_name": "New App",
+        "public_key": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqwmoi0ReR8abVU8G09ok\n3v/02ZaCQStHEzr8b4Wx6vTbOutpe7EoVL2O8OEeo49fpUJbTmmRsgJV7rm1rQVP\nVBQNGKHkpYLI+N24IyPyocJjZCsDdif7Fl2uVB8c1ASrI3PLb7PFV4Se1T3sgE7X\nB0ToQHK5gr/+1VCi0yW07GnZhXdmXZFuZNyGasalwxIcxwQtIVmWGriU80qNSsIV\nHI+phkrECrIa7V+qlqAUNb/XfGYQiiJYHSxkWsq29ZrSElF6P7+HwP5fVFBgnTQA\n9CspTQ6y6FmB4XqHeeFw1Nw2S4UGwEVCztVWdw2M0xOAYS//J9QES++Bkp3NDfMA\newIDAQAB\n-----END PUBLIC KEY-----\n"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T08:47:10.242418",
+  "transaction_started_at": "2026-10-14T08:47:09.028254",
+  "responses": [
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Payload too large for PKCS#1 encryption with this key size. Maximum: 245 bytes, got: 374 bytes. Try using a shorter nonce or a larger RSA key (minimum 2048-bit recommended)."
+        ],
+        "error_type": "invalid_parameters"
+      }
+    }
+  ],
+  "changes": {
+    "user_api_key_clients": {
+      "inserted": [
+        {
+          "id": 1,
+          "client_id": "new-app",
+          "created_at": "2026-10-14T08:47:10.268677",
+          "public_key": null,
+          "updated_at": "2026-10-14T08:47:10.268677",
+          "auth_redirect": null,
+          "application_name": "New App"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_api_key_scopes": {
+      "inserted": [
+        {
+          "id": 1,
+          "name": "read",
+          "created_at": "2026-10-14T08:47:10.279744",
+          "updated_at": "2026-10-14T08:47:10.279744",
+          "user_api_key_id": 1,
+          "allowed_parameters": null
+        },
+        {
+          "id": 2,
+          "name": "write",
+          "created_at": "2026-10-14T08:47:10.282796",
+          "updated_at": "2026-10-14T08:47:10.282796",
+          "user_api_key_id": 1,
+          "allowed_parameters": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_api_keys": {
+      "inserted": [
+        {
+          "id": 1,
+          "user_id": 3,
+          "key_hash": "e78625c07b0698a56a87e0bbaf0a7b0922f1f8c094cebc2d045b67d39a8d9c7b",
+          "push_url": null,
+          "client_id": null,
+          "created_at": "2026-10-14T08:47:10.277269",
+          "expires_at": null,
+          "revoked_at": null,
+          "updated_at": "2026-10-14T08:47:10.277269",
+          "last_used_at": "2026-10-14T08:47:09.028254",
+          "application_name": null,
+          "user_api_key_client_id": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "tlIkuQ0x2hOuPq/N7Nfp8HTe4DU=",
+            "created_at": "2026-10-14T08:47:09.5446",
+            "rotated_at": "2026-10-14T08:47:09.543189",
+            "updated_at": "2026-10-14T08:47:09.5446",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "tlIkuQ0x2hOuPq/N7Nfp8HTe4DU=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T08:47:10.252689",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "tlIkuQ0x2hOuPq/N7Nfp8HTe4DU=",
+            "created_at": "2026-10-14T08:47:09.5446",
+            "rotated_at": "2026-10-14T08:47:09.543189",
+            "updated_at": "2026-10-14T08:47:09.5446",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "tlIkuQ0x2hOuPq/N7Nfp8HTe4DU=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "user_api_key_clients": 1,
+    "user_api_key_scopes": 1,
+    "user_api_keys": 1
+  },
+  "recorded_from": {
+    "case": "08a92b5ef588dac207c9b30e72855fdc046ba4da532b8187954e5109794fb2de",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

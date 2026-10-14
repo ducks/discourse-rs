@@ -127,9 +127,10 @@ def clear_redis_state
   # user directory (DirectoryItem.last_updated_at, DirectoryRefresh).
   # _CACHE:watched-words-list: WordWatcher's word lists, cached a day
   # (empty ones too), which would hide a case's setup words from Rails.
+  # otp_*: the user API one-time passwords a case hands out.
   # readonly_mode*: read-only mode's keys (a case's `readonly`, or the
   # admin toggle), which would refuse every later case's writes.
-  %w[readonly_mode* postgres:last_readonly unique-post-* unique-pm-post-* rejection_email:* user-last-seen:* hot_score_6_hourly __SEARCH__LOG_* LAST_UPLOAD_CLEANUP l-rate-limit3:* grpmsg:* last_notified_reviewable_id _CACHE:inline_onebox:* _CACHE:onebox__* _CACHE:onebox_failed__* about-stats badge_queue directory_* summary-new-users:* _CACHE:watched-words-list:*].each do |pattern|
+  %w[readonly_mode* postgres:last_readonly otp_* unique-post-* unique-pm-post-* rejection_email:* user-last-seen:* hot_score_6_hourly __SEARCH__LOG_* LAST_UPLOAD_CLEANUP l-rate-limit3:* grpmsg:* last_notified_reviewable_id _CACHE:inline_onebox:* _CACHE:onebox__* _CACHE:onebox_failed__* about-stats badge_queue directory_* summary-new-users:* _CACHE:watched-words-list:*].each do |pattern|
     Discourse.redis.keys(pattern).each { |k| Discourse.redis.del(k) }
   end
   # Oneboxer's preferred strategies, outside the namespace.

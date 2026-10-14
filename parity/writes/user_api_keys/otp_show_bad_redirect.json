@@ -1,0 +1,97 @@
+{
+  "name": "otp_show_bad_redirect",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/user-api-key/otp.json?application_name=OTP+App&public_key=-----BEGIN+PUBLIC+KEY-----%0AMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqwmoi0ReR8abVU8G09ok%0A3v%2F02ZaCQStHEzr8b4Wx6vTbOutpe7EoVL2O8OEeo49fpUJbTmmRsgJV7rm1rQVP%0AVBQNGKHkpYLI%2BN24IyPyocJjZCsDdif7Fl2uVB8c1ASrI3PLb7PFV4Se1T3sgE7X%0AB0ToQHK5gr%2F%2B1VCi0yW07GnZhXdmXZFuZNyGasalwxIcxwQtIVmWGriU80qNSsIV%0AHI%2BphkrECrIa7V%2BqlqAUNb%2FXfGYQiiJYHSxkWsq29ZrSElF6P7%2BHwP5fVFBgnTQA%0A9CspTQ6y6FmB4XqHeeFw1Nw2S4UGwEVCztVWdw2M0xOAYS%2F%2FJ9QES%2B%2BBkp3NDfMA%0AewIDAQAB%0A-----END+PUBLIC+KEY-----%0A&auth_redirect=https%3A%2F%2Fevil.example.com%2F"
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key/otp.json?application_name=OTP+App&public_key=nope&auth_redirect=https%3A%2F%2Fapi.discourse.org%2Fapi%2Fauth_redirect"
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key/otp.json?application_name=OTP+App&auth_redirect=https%3A%2F%2Fapi.discourse.org%2Fapi%2Fauth_redirect"
+    }
+  ],
+  "started_at": "2026-10-14T08:47:58.989409",
+  "transaction_started_at": "2026-10-14T08:47:57.895593",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: public_key"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "param is missing or the value is empty or invalid: public_key"
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "jhwTA/rIswD4YHOP0ZksZFr7T88=",
+            "created_at": "2026-10-14T08:47:58.406845",
+            "rotated_at": "2026-10-14T08:47:58.404527",
+            "updated_at": "2026-10-14T08:47:58.406845",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "jhwTA/rIswD4YHOP0ZksZFr7T88=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T08:47:58.996043",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "jhwTA/rIswD4YHOP0ZksZFr7T88=",
+            "created_at": "2026-10-14T08:47:58.406845",
+            "rotated_at": "2026-10-14T08:47:58.404527",
+            "updated_at": "2026-10-14T08:47:58.406845",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "jhwTA/rIswD4YHOP0ZksZFr7T88=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "fe5e7244265f93ca7375ac0e87abf223807b6a36866f96ebb72c174290bdbd46",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

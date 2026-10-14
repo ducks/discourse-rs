@@ -1,0 +1,16 @@
+{% extends "no_ember.html" %}
+{% block content %}
+{#- session/one_time_password.html.erb -#}
+{%- if !error.is_empty() %}
+  <div class='alert alert-error'>
+    {{ error }}
+  </div>
+{%- else %}
+  <form action="{{ action }}" accept-charset="UTF-8" method="post">
+    <input type="hidden" name="authenticity_token" value="{{ csrf_token }}" autocomplete="off">
+    <h2>{{ confirm_title }}</h2>
+    <p>{{ logging_in_as }}</p>
+    <input type="submit" name="commit" value="{{ confirm_button }}" class="btn btn-primary" data-disable-with="{{ confirm_button }}">
+  </form>
+{%- endif %}
+{% endblock %}

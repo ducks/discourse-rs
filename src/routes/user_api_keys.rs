@@ -18,14 +18,14 @@ use crate::session::current::AuthGuardian;
 use crate::site_settings::SiteSettings;
 use crate::{AppError, AppState};
 
-fn form_pairs(map: &Map<String, Value>) -> Vec<(String, String)> {
+pub(super) fn form_pairs(map: &Map<String, Value>) -> Vec<(String, String)> {
     map.iter()
         .filter_map(|(k, v)| params::scalar(v).map(|v| (k.clone(), v)))
         .collect()
 }
 
 /// `params.require(name)`: present and not blank.
-fn required(p: &Map<String, Value>, name: &str) -> Option<String> {
+pub(super) fn required(p: &Map<String, Value>, name: &str) -> Option<String> {
     match p.get(name) {
         Some(Value::String(s)) if !s.trim().is_empty() => Some(s.clone()),
         Some(v @ (Value::Number(_) | Value::Bool(true))) => params::scalar(v),
