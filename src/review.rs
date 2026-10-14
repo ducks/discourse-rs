@@ -1,12 +1,14 @@
 //! Acting on the review queue: `Reviewable#perform` for a
 //! ReviewableFlaggedPost (agree and keep, agree and hide, disagree,
 //! ignore), with the flag actions it settles, the transition, the flaggers'
-//! stats, and `Post#hide!`.
+//! stats, and `Post#hide!`; ReviewableUser's delete actions
+//! (reviewable_user.rs) and the queued and reviewed posts' actions
+//! (review_posts.rs).
 //!
-//! Refused: other reviewable types, posts that are deleted or hidden
-//! (restoring and unhiding), deleting posts, silencing or suspending from
-//! the queue, editing, deleting users, claiming, flags with a message
-//! (their moderator replies) and category group moderation.
+//! Refused for flagged posts: posts that are deleted or hidden (restoring
+//! and unhiding), deleting posts, silencing or suspending from the queue,
+//! editing, deleting users, flags with a message (their moderator
+//! replies); for every type, claiming and category group moderation.
 
 use serde_json::{Value, json};
 use sqlx::PgConnection;
@@ -61,11 +63,14 @@ pub enum Outcome {
     NotFoundMessage(&'static str),
 }
 
-/// The type's `additional_args` from the request (ReviewableUser's).
-pub struct ExtraArgs {
+/// The type's `additional_args` from the request (ReviewableUser's and
+/// ReviewableQueuedPost's), and the mailer a perform may send with.
+pub struct ExtraArgs<'a> {
     pub reject_reason: Option<String>,
     /// `params[:send_email] != "false"`
     pub send_email: bool,
+    pub posts: crate::review_posts::Args,
+    pub mailer: &'a crate::email::Mailer,
 }
 
 /// The perform method an action id runs, given whether the post is
@@ -154,7 +159,7 @@ pub async fn perform(
     reviewable_id: i64,
     action_id: &str,
     version: i64,
-    extra: &ExtraArgs,
+    extra: &ExtraArgs<'_>,
 ) -> Result<Outcome, AppError> {
     let s = ctx.settings;
     let Some(user) = guardian.user() else {
@@ -186,6 +191,57 @@ pub async fn perform(
     }
     if reviewable.kind == "ReviewableUser" {
         return perform_user(conn, ctx, guardian, &reviewable, action_id, version, extra).await;
+    }
+    if matches!(
+        reviewable.kind.as_str(),
+        "ReviewableQueuedPost" | "ReviewablePost"
+    ) {
+        let performed = crate::review_posts::perform(
+            &mut *conn,
+            ctx,
+            guardian,
+            reviewable.id,
+            action_id,
+            Some(version),
+            &extra.posts,
+            Some(extra.mailer),
+            None,
+        )
+        .await?;
+        let crate::review_posts::Performed::Done {
+            version,
+            remove,
+            updates,
+            created,
+        } = performed
+        else {
+            return Ok(match performed {
+                crate::review_posts::Performed::Conflict => Outcome::Conflict,
+                _ => Outcome::Forbidden,
+            });
+        };
+        let (count, unseen) =
+            reviewables::staff_counts(&mut *conn, s, user.id, user.admin, user.moderator).await?;
+        let mut result = serde_json::Map::new();
+        result.insert("success".into(), json!(true));
+        if let Some((post_id, topic_id)) = created {
+            result.insert("created_post_id".into(), json!(post_id));
+            result.insert("created_post_topic_id".into(), json!(topic_id));
+        }
+        result.insert("remove_reviewable_ids".into(), json!(remove));
+        if let Some(updates) = updates {
+            let updates: serde_json::Map<String, Value> = updates
+                .iter()
+                .map(|(id, status)| (id.to_string(), json!({ "status": status })))
+                .collect();
+            result.insert("reviewable_updates".into(), Value::Object(updates));
+        }
+        result.insert("version".into(), json!(version));
+        result.insert("reviewable_count".into(), json!(count));
+        result.insert("unseen_reviewable_count".into(), json!(unseen));
+        return Ok(Outcome::Done(
+            json!({ "reviewable_perform_result": result }),
+        ));
     }
     if reviewable.kind != "ReviewableFlaggedPost" {
         return Err(Unsupported("reviewable types other than flagged posts").into());
@@ -242,7 +298,7 @@ async fn perform_user(
     reviewable: &Reviewable,
     action_id: &str,
     version: i64,
-    extra: &ExtraArgs,
+    extra: &ExtraArgs<'_>,
 ) -> Result<Outcome, AppError> {
     let block = match action_id {
         "delete_user" => false,

@@ -198,8 +198,8 @@ pub async fn reviewable_priorities(state: &AppState) -> Result<(), AppError> {
 }
 
 /// `Jobs::AutoQueueHandler`: pending reviewables older than
-/// auto_handle_queued_age days: flags ignored (expired). Queued posts
-/// rejected and users deleted are not ported.
+/// auto_handle_queued_age days: flags ignored (expired), queued posts
+/// rejected and account reviews' users deleted, by system.
 pub async fn auto_queue_handler(state: &AppState) -> Result<(), AppError> {
     let s = settings(state).await?;
     let days = s.get("auto_handle_queued_age")?.to_i();
@@ -224,7 +224,33 @@ pub async fn auto_queue_handler(state: &AppState) -> Result<(), AppError> {
                 tx.commit().await?;
             }
             "ReviewableQueuedPost" => {
-                return Err(Unsupported("rejecting queued posts").into());
+                // reviewable.perform(Discourse.system_user, :reject_post)
+                let mut tx = state.pool.begin().await?;
+                let system = crate::session::current::SessionUser::load(&mut tx, -1)
+                    .await?
+                    .ok_or(Unsupported("a site without its system user"))?;
+                let guardian = crate::guardian::Guardian::for_user(&mut tx, &system).await?;
+                match crate::review_posts::perform(
+                    &mut tx,
+                    &ctx,
+                    &guardian,
+                    id,
+                    "reject_post",
+                    None,
+                    &crate::review_posts::Args::default(),
+                    None,
+                    None,
+                )
+                .await?
+                {
+                    crate::review_posts::Performed::Done { .. } => tx.commit().await?,
+                    _ => {
+                        return Err(Unsupported(
+                            "auto-handling a queued post that offers no rejection",
+                        )
+                        .into());
+                    }
+                }
             }
             "ReviewableUser" => {
                 // reviewable.perform(Discourse.system_user, :delete_user)

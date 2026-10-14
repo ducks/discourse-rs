@@ -1022,7 +1022,7 @@ async fn category_update_latest(
     category_id: i32,
     deferred: Option<&Deferred>,
 ) -> Result<(), AppError> {
-    let changed = sqlx::query(
+    sqlx::query(
         "UPDATE categories c SET latest_post_id = x.post_id, latest_topic_id = x.topic_id, \
                                  updated_at = clock_timestamp() \
          FROM (SELECT \
@@ -1036,18 +1036,16 @@ async fn category_update_latest(
     )
     .bind(category_id)
     .execute(&mut *conn)
-    .await?
-    .rows_affected();
-    if changed > 0 {
-        // after_save_commit :index_search
-        after_commit_job(
-            conn,
-            deferred,
-            "index_category_for_search",
-            json!({ "category_id": category_id, "force": false }),
-        )
-        .await?;
-    }
+    .await?;
+    // after_save_commit :index_search, which a save without changes runs
+    // too.
+    after_commit_job(
+        conn,
+        deferred,
+        "index_category_for_search",
+        json!({ "category_id": category_id, "force": false }),
+    )
+    .await?;
     Ok(())
 }
 
@@ -1194,14 +1192,30 @@ pub async fn recover_post(
     let user = guardian
         .user()
         .ok_or(Unsupported("recovering anonymously"))?;
-    let post = load_post(&mut *conn, access.post.id).await?;
-    let topic = load_topic(&mut *conn, post.topic_id).await?;
     let can_moderate = guardian.is_staff()
         || guardian.can_perform_action_available_to_group_moderators(s, access.can_see_topic)?
         || guardian.can_delete_all_posts_and_topics(s)?;
     if !(can_moderate && access.post.deleted_at.is_some()) {
         return Err(Unsupported("authors recovering their own posts (user_recovered)").into());
     }
+    staff_recover_in(conn, ctx, user.id, access.post.id, None).await?;
+    Ok(Outcome::Done)
+}
+
+/// `PostDestroyer.new(user, post).recover` as staff recover a deleted
+/// reply (`staff_recovered`), on the caller's transaction: with
+/// `deferred`, the jobs Rails enqueues from after-commit callbacks wait
+/// for its commit.
+pub async fn staff_recover_in(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    user_id: i32,
+    post_id: i32,
+    deferred: Option<&Deferred>,
+) -> Result<(), AppError> {
+    let s = ctx.settings;
+    let post = load_post(&mut *conn, post_id).await?;
+    let topic = load_topic(&mut *conn, post.topic_id).await?;
     if post.is_first_post() {
         return Err(Unsupported("recovering topics").into());
     }
@@ -1257,7 +1271,7 @@ pub async fn recover_post(
         return Err(Unsupported("recovering posts without an author").into());
     }
     if let Some(category_id) = topic.category_id {
-        category_update_latest(&mut *conn, category_id, None).await?;
+        category_update_latest(&mut *conn, category_id, deferred).await?;
     }
     // mark_topic_changed
     sqlx::query("UPDATE topics SET updated_at = clock_timestamp() WHERE id = $1")
@@ -1342,7 +1356,7 @@ pub async fn recover_post(
         json!({ "post_id": post.id }),
     )
     .await?;
-    if post.user_id != Some(user.id) {
+    if post.user_id != Some(user_id) {
         let author = user_label(&mut *conn, post.user_id)
             .await?
             .unwrap_or_else(|| "(deleted user)".into());
@@ -1356,7 +1370,7 @@ pub async fn recover_post(
         log(
             &mut *conn,
             RECOVER_POST,
-            user.id,
+            user_id,
             Some(topic.id),
             Some(post.id),
             None,
@@ -1365,5 +1379,5 @@ pub async fn recover_post(
         )
         .await?;
     }
-    Ok(Outcome::Done)
+    Ok(())
 }

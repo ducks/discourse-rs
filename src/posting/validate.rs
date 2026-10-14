@@ -15,6 +15,17 @@ use crate::guardian::Guardian;
 use crate::pretty_text::cleanup::{attr, element_name, fragment_root, has_class, parse, text};
 use crate::{AppError, Unsupported};
 
+/// Watched words (block, censor, require approval, tag) are not ported.
+pub async fn refuse_watched_words(conn: &mut PgConnection) -> Result<(), AppError> {
+    let watched: bool = sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM watched_words)")
+        .fetch_one(conn)
+        .await?;
+    if watched {
+        return Err(Unsupported("watched words").into());
+    }
+    Ok(())
+}
+
 /// Refuses what this slice doesn't write: watched words (block, censor,
 /// require approval, tag), and anything `post_needs_approval?` would send
 /// to the review queue.
@@ -29,12 +40,7 @@ pub async fn refuse_unported(
 ) -> Result<(), AppError> {
     let s = ctx.settings;
     let user = guardian.user().ok_or(Unsupported("posting anonymously"))?;
-    let watched: bool = sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM watched_words)")
-        .fetch_one(&mut *conn)
-        .await?;
-    if watched {
-        return Err(Unsupported("watched words").into());
-    }
+    refuse_watched_words(&mut *conn).await?;
     if guardian.is_staff() {
         return Ok(());
     }

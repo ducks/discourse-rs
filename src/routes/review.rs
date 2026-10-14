@@ -81,9 +81,21 @@ pub async fn perform(
         bus: &state.bus,
     };
     // ReviewableUser.additional_args
+    let param = |name: &str| p.get(name).and_then(params::scalar);
+    // ReviewableQueuedPost.additional_args: nothing without a revise_reason.
+    let posts = match param("revise_reason").filter(|r| !r.trim().is_empty()) {
+        Some(reason) => crate::review_posts::Args {
+            revise_reason: Some(reason),
+            revise_feedback: param("revise_feedback"),
+            revise_custom_reason: param("revise_custom_reason"),
+        },
+        None => crate::review_posts::Args::default(),
+    };
     let extra = review::ExtraArgs {
-        reject_reason: p.get("reject_reason").and_then(params::scalar),
-        send_email: p.get("send_email").and_then(params::scalar).as_deref() != Some("false"),
+        reject_reason: param("reject_reason"),
+        send_email: param("send_email").as_deref() != Some("false"),
+        posts,
+        mailer: &state.mailer,
     };
     let outcome = review::perform(
         &mut tx,

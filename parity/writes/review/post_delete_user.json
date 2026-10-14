@@ -1,0 +1,80 @@
+{
+  "name": "post_delete_user",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/review/9321/perform/delete_user",
+      "params": {
+        "version": 0
+      }
+    }
+  ],
+  "started_at": "2026-10-14T02:31:42.423509",
+  "transaction_started_at": "2026-10-14T02:31:40.488076",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "K+9diDlIW7ZxMihEKLbpDS7XO1s=",
+            "created_at": "2026-10-14T02:31:41.073526",
+            "rotated_at": "2026-10-14T02:31:41.070794",
+            "updated_at": "2026-10-14T02:31:41.073526",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "K+9diDlIW7ZxMihEKLbpDS7XO1s=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 1,
+            "seen_at": "2026-10-14T02:31:42.434333",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "K+9diDlIW7ZxMihEKLbpDS7XO1s=",
+            "created_at": "2026-10-14T02:31:41.073526",
+            "rotated_at": "2026-10-14T02:31:41.070794",
+            "updated_at": "2026-10-14T02:31:41.073526",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "K+9diDlIW7ZxMihEKLbpDS7XO1s=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO reviewables (id, type, type_source, status, created_by_id, reviewable_by_moderator, category_id, topic_id, score, potential_spam, target_id, target_type, target_created_by_id, payload, version, latest_score, force_review, potentially_illegal, created_at, updated_at) VALUES (9321, 'ReviewablePost', 'core', 0, -1, TRUE, 4, 35, 6, FALSE, 36, 'Post', 3, NULL, 0, '2026-10-02 10:00:00', TRUE, FALSE, '2026-10-02 10:00:00', '2026-10-02 10:00:00')",
+    "INSERT INTO reviewable_scores (id, reviewable_id, user_id, reviewable_score_type, status, score, take_action_bonus, user_accuracy_bonus, created_at, updated_at) VALUES (9321, 9321, -1, 9, 0, 6, 0, 0, '2026-10-02 10:00:00', '2026-10-02 10:00:00')",
+    "INSERT INTO reviewable_histories (id, reviewable_id, reviewable_history_type, status, created_by_id, created_at, updated_at) VALUES (9321, 9321, 0, 0, -1, '2026-10-02 10:00:00', '2026-10-02 10:00:00')"
+  ],
+  "recorded_from": {
+    "case": "182bbb86ab47f65d26886a2e7370af1d2d98835f85d18ec182e07e2f06b4cc57",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
