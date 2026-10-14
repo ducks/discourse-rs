@@ -1,0 +1,41 @@
+{
+  "name": "client_create_blank_scopes",
+  "user": null,
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/user-api-key-client.json",
+      "params": {
+        "client_id": "registered-app",
+        "application_name": "Registered App",
+        "public_key": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqwmoi0ReR8abVU8G09ok\n3v/02ZaCQStHEzr8b4Wx6vTbOutpe7EoVL2O8OEeo49fpUJbTmmRsgJV7rm1rQVP\nVBQNGKHkpYLI+N24IyPyocJjZCsDdif7Fl2uVB8c1ASrI3PLb7PFV4Se1T3sgE7X\nB0ToQHK5gr/+1VCi0yW07GnZhXdmXZFuZNyGasalwxIcxwQtIVmWGriU80qNSsIV\nHI+phkrECrIa7V+qlqAUNb/XfGYQiiJYHSxkWsq29ZrSElF6P7+HwP5fVFBgnTQA\n9CspTQ6y6FmB4XqHeeFw1Nw2S4UGwEVCztVWdw2M0xOAYS//J9QES++Bkp3NDfMA\newIDAQAB\n-----END PUBLIC KEY-----\n",
+        "auth_redirect": "https://app.example.com/auth",
+        "scopes": " , "
+      }
+    }
+  ],
+  "started_at": "2026-10-14T08:19:40.282179",
+  "transaction_started_at": "2026-10-14T08:19:36.284549",
+  "responses": [
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: scopes"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "allow_user_api_key_client_scopes": "read|write"
+  },
+  "recorded_from": {
+    "case": "88fb487ac38701c37258f90cc6b2f4e094b0c802f097ee3c2cbd321a211bdf6d",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

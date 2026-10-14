@@ -331,6 +331,18 @@ const SCHEDULED: &[(&str, Duration)] = &[
         Duration::from_secs(24 * 3600),
     ),
     (
+        accounts::CLEAN_UP_UNUSED_USER_API_KEYS,
+        Duration::from_secs(24 * 3600),
+    ),
+    (
+        accounts::CLEAN_UP_USER_API_KEYS_MAX_LIFE,
+        Duration::from_secs(24 * 3600),
+    ),
+    (
+        accounts::CLEAN_UP_UNUSED_REGISTERED_USER_API_KEY_CLIENTS,
+        Duration::from_secs(24 * 3600),
+    ),
+    (
         accounts::CLEAN_UP_EMAIL_TOKENS,
         Duration::from_secs(24 * 3600),
     ),
@@ -503,6 +515,15 @@ pub async fn run_scheduled(state: &AppState, name: &str) -> Result<(), AppError>
         accounts::INVALIDATE_INACTIVE_ADMINS => accounts::invalidate_inactive_admins(state).await,
         accounts::CLEAN_UP_API_KEYS_MAX_LIFE => accounts::clean_up_api_keys_max_life(state).await,
         accounts::CLEAN_UP_UNUSED_API_KEYS => accounts::clean_up_unused_api_keys(state).await,
+        accounts::CLEAN_UP_UNUSED_USER_API_KEYS => {
+            accounts::clean_up_unused_user_api_keys(state).await
+        }
+        accounts::CLEAN_UP_USER_API_KEYS_MAX_LIFE => {
+            accounts::clean_up_user_api_keys_max_life(state).await
+        }
+        accounts::CLEAN_UP_UNUSED_REGISTERED_USER_API_KEY_CLIENTS => {
+            accounts::clean_up_unused_registered_user_api_key_clients(state).await
+        }
         accounts::CLEAN_UP_EMAIL_TOKENS => accounts::clean_up_email_tokens(state).await,
         accounts::CLEAN_UP_EMAIL_LOGIN_CODES => accounts::clean_up_email_login_codes(state).await,
         accounts::CLEAN_UP_EMAIL_CHANGE_REQUESTS => {

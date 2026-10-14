@@ -130,6 +130,7 @@ pub mod upload_references;
 pub mod uploads;
 pub mod url;
 pub mod user_anonymizer;
+pub mod user_api_key_crypto;
 pub mod user_card_view;
 pub mod user_comm_screener;
 pub mod user_destroyer;

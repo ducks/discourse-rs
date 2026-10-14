@@ -198,7 +198,9 @@ impl Client {
                 .collect();
             request = request.header(header::COOKIE, cookie.join("; "));
         }
-        let api = extra.keys().any(|k| k.eq_ignore_ascii_case("api-key"));
+        let api = extra
+            .keys()
+            .any(|k| k.eq_ignore_ascii_case("api-key") || k.eq_ignore_ascii_case("user-api-key"));
         // The case's headers replace the defaults, as the recorder's
         // headers.merge does.
         if let Some(headers) = request.headers_mut() {

@@ -1,0 +1,24 @@
+{
+  "user": null,
+  "settings": {
+    "revoke_user_api_keys_unused_days": 30
+  },
+  "setup": [
+    "INSERT INTO user_api_key_clients (id, client_id, application_name, public_key, auth_redirect, created_at, updated_at) VALUES (9101, 'parity-client', 'Parity App', NULL, NULL, now() - interval '3 days', now() - interval '3 days')",
+    "INSERT INTO user_api_keys (id, user_id, key_hash, push_url, created_at, updated_at, last_used_at, user_api_key_client_id, revoked_at, expires_at) VALUES (9101, 3, encode(sha256(convert_to('parity-user-key-9101', 'UTF8')), 'hex'), NULL, now() - interval '60 days', now() - interval '60 days', now() - interval '40 days', 9101, NULL, NULL)",
+    "INSERT INTO user_api_keys (id, user_id, key_hash, push_url, created_at, updated_at, last_used_at, user_api_key_client_id, revoked_at, expires_at) VALUES (9102, 3, encode(sha256(convert_to('k9102', 'UTF8')), 'hex'), NULL, now() - interval '60 days', now() - interval '60 days', now() - interval '10 days', 9101, NULL, NULL)",
+    "INSERT INTO user_api_keys (id, user_id, key_hash, push_url, created_at, updated_at, last_used_at, user_api_key_client_id, revoked_at, expires_at) VALUES (9103, 4, encode(sha256(convert_to('k9103', 'UTF8')), 'hex'), NULL, now() - interval '60 days', now() - interval '60 days', now() - interval '40 days', 9101, NULL, now() - interval '1 day')",
+    "INSERT INTO user_api_keys (id, user_id, key_hash, push_url, created_at, updated_at, last_used_at, user_api_key_client_id, revoked_at, expires_at) VALUES (9104, 4, encode(sha256(convert_to('k9104', 'UTF8')), 'hex'), NULL, now() - interval '60 days', now() - interval '60 days', now() - interval '50 days', 9101, now() - interval '45 days', NULL)"
+  ],
+  "requests": [],
+  "enqueue": [
+    [
+      "clean_up_unused_user_api_keys",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "clean_up_unused_user_api_keys"
+  ],
+  "job_clock": "user_api_keys.revoked_at"
+}

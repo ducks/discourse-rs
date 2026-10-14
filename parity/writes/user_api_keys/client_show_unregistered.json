@@ -1,0 +1,59 @@
+{
+  "name": "client_show_unregistered",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=parity-client"
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope"
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json"
+    }
+  ],
+  "started_at": "2026-10-14T08:19:52.750306",
+  "transaction_started_at": "2026-10-14T08:19:51.718545",
+  "responses": [
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "param is missing or the value is empty or invalid: client_id"
+        ]
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO user_api_key_clients (id, client_id, application_name, public_key, auth_redirect, created_at, updated_at) VALUES (9101, 'parity-client', 'Parity App', NULL, NULL, now() - interval '3 days', now() - interval '3 days')"
+  ],
+  "recorded_from": {
+    "case": "ad0f7bee2752d89ce6035ef2ad095bebb19c1d7bd4f4752b567458a2527a1623",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

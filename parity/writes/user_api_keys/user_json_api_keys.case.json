@@ -1,0 +1,20 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO user_api_key_clients (id, client_id, application_name, public_key, auth_redirect, created_at, updated_at) VALUES (9101, 'parity-client', 'Parity App', NULL, NULL, now() - interval '3 days', now() - interval '3 days')",
+    "INSERT INTO user_api_key_clients (id, client_id, application_name, public_key, auth_redirect, created_at, updated_at) VALUES (9102, 'other-client', 'Other App', NULL, NULL, now() - interval '3 days', now() - interval '3 days')",
+    "INSERT INTO user_api_keys (id, user_id, key_hash, push_url, created_at, updated_at, last_used_at, user_api_key_client_id, revoked_at, expires_at) VALUES (9101, 3, encode(sha256(convert_to('parity-user-key-9101', 'UTF8')), 'hex'), NULL, now() - interval '2 days', now() - interval '2 days', now() - interval '3 hours', 9101, NULL, NULL)",
+    "INSERT INTO user_api_keys (id, user_id, key_hash, push_url, created_at, updated_at, last_used_at, user_api_key_client_id, revoked_at, expires_at) VALUES (9102, 3, encode(sha256(convert_to('parity-user-key-9102', 'UTF8')), 'hex'), NULL, now() - interval '2 days', now() - interval '2 days', now() - interval '5 hours', 9102, NULL, now() - interval '1 hour')",
+    "INSERT INTO user_api_keys (id, user_id, key_hash, push_url, created_at, updated_at, last_used_at, user_api_key_client_id, revoked_at, expires_at) VALUES (9103, 3, encode(sha256(convert_to('parity-user-key-9103', 'UTF8')), 'hex'), NULL, now() - interval '2 days', now() - interval '2 days', now() - interval '1 day', 9102, now() - interval '1 hour', NULL)",
+    "INSERT INTO user_api_key_scopes (id, user_api_key_id, name, created_at, updated_at) VALUES (9101, 9101, 'read', now() - interval '2 days', now() - interval '2 days')",
+    "INSERT INTO user_api_key_scopes (id, user_api_key_id, name, created_at, updated_at) VALUES (9102, 9101, 'notifications', now() - interval '2 days', now() - interval '2 days')",
+    "INSERT INTO user_api_key_scopes (id, user_api_key_id, name, created_at, updated_at) VALUES (9103, 9102, 'write', now() - interval '2 days', now() - interval '2 days')",
+    "INSERT INTO user_api_key_scopes (id, user_api_key_id, name, created_at, updated_at) VALUES (9104, 9102, 'bookmarks_calendar', now() - interval '2 days', now() - interval '2 days')"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/u/user1.json"
+    }
+  ]
+}

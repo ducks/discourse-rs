@@ -62,6 +62,7 @@ mod topic_status;
 mod topic_timer;
 mod topic_voting;
 mod topics;
+mod user_api_keys;
 mod user_avatars;
 mod user_badges;
 pub(crate) mod user_card;
@@ -480,6 +481,25 @@ pub fn router(state: &AppState) -> Router<AppState> {
             get(users::show_with_tail).put(user_badges::put_user_tail),
         )
         .route("/user_actions.json", get(users::actions))
+        // UserApiKeysController and UserApiKeyClientsController.
+        .route("/user-api-key/revoke", post(user_api_keys::revoke))
+        .route("/user-api-key/revoke.json", post(user_api_keys::revoke))
+        .route(
+            "/user-api-key/undo-revoke",
+            post(user_api_keys::undo_revoke),
+        )
+        .route(
+            "/user-api-key/undo-revoke.json",
+            post(user_api_keys::undo_revoke),
+        )
+        .route(
+            "/user-api-key-client",
+            get(user_api_keys::client_show).post(user_api_keys::client_create),
+        )
+        .route(
+            "/user-api-key-client.json",
+            get(user_api_keys::client_show).post(user_api_keys::client_create),
+        )
         .route("/c/{*path}", cached!(get(list::category)))
         .route("/robots.txt", get(robots::index))
         .route("/robots-builder.json", get(robots::builder))

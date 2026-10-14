@@ -966,7 +966,7 @@ impl Alerter<'_> {
                 ),
             });
             crate::bus::publish_notification_alert(ctx.bus, &mut *conn, user_id, &payload).await?;
-            push_notification(conn, user_id).await?;
+            push_notification(conn, ctx.settings, user_id).await?;
         }
         Ok(true)
     }
@@ -974,17 +974,36 @@ impl Alerter<'_> {
 
 /// `PostAlerter.push_notification(user, payload)`: nothing for a user in
 /// do not disturb; push delivery is not ported, so otherwise a user with
-/// a push subscription or a push client is refused.
-pub async fn push_notification(conn: &mut PgConnection, user_id: i32) -> Result<(), AppError> {
+/// a push subscription or a push client (`UserApiKey.push_clients_for`)
+/// is refused.
+pub async fn push_notification(
+    conn: &mut PgConnection,
+    settings: &crate::site_settings::SiteSettings,
+    user_id: i32,
+) -> Result<(), AppError> {
     if crate::notification_create::do_not_disturb(conn, user_id).await? {
         return Ok(());
     }
+    // push_clients_for: none unless the push scope is allowed and some
+    // push urls are; then active keys with the push or notifications
+    // scope and a client, whose push url is inside the allowed urls.
+    let scopes = settings.get("allow_user_api_key_scopes")?.to_s();
+    let push_urls = settings.get("allowed_user_api_push_urls")?.to_s();
+    let clients_possible = scopes.split('|').any(|s| s == "push") && !push_urls.trim().is_empty();
     let push: bool = sqlx::query_scalar(
         "SELECT EXISTS (SELECT 1 FROM push_subscriptions WHERE user_id = $1) \
-         OR EXISTS (SELECT 1 FROM user_api_keys k \
-                    WHERE k.user_id = $1 AND k.revoked_at IS NULL AND k.push_url IS NOT NULL)",
+         OR ($2 AND EXISTS (SELECT 1 FROM user_api_keys k \
+                    JOIN user_api_key_scopes s ON s.user_api_key_id = k.id \
+                    JOIN user_api_key_clients c ON c.id = k.user_api_key_client_id \
+                    WHERE k.user_id = $1 AND k.revoked_at IS NULL \
+                      AND (k.expires_at IS NULL OR k.expires_at > now()) \
+                      AND s.name IN ('push', 'notifications') \
+                      AND k.push_url IS NOT NULL AND k.push_url <> '' \
+                      AND position(k.push_url IN $3) > 0))",
     )
     .bind(user_id)
+    .bind(clients_possible)
+    .bind(&push_urls)
     .fetch_one(&mut *conn)
     .await?;
     if push {

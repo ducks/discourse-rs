@@ -1,0 +1,291 @@
+{
+  "name": "key_notifications_scope",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/notifications.json",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/latest.json",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T08:20:02.202435",
+  "transaction_started_at": "2026-10-14T08:20:01.301553",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "notifications": [
+          {
+            "fancy_title": "Parity fixture: replies and posters",
+            "id": 52,
+            "user_id": 3,
+            "notification_type": 24,
+            "read": false,
+            "high_priority": true,
+            "created_at": "2026-10-01T22:32:02.464Z",
+            "post_number": 5,
+            "topic_id": 35,
+            "slug": "parity-fixture-replies-and-posters",
+            "data": {
+              "title": "Parity fixture: replies and posters",
+              "bookmarkable_url": "/t/parity-fixture-replies-and-posters/35/5",
+              "display_username": "user1",
+              "bookmark_name": "Parity fixture: reminder sent",
+              "bookmark_id": 5,
+              "bookmarkable_type": "Post",
+              "bookmarkable_id": 52
+            }
+          },
+          {
+            "fancy_title": "Parity fixture: replies and posters",
+            "id": 51,
+            "user_id": 3,
+            "notification_type": 1,
+            "read": false,
+            "high_priority": false,
+            "created_at": "2026-10-01T15:41:12.744Z",
+            "post_number": 5,
+            "topic_id": 35,
+            "slug": "parity-fixture-replies-and-posters",
+            "data": {
+              "topic_title": "Parity fixture: replies and posters",
+              "original_post_id": 52,
+              "original_post_type": 1,
+              "original_username": "user0",
+              "revision_number": null,
+              "display_username": "user0",
+              "display_name": "User0"
+            }
+          },
+          {
+            "fancy_title": "Parity fixture: PM user2 to user1, archived",
+            "id": 50,
+            "user_id": 3,
+            "notification_type": 6,
+            "read": false,
+            "high_priority": true,
+            "created_at": "2026-10-01T15:41:12.656Z",
+            "post_number": 1,
+            "topic_id": 44,
+            "slug": "parity-fixture-pm-user2-to-user1-archived",
+            "data": {
+              "topic_title": "Parity fixture: PM user2 to user1, archived",
+              "original_post_id": 51,
+              "original_post_type": 1,
+              "original_username": "user2",
+              "revision_number": null,
+              "display_username": "user2",
+              "display_name": "User2"
+            }
+          },
+          {
+            "fancy_title": "Parity fixture: PM admin to user1 and user2",
+            "id": 48,
+            "user_id": 3,
+            "notification_type": 6,
+            "read": false,
+            "high_priority": true,
+            "created_at": "2026-10-01T15:41:12.501Z",
+            "post_number": 1,
+            "topic_id": 43,
+            "slug": "parity-fixture-pm-admin-to-user1-and-user2",
+            "data": {
+              "topic_title": "Parity fixture: PM admin to user1 and user2",
+              "original_post_id": 50,
+              "original_post_type": 1,
+              "original_username": "admin",
+              "revision_number": null,
+              "display_username": "admin",
+              "display_name": "Admin"
+            }
+          },
+          {
+            "fancy_title": "Parity fixture: replies and posters",
+            "id": 45,
+            "user_id": 3,
+            "notification_type": 5,
+            "read": false,
+            "high_priority": false,
+            "created_at": "2026-10-01T15:39:52.161Z",
+            "post_number": 2,
+            "topic_id": 35,
+            "slug": "parity-fixture-replies-and-posters",
+            "data": {
+              "topic_title": "Parity fixture: replies and posters",
+              "original_post_id": 36,
+              "original_post_type": 1,
+              "original_username": "user0",
+              "revision_number": null,
+              "display_username": "user0",
+              "display_name": "User1"
+            }
+          },
+          {
+            "id": 47,
+            "user_id": 3,
+            "notification_type": 12,
+            "read": false,
+            "high_priority": false,
+            "created_at": "2026-10-01T15:39:52.050Z",
+            "post_number": null,
+            "topic_id": null,
+            "slug": null,
+            "data": {
+              "badge_id": 5,
+              "badge_name": "Welcome",
+              "badge_slug": "welcome",
+              "badge_title": false,
+              "username": "user1"
+            }
+          },
+          {
+            "fancy_title": "Parity fixture: PM user1 to user0",
+            "id": 44,
+            "user_id": 3,
+            "notification_type": 6,
+            "read": false,
+            "high_priority": true,
+            "created_at": "2026-10-01T15:39:51.818Z",
+            "post_number": 2,
+            "topic_id": 42,
+            "slug": "parity-fixture-pm-user1-to-user0",
+            "data": {
+              "topic_title": "Parity fixture: PM user1 to user0",
+              "original_post_id": 49,
+              "original_post_type": 1,
+              "original_username": "user0",
+              "revision_number": null,
+              "display_username": "user0",
+              "display_name": "User0"
+            }
+          },
+          {
+            "id": 41,
+            "user_id": 3,
+            "notification_type": 12,
+            "read": false,
+            "high_priority": false,
+            "created_at": "2026-09-30T07:28:30.313Z",
+            "post_number": null,
+            "topic_id": null,
+            "slug": null,
+            "data": {
+              "badge_id": 11,
+              "badge_name": "First Like",
+              "badge_slug": "first-like",
+              "badge_title": false,
+              "username": "user1"
+            }
+          },
+          {
+            "id": 7,
+            "user_id": 3,
+            "notification_type": 12,
+            "read": false,
+            "high_priority": false,
+            "created_at": "2026-09-30T06:20:36.833Z",
+            "post_number": null,
+            "topic_id": null,
+            "slug": null,
+            "data": {
+              "badge_id": 2,
+              "badge_name": "Member",
+              "badge_slug": "member",
+              "badge_title": false,
+              "username": "user1"
+            }
+          },
+          {
+            "id": 2,
+            "user_id": 3,
+            "notification_type": 12,
+            "read": true,
+            "high_priority": false,
+            "created_at": "2026-09-30T06:20:02.086Z",
+            "post_number": null,
+            "topic_id": null,
+            "slug": null,
+            "data": {
+              "badge_id": 1,
+              "badge_name": "Basic",
+              "badge_slug": "basic",
+              "badge_title": false,
+              "username": "user1"
+            }
+          }
+        ],
+        "total_rows_notifications": 10,
+        "seen_notification_id": 0,
+        "load_more_notifications": "/notifications?limit=60&offset=60&username=user1"
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {
+    "user_api_keys": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 9101,
+            "user_id": 3,
+            "key_hash": "6d29574cad155c0d372117af333d007c36d5ca2febd398c678f9fa227b7c2e3c",
+            "push_url": null,
+            "client_id": null,
+            "created_at": "2026-10-12T08:20:01.301553",
+            "expires_at": null,
+            "revoked_at": null,
+            "updated_at": "2026-10-12T08:20:01.301553",
+            "last_used_at": "2026-10-13T08:20:01.301553",
+            "application_name": null,
+            "user_api_key_client_id": 9101
+          },
+          "after": {
+            "id": 9101,
+            "user_id": 3,
+            "key_hash": "6d29574cad155c0d372117af333d007c36d5ca2febd398c678f9fa227b7c2e3c",
+            "push_url": null,
+            "client_id": null,
+            "created_at": "2026-10-12T08:20:01.301553",
+            "expires_at": null,
+            "revoked_at": null,
+            "updated_at": "2026-10-12T08:20:01.301553",
+            "last_used_at": "2026-10-14T08:20:02.218943",
+            "application_name": null,
+            "user_api_key_client_id": 9101
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO user_api_key_clients (id, client_id, application_name, public_key, auth_redirect, created_at, updated_at) VALUES (9101, 'parity-client', 'Parity App', NULL, NULL, now() - interval '3 days', now() - interval '3 days')",
+    "INSERT INTO user_api_keys (id, user_id, key_hash, push_url, created_at, updated_at, last_used_at, user_api_key_client_id, revoked_at, expires_at) VALUES (9101, 3, encode(sha256(convert_to('parity-user-key-9101', 'UTF8')), 'hex'), NULL, now() - interval '2 days', now() - interval '2 days', now() - interval '1 day', 9101, NULL, NULL)",
+    "INSERT INTO user_api_key_scopes (id, user_api_key_id, name, created_at, updated_at) VALUES (9101, 9101, 'notifications', now() - interval '2 days', now() - interval '2 days')"
+  ],
+  "recorded_from": {
+    "case": "19003f244984cdbaecfb12c1437a4bb6f80813230a92f6b2fff668ccba95a060",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -287,18 +287,38 @@ pub async fn layer(
         .extensions()
         .get::<axum::extract::ConnectInfo<std::net::SocketAddr>>()
         .map(|c| c.0);
-    // A user API key (lookup_user_api_user_and_update_key) would act as
-    // its user; until those keys are ported, refuse rather than serve
-    // the request as anonymous or as the cookie's user.
-    if request.headers().contains_key("user-api-key") {
-        return Err(crate::Unsupported("user API keys").into());
+    // A key in a parameter (api_parameter_allowed?): of the routes that
+    // allow one, the port serves only handle_mail (no RSS or calendar
+    // feeds), and reads keys from headers only.
+    if path.starts_with("/admin/email/handle_mail")
+        && request.uri().query().is_some_and(|q| {
+            form_urlencoded::parse(q.as_bytes()).any(|(k, _)| k == "api_key" || k == "user_api_key")
+        })
+    {
+        return Err(crate::Unsupported("API keys in request parameters").into());
     }
-    // An admin API key stands in for the session (lookup_api_user). An
-    // admin route that does not let the request in is a 404, as Rails'
-    // AdminConstraint makes it; elsewhere it is invalid access.
-    if request
-        .headers()
-        .contains_key(super::api_key::HEADER_API_KEY)
+    let user_api_key = headers
+        .get(super::user_api_key::HEADER_USER_API_KEY)
+        .and_then(|v| v.to_str().ok())
+        .map(str::to_string);
+    if user_api_key.is_some() {
+        // Rails looks up the cookie (and an admin key) first and lets the
+        // user key overwrite them; the port takes a user key alone.
+        if headers.contains_key(super::api_key::HEADER_API_KEY) {
+            return Err(crate::Unsupported("a user API key with an admin API key").into());
+        }
+        if cookie(&headers, TOKEN_COOKIE).is_some() {
+            return Err(crate::Unsupported("a user API key with an auth cookie").into());
+        }
+    }
+    // An admin API key (lookup_api_user) or a user API key stands in for
+    // the session. An admin route that does not let the request in is a
+    // 404, as Rails' AdminConstraint makes it; elsewhere it is invalid
+    // access.
+    if user_api_key.is_some()
+        || request
+            .headers()
+            .contains_key(super::api_key::HEADER_API_KEY)
     {
         let mut conn = state.pool.acquire().await?;
         let ip = crate::remote_ip::remote_ip(&headers, peer)?;
@@ -316,13 +336,67 @@ pub async fn layer(
                 header::HeaderName::from_static("x-requested-with"),
                 "XMLHttpRequest",
             );
-        let refused_key =
-            match super::api_key::resolve(&mut conn, &headers, &ip, &method, &path).await? {
-                super::api_key::Resolved::User(user) => Err(user),
-                super::api_key::Resolved::Invalid => Ok("invalid_api_credentials"),
-                super::api_key::Resolved::Refused => Ok("invalid_access"),
-            };
+        let mode = crate::readonly::mode(&mut conn).await?;
+        let refused_key = match &user_api_key {
+            Some(key) => {
+                // The revoke matcher reads the request's `id`.
+                let id_param = if super::user_api_key::wants_id_param(&method, &path) {
+                    let (id, rebuilt) = id_param(request).await;
+                    request = rebuilt;
+                    id
+                } else {
+                    None
+                };
+                let matched = super::user_api_key::Request {
+                    method: &method,
+                    path: &path,
+                    query: request.uri().query(),
+                    id_param,
+                };
+                let resolved = super::user_api_key::resolve(
+                    &state,
+                    &mut conn,
+                    key,
+                    &headers,
+                    &matched,
+                    mode.postgres,
+                )
+                .await?;
+                match resolved {
+                    super::user_api_key::Resolved::User(user) => Err(user),
+                    super::user_api_key::Resolved::Invalid => Ok("invalid_access"),
+                    super::user_api_key::Resolved::Limited(refused) => {
+                        return Ok(refused.into_response(&state.i18n));
+                    }
+                }
+            }
+            None => {
+                match super::api_key::resolve(&mut conn, &headers, &ip, &method, &path).await? {
+                    super::api_key::Resolved::User(user) => Err(user),
+                    super::api_key::Resolved::Invalid => Ok("invalid_api_credentials"),
+                    super::api_key::Resolved::Refused => Ok("invalid_access"),
+                }
+            }
+        };
         let guardian = match refused_key {
+            Err(user) if user_api_key.is_some() => {
+                // should_update_last_seen?: an API request only with
+                // Discourse-Present: true.
+                if !mode.postgres
+                    && headers
+                        .get("discourse-present")
+                        .is_some_and(|v| v.as_bytes() == b"true")
+                {
+                    let settings = SiteSettings::load(
+                        &mut conn,
+                        &state.site_setting_defs,
+                        &state.config.globals,
+                    )
+                    .await?;
+                    update_last_seen(&mut conn, &state, &settings, &user, &ip).await?;
+                }
+                crate::guardian::Guardian::for_user(&mut conn, &user).await?
+            }
             Err(user) => {
                 // admin_api_key_limiter: one budget for every key on the
                 // site (GlobalSetting max_admin_api_reqs_per_minute).
@@ -370,7 +444,7 @@ pub async fn layer(
             }
         };
         let cleared = match (guardian.user_id(), ClearNotifications::from(&headers)) {
-            (Some(user_id), Some(clear)) if !crate::readonly::mode(&mut conn).await?.readonly => {
+            (Some(user_id), Some(clear)) if !mode.readonly => {
                 let settings =
                     SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals)
                         .await?;
@@ -514,6 +588,39 @@ pub async fn layer(
         None => {}
     }
     Ok(response)
+}
+
+/// `request.parameters["id"]` (the query string over the body, a JSON
+/// body's values keeping their type), with the request rebuilt around
+/// the body it read.
+async fn id_param(request: Request) -> (Option<serde_json::Value>, Request) {
+    use serde_json::Value;
+    let from_query = request.uri().query().and_then(|q| {
+        form_urlencoded::parse(q.as_bytes())
+            .find(|(k, _)| k == "id")
+            .map(|(_, v)| Value::String(v.into_owned()))
+    });
+    let content_type = request
+        .headers()
+        .get(header::CONTENT_TYPE)
+        .and_then(|v| v.to_str().ok())
+        .unwrap_or("")
+        .to_string();
+    let (parts, body) = request.into_parts();
+    let bytes = axum::body::to_bytes(body, 1 << 20)
+        .await
+        .unwrap_or_default();
+    let from_body = if content_type.starts_with("application/json") {
+        serde_json::from_slice::<Value>(&bytes)
+            .ok()
+            .and_then(|v| v.get("id").cloned())
+    } else {
+        form_urlencoded::parse(&bytes)
+            .find(|(k, _)| k == "id")
+            .map(|(_, v)| Value::String(v.into_owned()))
+    };
+    let request = Request::from_parts(parts, Body::from(bytes));
+    (from_query.or(from_body), request)
 }
 
 /// `cookies.delete("cn")`

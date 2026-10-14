@@ -311,7 +311,18 @@ then by what running a forum needs (milestone 6). Briefs:
     the request message's topic custom field and requested_group_name;
     requests in locales other than English refused)
 83. `feat/web-hooks` L: web hooks, their events from core, deliveries
-    and the scheduled jobs, 84. `feat/user-api-keys` M (and their jobs)
+    and the scheduled jobs,
+84. ~~`feat/user-api-keys`~~ (done) M (the `User-Api-Key` header: lookup,
+    the two limiters, scopes by route, last use and client id writes, no
+    CSRF or session refresh; revoke and undo-revoke, the user's own key
+    listing, `/user-api-key-client` show and create, the three jobs; push
+    refusals narrowed to `push_clients_for`. Refused: a user key with an
+    auth cookie or admin key, keys in request parameters, the bookmarks
+    calendar feed, a listed key without a client),
+    84b. `feat/user-api-key-auth-flow` M (RSA, `/user-api-key/new`, `POST
+    /user-api-key`, one-time passwords), 84c. `feat/user-api-key-device` M
+    (the device authorization flow), 84d. `feat/admin-api-keys` S/M
+    (`/admin/api/keys`, ApiKeyScope mappings)
 85. `feat/admin-badges` M: creating, editing, deleting badges and
     groupings, badge SQL with its preview, the badges pages' HTML
 86. `feat/admin-users-rest` M: granting admin (second factor or email

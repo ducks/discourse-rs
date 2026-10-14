@@ -1,0 +1,80 @@
+{
+  "name": "undo_revoke_other_users_key",
+  "user": "user2",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/user-api-key/undo-revoke.json",
+      "params": {
+        "id": 9101
+      }
+    }
+  ],
+  "started_at": "2026-10-14T08:20:55.016539",
+  "transaction_started_at": "2026-10-14T08:20:53.621858",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "RQsCumgJno1cxGIjerRMIxYEUvA=",
+            "created_at": "2026-10-14T08:20:54.230435",
+            "rotated_at": "2026-10-14T08:20:54.228469",
+            "updated_at": "2026-10-14T08:20:54.230435",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "RQsCumgJno1cxGIjerRMIxYEUvA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T08:20:55.024676",
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "RQsCumgJno1cxGIjerRMIxYEUvA=",
+            "created_at": "2026-10-14T08:20:54.230435",
+            "rotated_at": "2026-10-14T08:20:54.228469",
+            "updated_at": "2026-10-14T08:20:54.230435",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "RQsCumgJno1cxGIjerRMIxYEUvA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO user_api_key_clients (id, client_id, application_name, public_key, auth_redirect, created_at, updated_at) VALUES (9101, 'parity-client', 'Parity App', NULL, NULL, now() - interval '3 days', now() - interval '3 days')",
+    "INSERT INTO user_api_keys (id, user_id, key_hash, push_url, created_at, updated_at, last_used_at, user_api_key_client_id, revoked_at, expires_at) VALUES (9101, 3, encode(sha256(convert_to('parity-user-key-9101', 'UTF8')), 'hex'), NULL, now() - interval '2 days', now() - interval '2 days', now() - interval '1 day', 9101, now() - interval '1 hour', NULL)",
+    "INSERT INTO user_api_key_scopes (id, user_api_key_id, name, created_at, updated_at) VALUES (9101, 9101, 'read', now() - interval '2 days', now() - interval '2 days')"
+  ],
+  "recorded_from": {
+    "case": "4dcb62191915794284e939c579aa83c32fea40857eee2563b591f85ccfe90e4b",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

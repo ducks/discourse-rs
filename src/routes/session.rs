@@ -36,7 +36,9 @@ pub(crate) fn csrf_ok(
 ) -> bool {
     // API requests are not checked (handle_unverified_request); a key that
     // reached a handler was valid, the session middleware saw to it.
-    if headers.contains_key(crate::session::api_key::HEADER_API_KEY) {
+    if headers.contains_key(crate::session::api_key::HEADER_API_KEY)
+        || headers.contains_key(crate::session::user_api_key::HEADER_USER_API_KEY)
+    {
         return true;
     }
     let session = load_forum_session(state, headers);
@@ -640,7 +642,18 @@ pub async fn current(
     State(state): State<AppState>,
     axum::Extension(incoming): axum::Extension<Incoming>,
 ) -> Result<Response, AppError> {
-    let Some(session) = &incoming.session else {
+    let mut conn = state.pool.acquire().await?;
+    // The cookie's session, or an API key's user (no token, so never
+    // authenticated with OAuth).
+    let user = match (&incoming.session, incoming.guardian.user_id()) {
+        (Some(session), _) => Some((
+            session.user.clone(),
+            session.token.authenticated_with_oauth.unwrap_or(false),
+        )),
+        (None, Some(id)) => SessionUser::load(&mut conn, id).await?.map(|u| (u, false)),
+        (None, None) => None,
+    };
+    let Some((user, oauth)) = user else {
         return Ok((
             StatusCode::NOT_FOUND,
             [
@@ -651,14 +664,13 @@ pub async fn current(
         )
             .into_response());
     };
-    let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
-    let doc = crate::current_user::serialize(&mut conn, &state, &settings, session).await?;
+    let doc = crate::current_user::serialize(&mut conn, &state, &settings, &user, oauth).await?;
     let mut response = json_response(json!({"current_user": doc}));
     response.headers_mut().insert(
         "x-discourse-username",
-        HeaderValue::from_str(&session.user.username)?,
+        HeaderValue::from_str(&user.username)?,
     );
     Ok(response)
 }

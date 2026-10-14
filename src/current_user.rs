@@ -9,7 +9,7 @@ use sqlx::PgConnection;
 use crate::AppError;
 use crate::AppState;
 use crate::Unsupported;
-use crate::session::current::{Session, SessionUser};
+use crate::session::current::SessionUser;
 use crate::site_settings::SiteSettings;
 
 /// `Group::AUTO_GROUPS`
@@ -254,9 +254,9 @@ pub async fn serialize(
     conn: &mut PgConnection,
     state: &AppState,
     settings: &SiteSettings,
-    session: &Session,
+    user: &SessionUser,
+    authenticated_with_oauth: bool,
 ) -> Result<Value, AppError> {
-    let user = &session.user;
     let uid = user.id;
     let g = UserGuardian::load(conn, settings, user).await?;
     let urls = crate::url::Urls {
@@ -754,7 +754,7 @@ pub async fn serialize(
     );
     out.insert(
         "login_method".into(),
-        json!(if session.token.authenticated_with_oauth.unwrap_or(false) {
+        json!(if authenticated_with_oauth {
             "oauth"
         } else {
             "local"
