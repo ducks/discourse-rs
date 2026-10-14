@@ -5,8 +5,7 @@
 //! UploadCreator's steps (conversion to JPEG, re-encoding, orientation,
 //! optimization, downsizing) with the in-process tools of src/images.rs,
 //! which make Rails' decisions but not always its bytes. Refused: SVG
-//! cleaning, HEIF conversion, cropped upload types (an animated custom emoji
-//! passes: it skips the crop).
+//! cleaning, HEIF conversion, cropped upload types other than custom emoji.
 
 use std::path::Path;
 
@@ -31,6 +30,19 @@ const TYPES_TO_CROP: [&str; 4] = [
     "card_background",
     "custom_emoji",
     "profile_background",
+];
+
+/// `UploadCreator::ADMIN_ASSET_TYPES`: kept in their format (no JPEG
+/// conversion or re-encoding).
+const ADMIN_ASSET_TYPES: [&str; 8] = [
+    "badge_image",
+    "branding",
+    "custom_emoji",
+    "category_background",
+    "category_background_dark",
+    "category_logo",
+    "category_logo_dark",
+    "group_flair",
 ];
 
 /// `FileHelper.is_supported_image?(filename)`
@@ -160,6 +172,11 @@ struct ImageOpts {
     max_size: usize,
     png_to_jpg_quality: u8,
     recompress_quality: u8,
+    /// should_crop?: a custom emoji (not animated) is fitted in 100x100.
+    crop_custom_emoji: bool,
+    /// An admin asset type or a topic's OpenGraph image: never replaced
+    /// by a JPEG (`replace_with_jpeg_if_sufficiently_smaller!`).
+    keep_format: bool,
 }
 
 /// Why an image upload is refused, as UploadCreator's errors.
@@ -185,7 +202,7 @@ fn extract_image_info(bytes: &[u8], opts: &ImageOpts) -> Result<images::Info, Im
 
 /// `replace_with_jpeg_if_sufficiently_smaller!`
 fn replace_with_jpeg(bytes: &mut Vec<u8>, info: &mut images::Info, quality: u8, opts: &ImageOpts) {
-    if bytes.len() < MIN_CONVERT_TO_JPEG_BYTES_SAVED {
+    if opts.keep_format || bytes.len() < MIN_CONVERT_TO_JPEG_BYTES_SAVED {
         return;
     }
     let Some(jpeg) = images::to_jpeg(bytes, info.format, quality) else {
@@ -209,7 +226,19 @@ fn process_image(
 ) -> Result<(Vec<u8>, images::Info), ImageRefusal> {
     use images::Format;
     let mut info = extract_image_info(&bytes, opts)?;
+    // crop! (custom_emoji): `OptimizedImage.downsize(width: 100, height:
+    // 100)`, skipped for an animated image.
+    let crop = |bytes: &mut Vec<u8>, info: &mut images::Info| -> Result<(), ImageRefusal> {
+        if opts.crop_custom_emoji && !info.animated {
+            let cropped = images::downsize_to_fit(bytes, info.format, 100, 100)
+                .ok_or(ImageRefusal::OptimizeFailure)?;
+            *info = extract_image_info(&cropped, opts)?;
+            *bytes = cropped;
+        }
+        Ok(())
+    };
     if info.format == Format::Gif {
+        crop(&mut bytes, &mut info)?;
         return Ok((bytes, info));
     }
     match info.format {
@@ -236,6 +265,7 @@ fn process_image(
         info = extract_image_info(&upright, opts)?;
         bytes = upright;
     }
+    crop(&mut bytes, &mut info)?;
     // should_optimize?: never GIF; PNG under two megapixels.
     if (info.format != Format::Png || info.pixels() < 2_000_000)
         && let Some(optimized) = images::optimize(&bytes, info.format, false)
@@ -344,6 +374,9 @@ pub async fn create(
             max_size: (s.get("max_image_size_kb")?.to_i() * 1024).max(0) as usize,
             png_to_jpg_quality: quality("png_to_jpg_quality")?,
             recompress_quality: quality("recompress_original_jpg_quality")?,
+            crop_custom_emoji: up.upload_type == "custom_emoji",
+            keep_format: up.upload_type == "topic_og_image"
+                || ADMIN_ASSET_TYPES.contains(&up.upload_type),
         };
         let processed = tokio::task::spawn_blocking(move || process_image(bytes, &opts))
             .await
@@ -377,11 +410,6 @@ pub async fn create(
                 return Ok(Outcome::Invalid(vec![message]));
             }
         };
-        // should_crop?: a custom emoji is cropped (downsized to fit 100x100)
-        // unless animated.
-        if up.upload_type == "custom_emoji" && !info.animated {
-            return Err(Unsupported("cropping custom emoji images (not animated)").into());
-        }
         bytes = processed;
         image = Some((info.width, info.height, info.animated));
         image_type = Some(info.format.name());

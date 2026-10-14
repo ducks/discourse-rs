@@ -1,0 +1,14 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/config/emoji.json",
+      "params": {
+        "file": {
+          "fixture": "photo.png"
+        }
+      }
+    }
+  ]
+}

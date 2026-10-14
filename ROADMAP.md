@@ -256,8 +256,10 @@ then by what running a forum needs (milestone 6). Briefs:
     /site/emoji, the rebake job; custom emoji and the deny list in
     cooking, emojiUnescape, codes_to_img, unicode titles and every emoji
     url; static images refused until the crop: 81b), 81b.
-    `feat/custom-emoji-crop` S (the 100x100> downsize of static custom
-    emoji uploads), 81c. `feat/custom-emoji-import-export` S/M (zip and
+    ~~`feat/custom-emoji-crop`~~ (done) S (the 100x100> downsize of
+    static custom emoji uploads, admin asset types kept in their format;
+    a resampled image's dominant colour can be one off ImageMagick's),
+    81c. `feat/custom-emoji-import-export` S/M (zip and
     CSV export, import preview and confirm)
 82. `feat/admin-groups` L: creating, editing, deleting groups, members
     and owners in bulk, automatic membership by email domain

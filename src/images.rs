@@ -587,6 +587,40 @@ pub fn downsize_half(bytes: &[u8], format: Format) -> Option<Vec<u8>> {
     encode(&DynamicImage::ImageRgba8(resized), format, 92, None).ok()
 }
 
+/// `OptimizedImage.downsize(width:, height:)`, ImageMagick's `-resize
+/// WxH>`: an image larger than the box fitted inside it (each side
+/// `floor(side * scale + 0.5)`), a smaller one kept at its size, and
+/// either way written again in its format (a JPEG at its own estimated
+/// quality, as ImageMagick keeps it).
+pub fn downsize_to_fit(
+    bytes: &[u8],
+    format: Format,
+    max_width: u32,
+    max_height: u32,
+) -> Option<Vec<u8>> {
+    let image = auto_orient(
+        decode(bytes, format).ok()?,
+        jpeg_orientation_of(bytes, format),
+    );
+    let (width, height) = (image.width(), image.height());
+    let image = if width > max_width || height > max_height {
+        let scale = (f64::from(max_width) / f64::from(width))
+            .min(f64::from(max_height) / f64::from(height));
+        let side = |s: u32| ((f64::from(s) * scale + 0.5).floor() as u32).max(1);
+        DynamicImage::ImageRgba8(fill(&image, side(width), side(height), (0.5, 0.5))?)
+    } else {
+        image
+    };
+    let quality = match format {
+        Format::Jpeg => match jpeg_quality(bytes) {
+            0 => 92,
+            q => q.min(100) as u8,
+        },
+        _ => 92,
+    };
+    encode(&image, format, quality, None).ok()
+}
+
 /// `UploadCreator#execute_convert` to JPEG: oriented, flattened on white,
 /// at `quality`.
 pub fn to_jpeg(bytes: &[u8], format: Format, quality: u8) -> Option<Vec<u8>> {
@@ -684,6 +718,21 @@ mod tests {
             "{}",
             jpeg_quality(&jpeg)
         );
+    }
+
+    /// `-resize 100x100>` as the reference sized custom emoji: 1300x740 to
+    /// 100x57, 300x200 to 100x67, a smaller image kept at its size.
+    #[test]
+    fn downsize_fits_larger_images_only() {
+        for ((w, h), want) in [
+            ((1300, 740), (100, 57)),
+            ((300, 200), (100, 67)),
+            ((60, 40), (60, 40)),
+        ] {
+            let out = downsize_to_fit(&png(w, h), Format::Png, 100, 100).unwrap();
+            let i = info(&out).unwrap();
+            assert_eq!((i.width, i.height), want, "{w}x{h}");
+        }
     }
 
     /// The colours the reference saved for the upload fixtures

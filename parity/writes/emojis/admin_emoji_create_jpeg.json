@@ -1,0 +1,182 @@
+{
+  "name": "admin_emoji_create_jpeg",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/config/emoji.json",
+      "params": {
+        "file": {
+          "fixture": "photo.jpg"
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-14T06:44:51.341382",
+  "transaction_started_at": "2026-10-14T06:44:48.816108",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "name": "photo",
+        "url": "/uploads/default/original/1X/11858b0a4fd7b3c42fe841da4c89397ba48634d2.jpeg",
+        "group": null
+      }
+    }
+  ],
+  "changes": {
+    "custom_emojis": {
+      "inserted": [
+        {
+          "id": 1,
+          "name": "photo",
+          "group": null,
+          "user_id": 1,
+          "upload_id": 36,
+          "created_at": "2026-10-14T06:44:51.544541",
+          "updated_at": "2026-10-14T06:44:51.544541"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "upload_references": {
+      "inserted": [
+        {
+          "id": 36,
+          "target_id": 1,
+          "upload_id": 36,
+          "created_at": "2026-10-14T06:44:51.548971",
+          "updated_at": "2026-10-14T06:44:51.549",
+          "target_type": "CustomEmoji"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "uploads": {
+      "inserted": [
+        {
+          "id": 36,
+          "url": "/uploads/default/original/1X/11858b0a4fd7b3c42fe841da4c89397ba48634d2.jpeg",
+          "etag": null,
+          "sha1": "11858b0a4fd7b3c42fe841da4c89397ba48634d2",
+          "width": 100,
+          "height": 56,
+          "origin": null,
+          "secure": false,
+          "user_id": 1,
+          "animated": false,
+          "filesize": 4665,
+          "extension": "jpeg",
+          "created_at": "2026-10-14T06:44:51.494297",
+          "updated_at": "2026-10-14T06:44:51.505463",
+          "retain_hours": null,
+          "original_sha1": null,
+          "dominant_color": "3C4C5A",
+          "thumbnail_width": 100,
+          "thumbnail_height": 56,
+          "original_filename": "photo.jpg",
+          "verification_status": 1,
+          "access_control_post_id": null,
+          "security_last_changed_at": null,
+          "security_last_changed_reason": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "A7rwaAm9YWXepZYaQpuQ5RwyTgc=",
+            "created_at": "2026-10-14T06:44:49.142893",
+            "rotated_at": "2026-10-14T06:44:49.141949",
+            "updated_at": "2026-10-14T06:44:49.142893",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "A7rwaAm9YWXepZYaQpuQ5RwyTgc=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 1,
+            "seen_at": "2026-10-14T06:44:51.352594",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "A7rwaAm9YWXepZYaQpuQ5RwyTgc=",
+            "created_at": "2026-10-14T06:44:49.142893",
+            "rotated_at": "2026-10-14T06:44:49.141949",
+            "updated_at": "2026-10-14T06:44:49.142893",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "A7rwaAm9YWXepZYaQpuQ5RwyTgc=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 112,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": "photo",
+          "admin_only": true,
+          "created_at": "2026-10-14T06:44:51.555537",
+          "ip_address": null,
+          "updated_at": "2026-10-14T06:44:51.555537",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_uploads": {
+      "inserted": [
+        {
+          "id": 36,
+          "user_id": 1,
+          "upload_id": 36,
+          "created_at": "2026-10-14T06:44:51.523668"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "custom_emojis": 1,
+    "upload_references": 36,
+    "uploads": 36,
+    "user_histories": 74,
+    "user_uploads": 36
+  },
+  "recorded_from": {
+    "case": "f5930000cf423d69e541856fec1be38a9032618d7663c8ae49a5507c5b0c2930",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
