@@ -125,7 +125,9 @@ def clear_redis_state
   # summary-new-users: the digest's new users count, kept a day.
   # directory_*: when the reference's own scheduler last refreshed the
   # user directory (DirectoryItem.last_updated_at, DirectoryRefresh).
-  %w[unique-post-* unique-pm-post-* rejection_email:* user-last-seen:* hot_score_6_hourly __SEARCH__LOG_* LAST_UPLOAD_CLEANUP l-rate-limit3:* grpmsg:* last_notified_reviewable_id _CACHE:inline_onebox:* _CACHE:onebox__* _CACHE:onebox_failed__* about-stats badge_queue directory_* summary-new-users:*].each do |pattern|
+  # _CACHE:watched-words-list: WordWatcher's word lists, cached a day
+  # (empty ones too), which would hide a case's setup words from Rails.
+  %w[unique-post-* unique-pm-post-* rejection_email:* user-last-seen:* hot_score_6_hourly __SEARCH__LOG_* LAST_UPLOAD_CLEANUP l-rate-limit3:* grpmsg:* last_notified_reviewable_id _CACHE:inline_onebox:* _CACHE:onebox__* _CACHE:onebox_failed__* about-stats badge_queue directory_* summary-new-users:* _CACHE:watched-words-list:*].each do |pattern|
     Discourse.redis.keys(pattern).each { |k| Discourse.redis.del(k) }
   end
   # Oneboxer's preferred strategies, outside the namespace.
@@ -148,6 +150,8 @@ def reset_plugin_caches
   Category.reset_voting_cache if Category.respond_to?(:reset_voting_cache)
   # discourse-solved's in-memory list of categories that take answers.
   DiscourseSolved::AcceptedAnswerCache.reset_accepted_answer_cache if defined?(DiscourseSolved::AcceptedAnswerCache)
+  # WordWatcher's word lists (Discourse.cache, in Redis).
+  WordWatcher.clear_cache!
 end
 
 def checksums
@@ -390,6 +394,8 @@ cases.each do |c|
     # (SiteSetting.set_and_log), which the rollback undoes in the database
     # but not in the in-process cache.
     SiteSetting.refresh!
-    reset_plugin_caches if c["setup"]
+    # Always too: a case's requests may write rows these caches keep (the
+    # admin watched words routes), which the rollback removes.
+    reset_plugin_caches
   end
 end
