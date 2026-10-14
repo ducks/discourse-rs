@@ -1577,3 +1577,68 @@ pub async fn primary_group(
     tx.commit().await?;
     Ok(StatusCode::OK.into_response())
 }
+
+/// The `:user_id` of an admin user route, `.json` and all.
+fn route_user_id(user_id: &str) -> Option<i32> {
+    user_id
+        .strip_suffix(".json")
+        .unwrap_or(user_id)
+        .parse::<i32>()
+        .ok()
+}
+
+/// PUT /admin/users/:id/anonymize: Admin::UsersController#anonymize.
+pub async fn anonymize(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(user_id): Path<String>,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    let p = params::parse(uri.query(), &headers, &body);
+    if !csrf_ok(&state, &headers, &form_pairs(&p), uri.path(), "PUT") {
+        return Ok(bad_csrf());
+    }
+    if !guardian.is_staff() {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    let Some(user_id) = route_user_id(&user_id) else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    let mut tx = state.pool.begin().await?;
+    let exists: bool = sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM users WHERE id = $1)")
+        .bind(user_id)
+        .fetch_one(&mut *tx)
+        .await?;
+    if !exists {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    if !crate::user_anonymizer::can_anonymize(&mut tx, user_id).await? {
+        return Ok(super::search::invalid_access(&state));
+    }
+    let anonymize_ip = p
+        .get("anonymize_ip")
+        .and_then(params::scalar)
+        .filter(|v| !crate::ruby::is_blank(v));
+    let settings =
+        SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
+    let host = Host::from_state(&state);
+    let ctx = Ctx {
+        host: &host,
+        settings: &settings,
+        config: &state.config,
+        i18n: &state.i18n,
+        bus: &state.bus,
+    };
+    let username = crate::user_anonymizer::make_anonymous(
+        &mut tx,
+        &ctx,
+        user_id,
+        guardian.user_id(),
+        anonymize_ip.as_deref(),
+    )
+    .await?;
+    tx.commit().await?;
+    Ok(Json(json!({ "success": "OK", "username": username })).into_response())
+}
