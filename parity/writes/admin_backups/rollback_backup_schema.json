@@ -1,0 +1,135 @@
+{
+  "name": "rollback_backup_schema",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/backups/status.json"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/backups/rollback.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/backups/status.json"
+    }
+  ],
+  "started_at": "2026-10-14T16:15:39.967602",
+  "transaction_started_at": "2026-10-14T16:15:38.696485",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "is_operation_running": false,
+        "can_rollback": true,
+        "allow_restore": true
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "is_operation_running": false,
+        "can_rollback": false,
+        "allow_restore": true
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "2lGzxlRdKOLR5D0gB3tm0OqiP3g=",
+            "created_at": "2026-10-14T16:15:39.117733",
+            "rotated_at": "2026-10-14T16:15:39.115293",
+            "updated_at": "2026-10-14T16:15:39.117733",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "2lGzxlRdKOLR5D0gB3tm0OqiP3g=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T16:15:39.980841",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "2lGzxlRdKOLR5D0gB3tm0OqiP3g=",
+            "created_at": "2026-10-14T16:15:39.117733",
+            "rotated_at": "2026-10-14T16:15:39.115293",
+            "updated_at": "2026-10-14T16:15:39.117733",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "2lGzxlRdKOLR5D0gB3tm0OqiP3g=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_profiles": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "views": 3,
+            "bio_raw": null,
+            "user_id": 1,
+            "website": null,
+            "location": null,
+            "bio_cooked": null,
+            "featured_topic_id": null,
+            "bio_cooked_version": 1,
+            "dismissed_banner_key": null,
+            "granted_title_badge_id": null,
+            "card_background_upload_id": null,
+            "profile_background_upload_id": null
+          },
+          "after": {
+            "views": 3,
+            "bio_raw": null,
+            "user_id": 1,
+            "website": null,
+            "location": "Restored",
+            "bio_cooked": null,
+            "featured_topic_id": null,
+            "bio_cooked_version": 1,
+            "dismissed_banner_key": null,
+            "granted_title_badge_id": null,
+            "card_background_upload_id": null,
+            "profile_background_upload_id": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "CREATE SCHEMA backup",
+    "CREATE TABLE backup.user_profiles (LIKE public.user_profiles INCLUDING ALL)",
+    "INSERT INTO backup.user_profiles SELECT * FROM public.user_profiles",
+    "UPDATE backup.user_profiles SET location = 'Restored' WHERE user_id = 1"
+  ],
+  "recorded_from": {
+    "case": "22763b04f4cc14167c2f40b6fd19e1aef2c545c4d04c918a7e67d0aabb29797d",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "setup": [
+    "CREATE SCHEMA backup",
+    "INSERT INTO backup_metadata (name, value) VALUES ('last_restore_date', to_char((now() - interval '1 day') AT TIME ZONE 'UTC', 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"'))"
+  ],
+  "enqueue": [
+    [
+      "drop_backup_schema"
+    ]
+  ],
+  "run_jobs": [
+    "drop_backup_schema"
+  ],
+  "requests": []
+}

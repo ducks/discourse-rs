@@ -66,6 +66,7 @@ Classes:
 | badge_grant (each badge a backfill_badge job), ensure_badges_consistency, grant_anniversary_badges, grant_new_user_of_the_month_badges | 1d (the scheduler never passes the anniversary job a start_date) | badges/job_* |
 | fix_user_usernames_and_groups_names_clash | 1w (UsernameChanger inline, no staff log) | scheduled/username_group_clash* |
 | schedule_backup | 1d (from the worker's start; Rails: midnight. The create_backup it queues makes the backup in the job; the failure message to the admins group refused: SystemMessage target_group_names; S3 store refused) | scheduled/schedule_backup_*, scheduled/create_backup_job, tests/backups.rs (the archive) |
+| drop_backup_schema | 1d (a restore's `backup` schema a week after last_restore_date) | scheduled/drop_backup_schema_*, tests/backup_restore.rs (the drop) |
 
 ## Ready, in porting order
 
@@ -83,7 +84,6 @@ the features below (ROADMAP.md's queue has them).
 | clean_up_associated_accounts, clean_up_associated_groups | external auth |
 | check_out_of_date_themes | themes |
 | check_translation_overrides | translation overrides |
-| drop_backup_schema | restoring backups (91c) |
 | ensure_s3_uploads_existence | S3 |
 | clean_up_exports | user exports |
 | clean_up_mcp_records | the MCP server |

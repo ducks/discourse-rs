@@ -1,0 +1,19 @@
+{
+  "user": "admin",
+  "settings": {
+    "enable_backups": false
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/backups/discourse-2026-10-01-033000-v20260925054715.tar.gz/restore",
+      "params": {
+        "client_id": "abc123"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/backups/rollback.json"
+    }
+  ]
+}

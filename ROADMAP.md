@@ -421,8 +421,19 @@ then by what running a forum needs (milestone 6). Briefs:
     create_backup and schedule_backup. Refused: sites with S3 uploads,
     schedule_backup's failure message to the admins group; the logs go
     to every tab of the admin (no client_ids filter)),
-    91c. `feat/backup-restore` L (Restorer, rollback,
-    drop_backup_schema)
+    91c. ~~`feat/backup-restore`~~ (done) L (POST
+    /admin/backups/:id/restore queues the Restorer, run detached: the
+    archive unpacked, its version checked, read only and the job queue
+    paused, Redis-held state flushed, the public tables moved to
+    `backup`, the dump loaded with psql in one transaction, the
+    restored settings (disable_emails), the uploads copied and remapped
+    (DbHelper.remap), icons and rebakes, the logs and the message, the
+    rollback on any failure; POST /admin/backups/rollback;
+    drop_backup_schema. A Rails archive restores with 367 of 387 tables
+    equal to the seed it came from, the rest the restore's own rows.
+    Refused: backups that need migrations (no db:migrate), db:seed and
+    recompiling theme fields (logged as Rails logs those failures), S3
+    stores and S3 upload remaps)
 
 [phase-8]
 
@@ -987,8 +998,8 @@ API keys for posting, and grant_moderation! for the first admin's login.
       email logs (sent, skipped, bounced, received, rejected), measured
       against Rails
 - [x] Logs: a search term's details, incoming email details
-- [ ] Backups: creating, listing, downloading and restoring through the
-      app (scripts/restore-backup restores today), read-only mode
+- [x] Backups: creating, listing, downloading and restoring through the
+      app, read-only mode (S3, and backups that need migrations, refused)
 - [ ] Badges: creating, editing and deleting, groupings, granting and
       revoking, badge SQL, and the BadgeGranter jobs that award them
 - [x] Permalinks, embeddable hosts, user fields, form

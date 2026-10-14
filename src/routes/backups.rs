@@ -600,6 +600,89 @@ pub async fn create(
     Ok(Json(json!({"success": "OK"})).into_response())
 }
 
+/// POST /admin/backups/:id/restore (#restore): the restore started (the
+/// port queues what Rails spawns). Nothing is logged here.
+pub async fn restore(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(raw): Path<String>,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    let (Some((id, _)), None) = (backup_id(&raw), admin_only(&state, &guardian)) else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    let p = crate::params::parse(uri.query(), &headers, &body);
+    if !super::session::csrf_ok(&state, &headers, &pairs(&p), uri.path(), "POST") {
+        return Ok(super::session::bad_csrf());
+    }
+    if !xhr_or_json(&uri, &headers) {
+        return Ok(super::session::render_empty());
+    }
+    let settings = settings(&state).await?;
+    if let Some(r) = backups_disabled(&state, &settings)? {
+        return Ok(r);
+    }
+    let Some(client_id) = p.get("client_id").and_then(crate::params::scalar) else {
+        return Ok(param_missing("client_id"));
+    };
+    let mut conn = state.pool.acquire().await?;
+    crate::jobs::enqueue(
+        &mut conn,
+        backup_restore::jobs::SPAWN_BACKUP_RESTORE,
+        json!({
+            "type": "restore",
+            "user_id": guardian.user_id(),
+            "opts": {
+                "filename": id,
+                "client_id": client_id,
+                "publish_to_message_bus": true,
+            },
+        }),
+    )
+    .await?;
+    Ok(Json(json!({"success": "OK"})).into_response())
+}
+
+/// POST /admin/backups/rollback(.json) (#rollback): the tables a restore
+/// moved to the `backup` schema moved back, unless an operation runs.
+pub async fn rollback(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    if let Some(r) = admin_only(&state, &guardian) {
+        return Ok(r);
+    }
+    let p = crate::params::parse(uri.query(), &headers, &body);
+    if !super::session::csrf_ok(&state, &headers, &pairs(&p), uri.path(), "POST") {
+        return Ok(super::session::bad_csrf());
+    }
+    if !xhr_or_json(&uri, &headers) {
+        return Ok(super::session::render_empty());
+    }
+    let settings = settings(&state).await?;
+    if let Some(r) = backups_disabled(&state, &settings)? {
+        return Ok(r);
+    }
+    let mut conn = state.pool.acquire().await?;
+    if backup_restore::is_operation_running(&mut conn).await? {
+        // render_error("backup.operation_already_running")
+        let message = state
+            .i18n
+            .t("backup.operation_already_running")
+            .unwrap_or_default();
+        return Ok(Json(json!({"failed": "FAILED", "message": message})).into_response());
+    }
+    if backup_restore::can_rollback(&mut conn).await? {
+        backup_restore::restorer::move_tables_between_schemas(&state, "backup", "public").await?;
+    }
+    Ok(Json(json!({"success": "OK"})).into_response())
+}
+
 /// DELETE /admin/backups/cancel(.json) (#cancel): the shutdown flag the
 /// running operation watches.
 pub async fn cancel(

@@ -223,6 +223,50 @@ pub fn mime_type(url: &str) -> &'static str {
     }
 }
 
+/// `SiteIconManager.ensure_optimized!` in full: each sized icon's
+/// original (its setting chain, else the sketch logo) given its optimized
+/// copy (`OptimizedImage.create_for`), row and file, when it has none.
+/// A backup restore runs it after emptying optimized_images.
+pub async fn create_optimized(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    store: &crate::file_store::FileStore,
+) -> Result<(), crate::AppError> {
+    for icon in ICONS {
+        let Some((width, height)) = icon.size else {
+            continue;
+        };
+        let mut original = None;
+        for name in icon.settings {
+            let id = settings.get(name)?.to_i();
+            if id == SEEDED_ID_THRESHOLD {
+                continue;
+            }
+            if let Some(upload) = find_upload(conn, id).await? {
+                original = Some(upload);
+                break;
+            }
+        }
+        if original.is_none() && icon.fallback_to_sketch {
+            original = find_upload(conn, SKETCH_LOGO_ID).await?;
+        }
+        let Some(original) = original else {
+            continue;
+        };
+        let Some(upload) = crate::optimized_images::Upload::find(conn, original.id).await? else {
+            continue;
+        };
+        crate::optimized_images::create_for(conn, settings, store, &upload, width, height, false)
+            .await
+            .map_err(|e| match e {
+                crate::pretty_text::CookError::App(e) => e,
+                crate::pretty_text::CookError::Unsupported(u) => u.into(),
+                other => crate::AppError::from(other),
+            })?;
+    }
+    Ok(())
+}
+
 /// `SiteIconManager.ensure_optimized!`, as far as it matters here: Rails
 /// makes each sized icon's optimized copy at boot, and the seed's rows
 /// for them point at files only the reference has. A row whose file is

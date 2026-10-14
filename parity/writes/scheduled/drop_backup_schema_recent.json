@@ -1,0 +1,26 @@
+{
+  "name": "drop_backup_schema_recent",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-14T16:15:47.579322",
+  "transaction_started_at": "2026-10-14T16:15:46.535492",
+  "responses": [],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "CREATE SCHEMA backup",
+    "INSERT INTO backup_metadata (name, value) VALUES ('last_restore_date', to_char((now() - interval '1 day') AT TIME ZONE 'UTC', 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"'))"
+  ],
+  "enqueue": [
+    [
+      "drop_backup_schema"
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "042dd7f3cda8de301d260c0724a658b6f353f1dbef0ddc2be418643586b5d8de",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

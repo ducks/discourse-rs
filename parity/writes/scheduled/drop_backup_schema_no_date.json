@@ -1,0 +1,39 @@
+{
+  "name": "drop_backup_schema_no_date",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-14T16:15:45.207968",
+  "transaction_started_at": "2026-10-14T16:15:44.285377",
+  "responses": [],
+  "changes": {
+    "backup_metadata": {
+      "inserted": [
+        {
+          "id": 7,
+          "name": "last_restore_date",
+          "value": "2026-10-14T16:15:45Z"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "backup_metadata": 7
+  },
+  "setup": [
+    "CREATE SCHEMA backup"
+  ],
+  "enqueue": [
+    [
+      "drop_backup_schema"
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "18cd1845c4b8a58247505ab48745b79ca147f70b3f92ed9c68dbb0dae5c7f931",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
