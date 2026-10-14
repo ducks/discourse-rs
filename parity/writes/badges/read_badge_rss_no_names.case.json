@@ -1,0 +1,11 @@
+{
+  "user": "user1",
+  "settings": {"enable_names": false},
+  "setup": [
+    "DELETE FROM user_badges WHERE id > 18"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/badges/5/welcome.rss"},
+    {"method": "GET", "path": "/badges/111/x.rss"}
+  ]
+}

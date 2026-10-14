@@ -60,6 +60,9 @@ enum Action {
     /// `/messages/group/:name/new` ...): users#show, drawn with the list
     /// the route loads; the group name for a group's.
     Messages(MessagesRoute, Option<String>),
+    /// The HTML of `/u/:username/badges`: users#badges (users#show),
+    /// drawn as the badges tab.
+    Badges,
 }
 
 /// `/u/:username/messages(/...)` as a page: the route and its group.
@@ -132,6 +135,7 @@ fn route(username: &str, rest: Option<&str>) -> Result<Routed, Unsupported> {
     }
     let action = match rest {
         "summary" => Action::Summary,
+        "badges" if !json => Action::Badges,
         "badges" | "notifications" | "messages" | "private-messages" | "deleted-posts" => {
             Action::Show
         }
@@ -376,7 +380,10 @@ async fn respond(
         auth_token: auth_token.as_deref(),
     };
     let doc = match action {
-        Action::Show | Action::Activity(_) | Action::Card => {
+        Action::Show | Action::Activity(_) | Action::Card | Action::Badges => {
+            if matches!(action, Action::Badges) && !settings.get("enable_badges")?.truthy() {
+                return Ok(not_found());
+            }
             let mut doc = users.show(&user).await?;
             // UserSerializer gets the post count too, HiddenProfileSerializer
             // only on the card.
@@ -407,13 +414,17 @@ async fn respond(
     // The HTML profile draws on the show document, the summary and the
     // public activity stream.
     let show_doc = match action {
-        Action::Show | Action::Activity(_) | Action::Card | Action::Messages(..) => doc,
+        Action::Show
+        | Action::Activity(_)
+        | Action::Card
+        | Action::Messages(..)
+        | Action::Badges => doc,
         Action::Summary => users.show(&user).await?,
     };
     // user/index: one's own profile opens the activity stream, others
     // view_user_route.
     let filter = match action {
-        Action::Summary | Action::Card | Action::Messages(..) => None,
+        Action::Summary | Action::Card | Action::Messages(..) | Action::Badges => None,
         Action::Activity(filter) => Some(filter),
         Action::Show if guardian.is_me(user.id) => Some(ActivityFilter::All),
         Action::Show => match settings.get("view_user_route")?.to_s().as_str() {
@@ -423,7 +434,26 @@ async fn respond(
         },
     };
     let visible = user.visible_to(&settings, &guardian)?;
-    let summary_doc = if visible && filter.is_none() {
+    // user/badges: the user's grants grouped per badge
+    // (`/user-badges/:username.json?grouped=true`).
+    let badges_tab = if matches!(action, Action::Badges) {
+        if !visible {
+            return Err(Unsupported("a hidden user's badges tab").into());
+        }
+        let doc = super::badges::username_doc(
+            &state,
+            &mut *users.conn,
+            &settings,
+            &guardian,
+            user.id,
+            true,
+        )
+        .await?;
+        Some(doc)
+    } else {
+        None
+    };
+    let summary_doc = if visible && filter.is_none() && badges_tab.is_none() {
         Some(users.summary(&user).await?)
     } else {
         None
@@ -539,14 +569,37 @@ async fn respond(
         }
         _ => Vec::new(),
     };
-    let tab = match filter {
-        None => Tab::Summary(summary_doc.as_ref()),
-        Some(filter) => Tab::Activity {
-            filter,
-            stream: &stream,
-            topics: &voted_topics,
-            reactions: &reactions,
-            solved: &solved,
+    let badges_content = match &badges_tab {
+        Some(doc) => {
+            let cx = crate::topic_list_view::ListContext {
+                i18n: &state.i18n,
+                base_path,
+                now: crate::clock::now(),
+                categories: &std::collections::HashMap::new(),
+                expand_all_pinned: false,
+                member_trust_level: None,
+                settings: crate::topic_list_view::ListSettings::load(&settings)?,
+            };
+            Some(crate::badges_page::render_user_badges(
+                &cx,
+                doc,
+                &user.username.to_lowercase(),
+                settings.get("max_favorite_badges")?.to_i(),
+            )?)
+        }
+        None => None,
+    };
+    let tab = match (&badges_content, filter) {
+        (Some(content), _) => Tab::Badges(content.clone()),
+        (None, filter) => match filter {
+            None => Tab::Summary(summary_doc.as_ref()),
+            Some(filter) => Tab::Activity {
+                filter,
+                stream: &stream,
+                topics: &voted_topics,
+                reactions: &reactions,
+                solved: &solved,
+            },
         },
     };
     let active = if filter == Some(ActivityFilter::All) && guardian.is_me(user.id) {
@@ -573,10 +626,13 @@ async fn respond(
     .await?;
     // The tab template's bodyClass.
     if show_doc["user"]["profile_hidden"] != true {
-        page.chrome.body_classes.push_str(match filter {
-            None => " user-summary-page",
-            Some(_) => " user-activity-page",
-        });
+        page.chrome
+            .body_classes
+            .push_str(match (&badges_content, filter) {
+                (Some(_), _) => " user-badges-page",
+                (None, None) => " user-summary-page",
+                (None, Some(_)) => " user-activity-page",
+            });
     }
     // crawlable_meta_data(title: username, image: the 45px avatar)
     let avatar = show_doc["user"]["avatar_template"]

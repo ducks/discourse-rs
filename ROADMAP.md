@@ -322,6 +322,13 @@ then by what running a forum needs (milestone 6). Briefs:
     custom descriptions with markup or entities, CSV files with quotes
     or mixed line endings, error positions past Latin characters, the
     Ember admin pages),
+    85b. ~~`feat/badges-pages`~~ (done) M (/badges, /badges/:id/:slug
+    with its grants and `?username=`, the /u/:username/badges tab, the
+    badge RSS feed and its auto-discovery link, badges.css; under 1%
+    desktop and mobile on parity/screens/badges-pages; refused: the
+    title picker of a badge the viewer may title themselves with, more
+    grants than the first page, emoji in long descriptions,
+    /user-badges/:username in a browser, Ember's unknown route),
 86. `feat/admin-users-rest` M: granting admin (second factor or email
     confirmation), impersonation, penalties on several users
 87. `feat/admin-lists` M: permalinks, embeddable hosts, user fields,

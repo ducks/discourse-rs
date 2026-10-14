@@ -11,6 +11,7 @@ pub mod assets;
 pub mod avatar;
 pub mod badge_granter;
 pub mod badge_preview;
+pub mod badges_page;
 pub mod badges_view;
 pub mod bookmark_manager;
 pub mod bookmarks;

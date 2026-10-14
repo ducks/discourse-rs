@@ -1357,14 +1357,14 @@ pub struct GroupsHtml {
 /// What every groups page loads around its content: the site's chrome
 /// for the viewer, the categories the list context reads, the crawler
 /// view.
-struct Frame {
-    site: crate::html::Site,
-    vs: crate::html::ViewerState,
-    categories: std::collections::HashMap<i64, crate::topic_list_view::ListCategory>,
-    crawler: crate::html::Crawler,
+pub(super) struct Frame {
+    pub(super) site: crate::html::Site,
+    pub(super) vs: crate::html::ViewerState,
+    pub(super) categories: std::collections::HashMap<i64, crate::topic_list_view::ListCategory>,
+    pub(super) crawler: crate::html::Crawler,
 }
 
-async fn frame(
+pub(super) async fn frame(
     state: &AppState,
     conn: &mut PgConnection,
     settings: &SiteSettings,
@@ -1395,7 +1395,7 @@ async fn frame(
     })
 }
 
-fn finish(
+pub(super) fn finish(
     frame: Frame,
     settings: &SiteSettings,
     page_title: String,

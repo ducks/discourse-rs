@@ -2039,6 +2039,9 @@ pub struct Crawler {
     /// `add_noindex_header_to_non_canonical`: the canonical differs from
     /// the request URL.
     pub noindex: bool,
+    /// `auto_discovery_link_tag(:rss, href, title:)`: the feed's URL and
+    /// title.
+    pub rss: Option<(String, String)>,
 }
 
 impl Crawler {

@@ -1,0 +1,12 @@
+{
+  "user": null,
+  "setup": [
+    "DELETE FROM user_badges WHERE id > 18",
+    "UPDATE badges SET grant_count = 0 WHERE id = 40"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/badges/5/welcome.rss"},
+    {"method": "GET", "path": "/badges/100/certified.rss"},
+    {"method": "GET", "path": "/badges/1.rss"}
+  ]
+}

@@ -51,6 +51,8 @@ pub enum Tab<'a> {
     /// `userPrivateMessages.*`: the messages content (crate::messages_view),
     /// drawn.
     Messages(String),
+    /// `user.badges`: the badges content (crate::badges_page), drawn.
+    Badges(String),
 }
 
 /// The activity sub-navigation's stream routes.
@@ -511,7 +513,7 @@ pub fn render(
             &format!("{user_path}/badges"),
             "certificate",
             &t(cx, "badges.title"),
-            false,
+            matches!(tab, Tab::Badges(_)),
         ));
     }
     if u["can_edit"] == true {
@@ -555,7 +557,7 @@ pub fn render(
                 solved,
                 u["pending_posts_count"].as_i64().unwrap_or(0),
             )),
-            Tab::Messages(content) => out.push_str(content),
+            Tab::Messages(content) | Tab::Badges(content) => out.push_str(content),
         }
     }
     out.push_str("</div></div></section></div>");

@@ -93,6 +93,7 @@
     <meta name="twitter:description" content="{{ crawler.og_description }}">
     {% endif %}
     {% endif %}
+    {% if let Some((href, title)) = crawler.rss %}<link rel="alternate" type="application/rss+xml" title="{{ title }}" href="{{ href }}" />{% endif %}
     {% if let Some(v) = viewer %}
     <meta name="csrf-param" content="authenticity_token" />
     <meta name="csrf-token" content="{{ v.csrf_token }}" />

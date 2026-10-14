@@ -589,11 +589,8 @@ a#user-nav-skip-link:visited {
   background-color: var(--d-content-background, var(--secondary));
 }
 
-@media (width < 40rem) {
-  .user-content {
-    margin-top: 1em;
-  }
-}
+/* new-user.scss's narrow `.user-content { margin-top: 1em }` precedes
+   user.scss's rule above in common.css, so it never applies. */
 
 /* user-info.scss */
 .user-info {
