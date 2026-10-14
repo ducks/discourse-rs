@@ -1,0 +1,9 @@
+{
+  "user": null,
+  "setup": [
+    "UPDATE users SET trust_level = 0, created_at = now() - interval '60 days', last_seen_at = now() - interval '45 days' WHERE id = 5"
+  ],
+  "requests": [],
+  "enqueue": [["clean_up_inactive_users", {}]],
+  "run_jobs": ["clean_up_inactive_users"]
+}

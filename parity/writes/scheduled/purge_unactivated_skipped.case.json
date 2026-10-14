@@ -1,0 +1,10 @@
+{
+  "user": null,
+  "setup": [
+    "UPDATE users SET active = FALSE, created_at = now() - interval '30 days' WHERE id = 5",
+    "INSERT INTO user_histories (id, action, acting_user_id, target_user_id, admin_only, created_at, updated_at) VALUES (9301, 39, 1, 5, FALSE, now() - interval '20 days', now() - interval '20 days')"
+  ],
+  "requests": [],
+  "enqueue": [["purge_unactivated", {}]],
+  "run_jobs": ["purge_unactivated"]
+}

@@ -1,0 +1,30 @@
+{
+  "name": "inactive_users_cleanup_liked",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-14T00:20:26.29491",
+  "transaction_started_at": "2026-10-14T00:20:22.775135",
+  "responses": [],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "clean_up_inactive_users_after_days": 30
+  },
+  "setup": [
+    "UPDATE users SET trust_level = 0, created_at = now() - interval '60 days', last_seen_at = now() - interval '45 days' WHERE id = 5",
+    "INSERT INTO post_actions (id, post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (9301, 52, 5, 2, now() - interval '50 days', now() - interval '50 days')"
+  ],
+  "enqueue": [
+    [
+      "clean_up_inactive_users",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "8dd015765aab8914af3ad032c343c23f9fd6c21fed31aab49cfca8f4d506f3c0",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

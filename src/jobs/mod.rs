@@ -25,6 +25,7 @@ pub mod search_jobs;
 pub mod topic_timers;
 pub mod upload_cleanup;
 pub mod upload_jobs;
+pub mod user_cleanup;
 pub(crate) use handlers::choose_featured_users;
 pub(crate) mod post_alert;
 mod user_email;
@@ -285,6 +286,18 @@ const SCHEDULED: &[(&str, Duration)] = &[
         Duration::from_secs(2 * 3600),
     ),
     (
+        user_cleanup::PURGE_UNACTIVATED,
+        Duration::from_secs(24 * 3600),
+    ),
+    (
+        user_cleanup::CLEAN_UP_INACTIVE_USERS,
+        Duration::from_secs(24 * 3600),
+    ),
+    (
+        user_cleanup::CLEAN_UP_UNUSED_STAGED_USERS,
+        Duration::from_secs(24 * 3600),
+    ),
+    (
         accounts::INVALIDATE_INACTIVE_ADMINS,
         Duration::from_secs(24 * 3600),
     ),
@@ -430,6 +443,11 @@ pub async fn run_scheduled(state: &AppState, name: &str) -> Result<(), AppError>
             crate::plugins::chat::summary_email::send_unread_mentions_summary(state).await
         }
         moderation::TL3_PROMOTIONS => moderation::tl3_promotions(state).await,
+        user_cleanup::PURGE_UNACTIVATED => user_cleanup::purge_unactivated(state).await,
+        user_cleanup::CLEAN_UP_INACTIVE_USERS => user_cleanup::clean_up_inactive_users(state).await,
+        user_cleanup::CLEAN_UP_UNUSED_STAGED_USERS => {
+            user_cleanup::clean_up_unused_staged_users(state).await
+        }
         group_messages::IGNORED_USERS_SUMMARY => group_messages::ignored_users_summary(state).await,
         group_messages::PENDING_REVIEWABLES_REMINDER => {
             group_messages::pending_reviewables_reminder(state).await

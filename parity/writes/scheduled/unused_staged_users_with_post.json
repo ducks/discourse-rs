@@ -1,0 +1,27 @@
+{
+  "name": "unused_staged_users_with_post",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-14T00:20:52.618954",
+  "transaction_started_at": "2026-10-14T00:20:49.949548",
+  "responses": [],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE users SET staged = TRUE, created_at = now() - interval '400 days' WHERE id = 5",
+    "INSERT INTO posts (id, topic_id, user_id, post_number, raw, cooked, created_at, updated_at, last_version_at, sort_order, deleted_at, deleted_by_id) VALUES (9301, 35, 5, 6, 'A deleted reply by user3', '<p>A deleted reply by user3</p>', now() - interval '2 days', now() - interval '2 days', now() - interval '2 days', 6, now() - interval '1 day', 1)"
+  ],
+  "enqueue": [
+    [
+      "clean_up_unused_staged_users",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "cf1aad3483c5403539a5d363aeae2ae6aaa95ea016ffb29097975ea1c43bc4d3",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

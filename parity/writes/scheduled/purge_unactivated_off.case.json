@@ -1,0 +1,10 @@
+{
+  "user": null,
+  "settings": { "purge_unactivated_users_grace_period_days": 0 },
+  "setup": [
+    "UPDATE users SET active = FALSE, created_at = now() - interval '30 days' WHERE id = 5"
+  ],
+  "requests": [],
+  "enqueue": [["purge_unactivated", {}]],
+  "run_jobs": ["purge_unactivated"]
+}

@@ -1,0 +1,10 @@
+{
+  "user": null,
+  "setup": [
+    "UPDATE users SET active = FALSE, created_at = now() - interval '30 days' WHERE id = 5",
+    "INSERT INTO topic_allowed_users (id, user_id, topic_id, created_at, updated_at) VALUES (9301, 5, 42, now(), now())"
+  ],
+  "requests": [],
+  "enqueue": [["purge_unactivated", {}]],
+  "run_jobs": ["purge_unactivated"]
+}

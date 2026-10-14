@@ -1,0 +1,27 @@
+{
+  "name": "purge_unactivated_skipped",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-14T00:20:45.223302",
+  "transaction_started_at": "2026-10-14T00:20:44.040881",
+  "responses": [],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE users SET active = FALSE, created_at = now() - interval '30 days' WHERE id = 5",
+    "INSERT INTO user_histories (id, action, acting_user_id, target_user_id, admin_only, created_at, updated_at) VALUES (9301, 39, 1, 5, FALSE, now() - interval '20 days', now() - interval '20 days')"
+  ],
+  "enqueue": [
+    [
+      "purge_unactivated",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "cc929695531833c5a309cab0e673d585ec8e926f22b680a2bc2745d6215fb08d",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

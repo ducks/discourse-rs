@@ -39,6 +39,7 @@ Classes:
 | destroy_old_deletion_stubs | 30m | scheduled/deletion_stubs |
 | destroy_old_hidden_posts | 1d (posts in messages refused) | scheduled/hidden_posts* |
 | activation_reminder_emails | 2h | scheduled/activation_reminder* |
+| purge_unactivated, clean_up_inactive_users, clean_up_unused_staged_users | 1d | scheduled/{purge_unactivated,inactive_users_cleanup,unused_staged_users}* |
 | invalidate_inactive_admins | 1d (pending reviews, shadows and associated accounts refused) | scheduled/inactive_admins* |
 | clean_up_api_keys_max_life, clean_up_unused_api_keys | 1d | scheduled/api_keys_* |
 | clean_up_email_tokens, clean_up_email_login_codes, clean_up_email_change_requests, clean_up_unsubscribe_keys, clean_up_post_reply_keys, clean_up_email_logs | 1d | scheduled/{email_tokens,email_login_codes,email_change_requests,unsubscribe_keys,post_reply_keys,email_logs}_* |
@@ -72,7 +73,6 @@ the features below (ROADMAP.md's queue has them).
 | process_shelved_notifications, process_user_notification_schedules | do not disturb |
 | enqueue_digest_emails | digest emails |
 | directory_refresh | the user directory |
-| purge_unactivated, clean_up_inactive_users, clean_up_unused_staged_users | deleting users (UserDestroyer) |
 | pending_queued_posts_reminder, pending_users_reminder, enqueue_suspect_users | queued posts, user review |
 | fix_user_usernames_and_groups_names_clash | username changes |
 | aggregate_web_hooks_events, cleanup_redelivering_web_hook_events, redeliver_web_hook_events, purge_old_web_hook_events, purge_old_web_hook_events_daily_aggregate | web hooks |
