@@ -19,6 +19,8 @@ FILES=(
   lib/onebox/templates/discourse_topic_onebox.mustache
   lib/onebox/templates/discourse_user_onebox.mustache
   lib/onebox/templates/discourse_category_onebox.mustache
+  lib/onebox/templates/_layout.mustache
+  lib/onebox/templates/googlemeet.mustache
   vendor/assets/svg-icons/discourse-additional.svg
   vendor/assets/svg-icons/fontawesome/solid.svg
   vendor/assets/svg-icons/fontawesome/regular.svg

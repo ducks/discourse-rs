@@ -48,6 +48,7 @@ pub mod letter_avatar;
 pub mod likes;
 pub mod message_format;
 pub mod modifications;
+pub mod mustache;
 pub mod not_found_page;
 pub mod notifications;
 pub mod onebox;

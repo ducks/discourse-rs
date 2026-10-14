@@ -5,6 +5,7 @@
 //! (DNS rebinding) can't slip past the check.
 
 use std::net::{IpAddr, SocketAddr};
+use std::sync::LazyLock;
 use std::time::Duration;
 
 use sqlx::PgConnection;
@@ -133,6 +134,30 @@ fn hostname_of(url: &str) -> Option<String> {
     Some(host.to_lowercase())
 }
 
+/// Ruby's `URI::RFC3986_Parser`: what `URI.parse` takes without raising
+/// InvalidURIError (its IP-literal hosts loosened to any bracketed text).
+static RFC3986: LazyLock<regex::Regex> = LazyLock::new(|| {
+    let hex = "%[0-9A-Fa-f]{2}";
+    let seg = format!("(?:{hex}|[!$&-.0-9:;=@A-Z_a-z~/])");
+    let seg_no_slash = format!("(?:{hex}|[!$&-.0-9:;=@A-Z_a-z~])");
+    let authority = format!(
+        r"(?:(?:{hex}|[!$&-.0-9:;=A-Z_a-z~])*@)?(?:\[[^\]]*\]|(?:{hex}|[!$&-.0-9;=A-Z_a-z~])*)(?::[0-9]*)?"
+    );
+    let tail = format!(r"(?:\?[^#]*)?(?:#(?:{hex}|[!$&-.0-9:;=@A-Z_a-z~/?])*)?");
+    let absolute = format!(
+        r"[A-Za-z][+\-.0-9A-Za-z]*:(?://{authority}(?:/{seg}*)?|/(?:{seg_no_slash}{seg}*)?|{seg_no_slash}{seg}*|)"
+    );
+    let relative = format!(
+        r"(?://{authority}(?:/{seg}*)?|/{seg}*|(?:{hex}|[!$&-.0-9;=@A-Z_a-z~])+(?:/{seg}*)?|)"
+    );
+    regex::Regex::new(&format!(r"\A(?:{absolute}|{relative}){tail}\z")).unwrap()
+});
+
+/// Whether `URI.parse` takes the URL.
+pub fn ruby_uri_valid(url: &str) -> bool {
+    RFC3986.is_match(url)
+}
+
 /// A URL's parts as `URI.parse` gives them, for http and https.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Uri {
@@ -141,10 +166,14 @@ pub struct Uri {
     pub port: u16,
     /// The path and query (`request_uri`).
     pub request_uri: String,
+    pub fragment: Option<String>,
 }
 
 impl Uri {
     pub fn parse(url: &str) -> Option<Uri> {
+        if !ruby_uri_valid(url) {
+            return None;
+        }
         let (scheme, rest) = url.split_once("://")?;
         let scheme = scheme.to_lowercase();
         let end = rest.find(['/', '?', '#']).unwrap_or(rest.len());
@@ -167,7 +196,10 @@ impl Uri {
             return None;
         }
         let tail = &rest[end..];
-        let tail = tail.split('#').next().unwrap_or("");
+        let (tail, fragment) = match tail.split_once('#') {
+            Some((t, f)) => (t, Some(f.to_string())),
+            None => (tail, None),
+        };
         let request_uri = if tail.is_empty() || tail.starts_with('?') {
             format!("/{tail}")
         } else {
@@ -178,9 +210,24 @@ impl Uri {
             host: host.to_lowercase(),
             port,
             request_uri,
+            fragment,
         })
     }
 
+    /// `uri.path`
+    pub fn path(&self) -> &str {
+        self.request_uri.split('?').next().unwrap_or("")
+    }
+
+    /// `uri.to_s`, with its fragment.
+    pub fn to_s(&self) -> String {
+        match &self.fragment {
+            Some(f) => format!("{}#{f}", self.to_url()),
+            None => self.to_url(),
+        }
+    }
+
+    /// The URL requested: no fragment.
     fn to_url(&self) -> String {
         let default = (self.scheme == "http" && self.port == 80)
             || (self.scheme == "https" && self.port == 443);
@@ -459,6 +506,375 @@ impl Fetcher<'_> {
                 content_type,
                 uri,
             });
+        }
+    }
+}
+
+/// `FinalDestination::MAX_REQUEST_SIZE_BYTES`
+const MAX_REQUEST_SIZE_BYTES: usize = 5_242_880;
+/// `FinalDestination::MAX_REQUEST_TIME_SECONDS`
+const MAX_REQUEST_TIME: Duration = Duration::from_secs(10);
+
+/// Where `resolve` ended (`fd.status`).
+#[derive(Debug, Clone, PartialEq)]
+pub enum Status {
+    Resolved,
+    BlockedPage,
+    InvalidAddress,
+    TooManyRedirects,
+    /// A response that is neither the page nor a redirect.
+    Failure {
+        status_code: u16,
+        bot_challenge: bool,
+    },
+    /// A timeout, which `resolve` swallows (status left `:ready`).
+    Timeout,
+}
+
+/// What `resolve` found out.
+pub struct Resolution {
+    pub status: Status,
+    /// What `resolve` returned: the page's URI once resolved.
+    pub uri: Option<Uri>,
+    /// `fd.hostname`: the host it was last at.
+    pub hostname: String,
+    pub content_type: Option<String>,
+    pub cookie: Option<String>,
+}
+
+/// FinalDestination's options for `resolve`.
+pub struct ResolveOptions {
+    pub timeout: Duration,
+    /// `max_redirects` (nil is 5).
+    pub max_redirects: u32,
+    /// `initial_https_redirect_ignore_limit`
+    pub https_redirect_ignore_limit: bool,
+    pub stop_at_blocked_pages: bool,
+    /// URLs whose host and path prefix count as resolved without a request
+    /// (the site's own base URL comes first).
+    pub ignore_redirects: Vec<String>,
+    pub force_get_hosts: Vec<String>,
+    pub force_custom_user_agent_hosts: Vec<String>,
+    pub preserve_fragment_url_hosts: Vec<String>,
+    /// The user agent for force_custom_user_agent_hosts
+    /// (`Onebox::Helpers.user_agent`).
+    pub custom_user_agent: String,
+    /// Extra request headers.
+    pub headers: Vec<(String, String)>,
+}
+
+/// An error `resolve` lets through, as Excon raises it (a refused
+/// connection, a body too big): Oneboxer.onebox_raw rescues it.
+#[derive(Debug)]
+pub struct Raised(pub String);
+
+/// `hostname_matches?(url)`: a `*.` host matches its subdomains.
+fn hostname_matches(uri: &Uri, url: &str) -> bool {
+    let Some(other) = Uri::parse(url) else {
+        return false;
+    };
+    match other.host.strip_prefix("*.") {
+        Some(rest) => uri.host.ends_with(rest),
+        None => uri.host == other.host,
+    }
+}
+
+impl Fetcher<'_> {
+    /// `FinalDestination#resolve`: where the URL ends up, following
+    /// redirects with HEAD requests (GET for force_get_hosts), without
+    /// reading the page.
+    pub async fn resolve(
+        &self,
+        conn: &mut PgConnection,
+        url: &str,
+        opts: &ResolveOptions,
+    ) -> Result<Result<Resolution, Raised>, AppError> {
+        let Some(mut uri) = Uri::parse(url) else {
+            return Ok(Ok(Resolution {
+                status: Status::InvalidAddress,
+                uri: None,
+                hostname: String::new(),
+                content_type: None,
+                cookie: None,
+            }));
+        };
+        let max = i64::from(opts.max_redirects);
+        let mut limit = max;
+        let mut ignore_limit = opts.https_redirect_ignore_limit;
+        let mut ignored: Vec<(String, String)> = Vec::new();
+        if limit > 0 {
+            let mut urls = vec![self.urls.base_url()?];
+            urls.extend(opts.ignore_redirects.iter().cloned());
+            for u in urls {
+                if let Some(i) = Uri::parse(&u) {
+                    let path = i.path().to_string();
+                    ignored.push((i.host, path));
+                }
+            }
+        }
+        let force_get = opts
+            .force_get_hosts
+            .iter()
+            .any(|h| hostname_matches(&uri, h));
+        let preserve_fragment = opts
+            .preserve_fragment_url_hosts
+            .iter()
+            .any(|h| hostname_matches(&uri, h));
+        let user_agent = if opts
+            .force_custom_user_agent_hosts
+            .iter()
+            .any(|h| hostname_matches(&uri, h))
+        {
+            opts.custom_user_agent.clone()
+        } else {
+            DEFAULT_USER_AGENT.to_string()
+        };
+        let mut cookie: Option<String> = None;
+        let done = |status, uri: &Uri, ret: Option<Uri>, content_type, cookie: &Option<String>| {
+            Ok(Ok(Resolution {
+                status,
+                hostname: uri.host.clone(),
+                uri: ret,
+                content_type,
+                cookie: cookie.clone(),
+            }))
+        };
+        loop {
+            if uri.port == 80
+                && crate::owned_schema::cached_get(conn, &format!("HTTPS_DOMAIN_{}", uri.host))
+                    .await?
+                    .is_some()
+            {
+                uri.scheme = "https".into();
+                uri.port = 443;
+            }
+            if limit < 0 {
+                return done(Status::TooManyRedirects, &uri, None, None, &cookie);
+            }
+            if !self.valid(&uri)? {
+                return done(Status::InvalidAddress, &uri, None, None, &cookie);
+            }
+            if opts.stop_at_blocked_pages && self.blocked_domain(&uri.host)? {
+                return done(Status::BlockedPage, &uri, None, None, &cookie);
+            }
+            let path = uri.path().to_string();
+            if ignored.iter().any(|(host, prefix)| {
+                *host == uri.host && path.starts_with(if prefix.is_empty() { "/" } else { prefix })
+            }) {
+                let ret = uri.clone();
+                return done(Status::Resolved, &uri, Some(ret), None, &cookie);
+            }
+            let Some(addr) = self.lookup(&uri).await?.into_iter().next() else {
+                return done(Status::InvalidAddress, &uri, None, None, &cookie);
+            };
+            let client = reqwest::Client::builder()
+                .redirect(reqwest::redirect::Policy::none())
+                .connect_timeout(opts.timeout)
+                .resolve(&uri.host, addr)
+                .build()?;
+            let mut headers = vec![
+                ("User-Agent".to_string(), user_agent.clone()),
+                ("Accept".to_string(), "*/*".to_string()),
+                ("Accept-Language".to_string(), "*".to_string()),
+            ];
+            headers.extend(opts.headers.iter().cloned());
+            if let Some(c) = &cookie {
+                headers.push(("Cookie".into(), c.clone()));
+            }
+            let method = if force_get {
+                reqwest::Method::GET
+            } else {
+                reqwest::Method::HEAD
+            };
+            let mut request = client.request(method.clone(), uri.to_url());
+            for (name, value) in &headers {
+                request = request.header(name.as_str(), value.as_str());
+            }
+            let response = match tokio::time::timeout(opts.timeout, request.send()).await {
+                Err(_) => return done(Status::Timeout, &uri, None, None, &cookie),
+                Ok(Err(e)) if e.is_timeout() => {
+                    return done(Status::Timeout, &uri, None, None, &cookie);
+                }
+                Ok(Err(e)) => return Ok(Err(Raised(e.to_string()))),
+                Ok(Ok(r)) => r,
+            };
+            let response_headers = response.headers().clone();
+            let status = response.status().as_u16();
+            // The status the redirect is read from: small_get's, when it ran.
+            let mut response_status = status;
+            // The response block: the body (a GET's) within its limits.
+            if method == reqwest::Method::GET {
+                let started = std::time::Instant::now();
+                let mut size = 0;
+                let mut response = response;
+                loop {
+                    match tokio::time::timeout(opts.timeout, response.chunk()).await {
+                        Err(_) => return done(Status::Timeout, &uri, None, None, &cookie),
+                        Ok(Err(e)) => return Ok(Err(Raised(e.to_string()))),
+                        Ok(Ok(None)) => break,
+                        Ok(Ok(Some(chunk))) => {
+                            size += chunk.len();
+                            if size > MAX_REQUEST_SIZE_BYTES {
+                                return Ok(Err(Raised(format!(
+                                    "response size too big: {}",
+                                    uri.to_s()
+                                ))));
+                            }
+                            if started.elapsed() > MAX_REQUEST_TIME {
+                                return Ok(Err(Raised(format!(
+                                    "connect timeout reached: {}",
+                                    uri.to_s()
+                                ))));
+                            }
+                        }
+                    }
+                }
+            }
+            let header = |name: &str| {
+                response_headers
+                    .get(name)
+                    .and_then(|v| v.to_str().ok())
+                    .map(str::to_string)
+            };
+            if opts.stop_at_blocked_pages
+                && (self.blocked_domain(&uri.host)?
+                    || header("Discourse-No-Onebox").as_deref() == Some("1"))
+            {
+                return done(Status::BlockedPage, &uri, None, None, &cookie);
+            }
+            let mut cookies: Vec<String> = response_headers
+                .get_all("set-cookie")
+                .iter()
+                .filter_map(|v| v.to_str().ok().map(str::to_string))
+                .collect();
+            let mut location = header("location");
+            match status {
+                200 => {
+                    let ret = uri.clone();
+                    return done(
+                        Status::Resolved,
+                        &uri,
+                        Some(ret),
+                        header("content-type"),
+                        &cookie,
+                    );
+                }
+                103 | 400 | 405 | 406 | 409 | 500 | 501 => {
+                    // small_get: a GET's status and headers, its body unread.
+                    let mut request = client.get(uri.to_url());
+                    for (name, value) in &headers {
+                        request = request.header(name.as_str(), value.as_str());
+                    }
+                    let small = match tokio::time::timeout(opts.timeout, request.send()).await {
+                        Err(_) => return done(Status::Timeout, &uri, None, None, &cookie),
+                        Ok(Err(e)) if e.is_timeout() => {
+                            return done(Status::Timeout, &uri, None, None, &cookie);
+                        }
+                        Ok(Err(e)) => return Ok(Err(Raised(e.to_string()))),
+                        Ok(Ok(r)) => r,
+                    };
+                    if opts.stop_at_blocked_pages {
+                        let dont = small
+                            .headers()
+                            .get_all("discourse-no-onebox")
+                            .iter()
+                            .filter_map(|v| v.to_str().ok())
+                            .collect::<String>()
+                            == "1";
+                        if dont || self.blocked_domain(&uri.host)? {
+                            return done(Status::BlockedPage, &uri, None, None, &cookie);
+                        }
+                    }
+                    response_status = small.status().as_u16();
+                    if response_status == 200 {
+                        let ret = uri.clone();
+                        return done(Status::Resolved, &uri, Some(ret), None, &cookie);
+                    }
+                    cookies = small
+                        .headers()
+                        .get_all("set-cookie")
+                        .iter()
+                        .filter_map(|v| v.to_str().ok().map(str::to_string))
+                        .collect();
+                    location = {
+                        let all: Vec<&str> = small
+                            .headers()
+                            .get_all("location")
+                            .iter()
+                            .filter_map(|v| v.to_str().ok())
+                            .collect();
+                        (!all.is_empty()).then(|| all.concat())
+                    };
+                }
+                _ => {}
+            }
+            let location = location.filter(|_| (300..400).contains(&response_status));
+            if !cookies.is_empty() {
+                cookie = Some(
+                    cookies
+                        .iter()
+                        .map(|c| c.split(';').next().unwrap_or("").trim().to_string())
+                        .collect::<Vec<_>>()
+                        .join("; "),
+                );
+            }
+            if let Some(location) = location {
+                let next_location = if preserve_fragment
+                    && let Some(f) = uri.fragment.as_deref().filter(|f| !f.is_empty())
+                {
+                    format!("{location}#{f}")
+                } else {
+                    location.clone()
+                };
+                let next_location = if next_location.starts_with('/') {
+                    format!("{}://{}{}", uri.scheme, uri.host, next_location)
+                } else {
+                    next_location
+                };
+                if let Some(redirect) = Uri::parse(&location)
+                    && redirect.host == uri.host
+                    && (redirect.path().contains("/login") || redirect.path().contains("/session"))
+                {
+                    let ret = uri.clone();
+                    return done(Status::Resolved, &uri, Some(ret), None, &cookie);
+                }
+                let Some(next) = Uri::parse(&next_location) else {
+                    return done(Status::InvalidAddress, &uri, None, None, &cookie);
+                };
+                if limit == max
+                    && ignore_limit
+                    && uri.scheme == "http"
+                    && next.scheme == "https"
+                    && uri.to_s().strip_prefix("http://") == next.to_s().strip_prefix("https://")
+                {
+                    limit += 1;
+                    ignore_limit = false;
+                }
+                limit -= 1;
+                if uri.port == 80 && next.port == 443 && next.scheme == "https" {
+                    crate::owned_schema::cached_setex(
+                        conn,
+                        &format!("HTTPS_DOMAIN_{}", next.host),
+                        86_400,
+                        "1",
+                    )
+                    .await?;
+                }
+                uri = next;
+                continue;
+            }
+            let bot_challenge = header("x-amzn-waf-action").is_some_and(|v| !v.trim().is_empty())
+                || header("cf-mitigated").as_deref() == Some("challenge");
+            return done(
+                Status::Failure {
+                    status_code: status,
+                    bot_challenge,
+                },
+                &uri,
+                None,
+                None,
+                &cookie,
+            );
         }
     }
 }

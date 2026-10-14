@@ -137,3 +137,12 @@ pub async fn cached_setex(
     .await?;
     Ok(())
 }
+
+/// Redis's `DEL key` for a value set with `setex`.
+pub async fn cached_del(conn: &mut sqlx::PgConnection, key: &str) -> Result<(), sqlx::Error> {
+    sqlx::query("DELETE FROM discourse_rs.cached_values WHERE key = $1")
+        .bind(key)
+        .execute(conn)
+        .await?;
+    Ok(())
+}
