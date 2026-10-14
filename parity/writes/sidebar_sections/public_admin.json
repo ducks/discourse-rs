@@ -1,0 +1,1377 @@
+{
+  "name": "public_admin",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/sidebar_sections.json",
+      "params": {
+        "title": "Resources",
+        "public": "true",
+        "links": [
+          {
+            "icon": "book",
+            "name": "Docs",
+            "value": "https://example.com/docs"
+          },
+          {
+            "icon": "link",
+            "name": "Latest",
+            "value": "/latest"
+          }
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/sidebar_sections/2.json",
+      "params": {
+        "title": "Resources 2",
+        "public": "true",
+        "links": [
+          {
+            "id": "14",
+            "icon": "link",
+            "name": "Latest",
+            "value": "/latest"
+          },
+          {
+            "id": "13",
+            "icon": "book",
+            "name": "Docs",
+            "value": "https://example.com/docs"
+          }
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/sidebar_sections/1.json",
+      "params": {
+        "title": "Our community"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/sidebar_sections/1/reorder.json",
+      "params": {
+        "links_order": [
+          "12",
+          "11",
+          "10",
+          "9",
+          "8",
+          "7",
+          "6",
+          "5",
+          "4",
+          "3",
+          "2",
+          "1"
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/sidebar_sections/reset/1.json"
+    },
+    {
+      "method": "DELETE",
+      "path": "/sidebar_sections/1.json"
+    },
+    {
+      "method": "DELETE",
+      "path": "/sidebar_sections/2.json"
+    },
+    {
+      "method": "GET",
+      "path": "/sidebar_sections.json"
+    }
+  ],
+  "started_at": "2026-10-14T15:28:05.255408",
+  "transaction_started_at": "2026-10-14T15:28:03.670052",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "sidebar_section": {
+          "id": 2,
+          "title": "Resources",
+          "links": [
+            {
+              "id": 13,
+              "name": "Docs",
+              "value": "https://example.com/docs",
+              "icon": "book",
+              "external": true,
+              "segment": "primary",
+              "locale": "en"
+            },
+            {
+              "id": 14,
+              "name": "Latest",
+              "value": "/latest",
+              "icon": "link",
+              "external": false,
+              "segment": "primary",
+              "locale": "en"
+            }
+          ],
+          "slug": "resources",
+          "public": true,
+          "section_type": null,
+          "locale": "en"
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "sidebar_section": {
+          "id": 2,
+          "title": "Resources 2",
+          "links": [
+            {
+              "id": 14,
+              "name": "Latest",
+              "value": "/latest",
+              "icon": "link",
+              "external": false,
+              "segment": "primary",
+              "locale": "en"
+            },
+            {
+              "id": 13,
+              "name": "Docs",
+              "value": "https://example.com/docs",
+              "icon": "book",
+              "external": true,
+              "segment": "primary",
+              "locale": "en"
+            }
+          ],
+          "slug": "resources-2",
+          "public": true,
+          "section_type": null,
+          "locale": "en"
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "sidebar_section": {
+          "id": 1,
+          "title": "Our community",
+          "links": [
+            {
+              "id": 1,
+              "name": "Topics",
+              "value": "/latest",
+              "icon": "layer-group",
+              "external": false,
+              "segment": "primary",
+              "locale": null
+            },
+            {
+              "id": 2,
+              "name": "My posts",
+              "value": "/my/activity",
+              "icon": "user",
+              "external": false,
+              "segment": "primary",
+              "locale": null
+            },
+            {
+              "id": 3,
+              "name": "My messages",
+              "value": "/my/messages",
+              "icon": "inbox",
+              "external": false,
+              "segment": "primary",
+              "locale": null
+            },
+            {
+              "id": 4,
+              "name": "Review",
+              "value": "/review",
+              "icon": "flag",
+              "external": false,
+              "segment": "primary",
+              "locale": null
+            },
+            {
+              "id": 5,
+              "name": "Admin",
+              "value": "/admin",
+              "icon": "wrench",
+              "external": false,
+              "segment": "primary",
+              "locale": null
+            },
+            {
+              "id": 6,
+              "name": "Invite",
+              "value": "/new-invite",
+              "icon": "paper-plane",
+              "external": false,
+              "segment": "primary",
+              "locale": null
+            },
+            {
+              "id": 7,
+              "name": "Users",
+              "value": "/u",
+              "icon": "users",
+              "external": false,
+              "segment": "secondary",
+              "locale": null
+            },
+            {
+              "id": 8,
+              "name": "About",
+              "value": "/about",
+              "icon": "circle-info",
+              "external": false,
+              "segment": "secondary",
+              "locale": null
+            },
+            {
+              "id": 9,
+              "name": "FAQ",
+              "value": "/faq",
+              "icon": "circle-question",
+              "external": false,
+              "segment": "secondary",
+              "locale": null
+            },
+            {
+              "id": 10,
+              "name": "Groups",
+              "value": "/g",
+              "icon": "user-group",
+              "external": false,
+              "segment": "secondary",
+              "locale": null
+            },
+            {
+              "id": 11,
+              "name": "Badges",
+              "value": "/badges",
+              "icon": "certificate",
+              "external": false,
+              "segment": "secondary",
+              "locale": null
+            },
+            {
+              "id": 12,
+              "name": "Filter",
+              "value": "/filter",
+              "icon": "filter",
+              "external": false,
+              "segment": "secondary",
+              "locale": null
+            }
+          ],
+          "slug": "our-community",
+          "public": true,
+          "section_type": "community",
+          "locale": "en"
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "sidebar_section": {
+          "id": 1,
+          "title": "Our community",
+          "links": [
+            {
+              "id": 12,
+              "name": "Filter",
+              "value": "/filter",
+              "icon": "filter",
+              "external": false,
+              "segment": "secondary",
+              "locale": null
+            },
+            {
+              "id": 11,
+              "name": "Badges",
+              "value": "/badges",
+              "icon": "certificate",
+              "external": false,
+              "segment": "secondary",
+              "locale": null
+            },
+            {
+              "id": 10,
+              "name": "Groups",
+              "value": "/g",
+              "icon": "user-group",
+              "external": false,
+              "segment": "secondary",
+              "locale": null
+            },
+            {
+              "id": 9,
+              "name": "FAQ",
+              "value": "/faq",
+              "icon": "circle-question",
+              "external": false,
+              "segment": "secondary",
+              "locale": null
+            },
+            {
+              "id": 8,
+              "name": "About",
+              "value": "/about",
+              "icon": "circle-info",
+              "external": false,
+              "segment": "secondary",
+              "locale": null
+            },
+            {
+              "id": 7,
+              "name": "Users",
+              "value": "/u",
+              "icon": "users",
+              "external": false,
+              "segment": "secondary",
+              "locale": null
+            },
+            {
+              "id": 6,
+              "name": "Invite",
+              "value": "/new-invite",
+              "icon": "paper-plane",
+              "external": false,
+              "segment": "primary",
+              "locale": null
+            },
+            {
+              "id": 5,
+              "name": "Admin",
+              "value": "/admin",
+              "icon": "wrench",
+              "external": false,
+              "segment": "primary",
+              "locale": null
+            },
+            {
+              "id": 4,
+              "name": "Review",
+              "value": "/review",
+              "icon": "flag",
+              "external": false,
+              "segment": "primary",
+              "locale": null
+            },
+            {
+              "id": 3,
+              "name": "My messages",
+              "value": "/my/messages",
+              "icon": "inbox",
+              "external": false,
+              "segment": "primary",
+              "locale": null
+            },
+            {
+              "id": 2,
+              "name": "My posts",
+              "value": "/my/activity",
+              "icon": "user",
+              "external": false,
+              "segment": "primary",
+              "locale": null
+            },
+            {
+              "id": 1,
+              "name": "Topics",
+              "value": "/latest",
+              "icon": "layer-group",
+              "external": false,
+              "segment": "primary",
+              "locale": null
+            }
+          ],
+          "slug": "our-community",
+          "public": true,
+          "section_type": "community",
+          "locale": "en"
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "sidebar_section": {
+          "id": 1,
+          "title": "Community",
+          "links": [
+            {
+              "id": 15,
+              "name": "Topics",
+              "value": "/latest",
+              "icon": "layer-group",
+              "external": false,
+              "segment": "primary",
+              "locale": null
+            },
+            {
+              "id": 16,
+              "name": "My posts",
+              "value": "/my/activity",
+              "icon": "user",
+              "external": false,
+              "segment": "primary",
+              "locale": null
+            },
+            {
+              "id": 17,
+              "name": "My messages",
+              "value": "/my/messages",
+              "icon": "inbox",
+              "external": false,
+              "segment": "primary",
+              "locale": null
+            },
+            {
+              "id": 18,
+              "name": "Review",
+              "value": "/review",
+              "icon": "flag",
+              "external": false,
+              "segment": "primary",
+              "locale": null
+            },
+            {
+              "id": 19,
+              "name": "Admin",
+              "value": "/admin",
+              "icon": "wrench",
+              "external": false,
+              "segment": "primary",
+              "locale": null
+            },
+            {
+              "id": 20,
+              "name": "Invite",
+              "value": "/new-invite",
+              "icon": "paper-plane",
+              "external": false,
+              "segment": "primary",
+              "locale": null
+            },
+            {
+              "id": 21,
+              "name": "Users",
+              "value": "/u",
+              "icon": "users",
+              "external": false,
+              "segment": "secondary",
+              "locale": null
+            },
+            {
+              "id": 22,
+              "name": "About",
+              "value": "/about",
+              "icon": "circle-info",
+              "external": false,
+              "segment": "secondary",
+              "locale": null
+            },
+            {
+              "id": 23,
+              "name": "FAQ",
+              "value": "/faq",
+              "icon": "circle-question",
+              "external": false,
+              "segment": "secondary",
+              "locale": null
+            },
+            {
+              "id": 24,
+              "name": "Groups",
+              "value": "/g",
+              "icon": "user-group",
+              "external": false,
+              "segment": "secondary",
+              "locale": null
+            },
+            {
+              "id": 25,
+              "name": "Badges",
+              "value": "/badges",
+              "icon": "certificate",
+              "external": false,
+              "segment": "secondary",
+              "locale": null
+            },
+            {
+              "id": 26,
+              "name": "Filter",
+              "value": "/filter",
+              "icon": "filter",
+              "external": false,
+              "segment": "secondary",
+              "locale": null
+            }
+          ],
+          "slug": "community",
+          "public": true,
+          "section_type": "community",
+          "locale": "en"
+        }
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "failed": "FAILED"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "sidebar_sections": [
+          {
+            "id": 1,
+            "title": "Community",
+            "links": [
+              {
+                "id": 15,
+                "name": "Topics",
+                "value": "/latest",
+                "icon": "layer-group",
+                "external": false,
+                "segment": "primary",
+                "locale": null
+              },
+              {
+                "id": 16,
+                "name": "My posts",
+                "value": "/my/activity",
+                "icon": "user",
+                "external": false,
+                "segment": "primary",
+                "locale": null
+              },
+              {
+                "id": 17,
+                "name": "My messages",
+                "value": "/my/messages",
+                "icon": "inbox",
+                "external": false,
+                "segment": "primary",
+                "locale": null
+              },
+              {
+                "id": 18,
+                "name": "Review",
+                "value": "/review",
+                "icon": "flag",
+                "external": false,
+                "segment": "primary",
+                "locale": null
+              },
+              {
+                "id": 19,
+                "name": "Admin",
+                "value": "/admin",
+                "icon": "wrench",
+                "external": false,
+                "segment": "primary",
+                "locale": null
+              },
+              {
+                "id": 20,
+                "name": "Invite",
+                "value": "/new-invite",
+                "icon": "paper-plane",
+                "external": false,
+                "segment": "primary",
+                "locale": null
+              },
+              {
+                "id": 21,
+                "name": "Users",
+                "value": "/u",
+                "icon": "users",
+                "external": false,
+                "segment": "secondary",
+                "locale": null
+              },
+              {
+                "id": 22,
+                "name": "About",
+                "value": "/about",
+                "icon": "circle-info",
+                "external": false,
+                "segment": "secondary",
+                "locale": null
+              },
+              {
+                "id": 23,
+                "name": "FAQ",
+                "value": "/faq",
+                "icon": "circle-question",
+                "external": false,
+                "segment": "secondary",
+                "locale": null
+              },
+              {
+                "id": 24,
+                "name": "Groups",
+                "value": "/g",
+                "icon": "user-group",
+                "external": false,
+                "segment": "secondary",
+                "locale": null
+              },
+              {
+                "id": 25,
+                "name": "Badges",
+                "value": "/badges",
+                "icon": "certificate",
+                "external": false,
+                "segment": "secondary",
+                "locale": null
+              },
+              {
+                "id": 26,
+                "name": "Filter",
+                "value": "/filter",
+                "icon": "filter",
+                "external": false,
+                "segment": "secondary",
+                "locale": null
+              }
+            ],
+            "slug": "community",
+            "public": true,
+            "section_type": "community",
+            "locale": "en"
+          }
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "sidebar_section_links": {
+      "inserted": [
+        {
+          "id": 30,
+          "user_id": -1,
+          "position": 0,
+          "created_at": "2026-10-14T15:28:03.670052",
+          "updated_at": "2026-10-14T15:28:03.670052",
+          "linkable_id": 15,
+          "linkable_type": "SidebarUrl",
+          "sidebar_section_id": 1
+        },
+        {
+          "id": 31,
+          "user_id": -1,
+          "position": 1,
+          "created_at": "2026-10-14T15:28:03.670052",
+          "updated_at": "2026-10-14T15:28:03.670052",
+          "linkable_id": 16,
+          "linkable_type": "SidebarUrl",
+          "sidebar_section_id": 1
+        },
+        {
+          "id": 32,
+          "user_id": -1,
+          "position": 2,
+          "created_at": "2026-10-14T15:28:03.670052",
+          "updated_at": "2026-10-14T15:28:03.670052",
+          "linkable_id": 17,
+          "linkable_type": "SidebarUrl",
+          "sidebar_section_id": 1
+        },
+        {
+          "id": 33,
+          "user_id": -1,
+          "position": 3,
+          "created_at": "2026-10-14T15:28:03.670052",
+          "updated_at": "2026-10-14T15:28:03.670052",
+          "linkable_id": 18,
+          "linkable_type": "SidebarUrl",
+          "sidebar_section_id": 1
+        },
+        {
+          "id": 34,
+          "user_id": -1,
+          "position": 4,
+          "created_at": "2026-10-14T15:28:03.670052",
+          "updated_at": "2026-10-14T15:28:03.670052",
+          "linkable_id": 19,
+          "linkable_type": "SidebarUrl",
+          "sidebar_section_id": 1
+        },
+        {
+          "id": 35,
+          "user_id": -1,
+          "position": 5,
+          "created_at": "2026-10-14T15:28:03.670052",
+          "updated_at": "2026-10-14T15:28:03.670052",
+          "linkable_id": 20,
+          "linkable_type": "SidebarUrl",
+          "sidebar_section_id": 1
+        },
+        {
+          "id": 36,
+          "user_id": -1,
+          "position": 6,
+          "created_at": "2026-10-14T15:28:03.670052",
+          "updated_at": "2026-10-14T15:28:03.670052",
+          "linkable_id": 21,
+          "linkable_type": "SidebarUrl",
+          "sidebar_section_id": 1
+        },
+        {
+          "id": 37,
+          "user_id": -1,
+          "position": 7,
+          "created_at": "2026-10-14T15:28:03.670052",
+          "updated_at": "2026-10-14T15:28:03.670052",
+          "linkable_id": 22,
+          "linkable_type": "SidebarUrl",
+          "sidebar_section_id": 1
+        },
+        {
+          "id": 38,
+          "user_id": -1,
+          "position": 8,
+          "created_at": "2026-10-14T15:28:03.670052",
+          "updated_at": "2026-10-14T15:28:03.670052",
+          "linkable_id": 23,
+          "linkable_type": "SidebarUrl",
+          "sidebar_section_id": 1
+        },
+        {
+          "id": 39,
+          "user_id": -1,
+          "position": 9,
+          "created_at": "2026-10-14T15:28:03.670052",
+          "updated_at": "2026-10-14T15:28:03.670052",
+          "linkable_id": 24,
+          "linkable_type": "SidebarUrl",
+          "sidebar_section_id": 1
+        },
+        {
+          "id": 40,
+          "user_id": -1,
+          "position": 10,
+          "created_at": "2026-10-14T15:28:03.670052",
+          "updated_at": "2026-10-14T15:28:03.670052",
+          "linkable_id": 25,
+          "linkable_type": "SidebarUrl",
+          "sidebar_section_id": 1
+        },
+        {
+          "id": 41,
+          "user_id": -1,
+          "position": 11,
+          "created_at": "2026-10-14T15:28:03.670052",
+          "updated_at": "2026-10-14T15:28:03.670052",
+          "linkable_id": 26,
+          "linkable_type": "SidebarUrl",
+          "sidebar_section_id": 1
+        }
+      ],
+      "deleted": [
+        {
+          "id": 1,
+          "user_id": -1,
+          "position": 1,
+          "created_at": "2026-07-25T05:58:27.638527",
+          "updated_at": "2026-07-25T05:58:27.638527",
+          "linkable_id": 1,
+          "linkable_type": "SidebarUrl",
+          "sidebar_section_id": 1
+        },
+        {
+          "id": 2,
+          "user_id": -1,
+          "position": 2,
+          "created_at": "2026-07-25T05:58:27.648438",
+          "updated_at": "2026-07-25T05:58:27.648438",
+          "linkable_id": 2,
+          "linkable_type": "SidebarUrl",
+          "sidebar_section_id": 1
+        },
+        {
+          "id": 3,
+          "user_id": -1,
+          "position": 3,
+          "created_at": "2026-07-25T05:58:27.65929",
+          "updated_at": "2026-07-25T05:58:27.65929",
+          "linkable_id": 3,
+          "linkable_type": "SidebarUrl",
+          "sidebar_section_id": 1
+        },
+        {
+          "id": 4,
+          "user_id": -1,
+          "position": 4,
+          "created_at": "2026-07-25T05:58:27.666607",
+          "updated_at": "2026-07-25T05:58:27.666607",
+          "linkable_id": 4,
+          "linkable_type": "SidebarUrl",
+          "sidebar_section_id": 1
+        },
+        {
+          "id": 5,
+          "user_id": -1,
+          "position": 5,
+          "created_at": "2026-07-25T05:58:27.673567",
+          "updated_at": "2026-07-25T05:58:27.673567",
+          "linkable_id": 5,
+          "linkable_type": "SidebarUrl",
+          "sidebar_section_id": 1
+        },
+        {
+          "id": 6,
+          "user_id": -1,
+          "position": 6,
+          "created_at": "2026-07-25T05:58:27.680304",
+          "updated_at": "2026-07-25T05:58:27.680304",
+          "linkable_id": 6,
+          "linkable_type": "SidebarUrl",
+          "sidebar_section_id": 1
+        },
+        {
+          "id": 7,
+          "user_id": -1,
+          "position": 7,
+          "created_at": "2026-07-25T05:58:27.687269",
+          "updated_at": "2026-07-25T05:58:27.687269",
+          "linkable_id": 7,
+          "linkable_type": "SidebarUrl",
+          "sidebar_section_id": 1
+        },
+        {
+          "id": 8,
+          "user_id": -1,
+          "position": 8,
+          "created_at": "2026-07-25T05:58:27.694095",
+          "updated_at": "2026-07-25T05:58:27.694095",
+          "linkable_id": 8,
+          "linkable_type": "SidebarUrl",
+          "sidebar_section_id": 1
+        },
+        {
+          "id": 9,
+          "user_id": -1,
+          "position": 9,
+          "created_at": "2026-07-25T05:58:27.700923",
+          "updated_at": "2026-07-25T05:58:27.700923",
+          "linkable_id": 9,
+          "linkable_type": "SidebarUrl",
+          "sidebar_section_id": 1
+        },
+        {
+          "id": 10,
+          "user_id": -1,
+          "position": 10,
+          "created_at": "2026-07-25T05:58:27.707512",
+          "updated_at": "2026-07-25T05:58:27.707512",
+          "linkable_id": 10,
+          "linkable_type": "SidebarUrl",
+          "sidebar_section_id": 1
+        },
+        {
+          "id": 11,
+          "user_id": -1,
+          "position": 11,
+          "created_at": "2026-07-25T05:58:27.714212",
+          "updated_at": "2026-07-25T05:58:27.714212",
+          "linkable_id": 11,
+          "linkable_type": "SidebarUrl",
+          "sidebar_section_id": 1
+        },
+        {
+          "id": 12,
+          "user_id": -1,
+          "position": 12,
+          "created_at": "2026-07-25T05:58:27.721205",
+          "updated_at": "2026-07-25T05:58:27.721205",
+          "linkable_id": 12,
+          "linkable_type": "SidebarUrl",
+          "sidebar_section_id": 1
+        }
+      ],
+      "updated": []
+    },
+    "sidebar_sections": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "title": "Community",
+            "locale": null,
+            "public": true,
+            "user_id": -1,
+            "created_at": "2026-07-25T05:58:27.613991",
+            "updated_at": "2026-07-25T05:58:27.613991",
+            "section_type": 0
+          },
+          "after": {
+            "id": 1,
+            "title": "Community",
+            "locale": "en",
+            "public": true,
+            "user_id": -1,
+            "created_at": "2026-07-25T05:58:27.613991",
+            "updated_at": "2026-10-14T15:28:05.49632",
+            "section_type": 0
+          }
+        }
+      ]
+    },
+    "sidebar_urls": {
+      "inserted": [
+        {
+          "id": 15,
+          "icon": "layer-group",
+          "name": "Topics",
+          "value": "/latest",
+          "locale": null,
+          "segment": 0,
+          "external": false,
+          "created_at": "2026-10-14T15:28:03.670052",
+          "updated_at": "2026-10-14T15:28:03.670052"
+        },
+        {
+          "id": 16,
+          "icon": "user",
+          "name": "My posts",
+          "value": "/my/activity",
+          "locale": null,
+          "segment": 0,
+          "external": false,
+          "created_at": "2026-10-14T15:28:03.670052",
+          "updated_at": "2026-10-14T15:28:03.670052"
+        },
+        {
+          "id": 17,
+          "icon": "inbox",
+          "name": "My messages",
+          "value": "/my/messages",
+          "locale": null,
+          "segment": 0,
+          "external": false,
+          "created_at": "2026-10-14T15:28:03.670052",
+          "updated_at": "2026-10-14T15:28:03.670052"
+        },
+        {
+          "id": 18,
+          "icon": "flag",
+          "name": "Review",
+          "value": "/review",
+          "locale": null,
+          "segment": 0,
+          "external": false,
+          "created_at": "2026-10-14T15:28:03.670052",
+          "updated_at": "2026-10-14T15:28:03.670052"
+        },
+        {
+          "id": 19,
+          "icon": "wrench",
+          "name": "Admin",
+          "value": "/admin",
+          "locale": null,
+          "segment": 0,
+          "external": false,
+          "created_at": "2026-10-14T15:28:03.670052",
+          "updated_at": "2026-10-14T15:28:03.670052"
+        },
+        {
+          "id": 20,
+          "icon": "paper-plane",
+          "name": "Invite",
+          "value": "/new-invite",
+          "locale": null,
+          "segment": 0,
+          "external": false,
+          "created_at": "2026-10-14T15:28:03.670052",
+          "updated_at": "2026-10-14T15:28:03.670052"
+        },
+        {
+          "id": 21,
+          "icon": "users",
+          "name": "Users",
+          "value": "/u",
+          "locale": null,
+          "segment": 1,
+          "external": false,
+          "created_at": "2026-10-14T15:28:03.670052",
+          "updated_at": "2026-10-14T15:28:03.670052"
+        },
+        {
+          "id": 22,
+          "icon": "circle-info",
+          "name": "About",
+          "value": "/about",
+          "locale": null,
+          "segment": 1,
+          "external": false,
+          "created_at": "2026-10-14T15:28:03.670052",
+          "updated_at": "2026-10-14T15:28:03.670052"
+        },
+        {
+          "id": 23,
+          "icon": "circle-question",
+          "name": "FAQ",
+          "value": "/faq",
+          "locale": null,
+          "segment": 1,
+          "external": false,
+          "created_at": "2026-10-14T15:28:03.670052",
+          "updated_at": "2026-10-14T15:28:03.670052"
+        },
+        {
+          "id": 24,
+          "icon": "user-group",
+          "name": "Groups",
+          "value": "/g",
+          "locale": null,
+          "segment": 1,
+          "external": false,
+          "created_at": "2026-10-14T15:28:03.670052",
+          "updated_at": "2026-10-14T15:28:03.670052"
+        },
+        {
+          "id": 25,
+          "icon": "certificate",
+          "name": "Badges",
+          "value": "/badges",
+          "locale": null,
+          "segment": 1,
+          "external": false,
+          "created_at": "2026-10-14T15:28:03.670052",
+          "updated_at": "2026-10-14T15:28:03.670052"
+        },
+        {
+          "id": 26,
+          "icon": "filter",
+          "name": "Filter",
+          "value": "/filter",
+          "locale": null,
+          "segment": 1,
+          "external": false,
+          "created_at": "2026-10-14T15:28:03.670052",
+          "updated_at": "2026-10-14T15:28:03.670052"
+        }
+      ],
+      "deleted": [
+        {
+          "id": 1,
+          "icon": "layer-group",
+          "name": "Topics",
+          "value": "/latest",
+          "locale": null,
+          "segment": 0,
+          "external": false,
+          "created_at": "2026-07-25T05:58:27.627074",
+          "updated_at": "2026-07-25T05:58:27.627074"
+        },
+        {
+          "id": 2,
+          "icon": "user",
+          "name": "My posts",
+          "value": "/my/activity",
+          "locale": null,
+          "segment": 0,
+          "external": false,
+          "created_at": "2026-07-25T05:58:27.645195",
+          "updated_at": "2026-07-25T05:58:27.645195"
+        },
+        {
+          "id": 3,
+          "icon": "inbox",
+          "name": "My messages",
+          "value": "/my/messages",
+          "locale": null,
+          "segment": 0,
+          "external": false,
+          "created_at": "2026-07-25T05:58:27.656731",
+          "updated_at": "2026-07-25T05:58:27.656731"
+        },
+        {
+          "id": 4,
+          "icon": "flag",
+          "name": "Review",
+          "value": "/review",
+          "locale": null,
+          "segment": 0,
+          "external": false,
+          "created_at": "2026-07-25T05:58:27.663968",
+          "updated_at": "2026-07-25T05:58:27.663968"
+        },
+        {
+          "id": 5,
+          "icon": "wrench",
+          "name": "Admin",
+          "value": "/admin",
+          "locale": null,
+          "segment": 0,
+          "external": false,
+          "created_at": "2026-07-25T05:58:27.671101",
+          "updated_at": "2026-07-25T05:58:27.671101"
+        },
+        {
+          "id": 6,
+          "icon": "paper-plane",
+          "name": "Invite",
+          "value": "/new-invite",
+          "locale": null,
+          "segment": 0,
+          "external": false,
+          "created_at": "2026-07-25T05:58:27.6778",
+          "updated_at": "2026-07-25T05:58:27.6778"
+        },
+        {
+          "id": 7,
+          "icon": "users",
+          "name": "Users",
+          "value": "/u",
+          "locale": null,
+          "segment": 1,
+          "external": false,
+          "created_at": "2026-07-25T05:58:27.684705",
+          "updated_at": "2026-07-25T05:58:27.684705"
+        },
+        {
+          "id": 8,
+          "icon": "circle-info",
+          "name": "About",
+          "value": "/about",
+          "locale": null,
+          "segment": 1,
+          "external": false,
+          "created_at": "2026-07-25T05:58:27.691764",
+          "updated_at": "2026-07-25T05:58:27.691764"
+        },
+        {
+          "id": 9,
+          "icon": "circle-question",
+          "name": "FAQ",
+          "value": "/faq",
+          "locale": null,
+          "segment": 1,
+          "external": false,
+          "created_at": "2026-07-25T05:58:27.698421",
+          "updated_at": "2026-07-25T05:58:27.698421"
+        },
+        {
+          "id": 10,
+          "icon": "user-group",
+          "name": "Groups",
+          "value": "/g",
+          "locale": null,
+          "segment": 1,
+          "external": false,
+          "created_at": "2026-07-25T05:58:27.705265",
+          "updated_at": "2026-07-25T05:58:27.705265"
+        },
+        {
+          "id": 11,
+          "icon": "certificate",
+          "name": "Badges",
+          "value": "/badges",
+          "locale": null,
+          "segment": 1,
+          "external": false,
+          "created_at": "2026-07-25T05:58:27.711741",
+          "updated_at": "2026-07-25T05:58:27.711741"
+        },
+        {
+          "id": 12,
+          "icon": "filter",
+          "name": "Filter",
+          "value": "/filter",
+          "locale": null,
+          "segment": 1,
+          "external": false,
+          "created_at": "2026-07-25T05:58:27.718677",
+          "updated_at": "2026-07-25T05:58:27.718677"
+        }
+      ],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 112,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "GfFV5a2khWyuHNuzICf5+bjM25U=",
+            "created_at": "2026-10-14T15:28:04.350058",
+            "rotated_at": "2026-10-14T15:28:04.347931",
+            "updated_at": "2026-10-14T15:28:04.350058",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "GfFV5a2khWyuHNuzICf5+bjM25U=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 112,
+            "seen_at": "2026-10-14T15:28:05.264851",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "GfFV5a2khWyuHNuzICf5+bjM25U=",
+            "created_at": "2026-10-14T15:28:04.350058",
+            "rotated_at": "2026-10-14T15:28:04.347931",
+            "updated_at": "2026-10-14T15:28:04.350058",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "GfFV5a2khWyuHNuzICf5+bjM25U=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 101,
+          "context": null,
+          "details": "links: Docs - https://example.com/docs, Latest - /latest",
+          "post_id": null,
+          "subject": "Resources",
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-14T15:28:05.302849",
+          "ip_address": null,
+          "updated_at": "2026-10-14T15:28:05.302849",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 75,
+          "email": null,
+          "action": 102,
+          "context": null,
+          "details": "links: Docs - https://example.com/docs, Latest - /latest",
+          "post_id": null,
+          "subject": "Resources 2",
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-14T15:28:05.350658",
+          "ip_address": null,
+          "updated_at": "2026-10-14T15:28:05.350658",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 76,
+          "email": null,
+          "action": 102,
+          "context": null,
+          "details": "links: Topics - /latest, My posts - /my/activity, My messages - /my/messages, Review - /review, Admin - /admin, Invite - /new-invite, Users - /u, About - /about, FAQ - /faq, Groups - /g, Badges - /badges, Filter - /filter",
+          "post_id": null,
+          "subject": "Our community",
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-14T15:28:05.4006",
+          "ip_address": null,
+          "updated_at": "2026-10-14T15:28:05.4006",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 77,
+          "email": null,
+          "action": 102,
+          "context": null,
+          "details": "links: Filter - /filter, Badges - /badges, Groups - /g, FAQ - /faq, About - /about, Users - /u, Invite - /new-invite, Admin - /admin, Review - /review, My messages - /my/messages, My posts - /my/activity, Topics - /latest",
+          "post_id": null,
+          "subject": "Our community",
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-14T15:28:05.458736",
+          "ip_address": null,
+          "updated_at": "2026-10-14T15:28:05.458736",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 78,
+          "email": null,
+          "action": 103,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Resources 2",
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-14T15:28:05.759298",
+          "ip_address": null,
+          "updated_at": "2026-10-14T15:28:05.759298",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "sidebar_section_links": 28,
+    "sidebar_urls": 13,
+    "user_histories": 74
+  },
+  "recorded_from": {
+    "case": "eb2752a038704a8670c8309903199c188df0e49a274b9f3204a58ad15407837e",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

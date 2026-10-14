@@ -23,6 +23,13 @@ use crate::{AppError, Unsupported};
 /// `UserHistory.actions[:change_site_setting]`
 const CHANGE_SITE_SETTING: i32 = 3;
 
+/// `SiteSettingUpdateExistingUsers.is_sidebar_default_setting?`: the default
+/// user preferences the port updates (and backfills).
+pub const SIDEBAR_DEFAULTS: [&str; 2] = [
+    "default_navigation_menu_categories",
+    "default_navigation_menu_tags",
+];
+
 /// `SiteSettings::DeprecatedSettings::SETTINGS`: old name, new name and
 /// whether the old one still overrides the new.
 const DEPRECATED: &[(&str, &str, bool)] = &[
@@ -96,6 +103,11 @@ fn opt<'a>(def: &'a crate::site_settings::Definition, key: &str) -> Option<&'a Y
     def.options.as_ref()?.get(Yaml::String(key.into()))
 }
 
+/// `hidden: true` in the setting's definition.
+pub fn is_hidden(def: &crate::site_settings::Definition) -> bool {
+    opt(def, "hidden").is_some_and(|v| matches!(v, Yaml::Bool(true)))
+}
+
 /// ActionView's `number_with_delimiter`.
 fn delimited(n: i64) -> String {
     let digits = n.unsigned_abs().to_string();
@@ -120,6 +132,7 @@ pub async fn update(
     guardian: &Guardian,
     name: &str,
     raw: &str,
+    backfill: bool,
 ) -> Result<Outcome, AppError> {
     if settings.get("site_archived")?.truthy() && name != "site_archived" {
         return Err(Unsupported("changing settings of an archived site").into());
@@ -158,7 +171,7 @@ pub async fn update(
     if CUSTOM_VALIDATIONS.contains(&name) || opt(def, "validator").is_some() {
         return Err(Unsupported("settings with custom validations").into());
     }
-    if name.starts_with("default_") {
+    if name.starts_with("default_") && !SIDEBAR_DEFAULTS.contains(&name) {
         return Err(Unsupported("default_* settings (user preference backfills)").into());
     }
     if opt(def, "shadowed_by_global").is_some_and(|v| matches!(v, Yaml::Bool(true))) {
@@ -178,6 +191,9 @@ pub async fn update(
         DataType::Float => Value::Float(crate::ruby::to_f(value)),
         DataType::Bool => Value::Bool(matches!(value, "t" | "true")),
         DataType::String => Value::Str(value.to_string()),
+        DataType::CategoryList | DataType::TagList if SIDEBAR_DEFAULTS.contains(&name) => {
+            Value::Str(value.to_string())
+        }
         DataType::Enum => match &def.default {
             Value::Int(_) => Value::Int(crate::ruby::to_i(value)),
             _ => Value::Str(value.to_string()),
@@ -211,7 +227,45 @@ pub async fn update(
     if let Some(message) = invalid(def, &new_value, i18n)? {
         return Ok(Outcome::Invalid(format!("{name}: {message}")));
     }
-    set_and_log(&mut *conn, bus, def, &previous, &new_value, actor.id).await?;
+    // SiteSetting::Update#save: default user preferences log whether
+    // existing users were updated; #backfill enqueues the sidebar job.
+    let details = if SIDEBAR_DEFAULTS.contains(&name) {
+        let answer = i18n
+            .t(if backfill {
+                "csv_export.boolean_yes"
+            } else {
+                "csv_export.boolean_no"
+            })
+            .unwrap_or_default();
+        i18n.t_with(
+            "staff_action_logs.site_setting.update_existing_users",
+            &[("value", answer)],
+        )
+    } else {
+        None
+    };
+    set_and_log_details(
+        &mut *conn,
+        bus,
+        def,
+        &previous,
+        &new_value,
+        actor.id,
+        details.as_deref(),
+    )
+    .await?;
+    if backfill && SIDEBAR_DEFAULTS.contains(&name) {
+        crate::jobs::enqueue(
+            &mut *conn,
+            "backfill_sidebar_site_settings",
+            serde_json::json!({
+                "setting_name": name,
+                "previous_value": previous.to_s(),
+                "new_value": new_value.to_s(),
+            }),
+        )
+        .await?;
+    }
     Ok(Outcome::Done)
 }
 
@@ -274,6 +328,20 @@ pub async fn set_and_log(
     new_value: &Value,
     actor_id: i32,
 ) -> Result<(), AppError> {
+    set_and_log_details(conn, bus, def, previous, new_value, actor_id, None).await
+}
+
+/// `set_and_log` with the log's details (the backfill answer of default
+/// user preference settings).
+pub async fn set_and_log_details(
+    conn: &mut PgConnection,
+    bus: &pg_bus::Bus,
+    def: &crate::site_settings::Definition,
+    previous: &Value,
+    new_value: &Value,
+    actor_id: i32,
+    details: Option<&str>,
+) -> Result<(), AppError> {
     let name = def.name.as_str();
     let stored = stored_value(def, new_value)?;
     let db_value = match &stored {
@@ -309,15 +377,16 @@ pub async fn set_and_log(
     };
     // StaffActionLogger#log_site_setting_change
     sqlx::query(
-        "INSERT INTO user_histories (action, acting_user_id, subject, previous_value, new_value, admin_only, \
-                                     created_at, updated_at) \
-         VALUES ($1, $2, $3, $4, $5, TRUE, clock_timestamp(), clock_timestamp())",
+        "INSERT INTO user_histories (action, acting_user_id, subject, previous_value, new_value, details, \
+                                     admin_only, created_at, updated_at) \
+         VALUES ($1, $2, $3, $4, $5, $6, TRUE, clock_timestamp(), clock_timestamp())",
     )
     .bind(CHANGE_SITE_SETTING)
     .bind(actor_id)
     .bind(name)
     .bind(previous)
     .bind(new_value)
+    .bind(details)
     .execute(&mut *conn)
     .await?;
     Ok(())

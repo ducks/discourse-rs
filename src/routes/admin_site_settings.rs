@@ -42,7 +42,12 @@ pub async fn update(
     if id == "bulk_update" {
         return Err(Unsupported("bulk site setting updates").into());
     }
-    if p.contains_key("update_existing_user") {
+    // `!!params[:update_existing_user]`
+    let backfill = match p.get("update_existing_user") {
+        None | Some(Value::Null) | Some(Value::Bool(false)) => false,
+        Some(_) => true,
+    };
+    if backfill && !site_setting_update::SIDEBAR_DEFAULTS.contains(&id.as_str()) {
         return Err(Unsupported("backfilling user preferences (update_existing_user)").into());
     }
     // params[id].to_s
@@ -59,6 +64,7 @@ pub async fn update(
         &guardian,
         &id,
         &raw,
+        backfill,
     )
     .await?;
     Ok(match outcome {
@@ -72,6 +78,92 @@ pub async fn update(
         )
             .into_response(),
     })
+}
+
+/// `SiteSettingUpdateExistingUsers.user_options`' settings.
+const USER_OPTION_DEFAULTS: [&str; 27] = [
+    "default_email_mailing_list_mode",
+    "default_email_mailing_list_mode_frequency",
+    "default_email_level",
+    "default_email_messages_level",
+    "default_topics_automatic_unpin",
+    "default_email_previous_replies",
+    "default_email_in_reply_to",
+    "default_other_enable_quoting",
+    "default_other_enable_smart_lists",
+    "default_other_external_links_in_new_tab",
+    "default_other_dynamic_favicon",
+    "default_other_new_topic_duration_minutes",
+    "default_other_auto_track_topics_after_msecs",
+    "default_other_notification_level_when_replying",
+    "default_other_like_notification_frequency",
+    "default_other_skip_new_user_tips",
+    "default_other_enable_markdown_monospace_font",
+    "default_email_digest_frequency",
+    "default_include_tl0_in_digests",
+    "default_text_size",
+    "default_title_count_mode",
+    "default_hide_profile",
+    "default_hide_presence",
+    "default_sidebar_link_to_filtered_list",
+    "default_sidebar_show_count_of_new_items",
+    "default_composition_mode",
+    "default_watched_precedence_over_muted",
+];
+
+/// PUT /admin/site_settings/:id/user_count: how many users a backfill of
+/// a default_* setting to `params[id]` would change.
+pub async fn user_count(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(id): Path<String>,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    let p = params::parse(uri.query(), &headers, &body);
+    if !csrf_ok(&state, &headers, &form_pairs(&p), uri.path(), "PUT") {
+        return Ok(bad_csrf());
+    }
+    if !guardian.is_admin() {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    let Some(def) = state
+        .site_setting_defs
+        .get(&id)
+        .filter(|_| id.starts_with("default_"))
+    else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    if site_setting_update::is_hidden(def) {
+        return Ok(super::search::invalid_parameters(
+            &state,
+            "You are not allowed to change hidden settings",
+        ));
+    }
+    if def.plugin.is_some() {
+        return Err(Unsupported("user counts of plugin settings").into());
+    }
+    let new_value = p.get(&id).and_then(params::scalar).unwrap_or_default();
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let previous = settings.get(&id)?.to_s();
+    let mut body = Map::new();
+    if site_setting_update::SIDEBAR_DEFAULTS.contains(&id.as_str()) {
+        let backfiller =
+            crate::sidebar_backfill::Backfiller::new(&mut conn, &id, &previous, &new_value).await?;
+        body.insert(
+            "user_count".into(),
+            json!(backfiller.number_of_users_to_backfill(&mut conn).await?),
+        );
+    } else if USER_OPTION_DEFAULTS.contains(&id.as_str())
+        || id.starts_with("default_categories_")
+        || id.starts_with("default_tags_")
+    {
+        return Err(Unsupported("user counts of user preference defaults").into());
+    }
+    Ok(Json(Value::Object(body)).into_response())
 }
 
 /// GET /admin/site_settings: Admin::SiteSettingsController#index, the

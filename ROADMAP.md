@@ -493,7 +493,16 @@ then by what running a forum needs (milestone 6). Briefs:
     "colors is invalid" counts; /admin/config/colors/:id; schemes based
     on a DB scheme (remote copies) resolved; site.json's
     user_color_schemes. Left for 90d: /admin/config/colors, whose extras
-    carry ThemeSerializer), 90c. `feat/sidebar-defaults` M, 90d.
+    carry ThemeSerializer), 90c. ~~`feat/sidebar-defaults`~~ (done) M
+    (SidebarSectionsController: index, show, create and update with the
+    nested link attributes, SidebarUrl's hooks and validations and
+    apply_links_order!'s free positions, destroy, reset of the community
+    section, ReorderLinks, MoveLink, the public sections' staff logs; the
+    default navigation menu categories and tags with update_existing_user,
+    the backfill job and PUT /admin/site_settings/:id/user_count; their
+    tags at signup and for anonymous visitors in site.json. Refused:
+    content localization, user counts and backfills of the other user
+    preference defaults), 90d.
     `feat/themes` L,
     91. `feat/backups` L (creating, listing, downloading, restoring
     through the app; read-only mode is 79c), split:

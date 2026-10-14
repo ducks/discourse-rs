@@ -68,6 +68,7 @@ mod reactions;
 mod required_fields;
 mod session;
 mod session_2fa;
+mod sidebar_sections;
 mod site;
 mod site_texts;
 mod sitemap;
@@ -772,6 +773,14 @@ pub fn router(state: &AppState) -> Router<AppState> {
             put(admin_site_settings::update),
         )
         .route(
+            "/admin/site_settings/{id}/user_count",
+            put(admin_site_settings::user_count),
+        )
+        .route(
+            "/admin/site_settings/{id}/user_count.json",
+            put(admin_site_settings::user_count),
+        )
+        .route(
             "/admin/logs/screened_emails",
             get(admin_logs::screened_emails),
         )
@@ -1176,6 +1185,37 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route(
             "/admin/users/{user_id}/merge.json",
             post(admin_users::merge),
+        )
+        .route(
+            "/sidebar_sections",
+            get(sidebar_sections::index).post(sidebar_sections::create),
+        )
+        .route(
+            "/sidebar_sections.json",
+            get(sidebar_sections::index).post(sidebar_sections::create),
+        )
+        .route(
+            "/sidebar_sections/{id}",
+            get(sidebar_sections::show)
+                .put(sidebar_sections::update)
+                .delete(sidebar_sections::destroy),
+        )
+        .route("/sidebar_sections/reset/{id}", put(sidebar_sections::reset))
+        .route(
+            "/sidebar_sections/{id}/reorder",
+            put(sidebar_sections::reorder),
+        )
+        .route(
+            "/sidebar_sections/{id}/reorder.json",
+            put(sidebar_sections::reorder),
+        )
+        .route(
+            "/sidebar_sections/{id}/move_link",
+            put(sidebar_sections::move_link),
+        )
+        .route(
+            "/sidebar_sections/{id}/move_link.json",
+            put(sidebar_sections::move_link),
         )
         .route(
             "/admin/color_schemes",

@@ -1,0 +1,13 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "POST", "path": "/sidebar_sections.json", "params": {"title": "Resources", "public": "true", "links": [{"icon": "book", "name": "Docs", "value": "https://example.com/docs"}, {"icon": "link", "name": "Latest", "value": "/latest"}]}},
+    {"method": "PUT", "path": "/sidebar_sections/2.json", "params": {"title": "Resources 2", "public": "true", "links": [{"id": "14", "icon": "link", "name": "Latest", "value": "/latest"}, {"id": "13", "icon": "book", "name": "Docs", "value": "https://example.com/docs"}]}},
+    {"method": "PUT", "path": "/sidebar_sections/1.json", "params": {"title": "Our community"}},
+    {"method": "PUT", "path": "/sidebar_sections/1/reorder.json", "params": {"links_order": ["12", "11", "10", "9", "8", "7", "6", "5", "4", "3", "2", "1"]}},
+    {"method": "PUT", "path": "/sidebar_sections/reset/1.json"},
+    {"method": "DELETE", "path": "/sidebar_sections/1.json"},
+    {"method": "DELETE", "path": "/sidebar_sections/2.json"},
+    {"method": "GET", "path": "/sidebar_sections.json"}
+  ]
+}

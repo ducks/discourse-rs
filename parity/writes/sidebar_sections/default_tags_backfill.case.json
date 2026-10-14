@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "PUT", "path": "/admin/site_settings/default_navigation_menu_tags/user_count.json", "params": {"default_navigation_menu_tags": "howto|guide"}},
+    {"method": "PUT", "path": "/admin/site_settings/default_navigation_menu_tags.json", "params": {"default_navigation_menu_tags": "howto|guide", "update_existing_user": "true"}},
+    {"method": "PUT", "path": "/admin/site_settings/default_navigation_menu_tags.json", "params": {"default_navigation_menu_tags": "guide"}},
+    {"method": "PUT", "path": "/admin/site_settings/default_navigation_menu_tags/user_count.json", "params": {"default_navigation_menu_tags": ""}},
+    {"method": "PUT", "path": "/admin/site_settings/nope/user_count.json", "params": {}},
+    {"method": "PUT", "path": "/admin/site_settings/default_trust_level/user_count.json", "params": {"default_trust_level": "2"}}
+  ],
+  "run_jobs": ["backfill_sidebar_site_settings"]
+}
