@@ -488,9 +488,16 @@ pub async fn call(
             Err(Unsupported("checking Twitter's login health (an outbound request)").into())
         }
         "watched_words" => {
-            // Without regular expressions every word is escaped into its
-            // regexp, so none can be invalid.
-            crate::word_watcher::refuse_unported(env.settings)?;
+            // Every action's regexps compile, or the port can't tell an
+            // invalid Ruby regexp from one it can't translate: each admin
+            // regexp was refused at creation unless both dialects read it.
+            for (_, action) in crate::word_watcher::ACTIONS {
+                for c in
+                    crate::word_watcher::compiled_for_action(conn, env.settings, action).await?
+                {
+                    c.regex()?;
+                }
+            }
             none
         }
         "upcoming_change_stable_opted_out" => upcoming_change_opted_out(env, target),
