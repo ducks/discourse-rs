@@ -1,0 +1,255 @@
+{
+  "name": "report_search_crawlers",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/reports/trending_search.json",
+      "params": {
+        "start_date": "2026-09-01",
+        "end_date": "2026-10-31"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/trending_search.json",
+      "params": {
+        "start_date": "2026-09-01",
+        "end_date": "2026-10-31",
+        "limit": "1"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/web_crawlers.json",
+      "params": {
+        "start_date": "2026-09-01",
+        "end_date": "2026-10-31"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T15:27:46.50964",
+  "transaction_started_at": "2026-10-14T15:27:44.916406",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "trending_search",
+          "title": "Trending Search Terms",
+          "xaxis": null,
+          "yaxis": null,
+          "description": "Most popular search terms with their click-through rates.",
+          "description_link": null,
+          "data": [
+            {
+              "term": "ruby",
+              "searches": 3,
+              "ctr": 33.4
+            },
+            {
+              "term": "rails",
+              "searches": 1,
+              "ctr": 0
+            }
+          ],
+          "start_date": "2026-09-01T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-07-02T00:00:00Z",
+          "prev_end_date": "2026-09-01T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": true,
+          "report_key": "reports:trending_search:20260901:20261031:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [],
+          "labels": [
+            {
+              "property": "term",
+              "type": "text",
+              "title": "Term"
+            },
+            {
+              "property": "searches",
+              "type": "number",
+              "title": "Searches"
+            },
+            {
+              "type": "percent",
+              "property": "ctr",
+              "title": "CTR"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "table"
+          ]
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "trending_search",
+          "title": "Trending Search Terms",
+          "xaxis": null,
+          "yaxis": null,
+          "description": "Most popular search terms with their click-through rates.",
+          "description_link": null,
+          "data": [
+            {
+              "term": "ruby",
+              "searches": 3,
+              "ctr": 33.4
+            }
+          ],
+          "start_date": "2026-09-01T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-07-02T00:00:00Z",
+          "prev_end_date": "2026-09-01T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": true,
+          "report_key": "reports:trending_search:20260901:20261031:[:total, :prev30Days]:1:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [],
+          "labels": [
+            {
+              "property": "term",
+              "type": "text",
+              "title": "Term"
+            },
+            {
+              "property": "searches",
+              "type": "number",
+              "title": "Searches"
+            },
+            {
+              "type": "percent",
+              "property": "ctr",
+              "title": "CTR"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "table"
+          ],
+          "limit": 1
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "web_crawlers",
+          "title": "Web Crawler User Agents",
+          "xaxis": null,
+          "yaxis": null,
+          "description": "List of web crawler user agents, sorted by pageviews.",
+          "description_link": null,
+          "data": [
+            {
+              "user_agent": "Googlebot",
+              "count": 42
+            },
+            {
+              "user_agent": "Bingbot",
+              "count": 20
+            }
+          ],
+          "start_date": "2026-09-01T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-07-02T00:00:00Z",
+          "prev_end_date": "2026-09-01T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": true,
+          "report_key": "reports:web_crawlers:20260901:20261031:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [],
+          "labels": [
+            {
+              "type": "string",
+              "property": "user_agent",
+              "title": "User Agent"
+            },
+            {
+              "property": "count",
+              "type": "number",
+              "title": "Pageviews"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "table"
+          ]
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 222,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "inXBajvfxo7Rx6bIYOxyaOXSrdM=",
+            "created_at": "2026-10-14T15:27:45.699517",
+            "rotated_at": "2026-10-14T15:27:45.697842",
+            "updated_at": "2026-10-14T15:27:45.699517",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "inXBajvfxo7Rx6bIYOxyaOXSrdM=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 222,
+            "seen_at": "2026-10-14T15:27:46.517579",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "inXBajvfxo7Rx6bIYOxyaOXSrdM=",
+            "created_at": "2026-10-14T15:27:45.699517",
+            "rotated_at": "2026-10-14T15:27:45.697842",
+            "updated_at": "2026-10-14T15:27:45.699517",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "inXBajvfxo7Rx6bIYOxyaOXSrdM=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "DELETE FROM search_logs",
+    "INSERT INTO search_logs (term, user_id, ip_address, search_result_id, search_type, created_at) VALUES ('Ruby', 2, '10.0.0.1', 37, 1, now() - interval '2 days'), ('ruby', 3, '10.0.0.2', NULL, 1, now() - interval '2 days'), ('rails', 3, '10.0.0.2', NULL, 2, now() - interval '3 days'), ('ruby', NULL, '10.0.0.3', NULL, 1, now() - interval '1 day'), ('old', 2, '10.0.0.1', NULL, 1, now() - interval '60 days')",
+    "INSERT INTO web_crawler_requests (date, user_agent, count) VALUES ((now() - interval '2 days')::date, 'Googlebot', 30), ((now() - interval '1 day')::date, 'Googlebot', 12), ((now() - interval '1 day')::date, 'Bingbot', 20), ((now() - interval '60 days')::date, 'OldBot', 100)"
+  ],
+  "recorded_from": {
+    "case": "5e49196185ac07967ce3065c9947086e93574bd5971879370b07224dfbf420f1",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

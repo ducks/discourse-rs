@@ -99,6 +99,7 @@ pub mod rate_limiter;
 pub mod read_tracking;
 pub mod readonly;
 pub mod remote_ip;
+pub mod reports;
 pub mod request_tracker;
 pub mod retrieve_title;
 pub mod review;
@@ -276,6 +277,15 @@ impl AppError {
     pub fn is_unsupported(&self) -> bool {
         self.0.downcast_ref::<Unsupported>().is_some()
             || self.0.to_string().starts_with("not ported yet:")
+    }
+
+    /// The SQLSTATE of a database error, if that is what this is.
+    pub fn sql_state(&self) -> Option<String> {
+        self.0
+            .downcast_ref::<sqlx::Error>()
+            .and_then(|e| e.as_database_error())
+            .and_then(|e| e.code())
+            .map(|c| c.into_owned())
     }
 
     /// The rate limit refusal raised, if that is what this is.

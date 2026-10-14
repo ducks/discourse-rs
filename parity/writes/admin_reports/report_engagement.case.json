@@ -1,0 +1,15 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO user_actions (action_type, user_id, target_topic_id, target_post_id, acting_user_id, created_at, updated_at) VALUES (1, 4, 41, 46, 4, now() - interval '2 days', now() - interval '2 days'), (5, 3, 41, 46, 3, now() - interval '2 days', now() - interval '2 days'), (5, 3, 41, 47, 3, now() - interval '2 days' + interval '1 minute', now() - interval '2 days'), (4, 2, 41, NULL, 2, now() - interval '40 days', now() - interval '40 days')",
+    "UPDATE user_stats SET first_post_created_at = now() - interval '2 days' WHERE user_id = 4",
+    "UPDATE user_stats SET first_post_created_at = now() - interval '3 days' WHERE user_id = 3",
+    "UPDATE user_stats SET first_post_created_at = now() - interval '45 days' WHERE user_id = 2"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/admin/reports/daily_engaged_users.json", "params": {"start_date": "2026-09-20", "end_date": "2026-10-31"}},
+    {"method": "GET", "path": "/admin/reports/daily_engaged_users.json", "params": {"start_date": "2026-09-20", "end_date": "2026-10-31", "facets": ["total", "prev30Days", "prev_period"]}},
+    {"method": "GET", "path": "/admin/reports/new_contributors.json", "params": {"start_date": "2026-09-20", "end_date": "2026-10-31", "facets": ["total", "prev30Days", "prev_period"]}},
+    {"method": "GET", "path": "/admin/reports/new_contributors.json", "params": {"start_date": "2026-09-01", "end_date": "2026-10-31", "include_related_items": "true"}}
+  ]
+}

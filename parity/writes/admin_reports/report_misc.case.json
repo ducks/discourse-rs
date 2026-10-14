@@ -1,0 +1,18 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO discourse_reactions_reactions (id, post_id, reaction_type, reaction_value, reaction_users_count, created_at, updated_at) VALUES (9951, 37, 0, 'laughing', 2, now() - interval '2 days', now() - interval '2 days'), (9952, 38, 0, 'heart', 1, now() - interval '2 days', now() - interval '2 days'), (9953, 46, 0, 'open_mouth', 1, now() - interval '3 days', now() - interval '3 days')",
+    "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, created_at, updated_at, post_id) VALUES (9951, 2, now() - interval '2 days', now() - interval '2 days', 37), (9951, 3, now() - interval '2 days', now() - interval '2 days', 37), (9952, 4, now() - interval '2 days', now() - interval '2 days', 38), (9953, 4, now() - interval '3 days', now() - interval '3 days', 46)",
+    "INSERT INTO post_actions (id, post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (9301, 37, 5, 2, now() - interval '2 days', now() - interval '2 days'), (9302, 38, 4, 2, now() - interval '2 days', now() - interval '2 days')"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/admin/reports/reactions.json", "params": {"start_date": "2026-10-08", "end_date": "2026-10-14"}},
+    {"method": "GET", "path": "/admin/reports/about.json", "params": {"start_date": "2026-10-08", "end_date": "2026-10-14"}},
+    {"method": "GET", "path": "/admin/reports/http_total_reqs.json", "params": {"start_date": "2026-10-08", "end_date": "2026-10-14", "facets": ["prev_period"]}},
+    {"method": "GET", "path": "/admin/reports/no_such_thing_reqs.json", "params": {"start_date": "2026-10-08", "end_date": "2026-10-14"}},
+    {"method": "GET", "path": "/admin/reports/posters_by_member_type.json", "params": {"start_date": "2026-09-01", "end_date": "2026-10-31", "filters": {"groups": ["group:13", "new_members"], "category_ids": ["4", "2"]}}},
+    {"method": "GET", "path": "/admin/reports/visits.json", "params": {"start_date": "2026-09-01", "end_date": "2026-10-31", "limit": "3", "facets": ["total"], "filters": {"group": "abc"}}},
+    {"method": "GET", "path": "/admin/reports/signups.json", "params": {"start_date": "2026-09-01", "end_date": "2026-10-31", "filters": {"group": "abc"}}},
+    {"method": "GET", "path": "/admin/reports/topics.json", "params": {"start_date": "2026-10-01T23:30:00-05:00", "end_date": "Oct 31 2026"}}
+  ]
+}

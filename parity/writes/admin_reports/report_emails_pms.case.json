@@ -1,0 +1,15 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO email_logs (to_address, email_type, user_id, created_at, updated_at) VALUES ('user0@example.com', 'digest', 2, now() - interval '2 days', now() - interval '2 days'), ('user1@example.com', 'user_replied', 3, now() - interval '2 days', now() - interval '2 days'), ('user1@example.com', 'signup', 3, now() - interval '4 days', now() - interval '4 days'), ('user2@example.com', 'digest', 4, now() - interval '50 days', now() - interval '50 days')"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/admin/reports/emails.json", "params": {"start_date": "2026-09-20", "end_date": "2026-10-31", "facets": ["total", "prev30Days", "prev_period"]}},
+    {"method": "GET", "path": "/admin/reports/user_to_user_private_messages.json", "params": {"start_date": "2026-09-01", "end_date": "2026-10-31"}},
+    {"method": "GET", "path": "/admin/reports/user_to_user_private_messages_with_replies.json", "params": {"start_date": "2026-09-01", "end_date": "2026-10-31", "facets": ["total", "prev30Days", "prev_period"]}},
+    {"method": "GET", "path": "/admin/reports/system_private_messages.json", "params": {"start_date": "2026-09-01", "end_date": "2026-10-31"}},
+    {"method": "GET", "path": "/admin/reports/moderator_warning_private_messages.json", "params": {"start_date": "2026-09-01", "end_date": "2026-10-31"}},
+    {"method": "GET", "path": "/admin/reports/notify_moderators_private_messages.json", "params": {"start_date": "2026-09-01", "end_date": "2026-10-31"}},
+    {"method": "GET", "path": "/admin/reports/notify_user_private_messages.json", "params": {"start_date": "2026-09-01", "end_date": "2026-10-31"}}
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "user": "user2",
+  "setup": [
+    "UPDATE users SET moderator = TRUE WHERE id = 4",
+    "INSERT INTO post_revisions (user_id, post_id, modifications, number, created_at, updated_at, hidden) VALUES (4, 37, '--- {}', 2, now() - interval '2 days', now() - interval '2 days', false), (1, 46, '--- {}', 2, now() - interval '3 days', now() - interval '3 days', false)"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/admin/reports/post_edits.json", "params": {"start_date": "2026-09-20", "end_date": "2026-10-31"}},
+    {"method": "GET", "path": "/admin/reports/activity_by_category.json", "params": {"start_date": "2026-09-20", "end_date": "2026-10-31"}},
+    {"method": "GET", "path": "/admin/reports/posters_by_member_type.json", "params": {"start_date": "2026-09-01", "end_date": "2026-10-31"}}
+  ]
+}

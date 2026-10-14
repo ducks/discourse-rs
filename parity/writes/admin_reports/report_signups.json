@@ -1,0 +1,530 @@
+{
+  "name": "report_signups",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/reports/signups.json",
+      "params": {
+        "start_date": "2026-09-20",
+        "end_date": "2026-10-31"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/signups.json",
+      "params": {
+        "start_date": "2026-09-20",
+        "end_date": "2026-10-31",
+        "facets": [
+          "prev_period"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/signups.json",
+      "params": {
+        "start_date": "2026-09-20",
+        "end_date": "2026-10-31",
+        "facets": [
+          "total",
+          "prev30Days",
+          "prev_period"
+        ],
+        "filters": {
+          "group": "12"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/signups.json",
+      "params": {
+        "start_date": "2026-09-01",
+        "end_date": "2026-10-31",
+        "include_related_items": "true",
+        "limit": "1"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/signups.json",
+      "params": {
+        "start_date": "2026-09-01",
+        "end_date": "2026-10-31",
+        "include_related_items": "true",
+        "filters": {
+          "group": "12"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/signups.json"
+    }
+  ],
+  "started_at": "2026-10-14T15:02:43.97117",
+  "transaction_started_at": "2026-10-14T15:02:41.933895",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "signups",
+          "title": "Signups",
+          "xaxis": "Day",
+          "yaxis": "Number of signups",
+          "description": "New account registrations for this period.",
+          "description_link": null,
+          "data": [
+            {
+              "x": "2026-10-09",
+              "y": 1
+            },
+            {
+              "x": "2026-10-11",
+              "y": 1
+            }
+          ],
+          "start_date": "2026-09-20T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-08-09T00:00:00Z",
+          "prev_end_date": "2026-09-20T00:00:00Z",
+          "prev30Days": 1,
+          "dates_filtering": true,
+          "report_key": "reports:signups:20260920:20261031:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "group",
+              "type": "group",
+              "default": null
+            }
+          ],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "chart",
+            "table"
+          ],
+          "icon": "user-plus",
+          "total": 5
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "signups",
+          "title": "Signups",
+          "xaxis": "Day",
+          "yaxis": "Number of signups",
+          "description": "New account registrations for this period.",
+          "description_link": null,
+          "data": [
+            {
+              "x": "2026-10-09",
+              "y": 1
+            },
+            {
+              "x": "2026-10-11",
+              "y": 1
+            }
+          ],
+          "start_date": "2026-09-20T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-08-09T00:00:00Z",
+          "prev_end_date": "2026-09-20T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": true,
+          "report_key": "reports:signups:20260920:20261031:[:prev_period]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "group",
+              "type": "group",
+              "default": null
+            }
+          ],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "chart",
+            "table"
+          ],
+          "icon": "user-plus",
+          "prev_period": 1
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "signups",
+          "title": "Signups",
+          "xaxis": "Day",
+          "yaxis": "Number of signups",
+          "description": "New account registrations for this period.",
+          "description_link": null,
+          "data": [
+            {
+              "x": "2026-10-09",
+              "y": 1
+            },
+            {
+              "x": "2026-10-11",
+              "y": 1
+            }
+          ],
+          "start_date": "2026-09-20T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-08-09T00:00:00Z",
+          "prev_end_date": "2026-09-20T00:00:00Z",
+          "prev30Days": 1,
+          "dates_filtering": true,
+          "report_key": "reports:signups:20260920:20261031:[:total, :prev30Days, :prev_period]:{\"group\":\"12\"}:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "group",
+              "type": "group",
+              "default": "12"
+            }
+          ],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "chart",
+            "table"
+          ],
+          "icon": "user-plus",
+          "total": 5,
+          "prev_period": 1
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "signups",
+          "title": "Signups",
+          "xaxis": "Day",
+          "yaxis": "Number of signups",
+          "description": "New account registrations for this period.",
+          "description_link": null,
+          "data": [
+            {
+              "x": "2026-09-09",
+              "y": 1
+            },
+            {
+              "x": "2026-10-09",
+              "y": 1
+            },
+            {
+              "x": "2026-10-11",
+              "y": 1
+            }
+          ],
+          "start_date": "2026-09-01T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-07-02T00:00:00Z",
+          "prev_end_date": "2026-09-01T00:00:00Z",
+          "prev30Days": 1,
+          "dates_filtering": true,
+          "report_key": "reports:signups:20260901:20261031:[:total, :prev30Days]:1:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "group",
+              "type": "group",
+              "default": null
+            }
+          ],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "chart",
+            "table"
+          ],
+          "icon": "user-plus",
+          "total": 5,
+          "limit": 1,
+          "related_items": {
+            "users": [
+              {
+                "user": {
+                  "id": 4,
+                  "username": "user2",
+                  "name": "User2",
+                  "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png"
+                },
+                "timestamp": "2026-10-11T15:02:41Z"
+              }
+            ]
+          },
+          "related_items_totals": {
+            "users": 3
+          }
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "signups",
+          "title": "Signups",
+          "xaxis": "Day",
+          "yaxis": "Number of signups",
+          "description": "New account registrations for this period.",
+          "description_link": null,
+          "data": [
+            {
+              "x": "2026-10-09",
+              "y": 1
+            },
+            {
+              "x": "2026-10-11",
+              "y": 1
+            }
+          ],
+          "start_date": "2026-09-01T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-07-02T00:00:00Z",
+          "prev_end_date": "2026-09-01T00:00:00Z",
+          "prev30Days": 1,
+          "dates_filtering": true,
+          "report_key": "reports:signups:20260901:20261031:[:total, :prev30Days]:{\"group\":\"12\"}:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "group",
+              "type": "group",
+              "default": "12"
+            }
+          ],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "chart",
+            "table"
+          ],
+          "icon": "user-plus",
+          "total": 5,
+          "related_items": {
+            "users": [
+              {
+                "user": {
+                  "id": 4,
+                  "username": "user2",
+                  "name": "User2",
+                  "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png"
+                },
+                "timestamp": "2026-10-11T15:02:41Z"
+              },
+              {
+                "user": {
+                  "id": 3,
+                  "username": "user1",
+                  "name": "User1",
+                  "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png"
+                },
+                "timestamp": "2026-10-09T15:02:41Z"
+              }
+            ]
+          },
+          "related_items_totals": {
+            "users": 2
+          }
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "signups",
+          "title": "Signups",
+          "xaxis": "Day",
+          "yaxis": "Number of signups",
+          "description": "New account registrations for this period.",
+          "description_link": null,
+          "data": [],
+          "start_date": "2026-10-13T00:00:00Z",
+          "end_date": "2026-11-12T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-09-12T00:00:00Z",
+          "prev_end_date": "2026-10-13T00:00:00Z",
+          "prev30Days": 2,
+          "dates_filtering": true,
+          "report_key": "reports:signups:20261013:20261112:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "group",
+              "type": "group",
+              "default": null
+            }
+          ],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "chart",
+            "table"
+          ],
+          "icon": "user-plus",
+          "total": 5
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 222,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "piA6wrmas/SXAwgwCa9g7Zlp3WQ=",
+            "created_at": "2026-10-14T15:02:42.478355",
+            "rotated_at": "2026-10-14T15:02:42.476771",
+            "updated_at": "2026-10-14T15:02:42.478355",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "piA6wrmas/SXAwgwCa9g7Zlp3WQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 222,
+            "seen_at": "2026-10-14T15:02:43.97815",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "piA6wrmas/SXAwgwCa9g7Zlp3WQ=",
+            "created_at": "2026-10-14T15:02:42.478355",
+            "rotated_at": "2026-10-14T15:02:42.476771",
+            "updated_at": "2026-10-14T15:02:42.478355",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "piA6wrmas/SXAwgwCa9g7Zlp3WQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE users SET created_at = now() - interval '3 days' WHERE id = 4",
+    "UPDATE users SET created_at = now() - interval '5 days' WHERE id = 3",
+    "UPDATE users SET created_at = now() - interval '35 days' WHERE id = 2",
+    "UPDATE users SET created_at = now() - interval '70 days' WHERE id = 5"
+  ],
+  "recorded_from": {
+    "case": "6a1ff7280607eda6220d863214aa04b0c214d97e0eb2b57ce6abe228acfcc920",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

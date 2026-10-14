@@ -1,0 +1,17 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE users SET created_at = now() - interval '3 days' WHERE id = 4",
+    "UPDATE users SET created_at = now() - interval '5 days' WHERE id = 3",
+    "UPDATE users SET created_at = now() - interval '35 days' WHERE id = 2",
+    "UPDATE users SET created_at = now() - interval '70 days' WHERE id = 5"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/admin/reports/signups.json", "params": {"start_date": "2026-09-20", "end_date": "2026-10-31"}},
+    {"method": "GET", "path": "/admin/reports/signups.json", "params": {"start_date": "2026-09-20", "end_date": "2026-10-31", "facets": ["prev_period"]}},
+    {"method": "GET", "path": "/admin/reports/signups.json", "params": {"start_date": "2026-09-20", "end_date": "2026-10-31", "facets": ["total", "prev30Days", "prev_period"], "filters": {"group": "12"}}},
+    {"method": "GET", "path": "/admin/reports/signups.json", "params": {"start_date": "2026-09-01", "end_date": "2026-10-31", "include_related_items": "true", "limit": "1"}},
+    {"method": "GET", "path": "/admin/reports/signups.json", "params": {"start_date": "2026-09-01", "end_date": "2026-10-31", "include_related_items": "true", "filters": {"group": "12"}}},
+    {"method": "GET", "path": "/admin/reports/signups.json"}
+  ]
+}

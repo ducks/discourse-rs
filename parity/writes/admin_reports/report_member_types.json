@@ -1,0 +1,929 @@
+{
+  "name": "report_member_types",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/reports/posters_by_member_type.json",
+      "params": {
+        "start_date": "2026-09-01",
+        "end_date": "2026-10-31"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/posters_by_member_type.json",
+      "params": {
+        "start_date": "2026-09-01",
+        "end_date": "2026-10-31",
+        "filters": {
+          "groups": "group:12,staff,group:0,group:999,bogus",
+          "category_ids": "4,34"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/posters_by_member_type.json",
+      "params": {
+        "start_date": "2026-09-01",
+        "end_date": "2026-10-31",
+        "filters": {
+          "category_ids": "999"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/posters_by_member_type_members.json",
+      "params": {
+        "start_date": "2026-09-01",
+        "end_date": "2026-10-31",
+        "filters": {
+          "group": "returning"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/posters_by_member_type_members.json",
+      "params": {
+        "start_date": "2026-09-01",
+        "end_date": "2026-10-31",
+        "filters": {
+          "group": "group:11"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/posters_by_member_type_members.json",
+      "params": {
+        "start_date": "2026-09-01",
+        "end_date": "2026-10-31",
+        "filters": {
+          "group": "group:3"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/activity_by_category.json",
+      "params": {
+        "start_date": "2026-09-20",
+        "end_date": "2026-10-31"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/activity_by_category.json",
+      "params": {
+        "start_date": "2026-09-20",
+        "end_date": "2026-10-31",
+        "filters": {
+          "category_ids": "2,4"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/activity_by_category.json",
+      "params": {
+        "start_date": "2026-09-20",
+        "end_date": "2026-10-31",
+        "filters": {
+          "category_ids": "0"
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-14T15:02:27.815102",
+  "transaction_started_at": "2026-10-14T15:02:26.580326",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "posters_by_member_type",
+          "title": "Who's posting?",
+          "xaxis": null,
+          "yaxis": null,
+          "description": "Posts authored in the selected period, bucketed by member type. \"New members\" signed up during the period, \"Returning\" signed up before it, and \"Staff\" are admins or moderators.",
+          "description_link": null,
+          "data": [
+            {
+              "type": "new_members",
+              "kind": "synthetic",
+              "group_id": null,
+              "name": "New members",
+              "count": 2,
+              "share": 20.0,
+              "share_formatted": "20.0%"
+            },
+            {
+              "type": "returning",
+              "kind": "synthetic",
+              "group_id": null,
+              "name": "Returning",
+              "count": 4,
+              "share": 40.0,
+              "share_formatted": "40.0%"
+            },
+            {
+              "type": "staff",
+              "kind": "synthetic",
+              "group_id": null,
+              "name": "Staff",
+              "count": 4,
+              "share": 40.0,
+              "share_formatted": "40.0%"
+            }
+          ],
+          "start_date": "2026-09-01T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-07-02T00:00:00Z",
+          "prev_end_date": "2026-09-01T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": true,
+          "report_key": "reports:posters_by_member_type:20260901:20261031:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "category_ids",
+              "type": "category_list",
+              "default": null
+            },
+            {
+              "id": "groups",
+              "type": "groups",
+              "default": [
+                "new_members",
+                "returning",
+                "staff"
+              ]
+            }
+          ],
+          "labels": [
+            {
+              "property": "name",
+              "title": "Member type"
+            },
+            {
+              "property": "count",
+              "type": "number",
+              "title": "Posts"
+            },
+            {
+              "property": "share_formatted",
+              "title": "Share"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "posters_by_member_type"
+          ],
+          "total": 10
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "posters_by_member_type",
+          "title": "Who's posting?",
+          "xaxis": null,
+          "yaxis": null,
+          "description": "Posts authored in the selected period, bucketed by member type. \"New members\" signed up during the period, \"Returning\" signed up before it, and \"Staff\" are admins or moderators.",
+          "description_link": null,
+          "data": [
+            {
+              "type": "group:12",
+              "kind": "group",
+              "group_id": 12,
+              "name": "Trust level 2",
+              "count": 6,
+              "share": 66.67,
+              "share_formatted": "66.67%"
+            },
+            {
+              "type": "staff",
+              "kind": "synthetic",
+              "group_id": null,
+              "name": "Staff",
+              "count": 3,
+              "share": 33.33,
+              "share_formatted": "33.33%"
+            }
+          ],
+          "start_date": "2026-09-01T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-07-02T00:00:00Z",
+          "prev_end_date": "2026-09-01T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": true,
+          "report_key": "reports:posters_by_member_type:20260901:20261031:[:total, :prev30Days]:{\"groups\":\"group:12,staff,group:0,group:999,bogus\",\"category_ids\":\"4,34\"}:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "category_ids",
+              "type": "category_list",
+              "default": [
+                4,
+                34
+              ]
+            },
+            {
+              "id": "groups",
+              "type": "groups",
+              "default": [
+                "group:12",
+                "staff"
+              ]
+            }
+          ],
+          "labels": [
+            {
+              "property": "name",
+              "title": "Member type"
+            },
+            {
+              "property": "count",
+              "type": "number",
+              "title": "Posts"
+            },
+            {
+              "property": "share_formatted",
+              "title": "Share"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "posters_by_member_type"
+          ],
+          "total": 9
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "posters_by_member_type",
+          "title": "Who's posting?",
+          "xaxis": null,
+          "yaxis": null,
+          "description": "Posts authored in the selected period, bucketed by member type. \"New members\" signed up during the period, \"Returning\" signed up before it, and \"Staff\" are admins or moderators.",
+          "description_link": null,
+          "data": [
+            {
+              "type": "new_members",
+              "kind": "synthetic",
+              "group_id": null,
+              "name": "New members",
+              "count": 0,
+              "share": 0.0,
+              "share_formatted": "0.0%"
+            },
+            {
+              "type": "returning",
+              "kind": "synthetic",
+              "group_id": null,
+              "name": "Returning",
+              "count": 0,
+              "share": 0.0,
+              "share_formatted": "0.0%"
+            },
+            {
+              "type": "staff",
+              "kind": "synthetic",
+              "group_id": null,
+              "name": "Staff",
+              "count": 0,
+              "share": 0.0,
+              "share_formatted": "0.0%"
+            }
+          ],
+          "start_date": "2026-09-01T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-07-02T00:00:00Z",
+          "prev_end_date": "2026-09-01T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": true,
+          "report_key": "reports:posters_by_member_type:20260901:20261031:[:total, :prev30Days]:{\"category_ids\":\"999\"}:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "category_ids",
+              "type": "category_list",
+              "default": []
+            },
+            {
+              "id": "groups",
+              "type": "groups",
+              "default": [
+                "new_members",
+                "returning",
+                "staff"
+              ]
+            }
+          ],
+          "labels": [
+            {
+              "property": "name",
+              "title": "Member type"
+            },
+            {
+              "property": "count",
+              "type": "number",
+              "title": "Posts"
+            },
+            {
+              "property": "share_formatted",
+              "title": "Share"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "posters_by_member_type"
+          ],
+          "total": 0
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "posters_by_member_type_members",
+          "title": null,
+          "xaxis": null,
+          "yaxis": null,
+          "description": null,
+          "description_link": null,
+          "data": [
+            {
+              "user_id": 2,
+              "username": "user0",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+              "count": 3,
+              "share": 75.0,
+              "share_formatted": "75.0%"
+            },
+            {
+              "user_id": 4,
+              "username": "user2",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+              "count": 1,
+              "share": 25.0,
+              "share_formatted": "25.0%"
+            }
+          ],
+          "start_date": "2026-09-01T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-07-02T00:00:00Z",
+          "prev_end_date": "2026-09-01T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": true,
+          "report_key": "reports:posters_by_member_type_members:20260901:20261031:[:total, :prev30Days]:{\"group\":\"returning\"}:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "category_ids",
+              "type": "category_list",
+              "default": null
+            }
+          ],
+          "labels": [
+            {
+              "type": "user",
+              "properties": {
+                "username": "username",
+                "id": "user_id",
+                "avatar": "avatar_template"
+              },
+              "title": "User"
+            },
+            {
+              "property": "count",
+              "type": "number",
+              "title": "Posts"
+            },
+            {
+              "property": "share_formatted",
+              "title": "Share"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "table"
+          ],
+          "total": 4
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "posters_by_member_type_members",
+          "title": null,
+          "xaxis": null,
+          "yaxis": null,
+          "description": null,
+          "description_link": null,
+          "data": [
+            {
+              "user_id": 1,
+              "username": "admin",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+              "count": 4,
+              "share": 40.0,
+              "share_formatted": "40.0%"
+            },
+            {
+              "user_id": 2,
+              "username": "user0",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+              "count": 3,
+              "share": 30.0,
+              "share_formatted": "30.0%"
+            },
+            {
+              "user_id": 3,
+              "username": "user1",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+              "count": 2,
+              "share": 20.0,
+              "share_formatted": "20.0%"
+            },
+            {
+              "user_id": 4,
+              "username": "user2",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+              "count": 1,
+              "share": 10.0,
+              "share_formatted": "10.0%"
+            }
+          ],
+          "start_date": "2026-09-01T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-07-02T00:00:00Z",
+          "prev_end_date": "2026-09-01T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": true,
+          "report_key": "reports:posters_by_member_type_members:20260901:20261031:[:total, :prev30Days]:{\"group\":\"group:11\"}:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "category_ids",
+              "type": "category_list",
+              "default": null
+            }
+          ],
+          "labels": [
+            {
+              "type": "user",
+              "properties": {
+                "username": "username",
+                "id": "user_id",
+                "avatar": "avatar_template"
+              },
+              "title": "User"
+            },
+            {
+              "property": "count",
+              "type": "number",
+              "title": "Posts"
+            },
+            {
+              "property": "share_formatted",
+              "title": "Share"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "table"
+          ],
+          "total": 10
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "posters_by_member_type_members",
+          "title": null,
+          "xaxis": null,
+          "yaxis": null,
+          "description": null,
+          "description_link": null,
+          "data": null,
+          "start_date": "2026-09-01T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-07-02T00:00:00Z",
+          "prev_end_date": "2026-09-01T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": true,
+          "report_key": "reports:posters_by_member_type_members:20260901:20261031:[:total, :prev30Days]:{\"group\":\"group:3\"}:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "category_ids",
+              "type": "category_list",
+              "default": null
+            }
+          ],
+          "labels": [
+            {
+              "type": "user",
+              "properties": {
+                "username": "username",
+                "id": "user_id",
+                "avatar": "avatar_template"
+              },
+              "title": "User"
+            },
+            {
+              "property": "count",
+              "type": "number",
+              "title": "Posts"
+            },
+            {
+              "property": "share_formatted",
+              "title": "Share"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "table"
+          ],
+          "error": "not_found"
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "activity_by_category",
+          "title": "Activity by category",
+          "xaxis": null,
+          "yaxis": null,
+          "description": "Topics, posts, and member participation per category in the selected period. Share is each category's percentage of total activity across the listed categories; Vs Prior is the change in share compared with the previous period of equal length.",
+          "description_link": null,
+          "data": [
+            {
+              "category_id": 4,
+              "name": "General",
+              "color": "25AAE2",
+              "slug": "general",
+              "topics": 5,
+              "posts": 12,
+              "page_views": 30,
+              "share": 64.38,
+              "share_change": -22.8,
+              "share_formatted": "64.38%",
+              "share_change_formatted": "-22.8%"
+            },
+            {
+              "category_id": 2,
+              "name": "Site Feedback",
+              "color": "808281",
+              "slug": "site-feedback",
+              "topics": 1,
+              "posts": 3,
+              "page_views": 10,
+              "share": 19.18,
+              "share_change": 6.36,
+              "share_formatted": "19.18%",
+              "share_change_formatted": "+6.36%"
+            },
+            {
+              "category_id": 34,
+              "name": "Sub General",
+              "color": "AB9364",
+              "slug": "sub-general",
+              "topics": 3,
+              "posts": 3,
+              "page_views": 3,
+              "share": 12.33,
+              "share_change": 12.33,
+              "share_formatted": "12.33%",
+              "share_change_formatted": "+12.33%"
+            },
+            {
+              "category_id": 3,
+              "name": "Staff",
+              "color": "E45735",
+              "slug": "staff",
+              "topics": 1,
+              "posts": 1,
+              "page_views": 1,
+              "share": 4.11,
+              "share_change": 4.11,
+              "share_formatted": "4.11%",
+              "share_change_formatted": "+4.11%"
+            }
+          ],
+          "start_date": "2026-09-20T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-08-09T00:00:00Z",
+          "prev_end_date": "2026-09-20T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": true,
+          "report_key": "reports:activity_by_category:20260920:20261031:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "category_ids",
+              "type": "category_list",
+              "default": null
+            }
+          ],
+          "labels": [
+            {
+              "property": "name",
+              "title": "Category"
+            },
+            {
+              "property": "topics",
+              "type": "number",
+              "title": "Topics"
+            },
+            {
+              "property": "posts",
+              "type": "number",
+              "title": "Posts"
+            },
+            {
+              "property": "page_views",
+              "type": "number",
+              "title": "Page views"
+            },
+            {
+              "property": "share_formatted",
+              "title": "Share"
+            },
+            {
+              "property": "share_change_formatted",
+              "title": "Vs Prior"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "table"
+          ],
+          "total": 73
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "activity_by_category",
+          "title": "Activity by category",
+          "xaxis": null,
+          "yaxis": null,
+          "description": "Topics, posts, and member participation per category in the selected period. Share is each category's percentage of total activity across the listed categories; Vs Prior is the change in share compared with the previous period of equal length.",
+          "description_link": null,
+          "data": [
+            {
+              "category_id": 4,
+              "name": "General",
+              "color": "25AAE2",
+              "slug": "general",
+              "topics": 5,
+              "posts": 12,
+              "page_views": 30,
+              "share": 77.05,
+              "share_change": -10.13,
+              "share_formatted": "77.05%",
+              "share_change_formatted": "-10.13%"
+            },
+            {
+              "category_id": 2,
+              "name": "Site Feedback",
+              "color": "808281",
+              "slug": "site-feedback",
+              "topics": 1,
+              "posts": 3,
+              "page_views": 10,
+              "share": 22.95,
+              "share_change": 10.13,
+              "share_formatted": "22.95%",
+              "share_change_formatted": "+10.13%"
+            }
+          ],
+          "start_date": "2026-09-20T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-08-09T00:00:00Z",
+          "prev_end_date": "2026-09-20T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": true,
+          "report_key": "reports:activity_by_category:20260920:20261031:[:total, :prev30Days]:{\"category_ids\":\"2,4\"}:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "category_ids",
+              "type": "category_list",
+              "default": [
+                2,
+                4
+              ]
+            }
+          ],
+          "labels": [
+            {
+              "property": "name",
+              "title": "Category"
+            },
+            {
+              "property": "topics",
+              "type": "number",
+              "title": "Topics"
+            },
+            {
+              "property": "posts",
+              "type": "number",
+              "title": "Posts"
+            },
+            {
+              "property": "page_views",
+              "type": "number",
+              "title": "Page views"
+            },
+            {
+              "property": "share_formatted",
+              "title": "Share"
+            },
+            {
+              "property": "share_change_formatted",
+              "title": "Vs Prior"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "table"
+          ],
+          "total": 61
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "activity_by_category",
+          "title": "Activity by category",
+          "xaxis": null,
+          "yaxis": null,
+          "description": "Topics, posts, and member participation per category in the selected period. Share is each category's percentage of total activity across the listed categories; Vs Prior is the change in share compared with the previous period of equal length.",
+          "description_link": null,
+          "data": [],
+          "start_date": "2026-09-20T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-08-09T00:00:00Z",
+          "prev_end_date": "2026-09-20T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": true,
+          "report_key": "reports:activity_by_category:20260920:20261031:[:total, :prev30Days]:{\"category_ids\":\"0\"}:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "category_ids",
+              "type": "category_list",
+              "default": []
+            }
+          ],
+          "labels": [
+            {
+              "property": "name",
+              "title": "Category"
+            },
+            {
+              "property": "topics",
+              "type": "number",
+              "title": "Topics"
+            },
+            {
+              "property": "posts",
+              "type": "number",
+              "title": "Posts"
+            },
+            {
+              "property": "page_views",
+              "type": "number",
+              "title": "Page views"
+            },
+            {
+              "property": "share_formatted",
+              "title": "Share"
+            },
+            {
+              "property": "share_change_formatted",
+              "title": "Vs Prior"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "table"
+          ],
+          "total": 0
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 222,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "pYeDXqNW231j1vSKsj8VfGSUXKw=",
+            "created_at": "2026-10-14T15:02:27.109363",
+            "rotated_at": "2026-10-14T15:02:27.104438",
+            "updated_at": "2026-10-14T15:02:27.109363",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "pYeDXqNW231j1vSKsj8VfGSUXKw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 222,
+            "seen_at": "2026-10-14T15:02:27.836118",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "pYeDXqNW231j1vSKsj8VfGSUXKw=",
+            "created_at": "2026-10-14T15:02:27.109363",
+            "rotated_at": "2026-10-14T15:02:27.104438",
+            "updated_at": "2026-10-14T15:02:27.109363",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "pYeDXqNW231j1vSKsj8VfGSUXKw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE users SET created_at = now() - interval '10 days' WHERE id = 3",
+    "UPDATE posts SET created_at = now() - interval '2 days' WHERE topic_id IN (35, 38, 41)",
+    "INSERT INTO category_activity_daily_rollups (date, category_id, topics, posts, page_views, likely_crawler_page_views) VALUES ((now() - interval '2 days')::date, 4, 2, 5, 30, 4), ((now() - interval '2 days')::date, 34, 1, 1, 3, 0), ((now() - interval '3 days')::date, 2, 0, 2, 10, 0), ((now() - interval '3 days')::date, 3, 1, 1, 1, 0), ((now() - interval '50 days')::date, 4, 1, 1, 100, 0), ((now() - interval '50 days')::date, 2, 5, 5, 5, 0)"
+  ],
+  "recorded_from": {
+    "case": "3da3c5ea31a1c574004f67d8787591a3ea7283ca6c44c3dc4b8cfbcf50e31be0",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

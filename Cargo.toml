@@ -56,6 +56,7 @@ oxipng = { version = "10.2.1", default-features = false }
 imagequant = { version = "4.4.1", default-features = false }
 kamadak-exif = "0.6.1"
 grass = { version = "0.13.4", default-features = false }
+libc = "0.2"
 
 [dev-dependencies]
 http-body-util = "0.1"

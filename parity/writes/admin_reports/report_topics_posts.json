@@ -1,0 +1,655 @@
+{
+  "name": "report_topics_posts",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/reports/topics.json",
+      "params": {
+        "start_date": "2026-09-20",
+        "end_date": "2026-10-31"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/topics.json",
+      "params": {
+        "start_date": "2026-09-20",
+        "end_date": "2026-10-31",
+        "facets": [
+          "total",
+          "prev30Days",
+          "prev_period"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/topics.json",
+      "params": {
+        "start_date": "2026-09-01",
+        "end_date": "2026-10-31",
+        "filters": {
+          "category": "4"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/topics.json",
+      "params": {
+        "start_date": "2026-09-01",
+        "end_date": "2026-10-31",
+        "filters": {
+          "category": "4",
+          "include_subcategories": "true"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/posts.json",
+      "params": {
+        "start_date": "2026-09-20",
+        "end_date": "2026-10-31"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/posts.json",
+      "params": {
+        "start_date": "2026-09-20",
+        "end_date": "2026-10-31",
+        "facets": [
+          "total",
+          "prev30Days",
+          "prev_period"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/posts.json",
+      "params": {
+        "start_date": "2026-09-01",
+        "end_date": "2026-10-31",
+        "filters": {
+          "category": "4"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/posts.json",
+      "params": {
+        "start_date": "2026-09-01",
+        "end_date": "2026-10-31",
+        "filters": {
+          "category": "4",
+          "include_subcategories": "1"
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-14T15:03:04.200386",
+  "transaction_started_at": "2026-10-14T15:03:00.64957",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "topics",
+          "title": "Topics",
+          "xaxis": "Day",
+          "yaxis": "Number of new topics",
+          "description": "New topics created during this period.",
+          "description_link": null,
+          "data": [
+            {
+              "x": "2026-09-30",
+              "y": 4
+            },
+            {
+              "x": "2026-10-12",
+              "y": 1
+            }
+          ],
+          "start_date": "2026-09-20T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-08-09T00:00:00Z",
+          "prev_end_date": "2026-09-20T00:00:00Z",
+          "prev30Days": 1,
+          "dates_filtering": true,
+          "report_key": "reports:topics:20260920:20261031:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "category",
+              "type": "category",
+              "default": null
+            }
+          ],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "chart",
+            "table"
+          ],
+          "total": 12
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "topics",
+          "title": "Topics",
+          "xaxis": "Day",
+          "yaxis": "Number of new topics",
+          "description": "New topics created during this period.",
+          "description_link": null,
+          "data": [
+            {
+              "x": "2026-09-30",
+              "y": 4
+            },
+            {
+              "x": "2026-10-12",
+              "y": 1
+            }
+          ],
+          "start_date": "2026-09-20T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-08-09T00:00:00Z",
+          "prev_end_date": "2026-09-20T00:00:00Z",
+          "prev30Days": 1,
+          "dates_filtering": true,
+          "report_key": "reports:topics:20260920:20261031:[:total, :prev30Days, :prev_period]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "category",
+              "type": "category",
+              "default": null
+            }
+          ],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "chart",
+            "table"
+          ],
+          "total": 12,
+          "prev_period": 1
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "topics",
+          "title": "Topics",
+          "xaxis": "Day",
+          "yaxis": "Number of new topics",
+          "description": "New topics created during this period.",
+          "description_link": null,
+          "data": [
+            {
+              "x": "2026-09-30",
+              "y": 2
+            }
+          ],
+          "start_date": "2026-09-01T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-07-02T00:00:00Z",
+          "prev_end_date": "2026-09-01T00:00:00Z",
+          "prev30Days": 1,
+          "dates_filtering": true,
+          "report_key": "reports:topics:20260901:20261031:[:total, :prev30Days]:{\"category\":\"4\"}:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "category",
+              "type": "category",
+              "default": 4
+            },
+            {
+              "id": "include_subcategories",
+              "type": "bool",
+              "default": false
+            }
+          ],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "chart",
+            "table"
+          ],
+          "total": 5
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "topics",
+          "title": "Topics",
+          "xaxis": "Day",
+          "yaxis": "Number of new topics",
+          "description": "New topics created during this period.",
+          "description_link": null,
+          "data": [
+            {
+              "x": "2026-09-30",
+              "y": 4
+            }
+          ],
+          "start_date": "2026-09-01T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-07-02T00:00:00Z",
+          "prev_end_date": "2026-09-01T00:00:00Z",
+          "prev30Days": 1,
+          "dates_filtering": true,
+          "report_key": "reports:topics:20260901:20261031:[:total, :prev30Days]:{\"category\":\"4\",\"include_subcategories\":\"true\"}:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "category",
+              "type": "category",
+              "default": 4
+            },
+            {
+              "id": "include_subcategories",
+              "type": "bool",
+              "default": true
+            }
+          ],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "chart",
+            "table"
+          ],
+          "total": 7
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "posts",
+          "title": "Posts",
+          "xaxis": "Day",
+          "yaxis": "Number of new posts",
+          "description": "New posts created during this period",
+          "description_link": null,
+          "data": [
+            {
+              "x": "2026-09-30",
+              "y": 7
+            },
+            {
+              "x": "2026-10-01",
+              "y": 1
+            },
+            {
+              "x": "2026-10-12",
+              "y": 1
+            }
+          ],
+          "start_date": "2026-09-20T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-08-09T00:00:00Z",
+          "prev_end_date": "2026-09-20T00:00:00Z",
+          "prev30Days": 1,
+          "dates_filtering": true,
+          "report_key": "reports:posts:20260920:20261031:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "category",
+              "type": "category",
+              "default": null
+            }
+          ],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "chart",
+            "table"
+          ],
+          "total": 17
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "posts",
+          "title": "Posts",
+          "xaxis": "Day",
+          "yaxis": "Number of new posts",
+          "description": "New posts created during this period",
+          "description_link": null,
+          "data": [
+            {
+              "x": "2026-09-30",
+              "y": 7
+            },
+            {
+              "x": "2026-10-01",
+              "y": 1
+            },
+            {
+              "x": "2026-10-12",
+              "y": 1
+            }
+          ],
+          "start_date": "2026-09-20T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-08-09T00:00:00Z",
+          "prev_end_date": "2026-09-20T00:00:00Z",
+          "prev30Days": 1,
+          "dates_filtering": true,
+          "report_key": "reports:posts:20260920:20261031:[:total, :prev30Days, :prev_period]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "category",
+              "type": "category",
+              "default": null
+            }
+          ],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "chart",
+            "table"
+          ],
+          "total": 17,
+          "prev_period": 1
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "posts",
+          "title": "Posts",
+          "xaxis": "Day",
+          "yaxis": "Number of new posts",
+          "description": "New posts created during this period",
+          "description_link": null,
+          "data": [
+            {
+              "x": "2026-09-30",
+              "y": 5
+            },
+            {
+              "x": "2026-10-01",
+              "y": 1
+            }
+          ],
+          "start_date": "2026-09-01T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-07-02T00:00:00Z",
+          "prev_end_date": "2026-09-01T00:00:00Z",
+          "prev30Days": 1,
+          "dates_filtering": true,
+          "report_key": "reports:posts:20260901:20261031:[:total, :prev30Days]:{\"category\":\"4\"}:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "category",
+              "type": "category",
+              "default": 4
+            },
+            {
+              "id": "include_subcategories",
+              "type": "bool",
+              "default": false
+            }
+          ],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "chart",
+            "table"
+          ],
+          "total": 9
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "posts",
+          "title": "Posts",
+          "xaxis": "Day",
+          "yaxis": "Number of new posts",
+          "description": "New posts created during this period",
+          "description_link": null,
+          "data": [
+            {
+              "x": "2026-09-30",
+              "y": 7
+            },
+            {
+              "x": "2026-10-01",
+              "y": 1
+            }
+          ],
+          "start_date": "2026-09-01T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-07-02T00:00:00Z",
+          "prev_end_date": "2026-09-01T00:00:00Z",
+          "prev30Days": 1,
+          "dates_filtering": true,
+          "report_key": "reports:posts:20260901:20261031:[:total, :prev30Days]:{\"category\":\"4\",\"include_subcategories\":\"1\"}:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "category",
+              "type": "category",
+              "default": 4
+            },
+            {
+              "id": "include_subcategories",
+              "type": "bool",
+              "default": true
+            }
+          ],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "chart",
+            "table"
+          ],
+          "total": 11
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 222,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "DO5zWIkuReX5EtLaC2qAdBS1+WM=",
+            "created_at": "2026-10-14T15:03:02.113246",
+            "rotated_at": "2026-10-14T15:03:02.105884",
+            "updated_at": "2026-10-14T15:03:02.113246",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "DO5zWIkuReX5EtLaC2qAdBS1+WM=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 222,
+            "seen_at": "2026-10-14T15:03:04.216398",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "DO5zWIkuReX5EtLaC2qAdBS1+WM=",
+            "created_at": "2026-10-14T15:03:02.113246",
+            "rotated_at": "2026-10-14T15:03:02.105884",
+            "updated_at": "2026-10-14T15:03:02.113246",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "DO5zWIkuReX5EtLaC2qAdBS1+WM=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE topics SET created_at = now() - interval '2 days' WHERE id = 37",
+    "UPDATE topics SET created_at = now() - interval '45 days' WHERE id = 39",
+    "UPDATE posts SET created_at = now() - interval '2 days' WHERE topic_id = 37",
+    "UPDATE posts SET created_at = now() - interval '45 days' WHERE topic_id = 39"
+  ],
+  "recorded_from": {
+    "case": "340d07a524d8f7bf8eb964641f68a4dea078b3067d09025b47fb67f18416c63d",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

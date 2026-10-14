@@ -1,0 +1,659 @@
+{
+  "name": "report_solutions_pageviews",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/reports/accepted_solutions.json",
+      "params": {
+        "start_date": "2026-09-20",
+        "end_date": "2026-10-31",
+        "facets": [
+          "total",
+          "prev30Days",
+          "prev_period"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/accepted_solutions.json",
+      "params": {
+        "start_date": "2026-09-20",
+        "end_date": "2026-10-31",
+        "filters": {
+          "category_ids": "34"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/accepted_solutions.json",
+      "params": {
+        "start_date": "2026-09-01",
+        "end_date": "2026-10-31",
+        "include_related_items": "true"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/top_entry_urls.json",
+      "params": {
+        "start_date": "2026-09-20",
+        "end_date": "2026-10-31"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/top_countries_by_browser_pageviews.json",
+      "params": {
+        "start_date": "2026-09-20",
+        "end_date": "2026-10-31"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/top_referrers_by_browser_pageviews.json",
+      "params": {
+        "start_date": "2026-09-20",
+        "end_date": "2026-10-31"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/web_hook_events_daily_aggregate.json",
+      "params": {
+        "start_date": "2026-09-20",
+        "end_date": "2026-10-31"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/storage_stats.json"
+    }
+  ],
+  "started_at": "2026-10-14T15:27:48.166893",
+  "transaction_started_at": "2026-10-14T15:27:46.926327",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "accepted_solutions",
+          "title": "Accepted solutions",
+          "xaxis": "Day",
+          "yaxis": "Total",
+          "description": "How many topics had a solution accepted per day in a date range, with optional category filter and a 30-day comparison total.",
+          "description_link": null,
+          "data": [
+            {
+              "x": "2026-10-11",
+              "y": 1
+            },
+            {
+              "x": "2026-10-12",
+              "y": 1
+            }
+          ],
+          "start_date": "2026-09-20T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-08-09T00:00:00Z",
+          "prev_end_date": "2026-09-20T00:00:00Z",
+          "prev30Days": 1,
+          "dates_filtering": true,
+          "report_key": "reports:accepted_solutions:20260920:20261031:[:total, :prev30Days, :prev_period]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "category_ids",
+              "type": "category_list",
+              "default": null
+            }
+          ],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "chart",
+            "table"
+          ],
+          "total": 3,
+          "prev_period": 1
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "accepted_solutions",
+          "title": "Accepted solutions",
+          "xaxis": "Day",
+          "yaxis": "Total",
+          "description": "How many topics had a solution accepted per day in a date range, with optional category filter and a 30-day comparison total.",
+          "description_link": null,
+          "data": [
+            {
+              "x": "2026-10-11",
+              "y": 1
+            }
+          ],
+          "start_date": "2026-09-20T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-08-09T00:00:00Z",
+          "prev_end_date": "2026-09-20T00:00:00Z",
+          "prev30Days": 0,
+          "dates_filtering": true,
+          "report_key": "reports:accepted_solutions:20260920:20261031:[:total, :prev30Days]:{\"category_ids\":\"34\"}:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "category_ids",
+              "type": "category_list",
+              "default": [
+                34
+              ]
+            }
+          ],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "chart",
+            "table"
+          ],
+          "total": 1
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "accepted_solutions",
+          "title": "Accepted solutions",
+          "xaxis": "Day",
+          "yaxis": "Total",
+          "description": "How many topics had a solution accepted per day in a date range, with optional category filter and a 30-day comparison total.",
+          "description_link": null,
+          "data": [
+            {
+              "x": "2026-10-11",
+              "y": 1
+            },
+            {
+              "x": "2026-10-12",
+              "y": 1
+            }
+          ],
+          "start_date": "2026-09-01T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-07-02T00:00:00Z",
+          "prev_end_date": "2026-09-01T00:00:00Z",
+          "prev30Days": 1,
+          "dates_filtering": true,
+          "report_key": "reports:accepted_solutions:20260901:20261031:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "category_ids",
+              "type": "category_list",
+              "default": null
+            }
+          ],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "chart",
+            "table"
+          ],
+          "total": 3,
+          "related_items": {
+            "solved_topics": [
+              {
+                "topic": {
+                  "title": "Parity fixture: replies and posters",
+                  "url": "/t/parity-fixture-replies-and-posters/35"
+                },
+                "solved_by_users": [
+                  {
+                    "id": 4,
+                    "username": "user2",
+                    "name": "User2",
+                    "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png"
+                  },
+                  {
+                    "id": 1,
+                    "username": "admin",
+                    "name": "Admin",
+                    "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png"
+                  },
+                  {
+                    "id": 2,
+                    "username": "user0",
+                    "name": "User0",
+                    "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png"
+                  }
+                ],
+                "category": {
+                  "id": 4,
+                  "name": "General",
+                  "slug": "general",
+                  "color": "25AAE2",
+                  "textColor": "FFFFFF"
+                }
+              },
+              {
+                "topic": {
+                  "title": "Parity fixture: tagged in a subcategory",
+                  "url": "/t/parity-fixture-tagged-in-a-subcategory/38"
+                },
+                "solved_by_users": [],
+                "category": {
+                  "id": 34,
+                  "name": "Sub General",
+                  "slug": "sub-general",
+                  "color": "AB9364",
+                  "textColor": "FFFFFF"
+                }
+              }
+            ]
+          },
+          "related_items_totals": {
+            "solved_topics": 2
+          }
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "top_entry_urls",
+          "title": "Top entry URLs",
+          "xaxis": null,
+          "yaxis": null,
+          "description": "Pages that received the most direct or externally referred browser visits in the selected period.",
+          "description_link": null,
+          "data": [
+            {
+              "entry_url": "/latest",
+              "count": "30.0",
+              "percent": 67
+            },
+            {
+              "entry_url": "/t/35",
+              "count": "15.0",
+              "percent": 33
+            }
+          ],
+          "start_date": "2026-09-20T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-08-09T00:00:00Z",
+          "prev_end_date": "2026-09-20T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": true,
+          "report_key": "reports:top_entry_urls:20260920:20261031:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [],
+          "labels": [
+            {
+              "properties": [
+                "entry_url",
+                "entry_url"
+              ],
+              "type": "link",
+              "title": "Entry URL"
+            },
+            {
+              "property": "count",
+              "type": "number",
+              "title": "Visits"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "table"
+          ]
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "top_countries_by_browser_pageviews",
+          "title": "Top countries",
+          "xaxis": null,
+          "yaxis": null,
+          "description": "Countries driving the most browser pageviews to your forum in the selected period.",
+          "description_link": null,
+          "data": [
+            {
+              "country_code": "US",
+              "count": "30.0",
+              "percent": 61
+            },
+            {
+              "country_code": "DE",
+              "count": "10.0",
+              "percent": 20
+            }
+          ],
+          "start_date": "2026-09-20T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-08-09T00:00:00Z",
+          "prev_end_date": "2026-09-20T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": true,
+          "report_key": "reports:top_countries_by_browser_pageviews:20260920:20261031:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [],
+          "labels": [
+            {
+              "property": "country_code",
+              "type": "text",
+              "title": "Country code"
+            },
+            {
+              "property": "count",
+              "type": "number",
+              "title": "Visits"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "table"
+          ]
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "top_referrers_by_browser_pageviews",
+          "title": "Top referrers",
+          "xaxis": null,
+          "yaxis": null,
+          "description": "External sites referring the most browser pageviews to your forum in the selected period.",
+          "description_link": null,
+          "data": [
+            {
+              "normalized_referrer": "google.com",
+              "count": "10.0",
+              "percent": 59
+            },
+            {
+              "normalized_referrer": "example.org/a",
+              "count": "7.0",
+              "percent": 41
+            }
+          ],
+          "start_date": "2026-09-20T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-08-09T00:00:00Z",
+          "prev_end_date": "2026-09-20T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": true,
+          "report_key": "reports:top_referrers_by_browser_pageviews:20260920:20261031:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [],
+          "labels": [
+            {
+              "property": "normalized_referrer",
+              "type": "text",
+              "title": "Referrer"
+            },
+            {
+              "property": "count",
+              "type": "number",
+              "title": "Visits"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "table"
+          ]
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "web_hook_events_daily_aggregate",
+          "title": "Web Hook Events",
+          "xaxis": "Day",
+          "yaxis": "Number of events",
+          "description": "Number of web hook events triggered or their mean duration.",
+          "description_link": null,
+          "data": [],
+          "start_date": "2026-09-20T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-08-09T00:00:00Z",
+          "prev_end_date": "2026-09-20T00:00:00Z",
+          "prev30Days": [],
+          "dates_filtering": true,
+          "report_key": "reports:web_hook_events_daily_aggregate:20260920:20261031:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "type_of_web_hook_event",
+              "type": "list",
+              "default": "all",
+              "choices": [
+                {
+                  "id": "all",
+                  "name": "all"
+                },
+                {
+                  "id": "failed events",
+                  "name": "failed events"
+                },
+                {
+                  "id": "successful events",
+                  "name": "successful events"
+                },
+                {
+                  "id": "mean duration",
+                  "name": "mean duration"
+                }
+              ],
+              "allow_any": false,
+              "auto_insert_none_item": false
+            }
+          ],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "percent",
+              "property": "y",
+              "title": "Percent"
+            }
+          ],
+          "average": true,
+          "percent": true,
+          "higher_is_better": true,
+          "modes": [
+            "chart",
+            "table"
+          ],
+          "legacy": true
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "storage_stats",
+          "title": null,
+          "xaxis": null,
+          "yaxis": null,
+          "description": null,
+          "description_link": null,
+          "data": {
+            "backups": {
+              "used_bytes": 0,
+              "free_bytes": 103839682560,
+              "count": 0,
+              "last_backup_taken_at": null
+            },
+            "uploads": {
+              "used_bytes": 1368569,
+              "free_bytes": 103839682560
+            }
+          },
+          "start_date": "2026-10-13T00:00:00Z",
+          "end_date": "2026-11-12T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-09-12T00:00:00Z",
+          "prev_end_date": "2026-10-13T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": true,
+          "report_key": "reports:storage_stats:20261013:20261112:[:total, :prev30Days]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "chart",
+            "table"
+          ]
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 222,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "JnuSbQjEDKT8XBDCfmT/g+h/7B4=",
+            "created_at": "2026-10-14T15:27:47.376316",
+            "rotated_at": "2026-10-14T15:27:47.374903",
+            "updated_at": "2026-10-14T15:27:47.376316",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "JnuSbQjEDKT8XBDCfmT/g+h/7B4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 222,
+            "seen_at": "2026-10-14T15:27:48.17093",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "JnuSbQjEDKT8XBDCfmT/g+h/7B4=",
+            "created_at": "2026-10-14T15:27:47.376316",
+            "rotated_at": "2026-10-14T15:27:47.374903",
+            "updated_at": "2026-10-14T15:27:47.376316",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "JnuSbQjEDKT8XBDCfmT/g+h/7B4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO discourse_solved_solved_topics (id, topic_id, answer_post_id, accepter_user_id, created_at, updated_at) VALUES (9901, 35, 38, 2, now() - interval '2 days', now() - interval '2 days'), (9902, 38, 42, 3, now() - interval '3 days', now() - interval '3 days'), (9903, 41, NULL, 2, now() - interval '50 days', now() - interval '50 days')",
+    "INSERT INTO discourse_solved_topic_answers (solved_topic_id, answer_post_id, accepter_user_id, created_at, updated_at) VALUES (9901, 38, 2, now() - interval '2 days', now() - interval '2 days'), (9901, 37, 2, now() - interval '2 days', now() - interval '2 days'), (9901, 52, 2, now() - interval '2 days', now() - interval '2 days')",
+    "INSERT INTO browser_pageview_entry_url_daily_rollups (date, entry_url, count, logged_in_count, likely_crawler_count, likely_crawler_logged_in_count) VALUES ((now() - interval '2 days')::date, '/t/35', 10, 3, 1, 0), ((now() - interval '2 days')::date, '/latest', 30, 10, 0, 0), ((now() - interval '1 day')::date, '/t/35', 5, 1, 0, 0)",
+    "INSERT INTO browser_pageview_country_daily_rollups (date, country_code, count, logged_in_count, likely_crawler_count, likely_crawler_logged_in_count) VALUES ((now() - interval '2 days')::date, 'DE', 10, 3, 1, 0), ((now() - interval '2 days')::date, 'US', 30, 10, 0, 0), ((now() - interval '2 days')::date, 'ZZ', 9, 0, 0, 0)",
+    "INSERT INTO browser_pageview_referrer_daily_rollups (date, normalized_referrer, count, logged_in_count, likely_crawler_count, likely_crawler_logged_in_count) VALUES ((now() - interval '2 days')::date, 'google.com', 10, 3, 1, 0), ((now() - interval '2 days')::date, 'localhost/t/1', 30, 10, 0, 0), ((now() - interval '2 days')::date, 'example.org/a', 7, 0, 0, 0)"
+  ],
+  "recorded_from": {
+    "case": "7a9f3a0988926d7d2facf7edfcd5c9636217cf127f40e592c2159a682f978d37",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

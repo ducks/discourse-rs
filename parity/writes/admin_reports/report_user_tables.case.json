@@ -1,0 +1,24 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO user_actions (action_type, user_id, target_topic_id, target_post_id, acting_user_id, created_at, updated_at) VALUES (2, 2, 35, 37, 4, now() - interval '2 days', now() - interval '2 days'), (2, 2, 35, 37, 3, now() - interval '2 days', now() - interval '2 days'), (2, 3, 38, 47, 2, now() - interval '3 days', now() - interval '3 days'), (1, 4, 35, 37, 4, now() - interval '2 days', now() - interval '2 days'), (1, 5, 35, 37, 5, now() - interval '2 days', now() - interval '2 days'), (1, 2, 38, 47, 2, now() - interval '3 days', now() - interval '3 days')",
+    "INSERT INTO ignored_users (user_id, ignored_user_id, created_at, updated_at, expiring_at) VALUES (2, 4, now() - interval '2 days', now() - interval '2 days', now() + interval '1 day'), (3, 4, now() - interval '2 days', now() - interval '2 days', now() + interval '1 day'), (2, 5, now() - interval '3 days', now() - interval '3 days', now() + interval '1 day')",
+    "INSERT INTO muted_users (user_id, muted_user_id, created_at, updated_at) VALUES (5, 4, now() - interval '2 days', now() - interval '2 days'), (3, 2, now() - interval '2 days', now() - interval '2 days')",
+    "INSERT INTO reviewables (id, type, status, created_by_id, target_type, target_id, topic_id, category_id, created_at, updated_at, payload, potential_spam, score, force_review) VALUES (9401, 'ReviewableFlaggedPost', 0, 2, 'Post', 37, 35, 4, now() - interval '2 days', now() - interval '2 days', '{}', false, 1.0, false)",
+    "INSERT INTO reviewable_scores (reviewable_id, user_id, reviewable_score_type, status, score, take_action_bonus, created_at, updated_at) VALUES (9401, 2, 3, 1, 1.0, 0, now() - interval '2 days', now() - interval '2 days'), (9401, 2, 4, 1, 1.0, 0, now() - interval '2 days', now() - interval '2 days'), (9401, 2, 7, 2, 1.0, 0, now() - interval '2 days', now() - interval '2 days'), (9401, 3, 3, 2, 1.0, 0, now() - interval '2 days', now() - interval '2 days'), (9401, 3, 4, 3, 1.0, 0, now() - interval '2 days', now() - interval '2 days'), (9401, 4, 4, 0, 1.0, 0, now() - interval '2 days', now() - interval '2 days')",
+    "INSERT INTO user_profile_views (user_profile_id, viewed_at, ip_address, user_id) VALUES (3, now() - interval '2 days', '10.0.0.1', 2), (3, now() - interval '2 days', '10.0.0.2', 4), (2, now() - interval '3 days', '10.0.0.1', NULL), (2, now() - interval '40 days', '10.0.0.1', 4)",
+    "INSERT INTO topic_view_stats (topic_id, viewed_at, anonymous_views, logged_in_views) VALUES (35, (now() - interval '2 days')::date, 3, 4), (38, (now() - interval '2 days')::date, 10, 0), (35, (now() - interval '3 days')::date, 1, 1), (3, (now() - interval '3 days')::date, 0, 1)"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/admin/reports/top_users_by_likes_received.json", "params": {"start_date": "2026-09-01", "end_date": "2026-10-31"}},
+    {"method": "GET", "path": "/admin/reports/top_users_by_likes_received_from_a_variety_of_people.json", "params": {"start_date": "2026-09-01", "end_date": "2026-10-31"}},
+    {"method": "GET", "path": "/admin/reports/top_users_by_likes_received_from_inferior_trust_level.json", "params": {"start_date": "2026-09-01", "end_date": "2026-10-31"}},
+    {"method": "GET", "path": "/admin/reports/top_ignored_users.json", "params": {"start_date": "2026-09-01", "end_date": "2026-10-31"}},
+    {"method": "GET", "path": "/admin/reports/user_flagging_ratio.json", "params": {"start_date": "2026-09-01", "end_date": "2026-10-31"}},
+    {"method": "GET", "path": "/admin/reports/profile_views.json", "params": {"start_date": "2026-09-20", "end_date": "2026-10-31"}},
+    {"method": "GET", "path": "/admin/reports/profile_views.json", "params": {"start_date": "2026-09-20", "end_date": "2026-10-31", "filters": {"group": "12"}}},
+    {"method": "GET", "path": "/admin/reports/topic_view_stats.json", "params": {"start_date": "2026-09-01", "end_date": "2026-10-31"}},
+    {"method": "GET", "path": "/admin/reports/topic_view_stats.json", "params": {"start_date": "2026-09-01", "end_date": "2026-10-31", "filters": {"category": "4", "include_subcategories": "true"}}},
+    {"method": "GET", "path": "/admin/reports/bookmarks.json", "params": {"start_date": "2026-09-01", "end_date": "2026-10-31"}}
+  ]
+}

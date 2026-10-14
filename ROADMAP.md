@@ -448,8 +448,12 @@ then by what running a forum needs (milestone 6). Briefs:
     (a group's SMTP credentials, Twitter's login health), watched words
     with regular expressions, two upcoming changes whose display reads
     themes or categories),
-    89b. `feat/admin-reports` L, 89c. `feat/admin-dashboard-sections`
-    M/L, 89d. `feat/pageview-tracking` L
+    89b. ~~`feat/admin-reports`~~ (done) L (Report with as_json, report
+    keys, read-only slow-query wrapping and the hour's cache, ListQuery,
+    show and bulk, the 56 core reports and solved's and reactions'; refused:
+    unported plugins' reports, associated accounts with an external
+    login, MaxMind locations, remote storage stats),
+    89c. `feat/admin-dashboard-sections` M/L, 89d. `feat/pageview-tracking` L
 90. `feat/themes` L: themes and components, color schemes, site texts
     (translation overrides), sidebar defaults, the /admin/config pages,
     91. `feat/backups` L (creating, listing, downloading, restoring

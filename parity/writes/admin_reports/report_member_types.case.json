@@ -1,0 +1,19 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE users SET created_at = now() - interval '10 days' WHERE id = 3",
+    "UPDATE posts SET created_at = now() - interval '2 days' WHERE topic_id IN (35, 38, 41)",
+    "INSERT INTO category_activity_daily_rollups (date, category_id, topics, posts, page_views, likely_crawler_page_views) VALUES ((now() - interval '2 days')::date, 4, 2, 5, 30, 4), ((now() - interval '2 days')::date, 34, 1, 1, 3, 0), ((now() - interval '3 days')::date, 2, 0, 2, 10, 0), ((now() - interval '3 days')::date, 3, 1, 1, 1, 0), ((now() - interval '50 days')::date, 4, 1, 1, 100, 0), ((now() - interval '50 days')::date, 2, 5, 5, 5, 0)"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/admin/reports/posters_by_member_type.json", "params": {"start_date": "2026-09-01", "end_date": "2026-10-31"}},
+    {"method": "GET", "path": "/admin/reports/posters_by_member_type.json", "params": {"start_date": "2026-09-01", "end_date": "2026-10-31", "filters": {"groups": "group:12,staff,group:0,group:999,bogus", "category_ids": "4,34"}}},
+    {"method": "GET", "path": "/admin/reports/posters_by_member_type.json", "params": {"start_date": "2026-09-01", "end_date": "2026-10-31", "filters": {"category_ids": "999"}}},
+    {"method": "GET", "path": "/admin/reports/posters_by_member_type_members.json", "params": {"start_date": "2026-09-01", "end_date": "2026-10-31", "filters": {"group": "returning"}}},
+    {"method": "GET", "path": "/admin/reports/posters_by_member_type_members.json", "params": {"start_date": "2026-09-01", "end_date": "2026-10-31", "filters": {"group": "group:11"}}},
+    {"method": "GET", "path": "/admin/reports/posters_by_member_type_members.json", "params": {"start_date": "2026-09-01", "end_date": "2026-10-31", "filters": {"group": "group:3"}}},
+    {"method": "GET", "path": "/admin/reports/activity_by_category.json", "params": {"start_date": "2026-09-20", "end_date": "2026-10-31"}},
+    {"method": "GET", "path": "/admin/reports/activity_by_category.json", "params": {"start_date": "2026-09-20", "end_date": "2026-10-31", "filters": {"category_ids": "2,4"}}},
+    {"method": "GET", "path": "/admin/reports/activity_by_category.json", "params": {"start_date": "2026-09-20", "end_date": "2026-10-31", "filters": {"category_ids": "0"}}}
+  ]
+}

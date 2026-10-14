@@ -1,0 +1,360 @@
+{
+  "name": "report_actions",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/reports/likes.json",
+      "params": {
+        "start_date": "2026-09-20",
+        "end_date": "2026-10-31",
+        "facets": [
+          "total",
+          "prev30Days",
+          "prev_period"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/likes.json",
+      "params": {
+        "start_date": "2026-09-20",
+        "end_date": "2026-10-31",
+        "filters": {
+          "category": "34"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/flags.json",
+      "params": {
+        "start_date": "2026-09-20",
+        "end_date": "2026-10-31",
+        "facets": [
+          "total",
+          "prev30Days",
+          "prev_period"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/flags.json",
+      "params": {
+        "start_date": "2026-09-20",
+        "end_date": "2026-10-31",
+        "filters": {
+          "category": "4",
+          "include_subcategories": "true"
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-14T15:02:16.583744",
+  "transaction_started_at": "2026-10-14T15:02:11.992507",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "likes",
+          "title": "Likes",
+          "xaxis": "Day",
+          "yaxis": "Number of new likes",
+          "description": "Number of new likes.",
+          "description_link": null,
+          "data": [
+            {
+              "x": "2026-09-30",
+              "y": 1
+            },
+            {
+              "x": "2026-10-01",
+              "y": 1
+            },
+            {
+              "x": "2026-10-13",
+              "y": 2
+            }
+          ],
+          "start_date": "2026-09-20T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-08-09T00:00:00Z",
+          "prev_end_date": "2026-09-20T00:00:00Z",
+          "prev30Days": 1,
+          "dates_filtering": true,
+          "report_key": "reports:likes:20260920:20261031:[:total, :prev30Days, :prev_period]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "category",
+              "type": "category",
+              "default": null
+            }
+          ],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "chart",
+            "table"
+          ],
+          "legacy": true,
+          "icon": "heart",
+          "total": 5,
+          "prev_period": 1
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "likes",
+          "title": "Likes",
+          "xaxis": "Day",
+          "yaxis": "Number of new likes",
+          "description": "Number of new likes.",
+          "description_link": null,
+          "data": [],
+          "start_date": "2026-09-20T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-08-09T00:00:00Z",
+          "prev_end_date": "2026-09-20T00:00:00Z",
+          "prev30Days": 0,
+          "dates_filtering": true,
+          "report_key": "reports:likes:20260920:20261031:[:total, :prev30Days]:{\"category\":\"34\"}:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "category",
+              "type": "category",
+              "default": 34
+            },
+            {
+              "id": "include_subcategories",
+              "type": "bool",
+              "default": false
+            }
+          ],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "chart",
+            "table"
+          ],
+          "legacy": true,
+          "icon": "heart",
+          "total": 0
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "flags",
+          "title": "Flags",
+          "xaxis": "Day",
+          "yaxis": "Number of flags",
+          "description": "Number of new flags.",
+          "description_link": null,
+          "data": [
+            {
+              "x": "2026-10-12",
+              "y": 1
+            }
+          ],
+          "start_date": "2026-09-20T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-08-09T00:00:00Z",
+          "prev_end_date": "2026-09-20T00:00:00Z",
+          "prev30Days": 1,
+          "dates_filtering": true,
+          "report_key": "reports:flags:20260920:20261031:[:total, :prev30Days, :prev_period]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "category",
+              "type": "category",
+              "default": null
+            }
+          ],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": false,
+          "modes": [
+            "chart",
+            "table"
+          ],
+          "legacy": true,
+          "icon": "flag",
+          "total": 2,
+          "prev_period": 1
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "flags",
+          "title": "Flags",
+          "xaxis": "Day",
+          "yaxis": "Number of flags",
+          "description": "Number of new flags.",
+          "description_link": null,
+          "data": [
+            {
+              "x": "2026-10-12",
+              "y": 1
+            }
+          ],
+          "start_date": "2026-09-20T00:00:00Z",
+          "end_date": "2026-10-31T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-08-09T00:00:00Z",
+          "prev_end_date": "2026-09-20T00:00:00Z",
+          "prev30Days": 1,
+          "dates_filtering": true,
+          "report_key": "reports:flags:20260920:20261031:[:total, :prev30Days]:{\"category\":\"4\",\"include_subcategories\":\"true\"}:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [
+            {
+              "id": "category",
+              "type": "category",
+              "default": 4
+            },
+            {
+              "id": "include_subcategories",
+              "type": "bool",
+              "default": true
+            }
+          ],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": false,
+          "modes": [
+            "chart",
+            "table"
+          ],
+          "legacy": true,
+          "icon": "flag",
+          "total": 2
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 222,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "vOJk7zuQu4DPXFdouQW8HJNHLmk=",
+            "created_at": "2026-10-14T15:02:14.398653",
+            "rotated_at": "2026-10-14T15:02:14.389535",
+            "updated_at": "2026-10-14T15:02:14.398653",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "vOJk7zuQu4DPXFdouQW8HJNHLmk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 222,
+            "seen_at": "2026-10-14T15:02:16.621143",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "vOJk7zuQu4DPXFdouQW8HJNHLmk=",
+            "created_at": "2026-10-14T15:02:14.398653",
+            "rotated_at": "2026-10-14T15:02:14.389535",
+            "updated_at": "2026-10-14T15:02:14.398653",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "vOJk7zuQu4DPXFdouQW8HJNHLmk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO post_actions (id, post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (9301, 37, 4, 2, now() - interval '1 day', now() - interval '1 day'), (9302, 38, 4, 2, now() - interval '1 day', now() - interval '1 day'), (9303, 38, 2, 2, now() - interval '40 days', now() - interval '40 days'), (9304, 37, 2, 3, now() - interval '2 days', now() - interval '2 days')",
+    "INSERT INTO reviewables (id, type, status, created_by_id, target_type, target_id, topic_id, category_id, created_at, updated_at, payload, potential_spam, score, force_review, reject_reason) VALUES (9401, 'ReviewableFlaggedPost', 0, 2, 'Post', 37, 35, 4, now() - interval '2 days', now() - interval '2 days', '{}', false, 1.0, false, NULL)",
+    "INSERT INTO reviewable_scores (id, reviewable_id, user_id, reviewable_score_type, status, score, take_action_bonus, created_at, updated_at) VALUES (9501, 9401, 2, 3, 0, 1.0, 0, now() - interval '2 days', now() - interval '2 days'), (9502, 9401, 3, 3, 1, 1.0, 0, now() - interval '50 days', now() - interval '50 days')"
+  ],
+  "recorded_from": {
+    "case": "e4276072a0e114fe5841317d46ffff8884a4494837f75c546b113e506f5dc7e3",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
