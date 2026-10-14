@@ -1417,18 +1417,22 @@ async fn membership(
         return Ok(json_error(vec![message.to_string()]));
     }
     let acting = guardian.user_id().unwrap_or_default();
+    let settings =
+        SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
+    let host = Host::from_state(&state);
+    let promotion = crate::promotion::Ctx {
+        settings: &settings,
+        i18n: &state.i18n,
+        host: &host,
+    };
+    let cx = crate::group_manager::Cx {
+        state: &state,
+        promotion: &promotion,
+    };
     if method == "POST" {
-        let settings =
-            SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
-        let host = Host::from_state(&state);
-        let cx = crate::promotion::Ctx {
-            settings: &settings,
-            i18n: &state.i18n,
-            host: &host,
-        };
         crate::group_manager::add(&mut tx, &cx, &group, user_id, acting).await?;
     } else {
-        crate::group_manager::remove(&mut tx, &group, user_id, acting).await?;
+        crate::group_manager::remove(&mut tx, &cx, &group, user_id, acting).await?;
     }
     tx.commit().await?;
     Ok(StatusCode::OK.into_response())

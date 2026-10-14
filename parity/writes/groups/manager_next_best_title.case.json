@@ -1,0 +1,16 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO groups (id, name, title, user_count, created_at, updated_at) VALUES (9001, 'testers', 'Tester', 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO groups (id, name, title, user_count, created_at, updated_at) VALUES (9002, 'seconds', 'Second', 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO group_users (id, group_id, user_id, owner, notification_level, created_at, updated_at) VALUES (90001, 9001, 4, FALSE, 3, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO group_users (id, group_id, user_id, owner, notification_level, created_at, updated_at) VALUES (90002, 9002, 4, FALSE, 3, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "UPDATE users SET title = 'Tester' WHERE id = 4"
+  ],
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/admin/users/4/groups/9001.json"
+    }
+  ]
+}

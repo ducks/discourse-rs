@@ -589,6 +589,14 @@ async fn batch_set_categories(
 
 /// `CategoryUser.auto_watch(user_id:)`
 pub(crate) async fn auto_watch(conn: &mut PgConnection, user_id: i32) -> Result<(), sqlx::Error> {
+    auto_watch_many(conn, &[user_id]).await
+}
+
+/// `CategoryUser.auto_watch(user_ids:)`
+pub(crate) async fn auto_watch_many(
+    conn: &mut PgConnection,
+    user_ids: &[i32],
+) -> Result<(), sqlx::Error> {
     sqlx::query(
         "UPDATE topic_users tu \
          SET notification_level = CASE WHEN should_track THEN $2 WHEN should_watch THEN $3 \
@@ -606,12 +614,12 @@ pub(crate) async fn auto_watch(conn: &mut PgConnection, user_id: i32) -> Result<
            JOIN topics t ON t.id = tu1.topic_id \
            LEFT JOIN category_users cu ON cu.category_id = t.category_id \
                 AND cu.user_id = tu1.user_id AND cu.notification_level = $3 \
-           WHERE COALESCE(tu1.notifications_reason_id, 0) <> $6 AND tu1.user_id IN ($1) \
+           WHERE COALESCE(tu1.notifications_reason_id, 0) <> $6 AND tu1.user_id = ANY($1) \
          ) AS X \
          WHERE X.topic_id = tu.topic_id AND X.user_id = tu.user_id \
-           AND (should_watch OR should_track) AND tu.user_id IN ($1)",
+           AND (should_watch OR should_track) AND tu.user_id = ANY($1)",
     )
-    .bind(user_id)
+    .bind(user_ids)
     .bind(TRACKING)
     .bind(WATCHING)
     .bind(REGULAR)
@@ -624,14 +632,22 @@ pub(crate) async fn auto_watch(conn: &mut PgConnection, user_id: i32) -> Result<
 
 /// `CategoryUser.auto_track(user_id:)`
 pub(crate) async fn auto_track(conn: &mut PgConnection, user_id: i32) -> Result<(), sqlx::Error> {
+    auto_track_many(conn, &[user_id]).await
+}
+
+/// `CategoryUser.auto_track(user_ids:)`
+pub(crate) async fn auto_track_many(
+    conn: &mut PgConnection,
+    user_ids: &[i32],
+) -> Result<(), sqlx::Error> {
     sqlx::query(
         "UPDATE topic_users tu SET notification_level = $2, notifications_reason_id = $4 \
          FROM topics t, category_users cu \
          WHERE tu.topic_id = t.id AND cu.category_id = t.category_id AND cu.user_id = tu.user_id \
            AND cu.notification_level = $2 AND tu.notification_level = $3 \
-           AND COALESCE(tu.notifications_reason_id, 0) <> $5 AND tu.user_id IN ($1)",
+           AND COALESCE(tu.notifications_reason_id, 0) <> $5 AND tu.user_id = ANY($1)",
     )
-    .bind(user_id)
+    .bind(user_ids)
     .bind(TRACKING)
     .bind(REGULAR)
     .bind(AUTO_TRACK_CATEGORY)

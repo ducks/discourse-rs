@@ -261,6 +261,51 @@ pub async fn user_content_deleting(
     Ok(())
 }
 
+/// DiscourseEvent `:user_added_to_group` (GroupManager#add, each user
+/// added): chat's AutoJoinChannels for the user.
+pub async fn user_added_to_group(
+    conn: &mut sqlx::PgConnection,
+    state: &crate::AppState,
+    settings: &SiteSettings,
+    user_id: i32,
+) -> Result<(), crate::AppError> {
+    if chat::enabled(settings)? {
+        chat::auto_join::user(conn, &state.bus, state, settings, user_id).await?;
+    }
+    Ok(())
+}
+
+/// DiscourseEvent `:user_removed_from_group` (GroupManager#remove, each
+/// user removed): chat's AutoLeaveChannels for the user.
+pub async fn user_removed_from_group(
+    conn: &mut sqlx::PgConnection,
+    settings: &SiteSettings,
+    user_id: i32,
+) -> Result<(), crate::AppError> {
+    if chat::enabled(settings)? {
+        chat::scheduled::auto_leave_channels(
+            conn,
+            settings,
+            "user_removed_from_group",
+            Some(user_id),
+        )
+        .await?;
+    }
+    Ok(())
+}
+
+/// DiscourseEvent `:group_destroyed`: chat's AutoLeaveChannels for
+/// everyone (its group_id narrows nothing).
+pub async fn group_destroyed(
+    conn: &mut sqlx::PgConnection,
+    settings: &SiteSettings,
+) -> Result<(), crate::AppError> {
+    if chat::enabled(settings)? {
+        chat::scheduled::auto_leave_channels(conn, settings, "group_destroyed", None).await?;
+    }
+    Ok(())
+}
+
 /// `WebHook.active_web_hooks(event).exists?`: an active hook for the
 /// event, or a wildcard one.
 pub(crate) async fn web_hooks_active(

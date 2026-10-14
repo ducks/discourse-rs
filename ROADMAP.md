@@ -262,9 +262,13 @@ then by what running a forum needs (milestone 6). Briefs:
     page (/g/:name) as HTML (permissions with categories refused until
     CategorySerializer; the activity, requests, messages and manage tabs
     refused until their routes),
-    82b. `feat/group-manager-bulk` M (GroupManager over many users,
-    notification defaults, category publishes, next_best_title, chat
-    auto join and leave on membership changes, bulk_grant_trust_level),
+    82b. ~~`feat/group-manager-bulk`~~ (done) M (GroupManager over many
+    users, notification defaults, category publishes, next_best_title,
+    chat auto join and leave on membership changes,
+    bulk_grant_trust_level; a /categories update with categories the
+    member may now see refused until CategorySerializer; the automatic
+    groups' refreshes in promotion.rs, signup.rs and roles.rs still
+    refuse titled, flaired, granting or defaulted groups),
     82c. `feat/admin-groups` M (create, update, destroy, members and
     owners, primary, automatic_membership_count, their logs and jobs),
     82d. `feat/group-email-domains` S (automatic_group_membership,

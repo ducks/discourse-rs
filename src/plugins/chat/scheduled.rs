@@ -102,49 +102,58 @@ pub async fn auto_join_users(state: &AppState, args: &Value) -> Result<(), AppEr
     }
     super::auto_join::create_memberships(&mut tx, &state.bus, state, &s, None, None).await?;
     let event = args["event"].as_str().unwrap_or("hourly_job").to_string();
-    auto_leave_channels(&mut tx, &s, &event).await?;
+    auto_leave_channels(&mut tx, &s, &event, None).await?;
     tx.commit().await?;
     Ok(())
 }
 
-/// `Chat::AutoLeaveChannels#remove_memberships` for everyone: without a
-/// chat-allowed group (unless everyone may chat), out of every channel;
-/// in a restricted category's channel without a group that may post
-/// there (staff aside), out of it. Then PublishAutoRemovedUser.
-async fn auto_leave_channels(
+/// `Chat::AutoLeaveChannels#remove_memberships` for everyone, or for one
+/// user (`user_id`): without a chat-allowed group (unless everyone may
+/// chat), out of every channel; in a restricted category's channel
+/// without a group that may post there (staff aside), out of it. Then
+/// PublishAutoRemovedUser.
+pub(crate) async fn auto_leave_channels(
     conn: &mut PgConnection,
     settings: &SiteSettings,
     event: &str,
+    user_id: Option<i32>,
 ) -> Result<(), AppError> {
     let group_ids = settings.group_ids("chat_allowed_groups")?;
     let everyone_allowed = group_ids.contains(&crate::guardian::auto_groups::EVERYONE)
         || group_ids.contains(&crate::guardian::auto_groups::LOGGED_IN_USERS);
+    let only = |column: &str| {
+        user_id
+            .map(|id| format!(" AND {column} = {id}"))
+            .unwrap_or_default()
+    };
     let mut removed: Vec<(i64, i32)> = Vec::new();
     if !everyone_allowed {
-        let rows: Vec<(i64, i32)> = sqlx::query_as(
+        let rows: Vec<(i64, i32)> = sqlx::query_as(&format!(
             "DELETE FROM user_chat_channel_memberships uccm WHERE NOT EXISTS ( \
-               SELECT 1 FROM group_users gu WHERE gu.user_id = uccm.user_id AND gu.group_id = ANY($1)) \
+               SELECT 1 FROM group_users gu WHERE gu.user_id = uccm.user_id AND gu.group_id = ANY($1)){} \
              RETURNING chat_channel_id, user_id",
-        )
+            only("uccm.user_id")
+        ))
         .bind(&group_ids)
         .fetch_all(&mut *conn)
         .await?;
         removed.extend(rows);
     }
     // CategoryGroup create_post (2) and full (1).
-    let rows: Vec<(i64, i32)> = sqlx::query_as(
+    let rows: Vec<(i64, i32)> = sqlx::query_as(&format!(
         "WITH valid_permissions AS ( \
            SELECT gu.user_id, cg.category_id FROM group_users gu \
            JOIN category_groups cg ON cg.group_id = gu.group_id AND cg.permission_type IN (2, 1)) \
          DELETE FROM user_chat_channel_memberships WHERE (user_id, chat_channel_id) IN ( \
            SELECT uccm.user_id, uccm.chat_channel_id FROM user_chat_channel_memberships uccm \
-           JOIN users u ON u.id = uccm.user_id AND u.id > 0 AND u.moderator = FALSE AND u.admin = FALSE \
+           JOIN users u ON u.id = uccm.user_id AND u.id > 0 AND u.moderator = FALSE AND u.admin = FALSE{} \
            JOIN chat_channels cc ON cc.id = uccm.chat_channel_id AND cc.chatable_type = 'Category' \
            JOIN categories c ON c.id = cc.chatable_id AND c.read_restricted = TRUE \
            LEFT JOIN valid_permissions vp ON vp.user_id = uccm.user_id AND vp.category_id = c.id \
            WHERE vp.user_id IS NULL) \
          RETURNING chat_channel_id, user_id",
-    )
+        only("u.id")
+    ))
     .fetch_all(&mut *conn)
     .await?;
     removed.extend(rows);
