@@ -225,7 +225,7 @@ pub fn render(cx: &ListContext, v: &SearchView) -> String {
             ));
         }
         out.push_str("<div class=\"search-filters\">");
-        out.push_str(&advanced_filters(v.expanded));
+        out.push_str(&advanced_filters(cx, v.expanded));
         out.push_str("</div>");
     }
     out.push_str("<div class=\"search-notice\"></div></div><div class=\"search-advanced\">");
@@ -475,11 +475,12 @@ fn user_item(cx: &ListContext, v: &SearchView, user: &Value) -> String {
 
 /// SearchAdvancedOptions' toggle. The filters it opens are not ported:
 /// expanded, the toggle says so but the panel stays empty.
-fn advanced_filters(expanded: bool) -> String {
+fn advanced_filters(cx: &ListContext, expanded: bool) -> String {
+    let title = t(cx, "search.advanced.title");
     // DButton translates its @ariaLabel again, which the translated title
     // is not a key of.
     format!(
-        "<div class=\"advanced-filters{}\"><button aria-expanded=\"{expanded}\" aria-label=\"[en.Advanced filters]\" class=\"btn no-text advanced-filters__toggle btn-default\" type=\"button\">Advanced filters{}</button></div>",
+        "<div class=\"advanced-filters{}\"><button aria-expanded=\"{expanded}\" aria-label=\"[en.{title}]\" class=\"btn no-text advanced-filters__toggle btn-default\" type=\"button\">{title}{}</button></div>",
         if expanded { " --is-expanded" } else { "" },
         icon(
             if expanded {
@@ -488,7 +489,8 @@ fn advanced_filters(expanded: bool) -> String {
                 "chevron-down"
             },
             None
-        )
+        ),
+        title = escape(&title),
     )
 }
 

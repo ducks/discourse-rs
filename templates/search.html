@@ -1,5 +1,5 @@
 {% extends "layout.html" %}
-{% block title %}Search results for '{{ term }}' - {{ site_title }}{% endblock %}
+{% block title %}{{ chrome.t_with("search.results_page", "term", term) }} - {{ site_title }}{% endblock %}
 {% block content %}
 {{ body|safe }}
 <script src="{{ crate::assets::url(base_path, "search-page.js") }}" data-min-length="{{ min_length }}" data-too-short="{{ too_short }}" data-clear-label="{{ clear_label }}"></script>

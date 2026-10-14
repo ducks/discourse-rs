@@ -523,9 +523,16 @@ then by what running a forum needs (milestone 6). Briefs:
     objects settings, the design wizard), 90g. `feat/admin-shell` L (the
     admin pages' HTML: the port has none; /admin/customize/* and
     /admin/config/* refuse non-JSON requests today), 90h.
-    `feat/template-strings` M (the templates' literal English client
-    strings through the locale, so site texts reach them; New Topic
-    done),
+    ~~`feat/template-client-strings`~~ (done) M (the templates' and
+    views' literal English client strings through the locale with
+    Ember's keys, site texts included: the header's buttons, the topic
+    list's caption and columns, the categories table, the page titles,
+    the suggested topics' columns, the select-kit filter label, the
+    search page's advanced filters, the user card's label; the crawler
+    header's server strings. Left as they are: the port's own controls
+    with no Ember string (the topics' and lists' Next/Previous page
+    links, the login page's form), and literal labels Ember writes
+    literally too ("User primary")),
     91. `feat/backups` L (creating, listing, downloading, restoring
     through the app; read-only mode is 79c), split:
     91a. ~~`feat/backup-files`~~ (done) M (the local store under

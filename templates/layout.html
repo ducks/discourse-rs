@@ -10,11 +10,11 @@
     in the mobile view), and the hamburger that opens the sidebar's sections. -#}
 {%- macro search_button() %}
 {%- if chrome.can_search %}
-<li class="header-dropdown-toggle search-dropdown"><button aria-label="Search" class="btn no-text btn-icon icon btn-flat" id="search-button" title="Search" aria-haspopup="true" type="button" onclick="window.location.href = '{{ base_path }}/search{{ chrome.search_context }}'"><svg class="fa d-icon d-icon-magnifying-glass svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#magnifying-glass"></use></svg> <span aria-hidden="true"> &#8203; </span> </button></li>
+<li class="header-dropdown-toggle search-dropdown"><button aria-label="{{ chrome.t("search.title") }}" class="btn no-text btn-icon icon btn-flat" id="search-button" title="{{ chrome.t("search.title") }}" aria-haspopup="true" type="button" onclick="window.location.href = '{{ base_path }}/search{{ chrome.search_context }}'"><svg class="fa d-icon d-icon-magnifying-glass svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#magnifying-glass"></use></svg> <span aria-hidden="true"> &#8203; </span> </button></li>
 {%- endif %}
 {%- endmacro %}
 {%- macro hamburger_button() %}
-<li class="header-dropdown-toggle hamburger-dropdown"><button aria-label="Navigation menu" class="btn no-text btn-icon icon btn-flat" id="toggle-hamburger-menu" title="Navigation menu" aria-haspopup="true" type="button"><svg class="fa d-icon d-icon-bars svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#bars"></use></svg> <span aria-hidden="true"> &#8203; </span> </button></li>
+<li class="header-dropdown-toggle hamburger-dropdown"><button aria-label="{{ chrome.t("hamburger_menu") }}" class="btn no-text btn-icon icon btn-flat" id="toggle-hamburger-menu" title="{{ chrome.t("hamburger_menu") }}" aria-haspopup="true" type="button"><svg class="fa d-icon d-icon-bars svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#bars"></use></svg> <span aria-hidden="true"> &#8203; </span> </button></li>
 {%- endmacro %}
 <html lang="{{ lang }}" class="text-size-normal{% if viewer.is_none() %} anon{% endif %} no-touch discourse-no-touch{% if mobile %} mobile-view mobile-device{% else %} desktop-view not-mobile-device{% endif %}{{ chrome.html_classes }}">
   <head>
@@ -128,7 +128,7 @@
     <script src="{{ crate::assets::url(base_path, "codeblock-buttons.js") }}" defer></script>
     <script src="{{ crate::assets::url(base_path, "quote-controls.js") }}" defer></script>
     {%- if chrome.user_cards %}
-    <script src="{{ crate::assets::url(base_path, "user-card.js") }}" data-show-badges="{{ chrome.enable_badges }}" defer></script>
+    <script src="{{ crate::assets::url(base_path, "user-card.js") }}" data-show-badges="{{ chrome.enable_badges }}" data-label="{{ chrome.t("user.card") }}" defer></script>
     {%- endif %}
     {%- if chrome.inline_footnotes %}
     <script src="{{ crate::assets::url(base_path, "inline-footnotes.js") }}" defer></script>
@@ -166,7 +166,7 @@
               <div class="contents">
                 {%- if !chrome.sidebar.is_empty() %}
                 <span class="header-sidebar-toggle">
-                  <button aria-controls="d-sidebar" aria-expanded="true" class="btn btn-flat btn-sidebar-toggle no-text btn-icon" title="Sidebar" type="button">
+                  <button aria-controls="d-sidebar" aria-expanded="true" class="btn btn-flat btn-sidebar-toggle no-text btn-icon" title="{{ chrome.t("sidebar.title") }}" type="button">
                     <svg class="fa d-icon d-icon-bars svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#bars"></use></svg>
                   </button>
                 </span>
@@ -188,7 +188,7 @@
                   </div>
                   {%- endif %}
                 </div>
-                <div class="panel" role="navigation" aria-label="Header">
+                <div class="panel" role="navigation" aria-label="{{ chrome.t("header_panel") }}">
                   {% if let Some(v) = viewer %}
                   <span class="header-buttons"></span>
                   <ul class="icons d-header-icons">
@@ -200,7 +200,7 @@
                         open. The badge is the unread count, kept current
                         live. -#}
                     <li class="header-dropdown-toggle current-user user-menu-panel" id="current-user">
-                      <button aria-label="Notifications and account" class="btn no-text icon btn-flat" id="toggle-current-user" title="Notifications and account" aria-haspopup="true" type="button">
+                      <button aria-label="{{ chrome.t("user.avatar.header_title") }}" class="btn no-text icon btn-flat" id="toggle-current-user" title="{{ chrome.t("user.avatar.header_title") }}" aria-haspopup="true" type="button">
                         <img alt="" width="48" height="48" src="{{ v.avatar_url }}" class="avatar">
                         <span id="notification-count" class="badge-notification unread-notifications"></span>
                       </button>
@@ -212,9 +212,9 @@
                   <span class="header-buttons">
                     <span class="auth-buttons">
                       {%- if chrome.can_signup %}
-                      <a class="btn btn-primary btn-small sign-up-button" href="{{ base_path }}/signup"><span class="d-button-label">Sign Up</span></a>
+                      <a class="btn btn-primary btn-small sign-up-button" href="{{ base_path }}/signup"><span class="d-button-label">{{ chrome.t("sign_up") }}</span></a>
                       {%- endif %}
-                      <a class="btn btn-icon-text btn-primary btn-small login-button" href="{{ base_path }}/login"><svg class="fa d-icon d-icon-user svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true"><use href="#user"></use></svg><span class="d-button-label">Log In</span></a>
+                      <a class="btn btn-icon-text btn-primary btn-small login-button" href="{{ base_path }}/login"><svg class="fa d-icon d-icon-user svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true"><use href="#user"></use></svg><span class="d-button-label">{{ chrome.t("log_in") }}</span></a>
                     </span>
                   </span>
                   <ul class="icons d-header-icons">
@@ -266,7 +266,7 @@
             {% block content %}{% endblock %}
           </div>
           {%- if chrome.powered_by %}
-          <a class="powered-by-discourse" href="https://discourse.org/powered-by" target="_blank"><span class="powered-by-discourse__content"><span class="powered-by-discourse__logo"><svg class="fa d-icon d-icon-fab-discourse svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#fab-discourse"></use></svg></span><span>Powered by Discourse</span></span></a>
+          <a class="powered-by-discourse" href="https://discourse.org/powered-by" target="_blank"><span class="powered-by-discourse__content"><span class="powered-by-discourse__logo"><svg class="fa d-icon d-icon-fab-discourse svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#fab-discourse"></use></svg></span><span>{{ chrome.t("powered_by_discourse") }}</span></span></a>
           {%- endif %}
         </div>
       </div>

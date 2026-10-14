@@ -2309,10 +2309,10 @@ pub fn more_topics(
         "<div class=\"more-topics__container\"><div class=\"more-topics__lists single-list\"><div aria-labelledby=\"suggested-topics-title\" class=\"more-topics__list\" id=\"suggested-topics\" role=\"complementary\"><h3 class=\"more-topics__list-title\" id=\"suggested-topics-title\">{}</h3><div class=\"topics\"><table class=\"topic-list\"><caption class=\"sr-only\">{}</caption><thead class=\"topic-list-header --has-tabs\"><tr>{}{}{}{}</tr></thead><tbody class=\"topic-list-body\">{rows}</tbody></table></div></div></div><h3 class=\"more-topics__browse-more\">{browse_more}</h3></div>",
         escape(&t(l, "suggested_topics.title")),
         escape(&t(l, "sr_topic_list_caption")),
-        th("default", "Topic"),
-        th("posts num", "Replies"),
-        th("views num", "Views"),
-        th("activity num", "Activity"),
+        th("default", &escape(&t(l, "topic.title"))),
+        th("posts num", &escape(&t(l, "replies"))),
+        th("views num", &escape(&t(l, "views"))),
+        th("activity num", &escape(&t(l, "activity"))),
     ))
 }
 

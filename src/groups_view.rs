@@ -180,17 +180,19 @@ fn group_card(cx: &ListContext, group: &Value) -> String {
 
 /// A ComboBox (single select) header and its rows for groups.js to open.
 fn combo_box(
+    cx: &ListContext,
     class: &str,
     selected: Option<(&str, &str)>,
     none_label: &str,
     rows: &[(String, String)],
     angle: &str,
 ) -> String {
+    let raw_label = selected.map_or(none_label, |(_, label)| label);
     let (label, value) = match selected {
         Some((value, label)) => (escape(label), format!(" data-value=\"{}\"", escape(value))),
         None => (escape(none_label), String::new()),
     };
-    let filter_by = format!("Filter by: {label}");
+    let filter_by = escape(&t_with(cx, "select_kit.filter_by", &[("name", raw_label)]));
     let mut items = String::new();
     for (i, (value, row_label)) in rows.iter().enumerate() {
         let is_selected = selected.is_some_and(|(v, _)| v == value);
@@ -257,6 +259,7 @@ pub fn render_index(cx: &ListContext, v: &Index) -> String {
         escape(&t(cx, "groups.index.all")),
         escape(v.filter),
         combo_box(
+            cx,
             "groups-header-filters-type",
             selected,
             &t(cx, "groups.index.filter"),
@@ -497,6 +500,7 @@ pub fn render_show(cx: &ListContext, v: &Show) -> String {
         .map(|n| (n.clone(), n.clone()))
         .collect();
     out.push_str(&combo_box(
+        cx,
         "group-dropdown",
         Some((name, name)),
         name,
