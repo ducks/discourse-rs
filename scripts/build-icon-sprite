@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
 # Build static/vendor/icons.svg: the Font Awesome Free icons the pages use,
 # as <symbol>s named as Discourse names them (<use href="#bars">), from the
-# npm package Discourse depends on. The tarball is checked against its npm
-# integrity first. Icons are CC BY 4.0 (static/vendor/fontawesome-LICENSE.txt).
+# sprites Discourse vendors and serves (vendor/assets/svg-icons/fontawesome,
+# Font Awesome Free 6.6.0 at the vendored commit; SvgSprite builds the
+# page's sprite from these, not from the npm package). Icons are CC BY 4.0
+# (static/vendor/fontawesome-LICENSE.txt).
 #
 # Usage: scripts/build-icon-sprite
 #   The icons are listed below as "name" or "name=fontawesome-file";
 #   plugin-<name> is a bundled plugin's icon, from its vendored sprite.
 set -euo pipefail
 
-VERSION=7.3.1
 ICONS=(
   bars
   user
@@ -174,24 +175,20 @@ ICONS=(
 )
 
 root="$(cd "$(dirname "$0")/.." && pwd)"
-work="$(mktemp -d)"
-trap 'rm -rf "$work"' EXIT
 
-url="https://registry.npmjs.org/@fortawesome/fontawesome-free/-/fontawesome-free-$VERSION.tgz"
-want=$(curl -sf "https://registry.npmjs.org/@fortawesome/fontawesome-free/$VERSION" | jq -r .dist.integrity)
-curl -sfL "$url" -o "$work/fa.tgz"
-got="sha512-$(openssl dgst -sha512 -binary "$work/fa.tgz" | base64 -w0)"
-if [ "$want" != "$got" ]; then
-  echo "integrity mismatch: $want != $got" >&2
-  exit 1
-fi
-tar xzf "$work/fa.tgz" -C "$work"
+fa="$root/vendor/discourse/vendor/assets/svg-icons/fontawesome"
+version=$(grep -o 'Font Awesome Free [0-9.]*' "$fa/solid.svg" | head -1)
+
+# The <symbol> named $2 in sprite $1, on one line.
+symbol() {
+  tr -d '\n' < "$1" | grep -o "<symbol id=[\"']$2[\"'][^>]*>.*" | sed 's|</symbol>.*|</symbol>|'
+}
 
 out="$root/static/vendor/icons.svg"
 {
-  echo "<!-- Font Awesome Free $VERSION by @fontawesome - https://fontawesome.com"
+  echo "<!-- $version by @fontawesome - https://fontawesome.com"
   echo "     License - https://fontawesome.com/license/free (Icons: CC BY 4.0)"
-  echo "     Copyright 2026 Fonticons, Inc. The discourse-* icons are Discourse's"
+  echo "     Copyright 2024 Fonticons, Inc. The discourse-* icons are Discourse's"
   echo "     (vendor/discourse/vendor/assets/svg-icons, GPL-2.0), and so are the"
   echo "     bundled plugins' (vendor/discourse/plugins/*/svg-icons). Built by"
   echo "     scripts/build-icon-sprite. -->"
@@ -212,20 +209,20 @@ out="$root/static/vendor/icons.svg"
         | grep -o "<symbol id=[\"']${file#plugin-}[\"'][^>]*>.*" | sed 's|</symbol>.*|</symbol>|' | sed "s/^/  /"
       continue
     fi
-    # Discourse names the regular style's icons far-<name>.
-    if [[ $file == far-* ]]; then
-      svg="$work/package/svgs/regular/${file#far-}.svg"
-    # and the brands' fab-<name>.
-    elif [[ $file == fab-* ]]; then
-      svg="$work/package/svgs/brands/${file#fab-}.svg"
-    else
-      svg="$work/package/svgs/solid/$file.svg"
+    # Discourse names the regular style's icons far-<name>, the brands'
+    # fab-<name>; the vendored sprites name them plainly.
+    case $file in
+      far-*) sprite="$fa/regular.svg" id="${file#far-}" ;;
+      fab-*) sprite="$fa/brands.svg" id="${file#fab-}" ;;
+      *) sprite="$fa/solid.svg" id="$file" ;;
+    esac
+    found=$(symbol "$sprite" "$id")
+    if [ -z "$found" ]; then
+      echo "no icon $id in $(basename "$sprite") ($version)" >&2
+      exit 1
     fi
-    view_box=$(grep -o 'viewBox="[^"]*"' "$svg")
-    body=$(sed -e 's/<svg[^>]*>//' -e 's/<\/svg>//' -e 's/<!--[^>]*-->//' "$svg")
-    echo "  <symbol id=\"$name\" $view_box>$body</symbol>"
+    echo "  ${found/<symbol id=\"$id\"/<symbol id=\"$name\"}"
   done
   echo '</svg>'
 } > "$out"
-cp "$work/package/LICENSE.txt" "$root/static/vendor/fontawesome-LICENSE.txt"
 echo "wrote $out (${#ICONS[@]} icons)" >&2
