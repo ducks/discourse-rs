@@ -303,8 +303,9 @@ then by what running a forum needs (milestone 6). Briefs:
     flair uploads, rewriting a renamed group's mentions, an editor who
     can no longer see the group (the redirect), the admin's group forms
     and manage pages),
-    82d. `feat/group-email-domains` S (automatic_group_membership,
-    set_automatic_groups on confirmation),
+    82d. ~~`feat/group-email-domains`~~ (done) S
+    (automatic_group_membership, set_automatic_groups on confirmation;
+    DiscourseConnect external emails refused),
     82e. `feat/group-membership-requests` S (join, leave,
     request_membership, handle_membership_request, set_notifications)
 83. `feat/web-hooks` L: web hooks, their events from core, deliveries

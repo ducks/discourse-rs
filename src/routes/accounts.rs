@@ -515,6 +515,7 @@ pub async fn password_reset_update(
 
     // password_reset_find_user(token, committing_change: true)
     let user_id = match confirm_email_token(
+        &state,
         &mut tx,
         &settings,
         &token,
@@ -749,6 +750,7 @@ pub async fn password_reset_update(
 /// `EmailToken.confirm(token, scope:)`: an unconfirmed, unexpired token of
 /// the scope (or none) confirmed, its user activated; the user's id.
 pub(crate) async fn confirm_email_token(
+    state: &AppState,
     conn: &mut sqlx::PgConnection,
     settings: &SiteSettings,
     token: &str,
@@ -793,15 +795,6 @@ pub(crate) async fn confirm_email_token(
             crate::Unsupported("reviewables for confirmed users (must_approve_users)").into(),
         );
     }
-    let automatic: bool = sqlx::query_scalar(
-        "SELECT EXISTS (SELECT 1 FROM groups WHERE NOT automatic \
-           AND LENGTH(COALESCE(automatic_membership_email_domains, '')) > 0)",
-    )
-    .fetch_one(&mut *conn)
-    .await?;
-    if automatic {
-        return Err(crate::Unsupported("automatic group membership by email domain").into());
-    }
     sqlx::query(
         "DELETE FROM user_custom_fields WHERE user_id = $1 AND name = 'activation_reminder'",
     )
@@ -811,6 +804,18 @@ pub(crate) async fn confirm_email_token(
     if !active {
         crate::signup::activate_user(&mut *conn, settings, user_id).await?;
     }
+    // set_automatic_groups
+    let host = crate::pretty_text::Host::from_state(state);
+    let promotion = crate::promotion::Ctx {
+        settings,
+        i18n: &state.i18n,
+        host: &host,
+    };
+    let cx = crate::group_manager::Cx {
+        state,
+        promotion: &promotion,
+    };
+    crate::group_manager::set_automatic_groups(conn, &cx, user_id).await?;
     Ok(Some(user_id))
 }
 
@@ -1013,7 +1018,7 @@ pub async fn perform_account_activation(
         return Ok(super::topics::not_found_response(&state));
     }
     let Some(user_id) =
-        confirm_email_token(&mut tx, &settings, &token, token_scopes::SIGNUP).await?
+        confirm_email_token(&state, &mut tx, &settings, &token, token_scopes::SIGNUP).await?
     else {
         tx.commit().await?;
         return Ok(json_error(

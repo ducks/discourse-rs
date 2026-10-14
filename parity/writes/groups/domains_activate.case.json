@@ -1,0 +1,13 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO groups (id, name, automatic_membership_email_domains, title, user_count, created_at, updated_at) VALUES (9001, 'domains', 'example.com', 'Domain', 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "UPDATE users SET active = FALSE WHERE id = 5"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/5/activate.json"
+    }
+  ]
+}

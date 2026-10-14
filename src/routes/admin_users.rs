@@ -1261,7 +1261,8 @@ async fn account_route(
             // User#activate
             let token =
                 crate::accounts::create_email_token(&mut tx, user_id, email, signup).await?;
-            super::accounts::confirm_email_token(&mut tx, &settings, &token, signup).await?;
+            super::accounts::confirm_email_token(&state, &mut tx, &settings, &token, signup)
+                .await?;
             log(ACTIVATE_USER, "user.activated_by_staff")
         }
         AccountAction::Deactivate => {
