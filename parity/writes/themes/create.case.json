@@ -1,0 +1,21 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "POST", "path": "/admin/themes.json", "params": {"theme": {"name": "Fresh"}}},
+    {"method": "POST", "path": "/admin/themes.json", "params": {"theme": {"name": "Widget", "component": "true"}}},
+    {"method": "POST", "path": "/admin/themes.json", "params": {"theme": {"name": "Picked", "user_selectable": "true", "color_scheme_id": "13"}}},
+    {"method": "POST", "path": "/admin/themes.json", "params": {"theme": {"name": ""}}},
+    {"method": "POST", "path": "/admin/themes.json", "params": {"theme": {"name": "Comp with scheme", "component": "true", "color_scheme_id": "13"}}},
+    {"method": "GET", "path": "/admin/themes.json"},
+    {"method": "GET", "path": "/admin/config/customize/components.json"}
+  ],
+  "unordered_responses": [
+    "/responses/0/body/theme/theme_fields",
+    "/responses/5/body/themes/0/theme_fields",
+    "/responses/5/body/themes/1/theme_fields",
+    "/responses/5/body/themes/2/theme_fields",
+    "/responses/5/body/themes/3/theme_fields",
+    "/responses/5/body/themes/4/theme_fields",
+    "/responses/5/body/themes/5/theme_fields"
+  ]
+}

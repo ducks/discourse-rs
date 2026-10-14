@@ -248,6 +248,30 @@ pub fn html5_fragment_to_s(html: &str) -> Result<String, Error> {
     Ok(dom::serialize(&frag))
 }
 
+/// `Nokogiri::HTML5.fragment(html)` with each element handed to `visit`
+/// in document order (it may change attributes), then `to_s`.
+pub fn html5_fragment_edit(html: &str, mut visit: impl FnMut(&Handle)) -> Result<String, Error> {
+    fn walk(node: &Handle, visit: &mut impl FnMut(&Handle)) {
+        for child in dom::children(node) {
+            if dom::is_element(&child) {
+                visit(&child);
+            }
+            walk(&child, visit);
+        }
+    }
+    let frag = dom::parse_fragment(html, &config::ParserOptions::default())?;
+    walk(&frag, &mut visit);
+    Ok(dom::serialize(&frag))
+}
+
+/// An element's lowercase name, None for other nodes.
+pub fn element_name(node: &Handle) -> Option<String> {
+    match &node.data {
+        NodeData::Element { name, .. } => Some(name.local.to_lowercase()),
+        _ => None,
+    }
+}
+
 /// `Sanitize.document(html, config)`
 pub fn document(html: &str, config: &Config) -> Result<String, Error> {
     Sanitizer::new(config).document(html)

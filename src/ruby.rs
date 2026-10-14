@@ -27,6 +27,17 @@ pub fn to_i(s: &str) -> i64 {
     if neg { -n } else { n }
 }
 
+/// `Float#to_s` for the values settings hold: a whole number keeps its
+/// `.0`; beyond 1e16 Ruby switches to exponent form, refused by callers'
+/// ranges in practice and written as Rust does.
+pub fn float_to_s(f: f64) -> String {
+    if f.is_finite() && f.fract() == 0.0 && f.abs() < 1e16 {
+        format!("{f:.1}")
+    } else {
+        f.to_string()
+    }
+}
+
 /// `String#to_f`, restricted to the plain decimal forms settings use.
 pub fn to_f(s: &str) -> f64 {
     let s = s.trim_start();

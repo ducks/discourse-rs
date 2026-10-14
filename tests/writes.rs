@@ -532,6 +532,36 @@ fn ignore_in_payloads(doc: &mut Value, ignore: &[String]) {
     }
 }
 
+/// The columns a case names in `digests` (`table.column`): SHA1 digests
+/// no two runs share (a theme scss field's value_baked digests CSS whose
+/// source map names the compile's temporary directory), compared as
+/// `<digest>` wherever they hold one.
+fn digests(doc: &mut Value, case: &Value) {
+    let mask = |v: &mut Value| {
+        if v.as_str()
+            .is_some_and(|s| s.len() == 40 && s.bytes().all(|b| b.is_ascii_hexdigit()))
+        {
+            *v = Value::String("<digest>".into());
+        }
+    };
+    for spec in case["digests"].as_array().into_iter().flatten() {
+        let Some((table, column)) = spec.as_str().and_then(|s| s.split_once('.')) else {
+            continue;
+        };
+        let change = &mut doc["changes"][table];
+        for kind in ["inserted", "deleted"] {
+            for row in change[kind].as_array_mut().into_iter().flatten() {
+                mask(&mut row[column]);
+            }
+        }
+        for row in change["updated"].as_array_mut().into_iter().flatten() {
+            for side in ["before", "after"] {
+                mask(&mut row[side][column]);
+            }
+        }
+    }
+}
+
 fn approximate(doc: &mut Value, case: &Value) {
     let round = |v: &mut Value| {
         if let Some(f) = v.as_f64().filter(|f| *f != 0.0 && f.is_finite()) {
@@ -861,12 +891,13 @@ fn web_hook_values(doc: &mut Value) {
 }
 
 /// DateTime#to_s times inside a longer text (a staff log's details), in
-/// whole seconds, taken during the case: `<now>`.
+/// whole seconds, and JSON's millisecond times (a theme log's serialized
+/// theme), taken during the case: `<now>`.
 fn embedded_now(s: &str, started: NaiveDateTime) -> String {
     // DateTime#to_s, or TimeWithZone#to_s (a staff log's list of changes).
     static ISO: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
         regex::Regex::new(
-            r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+00:00|\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} UTC",
+            r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+00:00|\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} UTC|\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z",
         )
         .unwrap()
     });
@@ -1901,6 +1932,7 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
                     web_hook_values(&mut rails);
                     ignore_in_payloads(&mut rails, ignore);
                     approximate(&mut rails, case);
+                    digests(&mut rails, case);
                     unordered(&mut rails, case);
                     unordered_responses(&mut rails, case);
                     random_delays(&mut rails, case);
@@ -1918,6 +1950,7 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
                     web_hook_values(&mut ours);
                     ignore_in_payloads(&mut ours, ignore);
                     approximate(&mut ours, case);
+                    digests(&mut ours, case);
                     unordered(&mut ours, case);
                     unordered_responses(&mut ours, case);
                     random_delays(&mut ours, case);

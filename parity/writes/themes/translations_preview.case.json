@@ -1,0 +1,11 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "GET", "path": "/admin/themes/-2/translations/en.json"},
+    {"method": "GET", "path": "/admin/themes/-1/translations/en.json"},
+    {"method": "GET", "path": "/admin/themes/-2/translations/xx.json"},
+    {"method": "GET", "path": "/admin/themes/999/translations/en.json"},
+    {"method": "GET", "path": "/admin/themes/-2/preview"},
+    {"method": "GET", "path": "/admin/themes/999/preview"}
+  ]
+}

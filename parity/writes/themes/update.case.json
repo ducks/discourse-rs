@@ -1,0 +1,22 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "POST", "path": "/admin/themes.json", "params": {"theme": {"name": "Base"}}},
+    {"method": "PUT", "path": "/admin/themes/{{responses.0.body.theme.id}}.json", "params": {"theme": {"name": "Renamed", "user_selectable": "true", "color_scheme_id": "13", "dark_color_scheme_id": "2"}}},
+    {"method": "PUT", "path": "/admin/themes/{{responses.0.body.theme.id}}.json", "params": {"theme": {"default": "true"}}},
+    {"method": "PUT", "path": "/admin/themes/{{responses.0.body.theme.id}}.json", "params": {"theme": {"default": "false"}}},
+    {"method": "PUT", "path": "/admin/themes/{{responses.0.body.theme.id}}.json", "params": {"theme": {"name": "Renamed"}}},
+    {"method": "PUT", "path": "/admin/themes/{{responses.0.body.theme.id}}.json", "params": {"theme": {"theme_fields": [{"name": "after_header", "target": "mobile", "value": "<section>Mobile only</section>"}]}}},
+    {"method": "PUT", "path": "/admin/themes/{{responses.0.body.theme.id}}.json", "params": {"theme": {"theme_fields": [{"name": "after_header", "target": "mobile", "value": ""}]}}},
+    {"method": "PUT", "path": "/admin/themes/999.json", "params": {"theme": {"name": "Nope"}}}
+  ],
+  "unordered_responses": [
+    "/responses/0/body/theme/theme_fields",
+    "/responses/1/body/theme/theme_fields",
+    "/responses/2/body/theme/theme_fields",
+    "/responses/3/body/theme/theme_fields",
+    "/responses/4/body/theme/theme_fields",
+    "/responses/5/body/theme/theme_fields",
+    "/responses/6/body/theme/theme_fields"
+  ]
+}

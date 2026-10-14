@@ -511,14 +511,25 @@ then by what running a forum needs (milestone 6). Briefs:
     /admin/themes/:id/site-setting, the 400-style refusal of themeable
     settings through PUT /admin/site_settings, scheme colors that set
     color_transformations' variables. Left, split on: 90e.
-    `feat/theme-writes` L (create, update with log_theme_change's
-    strip_duplicates JSON, destroy, bulk_destroy, child themes,
-    components' enable and disable, the default theme, user theme_ids on
-    PUT /u; html fields baked through Nokogiri's fragment, translation
-    fields through process_translation, `compiler_version` read from a
-    baked row; refused: scss and extra_js fields (stylesheet and
-    ThemeJavascriptCompiler), inline scripts (AssetProcessor), and
-    therefore theme setting changes, which rebake scss fields), 90f.
+    ~~`feat/theme-writes`~~ (done) L (create, update with
+    log_theme_change's strip_duplicates JSON, destroy, bulk_destroy,
+    child and parent themes, components' enable and disable and the
+    switch between theme and component, the default theme, theme
+    settings through update and update_single_setting (with
+    ThemeSetting's modifier refresh), theme translations, get
+    translations and preview, user theme_ids on PUT /u; the theme's
+    after_save: fields saved, dependents invalidated, html fields baked
+    through Nokogiri's fragment with the CSP nonce, translation fields
+    into their javascript caches, settings YAML validated, tests and
+    migrations marked baked, `compiler_version` read from a baked row,
+    and scss fields rebaked with a digest of their own: Rails' is the
+    SHA1 of CSS whose source map names the compile's temporary
+    directory, so no two compiles share it and cases compare it as
+    `<digest>` (the `digests` key). Refused: new or changed scss values
+    (their compile errors), extra_js (ThemeJavascriptCompiler), inline
+    scripts (AssetProcessor), migrations, uploads and svg sprites,
+    other locales' translations, settings that request a refresh,
+    destroying a theme's own color schemes), 90f.
     `feat/theme-imports` M (import, export, remote themes, uploads,
     objects settings, the design wizard), 90g. `feat/admin-shell` L (the
     admin pages' HTML: the port has none; /admin/customize/* and

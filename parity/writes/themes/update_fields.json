@@ -1,0 +1,1064 @@
+{
+  "name": "update_fields",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/themes.json",
+      "params": {
+        "theme": {
+          "name": "Layered",
+          "theme_fields": [
+            {
+              "name": "head_tag",
+              "target": "common",
+              "value": "<script src=\"https://example.com/widget.js\" defer></script><link rel=\"stylesheet\" href=\"/x.css\">"
+            },
+            {
+              "name": "body_tag",
+              "target": "mobile",
+              "value": "<script type=\"text/x-template\">tmpl</script>Café &amp; tea <img src=/a.png alt='q'>"
+            },
+            {
+              "name": "en",
+              "target": "translations",
+              "value": "en:\n  title: Layered\n  nested:\n    deep: Deep text\n"
+            },
+            {
+              "name": "yaml",
+              "target": "settings",
+              "value": "accent: blue\nmissing:\n  type: integer\nratio: 1.5\n"
+            },
+            {
+              "name": "first",
+              "target": "tests_js",
+              "value": "acceptance('x', function() {});",
+              "type_id": "6"
+            },
+            {
+              "name": "about",
+              "target": "about",
+              "value": "{}",
+              "type_id": "8"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/{{responses.0.body.theme.id}}.json",
+      "params": {
+        "theme": {
+          "name": "Layered too"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/{{responses.0.body.theme.id}}.json",
+      "params": {
+        "theme": {
+          "theme_fields": [
+            {
+              "name": "en",
+              "target": "translations",
+              "value": "en:\n  title: Layered again\n"
+            },
+            {
+              "name": "yaml",
+              "target": "settings",
+              "value": "accent: blue\nratio: 1.5\n"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/{{responses.0.body.theme.id}}/setting.json",
+      "params": {
+        "name": "ratio",
+        "value": "2"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/{{responses.0.body.theme.id}}/setting.json",
+      "params": {
+        "name": "accent",
+        "value": "red"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/{{responses.0.body.theme.id}}.json",
+      "params": {
+        "theme": {
+          "theme_fields": [
+            {
+              "name": "en",
+              "target": "translations",
+              "value": ""
+            },
+            {
+              "name": "head_tag",
+              "target": "common",
+              "value": ""
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/themes/{{responses.0.body.theme.id}}.json"
+    }
+  ],
+  "started_at": "2026-10-14T19:23:07.559609",
+  "transaction_started_at": "2026-10-14T19:23:03.740358",
+  "responses": [
+    {
+      "status": 201,
+      "body": {
+        "theme": {
+          "id": 1,
+          "name": "Layered",
+          "description": null,
+          "created_at": "2026-10-14T19:23:07.596Z",
+          "updated_at": "2026-10-14T19:23:07.596Z",
+          "component": false,
+          "color_scheme_id": null,
+          "dark_color_scheme_id": null,
+          "user_selectable": false,
+          "auto_update": true,
+          "remote_theme_id": null,
+          "settings": [],
+          "themeable_site_settings": [
+            {
+              "setting": "enable_welcome_banner",
+              "default": "true",
+              "description": "Display a banner on your main topic list pages to welcome members and allow them to search site content",
+              "humanized_name": "Enable welcome banner",
+              "type": "bool",
+              "value": "true"
+            },
+            {
+              "setting": "search_experience",
+              "default": "search_icon",
+              "description": "The default position and appearance of search on desktop devices",
+              "humanized_name": "Search experience",
+              "type": "enum",
+              "valid_values": [
+                {
+                  "name": "search.experience.search_field",
+                  "value": "search_field"
+                },
+                {
+                  "name": "search.experience.search_icon",
+                  "value": "search_icon"
+                }
+              ],
+              "translate_names": true,
+              "value": "search_icon"
+            }
+          ],
+          "errors": [
+            "Setting `missing` has no default value."
+          ],
+          "supported": true,
+          "enabled": true,
+          "theme_fields": [
+            {
+              "name": "head_tag",
+              "target": "common",
+              "value": "<script src=\"https://example.com/widget.js\" defer></script><link rel=\"stylesheet\" href=\"/x.css\">",
+              "type_id": 0,
+              "file_path": "common/head_tag.html"
+            },
+            {
+              "name": "body_tag",
+              "target": "mobile",
+              "value": "<script type=\"text/x-template\">tmpl</script>Café &amp; tea <img src=/a.png alt='q'>",
+              "type_id": 0,
+              "file_path": "mobile/body_tag.html"
+            },
+            {
+              "name": "yaml",
+              "target": "settings",
+              "value": "accent: blue\nmissing:\n  type: integer\nratio: 1.5\n",
+              "error": "Setting `missing` has no default value.",
+              "type_id": 5,
+              "file_path": "settings.yml"
+            },
+            {
+              "name": "en",
+              "target": "translations",
+              "value": "en:\n  title: Layered\n  nested:\n    deep: Deep text\n",
+              "type_id": 5,
+              "file_path": "locales/en.yml"
+            },
+            {
+              "name": "first",
+              "target": "tests_js",
+              "value": "acceptance('x', function() {});",
+              "type_id": 6,
+              "file_path": "test/first"
+            },
+            {
+              "name": "about",
+              "target": "about",
+              "value": "{}",
+              "type_id": 8,
+              "file_path": "about.json"
+            }
+          ],
+          "screenshot_dark_url": null,
+          "screenshot_light_url": null,
+          "system": false,
+          "only_theme_color_schemes": false,
+          "color_scheme": null,
+          "user": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "title": null
+          },
+          "child_themes": [],
+          "parent_themes": [],
+          "remote_theme": null,
+          "translations": [
+            {
+              "key": "title",
+              "value": "Layered",
+              "default": "Layered"
+            },
+            {
+              "key": "nested.deep",
+              "value": "Deep text",
+              "default": "Deep text"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "theme": {
+          "id": 1,
+          "name": "Layered too",
+          "description": null,
+          "created_at": "2026-10-14T19:23:07.596Z",
+          "updated_at": "2026-10-14T19:23:07.867Z",
+          "component": false,
+          "color_scheme_id": null,
+          "dark_color_scheme_id": null,
+          "user_selectable": false,
+          "auto_update": true,
+          "remote_theme_id": null,
+          "settings": [],
+          "themeable_site_settings": [
+            {
+              "setting": "enable_welcome_banner",
+              "default": "true",
+              "description": "Display a banner on your main topic list pages to welcome members and allow them to search site content",
+              "humanized_name": "Enable welcome banner",
+              "type": "bool",
+              "value": "true"
+            },
+            {
+              "setting": "search_experience",
+              "default": "search_icon",
+              "description": "The default position and appearance of search on desktop devices",
+              "humanized_name": "Search experience",
+              "type": "enum",
+              "valid_values": [
+                {
+                  "name": "search.experience.search_field",
+                  "value": "search_field"
+                },
+                {
+                  "name": "search.experience.search_icon",
+                  "value": "search_icon"
+                }
+              ],
+              "translate_names": true,
+              "value": "search_icon"
+            }
+          ],
+          "errors": [
+            "Setting `missing` has no default value."
+          ],
+          "supported": true,
+          "enabled": true,
+          "theme_fields": [
+            {
+              "name": "head_tag",
+              "target": "common",
+              "value": "<script src=\"https://example.com/widget.js\" defer></script><link rel=\"stylesheet\" href=\"/x.css\">",
+              "type_id": 0,
+              "file_path": "common/head_tag.html"
+            },
+            {
+              "name": "body_tag",
+              "target": "mobile",
+              "value": "<script type=\"text/x-template\">tmpl</script>Café &amp; tea <img src=/a.png alt='q'>",
+              "type_id": 0,
+              "file_path": "mobile/body_tag.html"
+            },
+            {
+              "name": "yaml",
+              "target": "settings",
+              "value": "accent: blue\nmissing:\n  type: integer\nratio: 1.5\n",
+              "error": "Setting `missing` has no default value.",
+              "type_id": 5,
+              "file_path": "settings.yml"
+            },
+            {
+              "name": "en",
+              "target": "translations",
+              "value": "en:\n  title: Layered\n  nested:\n    deep: Deep text\n",
+              "type_id": 5,
+              "file_path": "locales/en.yml"
+            },
+            {
+              "name": "first",
+              "target": "tests_js",
+              "value": "acceptance('x', function() {});",
+              "type_id": 6,
+              "file_path": "test/first"
+            },
+            {
+              "name": "about",
+              "target": "about",
+              "value": "{}",
+              "type_id": 8,
+              "file_path": "about.json"
+            }
+          ],
+          "screenshot_dark_url": null,
+          "screenshot_light_url": null,
+          "system": false,
+          "only_theme_color_schemes": false,
+          "color_scheme": null,
+          "user": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "title": null
+          },
+          "child_themes": [],
+          "parent_themes": [],
+          "remote_theme": null,
+          "translations": [
+            {
+              "key": "title",
+              "value": "Layered",
+              "default": "Layered"
+            },
+            {
+              "key": "nested.deep",
+              "value": "Deep text",
+              "default": "Deep text"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "theme": {
+          "id": 1,
+          "name": "Layered too",
+          "description": null,
+          "created_at": "2026-10-14T19:23:07.596Z",
+          "updated_at": "2026-10-14T19:23:07.867Z",
+          "component": false,
+          "color_scheme_id": null,
+          "dark_color_scheme_id": null,
+          "user_selectable": false,
+          "auto_update": true,
+          "remote_theme_id": null,
+          "settings": [
+            {
+              "setting": "accent",
+              "humanized_name": "Accent",
+              "type": "string",
+              "default": "blue",
+              "value": "blue",
+              "textarea": false
+            },
+            {
+              "setting": "ratio",
+              "humanized_name": "Ratio",
+              "type": "float",
+              "default": 1.5,
+              "value": 1.5
+            }
+          ],
+          "themeable_site_settings": [
+            {
+              "setting": "enable_welcome_banner",
+              "default": "true",
+              "description": "Display a banner on your main topic list pages to welcome members and allow them to search site content",
+              "humanized_name": "Enable welcome banner",
+              "type": "bool",
+              "value": "true"
+            },
+            {
+              "setting": "search_experience",
+              "default": "search_icon",
+              "description": "The default position and appearance of search on desktop devices",
+              "humanized_name": "Search experience",
+              "type": "enum",
+              "valid_values": [
+                {
+                  "name": "search.experience.search_field",
+                  "value": "search_field"
+                },
+                {
+                  "name": "search.experience.search_icon",
+                  "value": "search_icon"
+                }
+              ],
+              "translate_names": true,
+              "value": "search_icon"
+            }
+          ],
+          "supported": true,
+          "enabled": true,
+          "theme_fields": [
+            {
+              "name": "head_tag",
+              "target": "common",
+              "value": "<script src=\"https://example.com/widget.js\" defer></script><link rel=\"stylesheet\" href=\"/x.css\">",
+              "type_id": 0,
+              "file_path": "common/head_tag.html"
+            },
+            {
+              "name": "body_tag",
+              "target": "mobile",
+              "value": "<script type=\"text/x-template\">tmpl</script>Café &amp; tea <img src=/a.png alt='q'>",
+              "type_id": 0,
+              "file_path": "mobile/body_tag.html"
+            },
+            {
+              "name": "yaml",
+              "target": "settings",
+              "value": "accent: blue\nratio: 1.5\n",
+              "type_id": 5,
+              "file_path": "settings.yml"
+            },
+            {
+              "name": "en",
+              "target": "translations",
+              "value": "en:\n  title: Layered again\n",
+              "type_id": 5,
+              "file_path": "locales/en.yml"
+            },
+            {
+              "name": "first",
+              "target": "tests_js",
+              "value": "acceptance('x', function() {});",
+              "type_id": 6,
+              "file_path": "test/first"
+            },
+            {
+              "name": "about",
+              "target": "about",
+              "value": "{}",
+              "type_id": 8,
+              "file_path": "about.json"
+            }
+          ],
+          "screenshot_dark_url": null,
+          "screenshot_light_url": null,
+          "system": false,
+          "only_theme_color_schemes": false,
+          "color_scheme": null,
+          "user": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "title": null
+          },
+          "child_themes": [],
+          "parent_themes": [],
+          "remote_theme": null,
+          "translations": [
+            {
+              "key": "title",
+              "value": "Layered again",
+              "default": "Layered again"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "ratio": 2.0
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "accent": "red"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "theme": {
+          "id": 1,
+          "name": "Layered too",
+          "description": null,
+          "created_at": "2026-10-14T19:23:07.596Z",
+          "updated_at": "2026-10-14T19:23:07.867Z",
+          "component": false,
+          "color_scheme_id": null,
+          "dark_color_scheme_id": null,
+          "user_selectable": false,
+          "auto_update": true,
+          "remote_theme_id": null,
+          "settings": [
+            {
+              "setting": "accent",
+              "humanized_name": "Accent",
+              "type": "string",
+              "default": "blue",
+              "value": "red",
+              "textarea": false
+            },
+            {
+              "setting": "ratio",
+              "humanized_name": "Ratio",
+              "type": "float",
+              "default": 1.5,
+              "value": 2.0
+            }
+          ],
+          "themeable_site_settings": [
+            {
+              "setting": "enable_welcome_banner",
+              "default": "true",
+              "description": "Display a banner on your main topic list pages to welcome members and allow them to search site content",
+              "humanized_name": "Enable welcome banner",
+              "type": "bool",
+              "value": "true"
+            },
+            {
+              "setting": "search_experience",
+              "default": "search_icon",
+              "description": "The default position and appearance of search on desktop devices",
+              "humanized_name": "Search experience",
+              "type": "enum",
+              "valid_values": [
+                {
+                  "name": "search.experience.search_field",
+                  "value": "search_field"
+                },
+                {
+                  "name": "search.experience.search_icon",
+                  "value": "search_icon"
+                }
+              ],
+              "translate_names": true,
+              "value": "search_icon"
+            }
+          ],
+          "supported": true,
+          "enabled": true,
+          "theme_fields": [
+            {
+              "name": "body_tag",
+              "target": "mobile",
+              "value": "<script type=\"text/x-template\">tmpl</script>Café &amp; tea <img src=/a.png alt='q'>",
+              "type_id": 0,
+              "file_path": "mobile/body_tag.html"
+            },
+            {
+              "name": "yaml",
+              "target": "settings",
+              "value": "accent: blue\nratio: 1.5\n",
+              "type_id": 5,
+              "file_path": "settings.yml"
+            },
+            {
+              "name": "first",
+              "target": "tests_js",
+              "value": "acceptance('x', function() {});",
+              "type_id": 6,
+              "file_path": "test/first"
+            },
+            {
+              "name": "about",
+              "target": "about",
+              "value": "{}",
+              "type_id": 8,
+              "file_path": "about.json"
+            }
+          ],
+          "screenshot_dark_url": null,
+          "screenshot_light_url": null,
+          "system": false,
+          "only_theme_color_schemes": false,
+          "color_scheme": null,
+          "user": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "title": null
+          },
+          "child_themes": [],
+          "parent_themes": [],
+          "remote_theme": null,
+          "translations": []
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "theme": {
+          "id": 1,
+          "name": "Layered too",
+          "description": null,
+          "created_at": "2026-10-14T19:23:07.596Z",
+          "updated_at": "2026-10-14T19:23:07.867Z",
+          "component": false,
+          "color_scheme_id": null,
+          "dark_color_scheme_id": null,
+          "user_selectable": false,
+          "auto_update": true,
+          "remote_theme_id": null,
+          "settings": [
+            {
+              "setting": "accent",
+              "humanized_name": "Accent",
+              "type": "string",
+              "default": "blue",
+              "value": "red",
+              "textarea": false
+            },
+            {
+              "setting": "ratio",
+              "humanized_name": "Ratio",
+              "type": "float",
+              "default": 1.5,
+              "value": 2.0
+            }
+          ],
+          "themeable_site_settings": [
+            {
+              "setting": "enable_welcome_banner",
+              "default": "true",
+              "description": "Display a banner on your main topic list pages to welcome members and allow them to search site content",
+              "humanized_name": "Enable welcome banner",
+              "type": "bool",
+              "value": "true"
+            },
+            {
+              "setting": "search_experience",
+              "default": "search_icon",
+              "description": "The default position and appearance of search on desktop devices",
+              "humanized_name": "Search experience",
+              "type": "enum",
+              "valid_values": [
+                {
+                  "name": "search.experience.search_field",
+                  "value": "search_field"
+                },
+                {
+                  "name": "search.experience.search_icon",
+                  "value": "search_icon"
+                }
+              ],
+              "translate_names": true,
+              "value": "search_icon"
+            }
+          ],
+          "supported": true,
+          "enabled": true,
+          "theme_fields": [
+            {
+              "name": "body_tag",
+              "target": "mobile",
+              "value": "<script type=\"text/x-template\">tmpl</script>Café &amp; tea <img src=/a.png alt='q'>",
+              "type_id": 0,
+              "file_path": "mobile/body_tag.html"
+            },
+            {
+              "name": "yaml",
+              "target": "settings",
+              "value": "accent: blue\nratio: 1.5\n",
+              "type_id": 5,
+              "file_path": "settings.yml"
+            },
+            {
+              "name": "first",
+              "target": "tests_js",
+              "value": "acceptance('x', function() {});",
+              "type_id": 6,
+              "file_path": "test/first"
+            },
+            {
+              "name": "about",
+              "target": "about",
+              "value": "{}",
+              "type_id": 8,
+              "file_path": "about.json"
+            }
+          ],
+          "screenshot_dark_url": null,
+          "screenshot_light_url": null,
+          "system": false,
+          "only_theme_color_schemes": false,
+          "color_scheme": null,
+          "user": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "title": null
+          },
+          "child_themes": [],
+          "parent_themes": [],
+          "remote_theme": null,
+          "translations": []
+        }
+      }
+    }
+  ],
+  "changes": {
+    "theme_fields": {
+      "inserted": [
+        {
+          "id": 174,
+          "name": "about",
+          "error": null,
+          "value": "{}",
+          "type_id": 8,
+          "theme_id": 1,
+          "target_id": 9,
+          "upload_id": null,
+          "created_at": "2026-10-14T19:23:07.614303",
+          "updated_at": "2026-10-14T19:23:07.614303",
+          "value_baked": null,
+          "compiler_version": "0"
+        },
+        {
+          "id": 173,
+          "name": "first",
+          "error": null,
+          "value": "acceptance('x', function() {});",
+          "type_id": 6,
+          "theme_id": 1,
+          "target_id": 7,
+          "upload_id": null,
+          "created_at": "2026-10-14T19:23:07.612851",
+          "updated_at": "2026-10-14T19:23:07.612851",
+          "value_baked": "baked",
+          "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+        },
+        {
+          "id": 172,
+          "name": "yaml",
+          "error": null,
+          "value": "accent: blue\nratio: 1.5\n",
+          "type_id": 5,
+          "theme_id": 1,
+          "target_id": 3,
+          "upload_id": null,
+          "created_at": "2026-10-14T19:23:07.607139",
+          "updated_at": "2026-10-14T19:23:08.551032",
+          "value_baked": "baked",
+          "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+        },
+        {
+          "id": 170,
+          "name": "body_tag",
+          "error": null,
+          "value": "<script type=\"text/x-template\">tmpl</script>Café &amp; tea <img src=/a.png alt='q'>",
+          "type_id": 0,
+          "theme_id": 1,
+          "target_id": 2,
+          "upload_id": null,
+          "created_at": "2026-10-14T19:23:07.602154",
+          "updated_at": "2026-10-14T19:23:07.602154",
+          "value_baked": "<script type=\"text/x-template\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\">tmpl</script>Café &amp; tea <img src=\"/a.png\" alt=\"q\">",
+          "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "theme_modifier_sets": {
+      "inserted": [
+        {
+          "id": 3,
+          "theme_id": 1,
+          "svg_icons": null,
+          "csp_extensions": null,
+          "custom_homepage": null,
+          "topic_thumbnail_sizes": null,
+          "serialize_topic_is_hot": null,
+          "theme_setting_modifiers": null,
+          "only_theme_color_schemes": null,
+          "serialize_topic_excerpts": null,
+          "serialize_post_user_badges": null,
+          "serialize_topic_op_likes_data": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "theme_settings": {
+      "inserted": [
+        {
+          "id": 1,
+          "name": "ratio",
+          "value": "2.0",
+          "theme_id": 1,
+          "data_type": 1,
+          "created_at": "2026-10-14T19:23:08.831742",
+          "json_value": null,
+          "updated_at": "2026-10-14T19:23:08.831742"
+        },
+        {
+          "id": 2,
+          "name": "accent",
+          "value": "red",
+          "theme_id": 1,
+          "data_type": 2,
+          "created_at": "2026-10-14T19:23:09.471576",
+          "json_value": null,
+          "updated_at": "2026-10-14T19:23:09.471576"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "themes": {
+      "inserted": [
+        {
+          "id": 1,
+          "name": "Layered too",
+          "hidden": false,
+          "enabled": true,
+          "user_id": 1,
+          "component": false,
+          "created_at": "2026-10-14T19:23:07.596881",
+          "updated_at": "2026-10-14T19:23:07.867386",
+          "auto_update": true,
+          "color_scheme_id": null,
+          "remote_theme_id": null,
+          "user_selectable": false,
+          "compiler_version": 0,
+          "dark_color_scheme_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 128,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "lYillRzKWZ6dNsb/+aTesR5w9Cw=",
+            "created_at": "2026-10-14T19:23:05.436638",
+            "rotated_at": "2026-10-14T19:23:05.430922",
+            "updated_at": "2026-10-14T19:23:05.436638",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "lYillRzKWZ6dNsb/+aTesR5w9Cw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 128,
+            "seen_at": "2026-10-14T19:23:07.568",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "lYillRzKWZ6dNsb/+aTesR5w9Cw=",
+            "created_at": "2026-10-14T19:23:05.436638",
+            "rotated_at": "2026-10-14T19:23:05.430922",
+            "updated_at": "2026-10-14T19:23:05.436638",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "lYillRzKWZ6dNsb/+aTesR5w9Cw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 4,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Layered",
+          "topic_id": null,
+          "new_value": "{\"id\":1,\"name\":\"Layered\",\"description\":null,\"created_at\":\"2026-10-14T19:23:07.596Z\",\"updated_at\":\"2026-10-14T19:23:07.596Z\",\"component\":false,\"color_scheme_id\":null,\"dark_color_scheme_id\":null,\"user_selectable\":false,\"auto_update\":true,\"remote_theme_id\":null,\"settings\":[],\"themeable_site_settings\":[{\"setting\":\"enable_welcome_banner\",\"default\":\"true\",\"description\":\"Display a banner on your main topic list pages to welcome members and allow them to search site content\",\"humanized_name\":\"Enable welcome banner\",\"type\":\"bool\",\"value\":\"true\"},{\"setting\":\"search_experience\",\"default\":\"search_icon\",\"description\":\"The default position and appearance of search on desktop devices\",\"humanized_name\":\"Search experience\",\"type\":\"enum\",\"valid_values\":[{\"name\":\"search.experience.search_field\",\"value\":\"search_field\"},{\"name\":\"search.experience.search_icon\",\"value\":\"search_icon\"}],\"translate_names\":true,\"value\":\"search_icon\"}],\"errors\":[\"Setting `missing` has no default value.\"],\"supported\":true,\"enabled\":true,\"theme_fields\":[{\"name\":\"head_tag\",\"target\":\"common\",\"value\":\"\\u003cscript src=\\\"https://example.com/widget.js\\\" defer\\u003e\\u003c/script\\u003e\\u003clink rel=\\\"stylesheet\\\" href=\\\"/x.css\\\"\\u003e\",\"type_id\":0,\"file_path\":\"common/head_tag.html\"},{\"name\":\"body_tag\",\"target\":\"mobile\",\"value\":\"\\u003cscript type=\\\"text/x-template\\\"\\u003etmpl\\u003c/script\\u003eCafé \\u0026amp; tea \\u003cimg src=/a.png alt='q'\\u003e\",\"type_id\":0,\"file_path\":\"mobile/body_tag.html\"},{\"name\":\"yaml\",\"target\":\"settings\",\"value\":\"accent: blue\\nmissing:\\n  type: integer\\nratio: 1.5\\n\",\"error\":\"Setting `missing` has no default value.\",\"type_id\":5,\"file_path\":\"settings.yml\"},{\"name\":\"en\",\"target\":\"translations\",\"value\":\"en:\\n  title: Layered\\n  nested:\\n    deep: Deep text\\n\",\"type_id\":5,\"file_path\":\"locales/en.yml\"},{\"name\":\"first\",\"target\":\"tests_js\",\"value\":\"acceptance('x', function() {});\",\"type_id\":6,\"file_path\":\"test/first\"},{\"name\":\"about\",\"target\":\"about\",\"value\":\"{}\",\"type_id\":8,\"file_path\":\"about.json\"}],\"screenshot_dark_url\":null,\"screenshot_light_url\":null,\"system\":false,\"only_theme_color_schemes\":false,\"color_scheme\":null,\"user\":{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"title\":null},\"child_themes\":[],\"parent_themes\":[],\"remote_theme\":null,\"translations\":[{\"key\":\"title\",\"value\":\"Layered\",\"default\":\"Layered\"},{\"key\":\"nested.deep\",\"value\":\"Deep text\",\"default\":\"Deep text\"}]}",
+          "admin_only": true,
+          "created_at": "2026-10-14T19:23:07.738689",
+          "ip_address": null,
+          "updated_at": "2026-10-14T19:23:07.738689",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 75,
+          "email": null,
+          "action": 4,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Layered too",
+          "topic_id": null,
+          "new_value": "{\"id\":1,\"name\":\"Layered too\",\"updated_at\":\"2026-10-14T19:23:07.867Z\"}",
+          "admin_only": true,
+          "created_at": "2026-10-14T19:23:08.382156",
+          "ip_address": null,
+          "updated_at": "2026-10-14T19:23:08.382156",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "{\"id\":1,\"name\":\"Layered\",\"updated_at\":\"2026-10-14T19:23:07.596Z\"}",
+          "target_user_id": null
+        },
+        {
+          "id": 76,
+          "email": null,
+          "action": 4,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Layered too",
+          "topic_id": null,
+          "new_value": "{\"id\":1,\"name\":\"Layered too\",\"settings\":[{\"setting\":\"accent\",\"humanized_name\":\"Accent\",\"type\":\"string\",\"default\":\"blue\",\"value\":\"blue\",\"textarea\":false},{\"setting\":\"ratio\",\"humanized_name\":\"Ratio\",\"type\":\"float\",\"default\":1.5,\"value\":1.5}],\"theme_fields\":[{\"name\":\"head_tag\",\"target\":\"common\",\"value\":\"\\u003cscript src=\\\"https://example.com/widget.js\\\" defer\\u003e\\u003c/script\\u003e\\u003clink rel=\\\"stylesheet\\\" href=\\\"/x.css\\\"\\u003e\",\"type_id\":0,\"file_path\":\"common/head_tag.html\"},{\"name\":\"body_tag\",\"target\":\"mobile\",\"value\":\"\\u003cscript type=\\\"text/x-template\\\"\\u003etmpl\\u003c/script\\u003eCafé \\u0026amp; tea \\u003cimg src=/a.png alt='q'\\u003e\",\"type_id\":0,\"file_path\":\"mobile/body_tag.html\"},{\"name\":\"yaml\",\"target\":\"settings\",\"value\":\"accent: blue\\nratio: 1.5\\n\",\"type_id\":5,\"file_path\":\"settings.yml\"},{\"name\":\"en\",\"target\":\"translations\",\"value\":\"en:\\n  title: Layered again\\n\",\"type_id\":5,\"file_path\":\"locales/en.yml\"},{\"name\":\"first\",\"target\":\"tests_js\",\"value\":\"acceptance('x', function() {});\",\"type_id\":6,\"file_path\":\"test/first\"},{\"name\":\"about\",\"target\":\"about\",\"value\":\"{}\",\"type_id\":8,\"file_path\":\"about.json\"}],\"translations\":[{\"key\":\"title\",\"value\":\"Layered again\",\"default\":\"Layered again\"}]}",
+          "admin_only": true,
+          "created_at": "2026-10-14T19:23:08.731332",
+          "ip_address": null,
+          "updated_at": "2026-10-14T19:23:08.731332",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "{\"id\":1,\"name\":\"Layered too\",\"settings\":[],\"errors\":[\"Setting `missing` has no default value.\"],\"theme_fields\":[{\"name\":\"head_tag\",\"target\":\"common\",\"value\":\"\\u003cscript src=\\\"https://example.com/widget.js\\\" defer\\u003e\\u003c/script\\u003e\\u003clink rel=\\\"stylesheet\\\" href=\\\"/x.css\\\"\\u003e\",\"type_id\":0,\"file_path\":\"common/head_tag.html\"},{\"name\":\"body_tag\",\"target\":\"mobile\",\"value\":\"\\u003cscript type=\\\"text/x-template\\\"\\u003etmpl\\u003c/script\\u003eCafé \\u0026amp; tea \\u003cimg src=/a.png alt='q'\\u003e\",\"type_id\":0,\"file_path\":\"mobile/body_tag.html\"},{\"name\":\"yaml\",\"target\":\"settings\",\"value\":\"accent: blue\\nmissing:\\n  type: integer\\nratio: 1.5\\n\",\"error\":\"Setting `missing` has no default value.\",\"type_id\":5,\"file_path\":\"settings.yml\"},{\"name\":\"en\",\"target\":\"translations\",\"value\":\"en:\\n  title: Layered\\n  nested:\\n    deep: Deep text\\n\",\"type_id\":5,\"file_path\":\"locales/en.yml\"},{\"name\":\"first\",\"target\":\"tests_js\",\"value\":\"acceptance('x', function() {});\",\"type_id\":6,\"file_path\":\"test/first\"},{\"name\":\"about\",\"target\":\"about\",\"value\":\"{}\",\"type_id\":8,\"file_path\":\"about.json\"}],\"translations\":[{\"key\":\"title\",\"value\":\"Layered\",\"default\":\"Layered\"},{\"key\":\"nested.deep\",\"value\":\"Deep text\",\"default\":\"Deep text\"}]}",
+          "target_user_id": null
+        },
+        {
+          "id": 77,
+          "email": null,
+          "action": 77,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Layered too: ratio",
+          "topic_id": null,
+          "new_value": "2",
+          "admin_only": true,
+          "created_at": "2026-10-14T19:23:09.335367",
+          "ip_address": null,
+          "updated_at": "2026-10-14T19:23:09.335367",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "1.5",
+          "target_user_id": null
+        },
+        {
+          "id": 78,
+          "email": null,
+          "action": 77,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Layered too: accent",
+          "topic_id": null,
+          "new_value": "red",
+          "admin_only": true,
+          "created_at": "2026-10-14T19:23:09.882868",
+          "ip_address": null,
+          "updated_at": "2026-10-14T19:23:09.882868",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "blue",
+          "target_user_id": null
+        },
+        {
+          "id": 79,
+          "email": null,
+          "action": 4,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Layered too",
+          "topic_id": null,
+          "new_value": "{\"id\":1,\"name\":\"Layered too\",\"theme_fields\":[{\"name\":\"body_tag\",\"target\":\"mobile\",\"value\":\"\\u003cscript type=\\\"text/x-template\\\"\\u003etmpl\\u003c/script\\u003eCafé \\u0026amp; tea \\u003cimg src=/a.png alt='q'\\u003e\",\"type_id\":0,\"file_path\":\"mobile/body_tag.html\"},{\"name\":\"yaml\",\"target\":\"settings\",\"value\":\"accent: blue\\nratio: 1.5\\n\",\"type_id\":5,\"file_path\":\"settings.yml\"},{\"name\":\"first\",\"target\":\"tests_js\",\"value\":\"acceptance('x', function() {});\",\"type_id\":6,\"file_path\":\"test/first\"},{\"name\":\"about\",\"target\":\"about\",\"value\":\"{}\",\"type_id\":8,\"file_path\":\"about.json\"}],\"translations\":[]}",
+          "admin_only": true,
+          "created_at": "2026-10-14T19:23:10.034669",
+          "ip_address": null,
+          "updated_at": "2026-10-14T19:23:10.034669",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "{\"id\":1,\"name\":\"Layered too\",\"theme_fields\":[{\"name\":\"head_tag\",\"target\":\"common\",\"value\":\"\\u003cscript src=\\\"https://example.com/widget.js\\\" defer\\u003e\\u003c/script\\u003e\\u003clink rel=\\\"stylesheet\\\" href=\\\"/x.css\\\"\\u003e\",\"type_id\":0,\"file_path\":\"common/head_tag.html\"},{\"name\":\"body_tag\",\"target\":\"mobile\",\"value\":\"\\u003cscript type=\\\"text/x-template\\\"\\u003etmpl\\u003c/script\\u003eCafé \\u0026amp; tea \\u003cimg src=/a.png alt='q'\\u003e\",\"type_id\":0,\"file_path\":\"mobile/body_tag.html\"},{\"name\":\"yaml\",\"target\":\"settings\",\"value\":\"accent: blue\\nratio: 1.5\\n\",\"type_id\":5,\"file_path\":\"settings.yml\"},{\"name\":\"en\",\"target\":\"translations\",\"value\":\"en:\\n  title: Layered again\\n\",\"type_id\":5,\"file_path\":\"locales/en.yml\"},{\"name\":\"first\",\"target\":\"tests_js\",\"value\":\"acceptance('x', function() {});\",\"type_id\":6,\"file_path\":\"test/first\"},{\"name\":\"about\",\"target\":\"about\",\"value\":\"{}\",\"type_id\":8,\"file_path\":\"about.json\"}],\"translations\":[{\"key\":\"title\",\"value\":\"Layered again\",\"default\":\"Layered again\"}]}",
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "theme_fields": 169,
+    "theme_modifier_sets": 3,
+    "theme_settings": 1,
+    "themes": 1,
+    "user_histories": 74
+  },
+  "unordered_responses": [
+    "/responses/0/body/theme/theme_fields",
+    "/responses/1/body/theme/theme_fields",
+    "/responses/2/body/theme/theme_fields",
+    "/responses/5/body/theme/theme_fields",
+    "/responses/6/body/theme/theme_fields"
+  ],
+  "recorded_from": {
+    "case": "fc78e9eb6f68bae7b83e07c1797721498729c3a4775c6d924136ac106089d246",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

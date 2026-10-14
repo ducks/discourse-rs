@@ -1,0 +1,45 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE themes SET user_selectable = true WHERE id = -2"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/user1.json",
+      "params": {
+        "theme_ids": [
+          "-2"
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/user1.json",
+      "params": {
+        "theme_ids": [
+          "-2"
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/user1.json",
+      "params": {
+        "theme_ids": [
+          "999"
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/user1.json",
+      "params": {
+        "theme_ids": [
+          "",
+          "-1"
+        ]
+      }
+    }
+  ]
+}

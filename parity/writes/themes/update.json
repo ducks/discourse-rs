@@ -1,0 +1,1369 @@
+{
+  "name": "update",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/themes.json",
+      "params": {
+        "theme": {
+          "name": "Base"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/{{responses.0.body.theme.id}}.json",
+      "params": {
+        "theme": {
+          "name": "Renamed",
+          "user_selectable": "true",
+          "color_scheme_id": "13",
+          "dark_color_scheme_id": "2"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/{{responses.0.body.theme.id}}.json",
+      "params": {
+        "theme": {
+          "default": "true"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/{{responses.0.body.theme.id}}.json",
+      "params": {
+        "theme": {
+          "default": "false"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/{{responses.0.body.theme.id}}.json",
+      "params": {
+        "theme": {
+          "name": "Renamed"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/{{responses.0.body.theme.id}}.json",
+      "params": {
+        "theme": {
+          "theme_fields": [
+            {
+              "name": "after_header",
+              "target": "mobile",
+              "value": "<section>Mobile only</section>"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/{{responses.0.body.theme.id}}.json",
+      "params": {
+        "theme": {
+          "theme_fields": [
+            {
+              "name": "after_header",
+              "target": "mobile",
+              "value": ""
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/999.json",
+      "params": {
+        "theme": {
+          "name": "Nope"
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-14T19:20:37.232219",
+  "transaction_started_at": "2026-10-14T19:20:36.179028",
+  "responses": [
+    {
+      "status": 201,
+      "body": {
+        "theme": {
+          "id": 1,
+          "name": "Base",
+          "description": null,
+          "created_at": "2026-10-14T19:20:37.248Z",
+          "updated_at": "2026-10-14T19:20:37.248Z",
+          "component": false,
+          "color_scheme_id": null,
+          "dark_color_scheme_id": null,
+          "user_selectable": false,
+          "auto_update": true,
+          "remote_theme_id": null,
+          "settings": [],
+          "themeable_site_settings": [
+            {
+              "setting": "enable_welcome_banner",
+              "default": "true",
+              "description": "Display a banner on your main topic list pages to welcome members and allow them to search site content",
+              "humanized_name": "Enable welcome banner",
+              "type": "bool",
+              "value": "true"
+            },
+            {
+              "setting": "search_experience",
+              "default": "search_icon",
+              "description": "The default position and appearance of search on desktop devices",
+              "humanized_name": "Search experience",
+              "type": "enum",
+              "valid_values": [
+                {
+                  "name": "search.experience.search_field",
+                  "value": "search_field"
+                },
+                {
+                  "name": "search.experience.search_icon",
+                  "value": "search_icon"
+                }
+              ],
+              "translate_names": true,
+              "value": "search_icon"
+            }
+          ],
+          "supported": true,
+          "enabled": true,
+          "theme_fields": [],
+          "screenshot_dark_url": null,
+          "screenshot_light_url": null,
+          "system": false,
+          "only_theme_color_schemes": false,
+          "color_scheme": null,
+          "user": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "title": null
+          },
+          "child_themes": [],
+          "parent_themes": [],
+          "remote_theme": null,
+          "translations": []
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "theme": {
+          "id": 1,
+          "name": "Renamed",
+          "description": null,
+          "created_at": "2026-10-14T19:20:37.248Z",
+          "updated_at": "2026-10-14T19:20:37.376Z",
+          "component": false,
+          "color_scheme_id": 13,
+          "dark_color_scheme_id": 2,
+          "user_selectable": true,
+          "auto_update": true,
+          "remote_theme_id": null,
+          "settings": [],
+          "themeable_site_settings": [
+            {
+              "setting": "enable_welcome_banner",
+              "default": "true",
+              "description": "Display a banner on your main topic list pages to welcome members and allow them to search site content",
+              "humanized_name": "Enable welcome banner",
+              "type": "bool",
+              "value": "true"
+            },
+            {
+              "setting": "search_experience",
+              "default": "search_icon",
+              "description": "The default position and appearance of search on desktop devices",
+              "humanized_name": "Search experience",
+              "type": "enum",
+              "valid_values": [
+                {
+                  "name": "search.experience.search_field",
+                  "value": "search_field"
+                },
+                {
+                  "name": "search.experience.search_icon",
+                  "value": "search_icon"
+                }
+              ],
+              "translate_names": true,
+              "value": "search_icon"
+            }
+          ],
+          "supported": true,
+          "enabled": true,
+          "theme_fields": [],
+          "screenshot_dark_url": null,
+          "screenshot_light_url": null,
+          "system": false,
+          "only_theme_color_schemes": false,
+          "color_scheme": {
+            "id": 13,
+            "name": "Dark",
+            "is_base": null,
+            "base_scheme_id": -2,
+            "theme_id": null,
+            "theme_name": null,
+            "user_selectable": false,
+            "is_builtin_default": null,
+            "is_dark": true,
+            "colors": [
+              {
+                "name": "primary",
+                "hex": "dddddd",
+                "default_hex": "dddddd",
+                "is_advanced": false
+              },
+              {
+                "name": "secondary",
+                "hex": "222222",
+                "default_hex": "222222",
+                "is_advanced": false
+              },
+              {
+                "name": "tertiary",
+                "hex": "099dd7",
+                "default_hex": "099dd7",
+                "is_advanced": false
+              },
+              {
+                "name": "quaternary",
+                "hex": "c14924",
+                "default_hex": "c14924",
+                "is_advanced": false
+              },
+              {
+                "name": "header_background",
+                "hex": "111111",
+                "default_hex": "111111",
+                "is_advanced": false
+              },
+              {
+                "name": "header_primary",
+                "hex": "dddddd",
+                "default_hex": "dddddd",
+                "is_advanced": false
+              },
+              {
+                "name": "selected",
+                "hex": "052e3d",
+                "default_hex": "052e3d",
+                "is_advanced": false
+              },
+              {
+                "name": "hover",
+                "hex": "313131",
+                "default_hex": "313131",
+                "is_advanced": false
+              },
+              {
+                "name": "highlight",
+                "hex": "a87137",
+                "default_hex": "a87137",
+                "is_advanced": false
+              },
+              {
+                "name": "danger",
+                "hex": "e45735",
+                "default_hex": "e45735",
+                "is_advanced": false
+              },
+              {
+                "name": "success",
+                "hex": "1ca551",
+                "default_hex": "1ca551",
+                "is_advanced": false
+              },
+              {
+                "name": "love",
+                "hex": "fa6c8d",
+                "default_hex": "fa6c8d",
+                "is_advanced": false
+              }
+            ]
+          },
+          "user": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "title": null
+          },
+          "child_themes": [],
+          "parent_themes": [],
+          "remote_theme": null,
+          "translations": []
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "theme": {
+          "id": 1,
+          "name": "Renamed",
+          "description": null,
+          "created_at": "2026-10-14T19:20:37.248Z",
+          "updated_at": "2026-10-14T19:20:37.376Z",
+          "default": true,
+          "component": false,
+          "color_scheme_id": 13,
+          "dark_color_scheme_id": 2,
+          "user_selectable": true,
+          "auto_update": true,
+          "remote_theme_id": null,
+          "settings": [],
+          "themeable_site_settings": [
+            {
+              "setting": "enable_welcome_banner",
+              "default": "true",
+              "description": "Display a banner on your main topic list pages to welcome members and allow them to search site content",
+              "humanized_name": "Enable welcome banner",
+              "type": "bool",
+              "value": "true"
+            },
+            {
+              "setting": "search_experience",
+              "default": "search_icon",
+              "description": "The default position and appearance of search on desktop devices",
+              "humanized_name": "Search experience",
+              "type": "enum",
+              "valid_values": [
+                {
+                  "name": "search.experience.search_field",
+                  "value": "search_field"
+                },
+                {
+                  "name": "search.experience.search_icon",
+                  "value": "search_icon"
+                }
+              ],
+              "translate_names": true,
+              "value": "search_icon"
+            }
+          ],
+          "supported": true,
+          "enabled": true,
+          "theme_fields": [],
+          "screenshot_dark_url": null,
+          "screenshot_light_url": null,
+          "system": false,
+          "only_theme_color_schemes": false,
+          "color_scheme": {
+            "id": 13,
+            "name": "Dark",
+            "is_base": null,
+            "base_scheme_id": -2,
+            "theme_id": null,
+            "theme_name": null,
+            "user_selectable": false,
+            "is_builtin_default": null,
+            "is_dark": true,
+            "colors": [
+              {
+                "name": "primary",
+                "hex": "dddddd",
+                "default_hex": "dddddd",
+                "is_advanced": false
+              },
+              {
+                "name": "secondary",
+                "hex": "222222",
+                "default_hex": "222222",
+                "is_advanced": false
+              },
+              {
+                "name": "tertiary",
+                "hex": "099dd7",
+                "default_hex": "099dd7",
+                "is_advanced": false
+              },
+              {
+                "name": "quaternary",
+                "hex": "c14924",
+                "default_hex": "c14924",
+                "is_advanced": false
+              },
+              {
+                "name": "header_background",
+                "hex": "111111",
+                "default_hex": "111111",
+                "is_advanced": false
+              },
+              {
+                "name": "header_primary",
+                "hex": "dddddd",
+                "default_hex": "dddddd",
+                "is_advanced": false
+              },
+              {
+                "name": "selected",
+                "hex": "052e3d",
+                "default_hex": "052e3d",
+                "is_advanced": false
+              },
+              {
+                "name": "hover",
+                "hex": "313131",
+                "default_hex": "313131",
+                "is_advanced": false
+              },
+              {
+                "name": "highlight",
+                "hex": "a87137",
+                "default_hex": "a87137",
+                "is_advanced": false
+              },
+              {
+                "name": "danger",
+                "hex": "e45735",
+                "default_hex": "e45735",
+                "is_advanced": false
+              },
+              {
+                "name": "success",
+                "hex": "1ca551",
+                "default_hex": "1ca551",
+                "is_advanced": false
+              },
+              {
+                "name": "love",
+                "hex": "fa6c8d",
+                "default_hex": "fa6c8d",
+                "is_advanced": false
+              }
+            ]
+          },
+          "user": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "title": null
+          },
+          "child_themes": [],
+          "parent_themes": [],
+          "remote_theme": null,
+          "translations": []
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "theme": {
+          "id": 1,
+          "name": "Renamed",
+          "description": null,
+          "created_at": "2026-10-14T19:20:37.248Z",
+          "updated_at": "2026-10-14T19:20:37.376Z",
+          "component": false,
+          "color_scheme_id": 13,
+          "dark_color_scheme_id": 2,
+          "user_selectable": true,
+          "auto_update": true,
+          "remote_theme_id": null,
+          "settings": [],
+          "themeable_site_settings": [
+            {
+              "setting": "enable_welcome_banner",
+              "default": "true",
+              "description": "Display a banner on your main topic list pages to welcome members and allow them to search site content",
+              "humanized_name": "Enable welcome banner",
+              "type": "bool",
+              "value": "true"
+            },
+            {
+              "setting": "search_experience",
+              "default": "search_icon",
+              "description": "The default position and appearance of search on desktop devices",
+              "humanized_name": "Search experience",
+              "type": "enum",
+              "valid_values": [
+                {
+                  "name": "search.experience.search_field",
+                  "value": "search_field"
+                },
+                {
+                  "name": "search.experience.search_icon",
+                  "value": "search_icon"
+                }
+              ],
+              "translate_names": true,
+              "value": "search_icon"
+            }
+          ],
+          "supported": true,
+          "enabled": true,
+          "theme_fields": [],
+          "screenshot_dark_url": null,
+          "screenshot_light_url": null,
+          "system": false,
+          "only_theme_color_schemes": false,
+          "color_scheme": {
+            "id": 13,
+            "name": "Dark",
+            "is_base": null,
+            "base_scheme_id": -2,
+            "theme_id": null,
+            "theme_name": null,
+            "user_selectable": false,
+            "is_builtin_default": null,
+            "is_dark": true,
+            "colors": [
+              {
+                "name": "primary",
+                "hex": "dddddd",
+                "default_hex": "dddddd",
+                "is_advanced": false
+              },
+              {
+                "name": "secondary",
+                "hex": "222222",
+                "default_hex": "222222",
+                "is_advanced": false
+              },
+              {
+                "name": "tertiary",
+                "hex": "099dd7",
+                "default_hex": "099dd7",
+                "is_advanced": false
+              },
+              {
+                "name": "quaternary",
+                "hex": "c14924",
+                "default_hex": "c14924",
+                "is_advanced": false
+              },
+              {
+                "name": "header_background",
+                "hex": "111111",
+                "default_hex": "111111",
+                "is_advanced": false
+              },
+              {
+                "name": "header_primary",
+                "hex": "dddddd",
+                "default_hex": "dddddd",
+                "is_advanced": false
+              },
+              {
+                "name": "selected",
+                "hex": "052e3d",
+                "default_hex": "052e3d",
+                "is_advanced": false
+              },
+              {
+                "name": "hover",
+                "hex": "313131",
+                "default_hex": "313131",
+                "is_advanced": false
+              },
+              {
+                "name": "highlight",
+                "hex": "a87137",
+                "default_hex": "a87137",
+                "is_advanced": false
+              },
+              {
+                "name": "danger",
+                "hex": "e45735",
+                "default_hex": "e45735",
+                "is_advanced": false
+              },
+              {
+                "name": "success",
+                "hex": "1ca551",
+                "default_hex": "1ca551",
+                "is_advanced": false
+              },
+              {
+                "name": "love",
+                "hex": "fa6c8d",
+                "default_hex": "fa6c8d",
+                "is_advanced": false
+              }
+            ]
+          },
+          "user": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "title": null
+          },
+          "child_themes": [],
+          "parent_themes": [],
+          "remote_theme": null,
+          "translations": []
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "theme": {
+          "id": 1,
+          "name": "Renamed",
+          "description": null,
+          "created_at": "2026-10-14T19:20:37.248Z",
+          "updated_at": "2026-10-14T19:20:37.376Z",
+          "component": false,
+          "color_scheme_id": 13,
+          "dark_color_scheme_id": 2,
+          "user_selectable": true,
+          "auto_update": true,
+          "remote_theme_id": null,
+          "settings": [],
+          "themeable_site_settings": [
+            {
+              "setting": "enable_welcome_banner",
+              "default": "true",
+              "description": "Display a banner on your main topic list pages to welcome members and allow them to search site content",
+              "humanized_name": "Enable welcome banner",
+              "type": "bool",
+              "value": "true"
+            },
+            {
+              "setting": "search_experience",
+              "default": "search_icon",
+              "description": "The default position and appearance of search on desktop devices",
+              "humanized_name": "Search experience",
+              "type": "enum",
+              "valid_values": [
+                {
+                  "name": "search.experience.search_field",
+                  "value": "search_field"
+                },
+                {
+                  "name": "search.experience.search_icon",
+                  "value": "search_icon"
+                }
+              ],
+              "translate_names": true,
+              "value": "search_icon"
+            }
+          ],
+          "supported": true,
+          "enabled": true,
+          "theme_fields": [],
+          "screenshot_dark_url": null,
+          "screenshot_light_url": null,
+          "system": false,
+          "only_theme_color_schemes": false,
+          "color_scheme": {
+            "id": 13,
+            "name": "Dark",
+            "is_base": null,
+            "base_scheme_id": -2,
+            "theme_id": null,
+            "theme_name": null,
+            "user_selectable": false,
+            "is_builtin_default": null,
+            "is_dark": true,
+            "colors": [
+              {
+                "name": "primary",
+                "hex": "dddddd",
+                "default_hex": "dddddd",
+                "is_advanced": false
+              },
+              {
+                "name": "secondary",
+                "hex": "222222",
+                "default_hex": "222222",
+                "is_advanced": false
+              },
+              {
+                "name": "tertiary",
+                "hex": "099dd7",
+                "default_hex": "099dd7",
+                "is_advanced": false
+              },
+              {
+                "name": "quaternary",
+                "hex": "c14924",
+                "default_hex": "c14924",
+                "is_advanced": false
+              },
+              {
+                "name": "header_background",
+                "hex": "111111",
+                "default_hex": "111111",
+                "is_advanced": false
+              },
+              {
+                "name": "header_primary",
+                "hex": "dddddd",
+                "default_hex": "dddddd",
+                "is_advanced": false
+              },
+              {
+                "name": "selected",
+                "hex": "052e3d",
+                "default_hex": "052e3d",
+                "is_advanced": false
+              },
+              {
+                "name": "hover",
+                "hex": "313131",
+                "default_hex": "313131",
+                "is_advanced": false
+              },
+              {
+                "name": "highlight",
+                "hex": "a87137",
+                "default_hex": "a87137",
+                "is_advanced": false
+              },
+              {
+                "name": "danger",
+                "hex": "e45735",
+                "default_hex": "e45735",
+                "is_advanced": false
+              },
+              {
+                "name": "success",
+                "hex": "1ca551",
+                "default_hex": "1ca551",
+                "is_advanced": false
+              },
+              {
+                "name": "love",
+                "hex": "fa6c8d",
+                "default_hex": "fa6c8d",
+                "is_advanced": false
+              }
+            ]
+          },
+          "user": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "title": null
+          },
+          "child_themes": [],
+          "parent_themes": [],
+          "remote_theme": null,
+          "translations": []
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "theme": {
+          "id": 1,
+          "name": "Renamed",
+          "description": null,
+          "created_at": "2026-10-14T19:20:37.248Z",
+          "updated_at": "2026-10-14T19:20:37.376Z",
+          "component": false,
+          "color_scheme_id": 13,
+          "dark_color_scheme_id": 2,
+          "user_selectable": true,
+          "auto_update": true,
+          "remote_theme_id": null,
+          "settings": [],
+          "themeable_site_settings": [
+            {
+              "setting": "enable_welcome_banner",
+              "default": "true",
+              "description": "Display a banner on your main topic list pages to welcome members and allow them to search site content",
+              "humanized_name": "Enable welcome banner",
+              "type": "bool",
+              "value": "true"
+            },
+            {
+              "setting": "search_experience",
+              "default": "search_icon",
+              "description": "The default position and appearance of search on desktop devices",
+              "humanized_name": "Search experience",
+              "type": "enum",
+              "valid_values": [
+                {
+                  "name": "search.experience.search_field",
+                  "value": "search_field"
+                },
+                {
+                  "name": "search.experience.search_icon",
+                  "value": "search_icon"
+                }
+              ],
+              "translate_names": true,
+              "value": "search_icon"
+            }
+          ],
+          "supported": true,
+          "enabled": true,
+          "theme_fields": [
+            {
+              "name": "after_header",
+              "target": "mobile",
+              "value": "<section>Mobile only</section>",
+              "type_id": 0,
+              "file_path": "mobile/after_header.html"
+            }
+          ],
+          "screenshot_dark_url": null,
+          "screenshot_light_url": null,
+          "system": false,
+          "only_theme_color_schemes": false,
+          "color_scheme": {
+            "id": 13,
+            "name": "Dark",
+            "is_base": null,
+            "base_scheme_id": -2,
+            "theme_id": null,
+            "theme_name": null,
+            "user_selectable": false,
+            "is_builtin_default": null,
+            "is_dark": true,
+            "colors": [
+              {
+                "name": "primary",
+                "hex": "dddddd",
+                "default_hex": "dddddd",
+                "is_advanced": false
+              },
+              {
+                "name": "secondary",
+                "hex": "222222",
+                "default_hex": "222222",
+                "is_advanced": false
+              },
+              {
+                "name": "tertiary",
+                "hex": "099dd7",
+                "default_hex": "099dd7",
+                "is_advanced": false
+              },
+              {
+                "name": "quaternary",
+                "hex": "c14924",
+                "default_hex": "c14924",
+                "is_advanced": false
+              },
+              {
+                "name": "header_background",
+                "hex": "111111",
+                "default_hex": "111111",
+                "is_advanced": false
+              },
+              {
+                "name": "header_primary",
+                "hex": "dddddd",
+                "default_hex": "dddddd",
+                "is_advanced": false
+              },
+              {
+                "name": "selected",
+                "hex": "052e3d",
+                "default_hex": "052e3d",
+                "is_advanced": false
+              },
+              {
+                "name": "hover",
+                "hex": "313131",
+                "default_hex": "313131",
+                "is_advanced": false
+              },
+              {
+                "name": "highlight",
+                "hex": "a87137",
+                "default_hex": "a87137",
+                "is_advanced": false
+              },
+              {
+                "name": "danger",
+                "hex": "e45735",
+                "default_hex": "e45735",
+                "is_advanced": false
+              },
+              {
+                "name": "success",
+                "hex": "1ca551",
+                "default_hex": "1ca551",
+                "is_advanced": false
+              },
+              {
+                "name": "love",
+                "hex": "fa6c8d",
+                "default_hex": "fa6c8d",
+                "is_advanced": false
+              }
+            ]
+          },
+          "user": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "title": null
+          },
+          "child_themes": [],
+          "parent_themes": [],
+          "remote_theme": null,
+          "translations": []
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "theme": {
+          "id": 1,
+          "name": "Renamed",
+          "description": null,
+          "created_at": "2026-10-14T19:20:37.248Z",
+          "updated_at": "2026-10-14T19:20:37.376Z",
+          "component": false,
+          "color_scheme_id": 13,
+          "dark_color_scheme_id": 2,
+          "user_selectable": true,
+          "auto_update": true,
+          "remote_theme_id": null,
+          "settings": [],
+          "themeable_site_settings": [
+            {
+              "setting": "enable_welcome_banner",
+              "default": "true",
+              "description": "Display a banner on your main topic list pages to welcome members and allow them to search site content",
+              "humanized_name": "Enable welcome banner",
+              "type": "bool",
+              "value": "true"
+            },
+            {
+              "setting": "search_experience",
+              "default": "search_icon",
+              "description": "The default position and appearance of search on desktop devices",
+              "humanized_name": "Search experience",
+              "type": "enum",
+              "valid_values": [
+                {
+                  "name": "search.experience.search_field",
+                  "value": "search_field"
+                },
+                {
+                  "name": "search.experience.search_icon",
+                  "value": "search_icon"
+                }
+              ],
+              "translate_names": true,
+              "value": "search_icon"
+            }
+          ],
+          "supported": true,
+          "enabled": true,
+          "theme_fields": [],
+          "screenshot_dark_url": null,
+          "screenshot_light_url": null,
+          "system": false,
+          "only_theme_color_schemes": false,
+          "color_scheme": {
+            "id": 13,
+            "name": "Dark",
+            "is_base": null,
+            "base_scheme_id": -2,
+            "theme_id": null,
+            "theme_name": null,
+            "user_selectable": false,
+            "is_builtin_default": null,
+            "is_dark": true,
+            "colors": [
+              {
+                "name": "primary",
+                "hex": "dddddd",
+                "default_hex": "dddddd",
+                "is_advanced": false
+              },
+              {
+                "name": "secondary",
+                "hex": "222222",
+                "default_hex": "222222",
+                "is_advanced": false
+              },
+              {
+                "name": "tertiary",
+                "hex": "099dd7",
+                "default_hex": "099dd7",
+                "is_advanced": false
+              },
+              {
+                "name": "quaternary",
+                "hex": "c14924",
+                "default_hex": "c14924",
+                "is_advanced": false
+              },
+              {
+                "name": "header_background",
+                "hex": "111111",
+                "default_hex": "111111",
+                "is_advanced": false
+              },
+              {
+                "name": "header_primary",
+                "hex": "dddddd",
+                "default_hex": "dddddd",
+                "is_advanced": false
+              },
+              {
+                "name": "selected",
+                "hex": "052e3d",
+                "default_hex": "052e3d",
+                "is_advanced": false
+              },
+              {
+                "name": "hover",
+                "hex": "313131",
+                "default_hex": "313131",
+                "is_advanced": false
+              },
+              {
+                "name": "highlight",
+                "hex": "a87137",
+                "default_hex": "a87137",
+                "is_advanced": false
+              },
+              {
+                "name": "danger",
+                "hex": "e45735",
+                "default_hex": "e45735",
+                "is_advanced": false
+              },
+              {
+                "name": "success",
+                "hex": "1ca551",
+                "default_hex": "1ca551",
+                "is_advanced": false
+              },
+              {
+                "name": "love",
+                "hex": "fa6c8d",
+                "default_hex": "fa6c8d",
+                "is_advanced": false
+              }
+            ]
+          },
+          "user": {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "title": null
+          },
+          "child_themes": [],
+          "parent_themes": [],
+          "remote_theme": null,
+          "translations": []
+        }
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: id"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    }
+  ],
+  "changes": {
+    "site_settings": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 9,
+            "name": "default_theme_id",
+            "value": "-1",
+            "data_type": 3,
+            "created_at": "2026-07-25T05:58:21.4293",
+            "updated_at": "2026-07-25T05:58:21.4293"
+          },
+          "after": {
+            "id": 9,
+            "name": "default_theme_id",
+            "value": "-1",
+            "data_type": 3,
+            "created_at": "2026-07-25T05:58:21.4293",
+            "updated_at": "2026-10-14T19:20:38.376575"
+          }
+        }
+      ]
+    },
+    "theme_modifier_sets": {
+      "inserted": [
+        {
+          "id": 3,
+          "theme_id": 1,
+          "svg_icons": null,
+          "csp_extensions": null,
+          "custom_homepage": null,
+          "topic_thumbnail_sizes": null,
+          "serialize_topic_is_hot": null,
+          "theme_setting_modifiers": null,
+          "only_theme_color_schemes": null,
+          "serialize_topic_excerpts": null,
+          "serialize_post_user_badges": null,
+          "serialize_topic_op_likes_data": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "themes": {
+      "inserted": [
+        {
+          "id": 1,
+          "name": "Renamed",
+          "hidden": false,
+          "enabled": true,
+          "user_id": 1,
+          "component": false,
+          "created_at": "2026-10-14T19:20:37.248256",
+          "updated_at": "2026-10-14T19:20:37.376544",
+          "auto_update": true,
+          "color_scheme_id": 13,
+          "remote_theme_id": null,
+          "user_selectable": true,
+          "compiler_version": 0,
+          "dark_color_scheme_id": 2
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 128,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "yNSWxp660+Tn6xrDRp5ZnJtwOgw=",
+            "created_at": "2026-10-14T19:20:36.537821",
+            "rotated_at": "2026-10-14T19:20:36.536735",
+            "updated_at": "2026-10-14T19:20:36.537821",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "yNSWxp660+Tn6xrDRp5ZnJtwOgw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 128,
+            "seen_at": "2026-10-14T19:20:37.237587",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "yNSWxp660+Tn6xrDRp5ZnJtwOgw=",
+            "created_at": "2026-10-14T19:20:36.537821",
+            "rotated_at": "2026-10-14T19:20:36.536735",
+            "updated_at": "2026-10-14T19:20:36.537821",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "yNSWxp660+Tn6xrDRp5ZnJtwOgw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 4,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Base",
+          "topic_id": null,
+          "new_value": "{\"id\":1,\"name\":\"Base\",\"description\":null,\"created_at\":\"2026-10-14T19:20:37.248Z\",\"updated_at\":\"2026-10-14T19:20:37.248Z\",\"component\":false,\"color_scheme_id\":null,\"dark_color_scheme_id\":null,\"user_selectable\":false,\"auto_update\":true,\"remote_theme_id\":null,\"settings\":[],\"themeable_site_settings\":[{\"setting\":\"enable_welcome_banner\",\"default\":\"true\",\"description\":\"Display a banner on your main topic list pages to welcome members and allow them to search site content\",\"humanized_name\":\"Enable welcome banner\",\"type\":\"bool\",\"value\":\"true\"},{\"setting\":\"search_experience\",\"default\":\"search_icon\",\"description\":\"The default position and appearance of search on desktop devices\",\"humanized_name\":\"Search experience\",\"type\":\"enum\",\"valid_values\":[{\"name\":\"search.experience.search_field\",\"value\":\"search_field\"},{\"name\":\"search.experience.search_icon\",\"value\":\"search_icon\"}],\"translate_names\":true,\"value\":\"search_icon\"}],\"supported\":true,\"enabled\":true,\"theme_fields\":[],\"screenshot_dark_url\":null,\"screenshot_light_url\":null,\"system\":false,\"only_theme_color_schemes\":false,\"color_scheme\":null,\"user\":{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"title\":null},\"child_themes\":[],\"parent_themes\":[],\"remote_theme\":null,\"translations\":[]}",
+          "admin_only": true,
+          "created_at": "2026-10-14T19:20:37.270702",
+          "ip_address": null,
+          "updated_at": "2026-10-14T19:20:37.270702",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 75,
+          "email": null,
+          "action": 4,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Renamed",
+          "topic_id": null,
+          "new_value": "{\"id\":1,\"name\":\"Renamed\",\"updated_at\":\"2026-10-14T19:20:37.376Z\",\"color_scheme_id\":13,\"dark_color_scheme_id\":2,\"user_selectable\":true,\"color_scheme\":{\"id\":13,\"name\":\"Dark\",\"is_base\":null,\"base_scheme_id\":-2,\"theme_id\":null,\"theme_name\":null,\"user_selectable\":false,\"is_builtin_default\":null,\"is_dark\":true,\"colors\":[{\"name\":\"primary\",\"hex\":\"dddddd\",\"default_hex\":\"dddddd\",\"is_advanced\":false},{\"name\":\"secondary\",\"hex\":\"222222\",\"default_hex\":\"222222\",\"is_advanced\":false},{\"name\":\"tertiary\",\"hex\":\"099dd7\",\"default_hex\":\"099dd7\",\"is_advanced\":false},{\"name\":\"quaternary\",\"hex\":\"c14924\",\"default_hex\":\"c14924\",\"is_advanced\":false},{\"name\":\"header_background\",\"hex\":\"111111\",\"default_hex\":\"111111\",\"is_advanced\":false},{\"name\":\"header_primary\",\"hex\":\"dddddd\",\"default_hex\":\"dddddd\",\"is_advanced\":false},{\"name\":\"selected\",\"hex\":\"052e3d\",\"default_hex\":\"052e3d\",\"is_advanced\":false},{\"name\":\"hover\",\"hex\":\"313131\",\"default_hex\":\"313131\",\"is_advanced\":false},{\"name\":\"highlight\",\"hex\":\"a87137\",\"default_hex\":\"a87137\",\"is_advanced\":false},{\"name\":\"danger\",\"hex\":\"e45735\",\"default_hex\":\"e45735\",\"is_advanced\":false},{\"name\":\"success\",\"hex\":\"1ca551\",\"default_hex\":\"1ca551\",\"is_advanced\":false},{\"name\":\"love\",\"hex\":\"fa6c8d\",\"default_hex\":\"fa6c8d\",\"is_advanced\":false}]}}",
+          "admin_only": true,
+          "created_at": "2026-10-14T19:20:37.966329",
+          "ip_address": null,
+          "updated_at": "2026-10-14T19:20:37.966329",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "{\"id\":1,\"name\":\"Base\",\"updated_at\":\"2026-10-14T19:20:37.248Z\",\"color_scheme_id\":null,\"dark_color_scheme_id\":null,\"user_selectable\":false,\"color_scheme\":null}",
+          "target_user_id": null
+        },
+        {
+          "id": 76,
+          "email": null,
+          "action": 4,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Renamed",
+          "topic_id": null,
+          "new_value": "{\"id\":1,\"name\":\"Renamed\",\"default\":true}",
+          "admin_only": true,
+          "created_at": "2026-10-14T19:20:38.223816",
+          "ip_address": null,
+          "updated_at": "2026-10-14T19:20:38.223816",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "{\"id\":1,\"name\":\"Renamed\"}",
+          "target_user_id": null
+        },
+        {
+          "id": 77,
+          "email": null,
+          "action": 4,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Renamed",
+          "topic_id": null,
+          "new_value": "{\"id\":1,\"name\":\"Renamed\"}",
+          "admin_only": true,
+          "created_at": "2026-10-14T19:20:38.406295",
+          "ip_address": null,
+          "updated_at": "2026-10-14T19:20:38.406295",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "{\"id\":1,\"name\":\"Renamed\",\"default\":true}",
+          "target_user_id": null
+        },
+        {
+          "id": 78,
+          "email": null,
+          "action": 4,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Renamed",
+          "topic_id": null,
+          "new_value": "{\"id\":1,\"name\":\"Renamed\"}",
+          "admin_only": true,
+          "created_at": "2026-10-14T19:20:38.516364",
+          "ip_address": null,
+          "updated_at": "2026-10-14T19:20:38.516364",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "{\"id\":1,\"name\":\"Renamed\"}",
+          "target_user_id": null
+        },
+        {
+          "id": 79,
+          "email": null,
+          "action": 4,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Renamed",
+          "topic_id": null,
+          "new_value": "{\"id\":1,\"name\":\"Renamed\",\"theme_fields\":[{\"name\":\"after_header\",\"target\":\"mobile\",\"value\":\"\\u003csection\\u003eMobile only\\u003c/section\\u003e\",\"type_id\":0,\"file_path\":\"mobile/after_header.html\"}]}",
+          "admin_only": true,
+          "created_at": "2026-10-14T19:20:38.686275",
+          "ip_address": null,
+          "updated_at": "2026-10-14T19:20:38.686275",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "{\"id\":1,\"name\":\"Renamed\",\"theme_fields\":[]}",
+          "target_user_id": null
+        },
+        {
+          "id": 80,
+          "email": null,
+          "action": 4,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Renamed",
+          "topic_id": null,
+          "new_value": "{\"id\":1,\"name\":\"Renamed\",\"theme_fields\":[]}",
+          "admin_only": true,
+          "created_at": "2026-10-14T19:20:38.82806",
+          "ip_address": null,
+          "updated_at": "2026-10-14T19:20:38.82806",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "{\"id\":1,\"name\":\"Renamed\",\"theme_fields\":[{\"name\":\"after_header\",\"target\":\"mobile\",\"value\":\"\\u003csection\\u003eMobile only\\u003c/section\\u003e\",\"type_id\":0,\"file_path\":\"mobile/after_header.html\"}]}",
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "theme_modifier_sets": 3,
+    "themes": 1,
+    "user_histories": 74
+  },
+  "unordered_responses": [
+    "/responses/0/body/theme/theme_fields",
+    "/responses/1/body/theme/theme_fields",
+    "/responses/2/body/theme/theme_fields",
+    "/responses/3/body/theme/theme_fields",
+    "/responses/4/body/theme/theme_fields",
+    "/responses/5/body/theme/theme_fields",
+    "/responses/6/body/theme/theme_fields"
+  ],
+  "recorded_from": {
+    "case": "757feab17ff1ae05e13d18ca3acd3befade85a0801c9ccdf8aa269a24aaf05f7",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

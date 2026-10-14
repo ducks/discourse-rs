@@ -1,0 +1,22 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "POST", "path": "/admin/themes.json", "params": {"theme": {"name": "Doomed", "theme_fields": [{"name": "header", "target": "common", "value": "<p>bye</p>"}]}}},
+    {"method": "POST", "path": "/admin/themes.json", "params": {"theme": {"name": "Also doomed", "component": "true"}}},
+    {"method": "POST", "path": "/admin/themes.json", "params": {"theme": {"name": "Third"}}},
+    {"method": "POST", "path": "/admin/themes.json", "params": {"theme": {"name": "Defaulted", "default": "true"}}},
+    {"method": "DELETE", "path": "/admin/themes/{{responses.0.body.theme.id}}.json"},
+    {"method": "DELETE", "path": "/admin/themes/{{responses.3.body.theme.id}}.json"},
+    {"method": "DELETE", "path": "/admin/themes/-2.json"},
+    {"method": "DELETE", "path": "/admin/themes/999.json"},
+    {"method": "DELETE", "path": "/admin/themes/bulk_destroy.json", "params": {"theme_ids": ["{{responses.1.body.theme.id}}", "{{responses.2.body.theme.id}}"]}},
+    {"method": "DELETE", "path": "/admin/themes/bulk_destroy.json", "params": {"theme_ids": ["-1"]}},
+    {"method": "DELETE", "path": "/admin/themes/bulk_destroy.json"}
+  ],
+  "unordered_responses": [
+    "/responses/0/body/theme/theme_fields",
+    "/responses/1/body/theme/theme_fields",
+    "/responses/2/body/theme/theme_fields",
+    "/responses/3/body/theme/theme_fields"
+  ]
+}
