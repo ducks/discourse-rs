@@ -347,10 +347,12 @@ pub async fn set(
         _ => Err(Unsupported("a site setting value that is a list or hash")),
     };
     let value = match def.data_type {
-        DataType::Bool => Value::Bool(matches!(raw, serde_json::Value::Bool(true)) || {
-            let t = text()?;
-            t == "t" || t == "true"
-        }),
+        DataType::Bool => Value::Bool(
+            matches!(raw, serde_json::Value::Bool(true)) || {
+                let t = text()?;
+                t == "t" || t == "true"
+            },
+        ),
         DataType::Integer => match raw {
             serde_json::Value::Number(n) if n.is_i64() => Value::Int(n.as_i64().unwrap_or(0)),
             _ => Value::Int(crate::ruby::to_i(&text()?)),

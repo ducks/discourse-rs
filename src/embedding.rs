@@ -72,10 +72,12 @@ pub async fn serialize(conn: &mut PgConnection, h: &Host) -> Result<Value, sqlx:
     .fetch_all(&mut *conn)
     .await?;
     let user: Option<String> = match h.user_id {
-        Some(id) => sqlx::query_scalar("SELECT username FROM users WHERE id = $1")
-            .bind(id)
-            .fetch_optional(&mut *conn)
-            .await?,
+        Some(id) => {
+            sqlx::query_scalar("SELECT username FROM users WHERE id = $1")
+                .bind(id)
+                .fetch_optional(&mut *conn)
+                .await?
+        }
         None => None,
     };
     Ok(json!({
@@ -149,7 +151,9 @@ pub fn valid_allowed_paths(paths: &str) -> Result<bool, Unsupported> {
     if depth != 0 || in_class {
         return Ok(false);
     }
-    Err(Unsupported("allowed paths only Ruby's regexp syntax may accept"))
+    Err(Unsupported(
+        "allowed paths only Ruby's regexp syntax may accept",
+    ))
 }
 
 /// What `save_host` assigns.
@@ -175,7 +179,10 @@ pub async fn save(
     if !valid_host(&host) {
         errors.push("Host is invalid".to_string());
     }
-    if let Some(paths) = p.allowed_paths.as_deref().filter(|s| !crate::ruby::is_blank(s))
+    if let Some(paths) = p
+        .allowed_paths
+        .as_deref()
+        .filter(|s| !crate::ruby::is_blank(s))
         && !valid_allowed_paths(paths)?
     {
         errors.push("Allowed paths is invalid".to_string());
@@ -222,16 +229,20 @@ pub async fn save(
     // manage_tags: blank clears, else the join rows become the tags found.
     let wanted: Vec<i32> = match &p.tag_ids {
         None => Vec::new(),
-        Some(ids) => sqlx::query_scalar("SELECT id FROM tags WHERE id = ANY($1) ORDER BY id")
-            .bind(ids)
-            .fetch_all(&mut *conn)
-            .await?,
+        Some(ids) => {
+            sqlx::query_scalar("SELECT id FROM tags WHERE id = ANY($1) ORDER BY id")
+                .bind(ids)
+                .fetch_all(&mut *conn)
+                .await?
+        }
     };
-    sqlx::query("DELETE FROM embeddable_host_tags WHERE embeddable_host_id = $1 AND NOT (tag_id = ANY($2))")
-        .bind(id)
-        .bind(&wanted)
-        .execute(&mut *conn)
-        .await?;
+    sqlx::query(
+        "DELETE FROM embeddable_host_tags WHERE embeddable_host_id = $1 AND NOT (tag_id = ANY($2))",
+    )
+    .bind(id)
+    .bind(&wanted)
+    .execute(&mut *conn)
+    .await?;
     for tag_id in &wanted {
         sqlx::query(
             "INSERT INTO embeddable_host_tags (embeddable_host_id, tag_id, created_at, updated_at) \

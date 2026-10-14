@@ -72,7 +72,10 @@ async fn embedding_json(
     }
     let mut e = Map::new();
     e.insert("id".into(), json!("default"));
-    e.insert("fields".into(), json!(embedding::settings().collect::<Vec<_>>()));
+    e.insert(
+        "fields".into(),
+        json!(embedding::settings().collect::<Vec<_>>()),
+    );
     let urls = crate::url::Urls {
         config: &state.config,
         settings,
@@ -197,10 +200,14 @@ async fn host_params(
     p: &Map<String, Value>,
 ) -> Result<HostParams, AppError> {
     let Some(h) = p.get("embeddable_host").and_then(Value::as_object) else {
-        return Err(Unsupported("an embeddable host without embeddable_host (NoMethodError)").into());
+        return Err(
+            Unsupported("an embeddable host without embeddable_host (NoMethodError)").into(),
+        );
     };
     let s = |k: &str| h.get(k).and_then(params::scalar);
-    let host = s("host").ok_or(Unsupported("an embeddable host without a host (NoMethodError)"))?;
+    let host = s("host").ok_or(Unsupported(
+        "an embeddable host without a host (NoMethodError)",
+    ))?;
     // category_id, or the uncategorized category when it names none.
     let category: Option<i32> = match s("category_id").filter(|c| !c.trim().is_empty()) {
         Some(c) => {
@@ -211,9 +218,8 @@ async fn host_params(
         }
         None => None,
     };
-    let category_id = Some(category.unwrap_or(
-        settings.get("uncategorized_category_id")?.to_i() as i32,
-    ));
+    let category_id =
+        Some(category.unwrap_or(settings.get("uncategorized_category_id")?.to_i() as i32));
     let user_id = match s("user").filter(|u| !crate::ruby::is_blank(u)) {
         Some(name) => {
             sqlx::query_scalar("SELECT id FROM users WHERE username_lower = $1")
@@ -380,7 +386,9 @@ pub async fn destroy_host(
             )
             .await?
             {
-                return Err(Unsupported("an embedding setting default that fails validation").into());
+                return Err(
+                    Unsupported("an embedding setting default that fails validation").into(),
+                );
             }
         }
     }

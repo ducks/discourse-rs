@@ -361,8 +361,27 @@ then by what running a forum needs (milestone 6). Briefs:
     libpq's error positions landed with 85a),
 86. `feat/admin-users-rest` M: granting admin (second factor or email
     confirmation), impersonation, penalties on several users
-87. `feat/admin-lists` M: permalinks, embeddable hosts, user fields,
-    form templates, custom flags, search term and incoming email details
+87. ~~`feat/admin-lists`~~ (done) M: permalinks (79d),
+    87a. ~~`fix/user-fields-field-type`~~ (done) S (user fields' type
+    from field_type_enum, confirm values, every field for staff and the
+    user, multiselect arrays),
+    87b. ~~`feat/admin-user-fields`~~ (done) M (/admin/config/user_fields
+    CRUD with options, sanitize_field, the required fields version and
+    index job; /site.json user_fields; profile updates and signup with
+    user fields; searchable fields in the user index; directory
+    user_field_ids, ordering by a field, /directory-columns and
+    /edit-directory-columns, user field columns on /u; the
+    redirect_to_profile_if_required layer. Left: the user profile
+    page's public fields in HTML),
+    87c. ~~`feat/admin-flags`~~ (done) S (/admin/config/flags create,
+    update, destroy, toggle, reorder with their policies and logs;
+    flagging with a custom flag),
+    87d. ~~`feat/admin-lists-rest`~~ (done) S/M (embeddable hosts and the
+    embedding settings with a typed SiteSetting.set, a search term's
+    details, incoming email details, form templates admin and public
+    list. Refused: a valid form template preview and the public show
+    (Psych's YAML.dump), YAML 1.1-only scalars, allowed paths only Ruby's
+    regexp syntax accepts)
 88. `feat/admin-email` M: the settings test, previews, templates, email
     style, 89. `feat/admin-dashboard` L (reports, problem checks,
     admin notices, the pageview jobs)
@@ -889,13 +908,14 @@ API keys for posting, and grant_moderation! for the first admin's login.
 - [x] Logs: staff actions, screened emails, IPs and URLs, search logs,
       email logs (sent, skipped, bounced, received, rejected), measured
       against Rails
-- [ ] Logs: a search term's details, incoming email details
+- [x] Logs: a search term's details, incoming email details
 - [ ] Backups: creating, listing, downloading and restoring through the
       app (scripts/restore-backup restores today), read-only mode
 - [ ] Badges: creating, editing and deleting, groupings, granting and
       revoking, badge SQL, and the BadgeGranter jobs that award them
-- [ ] Permalinks, embeddable hosts, user fields, form
-      templates, custom flags, custom emoji
+- [x] Permalinks, embeddable hosts, user fields, form
+      templates, custom flags, custom emoji (form template previews
+      wait for a Psych YAML emitter)
 - [ ] API keys and their scopes, web hooks and their deliveries (the
       events core sends to them)
 - [ ] Email: the settings test, previews, templates and email style

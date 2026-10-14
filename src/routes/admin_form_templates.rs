@@ -204,7 +204,11 @@ async fn preview(
     let Some(template) = required(p, "template")? else {
         return Ok(super::accounts::param_missing("template"));
     };
-    let id = match p.get("id").and_then(params::scalar).filter(|s| !s.is_empty()) {
+    let id = match p
+        .get("id")
+        .and_then(params::scalar)
+        .filter(|s| !s.is_empty())
+    {
         Some(raw) => {
             let found = match id_of(&raw) {
                 Some(id) => form_templates::find(&mut *conn, id).await?,
@@ -358,7 +362,9 @@ async fn public_guard(
     if !settings.get("enable_form_templates")?.truthy() {
         return Ok(Err(super::search::invalid_access(state)));
     }
-    Ok(Ok(guardian.allowed_category_ids(&mut *conn, &settings).await?))
+    Ok(Ok(guardian
+        .allowed_category_ids(&mut *conn, &settings)
+        .await?))
 }
 
 /// GET /form-templates(.json): FormTemplateSerializer without process!.

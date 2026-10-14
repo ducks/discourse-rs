@@ -664,10 +664,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/admin/customize/embedding/{id}",
             get(admin_embedding::edit),
         )
-        .route(
-            "/admin/embeddable_hosts",
-            post(admin_embedding::create),
-        )
+        .route("/admin/embeddable_hosts", post(admin_embedding::create))
         .route(
             "/admin/embeddable_hosts.json",
             post(admin_embedding::create),
@@ -698,10 +695,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/admin/customize/form-templates/{id}/edit.json",
             get(admin_form_templates::edit),
         )
-        .route(
-            "/form-templates",
-            get(admin_form_templates::public_index),
-        )
+        .route("/form-templates", get(admin_form_templates::public_index))
         .route(
             "/form-templates.json",
             get(admin_form_templates::public_index),

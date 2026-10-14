@@ -336,10 +336,10 @@ pub async fn search_logs(
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
-    Ok(Json(
-        crate::search_logs::trending(&mut conn, &settings, &period, &search_type).await?,
+    Ok(
+        Json(crate::search_logs::trending(&mut conn, &settings, &period, &search_type).await?)
+            .into_response(),
     )
-    .into_response())
 }
 
 /// GET /admin/logs/search_logs/term(.json)?term=: staff. The details

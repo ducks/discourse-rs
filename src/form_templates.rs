@@ -114,9 +114,12 @@ fn sanitized_description(description: &str) -> Result<String, Unsupported> {
         .insert("a".into(), AttrAllow::new(&["href", "target"]));
     config.protocols.insert(
         "a".into(),
-        [("href".to_string(), Protocols::new(&["http", "https", "mailto"]))]
-            .into_iter()
-            .collect(),
+        [(
+            "href".to_string(),
+            Protocols::new(&["http", "https", "mailto"]),
+        )]
+        .into_iter()
+        .collect(),
     );
     crate::sanitize::fragment(description, &config)
         .map_err(|_| Unsupported("a form template description Sanitize refuses"))
@@ -169,13 +172,16 @@ pub async fn errors(
     }
     let max = settings.get("max_form_template_content_length")?.to_i();
     if template.chars().count() as i64 > max {
-        out.push(format!("Template is too long (maximum is {max} characters)"));
+        out.push(format!(
+            "Template is too long (maximum is {max} characters)"
+        ));
     }
     // Anchors, aliases and tags where a node starts: safe_load refuses
     // some, Psych reads the rest; not compared.
     static NODE_PROPERTY: std::sync::OnceLock<regex::Regex> = std::sync::OnceLock::new();
-    let property = NODE_PROPERTY
-        .get_or_init(|| regex::Regex::new(r"(?m)(?:^|[:\-,\[\{?])[ \t]*[&*!][^\s]").expect("a regex"));
+    let property = NODE_PROPERTY.get_or_init(|| {
+        regex::Regex::new(r"(?m)(?:^|[:\-,\[\{?])[ \t]*[&*!][^\s]").expect("a regex")
+    });
     if property.is_match(template) {
         return Err(Unsupported("form templates with YAML anchors, aliases or tags").into());
     }

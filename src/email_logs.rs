@@ -11,8 +11,8 @@ use chrono::NaiveDateTime;
 use serde_json::{Map, Value, json};
 use sqlx::PgConnection;
 
-use crate::{AppError, Unsupported};
 use crate::i18n::I18n;
+use crate::{AppError, Unsupported};
 
 pub struct Context<'a> {
     pub user_cx: &'a crate::admin_user_show::Context<'a>,
@@ -561,17 +561,21 @@ pub async fn incoming(
     i18n: &I18n,
     id: i64,
 ) -> Result<Option<Value>, AppError> {
-    let row: Option<(Option<String>, Option<String>, Option<String>)> = sqlx::query_as(
-        "SELECT error, rejection_message, raw FROM incoming_emails WHERE id = $1",
-    )
-    .bind(id)
-    .fetch_optional(&mut *conn)
-    .await?;
+    let row: Option<(Option<String>, Option<String>, Option<String>)> =
+        sqlx::query_as("SELECT error, rejection_message, raw FROM incoming_emails WHERE id = $1")
+            .bind(id)
+            .fetch_optional(&mut *conn)
+            .await?;
     let Some((error, rejection_message, raw)) = row else {
         return Ok(None);
     };
     let raw = raw.ok_or(Unsupported("an incoming email without its raw message"))?;
-    Ok(Some(incoming_details(i18n, error, rejection_message, &raw)?))
+    Ok(Some(incoming_details(
+        i18n,
+        error,
+        rejection_message,
+        &raw,
+    )?))
 }
 
 /// Why incoming_from_bounced found nothing: the exception's message.
@@ -613,7 +617,10 @@ pub async fn incoming_from_bounced(
     // The legacy `subdomain+verp-key@root.ext` form.
     let mut parts = reply.split('@');
     let _ = parts.next();
-    let domain_parts: Vec<&str> = parts.next().map(|d| d.split('.').collect()).unwrap_or_default();
+    let domain_parts: Vec<&str> = parts
+        .next()
+        .map(|d| d.split('.').collect())
+        .unwrap_or_default();
     let get = |i: usize| domain_parts.get(i).copied().unwrap_or("");
     candidates.push(format!("{}+verp-{key}@{}.{}", get(0), get(1), get(2)));
     for address in candidates {
@@ -638,7 +645,10 @@ mod details_tests {
 
     #[test]
     fn underscores_class_names() {
-        assert_eq!(underscore("BadDestinationAddress"), "bad_destination_address");
+        assert_eq!(
+            underscore("BadDestinationAddress"),
+            "bad_destination_address"
+        );
         assert_eq!(underscore("EmptyEmailError"), "empty_email_error");
         assert_eq!(underscore("HTMLError"), "html_error");
     }
