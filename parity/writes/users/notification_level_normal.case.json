@@ -1,0 +1,11 @@
+{
+  "user": "user0",
+  "setup": [
+    "INSERT INTO muted_users (user_id, muted_user_id, created_at, updated_at) VALUES ((SELECT id FROM users WHERE username = 'user0'), (SELECT id FROM users WHERE username = 'user1'), '2026-10-05 10:00:00', '2026-10-05 10:00:00')"
+  ],
+  "requests": [
+    { "method": "PUT", "path": "/u/user1/notification_level", "params": { "notification_level": "normal" } },
+    { "method": "PUT", "path": "/u/user1/notification_level.json", "params": { "notification_level": "loud" } }
+  ],
+  "include_tables": ["muted_users", "ignored_users"]
+}

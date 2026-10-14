@@ -1,0 +1,142 @@
+{
+  "name": "notification_level_mute",
+  "user": "user0",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/user1/notification_level.json",
+      "params": {
+        "notification_level": "mute"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/user1/notification_level.json",
+      "params": {
+        "notification_level": "mute"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/u/User2/notification_level.json",
+      "params": {
+        "notification_level": "mute"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T11:52:31.853346",
+  "transaction_started_at": "2026-10-14T11:52:28.290664",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    }
+  ],
+  "changes": {
+    "ignored_users": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 1,
+          "user_id": 2,
+          "created_at": "2026-10-05T10:00:00",
+          "updated_at": "2026-10-05T10:00:00",
+          "expiring_at": "2030-01-01T00:00:00",
+          "summarized_at": null,
+          "ignored_user_id": 4
+        }
+      ],
+      "updated": []
+    },
+    "muted_users": {
+      "inserted": [
+        {
+          "id": 1,
+          "user_id": 2,
+          "created_at": "2026-10-14T11:52:31.87457",
+          "updated_at": "2026-10-14T11:52:31.87457",
+          "muted_user_id": 3
+        },
+        {
+          "id": 2,
+          "user_id": 2,
+          "created_at": "2026-10-14T11:52:31.923712",
+          "updated_at": "2026-10-14T11:52:31.923712",
+          "muted_user_id": 4
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 192,
+            "seen_at": null,
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "0hvOX/cPbjE2eh2aKhcoDr2ICZA=",
+            "created_at": "2026-10-14T11:52:29.994459",
+            "rotated_at": "2026-10-14T11:52:29.988606",
+            "updated_at": "2026-10-14T11:52:29.994459",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "0hvOX/cPbjE2eh2aKhcoDr2ICZA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 192,
+            "seen_at": "2026-10-14T11:52:31.863338",
+            "user_id": 2,
+            "client_ip": "127.0.0.1",
+            "auth_token": "0hvOX/cPbjE2eh2aKhcoDr2ICZA=",
+            "created_at": "2026-10-14T11:52:29.994459",
+            "rotated_at": "2026-10-14T11:52:29.988606",
+            "updated_at": "2026-10-14T11:52:29.994459",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "0hvOX/cPbjE2eh2aKhcoDr2ICZA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "muted_users": 1
+  },
+  "setup": [
+    "INSERT INTO ignored_users (user_id, ignored_user_id, expiring_at, created_at, updated_at) VALUES ((SELECT id FROM users WHERE username = 'user0'), (SELECT id FROM users WHERE username = 'user2'), '2030-01-01 00:00:00', '2026-10-05 10:00:00', '2026-10-05 10:00:00')"
+  ],
+  "include_tables": [
+    "muted_users",
+    "ignored_users"
+  ],
+  "recorded_from": {
+    "case": "50024faa54e574ad84eb86699fbf48ce7054d716e2c195ecdacbf71e8410a6ea",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

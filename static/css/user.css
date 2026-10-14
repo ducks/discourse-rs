@@ -589,11 +589,8 @@ a#user-nav-skip-link:visited {
   background-color: var(--d-content-background, var(--secondary));
 }
 
-@media (width < 40rem) {
-  .user-content {
-    margin-top: 1em;
-  }
-}
+/* new-user.scss's (width < 40rem) .user-content margin is overridden by
+   user.scss's, later in Discourse's bundle: left out. */
 
 /* user-info.scss */
 .user-info {

@@ -3,4 +3,5 @@
 {% block content %}
 {{ main|safe }}
 {% if main.contains("messages-dropdown-trigger") %}<script src="{{ crate::assets::url(base_path, "messages-dropdown.js") }}"></script>{% endif %}
+{% if main.contains("user-notifications-dropdown") %}<script src="{{ crate::assets::url(base_path, "user-notifications.js") }}"></script>{% endif %}
 {% endblock %}

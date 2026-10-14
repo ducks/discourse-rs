@@ -1,0 +1,10 @@
+{
+  "user": "user0",
+  "requests": [
+    { "method": "PUT", "path": "/u/admin/notification_level.json", "params": { "notification_level": "mute" } },
+    { "method": "PUT", "path": "/u/user0/notification_level.json", "params": { "notification_level": "mute" } },
+    { "method": "PUT", "path": "/u/user1/notification_level.json", "params": { "notification_level": "mute", "acting_user_id": "3" } },
+    { "method": "PUT", "path": "/u/nobody/notification_level.json", "params": { "notification_level": "mute" } }
+  ],
+  "include_tables": ["muted_users"]
+}
