@@ -1,0 +1,16 @@
+{
+  "user": "admin",
+  "settings": {"tagging_enabled": true},
+  "requests": [
+    {"method": "POST", "path": "/admin/permalinks.json", "params": {"permalink": {"url": "old-thread", "permalink_type": "topic", "permalink_type_value": "35"}}},
+    {"method": "POST", "path": "/admin/permalinks.json", "params": {"permalink": {"url": "/old-post ", "permalink_type": "post", "permalink_type_value": "37"}}},
+    {"method": "POST", "path": "/admin/permalinks.json", "params": {"permalink": {"url": "forum/general", "permalink_type": "category", "permalink_type_value": "4"}}},
+    {"method": "POST", "path": "/admin/permalinks.json", "params": {"permalink": {"url": "old-tag", "permalink_type": "tag", "permalink_type_value": "howto"}}},
+    {"method": "POST", "path": "/admin/permalinks.json", "params": {"permalink": {"url": "old-tag-2", "permalink_type": "tag", "permalink_type_value": "no-such-tag"}}},
+    {"method": "POST", "path": "/admin/permalinks.json", "params": {"permalink": {"url": "members/user1", "permalink_type": "user", "permalink_type_value": "3"}}},
+    {"method": "POST", "path": "/admin/permalinks.json", "params": {"permalink": {"url": "elsewhere", "permalink_type": "external_url", "permalink_type_value": "https://example.com/x"}}},
+    {"method": "POST", "path": "/admin/permalinks.json", "params": {"permalink": {"url": "old-thread", "permalink_type": "topic", "permalink_type_value": "36"}}},
+    {"method": "POST", "path": "/admin/permalinks.json", "params": {"permalink": {"url": "no-target", "permalink_type": "nonsense", "permalink_type_value": "1"}}},
+    {"method": "POST", "path": "/admin/permalinks.json", "params": {"something": "else"}}
+  ]
+}

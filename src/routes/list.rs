@@ -455,6 +455,7 @@ pub async fn category(
     RawQuery(raw_query): RawQuery,
     headers: HeaderMap,
     uri: axum::http::Uri,
+    requested: Option<axum::Extension<super::RequestedUri>>,
 ) -> Result<Response, AppError> {
     let (path, json) = match path.strip_suffix(".json") {
         Some(p) => (p.to_string(), true),
@@ -505,6 +506,14 @@ pub async fn category(
     // set_category: missing or unreadable -> 404, before any redirect.
     let category = Category::find_by_slug_path_with_id(&mut conn, &slug_path, max_nesting).await?;
     let Some(category) = category else {
+        // NotFound with check_permalinks: the full path looked up.
+        drop(conn);
+        let fullpath = super::fullpath_of(requested.as_ref().map(|r| &r.0), &uri);
+        if let Some(redirect) =
+            crate::permalinks::check(&state, &guardian, &headers, &fullpath).await?
+        {
+            return Ok(redirect);
+        }
         return Ok(super::topics::not_found_response(&state));
     };
     if category.read_restricted

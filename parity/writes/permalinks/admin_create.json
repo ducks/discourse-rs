@@ -1,0 +1,466 @@
+{
+  "name": "admin_create",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/permalinks.json",
+      "params": {
+        "permalink": {
+          "url": "old-thread",
+          "permalink_type": "topic",
+          "permalink_type_value": "35"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/permalinks.json",
+      "params": {
+        "permalink": {
+          "url": "/old-post ",
+          "permalink_type": "post",
+          "permalink_type_value": "37"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/permalinks.json",
+      "params": {
+        "permalink": {
+          "url": "forum/general",
+          "permalink_type": "category",
+          "permalink_type_value": "4"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/permalinks.json",
+      "params": {
+        "permalink": {
+          "url": "old-tag",
+          "permalink_type": "tag",
+          "permalink_type_value": "howto"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/permalinks.json",
+      "params": {
+        "permalink": {
+          "url": "old-tag-2",
+          "permalink_type": "tag",
+          "permalink_type_value": "no-such-tag"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/permalinks.json",
+      "params": {
+        "permalink": {
+          "url": "members/user1",
+          "permalink_type": "user",
+          "permalink_type_value": "3"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/permalinks.json",
+      "params": {
+        "permalink": {
+          "url": "elsewhere",
+          "permalink_type": "external_url",
+          "permalink_type_value": "https://example.com/x"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/permalinks.json",
+      "params": {
+        "permalink": {
+          "url": "old-thread",
+          "permalink_type": "topic",
+          "permalink_type_value": "36"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/permalinks.json",
+      "params": {
+        "permalink": {
+          "url": "no-target",
+          "permalink_type": "nonsense",
+          "permalink_type_value": "1"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/permalinks.json",
+      "params": {
+        "something": "else"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T04:55:24.017319",
+  "transaction_started_at": "2026-10-14T04:55:20.194208",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "permalink": {
+          "id": 1,
+          "url": "old-thread",
+          "topic_id": 35,
+          "topic_title": "Parity fixture: replies and posters",
+          "topic_url": "http://localhost:3049/t/parity-fixture-replies-and-posters/35",
+          "post_id": null,
+          "post_url": null,
+          "post_number": null,
+          "post_topic_title": null,
+          "category_id": null,
+          "category_name": null,
+          "category_url": null,
+          "external_url": null,
+          "tag_id": null,
+          "tag_name": null,
+          "tag_url": null,
+          "user_id": null,
+          "user_url": null,
+          "username": null
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "permalink": {
+          "id": 2,
+          "url": "old-post",
+          "topic_id": null,
+          "topic_title": null,
+          "topic_url": null,
+          "post_id": 37,
+          "post_url": "http://localhost:3049/t/parity-fixture-replies-and-posters/35/3",
+          "post_number": 3,
+          "post_topic_title": "Parity fixture: replies and posters",
+          "category_id": null,
+          "category_name": null,
+          "category_url": null,
+          "external_url": null,
+          "tag_id": null,
+          "tag_name": null,
+          "tag_url": null,
+          "user_id": null,
+          "user_url": null,
+          "username": null
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "permalink": {
+          "id": 3,
+          "url": "forum/general",
+          "topic_id": null,
+          "topic_title": null,
+          "topic_url": null,
+          "post_id": null,
+          "post_url": null,
+          "post_number": null,
+          "post_topic_title": null,
+          "category_id": 4,
+          "category_name": "General",
+          "category_url": "/c/general/4",
+          "external_url": null,
+          "tag_id": null,
+          "tag_name": null,
+          "tag_url": null,
+          "user_id": null,
+          "user_url": null,
+          "username": null
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "permalink": {
+          "id": 4,
+          "url": "old-tag",
+          "topic_id": null,
+          "topic_title": null,
+          "topic_url": null,
+          "post_id": null,
+          "post_url": null,
+          "post_number": null,
+          "post_topic_title": null,
+          "category_id": null,
+          "category_name": null,
+          "category_url": null,
+          "external_url": null,
+          "tag_id": 1,
+          "tag_name": "howto",
+          "tag_url": "http://localhost:3049/tag/howto/1",
+          "user_id": null,
+          "user_url": null,
+          "username": null
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "permalink": {
+          "id": 5,
+          "url": "old-tag-2",
+          "topic_id": null,
+          "topic_title": null,
+          "topic_url": null,
+          "post_id": null,
+          "post_url": null,
+          "post_number": null,
+          "post_topic_title": null,
+          "category_id": null,
+          "category_name": null,
+          "category_url": null,
+          "external_url": null,
+          "tag_id": -1,
+          "tag_name": null,
+          "tag_url": null,
+          "user_id": null,
+          "user_url": null,
+          "username": null
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "permalink": {
+          "id": 6,
+          "url": "members/user1",
+          "topic_id": null,
+          "topic_title": null,
+          "topic_url": null,
+          "post_id": null,
+          "post_url": null,
+          "post_number": null,
+          "post_topic_title": null,
+          "category_id": null,
+          "category_name": null,
+          "category_url": null,
+          "external_url": null,
+          "tag_id": null,
+          "tag_name": null,
+          "tag_url": null,
+          "user_id": 3,
+          "user_url": "http://localhost:3049/u/user1",
+          "username": "user1"
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "permalink": {
+          "id": 7,
+          "url": "elsewhere",
+          "topic_id": null,
+          "topic_title": null,
+          "topic_url": null,
+          "post_id": null,
+          "post_url": null,
+          "post_number": null,
+          "post_topic_title": null,
+          "category_id": null,
+          "category_name": null,
+          "category_url": null,
+          "external_url": "https://example.com/x",
+          "tag_id": null,
+          "tag_name": null,
+          "tag_url": null,
+          "user_id": null,
+          "user_url": null,
+          "username": null
+        }
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Url has already been taken"
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Exactly one of topic_id, post_id, category_id, tag_id, user_id, or external_url must be set"
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "param is missing or the value is empty or invalid: permalink"
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "permalinks": {
+      "inserted": [
+        {
+          "id": 1,
+          "url": "old-thread",
+          "tag_id": null,
+          "post_id": null,
+          "user_id": null,
+          "topic_id": 35,
+          "created_at": "2026-10-14T04:55:34.968424",
+          "updated_at": "2026-10-14T04:55:34.968424",
+          "category_id": null,
+          "external_url": null
+        },
+        {
+          "id": 2,
+          "url": "old-post",
+          "tag_id": null,
+          "post_id": 37,
+          "user_id": null,
+          "topic_id": null,
+          "created_at": "2026-10-14T04:55:39.835766",
+          "updated_at": "2026-10-14T04:55:39.835766",
+          "category_id": null,
+          "external_url": null
+        },
+        {
+          "id": 3,
+          "url": "forum/general",
+          "tag_id": null,
+          "post_id": null,
+          "user_id": null,
+          "topic_id": null,
+          "created_at": "2026-10-14T04:55:39.914867",
+          "updated_at": "2026-10-14T04:55:39.914867",
+          "category_id": 4,
+          "external_url": null
+        },
+        {
+          "id": 4,
+          "url": "old-tag",
+          "tag_id": 1,
+          "post_id": null,
+          "user_id": null,
+          "topic_id": null,
+          "created_at": "2026-10-14T04:55:39.965789",
+          "updated_at": "2026-10-14T04:55:39.965789",
+          "category_id": null,
+          "external_url": null
+        },
+        {
+          "id": 5,
+          "url": "old-tag-2",
+          "tag_id": -1,
+          "post_id": null,
+          "user_id": null,
+          "topic_id": null,
+          "created_at": "2026-10-14T04:55:39.994803",
+          "updated_at": "2026-10-14T04:55:39.994803",
+          "category_id": null,
+          "external_url": null
+        },
+        {
+          "id": 6,
+          "url": "members/user1",
+          "tag_id": null,
+          "post_id": null,
+          "user_id": 3,
+          "topic_id": null,
+          "created_at": "2026-10-14T04:55:40.020729",
+          "updated_at": "2026-10-14T04:55:40.020729",
+          "category_id": null,
+          "external_url": null
+        },
+        {
+          "id": 7,
+          "url": "elsewhere",
+          "tag_id": null,
+          "post_id": null,
+          "user_id": null,
+          "topic_id": null,
+          "created_at": "2026-10-14T04:55:40.048436",
+          "updated_at": "2026-10-14T04:55:40.048436",
+          "category_id": null,
+          "external_url": "https://example.com/x"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "OaqgiaTJliaRfrXIxriuYyx1cPA=",
+            "created_at": "2026-10-14T04:55:21.178807",
+            "rotated_at": "2026-10-14T04:55:21.173947",
+            "updated_at": "2026-10-14T04:55:21.178807",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "OaqgiaTJliaRfrXIxriuYyx1cPA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 1,
+            "seen_at": "2026-10-14T04:55:34.954346",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "OaqgiaTJliaRfrXIxriuYyx1cPA=",
+            "created_at": "2026-10-14T04:55:21.178807",
+            "rotated_at": "2026-10-14T04:55:21.173947",
+            "updated_at": "2026-10-14T04:55:21.178807",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "OaqgiaTJliaRfrXIxriuYyx1cPA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "permalinks": 1
+  },
+  "settings": {
+    "tagging_enabled": true
+  },
+  "recorded_from": {
+    "case": "79d96f371e7fd61c1d1b829356f145068b3bde5f1c4f7661442625c646819fab",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

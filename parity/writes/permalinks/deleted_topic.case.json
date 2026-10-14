@@ -1,0 +1,12 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO permalinks (id, url, external_url, created_at, updated_at) VALUES (9801, 't/parity-fixture-deleted-topic/40', 'https://example.com/moved', now(), now())"
+  ],
+  "keep_headers": ["Location", "Discourse-Xhr-Redirect"],
+  "requests": [
+    {"method": "GET", "path": "/t/parity-fixture-deleted-topic/40.json"},
+    {"method": "GET", "path": "/t/40.json"},
+    {"method": "GET", "path": "/t/some-other-slug/40.json"}
+  ]
+}

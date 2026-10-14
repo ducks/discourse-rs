@@ -188,9 +188,14 @@ pub async fn show(
     RawQuery(raw_query): RawQuery,
     headers: HeaderMap,
     uri: axum::http::Uri,
+    requested: Option<axum::Extension<super::RequestedUri>>,
 ) -> Result<Response, AppError> {
     let parsed = parse_path(&path, false)?;
-    show_list(state, guardian, parsed, params, raw_query, headers, uri).await
+    let fullpath = super::fullpath_of(requested.as_ref().map(|r| &r.0), &uri);
+    show_list(
+        state, guardian, parsed, params, raw_query, headers, uri, fullpath,
+    )
+    .await
 }
 
 /// GET /tags/c/{*path}
@@ -202,9 +207,14 @@ pub async fn show_in_category(
     RawQuery(raw_query): RawQuery,
     headers: HeaderMap,
     uri: axum::http::Uri,
+    requested: Option<axum::Extension<super::RequestedUri>>,
 ) -> Result<Response, AppError> {
     let parsed = parse_path(&path, true)?;
-    show_list(state, guardian, parsed, params, raw_query, headers, uri).await
+    let fullpath = super::fullpath_of(requested.as_ref().map(|r| &r.0), &uri);
+    show_list(
+        state, guardian, parsed, params, raw_query, headers, uri, fullpath,
+    )
+    .await
 }
 
 fn redirect(headers: &HeaderMap, location: String) -> Response {
@@ -228,6 +238,7 @@ async fn show_list(
     raw_query: Option<String>,
     headers: HeaderMap,
     uri: axum::http::Uri,
+    fullpath: String,
 ) -> Result<Response, AppError> {
     // Before the page's data is read (crate::bus::page_position).
     let bus_position = if path.json {
@@ -263,6 +274,26 @@ async fn show_list(
         let max_nesting = settings.get("max_category_nesting")?.to_i();
         let found = Category::find_by_slug_path_with_id(&mut conn, slug_path, max_nesting).await?;
         let Some(c) = found else {
+            // A category permalink for `c/<path>`: 301 under /tags, the
+            // target (base path and all) then the tag name.
+            if let Some(p) =
+                crate::permalinks::find_by_url(&mut conn, &settings, &format!("c/{slug_path}"))
+                    .await?
+                && p.category_id.is_some()
+                && crate::permalinks::can_see_target(&mut conn, &settings, &guardian, &p).await?
+            {
+                let target = crate::permalinks::target_url(&mut conn, &base_path, &p)
+                    .await?
+                    .unwrap_or_default();
+                let tag_name = match &path.tag {
+                    TagRef::Name(name) => name.as_str(),
+                    _ => "",
+                };
+                return Ok(redirect(
+                    &headers,
+                    format!("{base_path}/tags{target}/{tag_name}"),
+                ));
+            }
             return Ok(not_found());
         };
         if c.read_restricted
@@ -417,6 +448,13 @@ async fn show_list(
                 .fetch_one(&mut *conn)
                 .await?;
         if !exists {
+            // "tag not found", check_permalinks: the full path looked up.
+            drop(conn);
+            if let Some(redirect) =
+                crate::permalinks::check(&state, &guardian, &headers, &fullpath).await?
+            {
+                return Ok(redirect);
+            }
             return Ok(not_found());
         }
     }

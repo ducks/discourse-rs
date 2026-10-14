@@ -24,6 +24,7 @@ mod login_required;
 mod messages;
 mod not_found;
 mod notifications;
+mod permalinks;
 mod pm_invite;
 mod post_actions;
 mod post_destroy;
@@ -663,6 +664,40 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/admin/users/{user_id}/unsilence.json",
             put(admin_users::unsilence),
         )
+        .route(
+            "/admin/permalinks",
+            get(permalinks::index).post(permalinks::create),
+        )
+        .route(
+            "/admin/permalinks.json",
+            get(permalinks::index).post(permalinks::create),
+        )
+        .route(
+            "/admin/permalinks/{id}",
+            get(permalinks::show_admin)
+                .put(permalinks::update)
+                .delete(permalinks::destroy),
+        )
+        .route(
+            "/admin/config/permalinks",
+            get(permalinks::index).post(permalinks::create),
+        )
+        .route(
+            "/admin/config/permalinks.json",
+            get(permalinks::index).post(permalinks::create),
+        )
+        .route(
+            "/admin/config/permalinks/{id}",
+            get(permalinks::show_admin).delete(permalinks::destroy),
+        )
+        .route("/permalink-check", get(permalinks::check))
+        .route("/permalink-check.json", get(permalinks::check))
+        .route("/category/{*path}", get(permalinks::category_redirect))
+        // The last route, under PermalinkConstraint.
+        .route(
+            permalinks::CATCH_ALL,
+            get(permalinks::show).fallback(permalinks::no_route),
+        )
         .route("/admin/backups/readonly", put(backups::readonly))
         .route("/admin/backups/readonly.json", put(backups::readonly))
         .route("/admin/email/handle_mail", post(admin_email::handle_mail))
@@ -900,6 +935,12 @@ pub fn router(state: &AppState) -> Router<AppState> {
             state.clone(),
             not_found::html_errors,
         ))
+        // PermalinkConstraint: the `*url` route without a permalink is no
+        // route at all, before any filter.
+        .route_layer(axum::middleware::from_fn_with_state(
+            state.clone(),
+            permalinks::constraint,
+        ))
 }
 
 /// `Rack::MethodOverride`: a POST with a form `_method` (or the
@@ -967,7 +1008,8 @@ pub async fn request_format(
         && json_twin_page(request.uri().path())
         && wants_json(request.uri().query(), request.headers())
     {
-        let uri = request.uri();
+        let uri = request.uri().clone();
+        request.extensions_mut().insert(RequestedUri(uri.clone()));
         let rewritten = match uri.query() {
             Some(q) => format!("{}.json?{q}", uri.path()),
             None => format!("{}.json", uri.path()),
@@ -977,6 +1019,19 @@ pub async fn request_format(
         }
     }
     next.run(request).await
+}
+
+/// The URI as requested, before request_format sent it to its `.json`
+/// twin (Rails' `request.fullpath` has no format added).
+#[derive(Clone)]
+pub struct RequestedUri(pub axum::http::Uri);
+
+/// `request.fullpath`: the path and query as requested.
+pub(crate) fn fullpath_of(requested: Option<&RequestedUri>, uri: &axum::http::Uri) -> String {
+    let uri = requested.map(|r| &r.0).unwrap_or(uri);
+    uri.path_and_query()
+        .map(|p| p.as_str().to_string())
+        .unwrap_or_default()
 }
 
 /// The pages Rails answers as JSON when asked to: the topic lists, the

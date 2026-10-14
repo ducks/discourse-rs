@@ -1,0 +1,11 @@
+{
+  "setup": [
+    "INSERT INTO permalinks (id, url, category_id, created_at, updated_at) VALUES (9801, 'category/old-cat', 4, now(), now())"
+  ],
+  "keep_headers": ["Location"],
+  "requests": [
+    {"method": "GET", "path": "/category/old-cat"},
+    {"method": "GET", "path": "/category/general/sub"},
+    {"method": "GET", "path": "/category/old-cat.json"}
+  ]
+}
