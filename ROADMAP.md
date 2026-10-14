@@ -9,7 +9,9 @@ commit as the slice.
 The port refuses rather than guesses: a request that needs a behavior not
 ported yet gets an explicit `Unsupported(...)` 500 naming it. The list of
 those markers (`grep -rho 'Unsupported("[^"]*")' src/`) is the fine-grained
-backlog; the milestones below are the coarse one.
+backlog; the milestones below are the coarse one. Phase 9 groups the
+markers into branches and phase 10 holds the rest of the milestones'
+work, so the two together are the count of what is left.
 
 ## Now: the parity queue (2026-10-13)
 
@@ -292,7 +294,7 @@ then by what running a forum needs (milestone 6). Briefs:
     CSV export, import preview and confirm; the preview's rows kept in
     discourse_rs.cached_values; a file that isn't a zip and a manifest
     that isn't UTF-8 refused)
-82. `feat/admin-groups` L: creating, editing, deleting groups, members
+82. ~~`feat/admin-groups`~~ (done) L: creating, editing, deleting groups, members
     and owners in bulk, automatic membership by email domain. Split:
     82a. ~~`feat/groups-read`~~ (done) M: groups#index, search,
     check_name, show, members (and requesters), histories, mentionable,
@@ -368,7 +370,7 @@ then by what running a forum needs (milestone 6). Briefs:
     reference, allowed parameters; the master-key badge refusal was dead
     code. Refused: scopes on routes behind home page, permalink or
     markdown constraints, the Ember admin page itself)
-85. `feat/admin-badges` M: creating, editing, deleting badges and
+85. ~~`feat/admin-badges`~~ (done) M: creating, editing, deleting badges and
     groupings, badge SQL with its preview, the badges pages' HTML,
     85a. ~~`feat/admin-badges`~~ (done) M (Admin::BadgesController's
     JSON: index, types, create/update/destroy with Badge's validations,
@@ -392,7 +394,7 @@ then by what running a forum needs (milestone 6). Briefs:
     elements, quoted attributes, plain URLs, XML and numeric references;
     the rest refused (block elements, repairs, named HTML entities);
     libpq's error positions landed with 85a),
-86. `feat/admin-users-rest` M: granting admin (second factor or email
+86. ~~`feat/admin-users-rest`~~ (done) M: granting admin (second factor or email
     confirmation), impersonation, penalties on several users, split:
     86a. ~~`feat/admin-users-penalties`~~ (done) M (other_user_ids,
     the post action: delete, delete_replies, edit without a revision,
@@ -554,7 +556,7 @@ then by what running a forum needs (milestone 6). Briefs:
     with no Ember string (the topics' and lists' Next/Previous page
     links, the login page's form), and literal labels Ember writes
     literally too ("User primary")),
-    91. `feat/backups` L (creating, listing, downloading, restoring
+    91. ~~`feat/backups`~~ (done) L (creating, listing, downloading, restoring
     through the app; read-only mode is 79c), split:
     91a. ~~`feat/backup-files`~~ (done) M (the local store under
     public/backups/default: the list, status, the emailed download
@@ -700,6 +702,662 @@ with the viewport, guessing from the user agent without it
 
 [mobile-layout]
 
+### Phase 9: what done items still refuse
+
+Open in phases 9 and 10 (2026-10-14): 89 items, 120-208. By size: 24 S,
+46 M, 19 L. Phase 9: 68 (22 S, 36 M, 10 L); phase 10: 21 (2 S, 10 M,
+9 L). Not counted here: the open items above (90f, 90g, 92b, 100) and
+101-119.
+
+The refusals of merged items, grouped by feature and ordered by how
+often a real site meets them (reading and posting first, then
+moderation, then admin, then the Ruby-compatibility engines). Counted
+on main at cab8cde: 1512 `Unsupported("...")` sites with a literal
+reason (1295 distinct) in 266 files of src/ and crates/, about 60 more
+through helpers (`refuse_unported*`, crates/markdown's `ctx.refuse` and
+sanitizer, `user_updater::REFUSED`, admin_user_show's checks,
+jobs/consistency.rs's preflight, `web_hooks::refuse`), the 8 `not_yet`
+cases under parity/writes, and 12 jobs enqueued as Rails enqueues them
+that the worker fails as not ported (jobs/handlers.rs's fallback arm).
+File references are under src/ unless they name a crate. Each item
+names the refusals it lifts; a reason that appears in many places is
+cited by its main sites.
+
+Already owned elsewhere, so not repeated here: the admin's Ember pages
+(26 "(Ember)" and "admin ... page" refusals) are 90g; remote themes,
+theme uploads and objects settings, the wizard (themes.rs:305;
+theme_writes.rs:196,1213,1232; routes/themes.rs:1040;
+admin_site_settings.rs:218; site.rs:566; routes/accounts.rs:1062) are
+90f; MessageBus's own ids and positions are 100.
+
+The enqueued jobs without a handler go with the item that owns them:
+notify_mailing_list_subscribers (146), notify_post_revision (137),
+crawl_topic_link (127), index_category_for_search (144),
+rebake_quoted_posts_for_user (135), change_display_name (153),
+update_gravatar and create_avatar_thumbnails (131),
+pull_hotlinked_images and pull_user_profile_hotlinked_images (140),
+refresh_latest_new_feature (173), user_suspension_expired (151).
+
+120. `feat/slug-for` M: topics without a stored slug (`Slug.for`),
+    refused wherever a topic is linked (topic_view.rs:292,771;
+    topic_list.rs:544; users.rs:1864; notifications.rs:558;
+    bookmarks.rs:532; pretty_text/helpers.rs:275;
+    topic_view/web_hook.rs:154,320; not_found_page.rs:190;
+    review_list.rs:650; email/digest.rs:291,1058,1217;
+    jobs/bookmark_reminders.rs:147; reports/counts.rs:1204;
+    reports/lists.rs:409; plugins/reactions/users.rs:703;
+    routes/chat_pages.rs:406), slug_generation_method other than ascii
+    (posting/topic_save.rs:33; posting/create.rs:1403;
+    plugins/solved/by_user.rs:50), titles with emoji codes
+    (posting/text.rs:336), topics without a stored fancy_title on
+    profiles (users.rs:1662). Non-English transliteration waits on 167
+121. `feat/cdn` M: URLs behind a CDN (avatar.rs:67;
+    pretty_text/helpers.rs:342; pretty_text/mod.rs:466;
+    pretty_text/cleanup.rs:607; pretty_text/cooked_post_processor.rs:759;
+    topic_list.rs:1025; users.rs:1074; badges_view.rs:112;
+    reports/tables.rs:561)
+122. `feat/s3-store` L: the S3 store for uploads and backups
+    (file_store.rs:88; plugins/mod.rs:73; backup_restore/store.rs:55;
+    backup_restore/creator.rs:221; backup_restore/restorer.rs:831,933;
+    routes/backups.rs:522,534; reports/pageviews.rs:497,501;
+    jobs/upload_jobs.rs:48,116). Needs: an S3 client and an S3-compatible
+    store beside the reference for the harness
+123. `feat/secure-uploads` M, after 122: secure uploads and media
+    (uploads.rs:342; posting/rebake.rs:49; pretty_text/helpers.rs:338;
+    pretty_text/cooked_post_processor.rs:756; upload_references.rs:373;
+    topic_list.rs:1013; email/styles.rs:132)
+124. `feat/topic-view-staff` M: deleted topics and posts for staff
+    (topic_view.rs:289,687 with `post_stream.gaps`;
+    posting/revisions.rs:100), ignored users (topic_view.rs:675;
+    routes/users.rs:1290; the `not_yet` case
+    reactions/topic_view_ignoring_a_reactor), detailed_404
+    (topic_view.rs:284), queued_posts_count for moderators (:516),
+    title_is_group (:1747), custom post notices (:1876),
+    limit_suggested_to_category (:2518), suggested topics from other
+    lists and for anonymous readers (topic_query.rs:814,862)
+125. `feat/topic-thumbnails` M: topic thumbnails in the topic view and
+    web hook payloads (topic_view.rs:549; topic_view/web_hook.rs:550),
+    theme thumbnail sizes (optimized_images.rs:131 and
+    jobs/consistency.rs's preflight), topic images in digests
+    (email/digest.rs:657)
+126. `feat/featured-links` S: featured_link_root_domain
+    (topic_view.rs:409; topic_list.rs:650,758;
+    topic_view/web_hook.rs:434; email/digest.rs:660)
+127. `feat/topic-links` S: TopicLink.topic_map with clicks
+    (topic_view.rs:1402), links to topic and site paths the router isn't
+    ported for (posting/links.rs:65,449), links from video embeds
+    (:219), the crawl_topic_link job
+128. `feat/category-lists-rest` M: the subcategories_with_featured_topics
+    styles and paginated category lists (category_list.rs:148,167),
+    parent slugs needing CGI escapes (:120), category logos
+    (categories_view.rs:203,396), lazy-loaded categories
+    (categories.rs:187; bookmarks.rs:406; routes/drafts.rs:290),
+    three-level nesting (topic_query.rs:375; hashtags.rs:424), encoded
+    slugs and hidden parents in hashtags (pretty_text/helpers.rs:505,547;
+    hashtags.rs:393), unknown style_types (pretty_text/helpers.rs:569;
+    hashtags.rs:436)
+129. `feat/muted-defaults` S: mute_all_categories_by_default,
+    default_categories_muted and default_tags_muted in lists
+    (topic_query.rs:348,351,358; category_list.rs:349), default tag
+    preferences at signup (signup.rs:730), staff groups' category and tag
+    notification defaults (roles.rs:163)
+130. `feat/user-status` M: user status (UserStatus, the /user-status
+    routes, the status modal) wherever a user is serialized (users.rs:540;
+    current_user.rs:306; about.rs:253; bus.rs:447; directory.rs:611;
+    topic_view.rs:1509; routes/groups.rs:835; routes/admin_api_keys.rs:74;
+    plugins/chat/direct_messages.rs:237; plugins/chat/membership.rs:128;
+    plugins/chat/messages.rs:636; plugins/chat/channels.rs:654) and PUT
+    /u's `status` (user_updater.rs's REFUSED)
+131. `feat/avatars` M: generated letter avatars (avatar.rs:134,
+    LetterAvatar), default_avatars and restrict_letter_avatar_colors
+    (:113,122), avatar uploads and picking (uploads.rs:339), gravatar
+    (user_updater.rs:554,556), random avatars at signup (signup.rs:406),
+    system_user_avatar_template (site.rs:479), renaming or merging the
+    system user with the logo as its avatar (username_changer.rs:171;
+    user_merger.rs:229), the update_gravatar and create_avatar_thumbnails
+    jobs. Needs: network fetches (gravatar), letter rendering equal to
+    the reference's
+132. `feat/title-emoji` S: unicode emoji in titles (posting/text.rs:283,
+    performEmojiEscape; posting/validate.rs:741), emoji in a quoted
+    topic's title (crates/markdown), the emoji shortcut regex's
+    backtracking (posting/text.rs:296)
+133. `feat/anonymous-posting` M: anonymous posting mode (the shadow
+    accounts) wherever a shadow acts: posting (posting/validate.rs:80,153;
+    posting/create.rs:218; posting/revise.rs:81; posting/enqueue.rs:88),
+    likes, flags and bookmarks (post_actions.rs:235; likes.rs:187,519;
+    flags.rs:107; bookmark_manager.rs:130), topic_guardian.rs:913,
+    current_user.rs:309, read_tracking.rs:134,
+    post_destroyer.rs:328,389,1251, pm_invite.rs:66,243,
+    topic_status.rs:134, post_owner_changer.rs:446, review.rs:356,
+    review_posts.rs:179, reviewable_user.rs:247, the plugins
+    (topic_voting/votes.rs:126,152,175,218; poll/vote.rs:263,485;
+    reactions/toggle.rs:119; solved/answers.rs:264; chat/mod.rs:83;
+    chat/dm_groups.rs:438), anonymous staff on admin routes
+    (routes/admin_watched_words.rs:82,149,178;
+    routes/directory_columns.rs:248;
+    routes/admin_dashboard_sections.rs:172; user_penalties.rs:430,688,
+    837,1014; routes/admin_users.rs:504,1837; site_setting_update.rs:142)
+134. `feat/posting-trust-levels` M: posting as a new (TL0) or staged
+    user (posting/validate.rs:158,161), links from users outside
+    post_links_allowed_groups (:610), max_consecutive_replies (:641),
+    staged users on restricted categories (topic_guardian.rs:253),
+    approving a staged user's queued post (posting/create.rs:317),
+    silencing a TL0 user (user_penalties.rs:925, hide_posts), TL0 bio
+    links (users.rs:708, strip_links)
+135. `feat/quoted-posts` M: QuotedPost on create and revise
+    (posting/create.rs:549,552; posting/revise.rs:213), quote alerts and
+    quotes in group messages (jobs/post_alert.rs:398,467), recovering
+    posts with quotes (post_destroyer.rs:1299), the
+    rebake_quoted_posts_for_user job
+136. `feat/slow-mode` S: slow mode when creating, enqueueing, editing and
+    changing owners (posting/create.rs:486; posting/enqueue.rs:137;
+    posting/revise.rs:142; post_owner_changer.rs:465), slow mode without
+    seconds (routes/topic_timer.rs:252)
+137. `feat/post-edit-rest` L: edits within the grace period
+    (posting/revise.rs:180,197; Rails keeps the original in Redis),
+    hidden and non-regular posts (:104,107), deleted posts
+    (routes/posts.rs:309), staff_edit_locks_post (posting/revise.rs:574;
+    post_owner_changer.rs:780), posts#update's title, image sizes and
+    bypass_bump (routes/posts.rs:276,281), a category description synced
+    from its definition post (posting/revise.rs:115;
+    posting/rebake.rs:91; jobs/handlers.rs:941;
+    username_changer.rs:792,798; post_owner_changer.rs:462), revisions
+    without a user, by the system user or of hidden posts
+    (posting/revisions.rs:253,379,381), a past version's post and raw
+    (routes/posts.rs:425,480), repeated edit notifications
+    (jobs/post_alert.rs:778), the notify_post_revision job
+138. `feat/posting-rest` M: replies to whispers (posting/create.rs:773),
+    staff replying to closed topics (:506), uploaded video or audio
+    (:546; posting/revise.rs:253), duplicate titles and titles the
+    cleaner changes (posting/validate.rs:753; posting/topic_save.rs:30),
+    auto_close_topics_post_count (posting/create.rs:1263), returning-user
+    post notices (:1382), featured topics with a category sort order
+    (:1615), suppress_secured_categories_from_admin (:1618;
+    jobs/post_alert.rs:724), site_archived (posting/create.rs:221),
+    generate_topic_og_image (:799; jobs/handlers.rs:880;
+    post_owner_changer.rs:318), posts#create's other params and
+    archetypes (routes/posts.rs:76,105), process_post's recook, image
+    sizes and remove_full_quote_on_direct_reply
+    (jobs/handlers.rs:749,752,797), enqueueing a suspended user's post or
+    one with polls (posting/enqueue.rs:94,97)
+139. `feat/uploads-rest` M: image types Rails optimizes and crops
+    (uploads.rs:353,361), keeping metadata (:364), replacing a failed
+    upload (:430), upload thumbnails' serializer (:688), missing
+    extensions, outdated optimized images, SVG and AVIF thumbnails
+    (optimized_images.rs:202,222,227), dominant colours with libvips and
+    of AVIF, HEIC and JPEG XL (jobs/upload_jobs.rs:98,133), uploads not
+    sent as multipart, site setting uploads, retain_hours, uploads from a
+    url (routes/uploads.rs:46,67,188,209,216,222), drafts with uploads
+    (drafts.rs:51), uploads in user and group bios and profile
+    backgrounds (promotion.rs:325,361; user_updater.rs:1046,1096;
+    jobs/periodical.rs:116; group_writes.rs:420)
+140. `feat/hotlinked-media` M: images from other sites sized over HTTP
+    (pretty_text/cooked_post_processor.rs:369,458, FastImage), oneboxed
+    images of other sites or without a size (onebox/mod.rs:1521,1573),
+    blocked and pulled hotlinked media
+    (pretty_text/cooked_post_processor.rs:689,716;
+    pretty_text/cleanup.rs:574), the pull_hotlinked_images and
+    pull_user_profile_hotlinked_images jobs. Needs: network fetches,
+    through 52's FinalDestination
+141. `feat/optimized-videos` S: videos in the post processor
+    (pretty_text/cooked_post_processor.rs:806), video thumbnails
+    (upload_references.rs:390; pretty_text/cleanup.rs:610), destroying an
+    upload an optimized video was made into (jobs/upload_cleanup.rs:39),
+    oneboxes outside a post (pretty_text/cooked_post_processor.rs:766)
+142. `feat/onebox-rest` M: X posts through the Twitter API
+    (onebox/api_engines.rs:806), inline pull requests with
+    discourse-github's status (onebox/github.rs:1143), the engines not
+    ported (onebox/api_engines.rs:1358; onebox/embed_engines.rs:1691;
+    onebox/github.rs:1053; onebox/engines.rs:623), chat channel and
+    message oneboxes (onebox/mod.rs:250), the site's pages no route
+    recognizes (:257), protocol-relative URLs (:238), localized topic
+    oneboxes (:560, with 168), same-topic quotes outside a preview
+    (:622), Time.parse's rollovers and missing years
+    (onebox/ruby_time.rs), Ruby's float printing
+    (onebox/embed_engines.rs:271; onebox/generic.rs:97). Needs: 175 and
+    176 for the URL and charset cases, network for the APIs
+143. `feat/search-advanced` L: advanced filters and keywords
+    (search/mod.rs:292,298: `in:`, `status:`, `category:`, `#`, `@`,
+    `tags:`, `before:`, `after:`, `order:`...), search contexts
+    (routes/search.rs:348,522), search_for_id (:529),
+    restrict_to_archetype (:536), type_filter=all_topics (:546), the
+    categories & tags type (:352, Category.search and
+    tags/filter/search), URLs in terms (search/mod.rs:436), user search
+    by groups among reviewers (user_search.rs:187), the directory's
+    search by name (directory.rs:343, UserSearch)
+144. `feat/search-settings` M: search_ignore_accents (unaccent) and CJK
+    tokenization, searching and indexing (search/mod.rs:542,555,559;
+    posting/search_index.rs:267,275), use_pg_headlines_for_excerpt,
+    search_ranking_weights, search_prefer_recent_posts, a default sort
+    other than relevance (search/mod.rs:545,548,551,565), blurbs from old
+    post_search_data rows (:1027,1034), human_only search logs
+    (search_logs.rs:60), the index_category_for_search job
+145. `feat/post-alert-rest` M: group and @here mentions
+    (jobs/post_alert.rs:300,303), nested replies (:276), links to topics
+    (:408), first post alerts for tagged topics (:556), linked
+    notifications and their consolidation (:714;
+    notification_create.rs:230), staged users (jobs/post_alert.rs:733),
+    mentions in flagged messages and warnings (:330), post_alert's
+    options (:204), populate_acting_user (notifications.rs:360,416)
+146. `feat/notification-email-rest` M: previous replies and in-reply-to
+    excerpts (email/notification.rs:324,352), staged users and
+    private_email (:178,181), group notification emails (:226),
+    restricted tags in subjects (:289), the daily limit notice (:348),
+    lightboxes and iframes (:828,831), prioritize_username_in_ux off
+    (:908), quotes, oneboxes and iframes restyled and right-to-left
+    styles (email/styles.rs:126,221), replies to several posts or deeper
+    than one level, uploads, attachments and provider headers
+    (email/sender.rs:251,344,361,431,449,498), the other email types
+    (jobs/user_email.rs:90,98,101,470), sendmail delivery
+    (email/mod.rs:169), mailing list mode (the
+    notify_mailing_list_subscribers job)
+147. `feat/flags-rest` M: flags that send a message (notify user,
+    notify moderators, illegal: flags.rs:130), undoing flags
+    (routes/post_actions.rs:181), flagging topics (:95), flags in
+    messages (flags.rs:120), flags on posts already in review (:185),
+    staff queueing a post for review (:176), hiding on a trusted user's
+    spam flag (:380), silencing new users on spam flags and the scoring
+    behind it (:417; guardian.rs:392; current_user.rs:909)
+148. `feat/review-actions-rest` L: review actions that delete, edit,
+    restore or penalize (review.rs:107; user_penalties.rs:509), on hidden
+    or deleted posts (review.rs:85,258,575,617,620), hiding a topic's
+    first or last post (:698), claims and notes (review.rs:190;
+    review_posts.rs:257; reviewable_user.rs:195,272,446;
+    review_list.rs:589), reviewables for groups (review.rs:186), the
+    other reviewable types (review.rs:247; review_posts.rs:211;
+    review_list.rs:570,573), queued posts approved into closed or
+    deleted topics, with tags, an email, plugin fields or polls,
+    unsilencing their author, unhiding a first post
+    (review_posts.rs:464,476,610,624,627,1262), user reviewables on
+    invite-only sites or with an uploaded avatar and their rejection
+    email (reviewable_user.rs:52,82,316), score conversations, reasons
+    and types, the ids, date and additional filters
+    (review_list.rs:204,207,215,882,894,931,954), reviewable web hook
+    payloads (review_list.rs:1520,1558,1603 and `web_hooks::refuse` for
+    the reviewable events), truncate_user_flag_stats (review.rs:534;
+    review_posts.rs:1236)
+149. `feat/category-group-moderation` M: enable_category_group_moderation
+    and moderators in the review queue (topic_guardian.rs:191;
+    posting/validate.rs:211; review.rs:170; review_posts.rs:413,1138;
+    review_list.rs:178; routes/review.rs:147; user_destroyer.rs:620;
+    current_user.rs:552,972; reviewables.rs:91), moderators' view of
+    flagged messages and warnings (guardian.rs:282;
+    topic_guardian.rs:242; jobs/handlers.rs:1230), moderators and
+    owner-only groups on the admin view of a user
+    (routes/admin_users.rs:1536), category moderators on the about page
+    (about.rs:309)
+150. `feat/deletion-rest` M: permanent deletion
+    (routes/post_destroy.rs:80, force_destroy), recovering topics, likes,
+    replies and quotes (post_destroyer.rs:1277,1296,1299), authors
+    recovering their own posts (:1256), deleting flagged posts and
+    embedded or published topics (post_destroyer.rs's
+    refuse_unported_deletion), deleting replies as a non-staff user and
+    deletes in a transaction (:310,391,400), likes on deleted posts and
+    topics (likes.rs:536,558), destroying a category definition without
+    its first post (the `not_yet` case
+    scheduled/consistency_definition_without_op)
+151. `feat/penalties-rest` S: staff reasons with markup
+    (sanitize_staff_reason: user_penalties.rs:723; users.rs:1040;
+    admin_users.rs:610; admin_user_show.rs:138; routes/session.rs:390),
+    notifying responders of deleted replies (user_penalties.rs:543), the
+    user_suspension_expired job. Penalties from the review queue are 148
+152. `feat/topic-status-rest` S: pinning until a time
+    (topic_status.rs:187, the unpin job), removing an expired banner (the
+    `not_yet` case scheduled/consistency_expired_banner), loading a topic
+    being moderated (topic_status.rs:116)
+153. `feat/unicode-usernames` M: non-ASCII usernames (accounts.rs:64;
+    signup.rs:99; routes/accounts.rs:162; username_changer.rs:93,564;
+    pretty_text/mod.rs:461 for mentions; email/notification.rs:1014,1056;
+    routes/required_fields.rs:190; posting/enqueue.rs:378), flag name
+    keys from non-ASCII names (admin_flags.rs:207), titleizing a
+    non-ASCII user field (plugins/poll/vote.rs:742), the
+    change_display_name job
+154. `feat/signup-rest` M: overlong usernames, staged users, approval
+    and must_approve_users (signup.rs:209,226,234;
+    routes/accounts.rs:808), signup with local logins off (signup.rs:249),
+    the validation errors other than the username's and a taken email
+    (:289-327), screened emails and IPs (:311; routes/session.rs:398),
+    welcome messages (signup.rs:833), automatic groups with titles,
+    flair, granted levels or notification defaults (:668;
+    promotion.rs:428; roles.rs:204,216), password algorithms other than
+    pbkdf2-sha256 (session/token.rs:88,93,107), password reset errors
+    (routes/accounts.rs:558,613,635). Invite codes are 192
+155. `feat/second-factor` M: logging in with a second factor
+    (routes/session.rs:415), backup codes (second_factor.rs:115;
+    user_private.rs:120), security keys and passkeys (webauthn:
+    second_factor.rs:102,112; routes/session_2fa.rs:84), the 2FA page's
+    HTML (:64), password reset with second factors
+    (routes/accounts.rs:580), the login-required 2FA redirect
+    (enforce_second_factor)
+156. `feat/user-profile-rest` M: featured topics (users.rs:678;
+    current_user.rs:709), the title, primary group and flair group
+    (user_updater.rs:296), tag tracking (:330), PUT /u's custom fields,
+    external ids, backgrounds, date of birth and sidebar links
+    (user_updater.rs's REFUSED), array options (:821), the ignore
+    notification level (routes/user_update.rs:265), another acting
+    user's notification level (:257), the profile page's public user
+    fields (87b), user tips and redirected_to_top
+    (current_user.rs:1191,1214)
+157. `feat/groups-rest` M: group flair uploads (site.rs:751; groups.rs:32;
+    routes/groups.rs:588; group_writes.rs:565;
+    routes/admin_groups.rs:1175), group custom fields and associated
+    groups (routes/admin_groups.rs:224; user_destroyer.rs:472), rewriting
+    a renamed group's mentions (jobs/handlers.rs:267,
+    GroupMentionsUpdater), an editor who can no longer see the group
+    (routes/admin_groups.rs:1379), ordering members by custom fields
+    (routes/groups.rs:999), random username suggestions (:409), the
+    group activity, messages and manage pages (:1541), group permissions
+    with categories (:1336, after 190's CategorySerializer)
+158. `feat/shared-drafts` M: shared_drafts_category (topic_query.rs:371;
+    topic_guardian.rs:373,770) and publishing them
+    (jobs/topic_timers.rs:132, TopicPublisher)
+159. `feat/tags-reads-rest` S: tags_listed_by_group
+    (routes/tags.rs:621), tag list filters other than latest, top, hot
+    and votes (:268), the messages' tags pages (routes/users.rs:82,916),
+    hashtag search over localized tags (hashtags.rs:571, with 168)
+160. `feat/chat-threads` L: chat threads (plugins/chat/notify.rs:102,482;
+    plugins/chat/create.rs:213,216,226; plugins/chat/modify.rs:243;
+    plugins/chat/channels.rs:348; plugins/chat/page.rs:589;
+    plugins/chat/summary_email.rs:223; plugins/chat/publisher.rs:367;
+    plugins/chat/dm_groups.rs:540; plugins/chat/membership.rs:542), the
+    threads and DMs indexes (routes/chat_pages.rs:200)
+161. `feat/chat-uploads` M: chat message uploads
+    (plugins/chat/messages.rs:276,588; plugins/chat/create.rs:99;
+    plugins/chat/modify.rs:301; plugins/chat/page.rs:880,1315),
+    oneboxes, images and videos in messages (plugins/chat/create.rs:747),
+    chat message bookmarks (bookmarks.rs:266,743;
+    bookmark_manager.rs:168), chat transcripts in posts (crates/markdown's
+    bbcode refusal)
+162. `feat/chat-rest` M: messages of deleted users
+    (plugins/chat/notify.rs:76,487; plugins/chat/create.rs:293,721,763;
+    plugins/chat/modify.rs:337,342; plugins/chat/summary_email.rs:459;
+    plugins/chat/messages.rs:884), webhook messages and blocks
+    (plugins/chat/messages.rs:598,601), bot changes
+    (plugins/chat/modify.rs:166), archived channels and channels of
+    deleted categories or other chatables
+    (plugins/chat/channels.rs:141,536,713,718,749,797;
+    plugins/chat/membership.rs:70; plugins/chat/publisher.rs:34),
+    anonymous access (plugins/chat/mod.rs:129;
+    plugins/chat/publisher.rs:66; plugins/chat/channels.rs:434), slug
+    changes (plugins/chat/dm_groups.rs:478), the separate sidebar and
+    empty states (plugins/chat/view.rs:276,341,345), the mobile footer's
+    search and starred routes (99)
+163. `feat/solved-rest` S: discourse-solved's auto close timers, web
+    hooks, crawler schema markup, search filters and lists by solved
+    status (milestone 5), the dashboard's support section
+    (admin_dashboard.rs:290,1350), accepted solutions' related items
+    without a viewer (reports/counts.rs:1145)
+164. `feat/site-settings-types` L: setting types beyond string, number,
+    bool and enum: lists, uploads, groups, categories, objects
+    (site_setting_update.rs:211,424,438), enum classes, regex and JSON
+    schema validations (:534,588; setting_enums.rs:128), plugin settings
+    (site_setting_update.rs:163), change handlers that write and custom
+    validations (:177,180), default_* backfills and their user counts
+    (:183; routes/admin_site_settings.rs:51,145,164;
+    sidebar_backfill.rs:64), deprecated, upcoming and globally shadowed
+    settings (site_setting_update.rs:152,174,186), bulk updates
+    (routes/admin_site_settings.rs:43), an archived site
+    (site_setting_update.rs:138)
+165. `feat/reply-by-email-rest` L: bounces, forwarded emails, staged and
+    unknown senders, attachments, unsubscribing, likes and notification
+    levels by email, group and category addresses (email_in), replies to
+    messages, spam and Authentication-Results headers, posts for the
+    review queue or past a rate limit
+    (email/receiver.rs:524,528,625,628,637,672,690,694,771,780,783,795,
+    798,852,857), mailing list and resent emails and several senders
+    (email/incoming.rs:418,441), POP3 polling, rebaking emailed posts
+    (posting/rebake.rs:79; pretty_text/cooked_post_processor.rs:929,
+    EmailCook)
+166. `feat/group-smtp-imap` M: group SMTP and IMAP (email/sender.rs:287;
+    jobs/post_alert.rs:443; routes/admin_groups.rs:1163;
+    routes/groups.rs:610), the group SMTP credentials check
+    (problem_checks.rs:342). Needs: network
+167. `feat/locales` L: every locale but English: server strings
+    (badge_granter.rs:409; system_message.rs:258; jobs/badges.rs:249;
+    email/digest.rs:481; email/account.rs:50; review_posts.rs:931;
+    routes/group_membership.rs:370; category_types.rs:453), site texts
+    and reseeding (routes/site_texts.rs:64,915), the unsubscribe pages
+    (routes/email.rs:45), email templates
+    (routes/admin_email_templates.rs:221), theme translations
+    (theme_writes.rs:273; routes/themes.rs:1107,1437), MessageFormat
+    keys (routes/site_texts.rs:603), the default_locale entry
+    (admin_site_settings.rs:145), slugs by transliteration
+    (posting/text.rs:332), moment locales (49). Needs: the reference's
+    other locale trees recorded (scripts/record-i18n-tree) and the
+    client's
+168. `feat/content-localization` M: content_localization_enabled
+    (search/mod.rs:562; current_user.rs:1078;
+    routes/sidebar_sections.rs:319; bookmarks.rs:410; review_list.rs:181;
+    routes/drafts.rs:287; plugins/reactions/users.rs:665;
+    plugins/solved/by_user.rs:47; about.rs:299; posting/rebake.rs:52;
+    routes/users.rs:1279), 90c's sidebar content localization
+169. `feat/theme-scss` L: new or changed scss fields
+    (theme_writes.rs:250,263) and recompiling theme fields on restore
+    (91c). Needs: an SCSS compiler with Discourse's theme pipeline
+    (grass, as 88's email style uses, plus the color definitions, theme
+    variables and imports Stylesheet::Compiler adds) and the stylesheet
+    routes the port doesn't serve
+170. `feat/theme-javascript` L: extra_js (theme_writes.rs:267,437),
+    inline scripts in theme html (:608, AssetProcessor), theme settings
+    migrations (:270). Needs: ThemeJavascriptCompiler's toolchain in
+    process (Rails runs rollup, Babel and the Ember template compiler
+    under mini_racer) and the theme-javascripts routes
+171. `feat/theme-writes-rest` S: settings that request a refresh
+    (routes/themes.rs:1163,1378, Discourse.request_refresh!, with 100),
+    destroying a theme's own color schemes (theme_writes.rs:1258), a
+    field over 1 MiB (:278), svg sprites (:539, with 90f's uploads), html
+    that does not parse (:606)
+172. `feat/admin-email-templates-rest` S: updating, showing and reverting
+    customized email templates (routes/admin_email_templates.rs:407,444,
+    478), unblocked by 90a's override layer
+173. `feat/upcoming-changes` S: UpcomingChanges::List: what's new and
+    toggle-feature (routes/admin_dashboard_sections.rs:439; the
+    `not_yet` case admin_dashboard/dashboard_whats_new), undeclared
+    changes and display conditions reading themes or categories
+    (problem_checks.rs:546,576), upcoming change settings
+    (site_setting_update.rs:174), unseen new features and their
+    notifications (current_user.rs:779; notification_create.rs:231), the
+    refresh_latest_new_feature job
+174. `feat/ruby-regex` M: Ruby regexps the port can't run as Ruby does:
+    watched words outside the engines' shared grammar, with full case
+    folding or past the backtracking limit (word_watcher.rs:102,125,212,
+    222,314,385,425,463,512; 80b), auto_silence_first_post_regex
+    (posting/validate.rs:178,182), permalink_normalizations
+    (permalinks.rs:37), embedding allowed paths (embedding.rs:154),
+    ignore_by_title_regex and the receiver's address regexes
+    (email/receiver.rs:325,465,494,886), group email domains
+    (group_manager.rs:788), markdown_linkify_tlds
+    (crates/markdown/src/render/mod.rs:143). Needs: Onigmo (the onig
+    crate) or an equivalent
+175. `feat/url-normalize` M: Addressable's normalizing and IDNA:
+    canonical links and IDN hosts (onebox/html_doc.rs:91,118,135,149,175,
+    248), onebox URLs that need encoding (onebox/mod.rs:909,1110;
+    onebox/engines.rs:379; onebox/generic.rs:1067), non-ASCII URLs in
+    links (crates/markdown's linkify: punycode and percent-encoding),
+    permalink urls (permalinks.rs:356), pageview hostnames
+    (browser_pageviews.rs:104,109; reports/pageviews.rs:411), nested
+    query parameters (pretty_text/cooked_post_processor.rs:174)
+176. `feat/charsets` S: pages and email in charsets other than UTF-8
+    (onebox/fetch.rs:164; retrieve_title.rs:141;
+    email/incoming.rs:237,515,518,605,629). Needs: encoding_rs with
+    Ruby's charset names
+177. `feat/sanitizers-rest` M: the HTML sanitizers' remaining markup:
+    sanitize_field's block elements, repairs and named entities
+    (sanitize_field.rs; 85c), the admin notice sanitizer
+    (problem_checks.rs:1028-1156), the cooking sanitizer's malformed
+    markup (crates/markdown: comments, unclosed and misnested tags,
+    character references), form template descriptions
+    (form_templates.rs:125,249). Needs: Loofah's and Sanitize's behavior
+    over html5ever, fragments parsed as Nokogiri parses them
+178. `feat/email-css-rest` S: the email CSS beyond tags, classes, ids
+    and two combinators: at-rules, escapes, nesting, other selectors and
+    declarations (email/custom_css.rs:20-214)
+179. `feat/psych-yaml` S: a form template's preview and public show
+    (routes/admin_form_templates.rs:236,414, YAML.dump), YAML 1.1
+    scalars, anchors and tags (form_templates.rs:95-201), revision
+    values YAML can't hold (modifications.rs:22-55). Needs: a
+    Psych-compatible YAML emitter
+180. `feat/about-rest` S: the about page's visitor stats, banner image
+    and localized settings (about.rs:125,302; about_view.rs:151), the
+    welcome banner (html.rs:1236)
+181. `feat/badges-rest` S: badge counts past a thousand, emoji in long
+    descriptions, more grants than the first page, the title picker,
+    grants without a time or topic (badges_page.rs:20,42,352,391,403,
+    416), badge reason links to other routes
+    (routes/user_badges.rs:126,169,173,175), grants for posts in messages
+    (:237), badge preview columns of other types
+    (badge_preview.rs:262,367), mass award CSV texts and encodings
+    (admin_badges.rs:957; routes/admin_badges.rs:526,537)
+182. `feat/drafts-rest` S: drafts backed up to a message (drafts.rs:86),
+    clearing non-human users' drafts (:231), the edit conflict check on
+    tags (routes/drafts.rs:231), reading a draft at a sequence and
+    clearing another user's drafts (:315,342)
+183. `feat/messages-rest` S: group message lists with publish_read_state
+    (pm_lists.rs:151), period on message lists (routes/messages.rs:171),
+    group_pm_alert past group_pm_user_limit (pm_invite.rs:524), inviting
+    a user who now ignores the inviter (:254), the inbox of a group the
+    viewer isn't in (routes/users.rs:747), the dismiss and bulk select
+    buttons (33b)
+184. `feat/user-deletion-rest` S: blocking a deleted user's links
+    (user_destroyer.rs:458, block_urls), MCP authorizations (:475;
+    user_private.rs:164), the user_delete_self log (user_destroyer.rs:266),
+    deactivating with a pending review or associated accounts
+    (routes/admin_users.rs:1318; jobs/accounts.rs:151), verbose auth
+    token logging (routes/admin_users.rs:1237; user_anonymizer.rs:130),
+    non-address IPs (user_anonymizer.rs:177)
+185. `feat/maxmind-crawlers` S: MaxMind locations for reports and
+    suspicious logins (reports/tables.rs:386; jobs/handlers.rs:92; 89d),
+    CrawlerScorer (jobs/rollups.rs:164), enable_performance_http_headers
+    (request_tracker.rs:465), keep_old_ip_address_count
+    (session/current.rs:867). Needs: a GeoLite2 database
+186. `feat/push-notifications` M: push notifications
+    (jobs/post_alert.rs:1010) by web push and through user API keys'
+    push clients (84). Needs: network
+187. `fix/rails-error-answers` M: about 175 refusals of what Rails
+    answers with an exception or never sees: params of the wrong shape
+    (NoMethodError, ParameterMissing, InvalidParameters, TypeError),
+    missing or vanished rows (RecordNotFound, a site without its system
+    user, "gone once saved"), NOT NULL violations, staff actions missing
+    from enums.json, onebox API values "of another shape", out of range
+    numbers (routes/admin_embedding.rs, routes/admin_emoji.rs,
+    routes/directory_columns.rs, routes/sidebar_sections.rs,
+    routes/themes.rs, routes/color_schemes.rs, routes/admin_api_keys.rs,
+    user_fields.rs, user_merger.rs, jobs/handlers.rs,
+    request_tracking.rs, admin_traffic_explorer.rs, email/incoming.rs,
+    onebox/generic.rs, onebox/api_engines.rs, onebox/github.rs,
+    onebox/embed_engines.rs and others). Answer as Rails does where its
+    answer is fixed (the 500 page, a 400, a 404); the rest stay refused
+
+### Phase 10: what isn't built yet
+
+The milestone work no phase item covered, and routes Rails serves that
+the port doesn't route at all (a 404, not a refusal). Found by reading
+src/routes/mod.rs against the milestones; no full diff against Rails'
+route table has been made, so this list may be short.
+
+188. `feat/topic-edits` L: PUT /t/:slug/:id (title, category and tags
+    edits, refused since milestone 4), moving, merging, splitting and
+    converting topics, topic bulk actions (dismiss new and new posts);
+    none of it is routed
+189. `feat/tags-writes` L: tags on topics (posts#create and update
+    refuse them, routes/posts.rs), the composer's tag chooser (96), tag
+    CRUD, synonyms, tag groups and tag uploads, watched words' tag action
+    (watched_words.rs:129,286; routes/admin_watched_words.rs:68;
+    posting/create.rs:312), unused tags with synonyms
+    (jobs/cleanup.rs:340)
+190. `feat/categories-writes` L: POST, PUT and DELETE /categories,
+    categories#show with CategorySerializer (the `not_yet` cases
+    groups/read_permissions_anon and groups/read_permissions_user1;
+    group_manager.rs:498; routes/groups.rs:1336), creating a category's
+    definition topic (jobs/consistency.rs:157; the `not_yet` case
+    scheduled/consistency_category_definition), saving a category without
+    its settings (user_destroyer.rs:1147,1181; post_owner_changer.rs:282),
+    category types without Horizon (category_types.rs:268), the category
+    editor (topic voting's toggle)
+191. `feat/external-auth` L: OAuth2 and OIDC logins (/auth/:provider),
+    DiscourseConnect (/session/sso*), the authenticators on /site.json
+    and associated accounts (site.rs:1263; user_private.rs:130;
+    admin_user_show.rs:185; current_user.rs:641,644;
+    reports/lists.rs:297), external ids (web_hooks/payloads.rs:95;
+    notifications.rs:538; session/api_key.rs:135;
+    routes/user_api_key_auth.rs:296; group_manager.rs:753),
+    auth_immediately and logout with only external logins
+    (routes/login_required.rs:132; routes/session.rs:605), Twitter's
+    login health check (problem_checks.rs:488). Needs: network
+192. `feat/invites` L: InvitesController (/invites, invite links,
+    redeeming), invite codes at signup (signup.rs:194), adding group
+    members by email (routes/admin_groups.rs:601), messages to email
+    addresses (posting/create.rs:620; pm_invite.rs:69), invite-only
+    sites (reviewable_user.rs:52), inviting to restricted categories
+    (topic_guardian.rs:519), invalidating invites on password reset
+    (routes/accounts.rs:662)
+193. `feat/user-pages-rest` M: the user pages the port renders as the
+    summary or refuses: preferences (every tab), notifications,
+    /u/:username/badges and /activity/topics (97, ListController#topics_by),
+    the drafts page, the other view_user_route values
+    (routes/users.rs:433), the user badges page (routes/badges.rs:751),
+    voted_by's page (routes/topic_voting.rs:170)
+194. `feat/review-pages` M: the review queue's page (routes/review.rs:187),
+    the user menu's review tab (routes/user_menu.rs:88;
+    notifications.rs:270, pending_reviewables), the staff topic and post
+    admin menus, show_user_menu_avatars (routes/user_menu.rs:50)
+195. `feat/rss` M: the .rss feeds of the lists, categories, tags, topics,
+    a user's posts and activity, topic voting's votes feed, and the
+    bookmarks .ics calendar (session/user_api_key.rs:117; 84b). Only the
+    badge feed exists (85b)
+196. `feat/client-rest` L: the client's leftovers named under done
+    items: the rich editor (ProseMirror) and its toggle, the composer's
+    actions, heading, list, options and emoji menus, the insert-date
+    modal (49, 96), the desktop header's search menu and the advanced
+    filters panel (94), the do not disturb and user status modals (95),
+    the drafts and post menus as sheets, the jump to post prompt (98),
+    the topic map's menus, the footer's flag, mark unread and pinned
+    buttons, the sidebar's header actions and Customize (milestone 4.5),
+    the login, signup and logout dialogs (79c), the Edit Directory
+    Columns modal (74). Split when started
+197. `feat/filter-route` M: /filter (ListController#filter, not routed)
+    with topic voting's votes filters; the topic_ids and state list
+    filters (routes/list.rs:54; topic_query.rs:368)
+198. `feat/posts-show` S: GET /posts/:id.json (PostsController#show; the
+    `not_yet` case solved/post_as_admin)
+199. `feat/site-json-rest` S: the /site.json keys parity/cases still
+    ignores: markdown_additional_options, hashtag_configurations,
+    hashtag_icons, access_control, valid_flag_applies_to_types,
+    admin_config_login_routes, users_on_holiday and the workflow keys
+200. `feat/user-exports` M: user and admin CSV exports (/export_entity,
+    ExportCsvFile), a recent export on the admin view of a user
+    (admin_user_show.rs)
+201. `perf/topic-view-queries` M: the topic view's per-post queries
+    (milestone 2); bench above two connections needs a machine that
+    holds its clocks (BENCH.md)
+202. `feat/plugins-unported` L: the plugins the reference runs that the
+    port doesn't: discourse-ai, gamification, calendar and events, data
+    explorer (admin_dashboard.rs:1060), automation and
+    discourse-workflows (username_changer.rs:310,319;
+    user_anonymizer.rs:149,159; plugins/topic_voting/votes.rs:275;
+    badge_granter.rs:1132), post-voting, voice, templates,
+    narrative-bot's tutorials, math and graphviz in cooking
+    (crates/markdown's bbcode refusal), zendesk; their data on user
+    deletion (plugins/mod.rs:217,251), reports (reports/mod.rs:860,1036),
+    directory columns (routes/directory.rs:200), unsubscribe keys
+    (email/unsubscribe.rs:108) and the keys parity ignores. One branch
+    per plugin when started
+203. `feat/plugin-tier0` M: `plugin.toml` with settings, preloaded custom
+    fields, assets, i18n, the tables the plugin owns; `discourse-rs
+    plugins` (PLUGINS.md, tier 0)
+204. `feat/plugin-host-api` M: the host functions: keyed batch reads of
+    the plugin's own tables, the Discourse JSON API in process under the
+    manifest's scopes
+205. `feat/plugin-runtime` L: the third-party runtime (the Luau spike,
+    spike/plugin-runtime) on the lifecycle phases: `serialize`, `html`,
+    `modify` batched per response
+206. `feat/plugin-routes-events-jobs` M: `route` with core's session and
+    CSRF, `event`, `job`; the failure policy
+207. `feat/hosted-plugins` M: the same API over HTTP with a scoped key,
+    events as signed webhooks
+208. `feat/multisite` L: several forums from one process, by hostname
+    (RailsMultisite)
+
 ## Milestone 1: a hostable read-only mirror
 
 Serve an anonymous, read-only copy of a Discourse backup that someone
@@ -735,37 +1393,45 @@ how often a backup trips them.
 
 - [x] Fancy titles for topics without a stored `fancy_title` (computed
       and written back on read)
-- [ ] Unicode emoji in titles (`performEmojiEscape` turns them into codes)
+- [ ] Unicode emoji in titles (`performEmojiEscape` turns them into codes):
+      132
 - [ ] Hidden and deleted posts (`hidden`, `deleted_at`, staff whispers stay
-      hidden)
-- [ ] Topic thumbnails and topic images behind a CDN, secure uploads
+      hidden). Hidden posts serialize as Rails does (the review actions);
+      deleted posts and topics for staff: 124
+- [ ] Topic thumbnails and topic images behind a CDN, secure uploads: 125,
+      121, 123
 - [x] Watched words (`WordWatcher` regexps and actions and regular
       expression mode)
-- [ ] Topic timers, topic links with clicks (`TopicLink.topic_map`)
-- [ ] Featured links (`featured_link_root_domain`)
-- [ ] `subcategory_list` styles, paginated category lists
+- [ ] Topic timers (done: 60-62), topic links with clicks
+      (`TopicLink.topic_map`): 127
+- [ ] Featured links (`featured_link_root_domain`): 126
+- [ ] `subcategory_list` styles, paginated category lists: 128
 - [x] Performance: batch the list serializer's per-topic queries (99 to
       11 per /latest.json, 137 to 332 req/s at one connection)
 - [ ] Performance: the topic view's per-post queries; bench above two
-      connections needs a machine that holds its clocks (BENCH.md)
+      connections needs a machine that holds its clocks (BENCH.md): 201
 - [ ] Group flair uploads, user fields, badges granted, auth providers,
-      user color schemes on `/site.json`
+      user color schemes on `/site.json`. User fields (87b) and user color
+      schemes (90b) done; group flair uploads: 157; auth providers: 191;
+      the keys parity still ignores: 199
 - [ ] Muted defaults (`default_categories_muted`, `default_tags_muted`,
-      `mute_all_categories_by_default`), shared drafts category
-- [ ] `tags_listed_by_group`
+      `mute_all_categories_by_default`), shared drafts category: 129, 158
+- [ ] `tags_listed_by_group`: 159
 - [ ] Profiles: bios (PrettyText.excerpt), suspended/silenced users, user
       status, featured topics, generated letter avatars (`/letter_avatar`,
-      for sites that turn the proxy off)
+      for sites that turn the proxy off). Bios and suspended and silenced
+      users done; user status: 130; featured topics: 156; letter
+      avatars: 131
 - [ ] Search: advanced filters (`in:`, `status:`, `category:`, `#`, `@`,
       `tags:`, `before:`/`after:`, `order:`), search contexts, `search_for_id`,
-      rate limits, pg headlines
+      rate limits, pg headlines. Rate limits done (21); the rest: 143, 144
 - [ ] Plugin-added keys (solved, voting, reactions, ...) through the plugin
-      protocol (milestone 5) instead of parity ignore lists
-- [ ] Topics without a stored slug (`Slug.for`)
+      protocol (milestone 5) instead of parity ignore lists: 202, 199
+- [ ] Topics without a stored slug (`Slug.for`): 120
 - [ ] RSS feeds (`.rss` for the lists, categories, tags, topics, a
-      user's posts and activity)
+      user's posts and activity): 195
 - [ ] Multisite: several forums from one process, by hostname
-      (RailsMultisite)
+      (RailsMultisite): 208
 
 ## Milestone 3: sessions
 
@@ -775,7 +1441,9 @@ Logged-in readers, no writes yet.
       `_forum_session` cookies in Rails' own encrypted format so a cutover
       keeps sessions; `/session/current.json` byte-equal for members and
       admins
-- [ ] OIDC / external logins, 2FA
+- [ ] OIDC / external logins, 2FA. The TOTP challenge for granting admin
+      is done (86b); logging in with a second factor, backup codes and
+      webauthn: 155; OIDC and the other external logins: 191
 - [x] Logged-in `Guardian`: secure categories, group permissions, tag
       group permissions by group, staff visibility (unlisted topics, all
       tags, every group), can_* on topics and posts, flags (`post_can_act?`)
@@ -788,12 +1456,17 @@ Logged-in readers, no writes yet.
 - [ ] Deleted topics and posts for staff (`post_stream.gaps`,
       `show_deleted`), ignored users, category group moderators, shared
       drafts, group PMs' related messages, the login-required 2FA and
-      required-fields redirects, pending reviewables
+      required-fields redirects, pending reviewables. Group PMs' related
+      messages (33c) and the required-fields redirect (87b) done; deleted
+      topics and posts, ignored users: 124; category group moderators:
+      149; shared drafts: 158; the 2FA redirect: 155; pending
+      reviewables: 194
 - [x] Bookmarks: `/u/:username/bookmarks.json` and
       `/u/:username/user-menu-bookmarks` (core's post and topic bookmarks;
       the `.ics` feed and plugin bookmarkables are refused)
 - [ ] The other user-menu endpoints (`/u/:username/user-menu-private-messages`,
-      `/review/user-menu-list`)
+      `/review/user-menu-list`). The messages one is done (95);
+      `/review/user-menu-list`: 194
 - [x] Live updates, the transport: pg-bus (its own crate,
       github.com/ducks/pg-bus) in MessageBus's place, Postgres only: a
       message is written in the transaction that made the change and
@@ -845,7 +1518,7 @@ Logged-in readers, no writes yet.
       local, scripts/fetch-discourse-corpus), 4231 cook byte-equal; the
       other is a discourse-ai quote the reference's plugins allow
 - [ ] Cooking, plugins left: math, chat transcripts, events, graphviz;
-      refused explicitly today
+      refused explicitly today. Chat transcripts: 161; the rest: 202
 - [x] Cooking, `PrettyText.cleanup`: rel attributes, mention links,
       hidden direction marks, video thumbnails, HTML5 re-serialization;
       all 482 posts of the Faker backup cook byte-equal
@@ -860,7 +1533,9 @@ Logged-in readers, no writes yet.
 - [ ] Post processor, the rest: oneboxes (network fetches, the onebox
       engines), images from other sites sized over HTTP, hotlinked media,
       optimized videos, badges, a category description synced from its
-      definition
+      definition. Oneboxes (43, 51-55) and badges (57) done; images from
+      other sites and hotlinked media: 140; optimized videos: 141; the
+      category description: 137
 - [x] Posting, editing, revisions: replies, regular topics, raw and
       edit-reason edits, revision diffs; the 14 cases in parity/writes
       write the rows Rails writes (tests/writes.rs). Refused for now:
@@ -883,7 +1558,8 @@ Logged-in readers, no writes yet.
 - [ ] Flags and reviews that go further: closing topics and silencing new
       users on flags, notify user and notify moderators messages, illegal,
       undoing flags, flags on posts already in review, deleting, editing,
-      restoring and unhiding from the queue, penalties
+      restoring and unhiding from the queue, penalties. The reviewed and
+      queued posts' actions landed with 75; the rest: 147, 148
 - [x] The review queue (GET /review.json) for admins: flagged posts with
       `list_for`'s status, type, topic, category, user, priority and sort
       filters, paging, the side-loaded users, topics, scores, score types,
@@ -897,14 +1573,17 @@ Logged-in readers, no writes yet.
       count, hot scores, visibility reasons and the staff action log.
       Measured against Rails
 - [ ] Topic status that goes further: messages, topic timers, pinning
-      until a time
+      until a time. Messages and timers done (60); pinning until a time:
+      152
 - [x] Deleting posts and topics (DELETE /posts/:id, DELETE /t/:id) and
       recovering replies (PUT /posts/:id/recover): PostDestroyer for
       staff, the author marking their own post deleted through
       PostRevisor, the counters, user actions, notifications, category
       latest posts, user stats and staff logs. Measured against Rails
 - [ ] Deletion that goes further: permanent deletion, messages, posts with
-      links, likes or pending flags, recovering topics, quotes and replies
+      links, likes or pending flags, recovering topics, quotes and replies.
+      Messages (31) and posts with links and likes (63) done; the
+      rest: 150
 - [x] Suspending, unsuspending, silencing and unsilencing users
       (PUT /admin/users/:id/...): the user, the staff log, the expiry job, the
       penalty emails, and SystemMessage (a private message from the site
@@ -912,14 +1591,17 @@ Logged-in readers, no writes yet.
       (the post_hidden message). Measured against Rails
 - [ ] Penalties that go further: several users at once, acting on a post,
       penalties from the review queue, re-penalizing (its "how long ago"
-      message), auto-silencing new users on spam flags
+      message), auto-silencing new users on spam flags. Several users,
+      acting on a post and re-penalizing done (86a); from the review
+      queue: 148; auto-silencing on spam flags: 147
 - [x] Changing a site setting (PUT /admin/site_settings/:id) for core
       settings of the plain types: the cast, the hidden and archive checks,
       TypeSupervisor's validation, the stored override and the
       change_site_setting log. Measured against Rails
 - [ ] Site settings that go further: lists, uploads, groups, categories,
       plugin settings, bulk updates, user preference backfills, and the
-      settings whose change handlers write (title, site_description...)
+      settings whose change handlers write (title, site_description...):
+      164 (the sidebar defaults' backfill landed with 90c)
 - [x] Read tracking: POST /topics/timings (post timings and reads, time
       read, the notifications on posts read, the topic user's last read
       post and auto tracking, the day's visit) and PUT
@@ -945,7 +1627,8 @@ Logged-in readers, no writes yet.
       locally as Rails stores them (dominant colour by `magick`), measured
       against Rails
 - [ ] Uploads Rails optimizes (PNG, JPEG), optimized images and
-      thumbnails, avatars, S3
+      thumbnails, avatars, S3. Post images' optimized images and
+      thumbnails done (the post processor, above); the rest: 139, 131, 122
 - [x] Background job queue: Postgres (`discourse_rs.jobs`, the one table
       the port owns), a worker beside the web server, Sidekiq's retries;
       posting enqueues what Rails enqueues (measured)
@@ -978,14 +1661,20 @@ Logged-in readers, no writes yet.
 - [x] Admin API keys (mail-receiver's handle_mail, and posting)
 - [ ] Reply by email, next: staged users, attachments, bounces, likes
       and notification levels by email,
-      POP3 polling, group and category addresses (email_in)
-- [ ] PM emails, previous-replies context
+      POP3 polling, group and category addresses (email_in): 165
+- [ ] PM emails, previous-replies context. PM emails done (above); the
+      previous replies: 146
 - [ ] Jobs, next: digests, pull_hotlinked_images,
       notify_mailing_list_subscribers, scheduled jobs (category stats, top
-      topics, digests), rate limits
-- [ ] Name the places a plugin would attach as they are built
+      topics, digests), rate limits. Digests (70, 71), the scheduled jobs
+      (phase 1) and rate limits (phase 2) done; pull_hotlinked_images: 140;
+      notify_mailing_list_subscribers: 146 (the enqueued jobs without a
+      handler are listed under phase 9)
+- [x] Name the places a plugin would attach as they are built
       (NewPostManager modifiers, post events); nothing calls them until
-      milestone 5
+      milestone 5. Done as the lifecycle phases and DiscourseEvent
+      functions of src/plugins/mod.rs (PLUGINS.md decision 6), which the
+      bundled plugins use
 
 ## Milestone 4.5: the client
 
@@ -1113,8 +1802,11 @@ Discourse's own clients keep working.
       /uploads/lookup-urls). Not yet: checking extensions and sizes
       before sending (the server's errors are shown), simultaneous_uploads,
       grids of consecutive images, rich text paste, video thumbnails
-- [ ] The user menu, notifications, bookmarks, messages, preferences
-- [ ] Review queue and topic status for staff
+- [ ] The user menu, notifications, bookmarks, messages, preferences. The
+      user menu with its bookmarks and messages tabs (95) and the
+      messages pages (33b) done; the notifications, preferences and the
+      other user pages: 193
+- [ ] Review queue and topic status for staff: 194
 
 ## Milestone 5: plugins
 
@@ -1139,17 +1831,22 @@ write endpoints. The design and its open decisions are in PLUGINS.md.
       for what core doesn't port yet: the Reactions received notifications
       page, the allow-any-emoji picker; reactions in messages are refused,
       as likes there are; the animations and touch gestures are not
-      ported), presence, templates, narrative-bot, chat, poll's voting
+      ported), presence, templates, narrative-bot, chat, poll's voting.
+      Presence and poll's voting (39) done; solved's leftovers: 163;
+      chat's: 160-162; voting's and reactions' follow core's items (195,
+      143, 197); templates, narrative-bot's tutorials and the plugins not
+      started: 202
 - [ ] Tier 0: `plugin.toml` with settings, preloaded custom fields,
-      assets, i18n, the tables the plugin owns; `discourse-rs plugins`
+      assets, i18n, the tables the plugin owns; `discourse-rs plugins`:
+      203
 - [ ] The host functions: keyed batch reads of the plugin's own tables,
-      and the Discourse JSON API in-process under manifest scopes
+      and the Discourse JSON API in-process under manifest scopes: 204
 - [ ] The third-party runtime on the same phases: `serialize`, `html`,
-      `modify` batched per response
+      `modify` batched per response: 205
 - [ ] `route` with core's session and CSRF, `event`, `job`; the failure
-      policy
+      policy: 206
 - [ ] Hosted plugins: the same API over HTTP with a scoped key, events
-      as signed webhooks
+      as signed webhooks: 207
 
 ## Milestone 6: admin
 
@@ -1167,7 +1864,7 @@ API keys for posting, and grant_moderation! for the first admin's login.
       default theme; enum classes and choices expressions recorded from
       Rails (scripts/record-setting-enums), the database-backed ones
       computed. Measured against Rails: all 1542 settings of the reference
-- [ ] Site settings: the setting types milestone 4 refuses
+- [ ] Site settings: the setting types milestone 4 refuses: 164
 - [x] Users: the lists and filters (`GET /admin/users/list`), measured
       against Rails
 - [x] Users: the admin view of a user (`GET /admin/users/:id`), measured
@@ -1178,27 +1875,33 @@ API keys for posting, and grant_moderation! for the first admin's login.
       Rails; the badge grant queue waits for badges
 - [x] Users: approving, activating, deactivating and logging out, adding
       and removing groups, the primary group, measured against Rails
-- [ ] Users: granting admin (its second factor or email confirmation),
+- [x] Users: granting admin (its second factor or email confirmation),
       deleting, anonymizing and merging, impersonating, penalties on several users
-- [ ] Groups: creating, editing and deleting, members and owners in bulk,
-      automatic membership by email domain
+      (86b, 63, 78, 79, 79b, 86c, 86a)
+- [x] Groups: creating, editing and deleting, members and owners in bulk,
+      automatic membership by email domain (82a-82e)
 - [x] Logs: staff actions, screened emails, IPs and URLs, search logs,
       email logs (sent, skipped, bounced, received, rejected), measured
       against Rails
 - [x] Logs: a search term's details, incoming email details
 - [x] Backups: creating, listing, downloading and restoring through the
       app, read-only mode (S3, and backups that need migrations, refused)
-- [ ] Badges: creating, editing and deleting, groupings, granting and
+- [x] Badges: creating, editing and deleting, groupings, granting and
       revoking, badge SQL, and the BadgeGranter jobs that award them
+      (85a-85c, 56-58)
 - [x] Permalinks, embeddable hosts, user fields, form
       templates, custom flags, custom emoji (form template previews
       wait for a Psych YAML emitter)
-- [ ] API keys and their scopes, web hooks and their deliveries (the
-      events core sends to them)
-- [ ] Email: the settings test, previews, templates and email style
-- [ ] Dashboard, reports and problem checks, admin notices
+- [x] API keys and their scopes, web hooks and their deliveries (the
+      events core sends to them) (84d, 83a-83d)
+- [x] Email: the settings test, previews, templates and email style (88,
+      72; updating and reverting a customized template: 172)
+- [x] Dashboard, reports and problem checks, admin notices (89a-89d)
 - [ ] Customize: themes and components, color schemes, site texts
-      (translation overrides), sidebar defaults; the `/admin/config` pages
+      (translation overrides), sidebar defaults; the `/admin/config` pages.
+      Site texts (90a), color schemes (90b), sidebar defaults (90c) and
+      the themes' reads and writes (90d, 90e) done; left: 90f, 90g and
+      169-171
 
 ## Not planned
 
