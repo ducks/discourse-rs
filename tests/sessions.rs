@@ -2415,3 +2415,19 @@ async fn admin_api_keys_share_one_limit() {
             .any(|(k, v)| k == "discourse-rate-limit-error-code" && v == "admin_api_key_rate_limit")
     );
 }
+
+/// A user API key would act as its user (lookup_user_api_user_and_update_key);
+/// until those keys are ported the request is refused, not served as
+/// anonymous or as the cookie's user.
+#[tokio::test]
+async fn user_api_keys_are_refused() {
+    let db = TestDb::new().await;
+    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut client = Client::new(app_state);
+    let reply = client.get("/latest.json").await;
+    assert_eq!(reply.status, StatusCode::OK);
+    let reply = client
+        .send(Method::GET, "/latest.json", &[("user-api-key", "abc")], "")
+        .await;
+    assert_eq!(reply.status, StatusCode::INTERNAL_SERVER_ERROR);
+}

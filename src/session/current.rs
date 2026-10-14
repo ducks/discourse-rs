@@ -287,6 +287,12 @@ pub async fn layer(
         .extensions()
         .get::<axum::extract::ConnectInfo<std::net::SocketAddr>>()
         .map(|c| c.0);
+    // A user API key (lookup_user_api_user_and_update_key) would act as
+    // its user; until those keys are ported, refuse rather than serve
+    // the request as anonymous or as the cookie's user.
+    if request.headers().contains_key("user-api-key") {
+        return Err(crate::Unsupported("user API keys").into());
+    }
     // An admin API key stands in for the session (lookup_api_user). An
     // admin route that does not let the request in is a 404, as Rails'
     // AdminConstraint makes it; elsewhere it is invalid access.
