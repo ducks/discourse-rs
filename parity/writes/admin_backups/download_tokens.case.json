@@ -1,0 +1,24 @@
+{
+  "user": "admin",
+  "files": {
+    "/backups/default/discourse-2026-10-01-033000-v20260925054715.tar.gz": "backup.tar.gz"
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/backups/discourse-2026-10-01-033000-v20260925054715.tar.gz"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/backups/discourse-2026-10-01-033000-v20260925054715.tar.gz?token=nope",
+      "headers": {
+        "Accept": "text/html",
+        "X-Requested-With": ""
+      }
+    }
+  ],
+  "fragment": [
+    "<div id=\"simple-container\">",
+    "</div>\n</div>"
+  ]
+}

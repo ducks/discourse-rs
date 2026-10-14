@@ -463,6 +463,10 @@ fn unrandom(s: &str) -> String {
     static CONFIRM_ADMIN: std::sync::LazyLock<regex::Regex> =
         std::sync::LazyLock::new(|| regex::Regex::new(r"confirm-admin/[0-9a-f]{32}\b").unwrap());
     let s = CONFIRM_ADMIN.replace_all(&s, "confirm-admin/<hex>");
+    // EmailBackupToken (SecureRandom.hex) in a backup download link.
+    static BACKUP_TOKEN: std::sync::LazyLock<regex::Regex> =
+        std::sync::LazyLock::new(|| regex::Regex::new(r"\?token=[0-9a-f]{32}\b").unwrap());
+    let s = BACKUP_TOKEN.replace_all(&s, "?token=<hex>");
     let s = ANON.replace_all(&s, "anon<n>");
     let s = KEY.replace_all(&s, "<key>");
     let s = UUID.replace_all(&s, "<uuid>");
@@ -1382,6 +1386,19 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
         discourse_rs::readonly::set_key(&mut conn, key.as_str().unwrap())
             .await
             .unwrap();
+    }
+    // `redis`: other Redis values the requests read, as the recorder sets
+    // them (no TTL): the port keeps them in discourse_rs.cached_values.
+    for (key, value) in case["redis"].as_object().into_iter().flatten() {
+        let mut conn = db.pool.acquire().await.unwrap();
+        discourse_rs::owned_schema::cached_setex(
+            &mut conn,
+            key,
+            100 * 365 * 24 * 3600,
+            value.as_str().unwrap(),
+        )
+        .await
+        .unwrap();
     }
     // The recorder drops what the login and setup enqueued (ENQUEUED.clear),
     // such as a staff login's suspicious_login.

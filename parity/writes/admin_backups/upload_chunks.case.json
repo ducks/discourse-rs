@@ -1,0 +1,68 @@
+{
+  "user": "admin",
+  "run_jobs": [
+    "backup_chunks_merger"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/backups/upload",
+      "params": {
+        "resumableIdentifier": "abc-123",
+        "resumableFilename": "uploaded.tar.gz",
+        "resumableChunkNumber": "1",
+        "resumableCurrentChunkSize": "29"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/backups/upload",
+      "params": {
+        "resumableFilename": "uploaded.tar.gz",
+        "resumableTotalSize": "58",
+        "resumableIdentifier": "abc-123",
+        "resumableChunkNumber": "1",
+        "resumableChunkSize": "29",
+        "resumableCurrentChunkSize": "29",
+        "file": {
+          "fixture": "backup_chunk.gz"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/backups/upload",
+      "params": {
+        "resumableIdentifier": "abc-123",
+        "resumableFilename": "uploaded.tar.gz",
+        "resumableChunkNumber": "1",
+        "resumableCurrentChunkSize": "29"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/backups/upload",
+      "params": {
+        "resumableIdentifier": "abc-123",
+        "resumableFilename": "uploaded.tar.gz",
+        "resumableChunkNumber": "1",
+        "resumableCurrentChunkSize": "28"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/backups/upload",
+      "params": {
+        "resumableFilename": "uploaded.tar.gz",
+        "resumableTotalSize": "58",
+        "resumableIdentifier": "abc-123",
+        "resumableChunkNumber": "2",
+        "resumableChunkSize": "29",
+        "resumableCurrentChunkSize": "29",
+        "file": {
+          "fixture": "backup_chunk.gz"
+        }
+      }
+    }
+  ]
+}

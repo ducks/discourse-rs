@@ -1,0 +1,16 @@
+{
+  "user": "admin",
+  "redis": {
+    "backup_restore_operation_is_running": "1"
+  },
+  "setup": [
+    "CREATE SCHEMA backup",
+    "CREATE TABLE backup.posts (id integer)"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/backups/status.json"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/backups/discourse-2026-10-01-033000-v20260925054715.tar.gz"
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/backups/notes.txt"
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/backups/bad%20name.tar.gz"
+    }
+  ]
+}

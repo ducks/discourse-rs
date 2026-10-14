@@ -1,0 +1,79 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/backups/upload",
+      "params": {
+        "resumableFilename": "backup.zip",
+        "resumableTotalSize": "29",
+        "resumableIdentifier": "abc-123",
+        "resumableChunkNumber": "1",
+        "resumableChunkSize": "1048576",
+        "resumableCurrentChunkSize": "29",
+        "file": {
+          "fixture": "backup_chunk.gz"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/backups/upload",
+      "params": {
+        "resumableFilename": "back up.tar.gz",
+        "resumableTotalSize": "29",
+        "resumableIdentifier": "abc-123",
+        "resumableChunkNumber": "1",
+        "resumableChunkSize": "1048576",
+        "resumableCurrentChunkSize": "29",
+        "file": {
+          "fixture": "backup_chunk.gz"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/backups/upload",
+      "params": {
+        "resumableFilename": "backup.tar.gz",
+        "resumableTotalSize": "29",
+        "resumableIdentifier": "abc/123",
+        "resumableChunkNumber": "1",
+        "resumableChunkSize": "1048576",
+        "resumableCurrentChunkSize": "29",
+        "file": {
+          "fixture": "backup_chunk.gz"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/backups/upload",
+      "params": {
+        "resumableIdentifier": "abc 123",
+        "resumableFilename": "backup.tar.gz",
+        "resumableChunkNumber": "1",
+        "resumableCurrentChunkSize": "29"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/backups/upload",
+      "params": {
+        "resumableIdentifier": "abc-123",
+        "resumableFilename": "back up.tar.gz",
+        "resumableChunkNumber": "1",
+        "resumableCurrentChunkSize": "29"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/backups/upload",
+      "params": {
+        "resumableIdentifier": "abc-123",
+        "resumableFilename": "backup.tar.gz",
+        "resumableChunkNumber": "1"
+      }
+    }
+  ]
+}

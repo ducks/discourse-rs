@@ -1,0 +1,17 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/backups.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/backups/status.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/backups/status"
+    }
+  ]
+}

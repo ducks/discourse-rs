@@ -1,0 +1,26 @@
+{
+  "user": "admin",
+  "files": {
+    "/backups/default/discourse-2026-10-01-033000-v20260925054715.tar.gz": "backup.tar.gz"
+  },
+  "readonly": [
+    "readonly_mode:user"
+  ],
+  "keep_headers": [
+    "Discourse-Readonly"
+  ],
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/admin/backups/discourse-2026-10-01-033000-v20260925054715.tar.gz"
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/backups/discourse-2026-10-01-033000-v20260925054715.tar.gz"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/backups.json"
+    }
+  ]
+}

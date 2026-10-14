@@ -12,6 +12,7 @@ pub mod anonymous_cache;
 pub mod archived_messages;
 pub mod assets;
 pub mod avatar;
+pub mod backup_restore;
 pub mod badge_granter;
 pub mod badge_preview;
 pub mod badges_page;
