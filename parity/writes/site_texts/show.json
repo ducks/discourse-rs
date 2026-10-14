@@ -1,0 +1,779 @@
+{
+  "name": "show",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/customize/site_texts/js.topic.create.json?locale=en"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/customize/site_texts/user_notifications.user_mentioned.text_body_template.json?locale=en"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/customize/site_texts/js.topic.filter_to.one.json?locale=en"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/customize/site_texts/js.powered_by_discourse.json?locale=en"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/customize/site_texts/no.such.key.json?locale=en"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/customize/site_texts/js.topic.json?locale=en"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/customize/site_texts/js.theme_translations.-2.solved.json?locale=en"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/customize/site_texts/js.theme_translations.-2.nope.json?locale=en"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/customize/site_texts/js.topic.create.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/customize/site_texts/system_messages.welcome_user.subject_template.json?locale=en"
+    }
+  ],
+  "started_at": "2026-10-14T14:30:47.205771",
+  "transaction_started_at": "2026-10-14T14:30:45.619584",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "site_text": {
+          "id": "js.topic.create",
+          "value": "New Topic",
+          "status": "up_to_date",
+          "old_default": null,
+          "new_default": null,
+          "interpolation_keys": [],
+          "overridden": false,
+          "can_revert": false
+        },
+        "__rest_serializer": "1"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "site_text": {
+          "id": "user_notifications.user_mentioned.text_body_template",
+          "value": "%{header_instructions}\n\n%{message}\n\n%{context}\n\n%{respond_instructions}\n",
+          "status": "up_to_date",
+          "old_default": null,
+          "new_default": null,
+          "interpolation_keys": [
+            "context",
+            "group_name",
+            "header_instructions",
+            "message",
+            "optional_cat",
+            "optional_pm",
+            "optional_re",
+            "optional_tags",
+            "participants",
+            "post_id",
+            "recipient_username",
+            "respond_instructions",
+            "site_description",
+            "site_name",
+            "site_title",
+            "site_title_url_encoded",
+            "subject_pm",
+            "topic_id",
+            "topic_title",
+            "topic_title_url_encoded",
+            "unsubscribe_url",
+            "url",
+            "username"
+          ],
+          "overridden": false,
+          "can_revert": false
+        },
+        "__rest_serializer": "1"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "site_text": {
+          "id": "js.topic.filter_to.one",
+          "value": "%{count} post in topic",
+          "status": "up_to_date",
+          "old_default": null,
+          "new_default": null,
+          "interpolation_keys": [
+            "count"
+          ],
+          "overridden": false,
+          "can_revert": false
+        },
+        "__rest_serializer": "1"
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "This email template can't be modified"
+        ],
+        "error_type": "invalid_access"
+      }
+    },
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "site_text": {
+          "id": "js.topic",
+          "value": {
+            "filter_to": {
+              "one": "%{count} post in topic",
+              "other": "%{count} posts in topic"
+            },
+            "create": "New Topic",
+            "create_shared_draft": "New Shared Draft",
+            "create_long": "Create a new topic",
+            "create_group": "New topic and drafts",
+            "open_draft": "Open Draft",
+            "private_message": "Start a message",
+            "archive_message": {
+              "help": "Move message to your archive",
+              "title": "Archive"
+            },
+            "move_to_inbox": {
+              "title": "Move to Inbox",
+              "help": "Move message back to Inbox"
+            },
+            "defer": {
+              "help": "Mark topic as unread",
+              "title": "Mark unread"
+            },
+            "list": "Topics",
+            "new": "new topic",
+            "has_new_replies": "new replies since your last visit",
+            "unread": "unread",
+            "new_topics": {
+              "one": "%{count} new topic",
+              "other": "%{count} new topics"
+            },
+            "unread_topics": {
+              "one": "%{count} unread topic",
+              "other": "%{count} unread topics"
+            },
+            "title": "Topic",
+            "invalid_access": {
+              "title": "Topic is private",
+              "description": "Sorry, you don't have access to that topic!",
+              "login_required": "You need to log in to see that topic."
+            },
+            "server_error": {
+              "title": "Topic failed to load",
+              "description": "Sorry, we couldn't load that topic, possibly due to a connection problem. Please try again. If the problem persists, let us know."
+            },
+            "not_found": {
+              "title": "Topic not found",
+              "description": "Sorry, we couldn't find that topic. Perhaps it was removed by a moderator?"
+            },
+            "unread_posts": {
+              "one": "you have %{count} unread post in this topic",
+              "other": "you have %{count} unread posts in this topic"
+            },
+            "likes": {
+              "one": "there is %{count} like in this topic",
+              "other": "there are %{count} likes in this topic"
+            },
+            "back_to_list": "Back to Topic List",
+            "options": "Topic Options",
+            "show_links": "show links within this topic",
+            "collapse_details": "collapse topic details",
+            "expand_details": "expand topic details",
+            "read_more_in_category": "Want to read more? Browse other topics in %{categoryLink} or <a href='%{latestLink}'>view latest topics</a>.",
+            "read_more": "Want to read more? <a href='%{categoryLink}'>Browse all categories</a> or <a href='%{latestLink}'>view latest topics</a>.",
+            "unread_indicator": "No member has read the last post of this topic yet.",
+            "sr_read": "read",
+            "participant_groups": "Participant groups",
+            "read_more_MF": "{ HAS_UNREAD_AND_NEW, select,\n  true {\n    { UNREAD, plural,\n         =0 {}\n        one {There is <a href=\"{unreadUrl}\"># unread</a>}\n      other {There are <a href=\"{unreadUrl}\"># unread</a>}\n    }\n    { NEW, plural,\n         =0 {}\n        one { and <a href=\"{newUrl}\"># new</a> topic remaining,}\n      other { and <a href=\"{newUrl}\"># new</a> topics remaining,}\n    }\n  }\n  false {\n    { UNREAD, plural,\n         =0 {}\n        one {There is <a href=\"{unreadUrl}\"># unread</a> topic remaining,}\n      other {There are <a href=\"{unreadUrl}\"># unread</a> topics remaining,}\n    }\n    { NEW, plural,\n         =0 {}\n        one {There is <a href=\"{newUrl}\"># new</a> topic remaining,}\n      other {There are <a href=\"{newUrl}\"># new</a> topics remaining,}\n    }\n  }\n  other {}\n}\n{ HAS_CATEGORY, select,\n  true { or browse other topics in {categoryLink}}\n  false { or <a href=\"{basePath}/latest\">view latest topics</a>}\n  other {}\n}\n",
+            "reply_count_link": {
+              "one": "%{count} reply, jump to first post",
+              "other": "%{count} replies, jump to first post"
+            },
+            "created_at": "Created: %{date}",
+            "bumped_at": "Latest: %{date}",
+            "browse_latest_topics": "Browse latest topics",
+            "browse_new_replies": "Browse new replies",
+            "browse_new_topics": "Browse new topics",
+            "suggest_create_topic": "Ready to <a href>start a new conversation?</a>",
+            "jump_reply": "Jump to post's original location",
+            "jump_reply_aria": "Jump to @%{username}'s post in its original location",
+            "jump_reply_button": "Jump to post",
+            "deleted": "The topic has been deleted",
+            "slow_mode_update": {
+              "title": "Slow mode",
+              "select": "Users may only post in this topic once every:",
+              "description": "To promote thoughtful discussion in fast moving or contentious discussions, users must wait before posting again in this topic.",
+              "enable": "Enable",
+              "update": "Update",
+              "enabled_until": "Enabled until:",
+              "remove": "Disable",
+              "hours": "Hours:",
+              "minutes": "Minutes:",
+              "seconds": "Seconds:",
+              "durations": {
+                "10_minutes": "10 Minutes",
+                "15_minutes": "15 Minutes",
+                "30_minutes": "30 Minutes",
+                "45_minutes": "45 Minutes",
+                "1_hour": "1 Hour",
+                "2_hours": "2 Hours",
+                "4_hours": "4 Hours",
+                "8_hours": "8 Hours",
+                "12_hours": "12 Hours",
+                "24_hours": "24 Hours",
+                "custom": "Custom Duration"
+              }
+            },
+            "slow_mode_notice": {
+              "duration": "Please wait %{duration} between your posts in this topic"
+            },
+            "topic_status_update": {
+              "title": "Topic Timer",
+              "save": "Set Timer",
+              "num_of_hours": "Number of hours:",
+              "num_of_days": "Number of days:",
+              "remove": "Remove Timer",
+              "publish_to": "Publish To:",
+              "when": "When:",
+              "time_frame_required": "Please select a time frame",
+              "category_required": "Please select a category",
+              "min_duration": "Duration must be greater than 0",
+              "max_duration": "Duration must be less than 20 years",
+              "duration": "Duration"
+            },
+            "publish_to_category": {
+              "title": "Schedule Publishing"
+            },
+            "temp_open": {
+              "title": "Open Temporarily"
+            },
+            "auto_reopen": {
+              "title": "Auto-Open Topic"
+            },
+            "temp_close": {
+              "title": "Close Temporarily"
+            },
+            "auto_close": {
+              "title": "Auto-Close Topic",
+              "label": "Auto-close topic after:",
+              "error": "Please enter a valid value.",
+              "based_on_last_post": "Don't close until the last post in the topic is at least this old."
+            },
+            "auto_close_after_last_post": {
+              "title": "Auto-Close Topic After Last Post"
+            },
+            "auto_delete": {
+              "title": "Auto-Delete Topic"
+            },
+            "auto_delete_after_last_post": {
+              "title": "Auto-Delete Topic After Last Post"
+            },
+            "auto_bump": {
+              "title": "Auto-Bump Topic"
+            },
+            "reminder": {
+              "title": "Remind Me"
+            },
+            "auto_delete_replies": {
+              "title": "Auto-Delete Replies"
+            },
+            "status_update_notice": {
+              "auto_open": "This topic will automatically open %{timeLeft}.",
+              "auto_close": "This topic will automatically close %{timeLeft}.",
+              "auto_publish_to_category": "This topic will be published to <a href=%{categoryUrl}>#%{categoryName}</a> %{timeLeft}.",
+              "auto_close_after_last_post": "This topic will close %{duration} after the last reply.",
+              "auto_delete_after_last_post": "This topic will be deleted %{duration} after the last reply.",
+              "auto_delete": "This topic will be automatically deleted %{timeLeft}.",
+              "auto_bump": "This topic will be automatically bumped %{timeLeft}.",
+              "auto_reminder": "You will be reminded about this topic %{timeLeft}.",
+              "auto_delete_replies": "Replies on this topic are automatically deleted after %{duration}."
+            },
+            "auto_close_title": "Auto-Close Settings",
+            "auto_close_immediate": {
+              "one": "The last post in the topic is already %{count} hour old, so the topic will be closed immediately.",
+              "other": "The last post in the topic is already %{count} hours old, so the topic will be closed immediately."
+            },
+            "auto_delete_immediate": {
+              "one": "The last post in the topic is already %{count} hour old, so the topic will be deleted immediately.",
+              "other": "The last post in the topic is already %{count} hours old, so the topic will be deleted immediately."
+            },
+            "timeline": {
+              "back": "Back",
+              "back_description": "Go back to your last unread post",
+              "replies_short": "%{current} / %{total}"
+            },
+            "progress": {
+              "title": "topic progress",
+              "jump_prompt": "jump to…",
+              "jump_prompt_of": {
+                "one": "of %{count} post",
+                "other": "of %{count} posts"
+              },
+              "jump_prompt_long": "Jump to…",
+              "jump_prompt_to_date": "to date",
+              "jump_prompt_or": "or"
+            },
+            "notifications": {
+              "title": "change how often you get notified about this topic",
+              "reasons": {
+                "mailing_list_mode": "You have mailing list mode enabled, so you will be notified of replies to this topic via email.",
+                "3_10": "You will receive notifications because you are watching a tag on this topic.",
+                "3_10_stale": "You will receive notifications because you were watching a tag on this topic in the past.",
+                "3_6": "You will receive notifications because you are watching this category.",
+                "3_6_stale": "You will receive notifications because you were watching this category in the past.",
+                "3_5": "You will receive notifications because you started watching this topic automatically.",
+                "3_2": "You will receive notifications because you are watching this topic.",
+                "3_1": "You will receive notifications because you created this topic.",
+                "3": "You will receive notifications because you are watching this topic.",
+                "2_8": "You will see a count of new replies because you are tracking this category.",
+                "2_8_stale": "You will see a count of new replies because you were tracking this category in the past.",
+                "2_4": "You will see a count of new replies because you posted a reply to this topic.",
+                "2_2": "You will see a count of new replies because you are tracking this topic.",
+                "2": "You will see a count of new replies because you <a href=\"%{basePath}/u/%{username}/preferences/notifications\">read this topic</a>.",
+                "1_2": "You will be notified if someone mentions your @name or replies to you.",
+                "1": "You will be notified if someone mentions your @name or replies to you.",
+                "0_7": "You are ignoring all notifications in this category.",
+                "0_2": "You are ignoring all notifications on this topic.",
+                "0": "You are ignoring all notifications on this topic."
+              },
+              "watching_pm": {
+                "title": "Watching",
+                "description": "You will be notified of every new reply in this message, and a count of new replies will be shown."
+              },
+              "watching": {
+                "title": "Watching",
+                "description": "You will be notified of every new reply in this topic, and a count of new replies will be shown."
+              },
+              "tracking_pm": {
+                "title": "Tracking",
+                "description": "A count of new replies will be shown for this message. You will be notified if someone mentions your @name or replies to you."
+              },
+              "tracking": {
+                "title": "Tracking",
+                "description": "A count of new replies will be shown for this topic. You will be notified if someone mentions your @name or replies to you."
+              },
+              "regular": {
+                "title": "Normal",
+                "description": "You will be notified if someone mentions your @name or replies to you."
+              },
+              "regular_pm": {
+                "title": "Normal",
+                "description": "You will be notified if someone mentions your @name or replies to you."
+              },
+              "muted_pm": {
+                "title": "Muted",
+                "description": "You will never be notified of anything about this message."
+              },
+              "muted": {
+                "title": "Muted",
+                "description": "You will never be notified of anything about this topic, and it will not appear in latest."
+              }
+            },
+            "actions": {
+              "title": "Actions",
+              "recover": "Un-Delete Topic",
+              "delete": "Delete Topic",
+              "open": "Open Topic",
+              "close": "Close Topic",
+              "multi_select": "Select Posts…",
+              "slow_mode": "Set Slow Mode…",
+              "timed_update": "Set Topic Timer…",
+              "pin": "Pin Topic…",
+              "unpin": "Un-Pin Topic…",
+              "unarchive": "Unarchive Topic",
+              "archive": "Archive Topic",
+              "invisible": "Unlist Topic",
+              "visible": "List Topic",
+              "reset_read": "Reset Read Data",
+              "make_public": "Make Public Topic…",
+              "make_private": "Make Personal Message",
+              "reset_bump_date": "Reset Bump Date"
+            },
+            "feature": {
+              "pin": "Pin Topic",
+              "unpin": "Un-Pin Topic",
+              "pin_globally": "Pin Topic Globally",
+              "make_banner": "Make Banner Topic",
+              "remove_banner": "Remove Banner Topic"
+            },
+            "reply": {
+              "title": "Reply",
+              "help": "begin composing a reply to this topic"
+            },
+            "footer_buttons": {
+              "region_label": "Topic actions"
+            },
+            "share": {
+              "title": "Share Topic",
+              "extended_title": "Share a link",
+              "help": "share a link to this topic",
+              "instructions": "Share a link to this topic:",
+              "copied": "Topic link copied.",
+              "restricted_groups": {
+                "one": "Only visible to members of group: %{groupNames}",
+                "other": "Only visible to members of groups: %{groupNames}"
+              },
+              "invite_users": "Invite"
+            },
+            "print": {
+              "title": "Print",
+              "help": "Open a printer friendly version of this topic"
+            },
+            "flag_topic": {
+              "title": "Flag",
+              "help": "privately flag this topic for attention or send a personal message about it",
+              "success_message": "You successfully flagged this topic."
+            },
+            "make_public": {
+              "title": "Convert to Public Topic",
+              "choose_category": "Please choose a category for the public topic:"
+            },
+            "feature_topic": {
+              "title": "Feature this topic",
+              "pin": "Make this topic appear at the top of the %{categoryLink} category until",
+              "unpin": "Remove this topic from the top of the %{categoryLink} category.",
+              "unpin_until": "Remove this topic from the top of the %{categoryLink} category or wait until <strong>%{until}</strong>.",
+              "pin_note": "Users can unpin the topic individually for themselves.",
+              "pin_until": "Pin until",
+              "pin_validation": "A date is required to pin this topic.",
+              "not_pinned": "There are no topics pinned in %{categoryLink}.",
+              "already_pinned": {
+                "one": "Topics currently pinned in %{categoryLink}: <strong class='badge badge-notification unread'>%{count}</strong>",
+                "other": "Topics currently pinned in %{categoryLink}: <strong class='badge badge-notification unread'>%{count}</strong>"
+              },
+              "pin_globally": "Make this topic appear at the top of all topic lists until",
+              "confirm_pin_globally": {
+                "one": "You already have %{count} globally pinned topic. Too many pinned topics may be a burden for new and anonymous users. Are you sure you want to pin another topic globally?",
+                "other": "You already have %{count} globally pinned topics. Too many pinned topics may be a burden for new and anonymous users. Are you sure you want to pin another topic globally?"
+              },
+              "unpin_globally": "Remove this topic from the top of all topic lists.",
+              "unpin_globally_until": "Remove this topic from the top of all topic lists or wait until <strong>%{until}</strong>.",
+              "global_pin_note": "Users can unpin the topic individually for themselves.",
+              "not_pinned_globally": "There are no topics pinned globally.",
+              "already_pinned_globally": {
+                "one": "Topics currently pinned globally: <strong class='badge badge-notification unread'>%{count}</strong>",
+                "other": "Topics currently pinned globally: <strong class='badge badge-notification unread'>%{count}</strong>"
+              },
+              "make_banner": "Make this topic into a banner that appears at the top of all pages.",
+              "remove_banner": "Remove the banner that appears at the top of all pages.",
+              "banner_note": "Users can dismiss the banner by closing it. Only one topic can be bannered at any given time.",
+              "no_banner_exists": "There is no banner topic.",
+              "banner_exists": "There <strong class='badge badge-notification unread'>is</strong> currently a banner topic."
+            },
+            "bulk_feature_topic": {
+              "pin": "Make these topics appear at the top of the topic's category until",
+              "pin_note": "Users can unpin topics individually for themselves.",
+              "pin_globally": "Make these topics appear at the top of all topic lists until",
+              "pin_button": "Pin topics",
+              "pin_globally_button": "Pin topics globally"
+            },
+            "inviting": "Inviting…",
+            "automatically_add_to_groups": "This invite also includes access to these groups:",
+            "invite_private": {
+              "title": "Invite to Message",
+              "email_or_username": "Invitee's Email or Username",
+              "email_or_username_placeholder": "email address or username",
+              "action": "Invite",
+              "success": "We've invited that user to participate in this message.",
+              "success_group": "We've invited that group to participate in this message.",
+              "error": "Sorry, there was an error inviting that user.",
+              "not_allowed": "Sorry, that user can't be invited.",
+              "group_name": "group name"
+            },
+            "controls": "Topic Controls",
+            "invite_reply": {
+              "title": "Invite",
+              "username_placeholder": "username",
+              "action": "Send Invite",
+              "help": "invite others to this topic via email or notifications",
+              "to_forum": "We'll send a brief email allowing your friend to immediately join by clicking a link.",
+              "discourse_connect_enabled": "Enter the username of the person you'd like to invite to this topic.",
+              "to_topic_blank": "Enter the username or email address of the person you'd like to invite to this topic.",
+              "to_topic_email": "You've entered an email address. We'll email an invitation that allows your friend to immediately reply to this topic.",
+              "to_topic_username": "You've entered a username. We'll send a notification with a link inviting them to this topic.",
+              "to_username": "Enter the username of the person you'd like to invite. We'll send a notification with a link inviting them to this topic.",
+              "email_placeholder": "name@example.com",
+              "success_email": "We mailed out an invitation to <b>%{invitee}</b>. We'll notify you when the invitation is redeemed. Check the invitations tab on your user page to keep track of your invites.",
+              "success_username": "We've invited that user to participate in this topic.",
+              "error": "Sorry, we couldn't invite that person. Perhaps they have already been invited? (Invites are rate limited)",
+              "success_existing_email": "A user with email <b>%{emailOrUsername}</b> already exists. We've invited that user to participate in this topic."
+            },
+            "login_reply": "Log In to Reply",
+            "filters": {
+              "n_posts": {
+                "one": "%{count} post",
+                "other": "%{count} posts"
+              },
+              "cancel": "Remove filter"
+            },
+            "move_to": {
+              "title": "Move to",
+              "action": "move to",
+              "error": "There was an error moving posts."
+            },
+            "split_topic": {
+              "title": "Move to New Topic",
+              "action": "move to new topic",
+              "topic_name": "New Topic Title",
+              "radio_label": "New Topic",
+              "error": "There was an error moving posts to the new topic.",
+              "instructions": {
+                "one": "You are about to create a new topic and populate it with the post you've selected.",
+                "other": "You are about to create a new topic and populate it with the <b>%{count}</b> posts you've selected."
+              }
+            },
+            "merge_topic": {
+              "title": "Move to Existing Topic",
+              "action": "move to existing topic",
+              "error": "There was an error moving posts into that topic.",
+              "radio_label": "Existing Topic",
+              "instructions": {
+                "one": "Please choose the topic you'd like to move that post to.",
+                "other": "Please choose the topic you'd like to move those <b>%{count}</b> posts to."
+              },
+              "chronological_order": "preserve chronological order after merging"
+            },
+            "move_to_new_message": {
+              "title": "Move to New Message",
+              "action": "move to new message",
+              "message_title": "New Message Title",
+              "radio_label": "New Message",
+              "participants": "Participants",
+              "instructions": {
+                "one": "You are about to create a new message and populate it with the post you've selected.",
+                "other": "You are about to create a new message and populate it with the <b>%{count}</b> posts you've selected."
+              }
+            },
+            "move_to_existing_message": {
+              "title": "Move to Existing Message",
+              "action": "move to existing message",
+              "radio_label": "Existing Message",
+              "participants": "Participants",
+              "instructions": {
+                "one": "Please choose the message you'd like to move that post to.",
+                "other": "Please choose the message you'd like to move those <b>%{count}</b> posts to."
+              }
+            },
+            "merge_posts": {
+              "title": "Merge Selected Posts",
+              "action": "merge selected posts",
+              "error": "There was an error merging the selected posts."
+            },
+            "publish_page": {
+              "title": "Page Publishing",
+              "publish": "Publish",
+              "description": "When a topic is published as a page, its URL can be shared and it will displayed with custom styling.",
+              "slug": "Slug",
+              "public": "Public",
+              "public_description": "People can see the page even if the associated topic is private.",
+              "publish_url": "Your page has been published at:",
+              "topic_published": "Your topic has been published at:",
+              "preview_url": "Your page will be published at:",
+              "invalid_slug": "Sorry, you can't publish this page.",
+              "unpublish": "Unpublish",
+              "unpublished": "Your page has been unpublished and is no longer accessible.",
+              "publishing_settings": "Publishing Settings"
+            },
+            "change_owner": {
+              "title": "Change Owner",
+              "action": "change ownership",
+              "error": "There was an error changing the ownership of the posts.",
+              "placeholder": "username of new owner",
+              "instructions": {
+                "one": "Please choose a new owner for the post by <b>@%{old_user}</b>",
+                "other": "Please choose a new owner for the %{count} posts by <b>@%{old_user}</b>"
+              },
+              "instructions_without_old_user": {
+                "one": "Please choose a new owner for the post",
+                "other": "Please choose a new owner for the %{count} posts"
+              }
+            },
+            "change_timestamp": {
+              "title": "Change Timestamp…",
+              "action": "change timestamp",
+              "invalid_timestamp": "Timestamp cannot be in the future.",
+              "error": "There was an error changing the timestamp of the topic.",
+              "instructions": "Please select the new timestamp of the topic. Posts in the topic will be updated to have the same time difference."
+            },
+            "multi_select": {
+              "select": "select",
+              "selected": "selected (%{count})",
+              "select_post": {
+                "label": "select",
+                "title": "Add post to selection"
+              },
+              "selected_post": {
+                "label": "selected",
+                "title": "Click to remove post from selection"
+              },
+              "select_replies": {
+                "label": "select +replies",
+                "title": "Add post and all its replies to selection"
+              },
+              "select_below": {
+                "label": "select +below",
+                "title": "Add post and all after it to selection"
+              },
+              "delete": "delete selected",
+              "cancel": "cancel selecting",
+              "select_all": "select all",
+              "deselect_all": "deselect all",
+              "description": {
+                "one": "You have selected <b>%{count}</b> post.",
+                "other": "You have selected <b>%{count}</b> posts."
+              }
+            },
+            "deleted_by_author_simple": "(topic deleted by author)",
+            "localizations": {
+              "title_edit_warning": {
+                "message": "This is a translated topic title.<br><br>Do you want to edit the <b>original</b> category, tags, and title in %{language} or edit this specific <b>translation</b>?",
+                "action_original": "Edit original",
+                "action_translation": "Edit translated topic title"
+              },
+              "editing_translation": "Editing %{language} translation"
+            },
+            "create_zendesk_issue": "Create Zendesk Ticket",
+            "view_zendesk_issue": "View on Zendesk"
+          },
+          "status": "up_to_date",
+          "old_default": null,
+          "new_default": null,
+          "interpolation_keys": [],
+          "overridden": false,
+          "can_revert": false
+        },
+        "__rest_serializer": "1"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "site_text": {
+          "id": "js.theme_translations.-2.solved",
+          "value": "Solved",
+          "status": "up_to_date",
+          "old_default": null,
+          "new_default": "Solved",
+          "overridden": false,
+          "can_revert": false,
+          "interpolation_keys": []
+        },
+        "__rest_serializer": "1"
+      }
+    },
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: locale"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "site_text": {
+          "id": "system_messages.welcome_user.subject_template",
+          "value": "Welcome to %{site_name}!",
+          "status": "up_to_date",
+          "old_default": null,
+          "new_default": null,
+          "interpolation_keys": [
+            "name",
+            "name_or_username",
+            "site_name",
+            "username"
+          ],
+          "overridden": false,
+          "can_revert": false
+        },
+        "__rest_serializer": "1"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 112,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "CNklk2nqpPjX9faU/MvHYIalhlo=",
+            "created_at": "2026-10-14T14:30:46.249746",
+            "rotated_at": "2026-10-14T14:30:46.247429",
+            "updated_at": "2026-10-14T14:30:46.249746",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "CNklk2nqpPjX9faU/MvHYIalhlo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 112,
+            "seen_at": "2026-10-14T14:30:47.217212",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "CNklk2nqpPjX9faU/MvHYIalhlo=",
+            "created_at": "2026-10-14T14:30:46.249746",
+            "rotated_at": "2026-10-14T14:30:46.247429",
+            "updated_at": "2026-10-14T14:30:46.249746",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "CNklk2nqpPjX9faU/MvHYIalhlo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "d01732c741ddc6cea0892cc3779f53bf657bb17bc6898bd33174d5b38ea2f7ad",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

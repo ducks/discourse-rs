@@ -1,0 +1,134 @@
+{
+  "name": "dismiss_outdated",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/customize/site_texts/js.topic.create/dismiss_outdated.json",
+      "params": {
+        "locale": "en"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/customize/site_texts/js.composer.reply/dismiss_outdated.json",
+      "params": {
+        "locale": "en"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/customize/site_texts/js.topic.title/dismiss_outdated.json",
+      "params": {
+        "locale": "en"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T14:30:02.562507",
+  "transaction_started_at": "2026-10-14T14:29:57.987924",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "failed": "FAILED",
+        "message": "Can only dismiss outdated translations"
+      }
+    },
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    }
+  ],
+  "changes": {
+    "translation_overrides": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "value": "Start a discussion",
+            "locale": "en",
+            "status": 1,
+            "created_at": "2026-10-14T14:29:57.987924",
+            "updated_at": "2026-10-14T14:29:57.987924",
+            "translation_key": "js.topic.create",
+            "original_translation": "Old Topic"
+          },
+          "after": {
+            "id": 1,
+            "value": "Start a discussion",
+            "locale": "en",
+            "status": 0,
+            "created_at": "2026-10-14T14:29:57.987924",
+            "updated_at": "2026-10-14T14:30:02.603002",
+            "translation_key": "js.topic.create",
+            "original_translation": "New Topic"
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 112,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "uRxIjlbcoDBE0ynMnjuXlyGe69M=",
+            "created_at": "2026-10-14T14:30:00.138202",
+            "rotated_at": "2026-10-14T14:30:00.129751",
+            "updated_at": "2026-10-14T14:30:00.138202",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "uRxIjlbcoDBE0ynMnjuXlyGe69M=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 112,
+            "seen_at": "2026-10-14T14:30:02.577762",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "uRxIjlbcoDBE0ynMnjuXlyGe69M=",
+            "created_at": "2026-10-14T14:30:00.138202",
+            "rotated_at": "2026-10-14T14:30:00.129751",
+            "updated_at": "2026-10-14T14:30:00.138202",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "uRxIjlbcoDBE0ynMnjuXlyGe69M=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO translation_overrides (locale, translation_key, value, original_translation, status, created_at, updated_at) VALUES ('en', 'js.topic.create', 'Start a discussion', 'Old Topic', 1, now(), now())",
+    "INSERT INTO translation_overrides (locale, translation_key, value, original_translation, status, created_at, updated_at) VALUES ('en', 'js.composer.reply', 'Answer', 'Reply', 0, now(), now())"
+  ],
+  "recorded_from": {
+    "case": "ee263cdf9d8776e782ce54791e69eec37c078799926631d500c4d07435f34ced",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

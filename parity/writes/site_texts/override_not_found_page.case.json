@@ -1,0 +1,14 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO translation_overrides (locale, translation_key, value, original_translation, status, created_at, updated_at) VALUES ('en', 'page_not_found.title', 'Nothing here, sorry', NULL, 0, now(), now())",
+    "INSERT INTO translation_overrides (locale, translation_key, value, original_translation, status, created_at, updated_at) VALUES ('en', 'page_not_found.popular_topics', 'Try these', NULL, 0, now(), now())",
+    "INSERT INTO translation_overrides (locale, translation_key, value, original_translation, status, created_at, updated_at) VALUES ('en', 'not_found', 'Gone', NULL, 0, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/t/made-up-topic-slug/123456.json"
+    }
+  ]
+}

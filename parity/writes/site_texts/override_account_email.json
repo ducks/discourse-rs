@@ -1,0 +1,148 @@
+{
+  "name": "override_account_email",
+  "user": null,
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/session/forgot_password.json",
+      "params": {
+        "login": "user1@example.com"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T14:30:25.978777",
+  "transaction_started_at": "2026-10-14T14:30:24.65969",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "email_code": true
+      }
+    }
+  ],
+  "changes": {
+    "email_login_codes": {
+      "inserted": [
+        {
+          "id": 1,
+          "email": "user1@example.com",
+          "purpose": 1,
+          "attempts": 0,
+          "code_hash": "bb9dbc9b8eaa137010b93d6204c522078c34c3b0853f876071ab81f198f68f8b",
+          "created_at": "2026-10-14T14:30:26.074046",
+          "expires_at": "2026-10-14T14:40:26.069572",
+          "updated_at": "2026-10-14T14:30:26.074046",
+          "consumed_at": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "email_logs": {
+      "inserted": [
+        {
+          "id": 1,
+          "raw": null,
+          "bounced": false,
+          "post_id": null,
+          "user_id": null,
+          "topic_id": null,
+          "bounce_key": null,
+          "created_at": "2026-10-14T14:30:27.995433",
+          "email_type": "email_login_code",
+          "message_id": "2cca2fb9-00cf-4d72-acfe-aa4bbf66677f@localhost",
+          "to_address": "user1@example.com",
+          "updated_at": "2026-10-14T14:30:27.995433",
+          "cc_user_ids": null,
+          "cc_addresses": null,
+          "bcc_addresses": null,
+          "smtp_group_id": null,
+          "bounce_error_code": null,
+          "smtp_transaction_response": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [
+    [
+      "send_email_login_code",
+      {
+        "to_address": "user1@example.com",
+        "code": "669481",
+        "password_reset": true
+      }
+    ]
+  ],
+  "next_ids": {
+    "email_login_codes": 1,
+    "email_logs": 1
+  },
+  "settings": {
+    "email_prefix": "Forum"
+  },
+  "setup": [
+    "INSERT INTO translation_overrides (locale, translation_key, value, original_translation, status, created_at, updated_at) VALUES ('en', 'password_reset_code_mailer.subject_template', 'Your %{site_name} reset code%{topic_title}', NULL, 0, now(), now())",
+    "INSERT INTO translation_overrides (locale, translation_key, value, original_translation, status, created_at, updated_at) VALUES ('en', 'password_reset_code_mailer.text_body_template', 'Reset on **%{site_name}**:\n\n## %{code}\n\nValid %{minutes} minutes.', NULL, 0, now(), now())"
+  ],
+  "jobs_from_jobs": [],
+  "emails": [
+    {
+      "headers": [
+        [
+          "From",
+          "\"Discourse\" <noreply@unconfigured.discourse.org>"
+        ],
+        [
+          "Reply-To",
+          "\"Discourse\" <noreply@unconfigured.discourse.org>"
+        ],
+        [
+          "To",
+          "user1@example.com"
+        ],
+        [
+          "Message-ID",
+          "<2cca2fb9-00cf-4d72-acfe-aa4bbf66677f@localhost>"
+        ],
+        [
+          "Subject",
+          "Your Forum reset code"
+        ],
+        [
+          "MIME-Version",
+          "1.0"
+        ],
+        [
+          "Content-Type",
+          "multipart/alternative; boundary=--==_mimepart_6acf9203ede65_8913f2886398"
+        ],
+        [
+          "Content-Transfer-Encoding",
+          "7bit"
+        ],
+        [
+          "X-Auto-Response-Suppress",
+          "All"
+        ],
+        [
+          "x-ms-reactions",
+          "disallow"
+        ],
+        [
+          "Auto-Submitted",
+          "auto-generated"
+        ]
+      ],
+      "text": "Reset on **Discourse**:\n\n## 669481\n\nValid 10 minutes.",
+      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <p>Reset on <strong>Discourse</strong>:</p>\n<h2><a name=\"h-669481-1\" class=\"anchor\" href=\"#h-669481-1\" aria-label=\"Heading link\" style=\"text-decoration:none;font-weight:bold;color:#006699\"></a>669481</h2>\n<p>Valid 10 minutes.</p>\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
+    }
+  ],
+  "recorded_from": {
+    "case": "a237714dc619f7f0b262bd59a47fd8584033a4d131d3745cb3fc8aa97956182f",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -157,6 +157,10 @@ def reset_plugin_caches
   DiscourseSolved::AcceptedAnswerCache.reset_accepted_answer_cache if defined?(DiscourseSolved::AcceptedAnswerCache)
   # WordWatcher's word lists (Discourse.cache, in Redis).
   WordWatcher.clear_cache!
+  # The translation overrides I18n keeps per site (translate_accelerator),
+  # which TranslationOverride's own writes reload but setup SQL and the
+  # rollback do not.
+  I18n.instance_variable_set(:@overrides_by_site, {})
 end
 
 def checksums

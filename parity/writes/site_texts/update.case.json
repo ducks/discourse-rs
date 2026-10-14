@@ -1,0 +1,10 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "PUT", "path": "/admin/customize/site_texts/js.topic.create.json", "params": {"site_text": {"value": "Start a <b>discussion</b> &amp; more", "locale": "en"}}},
+    {"method": "PUT", "path": "/admin/customize/site_texts/js.topic.create.json", "params": {"site_text": {"value": "Start one", "locale": "en"}}},
+    {"method": "GET", "path": "/admin/customize/site_texts/js.topic.create.json?locale=en"},
+    {"method": "PUT", "path": "/admin/customize/site_texts/js.topic.filter_to.one.json", "params": {"site_text": {"value": "%{count} more <b>unread</b> in %{basePath}", "locale": "en"}}},
+    {"method": "PUT", "path": "/admin/customize/site_texts/system_messages.welcome_user.subject_template.json", "params": {"site_text": {"value": "Welcome %{name}, to %{site_name}", "locale": "en"}}}
+  ]
+}

@@ -182,7 +182,6 @@ async fn reject(
     };
     let refs: Vec<(&str, &str)> = args.iter().map(|(k, v)| (k.as_str(), v.as_str())).collect();
     let built = super::account::build_template(
-        &mut *conn,
         &ctx,
         &format!("system_messages.{template}"),
         &mail.from_addresses.join(", "),

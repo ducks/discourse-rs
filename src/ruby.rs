@@ -149,6 +149,38 @@ pub fn cast_boolean(v: Option<&str>) -> Option<bool> {
     }
 }
 
+/// `Array#sort!` with a block on the reference: MRI's ruby_qsort is glibc's
+/// qsort_r there (HAVE_GNU_QSORT_R), whose msort_with_tmp is a top-down
+/// merge sort taking the left element while the block says <= 0. Blocks
+/// that are not a total order (the site texts' and color palettes' sorts)
+/// end as that algorithm leaves them, which this reproduces.
+pub fn sort_by_block<T>(items: &mut Vec<T>, cmp: &mut impl FnMut(&T, &T) -> std::cmp::Ordering) {
+    fn msort<T>(mut items: Vec<T>, cmp: &mut impl FnMut(&T, &T) -> std::cmp::Ordering) -> Vec<T> {
+        let n = items.len();
+        if n <= 1 {
+            return items;
+        }
+        let right = items.split_off(n / 2);
+        let left = msort(items, cmp);
+        let right = msort(right, cmp);
+        let mut out = Vec::with_capacity(n);
+        let mut left = left.into_iter().peekable();
+        let mut right = right.into_iter().peekable();
+        while let (Some(l), Some(r)) = (left.peek(), right.peek()) {
+            if cmp(l, r) != std::cmp::Ordering::Greater {
+                out.extend(left.next());
+            } else {
+                out.extend(right.next());
+            }
+        }
+        out.extend(left);
+        out.extend(right);
+        out
+    }
+    let taken = std::mem::take(items);
+    *items = msort(taken, cmp);
+}
+
 /// `Hash#inspect` (and `Array#inspect`) of a deep-symbolized parameter
 /// hash, as Ruby 3.4 writes it: `{key: value}`, a key that isn't a plain
 /// symbol quoted (`"a b": 1`).
@@ -203,6 +235,24 @@ mod tests {
         for bad in ["", "abc", "1_", "1__0", "12abc", "08", "-", " "] {
             assert_eq!(integer(bad), None, "{bad:?}");
         }
+    }
+
+    #[test]
+    fn sort_by_block_matches_the_reference() {
+        // Recorded with Ruby 3.4.9 on glibc 2.36: a block that puts zeros
+        // first without comparing them to each other.
+        let a = [3, 0, 2, 0, 1, 3, 0, 2, 1, 0, 3];
+        let mut idx: Vec<usize> = (0..a.len()).collect();
+        sort_by_block(&mut idx, &mut |&x, &y| {
+            if a[x] == 0 {
+                std::cmp::Ordering::Less
+            } else if a[y] == 0 {
+                std::cmp::Ordering::Greater
+            } else {
+                a[x].cmp(&a[y])
+            }
+        });
+        assert_eq!(idx, [1, 3, 6, 9, 4, 8, 2, 7, 0, 5, 10]);
     }
 
     #[test]

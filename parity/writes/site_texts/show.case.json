@@ -1,0 +1,15 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "GET", "path": "/admin/customize/site_texts/js.topic.create.json?locale=en"},
+    {"method": "GET", "path": "/admin/customize/site_texts/user_notifications.user_mentioned.text_body_template.json?locale=en"},
+    {"method": "GET", "path": "/admin/customize/site_texts/js.topic.filter_to.one.json?locale=en"},
+    {"method": "GET", "path": "/admin/customize/site_texts/js.powered_by_discourse.json?locale=en"},
+    {"method": "GET", "path": "/admin/customize/site_texts/no.such.key.json?locale=en"},
+    {"method": "GET", "path": "/admin/customize/site_texts/js.topic.json?locale=en"},
+    {"method": "GET", "path": "/admin/customize/site_texts/js.theme_translations.-2.solved.json?locale=en"},
+    {"method": "GET", "path": "/admin/customize/site_texts/js.theme_translations.-2.nope.json?locale=en"},
+    {"method": "GET", "path": "/admin/customize/site_texts/js.topic.create.json"},
+    {"method": "GET", "path": "/admin/customize/site_texts/system_messages.welcome_user.subject_template.json?locale=en"}
+  ]
+}

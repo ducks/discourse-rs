@@ -1,0 +1,9 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "GET", "path": "/admin/customize/site_texts.json?q=bookmark%20reminder&locale=en"},
+    {"method": "GET", "path": "/admin/customize/site_texts.json?q=Solved&locale=en"},
+    {"method": "GET", "path": "/admin/customize/site_texts.json?q=don%27t%20have&locale=en"},
+    {"method": "GET", "path": "/admin/customize/site_texts.json?q=new%20topic&locale=en&only_selected_locale=true"}
+  ]
+}

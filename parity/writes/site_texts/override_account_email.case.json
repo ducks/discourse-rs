@@ -1,0 +1,21 @@
+{
+  "settings": {
+    "email_prefix": "Forum"
+  },
+  "setup": [
+    "INSERT INTO translation_overrides (locale, translation_key, value, original_translation, status, created_at, updated_at) VALUES ('en', 'password_reset_code_mailer.subject_template', 'Your %{site_name} reset code%{topic_title}', NULL, 0, now(), now())",
+    "INSERT INTO translation_overrides (locale, translation_key, value, original_translation, status, created_at, updated_at) VALUES ('en', 'password_reset_code_mailer.text_body_template', 'Reset on **%{site_name}**:\n\n## %{code}\n\nValid %{minutes} minutes.', NULL, 0, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/session/forgot_password.json",
+      "params": {
+        "login": "user1@example.com"
+      }
+    }
+  ],
+  "run_jobs": [
+    "send_email_login_code"
+  ]
+}

@@ -108,6 +108,7 @@ struct PostRow {
 
 #[derive(sqlx::FromRow)]
 struct Recipient {
+    username: String,
     email: Option<String>,
     staged: bool,
     suspended: bool,
@@ -165,7 +166,7 @@ pub async fn build(
         None
     };
     let user: Recipient = sqlx::query_as(
-        "SELECT (SELECT email FROM user_emails WHERE user_id = u.id AND \"primary\" LIMIT 1) AS email, \
+        "SELECT u.username, (SELECT email FROM user_emails WHERE user_id = u.id AND \"primary\" LIMIT 1) AS email, \
                 u.staged, COALESCE(u.suspended_till > now(), FALSE) AS suspended, \
                 o.mailing_list_mode, o.email_in_reply_to, o.email_previous_replies \
          FROM users u JOIN user_options o ON o.user_id = u.id WHERE u.id = $1",
@@ -324,17 +325,17 @@ pub async fn build(
             }
         }
     }
-    let overridden: bool = sqlx::query_scalar(
-        "SELECT EXISTS (SELECT 1 FROM translation_overrides WHERE locale = $1 AND translation_key IN ($2, $3))",
-    )
-    .bind(s.get("default_locale")?.to_s())
-    .bind(format!("{template}.text_body_template"))
-    .bind(format!("{template}.subject_template"))
-    .fetch_one(&mut *conn)
-    .await?;
-    if overridden {
-        return Err(Unsupported("translation overrides of email templates").into());
-    }
+    // An overridden body is sent without the notification view (the
+    // renderer cooks the text instead); an overridden subject gets
+    // MessageBuilder's augmented arguments.
+    let body_overridden = ctx
+        .i18n
+        .override_of(&format!("{template}.text_body_template"))
+        .is_some();
+    let subject_overridden = ctx
+        .i18n
+        .override_of(&format!("{template}.subject_template"))
+        .is_some();
     let max_per_day = s.get("max_emails_per_day_per_user")?.to_i();
     if max_per_day > 0 {
         let sent: i64 = sqlx::query_scalar(
@@ -570,8 +571,51 @@ pub async fn build(
         String::new()
     };
     let topic_title_unicode = s.emojis().gsub_to_unicode(&topic_title);
+    // MessageBuilder's template_args: the defaults, the email options and
+    // the instructions. topic_title_url_encoded, site_title_url_encoded
+    // and the tag hashtags are left out, so an override naming them is
+    // refused as missing an argument.
+    let hostname = urls.current_hostname()?;
+    let user_preferences_url = format!("{base_url}/my/preferences");
+    let site_description = s.get("site_description")?.to_s();
+    let post_id = post.id.to_string();
+    let topic_id = post.topic_id.to_string();
+    let template_args: Vec<(&str, &str)> = vec![
+        ("email_prefix", &email_prefix),
+        ("base_url", &base_url),
+        ("user_preferences_url", &user_preferences_url),
+        ("hostname", &hostname),
+        ("message", &message),
+        ("url", &url),
+        ("post_id", &post_id),
+        ("topic_id", &topic_id),
+        ("context", ""),
+        ("username", &original_username),
+        ("group_name", group_name.as_deref().unwrap_or_default()),
+        ("unsubscribe_url", &unsubscribe_url),
+        ("subject_pm", &subject_pm),
+        ("participants", participants.as_deref().unwrap_or_default()),
+        ("site_description", &site_description),
+        ("site_title", &site_title),
+        ("recipient_username", &user.username),
+        ("email_preview", preview.as_deref().unwrap_or_default()),
+        ("header_instructions", &header_instructions),
+        ("respond_instructions", &respond_instructions),
+        ("unsubscribe_instructions", &unsubscribe_instructions),
+    ];
     // The invite's own subject template (no use_site_subject).
-    let subject = if invite {
+    let subject = if subject_overridden {
+        let mut args: Vec<(&str, &str)> = vec![
+            ("site_name", &email_prefix),
+            ("optional_re", &subject_re),
+            ("optional_pm", if pm { &subject_pm } else { "" }),
+            ("optional_cat", &format_category),
+            ("optional_tags", &format_tags),
+            ("topic_title", &topic_title_unicode),
+        ];
+        args.extend(template_args.iter().copied());
+        t(ctx, &format!("{template}.subject_template"), &args)?
+    } else if invite {
         let key = format!("{template}.subject_template");
         let key = if s.get("simple_email_subject")?.truthy()
             && ctx.i18n.t(&format!("{key}_improved")).is_some()
@@ -602,17 +646,18 @@ pub async fn build(
     };
 
     // body: the text template, then the unsubscribe instructions.
-    let context = String::new();
-    let mut text = t(
-        ctx,
-        &format!("{template}.text_body_template"),
-        &[
-            ("header_instructions", &header_instructions),
-            ("message", &message),
-            ("context", &context),
-            ("respond_instructions", &respond_instructions),
-        ],
-    )?;
+    // MessageBuilder#body: topic_title escaped twice, the optional parts
+    // of the subject blank but the category.
+    let escaped_title = html_escape(&html_escape(&topic_title_unicode));
+    let mut body_args: Vec<(&str, &str)> = vec![
+        ("site_name", &site_title),
+        ("topic_title", &escaped_title),
+        ("optional_re", ""),
+        ("optional_pm", ""),
+        ("optional_cat", &format_category),
+    ];
+    body_args.extend(template_args.iter().copied());
+    let mut text = t(ctx, &format!("{template}.text_body_template"), &body_args)?;
     text.push('\n');
     text.push_str(&unsubscribe_instructions);
 
@@ -650,11 +695,24 @@ pub async fn build(
         cook(respond_instructions.clone()).await?
     };
     html = html.replace("%{respond_instructions}", &respond_html);
-    let html_part = layout(
-        &html,
-        &s.get("default_locale")?.to_s().replacen('_', "-", 1),
-        "",
-    );
+    let html_lang = s.get("default_locale")?.to_s().replacen('_', "-", 1);
+    let html_part = if body_overridden {
+        // Email::Renderer#html without an HTML part: the text, unescaped
+        // and cooked for the recipient, in the layout with the preview.
+        let unescaped = html_escape::decode_html_entities(&text).into_owned();
+        let cooked = pretty_text::cook(
+            ctx.host,
+            &unescaped,
+            &MarkdownOptions {
+                user_id: Some(i64::from(req.user_id)),
+                ..Default::default()
+            },
+        )
+        .await?;
+        layout(&cooked, &html_lang, &preview_html)
+    } else {
+        layout(&html, &html_lang, "")
+    };
 
     // header_args, in MessageBuilder's order.
     let notification_email = s.get("notification_email")?.to_s();

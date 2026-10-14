@@ -1,0 +1,8 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "GET", "path": "/admin/customize/site_texts.json"},
+    {"method": "GET", "path": "/admin/customize/site_texts.json?locale=xx"},
+    {"method": "GET", "path": "/admin/customize/site_texts.json?locale=en&theme_id=999"}
+  ]
+}

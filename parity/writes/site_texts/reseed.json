@@ -1,0 +1,102 @@
+{
+  "name": "reseed",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/customize/reseed.json"
+    }
+  ],
+  "started_at": "2026-10-14T14:30:42.456036",
+  "transaction_started_at": "2026-10-14T14:30:40.420701",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "categories": [
+          {
+            "id": "meta_category_id",
+            "name": "Site Feedback",
+            "selected": true
+          },
+          {
+            "id": "staff_category_id",
+            "name": "Staff",
+            "selected": true
+          },
+          {
+            "id": "general_category_id",
+            "name": "General",
+            "selected": true
+          }
+        ],
+        "topics": [
+          {
+            "id": "guidelines_topic_id",
+            "name": "Guidelines",
+            "selected": true
+          },
+          {
+            "id": "welcome_topic_id",
+            "name": "Welcome to Discourse! :wave:",
+            "selected": true
+          },
+          {
+            "id": "admin_quick_start_topic_id",
+            "name": "Admin Guide: Getting Started",
+            "selected": true
+          }
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 112,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "YH0wvYfm0B6t9ZzZZCgjXvjiNFA=",
+            "created_at": "2026-10-14T14:30:41.146547",
+            "rotated_at": "2026-10-14T14:30:41.14444",
+            "updated_at": "2026-10-14T14:30:41.146547",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "YH0wvYfm0B6t9ZzZZCgjXvjiNFA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 112,
+            "seen_at": "2026-10-14T14:30:42.466115",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "YH0wvYfm0B6t9ZzZZCgjXvjiNFA=",
+            "created_at": "2026-10-14T14:30:41.146547",
+            "rotated_at": "2026-10-14T14:30:41.14444",
+            "updated_at": "2026-10-14T14:30:41.146547",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "YH0wvYfm0B6t9ZzZZCgjXvjiNFA=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "3b13eb3694920cca4f22ee2ad86b1582c4b6cb786f15a215ccf540b8b843188c",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

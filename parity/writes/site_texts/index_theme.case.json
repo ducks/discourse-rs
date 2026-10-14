@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO theme_translation_overrides (theme_id, locale, translation_key, value, created_at, updated_at) VALUES (-2, 'en', 'solved', 'Answered', now(), now())"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/admin/customize/site_texts.json?theme_id=-2&locale=en"},
+    {"method": "GET", "path": "/admin/customize/site_texts.json?q=answered&locale=en"},
+    {"method": "GET", "path": "/admin/customize/site_texts.json?overridden=true&theme_id=-2&locale=en"},
+    {"method": "GET", "path": "/admin/customize/site_texts.json?q=Unsolved&locale=en"}
+  ]
+}

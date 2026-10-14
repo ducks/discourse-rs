@@ -51,7 +51,6 @@ pub async fn build(
     }
     let to = email.ok_or(Unsupported("a recipient without an email"))?;
     build_template(
-        conn,
         ctx,
         template,
         &to,
@@ -68,7 +67,6 @@ pub async fn build(
 /// override: `extra` are the template's own arguments, `user_id` the user
 /// the text is cooked for (Email::Sender's user).
 pub async fn build_template(
-    conn: &mut PgConnection,
     ctx: &Ctx<'_>,
     template: &str,
     to: &str,
@@ -77,16 +75,6 @@ pub async fn build_template(
 ) -> Result<Built, AppError> {
     let s = ctx.settings;
     let default_locale = s.get("default_locale")?.to_s();
-    let overridden: bool = sqlx::query_scalar(
-        "SELECT EXISTS (SELECT 1 FROM translation_overrides WHERE locale = $1 AND translation_key LIKE $2)",
-    )
-    .bind(&default_locale)
-    .bind(format!("{template}.%"))
-    .fetch_one(&mut *conn)
-    .await?;
-    if overridden {
-        return Err(Unsupported("translation overrides of email templates").into());
-    }
     let urls = Urls {
         config: ctx.config,
         settings: s,
@@ -116,7 +104,16 @@ pub async fn build_template(
         .t(&format!("{template}.preview"))
         .map(|_| t(ctx, &format!("{template}.preview"), &args))
         .transpose()?;
-    let subject_key = if s.get("simple_email_subject")?.truthy()
+    // MessageBuilder#subject: an overridden subject template gets the
+    // email prefix as site_name and an empty topic title (no topic here,
+    // so no category or tags either).
+    let subject_override = ctx
+        .i18n
+        .override_of(&format!("{template}.subject_template"))
+        .is_some();
+    let subject_key = if subject_override {
+        format!("{template}.subject_template")
+    } else if s.get("simple_email_subject")?.truthy()
         && ctx
             .i18n
             .t(&format!("{template}.subject_template_improved"))
@@ -126,7 +123,16 @@ pub async fn build_template(
     } else {
         format!("{template}.subject_template")
     };
-    let subject = t(ctx, &subject_key, &args)?;
+    let subject = if subject_override {
+        // The first of a name wins: the template's own topic_title over
+        // the empty one.
+        let mut augmented: Vec<(&str, &str)> = vec![("site_name", &email_prefix)];
+        augmented.extend(args.iter().filter(|(k, _)| *k != "site_name"));
+        augmented.push(("topic_title", ""));
+        t(ctx, &subject_key, &augmented)?
+    } else {
+        t(ctx, &subject_key, &args)?
+    };
     let text = t(ctx, &format!("{template}.text_body_template"), &args)?;
 
     // Email::Renderer#html without an HTML part: the text, unescaped and

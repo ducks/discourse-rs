@@ -1,0 +1,228 @@
+{
+  "name": "revert",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/admin/customize/site_texts/js.topic.create.json?locale=en"
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/customize/site_texts/badges.first_like.description.json?locale=en"
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/customize/site_texts/js.composer.reply.json?locale=en"
+    }
+  ],
+  "started_at": "2026-10-14T14:30:44.481419",
+  "transaction_started_at": "2026-10-14T14:30:42.862973",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "site_text": {
+          "id": "js.topic.create",
+          "value": "New Topic",
+          "status": "up_to_date",
+          "old_default": null,
+          "new_default": null,
+          "interpolation_keys": [],
+          "overridden": false,
+          "can_revert": false
+        },
+        "__rest_serializer": "1"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "site_text": {
+          "id": "badges.first_like.description",
+          "value": "Liked a post",
+          "status": "up_to_date",
+          "old_default": null,
+          "new_default": null,
+          "interpolation_keys": [],
+          "overridden": false,
+          "can_revert": false
+        },
+        "__rest_serializer": "1"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "site_text": {
+          "id": "js.composer.reply",
+          "value": "Reply",
+          "status": "up_to_date",
+          "old_default": null,
+          "new_default": null,
+          "interpolation_keys": [],
+          "overridden": false,
+          "can_revert": false
+        },
+        "__rest_serializer": "1"
+      }
+    }
+  ],
+  "changes": {
+    "translation_overrides": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 1,
+          "value": "Start a discussion",
+          "locale": "en",
+          "status": 0,
+          "created_at": "2026-10-14T14:30:42.862973",
+          "updated_at": "2026-10-14T14:30:42.862973",
+          "translation_key": "js.topic.create",
+          "original_translation": "New Topic"
+        },
+        {
+          "id": 2,
+          "value": "Liked once",
+          "locale": "en",
+          "status": 0,
+          "created_at": "2026-10-14T14:30:42.862973",
+          "updated_at": "2026-10-14T14:30:42.862973",
+          "translation_key": "badges.first_like.description",
+          "original_translation": "Liked a post"
+        }
+      ],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 112,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "2tAogNZypScdDvUqlVWKFc0lvOI=",
+            "created_at": "2026-10-14T14:30:43.542532",
+            "rotated_at": "2026-10-14T14:30:43.540581",
+            "updated_at": "2026-10-14T14:30:43.542532",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "2tAogNZypScdDvUqlVWKFc0lvOI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 112,
+            "seen_at": "2026-10-14T14:30:44.491006",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "2tAogNZypScdDvUqlVWKFc0lvOI=",
+            "created_at": "2026-10-14T14:30:43.542532",
+            "rotated_at": "2026-10-14T14:30:43.540581",
+            "updated_at": "2026-10-14T14:30:43.542532",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "2tAogNZypScdDvUqlVWKFc0lvOI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 29,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "js.topic.create",
+          "topic_id": null,
+          "new_value": "New Topic",
+          "admin_only": true,
+          "created_at": "2026-10-14T14:30:44.701614",
+          "ip_address": null,
+          "updated_at": "2026-10-14T14:30:44.701614",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "Start a discussion",
+          "target_user_id": null
+        },
+        {
+          "id": 75,
+          "email": null,
+          "action": 29,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "badges.first_like.description",
+          "topic_id": null,
+          "new_value": "Liked a post",
+          "admin_only": true,
+          "created_at": "2026-10-14T14:30:44.931786",
+          "ip_address": null,
+          "updated_at": "2026-10-14T14:30:44.931786",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "Liked once",
+          "target_user_id": null
+        },
+        {
+          "id": 76,
+          "email": null,
+          "action": 29,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "js.composer.reply",
+          "topic_id": null,
+          "new_value": "Reply",
+          "admin_only": true,
+          "created_at": "2026-10-14T14:30:45.192949",
+          "ip_address": null,
+          "updated_at": "2026-10-14T14:30:45.192949",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "Reply",
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [
+    [
+      "bulk_user_title_update",
+      {
+        "granted_badge_id": 11,
+        "action": "reset"
+      }
+    ]
+  ],
+  "next_ids": {
+    "user_histories": 74
+  },
+  "setup": [
+    "INSERT INTO translation_overrides (locale, translation_key, value, original_translation, status, created_at, updated_at) VALUES ('en', 'js.topic.create', 'Start a discussion', 'New Topic', 0, now(), now())",
+    "INSERT INTO translation_overrides (locale, translation_key, value, original_translation, status, created_at, updated_at) VALUES ('en', 'badges.first_like.description', 'Liked once', 'Liked a post', 0, now(), now())"
+  ],
+  "recorded_from": {
+    "case": "0bc61119d13da1d26a08d8aa31c520f1251cb392dc60b6783778f63998bd7f49",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

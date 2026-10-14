@@ -1,0 +1,534 @@
+{
+  "name": "index_theme",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/customize/site_texts.json?theme_id=-2&locale=en"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/customize/site_texts.json?q=answered&locale=en"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/customize/site_texts.json?overridden=true&theme_id=-2&locale=en"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/customize/site_texts.json?q=Unsolved&locale=en"
+    }
+  ],
+  "started_at": "2026-10-14T14:30:24.043655",
+  "transaction_started_at": "2026-10-14T14:30:22.983588",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "site_texts": [
+          {
+            "id": "js.theme_translations.-2.posted",
+            "value": "posted",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": "posted",
+            "overridden": false,
+            "can_revert": false,
+            "interpolation_keys": []
+          },
+          {
+            "id": "js.theme_translations.-2.solved",
+            "value": "Answered",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": "Solved",
+            "overridden": true,
+            "can_revert": true,
+            "interpolation_keys": []
+          },
+          {
+            "id": "js.theme_translations.-2.replied",
+            "value": "replied",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": "replied",
+            "overridden": false,
+            "can_revert": false,
+            "interpolation_keys": []
+          },
+          {
+            "id": "js.theme_translations.-2.unsolved",
+            "value": "Unsolved",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": "Unsolved",
+            "overridden": false,
+            "can_revert": false,
+            "interpolation_keys": []
+          },
+          {
+            "id": "js.theme_translations.-2.by_username",
+            "value": "by @%{username}",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": "by @%{username}",
+            "overridden": false,
+            "can_revert": false,
+            "interpolation_keys": [
+              "username"
+            ]
+          },
+          {
+            "id": "js.theme_translations.-2.vote_count.one",
+            "value": "%{count} vote",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": "%{count} vote",
+            "overridden": false,
+            "can_revert": false,
+            "interpolation_keys": [
+              "count"
+            ]
+          },
+          {
+            "id": "js.theme_translations.-2.like_count.one",
+            "value": "%{count} like",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": "%{count} like",
+            "overridden": false,
+            "can_revert": false,
+            "interpolation_keys": [
+              "count"
+            ]
+          },
+          {
+            "id": "js.theme_translations.-2.reply_count.one",
+            "value": "%{count} reply",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": "%{count} reply",
+            "overridden": false,
+            "can_revert": false,
+            "interpolation_keys": [
+              "count"
+            ]
+          },
+          {
+            "id": "js.theme_translations.-2.vote_count.other",
+            "value": "%{count} votes",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": "%{count} votes",
+            "overridden": false,
+            "can_revert": false,
+            "interpolation_keys": [
+              "count"
+            ]
+          },
+          {
+            "id": "js.theme_translations.-2.like_count.other",
+            "value": "%{count} likes",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": "%{count} likes",
+            "overridden": false,
+            "can_revert": false,
+            "interpolation_keys": [
+              "count"
+            ]
+          },
+          {
+            "id": "js.theme_translations.-2.reply_count.other",
+            "value": "%{count} replies",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": "%{count} replies",
+            "overridden": false,
+            "can_revert": false,
+            "interpolation_keys": [
+              "count"
+            ]
+          }
+        ],
+        "__rest_serializer": "1",
+        "extras": {
+          "themes": [
+            {
+              "id": -1,
+              "name": "Foundation",
+              "enabled": true
+            },
+            {
+              "id": -2,
+              "name": "Horizon",
+              "enabled": true
+            }
+          ],
+          "regex": ""
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "site_texts": [
+          {
+            "id": "js.theme_translations.-2.solved",
+            "value": "Answered",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": "Solved",
+            "overridden": true,
+            "can_revert": true,
+            "interpolation_keys": []
+          },
+          {
+            "id": "js.solved.no_answer.title",
+            "value": "Has your question been answered?",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "admin_js.admin.dashboard.ask_ai.outcomes.answered",
+            "value": "Answer provided",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "admin_js.admin.dashboard.sections.support.outcomes.unanswered.label",
+            "value": "Unanswered",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "admin_js.admin.dashboard.sections.support.outcomes.unanswered.tooltip",
+            "value": "The number of topics with no replies.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "admin_js.admin.dashboard.sections.support.headline.summaries.more_answers",
+            "value": "More questions are getting answered.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "admin_js.admin.dashboard.sections.support.headline.cta.unanswered",
+            "value": "Check out the unanswered topics to see which you can address.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "admin_js.admin.dashboard.sections.support.headline.summaries.more_answers_and_faster_replies",
+            "value": "More questions are getting answered, and they're getting answered faster.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "admin_js.admin.dashboard.sections.support.headline.summaries.more_answers_first_reply_time_flat",
+            "value": "More questions are getting answered, but the time to first reply is flat.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "admin_js.admin.dashboard.sections.support.headline.summaries.more_answers_but_slower_replies",
+            "value": "More questions are getting answered, but the time to first reply has increased.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "admin_js.admin.dashboard.sections.support.headline.cta.in_progress_and_unanswered",
+            "value": "Investigate the in progress and unanswered topics to make sure members are getting timely responses.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          }
+        ],
+        "__rest_serializer": "1",
+        "extras": {
+          "themes": [
+            {
+              "id": -1,
+              "name": "Foundation",
+              "enabled": true
+            },
+            {
+              "id": -2,
+              "name": "Horizon",
+              "enabled": true
+            }
+          ],
+          "regex": "answered"
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "site_texts": [
+          {
+            "id": "js.theme_translations.-2.solved",
+            "value": "Answered",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": "Solved",
+            "overridden": true,
+            "can_revert": true,
+            "interpolation_keys": []
+          }
+        ],
+        "__rest_serializer": "1",
+        "extras": {
+          "themes": [
+            {
+              "id": -1,
+              "name": "Foundation",
+              "enabled": true
+            },
+            {
+              "id": -2,
+              "name": "Horizon",
+              "enabled": true
+            }
+          ],
+          "regex": ""
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "site_texts": [
+          {
+            "id": "js.solved.topic_status_filter.unsolved",
+            "value": "unsolved",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.theme_translations.-2.unsolved",
+            "value": "Unsolved",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": "Unsolved",
+            "overridden": false,
+            "can_revert": false,
+            "interpolation_keys": []
+          },
+          {
+            "id": "js.search.advanced.statuses.unsolved",
+            "value": "are unsolved",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "solved.filter.description.unsolved",
+            "value": "Filter topics that have not been solved",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "site_settings.empty_box_on_unsolved",
+            "value": "Display an empty box next to unsolved topics",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.solved.empty_box_on_unsolved",
+            "value": "Display unsolved topic state in the topic list for supported themes",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "site_settings.assignment_status_on_unsolve",
+            "value": "When a topic is unsolved update all assignments to this status",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "discourse_solved.category_type.empty_box_on_unsolved.label",
+            "value": "Display unsolved topic state in the topic list for supported themes",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.solved.confirm_move_solution.one",
+            "value": "The post you selected is marked as the solution for this topic. If you move it, the topic will be updated to unsolved.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.solved.confirm_move_solution.other",
+            "value": "One of the posts you selected is marked as the solution for this topic. If you move them, the topic will be updated to unsolved.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "site_settings.enable_solved_shared_issues",
+            "value": "Adds a “Me too” button to unsolved topics in support categories, letting members signal they’re experiencing the same issue and opt-in to notifications about the topic's solution.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "discourse_solved.category_type.enable_shared_issues.description",
+            "value": "Adds a button to unsolved topics in this category that members can use to signal they're experiencing the same issue and opt in to notifications about the solution.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          }
+        ],
+        "__rest_serializer": "1",
+        "extras": {
+          "themes": [
+            {
+              "id": -1,
+              "name": "Foundation",
+              "enabled": true
+            },
+            {
+              "id": -2,
+              "name": "Horizon",
+              "enabled": true
+            }
+          ],
+          "regex": "Unsolved"
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 112,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "zV2ljbFqwcdcGTud/ZoMIWNMN/M=",
+            "created_at": "2026-10-14T14:30:23.422222",
+            "rotated_at": "2026-10-14T14:30:23.420647",
+            "updated_at": "2026-10-14T14:30:23.422222",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "zV2ljbFqwcdcGTud/ZoMIWNMN/M=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 112,
+            "seen_at": "2026-10-14T14:30:24.051198",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "zV2ljbFqwcdcGTud/ZoMIWNMN/M=",
+            "created_at": "2026-10-14T14:30:23.422222",
+            "rotated_at": "2026-10-14T14:30:23.420647",
+            "updated_at": "2026-10-14T14:30:23.422222",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "zV2ljbFqwcdcGTud/ZoMIWNMN/M=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO theme_translation_overrides (theme_id, locale, translation_key, value, created_at, updated_at) VALUES (-2, 'en', 'solved', 'Answered', now(), now())"
+  ],
+  "recorded_from": {
+    "case": "7120c725b8825b6a4c0c4297ee45472aba15aabfe2988e3584f655b282ab95c0",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

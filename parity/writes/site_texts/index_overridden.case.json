@@ -1,0 +1,18 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO translation_overrides (locale, translation_key, value, original_translation, status, created_at, updated_at) VALUES ('en', 'js.topic.create', 'Start a discussion', 'New Topic', 0, now(), now())",
+    "INSERT INTO translation_overrides (locale, translation_key, value, original_translation, status, created_at, updated_at) VALUES ('en', 'badges.first_like.name', 'Liked once', 'First Like', 0, now(), now())",
+    "INSERT INTO translation_overrides (locale, translation_key, value, original_translation, status, created_at, updated_at) VALUES ('en', 'js.composer.reply', 'Answer', 'Reply', 1, now(), now())",
+    "INSERT INTO translation_overrides (locale, translation_key, value, original_translation, status, created_at, updated_at) VALUES ('en', 'js.topic.filter_to.one', 'One more', 'There is <a href=\"%{basePath}/unread\">1 unread</a>', 1, now(), now())",
+    "INSERT INTO translation_overrides (locale, translation_key, value, original_translation, status, created_at, updated_at) VALUES ('de', 'js.topic.create', 'Neues Thema', 'New Topic', 0, now(), now())"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/admin/customize/site_texts.json?overridden=true&locale=en"},
+    {"method": "GET", "path": "/admin/customize/site_texts.json?q=discussion&locale=en"},
+    {"method": "GET", "path": "/admin/customize/site_texts.json?q=Create%20a%20new%20topic&locale=en"},
+    {"method": "GET", "path": "/admin/customize/site_texts.json?outdated=true&locale=en"},
+    {"method": "GET", "path": "/admin/customize/site_texts.json?q=filter_to&locale=en"},
+    {"method": "GET", "path": "/admin/customize/site_texts.json?locale=en"}
+  ]
+}

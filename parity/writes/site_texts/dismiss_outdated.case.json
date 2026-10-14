@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO translation_overrides (locale, translation_key, value, original_translation, status, created_at, updated_at) VALUES ('en', 'js.topic.create', 'Start a discussion', 'Old Topic', 1, now(), now())",
+    "INSERT INTO translation_overrides (locale, translation_key, value, original_translation, status, created_at, updated_at) VALUES ('en', 'js.composer.reply', 'Answer', 'Reply', 0, now(), now())"
+  ],
+  "requests": [
+    {"method": "PUT", "path": "/admin/customize/site_texts/js.topic.create/dismiss_outdated.json", "params": {"locale": "en"}},
+    {"method": "PUT", "path": "/admin/customize/site_texts/js.composer.reply/dismiss_outdated.json", "params": {"locale": "en"}},
+    {"method": "PUT", "path": "/admin/customize/site_texts/js.topic.title/dismiss_outdated.json", "params": {"locale": "en"}}
+  ]
+}

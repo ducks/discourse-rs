@@ -1,0 +1,11 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "PUT", "path": "/admin/customize/site_texts/js.topic.filter_to.one.json", "params": {"site_text": {"value": "There is %{unknown} and %{other_key} left", "locale": "en"}}},
+    {"method": "PUT", "path": "/admin/customize/site_texts/system_messages.welcome_user.subject_template.json", "params": {"site_text": {"value": "Welcome %{nope}", "locale": "en"}}},
+    {"method": "PUT", "path": "/admin/customize/site_texts/js.powered_by_discourse.json", "params": {"site_text": {"value": "x", "locale": "en"}}},
+    {"method": "PUT", "path": "/admin/customize/site_texts/no.such.key.json", "params": {"site_text": {"value": "x", "locale": "en"}}},
+    {"method": "PUT", "path": "/admin/customize/site_texts/js.topic.create.json", "params": {"site_text": {"value": "x", "locale": "xx"}}},
+    {"method": "PUT", "path": "/admin/customize/site_texts/js.topic.create.json", "params": {"site_text": {"value": "", "locale": "en"}}}
+  ]
+}

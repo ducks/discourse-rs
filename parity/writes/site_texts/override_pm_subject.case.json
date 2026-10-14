@@ -1,0 +1,23 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO translation_overrides (locale, translation_key, value, original_translation, status, created_at, updated_at) VALUES ('en', 'user_notifications.user_posted_pm.subject_template', '[%{site_name}] %{optional_pm}%{topic_title} from %{username}', NULL, 0, now(), now())",
+    "INSERT INTO translation_overrides (locale, translation_key, value, original_translation, status, created_at, updated_at) VALUES ('en', 'user_notifications.reply_by_email_pm', 'Reply here: %{base_url}%{url}', NULL, 0, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A private message with an overridden subject",
+        "raw": "Hello user0, this is a private message long enough to post.",
+        "archetype": "private_message",
+        "target_recipients": "user0"
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert",
+    "user_email"
+  ]
+}

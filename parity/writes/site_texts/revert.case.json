@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO translation_overrides (locale, translation_key, value, original_translation, status, created_at, updated_at) VALUES ('en', 'js.topic.create', 'Start a discussion', 'New Topic', 0, now(), now())",
+    "INSERT INTO translation_overrides (locale, translation_key, value, original_translation, status, created_at, updated_at) VALUES ('en', 'badges.first_like.description', 'Liked once', 'Liked a post', 0, now(), now())"
+  ],
+  "requests": [
+    {"method": "DELETE", "path": "/admin/customize/site_texts/js.topic.create.json?locale=en"},
+    {"method": "DELETE", "path": "/admin/customize/site_texts/badges.first_like.description.json?locale=en"},
+    {"method": "DELETE", "path": "/admin/customize/site_texts/js.composer.reply.json?locale=en"}
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "PUT", "path": "/admin/customize/site_texts/js.theme_translations.-2.solved.json", "params": {"site_text": {"value": "Answered", "locale": "en"}}},
+    {"method": "PUT", "path": "/admin/customize/site_texts/js.theme_translations.-2.solved.json", "params": {"site_text": {"value": "Done", "locale": "en"}}},
+    {"method": "DELETE", "path": "/admin/customize/site_texts/js.theme_translations.-2.solved.json?locale=en"},
+    {"method": "PUT", "path": "/admin/customize/site_texts/js.theme_translations.-2.unsolved.json", "params": {"site_text": {"value": "Unsolved", "locale": "en"}}}
+  ]
+}
