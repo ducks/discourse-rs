@@ -1,0 +1,9 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "POST", "path": "/admin/users/5/merge.json"},
+    {"method": "POST", "path": "/admin/users/5/merge.json", "params": {"target_username": "nobody"}},
+    {"method": "POST", "path": "/admin/users/999/merge.json", "params": {"target_username": "user2"}},
+    {"method": "POST", "path": "/admin/users/1/merge.json", "params": {"target_username": "user2"}}
+  ]
+}

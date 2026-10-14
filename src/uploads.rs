@@ -95,7 +95,7 @@ fn detect(bytes: &[u8]) -> Option<ImageType> {
 
 /// `ImageSizer.resize(w, h)`: within max_image_width and
 /// max_image_height, keeping the ratio.
-fn image_sizer_resize(s: &SiteSettings, w: u32, h: u32) -> Result<(i64, i64), AppError> {
+pub(crate) fn image_sizer_resize(s: &SiteSettings, w: u32, h: u32) -> Result<(i64, i64), AppError> {
     let max_w = s.get("max_image_width")?.to_i() as f64;
     let max_h = s.get("max_image_height")?.to_i() as f64;
     let (w, h) = (w as f64, h as f64);

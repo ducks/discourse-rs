@@ -24,6 +24,9 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         crate::plugins::chat::membership::DELETE_USER_MESSAGES_JOB => {
             chat_delete_user_messages(state, &job.args).await
         }
+        crate::user_merger::MERGE_USER => {
+            crate::user_merger::merge_user_job(state, &job.args).await
+        }
         crate::user_anonymizer::ANONYMIZE_USER => {
             crate::user_anonymizer::anonymize_user_job(state, &job.args).await
         }

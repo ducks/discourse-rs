@@ -1,0 +1,7 @@
+{
+  "user": "user1",
+  "setup": ["UPDATE users SET moderator = TRUE WHERE id = 3"],
+  "requests": [
+    {"method": "POST", "path": "/admin/users/5/merge.json", "params": {"target_username": "user2"}}
+  ]
+}

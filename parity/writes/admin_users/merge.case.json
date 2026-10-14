@@ -1,0 +1,22 @@
+{
+  "user": "admin",
+  "settings": {"site_contact_username": "user3", "topic_voting_enabled": true},
+  "setup": [
+    "UPDATE posts SET raw = raw || E'\\n\\nThanks @user3.', cooked = cooked || E'\\n<p>Thanks <a class=\"mention\" href=\"/u/user3\">@user3</a>.</p>' WHERE id = 36",
+    "INSERT INTO user_actions (action_type, user_id, target_topic_id, target_post_id, acting_user_id, created_at, updated_at) VALUES (7, 5, 35, 36, 3, now(), now())",
+    "INSERT INTO notifications (notification_type, user_id, data, read, created_at, updated_at, topic_id, post_number) VALUES (1, 5, '{\"original_username\":\"user1\",\"display_username\":\"user1\"}', FALSE, now(), now(), 35, 2)",
+    "INSERT INTO post_timings (topic_id, post_number, user_id, msecs) VALUES (35, 1, 5, 1500), (35, 2, 5, 700) ON CONFLICT DO NOTHING",
+    "INSERT INTO post_timings (topic_id, post_number, user_id, msecs) VALUES (35, 1, 4, 2500) ON CONFLICT DO NOTHING",
+    "INSERT INTO user_visits (user_id, visited_at, posts_read, mobile, time_read) VALUES (5, '2026-09-01', 3, TRUE, 60), (5, '2026-09-02', 1, FALSE, 10) ON CONFLICT DO NOTHING",
+    "INSERT INTO user_visits (user_id, visited_at, posts_read, mobile, time_read) VALUES (4, '2026-09-01', 2, FALSE, 30) ON CONFLICT DO NOTHING",
+    "INSERT INTO category_users (category_id, user_id, notification_level) VALUES (4, 5, 3), (3, 5, 2), (4, 4, 1) ON CONFLICT DO NOTHING",
+    "INSERT INTO muted_users (user_id, muted_user_id, created_at, updated_at) VALUES (5, 3, now(), now())",
+    "INSERT INTO user_custom_fields (user_id, name, value, created_at, updated_at) VALUES (5, 'favorite', 'tea', now(), now())",
+    "INSERT INTO user_emails (user_id, email, \"primary\", normalized_email, created_at, updated_at) VALUES (5, 'third3@example.com', FALSE, 'third3@example.com', now(), now())",
+    "INSERT INTO topic_voting_votes (topic_id, user_id, archive, created_at, updated_at) VALUES (35, 5, FALSE, now(), now()), (35, 4, FALSE, now(), now()), (38, 5, FALSE, now(), now())"
+  ],
+  "requests": [
+    {"method": "POST", "path": "/admin/users/5/merge.json", "params": {"target_username": "user2"}}
+  ],
+  "run_jobs": ["merge_user"]
+}

@@ -1642,3 +1642,66 @@ pub async fn anonymize(
     tx.commit().await?;
     Ok(Json(json!({ "success": "OK", "username": username })).into_response())
 }
+
+/// POST /admin/users/:id/merge: Admin::UsersController#merge, which
+/// enqueues the merge.
+pub async fn merge(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(user_id): Path<String>,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    let p = params::parse(uri.query(), &headers, &body);
+    if !csrf_ok(&state, &headers, &form_pairs(&p), uri.path(), "POST") {
+        return Ok(bad_csrf());
+    }
+    if !guardian.is_staff() {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    let Some(user_id) = route_user_id(&user_id) else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    let mut tx = state.pool.begin().await?;
+    let exists: bool = sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM users WHERE id = $1)")
+        .bind(user_id)
+        .fetch_one(&mut *tx)
+        .await?;
+    if !exists {
+        return Ok(super::topics::not_found_response(&state));
+    }
+    // params.require(:target_username)
+    let target_username = match p.get("target_username") {
+        None => None,
+        Some(v) => Some(
+            params::scalar(v)
+                .ok_or(crate::Unsupported("a target_username that is not a string"))?,
+        ),
+    };
+    let Some(target_username) = target_username.filter(|v| !crate::ruby::is_blank(v)) else {
+        return Ok(super::accounts::param_missing("target_username"));
+    };
+    let target: Option<i32> = sqlx::query_scalar("SELECT id FROM users WHERE username_lower = $1")
+        .bind(crate::accounts::normalize_username(&target_username)?)
+        .fetch_optional(&mut *tx)
+        .await?;
+    let Some(target) = target else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    if !crate::user_merger::can_merge_user(&mut tx, &guardian, user_id).await? {
+        return Ok(super::search::invalid_access(&state));
+    }
+    crate::jobs::enqueue(
+        &mut tx,
+        crate::user_merger::MERGE_USER,
+        json!({
+            "user_id": user_id,
+            "target_user_id": target,
+            "current_user_id": guardian.user_id(),
+        }),
+    )
+    .await?;
+    tx.commit().await?;
+    Ok(Json(json!({ "success": "OK" })).into_response())
+}
