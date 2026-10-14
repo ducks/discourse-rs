@@ -19,9 +19,32 @@ pub struct SchemeColors {
     pub danger: Color,
     pub success: Color,
     pub love: Color,
+    /// Every color of the scheme by its Sass name (`_` and `-` alike), for
+    /// those that set a variable color_transformations.scss defaults.
+    pub defined: Vec<(String, Color)>,
 }
 
 impl SchemeColors {
+    /// The scheme's own colors, every one (Sass reads `-` and `_` in a
+    /// name alike).
+    pub fn with_defined(mut self, colors: &[(String, String)]) -> SchemeColors {
+        self.defined = colors
+            .iter()
+            .filter_map(|(name, hex)| Some((name.replace('_', "-"), Color::hex(hex)?)))
+            .collect();
+        self
+    }
+
+    /// The color the scheme gives a Sass variable, if any.
+    fn defined(&self, name: &str) -> Option<&Color> {
+        let name = name.replace('_', "-");
+        self.defined
+            .iter()
+            .rev()
+            .find(|(n, _)| *n == name)
+            .map(|(_, c)| c)
+    }
+
     /// From `name → hex` pairs (a resolved scheme), each falling back to
     /// colors.scss.
     pub fn from_hex(get: impl Fn(&str) -> Option<String>) -> SchemeColors {
@@ -43,6 +66,7 @@ impl SchemeColors {
             danger: color("danger", "#c80001"),
             success: color("success", "#090"),
             love: color("love", "#fa6c8d"),
+            defined: Vec::new(),
         }
     }
 }
@@ -64,13 +88,14 @@ pub fn css(c: &SchemeColors) -> String {
     let choose_text = |l: &str, d: &str| if light { l.to_string() } else { d.to_string() };
     let hex = |s: &str| Color::hex(s).unwrap();
     let (p, s, t) = (&c.primary, &c.secondary, &c.tertiary);
+    let ov = |name: &str, computed: Color| c.defined(name).cloned().unwrap_or(computed);
 
-    let primary_very_low = diff(p, s, 97.0, -82.0);
-    let primary_low = diff(p, s, 90.0, -78.0);
-    let primary_low_mid = diff(p, s, 70.0, -45.0);
-    let primary_medium = diff(p, s, 50.0, -35.0);
-    let primary_high = diff(p, s, 30.0, -25.0);
-    let primary_very_high = diff(p, s, 15.0, -10.0);
+    let primary_very_low = ov("primary-very-low", diff(p, s, 97.0, -82.0));
+    let primary_low = ov("primary-low", diff(p, s, 90.0, -78.0));
+    let primary_low_mid = ov("primary-low-mid", diff(p, s, 70.0, -45.0));
+    let primary_medium = ov("primary-medium", diff(p, s, 50.0, -35.0));
+    let primary_high = ov("primary-high", diff(p, s, 30.0, -25.0));
+    let primary_very_high = ov("primary-very-high", diff(p, s, 15.0, -10.0));
     let primary_n = [
         (50, 97.0, -82.0),
         (100, 94.0, -80.0),
@@ -83,20 +108,23 @@ pub fn css(c: &SchemeColors) -> String {
         (800, 30.0, -25.0),
         (900, 15.0, -10.0),
     ]
-    .map(|(n, l, d)| (n, diff(p, s, l, d)));
+    .map(|(n, l, d)| (n, ov(&format!("primary-{n}"), diff(p, s, l, d))));
     let primary_n_get = |n: i32| primary_n.iter().find(|(k, _)| *k == n).unwrap().1.clone();
     let header = |percent: f64| Color::srgb_scale(&c.header_primary, &c.header_background, percent);
 
-    let secondary_low = diff(s, p, 70.0, -70.0);
-    let secondary_medium = diff(s, p, 50.0, -50.0);
-    let secondary_high = diff(s, p, 30.0, -35.0);
-    let secondary_very_high = diff(s, p, 7.0, -7.0);
+    let secondary_low = ov("secondary-low", diff(s, p, 70.0, -70.0));
+    let secondary_medium = ov("secondary-medium", diff(s, p, 50.0, -50.0));
+    let secondary_high = ov("secondary-high", diff(s, p, 30.0, -35.0));
+    let secondary_very_high = ov("secondary-very-high", diff(s, p, 7.0, -7.0));
 
-    let tertiary_very_low = diff(t, s, 90.0, -75.0);
-    let tertiary_low = diff(t, s, 85.0, -65.0);
-    let tertiary_medium = diff(t, s, 50.0, -45.0);
-    let tertiary_high = diff(t, s, 20.0, -25.0);
-    let tertiary_hover = choose(&diff(t, s, -25.0, -25.0), &diff(t, p, 20.0, 70.0));
+    let tertiary_very_low = ov("tertiary-very-low", diff(t, s, 90.0, -75.0));
+    let tertiary_low = ov("tertiary-low", diff(t, s, 85.0, -65.0));
+    let tertiary_medium = ov("tertiary-medium", diff(t, s, 50.0, -45.0));
+    let tertiary_high = ov("tertiary-high", diff(t, s, 20.0, -25.0));
+    let tertiary_hover = ov(
+        "tertiary-hover",
+        choose(&diff(t, s, -25.0, -25.0), &diff(t, p, 20.0, 70.0)),
+    );
     let tertiary_n = [
         (25, 93.0, -80.0),
         (50, 90.0, -75.0),
@@ -110,24 +138,27 @@ pub fn css(c: &SchemeColors) -> String {
         (800, 30.0, -31.0),
         (900, 20.0, -25.0),
     ]
-    .map(|(n, l, d)| (n, diff(t, s, l, d)));
+    .map(|(n, l, d)| (n, ov(&format!("tertiary-{n}"), diff(t, s, l, d))));
 
-    let quaternary_low = diff(&c.quaternary, s, 70.0, -70.0);
-    let highlight_bg = diff(&c.highlight, s, 70.0, -80.0);
-    let highlight_low = diff(&c.highlight, s, 70.0, -80.0);
-    let highlight_medium = diff(&c.highlight, s, 50.0, -55.0);
-    let highlight_high = diff(&c.highlight, s, -50.0, -10.0);
-    let danger_low = diff(&c.danger, s, 90.0, -68.0);
-    let danger_low_mid = diff(&c.danger.with_alpha(0.7), s, 50.0, -60.0);
-    let danger_medium = diff(&c.danger, s, 30.0, -35.0);
-    let danger_hover = diff(&c.danger, s, -20.0, -20.0);
-    let success_very_low = diff(&c.success, s, 90.0, -70.0);
-    let success_low = diff(&c.success, s, 80.0, -60.0);
-    let success_medium = diff(&c.success, s, 50.0, -40.0);
-    let success_hover = diff(&c.success, s, -20.0, -20.0);
-    let love_low = diff(&c.love, s, 85.0, -60.0);
-    let selected_hover = diff(&c.selected, s, 20.0, 20.0);
-    let blend_primary_secondary_5 = Color::srgb_scale(p, s, 5.0);
+    let quaternary_low = ov("quaternary-low", diff(&c.quaternary, s, 70.0, -70.0));
+    let highlight_bg = ov("highlight-bg", diff(&c.highlight, s, 70.0, -80.0));
+    let highlight_low = ov("highlight-low", diff(&c.highlight, s, 70.0, -80.0));
+    let highlight_medium = ov("highlight-medium", diff(&c.highlight, s, 50.0, -55.0));
+    let highlight_high = ov("highlight-high", diff(&c.highlight, s, -50.0, -10.0));
+    let danger_low = ov("danger-low", diff(&c.danger, s, 90.0, -68.0));
+    let danger_low_mid = ov(
+        "danger-low-mid",
+        diff(&c.danger.with_alpha(0.7), s, 50.0, -60.0),
+    );
+    let danger_medium = ov("danger-medium", diff(&c.danger, s, 30.0, -35.0));
+    let danger_hover = ov("danger-hover", diff(&c.danger, s, -20.0, -20.0));
+    let success_very_low = ov("success-very-low", diff(&c.success, s, 90.0, -70.0));
+    let success_low = ov("success-low", diff(&c.success, s, 80.0, -60.0));
+    let success_medium = ov("success-medium", diff(&c.success, s, 50.0, -40.0));
+    let success_hover = ov("success-hover", diff(&c.success, s, -20.0, -20.0));
+    let love_low = ov("love-low", diff(&c.love, s, 85.0, -60.0));
+    let selected_hover = ov("selected-hover", diff(&c.selected, s, 20.0, 20.0));
+    let blend_primary_secondary_5 = ov("blend-primary-secondary-5", Color::srgb_scale(p, s, 5.0));
 
     // variables.scss
     let google = hex("#fff");
@@ -147,7 +178,14 @@ pub fn css(c: &SchemeColors) -> String {
     let opacity = |l: f64, d: f64| number(if light { l } else { d });
 
     let mut vars: Vec<(String, String)> = Vec::new();
-    let mut put = |name: &str, value: String| vars.push((name.to_string(), value));
+    // A scheme color named like a variable here sets it (the importer's
+    // `$name: #hex !default` comes before color_transformations' own).
+    let mut put = |name: &str, value: String| {
+        let value = c
+            .defined(name.trim_start_matches("--"))
+            .map_or(value, |color| color.to_css());
+        vars.push((name.to_string(), value))
+    };
     let scheme = if light { "light" } else { "dark" };
     put("--scheme-type", scheme.to_string());
     put("--primary", p.to_css());
