@@ -1,0 +1,12 @@
+{
+  "user": "user3",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/2/slow_mode",
+      "params": {
+        "seconds": "600"
+      }
+    }
+  ]
+}

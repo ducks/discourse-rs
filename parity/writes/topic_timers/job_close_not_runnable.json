@@ -1,0 +1,28 @@
+{
+  "name": "job_close_not_runnable",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-14T00:21:56.44889",
+  "transaction_started_at": "2026-10-14T00:21:53.319929",
+  "responses": [],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO topic_timers (id, execute_at, status_type, user_id, created_at, updated_at, public_type, type, timerable_id, based_on_last_post, duration_minutes, category_id) VALUES (9601, now() + interval '1 hour', 1, 1, now() - interval '1 hour', now() - interval '1 hour', TRUE, 'TopicTimer', 35, FALSE, NULL, NULL)"
+  ],
+  "enqueue": [
+    [
+      "close_topic",
+      {
+        "topic_timer_id": 9601
+      }
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "5c39b59c03aec9e82c8b0ad5ec0a285924bd94d9f9a804fc794a20d8e666a0cb",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

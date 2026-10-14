@@ -383,6 +383,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/t/{slug}/status", put(topic_status::status))
         // TopicsController#timer; {slug} holds the topic id.
         .route("/t/{slug}/timer", post(topic_timer::timer))
+        .route("/t/{slug}/slow_mode", put(topic_timer::slow_mode))
         // {slug} holds the topic id.
         .route("/t/{slug}/archive-message", put(archive_message::archive))
         .route("/t/{slug}/invite", post(pm_invite::invite))

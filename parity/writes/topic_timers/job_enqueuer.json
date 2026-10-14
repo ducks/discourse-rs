@@ -1,0 +1,64 @@
+{
+  "name": "job_enqueuer",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-14T00:07:17.554648",
+  "transaction_started_at": "2026-10-14T00:07:16.501024",
+  "responses": [],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO topic_timers (id, execute_at, status_type, user_id, created_at, updated_at, public_type, type, timerable_id, based_on_last_post, duration_minutes, category_id) VALUES (9601, now() - interval '1 minute', 1, 1, now() - interval '1 hour', now() - interval '1 hour', TRUE, 'TopicTimer', 35, FALSE, NULL, NULL)",
+    "INSERT INTO topic_timers (id, execute_at, status_type, user_id, created_at, updated_at, public_type, type, timerable_id, based_on_last_post, duration_minutes, category_id) VALUES (9602, now() - interval '1 minute', 8, 1, now() - interval '1 hour', now() - interval '1 hour', TRUE, 'TopicTimer', 38, FALSE, NULL, NULL)",
+    "INSERT INTO topic_timers (id, execute_at, status_type, user_id, created_at, updated_at, public_type, type, timerable_id, based_on_last_post, duration_minutes, category_id) VALUES (9603, now() + interval '1 day', 2, 1, now() - interval '1 hour', now() - interval '1 hour', TRUE, 'TopicTimer', 37, FALSE, NULL, NULL)",
+    "INSERT INTO topic_timers (id, execute_at, status_type, user_id, created_at, updated_at, public_type, type, timerable_id, based_on_last_post, duration_minutes, category_id) VALUES (9604, now() - interval '1 minute', 5, 1, now() - interval '1 hour', now() - interval '1 hour', FALSE, 'TopicTimer', 39, FALSE, NULL, NULL)",
+    "INSERT INTO topic_timers (id, execute_at, status_type, user_id, created_at, updated_at, public_type, type, timerable_id, based_on_last_post, duration_minutes, category_id) VALUES (9605, now() - interval '1 minute', 6, 1, now() - interval '1 hour', now() - interval '1 hour', TRUE, 'TopicTimer', 41, FALSE, NULL, NULL)",
+    "INSERT INTO topic_timers (id, execute_at, status_type, user_id, created_at, updated_at, public_type, type, timerable_id, based_on_last_post, duration_minutes, category_id) VALUES (9606, now() - interval '1 minute', 9, 1, now() - interval '1 hour', now() - interval '1 hour', FALSE, 'TopicTimer', 39, FALSE, NULL, NULL)",
+    "INSERT INTO topic_timers (id, execute_at, status_type, user_id, created_at, updated_at, public_type, type, timerable_id, based_on_last_post, duration_minutes, category_id) VALUES (9607, now() - interval '1 minute', 7, 1, now() - interval '1 hour', now() - interval '1 hour', TRUE, 'TopicTimer', 34, FALSE, 60, NULL)"
+  ],
+  "enqueue": [
+    [
+      "topic_timer_enqueuer",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [
+    [
+      "close_topic",
+      {
+        "topic_timer_id": 9601
+      }
+    ],
+    [
+      "close_topic",
+      {
+        "topic_timer_id": 9602,
+        "silent": true
+      }
+    ],
+    [
+      "bump_topic",
+      {
+        "topic_timer_id": 9605
+      }
+    ],
+    [
+      "clear_slow_mode",
+      {
+        "topic_timer_id": 9606
+      }
+    ],
+    [
+      "delete_replies",
+      {
+        "topic_timer_id": 9607
+      }
+    ]
+  ],
+  "recorded_from": {
+    "case": "4442cce61902577e5fdd8a221d57891b80f285c059fd51c1966be6d158a9d527",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

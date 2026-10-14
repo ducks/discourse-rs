@@ -32,6 +32,9 @@ pub enum Status {
     Visible,
     Pinned,
     PinnedGlobally,
+    /// `autoclosed`: the timer jobs' close and open, not a status the
+    /// controller takes.
+    Autoclosed,
 }
 
 impl Status {
@@ -54,6 +57,7 @@ impl Status {
             Status::Visible => "visible",
             Status::Pinned => "pinned",
             Status::PinnedGlobally => "pinned_globally",
+            Status::Autoclosed => "autoclosed",
         }
     }
 }
@@ -110,7 +114,7 @@ pub async fn update(
             guardian.can_moderate(can_see)
                 || guardian.can_perform_action_available_to_group_moderators(s, can_see)?
         }
-        Status::PinnedGlobally => guardian.can_moderate(can_see),
+        Status::PinnedGlobally | Status::Autoclosed => guardian.can_moderate(can_see),
     };
     if !allowed {
         return Ok(Outcome::Forbidden);
@@ -118,13 +122,14 @@ pub async fn update(
     let user = guardian
         .user()
         .ok_or(Unsupported("changing a topic's status anonymously"))?;
-    apply(conn, ctx, topic.id, user.id, status, enabled, until).await?;
+    apply(conn, ctx, topic.id, user.id, status, enabled, until, false).await?;
     Ok(Outcome::Done)
 }
 
 /// `Topic#update_status(status, enabled, user)`: TopicStatusUpdater, the
 /// staff action log, and a closed message's group archives, for a topic
 /// that exists.
+#[allow(clippy::too_many_arguments)]
 pub async fn apply(
     conn: &mut PgConnection,
     ctx: &Ctx<'_>,
@@ -133,6 +138,7 @@ pub async fn apply(
     status: Status,
     enabled: bool,
     until: Option<&str>,
+    silent: bool,
 ) -> Result<(), AppError> {
     let s = ctx.settings;
     let topic: Topic =
@@ -167,8 +173,11 @@ pub async fn apply(
             .await?;
             true
         }
-        Status::Closed | Status::Archived | Status::Visible => {
-            let column = status.name();
+        Status::Closed | Status::Archived | Status::Visible | Status::Autoclosed => {
+            let column = match status {
+                Status::Autoclosed => "closed",
+                _ => status.name(),
+            };
             sqlx::query(&format!(
                 "UPDATE topics SET {column} = $2 WHERE id = $1 AND {column} = NOT $2"
             ))
@@ -240,7 +249,7 @@ pub async fn apply(
     }
     // The public timer: closing finishes close timers, opening finishes
     // the open timer and takes the category's auto close again.
-    if topic_timer.is_some() && status == Status::Closed {
+    if topic_timer.is_some() && matches!(status, Status::Closed | Status::Autoclosed) {
         use crate::topic_timer::{delete_topic_timer, types};
         let by = Some(user_id);
         if enabled {
@@ -258,7 +267,11 @@ pub async fn apply(
         }
     }
     // Featured topics go when a topic is closed, archived or unlisted.
-    if (enabled && matches!(status, Status::Closed | Status::Archived))
+    if (enabled
+        && matches!(
+            status,
+            Status::Closed | Status::Archived | Status::Autoclosed
+        ))
         || (!enabled && status == Status::Visible)
     {
         sqlx::query("DELETE FROM category_featured_topics WHERE topic_id = $1")
@@ -280,16 +293,25 @@ pub async fn apply(
             status.name(),
             if enabled { "enabled" } else { "disabled" }
         );
-        small_action::add(
+        let message = match status {
+            Status::Autoclosed => Some(
+                autoclosed_message(&mut *conn, ctx, topic.id, enabled, topic_timer.as_ref())
+                    .await?,
+            ),
+            _ => None,
+        };
+        small_action::add_with_message(
             &mut *conn,
             ctx,
             &SmallAction {
                 user_id,
                 topic_id: topic.id,
                 action_code: &action_code,
-                bump: status == Status::Closed && !enabled,
+                bump: matches!(status, Status::Closed | Status::Autoclosed) && !enabled,
                 who: None,
             },
+            message.as_deref(),
+            silent,
         )
         .await?;
     }
@@ -323,7 +345,10 @@ pub async fn apply(
     }
     // Topic#update_status: a message closed is archived for each of the
     // closer's groups it is to (with no acting user).
-    if enabled && status == Status::Closed && topic.archetype == "private_message" {
+    if enabled
+        && matches!(status, Status::Closed | Status::Autoclosed)
+        && topic.archetype == "private_message"
+    {
         let groups: Vec<i32> = sqlx::query_scalar(
             "SELECT groups.id FROM groups \
              INNER JOIN topic_allowed_groups ON groups.id = topic_allowed_groups.group_id \
@@ -340,6 +365,46 @@ pub async fn apply(
         }
     }
     Ok(())
+}
+
+/// TopicStatusUpdater#message_for an autoclosed change: how long the
+/// topic stayed open (or closed), from the timer's duration when based
+/// on the last post, else since the timer (or the topic) was created.
+async fn autoclosed_message(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    topic_id: i32,
+    enabled: bool,
+    timer: Option<&crate::topic_timer::Timer>,
+) -> Result<String, AppError> {
+    let lastpost = timer.is_some_and(|t| t.based_on_last_post);
+    let key = format!(
+        "topic_statuses.autoclosed_{}{}",
+        if enabled { "enabled" } else { "disabled" },
+        if lastpost { "_lastpost" } else { "" }
+    );
+    let now = crate::clock::now_naive();
+    let seconds: f64 = match timer {
+        Some(t) if t.based_on_last_post => f64::from(t.duration_minutes.unwrap_or(0)) * 60.0,
+        Some(t) => (now - t.created_at).num_microseconds().unwrap_or(0) as f64 / 1e6,
+        None => {
+            let created: chrono::NaiveDateTime =
+                sqlx::query_scalar("SELECT created_at FROM topics WHERE id = $1")
+                    .bind(topic_id)
+                    .fetch_one(&mut *conn)
+                    .await?;
+            (now - created).num_microseconds().unwrap_or(0) as f64 / 1e6
+        }
+    };
+    let minutes = (seconds / 60.0).round() as i64;
+    // Duration / Duration divides integers.
+    Ok(if minutes * 60 >= 2 * 86_400 {
+        ctx.t_count(&format!("{key}_days"), minutes * 60 / 86_400)
+    } else if minutes / 60 >= 2 {
+        ctx.t_count(&format!("{key}_hours"), minutes / 60)
+    } else {
+        ctx.t_count(&format!("{key}_minutes"), minutes)
+    })
 }
 
 /// The response's body: success, with `TopicTimer.find_by(topic:)`, any

@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/t/9999/slow_mode",
+      "params": {
+        "seconds": "600"
+      }
+    }
+  ]
+}

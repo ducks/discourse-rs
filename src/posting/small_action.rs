@@ -35,7 +35,39 @@ pub async fn add(
     ctx: &Ctx<'_>,
     action: &SmallAction<'_>,
 ) -> Result<i32, AppError> {
+    add_with_message(conn, ctx, action, None, false).await
+}
+
+/// `add_moderator_post(user, message, post_type: small_action, silent:)`:
+/// the small action with a raw message (cooked, its words counted), and
+/// `silent` leaving the topic's bump alone.
+pub async fn add_with_message(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    action: &SmallAction<'_>,
+    message: Option<&str>,
+    silent: bool,
+) -> Result<i32, AppError> {
     let (topic_id, user_id) = (action.topic_id, action.user_id);
+    let raw = message.unwrap_or("").trim_end().to_string();
+    let cooked = if raw.is_empty() {
+        String::new()
+    } else {
+        crate::pretty_text::cook(
+            ctx.host,
+            &raw,
+            &crate::pretty_text::MarkdownOptions {
+                topic_id: Some(i64::from(topic_id)),
+                post_id: None,
+                user_id: Some(i64::from(user_id)),
+                force_quote_link: false,
+                omit_nofollow: false,
+                chat: false,
+            },
+        )
+        .await?
+    };
+    let words = super::text::word_count(&raw);
     let (archetype, category_id): (String, Option<i32>) =
         sqlx::query_as("SELECT archetype, category_id FROM topics WHERE id = $1")
             .bind(topic_id)
@@ -69,7 +101,7 @@ pub async fn add(
         "INSERT INTO posts (user_id, topic_id, post_number, raw, cooked, post_type, action_code, created_at, \
                             updated_at, last_editor_id, word_count, sort_order, last_version_at, baked_at, \
                             baked_version, wiki, quote_count) \
-         VALUES ($1, $2, $3, '', '', $4, $5, clock_timestamp(), clock_timestamp(), $1, 0, $3, \
+         VALUES ($1, $2, $3, $7, $8, $4, $5, clock_timestamp(), clock_timestamp(), $1, $9, $3, \
                  clock_timestamp(), clock_timestamp(), $6, FALSE, 0) \
          RETURNING id, created_at",
     )
@@ -79,6 +111,9 @@ pub async fn add(
     .bind(post_types::SMALL_ACTION)
     .bind(action.action_code)
     .bind(BAKED_VERSION)
+    .bind(&raw)
+    .bind(&cooked)
+    .bind(words)
     .fetch_one(&mut *conn)
     .await?;
     sqlx::query(
@@ -203,7 +238,7 @@ pub async fn add(
     )
     .bind(topic_id)
     .bind(created_at)
-    .bind(action.bump)
+    .bind(action.bump && !silent)
     .execute(&mut *conn)
     .await?;
     crate::topic_timer::update_topic_auto_close(&mut *conn, ctx, topic_id).await?;
