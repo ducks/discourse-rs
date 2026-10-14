@@ -179,6 +179,12 @@
         Discourse.highlightSyntax(cooked);
       });
     }
+    // chat-plugin-decorators' local dates.
+    if (window.Discourse && Discourse.applyLocalDates) {
+      channel.querySelectorAll(".chat-cooked").forEach(function (cooked) {
+        Discourse.applyLocalDates(cooked);
+      });
+    }
   }
 
   function filterCards(select) {

@@ -1,0 +1,77 @@
+/* discourse-local-dates's discourse-local-dates.scss, as Rails compiles it. */
+
+/* discourse-local-dates.scss:2 */
+.discourse-local-date svg,
+.discourse-local-date span {
+  pointer-events: none;
+}
+/* discourse-local-dates.scss:7 */
+.discourse-local-date.cooked-date {
+  color: var(--primary);
+  cursor: pointer;
+  border-bottom: 1px dashed var(--primary-medium);
+}
+/* discourse-local-dates.scss:12 */
+.discourse-local-date.cooked-date .d-icon {
+  color: var(--primary);
+}
+/* discourse-local-dates.scss:16 */
+.discourse-local-date.cooked-date.past {
+  border-bottom-color: var(--primary-low-mid);
+}
+/* discourse-local-dates.scss:20 */
+.discourse-local-date.cooked-date.past[data-countdown] {
+  color: var(--primary-medium);
+}
+/* discourse-local-dates.scss:26 */
+.locale-dates-previews {
+  max-width: 250px;
+}
+/* discourse-local-dates.scss:29 */
+.locale-dates-previews .preview {
+  display: flex;
+  flex-direction: column;
+  padding: 5px;
+  margin: 0;
+}
+/* discourse-local-dates.scss:35 */
+.locale-dates-previews .preview .timezone {
+  font-weight: 700;
+}
+/* discourse-local-dates.scss:39 */
+.locale-dates-previews .preview.current {
+  background: var(--tertiary-low);
+}
+/* discourse-local-dates.scss:45 */
+.download-calendar {
+  text-align: right;
+  cursor: pointer;
+  margin-top: .5em;
+}
+/* discourse-local-dates.scss:51 */
+.composer-local-date {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-half);
+  padding-inline-end: var(--space-half);
+}
+/* discourse-local-dates.scss:59 */
+.composer-local-date__edit-button {
+  padding: var(--space-half);
+  line-height: 1;
+  border: none;
+  border-radius: var(--d-border-radius);
+  background: none;
+  color: var(--primary-low-mid);
+  cursor: pointer;
+}
+/* discourse-local-dates.scss:68 */
+.composer-local-date__edit-button:hover {
+  color: var(--primary);
+}
+/* discourse-local-dates.scss:73 */
+.composer-local-date__edit-button:focus-visible {
+  outline: none;
+  background: var(--d-hover);
+  color: var(--primary);
+}

@@ -149,6 +149,13 @@ ICONS=(
   trophy
   user-pen
   user-plus
+  # discourse-local-dates: the date, its preview and the calendar modal.
+  earth-americas
+  file
+  download
+  fab-google
+  fab-microsoft
+  fab-apple
 )
 
 root="$(cd "$(dirname "$0")/.." && pwd)"

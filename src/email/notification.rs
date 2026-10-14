@@ -774,6 +774,11 @@ pub(crate) fn format_for_email(
         append(&link, new_text(&label));
         replace_with(&details, vec![new_text(&format!("{summary} ")), link]);
     }
+    // reduce_cooked: discourse-local-dates' email previews, after
+    // discourse-details' (the plugins' load order).
+    if crate::plugins::local_dates::enabled(urls.settings)? {
+        crate::plugins::local_dates::reduce_cooked(&dom);
+    }
     let base_no_prefix = urls.base_url_no_prefix()?;
     let base_path = urls.config.globals.relative_url_root();
     let mut stack = vec![dom.document.clone()];

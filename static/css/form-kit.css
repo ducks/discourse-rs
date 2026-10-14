@@ -1,0 +1,373 @@
+/* form-kit's fieldset, container, field and radio and checkbox controls
+   (form-kit/*.scss), and download-calendar.scss, as Rails compiles them
+   into common.css: the calendar modal's form (static/js/local-dates.js). */
+
+/* _fieldset.scss:2 */
+.form-kit__fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+}
+/* _fieldset.scss:7 */
+.form-kit__fieldset.--inline {
+  flex-flow: row wrap;
+  align-items: center;
+  gap: .5rem 1.5rem;
+}
+/* _fieldset.scss:12 */
+.form-kit__fieldset.--inline>:not(.form-kit__field) {
+  flex-basis: 100%;
+}
+/* _fieldset.scss:18 */
+.form-kit__fieldset-title {
+  display: flex;
+  align-items: center;
+  margin: 0 0 .25rem;
+  font-size: var(--font-down-1-rem);
+  color: var(--primary);
+}
+/* _fieldset.scss:26 */
+.form-kit__fieldset-description {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  color: var(--primary);
+}
+/* _container.scss:3 */
+.form-kit__container {
+  display: flex;
+  gap: .25rem;
+  flex-direction: column;
+  align-items: flex-start;
+}
+/* _container.scss:9 */
+.form-kit__container.--full {
+  width: 100%;
+}
+/* _container.scss:3 */
+@media (width < 40rem) {
+  .form-kit__container {
+    width: 100%;
+  }
+}
+/* _container.scss:18 */
+.form-kit__container.--column .form-kit__container-content {
+  flex-direction: column;
+}
+/* _container.scss:23 */
+.form-kit__container-title {
+  display: inline;
+  gap: .25em;
+  margin: 0;
+  font-size: var(--font-down-1-rem);
+  color: var(--primary);
+  font-weight: 600 !important;
+}
+/* _container.scss:32 */
+.form-kit__container-subtitle {
+  display: flex;
+  align-items: center;
+  gap: .25em;
+  margin: 0;
+  font-size: var(--font-down-1-rem);
+  color: var(--primary-medium);
+}
+/* _container.scss:40 */
+.form-kit__container-subtitle>* {
+  margin: 0;
+}
+/* _container.scss:45 */
+.form-kit__container-optional {
+  font-size: var(--font-down-2-rem);
+  color: var(--primary-high-or-secondary-low);
+  font-weight: normal;
+}
+/* _container.scss:51 */
+.form-kit__container-content {
+  display: flex;
+  gap: .25em;
+  flex-direction: row;
+  align-items: flex-start;
+  max-width: 100%;
+  width: var(--form-kit-medium-input);
+}
+/* _container.scss:51 */
+@media (width < 40rem) {
+  .form-kit__container-content {
+    width: 100%;
+  }
+}
+/* _container.scss:68 */
+.--small .form-kit__container-title,
+.--small .form-kit__container-description,
+.--small .form-kit__container-content {
+  width: var(--form-kit-small-input);
+}
+/* _container.scss:73 */
+@media (width >= 40rem) {
+  .--medium .form-kit__container-title,
+  .--medium .form-kit__container-description,
+  .--medium .form-kit__container-content {
+    width: var(--form-kit-medium-input);
+  }
+}
+/* _container.scss:77 */
+@media (width >= 40rem) {
+  .--large .form-kit__container-title,
+  .--large .form-kit__container-description,
+  .--large .form-kit__container-content {
+    width: var(--form-kit-large-input);
+  }
+}
+/* _container.scss:81 */
+@media (width >= 40rem) {
+  .--max .form-kit__container-title,
+  .--max .form-kit__container-description,
+  .--max .form-kit__container-content {
+    max-width: var(--form-kit-max-input);
+    width: 100%;
+  }
+}
+/* _container.scss:86 */
+@media (width >= 40rem) {
+  .--full .form-kit__container-title,
+  .--full .form-kit__container-description,
+  .--full .form-kit__container-content {
+    width: 100%;
+    min-width: var(--form-kit-small-input);
+  }
+}
+/* _container.scss:99 */
+.form-kit__container-title.--small,
+.form-kit__container-description.--small,
+.form-kit__container-content.--small {
+  width: var(--form-kit-small-input);
+}
+/* _container.scss:104 */
+@media (width >= 40rem) {
+  .form-kit__container-title.--medium,
+  .form-kit__container-description.--medium,
+  .form-kit__container-content.--medium {
+    width: var(--form-kit-medium-input);
+  }
+}
+/* _container.scss:108 */
+@media (width >= 40rem) {
+  .form-kit__container-title.--large,
+  .form-kit__container-description.--large,
+  .form-kit__container-content.--large {
+    width: var(--form-kit-large-input);
+  }
+}
+/* _container.scss:112 */
+@media (width >= 40rem) {
+  .form-kit__container-title.--max,
+  .form-kit__container-description.--max,
+  .form-kit__container-content.--max {
+    max-width: var(--form-kit-max-input);
+    width: 100%;
+  }
+}
+/* _container.scss:117 */
+@media (width >= 40rem) {
+  .form-kit__container-title.--full,
+  .form-kit__container-description.--full,
+  .form-kit__container-content.--full {
+    width: 100%;
+    min-width: var(--form-kit-small-input);
+  }
+}
+/* _control-checkbox.scss:2 */
+.form-kit__control-checkbox {
+  position: absolute;
+  opacity: 0;
+}
+/* _control-checkbox.scss:6 */
+.form-kit__control-checkbox-label {
+  position: relative;
+  display: flex;
+  gap: .75em;
+  margin: 0;
+  font-weight: normal !important;
+  color: var(--primary);
+  font-size: var(--font-down-1-rem);
+  cursor: pointer;
+}
+/* _control-checkbox.scss:16 */
+.form-kit__field[data-disabled] .form-kit__control-checkbox-label {
+  cursor: not-allowed;
+}
+/* _control-checkbox.scss:22 */
+.form-kit__control-checkbox-checkmark {
+  width: 1.25em;
+  height: 1.25em;
+  border: 2px solid var(--primary-low-mid);
+  border-radius: 5px;
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  position: relative;
+  box-sizing: border-box;
+  background: var(--secondary);
+  flex-shrink: 0;
+  overflow: hidden;
+  transition: border .2s ease;
+}
+/* _control-checkbox.scss:37 */
+.form-kit__control-checkbox-checkmark::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 50%;
+  height: 50%;
+  background: var(--tertiary);
+  border-radius: 50%;
+  transition: transform .35s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0);
+}
+/* _control-checkbox.scss:51 */
+.form-kit__control-checkbox-checkmark .d-icon {
+  display: none;
+  width: 75%;
+  height: 75%;
+}
+/* _control-checkbox.scss:58 */
+.form-kit__control-checkbox-content {
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+}
+/* _control-checkbox.scss:64 */
+.form-kit__control-checkbox-description {
+  color: var(--primary-medium);
+}
+/* _control-checkbox.scss:67 */
+.form-kit__control-checkbox-description:empty {
+  display: none;
+}
+/* _control-checkbox.scss:73 */
+.form-kit__control-checkbox-label:hover .form-kit__control-checkbox-checkmark {
+  border-color: var(--tertiary);
+}
+/* _control-checkbox.scss:77 */
+.form-kit__control-checkbox:checked+.form-kit__control-checkbox-checkmark {
+  border-color: var(--tertiary-low);
+}
+/* _control-checkbox.scss:80 */
+.form-kit__control-checkbox:checked+.form-kit__control-checkbox-checkmark::before {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(3);
+}
+/* _control-checkbox.scss:85 */
+.form-kit__control-checkbox:checked+.form-kit__control-checkbox-checkmark .d-icon {
+  display: initial;
+  color: var(--secondary);
+}
+/* _control-radio.scss:1 */
+.form-kit__control-radio-label {
+  display: flex;
+  gap: .5em;
+  font-weight: 500 !important;
+  margin: 0;
+  color: var(--primary);
+  font-size: var(--font-down-1-rem);
+}
+/* _control-radio.scss:9 */
+.form-kit__field[data-disabled] .form-kit__control-radio-label {
+  cursor: not-allowed;
+}
+/* _control-radio.scss:13 */
+.form-kit__control-radio-label input[type=radio] {
+  margin-right: 0;
+}
+/* _control-radio.scss:18 */
+.form-kit__control-radio-content {
+  display: flex;
+  flex-direction: column;
+}
+/* _control-radio.scss:23 */
+.form-kit__control-radio-description {
+  color: var(--primary-medium);
+  font-size: var(--font-down-1-rem);
+}
+/* _control-radio.scss:28 */
+.form-kit__inline-radio {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+}
+/* _control-radio.scss:33 */
+.form-kit__inline-radio input[type=radio] {
+  margin-right: 0;
+}
+/* _field.scss:4 */
+.form-kit__field .form-kit__container-content {
+  flex-direction: column;
+}
+/* _field.scss:11 */
+.form-kit__field-composer .form-kit__container-content,
+.form-kit__field-code .form-kit__container-content,
+.form-kit__field-image .form-kit__container-content {
+  min-width: var(--form-kit-large-input);
+}
+/* _field.scss:18 */
+@media (width >= 40rem) {
+  .form-kit__field-textarea:not(.--full) .form-kit__container-content {
+    min-width: var(--form-kit-large-input);
+    width: fit-content !important;
+  }
+}
+/* _field.scss:25 */
+.form-kit__field-toggle {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+/* _field.scss:25 */
+@media (width >= 40rem) {
+  .form-kit__field-toggle {
+    width: var(--form-kit-medium-input);
+  }
+}
+/* _field.scss:34 */
+.form-kit__field-toggle .form-kit__container-content {
+  align-items: flex-end;
+}
+/* _field.scss:38 */
+.form-kit__field-toggle .form-kit__container-title {
+  padding: 0;
+}
+/* _field.scss:43 */
+.form-kit__field .form-kit__container-description {
+  margin: 0;
+  font-size: var(--font-down-1);
+  color: var(--primary-medium);
+}
+/* _field.scss:48 */
+.form-kit__field .form-kit__container-description pre,
+.form-kit__field .form-kit__container-description code {
+  font-size: var(--font-down-2);
+}
+/* _field.scss:54 */
+.form-kit__field .form-kit__container-help-text {
+  margin: 0;
+  font-size: var(--font-down-1);
+  color: var(--primary-medium);
+}
+/* _form-kit.scss:1 */
+.form-kit {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5em;
+  align-items: flex-start;
+}
+/* _form-kit.scss:7 */
+.form-kit .alert {
+  margin-bottom: 0;
+}
+/* download-calendar.scss:1 */
+.download-calendar {
+  color: var(--primary-med-or-secondary-med);
+}

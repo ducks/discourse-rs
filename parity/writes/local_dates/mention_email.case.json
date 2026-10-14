@@ -1,0 +1,17 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "@user0 the call is at [date=2026-10-20 time=10:00:00 timezone=\"Europe/Paris\"], and the trip [date-range from=2026-10-21 to=2026-10-22 timezone=\"America/New_York\"]."
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert",
+    "user_email"
+  ]
+}

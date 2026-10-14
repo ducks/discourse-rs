@@ -1,0 +1,17 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/posts/36.json",
+      "params": {
+        "post": {
+          "raw": "Meet [date=2026-10-20 time=10:00:00 timezone=\"Europe/Paris\"] until [date-range from=2026-10-21 to=2026-10-22 timezone=\"America/New_York\"], every week [date=2026-10-06 time=09:30:00 timezone=\"Etc/UTC\" recurring=\"1.weeks\" format=\"LLL\"].\n\n[quote]\nNot this one: [date=2027-01-01 timezone=\"UTC\"]\n[/quote]"
+        }
+      }
+    }
+  ],
+  "run_jobs": [
+    "process_post"
+  ]
+}
