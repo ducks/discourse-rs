@@ -236,10 +236,14 @@ Bugs or silent gaps in what is merged, small and independent.
     refused),
     79. ~~`feat/user-merger`~~ (done) L (a source user with posts is
     refused until 79b)
-79b. `feat/post-owner-changer` M: PostOwnerChanger (each post revised to
-    its new owner by PostRevisor's owner change, the new owner's like
-    destroyed, topic users, statistics and last poster), which merging a
-    user with posts and the admin's change-owner route need
+79b. ~~`feat/post-owner-changer`~~ (done) M: PostOwnerChanger (each post
+    revised to its new owner by PostRevisor's owner change, the new
+    owner's like destroyed, topic users, statistics and last poster),
+    merging a user with posts and POST /t/:id/change-owner (a first post
+    without its author, category definition posts, a raw TextCleaner
+    would change, staff_edit_locks_post, review_every_post for
+    non-staff editors, slow mode for non-staff and the og image
+    regeneration on a like count change refused)
 
 [users-digests-dnd]
 

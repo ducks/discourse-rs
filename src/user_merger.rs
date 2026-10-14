@@ -5,15 +5,15 @@
 //! username site settings repointed, the users' and profiles' columns
 //! combined, the plugins' `merging_users` listeners (poll, topic voting,
 //! gamification), the stats recounted, then the source destroyed through
-//! UserDestroyer (quietly, as system) and the merge logged.
+//! UserDestroyer (quietly, as system) and the merge logged. The source's
+//! posts go to the target through PostOwnerChanger.
 //!
-//! Refused: a source with posts (PostOwnerChanger, which revises each
-//! post to its new owner, is not ported), and the `/merge_user` progress
+//! Refused: what PostOwnerChanger refuses, and the `/merge_user` progress
 //! messages' AdminDetailedUserSerializer payload where the port cannot
 //! serialize the user.
 
 use serde_json::{Value, json};
-use sqlx::PgConnection;
+use sqlx::{PgConnection, PgPool};
 
 use crate::guardian::Guardian;
 use crate::posting::Ctx;
@@ -108,8 +108,67 @@ async fn exec(
     Ok(())
 }
 
+/// `move_posts`: the source's posts, deleted ones too, handed to the
+/// target topic by topic through PostOwnerChanger as the system user,
+/// without revisions.
+async fn move_posts(
+    pool: &PgPool,
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    acting: Option<i32>,
+    source: i32,
+    target: i32,
+) -> Result<(), AppError> {
+    let posts: Vec<(i32, i32)> = sqlx::query_as(
+        "SELECT topic_id, id FROM posts WHERE user_id = $1 ORDER BY topic_id, post_number",
+    )
+    .bind(source)
+    .fetch_all(&mut *conn)
+    .await?;
+    if posts.is_empty() {
+        return Ok(());
+    }
+    progress(&mut *conn, ctx, acting, "changing_post_ownership").await?;
+    let system = crate::session::current::SessionUser::load(&mut *conn, SYSTEM_USER_ID)
+        .await?
+        .ok_or(Unsupported("a site without its system user"))?;
+    let guardian = Guardian::for_user(&mut *conn, &system).await?;
+    let mut groups: Vec<(i32, Vec<i32>)> = Vec::new();
+    for (topic_id, post_id) in posts {
+        match groups.last_mut() {
+            Some((t, ids)) if *t == topic_id => ids.push(post_id),
+            _ => groups.push((topic_id, vec![post_id])),
+        }
+    }
+    for (topic_id, post_ids) in groups {
+        let change = crate::post_owner_changer::Change {
+            topic_id,
+            post_ids,
+            new_owner: target,
+            skip_revision: true,
+        };
+        use crate::post_owner_changer::Outcome;
+        match crate::post_owner_changer::change_owner(pool, &mut *conn, ctx, &guardian, &change)
+            .await?
+        {
+            Outcome::Done => {}
+            Outcome::ArgumentError => {
+                return Err(std::io::Error::other("ArgumentError").into());
+            }
+            Outcome::InvalidAccess => {
+                return Err(std::io::Error::other("Discourse::InvalidAccess").into());
+            }
+            Outcome::RateLimited(_) => {
+                return Err(std::io::Error::other("RateLimiter::LimitExceeded").into());
+            }
+        }
+    }
+    Ok(())
+}
+
 /// `UserMerger.new(source, target, acting).merge!`
 pub async fn merge(
+    pool: &PgPool,
     conn: &mut PgConnection,
     ctx: &Ctx<'_>,
     source: i32,
@@ -184,13 +243,7 @@ pub async fn merge(
     }
 
     // move_posts
-    let posts: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM posts WHERE user_id = $1")
-        .bind(source)
-        .fetch_one(&mut *conn)
-        .await?;
-    if posts > 0 {
-        return Err(Unsupported("merging a user with posts (PostOwnerChanger)").into());
-    }
+    move_posts(pool, &mut *conn, ctx, acting, source, target).await?;
 
     update_user_ids(&mut *conn, ctx, acting, source, target).await?;
 
@@ -840,7 +893,7 @@ pub async fn merge_user_job(state: &AppState, args: &Value) -> Result<(), AppErr
             Unsupported("merge_user without an acting user (NoMethodError in Rails)").into(),
         );
     };
-    merge(&mut tx, &ctx, source, target, Some(acting)).await?;
+    merge(&state.pool, &mut tx, &ctx, source, target, Some(acting)).await?;
     // The finished merge's message carries AdminDetailedUserSerializer.
     let urls = crate::url::Urls {
         config: &state.config,

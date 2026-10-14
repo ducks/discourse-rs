@@ -1,0 +1,7 @@
+{
+  "user": "user2",
+  "settings": {"change_post_ownership_allowed_groups": "12"},
+  "requests": [
+    {"method": "POST", "path": "/t/35/change-owner.json", "params": {"post_ids": [36], "username": "user2"}}
+  ]
+}

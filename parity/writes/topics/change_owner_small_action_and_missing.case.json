@@ -1,0 +1,6 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "POST", "path": "/t/37/change-owner", "params": {"post_ids": [41, 999, 36], "username": "user2"}}
+  ]
+}

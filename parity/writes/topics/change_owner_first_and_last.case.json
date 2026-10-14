@@ -1,0 +1,14 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (35, 3, 2, now() - interval '1 day', now() - interval '1 day')",
+    "UPDATE posts SET like_count = 1 WHERE id = 35",
+    "UPDATE topics SET like_count = 1 WHERE id = 35",
+    "INSERT INTO user_actions (action_type, user_id, target_topic_id, target_post_id, acting_user_id, created_at, updated_at) VALUES (1, 3, 35, 35, 3, now() - interval '1 day', now() - interval '1 day'), (2, 2, 35, 35, 3, now() - interval '1 day', now() - interval '1 day')",
+    "UPDATE user_stats SET likes_given = likes_given + 1 WHERE user_id = 3",
+    "UPDATE user_stats SET likes_received = likes_received + 1 WHERE user_id = 2"
+  ],
+  "requests": [
+    {"method": "POST", "path": "/t/35/change-owner.json", "params": {"post_ids": [35, 52], "username": "user1"}}
+  ]
+}

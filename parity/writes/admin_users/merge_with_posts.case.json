@@ -3,6 +3,5 @@
   "requests": [
     {"method": "POST", "path": "/admin/users/3/merge.json", "params": {"target_username": "user2"}}
   ],
-  "run_jobs": ["merge_user"],
-  "not_yet": "PostOwnerChanger (a source user with posts) is not ported"
+  "run_jobs": ["merge_user"]
 }

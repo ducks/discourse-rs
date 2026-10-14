@@ -463,6 +463,20 @@ pub(crate) async fn destroy(
     guardian: &Guardian,
     post_id: i32,
 ) -> Result<Outcome, AppError> {
+    destroy_with(pool, tx, ctx, guardian, post_id, false).await
+}
+
+/// `PostActionDestroyer.destroy(user, post, :like, skip_delete_check:)`.
+/// With the check skipped the caller hands over the post itself, deleted
+/// or not (PostOwnerChanger).
+pub(crate) async fn destroy_with(
+    pool: &PgPool,
+    tx: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    guardian: &Guardian,
+    post_id: i32,
+    skip_delete_check: bool,
+) -> Result<Outcome, AppError> {
     let user = guardian
         .user()
         .ok_or(Unsupported("unliking anonymously"))?
@@ -475,13 +489,13 @@ pub(crate) async fn destroy(
          WHERE id = $1 AND ($2 OR deleted_at IS NULL)",
     )
     .bind(post_id)
-    .bind(staff)
+    .bind(staff || skip_delete_check)
     .fetch_optional(&mut *tx)
     .await?;
     let Some((post_id, author, topic_id, post_number, post_deleted)) = post else {
         return Ok(Outcome::ResultNotFound);
     };
-    if post_deleted {
+    if post_deleted && !skip_delete_check {
         return Err(Unsupported("unliking a deleted post as staff").into());
     }
     // `finder.with_deleted` for staff: their removed likes count too, and
@@ -505,13 +519,15 @@ pub(crate) async fn destroy(
     let topic = crate::topic_guardian::TopicCtx::load(&mut *tx, ctx.settings, guardian, topic_id)
         .await?
         .ok_or(Unsupported("likes on posts of deleted topics"))?;
-    if !guardian.can_delete_post_action(
-        ctx.settings,
-        &topic,
-        action_user,
-        action_created_at,
-        crate::post_actions::LIKE,
-    )? {
+    if !skip_delete_check
+        && !guardian.can_delete_post_action(
+            ctx.settings,
+            &topic,
+            action_user,
+            action_created_at,
+            crate::post_actions::LIKE,
+        )?
+    {
         return Ok(Outcome::Forbidden("invalid_access"));
     }
     if let Err(refused) = perform(

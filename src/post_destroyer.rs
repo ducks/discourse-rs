@@ -1137,7 +1137,10 @@ async fn update_user_counts(
 
 /// `Topic.reset_highest(topic_id)`, with readers' last read post numbers
 /// brought down to it.
-async fn reset_highest(conn: &mut PgConnection, topic_id: i32) -> Result<(), sqlx::Error> {
+pub(crate) async fn reset_highest(
+    conn: &mut PgConnection,
+    topic_id: i32,
+) -> Result<(), sqlx::Error> {
     let public = format!(
         "post_type NOT IN ({}, {})",
         post_types::SMALL_ACTION,

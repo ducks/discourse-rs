@@ -1,0 +1,10 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE posts SET deleted_at = now() - interval '1 hour', deleted_by_id = 1 WHERE id = 37",
+    "UPDATE topics SET posts_count = posts_count - 1 WHERE id = 35"
+  ],
+  "requests": [
+    {"method": "POST", "path": "/t/35/change-owner.json", "params": {"post_ids": [37], "username": "user3"}}
+  ]
+}
