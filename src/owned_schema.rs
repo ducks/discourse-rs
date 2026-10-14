@@ -33,6 +33,11 @@ pub async fn migrate(pool: &PgPool) -> Result<(), sqlx::Error> {
            key text PRIMARY KEY, \
            value text NOT NULL, \
            expires_at timestamp NOT NULL)",
+        // BadgeGranter's `badge_queue` Redis list: `{type, post_ids |
+        // user_ids}` payloads, popped newest first.
+        "CREATE TABLE IF NOT EXISTS discourse_rs.badge_queue ( \
+           id bigserial PRIMARY KEY, \
+           payload jsonb NOT NULL)",
         // PresenceChannel's clients (its zlist and user hash in Redis): a
         // browser tab present in a channel until expires_at.
         "CREATE TABLE IF NOT EXISTS discourse_rs.presence_clients ( \

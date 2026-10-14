@@ -244,13 +244,20 @@ pub async fn add_with_message(
     crate::topic_timer::update_topic_auto_close(&mut *conn, ctx, topic_id).await?;
     // update_user_counts: only the first post's date (no count for a
     // small action, no last_posted_at).
-    sqlx::query(
-        "UPDATE user_stats SET first_post_created_at = COALESCE(first_post_created_at, $2) WHERE user_id = $1",
+    let first_post = sqlx::query(
+        "UPDATE user_stats SET first_post_created_at = $2 \
+         WHERE user_id = $1 AND first_post_created_at IS NULL",
     )
     .bind(user_id)
     .bind(created_at)
     .execute(&mut *conn)
-    .await?;
+    .await?
+    .rows_affected()
+        > 0;
+    // UserStat's after_save
+    if first_post {
+        crate::badge_granter::queue_user_change(&mut *conn, ctx.settings, user_id).await?;
+    }
     // delete_owned_bookmarks (on_owner_reply), then topic_users.bookmarked
     sqlx::query(
         "DELETE FROM bookmarks WHERE id IN (SELECT bookmarks.id FROM bookmarks \
@@ -329,6 +336,13 @@ pub async fn add_with_message(
         &mut *conn,
         "process_post",
         json!({"bypass_bump": false, "cooking_options": null, "new_post": true, "post_id": post_id, "skip_pull_hotlinked_images": false}),
+    )
+    .await?;
+    crate::badge_granter::queue(
+        &mut *conn,
+        ctx.settings,
+        crate::badge_granter::Trigger::PostRevision,
+        &[post_id],
     )
     .await?;
 

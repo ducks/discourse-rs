@@ -199,6 +199,10 @@ const SCHEDULED: &[(&str, Duration)] = &[
     // Jobs::PresenceChannelAutoLeave, every DEFAULT_TIMEOUT.
     ("presence_channel_auto_leave", Duration::from_secs(60)),
     (topic_timers::ENQUEUER, Duration::from_secs(60)),
+    (
+        crate::badge_granter::PROCESS_BADGE_BACKLOG,
+        Duration::from_secs(60),
+    ),
     (bookmark_reminders::JOB, Duration::from_secs(300)),
     (housekeeping::UNSILENCE_USERS, Duration::from_secs(15 * 60)),
     (
@@ -377,6 +381,9 @@ pub async fn run_scheduled(state: &AppState, name: &str) -> Result<(), AppError>
         "presence_channel_auto_leave" => crate::presence::auto_leave_all(state).await,
         bookmark_reminders::JOB => bookmark_reminders::run(state).await,
         topic_timers::ENQUEUER => topic_timers::enqueue_pending(state).await,
+        crate::badge_granter::PROCESS_BADGE_BACKLOG => {
+            crate::badge_granter::process_badge_backlog(state).await
+        }
         housekeeping::UNSILENCE_USERS => housekeeping::unsilence_users(state).await,
         housekeeping::PURGE_EXPIRED_IGNORED_USERS => {
             housekeeping::purge_expired_ignored_users(state).await

@@ -899,13 +899,20 @@ pub async fn create(
     .await?;
     crate::topic_timer::update_topic_auto_close(&mut tx, ctx, topic_id).await?;
     // update_user_counts
-    sqlx::query(
-        "UPDATE user_stats SET first_post_created_at = COALESCE(first_post_created_at, $2) WHERE user_id = $1",
+    let first_post = sqlx::query(
+        "UPDATE user_stats SET first_post_created_at = $2 \
+         WHERE user_id = $1 AND first_post_created_at IS NULL",
     )
     .bind(user.id)
     .bind(created_at)
     .execute(&mut *tx)
-    .await?;
+    .await?
+    .rows_affected()
+        > 0;
+    // UserStat's and User's after_save: the user's badges, queued.
+    if first_post || !private_message {
+        crate::badge_granter::queue_user_change(&mut tx, s, user.id).await?;
+    }
     let column = if new_topic {
         "topic_count"
     } else {
@@ -1110,6 +1117,13 @@ pub async fn create(
         )
         .await?;
     }
+    crate::badge_granter::queue(
+        &mut tx,
+        s,
+        crate::badge_granter::Trigger::PostRevision,
+        &[post_id],
+    )
+    .await?;
     tx.commit().await?;
     performed.commit();
 

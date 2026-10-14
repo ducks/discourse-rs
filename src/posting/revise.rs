@@ -515,6 +515,14 @@ pub async fn revise(
     // above.
     crate::bus::publish_post_change(ctx, &mut tx, post.id, "revised", Default::default(), false)
         .await?;
+    // grant_badge
+    crate::badge_granter::queue(
+        &mut tx,
+        s,
+        crate::badge_granter::Trigger::PostRevision,
+        &[post.id],
+    )
+    .await?;
     tx.commit().await?;
 
     // bump_topic, after the transaction as Rails does. should_bump?: a new

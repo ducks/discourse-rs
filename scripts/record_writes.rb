@@ -117,10 +117,12 @@ def clear_redis_state
   # unique-pm-post: the duplicate check's key for posts in messages.
   # grpmsg, last_notified_reviewable_id: what GroupMessage and the
   # reviewables reminder remember having sent.
+  # badge_queue: BadgeGranter's queue, which a backlog case would drain
+  # with earlier cases' payloads in it.
   # _CACHE:inline_onebox, _CACHE:onebox__, _CACHE:onebox_failed__: crawled
   # titles and oneboxes (InlineOneboxer, Oneboxer), kept up to a day.
   # about-stats: the about page's cached stats (About.fetch_cached_stats).
-  %w[unique-post-* unique-pm-post-* rejection_email:* user-last-seen:* hot_score_6_hourly __SEARCH__LOG_* LAST_UPLOAD_CLEANUP l-rate-limit3:* grpmsg:* last_notified_reviewable_id _CACHE:inline_onebox:* _CACHE:onebox__* _CACHE:onebox_failed__* about-stats].each do |pattern|
+  %w[unique-post-* unique-pm-post-* rejection_email:* user-last-seen:* hot_score_6_hourly __SEARCH__LOG_* LAST_UPLOAD_CLEANUP l-rate-limit3:* grpmsg:* last_notified_reviewable_id _CACHE:inline_onebox:* _CACHE:onebox__* _CACHE:onebox_failed__* about-stats badge_queue].each do |pattern|
     Discourse.redis.keys(pattern).each { |k| Discourse.redis.del(k) }
   end
   # Oneboxer's preferred strategies, outside the namespace.

@@ -420,7 +420,12 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/t/{slug}/{id}/status", put(topic_status::status_with_slug))
         .route("/u/search/users", get(user_search::search_users))
         .route("/u/search/users.json", get(user_search::search_users))
-        .route("/u/{username}", get(users::show).put(user_update::update))
+        .route(
+            "/u/{username}",
+            get(users::show)
+                .put(user_update::update)
+                .post(user_badges::post_user),
+        )
         .route("/u/{username}/bookmarks", get(bookmarks::index))
         .route("/u/{username}/bookmarks.json", get(bookmarks::index))
         .route(
@@ -435,7 +440,10 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/u/{username}/{*rest}",
             get(users::show_with_tail).put(user_badges::put_user_tail),
         )
-        .route("/users/{username}", get(users::show))
+        .route(
+            "/users/{username}",
+            get(users::show).post(user_badges::post_user),
+        )
         .route("/users/{username}/bookmarks", get(bookmarks::index))
         .route("/users/{username}/bookmarks.json", get(bookmarks::index))
         .route(

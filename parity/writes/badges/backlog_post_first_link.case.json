@@ -1,0 +1,33 @@
+{
+  "user": "user2",
+  "setup": [
+    "DELETE FROM user_badges WHERE id > 18",
+    "UPDATE badges SET grant_count = 0 WHERE id = 40",
+    "UPDATE user_stats SET distinct_badge_count = 3 WHERE user_id = 2",
+    "UPDATE user_badges SET featured_rank = CASE id WHEN 3 THEN 4 WHEN 16 THEN 3 WHEN 17 THEN 2 WHEN 18 THEN 3 END WHERE id IN (3, 16, 17, 18)"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "A reply that links [another topic](/t/parity-fixture-liked-and-archived/41/1) for the first link badge."
+      }
+    }
+  ],
+  "enqueue": [
+    [
+      "process_badge_backlog",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "process_post",
+    "process_badge_backlog"
+  ],
+  "ignore": [
+    "/changes/topic_links/inserted/0/url",
+    "/changes/topic_links/inserted/1/url"
+  ]
+}

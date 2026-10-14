@@ -131,6 +131,7 @@ impl Badge {
 }
 
 /// Which rows a backfill covers.
+#[derive(Clone, Copy)]
 pub enum Scope<'a> {
     Posts(&'a [i32]),
     Users(&'a [i32]),
@@ -846,6 +847,175 @@ pub async fn update_featured_ranks(
     .bind(user_ids.unwrap_or(&[]))
     .execute(conn)
     .await?;
+    Ok(())
+}
+
+/// `Badge::Trigger`
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum Trigger {
+    PostAction,
+    PostRevision,
+    TrustLevelChange,
+    UserChange,
+}
+
+impl Trigger {
+    fn id(self) -> i32 {
+        match self {
+            Trigger::PostAction => 1,
+            Trigger::PostRevision => 2,
+            Trigger::TrustLevelChange => 4,
+            Trigger::UserChange => 8,
+        }
+    }
+
+    fn name(self) -> &'static str {
+        match self {
+            Trigger::PostAction => "PostAction",
+            Trigger::PostRevision => "PostRevision",
+            Trigger::TrustLevelChange => "TrustLevelChange",
+            Trigger::UserChange => "UserChange",
+        }
+    }
+
+    fn from_name(name: &str) -> Option<Trigger> {
+        [
+            Trigger::PostAction,
+            Trigger::PostRevision,
+            Trigger::TrustLevelChange,
+            Trigger::UserChange,
+        ]
+        .into_iter()
+        .find(|t| t.name() == name)
+    }
+
+    /// `uses_post_ids?`
+    fn uses_post_ids(self) -> bool {
+        matches!(self, Trigger::PostAction | Trigger::PostRevision)
+    }
+}
+
+/// `BadgeGranter.queue_badge_grant(type, opt)`: the post ids (a post, or
+/// a post action's post and related post) or the user id, pushed onto the
+/// badge queue when badges are on.
+pub async fn queue(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    trigger: Trigger,
+    ids: &[i32],
+) -> Result<(), AppError> {
+    if !settings.get("enable_badges")?.truthy() {
+        return Ok(());
+    }
+    let key = if trigger.uses_post_ids() {
+        "post_ids"
+    } else {
+        "user_ids"
+    };
+    let payload = json!({ "type": trigger.name(), key: ids });
+    sqlx::query("INSERT INTO discourse_rs.badge_queue (payload) VALUES ($1)")
+        .bind(payload)
+        .execute(&mut *conn)
+        .await?;
+    Ok(())
+}
+
+/// `queue(UserChange)` for a user: User's, UserProfile's and UserStat's
+/// after_save `badge_grant` / `trigger_badges`.
+pub async fn queue_user_change(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    user_id: i32,
+) -> Result<(), AppError> {
+    queue(conn, settings, Trigger::UserChange, &[user_id]).await
+}
+
+/// `Jobs::ProcessBadgeBacklog`, every minute.
+pub const PROCESS_BADGE_BACKLOG: &str = "process_badge_backlog";
+
+/// `Jobs::ProcessBadgeBacklog#execute`
+pub async fn process_badge_backlog(state: &crate::AppState) -> Result<(), AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    process_queue(&mut conn, &state.bus, &settings, &state.i18n).await
+}
+
+/// `BadgeGranter.process_queue!`: up to 1000 payloads popped newest
+/// first, their ids put together per type (in the order the types were
+/// first seen), and each badge of that trigger backfilled for them. A
+/// badge that fails is logged and the next one runs; what the port
+/// refuses rolls the whole run back.
+pub async fn process_queue(
+    conn: &mut PgConnection,
+    bus: &pg_bus::Bus,
+    settings: &SiteSettings,
+    i18n: &crate::i18n::I18n,
+) -> Result<(), AppError> {
+    use sqlx::Connection;
+    let mut tx = conn.begin().await?;
+    let payloads: Vec<serde_json::Value> = sqlx::query_scalar(
+        "WITH popped AS ( \
+           DELETE FROM discourse_rs.badge_queue WHERE id IN ( \
+             SELECT id FROM discourse_rs.badge_queue ORDER BY id DESC LIMIT 1000) \
+           RETURNING id, payload) \
+         SELECT payload FROM popped ORDER BY id DESC",
+    )
+    .fetch_all(&mut *tx)
+    .await?;
+    let mut groups: Vec<(Trigger, Vec<i32>, Vec<i32>)> = Vec::new();
+    for payload in &payloads {
+        let Some(trigger) = payload["type"].as_str().and_then(Trigger::from_name) else {
+            continue;
+        };
+        let ids = |key: &str| -> Vec<i32> {
+            payload[key]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .filter_map(|v| v.as_i64().and_then(|i| i32::try_from(i).ok()))
+                .collect()
+        };
+        let index = match groups.iter().position(|(t, _, _)| *t == trigger) {
+            Some(i) => i,
+            None => {
+                groups.push((trigger, Vec::new(), Vec::new()));
+                groups.len() - 1
+            }
+        };
+        let (_, post_ids, user_ids) = &mut groups[index];
+        for id in ids("post_ids") {
+            if !post_ids.contains(&id) {
+                post_ids.push(id);
+            }
+        }
+        for id in ids("user_ids") {
+            if !user_ids.contains(&id) {
+                user_ids.push(id);
+            }
+        }
+    }
+    for (trigger, post_ids, user_ids) in groups {
+        let scope = if !post_ids.is_empty() {
+            Scope::Posts(&post_ids)
+        } else if !user_ids.is_empty() {
+            Scope::Users(&user_ids)
+        } else {
+            continue;
+        };
+        for badge in Badge::with_trigger(&mut tx, trigger.id()).await? {
+            let mut savepoint = tx.begin().await?;
+            match backfill(&mut savepoint, bus, settings, i18n, &badge, Some(scope)).await {
+                Ok(()) => savepoint.commit().await?,
+                Err(e) if e.is_unsupported() => return Err(e),
+                Err(e) => {
+                    savepoint.rollback().await?;
+                    tracing::warn!(badge = %badge.name, error = %e, "Failed to backfill badge");
+                }
+            }
+        }
+    }
+    tx.commit().await?;
     Ok(())
 }
 

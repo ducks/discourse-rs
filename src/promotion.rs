@@ -1,10 +1,9 @@
 //! Port of `Promotion` (lib/promotion.rb), `TrustLevel.calculate` and
 //! `Group.user_trust_level_change!`: a user's trust level changed by
 //! staff or recalculated, with its log, the recooked bio and the trust
-//! level groups.
+//! level groups, and the badges a change queues.
 //!
-//! Not ported: `BadgeGranter.queue_badge_grant` (a Redis queue the
-//! badge jobs drain; badges are milestone 6), and refused: web hooks for
+//! Refused: web hooks for
 //! `user_promoted`/`user_added_to_group`, trust level groups with
 //! notification defaults, titles, flair or granted levels.
 
@@ -245,7 +244,17 @@ pub async fn change_trust_level(
         .await?;
     }
     recook_bio(conn, cx, user_id, new_level, u.admin || u.moderator).await?;
+    // UserProfile's after_save trigger_badges (the user's save! queues the
+    // same when the level changed).
+    crate::badge_granter::queue_user_change(conn, s, user_id).await?;
     user_trust_level_change(conn, user_id, new_level).await?;
+    crate::badge_granter::queue(
+        conn,
+        s,
+        crate::badge_granter::Trigger::TrustLevelChange,
+        &[user_id],
+    )
+    .await?;
     Ok(Ok(()))
 }
 
