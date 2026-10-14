@@ -1937,6 +1937,10 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/letter_avatar_proxy/{version}/letter/{letter}/{color}/{size}",
             get(user_avatars::show_proxy_letter),
         )
+        .route(
+            "/assets/moment-locale/{name}",
+            get(crate::moment_locale::serve),
+        )
         .route("/assets/htmx.min.js", get(asset))
         .route("/assets/htmx-ext-sse.js", get(asset))
         .route("/assets/page.js", get(asset))
@@ -1960,6 +1964,8 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/user-card.js", get(asset))
         .route("/assets/inline-footnotes.js", get(asset))
         .route("/assets/local-dates.js", get(asset))
+        .route("/assets/local-dates-create.js", get(asset))
+        .route("/assets/pikaday.js", get(asset))
         .route("/assets/moment.min.js", get(asset))
         .route(
             "/assets/moment-timezone-with-data-10-year-range.min.js",

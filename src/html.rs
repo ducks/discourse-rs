@@ -350,6 +350,42 @@ const LOCAL_DATES_STRINGS: &[&str] = &[
     "download_calendar.remember",
     "download_calendar.remember_explanation",
     "cancel",
+    // The insert date modal (local-dates-create.js).
+    "discourse_local_dates.title",
+    "discourse_local_dates.edit",
+    "discourse_local_dates.create.form.insert",
+    "discourse_local_dates.create.form.save",
+    "discourse_local_dates.create.form.format_title",
+    "discourse_local_dates.create.form.format_description",
+    "discourse_local_dates.create.form.timezones_title",
+    "discourse_local_dates.create.form.timezones_description",
+    "discourse_local_dates.create.form.recurring_title",
+    "discourse_local_dates.create.form.recurring_description",
+    "discourse_local_dates.create.form.recurring_none",
+    "discourse_local_dates.create.form.invalid_date",
+    "discourse_local_dates.create.form.until",
+    "discourse_local_dates.create.form.current_timezone",
+    "discourse_local_dates.create.form.recurring.every_day",
+    "discourse_local_dates.create.form.recurring.every_week",
+    "discourse_local_dates.create.form.recurring.every_two_weeks",
+    "discourse_local_dates.create.form.recurring.every_month",
+    "discourse_local_dates.create.form.recurring.every_two_months",
+    "discourse_local_dates.create.form.recurring.every_three_months",
+    "discourse_local_dates.create.form.recurring.every_six_months",
+    "discourse_local_dates.create.form.recurring.every_year",
+    "advanced_mode_toggle.advanced_mode",
+    "advanced_mode_toggle.simple_mode",
+    "dates.previous_month",
+    "dates.next_month",
+    "modal.close",
+    "select_kit.filter_placeholder",
+    "select_kit.no_content",
+    "select_kit.filter_by",
+    "select_kit.max_content_reached.one",
+    "select_kit.max_content_reached.other",
+    "select_kit.default_header_text",
+    "select_kit.delete_item",
+    "timezone_input.ambiguous_ist",
 ];
 
 /// local-dates.js's script tag attributes: the siteSettings it reads
@@ -361,6 +397,8 @@ fn local_dates_attrs(
     i18n: &I18n,
     username: Option<&str>,
     default_calendar: Option<i32>,
+    moment_locale: &str,
+    user_timezone: &str,
 ) -> Result<String, SettingError> {
     let esc = crate::topic_list_view::escape;
     let title = settings.get("title")?.to_s();
@@ -384,7 +422,8 @@ fn local_dates_attrs(
         .collect();
     Ok(format!(
         " data-default-timezones=\"{}\" data-default-title=\"{}\" data-site-title=\"{}\" \
-         data-username=\"{}\" data-default-calendar=\"{}\" data-strings=\"{}\"",
+         data-username=\"{}\" data-default-calendar=\"{}\" data-strings=\"{}\" \
+         data-moment-locale=\"{}\" data-user-timezone=\"{}\" data-default-formats=\"{}\"",
         esc(&settings
             .get("discourse_local_dates_default_timezones")?
             .to_s()),
@@ -393,6 +432,11 @@ fn local_dates_attrs(
         esc(username.unwrap_or("")),
         default_calendar,
         esc(&Value::Object(strings).to_string()),
+        esc(moment_locale),
+        esc(user_timezone),
+        esc(&settings
+            .get("discourse_local_dates_default_formats")?
+            .to_s()),
     ))
 }
 
@@ -678,22 +722,49 @@ impl Site {
         self.chrome.autohighlight_all_code = settings.get("autohighlight_all_code")?.truthy();
         self.chrome.cooked_config = cooked_config(settings, &state.i18n)?;
         if crate::plugins::local_dates::enabled(settings)? {
-            let default_calendar = match guardian.user() {
+            let (default_calendar, user_timezone) = match guardian.user() {
                 Some(user) => {
-                    sqlx::query_scalar::<_, i32>(
-                        "SELECT default_calendar FROM user_options WHERE user_id = $1",
+                    let row: Option<(Option<i32>, Option<String>)> = sqlx::query_as(
+                        "SELECT default_calendar, timezone FROM user_options WHERE user_id = $1",
                     )
                     .bind(user.id)
                     .fetch_optional(&mut *conn)
-                    .await?
+                    .await?;
+                    match row {
+                        Some((calendar, timezone)) => (calendar, timezone.unwrap_or_default()),
+                        None => (None, String::new()),
+                    }
                 }
-                None => None,
+                None => (None, String::new()),
+            };
+            // configureMoment's locale (crate::moment_locale), when it has
+            // more than the formats: the request's I18n.locale, the
+            // member's own under allow_user_locale (effective_locale).
+            let mut locale = settings.get("default_locale")?.to_s();
+            if let Some(user) = guardian.user()
+                && settings.get("allow_user_locale")?.truthy()
+            {
+                let own: Option<Option<String>> =
+                    sqlx::query_scalar("SELECT locale FROM users WHERE id = $1")
+                        .bind(user.id)
+                        .fetch_optional(&mut *conn)
+                        .await?;
+                if let Some(own) = own.flatten().filter(|l| !l.is_empty()) {
+                    locale = own;
+                }
+            }
+            let moment_locale = if crate::moment_locale::has_files(&locale) {
+                crate::moment_locale::url(&self.base_path, &locale, &state.i18n)
+            } else {
+                String::new()
             };
             self.chrome.local_dates_attrs = local_dates_attrs(
                 settings,
                 &state.i18n,
                 guardian.user().map(|u| u.username.as_str()),
                 default_calendar,
+                &moment_locale,
+                &user_timezone,
             )?;
         }
         let sidebar_cx = |plugin_sections| {
@@ -853,6 +924,12 @@ impl Site {
         } else {
             None
         };
+        // The toolbar's options menu: add-poll-ui-builder's condition is
+        // staff or poll_create_allowed_groups.
+        let can_create_poll = guardian.is_staff()
+            || guardian.in_setting_groups(settings, "poll_create_allowed_groups")?;
+        let popup_options = crate::composer_view::popup_options(settings, can_create_poll)?;
+        let unported_popup = crate::composer_view::unported_popup_plugins(settings)?;
         Ok(crate::composer_view::render(
             &list,
             &chooser,
@@ -870,6 +947,7 @@ impl Site {
                 guardian.is_staff(),
             )
             .as_ref(),
+            Some((&popup_options, &unported_popup)),
         ))
     }
 }

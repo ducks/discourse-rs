@@ -3,7 +3,8 @@
 //! its own target directory, so it never waits on this build's lock; it
 //! reruns when the markdown crate or the data it embeds changes.
 //!
-//! Also lists the vendored highlight.js languages for src/highlight_js.rs.
+//! Also lists the vendored highlight.js languages for src/highlight_js.rs
+//! and the moment locales for src/moment_locale.rs.
 
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -15,6 +16,8 @@ fn main() {
         "vendor/discourse/DISCOURSE_REF",
         "Cargo.lock",
         "static/vendor/highlightjs/languages",
+        "static/vendor/moment/locale",
+        "static/vendor/moment-timezone-names",
     ] {
         println!("cargo:rerun-if-changed={path}");
     }
@@ -58,6 +61,7 @@ fn main() {
         hasher.finish()
     );
     highlight_js_languages(&out);
+    moment_locales(&out);
 }
 
 /// `HIGHLIGHT_JS_LANGUAGES`: each `<name>.min.js` in
@@ -83,4 +87,39 @@ fn highlight_js_languages(out: &Path) {
     }
     table.push_str("];\n");
     std::fs::write(out.join("highlight_js_languages.rs"), table).expect("OUT_DIR is writable");
+}
+
+/// `MOMENT_LOCALES` and `MOMENT_TIMEZONE_NAMES`: each `<name>.js` in
+/// static/vendor/moment/locale and static/vendor/moment-timezone-names as
+/// (name, contents), by name, for src/moment_locale.rs.
+fn moment_locales(out: &Path) {
+    let root = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR"));
+    let mut table = String::new();
+    for (constant, dir) in [
+        ("MOMENT_LOCALES", "static/vendor/moment/locale"),
+        (
+            "MOMENT_TIMEZONE_NAMES",
+            "static/vendor/moment-timezone-names",
+        ),
+    ] {
+        let dir = root.join(dir);
+        let mut names: Vec<String> = std::fs::read_dir(&dir)
+            .expect("the moment locales are vendored")
+            .filter_map(|entry| {
+                let name = entry.ok()?.file_name().into_string().ok()?;
+                name.strip_suffix(".js").map(str::to_string)
+            })
+            .collect();
+        names.sort();
+        table.push_str(&format!("pub const {constant}: &[(&str, &str)] = &[\n"));
+        for name in names {
+            let path = dir.join(format!("{name}.js"));
+            table.push_str(&format!(
+                "    ({name:?}, include_str!({:?})),\n",
+                path.display().to_string()
+            ));
+        }
+        table.push_str("];\n");
+    }
+    std::fs::write(out.join("moment_locales.rs"), table).expect("OUT_DIR is writable");
 }

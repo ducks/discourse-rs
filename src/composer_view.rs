@@ -173,7 +173,178 @@ impl UploadUi {
     }
 }
 
-fn toolbar(list: &ListContext, upload: Option<&UploadUi>) -> String {
+/// One of the toolbar's options menu items (Composer#popupMenuOptions):
+/// core's and the enabled bundled plugins' `addComposerToolbarPopupMenuOption`s.
+pub struct PopupOption {
+    pub name: &'static str,
+    pub icon: &'static str,
+    /// The label's js.* key.
+    pub label: &'static str,
+    /// The shortcut after the platform's modifier (`Shift+.`).
+    pub shortcut: Option<&'static str>,
+    pub always_show_shortcut: bool,
+    pub show_active_icon: bool,
+    /// When the item shows: `touch` (a touch device) or `edit-reply` (an
+    /// edit of a reply); always without.
+    pub when: Option<&'static str>,
+    /// Whether composer.js carries out its action; the others refuse.
+    pub ported: bool,
+    /// Whether Ember gives the option a `name` (its button's data-name);
+    /// footnote's, spoiler's and poll's have none.
+    pub named: bool,
+}
+
+/// The options menu's items for the site's settings, in Ember's order:
+/// core's quote, format code and insert table, change reply-to, the
+/// plugins' (details, footnote, local dates, spoiler, poll), then wrap.
+/// `can_create_poll` is the viewer's (staff or poll_create_allowed_groups).
+pub fn popup_options(
+    settings: &crate::site_settings::SiteSettings,
+    can_create_poll: bool,
+) -> Result<Vec<PopupOption>, crate::site_settings::SettingError> {
+    let on = |name: &str| settings.get(name).map(|v| v.truthy());
+    let option = |name, icon, label| PopupOption {
+        name,
+        icon,
+        label,
+        shortcut: None,
+        always_show_shortcut: false,
+        show_active_icon: false,
+        when: None,
+        ported: false,
+        named: true,
+    };
+    let mut out = vec![
+        option("quote", "far-comment", "composer.quote_post_title"),
+        PopupOption {
+            when: Some("touch"),
+            ..option("format-code", "code", "composer.code_title")
+        },
+        option("toggle-spreadsheet", "table", "composer.insert_table"),
+        PopupOption {
+            when: Some("edit-reply"),
+            ..option(
+                "change-reply-to",
+                "share",
+                "composer.change_reply_to.open_from_menu",
+            )
+        },
+    ];
+    if on("details_enabled")? {
+        out.push(PopupOption {
+            shortcut: Some("Shift+D"),
+            ported: true,
+            ..option("details", "angle-right", "details.title")
+        });
+    }
+    if on("enable_markdown_footnotes")? {
+        out.push(PopupOption {
+            ported: true,
+            named: false,
+            ..option("footnote", "asterisk", "footnote.add")
+        });
+    }
+    if crate::plugins::local_dates::enabled(settings)? {
+        out.push(PopupOption {
+            shortcut: Some("Shift+."),
+            always_show_shortcut: true,
+            ported: true,
+            ..option("local-dates", "far-clock", "discourse_local_dates.title")
+        });
+    }
+    if on("spoiler_enabled")? {
+        out.push(PopupOption {
+            show_active_icon: true,
+            ported: true,
+            named: false,
+            ..option("spoiler", "wand-magic", "spoiler.title")
+        });
+    }
+    if on("poll_enabled")? && can_create_poll {
+        out.push(PopupOption {
+            named: false,
+            ..option("poll", "chart-bar", "poll.ui_builder.title")
+        });
+    }
+    out.push(PopupOption {
+        show_active_icon: true,
+        ..option(
+            "toggle-wrap",
+            "right-to-bracket",
+            "composer.apply_wrap_title",
+        )
+    });
+    Ok(out)
+}
+
+/// The plugins whose options menu items aren't ported (their place among
+/// the others not known either): the menu refuses to open while one is on.
+pub fn unported_popup_plugins(
+    settings: &crate::site_settings::SiteSettings,
+) -> Result<Vec<&'static str>, crate::site_settings::SettingError> {
+    let mut out = Vec::new();
+    for (setting, plugin) in [
+        ("discourse_math_enabled", "discourse-math"),
+        ("discourse_post_event_enabled", "discourse-events"),
+        ("policy_enabled", "discourse-policy"),
+        ("discourse_graphviz_enabled", "discourse-graphviz"),
+    ] {
+        if settings.get(setting)?.truthy() {
+            out.push(plugin);
+        }
+    }
+    // discourse-templates adds its item for a member who can_use_templates,
+    // which takes its categories or its private templates' tags.
+    if settings.get("discourse_templates_enabled")?.truthy()
+        && (!settings
+            .get("discourse_templates_categories")?
+            .to_s()
+            .is_empty()
+            || (settings
+                .get("discourse_templates_enable_private_templates")?
+                .truthy()
+                && !settings
+                    .get("discourse_templates_private_templates_tags")?
+                    .to_s()
+                    .is_empty()))
+    {
+        out.push("discourse-templates");
+    }
+    Ok(out)
+}
+
+/// The options trigger and what composer.js builds its menu from.
+fn options_trigger(list: &ListContext, options: &[PopupOption], unported: &[&str]) -> String {
+    let items: Vec<serde_json::Value> = options
+        .iter()
+        .map(|o| {
+            serde_json::json!({
+                "name": o.name,
+                "icon": o.icon,
+                "label": t(list, o.label),
+                "shortcut": o.shortcut,
+                "alwaysShowShortcut": o.always_show_shortcut,
+                "showActiveIcon": o.show_active_icon,
+                "when": o.when,
+                "ported": o.ported,
+                "named": o.named,
+            })
+        })
+        .collect();
+    let data = serde_json::json!({ "items": items, "unported": unported });
+    format!(
+        "<button aria-expanded=\"false\" class=\"btn no-text fk-d-menu__trigger toolbar-menu__options-trigger toolbar__button options toolbar-popup-menu-options\" tabindex=\"-1\" title=\"{}\" data-identifier=\"toolbar-menu__options\" data-trigger=\"\" type=\"button\" data-popup-options=\"{}\">{}</button>",
+        escape(&t(list, "composer.options")),
+        escape(&data.to_string()),
+        icon("circle-plus", None)
+    )
+}
+
+fn toolbar(
+    list: &ListContext,
+    upload: Option<&UploadUi>,
+    options: Option<(&[PopupOption], &[&str])>,
+) -> String {
     let mut buttons = vec![
         ("bold", "bold", "composer.bold_title"),
         ("italic", "italic", "composer.italic_title"),
@@ -194,6 +365,10 @@ fn toolbar(list: &ListContext, upload: Option<&UploadUi>) -> String {
             icon(icon_name, None)
         ));
     }
+    // The extras group: the options menu (emoji is not ported).
+    if let Some((options, unported)) = options {
+        out.push_str(&options_trigger(list, options, unported));
+    }
     out
 }
 
@@ -202,6 +377,7 @@ fn toolbar(list: &ListContext, upload: Option<&UploadUi>) -> String {
 /// `preview` is where the preview's WebAssembly and render settings are
 /// served, and the preview's onebox limit (max_oneboxes_per_post); None
 /// leaves the composer without a preview.
+#[allow(clippy::too_many_arguments)]
 pub fn render(
     list: &ListContext,
     allowed: &[ChooserCategory],
@@ -210,6 +386,7 @@ pub fn render(
     allow_preview: bool,
     presence: Option<&serde_json::Value>,
     upload: Option<&UploadUi>,
+    options: Option<(&[PopupOption], &[&str])>,
 ) -> String {
     // discourse-presence's before-composer-controls connector, and the
     // strings and settings static/js/topic-presence.js draws it with.
@@ -360,6 +537,19 @@ pub fn render(
             "<div class=\"save-or-cancel\"><button class=\"btn btn-icon-text btn-primary create\" type=\"button\"></button><button class=\"btn discard-button btn-transparent\" title=\"{discard}\" type=\"button\"><span class=\"d-button-label\">{discard}</span></button></div>"
         )
     };
+    // The options menu's example texts (applySurround's exampleKey,
+    // footnote's title) and what an unported item says.
+    let popup_data = if options.is_some() {
+        format!(
+            " data-text-details-title=\"{}\" data-text-details=\"{}\" data-text-footnote=\"{}\" data-text-spoiler=\"{}\" data-label-unported=\"Not supported yet:\"",
+            escape(&t(list, "composer.details_title")),
+            escape(&t(list, "composer.details_text")),
+            escape(&t(list, "footnote.title")),
+            escape(&t(list, "composer.spoiler_text")),
+        )
+    } else {
+        String::new()
+    };
     let preview_data = match preview {
         Some((wasm, settings, max_oneboxes)) => format!(
             " data-preview-wasm=\"{}\" data-preview-settings=\"{}\" data-max-oneboxes=\"{max_oneboxes}\" data-label-show-preview=\"{}\" data-label-hide-preview=\"{}\"",
@@ -371,7 +561,7 @@ pub fn render(
         None => String::new(),
     };
     format!(
-        "<div id=\"reply-control\" class=\"closed hide-preview\" hx-preserve=\"true\" data-page-attrs=\"data-default-category\" data-allow-preview=\"{allow_preview}\"{preview_data}{draft_data}{upload_data}{presence_data} data-base-path=\"{}\" data-default-category=\"{}\" data-action-reply=\"{}\" data-action-create-topic=\"{}\" data-action-edit=\"{}\" data-submit-reply=\"{}\" data-submit-create-topic=\"{}\" data-submit-edit=\"{}\" data-label-reply-to-topic=\"{}\" data-label-fullscreen=\"{}\" data-label-exit-fullscreen=\"{}\" data-text-bold=\"{}\" data-text-italic=\"{}\" data-text-link=\"{}\" data-text-blockquote=\"{}\" data-text-code=\"{}\" data-text-list=\"{}\"><div class=\"d-resize-separator grippie\" aria-label=\"{}\" aria-orientation=\"horizontal\" role=\"separator\" tabindex=\"0\"></div><div class=\"reply-area with-category\" role=\"dialog\" hidden><div class=\"reply-to\"><div class=\"composer-action-title\"><span aria-level=\"1\" class=\"action-title\" role=\"heading\"><button class=\"btn btn-icon-text composer-actions-trigger btn-flat btn-icon-text composer-actions\" tabindex=\"-1\" type=\"button\"></button></span></div>{presence_outlet}<div class=\"composer-controls\">{}{}{}</div></div><div class=\"toolbar-visible wmd-controls\"><div class=\"d-editor\"><div class=\"d-editor-container --markdown-editor-enabled\"><div class=\"d-editor-textarea-column\"><div class=\"composer-fields\"><div class=\"title-and-category\" hidden><div class=\"title-input\"><input aria-label=\"{title}\" autocomplete=\"off\" id=\"reply-title\" placeholder=\"{title}\" type=\"text\"></div><div class=\"category-input\">{chooser}</div></div></div><div class=\"d-editor-textarea-wrapper\"><div class=\"d-overflow-controls d-editor-button-bar__wrap\"><div class=\"d-overflow-controls__content d-editor-button-bar\" role=\"toolbar\">{}</div></div><textarea aria-label=\"{body}\" autocomplete=\"off\" class=\"d-editor-input --markdown-monospace\" placeholder=\"{body}\"></textarea></div></div><div class=\"d-editor-preview-wrapper\"><div class=\"d-editor-preview\"></div></div></div></div>{pick_files}</div><div class=\"submit-panel\">{save_or_cancel}{file_uploading}{draft_status}<p class=\"composer-error\" role=\"alert\" hidden></p></div></div></div>",
+        "<div id=\"reply-control\" class=\"closed hide-preview\" hx-preserve=\"true\" data-page-attrs=\"data-default-category\" data-allow-preview=\"{allow_preview}\"{preview_data}{draft_data}{upload_data}{presence_data}{popup_data} data-base-path=\"{}\" data-default-category=\"{}\" data-action-reply=\"{}\" data-action-create-topic=\"{}\" data-action-edit=\"{}\" data-submit-reply=\"{}\" data-submit-create-topic=\"{}\" data-submit-edit=\"{}\" data-label-reply-to-topic=\"{}\" data-label-fullscreen=\"{}\" data-label-exit-fullscreen=\"{}\" data-text-bold=\"{}\" data-text-italic=\"{}\" data-text-link=\"{}\" data-text-blockquote=\"{}\" data-text-code=\"{}\" data-text-list=\"{}\"><div class=\"d-resize-separator grippie\" aria-label=\"{}\" aria-orientation=\"horizontal\" role=\"separator\" tabindex=\"0\"></div><div class=\"reply-area with-category\" role=\"dialog\" hidden><div class=\"reply-to\"><div class=\"composer-action-title\"><span aria-level=\"1\" class=\"action-title\" role=\"heading\"><button class=\"btn btn-icon-text composer-actions-trigger btn-flat btn-icon-text composer-actions\" tabindex=\"-1\" type=\"button\"></button></span></div>{presence_outlet}<div class=\"composer-controls\">{}{}{}</div></div><div class=\"toolbar-visible wmd-controls\"><div class=\"d-editor\"><div class=\"d-editor-container --markdown-editor-enabled\"><div class=\"d-editor-textarea-column\"><div class=\"composer-fields\"><div class=\"title-and-category\" hidden><div class=\"title-input\"><input aria-label=\"{title}\" autocomplete=\"off\" id=\"reply-title\" placeholder=\"{title}\" type=\"text\"></div><div class=\"category-input\">{chooser}</div></div></div><div class=\"d-editor-textarea-wrapper\"><div class=\"d-overflow-controls d-editor-button-bar__wrap\"><div class=\"d-overflow-controls__content d-editor-button-bar\" role=\"toolbar\">{}</div></div><textarea aria-label=\"{body}\" autocomplete=\"off\" class=\"d-editor-input --markdown-monospace\" placeholder=\"{body}\"></textarea></div></div><div class=\"d-editor-preview-wrapper\"><div class=\"d-editor-preview\"></div></div></div></div>{pick_files}</div><div class=\"submit-panel\">{save_or_cancel}{file_uploading}{draft_status}<p class=\"composer-error\" role=\"alert\" hidden></p></div></div></div>",
         escape(list.base_path),
         selected.map(|c| c.id.to_string()).unwrap_or_default(),
         escape(&action(
@@ -420,7 +610,7 @@ pub fn render(
             "xmark",
             "composer.save_and_close"
         ),
-        toolbar(list, upload),
+        toolbar(list, upload, options),
         title = escape(&t(list, "composer.title_or_link_placeholder")),
         body = escape(&t(list, "composer.reply_placeholder")),
         save_or_cancel = save_or_cancel,

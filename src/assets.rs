@@ -38,6 +38,7 @@ const DISCOURSE_CSS: &str = concat!(
     include_str!("../static/css/composer.css"),
     include_str!("../static/css/kit.css"),
     include_str!("../static/css/modal.css"),
+    include_str!("../static/css/date-picker.css"),
     include_str!("../static/css/form-kit.css"),
     include_str!("../static/css/menus.css"),
     include_str!("../static/css/directory.css"),
@@ -109,6 +110,18 @@ const ASSETS: &[(&str, &str, &str)] = &[
         "local-dates.js",
         JS,
         include_str!("../static/js/local-dates.js"),
+    ),
+    (
+        "local-dates-create.js",
+        JS,
+        include_str!("../static/js/local-dates-create.js"),
+    ),
+    // Pikaday as Discourse patches it (static/vendor/README), which
+    // local-dates-create.js loads for its calendar.
+    (
+        "pikaday.js",
+        JS,
+        include_str!("../static/vendor/pikaday/pikaday.js"),
     ),
     // moment and moment-timezone as Discourse builds them in
     // (static/vendor/README), which local-dates.js loads when a page has a

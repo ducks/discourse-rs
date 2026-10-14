@@ -92,6 +92,11 @@
     {%- endif %}
     {%- if !chrome.local_dates_attrs.is_empty() %}
     <script src="{{ crate::assets::url(base_path, "local-dates.js") }}" defer data-moment="{{ crate::assets::url(base_path, "moment.min.js") }}" data-moment-timezone="{{ crate::assets::url(base_path, "moment-timezone-with-data-10-year-range.min.js") }}"{{ chrome.local_dates_attrs|safe }}></script>
+    {%- if viewer.is_some() %}
+    {#- The composer's insert date modal and its shortcut, Pikaday loaded
+        when it first opens. -#}
+    <script src="{{ crate::assets::url(base_path, "local-dates-create.js") }}" defer data-pikaday="{{ crate::assets::url(base_path, "pikaday.js") }}"></script>
+    {%- endif %}
     {%- endif %}
     <script src="{{ crate::assets::url(base_path, "hashtags.js") }}" defer></script>
     <script src="{{ crate::assets::url(base_path, "oneboxes.js") }}" defer></script>

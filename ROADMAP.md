@@ -687,6 +687,22 @@ with the viewport, guessing from the user agent without it
     suggests (the search refuses advanced filters, `#`, `@`), the private
     messages inbox, user, category and tag contexts of /search/query
     (refused), groups with a flair among the results (refused)
+103. ~~`feat/local-dates-composer`~~ (done) M: the composer toolbar's options
+    menu (ToolbarPopupMenuOptions over Composer#popupMenuOptions, its
+    shortcuts' keycaps) with discourse-local-dates' insert date modal
+    (local-dates-create: the from and to date-times on Pikaday, vendored,
+    the time input, the timezone combo box with the translated names, the
+    advanced mode's recurrence, timezones and format, the preview while the
+    timezone differs, Insert), its Ctrl/Cmd+Shift+. for now, and details'
+    (Ctrl/Cmd+Shift+D), footnote's and spoiler's items; moment's locale for
+    the request's locale (JsLocaleHelper's configureMoment: moment's locale
+    file, the timezone names translated, the formats; all vendored).
+    Left: the menu's quote whole post, insert table, change reply-to,
+    format code, build poll and wrap items, which say they are not ported;
+    the menu refuses to open with discourse-math, -events, -policy,
+    -graphviz or -templates (for a member who can use them) on; editing a
+    date from the rich editor (the rich editor is not ported); the locale
+    from the Accept-Language header
 
 [mobile-layout]
 

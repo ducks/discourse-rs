@@ -50,3 +50,23 @@ new versions the same way and check them again:
 moment and moment-timezone are the versions frontend/discourse/package.json
 pins, and the timezone build is the one load-moment.js imports (the
 10-year range). Both are byte-identical to the reference's node_modules.
+
+  moment/locale/*.js            moment@2.30.1, locale/* (all 137; embedded
+                                by build.rs, served in configureMoment's
+                                script at /assets/moment-locale/<locale>.js,
+                                src/moment_locale.rs)
+  moment-timezone-names/*.js    @discourse/moment-timezone-names-translations@1.0.0,
+                                locales/* (all 37, likewise)
+  moment-timezone-names/LICENSE @discourse/moment-timezone-names-translations@1.0.0,
+                                LICENSE (MIT)
+  pikaday/pikaday.js            pikaday@1.8.2, pikaday.js with Discourse's
+                                patches/pikaday.patch applied (its CommonJS
+                                branch takes window.moment; the plain script
+                                load this port does uses the global branch,
+                                which the patch leaves alone)
+  pikaday/LICENSE               pikaday@1.8.2, LICENSE (BSD-3-Clause and MIT)
+
+The three tarballs were checked against their npm integrity (sha512); the
+locale files are byte-identical to the tarballs and to the reference's
+node_modules, pikaday.js to the reference's (the tarball's but for the
+patch).

@@ -31,6 +31,11 @@
     siteTitle: script.dataset.siteTitle || "",
     defaultCalendar: script.dataset.defaultCalendar || "",
     username: script.dataset.username || "",
+    // configureMoment's script for the site's locale (crate::moment_locale),
+    // empty for English.
+    momentLocale: script.dataset.momentLocale || "",
+    userTimezone: script.dataset.userTimezone || "",
+    defaultFormats: script.dataset.defaultFormats || "",
     strings: {},
   };
   try {
@@ -88,6 +93,9 @@
       momentLoading = loadScript(config.moment)
         .then(function () {
           return loadScript(config.momentTimezone);
+        })
+        .then(function () {
+          return config.momentLocale ? loadScript(config.momentLocale) : null;
         })
         .then(function () {
           return window.moment;
@@ -1365,6 +1373,9 @@
       });
     });
   }
+
+  // What the insert date modal (local-dates-create.js) shares.
+  Discourse.localDates = { config: config, i18n: i18n, loadMoment: loadMoment };
 
   if (Discourse.once && !Discourse.once("local-dates")) {
     return;
