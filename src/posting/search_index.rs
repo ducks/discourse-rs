@@ -521,11 +521,33 @@ pub fn scrub(html: &str, base: &BaseUrls<'_>) -> String {
     squish(&out)
 }
 
+/// The scrubber's `characters` callbacks for a text node. Rails serializes
+/// the document and reads it back with libxml2's SAX parser, which hands
+/// each entity the serializer wrote (`&amp;`, `&lt;`, `&gt;`, `&nbsp;`)
+/// back as a call of its own, and each call is padded with spaces.
+fn characters(text: &str, out: &mut String) {
+    let mut run = String::new();
+    for c in text.chars() {
+        if matches!(c, '&' | '<' | '>' | '\u{a0}') {
+            if !run.is_empty() {
+                out.push_str(&format!(" {run} "));
+                run.clear();
+            }
+            out.push_str(&format!(" {c} "));
+        } else {
+            run.push(c);
+        }
+    }
+    if !run.is_empty() {
+        out.push_str(&format!(" {run} "));
+    }
+}
+
 fn walk(node: &Handle, base: &BaseUrls<'_>, in_lightbox: bool, out: &mut String) {
     match &node.data {
         NodeData::Text { contents } => {
             if !in_lightbox {
-                out.push_str(&format!(" {} ", contents.borrow()));
+                characters(&contents.borrow(), out);
             }
         }
         NodeData::Element { .. } => {
@@ -636,6 +658,24 @@ mod tests {
             scrub(cooked, &base()),
             "A heading With bold , a mention of @user0 , /c/general/4 #square-full General and :smile: , and a https://example.com/page link ."
         );
+    }
+
+    /// Recorded from SearchIndexer::HtmlScrubber.scrub on the reference.
+    #[test]
+    fn entities_come_back_as_words_of_their_own() {
+        assert_eq!(
+            scrub("<p>a &amp;amp; b &amp; c &lt;d&gt; e</p>", &base()),
+            "a & amp; b & c < d > e"
+        );
+        assert_eq!(
+            scrub("<p>x &amp;lt; y &quot; z</p>", &base()),
+            "x & lt; y \" z"
+        );
+        assert_eq!(
+            scrub("<p>a&nbsp;b &lt;tag&gt; c&amp;d</p>", &base()),
+            "a b < tag > c & d"
+        );
+        assert_eq!(scrub("<p title=\"x &amp; y\">t</p>", &base()), "x & y t");
     }
 
     #[test]

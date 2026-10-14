@@ -1,0 +1,16 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "Tom & Jerry <3, a literal &amp; and x > y, with non breaking space."
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert"
+  ]
+}
