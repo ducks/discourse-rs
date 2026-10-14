@@ -502,8 +502,30 @@ then by what running a forum needs (milestone 6). Briefs:
     the backfill job and PUT /admin/site_settings/:id/user_count; their
     tags at signup and for anonymous visitors in site.json. Refused:
     content localization, user counts and backfills of the other user
-    preference defaults), 90d.
-    `feat/themes` L,
+    preference defaults), 90d. `feat/themes` L, started: done are the
+    reads (Admin::ThemesController index and show with ThemeSerializer,
+    its settings of the bool, number, string and enum types, theme site
+    settings, fields, translations, screenshots; /admin/config's
+    customize themes, components and theme site settings, the color
+    palettes with their sort, the welcome banner's themes), PUT
+    /admin/themes/:id/site-setting, the 400-style refusal of themeable
+    settings through PUT /admin/site_settings, scheme colors that set
+    color_transformations' variables. Left, split on: 90e.
+    `feat/theme-writes` L (create, update with log_theme_change's
+    strip_duplicates JSON, destroy, bulk_destroy, child themes,
+    components' enable and disable, the default theme, user theme_ids on
+    PUT /u; html fields baked through Nokogiri's fragment, translation
+    fields through process_translation, `compiler_version` read from a
+    baked row; refused: scss and extra_js fields (stylesheet and
+    ThemeJavascriptCompiler), inline scripts (AssetProcessor), and
+    therefore theme setting changes, which rebake scss fields), 90f.
+    `feat/theme-imports` M (import, export, remote themes, uploads,
+    objects settings, the design wizard), 90g. `feat/admin-shell` L (the
+    admin pages' HTML: the port has none; /admin/customize/* and
+    /admin/config/* refuse non-JSON requests today), 90h.
+    `feat/template-strings` M (the templates' literal English client
+    strings through the locale, so site texts reach them; New Topic
+    done),
     91. `feat/backups` L (creating, listing, downloading, restoring
     through the app; read-only mode is 79c), split:
     91a. ~~`feat/backup-files`~~ (done) M (the local store under

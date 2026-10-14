@@ -192,6 +192,10 @@ pub struct Chrome {
     pub composer: String,
     /// `canCreateTopic`: the lists' New Topic button.
     pub can_create_topic: bool,
+    /// The button's label (`topic.create`) and its group's
+    /// (`topic.create_group`), site texts included.
+    pub create_topic_label: String,
+    pub create_topic_group_label: String,
     /// TopicDraftsDropdown's menu trigger beside New Topic, while the
     /// member has drafts (`draft_count`); empty otherwise.
     pub drafts_menu_trigger: String,
@@ -663,6 +667,16 @@ impl Site {
         }
         if let Some(user_id) = guardian.user_id() {
             self.chrome.can_create_topic = guardian.can_create_topic(&mut *conn, settings).await?;
+            self.chrome.create_topic_label = state
+                .i18n
+                .t("js.topic.create")
+                .unwrap_or("New Topic")
+                .to_string();
+            self.chrome.create_topic_group_label = state
+                .i18n
+                .t("js.topic.create_group")
+                .unwrap_or("New topic and drafts")
+                .to_string();
             let draft_count: Option<i32> =
                 sqlx::query_scalar("SELECT draft_count FROM user_stats WHERE user_id = $1")
                     .bind(user_id)

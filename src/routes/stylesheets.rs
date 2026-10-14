@@ -29,6 +29,7 @@ async fn scheme_css(
                     .find(|(n, _)| n == name)
                     .map(|(_, hex)| hex.clone())
             })
+            .with_defined(&resolved)
         }
     };
     Ok(Some(css(&colors)))

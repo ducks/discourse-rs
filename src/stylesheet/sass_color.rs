@@ -36,7 +36,7 @@ impl Color {
             g,
             b,
             a: 1.0,
-            written: Some(format!("#{}", digits.to_ascii_lowercase())),
+            written: Some(format!("#{digits}")),
         })
     }
 
