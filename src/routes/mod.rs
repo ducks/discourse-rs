@@ -15,6 +15,7 @@ mod admin_site_settings;
 mod admin_user_fields;
 mod admin_users;
 mod admin_watched_words;
+mod admin_web_hooks;
 mod archive_message;
 mod backups;
 mod badges;
@@ -1031,6 +1032,61 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route(
             "/admin/users/{user_id}/merge.json",
             post(admin_users::merge),
+        )
+        .route(
+            "/admin/api/web_hooks",
+            get(admin_web_hooks::index).post(admin_web_hooks::create),
+        )
+        .route(
+            "/admin/api/web_hooks.json",
+            get(admin_web_hooks::index).post(admin_web_hooks::create),
+        )
+        .route(
+            "/admin/api/web_hooks/{id}",
+            get(admin_web_hooks::show)
+                .put(admin_web_hooks::update)
+                .delete(admin_web_hooks::destroy),
+        )
+        .route("/admin/api/web_hooks/{id}/edit", get(admin_web_hooks::edit))
+        .route(
+            "/admin/api/web_hooks/{id}/edit.json",
+            get(admin_web_hooks::edit),
+        )
+        .route(
+            "/admin/api/web_hook_events/{id}",
+            get(admin_web_hooks::list_events),
+        )
+        .route(
+            "/admin/api/web_hooks/{id}/events/bulk",
+            get(admin_web_hooks::bulk_events),
+        )
+        .route(
+            "/admin/api/web_hooks/{id}/events/bulk.json",
+            get(admin_web_hooks::bulk_events),
+        )
+        .route(
+            "/admin/api/web_hooks/{id}/events/{event_id}/redeliver",
+            post(admin_web_hooks::redeliver_event),
+        )
+        .route(
+            "/admin/api/web_hooks/{id}/events/{event_id}/redeliver.json",
+            post(admin_web_hooks::redeliver_event),
+        )
+        .route(
+            "/admin/api/web_hooks/{id}/events/failed_redeliver",
+            post(admin_web_hooks::redeliver_failed_events),
+        )
+        .route(
+            "/admin/api/web_hooks/{id}/events/failed_redeliver.json",
+            post(admin_web_hooks::redeliver_failed_events),
+        )
+        .route(
+            "/admin/api/web_hooks/{id}/ping",
+            post(admin_web_hooks::ping),
+        )
+        .route(
+            "/admin/api/web_hooks/{id}/ping.json",
+            post(admin_web_hooks::ping),
         )
         .route(
             "/admin/permalinks",

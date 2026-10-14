@@ -1,0 +1,8 @@
+{
+  "user": "admin",
+  "settings": {"allowed_internal_hosts": "fixtures.localhost"},
+  "requests": [
+    {"method": "POST", "path": "/admin/api/web_hooks.json", "params": {"web_hook": {"payload_url": " http://fixtures.localhost:8099/hook ", "content_type": "1", "secret": "a-very-secret-key", "wildcard_web_hook": "false", "active": "true", "verify_certificate": "true", "web_hook_event_type_ids": ["202", "201"], "category_ids": ["4"], "group_ids": ["11"], "tag_ids": ["2", "1"]}}},
+    {"method": "POST", "path": "/admin/api/web_hooks.json", "params": {"web_hook": {"payload_url": "http://fixtures.localhost:8099/all", "content_type": 2, "wildcard_web_hook": true, "active": false, "verify_certificate": false}}}
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO web_hooks (id, payload_url, content_type, last_delivery_status, status, secret, wildcard_web_hook, verify_certificate, active, created_at, updated_at) VALUES (9001, 'http://fixtures.localhost:8099/hook', 1, 3, 1, '', false, true, true, '2026-09-01 10:00:00', '2026-09-01 10:00:00')",
+    "INSERT INTO web_hook_events (id, web_hook_id, headers, payload, status, duration, created_at, updated_at) VALUES (9001, 9001, '{}', '{}', 500, 10, '2026-09-15 01:00:00', '2026-09-15 01:00:00')",
+    "INSERT INTO web_hook_events (id, web_hook_id, headers, payload, status, duration, created_at, updated_at) VALUES (9002, 9001, '{}', '{}', 500, 10, '2026-09-15 01:00:00', '2026-09-15 01:00:00')",
+    "INSERT INTO redelivering_webhook_events (id, web_hook_event_id, processing, created_at, updated_at) VALUES (9001, 9001, true, now() - interval '9 hours', now() - interval '9 hours')",
+    "INSERT INTO redelivering_webhook_events (id, web_hook_event_id, processing, created_at, updated_at) VALUES (9002, 9002, false, now() - interval '7 hours', now() - interval '7 hours')"
+  ],
+  "requests": [],
+  "enqueue": [["cleanup_redelivering_web_hook_events", {}]],
+  "run_jobs": ["cleanup_redelivering_web_hook_events"]
+}

@@ -1,0 +1,17 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO web_hooks (id, payload_url, content_type, last_delivery_status, status, secret, wildcard_web_hook, verify_certificate, active, created_at, updated_at) VALUES (9001, 'http://fixtures.localhost:8099/hook', 1, 3, 1, '', false, true, true, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO web_hook_event_types_hooks (web_hook_id, web_hook_event_type_id) VALUES (9001, 201)",
+    "INSERT INTO categories_web_hooks (web_hook_id, category_id) VALUES (9001, 4)",
+    "INSERT INTO groups_web_hooks (web_hook_id, group_id) VALUES (9001, 10)",
+    "INSERT INTO tags_web_hooks (web_hook_id, tag_id) VALUES (9001, 1)",
+    "INSERT INTO web_hook_events (id, web_hook_id, headers, payload, status, response_headers, response_body, duration, created_at, updated_at) VALUES (9001, 9001, '{}', '{\"ping\":\"OK\"}', 200, '{}', '', 5, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO redelivering_webhook_events (id, web_hook_event_id, processing, created_at, updated_at) VALUES (9001, 9001, false, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO web_hook_events_daily_aggregates (id, web_hook_id, date, successful_event_count, failed_event_count, mean_duration, created_at, updated_at) VALUES (9001, 9001, '2026-10-01', 1, 0, 5, '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "requests": [
+    {"method": "DELETE", "path": "/admin/api/web_hooks/9001.json"},
+    {"method": "DELETE", "path": "/admin/api/web_hooks/9001.json"}
+  ]
+}

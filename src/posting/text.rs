@@ -321,6 +321,12 @@ pub fn escape_emoji(s: &str, opts: EmojiEscape) -> Result<String, Unsupported> {
 /// without emoji codes, on English sites (other locales have their own
 /// transliteration rules).
 pub fn slug_for(title: &str, locale: &str) -> Result<String, Unsupported> {
+    slug_with_default(title, locale, "topic")
+}
+
+/// `Slug.for(title, default)`: the default for a slug that comes out
+/// blank or only digits.
+pub fn slug_with_default(title: &str, locale: &str, default: &str) -> Result<String, Unsupported> {
     if !title.is_ascii() && locale != "en" {
         return Err(Unsupported(
             "slugs for non-ASCII titles in locales other than English (I18n transliteration)",
@@ -351,7 +357,7 @@ pub fn slug_for(title: &str, locale: &str) -> Result<String, Unsupported> {
     }
     let slug = slug.trim_matches('-').to_string();
     if slug.is_empty() || slug.chars().all(|c| c.is_ascii_digit()) {
-        return Ok("topic".to_string());
+        return Ok(default.to_string());
     }
     Ok(slug)
 }

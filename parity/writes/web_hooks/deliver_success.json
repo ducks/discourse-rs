@@ -1,0 +1,169 @@
+{
+  "name": "deliver_success",
+  "user": "admin",
+  "requests": [],
+  "started_at": "2026-10-14T07:46:46.787483",
+  "transaction_started_at": "2026-10-14T07:46:44.105219",
+  "responses": [],
+  "changes": {
+    "web_hook_events": {
+      "inserted": [
+        {
+          "id": 2,
+          "status": 201,
+          "headers": "{\"Accept\":\"*/*\",\"Connection\":\"close\",\"Content-Length\":\"18\",\"Content-Type\":\"application/x-www-form-urlencoded\",\"Host\":\"fixtures.localhost\",\"User-Agent\":\"Discourse/2026.10.0-latest-bf55a44c2872738f7ae2664d6fec3d6d8779190f; +https://www.discourse.org/\",\"X-Discourse-Instance\":\"http://localhost:3049\",\"X-Discourse-Event-Id\":\"2\",\"X-Discourse-Event-Type\":\"topic\",\"X-Discourse-Event\":\"topic_closed_status_updated\"}",
+          "payload": "{\"topic\":{\"id\":3}}",
+          "duration": 46,
+          "created_at": "2026-10-14T07:46:46.852742",
+          "updated_at": "2026-10-14T07:46:46.901277",
+          "web_hook_id": 9002,
+          "response_body": "",
+          "response_headers": "{\"user-agent\":\"Discourse/2026.10.0-latest-bf55a44c2872738f7ae2664d6fec3d6d8779190f; +https://www.discourse.org/\",\"connection\":\"close\",\"content-length\":\"0\"}"
+        },
+        {
+          "id": 1,
+          "status": 200,
+          "headers": "{\"Accept\":\"*/*\",\"Connection\":\"close\",\"Content-Length\":\"57\",\"Content-Type\":\"application/json\",\"Host\":\"fixtures.localhost\",\"User-Agent\":\"Discourse/2026.10.0-latest-bf55a44c2872738f7ae2664d6fec3d6d8779190f; +https://www.discourse.org/\",\"X-Discourse-Instance\":\"http://localhost:3049\",\"X-Discourse-Event-Id\":\"1\",\"X-Discourse-Event-Type\":\"post\",\"X-Discourse-Event\":\"post_created\",\"X-Discourse-Event-Signature\":\"sha256=59fc0b4fbb498b4ec01e385a54b28b256bf0998107d47bfc0161d6561fb940d0\"}",
+          "payload": "{\"post\":{\"id\":7,\"raw\":\"héllo ☃\",\"nested\":{\"a\":[1,2]}}}",
+          "duration": 41,
+          "created_at": "2026-10-14T07:46:46.797391",
+          "updated_at": "2026-10-14T07:46:46.845919",
+          "web_hook_id": 9001,
+          "response_body": "{\"ok\":true}",
+          "response_headers": "{\"user-agent\":\"Discourse/2026.10.0-latest-bf55a44c2872738f7ae2664d6fec3d6d8779190f; +https://www.discourse.org/\",\"connection\":\"close\",\"content-length\":\"11\",\"content-type\":\"application/json\",\"x-thing\":\"a\"}"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "web_hooks": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 9001,
+            "active": true,
+            "secret": "abcdefghijklmnop",
+            "status": 1,
+            "created_at": "2026-10-01T10:00:00",
+            "updated_at": "2026-10-01T10:00:00",
+            "payload_url": " http://fixtures.localhost:8099/hook?x=1 ",
+            "content_type": 1,
+            "wildcard_web_hook": false,
+            "verify_certificate": true,
+            "last_delivery_status": 1
+          },
+          "after": {
+            "id": 9001,
+            "active": true,
+            "secret": "abcdefghijklmnop",
+            "status": 1,
+            "created_at": "2026-10-01T10:00:00",
+            "updated_at": "2026-10-14T07:46:46.847217",
+            "payload_url": "http://fixtures.localhost:8099/hook?x=1",
+            "content_type": 1,
+            "wildcard_web_hook": false,
+            "verify_certificate": true,
+            "last_delivery_status": 3
+          }
+        },
+        {
+          "before": {
+            "id": 9002,
+            "active": true,
+            "secret": "",
+            "status": 1,
+            "created_at": "2026-10-01T10:00:00",
+            "updated_at": "2026-10-01T10:00:00",
+            "payload_url": "http://fixtures.localhost:8099/form",
+            "content_type": 2,
+            "wildcard_web_hook": true,
+            "verify_certificate": false,
+            "last_delivery_status": 2
+          },
+          "after": {
+            "id": 9002,
+            "active": true,
+            "secret": "",
+            "status": 1,
+            "created_at": "2026-10-01T10:00:00",
+            "updated_at": "2026-10-14T07:46:46.902671",
+            "payload_url": "http://fixtures.localhost:8099/form",
+            "content_type": 2,
+            "wildcard_web_hook": true,
+            "verify_certificate": false,
+            "last_delivery_status": 3
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "web_hook_events": 1
+  },
+  "settings": {
+    "allowed_internal_hosts": "fixtures.localhost"
+  },
+  "setup": [
+    "INSERT INTO web_hooks (id, payload_url, content_type, last_delivery_status, status, secret, wildcard_web_hook, verify_certificate, active, created_at, updated_at) VALUES (9001, ' http://fixtures.localhost:8099/hook?x=1 ', 1, 1, 1, 'abcdefghijklmnop', false, true, true, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO web_hook_event_types_hooks (web_hook_id, web_hook_event_type_id) VALUES (9001, 201)",
+    "INSERT INTO categories_web_hooks (web_hook_id, category_id) VALUES (9001, 4), (9001, 2)",
+    "INSERT INTO tags_web_hooks (web_hook_id, tag_id) VALUES (9001, 1)",
+    "INSERT INTO groups_web_hooks (web_hook_id, group_id) VALUES (9001, 10)",
+    "INSERT INTO web_hooks (id, payload_url, content_type, last_delivery_status, status, secret, wildcard_web_hook, verify_certificate, active, created_at, updated_at) VALUES (9002, 'http://fixtures.localhost:8099/form', 2, 2, 1, '', true, false, true, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO web_hook_event_types_hooks (web_hook_id, web_hook_event_type_id) VALUES (9002, 101)"
+  ],
+  "enqueue": [
+    [
+      "emit_web_hook_event",
+      {
+        "id": 7,
+        "category_id": 4,
+        "tag_ids": [
+          2,
+          1
+        ],
+        "group_ids": [
+          10,
+          11
+        ],
+        "payload": "{\"id\":7,\"raw\":\"héllo \\u2603\",\"nested\":{\"a\":[1,2]}}",
+        "web_hook_id": 9001,
+        "event_name": "post_created",
+        "event_type": "post"
+      }
+    ],
+    [
+      "emit_web_hook_event",
+      {
+        "id": 3,
+        "payload": "{\"id\":3}",
+        "web_hook_id": 9002,
+        "event_name": "topic_closed_status_updated",
+        "event_type": "topic"
+      }
+    ]
+  ],
+  "remote": {
+    "/hook?x=1": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json",
+        "X-Thing": "a"
+      },
+      "body": "{\"ok\":true}"
+    },
+    "/form": {
+      "status": 201,
+      "body": ""
+    }
+  },
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "ca63dc5718fe1ffb007a4d5d38455d410ef3d199107cf50627040431998496b2",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

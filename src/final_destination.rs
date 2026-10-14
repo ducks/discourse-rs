@@ -256,6 +256,52 @@ pub enum Read {
     Nothing,
 }
 
+/// What `lookup_and_filter_ips` found.
+pub enum Lookup {
+    Allowed(Vec<IpAddr>),
+    /// DisallowedIpError: every address is private or blocked.
+    Disallowed,
+    /// LookupFailedError
+    Failed,
+}
+
+/// A POST to make.
+pub struct Post<'a> {
+    pub url: &'a str,
+    pub headers: &'a [(String, String)],
+    pub body: &'a [u8],
+    pub verify_certificate: bool,
+    pub timeout: Duration,
+    /// `Discourse.user_agent`, which Net::HTTP's patched headers start with.
+    pub user_agent: &'a str,
+}
+
+/// What a POST gave.
+pub enum Posted {
+    Response {
+        status: u16,
+        /// Lower-cased, in the order received.
+        headers: Vec<(String, String)>,
+        body: String,
+    },
+    /// The SSRF check refused every address (DisallowedIpError).
+    Blocked,
+    /// Any other failure, with its message.
+    Failed(String),
+}
+
+/// The host and port of an absolute http(s) URL.
+fn post_target(url: &str) -> Option<(String, u16)> {
+    let parsed = reqwest::Url::parse(url).ok()?;
+    let scheme = parsed.scheme();
+    if scheme != "http" && scheme != "https" {
+        return None;
+    }
+    let host = parsed.host_str()?.trim_matches(['[', ']']).to_string();
+    let port = parsed.port_or_known_default()?;
+    Some((host, port))
+}
+
 /// FinalDestination's options for `get`.
 pub struct Options {
     pub timeout: Duration,
@@ -357,6 +403,109 @@ impl Fetcher<'_> {
             .into_iter()
             .filter(|a| ip_allowed(a.ip(), &blocked))
             .collect())
+    }
+
+    /// `SSRFDetector.lookup_and_filter_ips(name)` as it raises: the
+    /// allowed addresses, or why there are none.
+    pub async fn lookup_and_filter_ips(&self, host: &str) -> Result<Lookup, AppError> {
+        let resolved: Vec<IpAddr> = match host.parse::<IpAddr>() {
+            Ok(ip) => vec![ip],
+            Err(_) => match tokio::net::lookup_host((host, 80)).await {
+                Ok(addrs) => addrs.map(|a| a.ip()).collect(),
+                Err(_) => return Ok(Lookup::Failed),
+            },
+        };
+        if resolved.is_empty() {
+            return Ok(Lookup::Failed);
+        }
+        if self
+            .allowed_internal_hosts()?
+            .iter()
+            .any(|h| h.eq_ignore_ascii_case(host))
+        {
+            return Ok(Lookup::Allowed(resolved));
+        }
+        let blocked: Vec<Range> = setting_list(self.settings, "blocked_ip_blocks")?
+            .iter()
+            .filter_map(|r| Range::parse(r))
+            .collect();
+        let allowed: Vec<IpAddr> = resolved
+            .into_iter()
+            .filter(|ip| ip_allowed(*ip, &blocked))
+            .collect();
+        Ok(if allowed.is_empty() {
+            Lookup::Disallowed
+        } else {
+            Lookup::Allowed(allowed)
+        })
+    }
+
+    /// A POST through `FinalDestination::FaradayAdapter` (WebHookEmitter):
+    /// the connection made only to an address the SSRF check allows, the
+    /// headers sent as given, no redirects followed.
+    pub async fn post(&self, req: &Post<'_>) -> Result<Posted, AppError> {
+        let Some((host, port)) = post_target(req.url) else {
+            return Ok(Posted::Failed(format!("bad URI(is not URI?): {}", req.url)));
+        };
+        let addrs = match self.lookup_and_filter_ips(&host).await? {
+            Lookup::Allowed(addrs) => addrs,
+            Lookup::Disallowed => return Ok(Posted::Blocked),
+            Lookup::Failed => {
+                return Ok(Posted::Failed("FinalDestination: lookup failed".into()));
+            }
+        };
+        let addrs: Vec<SocketAddr> = addrs.iter().map(|ip| SocketAddr::new(*ip, port)).collect();
+        let client = reqwest::Client::builder()
+            .redirect(reqwest::redirect::Policy::none())
+            .connect_timeout(req.timeout)
+            .timeout(req.timeout)
+            .http1_title_case_headers()
+            .danger_accept_invalid_certs(!req.verify_certificate)
+            .resolve_to_addrs(&host, &addrs)
+            .build()?;
+        let mut request = client.post(req.url);
+        for (name, value) in req.headers {
+            request = request.header(name.as_str(), value.as_str());
+        }
+        let response = match request.body(req.body.to_vec()).send().await {
+            Ok(r) => r,
+            Err(e) => {
+                let cause = if e.is_timeout() {
+                    "execution expired".to_string()
+                } else if e.is_connect() {
+                    "Connection refused".to_string()
+                } else {
+                    e.to_string()
+                };
+                return Ok(Posted::Failed(format!(
+                    "Failed to open TCP connection to {host}:{port} ({cause})"
+                )));
+            }
+        };
+        let status = response.status().as_u16();
+        // Net::HTTP's headers, each name once, its values joined; a
+        // response carries the User-Agent Discourse's patch gives every
+        // header set first.
+        let mut headers: Vec<(String, String)> = vec![("user-agent".into(), req.user_agent.into())];
+        for (name, value) in response.headers() {
+            let value = String::from_utf8_lossy(value.as_bytes()).into_owned();
+            match headers.iter_mut().find(|(n, _)| n == name.as_str()) {
+                Some((_, v)) => {
+                    v.push_str(", ");
+                    v.push_str(&value);
+                }
+                None => headers.push((name.as_str().to_string(), value)),
+            }
+        }
+        let body = match response.bytes().await {
+            Ok(b) => String::from_utf8_lossy(&b).into_owned(),
+            Err(e) => return Ok(Posted::Failed(e.to_string())),
+        };
+        Ok(Posted::Response {
+            status,
+            headers,
+            body,
+        })
     }
 
     /// `FinalDestination#get`: the page's beginning, up to `max_bytes`, or

@@ -315,7 +315,13 @@ then by what running a forum needs (milestone 6). Briefs:
     S (`web_hooks::active`, Rails' INNER JOIN on the event types and its
     event name translation, at every site; each core event the port
     writes refused while a hook would receive it), 83b.
-    `feat/web-hooks-admin` M, 83c. `feat/web-hooks-posts` M, 83d.
+    ~~`feat/web-hooks-admin`~~ (done) M (/admin/api/web_hooks CRUD with
+    its validations, the SSRF lookup and the staff logs, the deprecated
+    tag_names creating tags, the events list, bulk, ping, redeliver and
+    failed_redeliver; emit_web_hook_event's delivery through
+    FinalDestination's checked POST, its headers and signature, retries
+    and deactivation; the five scheduled jobs; the admin pages refused),
+    83c. `feat/web-hooks-posts` M, 83d.
     `feat/web-hooks-users` M;
 84. ~~`feat/user-api-keys`~~ (done) M (the `User-Api-Key` header: lookup,
     the two limiters, scopes by route, last use and client id writes, no

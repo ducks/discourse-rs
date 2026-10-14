@@ -1,0 +1,7 @@
+{
+  "user": "admin",
+  "settings": {"allowed_internal_hosts": "fixtures.localhost", "tagging_enabled": true},
+  "requests": [
+    {"method": "POST", "path": "/admin/api/web_hooks.json", "params": {"web_hook": {"payload_url": "http://fixtures.localhost:8099/hook", "web_hook_event_type_ids": ["201"], "tag_names": ["howto", "brand-new"], "tag_ids": ["2"]}}}
+  ]
+}
