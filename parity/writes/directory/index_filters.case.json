@@ -1,0 +1,53 @@
+{
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/directory_items.json",
+      "params": {
+        "period": "all",
+        "username": "user2"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/directory_items.json",
+      "params": {
+        "period": "all",
+        "exclude_usernames": "user1,User2"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/directory_items.json",
+      "params": {
+        "period": "all",
+        "group": "staff"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/directory_items.json",
+      "params": {
+        "period": "all",
+        "group": "nope"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/directory_items.json",
+      "params": {
+        "period": "all",
+        "exclude_groups": "staff|admins"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/directory_items.json",
+      "params": {
+        "period": "all",
+        "username": "nobody"
+      }
+    }
+  ],
+  "user": "admin"
+}

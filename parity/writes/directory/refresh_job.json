@@ -1,0 +1,269 @@
+{
+  "name": "refresh_job",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-14T02:31:45.058678",
+  "transaction_started_at": "2026-10-14T02:31:43.893132",
+  "responses": [],
+  "changes": {
+    "directory_items": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 3,
+            "user_id": 3,
+            "solutions": 0,
+            "created_at": null,
+            "post_count": 0,
+            "posts_read": 0,
+            "updated_at": null,
+            "likes_given": 0,
+            "period_type": 5,
+            "topic_count": 0,
+            "days_visited": 1,
+            "likes_received": 1,
+            "topics_entered": 0,
+            "gamification_score": 0
+          },
+          "after": {
+            "id": 3,
+            "user_id": 3,
+            "solutions": 0,
+            "created_at": null,
+            "post_count": 0,
+            "posts_read": 0,
+            "updated_at": null,
+            "likes_given": 0,
+            "period_type": 5,
+            "topic_count": 0,
+            "days_visited": 0,
+            "likes_received": 0,
+            "topics_entered": 0,
+            "gamification_score": 0
+          }
+        },
+        {
+          "before": {
+            "id": 1,
+            "user_id": 1,
+            "solutions": 0,
+            "created_at": null,
+            "post_count": 0,
+            "posts_read": 0,
+            "updated_at": null,
+            "likes_given": 0,
+            "period_type": 5,
+            "topic_count": 0,
+            "days_visited": 1,
+            "likes_received": 0,
+            "topics_entered": 0,
+            "gamification_score": 0
+          },
+          "after": {
+            "id": 1,
+            "user_id": 1,
+            "solutions": 0,
+            "created_at": null,
+            "post_count": 0,
+            "posts_read": 0,
+            "updated_at": null,
+            "likes_given": 0,
+            "period_type": 5,
+            "topic_count": 0,
+            "days_visited": 0,
+            "likes_received": 0,
+            "topics_entered": 0,
+            "gamification_score": 0
+          }
+        },
+        {
+          "before": {
+            "id": 2,
+            "user_id": 2,
+            "solutions": 0,
+            "created_at": null,
+            "post_count": 1,
+            "posts_read": 0,
+            "updated_at": null,
+            "likes_given": 1,
+            "period_type": 5,
+            "topic_count": 0,
+            "days_visited": 1,
+            "likes_received": 0,
+            "topics_entered": 0,
+            "gamification_score": 0
+          },
+          "after": {
+            "id": 2,
+            "user_id": 2,
+            "solutions": 0,
+            "created_at": null,
+            "post_count": 0,
+            "posts_read": 0,
+            "updated_at": null,
+            "likes_given": 0,
+            "period_type": 5,
+            "topic_count": 0,
+            "days_visited": 0,
+            "likes_received": 0,
+            "topics_entered": 0,
+            "gamification_score": 0
+          }
+        },
+        {
+          "before": {
+            "id": 23,
+            "user_id": 3,
+            "solutions": 0,
+            "created_at": null,
+            "post_count": 1,
+            "posts_read": 0,
+            "updated_at": null,
+            "likes_given": 1,
+            "period_type": 4,
+            "topic_count": 1,
+            "days_visited": 1,
+            "likes_received": 1,
+            "topics_entered": 0,
+            "gamification_score": 0
+          },
+          "after": {
+            "id": 23,
+            "user_id": 3,
+            "solutions": 0,
+            "created_at": null,
+            "post_count": 0,
+            "posts_read": 0,
+            "updated_at": null,
+            "likes_given": 0,
+            "period_type": 4,
+            "topic_count": 0,
+            "days_visited": 0,
+            "likes_received": 0,
+            "topics_entered": 0,
+            "gamification_score": 0
+          }
+        },
+        {
+          "before": {
+            "id": 24,
+            "user_id": 4,
+            "solutions": 0,
+            "created_at": null,
+            "post_count": 1,
+            "posts_read": 0,
+            "updated_at": null,
+            "likes_given": 0,
+            "period_type": 4,
+            "topic_count": 0,
+            "days_visited": 0,
+            "likes_received": 0,
+            "topics_entered": 0,
+            "gamification_score": 0
+          },
+          "after": {
+            "id": 24,
+            "user_id": 4,
+            "solutions": 0,
+            "created_at": null,
+            "post_count": 0,
+            "posts_read": 0,
+            "updated_at": null,
+            "likes_given": 0,
+            "period_type": 4,
+            "topic_count": 0,
+            "days_visited": 0,
+            "likes_received": 0,
+            "topics_entered": 0,
+            "gamification_score": 0
+          }
+        },
+        {
+          "before": {
+            "id": 21,
+            "user_id": 1,
+            "solutions": 0,
+            "created_at": null,
+            "post_count": 1,
+            "posts_read": 0,
+            "updated_at": null,
+            "likes_given": 0,
+            "period_type": 4,
+            "topic_count": 1,
+            "days_visited": 1,
+            "likes_received": 0,
+            "topics_entered": 0,
+            "gamification_score": 0
+          },
+          "after": {
+            "id": 21,
+            "user_id": 1,
+            "solutions": 0,
+            "created_at": null,
+            "post_count": 0,
+            "posts_read": 0,
+            "updated_at": null,
+            "likes_given": 0,
+            "period_type": 4,
+            "topic_count": 0,
+            "days_visited": 0,
+            "likes_received": 0,
+            "topics_entered": 0,
+            "gamification_score": 0
+          }
+        },
+        {
+          "before": {
+            "id": 22,
+            "user_id": 2,
+            "solutions": 0,
+            "created_at": null,
+            "post_count": 1,
+            "posts_read": 0,
+            "updated_at": null,
+            "likes_given": 1,
+            "period_type": 4,
+            "topic_count": 2,
+            "days_visited": 1,
+            "likes_received": 1,
+            "topics_entered": 0,
+            "gamification_score": 0
+          },
+          "after": {
+            "id": 22,
+            "user_id": 2,
+            "solutions": 0,
+            "created_at": null,
+            "post_count": 0,
+            "posts_read": 0,
+            "updated_at": null,
+            "likes_given": 0,
+            "period_type": 4,
+            "topic_count": 0,
+            "days_visited": 0,
+            "likes_received": 0,
+            "topics_entered": 0,
+            "gamification_score": 0
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "enqueue": [
+    [
+      "directory_refresh",
+      {}
+    ]
+  ],
+  "include_tables": [],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "d214d0d8c58f6e59abdb3d84ea56055c4961bcf68da877638138a892cbb707ed",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

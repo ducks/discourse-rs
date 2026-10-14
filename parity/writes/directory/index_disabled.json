@@ -1,0 +1,37 @@
+{
+  "name": "index_disabled",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/directory_items.json",
+      "params": {
+        "period": "all"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T02:31:33.447616",
+  "transaction_started_at": "2026-10-14T02:31:32.412499",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "enable_user_directory": false
+  },
+  "recorded_from": {
+    "case": "58be0563e45ccfd919fdb91b2f0ee39ff45c1f0bc342bd8fa6bf96d73186f858",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

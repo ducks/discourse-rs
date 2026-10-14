@@ -1,0 +1,14 @@
+{
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/directory_items.json",
+      "params": {
+        "period": "all"
+      }
+    }
+  ],
+  "settings": {
+    "enable_user_directory": false
+  }
+}

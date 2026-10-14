@@ -1,0 +1,39 @@
+{
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/directory_items.json",
+      "params": {
+        "period": "weekly",
+        "order": "topic_count",
+        "asc": "true"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/directory_items.json",
+      "params": {
+        "period": "all",
+        "order": "username"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/directory_items.json",
+      "params": {
+        "period": "all",
+        "order": "nonsense"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/directory_items.json",
+      "params": {
+        "period": "all",
+        "order": "days_visited",
+        "page": "1",
+        "limit": "2"
+      }
+    }
+  ]
+}

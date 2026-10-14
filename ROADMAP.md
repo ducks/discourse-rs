@@ -197,7 +197,11 @@ Bugs or silent gaps in what is merged, small and independent.
 73. ~~`feat/about-stats`~~ (done) S/M (about.json with Stat.api_stats and
     their cache, the about_stats job, live_post_counts. Left: the about
     page's HTML; category moderators, banner image, localized settings
-    and visitor stats are refused), 74. `feat/directory` M
+    and visitor stats are refused), 74. ~~`feat/directory`~~ (done) M (/directory_items with
+    its filters, orders and pages, DirectoryItem.refresh_period! with the
+    solved and gamification column queries, the directory_refresh job.
+    Left: the users page's HTML; searching by name (UserSearch) and user
+    fields are refused)
 75. `feat/review-reject-queued-post` M,
     76. ~~`feat/user-destroyer-delete-posts`~~ (done) M (agreeing as spammer
     with queued and reviewed posts waits on 75; block_urls on onebox engines)

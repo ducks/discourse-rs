@@ -1,0 +1,97 @@
+{
+  "name": "index_errors",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/directory_items.json"
+    },
+    {
+      "method": "GET",
+      "path": "/directory_items.json",
+      "params": {
+        "period": "bogus"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/directory_items.json",
+      "params": {
+        "period": "all",
+        "page": "11"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/directory_items.json",
+      "params": {
+        "period": "all",
+        "page": "x"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/directory_items.json",
+      "params": {
+        "period": "all",
+        "limit": "51"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T02:31:35.701834",
+  "transaction_started_at": "2026-10-14T02:31:34.196799",
+  "responses": [
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "param is missing or the value is empty or invalid: period"
+        ]
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: page"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: page"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: limit"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "96ade3bb59e04835ea0a856010b9a96ad0ecd57e7a6f560588ad2b7d72e07195",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
