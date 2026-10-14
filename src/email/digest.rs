@@ -22,10 +22,12 @@ const LIKED: i32 = 5;
 const MAX_UNREAD_NOTIFICATIONS: i64 = 99;
 
 /// What the caller asks of the mailer: the admin's preview gives a date
-/// and leaves the unsubscribe links out.
+/// (as the time it means and the text it was given in, which the digest
+/// shows and keys its new users count by) and leaves the unsubscribe links
+/// out.
 #[derive(Default)]
 pub struct Options {
-    pub since: Option<NaiveDateTime>,
+    pub since: Option<(NaiveDateTime, String)>,
     pub skip_unsubscribe_links: bool,
 }
 
@@ -544,8 +546,8 @@ pub async fn build(
     };
 
     let now = crate::clock::now_naive();
-    let since = match opts.since {
-        Some(since) => since,
+    let since = match &opts.since {
+        Some((since, _)) => *since,
         None => [
             user.last_seen_at,
             user.digest_attempted_at,
@@ -806,7 +808,11 @@ pub async fn build(
         }
     }
     if counts.len() < 3 && user.digest_after_minutes.unwrap_or(0) >= 1440 {
-        let value = summary_new_users_count(&mut *conn, since).await?;
+        let date = match &opts.since {
+            Some((_, text)) => text.clone(),
+            None => since.format("%Y-%m-%d").to_string(),
+        };
+        let value = summary_new_users_count(&mut *conn, &date).await?;
         if value > 0 {
             counts.push(Count {
                 id: "new_users",
@@ -818,7 +824,10 @@ pub async fn build(
     }
 
     // Ruby's Time#to_s.
-    let since_text = since.format("%Y-%m-%d %H:%M:%S UTC").to_string();
+    let since_text = match &opts.since {
+        Some((_, text)) => text.clone(),
+        None => since.format("%Y-%m-%d %H:%M:%S UTC").to_string(),
+    };
     let preheader = t("preheader", &[("since", &since_text)])?;
     let subject_key = if s.get("simple_email_subject")?.truthy() {
         "subject_template_improved"
@@ -1332,13 +1341,9 @@ fn text_excerpt(cooked: &str, post_url: &str) -> String {
 }
 
 /// `summary_new_users_count(since)`: real, activated, unstaged,
-/// unsuspended users created after the day of `since`, cached a day per
-/// day as Redis keeps it.
-async fn summary_new_users_count(
-    conn: &mut PgConnection,
-    since: NaiveDateTime,
-) -> Result<i64, AppError> {
-    let date = since.format("%Y-%m-%d").to_string();
+/// unsuspended users created after `date` (since's day, or the text the
+/// admin gave), cached a day per date as Redis keeps it.
+async fn summary_new_users_count(conn: &mut PgConnection, date: &str) -> Result<i64, AppError> {
     let key = format!("summary-new-users:{date}");
     if let Some(value) = crate::owned_schema::cached_get(&mut *conn, &key).await? {
         return Ok(crate::ruby::to_i(&value));
@@ -1348,9 +1353,9 @@ async fn summary_new_users_count(
          AND NOT EXISTS (SELECT 1 FROM anonymous_users a WHERE a.user_id = u.id) \
          AND u.active AND NOT u.staged \
          AND (u.suspended_till IS NULL OR u.suspended_till <= now()) \
-         AND u.created_at > $1::date",
+         AND u.created_at > $1::timestamp",
     )
-    .bind(&date)
+    .bind(date)
     .fetch_one(&mut *conn)
     .await?;
     crate::owned_schema::cached_setex(&mut *conn, &key, 86_400, &count.to_string()).await?;

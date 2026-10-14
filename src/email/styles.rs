@@ -224,6 +224,27 @@ fn all_elements(node: &Handle, out: &mut Vec<Handle>) {
 
 // ---- the document ----
 
+/// `node['xml:lang'] = value`: libxml2 sets the attribute in the XML
+/// namespace, a different one from the `xml:lang` the HTML parser read as
+/// a plain name, so a template carrying one serializes it twice (the next
+/// parse keeps the first).
+fn set_xml_lang(node: &Handle, value: &str) {
+    use html5ever::{LocalName, Prefix, QualName, namespace_url, ns};
+    if let NodeData::Element { attrs, .. } = &node.data {
+        let mut attrs = attrs.borrow_mut();
+        let existing = attrs
+            .iter_mut()
+            .find(|a| a.name.ns == ns!(xml) && &*a.name.local == "lang");
+        match existing {
+            Some(a) => a.value = value.into(),
+            None => attrs.push(html5ever::Attribute {
+                name: QualName::new(Some(Prefix::from("xml")), ns!(xml), LocalName::from("lang")),
+                value: value.into(),
+            }),
+        }
+    }
+}
+
 /// `Email::Styles`
 pub struct Styles {
     dom: RcDom,
@@ -299,7 +320,11 @@ impl Styles {
                 Self::add_styles(&node, style);
             }
             for (k, v) in attrs {
-                set_attr(&node, k, v);
+                if *k == "xml:lang" {
+                    set_xml_lang(&node, v);
+                } else {
+                    set_attr(&node, k, v);
+                }
             }
         }
     }

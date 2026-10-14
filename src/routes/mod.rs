@@ -654,6 +654,19 @@ pub fn router(state: &AppState) -> Router<AppState> {
         )
         .route("/admin/email/handle_mail", post(admin_email::handle_mail))
         .route(
+            "/admin/email/preview-digest",
+            get(admin_email::preview_digest),
+        )
+        .route(
+            "/admin/email/preview-digest.json",
+            get(admin_email::preview_digest),
+        )
+        .route("/admin/email/send-digest", post(admin_email::send_digest))
+        .route(
+            "/admin/email/send-digest.json",
+            post(admin_email::send_digest),
+        )
+        .route(
             "/admin/email/handle_mail.json",
             post(admin_email::handle_mail),
         )

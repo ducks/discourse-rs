@@ -1,0 +1,17 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/email/preview-digest.json?username=user0"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/email/preview-digest.json?last_seen_at=2026-10-01"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/email/preview-digest.json?last_seen_at=2026-10-01&username=nobody"
+    }
+  ]
+}

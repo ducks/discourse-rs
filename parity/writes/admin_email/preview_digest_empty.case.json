@@ -1,0 +1,9 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/email/preview-digest.json?last_seen_at=2026-10-13&username=user0"
+    }
+  ]
+}

@@ -1,0 +1,106 @@
+{
+  "name": "send_digest_empty_and_errors",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/email/send-digest.json",
+      "params": {
+        "last_seen_at": "2026-10-13",
+        "username": "user0",
+        "email": "elsewhere@example.com"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/email/send-digest.json",
+      "params": {
+        "last_seen_at": "2026-10-01",
+        "username": "user0"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/email/send-digest.json",
+      "params": {
+        "last_seen_at": "2026-10-01",
+        "username": "nobody",
+        "email": "a@example.com"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T03:11:03.387586",
+  "transaction_started_at": "2026-10-14T03:11:01.506534",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "zXyhx3BV0/k6X1fCykwO0RIYmXs=",
+            "created_at": "2026-10-14T03:11:02.01152",
+            "rotated_at": "2026-10-14T03:11:02.009783",
+            "updated_at": "2026-10-14T03:11:02.01152",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "zXyhx3BV0/k6X1fCykwO0RIYmXs=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 1,
+            "seen_at": "2026-10-14T03:11:03.396958",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "zXyhx3BV0/k6X1fCykwO0RIYmXs=",
+            "created_at": "2026-10-14T03:11:02.01152",
+            "rotated_at": "2026-10-14T03:11:02.009783",
+            "updated_at": "2026-10-14T03:11:02.01152",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "zXyhx3BV0/k6X1fCykwO0RIYmXs=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "942b1dafebf41f25bc6d78bef1be0ed3f77c6543804f5f459c872b52e4e7379c",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

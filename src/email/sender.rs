@@ -144,6 +144,21 @@ async fn message_ids(
     .await?)
 }
 
+/// `Email::Renderer#html` of a message's HTML part: styled for mail
+/// clients, links absolute.
+pub fn renderer_html(ctx: &Ctx<'_>, html_part: &str) -> Result<String, AppError> {
+    let urls = Urls {
+        config: ctx.config,
+        settings: ctx.settings,
+    };
+    let base_url = urls.base_url()?;
+    let base_url_no_prefix = urls.base_url_no_prefix()?;
+    let style = Styles::new(html_part);
+    style.format_basic(&base_url)?;
+    style.format_html(ctx.settings)?;
+    Ok(style.to_html(&base_url, &base_url_no_prefix))
+}
+
 /// `Email::Sender.new(message, type, user).send`
 pub async fn send(
     conn: &mut PgConnection,
@@ -209,15 +224,8 @@ pub async fn send(
         settings: s,
     };
     let base_url = urls.base_url()?;
-    let base_url_no_prefix = urls.base_url_no_prefix()?;
 
-    // Email::Renderer#html
-    let rendered = {
-        let style = Styles::new(&built.html_part);
-        style.format_basic(&base_url)?;
-        style.format_html(s)?;
-        style.to_html(&base_url, &base_url_no_prefix)
-    };
+    let rendered = renderer_html(ctx, &built.html_part)?;
     let store = crate::file_store::FileStore::for_site(ctx.config, s)?;
     if message
         .text
