@@ -1,0 +1,6 @@
+{
+  "user": null,
+  "requests": [],
+  "enqueue": [["fix_user_usernames_and_groups_names_clash", {}]],
+  "run_jobs": ["fix_user_usernames_and_groups_names_clash"]
+}

@@ -242,7 +242,7 @@ fn remove(node: &Handle) {
 /// `Addressable::URI.encode_component` with its default character class:
 /// everything but RFC 3986's reserved and unreserved characters is
 /// percent-encoded, `%` included.
-pub(super) fn encode_component(s: &str) -> String {
+pub(crate) fn encode_component(s: &str) -> String {
     let mut out = String::with_capacity(s.len());
     for c in s.chars() {
         let keep = c.is_ascii_alphanumeric() || "-._~:/?#[]@!$&'()*+,;=".contains(c);

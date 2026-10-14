@@ -1,0 +1,77 @@
+{
+  "name": "username_change_reserved",
+  "user": "user2",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/user2/preferences/username.json",
+      "params": {
+        "new_username": "Support"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T02:47:28.245845",
+  "transaction_started_at": "2026-10-14T02:47:26.414434",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "That username is not allowed."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "seen_at": null,
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "H2vT4hvEfh3KMMavjGDn0JZe/AY=",
+            "created_at": "2026-10-14T02:47:27.663018",
+            "rotated_at": "2026-10-14T02:47:27.661871",
+            "updated_at": "2026-10-14T02:47:27.663018",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "H2vT4hvEfh3KMMavjGDn0JZe/AY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 1,
+            "seen_at": "2026-10-14T02:47:28.260797",
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "H2vT4hvEfh3KMMavjGDn0JZe/AY=",
+            "created_at": "2026-10-14T02:47:27.663018",
+            "rotated_at": "2026-10-14T02:47:27.661871",
+            "updated_at": "2026-10-14T02:47:27.663018",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "H2vT4hvEfh3KMMavjGDn0JZe/AY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE users SET created_at = now() - interval '1 day' WHERE id = 4"
+  ],
+  "recorded_from": {
+    "case": "ca351cf1b843597f4d449fbe342432edfbaf1b7804a3d9223a985e2ff15ff4e2",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

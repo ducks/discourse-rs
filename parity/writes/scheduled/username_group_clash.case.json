@@ -1,0 +1,11 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO groups (name, created_at, updated_at) VALUES ('user2', now(), now()), ('USER3', now(), now()), ('user21', now(), now())",
+    "UPDATE posts SET raw = raw || E'\\n\\nThanks @user2.', cooked = cooked || E'\\n<p>Thanks <a class=\"mention\" href=\"/u/user2\">@user2</a>.</p>' WHERE id = 36",
+    "INSERT INTO user_actions (action_type, user_id, target_topic_id, target_post_id, acting_user_id, created_at, updated_at) VALUES (7, 4, 35, 36, 3, now(), now())"
+  ],
+  "requests": [],
+  "enqueue": [["fix_user_usernames_and_groups_names_clash", {}]],
+  "run_jobs": ["fix_user_usernames_and_groups_names_clash"]
+}

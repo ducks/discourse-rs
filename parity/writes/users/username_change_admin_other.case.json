@@ -1,0 +1,27 @@
+{
+  "user": "admin",
+  "settings": {
+    "external_system_avatars_url": "https://avatars.example.com/v4/letter/{first_letter}/{color}/{size}.png"
+  },
+  "setup": [
+    "UPDATE posts SET raw = E'[quote=\"user1, post:2, topic:35\"]\\nReply one\\n[/quote]\\n\\nI agree with @user1 and @User1, not a@user1 or @user12. Also user1: &amp; done', cooked = E'<aside class=\"quote no-group\" data-username=\"user1\" data-post=\"2\" data-topic=\"35\">\\n<div class=\"title\">\\n<div class=\"quote-controls\"></div>\\n<img loading=\"lazy\" alt=\"\" width=\"24\" height=\"24\" src=\"https://avatars.example.com/v4/letter/u/aaaaaa/48.png\" class=\"avatar\"> user1:</div>\\n<blockquote>\\n<p>Reply one</p>\\n</blockquote>\\n</aside>\\n<p>I agree with <a class=\"mention\" href=\"/u/user1\">@user1</a> and <a class=\"mention\" href=\"/users/User1\">@User1</a>, not a@user1 or <a class=\"mention\" href=\"/u/user12\">@user12</a>. Also user1: &amp; done&nbsp;<br>end</p>' WHERE id = 37",
+    "INSERT INTO quoted_posts (post_id, quoted_post_id, created_at, updated_at) VALUES (37, 36, now(), now())",
+    "UPDATE posts SET raw = raw || E'\\n\\nWritten by @user1.', cooked = cooked || E'\\n<p>Written by <a class=\"mention\" href=\"/u/user1\">@user1</a>.</p>' WHERE id = 42",
+    "UPDATE posts SET raw = raw || E'\\n\\nPing @user1.', cooked = cooked || E'\\n<p>Ping <a class=\"mention\" href=\"/u/user1\">@user1</a>.</p>' WHERE id = 45",
+    "INSERT INTO user_actions (action_type, user_id, target_topic_id, target_post_id, acting_user_id, created_at, updated_at) VALUES (7, 3, 40, 45, 4, now(), now())",
+    "UPDATE posts SET raw = raw || E'\\n\\nAsk @user1.', cooked = cooked || E'\\n<p>Ask <a class=\"mention\" href=\"/u/user1\">@user1</a>.</p>' WHERE id = 34",
+    "INSERT INTO post_revisions (id, user_id, post_id, modifications, number, created_at, updated_at, hidden) VALUES (9401, 2, 52, E'--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\\nraw:\\n- Reply from user0\\n- Reply from user0 mentioning @user1 so a mention notification exists.\\ncooked:\\n- \"<p>Reply from user0</p>\"\\n- <p>Reply from user0 mentioning <a class=\"mention\" href=\"/u/user1\">@user1</a> so a mention notification exists.</p>\\n', 2, now() - interval '1 day', now() - interval '1 day', FALSE)",
+    "INSERT INTO post_revisions (id, user_id, post_id, modifications, number, created_at, updated_at, hidden) VALUES (9402, 2, 35, E'--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\\ntitle:\\n- raw text @user1\\n- Another title\\n', 2, now() - interval '1 day', now() - interval '1 day', FALSE)",
+    "INSERT INTO post_custom_fields (post_id, name, value, created_at, updated_at) VALUES (44, 'action_code_who', 'user1', now() - interval '1 day', now() - interval '1 day')"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/user1/preferences/username.json",
+      "params": {
+        "new_username": "user1new"
+      }
+    }
+  ],
+  "run_jobs": ["update_username"]
+}

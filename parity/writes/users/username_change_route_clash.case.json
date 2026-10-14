@@ -1,0 +1,4 @@
+{
+  "user": "admin",
+  "requests": [{"method": "PUT", "path": "/u/user1/preferences/username.json", "params": {"new_username": "Check_Username"}}]
+}

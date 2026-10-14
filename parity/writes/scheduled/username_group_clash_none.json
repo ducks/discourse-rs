@@ -1,0 +1,23 @@
+{
+  "name": "username_group_clash_none",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-14T02:46:47.732515",
+  "transaction_started_at": "2026-10-14T02:46:45.15581",
+  "responses": [],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "enqueue": [
+    [
+      "fix_user_usernames_and_groups_names_clash",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "5e2c3934a1081cfa7bc70a7c86051df6b335d300f830480bf881ba75c3155df3",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

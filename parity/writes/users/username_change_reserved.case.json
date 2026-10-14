@@ -1,0 +1,5 @@
+{
+  "user": "user2",
+  "setup": ["UPDATE users SET created_at = now() - interval '1 day' WHERE id = 4"],
+  "requests": [{"method": "PUT", "path": "/u/user2/preferences/username.json", "params": {"new_username": "Support"}}]
+}

@@ -1,0 +1,5 @@
+{
+  "user": "admin",
+  "settings": {"auth_overrides_username": true},
+  "requests": [{"method": "PUT", "path": "/u/user1/preferences/username.json", "params": {"new_username": "user1b"}}]
+}

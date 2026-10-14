@@ -1,0 +1,74 @@
+{
+  "name": "username_change_route_clash",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/user1/preferences/username.json",
+      "params": {
+        "new_username": "Check_Username"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T02:47:30.716219",
+  "transaction_started_at": "2026-10-14T02:47:28.646002",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "That username is not allowed."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "6B39m3QUIHLXVjJXQdi2fmx9J0E=",
+            "created_at": "2026-10-14T02:47:30.12132",
+            "rotated_at": "2026-10-14T02:47:30.119815",
+            "updated_at": "2026-10-14T02:47:30.12132",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "6B39m3QUIHLXVjJXQdi2fmx9J0E=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 1,
+            "seen_at": "2026-10-14T02:47:30.723513",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "6B39m3QUIHLXVjJXQdi2fmx9J0E=",
+            "created_at": "2026-10-14T02:47:30.12132",
+            "rotated_at": "2026-10-14T02:47:30.119815",
+            "updated_at": "2026-10-14T02:47:30.12132",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "6B39m3QUIHLXVjJXQdi2fmx9J0E=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "3a6cc1606e44dbc20181b31059f127a39318a482ff2c4d2cf455da7f93ce1dc0",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

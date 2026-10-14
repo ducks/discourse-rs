@@ -153,3 +153,105 @@ pub async fn update(
     )
         .into_response())
 }
+
+fn errors(status: StatusCode, message: String) -> Response {
+    (status, Json(json!({ "errors": [message] }))).into_response()
+}
+
+/// PUT /u/:username/preferences/username(.json): UsersController#username.
+pub async fn username(
+    state: AppState,
+    guardian: crate::guardian::Guardian,
+    username: String,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    use crate::username_changer::{self, Changed, Update};
+    let p = params::parse(uri.query(), &headers, &body);
+    if !csrf_ok(&state, &headers, &form_pairs(&p), uri.path(), "PUT") {
+        return Ok(bad_csrf());
+    }
+    if guardian.is_anonymous() {
+        return Ok(super::login_required::not_logged_in(&state));
+    }
+    // params.require(:new_username)
+    let new_username = match p.get("new_username") {
+        None => None,
+        Some(v) => match params::scalar(v) {
+            Some(s) => Some(s),
+            None => return Err(crate::Unsupported("a new_username that is not a string").into()),
+        },
+    };
+    let Some(new_username) = new_username.filter(|v| !crate::ruby::is_blank(v)) else {
+        return Ok(super::accounts::param_missing("new_username"));
+    };
+    let mut tx = state.pool.begin().await?;
+    let settings =
+        SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
+    // UsernameValidator::MAX_CHARS * 3
+    if new_username.chars().count() > 180 {
+        let max = settings.get("max_username_length")?.to_i();
+        let form = if max == 1 { "one" } else { "other" };
+        let message = state
+            .i18n
+            .t_with(
+                &format!("user.username.long.{form}"),
+                &[("count", &max.to_string())],
+            )
+            .unwrap_or_default();
+        return Ok(errors(StatusCode::UNPROCESSABLE_ENTITY, message));
+    }
+    if crate::signup::clashing_with_existing_route(&new_username)?
+        || (crate::signup::reserved_by_settings(&settings, &new_username)? && !guardian.is_admin())
+    {
+        let message = state.i18n.t("login.reserved_username").unwrap_or("");
+        return Ok(errors(
+            StatusCode::UNPROCESSABLE_ENTITY,
+            message.to_string(),
+        ));
+    }
+    let Some(target) = user_updater::find_target(&mut tx, &guardian, &username).await? else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    if !username_changer::can_edit_username(&mut tx, &settings, &guardian, target.id).await? {
+        // rescue Discourse::InvalidAccess
+        if guardian.is_staff() {
+            let message = state
+                .i18n
+                .t("errors.messages.auth_overrides_username")
+                .unwrap_or("");
+            return Ok(errors(
+                StatusCode::UNPROCESSABLE_ENTITY,
+                message.to_string(),
+            ));
+        }
+        return Ok((StatusCode::FORBIDDEN, Json(json!({ "failed": "FAILED" }))).into_response());
+    }
+    let host = Host::from_state(&state);
+    let ctx = Ctx {
+        host: &host,
+        settings: &settings,
+        config: &state.config,
+        i18n: &state.i18n,
+        bus: &state.bus,
+    };
+    let changed = username_changer::change(
+        &mut tx,
+        &ctx,
+        target.id,
+        &new_username,
+        guardian.user_id(),
+        Update::Enqueue,
+    )
+    .await?;
+    let response = match changed {
+        Changed::Changed => {
+            Json(json!({ "id": target.id, "username": new_username })).into_response()
+        }
+        Changed::Same => errors(StatusCode::UNPROCESSABLE_ENTITY, String::new()),
+        Changed::Invalid(messages) => errors(StatusCode::UNPROCESSABLE_ENTITY, messages.join(",")),
+    };
+    tx.commit().await?;
+    Ok(response)
+}

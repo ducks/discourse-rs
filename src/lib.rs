@@ -122,6 +122,7 @@ pub mod user_private;
 pub mod user_profile_view;
 pub mod user_search;
 pub mod user_updater;
+pub mod username_changer;
 pub mod users;
 
 use std::sync::Arc;

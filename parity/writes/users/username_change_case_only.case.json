@@ -1,0 +1,18 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/user0/preferences/username.json",
+      "params": {
+        "new_username": "User0"
+      }
+    }
+  ],
+  "run_jobs": [
+    "update_username"
+  ],
+  "settings": {
+    "external_system_avatars_url": "https://avatars.example.com/v4/letter/{first_letter}/{color}/{size}.png"
+  }
+}

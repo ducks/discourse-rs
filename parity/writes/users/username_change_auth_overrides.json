@@ -1,0 +1,77 @@
+{
+  "name": "username_change_auth_overrides",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/user1/preferences/username.json",
+      "params": {
+        "new_username": "user1b"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T02:47:04.14828",
+  "transaction_started_at": "2026-10-14T02:47:01.589033",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Username needs to be updated on authentication provider side, since `auth_overrides_username` setting is enabled."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "LByfIucIB/WmXtgnCuFooe2vf5g=",
+            "created_at": "2026-10-14T02:47:02.512679",
+            "rotated_at": "2026-10-14T02:47:02.509602",
+            "updated_at": "2026-10-14T02:47:02.512679",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "LByfIucIB/WmXtgnCuFooe2vf5g=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 1,
+            "seen_at": "2026-10-14T02:47:04.161541",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "LByfIucIB/WmXtgnCuFooe2vf5g=",
+            "created_at": "2026-10-14T02:47:02.512679",
+            "rotated_at": "2026-10-14T02:47:02.509602",
+            "updated_at": "2026-10-14T02:47:02.512679",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "LByfIucIB/WmXtgnCuFooe2vf5g=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "auth_overrides_username": true
+  },
+  "recorded_from": {
+    "case": "7a39e6eaef5ebc2dd196c9c3ed5b0000e6e65f837b3dacac16b7e4ddbec2de1b",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
