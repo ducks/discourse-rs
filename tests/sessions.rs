@@ -1334,6 +1334,23 @@ async fn list_pages_show_the_members_unread_and_new_counts() {
     assert!(everything.contains(r#"class="active sidebar-section-link sidebar-row""#));
     assert!(everything.contains(dot));
     assert!(link(&html, "li[data-category-id='4']").contains(dot));
+
+    // In the mobile view the stream keeps the nav trigger's label (latest
+    // counting new and unread there) and the sheet's items.
+    client.cookies.push(("mobile_view".into(), "1".into()));
+    let mut body = client.open("/live?nav=latest&sidebar=discovery").await;
+    let mut buffer = String::new();
+    let html = common::next_sse_event(&mut body, &mut buffer, "list").await;
+    assert!(
+        html.starts_with(
+            r#"<span hx-swap-oob="innerHTML:#navigation-bar .list-control-toggle-link__text">Latest (2)</span>"#
+        ),
+        "{html}"
+    );
+    assert!(html.contains(
+        r#"<template class="list-control-toggle-link-menu" hx-swap-oob="outerHTML:#navigation-bar template.list-control-toggle-link-menu"><ul class="dropdown-menu"><li class="active latest nav-item_latest""#
+    ));
+    assert!(!html.contains("li.nav-item_new > a"));
 }
 
 /// A member's header: every page connects, the unread notification count
@@ -2286,6 +2303,30 @@ async fn the_mobile_composer_has_its_own_controls() {
     assert!(page.contains(
         r#"<a aria-label="Upload" class="btn btn-default no-text mobile-file-upload" id="mobile-file-upload">"#
     ));
+/// The mobile view's topic footer (TopicFooterButtons' mobile branch):
+/// Flag and Mark unread behind the "..." DMenu, the notifications button
+/// in the actions without its reason; and the progress bar's fullscreen
+/// timeline, ready in its template.
+#[tokio::test]
+async fn the_mobile_topic_footer_has_its_menu() {
+    let db = TestDb::new().await;
+    let mut client = Client::new(state(db.pool.clone(), config(RailsEnv::Test, &[])).await);
+    client.login("user1", "password").await;
+    client.cookies.push(("mobile_view".into(), "1".into()));
+    let page = client
+        .get("/t/parity-fixture-replies-and-posters/35")
+        .await
+        .body;
+    assert!(page.contains(
+        r#"<button aria-expanded="false" class="btn no-text fk-d-menu__trigger topic-footer-mobile-dropdown-trigger topic-footer-button btn-default" data-identifier="topic-footer-mobile-dropdown" data-trigger="" type="button">"#
+    ), "{page}");
+    assert!(page.contains(
+        r#"<li class="dropdown-menu__item"><button aria-label="Flag" class="btn btn-icon-text topic-footer-button flag-topic" id="topic-footer-button-flag""#
+    ));
+    assert!(!page.contains("notifications-button-footer"));
+    assert!(!page.contains("notifications-tracking-btn__caret\""));
+    assert!(page.contains(r#"<template class="topic-timeline-fullscreen"><div class="timeline-container timeline-fullscreen""#));
+    assert!(page.contains(r#"<h2><a class="fancy-title" href="/t/parity-fixture-replies-and-posters/35/1">Parity fixture: replies and posters</a></h2>"#));
 }
 
 #[tokio::test]

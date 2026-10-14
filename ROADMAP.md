@@ -445,11 +445,17 @@ with the viewport, guessing from the user agent without it
     /notifications and /activity/topics, which render the summary in
     place of their pages (ListController#topics_by, the badges and
     notifications lists aren't ported)
-98. `feat/mobile-menus` M: the remaining menus as bottom sheets
-    (tracking, drafts, post and topic admin menus), the topic footer's
-    "..." menu and icon-only notifications button, the progress bar's
-    expanded timeline and back button, the user card as a modal, live
-    label updates of the mobile nav trigger
+98. ~~`feat/mobile-menus`~~ (done) M: the topic footer's mobile branch
+    (Flag and Mark unread in the "..." bottom sheet, the notifications
+    button among the actions without reason or caret), the notification
+    level menu as a bottom sheet, the progress bar's back button and its
+    fullscreen timeline (TopicsController#excerpts for the post at the
+    scroller), the user card fixed over its cloak and closed by a
+    scroll, the live stream keeping the mobile nav trigger's label and
+    sheet. Left: the drafts and post menus as sheets (the port's post
+    menu has no admin menu, the drafts menu floats), the jump to post
+    prompt, the fullscreen timeline's swipe, discourse-solved's
+    notification level descriptions (desktop too)
 99. `feat/mobile-chat` M: chat's mobile layout and `chat_mobile` bundle
 
 [mobile-layout]

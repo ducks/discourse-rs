@@ -2609,3 +2609,260 @@ html.anon #topic-footer-buttons {
   width: var(--progress-bg-width, 0);
   background-color: var(--tertiary-low);
 }
+
+/* The mobile view's fullscreen timeline and the progress bar's back button
+   (topic-timeline.scss, topic.scss), extracted from the reference's compiled
+   stylesheet. */
+
+/* topic.scss:101 */
+.progress-back-container {
+  z-index: 300;
+  text-align: center;
+  margin-bottom: 0;
+  margin-right: .5em;
+  position: absolute;
+  right: 0;
+  bottom: 100%;
+}
+
+/* topic.scss:110 */
+.progress-back-container .btn,
+.progress-back-container .d-modal.json-schema-editor-modal .je-ready .json-editor-btn-add,
+.d-modal.json-schema-editor-modal .je-ready .progress-back-container .json-editor-btn-add,
+.progress-back-container .d-modal.json-schema-editor-modal .je-ready button,
+.d-modal.json-schema-editor-modal .je-ready .progress-back-container button {
+  margin: 0;
+}
+
+/* topic-timeline.scss:17 */
+.timeline-container.timeline-fullscreen.show {
+  max-height: 700px;
+}
+
+/* topic-timeline.scss:17 */
+@media(prefers-reduced-motion: no-preference) {
+  .timeline-container.timeline-fullscreen.show {
+    transition: max-height .4s ease-out;
+  }
+}
+
+/* topic-timeline.scss:17 */
+@media screen and (height <= 425px) {
+  .timeline-container.timeline-fullscreen.show {
+    max-height: 75vh;
+  }
+}
+
+/* topic-timeline.scss:29 */
+.timeline-container.timeline-fullscreen.show .topic-timeline .timeline-footer-controls {
+  display: flex;
+  flex-wrap: wrap;
+  max-width: calc(100% - 9em);
+}
+
+/* topic-timeline.scss:36 */
+.timeline-container.timeline-fullscreen.show .timeline-controls {
+  display: table-cell;
+  vertical-align: top;
+}
+
+/* topic-timeline.scss:42 */
+.timeline-container.timeline-fullscreen {
+  max-height: 0;
+  position: fixed;
+  margin-left: 0;
+  background-color: var(--secondary);
+  bottom: 0;
+  left: 0;
+  right: 0;
+  border-top: 1px solid var(--content-border-color);
+  box-shadow: var(--shadow-composer);
+  padding: 20px 0;
+  z-index: 1150;
+}
+
+/* topic-timeline.scss:42 */
+@media(prefers-reduced-motion: no-preference) {
+  .timeline-container.timeline-fullscreen {
+    transition: max-height .3s ease-in;
+  }
+}
+
+/* topic-timeline.scss:42 */
+@media screen and (height <= 425px) {
+  .timeline-container.timeline-fullscreen {
+    padding-top: 10px;
+  }
+}
+
+/* topic-timeline.scss:63 */
+.timeline-container.timeline-fullscreen .back-button {
+  display: none;
+}
+
+/* topic-timeline.scss:67 */
+.timeline-container.timeline-fullscreen .topic-timeline {
+  width: 100%;
+  table-layout: fixed;
+  margin-left: 0;
+  margin-right: 0;
+  display: table;
+  touch-action: none;
+}
+
+/* topic-timeline.scss:75 */
+.timeline-container.timeline-fullscreen .topic-timeline .topic-category {
+  margin-bottom: var(--space-2);
+}
+
+/* topic-timeline.scss:79 */
+.timeline-container.timeline-fullscreen .topic-timeline .timeline-date-wrapper {
+  text-align: right;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* topic-timeline.scss:85 */
+.timeline-container.timeline-fullscreen .topic-timeline .post-excerpt {
+  max-width: 650px;
+  line-height: var(--line-height-large);
+  display: block;
+  display: -webkit-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  overflow-wrap: break-word;
+  -webkit-line-clamp: 8;
+  -webkit-box-orient: vertical;
+}
+
+/* topic-timeline.scss:85 */
+@media screen and (height <= 425px) {
+  .timeline-container.timeline-fullscreen .topic-timeline .post-excerpt {
+    display: -webkit-box;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    overflow-wrap: break-word;
+    -webkit-line-clamp: 5;
+    -webkit-box-orient: vertical;
+  }
+}
+
+/* topic-timeline.scss:97 */
+.timeline-container.timeline-fullscreen .topic-timeline .username {
+  color: var(--primary-high-or-secondary-low);
+  overflow-wrap: break-word;
+  font-weight: bold;
+}
+
+/* topic-timeline.scss:103 */
+.timeline-container.timeline-fullscreen .topic-timeline .title {
+  margin-top: 0;
+  padding-left: 1em;
+  display: table-cell;
+  vertical-align: top;
+  width: 100%;
+}
+
+/* topic-timeline.scss:110 */
+.timeline-container.timeline-fullscreen .topic-timeline .title h2 {
+  margin-top: 0;
+  display: block;
+  line-height: var(--line-height-medium);
+  font-size: var(--font-up-2);
+  display: -webkit-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  overflow-wrap: break-word;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+}
+
+/* topic-timeline.scss:119 */
+.timeline-container.timeline-fullscreen .topic-timeline .title a {
+  color: var(--primary);
+}
+
+/* topic-timeline.scss:124 */
+.timeline-container.timeline-fullscreen .topic-timeline .timeline-last-read {
+  right: 0;
+  margin-left: 0;
+}
+
+/* topic-timeline.scss:128 */
+.timeline-container.timeline-fullscreen .topic-timeline .timeline-last-read .progress {
+  display: none;
+}
+
+/* topic-timeline.scss:133 */
+.timeline-container.timeline-fullscreen .topic-timeline .timeline-footer-controls {
+  display: none;
+  position: absolute;
+  bottom: 20px;
+  left: 10px;
+}
+
+/* topic-timeline.scss:139 */
+.timeline-container.timeline-fullscreen .topic-timeline .timeline-footer-controls .topic-admin-menu {
+  display: flex;
+}
+
+/* topic-timeline.scss:144 */
+.timeline-container.timeline-fullscreen .topic-timeline .timeline-scrollarea-wrapper {
+  display: table-cell;
+  padding-right: 1.5em;
+  width: 7em;
+}
+
+/* topic-timeline.scss:150 */
+.timeline-container.timeline-fullscreen .topic-timeline .timeline-scrollarea {
+  border-right: 1px solid var(--tertiary-low-or-tertiary-high);
+  border-left: none;
+  max-width: 120px;
+}
+
+/* topic-timeline.scss:155 */
+.timeline-container.timeline-fullscreen .topic-timeline .timeline-scrollarea .timeline-scroller {
+  position: relative;
+  margin-right: -1.5em;
+  padding-right: 1.5em;
+  justify-content: flex-end;
+}
+
+/* topic-timeline.scss:161 */
+.timeline-container.timeline-fullscreen .topic-timeline .timeline-scrollarea .timeline-scroller .timeline-scroller-content {
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow: hidden;
+  text-align: right;
+  padding-left: 0;
+  padding-right: 1em;
+}
+
+/* topic-timeline.scss:170 */
+.timeline-container.timeline-fullscreen .topic-timeline .timeline-scrollarea .timeline-scroller .timeline-handle {
+  float: none;
+  width: 11px;
+  position: relative;
+  right: -6px;
+}
+
+/* topic-timeline.scss:178 */
+.timeline-container.timeline-fullscreen .topic-timeline .timeline-scrollarea .timeline-padding {
+  margin-left: 0;
+  margin-right: -1em;
+}
+
+/* topic-timeline.scss:185 */
+.timeline-container.timeline-fullscreen .timeline-scrollarea-wrapper::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+/* topic-timeline.scss:191 */
+.timeline-container.timeline-fullscreen .start-date,
+.timeline-container.timeline-fullscreen .now-date {
+  padding: .5em 0;
+}
+

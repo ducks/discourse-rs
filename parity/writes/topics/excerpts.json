@@ -1,0 +1,105 @@
+{
+  "name": "excerpts",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/t/35/excerpts.json?post_ids%5B%5D=35&post_ids%5B%5D=36&post_ids%5B%5D=37&post_ids%5B%5D=38&post_ids%5B%5D=52&post_ids%5B%5D=40"
+    },
+    {
+      "method": "GET",
+      "path": "/t/35/excerpts.json"
+    },
+    {
+      "method": "GET",
+      "path": "/t/35/excerpts.json?post_ids=35"
+    },
+    {
+      "method": "GET",
+      "path": "/t/42/excerpts.json?post_ids%5B%5D=49"
+    },
+    {
+      "method": "GET",
+      "path": "/t/999999/excerpts.json?post_ids%5B%5D=1"
+    }
+  ],
+  "started_at": "2026-10-14T12:31:13.789075",
+  "transaction_started_at": "2026-10-14T12:31:11.272052",
+  "responses": [
+    {
+      "status": 200,
+      "body": [
+        {
+          "post_id": 38,
+          "username": "admin",
+          "excerpt": "Reply three from admin, also long enough to pass the minimum length check."
+        },
+        {
+          "post_id": 36,
+          "username": "user1",
+          "excerpt": "Reply one from user1, also long enough to pass the minimum length check."
+        },
+        {
+          "post_id": 52,
+          "username": "user0",
+          "excerpt": "Reply from user0 mentioning <a class=\"mention\" href=\"/u/user1\">@user1</a> so a mention notification exists."
+        },
+        {
+          "post_id": 35,
+          "username": "user0",
+          "excerpt": "First post of a topic with several repliers, long enough to be a real post body for the excerpt."
+        },
+        {
+          "post_id": 37,
+          "username": "user2",
+          "excerpt": "Reply two from user2, also long enough to pass the minimum length check."
+        }
+      ]
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "param is missing or the value is empty or invalid: post_ids"
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Expecting post_ids to contain a list of posts ids"
+        ]
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "unordered_responses": [
+    "/responses/0/body"
+  ],
+  "recorded_from": {
+    "case": "2a46c0a1336760552164bca0580b0da57c453e70102973931adef5adfc01f1c5",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
