@@ -25,6 +25,7 @@ mod badges;
 mod bookmark_writes;
 mod bookmarks;
 mod bus;
+mod change_owner;
 pub(crate) mod composer;
 mod directory;
 mod directory_columns;
@@ -439,6 +440,11 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/t/{slug}/slow_mode", put(topic_timer::slow_mode))
         // {slug} holds the topic id.
         .route("/t/{slug}/archive-message", put(archive_message::archive))
+        .route("/t/{slug}/change-owner", post(change_owner::change_owner))
+        .route(
+            "/t/{slug}/change-owner.json",
+            post(change_owner::change_owner),
+        )
         .route("/t/{slug}/invite", post(pm_invite::invite))
         .route("/t/{slug}/invite.json", post(pm_invite::invite))
         .route("/t/{slug}/invite-group", post(pm_invite::invite_group))

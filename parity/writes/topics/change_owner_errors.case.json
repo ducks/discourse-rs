@@ -1,0 +1,10 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "POST", "path": "/t/35/change-owner.json", "params": {"post_ids": [36], "username": "nobody"}},
+    {"method": "POST", "path": "/t/35/change-owner.json", "params": {"username": "user2"}},
+    {"method": "POST", "path": "/t/35/change-owner.json", "params": {"post_ids": [36]}},
+    {"method": "POST", "path": "/t/35/change-owner.json", "params": {"post_ids": [], "username": "user2"}},
+    {"method": "POST", "path": "/t/9999/change-owner.json", "params": {"post_ids": [36], "username": "user2"}}
+  ]
+}

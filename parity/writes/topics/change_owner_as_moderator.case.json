@@ -1,0 +1,8 @@
+{
+  "user": "user3",
+  "setup": ["UPDATE users SET moderator = TRUE WHERE id = 5"],
+  "settings": {"moderators_change_post_ownership": true},
+  "requests": [
+    {"method": "POST", "path": "/t/35/change-owner.json", "params": {"post_ids": [37], "username": "user1"}}
+  ]
+}

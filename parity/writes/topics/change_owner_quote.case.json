@@ -1,0 +1,9 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE posts SET raw = E'[quote=\"user0, post:1, topic:35\"]\\nfirst\\n[/quote]\\n\\n[quote=\"user1, post:2, topic:35\"]\\nsecond\\n[/quote]\\n\\n[quote=\"elsewhere, post:1, topic:34\"]\\nother\\n[/quote]\\n\\nReplying.' WHERE id = 38"
+  ],
+  "requests": [
+    {"method": "POST", "path": "/t/35/change-owner.json", "params": {"post_ids": [38], "username": "user2"}}
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "user": "user1",
+  "requests": [
+    {"method": "POST", "path": "/t/35/change-owner.json", "params": {"post_ids": [36], "username": "user2"}}
+  ]
+}
