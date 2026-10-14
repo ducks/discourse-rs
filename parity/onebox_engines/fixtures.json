@@ -1,0 +1,257 @@
+{
+  "pages": {
+    "http://www.meetup.com/Toronto-Ember-JS-Meetup/events/219939537": {
+      "file": "meetup.response.html"
+    },
+    "http://api.meetup.com/oembed?url=http://www.meetup.com/Toronto-Ember-JS-Meetup/events/219939537": {
+      "file": "meetup_oembed.response"
+    },
+    "http://www.dailymail.co.uk/news/article-479146/Brutality-justice-The-truth-tarred-feathered-drug-dealer.html": {
+      "file": "dailymail.response"
+    },
+    "https://m.etsy.com/in-en/listing/87673424/personalized-word-pillow-case-letter": {
+      "file": "etsy_mobile.response"
+    },
+    "https://www.etsy.com/in-en/listing/87673424/personalized-word-pillow-case-letter": {
+      "file": "etsy.response"
+    },
+    "https://meta.discourse.org/t/congratulations-most-stars-in-2013-github-octoverse/12483": {
+      "file": "discourse_topic.response"
+    },
+    "https://meta.discourse.org/t/congratulations-most-stars-in-2013-github-octoverse/12483/2": {
+      "file": "discourse_topic_reply.response"
+    },
+    "https://en-americas-support.nintendo.com/app/answers/detail/a_id/67660": {
+      "file": "title_no_description.response"
+    },
+    "https://en-americas-support.nintendo.com/app/answers/detail/a_id/67660/~/discontinuation-of-earning-my-nintendo-gold-points": {
+      "file": "title_no_description.response"
+    },
+    "https://edition.cnn.com/2020/05/15/health/gallery/coronavirus-people-adopting-pets-photos/index.html": {
+      "file": "cnn.response"
+    },
+    "https://www.cnn.com/2020/05/15/health/gallery/coronavirus-people-adopting-pets-photos/index.html": {
+      "file": "cnn.response"
+    },
+    "https://www.example.com/content": {
+      "file": "basic_description.response"
+    },
+    "https://www.assemblyai.com/blog/how-rlhf-preference-model-tuning-works-and-how-things-may-go-wrong/": {
+      "file": "assemblyai.response"
+    },
+    "https://www.imdb.com/title/tt0108002/": {
+      "file": "imdb.response"
+    },
+    "https://example.com/missing-description/": {
+      "file": "missing_description.response"
+    },
+    "https://example.com/missing-image/": {
+      "file": "missing_image.response"
+    },
+    "https://example.com/video-missing-description/": {
+      "file": "video_missing_description.response"
+    },
+    "https://example.com/missing-description-and-image/": {
+      "file": "missing_description_and_image.response"
+    },
+    "https://docs.example.com/guide": {
+      "file": "gen_anchor_docs.html"
+    },
+    "https://photos.example.com/sunset": {
+      "file": "gen_image.html"
+    },
+    "https://clips.example.org/watch/1": {
+      "file": "gen_video.html"
+    },
+    "https://embed.example.org/thing": {
+      "file": "gen_embedded.html"
+    },
+    "https://embed.example.org/oembed.json?url=thing": {
+      "file": "gen_embedded.json"
+    },
+    "https://attacker.example/page": {
+      "file": "gen_embedded_blocked.html"
+    },
+    "https://attacker.example/oembed.json": {
+      "file": "gen_embedded_video.json"
+    },
+    "https://player.example.net/card": {
+      "file": "gen_card.html"
+    },
+    "https://widgets.example.com/item/42": {
+      "file": "gen_labels.html"
+    },
+    "https://shop.example.net/chair": {
+      "file": "gen_price.html"
+    },
+    "https://news.example.com/tom-jerry": {
+      "file": "gen_article.html"
+    },
+    "https://pics.example.com/only-image": {
+      "file": "gen_no_title.html"
+    },
+    "https://plain.example.com/": {
+      "file": "gen_nothing.html"
+    },
+    "https://blog.example.com/post/": {
+      "file": "gen_wordpress.html"
+    },
+    "https://blog.example.com/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fblog.example.com%2Fpost%2F": {
+      "file": "gen_wordpress.json"
+    },
+    "https://broken.example.com/page": {
+      "file": "gen_oembed_bad.html"
+    },
+    "https://broken.example.com/oembed": {
+      "file": "gen_not_json.html"
+    },
+    "https://films.example.com/short": {
+      "file": "gen_movie.html"
+    },
+    "https://films.example.com/tiny": {
+      "file": "gen_movie_minutes.html"
+    },
+    "https://m.example.org/mobile": {
+      "file": "gen_canonical.html"
+    },
+    "https://www.example.org/desktop?ref=Mobile%7CPage": {
+      "file": "gen_canonical_target.html"
+    },
+    "https://keep.example.org/page": {
+      "file": "gen_ignore_canonical.html"
+    },
+    "https://livestream.com/accounts/1/events/2": {
+      "file": "gen_https_rewrite.html"
+    },
+    "https://dates.example.com/bad": {
+      "file": "gen_bad_time.html"
+    },
+    "https://gone.example.com/page": {
+      "status": 404
+    },
+    "https://down.example.com/page": {
+      "status": 503
+    }
+  },
+  "cases": [
+    "http://www.meetup.com/Toronto-Ember-JS-Meetup/events/219939537",
+    "http://www.dailymail.co.uk/news/article-479146/Brutality-justice-The-truth-tarred-feathered-drug-dealer.html",
+    "https://m.etsy.com/in-en/listing/87673424/personalized-word-pillow-case-letter",
+    "https://meta.discourse.org/t/congratulations-most-stars-in-2013-github-octoverse/12483/2",
+    "https://en-americas-support.nintendo.com/app/answers/detail/a_id/67660",
+    "https://edition.cnn.com/2020/05/15/health/gallery/coronavirus-people-adopting-pets-photos/index.html",
+    "https://www.example.com/content",
+    "https://www.assemblyai.com/blog/how-rlhf-preference-model-tuning-works-and-how-things-may-go-wrong/",
+    "https://www.imdb.com/title/tt0108002/",
+    "https://example.com/missing-description/",
+    "https://example.com/missing-image/",
+    "https://example.com/video-missing-description/",
+    "https://example.com/missing-description-and-image/",
+    "https://docs.example.com/guide",
+    "https://docs.example.com/guide#setup",
+    "https://docs.example.com/guide#fn",
+    "https://docs.example.com/guide#legacy",
+    "https://docs.example.com/guide#install",
+    "https://docs.example.com/guide#Foo%7BBar%7D",
+    "https://docs.example.com/guide#orphan",
+    "https://docs.example.com/guide#intro",
+    "https://docs.example.com/guide#feat",
+    "https://docs.example.com/guide#ret",
+    "https://docs.example.com/guide#it's-complicated",
+    "https://docs.example.com/guide#long",
+    "https://docs.example.com/guide#deep",
+    "https://docs.example.com/guide#missing",
+    "https://photos.example.com/sunset",
+    "https://clips.example.org/watch/1",
+    "https://embed.example.org/thing",
+    "https://attacker.example/page",
+    "https://player.example.net/card",
+    "https://widgets.example.com/item/42",
+    "https://shop.example.net/chair",
+    "https://news.example.com/tom-jerry",
+    "https://pics.example.com/only-image",
+    "https://plain.example.com/",
+    "https://blog.example.com/post/",
+    "https://broken.example.com/page",
+    "https://films.example.com/short",
+    "https://films.example.com/tiny",
+    "https://m.example.org/mobile",
+    "https://keep.example.org/page",
+    "http://livestream.com/accounts/1/events/2",
+    "https://dates.example.com/bad",
+    "https://gone.example.com/page",
+    "https://down.example.com/page",
+    "https://unknown.example.com/nowhere"
+  ],
+  "times": [
+    "2023-01-15T10:30:00+05:00",
+    "2023-01-15T22:30:00Z",
+    "2023-01-15T10:30:00.123-0800",
+    "2023-01-15",
+    "2023-01-15 23:05",
+    "Mon, 15 Jan 2023 10:30:00 GMT",
+    "Sun, 15 Jan 2023 10:30:00 +0100",
+    "2023-01-15T10:30:00 EST",
+    "20230115",
+    "2023/01/15",
+    "January 15, 2023",
+    "15 Jan 2023",
+    "2023-13-01",
+    "garbage",
+    "PT2H30M15S",
+    "PT90M",
+    "PT45M",
+    "PT1H",
+    "PT2H5M",
+    "P0DT1H30M",
+    "1h 30m",
+    "2023-01-15T10:30",
+    "2014-08-08T20:03:49.008Zyyyy-MM-dd HH:mm:ss z",
+    "15/01/23",
+    "01/15/2023",
+    "3pm",
+    "10:30 PM",
+    "2023.01.15",
+    "H31.04.30",
+    "15-Jan-2023",
+    "Jan-15-2023",
+    "2023-W03-1",
+    "2023-045",
+    "--01-15",
+    "Jan 15th",
+    "15th of January, 2023",
+    "Sunday, January 15th, 2023 at 3:04 pm",
+    "2023-01-15T10:30:00.000000Z",
+    "2023-01-15T10:30:00+00:00",
+    "2023-01-15T24:00:00",
+    "2023-02-30",
+    "2023-01-32",
+    "1999-12-31",
+    "99-12-31",
+    "Tue Feb 14 2023 09:15:00 GMT+0000 (Coordinated Universal Time)",
+    "2023-01-15T10:30:00[Europe/Paris]",
+    "20230115T103000Z",
+    "1673778600",
+    "Jan 2023",
+    "2023",
+    "15 January",
+    "Thu, 01 Jan 1970 00:00:00 +0000",
+    "2021-06-01T12:00:00.000+02:00",
+    "June 1, 2021 12:00 pm",
+    "2021-06-01 12:00:00 UTC",
+    "Wed Jun  2 13:45:00 2021",
+    "12 BC",
+    "Jun 1 2021 3:45:12.5 AM PDT",
+    "2021-6-1",
+    "1/6/21",
+    "2021-06-01T12:00:00+0200",
+    "   2021-06-01   ",
+    "2021-06-01T12:00:00 Z",
+    "5 days ago",
+    "yesterday",
+    "noon",
+    "2021-06-01T12:61",
+    "2021-02-29",
+    "2020-02-29T23:59:59.999Z"
+  ]
+}

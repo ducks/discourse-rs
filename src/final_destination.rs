@@ -336,7 +336,7 @@ impl Fetcher<'_> {
 
     /// `SSRFDetector.lookup_and_filter_ips`: the host's addresses that
     /// are allowed, none when lookup fails or all are refused.
-    async fn lookup(&self, uri: &Uri) -> Result<Vec<SocketAddr>, AppError> {
+    pub(crate) async fn lookup(&self, uri: &Uri) -> Result<Vec<SocketAddr>, AppError> {
         let resolved: Vec<SocketAddr> =
             match tokio::net::lookup_host((uri.host.as_str(), uri.port)).await {
                 Ok(addrs) => addrs.collect(),
@@ -543,6 +543,7 @@ pub struct Resolution {
 }
 
 /// FinalDestination's options for `resolve`.
+#[derive(Clone)]
 pub struct ResolveOptions {
     pub timeout: Duration,
     /// `max_redirects` (nil is 5).

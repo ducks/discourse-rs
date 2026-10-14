@@ -7,13 +7,20 @@
 //! with a local onebox (topics, users, uploads, category lists) and the
 //! site's other pages, which onebox as a plain link. Other sites'
 //! oneboxes are fetched from the network (FinalDestination, the onebox
-//! engines) and are refused, as are own-site paths no route here knows
-//! (Rails would fetch the page) and chat's local oneboxes.
+//! engines, external.rs) where their engine is ported; the others are
+//! refused, as are own-site paths no route here knows (Rails would fetch
+//! the page) and chat's local oneboxes.
 
 pub mod engines;
+pub mod entities;
 pub mod external;
+pub mod fetch;
+pub mod generic;
+pub mod html_doc;
 pub mod matcher;
 pub mod preview;
+pub mod ruby_time;
+pub mod uri;
 
 use std::sync::LazyLock;
 
@@ -256,7 +263,13 @@ pub(crate) fn normalize_url_for_output(url: &str) -> String {
         .replace('"', "&quot;");
     let url: String = url
         .chars()
-        .filter(|c| c.is_alphanumeric() || *c == '_' || "-`.~:/?#[]@!$&'()*+,;=%’".contains(*c))
+        .filter(|c| {
+            // Ruby's \w is ASCII; marks (\p{M}) stay.
+            c.is_ascii_alphanumeric()
+                || *c == '_'
+                || "-`.~:/?#[]@!$&'()*+,;=%’".contains(*c)
+                || unicode_normalization::char::is_combining_mark(*c)
+        })
         .collect();
     // Addressable finds a host after a scheme or in a protocol-relative URL.
     let has_host = url
@@ -1115,13 +1128,13 @@ pub fn refuse_unported(
             }
             continue;
         }
-        // Another site's: only the engines that render from the URL (a
-        // redirect elsewhere is refused when the post is processed).
+        // Another site's: only the ported engines (a redirect to another
+        // engine is refused when the post is processed).
         if route_for(url, hostname, base_path)?.is_none()
             && !matcher::oneboxed(url, None, &iframes)
                 .is_some_and(|e| engines::PORTED.contains(&e.name))
         {
-            return Err(Unsupported("oneboxes of other sites that fetch the page").into());
+            return Err(Unsupported("oneboxes of other sites whose engine isn't ported").into());
         }
     }
     Ok(())

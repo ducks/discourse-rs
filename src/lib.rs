@@ -85,6 +85,7 @@ pub mod reviewables;
 pub mod roles;
 pub mod routes;
 pub mod ruby;
+pub mod ruby_date;
 pub mod sanitize;
 pub mod schema;
 pub mod screened;

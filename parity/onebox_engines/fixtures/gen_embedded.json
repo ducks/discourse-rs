@@ -1,0 +1,1 @@
+{"type":"rich","version":"1.0","title":"Embeddable thing &amp; more","provider_name":"Example","width":640,"height":360,"thumbnail_url":"https://embed.example.org/thumb.jpg","thumbnail_width":480,"thumbnail_height":270,"html":"<div><iframe style=\"border:0\" src=\"https://www.youtube.com/embed/abc123\" width=\"640\" height=\"360\" allowfullscreen></iframe><p>caption</p></div>"}

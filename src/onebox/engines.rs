@@ -8,12 +8,17 @@ use std::sync::LazyLock;
 
 use serde_json::json;
 
+use super::fetch::Fetch;
 use super::matcher::{Engine, ruby_regex};
 use super::normalize_url_for_output;
-use crate::Unsupported;
+use crate::{AppError, Unsupported};
 
 /// What an engine needs besides the URL.
 pub struct Ctx<'a> {
+    /// `allowed_iframe_regexes`
+    pub iframes: &'a [regex::Regex],
+    /// The cookie FinalDestination was given (`options[:cookie]`).
+    pub cookie: Option<&'a str>,
     /// `Discourse.current_hostname`
     pub hostname: &'a str,
     /// `disable_onebox_media_download_controls`
@@ -31,7 +36,7 @@ const LAYOUT: &str = include_str!("../../vendor/discourse/lib/onebox/templates/_
 const GOOGLE_MEET: &str =
     include_str!("../../vendor/discourse/lib/onebox/templates/googlemeet.mustache");
 
-fn placeholder(kind: &str) -> String {
+pub(super) fn placeholder(kind: &str) -> String {
     format!(
         "<div class='onebox-placeholder-container'><span class='placeholder-icon {kind}'></span></div>"
     )
@@ -39,7 +44,7 @@ fn placeholder(kind: &str) -> String {
 
 /// `AllowlistedGenericOnebox.host_matches(uri, https_hosts)`, the media
 /// engines' `always_https?`.
-fn https_host(host: &str) -> bool {
+pub(super) fn https_host(host: &str) -> bool {
     [
         "slideshare.net",
         "dailymotion.com",
@@ -53,7 +58,7 @@ fn https_host(host: &str) -> bool {
 
 /// `Engine#initialize` for an engine that is always https: the URL with
 /// its scheme made https.
-fn https(url: &str) -> String {
+pub(super) fn https(url: &str) -> String {
     if url.starts_with("//") {
         format!("https:{url}")
     } else if let Some((_, rest)) = url.split_once("://") {
@@ -308,29 +313,45 @@ fn google_calendar(url: &str) -> Html {
     }
 }
 
-/// `Engine#link`: `Onebox::Helpers.uri_encode(@url)`, which leaves an
-/// encoded ASCII URL as it is.
-fn link(url: &str) -> Result<String, Unsupported> {
-    if url.is_ascii()
-        && !url
-            .chars()
-            .any(|c| c.is_whitespace() || "\"<>\\^`{|}".contains(c))
-    {
-        Ok(url.to_string())
-    } else {
-        Err(Unsupported("onebox links that need encoding"))
+/// `Engine#link`: `Onebox::Helpers.uri_encode(@url)`.
+pub(super) fn link(url: &str) -> Result<String, Unsupported> {
+    super::uri::uri_encode(url).ok_or(Unsupported("onebox links Addressable can't parse"))
+}
+
+/// The partials the onebox templates include.
+fn partial(name: &str) -> Option<&'static str> {
+    match name {
+        "json_ld_partials/movie" => Some(include_str!(
+            "../../vendor/discourse/lib/onebox/templates/json_ld_partials/movie.mustache"
+        )),
+        _ => None,
     }
 }
 
 /// Onebox::Layout: the engine's view inside _layout.mustache.
-fn layout(name: &str, view: &str, record: &serde_json::Value) -> String {
+pub(super) fn layout(name: &str, view: &str, record: &serde_json::Value) -> String {
     let link = record["link"].as_str().unwrap_or("");
+    let uri = super::uri::RubyUri::parse(&normalize_url_for_output(link));
+    let host = uri
+        .as_ref()
+        .and_then(|u| u.host.clone())
+        .unwrap_or_default();
+    // Fix any relative paths
+    let mut record = record.clone();
+    if let Some(image) = record["image"].as_str()
+        && image.starts_with('/')
+        && image.chars().nth(1).is_some_and(|c| c != '/')
+    {
+        let scheme = uri
+            .as_ref()
+            .and_then(|u| u.scheme.clone())
+            .unwrap_or_default();
+        record["image"] = json!(format!("{scheme}://{host}/{image}"));
+    }
+    let record = &record;
     let domain = match record["domain"].as_str() {
         Some(d) => d.to_string(),
-        None => {
-            let host = host_of(&normalize_url_for_output(link));
-            host.strip_prefix("www.").unwrap_or(&host).to_string()
-        }
+        None => host.strip_prefix("www.").unwrap_or(&host).to_string(),
     };
     let details = json!({
         "link": record["link"],
@@ -344,7 +365,7 @@ fn layout(name: &str, view: &str, record: &serde_json::Value) -> String {
         "metadata_2_label": record["metadata_2_label"],
         "metadata_2_value": record["metadata_2_value"],
         "subname": name,
-        "view": crate::mustache::render(view, record),
+        "view": crate::mustache::render_with_partials(view, record, &partial),
     });
     crate::mustache::render(LAYOUT, &details)
 }
@@ -389,6 +410,7 @@ pub const PORTED: &[&str] = &[
     "TypeformOnebox",
     "GoogleCalendarOnebox",
     "GoogleMeetOnebox",
+    "AllowlistedGenericOnebox",
 ];
 
 /// `Onebox::Engine#to_html` and `#placeholder_html` for the engine that
@@ -407,6 +429,71 @@ pub fn render(engine: &Engine, url: &str, ctx: &Ctx) -> Result<Html, Unsupported
         "GoogleCalendarOnebox" => Ok(google_calendar(&https_url(engine.always_https))),
         "GoogleMeetOnebox" => google_meet(&https_url(engine.always_https), ctx),
         _ => Err(Unsupported("onebox engines that fetch the page")),
+    }
+}
+
+/// What running an engine raised past its own rescues.
+#[derive(Debug)]
+pub enum Fail {
+    /// One of Onebox::Preview's WEB_EXCEPTIONS: the HTML is blank.
+    Web(String),
+    /// Anything else Ruby raises: Oneboxer.onebox_raw gives up on the
+    /// onebox (a blank one, uncached).
+    Raised(String),
+    /// A refusal or an error of this port's own.
+    App(AppError),
+}
+
+impl From<AppError> for Fail {
+    fn from(e: AppError) -> Fail {
+        Fail::App(e)
+    }
+}
+
+impl From<Unsupported> for Fail {
+    fn from(e: Unsupported) -> Fail {
+        Fail::App(e.into())
+    }
+}
+
+/// What Onebox::Preview gets from an engine.
+#[derive(Debug, Default)]
+pub struct Rendered {
+    /// `to_html`, None for nil (or a web error: both preview as "").
+    pub html: Option<String>,
+    /// What `to_html` raised past Preview's rescue, if it did.
+    pub html_raised: Option<String>,
+    /// `placeholder_html`
+    pub placeholder: Option<String>,
+    /// What `placeholder_html` raised past Preview's rescue.
+    pub placeholder_raised: Option<String>,
+    /// `errors.keys`
+    pub errors: Vec<String>,
+    /// `verified_data`, for the engines that define it.
+    pub verified_data: Option<serde_json::Value>,
+}
+
+/// An engine's preview: `to_html`, `placeholder_html` and the errors they
+/// left, fetching what the engine fetches.
+pub async fn preview<F: Fetch>(
+    engine: &Engine,
+    url: &str,
+    ctx: &Ctx<'_>,
+    fetch: &mut F,
+) -> Result<Rendered, Fail> {
+    let result = match engine.name {
+        "AllowlistedGenericOnebox" => super::generic::preview(url, ctx, fetch).await,
+        _ => render(engine, url, ctx)
+            .map(|h| Rendered {
+                html: Some(h.html),
+                placeholder: Some(h.placeholder),
+                ..Default::default()
+            })
+            .map_err(Fail::from),
+    };
+    match result {
+        Err(Fail::Web(_)) => Ok(Rendered::default()),
+        other => other,
     }
 }
 

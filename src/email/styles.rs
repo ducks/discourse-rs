@@ -1,8 +1,6 @@
 //! Port of lib/email/styles.rb: the inline styles an email's HTML gets,
 //! since mail clients drop `<style>` blocks. Rails selects with Nokogiri's
-//! CSS engine; the selectors it uses are matched here by a small engine
-//! (tags, classes, attributes, `:not`, `:first-child`, `:last-child`,
-//! descendant and child combinators).
+//! CSS engine; crate::pretty_text::select matches the selectors it uses.
 
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -12,215 +10,9 @@ use html5ever::tendril::StrTendril;
 use markup5ever_rcdom::{Handle, Node, NodeData, RcDom, SerializableHandle};
 
 use crate::pretty_text::cleanup::{attr, element_name, parse_document, set_attr, text};
+use crate::pretty_text::select::{parent, select};
 use crate::site_settings::SiteSettings;
 use crate::{AppError, Unsupported};
-
-// ---- selectors ----
-
-#[derive(Debug, Clone)]
-enum AttrOp {
-    Exists,
-    Equals(String),
-    EndsWith(String),
-}
-
-#[derive(Debug, Clone, Default)]
-struct Compound {
-    tag: Option<String>,
-    classes: Vec<String>,
-    attrs: Vec<(String, AttrOp)>,
-    not: Vec<Compound>,
-    first_child: bool,
-    last_child: bool,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-enum Combinator {
-    Descendant,
-    Child,
-}
-
-/// A complex selector, rightmost compound first, each with the combinator
-/// to its left.
-type Complex = Vec<(Compound, Option<Combinator>)>;
-
-fn parse_compound(s: &str) -> (Compound, &str) {
-    let mut c = Compound::default();
-    let mut rest = s;
-    let ident_end = |r: &str| {
-        r.find(|ch: char| !(ch.is_ascii_alphanumeric() || ch == '-' || ch == '_'))
-            .unwrap_or(r.len())
-    };
-    if let Some(r) = rest.strip_prefix('*') {
-        rest = r;
-    } else {
-        let end = ident_end(rest);
-        if end > 0 {
-            c.tag = Some(rest[..end].to_ascii_lowercase());
-            rest = &rest[end..];
-        }
-    }
-    loop {
-        if let Some(r) = rest.strip_prefix('.') {
-            let end = ident_end(r);
-            c.classes.push(r[..end].to_string());
-            rest = &r[end..];
-        } else if let Some(r) = rest.strip_prefix('[') {
-            let close = r.find(']').expect("selectors are written closed");
-            let inner = &r[..close];
-            let unquote = |v: &str| v.trim_matches(|ch| ch == '"' || ch == '\'').to_string();
-            let entry = if let Some((name, value)) = inner.split_once("$=") {
-                (name.to_string(), AttrOp::EndsWith(unquote(value)))
-            } else if let Some((name, value)) = inner.split_once('=') {
-                (name.to_string(), AttrOp::Equals(unquote(value)))
-            } else {
-                (inner.to_string(), AttrOp::Exists)
-            };
-            c.attrs.push(entry);
-            rest = &r[close + 1..];
-        } else if let Some(r) = rest.strip_prefix(":not(") {
-            let close = r.find(')').expect("selectors are written closed");
-            let (inner, _) = parse_compound(&r[..close]);
-            c.not.push(inner);
-            rest = &r[close + 1..];
-        } else if let Some(r) = rest.strip_prefix(":first-child") {
-            c.first_child = true;
-            rest = r;
-        } else if let Some(r) = rest.strip_prefix(":last-child") {
-            c.last_child = true;
-            rest = r;
-        } else {
-            break;
-        }
-    }
-    (c, rest)
-}
-
-fn parse_complex(s: &str) -> Complex {
-    let mut parts: Vec<(Compound, Option<Combinator>)> = Vec::new();
-    let mut rest = s.trim();
-    let mut pending: Option<Combinator> = None;
-    while !rest.is_empty() {
-        let (c, r) = parse_compound(rest);
-        assert!(r.len() < rest.len(), "unsupported selector: {s}");
-        parts.push((c, pending.take()));
-        let trimmed = r.trim_start();
-        if let Some(r) = trimmed.strip_prefix('>') {
-            pending = Some(Combinator::Child);
-            rest = r.trim_start();
-        } else if trimmed.len() < r.len() || !trimmed.is_empty() {
-            pending = Some(Combinator::Descendant);
-            rest = trimmed;
-        } else {
-            rest = trimmed;
-        }
-    }
-    // Rightmost first, each carrying the combinator that joins it to the
-    // compound on its left.
-    let mut out = Vec::new();
-    for i in (0..parts.len()).rev() {
-        let combinator = parts[i].1;
-        out.push((parts[i].0.clone(), combinator));
-    }
-    out
-}
-
-fn parse_selector(s: &str) -> Vec<Complex> {
-    s.split(',').map(parse_complex).collect()
-}
-
-fn element_children(node: &Handle) -> Vec<Handle> {
-    node.children
-        .borrow()
-        .iter()
-        .filter(|c| matches!(c.data, NodeData::Element { .. }))
-        .cloned()
-        .collect()
-}
-
-fn parent(node: &Handle) -> Option<Handle> {
-    let weak = node.parent.take();
-    let parent = weak.as_ref().and_then(|w| w.upgrade());
-    node.parent.set(weak);
-    parent
-}
-
-fn matches_compound(node: &Handle, c: &Compound) -> bool {
-    let Some(name) = element_name(node) else {
-        return false;
-    };
-    if c.tag.as_deref().is_some_and(|t| t != name) {
-        return false;
-    }
-    if !c.classes.is_empty() {
-        let class = attr(node, "class").unwrap_or_default();
-        let tokens: Vec<&str> = class.split_whitespace().collect();
-        if !c.classes.iter().all(|k| tokens.contains(&k.as_str())) {
-            return false;
-        }
-    }
-    for (name, op) in &c.attrs {
-        let Some(value) = attr(node, name) else {
-            return false;
-        };
-        let ok = match op {
-            AttrOp::Exists => true,
-            AttrOp::Equals(v) => &value == v,
-            AttrOp::EndsWith(v) => !v.is_empty() && value.ends_with(v.as_str()),
-        };
-        if !ok {
-            return false;
-        }
-    }
-    if c.not.iter().any(|n| matches_compound(node, n)) {
-        return false;
-    }
-    if c.first_child || c.last_child {
-        let Some(p) = parent(node) else {
-            return false;
-        };
-        let siblings = element_children(&p);
-        if c.first_child && !siblings.first().is_some_and(|s| Rc::ptr_eq(s, node)) {
-            return false;
-        }
-        if c.last_child && !siblings.last().is_some_and(|s| Rc::ptr_eq(s, node)) {
-            return false;
-        }
-    }
-    true
-}
-
-fn matches_complex(node: &Handle, parts: &[(Compound, Option<Combinator>)]) -> bool {
-    let Some(((compound, combinator), rest)) = parts.split_first() else {
-        return true;
-    };
-    if !matches_compound(node, compound) {
-        return false;
-    }
-    match combinator {
-        None => rest.is_empty(),
-        Some(Combinator::Child) => parent(node).is_some_and(|p| matches_complex(&p, rest)),
-        Some(Combinator::Descendant) => {
-            let mut ancestor = parent(node);
-            while let Some(a) = ancestor {
-                if matches_complex(&a, rest) {
-                    return true;
-                }
-                ancestor = parent(&a);
-            }
-            false
-        }
-    }
-}
-
-fn all_elements(node: &Handle, out: &mut Vec<Handle>) {
-    for child in node.children.borrow().iter() {
-        if matches!(child.data, NodeData::Element { .. }) {
-            out.push(child.clone());
-        }
-        all_elements(child, out);
-    }
-}
 
 // ---- the document ----
 
@@ -299,12 +91,7 @@ impl Styles {
     }
 
     fn select(&self, selector: &str) -> Vec<Handle> {
-        let selectors = parse_selector(selector);
-        let mut all = Vec::new();
-        all_elements(&self.dom.document, &mut all);
-        all.into_iter()
-            .filter(|n| selectors.iter().any(|s| matches_complex(n, s)))
-            .collect()
+        select(&self.dom.document, selector)
     }
 
     fn add_styles(node: &Handle, new_styles: &str) {
@@ -670,12 +457,7 @@ impl Styles {
     }
 
     fn select_within(&self, root: &Handle, selector: &str) -> Vec<Handle> {
-        let selectors = parse_selector(selector);
-        let mut all = Vec::new();
-        all_elements(root, &mut all);
-        all.into_iter()
-            .filter(|n| selectors.iter().any(|s| matches_complex(n, s)))
-            .collect()
+        select(root, selector)
     }
 
     /// `to_html`: protocol-relative links get the site's scheme, relative

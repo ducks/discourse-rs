@@ -9,13 +9,19 @@ use serde_json::json;
 use sqlx::PgConnection;
 
 use super::Site;
-use super::engines::{self, Ctx};
-use super::matcher::{all_iframe_origins, oneboxed, origins_to_regexes};
+use serde_json::Value;
+
+use super::engines::{self, Ctx, Fail};
+use super::fetch::{Fetch, Live};
+use super::matcher::{Engine, all_iframe_origins, oneboxed, origins_to_regexes};
 use crate::AppError;
 use crate::final_destination::{Fetcher, ResolveOptions, Status};
 
 const PREVIEW_ERROR: &str =
     include_str!("../../vendor/discourse/lib/onebox/templates/preview_error_onebox.mustache");
+const PREVIEW_ERROR_FRAGMENT: &str = include_str!(
+    "../../vendor/discourse/lib/onebox/templates/preview_error_fragment_onebox.mustache"
+);
 
 /// An onebox and its composer preview.
 #[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
@@ -139,25 +145,122 @@ fn strategy_key(hostname: &str) -> String {
     format!("ONEBOXER_STRATEGY_{hostname}")
 }
 
-/// `Oneboxer.preview_error_onebox(args)`: the link, its title (the link
-/// itself) and the error's message with its emoji.
-fn preview_error(site: &Site, link: &str, message: Option<String>) -> Result<String, AppError> {
-    let s = site.settings;
-    let message = match message {
-        Some(m) if s.get("enable_emoji")?.truthy() => {
-            Some(crate::topic_list_view::emoji_unescape_with(
-                &m,
-                s.get("enable_inline_emoji_translation")?.truthy(),
-                &s.get("emoji_set")?.to_s(),
-                site.base_path,
-            ))
+/// What the error previews need of the site: its messages and emoji.
+pub struct Errors<'a> {
+    pub i18n: &'a crate::i18n::I18n,
+    pub enable_emoji: bool,
+    pub inline_emoji: bool,
+    pub emoji_set: String,
+    pub base_path: &'a str,
+}
+
+impl<'a> Errors<'a> {
+    pub fn of(site: &Site<'a>) -> Result<Errors<'a>, AppError> {
+        let s = site.settings;
+        Ok(Errors {
+            i18n: site.i18n,
+            enable_emoji: s.get("enable_emoji")?.truthy(),
+            inline_emoji: s.get("enable_inline_emoji_translation")?.truthy(),
+            emoji_set: s.get("emoji_set")?.to_s().to_string(),
+            base_path: site.base_path,
+        })
+    }
+
+    /// `Oneboxer.preview_error_onebox(args, is_fragment)`: the args' title
+    /// (the link when it has none) and the error's message with its emoji.
+    pub fn onebox(&self, mut args: serde_json::Map<String, Value>, fragment: bool) -> String {
+        if let Some(link) = args.get("link").filter(|l| !l.is_null()).cloned()
+            && args.get("title").is_none_or(Value::is_null)
+        {
+            args.insert("title".into(), link);
         }
-        m => m,
+        if let Some(Value::String(m)) = args.get("error_message")
+            && self.enable_emoji
+        {
+            let m = crate::topic_list_view::emoji_unescape_with(
+                m,
+                self.inline_emoji,
+                &self.emoji_set,
+                self.base_path,
+            );
+            args.insert("error_message".into(), json!(m));
+        }
+        crate::mustache::render(
+            if fragment {
+                PREVIEW_ERROR_FRAGMENT
+            } else {
+                PREVIEW_ERROR
+            },
+            &Value::Object(args),
+        )
+    }
+}
+
+/// `Oneboxer.preview_error_onebox(link:, error_message:)`
+fn preview_error(site: &Site, link: &str, message: Option<String>) -> Result<String, AppError> {
+    let mut args = serde_json::Map::new();
+    args.insert("link".into(), json!(link));
+    args.insert("error_message".into(), json!(message));
+    Ok(Errors::of(site)?.onebox(args, false))
+}
+
+/// `Onebox.preview(url, options)` as compute_external_onebox takes it: the
+/// preview and its placeholder, and when the engine found data missing,
+/// the error preview (or the placeholder with the error added to it).
+pub async fn engine_onebox<F: Fetch>(
+    engine: &Engine,
+    url: &str,
+    ctx: &Ctx<'_>,
+    fetch: &mut F,
+    errors: &Errors<'_>,
+) -> Result<Onebox, Fail> {
+    let rendered = engines::preview(engine, url, ctx, fetch).await?;
+    if let Some(m) = rendered.html_raised.or(rendered.placeholder_raised) {
+        return Err(Fail::Raised(m));
+    }
+    let mut result = Onebox {
+        onebox: super::preview::finish(rendered.html.as_deref().unwrap_or(""), ctx.iframes)?,
+        preview: super::preview::finish(
+            rendered.placeholder.as_deref().unwrap_or(""),
+            ctx.iframes,
+        )?,
     };
-    Ok(crate::mustache::render(
-        PREVIEW_ERROR,
-        &json!({ "link": link, "title": link, "error_message": message }),
-    ))
+    let keys = &rendered.errors;
+    if !keys.is_empty() && !(keys.len() == 1 && keys[0] == "image") {
+        let mut sorted = keys.clone();
+        sorted.sort();
+        let comma = errors.i18n.t("word_connector.comma").unwrap_or(", ");
+        let message = errors
+            .i18n
+            .t_count(
+                "errors.onebox.missing_data",
+                sorted.len() as i64,
+                &[("missing_attributes", &sorted.join(comma))],
+            )
+            .unwrap_or_default();
+        let mut args = match rendered.verified_data {
+            Some(Value::Object(m)) => m,
+            _ => serde_json::Map::new(),
+        };
+        args.insert("error_message".into(), json!(message));
+        if crate::ruby::is_blank(&result.preview) {
+            result.preview = errors.onebox(args, false);
+        } else {
+            use crate::pretty_text::cleanup::{append, fragment_root, parse, to_html};
+            let dom = parse(&result.preview);
+            if let Some(aside) =
+                crate::pretty_text::select::select_first(&fragment_root(&dom), "aside")
+            {
+                let fragment = parse(&errors.onebox(args, true));
+                let children: Vec<_> = fragment_root(&fragment).children.borrow().clone();
+                for child in children {
+                    append(&aside, child);
+                }
+                result.preview = to_html(&dom);
+            }
+        }
+    }
+    Ok(result)
 }
 
 /// What computing the onebox came to: an onebox to cache, or an error
@@ -265,16 +368,40 @@ async fn compute(
             Some(engine) => {
                 let hostname = site.urls.current_hostname()?;
                 let ctx = Ctx {
+                    iframes: &regexes,
+                    cookie: resolution.cookie.as_deref(),
                     hostname: &hostname,
                     disable_media_download_controls: s
                         .get("disable_onebox_media_download_controls")?
                         .truthy(),
                     i18n: site.i18n,
                 };
-                let html = engines::render(engine, &final_url, &ctx)?;
-                Onebox {
-                    onebox: super::preview::finish(&html.html, &regexes)?,
-                    preview: super::preview::finish(&html.placeholder, &regexes)?,
+                let mut default_options = opts.clone();
+                default_options.max_redirects = 5;
+                default_options.https_redirect_ignore_limit = false;
+                default_options.stop_at_blocked_pages = false;
+                default_options.force_get_hosts = force_get_hosts(site)?;
+                default_options.force_custom_user_agent_hosts =
+                    setting_list(site, "force_custom_user_agent_hosts")?;
+                let mut live = Live {
+                    conn: &mut *conn,
+                    fetcher: Fetcher {
+                        settings: s,
+                        urls: crate::url::Urls {
+                            config: site.urls.config,
+                            settings: s,
+                        },
+                    },
+                    user_agent: onebox_user_agent(site)?,
+                    accept_language: accept_language(&locale),
+                    resolve_options: default_options,
+                };
+                let errors = Errors::of(site)?;
+                match engine_onebox(engine, &final_url, &ctx, &mut live, &errors).await {
+                    Ok(result) => result,
+                    Err(Fail::App(e)) => return Err(e),
+                    Err(Fail::Web(_)) => Onebox::default(),
+                    Err(Fail::Raised(_)) => return Ok(Computed::Raised),
                 }
             }
         };
