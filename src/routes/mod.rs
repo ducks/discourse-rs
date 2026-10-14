@@ -501,6 +501,22 @@ pub fn router(state: &AppState) -> Router<AppState> {
             get(admin_users::show).delete(admin_users::destroy),
         )
         .route(
+            "/admin/users/destroy-bulk",
+            delete(admin_users::destroy_bulk),
+        )
+        .route(
+            "/admin/users/delete-others-with-same-ip",
+            delete(admin_users::delete_others_with_same_ip),
+        )
+        .route(
+            "/admin/users/delete-others-with-same-ip.json",
+            delete(admin_users::delete_others_with_same_ip),
+        )
+        .route(
+            "/admin/users/destroy-bulk.json",
+            delete(admin_users::destroy_bulk),
+        )
+        .route(
             "/admin/users/{user_id}/grant_moderation",
             put(admin_users::grant_moderation),
         )

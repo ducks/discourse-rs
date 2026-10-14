@@ -180,7 +180,8 @@ Bugs or silent gaps in what is merged, small and independent.
     71. `feat/jobs-digest` S, 72. `feat/admin-email-digest` S
 73. `feat/about-stats` S/M, 74. `feat/directory` M
 75. `feat/review-reject-queued-post` M,
-    76. `feat/user-destroyer-delete-posts` M
+    76. ~~`feat/user-destroyer-delete-posts`~~ (done) M (agreeing as spammer
+    with queued and reviewed posts waits on 75; block_urls on onebox engines)
 77. `feat/username-changer` L, 78. `feat/user-anonymizer` M,
     79. `feat/user-merger` L
 

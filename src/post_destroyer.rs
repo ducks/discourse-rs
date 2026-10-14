@@ -3,7 +3,7 @@
 //!
 //! Refused: an author deleting their own post (marked for deletion,
 //! through PostRevisor), permanent deletion, posts in messages, posts with
-//! links, likes or a pending flag, posts quoted or linked elsewhere,
+//! links or a pending flag, posts quoted or linked elsewhere,
 //! published pages and embeds, and recovering topics or replies with
 //! quotes, likes or a reply target to restore.
 
@@ -110,6 +110,38 @@ fn truncate(s: &str) -> String {
 /// What the request asked for, as the controller hands it over.
 pub struct Request<'a> {
     pub context: Option<&'a str>,
+    /// The review that deletes it (`opts[:reviewable_id]`), logged with it.
+    pub reviewable_id: Option<i64>,
+    /// Inside a caller's transaction: the jobs Rails enqueues from
+    /// after-commit callbacks wait here for its commit. None: enqueued
+    /// with the destroy's own transaction.
+    pub deferred: Option<&'a Deferred>,
+}
+
+/// Jobs held for an enclosing transaction's commit, in callback order.
+pub type Deferred = std::sync::Mutex<Vec<(&'static str, serde_json::Value)>>;
+
+/// A job Rails enqueues from an after-commit callback.
+async fn after_commit_job(
+    conn: &mut PgConnection,
+    deferred: Option<&Deferred>,
+    name: &'static str,
+    args: serde_json::Value,
+) -> Result<(), sqlx::Error> {
+    match deferred {
+        Some(jobs) => {
+            // A record saved again in the transaction runs its commit
+            // callbacks once.
+            let mut jobs = jobs
+                .lock()
+                .unwrap_or_else(std::sync::PoisonError::into_inner);
+            if !jobs.iter().any(|(n, a)| *n == name && *a == args) {
+                jobs.push((name, args));
+            }
+            Ok(())
+        }
+        None => crate::jobs::enqueue(conn, name, args).await,
+    }
 }
 
 /// How a destroy or recover ends when it isn't a server error.
@@ -240,6 +272,8 @@ pub async fn destroy_as_system(
         true,
         &Request {
             context: Some(context),
+            reviewable_id: None,
+            deferred: None,
         },
     )
     .await
@@ -261,7 +295,6 @@ async fn destroy(
     let mut conn = pool.acquire().await?;
     let post = load_post(&mut conn, post_id).await?;
     let topic = load_topic(&mut conn, post.topic_id).await?;
-    let pm = topic.archetype == "private_message";
     let should_reset_bumped_at = topic.highest_post_number == post.post_number
         && post.post_number != 1
         && post.post_type != post_types::WHISPER;
@@ -294,12 +327,78 @@ async fn destroy(
         mark_for_deletion(pool, ctx, guardian, &post).await?;
     }
     let mut tx = pool.begin().await?;
+    finish(
+        &mut tx,
+        ctx,
+        user.id,
+        &post,
+        &topic,
+        req,
+        perform,
+        should_reset_bumped_at,
+    )
+    .await?;
+    tx.commit().await?;
+    Ok(())
+}
+
+/// `PostDestroyer.new(staff, post, context:, reviewable_id:).destroy` on
+/// the caller's transaction (UserDestroyer deleting a user's posts): a
+/// staff member's delete is always performed.
+pub async fn destroy_by_staff_in(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    guardian: &Guardian,
+    post_id: i32,
+    req: &Request<'_>,
+) -> Result<(), AppError> {
+    let user = guardian.user().ok_or(Unsupported("deleting anonymously"))?;
+    if !guardian.is_staff() {
+        return Err(Unsupported("deleting posts in a transaction as a non-staff user").into());
+    }
+    let post = load_post(&mut *conn, post_id).await?;
+    let topic = load_topic(&mut *conn, post.topic_id).await?;
+    let should_reset_bumped_at = topic.highest_post_number == post.post_number
+        && post.post_number != 1
+        && post.post_type != post_types::WHISPER;
+    refuse_unported_deletion(&mut *conn, &post, &topic).await?;
+    if post.user_id == Some(user.id) {
+        return Err(Unsupported("staff deleting their own posts in a transaction").into());
+    }
+    finish(
+        conn,
+        ctx,
+        user.id,
+        &post,
+        &topic,
+        req,
+        true,
+        should_reset_bumped_at,
+    )
+    .await
+}
+
+/// What PostDestroyer#destroy does once it decided: the deletion (when it
+/// performs one) and what follows any destroy.
+#[allow(clippy::too_many_arguments)]
+async fn finish(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    user_id: i32,
+    post: &Post,
+    topic: &Topic,
+    req: &Request<'_>,
+    perform: bool,
+    should_reset_bumped_at: bool,
+) -> Result<(), AppError> {
+    let pm = topic.archetype == "private_message";
+    let tx = conn;
     if perform {
-        perform_delete(&mut tx, ctx, user.id, &post, &topic, req).await?;
+        perform_delete(&mut *tx, ctx, user_id, post, topic, req).await?;
         // Permanent deletion (:destroyed) is not ported.
         crate::bus::publish_post_change(
             ctx,
-            &mut tx,
+            &mut *tx,
             post.id,
             "deleted",
             Default::default(),
@@ -307,7 +406,7 @@ async fn destroy(
         )
         .await?;
         if post.is_first_post() {
-            crate::topic_tracking_state::publish_delete(ctx.bus, &mut tx, topic.id).await?;
+            crate::topic_tracking_state::publish_delete(ctx.bus, &mut *tx, topic.id).await?;
         }
     }
 
@@ -316,13 +415,21 @@ async fn destroy(
     if !post.is_first_post()
         && let Some(author) = post.user_id
     {
-        for (action_type, user_id) in post_rows(&mut tx, &topic, author).await? {
-            remove_user_action(&mut tx, action_type, user_id, author, topic.id, post.id, pm)
-                .await?;
+        for (action_type, user_id) in post_rows(&mut *tx, topic, author).await? {
+            remove_user_action(
+                &mut *tx,
+                action_type,
+                user_id,
+                author,
+                topic.id,
+                post.id,
+                pm,
+            )
+            .await?;
         }
     }
     crate::jobs::enqueue(
-        &mut tx,
+        &mut *tx,
         "sync_topic_user_bookmarked",
         json!({ "topic_id": topic.id }),
     )
@@ -344,8 +451,8 @@ async fn destroy(
             } else {
                 (user_actions::NEW_TOPIC, user_actions::NEW_PRIVATE_MESSAGE)
             };
-            remove_user_action(&mut tx, other, owner, owner, topic.id, -1, pm).await?;
-            remove_user_action(&mut tx, own, owner, owner, topic.id, -1, pm).await?;
+            remove_user_action(&mut *tx, other, owner, owner, topic.id, -1, pm).await?;
+            remove_user_action(&mut *tx, own, owner, owner, topic.id, -1, pm).await?;
             if pm {
                 let recipients: Vec<i32> = sqlx::query_scalar(
                     "SELECT user_id FROM topic_allowed_users WHERE topic_id = $1 AND user_id <> $2 ORDER BY id",
@@ -356,7 +463,7 @@ async fn destroy(
                 .await?;
                 for recipient in recipients {
                     remove_user_action(
-                        &mut tx,
+                        &mut *tx,
                         user_actions::GOT_PRIVATE_MESSAGE,
                         recipient,
                         owner,
@@ -370,9 +477,8 @@ async fn destroy(
         }
     }
     if should_reset_bumped_at {
-        reset_bumped_at(&mut tx, topic.id).await?;
+        reset_bumped_at(&mut *tx, topic.id).await?;
     }
-    tx.commit().await?;
     Ok(())
 }
 
@@ -437,22 +543,17 @@ async fn refuse_unported_deletion(
     post: &Post,
     topic: &Topic,
 ) -> Result<(), AppError> {
-    let (likes, flagged, embed, published): (bool, bool, bool, bool) =
-        sqlx::query_as(
-            "SELECT EXISTS (SELECT 1 FROM post_actions WHERE post_id = $1 AND post_action_type_id = 2 \
-                            AND deleted_at IS NULL), \
-                    EXISTS (SELECT 1 FROM reviewables WHERE target_type = 'Post' AND target_id = $1 \
-                            AND type = 'ReviewableFlaggedPost' AND status = 0), \
-                    EXISTS (SELECT 1 FROM topic_embeds WHERE topic_id = $2), \
-                    EXISTS (SELECT 1 FROM published_pages WHERE topic_id = $2)",
-        )
-        .bind(post.id)
-        .bind(topic.id)
-        .fetch_one(conn)
-        .await?;
-    let reason = if likes {
-        "deleting liked posts (deleted_public_actions)"
-    } else if flagged {
+    let (flagged, embed, published): (bool, bool, bool) = sqlx::query_as(
+        "SELECT EXISTS (SELECT 1 FROM reviewables WHERE target_type = 'Post' AND target_id = $1 \
+                        AND type = 'ReviewableFlaggedPost' AND status = 0), \
+                EXISTS (SELECT 1 FROM topic_embeds WHERE topic_id = $2), \
+                EXISTS (SELECT 1 FROM published_pages WHERE topic_id = $2)",
+    )
+    .bind(post.id)
+    .bind(topic.id)
+    .fetch_one(conn)
+    .await?;
+    let reason = if flagged {
         "deleting flagged posts (agreeing with the flags)"
     } else if embed || published {
         "deleting embedded or published topics"
@@ -469,6 +570,7 @@ async fn destroy_topic_links(
     conn: &mut PgConnection,
     column: &str,
     post_id: i32,
+    deferred: Option<&Deferred>,
 ) -> Result<(), sqlx::Error> {
     let ids: Vec<i32> = sqlx::query_scalar(&format!(
         "SELECT id FROM topic_links WHERE {column} = $1 ORDER BY id"
@@ -485,8 +587,9 @@ async fn destroy_topic_links(
             .bind(id)
             .execute(&mut *conn)
             .await?;
-        crate::jobs::enqueue(
+        after_commit_job(
             &mut *conn,
+            deferred,
             "crawl_topic_link",
             json!({ "topic_link_id": id }),
         )
@@ -565,7 +668,7 @@ async fn perform_delete(
 ) -> Result<(), AppError> {
     // Post#trash!: its links destroyed, the notice goes, then the row is
     // trashed.
-    destroy_topic_links(&mut *conn, "post_id", post.id).await?;
+    destroy_topic_links(&mut *conn, "post_id", post.id, req.deferred).await?;
     sqlx::query("DELETE FROM post_custom_fields WHERE post_id = $1 AND name = 'notice'")
         .bind(post.id)
         .execute(&mut *conn)
@@ -623,8 +726,38 @@ async fn perform_delete(
         .execute(&mut *conn)
         .await?;
     }
-    // trash_public_post_actions: none (liked posts are refused); the
-    // public counts are zeroed all the same.
+    // trash_public_post_actions: the live likes trashed, their ids kept
+    // in deleted_public_actions (one row each, any earlier ones replaced),
+    // the public counts zeroed.
+    let likes: Vec<i32> = sqlx::query_scalar(
+        "UPDATE post_actions SET deleted_at = clock_timestamp(), deleted_by_id = $2 \
+         WHERE id IN (SELECT id FROM post_actions WHERE post_id = $1 AND post_action_type_id = $3 \
+                        AND deleted_at IS NULL) \
+         RETURNING id",
+    )
+    .bind(post.id)
+    .bind(acting_user_id)
+    .bind(crate::post_actions::LIKE as i32)
+    .fetch_all(&mut *conn)
+    .await?;
+    let mut likes = likes;
+    likes.sort_unstable();
+    sqlx::query(
+        "DELETE FROM post_custom_fields WHERE post_id = $1 AND name = 'deleted_public_actions'",
+    )
+    .bind(post.id)
+    .execute(&mut *conn)
+    .await?;
+    for id in likes {
+        sqlx::query(
+            "INSERT INTO post_custom_fields (post_id, name, value, created_at, updated_at) \
+             VALUES ($1, 'deleted_public_actions', $2, clock_timestamp(), clock_timestamp())",
+        )
+        .bind(post.id)
+        .bind(id.to_string())
+        .execute(&mut *conn)
+        .await?;
+    }
     sqlx::query("UPDATE posts SET like_count = 0 WHERE id = $1")
         .bind(post.id)
         .execute(&mut *conn)
@@ -692,6 +825,7 @@ async fn perform_delete(
                 Some(topic.id),
                 None,
                 req.context,
+                req.reviewable_id,
                 &details,
             )
             .await?;
@@ -725,6 +859,7 @@ async fn perform_delete(
                 None,
                 Some(post.id),
                 req.context,
+                req.reviewable_id,
                 &details,
             )
             .await?;
@@ -775,11 +910,28 @@ async fn perform_delete(
     }
 
     // TopicLink.where(link_post_id:).destroy_all
-    destroy_topic_links(&mut *conn, "link_post_id", post.id).await?;
-    update_category_latest(&mut *conn, post, topic).await?;
+    destroy_topic_links(&mut *conn, "link_post_id", post.id, req.deferred).await?;
+    update_category_latest(&mut *conn, post, topic, req.deferred).await?;
     update_user_counts(&mut *conn, post, topic).await?;
-    // TopicUser.update_post_action_cache(post_id:): no likes to recount
-    // (liked posts are refused).
+    // TopicUser.update_post_action_cache(post_id:): the likers of the
+    // post (trashed likes too) in its topic.
+    sqlx::query(
+        "UPDATE topic_users tu SET liked = x.state FROM ( \
+           SELECT EXISTS ( \
+             SELECT 1 FROM post_actions pa JOIN posts p ON p.id = pa.post_id JOIN topics t ON t.id = p.topic_id \
+             WHERE pa.deleted_at IS NULL AND p.deleted_at IS NULL AND t.deleted_at IS NULL \
+               AND pa.post_action_type_id = $2 AND tu2.topic_id = t.id AND tu2.user_id = pa.user_id) AS state, \
+             tu2.topic_id, tu2.user_id \
+           FROM topic_users tu2 \
+           WHERE tu2.topic_id IN (SELECT topic_id FROM posts WHERE id = $1) \
+             AND tu2.user_id IN (SELECT user_id FROM post_actions WHERE post_id = $1 \
+                                 AND post_action_type_id = $2)) x \
+         WHERE x.topic_id = tu.topic_id AND x.user_id = tu.user_id AND x.state != tu.liked",
+    )
+    .bind(post.id)
+    .bind(crate::post_actions::LIKE as i32)
+    .execute(&mut *conn)
+    .await?;
 
     // After commit: Topic.reset_highest.
     reset_highest(&mut *conn, topic.id).await?;
@@ -801,18 +953,20 @@ async fn log(
     topic_id: Option<i32>,
     post_id: Option<i32>,
     context: Option<&str>,
+    reviewable_id: Option<i64>,
     details: &str,
 ) -> Result<(), sqlx::Error> {
     sqlx::query(
-        "INSERT INTO user_histories (action, acting_user_id, topic_id, post_id, context, details, admin_only, \
-                                     created_at, updated_at) \
-         VALUES ($1, $2, $3, $4, $5, $6, FALSE, clock_timestamp(), clock_timestamp())",
+        "INSERT INTO user_histories (action, acting_user_id, topic_id, post_id, context, reviewable_id, \
+                                     details, admin_only, created_at, updated_at) \
+         VALUES ($1, $2, $3, $4, $5, $6, $7, FALSE, clock_timestamp(), clock_timestamp())",
     )
     .bind(action)
     .bind(acting_user_id)
     .bind(topic_id)
     .bind(post_id)
     .bind(context)
+    .bind(reviewable_id)
     .bind(details)
     .execute(conn)
     .await?;
@@ -826,6 +980,7 @@ async fn update_category_latest(
     conn: &mut PgConnection,
     post: &Post,
     topic: &Topic,
+    deferred: Option<&Deferred>,
 ) -> Result<(), AppError> {
     let Some(category_id) = topic.category_id else {
         return Ok(());
@@ -840,11 +995,15 @@ async fn update_category_latest(
     {
         return Ok(());
     }
-    category_update_latest(conn, category_id).await
+    category_update_latest(conn, category_id, deferred).await
 }
 
 /// `Category#update_latest`
-async fn category_update_latest(conn: &mut PgConnection, category_id: i32) -> Result<(), AppError> {
+async fn category_update_latest(
+    conn: &mut PgConnection,
+    category_id: i32,
+    deferred: Option<&Deferred>,
+) -> Result<(), AppError> {
     let changed = sqlx::query(
         "UPDATE categories c SET latest_post_id = x.post_id, latest_topic_id = x.topic_id, \
                                  updated_at = clock_timestamp() \
@@ -863,8 +1022,9 @@ async fn category_update_latest(conn: &mut PgConnection, category_id: i32) -> Re
     .rows_affected();
     if changed > 0 {
         // after_save_commit :index_search
-        crate::jobs::enqueue(
+        after_commit_job(
             conn,
+            deferred,
             "index_category_for_search",
             json!({ "category_id": category_id, "force": false }),
         )
@@ -1079,7 +1239,7 @@ pub async fn recover_post(
         return Err(Unsupported("recovering posts without an author").into());
     }
     if let Some(category_id) = topic.category_id {
-        category_update_latest(&mut *conn, category_id).await?;
+        category_update_latest(&mut *conn, category_id, None).await?;
     }
     // mark_topic_changed
     sqlx::query("UPDATE topics SET updated_at = clock_timestamp() WHERE id = $1")
@@ -1181,6 +1341,7 @@ pub async fn recover_post(
             user.id,
             Some(topic.id),
             Some(post.id),
+            None,
             None,
             &details,
         )

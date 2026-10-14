@@ -1,0 +1,16 @@
+{
+  "user": "user2",
+  "setup": [
+    "UPDATE posts SET deleted_at = now() - interval '1 day', deleted_by_id = 1 WHERE id = 37",
+    "UPDATE user_stats SET topic_count = 0, post_count = 1 WHERE user_id = 4"
+  ],
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/u/user2.json",
+      "params": {
+        "context": "/u/user2/preferences/account"
+      }
+    }
+  ]
+}
