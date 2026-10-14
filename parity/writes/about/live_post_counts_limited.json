@@ -1,0 +1,91 @@
+{
+  "name": "live_post_counts_limited",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/about/live_post_counts.json"
+    },
+    {
+      "method": "GET",
+      "path": "/about/live_post_counts.json"
+    }
+  ],
+  "started_at": "2026-10-14T02:03:05.695673",
+  "transaction_started_at": "2026-10-14T02:03:01.760814",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "public_topic_count": 5,
+        "public_post_count": 4
+      }
+    },
+    {
+      "status": 429,
+      "body": {
+        "errors": [
+          "You’re asking for live post counts too quickly. Please wait 10 minutes before trying again."
+        ],
+        "error_type": "rate_limit",
+        "extras": {
+          "wait_seconds": 600,
+          "time_left": "10 minutes"
+        }
+      },
+      "headers": {
+        "Retry-After": "600"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 529,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "kYXuDZb8UAEmw0uBqAhgvPKCG6w=",
+            "created_at": "2026-10-14T02:03:02.89175",
+            "rotated_at": "2026-10-14T02:03:02.881348",
+            "updated_at": "2026-10-14T02:03:02.89175",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "kYXuDZb8UAEmw0uBqAhgvPKCG6w=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 529,
+            "seen_at": "2026-10-14T02:03:05.706287",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "kYXuDZb8UAEmw0uBqAhgvPKCG6w=",
+            "created_at": "2026-10-14T02:03:02.89175",
+            "rotated_at": "2026-10-14T02:03:02.881348",
+            "updated_at": "2026-10-14T02:03:02.89175",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "kYXuDZb8UAEmw0uBqAhgvPKCG6w=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "rate_limits": true,
+  "recorded_from": {
+    "case": "6b446cdfe4264157e3ef34a23e3b330ab2fb0678af5c56c3e314d1becbef4075",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

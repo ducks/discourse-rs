@@ -1,3 +1,4 @@
+pub mod about;
 pub mod accounts;
 pub mod admin_site_settings;
 pub mod admin_user_show;

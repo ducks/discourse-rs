@@ -1,0 +1,13 @@
+{
+  "settings": {
+    "hide_user_profiles_from_public": true,
+    "contact_email": "staff@example.com",
+    "contact_url": "https://example.com/contact"
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/about.json"
+    }
+  ]
+}

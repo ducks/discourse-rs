@@ -1,3 +1,4 @@
+mod about;
 mod accounts;
 mod admin_email;
 mod admin_logs;
@@ -711,6 +712,9 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/site.json", get(site::site))
         .route("/site/basic-info", get(site::basic_info))
         .route("/site/basic-info.json", get(site::basic_info))
+        .route("/about.json", get(about::show))
+        .route("/about/live_post_counts", get(about::live_post_counts))
+        .route("/about/live_post_counts.json", get(about::live_post_counts))
         .route("/assets/site.css", get(asset))
         .route("/assets/discourse.css", get(asset))
         .route(
