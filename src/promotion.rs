@@ -3,9 +3,8 @@
 //! staff or recalculated, with its log, the recooked bio and the trust
 //! level groups, and the badges a change queues.
 //!
-//! Refused: web hooks for
-//! `user_promoted`/`user_added_to_group`, trust level groups with
-//! notification defaults, titles, flair or granted levels.
+//! Refused: trust level groups with notification defaults, titles, flair
+//! or granted levels.
 
 use chrono::NaiveDateTime;
 use serde_json::json;
@@ -33,6 +32,7 @@ pub struct Ctx<'a> {
     pub settings: &'a SiteSettings,
     pub i18n: &'a I18n,
     pub host: &'a Host,
+    pub config: &'a crate::config::Config,
 }
 
 #[derive(sqlx::FromRow)]
@@ -201,12 +201,6 @@ pub async fn change_trust_level(
             .unwrap_or_default();
         return Ok(Err(message));
     }
-    // user_promoted, which the web hooks skip for a demotion.
-    if new_level >= old_level {
-        crate::web_hooks::refuse(&mut *conn, "user_promoted", "web hooks for user_promoted")
-            .await?;
-    }
-
     let (action, acting) = match log_action_for {
         Some(admin) => (CHANGE_TRUST_LEVEL, Some(admin)),
         None => (AUTO_TRUST_LEVEL_CHANGE, None),
@@ -245,7 +239,29 @@ pub async fn change_trust_level(
     // UserProfile's after_save trigger_badges (the user's save! queues the
     // same when the level changed).
     crate::badge_granter::queue_user_change(conn, s, user_id).await?;
-    user_trust_level_change(conn, user_id, new_level).await?;
+    // DiscourseEvent :user_promoted: its web hooks (UserSerializer), not
+    // for a demotion.
+    let payloads = crate::web_hooks::Payloads {
+        settings: s,
+        i18n: cx.i18n,
+        config: cx.config,
+    };
+    if new_level >= old_level {
+        crate::web_hooks::enqueue_object_hooks(
+            &mut *conn,
+            "user_promoted",
+            "user_promoted",
+            i64::from(user_id),
+            async |conn| {
+                Ok(serde_json::Value::Object(
+                    payloads.user_serializer(conn, user_id).await?,
+                ))
+            },
+            serde_json::Map::new(),
+        )
+        .await?;
+    }
+    user_trust_level_change(conn, &payloads, user_id, new_level).await?;
     crate::badge_granter::queue(
         conn,
         s,
@@ -359,6 +375,7 @@ async fn recook_bio(
 /// effects).
 pub async fn user_trust_level_change(
     conn: &mut PgConnection,
+    payloads: &crate::web_hooks::Payloads<'_>,
     user_id: i32,
     trust_level: i32,
 ) -> Result<(), AppError> {
@@ -403,12 +420,6 @@ pub async fn user_trust_level_change(
         if member {
             continue;
         }
-        crate::web_hooks::refuse(
-            &mut *conn,
-            "user_added_to_group",
-            "user_added_to_group web hooks",
-        )
-        .await?;
         if group.title.as_deref().is_some_and(|t| !t.is_empty())
             || group.primary_group
             || group.grant_trust_level.is_some_and(|l| l != 0)
@@ -419,14 +430,14 @@ pub async fn user_trust_level_change(
             )
             .into());
         }
-        sqlx::query(
+        let group_user_id: i64 = sqlx::query_scalar(
             "INSERT INTO group_users (group_id, user_id, notification_level, created_at, updated_at) \
-             VALUES ($1, $2, $3, clock_timestamp(), clock_timestamp())",
+             VALUES ($1, $2, $3, clock_timestamp(), clock_timestamp()) RETURNING id::int8",
         )
         .bind(id)
         .bind(user_id)
         .bind(group.default_notification_level.unwrap_or(3))
-        .execute(&mut *conn)
+        .fetch_one(&mut *conn)
         .await?;
         // increase_group_user_count: trust level groups hide bots.
         if user_id > 0 {
@@ -435,6 +446,16 @@ pub async fn user_trust_level_change(
                 .execute(&mut *conn)
                 .await?;
         }
+        // trigger_user_added_event
+        crate::web_hooks::enqueue_group_user_hooks(
+            &mut *conn,
+            payloads,
+            "user_added_to_group",
+            group_user_id,
+            id,
+            None,
+        )
+        .await?;
     }
     Ok(())
 }
@@ -556,7 +577,17 @@ pub async fn recalculate_with(
             .map_err(invalid)?;
     }
     let level = load(conn, user_id).await?.trust_level;
-    user_trust_level_change(conn, user_id, level).await?;
+    user_trust_level_change(
+        conn,
+        &crate::web_hooks::Payloads {
+            settings: s,
+            i18n: cx.i18n,
+            config: cx.config,
+        },
+        user_id,
+        level,
+    )
+    .await?;
     if level == 3 && tl3_lost(conn, s, user_id).await? {
         let by = performed_by.unwrap_or(SYSTEM_USER_ID);
         change_trust_level(conn, cx, user_id, 2, Some(by))

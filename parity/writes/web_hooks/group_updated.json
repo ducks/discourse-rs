@@ -1,0 +1,470 @@
+{
+  "name": "group_updated",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/groups/9001.json",
+      "params": {
+        "group": {
+          "full_name": "New Name",
+          "bio_raw": "A *new* bio",
+          "mentionable_level": "3",
+          "title": "Renamed",
+          "visibility_level": "1",
+          "flair_icon": "heart"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/groups/9001.json",
+      "params": {
+        "group": {
+          "full_name": ""
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/groups/9001.json",
+      "params": {
+        "group": {
+          "name": "user1"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/groups/9999.json",
+      "params": {
+        "group": {
+          "full_name": "x"
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-14T11:39:40.522703",
+  "transaction_started_at": "2026-10-14T11:39:39.470012",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Name has already been taken"
+        ]
+      }
+    },
+    {
+      "status": 404,
+      "body": "ActiveRecord::RecordNotFound in GroupsController#update\n\nCouldn't find Group with 'id'=\"9999\"\nExtracted source (around line #279):\n\n#277 \n#278         cached_find_by([primary_key], [id]) ||\n*279 [\"          \", \"raise\", \"(RecordNotFound.new(\\\"Couldn't find \\#{name} with '\\#{primary_key}'=\\#{id.inspect}\\\", name, primary_key, id))\\n\"]#280       end\n#281 \n#282       def find_by(*args) # :nodoc:\n\nExtracted source (around line #163):\n\n#161 \n#162   def update\n*163 [\"    group = Group\", \".find\", \"(params[:id])\\n\"]#164     guardian.ensure_can_edit!(group) if !guardian.can_admin_group?(group)\n#165 \n#166     group_attributes = group_params(automatic: group.automatic, group:)\n\nExtracted source (around line #8):\n\n#6   module BasicImplicitRender # :nodoc:\n#7     def send_action(method, *args)\n*8       ret = super\n#9       default_render unless performed?\n#10       ret\n#11     end\n\n\nRails.root: /var/www/discourse\n\nApplication Trace\n/var/www/discourse/app/controllers/groups_controller.rb:163:in 'GroupsController#update'\n/var/www/discourse/app/controllers/application_controller.rb:458:in 'block in ApplicationController#with_resolved_locale'\n/var/www/discourse/app/controllers/application_controller.rb:458:in 'ApplicationController#with_resolved_locale'\n/var/www/discourse/app/controllers/application_controller.rb:1140:in 'ApplicationController#ensure_dont_cache_page'\n/var/www/discourse/lib/middleware/omniauth_bypass_middleware.rb:35:in 'Middleware::OmniauthBypassMiddleware#call'\n/var/www/discourse/lib/middleware/crawler_hooks.rb:13:in 'Middleware::CrawlerHooks#call'\n/var/www/discourse/lib/content_security_policy/middleware.rb:12:in 'ContentSecurityPolicy::Middleware#call'\n/var/www/discourse/lib/middleware/csp_script_nonce_injector.rb:13:in 'Middleware::CspScriptNonceInjector#call'\n/var/www/discourse/lib/middleware/track_view_session_id_injector.rb:12:in 'Middleware::TrackViewSessionIdInjector#call'\n/var/www/discourse/config/initializers/008-rack-cors.rb:14:in 'Discourse::Cors#call'\n/var/www/discourse/lib/middleware/default_headers.rb:13:in 'Middleware::DefaultHeaders#call'\n/var/www/discourse/config/initializers/100-quiet_logger.rb:20:in 'DiscourseRackQuietAssetsLogger#call'\n/var/www/discourse/config/initializers/100-silence_logger.rb:29:in 'SilenceLogger#call'\n/var/www/discourse/lib/middleware/missing_avatars.rb:22:in 'Middleware::MissingAvatars#call'\n/var/www/discourse/lib/middleware/overload_protections.rb:18:in 'Middleware::OverloadProtections#call'\n/var/www/discourse/lib/middleware/processing_request.rb:14:in 'Middleware::ProcessingRequest#call'\n/var/www/discourse/lib/markdown_endpoint/vary_middleware.rb:10:in 'MarkdownEndpoint::VaryMiddleware#call'\n\nFramework Trace\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activerecord-8.1.4/lib/active_record/core.rb:279:in 'ActiveRecord::Core::ClassMethods#find'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/basic_implicit_render.rb:8:in 'ActionController::BasicImplicitRender#send_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/abstract_controller/base.rb:221:in 'AbstractController::Base#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/rendering.rb:199:in 'ActionController::Rendering#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/abstract_controller/callbacks.rb:267:in 'block in AbstractController::Callbacks#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/callbacks.rb:121:in 'block in ActiveSupport::Callbacks#run_callbacks'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/i18n-1.14.8/lib/i18n.rb:354:in 'I18n::Base#with_locale'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/callbacks.rb:130:in 'block in ActiveSupport::Callbacks#run_callbacks'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/callbacks.rb:130:in 'block in ActiveSupport::Callbacks#run_callbacks'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/callbacks.rb:141:in 'ActiveSupport::Callbacks#run_callbacks'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/abstract_controller/callbacks.rb:266:in 'AbstractController::Callbacks#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/rescue.rb:36:in 'ActionController::Rescue#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/instrumentation.rb:76:in 'block in ActionController::Instrumentation#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/notifications.rb:210:in 'block in ActiveSupport::Notifications.instrument'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/notifications/instrumenter.rb:58:in 'ActiveSupport::Notifications::Instrumenter#instrument'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/notifications.rb:210:in 'ActiveSupport::Notifications.instrument'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/instrumentation.rb:75:in 'ActionController::Instrumentation#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/params_wrapper.rb:259:in 'ActionController::ParamsWrapper#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activerecord-8.1.4/lib/active_record/railties/controller_runtime.rb:39:in 'ActiveRecord::Railties::ControllerRuntime#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/abstract_controller/base.rb:154:in 'AbstractController::Base#process'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionview-8.1.4/lib/action_view/rendering.rb:40:in 'ActionView::Rendering#process'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-mini-profiler-5.0.0/lib/mini_profiler/profiling_methods.rb:116:in 'block in ActionController::Base#profile_method'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal.rb:252:in 'ActionController::Metal#dispatch'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal.rb:335:in 'ActionController::Metal.dispatch'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/routing/route_set.rb:65:in 'ActionDispatch::Routing::RouteSet::Dispatcher#dispatch'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/routing/route_set.rb:50:in 'ActionDispatch::Routing::RouteSet::Dispatcher#serve'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/journey/router.rb:35:in 'block in ActionDispatch::Journey::Router#serve'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/journey/router.rb:86:in 'block in ActionDispatch::Journey::Router#recognize'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/journey/router.rb:66:in 'Array#each'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/journey/router.rb:66:in 'ActionDispatch::Journey::Router#recognize'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/journey/router.rb:31:in 'ActionDispatch::Journey::Router#serve'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/routing/route_set.rb:906:in 'ActionDispatch::Routing::RouteSet#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/tempfile_reaper.rb:15:in 'Rack::TempfileReaper#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/conditional_get.rb:40:in 'Rack::ConditionalGet#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/head.rb:12:in 'Rack::Head#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/session/abstract/id.rb:266:in 'Rack::Session::Abstract::Persisted#context'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/session/abstract/id.rb:260:in 'Rack::Session::Abstract::Persisted#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/cookies.rb:708:in 'ActionDispatch::Cookies#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activerecord-8.1.4/lib/active_record/migration.rb:671:in 'ActiveRecord::Migration::CheckPending#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/callbacks.rb:31:in 'block in ActionDispatch::Callbacks#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/callbacks.rb:101:in 'ActiveSupport::Callbacks#run_callbacks'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/callbacks.rb:30:in 'ActionDispatch::Callbacks#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/executor.rb:20:in 'ActionDispatch::Executor#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/actionable_exceptions.rb:18:in 'ActionDispatch::ActionableExceptions#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/debug_exceptions.rb:31:in 'ActionDispatch::DebugExceptions#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/show_exceptions.rb:32:in 'ActionDispatch::ShowExceptions#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/logster-2.21.0/lib/logster/middleware/reporter.rb:40:in 'Logster::Middleware::Reporter#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/rack/logger.rb:41:in 'Rails::Rack::Logger#call_app'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/rack/logger.rb:29:in 'Rails::Rack::Logger#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/remote_ip.rb:98:in 'ActionDispatch::RemoteIp#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/request_id.rb:34:in 'ActionDispatch::RequestId#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/method_override.rb:24:in 'Rack::MethodOverride#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/executor.rb:20:in 'ActionDispatch::Executor#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/propshaft-1.3.2/lib/propshaft/server.rb:37:in 'Propshaft::Server#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/static.rb:27:in 'ActionDispatch::Static#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/sendfile.rb:127:in 'Rack::Sendfile#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/host_authorization.rb:144:in 'ActionDispatch::HostAuthorization#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-mini-profiler-5.0.0/lib/mini_profiler.rb:342:in 'Rack::MiniProfiler#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/message_bus-5.0.0/lib/message_bus/rack/middleware.rb:60:in 'MessageBus::Rack::Middleware#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/engine.rb:534:in 'Rails::Engine#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-test-2.2.0/lib/rack/test.rb:360:in 'Rack::Test::Session#process_request'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-test-2.2.0/lib/rack/test.rb:153:in 'Rack::Test::Session#request'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/testing/integration.rb:298:in 'ActionDispatch::Integration::Session#process'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/testing/integration.rb:37:in 'ActionDispatch::Integration::RequestHelpers#put'\n/tmp/record_writes.rb:325:in 'Kernel#public_send'\n/tmp/record_writes.rb:325:in 'block (2 levels) in <compiled>'\n/tmp/record_writes.rb:315:in 'Array#each'\n/tmp/record_writes.rb:315:in 'block in <compiled>'\n/tmp/record_writes.rb:271:in 'Array#each'\n/tmp/record_writes.rb:271:in '<compiled>'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/commands/runner/runner_command.rb:44:in 'Kernel.load'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/commands/runner/runner_command.rb:44:in 'block in Rails::Command::RunnerCommand#perform'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/execution_wrapper.rb:91:in 'ActiveSupport::ExecutionWrapper.wrap'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/commands/runner/runner_command.rb:70:in 'Rails::Command::RunnerCommand#conditional_executor'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/commands/runner/runner_command.rb:43:in 'Rails::Command::RunnerCommand#perform'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/thor-1.5.0/lib/thor/command.rb:28:in 'Thor::Command#run'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/thor-1.5.0/lib/thor/invocation.rb:127:in 'Thor::Invocation#invoke_command'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/command/base.rb:176:in 'Rails::Command::Base#invoke_command'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/thor-1.5.0/lib/thor.rb:538:in 'Thor.dispatch'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/command/base.rb:71:in 'Rails::Command::Base.perform'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/command.rb:65:in 'block in Rails::Command.invoke'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/command.rb:143:in 'Rails::Command.with_argv'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/command.rb:63:in 'Rails::Command.invoke'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/commands.rb:18:in '<compiled>'\n/usr/local/lib/ruby/3.4.0/bundled_gems.rb:82:in 'Kernel.require'\n/usr/local/lib/ruby/3.4.0/bundled_gems.rb:82:in 'block (2 levels) in Kernel#replace_require'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/bootsnap-1.25.0/lib/bootsnap/load_path_cache/core_ext/kernel_require.rb:33:in 'Kernel#require'\nbin/rails:18:in '<main>'\n\nFull Trace\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activerecord-8.1.4/lib/active_record/core.rb:279:in 'ActiveRecord::Core::ClassMethods#find'\n/var/www/discourse/app/controllers/groups_controller.rb:163:in 'GroupsController#update'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/basic_implicit_render.rb:8:in 'ActionController::BasicImplicitRender#send_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/abstract_controller/base.rb:221:in 'AbstractController::Base#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/rendering.rb:199:in 'ActionController::Rendering#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/abstract_controller/callbacks.rb:267:in 'block in AbstractController::Callbacks#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/callbacks.rb:121:in 'block in ActiveSupport::Callbacks#run_callbacks'\n/var/www/discourse/app/controllers/application_controller.rb:458:in 'block in ApplicationController#with_resolved_locale'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/i18n-1.14.8/lib/i18n.rb:354:in 'I18n::Base#with_locale'\n/var/www/discourse/app/controllers/application_controller.rb:458:in 'ApplicationController#with_resolved_locale'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/callbacks.rb:130:in 'block in ActiveSupport::Callbacks#run_callbacks'\n/var/www/discourse/app/controllers/application_controller.rb:1140:in 'ApplicationController#ensure_dont_cache_page'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/callbacks.rb:130:in 'block in ActiveSupport::Callbacks#run_callbacks'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/callbacks.rb:141:in 'ActiveSupport::Callbacks#run_callbacks'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/abstract_controller/callbacks.rb:266:in 'AbstractController::Callbacks#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/rescue.rb:36:in 'ActionController::Rescue#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/instrumentation.rb:76:in 'block in ActionController::Instrumentation#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/notifications.rb:210:in 'block in ActiveSupport::Notifications.instrument'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/notifications/instrumenter.rb:58:in 'ActiveSupport::Notifications::Instrumenter#instrument'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/notifications.rb:210:in 'ActiveSupport::Notifications.instrument'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/instrumentation.rb:75:in 'ActionController::Instrumentation#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal/params_wrapper.rb:259:in 'ActionController::ParamsWrapper#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activerecord-8.1.4/lib/active_record/railties/controller_runtime.rb:39:in 'ActiveRecord::Railties::ControllerRuntime#process_action'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/abstract_controller/base.rb:154:in 'AbstractController::Base#process'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionview-8.1.4/lib/action_view/rendering.rb:40:in 'ActionView::Rendering#process'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-mini-profiler-5.0.0/lib/mini_profiler/profiling_methods.rb:116:in 'block in ActionController::Base#profile_method'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal.rb:252:in 'ActionController::Metal#dispatch'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_controller/metal.rb:335:in 'ActionController::Metal.dispatch'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/routing/route_set.rb:65:in 'ActionDispatch::Routing::RouteSet::Dispatcher#dispatch'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/routing/route_set.rb:50:in 'ActionDispatch::Routing::RouteSet::Dispatcher#serve'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/journey/router.rb:35:in 'block in ActionDispatch::Journey::Router#serve'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/journey/router.rb:86:in 'block in ActionDispatch::Journey::Router#recognize'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/journey/router.rb:66:in 'Array#each'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/journey/router.rb:66:in 'ActionDispatch::Journey::Router#recognize'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/journey/router.rb:31:in 'ActionDispatch::Journey::Router#serve'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/routing/route_set.rb:906:in 'ActionDispatch::Routing::RouteSet#call'\n/var/www/discourse/lib/middleware/omniauth_bypass_middleware.rb:35:in 'Middleware::OmniauthBypassMiddleware#call'\n/var/www/discourse/lib/middleware/crawler_hooks.rb:13:in 'Middleware::CrawlerHooks#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/tempfile_reaper.rb:15:in 'Rack::TempfileReaper#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/conditional_get.rb:40:in 'Rack::ConditionalGet#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/head.rb:12:in 'Rack::Head#call'\n/var/www/discourse/lib/content_security_policy/middleware.rb:12:in 'ContentSecurityPolicy::Middleware#call'\n/var/www/discourse/lib/middleware/csp_script_nonce_injector.rb:13:in 'Middleware::CspScriptNonceInjector#call'\n/var/www/discourse/lib/middleware/track_view_session_id_injector.rb:12:in 'Middleware::TrackViewSessionIdInjector#call'\n/var/www/discourse/config/initializers/008-rack-cors.rb:14:in 'Discourse::Cors#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/session/abstract/id.rb:266:in 'Rack::Session::Abstract::Persisted#context'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/session/abstract/id.rb:260:in 'Rack::Session::Abstract::Persisted#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/cookies.rb:708:in 'ActionDispatch::Cookies#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activerecord-8.1.4/lib/active_record/migration.rb:671:in 'ActiveRecord::Migration::CheckPending#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/callbacks.rb:31:in 'block in ActionDispatch::Callbacks#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/callbacks.rb:101:in 'ActiveSupport::Callbacks#run_callbacks'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/callbacks.rb:30:in 'ActionDispatch::Callbacks#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/executor.rb:20:in 'ActionDispatch::Executor#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/actionable_exceptions.rb:18:in 'ActionDispatch::ActionableExceptions#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/debug_exceptions.rb:31:in 'ActionDispatch::DebugExceptions#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/show_exceptions.rb:32:in 'ActionDispatch::ShowExceptions#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/logster-2.21.0/lib/logster/middleware/reporter.rb:40:in 'Logster::Middleware::Reporter#call'\n/var/www/discourse/lib/middleware/default_headers.rb:13:in 'Middleware::DefaultHeaders#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/rack/logger.rb:41:in 'Rails::Rack::Logger#call_app'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/rack/logger.rb:29:in 'Rails::Rack::Logger#call'\n/var/www/discourse/config/initializers/100-quiet_logger.rb:20:in 'DiscourseRackQuietAssetsLogger#call'\n/var/www/discourse/config/initializers/100-silence_logger.rb:29:in 'SilenceLogger#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/remote_ip.rb:98:in 'ActionDispatch::RemoteIp#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/request_id.rb:34:in 'ActionDispatch::RequestId#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/method_override.rb:24:in 'Rack::MethodOverride#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/executor.rb:20:in 'ActionDispatch::Executor#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/propshaft-1.3.2/lib/propshaft/server.rb:37:in 'Propshaft::Server#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/static.rb:27:in 'ActionDispatch::Static#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-2.2.24/lib/rack/sendfile.rb:127:in 'Rack::Sendfile#call'\n/var/www/discourse/lib/middleware/missing_avatars.rb:22:in 'Middleware::MissingAvatars#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/middleware/host_authorization.rb:144:in 'ActionDispatch::HostAuthorization#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-mini-profiler-5.0.0/lib/mini_profiler.rb:342:in 'Rack::MiniProfiler#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/message_bus-5.0.0/lib/message_bus/rack/middleware.rb:60:in 'MessageBus::Rack::Middleware#call'\n/var/www/discourse/lib/middleware/overload_protections.rb:18:in 'Middleware::OverloadProtections#call'\n/var/www/discourse/lib/middleware/processing_request.rb:14:in 'Middleware::ProcessingRequest#call'\n/var/www/discourse/lib/markdown_endpoint/vary_middleware.rb:10:in 'MarkdownEndpoint::VaryMiddleware#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/engine.rb:534:in 'Rails::Engine#call'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-test-2.2.0/lib/rack/test.rb:360:in 'Rack::Test::Session#process_request'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/rack-test-2.2.0/lib/rack/test.rb:153:in 'Rack::Test::Session#request'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/testing/integration.rb:298:in 'ActionDispatch::Integration::Session#process'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/actionpack-8.1.4/lib/action_dispatch/testing/integration.rb:37:in 'ActionDispatch::Integration::RequestHelpers#put'\n/tmp/record_writes.rb:325:in 'Kernel#public_send'\n/tmp/record_writes.rb:325:in 'block (2 levels) in <compiled>'\n/tmp/record_writes.rb:315:in 'Array#each'\n/tmp/record_writes.rb:315:in 'block in <compiled>'\n/tmp/record_writes.rb:271:in 'Array#each'\n/tmp/record_writes.rb:271:in '<compiled>'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/commands/runner/runner_command.rb:44:in 'Kernel.load'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/commands/runner/runner_command.rb:44:in 'block in Rails::Command::RunnerCommand#perform'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/activesupport-8.1.4/lib/active_support/execution_wrapper.rb:91:in 'ActiveSupport::ExecutionWrapper.wrap'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/commands/runner/runner_command.rb:70:in 'Rails::Command::RunnerCommand#conditional_executor'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/commands/runner/runner_command.rb:43:in 'Rails::Command::RunnerCommand#perform'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/thor-1.5.0/lib/thor/command.rb:28:in 'Thor::Command#run'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/thor-1.5.0/lib/thor/invocation.rb:127:in 'Thor::Invocation#invoke_command'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/command/base.rb:176:in 'Rails::Command::Base#invoke_command'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/thor-1.5.0/lib/thor.rb:538:in 'Thor.dispatch'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/command/base.rb:71:in 'Rails::Command::Base.perform'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/command.rb:65:in 'block in Rails::Command.invoke'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/command.rb:143:in 'Rails::Command.with_argv'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/command.rb:63:in 'Rails::Command.invoke'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/railties-8.1.4/lib/rails/commands.rb:18:in '<compiled>'\n/usr/local/lib/ruby/3.4.0/bundled_gems.rb:82:in 'Kernel.require'\n/usr/local/lib/ruby/3.4.0/bundled_gems.rb:82:in 'block (2 levels) in Kernel#replace_require'\n/home/discourse/.bundle/gems/ruby/3.4.0/gems/bootsnap-1.25.0/lib/bootsnap/load_path_cache/core_ext/kernel_require.rb:33:in 'Kernel#require'\nbin/rails:18:in '<main>'\n\n\n\nRequest parameters\n{\"group\" => {\"full_name\" => \"x\"},\n \"id\" => \"9999\",\n \"format\" => \"json\"}\n\nSession dump\nserver_session_id: \"e69698ada270769c0b8a1b10b7c78434\"\nsession_id: \"8b1e20745351cc93792be302f50d718e\"\n\nEnv dump\nHTTP_ACCEPT: \"application/json\"\nHTTP_VERSION: \"HTTP/1.0\"\nORIGINAL_SCRIPT_NAME: \"\"\nREMOTE_ADDR: \"127.0.0.1\"\nSERVER_NAME: \"localhost\"\nSERVER_PROTOCOL: \"HTTP/1.0\"\n\nResponse headers\nNone\n\n"
+    }
+  ],
+  "changes": {
+    "group_histories": {
+      "inserted": [
+        {
+          "id": 1,
+          "action": 1,
+          "subject": "title",
+          "group_id": 9001,
+          "new_value": "Renamed",
+          "created_at": "2026-10-14T11:39:40.579475",
+          "prev_value": "Tester",
+          "updated_at": "2026-10-14T11:39:40.579475",
+          "acting_user_id": 1,
+          "target_user_id": null
+        },
+        {
+          "id": 2,
+          "action": 1,
+          "subject": "bio_raw",
+          "group_id": 9001,
+          "new_value": "A *new* bio",
+          "created_at": "2026-10-14T11:39:40.582585",
+          "prev_value": null,
+          "updated_at": "2026-10-14T11:39:40.582585",
+          "acting_user_id": 1,
+          "target_user_id": null
+        },
+        {
+          "id": 3,
+          "action": 1,
+          "subject": "full_name",
+          "group_id": 9001,
+          "new_value": "New Name",
+          "created_at": "2026-10-14T11:39:40.586181",
+          "prev_value": "Old",
+          "updated_at": "2026-10-14T11:39:40.586181",
+          "acting_user_id": 1,
+          "target_user_id": null
+        },
+        {
+          "id": 4,
+          "action": 1,
+          "subject": "visibility_level",
+          "group_id": 9001,
+          "new_value": "1",
+          "created_at": "2026-10-14T11:39:40.589299",
+          "prev_value": "0",
+          "updated_at": "2026-10-14T11:39:40.589299",
+          "acting_user_id": 1,
+          "target_user_id": null
+        },
+        {
+          "id": 5,
+          "action": 1,
+          "subject": "mentionable_level",
+          "group_id": 9001,
+          "new_value": "3",
+          "created_at": "2026-10-14T11:39:40.592311",
+          "prev_value": "0",
+          "updated_at": "2026-10-14T11:39:40.592311",
+          "acting_user_id": 1,
+          "target_user_id": null
+        },
+        {
+          "id": 6,
+          "action": 1,
+          "subject": "flair_icon",
+          "group_id": 9001,
+          "new_value": "heart",
+          "created_at": "2026-10-14T11:39:40.595281",
+          "prev_value": null,
+          "updated_at": "2026-10-14T11:39:40.595281",
+          "acting_user_id": 1,
+          "target_user_id": null
+        },
+        {
+          "id": 7,
+          "action": 1,
+          "subject": "full_name",
+          "group_id": 9001,
+          "new_value": "",
+          "created_at": "2026-10-14T11:39:40.667491",
+          "prev_value": "New Name",
+          "updated_at": "2026-10-14T11:39:40.667491",
+          "acting_user_id": 1,
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "groups": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 9001,
+            "name": "testers",
+            "title": "Tester",
+            "bio_raw": null,
+            "imap_ssl": null,
+            "automatic": false,
+            "full_name": "Old",
+            "imap_port": null,
+            "smtp_port": null,
+            "bio_cooked": null,
+            "created_at": "2026-10-01T10:00:00",
+            "flair_icon": null,
+            "updated_at": "2026-10-01T10:00:00",
+            "user_count": 2,
+            "flair_color": null,
+            "imap_server": null,
+            "public_exit": false,
+            "smtp_server": null,
+            "has_messages": false,
+            "imap_enabled": false,
+            "smtp_enabled": false,
+            "imap_last_uid": 0,
+            "primary_group": false,
+            "smtp_ssl_mode": 0,
+            "email_password": null,
+            "email_username": null,
+            "flair_bg_color": null,
+            "incoming_email": null,
+            "flair_upload_id": null,
+            "imap_last_error": null,
+            "imap_new_emails": null,
+            "imap_old_emails": null,
+            "imap_updated_at": null,
+            "smtp_updated_at": null,
+            "assignable_level": 0,
+            "email_from_alias": null,
+            "public_admission": false,
+            "visibility_level": 0,
+            "grant_trust_level": null,
+            "imap_mailbox_name": "",
+            "imap_uid_validity": 0,
+            "mentionable_level": 0,
+            "messageable_level": 0,
+            "imap_updated_by_id": null,
+            "publish_read_state": false,
+            "smtp_updated_by_id": null,
+            "members_visibility_level": 0,
+            "allow_membership_requests": false,
+            "default_notification_level": 3,
+            "membership_request_template": null,
+            "allow_unknown_sender_topic_replies": false,
+            "automatic_membership_email_domains": null
+          },
+          "after": {
+            "id": 9001,
+            "name": "testers",
+            "title": "Renamed",
+            "bio_raw": "A *new* bio",
+            "imap_ssl": null,
+            "automatic": false,
+            "full_name": "",
+            "imap_port": null,
+            "smtp_port": null,
+            "bio_cooked": "<p>A <em>new</em> bio</p>",
+            "created_at": "2026-10-01T10:00:00",
+            "flair_icon": "heart",
+            "updated_at": "2026-10-14T11:39:40.657774",
+            "user_count": 2,
+            "flair_color": null,
+            "imap_server": null,
+            "public_exit": false,
+            "smtp_server": null,
+            "has_messages": false,
+            "imap_enabled": false,
+            "smtp_enabled": false,
+            "imap_last_uid": 0,
+            "primary_group": false,
+            "smtp_ssl_mode": 0,
+            "email_password": null,
+            "email_username": null,
+            "flair_bg_color": null,
+            "incoming_email": null,
+            "flair_upload_id": null,
+            "imap_last_error": null,
+            "imap_new_emails": null,
+            "imap_old_emails": null,
+            "imap_updated_at": null,
+            "smtp_updated_at": null,
+            "assignable_level": 0,
+            "email_from_alias": null,
+            "public_admission": false,
+            "visibility_level": 1,
+            "grant_trust_level": null,
+            "imap_mailbox_name": "",
+            "imap_uid_validity": 0,
+            "mentionable_level": 3,
+            "messageable_level": 0,
+            "imap_updated_by_id": null,
+            "publish_read_state": false,
+            "smtp_updated_by_id": null,
+            "members_visibility_level": 0,
+            "allow_membership_requests": false,
+            "default_notification_level": 3,
+            "membership_request_template": null,
+            "allow_unknown_sender_topic_replies": false,
+            "automatic_membership_email_domains": null
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "SohvH0MsBuRT4T3riJ5RPX5yA0w=",
+            "created_at": "2026-10-14T11:39:40.028148",
+            "rotated_at": "2026-10-14T11:39:40.027038",
+            "updated_at": "2026-10-14T11:39:40.028148",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "SohvH0MsBuRT4T3riJ5RPX5yA0w=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 1,
+            "seen_at": "2026-10-14T11:39:40.530236",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "SohvH0MsBuRT4T3riJ5RPX5yA0w=",
+            "created_at": "2026-10-14T11:39:40.028148",
+            "rotated_at": "2026-10-14T11:39:40.027038",
+            "updated_at": "2026-10-14T11:39:40.028148",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "SohvH0MsBuRT4T3riJ5RPX5yA0w=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "users": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 3,
+            "name": "User1",
+            "admin": false,
+            "title": "Tester",
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": false,
+            "username": "user1",
+            "moderator": false,
+            "created_at": "2026-07-25T05:59:16.250829",
+            "flag_level": 0,
+            "ip_address": "172.17.0.1",
+            "updated_at": "2026-10-01T15:45:00.822146",
+            "approved_at": null,
+            "trust_level": 2,
+            "last_seen_at": "2026-10-01T22:32:51.040203",
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": "2026-10-01T15:42:53.259339",
+            "silenced_till": null,
+            "approved_by_id": null,
+            "flair_group_id": null,
+            "last_posted_at": "2026-09-30T07:28:29.580198",
+            "suspended_till": null,
+            "username_lower": "user1",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": "2026-10-01T15:50:01.377372",
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          },
+          "after": {
+            "id": 3,
+            "name": "User1",
+            "admin": false,
+            "title": "Renamed",
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": false,
+            "username": "user1",
+            "moderator": false,
+            "created_at": "2026-07-25T05:59:16.250829",
+            "flag_level": 0,
+            "ip_address": "172.17.0.1",
+            "updated_at": "2026-10-01T15:45:00.822146",
+            "approved_at": null,
+            "trust_level": 2,
+            "last_seen_at": "2026-10-01T22:32:51.040203",
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": "2026-10-01T15:42:53.259339",
+            "silenced_till": null,
+            "approved_by_id": null,
+            "flair_group_id": null,
+            "last_posted_at": "2026-09-30T07:28:29.580198",
+            "suspended_till": null,
+            "username_lower": "user1",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": "2026-10-01T15:50:01.377372",
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "emit_web_hook_event",
+      {
+        "id": 9001,
+        "payload": "{\"id\":9001,\"automatic\":false,\"name\":\"testers\",\"user_count\":2,\"mentionable_level\":3,\"messageable_level\":0,\"visibility_level\":1,\"primary_group\":false,\"title\":\"Renamed\",\"grant_trust_level\":null,\"incoming_email\":null,\"has_messages\":false,\"flair_url\":\"heart\",\"flair_bg_color\":null,\"flair_color\":null,\"bio_raw\":\"A *new* bio\",\"bio_cooked\":\"\\u003cp\\u003eA \\u003cem\\u003enew\\u003c/em\\u003e bio\\u003c/p\\u003e\",\"bio_excerpt\":\"A new bio\",\"public_admission\":false,\"public_exit\":false,\"allow_membership_requests\":false,\"full_name\":\"New Name\",\"default_notification_level\":3,\"membership_request_template\":null,\"members_visibility_level\":0,\"can_see_members\":true,\"can_admin_group\":true,\"can_edit_group\":true,\"publish_read_state\":false}",
+        "web_hook_id": 9001,
+        "event_name": "group_updated",
+        "event_type": "group"
+      }
+    ],
+    [
+      "emit_web_hook_event",
+      {
+        "id": 9001,
+        "payload": "{\"id\":9001,\"automatic\":false,\"name\":\"testers\",\"user_count\":2,\"mentionable_level\":3,\"messageable_level\":0,\"visibility_level\":1,\"primary_group\":false,\"title\":\"Renamed\",\"grant_trust_level\":null,\"incoming_email\":null,\"has_messages\":false,\"flair_url\":\"heart\",\"flair_bg_color\":null,\"flair_color\":null,\"bio_raw\":\"A *new* bio\",\"bio_cooked\":\"\\u003cp\\u003eA \\u003cem\\u003enew\\u003c/em\\u003e bio\\u003c/p\\u003e\",\"bio_excerpt\":\"A new bio\",\"public_admission\":false,\"public_exit\":false,\"allow_membership_requests\":false,\"full_name\":\"New Name\",\"default_notification_level\":3,\"membership_request_template\":null,\"members_visibility_level\":0,\"can_see_members\":true,\"can_admin_group\":true,\"can_edit_group\":true,\"publish_read_state\":false}",
+        "web_hook_id": 9001,
+        "event_name": "group_updated",
+        "event_type": "group"
+      }
+    ],
+    [
+      "emit_web_hook_event",
+      {
+        "id": 9001,
+        "payload": "{\"id\":9001,\"automatic\":false,\"name\":\"testers\",\"user_count\":2,\"mentionable_level\":3,\"messageable_level\":0,\"visibility_level\":1,\"primary_group\":false,\"title\":\"Renamed\",\"grant_trust_level\":null,\"incoming_email\":null,\"has_messages\":false,\"flair_url\":\"heart\",\"flair_bg_color\":null,\"flair_color\":null,\"bio_raw\":\"A *new* bio\",\"bio_cooked\":\"\\u003cp\\u003eA \\u003cem\\u003enew\\u003c/em\\u003e bio\\u003c/p\\u003e\",\"bio_excerpt\":\"A new bio\",\"public_admission\":false,\"public_exit\":false,\"allow_membership_requests\":false,\"full_name\":\"\",\"default_notification_level\":3,\"membership_request_template\":null,\"members_visibility_level\":0,\"can_see_members\":true,\"can_admin_group\":true,\"can_edit_group\":true,\"publish_read_state\":false}",
+        "web_hook_id": 9001,
+        "event_name": "group_updated",
+        "event_type": "group"
+      }
+    ],
+    [
+      "emit_web_hook_event",
+      {
+        "id": 9001,
+        "payload": "{\"id\":9001,\"automatic\":false,\"name\":\"testers\",\"user_count\":2,\"mentionable_level\":3,\"messageable_level\":0,\"visibility_level\":1,\"primary_group\":false,\"title\":\"Renamed\",\"grant_trust_level\":null,\"incoming_email\":null,\"has_messages\":false,\"flair_url\":\"heart\",\"flair_bg_color\":null,\"flair_color\":null,\"bio_raw\":\"A *new* bio\",\"bio_cooked\":\"\\u003cp\\u003eA \\u003cem\\u003enew\\u003c/em\\u003e bio\\u003c/p\\u003e\",\"bio_excerpt\":\"A new bio\",\"public_admission\":false,\"public_exit\":false,\"allow_membership_requests\":false,\"full_name\":\"\",\"default_notification_level\":3,\"membership_request_template\":null,\"members_visibility_level\":0,\"can_see_members\":true,\"can_admin_group\":true,\"can_edit_group\":true,\"publish_read_state\":false}",
+        "web_hook_id": 9001,
+        "event_name": "group_updated",
+        "event_type": "group"
+      }
+    ]
+  ],
+  "next_ids": {
+    "group_histories": 1
+  },
+  "setup": [
+    "INSERT INTO groups (id, name, title, user_count, full_name, created_at, updated_at) VALUES (9001, 'testers', 'Tester', 2, 'Old', '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO group_users (id, group_id, user_id, owner, notification_level, created_at, updated_at) VALUES (90001, 9001, 3, FALSE, 3, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO group_users (id, group_id, user_id, owner, notification_level, created_at, updated_at) VALUES (90002, 9001, 4, FALSE, 3, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "UPDATE users SET title = 'Tester' WHERE id = 3",
+    "UPDATE users SET title = 'Other' WHERE id = 4",
+    "INSERT INTO web_hooks (id, payload_url, content_type, last_delivery_status, status, secret, wildcard_web_hook, verify_certificate, active, created_at, updated_at) VALUES (9001, 'http://fixtures.localhost:8099/hook', 1, 1, 1, '', false, true, true, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO web_hook_event_types_hooks (web_hook_id, web_hook_event_type_id) VALUES (9001, 402)"
+  ],
+  "recorded_from": {
+    "case": "b2bc761c85da08b77f8aecb3efb64d0fab1cbe21a99c8c7ce8034ae92b5e41af",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

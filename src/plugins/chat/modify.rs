@@ -259,12 +259,6 @@ impl Context<'_> {
         let Some(user) = self.acting_user()? else {
             return Ok(Outcome::Forbidden(None));
         };
-        crate::web_hooks::refuse(
-            &mut *self.conn,
-            "chat_message_edited",
-            "chat message web hooks",
-        )
-        .await?;
         // The contract.
         let mut errors = Vec::new();
         if message_id.trim().is_empty() {
@@ -456,6 +450,9 @@ impl Context<'_> {
 
         // publish: publish_edit!, the processing job, the thread's preview.
         super::publisher::publish_message(self, bus, &channel, old.id, "edit").await?;
+        // DiscourseEvent :chat_message_edited: its web hooks.
+        self.enqueue_message_hooks("chat_message_edited", channel.id, old.id)
+            .await?;
         crate::jobs::enqueue(
             &mut *self.conn,
             super::create::PROCESS_MESSAGE_JOB,
@@ -517,12 +514,6 @@ impl Context<'_> {
         let Some(user) = self.acting_user()? else {
             return Ok(Outcome::Forbidden(None));
         };
-        crate::web_hooks::refuse(
-            &mut *self.conn,
-            "chat_message_trashed",
-            "chat message web hooks",
-        )
-        .await?;
         let channel_id = channel_id.unwrap_or_default();
         let Some(message) = self.find_message(message_id, channel_id, false).await? else {
             return Ok(Outcome::NotFound);
@@ -625,6 +616,9 @@ impl Context<'_> {
                 refreshed.push(id);
             }
         }
+        // DiscourseEvent :chat_message_trashed: its web hooks.
+        self.enqueue_message_hooks("chat_message_trashed", channel.id, message.id)
+            .await?;
         super::publisher::publish_delete(self, bus, &channel, message.id).await?;
         if pinned {
             super::publisher::publish_unpin(self, bus, &channel, message.id, user.id).await?;
@@ -648,12 +642,6 @@ impl Context<'_> {
         let Some(user) = self.acting_user()? else {
             return Ok(Outcome::Forbidden(None));
         };
-        crate::web_hooks::refuse(
-            &mut *self.conn,
-            "chat_message_restored",
-            "chat message web hooks",
-        )
-        .await?;
         let channel_id = channel_id.unwrap_or_default();
         let Some(message) = self.find_message(message_id, channel_id, true).await? else {
             return Ok(Outcome::NotFound);
@@ -686,6 +674,9 @@ impl Context<'_> {
         self.update_last_message_ids(channel.id, thread_id, now)
             .await?;
         self.thread_reply_count_changed(thread_id).await?;
+        // DiscourseEvent :chat_message_restored: its web hooks.
+        self.enqueue_message_hooks("chat_message_restored", channel.id, message.id)
+            .await?;
         super::publisher::publish_message(self, bus, &channel, message.id, "restore").await?;
         if let Some(thread_id) = thread_id {
             super::publisher::publish_thread_metadata(self, bus, &channel, thread_id).await?;

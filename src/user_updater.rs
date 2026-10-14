@@ -296,7 +296,6 @@ pub async fn update(
             return Err(Unsupported("changing the title, primary group or flair group").into());
         }
     }
-    crate::web_hooks::refuse(&mut *conn, "user_updated", "user_updated web hooks").await?;
 
     // LEGACY_SHOW_ORIGINAL_CONTENT_ATTR
     let mut attrs = attrs.clone();
@@ -448,6 +447,18 @@ pub async fn update(
             crate::notification_schedule::destroy_scheduled_timings(&mut *conn, user.id).await?;
         }
     }
+    // DiscourseEvent :user_updated: its web hooks.
+    crate::web_hooks::enqueue_user_hooks(
+        &mut *conn,
+        &crate::web_hooks::Payloads {
+            settings: ctx.settings,
+            i18n: ctx.i18n,
+            config: ctx.config,
+        },
+        "user_updated",
+        user.id,
+    )
+    .await?;
     if custom_fields.is_some_and(|c| !c.is_empty())
         && crate::user_fields::needs_required_fields_check(&mut *conn, user.id).await?
     {

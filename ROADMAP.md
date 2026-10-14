@@ -310,7 +310,7 @@ then by what running a forum needs (milestone 6). Briefs:
     request_membership, handle_membership_request, set_notifications,
     the request message's topic custom field and requested_group_name;
     requests in locales other than English refused)
-83. `feat/web-hooks` L: web hooks, their events from core, deliveries
+83. ~~`feat/web-hooks`~~ (done) L: web hooks, their events from core, deliveries
     and the scheduled jobs, split: 83a. ~~`fix/web-hook-guards`~~ (done)
     S (`web_hooks::active`, Rails' INNER JOIN on the event types and its
     event name translation, at every site; each core event the port
@@ -326,7 +326,15 @@ then by what running a forum needs (milestone 6). Briefs:
     email replies, post_liked and notification_created, with
     WebHookPost, WebHookTopicView, WebHookLike and Notification payloads
     of the objects as Rails holds them; PostSerializer's via_email), 83d.
-    `feat/web-hooks-users` M;
+    ~~`feat/web-hooks-users`~~ (done) M (logins and logouts, user
+    created, confirmed, approved, updated, suspended, unsuspended,
+    promoted, anonymized and destroyed with WebHookUserSerializer or
+    UserSerializer and its penalty reasons; group created, updated and
+    destroyed and membership through GroupManager, the admin group
+    writes and membership requests; badges granted and revoked, tag
+    destroyed; reviewables created, scored and transitioned for flagged
+    posts and users; solved, topic voting and chat messages; refused:
+    queued post reviewables' payloads);
 84. ~~`feat/user-api-keys`~~ (done) M (the `User-Api-Key` header: lookup,
     the two limiters, scopes by route, last use and client id writes, no
     CSRF or session refresh; revoke and undo-revoke, the user's own key

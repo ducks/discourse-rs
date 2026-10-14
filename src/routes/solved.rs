@@ -119,7 +119,18 @@ async fn run(
             answers::accept(&mut tx, &ctx, &guardian, post_id).await?
         }
         Kind::Unaccept => {
-            answers::unaccept(&mut tx, &state.bus, &settings, &guardian, post_id).await?
+            answers::unaccept(
+                &mut tx,
+                &state.bus,
+                &crate::web_hooks::Payloads {
+                    settings: &settings,
+                    i18n: &state.i18n,
+                    config: &state.config,
+                },
+                &guardian,
+                post_id,
+            )
+            .await?
         }
     };
     let topic_id = match outcome {

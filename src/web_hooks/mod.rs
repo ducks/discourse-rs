@@ -4,6 +4,7 @@
 pub mod admin;
 pub mod emit;
 pub mod jobs;
+pub mod payloads;
 
 use serde_json::{Map, Value, json};
 use sqlx::PgConnection;
@@ -108,6 +109,11 @@ pub struct Payloads<'a> {
 }
 
 impl Payloads<'_> {
+    /// `I18n.t(key)`, the key itself when missing.
+    pub fn t(&self, key: &str) -> String {
+        self.i18n.t(key).unwrap_or(key).to_string()
+    }
+
     /// A TopicView seen by the system user.
     async fn with_view<T>(
         &self,
@@ -263,6 +269,271 @@ pub async fn enqueue_object_hooks(
     all.insert("id".into(), json!(id));
     all.insert("payload".into(), json!(payload));
     enqueue_hooks(conn, kind, event, all).await
+}
+
+/// `WebHook.enqueue_object_hooks(:user, user, event)`: WebHookUserSerializer.
+pub async fn enqueue_user_hooks(
+    conn: &mut PgConnection,
+    p: &Payloads<'_>,
+    event: &str,
+    user_id: i32,
+) -> Result<(), AppError> {
+    enqueue_object_hooks(
+        conn,
+        "user",
+        event,
+        i64::from(user_id),
+        async |conn| p.user(conn, user_id).await,
+        Map::new(),
+    )
+    .await
+}
+
+/// `group_created` and `group_updated` (Group's after_commit):
+/// WebHookGroupSerializer.
+pub async fn enqueue_group_hooks(
+    conn: &mut PgConnection,
+    p: &Payloads<'_>,
+    event: &str,
+    group_id: i32,
+) -> Result<(), AppError> {
+    enqueue_object_hooks(
+        conn,
+        "group",
+        event,
+        i64::from(group_id),
+        async |conn| p.group(conn, group_id).await,
+        Map::new(),
+    )
+    .await
+}
+
+/// HasDestroyedWebHook for a group: its payload, taken before the delete
+/// when a `group_destroyed` hook is active.
+pub async fn group_destroyed_payload(
+    conn: &mut PgConnection,
+    p: &Payloads<'_>,
+    group_id: i32,
+) -> Result<Option<Value>, AppError> {
+    if !active(&mut *conn, "group_destroyed").await? {
+        return Ok(None);
+    }
+    Ok(Some(p.group(conn, group_id).await?))
+}
+
+/// HasDestroyedWebHook's enqueue, after the delete: `id` and `payload`.
+pub async fn enqueue_group_destroyed(
+    conn: &mut PgConnection,
+    group_id: i32,
+    payload: Option<Value>,
+) -> Result<(), AppError> {
+    let Some(payload) = payload else {
+        return Ok(());
+    };
+    let mut all = Map::new();
+    all.insert("id".into(), json!(group_id));
+    all.insert("payload".into(), json!(to_json(&payload)));
+    enqueue_hooks(conn, "group", "group_destroyed", all).await
+}
+
+/// The `user_added_to_group` and `user_removed_from_group` web hooks for a
+/// group_users row (WebHookGroupUserSerializer, the group in `group_ids`).
+/// A removal's payload is built before the row goes: `payload` then.
+pub async fn enqueue_group_user_hooks(
+    conn: &mut PgConnection,
+    p: &Payloads<'_>,
+    event: &str,
+    group_user_id: i64,
+    group_id: i32,
+    payload: Option<Value>,
+) -> Result<(), AppError> {
+    let mut opts = Map::new();
+    opts.insert("group_ids".into(), json!([group_id]));
+    match payload {
+        Some(payload) => {
+            if !active(&mut *conn, event).await? {
+                return Ok(());
+            }
+            // GroupManager#enqueue_user_removed_webhook_events: id and
+            // payload first.
+            let mut all = Map::new();
+            all.insert("id".into(), json!(group_user_id));
+            all.insert("payload".into(), json!(to_json(&payload)));
+            all.extend(opts);
+            enqueue_hooks(conn, "group_user", event, all).await
+        }
+        None => {
+            enqueue_object_hooks(
+                conn,
+                "group_user",
+                event,
+                group_user_id,
+                async |conn| p.group_user(conn, group_user_id).await,
+                opts,
+            )
+            .await
+        }
+    }
+}
+
+/// The reviewable events' web hooks (reviewable_created,
+/// reviewable_score_updated, reviewable_transitioned_to): the reviewable's
+/// serializer, its category and its topic's tags.
+pub async fn enqueue_reviewable_hooks(
+    conn: &mut PgConnection,
+    p: &Payloads<'_>,
+    event: &str,
+    reviewable_id: i64,
+) -> Result<(), AppError> {
+    if !active(&mut *conn, event).await? {
+        return Ok(());
+    }
+    let (category_id, topic_id): (Option<i32>, Option<i32>) =
+        sqlx::query_as("SELECT category_id, topic_id FROM reviewables WHERE id = $1")
+            .bind(reviewable_id)
+            .fetch_one(&mut *conn)
+            .await?;
+    // reviewable.topic&.tag_ids: a trashed topic is none.
+    let tag_ids: Option<Vec<i32>> = match topic_id {
+        Some(topic_id) => {
+            let live: bool = sqlx::query_scalar(
+                "SELECT EXISTS (SELECT 1 FROM topics WHERE id = $1 AND deleted_at IS NULL)",
+            )
+            .bind(topic_id)
+            .fetch_one(&mut *conn)
+            .await?;
+            if live {
+                Some(
+                    sqlx::query_scalar(
+                        "SELECT tag_id FROM topic_tags WHERE topic_id = $1 ORDER BY ctid",
+                    )
+                    .bind(topic_id)
+                    .fetch_all(&mut *conn)
+                    .await?,
+                )
+            } else {
+                None
+            }
+        }
+        None => None,
+    };
+    let mut opts = Map::new();
+    opts.insert("category_id".into(), json!(category_id));
+    opts.insert("tag_ids".into(), json!(tag_ids));
+    enqueue_object_hooks(
+        conn,
+        "reviewable",
+        event,
+        reviewable_id,
+        async |conn| {
+            let guardian = system_guardian(&mut *conn).await?;
+            crate::review_list::web_hook_json(conn, p, &guardian, reviewable_id).await
+        },
+        opts,
+    )
+    .await
+}
+
+/// `DiscourseEvent.trigger(:user_badge_granted, badge_id, user_id)`: the
+/// web hooks get `UserBadge.find_by(badge_id:, user_id:)`.
+pub async fn enqueue_user_badge_granted(
+    conn: &mut PgConnection,
+    badge_id: i32,
+    user_id: i32,
+) -> Result<(), AppError> {
+    if !active(&mut *conn, "user_badge_granted").await? {
+        return Ok(());
+    }
+    let id: Option<i32> = sqlx::query_scalar(
+        "SELECT id FROM user_badges WHERE badge_id = $1 AND user_id = $2 ORDER BY ctid LIMIT 1",
+    )
+    .bind(badge_id)
+    .bind(user_id)
+    .fetch_optional(&mut *conn)
+    .await?;
+    let Some(id) = id else {
+        return Err(Unsupported("a user_badge_granted event without its grant").into());
+    };
+    enqueue_object_hooks(
+        conn,
+        "user_badge",
+        "user_badge_granted",
+        i64::from(id),
+        async |conn| payloads::user_badge_json(conn, i64::from(id)).await,
+        Map::new(),
+    )
+    .await
+}
+
+/// discourse-solved's `WebHook.enqueue_solved_hooks(event, post, payload)`:
+/// the post (WebHookPostSerializer) and its topic's category and tags.
+pub async fn enqueue_solved_hooks(
+    conn: &mut PgConnection,
+    p: &Payloads<'_>,
+    event: &str,
+    post_id: i32,
+) -> Result<(), AppError> {
+    if !active(&mut *conn, event).await? {
+        return Ok(());
+    }
+    // post.topic: a trashed topic is none.
+    let topic: Option<(i32, Option<i32>)> = sqlx::query_as(
+        "SELECT t.id, t.category_id FROM posts p JOIN topics t ON t.id = p.topic_id \
+         WHERE p.id = $1 AND t.deleted_at IS NULL",
+    )
+    .bind(post_id)
+    .fetch_optional(&mut *conn)
+    .await?;
+    let payload = to_json(
+        &p.post(&mut *conn, post_id, crate::topic_view::Held::default())
+            .await?,
+    );
+    let tag_ids = match topic {
+        Some((topic_id, _)) => Some(topic_tag_ids(&mut *conn, topic_id).await?),
+        None => None,
+    };
+    let mut opts = Map::new();
+    opts.insert("id".into(), json!(post_id));
+    opts.insert("category_id".into(), json!(topic.and_then(|t| t.1)));
+    opts.insert("tag_ids".into(), json!(tag_ids));
+    opts.insert("payload".into(), json!(payload));
+    enqueue_hooks(conn, "solved", event, opts).await
+}
+
+/// discourse-topic-voting's `WebHook.enqueue_topic_voting_hooks`: the vote,
+/// its topic's category and tags (no id).
+pub async fn enqueue_topic_voting_hooks(
+    conn: &mut PgConnection,
+    event: &str,
+    topic_id: i32,
+    voter_id: i32,
+) -> Result<(), AppError> {
+    if !active(&mut *conn, event).await? {
+        return Ok(());
+    }
+    let (slug, category_id, vote_count): (Option<String>, Option<i32>, Option<i32>) =
+        sqlx::query_as(
+            "SELECT t.slug, t.category_id, \
+                    (SELECT votes_count FROM topic_voting_topic_vote_count WHERE topic_id = t.id) \
+             FROM topics t WHERE t.id = $1",
+        )
+        .bind(topic_id)
+        .fetch_one(&mut *conn)
+        .await?;
+    let payload = json!({
+        "topic_id": topic_id,
+        "topic_slug": slug,
+        "voter_id": voter_id,
+        "vote_count": vote_count.unwrap_or(0),
+    });
+    let mut opts = Map::new();
+    opts.insert("category_id".into(), json!(category_id));
+    opts.insert(
+        "tag_ids".into(),
+        json!(topic_tag_ids(&mut *conn, topic_id).await?),
+    );
+    opts.insert("payload".into(), json!(to_json(&payload)));
+    enqueue_hooks(conn, "topic_voting", event, opts).await
 }
 
 /// An event whose web hooks are not ported yet: refused when a hook would

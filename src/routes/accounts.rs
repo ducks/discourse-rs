@@ -694,8 +694,7 @@ pub async fn password_reset_update(
             .get(header::USER_AGENT)
             .and_then(|v| v.to_str().ok())
             .map(str::to_string);
-        // log_on_user: user.logged_in.
-        crate::web_hooks::refuse(&mut tx, "user_logged_in", "user_logged_in web hooks").await?;
+
         let (_, unhashed) = crate::session::token::generate(
             &mut tx,
             user_id,
@@ -710,6 +709,18 @@ pub async fn password_reset_update(
             &mut tx,
             user_id,
             settings.get("maximum_session_age")?.to_i(),
+        )
+        .await?;
+        // log_on_user: user.logged_in, its web hooks.
+        crate::web_hooks::enqueue_user_hooks(
+            &mut tx,
+            &crate::web_hooks::Payloads {
+                settings: &settings,
+                i18n: &state.i18n,
+                config: &state.config,
+            },
+            "user_logged_in",
+            user_id,
         )
         .await?;
         let session_user = crate::session::current::SessionUser::load(&mut tx, user_id)
@@ -803,12 +814,6 @@ pub(crate) async fn confirm_email_token(
     .bind(user_id)
     .execute(&mut *conn)
     .await?;
-    crate::web_hooks::refuse(
-        &mut *conn,
-        "user_confirmed_email",
-        "user_confirmed_email web hooks",
-    )
-    .await?;
     if !active {
         crate::signup::activate_user(&mut *conn, settings, user_id).await?;
     }
@@ -818,12 +823,20 @@ pub(crate) async fn confirm_email_token(
         settings,
         i18n: &state.i18n,
         host: &host,
+        config: &state.config,
     };
     let cx = crate::group_manager::Cx {
         state,
         promotion: &promotion,
     };
     crate::group_manager::set_automatic_groups(conn, &cx, user_id).await?;
+    // DiscourseEvent :user_confirmed_email: its web hooks.
+    let payloads = crate::web_hooks::Payloads {
+        settings,
+        i18n: &state.i18n,
+        config: &state.config,
+    };
+    crate::web_hooks::enqueue_user_hooks(conn, &payloads, "user_confirmed_email", user_id).await?;
     Ok(Some(user_id))
 }
 
@@ -946,6 +959,7 @@ pub async fn create_user(
         &mut tx,
         &settings,
         &state.i18n,
+        &state.config,
         &crate::signup::Signup {
             name: name.as_deref(),
             email: &email,
@@ -1052,8 +1066,7 @@ pub async fn perform_account_activation(
         .get(header::USER_AGENT)
         .and_then(|v| v.to_str().ok())
         .map(str::to_string);
-    // log_on_user: user.logged_in.
-    crate::web_hooks::refuse(&mut tx, "user_logged_in", "user_logged_in web hooks").await?;
+
     let (_, unhashed) = crate::session::token::generate(
         &mut tx,
         user_id,
@@ -1068,6 +1081,18 @@ pub async fn perform_account_activation(
         &mut tx,
         user_id,
         settings.get("maximum_session_age")?.to_i(),
+    )
+    .await?;
+    // log_on_user: user.logged_in, its web hooks.
+    crate::web_hooks::enqueue_user_hooks(
+        &mut tx,
+        &crate::web_hooks::Payloads {
+            settings: &settings,
+            i18n: &state.i18n,
+            config: &state.config,
+        },
+        "user_logged_in",
+        user_id,
     )
     .await?;
     let auth =

@@ -196,8 +196,9 @@ pub async fn cast(
         json!({ "topic_id": topic.id }),
     )
     .await?;
-    if crate::web_hooks::active(conn, "topic_upvote").await? {
-        return Err(Unsupported("topic_upvote web hooks").into());
+    // enqueue_topic_upvote_webhook
+    if let Some(voter) = guardian.user_id() {
+        crate::web_hooks::enqueue_topic_voting_hooks(conn, "topic_upvote", topic.id, voter).await?;
     }
     workflows_unsupported(conn).await?;
     let (mut out, votes) = voting_response(conn, settings, urls, guardian, topic.id).await?;
@@ -232,9 +233,8 @@ pub async fn remove(
     .rows_affected();
     if removed > 0 {
         update_vote_count(conn, topic.id).await?;
-        if crate::web_hooks::active(conn, "topic_unvote").await? {
-            return Err(Unsupported("topic_unvote web hooks").into());
-        }
+        crate::web_hooks::enqueue_topic_voting_hooks(conn, "topic_unvote", topic.id, user_id)
+            .await?;
     }
     let (out, _) = voting_response(conn, settings, urls, guardian, topic.id).await?;
     Ok(Outcome::Done(Value::Object(out)))

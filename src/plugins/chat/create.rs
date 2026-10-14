@@ -85,12 +85,6 @@ impl Context<'_> {
         let Some(user) = g.user().cloned() else {
             return Ok(Outcome::Forbidden);
         };
-        crate::web_hooks::refuse(
-            &mut *self.conn,
-            "chat_message_created",
-            "chat message web hooks",
-        )
-        .await?;
         // policy :no_silenced_user, policy :accept_blocks
         if g.is_silenced() {
             return Ok(Outcome::Forbidden);
@@ -417,6 +411,9 @@ impl Context<'_> {
         }
         // process: publish_new!, then the processing job.
         super::publisher::publish_new(self, bus, &channel, message_id, params.staged_id.as_deref())
+            .await?;
+        // DiscourseEvent :chat_message_created: its web hooks.
+        self.enqueue_message_hooks("chat_message_created", channel.id, message_id)
             .await?;
         crate::jobs::enqueue(
             &mut *self.conn,

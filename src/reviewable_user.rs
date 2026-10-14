@@ -10,7 +10,6 @@ use serde_json::json;
 use sqlx::PgConnection;
 
 use crate::reviewables::{AGREED, PENDING};
-use crate::site_settings::SiteSettings;
 use crate::{AppError, Unsupported};
 
 const SYSTEM_USER_ID: i32 = -1;
@@ -33,9 +32,10 @@ const APPROVE_USER: i32 = 69;
 /// (approved user, or neither must_approve_users nor invite_only).
 pub async fn find_or_create(
     conn: &mut PgConnection,
-    s: &SiteSettings,
+    p: &crate::web_hooks::Payloads<'_>,
     user_id: i32,
 ) -> Result<Option<i64>, AppError> {
+    let s = p.settings;
     let existing: Option<i64> = sqlx::query_scalar(
         "SELECT id FROM reviewables WHERE type = 'ReviewableUser' AND target_type = 'User' \
          AND target_id = $1 ORDER BY id LIMIT 1",
@@ -91,13 +91,6 @@ pub async fn find_or_create(
         "avatar_upload_id": null,
         "avatar_url": null,
     });
-    crate::web_hooks::refuse(&mut *conn, "reviewable_created", "reviewable web hooks").await?;
-    crate::web_hooks::refuse(
-        &mut *conn,
-        "reviewable_score_updated",
-        "reviewable web hooks",
-    )
-    .await?;
     // needs_review!(target:, created_by: system, reviewable_by_moderator:, payload:)
     let id: i64 = sqlx::query_scalar(
         "INSERT INTO reviewables (type, type_source, status, created_by_id, reviewable_by_moderator, \
@@ -115,6 +108,7 @@ pub async fn find_or_create(
     .fetch_one(&mut *conn)
     .await?;
     log_history(conn, id, HISTORY_CREATED, PENDING, SYSTEM_USER_ID).await?;
+    crate::web_hooks::enqueue_reviewable_hooks(&mut *conn, p, "reviewable_created", id).await?;
     crate::jobs::enqueue(
         &mut *conn,
         "notify_reviewable",
@@ -155,6 +149,8 @@ pub async fn find_or_create(
         json!({ "reviewable_id": id }),
     )
     .await?;
+    crate::web_hooks::enqueue_reviewable_hooks(&mut *conn, p, "reviewable_score_updated", id)
+        .await?;
     Ok(Some(id))
 }
 
@@ -186,6 +182,7 @@ async fn log_history(
 /// disagreed), the staff told by notify_reviewable.
 pub async fn reject_for_deleted_user(
     conn: &mut PgConnection,
+    p: &crate::web_hooks::Payloads<'_>,
     reviewable_id: i64,
     performer: &Performer<'_>,
 ) -> Result<(), AppError> {
@@ -197,13 +194,12 @@ pub async fn reject_for_deleted_user(
     if topic_id.is_some() {
         return Err(Unsupported("user reviewables with a topic (claims)").into());
     }
-    crate::web_hooks::refuse(&mut *conn, "user_approved", "user_approved web hooks").await?;
     // increment_version!
     sqlx::query("UPDATE reviewables SET version = version + 1 WHERE id = $1")
         .bind(reviewable_id)
         .execute(&mut *conn)
         .await?;
-    reject(conn, reviewable_id, performer).await
+    reject(conn, p, reviewable_id, performer).await
 }
 
 /// What ReviewableUser#perform_delete_user(_block) is given.
@@ -343,7 +339,17 @@ pub async fn perform_delete_user(
         id: actor.id,
         username: &actor.username,
     };
-    reject(conn, reviewable_id, &performer).await?;
+    reject(
+        conn,
+        &crate::web_hooks::Payloads {
+            settings: ctx.settings,
+            i18n: ctx.i18n,
+            config: ctx.config,
+        },
+        reviewable_id,
+        &performer,
+    )
+    .await?;
     // resolved_reviewable_ids, with their statuses for the serializer.
     let resolved: Vec<(i64, i32)> = sqlx::query_as(
         "SELECT id, status FROM reviewables WHERE id = ANY($1) AND status <> $2 ORDER BY id",
@@ -362,15 +368,10 @@ pub async fn perform_delete_user(
 /// Reviewable#perform enqueues for it.
 pub(crate) async fn reject(
     conn: &mut PgConnection,
+    p: &crate::web_hooks::Payloads<'_>,
     reviewable_id: i64,
     performer: &Performer<'_>,
 ) -> Result<(), AppError> {
-    crate::web_hooks::refuse(
-        &mut *conn,
-        "reviewable_transitioned_to",
-        "reviewable web hooks",
-    )
-    .await?;
     sqlx::query("UPDATE reviewables SET status = $2, updated_at = clock_timestamp() WHERE id = $1")
         .bind(reviewable_id)
         .bind(REJECTED)
@@ -394,6 +395,13 @@ pub(crate) async fn reject(
     .bind(PENDING)
     .bind(SCORE_DISAGREED)
     .execute(&mut *conn)
+    .await?;
+    crate::web_hooks::enqueue_reviewable_hooks(
+        &mut *conn,
+        p,
+        "reviewable_transitioned_to",
+        reviewable_id,
+    )
     .await?;
     crate::jobs::enqueue(
         &mut *conn,
@@ -419,11 +427,12 @@ pub struct Performer<'a> {
 /// when the reviewable offers no approve action (already approved).
 pub async fn approve(
     conn: &mut PgConnection,
-    s: &SiteSettings,
+    p: &crate::web_hooks::Payloads<'_>,
     reviewable_id: i64,
     user_id: i32,
     performer: &Performer<'_>,
 ) -> Result<bool, AppError> {
+    let s = p.settings;
     let (status, topic_id): (i32, Option<i32>) =
         sqlx::query_as("SELECT status, topic_id FROM reviewables WHERE id = $1")
             .bind(reviewable_id)
@@ -469,6 +478,8 @@ pub async fn approve(
         u.name.as_deref(),
     )
     .await?;
+    // DiscourseEvent :user_approved: its web hooks.
+    crate::web_hooks::enqueue_user_hooks(&mut *conn, p, "user_approved", user_id).await?;
     if s.get("must_approve_users")?.truthy() {
         crate::jobs::enqueue(
             &mut *conn,
@@ -489,12 +500,6 @@ pub async fn approve(
     .execute(&mut *conn)
     .await?;
 
-    crate::web_hooks::refuse(
-        &mut *conn,
-        "reviewable_transitioned_to",
-        "reviewable web hooks",
-    )
-    .await?;
     // transition_to(:approved): the status, its history, the scores agreed.
     sqlx::query("UPDATE reviewables SET status = $2, updated_at = clock_timestamp() WHERE id = $1")
         .bind(reviewable_id)
@@ -519,6 +524,13 @@ pub async fn approve(
     .bind(PENDING)
     .bind(SCORE_DISAGREED)
     .execute(&mut *conn)
+    .await?;
+    crate::web_hooks::enqueue_reviewable_hooks(
+        &mut *conn,
+        p,
+        "reviewable_transitioned_to",
+        reviewable_id,
+    )
     .await?;
     crate::jobs::enqueue(
         &mut *conn,

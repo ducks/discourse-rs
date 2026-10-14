@@ -1,0 +1,36 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO groups (id, name, public_admission, public_exit, title, created_at, updated_at) VALUES (9001, 'open', TRUE, TRUE, 'Opener', '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO groups (id, name, created_at, updated_at) VALUES (9002, 'closed', '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO web_hooks (id, payload_url, content_type, last_delivery_status, status, secret, wildcard_web_hook, verify_certificate, active, created_at, updated_at) VALUES (9001, 'http://fixtures.localhost:8099/hook', 1, 1, 1, '', false, true, true, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO web_hook_event_types_hooks (web_hook_id, web_hook_event_type_id) VALUES (9001, 1401)",
+    "INSERT INTO web_hook_event_types_hooks (web_hook_id, web_hook_event_type_id) VALUES (9001, 1402)"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/groups/9001/join.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/groups/9001/join.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/groups/9002/join.json"
+    },
+    {
+      "method": "DELETE",
+      "path": "/groups/9001/leave.json"
+    },
+    {
+      "method": "DELETE",
+      "path": "/groups/9002/leave.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/groups/9999/join.json"
+    }
+  ]
+}

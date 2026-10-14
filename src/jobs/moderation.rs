@@ -52,6 +52,7 @@ pub async fn tl3_promotions(state: &AppState) -> Result<(), AppError> {
         settings: &s,
         i18n: &state.i18n,
         host: &crate::pretty_text::Host::from_state(state),
+        config: &state.config,
     };
     // Discourse::InvalidAccess from change_trust_level!
     let invalid = |m: String| AppError::from(std::io::Error::other(m));

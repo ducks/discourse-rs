@@ -5,7 +5,7 @@
 //!
 //! Refused: adding members by email who are not users (invites), group
 //! SMTP settings, flair uploads, plugin custom fields and associated
-//! groups, active web hooks for group events, and the 500s Rails answers
+//! groups, and the 500s Rails answers
 //! (an unknown user id for remove_owner, set_primary without usernames).
 
 use axum::Json;
@@ -114,13 +114,6 @@ async fn begin(
         settings,
         host: Host::from_state(state),
     }))
-}
-
-async fn refuse_web_hooks(conn: &mut PgConnection, event: &str) -> Result<(), AppError> {
-    if crate::web_hooks::active(conn, event).await? {
-        return Err(Unsupported("web hooks for group events").into());
-    }
-    Ok(())
 }
 
 /// `users_from_params`: the users named, ids or emails, in id order; an
@@ -334,7 +327,6 @@ pub async fn create(
     if !errors.is_empty() {
         return Ok(json_error(errors));
     }
-    refuse_web_hooks(&mut tx, "group_created").await?;
     gw::before_save(&req.host, &mut row, None).await?;
     let id = gw::insert(&mut tx, &row).await?;
     // The built group_users, owners first.
@@ -392,10 +384,23 @@ pub async fn create(
     // after_commit: the group's, then each member's sync_add_side_effects.
     let mut tx = state.pool.begin().await?;
     gw::after_commit(&mut tx, id, &row).await?;
+    // trigger_group_created_event
+    crate::web_hooks::enqueue_group_hooks(
+        &mut tx,
+        &crate::web_hooks::Payloads {
+            settings: &req.settings,
+            i18n: &state.i18n,
+            config: &state.config,
+        },
+        "group_created",
+        id,
+    )
+    .await?;
     let promotion = crate::promotion::Ctx {
         settings: &req.settings,
         i18n: &state.i18n,
         host: &req.host,
+        config: &state.config,
     };
     let cx = manager_cx(&state, &promotion);
     if !members.is_empty() {
@@ -447,8 +452,6 @@ pub async fn destroy(
     if group.automatic {
         return Ok(can_not_modify_automatic(&state));
     }
-    refuse_web_hooks(&mut tx, "group_destroyed").await?;
-    refuse_web_hooks(&mut tx, "user_removed_from_group").await?;
     let name: String = sqlx::query_scalar("SELECT name FROM groups WHERE id = $1")
         .bind(id)
         .fetch_one(&mut *tx)
@@ -497,10 +500,23 @@ pub async fn destroy(
         .bind(id)
         .execute(&mut *tx)
         .await?;
+    // HasDestroyedWebHook: the payload after the dependents go, before
+    // the group does; enqueued once it has.
+    let destroyed_payload = crate::web_hooks::group_destroyed_payload(
+        &mut tx,
+        &crate::web_hooks::Payloads {
+            settings: &req.settings,
+            i18n: &state.i18n,
+            config: &state.config,
+        },
+        id,
+    )
+    .await?;
     sqlx::query("DELETE FROM groups WHERE id = $1")
         .bind(id)
         .execute(&mut *tx)
         .await?;
+    crate::web_hooks::enqueue_group_destroyed(&mut tx, id, destroyed_payload).await?;
     // after_destroy: clear_acls
     crate::jobs::enqueue(
         &mut tx,
@@ -516,6 +532,7 @@ pub async fn destroy(
         settings: &req.settings,
         i18n: &state.i18n,
         host: &req.host,
+        config: &state.config,
     };
     for user_id in members {
         let exists: bool = sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM users WHERE id = $1)")
@@ -643,6 +660,7 @@ pub async fn add_members(
         settings: &req.settings,
         i18n: &state.i18n,
         host: &req.host,
+        config: &state.config,
     };
     let cx = manager_cx(&state, &promotion);
     let mgr_group = group_manager::find(&mut tx, group.id)
@@ -712,6 +730,7 @@ pub async fn remove_member(
         settings: &req.settings,
         i18n: &state.i18n,
         host: &req.host,
+        config: &state.config,
     };
     let cx = manager_cx(&state, &promotion);
     let mgr_group = group_manager::find(&mut tx, group.id)
@@ -766,6 +785,7 @@ pub async fn add_owners(
         settings: &req.settings,
         i18n: &state.i18n,
         host: &req.host,
+        config: &state.config,
     };
     let cx = manager_cx(&state, &promotion);
     let mgr_group = group_manager::find(&mut tx, group.id)
@@ -1296,7 +1316,6 @@ pub async fn update(
     if !errors.is_empty() {
         return Ok(json_error(errors));
     }
-    refuse_web_hooks(&mut tx, "group_updated").await?;
     gw::before_save(&req.host, &mut row, Some(&before)).await?;
     let changed = gw::changes(&before, &row);
     gw::write_changes(&mut tx, group.id, &row, &changed).await?;
@@ -1305,6 +1324,18 @@ pub async fn update(
     let mut tx = state.pool.begin().await?;
     // after_commit: automatic membership, then the defaults' batch_set.
     gw::after_commit(&mut tx, group.id, &row).await?;
+    // trigger_group_updated_event
+    crate::web_hooks::enqueue_group_hooks(
+        &mut tx,
+        &crate::web_hooks::Payloads {
+            settings: &req.settings,
+            i18n: &state.i18n,
+            config: &state.config,
+        },
+        "group_updated",
+        group.id,
+    )
+    .await?;
     for (level, values) in &category_sets {
         gw::batch_set(&mut tx, group.id, *level, false, values).await?;
     }
@@ -1318,6 +1349,18 @@ pub async fn update(
     // enqueues the automatic membership again and sets the defaults
     // again (their inserts' conflicts still take ids).
     gw::after_commit(&mut tx, group.id, &row).await?;
+    // trigger_group_updated_event
+    crate::web_hooks::enqueue_group_hooks(
+        &mut tx,
+        &crate::web_hooks::Payloads {
+            settings: &req.settings,
+            i18n: &state.i18n,
+            config: &state.config,
+        },
+        "group_updated",
+        group.id,
+    )
+    .await?;
     for (level, values) in &category_sets {
         gw::batch_set(&mut tx, group.id, *level, false, values).await?;
     }

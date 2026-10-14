@@ -475,12 +475,6 @@ async fn run(
         FlagAction::AgreeAndKeep | FlagAction::Ignore => {}
     }
 
-    crate::web_hooks::refuse(
-        &mut *conn,
-        "reviewable_transitioned_to",
-        "reviewable web hooks",
-    )
-    .await?;
     // transition_to: the status saved, its history, the scores settled.
     sqlx::query("UPDATE reviewables SET status = $2, updated_at = clock_timestamp() WHERE id = $1")
         .bind(reviewable.id)
@@ -497,6 +491,18 @@ async fn run(
     .bind(transition)
     .bind(performer_id)
     .execute(&mut *conn)
+    .await?;
+    // DiscourseEvent :reviewable_transitioned_to: its web hooks.
+    crate::web_hooks::enqueue_reviewable_hooks(
+        &mut *conn,
+        &crate::web_hooks::Payloads {
+            settings: ctx.settings,
+            i18n: ctx.i18n,
+            config: ctx.config,
+        },
+        "reviewable_transitioned_to",
+        reviewable.id,
+    )
     .await?;
     sqlx::query(
         "UPDATE reviewable_scores SET status = $2, reviewed_by_id = $3, reviewed_at = clock_timestamp() \

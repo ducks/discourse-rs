@@ -488,6 +488,14 @@ fn unordered_responses(doc: &mut Value, case: &Value) {
     }
 }
 
+/// The case's `ignore` paths again once web hook payloads are expanded
+/// (`web_hook_values`), for the paths inside them.
+fn ignore_in_payloads(doc: &mut Value, ignore: &[String]) {
+    for ptr in ignore.iter().filter(|p| p.contains("/payload/")) {
+        discourse_rs::parity::ignore_path(doc, ptr);
+    }
+}
+
 fn approximate(doc: &mut Value, case: &Value) {
     let round = |v: &mut Value| {
         if let Some(f) = v.as_f64().filter(|f| *f != 0.0 && f.is_finite()) {
@@ -725,6 +733,20 @@ fn web_hook_values(doc: &mut Value) {
             .filter(|p| p.is_object() || p.is_array())
         {
             *v = parsed;
+        }
+        // An anonymized user's letter avatar: its color hashes the random
+        // `anon<n>` username.
+        if v["username"].as_str().is_some_and(|u| {
+            u.strip_prefix("anon")
+                .is_some_and(|n| n.bytes().all(|b| b.is_ascii_digit()))
+        }) {
+            static COLOR: std::sync::LazyLock<regex::Regex> =
+                std::sync::LazyLock::new(|| regex::Regex::new(r"/letter/a/[0-9a-f]{6}/").unwrap());
+            for key in ["avatar_template", "system_avatar_template"] {
+                if let Some(Value::String(s)) = v.get_mut(key) {
+                    *s = COLOR.replace(s, "/letter/a/<color>/").into_owned();
+                }
+            }
         }
     }
     for list in ["jobs", "jobs_from_jobs"] {
@@ -1828,6 +1850,7 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
                     decrypt_user_api_payloads(&mut rails);
                     hide_secrets(&mut rails);
                     web_hook_values(&mut rails);
+                    ignore_in_payloads(&mut rails, ignore);
                     approximate(&mut rails, case);
                     unordered(&mut rails, case);
                     unordered_responses(&mut rails, case);
@@ -1843,6 +1866,7 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
                     decrypt_user_api_payloads(&mut ours);
                     hide_secrets(&mut ours);
                     web_hook_values(&mut ours);
+                    ignore_in_payloads(&mut ours, ignore);
                     approximate(&mut ours, case);
                     unordered(&mut ours, case);
                     unordered_responses(&mut ours, case);

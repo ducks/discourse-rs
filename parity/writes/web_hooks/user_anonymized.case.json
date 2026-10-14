@@ -1,0 +1,30 @@
+{
+  "user": "admin",
+  "setup": [
+    "UPDATE user_profiles SET location = 'Paris', website = 'https://example.com', bio_raw = 'Hello', bio_cooked = '<p>Hello</p>' WHERE user_id = 3",
+    "UPDATE users SET title = 'Leader', date_of_birth = '1990-01-02' WHERE id = 3",
+    "INSERT INTO user_statuses (user_id, emoji, description, set_at) VALUES (3, 'tada', 'Busy', now())",
+    "INSERT INTO user_emails (user_id, email, \"primary\", normalized_email, created_at, updated_at) VALUES (3, 'second1@example.com', FALSE, 'second1@example.com', now(), now())",
+    "INSERT INTO email_tokens (user_id, email, confirmed, expired, created_at, updated_at, token_hash, scope) VALUES (3, 'second1@example.com', FALSE, FALSE, now(), now(), 'aaaa1', 1)",
+    "INSERT INTO invites (invite_key, email, invited_by_id, created_at, updated_at, emailed_status, max_redemptions_allowed, redemption_count, expires_at) VALUES ('anonkey1', 'second1@example.com', 1, now(), now(), 0, 1, 0, now() + interval '30 days')",
+    "INSERT INTO email_logs (to_address, email_type, user_id, created_at, updated_at) VALUES ('second1@example.com', 'digest', 3, now(), now())",
+    "INSERT INTO post_reply_keys (user_id, post_id, reply_key, created_at, updated_at) VALUES (3, 36, '1b2b3b4b-1b2b-1b2b-1b2b-1b2b3b4b5b6b', now(), now())",
+    "UPDATE posts SET raw_email = 'From: user1' WHERE id = 36",
+    "INSERT INTO web_hooks (id, payload_url, content_type, last_delivery_status, status, secret, wildcard_web_hook, verify_certificate, active, created_at, updated_at) VALUES (9001, 'http://fixtures.localhost:8099/hook', 1, 1, 1, '', false, true, true, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO web_hook_event_types_hooks (web_hook_id, web_hook_event_type_id) VALUES (9001, 310)",
+    "INSERT INTO web_hook_event_types_hooks (web_hook_id, web_hook_event_type_id) VALUES (9001, 306)"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/3/anonymize.json"
+    }
+  ],
+  "run_jobs": [
+    "update_username",
+    "anonymize_user"
+  ],
+  "ignore": [
+    "/jobs/2/1/avatar_template"
+  ]
+}

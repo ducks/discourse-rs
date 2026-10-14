@@ -27,6 +27,7 @@ pub mod publisher;
 pub mod scheduled;
 pub mod summary_email;
 pub mod view;
+pub mod web_hooks;
 
 use serde_json::{Map, Value, json};
 use sqlx::PgConnection;

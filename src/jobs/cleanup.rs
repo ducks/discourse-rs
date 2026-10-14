@@ -339,8 +339,24 @@ pub async fn clean_up_tags(state: &AppState) -> Result<(), AppError> {
     if unported {
         return Err(Unsupported("destroying unused tags with live topic tags or synonyms").into());
     }
-    // HasDestroyedWebHook: tag_destroyed.
-    crate::web_hooks::refuse(&mut tx, "tag_destroyed", "tag_destroyed web hooks").await?;
+    // HasDestroyedWebHook: each tag's payload before destroy_all takes it
+    // (in the table's order), its tag_destroyed hooks after.
+    let mut destroyed = Vec::new();
+    if crate::web_hooks::active(&mut tx, "tag_destroyed").await? {
+        let payloads = crate::web_hooks::Payloads {
+            settings: &s,
+            i18n: &state.i18n,
+            config: &state.config,
+        };
+        let ordered: Vec<i32> =
+            sqlx::query_scalar("SELECT id FROM tags WHERE id = ANY($1) ORDER BY ctid")
+                .bind(&ids)
+                .fetch_all(&mut *tx)
+                .await?;
+        for id in ordered {
+            destroyed.push((id, payloads.tag(&mut tx, id).await?));
+        }
+    }
     for (table, column) in [
         ("tag_users", "tag_id"),
         ("topic_tags", "tag_id"),
@@ -362,6 +378,12 @@ pub async fn clean_up_tags(state: &AppState) -> Result<(), AppError> {
         .bind(&ids)
         .execute(&mut *tx)
         .await?;
+    for (id, payload) in destroyed {
+        let mut opts = serde_json::Map::new();
+        opts.insert("id".into(), json!(id));
+        opts.insert("payload".into(), json!(crate::web_hooks::to_json(&payload)));
+        crate::web_hooks::enqueue_hooks(&mut tx, "tag", "tag_destroyed", opts).await?;
+    }
     tx.commit().await?;
     Ok(())
 }

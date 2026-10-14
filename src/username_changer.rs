@@ -12,8 +12,8 @@
 //! Refused: non-ASCII usernames (Ruby's grapheme counts and Unicode
 //! normalization), watched words (user fields), a category description
 //! that a rewritten definition post would change (publish_category), the
-//! system user's site-logo avatar, and the `user_updated` web hooks,
-//! automations and workflows the job's events would run.
+//! system user's site-logo avatar, and the `user_updated` automations and
+//! workflows the job's events would run.
 
 use std::collections::HashSet;
 
@@ -298,11 +298,8 @@ pub async fn can_edit_username(
 }
 
 /// The `user_updated` and `username_changed` listeners the port doesn't
-/// have: web hooks, automations and workflows.
+/// have: automations and workflows.
 async fn user_updated_unsupported(conn: &mut PgConnection) -> Result<(), AppError> {
-    if crate::web_hooks::active(conn, "user_updated").await? {
-        return Err(Unsupported("user_updated web hooks").into());
-    }
     let automations: bool = sqlx::query_scalar(
         "SELECT EXISTS (SELECT 1 FROM discourse_automation_automations \
          WHERE enabled AND trigger = 'user_updated')",
@@ -614,6 +611,18 @@ pub async fn update_username(
     .bind(old)
     .bind(new)
     .execute(&mut *conn)
+    .await?;
+    // DiscourseEvent :user_updated: its web hooks.
+    crate::web_hooks::enqueue_user_hooks(
+        &mut *conn,
+        &crate::web_hooks::Payloads {
+            settings: ctx.settings,
+            i18n: ctx.i18n,
+            config: ctx.config,
+        },
+        "user_updated",
+        user_id,
+    )
     .await?;
     Ok(())
 }

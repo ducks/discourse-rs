@@ -321,15 +321,10 @@ pub(crate) struct Suspension<'a> {
 /// `UserSuspender#suspend`: the user's history details and suspended_at.
 pub(crate) async fn suspend_user(
     pool: &PgPool,
+    payloads: &crate::web_hooks::Payloads<'_>,
     user_id: i32,
     s: &Suspension<'_>,
 ) -> Result<(String, NaiveDateTime), AppError> {
-    crate::web_hooks::refuse(
-        &mut *pool.acquire().await?,
-        "user_suspended",
-        "user_suspended web hooks",
-    )
-    .await?;
     let mut tx = pool.begin().await?;
     let suspended_at: NaiveDateTime = sqlx::query_scalar(
         "UPDATE users SET suspended_till = $2, suspended_at = clock_timestamp(), updated_at = clock_timestamp() \
@@ -360,6 +355,8 @@ pub(crate) async fn suspend_user(
         .bind(user_id)
         .execute(&mut *conn)
         .await?;
+    // logged_out: the user_logged_out event's web hooks.
+    crate::web_hooks::enqueue_user_hooks(&mut conn, payloads, "user_logged_out", user_id).await?;
     let iso6 = |t: NaiveDateTime| t.format("%Y-%m-%dT%H:%M:%S%.6fZ").to_string();
     crate::jobs::enqueue_at(
         &mut conn,
@@ -381,6 +378,8 @@ pub(crate) async fn suspend_user(
         )
         .await?;
     }
+    // DiscourseEvent :user_suspended: its web hooks.
+    crate::web_hooks::enqueue_user_hooks(&mut conn, payloads, "user_suspended", user_id).await?;
     Ok((details, suspended_at))
 }
 
@@ -442,7 +441,17 @@ pub async fn suspend(
     };
     let mut first = None;
     for u in &users {
-        let done = suspend_user(pool, u.id, &suspension).await?;
+        let done = suspend_user(
+            pool,
+            &crate::web_hooks::Payloads {
+                settings: ctx.settings,
+                i18n: ctx.i18n,
+                config: ctx.config,
+            },
+            u.id,
+            &suspension,
+        )
+        .await?;
         first.get_or_insert(done);
     }
     let (full_reason, suspended_at) = first.unwrap_or_default();
@@ -664,6 +673,7 @@ async fn reply_ids(
 /// `Admin::UsersController#unsuspend` -> `UserSuspender.unsuspend`
 pub async fn unsuspend(
     conn: &mut PgConnection,
+    payloads: &crate::web_hooks::Payloads<'_>,
     guardian: &Guardian,
     user_id: i32,
 ) -> Result<Outcome, AppError> {
@@ -676,7 +686,6 @@ pub async fn unsuspend(
     let actor = guardian
         .user()
         .ok_or(Unsupported("unsuspending anonymously"))?;
-    crate::web_hooks::refuse(&mut *conn, "user_unsuspended", "user_unsuspended web hooks").await?;
     if user.suspended_till.is_some() {
         sqlx::query(
             "UPDATE users SET suspended_at = NULL, suspended_till = NULL, updated_at = clock_timestamp() \
@@ -694,6 +703,9 @@ pub async fn unsuspend(
         .bind(user.id)
         .execute(&mut *conn)
         .await?;
+        // DiscourseEvent :user_unsuspended: its web hooks.
+        crate::web_hooks::enqueue_user_hooks(&mut *conn, payloads, "user_unsuspended", user.id)
+            .await?;
     }
     Ok(Outcome::Done(
         json!({ "suspension": { "suspended_till": null, "suspended_at": null } }),

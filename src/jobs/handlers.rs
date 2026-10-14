@@ -66,23 +66,7 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         // only hands to web hooks (user_added_to_group's: the removal's
         // come from GroupManager alone).
         "publish_group_membership_updates" => {
-            let hooks = if job.args["type"] == "add" {
-                let mut conn = match state.pool.acquire().await {
-                    Ok(conn) => conn,
-                    Err(e) => return Err(AppError::from(e).into()),
-                };
-                match crate::web_hooks::active(&mut conn, "user_added_to_group").await {
-                    Ok(hooks) => hooks,
-                    Err(e) => return Err(AppError::from(e).into()),
-                }
-            } else {
-                false
-            };
-            if hooks {
-                Err(Unsupported("web hooks for group membership").into())
-            } else {
-                Ok(())
-            }
+            publish_group_membership_updates(state, &job.args).await
         }
         // UserAuthToken.is_suspicious compares the login's location with the
         // user's earlier ones, through MaxMind's databases; without them
@@ -171,6 +155,7 @@ async fn automatic_group_membership(state: &AppState, args: &Value) -> Result<()
         settings: &s,
         i18n: &state.i18n,
         host: &host,
+        config: &state.config,
     };
     let cx = crate::group_manager::Cx {
         state,
@@ -310,6 +295,7 @@ async fn bulk_grant_trust_level(state: &AppState, args: &Value) -> Result<(), Ap
         settings: &settings,
         i18n: &state.i18n,
         host: &host,
+        config: &state.config,
     };
     let existing: Vec<i32> =
         sqlx::query_scalar("SELECT id FROM users WHERE id = ANY($1) ORDER BY id")
@@ -324,6 +310,71 @@ async fn bulk_grant_trust_level(state: &AppState, args: &Value) -> Result<(), Ap
         }
     }
     tx.commit().await?;
+    Ok(())
+}
+
+/// Jobs::PublishGroupMembershipUpdates: user_added_to_group or
+/// user_removed_from_group for each human user, which core hands only to
+/// web hooks (and only additions: the removals' come from GroupManager).
+async fn publish_group_membership_updates(state: &AppState, args: &Value) -> Result<(), AppError> {
+    let added = match args["type"].as_str() {
+        Some("add") => true,
+        Some("remove") => false,
+        _ => {
+            return Err(std::io::Error::other("Discourse::InvalidParameters: type").into());
+        }
+    };
+    let mut conn = state.pool.acquire().await?;
+    let Some(group_id) = args["group_id"].as_i64().map(|id| id as i32) else {
+        return Ok(());
+    };
+    let exists: bool = sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM groups WHERE id = $1)")
+        .bind(group_id)
+        .fetch_one(&mut *conn)
+        .await?;
+    if !exists || !added || !crate::web_hooks::active(&mut conn, "user_added_to_group").await? {
+        return Ok(());
+    }
+    let user_ids: Vec<i32> = args["user_ids"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(|v| v.as_i64().map(|id| id as i32))
+        .collect();
+    let users: Vec<i32> =
+        sqlx::query_scalar("SELECT id FROM users WHERE id = ANY($1) AND id > 0 ORDER BY ctid")
+            .bind(&user_ids)
+            .fetch_all(&mut *conn)
+            .await?;
+    let s = SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let payloads = crate::web_hooks::Payloads {
+        settings: &s,
+        i18n: &state.i18n,
+        config: &state.config,
+    };
+    for user_id in users {
+        let group_user_id: Option<i64> = sqlx::query_scalar(
+            "SELECT id::int8 FROM group_users WHERE group_id = $1 AND user_id = $2",
+        )
+        .bind(group_id)
+        .bind(user_id)
+        .fetch_optional(&mut *conn)
+        .await?;
+        let Some(group_user_id) = group_user_id else {
+            return Err(
+                Unsupported("a membership update for a user no longer in the group").into(),
+            );
+        };
+        crate::web_hooks::enqueue_group_user_hooks(
+            &mut conn,
+            &payloads,
+            "user_added_to_group",
+            group_user_id,
+            group_id,
+            None,
+        )
+        .await?;
+    }
     Ok(())
 }
 
