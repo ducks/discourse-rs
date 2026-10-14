@@ -377,12 +377,22 @@ span.relative-date {
   }
 }
 
+/* discourse.scss:377, every type it lists (the insert date modal's time
+   input among them) */
 input[type="text"],
 input[type="password"],
+input[type="datetime"],
+input[type="datetime-local"],
+input[type="date"],
+input[type="month"],
+input[type="time"],
+input[type="week"],
+input[type="number"],
 input[type="email"],
 input[type="url"],
 input[type="search"],
-input[type="number"] {
+input[type="tel"],
+input[type="color"] {
   /* form-item-sizing */
   border: 1px solid transparent;
   font-size: var(--font-0);

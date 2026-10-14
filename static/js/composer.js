@@ -842,6 +842,212 @@
       });
   }
 
+  // The toolbar's options menu (ToolbarPopupMenuOptions over
+  // Composer#popupMenuOptions): the items the server listed for the
+  // site's settings, as a DMenu. The ones whose actions aren't ported
+  // say so instead of acting.
+  var optionsTrigger = control.querySelector(".toolbar-menu__options-trigger");
+  var popup = { items: [], unported: [] };
+  if (optionsTrigger) {
+    try {
+      popup = JSON.parse(optionsTrigger.dataset.popupOptions);
+    } catch (_) {}
+  }
+
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function svg(name, extra) {
+    return (
+      '<svg class="fa d-icon d-icon-' + name + " svg-icon fa-width-auto" + (extra ? " " + extra : "") +
+      ' svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#' +
+      name + '"></use></svg>'
+    );
+  }
+
+  var apple = /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent);
+
+  // DShortcut's keycaps for `mod+<shortcut>` (formatShortcut): Ctrl (⌘ on
+  // Apple platforms) first, then Shift, then the key.
+  function shortcutKbd(shortcut, always) {
+    if (!window.matchMedia("(pointer: fine)").matches) {
+      return "";
+    }
+    var keys = shortcut.split("+");
+    var key = keys.pop();
+    var caps = [apple ? ["⌘", true] : ["Ctrl", false]];
+    if (keys.indexOf("Shift") !== -1) {
+      caps.push(apple ? ["⇧", true] : ["Shift", false]);
+    }
+    caps.push([key.length === 1 ? key.toUpperCase() : key, false]);
+    return (
+      '<kbd aria-hidden="true" class="d-shortcut shortcut' + (always ? " --always-visible" : "") + '" dir="ltr">' +
+      caps
+        .map(function (cap) {
+          return (
+            '<kbd class="d-shortcut__key' + (cap[1] ? " d-shortcut__key--glyph" : "") + '">' + escapeHtml(cap[0]) + "</kbd>"
+          );
+        })
+        .join("") +
+      "</kbd>"
+    );
+  }
+
+  function popupItemShown(item) {
+    if (item.when === "touch") {
+      return document.documentElement.classList.contains("discourse-touch");
+    }
+    if (item.when === "edit-reply") {
+      return !!state && state.mode === "edit" && parseInt(state.postNumber, 10) > 1;
+    }
+    return true;
+  }
+
+  function popupMenuContent() {
+    var html = '<ul class="dropdown-menu">';
+    popup.items.filter(popupItemShown).forEach(function (item) {
+      html +=
+        '<li class="dropdown-menu__item"><button class="btn no-text btn-icon" title="' + escapeHtml(item.label) + '"' +
+        (item.named ? ' data-name="' + escapeHtml(item.name) + '"' : "") + ' type="button">' + svg(item.icon) +
+        '<span class="d-button-label"><span class="d-button-label__text">' + escapeHtml(item.label) + "</span>" +
+        (item.shortcut ? shortcutKbd(item.shortcut, item.alwaysShowShortcut) : "") +
+        (item.showActiveIcon ? svg("check", "d-button-label__active-icon") : "") +
+        "</span></button></li>";
+    });
+    return html + "</ul>";
+  }
+
+  // applySurround as the plugins call it: the selection (or the example
+  // text) wrapped, on lines of its own in block mode when the selection
+  // spans lines.
+  function applySurround(head, tail, example, blockMode) {
+    var selected = textarea.value.slice(textarea.selectionStart, textarea.selectionEnd);
+    if (blockMode && selected.indexOf("\n") !== -1) {
+      surround(head + "\n", "\n" + tail, example);
+    } else {
+      surround(head, tail, example);
+    }
+  }
+
+  function addText(text) {
+    insertText(text);
+    textarea.focus();
+    updatePreview();
+    scheduleDraft();
+  }
+
+  var popupActions = {
+    details: function () {
+      applySurround(
+        '\n[details="' + data.textDetailsTitle + '"]\n',
+        "\n[/details]\n",
+        data.textDetails,
+        false
+      );
+    },
+    footnote: function () {
+      addText("^[" + data.textFootnote + "]");
+    },
+    spoiler: function () {
+      applySurround("[spoiler]", "[/spoiler]", data.textSpoiler, true);
+    },
+    "local-dates": function () {
+      if (Discourse.localDatesCreate) {
+        Discourse.localDatesCreate.show(addText);
+      }
+    },
+  };
+
+  // The options' shortcuts in the editor (mod+Shift+D, mod+Shift+.):
+  // the option's shortcutAction, else its action.
+  var popupShortcuts = {
+    "local-dates": function () {
+      if (Discourse.localDatesCreate) {
+        Discourse.localDatesCreate.currentDateMarkup().then(function (markup) {
+          if (markup) {
+            addText(markup);
+          }
+        });
+      }
+    },
+  };
+
+  function runPopupAction(item, viaShortcut) {
+    var action = (viaShortcut && popupShortcuts[item.name]) || popupActions[item.name];
+    if (item.ported && action) {
+      action();
+    } else {
+      showError(data.labelUnported + " " + item.label);
+    }
+  }
+
+  if (optionsTrigger) {
+    optionsTrigger.addEventListener("click", function (event) {
+      event.stopPropagation();
+      if (popup.unported.length) {
+        showError(data.labelUnported + " " + popup.unported.join(", "));
+        return;
+      }
+      var menu = Discourse.float.menu(optionsTrigger, {
+        identifier: "toolbar-menu__options",
+        mainClass: "toolbar-menu__options-content toolbar-popup-menu-options",
+        placement: "bottom",
+        fallbackPlacements: ["top"],
+        offset: 5,
+        modalForMobile: true,
+        content: popupMenuContent(),
+      });
+      var content = menu && menu.content;
+      if (content) {
+        content.addEventListener("click", function (e) {
+          var button = e.target.closest(".dropdown-menu__item button");
+          if (!button) {
+            return;
+          }
+          var index = Array.prototype.indexOf.call(
+            content.querySelectorAll(".dropdown-menu__item button"),
+            button
+          );
+          var item = popup.items.filter(popupItemShown)[index];
+          menu.close();
+          if (item) {
+            runPopupAction(item, false);
+          }
+        });
+      }
+    });
+  }
+
+  textarea.addEventListener("keydown", function (event) {
+    if (!(event.ctrlKey || event.metaKey) || !event.shiftKey || popup.unported.length) {
+      return;
+    }
+    popup.items.forEach(function (item) {
+      if (!item.shortcut || !popupItemShown(item)) {
+        return;
+      }
+      var key = item.shortcut.split("+").pop();
+      // Shift+. arrives as ">" on most layouts; the code is the key.
+      var code = key === "." ? "Period" : "Key" + key.toUpperCase();
+      if (event.code === code) {
+        event.preventDefault();
+        runPopupAction(item, true);
+      }
+    });
+  });
+
+  // The preview's renderer for others: the insert date modal's preview.
+  Discourse.composerCook = function (raw) {
+    return loadRenderer().then(function (render) {
+      return render(raw);
+    });
+  };
+
   control.addEventListener("click", function (event) {
     var tool = event.target.closest(".toolbar__button");
     if (tool && actions[tool.dataset.action]) {

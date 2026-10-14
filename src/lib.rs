@@ -76,6 +76,7 @@ pub mod message_format;
 pub mod messages_view;
 pub mod mobile;
 pub mod modifications;
+pub mod moment_locale;
 pub mod mustache;
 pub mod not_found_page;
 pub mod notification_create;
