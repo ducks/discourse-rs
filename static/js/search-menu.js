@@ -987,6 +987,20 @@
     closeBannerMenu(false);
   }
 
+  // A layout switch redraws the page (page.js): the search service's
+  // visible stays, so the header's menu opens again in the new layout
+  // (a slide-in in the narrow desktop view, SearchMenuWrapper).
+  var reopen = false;
+  document.addEventListener("discourse:before-redraw", function () {
+    reopen = !!headerWrapper();
+  });
+  document.addEventListener("discourse:redrawn", function () {
+    if (reopen && !mobileView() && searchButton()) {
+      openHeaderMenu();
+    }
+    reopen = false;
+  });
+
   Discourse.onPage(function () {
     syncContext();
     if (state.highlightTerm) {

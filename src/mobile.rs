@@ -18,8 +18,16 @@
 //! the `<html>` classes. Without the cookie (a first visit, no script) the
 //! server guesses from the user agent as Rails does.
 //!
+//! The desktop view has a narrow mode too (lib/narrow-desktop.js:
+//! `narrowDesktopView`, a viewport under 48rem): the sidebar gives way to
+//! the slide-in its header toggle opens, the menus slide in, the search
+//! button is always there. The head script keeps the `narrow_desktop`
+//! cookie in step with that query the same way (`1` between 40rem and
+//! 48rem), reloading when the window crosses it where Ember re-renders.
+//!
 //! [`layer`] decides once per request and scopes the answer to the
-//! request's task, where [`mobile_view`] reads it.
+//! request's task, where [`mobile_view`] and [`narrow_desktop_view`] read
+//! it.
 
 use axum::extract::Request;
 use axum::http::{HeaderMap, header};
@@ -29,8 +37,12 @@ use axum::response::Response;
 /// The cookie page.js keeps in step with the viewport.
 pub const COOKIE: &str = "mobile_view";
 
+/// The cookie for the narrow desktop view.
+pub const NARROW_COOKIE: &str = "narrow_desktop";
+
 tokio::task_local! {
     static MOBILE_VIEW: bool;
+    static NARROW_DESKTOP: bool;
 }
 
 /// `MobileDetection.mobile_device?`: a phone's user agent, not an iPad's.
@@ -53,6 +65,18 @@ pub fn decide(headers: &HeaderMap) -> bool {
     }
 }
 
+/// The request's narrow desktop view: the desktop view with the
+/// `narrow_desktop` cookie the client wrote from its viewport. No cookie
+/// (a first visit) is the wide desktop.
+pub fn decide_narrow(headers: &HeaderMap) -> bool {
+    !decide(headers) && crate::session::current::cookie(headers, NARROW_COOKIE) == Some("1")
+}
+
+/// `site.narrowDesktopView` for the request being rendered.
+pub fn narrow_desktop_view() -> bool {
+    NARROW_DESKTOP.try_with(|n| *n).unwrap_or(false)
+}
+
 /// `site.mobileView` for the request being rendered; desktop outside a
 /// request (tests rendering a view directly).
 pub fn mobile_view() -> bool {
@@ -67,7 +91,10 @@ pub async fn scope<F: std::future::Future>(mobile: bool, f: F) -> F::Output {
 /// Decides the request's layout and renders it in that scope.
 pub async fn layer(request: Request, next: Next) -> Response {
     let mobile = decide(request.headers());
-    MOBILE_VIEW.scope(mobile, next.run(request)).await
+    let narrow = decide_narrow(request.headers());
+    MOBILE_VIEW
+        .scope(mobile, NARROW_DESKTOP.scope(narrow, next.run(request)))
+        .await
 }
 
 #[cfg(test)]
@@ -102,6 +129,20 @@ mod tests {
         assert!(decide(&headers(DESKTOP, Some("a=b; mobile_view=1"))));
         assert!(!decide(&headers(IPHONE, Some("mobile_view=0"))));
         assert!(decide(&headers(IPHONE, Some("mobile_view=x"))));
+    }
+
+    #[test]
+    fn the_narrow_desktop_is_a_desktop_with_its_cookie() {
+        assert!(decide_narrow(&headers(
+            DESKTOP,
+            Some("mobile_view=0; narrow_desktop=1")
+        )));
+        assert!(!decide_narrow(&headers(DESKTOP, Some("narrow_desktop=0"))));
+        assert!(!decide_narrow(&headers(DESKTOP, None)));
+        assert!(!decide_narrow(&headers(
+            DESKTOP,
+            Some("mobile_view=1; narrow_desktop=1")
+        )));
     }
 
     #[tokio::test]

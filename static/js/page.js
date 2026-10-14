@@ -194,32 +194,73 @@
   // from the user agent without one), so the cookie follows the viewport,
   // and a page in the other layout (a wrong guess on a first visit, a
   // window crossing the breakpoint) is asked for again and redrawn.
+  //
+  // NarrowDesktop: the desktop view under 48rem has its own layout (no
+  // sidebar, slide-in menus), the narrow_desktop cookie kept the same way.
+  // And TopicNavigation's width query: under 925px a desktop topic page
+  // shows the progress bar in the timeline's place, which the page picks
+  // as it comes in, so a window crossing that width is redrawn too.
   var viewport = window.matchMedia("(min-width: 40rem)");
+  var wide = window.matchMedia("(min-width: 48rem)");
+  var timelineWidth = window.matchMedia("(min-width: 925px)");
   var generation = 0;
   var hidden = null;
 
-  function wantedView() {
+  function wantedMobile() {
     return viewport.matches ? "0" : "1";
   }
 
+  function wantedNarrow() {
+    return viewport.matches && !wide.matches ? "1" : "0";
+  }
+
+  function wantedView() {
+    return wantedMobile() + wantedNarrow();
+  }
+
   function renderedView(doc) {
-    return doc.documentElement.classList.contains("mobile-view") ? "1" : "0";
+    return (
+      (doc.documentElement.classList.contains("mobile-view") ? "1" : "0") +
+      // The body's marker, or before the body is in, the head's.
+      ((doc.body
+        ? doc.body.hasAttribute("data-narrow-desktop")
+        : !!doc.querySelector('meta[name="discourse-narrow-desktop"]'))
+        ? "1"
+        : "0")
+    );
+  }
+
+  // A desktop topic page with the navigation its width doesn't want.
+  function timelineStale() {
+    if (document.documentElement.classList.contains("mobile-view")) {
+      return false;
+    }
+    var nav = document.querySelector(".topic-navigation");
+    if (!nav) {
+      return false;
+    }
+    var progress = nav.classList.contains("with-topic-progress") || nav.classList.contains("topic-progress-expanded");
+    return progress === timelineWidth.matches;
   }
 
   function syncView() {
     var meta = document.querySelector('meta[name="discourse-base-uri"]');
-    document.cookie =
-      "mobile_view=" + wantedView() + "; path=" + (meta ? meta.content : "") + "/; max-age=31536000; samesite=lax";
+    var path = "; path=" + (meta ? meta.content : "") + "/; max-age=31536000; samesite=lax";
+    document.cookie = "mobile_view=" + wantedMobile() + path;
+    document.cookie = "narrow_desktop=" + wantedNarrow() + path;
     checkView();
   }
 
-  // Only when the cookie took: a browser without cookies keeps the
+  // Only when the cookies took: a browser without cookies keeps the
   // server's guess instead of asking for the page forever. A redraw still
   // on its way is dropped when the window crosses back.
   function checkView() {
     generation += 1;
-    var took = document.cookie.split("; ").indexOf("mobile_view=" + wantedView()) !== -1;
-    if (renderedView(document) !== wantedView() && took) {
+    var cookies = document.cookie.split("; ");
+    var took =
+      cookies.indexOf("mobile_view=" + wantedMobile()) !== -1 &&
+      cookies.indexOf("narrow_desktop=" + wantedNarrow()) !== -1;
+    if ((renderedView(document) !== wantedView() || timelineStale()) && took) {
       redraw(generation);
     } else {
       reveal();
@@ -366,7 +407,9 @@
   // Swapped in as a boosted navigation swaps a page, where the reader
   // is: the focused field keeps its caret and the post being read stays
   // put. What stays (the composer) hears discourse:redraw with its markup
-  // in the new layout once the page is in.
+  // in the new layout once the page is in. The document hears
+  // discourse:before-redraw and discourse:redrawn around the swap, for
+  // what Ember keeps open across a layout switch (the search menu).
   function swapIn(html, doc) {
     var reading = anchor;
     var focused = document.activeElement;
@@ -381,9 +424,11 @@
         kept.push([element, document.importNode(incoming, true)]);
       }
     });
+    document.dispatchEvent(new CustomEvent("discourse:before-redraw"));
     leaving(doc);
     htmx.swap(document.body, html, { swapStyle: "innerHTML", swapDelay: 0, settleDelay: 0 });
     arrived();
+    document.dispatchEvent(new CustomEvent("discourse:redrawn"));
     kept.forEach(function (pair) {
       pair[0].dispatchEvent(new CustomEvent("discourse:redraw", { detail: pair[1] }));
     });
@@ -405,4 +450,6 @@
 
   syncView();
   viewport.addEventListener("change", syncView);
+  wide.addEventListener("change", syncView);
+  timelineWidth.addEventListener("change", syncView);
 })();

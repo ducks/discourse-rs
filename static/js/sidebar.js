@@ -137,18 +137,23 @@
   }
 
   function setHamburgerOpen(open) {
+    // The mobile view's hamburger button, or in the narrow desktop view the
+    // sidebar toggle (whose aria-expanded stays the hidden sidebar's).
     var toggle = document.querySelector(".hamburger-dropdown");
     var button = document.getElementById("toggle-hamburger-menu");
+    var narrow = document.querySelector(".btn-sidebar-toggle.narrow-desktop");
     var template = document.getElementById("hamburger-dropdown");
-    if (!toggle || !button || !template) {
+    if (!template || ((!toggle || !button) && !narrow)) {
       return;
     }
     if (open && !hamburgerOpen()) {
       var icons = document.querySelector(".d-header .d-header-icons");
       icons.after(template.content.cloneNode(true));
       applyCollapsed(document.querySelector(".hamburger-dropdown-wrapper"));
-      toggle.className = "active " + toggle.className;
-      button.setAttribute("aria-expanded", "");
+      if (toggle && button) {
+        toggle.className = "active " + toggle.className;
+        button.setAttribute("aria-expanded", "");
+      }
     } else if (!open) {
       document
         .querySelectorAll(
@@ -157,13 +162,17 @@
         .forEach(function (element) {
           element.remove();
         });
-      toggle.classList.remove("active");
-      button.removeAttribute("aria-expanded");
+      if (toggle && button) {
+        toggle.classList.remove("active");
+        button.removeAttribute("aria-expanded");
+      }
     }
   }
 
   document.addEventListener("click", function (event) {
-    if (event.target.closest("#toggle-hamburger-menu")) {
+    // Header#toggleNavigationMenu: the hamburger in the narrow desktop
+    // view, where the sidebar is not shown.
+    if (event.target.closest("#toggle-hamburger-menu, .btn-sidebar-toggle.narrow-desktop")) {
       setHamburgerOpen(!hamburgerOpen());
       return;
     }

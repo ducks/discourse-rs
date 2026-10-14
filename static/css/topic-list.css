@@ -454,3 +454,135 @@
     line-height: var(--line-height-large);
   }
 }
+
+/*
+ * The narrow desktop (40rem to 48rem), and a page with the sidebar under
+ * 64rem: the latest poster alone, centered; the narrow desktop has no
+ * views column either.
+ */
+
+/* _topic-list.scss:574 */
+@media (width >= 40rem) and (width < 48rem) {
+  .topic-list .posters {
+    width: 2em;
+    text-align: center;
+  }
+}
+
+/* mixins.scss:461 */
+@media (width >= 40rem) and (width < 48rem) {
+  .topic-list .posters a:first-child .avatar.latest:not(.single) {
+    top: 0;
+    left: 0;
+  }
+}
+
+/* mixins.scss:461 */
+@media (width >= 40rem) and (width < 64rem) {
+  .has-sidebar-page .topic-list .posters a:first-child .avatar.latest:not(.single) {
+    top: 0;
+    left: 0;
+  }
+}
+
+/* mixins.scss:466 */
+@media (width >= 40rem) and (width < 48rem) {
+  .topic-list .posters a:not(.latest) {
+    display: none;
+  }
+}
+
+/* mixins.scss:466 */
+@media (width >= 40rem) and (width < 64rem) {
+  .has-sidebar-page .topic-list .posters a:not(.latest) {
+    display: none;
+  }
+}
+
+/* mixins.scss:470 */
+@media (width >= 40rem) and (width < 48rem) {
+  .topic-list .posters a.latest {
+    width: 100%;
+  }
+}
+
+/* mixins.scss:470 */
+@media (width >= 40rem) and (width < 64rem) {
+  .has-sidebar-page .topic-list .posters a.latest {
+    width: 100%;
+  }
+}
+
+/* mixins.scss:473 */
+@media (width >= 40rem) and (width < 48rem) {
+  .topic-list .posters a.latest img {
+    margin: 0 auto;
+  }
+}
+
+/* mixins.scss:473 */
+@media (width >= 40rem) and (width < 64rem) {
+  .has-sidebar-page .topic-list .posters a.latest img {
+    margin: 0 auto;
+  }
+}
+
+/* _topic-list.scss:626 */
+@media (width >= 40rem) and (width < 48rem) {
+  .topic-list .views {
+    display: none;
+  }
+}
+
+/* Between 40rem and 64rem: the list's smaller text and padding. */
+
+/* _topic-list.scss:741 */
+@media (40rem <= width < 64rem) {
+  .topic-list .topic-list-data {
+    font-size: var(--font-0);
+  }
+}
+
+/* _topic-list.scss:746 */
+@media (40rem <= width < 64rem) {
+  .topic-list-header {
+    font-size: var(--font-down-1);
+  }
+}
+
+/* _topic-list.scss:750 */
+@media (40rem <= width < 64rem) {
+  .container.list-container {
+    position: relative;
+    padding: 0 var(--list-container-padding-x);
+  }
+}
+
+/* _topic-list.scss:755 */
+@media (40rem <= width < 64rem) {
+  .container.list-container.--categories {
+    padding: 0 var(--list-container-categories-padding-x);
+  }
+}
+
+/* _topic-list.scss:759 */
+@media (40rem <= width < 64rem) {
+  .container.list-container.--topic-list {
+    padding: 0 var(--list-container-topiclist-padding-x);
+  }
+}
+
+/* _topic-list.scss:605 */
+@media (40rem <= width < 64rem) {
+  .has-sidebar-page .topic-list .posters {
+    width: 2em;
+    text-align: center;
+  }
+}
+
+/* _topic-list.scss:633 */
+@media (40rem <= width < 64rem) {
+  .has-sidebar-page .topic-list .views {
+    display: none;
+  }
+}

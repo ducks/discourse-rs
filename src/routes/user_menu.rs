@@ -66,7 +66,7 @@ pub async fn show(
     let cx = MenuContext {
         i18n: &state.i18n,
         base_path: &base_path,
-        mobile: crate::mobile::mobile_view(),
+        mobile: crate::mobile::mobile_view() || crate::mobile::narrow_desktop_view(),
         user: &current_user,
         notification_types: crate::site::NOTIFICATION_TYPES,
         prioritize_full_name: settings.get("prioritize_full_name_in_ux")?.truthy(),

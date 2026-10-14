@@ -249,6 +249,9 @@ pub struct Chrome {
     /// passes it to the full-page search (Header#toggleSearchMenu): a
     /// query string, empty on pages without one.
     pub search_context: String,
+    /// The header's sidebar toggle (sidebarEnabled), shown in the narrow
+    /// desktop view too, where it opens the hamburger slide-in.
+    pub sidebar_toggle: bool,
     /// The same context for the search menu (search-menu.js): its type
     /// and id, empty without one.
     pub search_context_type: String,
@@ -642,12 +645,17 @@ impl Site {
         // sidebarEnabled: canDisplaySidebar (not for anonymous visitors
         // when login is required) and the sidebar navigation menu, never in
         // the mobile view, whose header menu shows the same sections.
+        // In the narrow desktop view the sidebar is enabled but not shown
+        // (calculateShowSidebar): its toggle opens the same sections as the
+        // mobile view's hamburger, in a slide-in.
         let mobile = crate::mobile::mobile_view();
+        let narrow = crate::mobile::narrow_desktop_view();
         let can_display_sidebar =
             guardian.user().is_some() || !settings.get("login_required")?.truthy();
         let sidebar_enabled =
             can_display_sidebar && !mobile && settings.get("navigation_menu")?.to_s() == "sidebar";
-        let hamburger = can_display_sidebar && mobile;
+        self.chrome.sidebar_toggle = sidebar_enabled;
+        let hamburger = can_display_sidebar && (mobile || (narrow && sidebar_enabled));
         self.chrome.tracking =
             crate::topic_tracking_report::load(&mut *conn, settings, guardian).await?;
         let inputs = if sidebar_enabled || hamburger {

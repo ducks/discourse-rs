@@ -687,6 +687,17 @@ with the viewport, guessing from the user agent without it
     suggests (the search refuses advanced filters, `#`, `@`), the private
     messages inbox, user, category and tag contexts of /search/query
     (refused), groups with a flair among the results (refused)
+102. ~~`feat/narrow-desktop`~~ (done) M: the desktop view under 48rem
+    (NarrowDesktop), decided like the mobile view from a cookie page.js
+    keeps (`narrow_desktop`, beside `mobile_view`; a window crossing 48rem
+    is redrawn in place as for 40rem, the reading position and composer
+    kept): no sidebar, its toggle opening the hamburger slide-in over the
+    cloak, the user and search menus as slide-ins, no drop-down-mode, the
+    search button always shown; the topic list's 40rem to 48rem and 64rem
+    rules (the latest poster alone, no views column, the smaller text);
+    below 925px the progress bar in the timeline's place (on any desktop
+    width, from a template the page swaps in, redrawn in place as the
+    window crosses 925px)
 103. ~~`feat/local-dates-composer`~~ (done) M: the composer toolbar's options
     menu (ToolbarPopupMenuOptions over Composer#popupMenuOptions, its
     shortcuts' keycaps) with discourse-local-dates' insert date modal
