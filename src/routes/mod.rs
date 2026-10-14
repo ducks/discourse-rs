@@ -790,6 +790,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/site.json", get(site::site))
         .route("/site/basic-info", get(site::basic_info))
         .route("/site/basic-info.json", get(site::basic_info))
+        .route("/about", get(about::page))
         .route("/about.json", get(about::show))
         .route("/directory_items", cached!(get(directory::index)))
         .route("/directory_items.json", cached!(get(directory::index)))
@@ -962,8 +963,8 @@ pub async fn request_format(
 }
 
 /// The pages Rails answers as JSON when asked to: the topic lists, the
-/// categories and tags, topics, user pages, drafts, notifications and the
-/// review queue.
+/// categories and tags, topics, user pages, drafts, notifications, the
+/// review queue and the about page.
 fn json_twin_page(path: &str) -> bool {
     let Some(rest) = path.strip_prefix('/') else {
         return false;
@@ -992,6 +993,7 @@ fn json_twin_page(path: &str) -> bool {
                 | "drafts"
                 | "notifications"
                 | "review"
+                | "about"
         )
 }
 

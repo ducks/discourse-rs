@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+{% block title %}{{ page_title }} - {{ site_title }}{% endblock %}
+{% block content %}
+{{ main|safe }}
+{%- if main.contains("about-page-users-list__expand-button") %}
+<script>
+  // AboutPageUsers#toggleExpanded: the users past the first six.
+  (function () {
+    if (!Discourse.once("about-page-users")) {
+      return;
+    }
+    document.addEventListener("click", function (event) {
+      var button = event.target.closest(".about-page-users-list__expand-button");
+      if (!button) {
+        return;
+      }
+      var expanded = button.getAttribute("aria-expanded") === "true";
+      var list = button.previousElementSibling;
+      list.querySelectorAll(".user-info").forEach(function (info, i) {
+        info.hidden = expanded && i >= 6;
+      });
+      button.setAttribute("aria-expanded", String(!expanded));
+      button.querySelector(".d-button-label").textContent = expanded
+        ? button.dataset.viewMore
+        : button.dataset.viewLess;
+      button.querySelector("use").setAttribute("href", expanded ? "#chevron-down" : "#chevron-up");
+      button.querySelector("svg").setAttribute("class", button.querySelector("svg").getAttribute("class").replace(expanded ? "d-icon-chevron-up" : "d-icon-chevron-down", expanded ? "d-icon-chevron-down" : "d-icon-chevron-up"));
+    });
+  })();
+</script>
+{%- endif %}
+{% endblock %}
