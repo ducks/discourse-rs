@@ -2303,6 +2303,8 @@ async fn the_mobile_composer_has_its_own_controls() {
     assert!(page.contains(
         r#"<a aria-label="Upload" class="btn btn-default no-text mobile-file-upload" id="mobile-file-upload">"#
     ));
+}
+
 /// The mobile view's topic footer (TopicFooterButtons' mobile branch):
 /// Flag and Mark unread behind the "..." DMenu, the notifications button
 /// in the actions without its reason; and the progress bar's fullscreen
