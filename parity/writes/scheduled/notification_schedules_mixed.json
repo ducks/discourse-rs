@@ -1,0 +1,78 @@
+{
+  "name": "notification_schedules_mixed",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-14T03:31:59.413661",
+  "transaction_started_at": "2026-10-14T03:31:58.558061",
+  "responses": [],
+  "changes": {
+    "do_not_disturb_timings": {
+      "inserted": [
+        {
+          "id": 1,
+          "ends_at": "2026-10-14T04:59:00",
+          "user_id": 3,
+          "scheduled": true,
+          "starts_at": "2026-10-14T00:00:00"
+        },
+        {
+          "id": 2,
+          "ends_at": "2026-10-15T00:00:00",
+          "user_id": 3,
+          "scheduled": true,
+          "starts_at": "2026-10-15T00:00:00"
+        },
+        {
+          "id": 3,
+          "ends_at": "2026-10-16T23:59:59.999999",
+          "user_id": 3,
+          "scheduled": true,
+          "starts_at": "2026-10-15T00:02:00"
+        },
+        {
+          "id": 4,
+          "ends_at": "2026-10-14T10:59:00",
+          "user_id": 2,
+          "scheduled": true,
+          "starts_at": "2026-10-13T06:00:00"
+        },
+        {
+          "id": 5,
+          "ends_at": "2026-10-15T06:00:00",
+          "user_id": 2,
+          "scheduled": true,
+          "starts_at": "2026-10-15T06:00:00"
+        },
+        {
+          "id": 6,
+          "ends_at": "2026-10-16T05:59:59.999999",
+          "user_id": 2,
+          "scheduled": true,
+          "starts_at": "2026-10-15T06:02:00"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "do_not_disturb_timings": 1
+  },
+  "setup": [
+    "INSERT INTO user_notification_schedules (user_id, enabled, day_0_start_time, day_0_end_time, day_1_start_time, day_1_end_time, day_2_start_time, day_2_end_time, day_3_start_time, day_3_end_time, day_4_start_time, day_4_end_time, day_5_start_time, day_5_end_time, day_6_start_time, day_6_end_time) VALUES (3, true, 0, 600, -1, 1440, 300, 1440, 1, 2, 0, 0, 1410, 1440, -1, -1)",
+    "INSERT INTO user_notification_schedules (user_id, enabled, day_0_start_time, day_0_end_time, day_1_start_time, day_1_end_time, day_2_start_time, day_2_end_time, day_3_start_time, day_3_end_time, day_4_start_time, day_4_end_time, day_5_start_time, day_5_end_time, day_6_start_time, day_6_end_time) VALUES (2, true, 0, 600, -1, 1440, 300, 1440, 1, 2, 0, 0, 1410, 1440, -1, -1)"
+  ],
+  "enqueue": [
+    [
+      "process_user_notification_schedules",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "6e9b90d0c0c88545902d4272a45320d0f05f328aaad596e836e7017f5cc816df",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

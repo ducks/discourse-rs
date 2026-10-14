@@ -23,6 +23,7 @@ Classes:
 | presence_channel_auto_leave | 60s | tests/presence.rs |
 | bookmark_reminder_notifications | 5m | scheduled/bookmark_reminder_* |
 | process_shelved_notifications | 5m | scheduled/shelved_process_* |
+| process_user_notification_schedules | 1d (timezones that are not tz names, such as Rails' "Mountain Time (US & Canada)", refused) | scheduled/notification_schedules_* |
 | unsilence_users | 15m | scheduled/unsilence_users* |
 | purge_expired_ignored_users | 1d | scheduled/purge_expired_ignored_users |
 | purge_old_notifications | 1w | scheduled/purge_old_notifications* |
@@ -68,7 +69,6 @@ the features below (ROADMAP.md's queue has them).
 | badge_grant, ensure_badges_consistency, grant_anniversary_badges, grant_new_user_of_the_month_badges, process_badge_backlog | badges |
 | topic_timer_enqueuer | topic timers |
 | ignored_users_summary, pending_reviewables_reminder | messages to a group (PostCreator target_group_names; group message alerts are refused) |
-| process_user_notification_schedules | do not disturb schedules |
 | enqueue_digest_emails | digest emails |
 | directory_refresh | the user directory |
 | about_stats | the /about page |

@@ -54,6 +54,7 @@ pub mod modifications;
 pub mod not_found_page;
 pub mod notification_create;
 pub mod notification_emailer;
+pub mod notification_schedule;
 pub mod notifications;
 pub mod onebox;
 pub mod optimized_images;

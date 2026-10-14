@@ -1,0 +1,16 @@
+{
+  "user": "user1",
+  "setup": [],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/u/user1.json",
+      "params": {
+        "user_notification_schedule": {
+          "enabled": true,
+          "day_3_start_time": 60
+        }
+      }
+    }
+  ]
+}

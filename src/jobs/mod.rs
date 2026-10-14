@@ -214,6 +214,10 @@ const SCHEDULED: &[(&str, Duration)] = &[
         crate::do_not_disturb::PROCESS_SHELVED_NOTIFICATIONS,
         Duration::from_secs(300),
     ),
+    (
+        crate::notification_schedule::PROCESS_USER_NOTIFICATION_SCHEDULES,
+        Duration::from_secs(24 * 3600),
+    ),
     (housekeeping::UNSILENCE_USERS, Duration::from_secs(15 * 60)),
     (
         housekeeping::PURGE_EXPIRED_IGNORED_USERS,
@@ -391,6 +395,9 @@ pub async fn run_scheduled(state: &AppState, name: &str) -> Result<(), AppError>
         bookmark_reminders::JOB => bookmark_reminders::run(state).await,
         crate::do_not_disturb::PROCESS_SHELVED_NOTIFICATIONS => {
             crate::do_not_disturb::process_shelved_notifications(state).await
+        }
+        crate::notification_schedule::PROCESS_USER_NOTIFICATION_SCHEDULES => {
+            crate::notification_schedule::process_user_notification_schedules(state).await
         }
         housekeeping::UNSILENCE_USERS => housekeeping::unsilence_users(state).await,
         housekeeping::PURGE_EXPIRED_IGNORED_USERS => {
