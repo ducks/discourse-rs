@@ -22,6 +22,10 @@ pub struct AdminViewer {
     pub has_unseen_features: bool,
     pub has_new_upcoming_changes: bool,
     pub can_run_design_wizard: bool,
+    pub id: i64,
+    pub staff: bool,
+    pub can_invite_to_forum: bool,
+    pub can_see_ip: bool,
 }
 
 impl AdminViewer {
@@ -34,6 +38,10 @@ impl AdminViewer {
             has_unseen_features: flag("has_unseen_features"),
             has_new_upcoming_changes: flag("has_new_upcoming_changes"),
             can_run_design_wizard: flag("can_run_design_wizard"),
+            id: user["id"].as_i64().unwrap_or(0),
+            staff: flag("staff"),
+            can_invite_to_forum: flag("can_invite_to_forum"),
+            can_see_ip: flag("can_see_ip"),
         }
     }
 }
@@ -51,7 +59,7 @@ pub fn t(i18n: &I18n, key: &str) -> String {
     t_opt(i18n, key).unwrap_or_else(|| format!("[en.{key}]"))
 }
 
-fn t_opt(i18n: &I18n, key: &str) -> Option<String> {
+pub fn t_opt(i18n: &I18n, key: &str) -> Option<String> {
     i18n.t(&format!("js.{key}"))
         .or_else(|| i18n.t(&format!("admin_js.{key}")))
         .map(str::to_string)
@@ -1183,7 +1191,7 @@ impl PageHeader<'_> {
             ));
             if let Some(url) = &self.learn_more_url {
                 out.push_str(&format!(
-                    "<span class=\"d-page-header__learn-more\">{}</span>",
+                    " <span class=\"d-page-header__learn-more\">{}</span>",
                     t_with(cx.i18n, "learn_more_with_link", &[("url", url)])
                 ));
             }
@@ -1191,12 +1199,65 @@ impl PageHeader<'_> {
         }
         if let Some(tabs) = &self.tabs {
             out.push_str(&format!(
-                "<div class=\"d-nav-submenu\"><div class=\"horizontal-overflow-nav d-nav-submenu__tabs\"><ul class=\"nav-pills action-list\">{tabs}</ul></div></div>"
+                "<div class=\"d-nav-submenu\"><nav class=\"horizontal-overflow-nav\"><div class=\"d-overflow-controls --owned-scroller horizontal-overflow-nav__controls\"><ul class=\"nav-pills action-list d-nav-submenu__tabs\" data-d-scroll-axis=\"horizontal\">{tabs}</ul></div></nav></div>"
             ));
         }
         out.push_str("</div>");
         out
     }
+}
+
+/// A page header's or subheader's action (DPageActionButton).
+pub struct PageAction {
+    /// The action's own classes (what the page's script finds it by).
+    pub class: String,
+    /// primary, default or danger.
+    pub kind: &'static str,
+    pub label: String,
+    pub title: Option<String>,
+}
+
+/// The actions block of DPageHeader (`identifier` d-page-header) or
+/// DPageSubheader (d-page-subheader): the buttons, or in the mobile view
+/// (collapseActionsOnMobile) the More options DMenu trigger with the
+/// buttons as DPageActionListItems in its template, which admin.js opens;
+/// an item clicks the button it stands for, kept hidden beside.
+pub fn page_actions(cx: &AdminCx, identifier: &str, actions: &[PageAction]) -> String {
+    let buttons: String = actions
+        .iter()
+        .map(|a| {
+            format!(
+                "<button class=\"btn d-page-action-button btn-small btn-{} {}\"{} type=\"button\"><span class=\"d-button-label\">{}</span></button>",
+                a.kind,
+                escape(&a.class),
+                a.title
+                    .as_ref()
+                    .map(|t| format!(" title=\"{}\"", escape(t)))
+                    .unwrap_or_default(),
+                escape(&a.label)
+            )
+        })
+        .collect();
+    if actions.is_empty() || !crate::mobile::mobile_view() {
+        return buttons;
+    }
+    let items: String = actions
+        .iter()
+        .map(|a| {
+            format!(
+                "<li class=\"dropdown-menu__item d-page-action-list-item\"><button class=\"btn btn-text d-page-action-button btn-small btn-transparent{}\" type=\"button\" data-page-action=\"{}\"><span class=\"d-button-label\">{}</span></button></li>",
+                if a.kind == "danger" { " btn-danger" } else { "" },
+                escape(&a.class),
+                escape(&a.label)
+            )
+        })
+        .collect();
+    let more = t(cx.i18n, "more_options");
+    format!(
+        "<button aria-expanded=\"false\" class=\"btn no-text btn-icon fk-d-menu__trigger {identifier}-mobile-actions-trigger btn-small btn-default\" title=\"{}\" data-identifier=\"{identifier}-mobile-actions\" data-trigger=\"\" type=\"button\">{}</button><template class=\"d-page-mobile-actions\"><ul class=\"dropdown-menu {identifier}__mobile-actions\">{items}</ul></template><div hidden>{buttons}</div>",
+        escape(&more),
+        icon("ellipsis-vertical", None)
+    )
 }
 
 /// templates/admin.gjs around the route's content, with the classes

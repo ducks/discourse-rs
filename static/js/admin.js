@@ -68,11 +68,58 @@
     template.replaceWith(kbd);
   }
 
+  // HorizontalScrollSyncWrapper of the admin tables: a scrollbar above the
+  // table, as wide as it, while its bottom is out of view; the two scroll
+  // together.
+  function scrollSync(container) {
+    var content = container.querySelector(".horizontal-scroll-sync__content");
+    var top = container.querySelector(".horizontal-scroll-sync__top-scroll");
+    var fake = container.querySelector(".horizontal-scroll-sync__fake-content");
+    if (!content || !top || !fake) {
+      return null;
+    }
+    function syncWidth() {
+      fake.style.width = content.scrollWidth + "px";
+      fake.style.height = "12px";
+    }
+    content.addEventListener("scroll", function () {
+      top.scrollLeft = content.scrollLeft;
+    }, { passive: true });
+    top.addEventListener("scroll", function () {
+      content.scrollLeft = top.scrollLeft;
+    }, { passive: true });
+    var observer = new IntersectionObserver(function (entries) {
+      var entry = entries[0];
+      if (entry.boundingClientRect.bottom < entry.rootBounds.height) {
+        fake.style.height = "0";
+      } else {
+        syncWidth();
+      }
+    }, { root: null, threshold: 0 });
+    observer.observe(content);
+    syncWidth();
+    return observer;
+  }
+
   Discourse.onPage(function () {
     document.querySelectorAll(".admin-panel").forEach(function (panel) {
       shortcutHint(panel);
       syncToggle(panel);
     });
+    var observers = [];
+    document
+      .querySelectorAll(".admin-contents .horizontal-scroll-sync__container")
+      .forEach(function (container) {
+        var observer = scrollSync(container);
+        if (observer) {
+          observers.push(observer);
+        }
+      });
+    return function () {
+      observers.forEach(function (o) {
+        o.disconnect();
+      });
+    };
   });
 
   document.addEventListener("click", function (event) {
@@ -108,6 +155,40 @@
     if (event.target.closest(".sidebar-section-header-collapsable")) {
       // sidebar.js toggled the section first.
       syncToggle(panel);
+    }
+  });
+
+  // DPageHeader's and DPageSubheader's More options in the mobile view:
+  // the actions as a menu, each item clicking the button it stands for.
+  document.addEventListener("click", function (event) {
+    var trigger = event.target.closest(
+      ".d-page-header-mobile-actions-trigger, .d-page-subheader-mobile-actions-trigger"
+    );
+    if (trigger) {
+      var template = trigger.parentElement.querySelector("template.d-page-mobile-actions");
+      var hidden = trigger.parentElement.querySelector("div[hidden]");
+      if (!template || !Discourse.float) {
+        return;
+      }
+      var content = template.content.firstElementChild.cloneNode(true);
+      var menu = Discourse.float.menu(trigger, {
+        identifier: trigger.dataset.identifier,
+        content: content,
+      });
+      content.addEventListener("click", function (e) {
+        var item = e.target.closest("[data-page-action]");
+        if (!item) {
+          return;
+        }
+        if (menu && menu.close) {
+          menu.close();
+        }
+        var cls = item.dataset.pageAction.split(" ")[0];
+        var button = hidden && hidden.querySelector("." + cls);
+        if (button) {
+          button.click();
+        }
+      });
     }
   });
 

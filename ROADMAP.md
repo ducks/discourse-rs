@@ -640,11 +640,31 @@ then by what running a forum needs (milestone 6). Briefs:
     report modes other than the charts in a card, the design wizard
     (90f) and the admin search (90g9); not drawn: the setting links'
     rewrite to their config pages (90g9) and the sidebar footer's
-    keyboard shortcuts, as on the forum's sidebar), 90g2. `feat/admin-shell-users` M (/admin/users/list/:filter
-    with its search, ordering and bulk select, /admin/users/:id/:username
-    with its actions: trust level, groups, suspend and silence, activate,
-    approve, log out, grant and revoke moderation and admin, delete,
-    anonymize, merge, impersonate; badges and TL3 requirements tabs),
+    keyboard shortcuts, as on the forum's sidebar), 90g2.
+    ~~`feat/admin-shell-users`~~ (done) M (/admin/users and /admin/users/list
+    sent on to the active list; /admin/users/list/:query for every tab
+    from the index's users: the header with its actions and tabs (DMenu
+    in the mobile view), Show emails, DFilterControls with the staff
+    list's account type and the new list's activation, the sortable
+    DResponsiveTable with the silenced and suspended lists' reasons, the
+    empty states, DLoadMore's next pages, bulk select; the state the
+    controller keeps is the URL's query; /admin/users/:id/:username from
+    the show document: details, user fields, permissions, groups,
+    activity, DiscourseConnect, exports and the danger controls, with
+    log out, editing the name and title, activate, deactivate, approve,
+    grant and revoke admin and moderation, the trust level and its lock,
+    unsuspend, unsilence, clearing the penalty history, the primary
+    group, impersonate, anonymize and delete working through the JSON
+    endpoints, and the dialog service they confirm with. Refused: the
+    settings tab (AdminAreaSettings, 90g3), the user's badges and TL3
+    requirements tabs. Left, saying so when used: the send invites
+    modal, the user list export, the bulk suspend and delete
+    confirmations, changing the username, revealing the email and the
+    associated accounts, resetting the bounce score, the activation
+    email, the IP lookup, disabling two-factor, the suspend, silence,
+    upcoming changes and merge modals, the custom groups' picker,
+    deleting every post, the archive export, deleting the
+    DiscourseConnect record),
     90g3. `feat/admin-shell-site-settings` L (/admin/site_settings and
     /admin/site_settings/category/:id: the categories, the filter, every
     setting type's editor, saving through PUT /admin/site_settings, the

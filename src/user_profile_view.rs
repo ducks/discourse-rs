@@ -133,7 +133,7 @@ fn s(v: &Value) -> &str {
 }
 
 /// `dNumber`: the short form, titled with the full number when they differ.
-fn number(cx: &ListContext, n: i64) -> String {
+pub(crate) fn number(cx: &ListContext, n: i64) -> String {
     let short = if n > 999_999 {
         t_with(
             cx,

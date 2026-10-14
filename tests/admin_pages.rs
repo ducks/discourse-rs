@@ -76,8 +76,15 @@ impl Client {
             }
         }
         let status = response.status();
+        let location = response
+            .headers()
+            .get(header::LOCATION)
+            .and_then(|v| v.to_str().ok())
+            .map(str::to_string);
         let bytes = response.into_body().collect().await.unwrap().to_bytes();
-        (status, String::from_utf8_lossy(&bytes).into_owned())
+        let body = String::from_utf8_lossy(&bytes).into_owned();
+        // A redirect's location, else the body.
+        (status, location.unwrap_or(body))
     }
 
     async fn logged_in(state: AppState, username: &str) -> Client {
@@ -262,5 +269,136 @@ async fn the_legacy_dashboard_is_refused() {
     set_setting(&db.pool, "dashboard_improvements", BOOL, "f").await;
     let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
     let (status, _) = Client::logged_in(st, "admin").await.page("/admin").await;
+    assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR);
+}
+
+#[tokio::test]
+async fn the_users_index_goes_to_the_active_list() {
+    let db = TestDb::new().await;
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st, "admin").await;
+    for path in ["/admin/users", "/admin/users/list"] {
+        let (status, location) = admin.page(path).await;
+        assert_eq!(status, StatusCode::SEE_OTHER, "{path}");
+        assert_eq!(location, "/admin/users/list/active");
+    }
+    // The JSON stays the index's.
+    let (status, body) = admin
+        .send(Method::GET, "/admin/users/list/active", "", true)
+        .await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(body.starts_with("[{\"id\":"), "{body}");
+}
+
+#[tokio::test]
+async fn the_users_list_page() {
+    let db = TestDb::new().await;
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st, "admin").await;
+    let (status, html) = admin.page("/admin/users/list/active").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(html.contains("<title>Users - Admin - "));
+    assert!(html.contains("<div class=\"admin-contents admin-users admin-users-list\">"));
+    assert!(html.contains("data-link-name=\"admin_users\" href=\"/admin/users\">"));
+    assert!(html.contains("<a class=\"active sidebar-section-link sidebar-row admin-sidebar-nav-link\" data-link-name=\"admin_users\""));
+    // The header: its actions, description and tabs.
+    assert!(html.contains("<button class=\"btn d-page-action-button btn-small btn-primary admin-users__header-export-users\" title=\"Export full user list in CSV format.\" type=\"button\"><span class=\"d-button-label\">Export</span></button>"));
+    assert!(html.contains("<span class=\"d-page-header__learn-more\"><a href='https://meta.discourse.org/t/accessing-a-user-s-admin-page/311859' target='_blank'>Learn more…</a></span>"));
+    assert!(html.contains("<li class=\"active admin-users-tabs__active\"><a class=\"active\" href=\"/admin/users/list/active\">Active</a></li>"));
+    assert!(html.contains(
+        "<li class=\"admin-users-tabs__staff\"><a href=\"/admin/users/list/staff\">Staff</a></li>"
+    ));
+    // The list.
+    assert!(html.contains("<h2 class=\"d-page-subheader__title\">Active users</h2>"));
+    assert!(html.contains("admin-users__subheader-show-emails"));
+    assert!(html.contains("class=\"directory-table users-list active\" role=\"table\" style=\"grid-template-columns: minmax(min-content, 2fr) repeat(7, minmax(min-content, 1fr))\""));
+    assert!(html.contains("<a href=\"/admin/users/1/admin\">admin</a>"));
+    assert!(html.contains("<span class=\"svg-icon-title\" title=\"Discourse Admin\">"));
+    assert!(html.contains("/assets/admin-users.js?v="));
+    // The filter and order come from the URL.
+    let (_, html) = admin
+        .page("/admin/users/list/active?filter=user1&order=username&asc=true")
+        .await;
+    assert!(html.contains("value=\"user1\""), "{html}");
+    assert!(html.contains("<a href=\"/admin/users/3/user1\">user1</a>"));
+    assert!(!html.contains("<a href=\"/admin/users/1/admin\">admin</a>"));
+    assert!(html.contains("aria-sort=\"ascending\" role=\"columnheader\" data-order=\"username\""));
+    // Showing emails adds their column.
+    let (_, html) = admin
+        .page("/admin/users/list/active?show_emails=true")
+        .await;
+    assert!(
+        html.contains("repeat(8, minmax(min-content, 1fr))"),
+        "{html}"
+    );
+    assert!(html.contains("admin-users__subheader-hide-emails"));
+}
+
+#[tokio::test]
+async fn the_users_lists_filters_and_empty_states() {
+    let db = TestDb::new().await;
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st, "admin").await;
+    let (_, html) = admin.page("/admin/users/list/staff").await;
+    assert!(html.contains("<select aria-label=\"Human accounts\" class=\"d-filter-controls__dropdown d-native-select\">"), "{html}");
+    let (_, html) = admin.page("/admin/users/list/staff?account_type=all").await;
+    assert!(html.contains("<select aria-label=\"All accounts\" class=\"d-filter-controls__dropdown --active d-native-select\">"), "{html}");
+    assert!(html.contains("<a href=\"/admin/users/-1/system\">system</a>"));
+    let (_, html) = admin.page("/admin/users/list/suspended").await;
+    assert!(
+        html.contains("<p class=\"admin-users-list__no-results\">No results found.</p>"),
+        "{html}"
+    );
+    let (_, html) = admin
+        .page("/admin/users/list/active?filter=nobody-at-all")
+        .await;
+    assert!(
+        html.contains("<div class=\"d-filter-controls__no-results\"><p>No results found.</p>"),
+        "{html}"
+    );
+}
+
+#[tokio::test]
+async fn a_users_admin_page() {
+    let db = TestDb::new().await;
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st, "admin").await;
+    let (status, html) = admin.page("/admin/users/3/user1").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(html.contains("<title>user1 - Users - Admin - "));
+    assert!(html.contains("<div class=\"admin-contents admin-users admin-user\" data-user-id=\"3\" data-username=\"user1\">"));
+    assert!(html.contains("<a class=\"btn btn-default\" href=\"/u/user1\">"));
+    assert!(html.contains("<div class=\"display-row username\" data-editable=\"username\"><div class=\"field\">Username</div><div class=\"value\"><a class=\"inline-editable-field\" href=\"\"><span>user1</span></a></div>"));
+    // Another member's email is revealed on request.
+    assert!(html.contains("<span class=\"d-button-label\">Show</span>"));
+    assert!(html.contains("<h1>Permissions</h1>"));
+    assert!(html.contains("data-name=\"2: member\" data-value=\"2\""));
+    assert!(html.contains("Grant Moderation"));
+    assert!(
+        html.contains(
+            "<button class=\"btn btn-icon-text btn-danger suspend-user\" type=\"button\">"
+        )
+    );
+    assert!(html.contains("<h1>Groups</h1>"));
+    assert!(html.contains("<a href=\"/g/trust_level_0\">trust_level_0</a>"));
+    assert!(html.contains("<h1>Activity</h1>"));
+    assert!(html.contains("<h1>User exports</h1>"));
+    assert!(html.contains("btn-impersonate"));
+    assert!(html.contains(
+        "<details class=\"select-kit single-select dropdown-select-box btn-user-delete\">"
+    ));
+    assert!(html.contains("<script type=\"application/json\" id=\"admin-user-strings\">"));
+    // An admin's own page shows its email; admins can't be deleted.
+    let (_, html) = admin.page("/admin/users/1/admin").await;
+    assert!(
+        html.contains("<a href=\"mailto:admin@example.com\">admin@example.com</a>"),
+        "{html}"
+    );
+    assert!(html.contains("<span class=\"delete-explanation\">"));
+    // Nobody by that id.
+    let (status, _) = admin.page("/admin/users/999999/nobody").await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+    // Its tabs are not ported.
+    let (status, _) = admin.page("/admin/users/3/user1/badges").await;
     assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR);
 }

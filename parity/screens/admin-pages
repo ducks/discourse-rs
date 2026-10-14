@@ -2,3 +2,10 @@
 # Masked: the status block's relative times and the storage's free space,
 # which the reference reads from its own disk.
 /admin as=admin wait=4000 mask=.db-system__block.--status,.db-system__block.--storage>.db-system__headline>.db-system__label
+# The users pages (90g2). Masked: the times the reference's own visits move.
+/admin/users/list/active as=admin mask=.directory-table__cell.last-seen
+/admin/users/list/staff as=admin mask=.directory-table__cell.last-seen
+/admin/users/list/new as=admin mask=.directory-table__cell.last-seen
+/admin/users/list/suspended as=admin
+/admin/users/1/admin as=admin mask=.relative-date
+/admin/users/3/user1 as=admin mask=.relative-date
