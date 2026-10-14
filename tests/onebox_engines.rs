@@ -119,3 +119,25 @@ fn processes_previews_like_rails() {
     }
     assert!(failures.is_empty(), "{}", failures.join("\n"));
 }
+
+/// What Onebox.preview gives: processed and sanitized.
+#[test]
+fn previews_like_rails() {
+    let rec = recording();
+    let regexes = iframe_regexes(&rec["settings"]);
+    let mut failures = Vec::new();
+    for case in rec["previews"].as_array().unwrap() {
+        let url = case["url"].as_str().unwrap();
+        for (raw, done) in [("raw", "html"), ("raw_placeholder", "placeholder")] {
+            let ours = discourse_rs::onebox::preview::finish(case[raw].as_str().unwrap(), &regexes)
+                .unwrap_or_else(|e| format!("refused: {}", e.0));
+            if ours != case[done].as_str().unwrap() {
+                failures.push(format!(
+                    "{url} [{done}]\n  ours  {ours:?}\n  rails {}",
+                    case[done]
+                ));
+            }
+        }
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+}

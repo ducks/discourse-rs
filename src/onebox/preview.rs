@@ -33,9 +33,8 @@ pub fn process_html(html: &str) -> String {
 
 /// `Preview#to_s` / `#placeholder_html` after the engine: processed, then
 /// sanitized with DISCOURSE_ONEBOX and the iframe allowlist.
-pub fn finish(html: &str, _allowed_iframes: &[regex::Regex]) -> Result<String, crate::Unsupported> {
-    let _processed = process_html(html);
-    Err(crate::Unsupported(
-        "sanitizing onebox HTML (the Sanitize gem)",
-    ))
+pub fn finish(html: &str, allowed_iframes: &[regex::Regex]) -> Result<String, crate::Unsupported> {
+    let config = crate::sanitize::onebox_config(Some(allowed_iframes.to_vec()));
+    crate::sanitize::fragment(&process_html(html), &config)
+        .map_err(|_| crate::Unsupported("onebox HTML past Gumbo's limits"))
 }

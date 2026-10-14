@@ -377,6 +377,20 @@ fn google_meet(url: &str, ctx: &Ctx) -> Result<Html, Unsupported> {
     })
 }
 
+/// The engines `render` ports.
+pub const PORTED: &[&str] = &[
+    "AudioOnebox",
+    "VideoOnebox",
+    "ImageOnebox",
+    "TwitchClipsOnebox",
+    "TwitchStreamOnebox",
+    "TwitchVideoOnebox",
+    "YoukuOnebox",
+    "TypeformOnebox",
+    "GoogleCalendarOnebox",
+    "GoogleMeetOnebox",
+];
+
 /// `Onebox::Engine#to_html` and `#placeholder_html` for the engine that
 /// handles the URL; refused for an engine that fetches.
 pub fn render(engine: &Engine, url: &str, ctx: &Ctx) -> Result<Html, Unsupported> {

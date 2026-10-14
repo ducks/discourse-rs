@@ -43,8 +43,14 @@ pub async fn invalidate(conn: &mut PgConnection, url: &str) -> Result<(), AppErr
 }
 
 fn setting_list(site: &Site, name: &str) -> Result<Vec<String>, AppError> {
-    Ok(site
-        .settings
+    settings_list(site.settings, name)
+}
+
+fn settings_list(
+    settings: &crate::site_settings::SiteSettings,
+    name: &str,
+) -> Result<Vec<String>, AppError> {
+    Ok(settings
         .get(name)?
         .to_s()
         .split('|')
@@ -54,12 +60,14 @@ fn setting_list(site: &Site, name: &str) -> Result<Vec<String>, AppError> {
 }
 
 /// `Oneboxer.allowed_iframe_origins`
-pub fn allowed_iframe_origins(site: &Site) -> Result<Vec<String>, AppError> {
-    let mut allowed = setting_list(site, "allowed_onebox_iframes")?;
+pub fn allowed_iframe_origins(
+    settings: &crate::site_settings::SiteSettings,
+) -> Result<Vec<String>, AppError> {
+    let mut allowed = settings_list(settings, "allowed_onebox_iframes")?;
     if allowed.iter().any(|o| o == "*") {
         allowed = all_iframe_origins();
     }
-    allowed.extend(setting_list(site, "allowed_iframes")?);
+    allowed.extend(settings_list(settings, "allowed_iframes")?);
     Ok(allowed)
 }
 
@@ -251,7 +259,7 @@ async fn compute(
             return Ok(Computed::Onebox(Onebox::default()));
         };
         let final_url = uri.to_s();
-        let regexes = origins_to_regexes(&allowed_iframe_origins(site)?);
+        let regexes = origins_to_regexes(&allowed_iframe_origins(s)?);
         let result = match oneboxed(&final_url, resolution.content_type.as_deref(), &regexes) {
             None => Onebox::default(),
             Some(engine) => {

@@ -1091,12 +1091,14 @@ async fn refuse_censored(conn: &mut PgConnection) -> Result<(), AppError> {
 /// inline oneboxes of anything but the site's topics.
 pub fn refuse_unported(
     links: &[(String, bool)],
-    hostname: &str,
+    urls: &Urls,
     base_path: &str,
-) -> Result<(), Unsupported> {
+) -> Result<(), AppError> {
+    let hostname = &urls.current_hostname()?;
+    let iframes = matcher::origins_to_regexes(&external::allowed_iframe_origins(urls.settings)?);
     for (url, inline) in links {
         if !url.is_ascii() || url.chars().any(char::is_whitespace) {
-            return Err(Unsupported("onebox URLs that need encoding"));
+            return Err(Unsupported("onebox URLs that need encoding").into());
         }
         if *inline {
             // A topic's title, or a page's crawled (RetrieveTitle), except
@@ -1105,14 +1107,18 @@ pub fn refuse_unported(
             if matches!(host.as_deref(), Some("github.com" | "meet.google.com")) {
                 return Err(Unsupported(
                     "inline oneboxes of GitHub and Google Meet links (onebox engines)",
-                ));
+                )
+                .into());
             }
             continue;
         }
-        if route_for(url, hostname, base_path)?.is_none() {
-            return Err(Unsupported(
-                "oneboxes of other sites (fetched from the network)",
-            ));
+        // Another site's: only the engines that render from the URL (a
+        // redirect elsewhere is refused when the post is processed).
+        if route_for(url, hostname, base_path)?.is_none()
+            && !matcher::oneboxed(url, None, &iframes)
+                .is_some_and(|e| engines::PORTED.contains(&e.name))
+        {
+            return Err(Unsupported("oneboxes of other sites that fetch the page").into());
         }
     }
     Ok(())
