@@ -1955,7 +1955,7 @@ async fn the_composer_preview_loads_the_renderer_and_settings() {
         wasm_url.starts_with("/assets/markdown.wasm?v="),
         "{wasm_url}"
     );
-    assert!(page.contains(r#"data-preview-settings="/assets/markdown-settings.json" data-label-show-preview="show preview" data-label-hide-preview="hide preview""#));
+    assert!(page.contains(r#"data-preview-settings="/assets/markdown-settings.json" data-max-oneboxes="50" data-label-show-preview="show preview" data-label-hide-preview="hide preview""#));
 
     let wasm = client.get(&wasm_url).await;
     assert_eq!(wasm.status, StatusCode::OK);
