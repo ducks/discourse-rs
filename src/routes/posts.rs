@@ -157,6 +157,19 @@ pub async fn create(
             Json(json!({"action": action, "errors": errors})),
         )
             .into_response()),
+        Outcome::InvalidRaw(errors) => Ok((
+            StatusCode::UNPROCESSABLE_ENTITY,
+            Json(json!({"action": "created_post", "errors": [errors]})),
+        )
+            .into_response()),
+        Outcome::Enqueued(enqueued) => {
+            let status = if enqueued.errors.is_empty() {
+                StatusCode::OK
+            } else {
+                StatusCode::UNPROCESSABLE_ENTITY
+            };
+            Ok((status, Json(enqueued.json())).into_response())
+        }
         Outcome::Forbidden => Ok(super::search::invalid_access(&state)),
         Outcome::InvalidParameter(name) => Ok(super::search::invalid_parameters(&state, name)),
         Outcome::RateLimited(refused) => Ok(refused.into_response(&state.i18n)),

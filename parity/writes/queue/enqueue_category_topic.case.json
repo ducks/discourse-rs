@@ -1,0 +1,19 @@
+{
+  "user": "user1",
+  "setup": [
+    "UPDATE category_settings SET topic_posting_review_mode = 1 WHERE category_id = 4"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A new topic that waits in the review queue",
+        "raw": "The first post of a topic that waits in the review queue for staff.",
+        "category": 4,
+        "typing_duration_msecs": 4000,
+        "composer_open_duration_msecs": 12000
+      }
+    }
+  ]
+}

@@ -86,6 +86,13 @@ pub enum Outcome {
     },
     /// `NewPostResult` errors: a 422 with `{action: "create_post", errors}`.
     Invalid(Vec<String>),
+    /// A post for the review queue whose raw PostValidator refused: a 422
+    /// with `{action: "created_post", errors: [errors[:raw]]}` (the
+    /// messages as one error, an array).
+    InvalidRaw(Vec<String>),
+    /// Sent to the review queue (`action: "enqueued"`): 200, or 422 when
+    /// the creator refused it.
+    Enqueued(super::enqueue::Enqueued),
     /// A NewPostManager handler's failed result: a 422 with its action.
     Refused {
         action: &'static str,
@@ -260,8 +267,11 @@ pub async fn create(
     } else {
         None
     };
+    // TopicCreator's guardian check, after the review queue's (which
+    // answers its own way for a post it would queue).
+    let mut forbidden = false;
     if new_topic && !new_pm && !args.reviewed_queued_post {
-        let allowed = match category_id {
+        forbidden = !match category_id {
             None => guardian.can_create_topic(&mut conn, s).await?,
             Some(id) => {
                 guardian.can_create_topic(&mut conn, s).await?
@@ -271,9 +281,6 @@ pub async fn create(
                         .contains(&id)
             }
         };
-        if !allowed {
-            return Ok(Outcome::Forbidden);
-        }
     }
 
     // The reply's topic, before the review-queue check reads its category.
@@ -299,16 +306,54 @@ pub async fn create(
             return Err(Unsupported("approving a staged user's queued post").into());
         }
     } else {
-        validate::refuse_unported(
-            &mut conn,
-            ctx,
-            guardian,
-            new_topic,
-            category_id.or(reply_topic.as_ref().and_then(|t| t.category_id)),
-            args.typing_duration_msecs.unwrap_or(0),
-            args.first_post_checks,
-        )
-        .await?;
+        validate::refuse_watched_words(&mut conn).await?;
+        validate::refuse_unported_author(guardian)?;
+        // NewPostManager#perform: messages are never queued; anything else
+        // post_needs_approval? finds a reason for goes to the queue.
+        if !private_message {
+            let approval = validate::post_needs_approval(
+                &mut conn,
+                ctx,
+                guardian,
+                &validate::ApprovalArgs {
+                    raw: &args.raw,
+                    title: args.title.as_deref(),
+                    topic_id: args.topic_id,
+                    category_id,
+                    typing_duration_msecs: args.typing_duration_msecs.unwrap_or(0),
+                    first_post_checks: args.first_post_checks,
+                },
+            )
+            .await?;
+            if let Some(reason) = approval.reason {
+                if forbidden {
+                    // can_create_topic_on_category? fails with
+                    // js.errors.reasons.forbidden, a client string.
+                    return Err(Unsupported("enqueueing a topic its author can't create").into());
+                }
+                drop(conn);
+                let topic = reply_topic.as_ref().map(|t| super::enqueue::QueueTopic {
+                    id: t.id,
+                    category_id: t.category_id,
+                    slow_mode_seconds: t.slow_mode_seconds,
+                });
+                return super::enqueue::enqueue(
+                    pool,
+                    ctx,
+                    guardian,
+                    &args,
+                    &approval,
+                    reason,
+                    category_id,
+                    topic.as_ref(),
+                    !polls.is_empty(),
+                )
+                .await;
+            }
+        }
+    }
+    if forbidden {
+        return Ok(Outcome::Forbidden);
     }
 
     // PostCreator#valid?

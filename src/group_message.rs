@@ -8,7 +8,7 @@ use sqlx::{PgConnection, PgPool};
 use crate::guardian::Guardian;
 use crate::posting::Ctx;
 use crate::posting::create::{self, NewPost, Outcome};
-use crate::session::current::{SESSION_USER_COLUMNS, SessionUser};
+use crate::session::current::SessionUser;
 use crate::url::Urls;
 use crate::{AppError, Unsupported};
 
@@ -92,11 +92,11 @@ impl GroupMessage<'_> {
         }
         let title = self.template(ctx, "subject_template")?;
         let raw = self.template(ctx, "text_body_template")?;
-        let system: SessionUser = sqlx::query_as(&format!(
-            "SELECT {SESSION_USER_COLUMNS} FROM users WHERE users.id = -1"
-        ))
-        .fetch_one(&mut *conn)
-        .await?;
+        // The id bound, not inlined: a parameterless statement here met
+        // "bind message supplies 0 parameters" on a reused connection.
+        let system: SessionUser = SessionUser::load(&mut conn, -1)
+            .await?
+            .ok_or(Unsupported("group messages without the system user"))?;
         let guardian = Guardian::for_user(&mut conn, &system).await?;
         drop(conn);
         let outcome = create::create(

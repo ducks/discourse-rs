@@ -1,0 +1,83 @@
+{
+  "name": "enqueue_reply_closed_topic",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "A reply that waits in the review queue before anyone else can read it.",
+        "typing_duration_msecs": 4000
+      }
+    }
+  ],
+  "started_at": "2026-10-14T04:46:25.883813",
+  "transaction_started_at": "2026-10-14T04:46:24.600933",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "action": "created_post",
+        "errors": [
+          "Something has gone wrong. Perhaps this topic was closed or deleted while you were looking at it?"
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "kjAgofZO+pS8unCt/NqhC0NURTw=",
+            "created_at": "2026-10-14T04:46:25.225195",
+            "rotated_at": "2026-10-14T04:46:25.223162",
+            "updated_at": "2026-10-14T04:46:25.225195",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "kjAgofZO+pS8unCt/NqhC0NURTw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T04:46:25.893785",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "kjAgofZO+pS8unCt/NqhC0NURTw=",
+            "created_at": "2026-10-14T04:46:25.225195",
+            "rotated_at": "2026-10-14T04:46:25.223162",
+            "updated_at": "2026-10-14T04:46:25.225195",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "kjAgofZO+pS8unCt/NqhC0NURTw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "approve_unless_allowed_groups": "1|2"
+  },
+  "setup": [
+    "UPDATE topics SET closed = TRUE WHERE id = 35"
+  ],
+  "recorded_from": {
+    "case": "0e26c20dee0e4d071f4ec5736d56b18d6db2bcb0fab8c66746703684b97cf044",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

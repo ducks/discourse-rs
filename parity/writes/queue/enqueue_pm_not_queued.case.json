@@ -1,0 +1,18 @@
+{
+  "user": "user0",
+  "settings": {
+    "approve_post_count": 5
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A private message the queue lets through",
+        "raw": "Private messages are never sent to the review queue by Rails.",
+        "archetype": "private_message",
+        "target_recipients": "user1"
+      }
+    }
+  ]
+}

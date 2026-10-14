@@ -545,18 +545,23 @@ impl TopicView<'_> {
                 .await?,
         );
         if self.guardian.is_authenticated() && viewer.queue_enabled {
-            let pending: Vec<(i64, NaiveDateTime)> = sqlx::query_as(
-                "SELECT id, created_at FROM reviewables WHERE type = 'ReviewableQueuedPost' AND status = 0 \
+            // TopicPendingPostSerializer: id, the payload's raw, created_at.
+            let pending: Vec<(i64, Option<String>, NaiveDateTime)> = sqlx::query_as(
+                "SELECT id, payload->>'raw', created_at FROM reviewables \
+                 WHERE type = 'ReviewableQueuedPost' AND status = 0 \
                  AND target_created_by_id = $1 AND topic_id = $2 ORDER BY created_at ASC",
             )
             .bind(self.guardian.user_id())
             .bind(topic.id)
             .fetch_all(&mut *self.conn)
             .await?;
-            if !pending.is_empty() {
-                return Err(Unsupported("pending queued posts (raw from payload)").into());
-            }
-            out.insert("pending_posts".into(), json!([]));
+            let pending: Vec<Value> = pending
+                .into_iter()
+                .map(|(id, raw, created_at)| {
+                    json!({"id": id, "raw": raw, "created_at": time_json(created_at)})
+                })
+                .collect();
+            out.insert("pending_posts".into(), Value::Array(pending));
         }
         out.insert(
             "bookmarks".into(),
@@ -805,16 +810,16 @@ impl TopicView<'_> {
         if watched {
             return Ok(true);
         }
+        // guardian.reply_posting_review_required?(topic.category), for a
+        // signed-in viewer (the only kind this is asked for).
         if let Some(category_id) = ctx.category_id {
-            let review: Option<bool> = sqlx::query_scalar(
-                "SELECT reply_posting_review_mode <> 0 FROM category_settings WHERE category_id = $1",
+            return Ok(crate::posting::validate::posting_review_required(
+                &mut *self.conn,
+                self.guardian,
+                category_id,
+                crate::posting::validate::REVIEW_REPLY,
             )
-            .bind(category_id)
-            .fetch_optional(&mut *self.conn)
-            .await?;
-            if review == Some(true) {
-                return Err(Unsupported("category reply posting review modes").into());
-            }
+            .await?);
         }
         Ok(false)
     }

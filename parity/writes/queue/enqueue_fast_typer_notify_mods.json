@@ -1,0 +1,1227 @@
+{
+  "name": "enqueue_fast_typer_notify_mods",
+  "user": "user3",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "A first post typed far too fast for a human to have written it.",
+        "typing_duration_msecs": 100
+      }
+    }
+  ],
+  "started_at": "2026-10-14T04:46:23.470465",
+  "transaction_started_at": "2026-10-14T04:46:22.046453",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "action": "enqueued",
+        "success": true,
+        "pending_count": 1,
+        "pending_post": {
+          "id": 1,
+          "raw": "A first post typed far too fast for a human to have written it.",
+          "created_at": "2026-10-14T04:46:23.546Z"
+        }
+      }
+    }
+  ],
+  "changes": {
+    "groups": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 2,
+            "name": "moderators",
+            "title": null,
+            "bio_raw": null,
+            "imap_ssl": null,
+            "automatic": true,
+            "full_name": "Moderators",
+            "imap_port": null,
+            "smtp_port": null,
+            "bio_cooked": null,
+            "created_at": "2026-07-25T05:58:06.795937",
+            "flair_icon": null,
+            "updated_at": "2026-07-25T05:58:06.80035",
+            "user_count": 1,
+            "flair_color": null,
+            "imap_server": null,
+            "public_exit": false,
+            "smtp_server": null,
+            "has_messages": false,
+            "imap_enabled": false,
+            "smtp_enabled": false,
+            "imap_last_uid": 0,
+            "primary_group": false,
+            "smtp_ssl_mode": 0,
+            "email_password": null,
+            "email_username": null,
+            "flair_bg_color": null,
+            "incoming_email": null,
+            "flair_upload_id": null,
+            "imap_last_error": null,
+            "imap_new_emails": null,
+            "imap_old_emails": null,
+            "imap_updated_at": null,
+            "smtp_updated_at": null,
+            "assignable_level": 0,
+            "email_from_alias": null,
+            "public_admission": false,
+            "visibility_level": 1,
+            "grant_trust_level": null,
+            "imap_mailbox_name": "",
+            "imap_uid_validity": 0,
+            "mentionable_level": 0,
+            "messageable_level": 99,
+            "imap_updated_by_id": null,
+            "publish_read_state": false,
+            "smtp_updated_by_id": null,
+            "members_visibility_level": 0,
+            "allow_membership_requests": false,
+            "default_notification_level": 2,
+            "membership_request_template": null,
+            "allow_unknown_sender_topic_replies": false,
+            "automatic_membership_email_domains": null
+          },
+          "after": {
+            "id": 2,
+            "name": "moderators",
+            "title": null,
+            "bio_raw": null,
+            "imap_ssl": null,
+            "automatic": true,
+            "full_name": "Moderators",
+            "imap_port": null,
+            "smtp_port": null,
+            "bio_cooked": null,
+            "created_at": "2026-07-25T05:58:06.795937",
+            "flair_icon": null,
+            "updated_at": "2026-07-25T05:58:06.80035",
+            "user_count": 1,
+            "flair_color": null,
+            "imap_server": null,
+            "public_exit": false,
+            "smtp_server": null,
+            "has_messages": true,
+            "imap_enabled": false,
+            "smtp_enabled": false,
+            "imap_last_uid": 0,
+            "primary_group": false,
+            "smtp_ssl_mode": 0,
+            "email_password": null,
+            "email_username": null,
+            "flair_bg_color": null,
+            "incoming_email": null,
+            "flair_upload_id": null,
+            "imap_last_error": null,
+            "imap_new_emails": null,
+            "imap_old_emails": null,
+            "imap_updated_at": null,
+            "smtp_updated_at": null,
+            "assignable_level": 0,
+            "email_from_alias": null,
+            "public_admission": false,
+            "visibility_level": 1,
+            "grant_trust_level": null,
+            "imap_mailbox_name": "",
+            "imap_uid_validity": 0,
+            "mentionable_level": 0,
+            "messageable_level": 99,
+            "imap_updated_by_id": null,
+            "publish_read_state": false,
+            "smtp_updated_by_id": null,
+            "members_visibility_level": 0,
+            "allow_membership_requests": false,
+            "default_notification_level": 2,
+            "membership_request_template": null,
+            "allow_unknown_sender_topic_replies": false,
+            "automatic_membership_email_domains": null
+          }
+        }
+      ]
+    },
+    "post_search_data": {
+      "inserted": [
+        {
+          "locale": "en",
+          "post_id": 53,
+          "version": 5,
+          "raw_data": "Hello, This is an automated message from Discourse to let you know that your account has been temporarily placed on hold as a precautionary measure. Please do continue to browse, but you won't be able to reply or create topics until a staff member reviews your most recent posts. We apologize for the inconvenience. For additional guidance, refer to our community guidelines .",
+          "search_data": "'abl':40 'account':1A,19 'addit':61 'apolog':56 'autom':9 'brows':34 'communiti':66 'continu':32 'creat':44 'discours':12 'guidanc':62 'guidelin':67 'hello':5 'hold':4A,25 'inconveni':59 'know':16 'let':14 'measur':29 'member':49 'messag':10 'place':23 'pleas':30 'post':54 'precautionari':28 'recent':53 'refer':63 'repli':42 'review':50 'staff':48 'temporarili':2A,22 'topic':45 'won':37",
+          "private_message": true
+        },
+        {
+          "locale": "en",
+          "post_id": 54,
+          "version": 5,
+          "raw_data": "This is an automated message. The new user /u/user3 user3 was automatically silenced. Reason - New user typed too fast Please review the flags . If user3 was incorrectly silenced from posting, click the unsilence button on /u/user3 the admin page for this user . This threshold can be changed via the silence_new_user site settings.",
+          "search_data": "'/u/user3':16,43 'admin':45 'autom':11 'automat':19 'button':41 'chang':54 'click':38 'communiti':6A 'fast':26 'flag':7A,30 'incorrect':34 'messag':12 'new':1A,14,22,58 'page':46 'pleas':27 'post':37 'reason':21 'review':28 'set':61 'silenc':4A,20,35,57 'site':60 'threshold':51 'type':24 'unsil':40 'user':2A,15,23,49,59 'user3':3A,17,32 'via':55",
+          "private_message": true
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_stats": {
+      "inserted": [
+        {
+          "id": 52,
+          "post_id": 53,
+          "created_at": "2026-10-14T04:46:23.831477",
+          "updated_at": "2026-10-14T04:46:23.831477",
+          "drafts_saved": 0,
+          "writing_device": null,
+          "composer_version": null,
+          "typing_duration_msecs": 0,
+          "writing_device_user_agent": null,
+          "composer_open_duration_msecs": 0
+        },
+        {
+          "id": 53,
+          "post_id": 54,
+          "created_at": "2026-10-14T04:46:24.215413",
+          "updated_at": "2026-10-14T04:46:24.215413",
+          "drafts_saved": 0,
+          "writing_device": null,
+          "composer_version": null,
+          "typing_duration_msecs": 0,
+          "writing_device_user_agent": null,
+          "composer_open_duration_msecs": 0
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_timings": {
+      "inserted": [
+        {
+          "msecs": 5000,
+          "user_id": -1,
+          "topic_id": 45,
+          "post_number": 1
+        },
+        {
+          "msecs": 5000,
+          "user_id": -1,
+          "topic_id": 46,
+          "post_number": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "posts": {
+      "inserted": [
+        {
+          "id": 53,
+          "raw": "Hello,\n\nThis is an automated message from Discourse to let you know that your account has been temporarily placed on hold as a precautionary measure.\n\nPlease do continue to browse, but you won't be able to reply or create topics until a [staff member](http://localhost:3051/about) reviews your most recent posts. We apologize for the inconvenience.\n\nFor additional guidance, refer to our [community guidelines](http://localhost:3051/guidelines).",
+          "wiki": false,
+          "reads": 1,
+          "score": null,
+          "cooked": "<p>Hello,</p>\n<p>This is an automated message from Discourse to let you know that your account has been temporarily placed on hold as a precautionary measure.</p>\n<p>Please do continue to browse, but you won’t be able to reply or create topics until a <a href=\"http://localhost:3051/about\">staff member</a> reviews your most recent posts. We apologize for the inconvenience.</p>\n<p>For additional guidance, refer to our <a href=\"http://localhost:3051/guidelines\">community guidelines</a>.</p>",
+          "hidden": false,
+          "locale": null,
+          "user_id": -1,
+          "version": 1,
+          "baked_at": "2026-10-14T04:46:23.790627",
+          "topic_id": 45,
+          "hidden_at": null,
+          "post_type": 1,
+          "raw_email": null,
+          "via_email": false,
+          "created_at": "2026-10-14T04:46:23.790731",
+          "deleted_at": null,
+          "like_count": 0,
+          "like_score": 0,
+          "self_edits": 0,
+          "sort_order": 1,
+          "spam_count": 0,
+          "updated_at": "2026-10-14T04:46:23.790731",
+          "word_count": 71,
+          "action_code": null,
+          "cook_method": 1,
+          "edit_reason": null,
+          "post_number": 1,
+          "quote_count": 0,
+          "reply_count": 0,
+          "locked_by_id": null,
+          "percent_rank": 1,
+          "reply_quoted": false,
+          "user_deleted": false,
+          "baked_version": 2,
+          "deleted_by_id": null,
+          "illegal_count": 0,
+          "qa_vote_count": 0,
+          "bookmark_count": 0,
+          "last_editor_id": -1,
+          "public_version": 1,
+          "image_upload_id": null,
+          "last_version_at": "2026-10-14T04:46:23.826698",
+          "off_topic_count": 0,
+          "hidden_reason_id": null,
+          "reply_to_user_id": null,
+          "notify_user_count": 0,
+          "inappropriate_count": 0,
+          "incoming_link_count": 0,
+          "outbound_message_id": null,
+          "reply_to_post_number": null,
+          "notify_moderators_count": 0
+        },
+        {
+          "id": 54,
+          "raw": "This is an automated message.\n\nThe new user [user3](/u/user3) was automatically silenced.\n\nReason - New user typed too fast\n\nPlease [review the flags](http://localhost:3051/review). If user3 was incorrectly silenced from posting, click the unsilence button on [the admin page for this user](/u/user3).\n\nThis threshold can be changed via the `silence_new_user` site settings.",
+          "wiki": false,
+          "reads": 1,
+          "score": null,
+          "cooked": "<p>This is an automated message.</p>\n<p>The new user <a href=\"/u/user3\">user3</a> was automatically silenced.</p>\n<p>Reason - New user typed too fast</p>\n<p>Please <a href=\"http://localhost:3051/review\">review the flags</a>. If user3 was incorrectly silenced from posting, click the unsilence button on <a href=\"/u/user3\">the admin page for this user</a>.</p>\n<p>This threshold can be changed via the <code>silence_new_user</code> site settings.</p>",
+          "hidden": false,
+          "locale": null,
+          "user_id": -1,
+          "version": 1,
+          "baked_at": "2026-10-14T04:46:24.173441",
+          "topic_id": 46,
+          "hidden_at": null,
+          "post_type": 1,
+          "raw_email": null,
+          "via_email": false,
+          "created_at": "2026-10-14T04:46:24.173552",
+          "deleted_at": null,
+          "like_count": 0,
+          "like_score": 0,
+          "self_edits": 0,
+          "sort_order": 1,
+          "spam_count": 0,
+          "updated_at": "2026-10-14T04:46:24.173552",
+          "word_count": 58,
+          "action_code": null,
+          "cook_method": 1,
+          "edit_reason": null,
+          "post_number": 1,
+          "quote_count": 0,
+          "reply_count": 0,
+          "locked_by_id": null,
+          "percent_rank": 1,
+          "reply_quoted": false,
+          "user_deleted": false,
+          "baked_version": 2,
+          "deleted_by_id": null,
+          "illegal_count": 0,
+          "qa_vote_count": 0,
+          "bookmark_count": 0,
+          "last_editor_id": -1,
+          "public_version": 1,
+          "image_upload_id": null,
+          "last_version_at": "2026-10-14T04:46:24.211093",
+          "off_topic_count": 0,
+          "hidden_reason_id": null,
+          "reply_to_user_id": null,
+          "notify_user_count": 0,
+          "inappropriate_count": 0,
+          "incoming_link_count": 0,
+          "outbound_message_id": null,
+          "reply_to_post_number": null,
+          "notify_moderators_count": 0
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "reviewable_histories": {
+      "inserted": [
+        {
+          "id": 1,
+          "edited": null,
+          "status": 0,
+          "created_at": "2026-10-14T04:46:23.549786",
+          "updated_at": "2026-10-14T04:46:23.549786",
+          "created_by_id": -1,
+          "reviewable_id": 1,
+          "reviewable_history_type": 0
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "reviewable_scores": {
+      "inserted": [
+        {
+          "id": 1,
+          "score": 6,
+          "reason": "fast_typer",
+          "status": 0,
+          "context": null,
+          "user_id": -1,
+          "created_at": "2026-10-14T04:46:23.569376",
+          "updated_at": "2026-10-14T04:46:23.571481",
+          "reviewed_at": null,
+          "meta_topic_id": null,
+          "reviewable_id": 1,
+          "reviewed_by_id": null,
+          "take_action_bonus": 0,
+          "user_accuracy_bonus": 0,
+          "reviewable_score_type": 9
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "reviewables": {
+      "inserted": [
+        {
+          "id": 1,
+          "type": "ReviewableQueuedPost",
+          "score": 6,
+          "status": 0,
+          "payload": {
+            "raw": "A first post typed far too fast for a human to have written it.",
+            "tags": null,
+            "is_poll": true,
+            "typing_duration_msecs": 100
+          },
+          "version": 0,
+          "topic_id": 35,
+          "target_id": null,
+          "created_at": "2026-10-14T04:46:23.546587",
+          "updated_at": "2026-10-14T04:46:23.575807",
+          "category_id": 4,
+          "target_type": null,
+          "type_source": "core",
+          "force_review": true,
+          "latest_score": "2026-10-14T04:46:23.569376",
+          "created_by_id": -1,
+          "reject_reason": null,
+          "potential_spam": false,
+          "potentially_illegal": false,
+          "target_created_by_id": 5,
+          "reviewable_by_group_id": null,
+          "reviewable_by_moderator": true
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_allowed_groups": {
+      "inserted": [
+        {
+          "id": 1,
+          "group_id": 2,
+          "topic_id": 46
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_allowed_users": {
+      "inserted": [
+        {
+          "id": 9,
+          "user_id": 5,
+          "topic_id": 45,
+          "created_at": "2026-10-14T04:46:23.680291",
+          "updated_at": "2026-10-14T04:46:23.680291"
+        },
+        {
+          "id": 10,
+          "user_id": -1,
+          "topic_id": 45,
+          "created_at": "2026-10-14T04:46:23.686432",
+          "updated_at": "2026-10-14T04:46:23.686432"
+        },
+        {
+          "id": 11,
+          "user_id": -1,
+          "topic_id": 46,
+          "created_at": "2026-10-14T04:46:24.099658",
+          "updated_at": "2026-10-14T04:46:24.099658"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_links": {
+      "inserted": [
+        {
+          "id": 20,
+          "url": "http://localhost:3051/about",
+          "quote": false,
+          "title": null,
+          "clicks": 0,
+          "domain": "localhost",
+          "post_id": 53,
+          "user_id": -1,
+          "internal": true,
+          "topic_id": 45,
+          "extension": null,
+          "crawled_at": null,
+          "created_at": "2026-10-14T04:46:23.840149",
+          "reflection": false,
+          "updated_at": "2026-10-14T04:46:23.840149",
+          "link_post_id": null,
+          "link_topic_id": null
+        },
+        {
+          "id": 21,
+          "url": "http://localhost:3051/guidelines",
+          "quote": false,
+          "title": null,
+          "clicks": 0,
+          "domain": "localhost",
+          "post_id": 53,
+          "user_id": -1,
+          "internal": true,
+          "topic_id": 45,
+          "extension": null,
+          "crawled_at": null,
+          "created_at": "2026-10-14T04:46:23.845774",
+          "reflection": false,
+          "updated_at": "2026-10-14T04:46:23.845774",
+          "link_post_id": null,
+          "link_topic_id": null
+        },
+        {
+          "id": 22,
+          "url": "http://localhost:3051/review",
+          "quote": false,
+          "title": null,
+          "clicks": 0,
+          "domain": "localhost",
+          "post_id": 54,
+          "user_id": -1,
+          "internal": true,
+          "topic_id": 46,
+          "extension": null,
+          "crawled_at": null,
+          "created_at": "2026-10-14T04:46:24.229285",
+          "reflection": false,
+          "updated_at": "2026-10-14T04:46:24.229285",
+          "link_post_id": null,
+          "link_topic_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_search_data": {
+      "inserted": [
+        {
+          "locale": "en",
+          "version": 4,
+          "raw_data": "Account temporarily on hold Hello, This is an automated message from Discourse to let you know that your account has been temporarily placed on hold as a precautionary measure. Please do continue to browse, but you won't be able",
+          "topic_id": 45,
+          "search_data": "'abl':40B 'account':1A,19B 'autom':9B 'brows':34B 'continu':32B 'discours':12B 'hello':5B 'hold':4A,25B 'know':16B 'let':14B 'measur':29B 'messag':10B 'place':23B 'pleas':30B 'precautionari':28B 'temporarili':2A,22B 'won':37B"
+        },
+        {
+          "locale": "en",
+          "version": 4,
+          "raw_data": "New user user3 silenced by community flags This is an automated message. The new user /u/user3 user3 was automatically silenced. Reason - New user typed too fast Please review the flags . If user3 was incorrectly silenced from posting, click t",
+          "topic_id": 46,
+          "search_data": "'/u/user3':16B 'autom':11B 'automat':19B 'click':38B 'communiti':6A 'fast':26B 'flag':7A,30B 'incorrect':34B 'messag':12B 'new':1A,14B,22B 'pleas':27B 'post':37B 'reason':21B 'review':28B 'silenc':4A,20B,35B 'type':24B 'user':2A,15B,23B 'user3':3A,17B,32B"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_users": {
+      "inserted": [
+        {
+          "id": 56,
+          "liked": false,
+          "posted": false,
+          "user_id": 5,
+          "topic_id": 45,
+          "bookmarked": false,
+          "last_posted_at": null,
+          "last_visited_at": "2026-10-14T04:46:23.72295",
+          "first_visited_at": "2026-10-14T04:46:23.72295",
+          "cleared_pinned_at": null,
+          "notification_level": 3,
+          "total_msecs_viewed": 0,
+          "last_read_post_number": null,
+          "notifications_reason_id": 2,
+          "last_emailed_post_number": null,
+          "notifications_changed_at": "2026-10-14T04:46:23.720325"
+        },
+        {
+          "id": 55,
+          "liked": false,
+          "posted": true,
+          "user_id": -1,
+          "topic_id": 45,
+          "bookmarked": false,
+          "last_posted_at": "2026-10-14T04:46:23.855821",
+          "last_visited_at": "2026-10-14T04:46:23.703136",
+          "first_visited_at": "2026-10-14T04:46:23.703136",
+          "cleared_pinned_at": null,
+          "notification_level": 3,
+          "total_msecs_viewed": 0,
+          "last_read_post_number": 1,
+          "notifications_reason_id": 1,
+          "last_emailed_post_number": null,
+          "notifications_changed_at": "2026-10-14T04:46:23.701202"
+        },
+        {
+          "id": 58,
+          "liked": false,
+          "posted": false,
+          "user_id": 1,
+          "topic_id": 46,
+          "bookmarked": false,
+          "last_posted_at": null,
+          "last_visited_at": "2026-10-14T04:46:24.137198",
+          "first_visited_at": "2026-10-14T04:46:24.137198",
+          "cleared_pinned_at": null,
+          "notification_level": 2,
+          "total_msecs_viewed": 0,
+          "last_read_post_number": null,
+          "notifications_reason_id": 2,
+          "last_emailed_post_number": null,
+          "notifications_changed_at": "2026-10-14T04:46:24.134725"
+        },
+        {
+          "id": 57,
+          "liked": false,
+          "posted": true,
+          "user_id": -1,
+          "topic_id": 46,
+          "bookmarked": false,
+          "last_posted_at": "2026-10-14T04:46:24.236588",
+          "last_visited_at": "2026-10-14T04:46:24.1178",
+          "first_visited_at": "2026-10-14T04:46:24.1178",
+          "cleared_pinned_at": null,
+          "notification_level": 3,
+          "total_msecs_viewed": 0,
+          "last_read_post_number": 1,
+          "notifications_reason_id": 1,
+          "last_emailed_post_number": null,
+          "notifications_changed_at": "2026-10-14T04:46:24.115545"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topics": {
+      "inserted": [
+        {
+          "id": 45,
+          "slug": "account-temporarily-on-hold",
+          "score": null,
+          "title": "Account temporarily on hold",
+          "views": 0,
+          "closed": false,
+          "locale": null,
+          "excerpt": "Hello, \nThis is an automated message from Discourse to let you know that your account has been temporarily placed on hold as a precautionary measure. \nPlease do continue to browse, but you won’t be able to reply or creat&hellip;",
+          "subtype": "system_message",
+          "user_id": -1,
+          "visible": true,
+          "archived": false,
+          "archetype": "private_message",
+          "bumped_at": "2026-10-14T04:46:23.790731",
+          "pinned_at": null,
+          "created_at": "2026-10-14T04:46:23.672196",
+          "deleted_at": null,
+          "like_count": 0,
+          "spam_count": 0,
+          "updated_at": "2026-10-14T04:46:23.869295",
+          "word_count": 71,
+          "category_id": null,
+          "external_id": null,
+          "fancy_title": "Account temporarily on hold",
+          "has_summary": false,
+          "posts_count": 1,
+          "reply_count": 0,
+          "percent_rank": 1,
+          "pinned_until": null,
+          "deleted_by_id": null,
+          "featured_link": null,
+          "bannered_until": null,
+          "last_posted_at": "2026-10-14T04:46:23.790731",
+          "image_upload_id": null,
+          "pinned_globally": false,
+          "reviewable_score": 0,
+          "featured_user1_id": null,
+          "featured_user2_id": null,
+          "featured_user3_id": null,
+          "featured_user4_id": null,
+          "last_post_user_id": -1,
+          "participant_count": 1,
+          "slow_mode_seconds": 0,
+          "og_image_upload_id": null,
+          "highest_post_number": 1,
+          "incoming_link_count": 0,
+          "visibility_reason_id": null,
+          "moderator_posts_count": 0,
+          "notify_moderators_count": 0,
+          "highest_staff_post_number": 1
+        },
+        {
+          "id": 46,
+          "slug": "new-user-user3-silenced-by-community-flags",
+          "score": null,
+          "title": "New user user3 silenced by community flags",
+          "views": 0,
+          "closed": false,
+          "locale": null,
+          "excerpt": "This is an automated message. \nThe new user user3 was automatically silenced. \nReason - New user typed too fast \nPlease review the flags. If user3 was incorrectly silenced from posting, click the unsilence button on the &hellip;",
+          "subtype": "system_message",
+          "user_id": -1,
+          "visible": true,
+          "archived": false,
+          "archetype": "private_message",
+          "bumped_at": "2026-10-14T04:46:24.173552",
+          "pinned_at": null,
+          "created_at": "2026-10-14T04:46:24.092198",
+          "deleted_at": null,
+          "like_count": 0,
+          "spam_count": 0,
+          "updated_at": "2026-10-14T04:46:24.245886",
+          "word_count": 58,
+          "category_id": null,
+          "external_id": null,
+          "fancy_title": "New user user3 silenced by community flags",
+          "has_summary": false,
+          "posts_count": 1,
+          "reply_count": 0,
+          "percent_rank": 1,
+          "pinned_until": null,
+          "deleted_by_id": null,
+          "featured_link": null,
+          "bannered_until": null,
+          "last_posted_at": "2026-10-14T04:46:24.173552",
+          "image_upload_id": null,
+          "pinned_globally": false,
+          "reviewable_score": 0,
+          "featured_user1_id": null,
+          "featured_user2_id": null,
+          "featured_user3_id": null,
+          "featured_user4_id": null,
+          "last_post_user_id": -1,
+          "participant_count": 1,
+          "slow_mode_seconds": 0,
+          "og_image_upload_id": null,
+          "highest_post_number": 1,
+          "incoming_link_count": 0,
+          "visibility_reason_id": null,
+          "moderator_posts_count": 0,
+          "notify_moderators_count": 0,
+          "highest_staff_post_number": 1
+        }
+      ],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 35,
+            "slug": "parity-fixture-replies-and-posters",
+            "score": 3.2,
+            "title": "Parity fixture: replies and posters",
+            "views": 0,
+            "closed": false,
+            "locale": null,
+            "excerpt": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+            "subtype": null,
+            "user_id": 2,
+            "visible": true,
+            "archived": false,
+            "archetype": "regular",
+            "bumped_at": "2026-10-01T15:39:51.834549",
+            "pinned_at": null,
+            "created_at": "2026-09-30T07:28:28.864868",
+            "deleted_at": null,
+            "like_count": 1,
+            "spam_count": 0,
+            "updated_at": "2026-10-01T15:39:52.00791",
+            "word_count": 68,
+            "category_id": 4,
+            "external_id": null,
+            "fancy_title": "Parity fixture: replies and posters",
+            "has_summary": false,
+            "posts_count": 5,
+            "reply_count": 0,
+            "percent_rank": 1,
+            "pinned_until": null,
+            "deleted_by_id": null,
+            "featured_link": null,
+            "bannered_until": null,
+            "last_posted_at": "2026-10-01T15:39:51.834549",
+            "image_upload_id": null,
+            "pinned_globally": false,
+            "reviewable_score": 0,
+            "featured_user1_id": 3,
+            "featured_user2_id": null,
+            "featured_user3_id": 1,
+            "featured_user4_id": 4,
+            "last_post_user_id": 2,
+            "participant_count": 4,
+            "slow_mode_seconds": 0,
+            "og_image_upload_id": null,
+            "highest_post_number": 5,
+            "incoming_link_count": 0,
+            "visibility_reason_id": null,
+            "moderator_posts_count": 0,
+            "notify_moderators_count": 0,
+            "highest_staff_post_number": 5
+          },
+          "after": {
+            "id": 35,
+            "slug": "parity-fixture-replies-and-posters",
+            "score": 3.2,
+            "title": "Parity fixture: replies and posters",
+            "views": 0,
+            "closed": false,
+            "locale": null,
+            "excerpt": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+            "subtype": null,
+            "user_id": 2,
+            "visible": true,
+            "archived": false,
+            "archetype": "regular",
+            "bumped_at": "2026-10-01T15:39:51.834549",
+            "pinned_at": null,
+            "created_at": "2026-09-30T07:28:28.864868",
+            "deleted_at": null,
+            "like_count": 1,
+            "spam_count": 0,
+            "updated_at": "2026-10-14T04:46:23.581113",
+            "word_count": 68,
+            "category_id": 4,
+            "external_id": null,
+            "fancy_title": null,
+            "has_summary": false,
+            "posts_count": 5,
+            "reply_count": 0,
+            "percent_rank": 1,
+            "pinned_until": null,
+            "deleted_by_id": null,
+            "featured_link": null,
+            "bannered_until": null,
+            "last_posted_at": "2026-10-01T15:39:51.834549",
+            "image_upload_id": null,
+            "pinned_globally": false,
+            "reviewable_score": 6,
+            "featured_user1_id": 3,
+            "featured_user2_id": null,
+            "featured_user3_id": 1,
+            "featured_user4_id": 4,
+            "last_post_user_id": 2,
+            "participant_count": 4,
+            "slow_mode_seconds": 0,
+            "og_image_upload_id": null,
+            "highest_post_number": 5,
+            "incoming_link_count": 0,
+            "visibility_reason_id": null,
+            "moderator_posts_count": 0,
+            "notify_moderators_count": 0,
+            "highest_staff_post_number": 5
+          }
+        }
+      ]
+    },
+    "user_actions": {
+      "inserted": [
+        {
+          "id": 65,
+          "user_id": -1,
+          "created_at": "2026-10-14T04:46:23.672196",
+          "updated_at": "2026-10-14T04:46:23.760554",
+          "action_type": 12,
+          "acting_user_id": -1,
+          "target_post_id": -1,
+          "target_user_id": null,
+          "target_topic_id": 45
+        },
+        {
+          "id": 66,
+          "user_id": 5,
+          "created_at": "2026-10-14T04:46:23.672196",
+          "updated_at": "2026-10-14T04:46:23.777991",
+          "action_type": 13,
+          "acting_user_id": -1,
+          "target_post_id": -1,
+          "target_user_id": null,
+          "target_topic_id": 45
+        },
+        {
+          "id": 67,
+          "user_id": -1,
+          "created_at": "2026-10-14T04:46:24.092198",
+          "updated_at": "2026-10-14T04:46:24.155297",
+          "action_type": 12,
+          "acting_user_id": -1,
+          "target_post_id": -1,
+          "target_user_id": null,
+          "target_topic_id": 46
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_archived_messages": {
+      "inserted": [
+        {
+          "id": 2,
+          "user_id": -1,
+          "topic_id": 45,
+          "created_at": "2026-10-14T04:46:23.957819",
+          "updated_at": "2026-10-14T04:46:23.957819"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 5,
+            "client_ip": "127.0.0.1",
+            "auth_token": "SH0MEcHb5ZTAlUQMPTMlm1l3ehk=",
+            "created_at": "2026-10-14T04:46:22.670351",
+            "rotated_at": "2026-10-14T04:46:22.668038",
+            "updated_at": "2026-10-14T04:46:22.670351",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "SH0MEcHb5ZTAlUQMPTMlm1l3ehk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T04:46:23.477792",
+            "user_id": 5,
+            "client_ip": "127.0.0.1",
+            "auth_token": "SH0MEcHb5ZTAlUQMPTMlm1l3ehk=",
+            "created_at": "2026-10-14T04:46:22.670351",
+            "rotated_at": "2026-10-14T04:46:22.668038",
+            "updated_at": "2026-10-14T04:46:22.670351",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "SH0MEcHb5ZTAlUQMPTMlm1l3ehk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 30,
+          "context": "silenced_by_staff: New user typed too fast",
+          "details": "New user typed too fast",
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": false,
+          "created_at": "2026-10-14T04:46:23.633809",
+          "ip_address": null,
+          "updated_at": "2026-10-14T04:46:23.633809",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": 1,
+          "acting_user_id": -1,
+          "previous_value": null,
+          "target_user_id": 5
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_stats": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "user_id": 5,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:17.387931",
+            "time_read": 0,
+            "post_count": 0,
+            "draft_count": 0,
+            "likes_given": 0,
+            "topic_count": 0,
+            "bounce_score": 0,
+            "days_visited": 0,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 0,
+            "topics_entered": 0,
+            "first_unread_at": "2026-07-25T05:59:17.197224",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 0,
+            "first_unread_pm_at": "2026-07-25T05:59:17.197224",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 4,
+            "first_post_created_at": null,
+            "reset_bounce_score_after": null
+          },
+          "after": {
+            "user_id": 5,
+            "read_faq": null,
+            "new_since": "2026-07-25T05:59:17.387931",
+            "time_read": 0,
+            "post_count": 0,
+            "draft_count": 0,
+            "likes_given": 0,
+            "topic_count": 0,
+            "bounce_score": 0,
+            "days_visited": 0,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 0,
+            "topics_entered": 0,
+            "first_unread_at": "2026-07-25T05:59:17.197224",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 0,
+            "first_unread_pm_at": "2026-07-25T05:59:17.197224",
+            "digest_attempted_at": null,
+            "pending_posts_count": 1,
+            "distinct_badge_count": 4,
+            "first_post_created_at": null,
+            "reset_bounce_score_after": null
+          }
+        }
+      ]
+    },
+    "users": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 5,
+            "name": "User3",
+            "admin": false,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": false,
+            "username": "user3",
+            "moderator": false,
+            "created_at": "2026-07-25T05:59:17.199294",
+            "flag_level": 0,
+            "ip_address": null,
+            "updated_at": "2026-07-25T05:59:17.511834",
+            "approved_at": null,
+            "trust_level": 4,
+            "last_seen_at": null,
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": null,
+            "silenced_till": null,
+            "approved_by_id": null,
+            "flair_group_id": null,
+            "last_posted_at": null,
+            "suspended_till": null,
+            "username_lower": "user3",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": null,
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          },
+          "after": {
+            "id": 5,
+            "name": "User3",
+            "admin": false,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": false,
+            "username": "user3",
+            "moderator": false,
+            "created_at": "2026-07-25T05:59:17.199294",
+            "flag_level": 0,
+            "ip_address": null,
+            "updated_at": "2026-10-14T04:46:23.608901",
+            "approved_at": null,
+            "trust_level": 4,
+            "last_seen_at": null,
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": null,
+            "silenced_till": "3026-10-14T04:46:23.599608",
+            "approved_by_id": null,
+            "flair_group_id": null,
+            "last_posted_at": null,
+            "suspended_till": null,
+            "username_lower": "user3",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": null,
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "notify_reviewable",
+      {
+        "reviewable_id": 1
+      }
+    ],
+    [
+      "notify_reviewable",
+      {
+        "reviewable_id": 1
+      }
+    ],
+    [
+      "bot_input",
+      {
+        "user_id": 5,
+        "topic_id": 45,
+        "input": "topic_notification_level_changed"
+      }
+    ],
+    [
+      "crawl_topic_link",
+      {
+        "topic_link_id": 20
+      }
+    ],
+    [
+      "crawl_topic_link",
+      {
+        "topic_link_id": 21
+      }
+    ],
+    [
+      "post_alert",
+      {
+        "post_id": 53,
+        "new_record": true,
+        "options": {
+          "skip_send_email": true
+        }
+      }
+    ],
+    [
+      "feature_topic_users",
+      {
+        "topic_id": 45
+      }
+    ],
+    [
+      "process_post",
+      {
+        "bypass_bump": false,
+        "cooking_options": null,
+        "new_post": true,
+        "post_id": 53,
+        "skip_pull_hotlinked_images": false
+      }
+    ],
+    [
+      "post_update_topic_tracking_state",
+      {
+        "post_id": 53
+      }
+    ],
+    [
+      "bot_input",
+      {
+        "user_id": 1,
+        "topic_id": 46,
+        "input": "topic_notification_level_changed"
+      }
+    ],
+    [
+      "crawl_topic_link",
+      {
+        "topic_link_id": 22
+      }
+    ],
+    [
+      "post_alert",
+      {
+        "post_id": 54,
+        "new_record": true,
+        "options": null
+      }
+    ],
+    [
+      "feature_topic_users",
+      {
+        "topic_id": 46
+      }
+    ],
+    [
+      "process_post",
+      {
+        "bypass_bump": false,
+        "cooking_options": null,
+        "new_post": true,
+        "post_id": 54,
+        "skip_pull_hotlinked_images": false
+      }
+    ],
+    [
+      "post_update_topic_tracking_state",
+      {
+        "post_id": 54
+      }
+    ]
+  ],
+  "next_ids": {
+    "post_stats": 52,
+    "posts": 53,
+    "reviewable_histories": 1,
+    "reviewable_scores": 1,
+    "reviewables": 1,
+    "topic_allowed_groups": 1,
+    "topic_allowed_users": 9,
+    "topic_links": 20,
+    "topic_users": 55,
+    "topics": 45,
+    "user_actions": 65,
+    "user_archived_messages": 2,
+    "user_histories": 74
+  },
+  "settings": {
+    "auto_silence_fast_typers_max_trust_level": 4,
+    "notify_mods_when_user_silenced": true
+  },
+  "recorded_from": {
+    "case": "cab27e2002fe109b3b7b648b057f97ef353b07fab550484ef701aa97e0099e12",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -393,6 +393,7 @@ pub async fn silencer_silence(
     user_id: i32,
     until: NaiveDateTime,
     reason: &str,
+    reviewable_id: Option<i64>,
 ) -> Result<bool, AppError> {
     let (staff, trust_level, silenced_till): (bool, i32, Option<NaiveDateTime>) = sqlx::query_as(
         "SELECT admin OR moderator, trust_level, silenced_till FROM users WHERE id = $1",
@@ -418,15 +419,16 @@ pub async fn silencer_silence(
     .execute(&mut *tx)
     .await?;
     sqlx::query(
-        "INSERT INTO user_histories (action, acting_user_id, target_user_id, context, details, admin_only, \
-                                     created_at, updated_at) \
-         VALUES ($1, $2, $3, $4, $5, FALSE, clock_timestamp(), clock_timestamp())",
+        "INSERT INTO user_histories (action, acting_user_id, target_user_id, context, details, reviewable_id, \
+                                     admin_only, created_at, updated_at) \
+         VALUES ($1, $2, $3, $4, $5, $6, FALSE, clock_timestamp(), clock_timestamp())",
     )
     .bind(SILENCE_USER)
     .bind(by_user_id)
     .bind(user_id)
     .bind(format!("silenced_by_staff: {reason}"))
     .bind(staff_message(reason, None))
+    .bind(reviewable_id)
     .execute(&mut *tx)
     .await?;
     tx.commit().await?;

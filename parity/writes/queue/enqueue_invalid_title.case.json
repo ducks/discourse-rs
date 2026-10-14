@@ -1,0 +1,17 @@
+{
+  "user": "user0",
+  "settings": {
+    "approve_post_count": 5
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "short",
+        "raw": "The first post of a topic whose title is far too short to pass.",
+        "category": 4
+      }
+    }
+  ]
+}
