@@ -23,6 +23,7 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         "cleanup_acls_for_deleted" => cleanup_acls_for_deleted(state, &job.args).await,
         "bulk_grant_trust_level" => bulk_grant_trust_level(state, &job.args).await,
         "notify_users_added_to_group" => notify_users_added_to_group(state, &job.args).await,
+        "automatic_group_membership" => automatic_group_membership(state, &job.args).await,
         "update_group_mentions" => update_group_mentions(state, &job.args).await,
         crate::plugins::chat::membership::DELETE_USER_MESSAGES_JOB => {
             chat_delete_user_messages(state, &job.args).await
@@ -130,6 +131,31 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         }
     };
     Ok(result?)
+}
+
+/// Jobs::AutomaticGroupMembership (group_manager).
+async fn automatic_group_membership(state: &AppState, args: &Value) -> Result<(), AppError> {
+    let Some(group_id) = int_arg(args, "group_id")? else {
+        return Err(Unsupported(
+            "automatic_group_membership without a group_id (InvalidParameters)",
+        )
+        .into());
+    };
+    let mut tx = state.pool.begin().await?;
+    let s = SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
+    let host = crate::pretty_text::Host::from_state(state);
+    let promotion = crate::promotion::Ctx {
+        settings: &s,
+        i18n: &state.i18n,
+        host: &host,
+    };
+    let cx = crate::group_manager::Cx {
+        state,
+        promotion: &promotion,
+    };
+    crate::group_manager::automatic_group_membership(&mut tx, &cx, group_id).await?;
+    tx.commit().await?;
+    Ok(())
 }
 
 /// Jobs::NotifyUsersAddedToGroup: each user (by id) sent the

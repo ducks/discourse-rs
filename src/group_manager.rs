@@ -683,3 +683,138 @@ pub async fn next_best_title(
         i18n.t(&key).map(str::to_string).unwrap_or(name)
     }))
 }
+
+/// `Discourse.system_user`
+const SYSTEM_USER_ID: i32 = -1;
+
+/// `User#email_confirmed?`: a confirmed token for the primary email, or
+/// no tokens at all (a DiscourseConnect record's external email is
+/// refused).
+pub async fn email_confirmed(conn: &mut PgConnection, user_id: i32) -> Result<bool, AppError> {
+    let (confirmed, none, sso): (bool, bool, bool) = sqlx::query_as(
+        "SELECT EXISTS (SELECT 1 FROM email_tokens t JOIN user_emails e ON e.user_id = t.user_id \
+                          AND e.primary AND t.email = e.email \
+                        WHERE t.user_id = $1 AND t.confirmed), \
+                NOT EXISTS (SELECT 1 FROM email_tokens WHERE user_id = $1), \
+                EXISTS (SELECT 1 FROM single_sign_on_records WHERE user_id = $1)",
+    )
+    .bind(user_id)
+    .fetch_one(&mut *conn)
+    .await?;
+    if confirmed || none {
+        return Ok(true);
+    }
+    if sso {
+        return Err(Unsupported("email confirmation through DiscourseConnect").into());
+    }
+    Ok(false)
+}
+
+/// `User#set_automatic_groups`: an active, unstaged, confirmed user added
+/// (and logged by the system user) to each group whose email domains
+/// match their primary email and that they are not in.
+pub async fn set_automatic_groups(
+    conn: &mut PgConnection,
+    cx: &Cx<'_>,
+    user_id: i32,
+) -> Result<(), AppError> {
+    let user: Option<(bool, bool, Option<String>)> = sqlx::query_as(
+        "SELECT active, staged, (SELECT email FROM user_emails WHERE user_id = u.id AND \"primary\" LIMIT 1) \
+         FROM users u WHERE id = $1",
+    )
+    .bind(user_id)
+    .fetch_optional(&mut *conn)
+    .await?;
+    let Some((true, false, Some(email))) = user else {
+        return Ok(());
+    };
+    if !email_confirmed(conn, user_id).await? {
+        return Ok(());
+    }
+    let groups: Vec<(i32, String)> = sqlx::query_as(
+        "SELECT id, automatic_membership_email_domains FROM groups WHERE NOT automatic \
+         AND LENGTH(COALESCE(automatic_membership_email_domains, '')) > 0 ORDER BY id",
+    )
+    .fetch_all(&mut *conn)
+    .await?;
+    for (group_id, domains) in groups {
+        let pattern = format!("(?i)@({})$", domains.replace('.', "\\."));
+        let Ok(re) = regex::Regex::new(&pattern) else {
+            return Err(Unsupported("email domains that are not a regular expression").into());
+        };
+        if !re.is_match(&email) {
+            continue;
+        }
+        let member: bool = sqlx::query_scalar(
+            "SELECT EXISTS (SELECT 1 FROM group_users WHERE group_id = $1 AND user_id = $2)",
+        )
+        .bind(group_id)
+        .bind(user_id)
+        .fetch_one(&mut *conn)
+        .await?;
+        if member {
+            continue;
+        }
+        let Some(group) = find(conn, group_id).await? else {
+            continue;
+        };
+        add_many(conn, cx, &group, &[user_id], false).await?;
+        log_many(
+            conn,
+            group_id,
+            SYSTEM_USER_ID,
+            &[user_id],
+            ADD_USER_TO_GROUP,
+        )
+        .await?;
+    }
+    Ok(())
+}
+
+/// `Jobs::AutomaticGroupMembership`: every activated, unstaged user with
+/// an email in the group's domains (once an email, by id) who confirmed
+/// it, added automatically and logged by the system user (logged also
+/// when already a member).
+pub async fn automatic_group_membership(
+    conn: &mut PgConnection,
+    cx: &Cx<'_>,
+    group_id: i32,
+) -> Result<(), AppError> {
+    let Some(group) = find(conn, group_id).await? else {
+        return Err(Unsupported(
+            "automatic_group_membership of a missing group (InvalidParameters)",
+        )
+        .into());
+    };
+    let domains: Option<String> =
+        sqlx::query_scalar("SELECT automatic_membership_email_domains FROM groups WHERE id = $1")
+            .bind(group_id)
+            .fetch_one(&mut *conn)
+            .await?;
+    let Some(domains) = domains.filter(|d| !d.trim().is_empty()) else {
+        return Ok(());
+    };
+    let pattern = format!("@({})$", domains.replace('.', "\\."));
+    let users: Vec<i32> = sqlx::query_scalar(
+        "SELECT u.id FROM users u JOIN user_emails e ON e.user_id = u.id \
+         WHERE e.email ~* $1 AND u.active AND NOT u.staged ORDER BY u.id",
+    )
+    .bind(&pattern)
+    .fetch_all(&mut *conn)
+    .await?;
+    for user_id in users {
+        if !email_confirmed(conn, user_id).await? {
+            continue;
+        }
+        add_many(conn, cx, &group, &[user_id], true).await?;
+        log_many(
+            conn,
+            group_id,
+            SYSTEM_USER_ID,
+            &[user_id],
+            ADD_USER_TO_GROUP,
+        )
+        .await?;
+    }
+    Ok(())
+}

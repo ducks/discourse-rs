@@ -1,0 +1,396 @@
+{
+  "name": "domains_activate",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/5/activate.json"
+    }
+  ],
+  "started_at": "2026-10-14T08:54:57.9515",
+  "transaction_started_at": "2026-10-14T08:54:53.829088",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    }
+  ],
+  "changes": {
+    "email_tokens": {
+      "inserted": [
+        {
+          "id": 13,
+          "email": "user3@example.com",
+          "scope": 1,
+          "expired": true,
+          "user_id": 5,
+          "confirmed": false,
+          "created_at": "2026-10-14T08:54:58.000673",
+          "token_hash": "e8f3d600286ee595e40c86ac6f3057d4be6ec82ba9ba3980ecb7a5d833ef58d9",
+          "updated_at": "2026-10-14T08:54:58.000673"
+        },
+        {
+          "id": 14,
+          "email": "user3@example.com",
+          "scope": 1,
+          "expired": false,
+          "user_id": 5,
+          "confirmed": true,
+          "created_at": "2026-10-14T08:54:58.012225",
+          "token_hash": "00aae6b2d6a1d73bed63b343f4feeac8fae5a4d7648723b651fd515d682c505d",
+          "updated_at": "2026-10-14T08:54:58.032241"
+        }
+      ],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 12,
+            "email": "user3@example.com",
+            "scope": 1,
+            "expired": false,
+            "user_id": 5,
+            "confirmed": true,
+            "created_at": "2026-07-25T05:59:17.757819",
+            "token_hash": "4d636580489e1455dd0785b3f714a525cb0705cd80ff51c1ad236a4154bdf0c8",
+            "updated_at": "2026-07-25T05:59:17.787207"
+          },
+          "after": {
+            "id": 12,
+            "email": "user3@example.com",
+            "scope": 1,
+            "expired": true,
+            "user_id": 5,
+            "confirmed": true,
+            "created_at": "2026-07-25T05:59:17.757819",
+            "token_hash": "4d636580489e1455dd0785b3f714a525cb0705cd80ff51c1ad236a4154bdf0c8",
+            "updated_at": "2026-07-25T05:59:17.787207"
+          }
+        }
+      ]
+    },
+    "group_histories": {
+      "inserted": [
+        {
+          "id": 1,
+          "action": 2,
+          "subject": null,
+          "group_id": 9001,
+          "new_value": null,
+          "created_at": "2026-10-14T08:54:58.147289",
+          "prev_value": null,
+          "updated_at": "2026-10-14T08:54:58.147289",
+          "acting_user_id": -1,
+          "target_user_id": 5
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "group_users": {
+      "inserted": [
+        {
+          "id": 68,
+          "owner": false,
+          "user_id": 5,
+          "group_id": 9001,
+          "created_at": "2026-10-14T08:54:53.829088",
+          "updated_at": "2026-10-14T08:54:53.829088",
+          "first_unread_pm_at": "2026-10-14T08:54:53.829088",
+          "notification_level": 3
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "groups": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 9001,
+            "name": "domains",
+            "title": "Domain",
+            "bio_raw": null,
+            "imap_ssl": null,
+            "automatic": false,
+            "full_name": null,
+            "imap_port": null,
+            "smtp_port": null,
+            "bio_cooked": null,
+            "created_at": "2026-10-01T10:00:00",
+            "flair_icon": null,
+            "updated_at": "2026-10-01T10:00:00",
+            "user_count": 1,
+            "flair_color": null,
+            "imap_server": null,
+            "public_exit": false,
+            "smtp_server": null,
+            "has_messages": false,
+            "imap_enabled": false,
+            "smtp_enabled": false,
+            "imap_last_uid": 0,
+            "primary_group": false,
+            "smtp_ssl_mode": 0,
+            "email_password": null,
+            "email_username": null,
+            "flair_bg_color": null,
+            "incoming_email": null,
+            "flair_upload_id": null,
+            "imap_last_error": null,
+            "imap_new_emails": null,
+            "imap_old_emails": null,
+            "imap_updated_at": null,
+            "smtp_updated_at": null,
+            "assignable_level": 0,
+            "email_from_alias": null,
+            "public_admission": false,
+            "visibility_level": 0,
+            "grant_trust_level": null,
+            "imap_mailbox_name": "",
+            "imap_uid_validity": 0,
+            "mentionable_level": 0,
+            "messageable_level": 0,
+            "imap_updated_by_id": null,
+            "publish_read_state": false,
+            "smtp_updated_by_id": null,
+            "members_visibility_level": 0,
+            "allow_membership_requests": false,
+            "default_notification_level": 3,
+            "membership_request_template": null,
+            "allow_unknown_sender_topic_replies": false,
+            "automatic_membership_email_domains": "example.com"
+          },
+          "after": {
+            "id": 9001,
+            "name": "domains",
+            "title": "Domain",
+            "bio_raw": null,
+            "imap_ssl": null,
+            "automatic": false,
+            "full_name": null,
+            "imap_port": null,
+            "smtp_port": null,
+            "bio_cooked": null,
+            "created_at": "2026-10-01T10:00:00",
+            "flair_icon": null,
+            "updated_at": "2026-10-01T10:00:00",
+            "user_count": 2,
+            "flair_color": null,
+            "imap_server": null,
+            "public_exit": false,
+            "smtp_server": null,
+            "has_messages": false,
+            "imap_enabled": false,
+            "smtp_enabled": false,
+            "imap_last_uid": 0,
+            "primary_group": false,
+            "smtp_ssl_mode": 0,
+            "email_password": null,
+            "email_username": null,
+            "flair_bg_color": null,
+            "incoming_email": null,
+            "flair_upload_id": null,
+            "imap_last_error": null,
+            "imap_new_emails": null,
+            "imap_old_emails": null,
+            "imap_updated_at": null,
+            "smtp_updated_at": null,
+            "assignable_level": 0,
+            "email_from_alias": null,
+            "public_admission": false,
+            "visibility_level": 0,
+            "grant_trust_level": null,
+            "imap_mailbox_name": "",
+            "imap_uid_validity": 0,
+            "mentionable_level": 0,
+            "messageable_level": 0,
+            "imap_updated_by_id": null,
+            "publish_read_state": false,
+            "smtp_updated_by_id": null,
+            "members_visibility_level": 0,
+            "allow_membership_requests": false,
+            "default_notification_level": 3,
+            "membership_request_template": null,
+            "allow_unknown_sender_topic_replies": false,
+            "automatic_membership_email_domains": "example.com"
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 82,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "pFWr0xbDuUmDvpcFj2UG/QpMmUw=",
+            "created_at": "2026-10-14T08:54:55.443148",
+            "rotated_at": "2026-10-14T08:54:55.437133",
+            "updated_at": "2026-10-14T08:54:55.443148",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "pFWr0xbDuUmDvpcFj2UG/QpMmUw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 82,
+            "seen_at": "2026-10-14T08:54:57.969286",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "pFWr0xbDuUmDvpcFj2UG/QpMmUw=",
+            "created_at": "2026-10-14T08:54:55.443148",
+            "rotated_at": "2026-10-14T08:54:55.437133",
+            "updated_at": "2026-10-14T08:54:55.443148",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "pFWr0xbDuUmDvpcFj2UG/QpMmUw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 43,
+          "context": null,
+          "details": "Activated by staff",
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": false,
+          "created_at": "2026-10-14T08:54:58.182614",
+          "ip_address": null,
+          "updated_at": "2026-10-14T08:54:58.182614",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": 5
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "users": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 5,
+            "name": "User3",
+            "admin": false,
+            "title": null,
+            "views": 0,
+            "active": false,
+            "locale": null,
+            "staged": false,
+            "approved": false,
+            "username": "user3",
+            "moderator": false,
+            "created_at": "2026-07-25T05:59:17.199294",
+            "flag_level": 0,
+            "ip_address": null,
+            "updated_at": "2026-07-25T05:59:17.511834",
+            "approved_at": null,
+            "trust_level": 4,
+            "last_seen_at": null,
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": null,
+            "silenced_till": null,
+            "approved_by_id": null,
+            "flair_group_id": null,
+            "last_posted_at": null,
+            "suspended_till": null,
+            "username_lower": "user3",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": null,
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          },
+          "after": {
+            "id": 5,
+            "name": "User3",
+            "admin": false,
+            "title": "Domain",
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": false,
+            "username": "user3",
+            "moderator": false,
+            "created_at": "2026-07-25T05:59:17.199294",
+            "flag_level": 0,
+            "ip_address": null,
+            "updated_at": "2026-10-14T08:54:58.050649",
+            "approved_at": null,
+            "trust_level": 4,
+            "last_seen_at": null,
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": null,
+            "silenced_till": null,
+            "approved_by_id": null,
+            "flair_group_id": null,
+            "last_posted_at": null,
+            "suspended_till": null,
+            "username_lower": "user3",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": null,
+            "secure_identifier": null,
+            "uploaded_avatar_id": null,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "email_tokens": 13,
+    "group_histories": 1,
+    "group_users": 68,
+    "user_histories": 74
+  },
+  "setup": [
+    "INSERT INTO groups (id, name, automatic_membership_email_domains, title, user_count, created_at, updated_at) VALUES (9001, 'domains', 'example.com', 'Domain', 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "UPDATE users SET active = FALSE WHERE id = 5"
+  ],
+  "recorded_from": {
+    "case": "cceacfc399a0649139d4fc4f81d9790d23976d89e78a467c15f4f1b9ff782d56",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
