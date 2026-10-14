@@ -209,9 +209,10 @@ Bugs or silent gaps in what is merged, small and independent.
 69. ~~`feat/email-unsubscribe`~~ (done) M, 70. ~~`feat/digest-email`~~ (done) L,
     71. ~~`feat/jobs-digest`~~ (done) S, 72. ~~`feat/admin-email-digest`~~ (done) S
 73. ~~`feat/about-stats`~~ (done) S/M (about.json with Stat.api_stats and
-    their cache, the about_stats job, live_post_counts. Left: the about
-    page's HTML; category moderators, banner image, localized settings
-    and visitor stats are refused), 74. ~~`feat/directory`~~ (done) M (/directory_items with
+    their cache, the about_stats job, live_post_counts. The about page's
+    HTML: ~~`feat/about-page`~~ (done). Left: category moderators, banner
+    image, localized settings and visitor stats are refused; the extra
+    groups are not drawn), 74. ~~`feat/directory`~~ (done) M (/directory_items with
     its filters, orders and pages, DirectoryItem.refresh_period! with the
     solved and gamification column queries, the directory_refresh job.
     Left: the users page's HTML; searching by name (UserSearch) and user

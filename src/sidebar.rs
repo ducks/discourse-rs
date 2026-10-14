@@ -36,6 +36,10 @@ pub enum Active {
     Chat,
     /// Full-page chat on this channel.
     ChatChannel(i64),
+    /// The about page: the community section's About link.
+    About,
+    /// The users directory: the community section's Users link.
+    Users,
 }
 
 impl Active {
@@ -52,6 +56,8 @@ impl Active {
             Active::MyMessages => "my-messages".into(),
             Active::Chat => "chat".into(),
             Active::ChatChannel(id) => format!("chat-channel:{id}"),
+            Active::About => "about".into(),
+            Active::Users => "users".into(),
         }
     }
 
@@ -69,6 +75,8 @@ impl Active {
                 "my-posts" => Active::MyPosts,
                 "my-messages" => Active::MyMessages,
                 "chat" => Active::Chat,
+                "about" => Active::About,
+                "users" => Active::Users,
                 _ => Active::None,
             },
         }
@@ -590,6 +598,17 @@ fn custom_section(section: &Value, cx: &Context) -> Result<String, SettingError>
     for link in &primary {
         html.push_str(&link_html(link, cx));
     }
+    // SidebarMoreSectionLinks#hoistActiveLink: the active one of the more
+    // links shows above the More button, as a MoreSectionLink, and leaves
+    // the menu.
+    if let Some(i) = more.iter().position(|l| l.active) {
+        let hoisted = more.remove(i);
+        html.push_str(&link_html(&hoisted, cx).replacen(
+            " data-sidebar-custom-link=\"true\"",
+            "",
+            1,
+        ));
+    }
     if !more.is_empty() {
         html.push_str(&more_links(&more, cx));
     }
@@ -734,7 +753,12 @@ fn community_link(link: &Value, cx: &Context) -> Result<Option<Link>, SettingErr
             name: overridden_icon.unwrap_or(default_icon).to_string(),
             color: None,
         },
-        active: name == "everything" && *cx.active == Active::Discovery,
+        active: match name {
+            "everything" => *cx.active == Active::Discovery,
+            "about" => *cx.active == Active::About,
+            "users" => *cx.active == Active::Users,
+            _ => false,
+        },
         ..Default::default()
     };
     if name == "everything"

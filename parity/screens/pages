@@ -64,3 +64,8 @@
 /latest as=user1
 /chat/c/-/3 as=user1 wait=3000 mask=.chat-time
 /chat/c/-/4 as=user2 wait=3000 mask=.chat-time
+
+# The about page
+/about
+/about as=user1
+/about as=admin

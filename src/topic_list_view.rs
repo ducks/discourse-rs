@@ -519,7 +519,7 @@ fn relative_date(cx: &ListContext, at: DateTime<Utc>) -> String {
 }
 
 /// `number`: thousands and millions shortened.
-fn number(cx: &ListContext, n: i64) -> String {
+pub(crate) fn number(cx: &ListContext, n: i64) -> String {
     if n > 999_999 {
         t_with(
             cx,

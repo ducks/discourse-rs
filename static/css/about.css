@@ -1,0 +1,147 @@
+/*
+ * The about page (templates/about.gjs, components/about-page.gjs), ported
+ * from common/base/about.scss and the body page rules of
+ * common/base/faqs.scss, as Rails compiles them into common.css. The
+ * extra groups' and category moderators' rules are left out with what
+ * they style. viewport.until(md) is width < 48rem.
+ */
+
+/* about.scss:4 */
+.about__main-content {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2em;
+  max-width: 1100px;
+}
+/* about.scss:10 */
+.about__main-content h2 {
+  font-size: var(--font-up-1);
+}
+.about__header {
+  max-width: 1100px;
+}
+/* about.scss:48 */
+.about__header h1 {
+  font-size: var(--font-up-1);
+}
+/* about.scss:53 */
+.about__left-side {
+  flex: 1 1 650px;
+}
+/* about.scss:57 */
+.about__right-side {
+  flex: 1 2 200px;
+}
+/* about.scss:61 */
+.about__stats {
+  display: flex;
+  border-top: 1px solid var(--content-border-color);
+  border-bottom: 1px solid var(--content-border-color);
+  padding: 1em 1em;
+  margin-bottom: 1em;
+}
+/* about.scss:61 */
+@media (width < 48rem) {
+  .about__stats {
+    flex-direction: column;
+  }
+}
+/* about.scss:72 */
+.about__stats .d-icon {
+  margin-right: 3px;
+}
+/* about.scss:77 */
+.about__stats-item {
+  flex: 1 0 fit-content;
+}
+/* about.scss:77 */
+@media (width < 48rem) {
+  .about__stats-item {
+    margin-bottom: 1em;
+  }
+}
+/* about.scss:83 */
+@media (width < 48rem) {
+  .about__stats-item:last-child {
+    margin-bottom: 0;
+  }
+}
+/* about.scss:89 */
+.about__banner {
+  margin-bottom: 1em;
+  width: 100%;
+  height: auto;
+  position: relative;
+  padding-top: 27.27%;
+}
+/* about.scss:96 */
+.about__banner-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* about.scss:106 */
+.about__activities-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.5em;
+}
+/* about.scss:112 */
+.about__activities-item-icon {
+  margin-right: 1em;
+}
+/* about.scss:116 */
+.about__activities-item-period {
+  font-size: var(--font-down-2);
+}
+/* about.scss:120 */
+.about__admins,
+.about__moderators {
+  margin-top: 3em;
+}
+/* about.scss:124 */
+.about__admins h2,
+.about__moderators h2 {
+  margin-bottom: 1em;
+}
+/* about.scss:130 */
+.about-page-users-list {
+  display: grid;
+  gap: 1em;
+  grid-template-columns: repeat(auto-fill, minmax(14em, 1fr));
+}
+/* about.scss:135 */
+.about-page-users-list__expand-button {
+  width: 100%;
+}
+/* faqs.scss:1 */
+.body-page {
+  max-width: 700px;
+  background: var(--d-content-background);
+}
+/* faqs.scss:6 */
+.about-page .body-page {
+  max-width: unset;
+}
+/* faqs.scss:23 */
+.mobile-view .body-page {
+  font-size: var(--font-0);
+}
+/* faqs.scss:27 */
+.body-page li {
+  margin-bottom: 8px;
+}
+/* faqs.scss:31 */
+.body-page .nav-pills {
+  margin: 0 0 2em;
+  gap: 0;
+  overflow: auto;
+}
+/* faqs.scss:37 */
+.body-page ul:not(.nav-pills),
+.body-page ol:not(.nav-pills) {
+  margin-left: 40px;
+}

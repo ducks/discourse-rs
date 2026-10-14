@@ -1,4 +1,5 @@
 pub mod about;
+pub mod about_view;
 pub mod accounts;
 pub mod admin_site_settings;
 pub mod admin_user_show;
@@ -125,6 +126,7 @@ pub mod user_anonymizer;
 pub mod user_card_view;
 pub mod user_comm_screener;
 pub mod user_destroyer;
+pub mod user_info_view;
 pub mod user_merger;
 pub mod user_penalties;
 pub mod user_private;

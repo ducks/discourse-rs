@@ -41,6 +41,7 @@ const DISCOURSE_CSS: &str = concat!(
     include_str!("../static/css/tooltip.css"),
     include_str!("../static/css/filter-controls.css"),
     include_str!("../static/css/not-found.css"),
+    include_str!("../static/css/about.css"),
     include_str!("../static/css/powered-by.css"),
     // The bundled plugins' stylesheets, after core's.
     include_str!("../static/css/topic-voting.css"),

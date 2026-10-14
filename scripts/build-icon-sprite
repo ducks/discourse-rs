@@ -159,6 +159,10 @@ ICONS=(
   fab-google
   fab-microsoft
   fab-apple
+  # The about page's stats and site activity.
+  calendar-days
+  scroll
+  comment-dots
 )
 
 root="$(cd "$(dirname "$0")/.." && pwd)"
