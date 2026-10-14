@@ -1,0 +1,19 @@
+{
+  "user": "user2",
+  "setup": [
+    "UPDATE users SET moderator = TRUE WHERE id = 4"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/backups.json",
+      "params": {
+        "with_uploads": "true"
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/backups/cancel.json"
+    }
+  ]
+}

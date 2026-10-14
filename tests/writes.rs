@@ -492,6 +492,32 @@ fn unordered_responses(doc: &mut Value, case: &Value) {
     }
 }
 
+/// `random_delays` (`{job: seconds}`): jobs enqueued with a random part
+/// in their delay (schedule_backup's `rand(10.minutes)`), their delay
+/// compared rounded down to that window on both sides.
+fn random_delays(doc: &mut Value, case: &Value) {
+    let Some(windows) = case["random_delays"].as_object() else {
+        return;
+    };
+    for list in ["jobs", "jobs_from_jobs"] {
+        for job in doc[list].as_array_mut().into_iter().flatten() {
+            let Some(shown) = job[0].as_str() else {
+                continue;
+            };
+            let Some((name, delay)) = shown.split_once(" in ") else {
+                continue;
+            };
+            let (Some(window), Some(seconds)) = (
+                windows.get(name).and_then(Value::as_i64),
+                delay.strip_suffix('s').and_then(|d| d.parse::<i64>().ok()),
+            ) else {
+                continue;
+            };
+            job[0] = Value::String(format!("{name} in {}s", seconds / window * window));
+        }
+    }
+}
+
 fn approximate(doc: &mut Value, case: &Value) {
     let round = |v: &mut Value| {
         if let Some(f) = v.as_f64().filter(|f| *f != 0.0 && f.is_finite()) {
@@ -1734,6 +1760,7 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
                     approximate(&mut rails, case);
                     unordered(&mut rails, case);
                     unordered_responses(&mut rails, case);
+                    random_delays(&mut rails, case);
                     rails
                 },
                 rails_started,
@@ -1748,6 +1775,7 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
                     approximate(&mut ours, case);
                     unordered(&mut ours, case);
                     unordered_responses(&mut ours, case);
+                    random_delays(&mut ours, case);
                     ours
                 },
                 started,

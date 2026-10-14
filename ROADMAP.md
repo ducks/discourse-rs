@@ -426,8 +426,14 @@ then by what running a forum needs (milestone 6). Briefs:
     backup_chunks_merger, staff logs 45/46, the read-only allowlist and
     ensure_backups_enabled. Refused: the S3 store, upload URLs and
     multipart uploads, the Ember index and logs pages),
-    91b. `feat/backup-create` M (Creator, create_backup and
-    schedule_backup with retention, cancel, logs on the bus),
+    91b. ~~`feat/backup-create`~~ (done) M (POST /admin/backups queues
+    what Rails spawns, run detached by the worker; the Creator:
+    backup_metadata, pg_dump, the .sql.gz or the .tar.gz with the local
+    uploads, the logs on /admin/backups/logs and in the system message
+    (inline or as a log.txt.zip upload), cancel, delete_old;
+    create_backup and schedule_backup. Refused: sites with S3 uploads,
+    schedule_backup's failure message to the admins group; the logs go
+    to every tab of the admin (no client_ids filter)),
     91c. `feat/backup-restore` L (Restorer, rollback,
     drop_backup_schema)
 

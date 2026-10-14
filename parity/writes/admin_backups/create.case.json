@@ -1,0 +1,20 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/backups.json",
+      "params": {
+        "with_uploads": "true",
+        "client_id": "abc123"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/backups",
+      "params": {
+        "with_uploads": "false"
+      }
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "user": "admin",
+  "settings": {
+    "enable_backups": false
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/backups.json",
+      "params": {
+        "with_uploads": "true"
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/backups/cancel.json"
+    }
+  ]
+}

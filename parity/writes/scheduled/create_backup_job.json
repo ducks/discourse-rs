@@ -1,0 +1,92 @@
+{
+  "name": "create_backup_job",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-14T15:36:57.322532",
+  "transaction_started_at": "2026-10-14T15:36:54.445031",
+  "responses": [],
+  "changes": {
+    "backup_metadata": {
+      "inserted": [
+        {
+          "id": 7,
+          "name": "base_url",
+          "value": "http://localhost:3051"
+        },
+        {
+          "id": 8,
+          "name": "cdn_url",
+          "value": null
+        },
+        {
+          "id": 9,
+          "name": "s3_base_url",
+          "value": null
+        },
+        {
+          "id": 10,
+          "name": "s3_cdn_url",
+          "value": null
+        },
+        {
+          "id": 11,
+          "name": "db_name",
+          "value": "default"
+        },
+        {
+          "id": 12,
+          "name": "multisite",
+          "value": "f"
+        }
+      ],
+      "deleted": [
+        {
+          "id": 1,
+          "name": "base_url",
+          "value": "http://localhost:3042"
+        },
+        {
+          "id": 2,
+          "name": "cdn_url",
+          "value": null
+        },
+        {
+          "id": 3,
+          "name": "s3_base_url",
+          "value": null
+        },
+        {
+          "id": 4,
+          "name": "s3_cdn_url",
+          "value": null
+        },
+        {
+          "id": 5,
+          "name": "db_name",
+          "value": "default"
+        },
+        {
+          "id": 6,
+          "name": "multisite",
+          "value": "f"
+        }
+      ],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "backup_metadata": 7
+  },
+  "enqueue": [
+    [
+      "create_backup"
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "29f7668cc37b15be4a69493899bfe466ccca15601bf5813c1c06d9a5d4be0af3",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

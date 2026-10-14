@@ -534,6 +534,100 @@ pub async fn multipart(
     Err(Unsupported("direct S3 backup uploads").into())
 }
 
+/// POST /admin/backups(.json) (#create): a backup started (the port
+/// queues what Rails spawns), logged as backup_create. One a minute, for
+/// staff too.
+pub async fn create(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    if let Some(r) = admin_only(&state, &guardian) {
+        return Ok(r);
+    }
+    let p = crate::params::parse(uri.query(), &headers, &body);
+    if !super::session::csrf_ok(&state, &headers, &pairs(&p), uri.path(), "POST") {
+        return Ok(super::session::bad_csrf());
+    }
+    if !xhr_or_json(&uri, &headers) {
+        return Ok(super::session::render_empty());
+    }
+    let settings = settings(&state).await?;
+    if let Some(r) = backups_disabled(&state, &settings)? {
+        return Ok(r);
+    }
+    let user_id = guardian.user_id().unwrap_or_default();
+    let limiter = crate::rate_limiter::RateLimiter::new(
+        Some(crate::rate_limiter::LimitUser {
+            id: user_id,
+            staff: guardian.is_staff(),
+        }),
+        "max-backups-per-minute",
+        1,
+        60,
+    )
+    .apply_limit_to_staff();
+    if let Err(refused) = limiter
+        .performed(&state.pool, state.config.rate_limits)
+        .await?
+    {
+        return Ok(refused.into_response(&state.i18n));
+    }
+    let Some(with_uploads) = p.get("with_uploads") else {
+        return Ok(param_missing("with_uploads"));
+    };
+    let with_uploads = crate::params::scalar(with_uploads).as_deref() == Some("true");
+    let client_id = p.get("client_id").and_then(crate::params::scalar);
+    let mut tx = state.pool.begin().await?;
+    crate::jobs::enqueue(
+        &mut tx,
+        backup_restore::jobs::SPAWN_BACKUP_RESTORE,
+        json!({
+            "type": "backup",
+            "user_id": user_id,
+            "opts": {
+                "publish_to_message_bus": true,
+                "with_uploads": with_uploads,
+                "client_id": client_id,
+            },
+        }),
+    )
+    .await?;
+    backup_restore::log_staff_action(&mut tx, "backup_create", user_id, None).await?;
+    tx.commit().await?;
+    Ok(Json(json!({"success": "OK"})).into_response())
+}
+
+/// DELETE /admin/backups/cancel(.json) (#cancel): the shutdown flag the
+/// running operation watches.
+pub async fn cancel(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
+) -> Result<Response, AppError> {
+    if let Some(r) = admin_only(&state, &guardian) {
+        return Ok(r);
+    }
+    let p = crate::params::parse(uri.query(), &headers, &body);
+    if !super::session::csrf_ok(&state, &headers, &pairs(&p), uri.path(), "DELETE") {
+        return Ok(super::session::bad_csrf());
+    }
+    if !xhr_or_json(&uri, &headers) {
+        return Ok(super::session::render_empty());
+    }
+    let settings = settings(&state).await?;
+    if let Some(r) = backups_disabled(&state, &settings)? {
+        return Ok(r);
+    }
+    let mut conn = state.pool.acquire().await?;
+    backup_restore::set_shutdown_signal(&mut conn).await?;
+    Ok(Json(json!({"success": "OK"})).into_response())
+}
+
 /// PUT /admin/backups/readonly(.json)?enable= (BackupsController#readonly,
 /// AdminConstraint): the user read-only key on or off, logged as
 /// change_readonly_mode, an empty 200.

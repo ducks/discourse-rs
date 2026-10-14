@@ -68,6 +68,12 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         crate::backup_restore::jobs::BACKUP_CHUNKS_MERGER => {
             crate::backup_restore::jobs::backup_chunks_merger(state, &job.args).await
         }
+        crate::backup_restore::jobs::SPAWN_BACKUP_RESTORE => {
+            crate::backup_restore::jobs::spawn_backup_restore(state, &job.args).await
+        }
+        crate::backup_restore::jobs::CREATE_BACKUP => {
+            crate::backup_restore::jobs::create_backup(state).await
+        }
         // Fires user_added_to_group / user_removed_from_group, which core
         // only hands to web hooks (none are ported).
         "publish_group_membership_updates" => {

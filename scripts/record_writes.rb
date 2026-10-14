@@ -31,6 +31,18 @@ module Jobs
     nil
   end
 end
+# BackupRestore.backup! and restore! spawn a detached process that backs
+# up or restores outside the case's transaction: recorded as a job
+# instead (the port queues the same), never run.
+require "backup_restore"
+# pg_dump connects as ENV["USER"] (BackupRestore.database_configuration),
+# which `dv run` leaves unset: the process's own user, as a shell has it.
+require "etc"
+ENV["USER"] ||= Etc.getpwuid.name
+BackupRestore.define_singleton_method(:spawn_process!) do |type, user_id, opts|
+  ENQUEUED << ["spawn_backup_restore", { type: type.to_s, user_id: user_id, opts: opts }]
+  nil
+end
 ActionController::Base.allow_forgery_protection = false
 ActionMailer::Base.delivery_method = :test
 ActionMailer::Base.perform_deliveries = true
@@ -396,6 +408,7 @@ cases.each do |c|
     record[:unordered] = c["unordered"] if c["unordered"]
     record[:unordered_responses] = c["unordered_responses"] if c["unordered_responses"]
     record[:job_clock] = c["job_clock"] if c["job_clock"]
+    record[:random_delays] = c["random_delays"] if c["random_delays"]
     record[:files] = c["files"] if c["files"]
     record[:remote] = c["remote"] if c["remote"]
     record[:rate_limits] = c["rate_limits"] if c["rate_limits"]

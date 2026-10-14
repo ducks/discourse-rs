@@ -148,6 +148,7 @@ pub async fn create(
             bytes,
             pasted: false,
             for_private_message: false,
+            for_export: false,
         },
     )
     .await?;

@@ -1,0 +1,14 @@
+{
+  "settings": {
+    "enable_backups": false
+  },
+  "enqueue": [
+    [
+      "schedule_backup"
+    ]
+  ],
+  "run_jobs": [
+    "schedule_backup"
+  ],
+  "requests": []
+}
