@@ -1,0 +1,12 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO user_fields (id, name, description, field_type_enum, editable, show_on_profile, show_on_user_card, position, created_at, updated_at) VALUES (1, 'Favorite color', 'Your color', 0, true, true, false, 1, now(), now()), (2, 'Terms', 'Accept the terms', 1, true, true, true, 2, now(), now()), (3, 'Hidden', 'Staff only', 0, true, false, false, 3, now(), now()), (4, 'Langs', 'Languages', 3, true, false, true, 4, now(), now())",
+    "INSERT INTO user_custom_fields (user_id, name, value, created_at, updated_at) VALUES (4, 'user_field_1', 'blue', now(), now()), (4, 'user_field_2', 'true', now(), now()), (4, 'user_field_3', 'secret', now(), now()), (4, 'user_field_4', 'rust', now(), now()), (4, 'user_field_4', 'ruby', now(), now()), (3, 'user_field_2', 'f', now(), now()), (3, 'user_field_3', 'mine', now(), now())"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/u/user2.json"},
+    {"method": "GET", "path": "/u/user2/card.json"},
+    {"method": "GET", "path": "/u/user1.json"}
+  ]
+}
