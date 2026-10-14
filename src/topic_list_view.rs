@@ -1073,8 +1073,15 @@ fn mobile_row(cx: &ListContext, topic: &Value, users: &[Value], row: MobileRow) 
         .iter()
         .find(|p| s(&p["extras"]).split(' ').any(|e| e == "latest"))
         .or(posters.first());
+    // A list's posters name their user in `users`; suggested topics'
+    // carry theirs inline.
     let avatar = last_poster
-        .and_then(|p| users.iter().find(|u| u["id"] == p["user_id"]))
+        .and_then(|p| {
+            users
+                .iter()
+                .find(|u| u["id"] == p["user_id"])
+                .or_else(|| p.get("user").filter(|u| u.is_object()))
+        })
         .map(|user| {
             let username = s(&user["username"]);
             let name = s(&user["name"]);

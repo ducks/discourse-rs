@@ -283,8 +283,9 @@ with the viewport, guessing from the user agent without it
     the hamburger's slide-in sidebar, the nav items as a bottom sheet,
     the topic list's mobile rows and last visit marker, the categories
     page's mobile style
-93. `feat/mobile-topic-page` M: the progress bar for the timeline, the
-    topic map, posts' meta data and menu, footer buttons, suggested rows
+93. ~~`feat/mobile-topic-page`~~ (done) M: the progress bar for the
+    timeline, the topic map without participants, the post menu's icon
+    Reply, suggested topics' mobile rows
 94. `feat/mobile-search-menu` M: the header's search button opens the
     search menu panel (today it goes to /search)
 95. `feat/mobile-user-menu` M: the user menu as the mobile panel, the
@@ -294,8 +295,10 @@ with the viewport, guessing from the user agent without it
 97. `feat/mobile-user-pages` M: profile, activity, messages and their
     nav as a menu, the users directory
 98. `feat/mobile-menus` M: the remaining menus as bottom sheets
-    (tracking, drafts, post and topic admin menus), the user card as a
-    modal, live label updates of the mobile nav trigger
+    (tracking, drafts, post and topic admin menus), the topic footer's
+    "..." menu and icon-only notifications button, the progress bar's
+    expanded timeline and back button, the user card as a modal, live
+    label updates of the mobile nav trigger
 99. `feat/mobile-chat` M: chat's mobile layout and `chat_mobile` bundle
 
 [mobile-layout]
