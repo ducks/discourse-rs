@@ -3,6 +3,7 @@ pub mod about_view;
 pub mod accounts;
 pub mod admin_badges;
 pub mod admin_confirmation;
+pub mod admin_flags;
 pub mod admin_site_settings;
 pub mod admin_user_show;
 pub mod admin_users;

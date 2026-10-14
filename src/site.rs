@@ -149,9 +149,6 @@ const USER_FIELD_MAX_LENGTH: i64 = 2048;
 /// lexer escape from the literal.
 const TAGS_FILTER_REGEXP: &str = r#"[/\?#\[\]@!\$&'\(\)\*\+,;=%\\`^\s|\{\}"<>]+"#;
 
-/// `PostActionType::LIKE_POST_ACTION_ID`
-const LIKE_POST_ACTION_ID: i64 = 2;
-
 /// `Archetype.list` minus private_message.
 const ARCHETYPES: &[&str] = &["regular", "banner"];
 
@@ -811,37 +808,13 @@ impl Site<'_> {
     }
 
     fn serialize_flag(&self, flag: &Flag, target: &str, used: &[i64]) -> Value {
-        let prefix = format!("{target}_types.{}", flag.name_key);
-        let base_path = [("base_path", self.base_path())];
-        // I18n.t without arguments leaves placeholders literal; with
-        // base_path passed, a missing placeholder falls back to the default.
-        let name = self
-            .i18n
-            .t(&format!("{prefix}.title"))
-            .unwrap_or(&flag.name);
-        let description = self
-            .i18n
-            .t_with(&format!("{prefix}.description"), &base_path)
-            .unwrap_or_else(|| flag.description.clone().unwrap_or_default());
-        let short_description = self
-            .i18n
-            .t_with(&format!("{prefix}.short_description"), &base_path)
-            .unwrap_or_default();
-        json!({
-            "id": flag.id,
-            "name": name,
-            "name_key": flag.name_key,
-            "description": description,
-            "short_description": short_description,
-            "applies_to": flag.applies_to,
-            "position": flag.position,
-            "require_message": flag.require_message,
-            "enabled": flag.enabled,
-            "is_flag": !flag.score_type && flag.id != LIKE_POST_ACTION_ID,
-            "is_used": used.contains(&flag.id),
-            "auto_action_type": flag.auto_action_type,
-            "system": flag.id < 1000,
-        })
+        crate::admin_flags::serialize(
+            self.i18n,
+            self.base_path(),
+            flag,
+            target,
+            used.contains(&flag.id),
+        )
     }
 
     /// `Tag.top_tags(guardian:)`: visible tags with topics in allowed
@@ -1239,19 +1212,7 @@ impl Site<'_> {
     }
 }
 
-#[derive(sqlx::FromRow)]
-struct Flag {
-    id: i64,
-    name: String,
-    name_key: String,
-    description: Option<String>,
-    applies_to: Vec<String>,
-    position: Option<i32>,
-    require_message: bool,
-    enabled: bool,
-    score_type: bool,
-    auto_action_type: bool,
-}
+use crate::admin_flags::Flag;
 
 impl From<CategoriesError> for SiteError {
     fn from(e: CategoriesError) -> Self {

@@ -1,0 +1,395 @@
+{
+  "name": "create",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/config/flags.json",
+      "params": {
+        "name": "Too  loud!",
+        "description": "Shouting in <b>caps</b>",
+        "applies_to": [
+          "Post",
+          "Topic"
+        ],
+        "require_message": false,
+        "enabled": true,
+        "auto_action_type": false
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/config/flags.json",
+      "params": {
+        "name": "Too  loud!",
+        "description": "Again",
+        "applies_to": [
+          "Post"
+        ],
+        "require_message": false,
+        "enabled": true,
+        "auto_action_type": false
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/config/flags.json",
+      "params": {
+        "name": "Too loud",
+        "description": "Same key",
+        "applies_to": [
+          "Topic"
+        ],
+        "require_message": "true",
+        "enabled": "false",
+        "auto_action_type": "true"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/config/flags.json",
+      "params": {
+        "name": "",
+        "description": "",
+        "applies_to": [
+          "Post"
+        ],
+        "require_message": false,
+        "enabled": true,
+        "auto_action_type": false
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/config/flags.json",
+      "params": {
+        "name": "Odd",
+        "description": "Bad target",
+        "applies_to": [
+          "Nope"
+        ],
+        "require_message": false,
+        "enabled": true,
+        "auto_action_type": false
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/config/flags.json",
+      "params": {
+        "name": "Spam",
+        "description": "Same name as a system flag",
+        "applies_to": [
+          "Chat::Message"
+        ],
+        "require_message": false,
+        "enabled": true,
+        "auto_action_type": false
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/flags.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/flags/new.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/flags/1001.json"
+    }
+  ],
+  "started_at": "2026-10-14T12:53:37.178935",
+  "transaction_started_at": "2026-10-14T12:53:32.312858",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "flag": {
+          "id": 1001,
+          "name": "Too  loud!",
+          "name_key": "custom_too_loud",
+          "description": "Shouting in <b>caps</b>",
+          "short_description": "",
+          "applies_to": [
+            "Post",
+            "Topic"
+          ],
+          "position": 7,
+          "require_message": false,
+          "enabled": true,
+          "is_flag": true,
+          "is_used": false,
+          "auto_action_type": false,
+          "system": false
+        }
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Flag name must be unique"
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "flag": {
+          "id": 1002,
+          "name": "Too loud",
+          "name_key": "custom_too_loud_2",
+          "description": "Same key",
+          "short_description": "",
+          "applies_to": [
+            "Topic"
+          ],
+          "position": 8,
+          "require_message": true,
+          "enabled": false,
+          "is_flag": true,
+          "is_used": false,
+          "auto_action_type": true,
+          "system": false
+        }
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "failed": "FAILED",
+        "errors": [
+          "Name can't be blank",
+          "Description can't be blank"
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "failed": "FAILED",
+        "errors": [
+          "Applies to is not included in the list"
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "flag": {
+          "id": 1003,
+          "name": "Spam",
+          "name_key": "custom_spam",
+          "description": "Same name as a system flag",
+          "short_description": "",
+          "applies_to": [
+            "Chat::Message"
+          ],
+          "position": 9,
+          "require_message": false,
+          "enabled": true,
+          "is_flag": true,
+          "is_used": false,
+          "auto_action_type": false,
+          "system": false
+        }
+      }
+    },
+    {
+      "status": 204,
+      "body": ""
+    },
+    {
+      "status": 204,
+      "body": ""
+    },
+    {
+      "status": 204,
+      "body": ""
+    }
+  ],
+  "changes": {
+    "flags": {
+      "inserted": [
+        {
+          "id": 1001,
+          "name": "Too  loud!",
+          "enabled": true,
+          "name_key": "custom_too_loud",
+          "position": 7,
+          "applies_to": [
+            "Post",
+            "Topic"
+          ],
+          "created_at": "2026-10-14T12:53:37.210981",
+          "score_type": false,
+          "updated_at": "2026-10-14T12:53:37.210981",
+          "description": "Shouting in <b>caps</b>",
+          "notify_type": true,
+          "require_message": false,
+          "auto_action_type": false
+        },
+        {
+          "id": 1002,
+          "name": "Too loud",
+          "enabled": false,
+          "name_key": "custom_too_loud_2",
+          "position": 8,
+          "applies_to": [
+            "Topic"
+          ],
+          "created_at": "2026-10-14T12:53:37.279043",
+          "score_type": false,
+          "updated_at": "2026-10-14T12:53:37.279043",
+          "description": "Same key",
+          "notify_type": true,
+          "require_message": true,
+          "auto_action_type": true
+        },
+        {
+          "id": 1003,
+          "name": "Spam",
+          "enabled": true,
+          "name_key": "custom_spam",
+          "position": 9,
+          "applies_to": [
+            "Chat::Message"
+          ],
+          "created_at": "2026-10-14T12:53:37.353262",
+          "score_type": false,
+          "updated_at": "2026-10-14T12:53:37.353262",
+          "description": "Same name as a system flag",
+          "notify_type": true,
+          "require_message": false,
+          "auto_action_type": false
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 112,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "UoeL5d+d41ktnoxcrXugThWPg6I=",
+            "created_at": "2026-10-14T12:53:34.691201",
+            "rotated_at": "2026-10-14T12:53:34.680937",
+            "updated_at": "2026-10-14T12:53:34.691201",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "UoeL5d+d41ktnoxcrXugThWPg6I=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 112,
+            "seen_at": "2026-10-14T12:53:37.188063",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "UoeL5d+d41ktnoxcrXugThWPg6I=",
+            "created_at": "2026-10-14T12:53:34.691201",
+            "rotated_at": "2026-10-14T12:53:34.680937",
+            "updated_at": "2026-10-14T12:53:34.691201",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "UoeL5d+d41ktnoxcrXugThWPg6I=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 23,
+          "context": null,
+          "details": "name: Too  loud!\ndescription: Shouting in <b>caps</b>\napplies_to: [\"Post\", \"Topic\"]\nrequire_message: false\nenabled: true",
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-14T12:53:37.221337",
+          "ip_address": null,
+          "updated_at": "2026-10-14T12:53:37.221337",
+          "category_id": null,
+          "custom_type": "create_flag",
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 75,
+          "email": null,
+          "action": 23,
+          "context": null,
+          "details": "name: Too loud\ndescription: Same key\napplies_to: [\"Topic\"]\nrequire_message: true\nenabled: false",
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-14T12:53:37.281017",
+          "ip_address": null,
+          "updated_at": "2026-10-14T12:53:37.281017",
+          "category_id": null,
+          "custom_type": "create_flag",
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 76,
+          "email": null,
+          "action": 23,
+          "context": null,
+          "details": "name: Spam\ndescription: Same name as a system flag\napplies_to: [\"Chat::Message\"]\nrequire_message: false\nenabled: true",
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-14T12:53:37.355373",
+          "ip_address": null,
+          "updated_at": "2026-10-14T12:53:37.355373",
+          "category_id": null,
+          "custom_type": "create_flag",
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "flags": 1001,
+    "user_histories": 74
+  },
+  "setup": [
+    "SELECT setval('flags_id_seq', 1000, true)"
+  ],
+  "recorded_from": {
+    "case": "b40918198e1fa765be9a3840855a66d92c6c0bf6f593b61b78d87a2876b73cfd",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

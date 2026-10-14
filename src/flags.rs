@@ -70,6 +70,18 @@ pub async fn update_counters(
     let name = types
         .name(type_id)
         .ok_or(Unsupported("counting an unknown post action type"))?;
+    // Only a type with a posts column of its own (a custom flag has none).
+    let column = format!("{name}_count");
+    let exists: bool = sqlx::query_scalar(
+        "SELECT EXISTS (SELECT 1 FROM pg_attribute \
+         WHERE attrelid = 'posts'::regclass AND attname = $1 AND NOT attisdropped)",
+    )
+    .bind(&column)
+    .fetch_one(&mut *conn)
+    .await?;
+    if !exists {
+        return Ok(());
+    }
     sqlx::query(&format!(
         "UPDATE posts SET {name}_count = (SELECT COUNT(*) FROM post_actions WHERE post_id = $1 \
                                           AND post_action_type_id = $2 AND deleted_at IS NULL) \

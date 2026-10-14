@@ -1,0 +1,138 @@
+{
+  "name": "moderator",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/config/flags.json",
+      "params": {
+        "name": "Mod flag",
+        "description": "By a moderator",
+        "applies_to": [
+          "Post"
+        ],
+        "require_message": false,
+        "enabled": true,
+        "auto_action_type": false
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/config/flags/3/toggle.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/config/flags/4/reorder/down.json"
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/config/flags/3.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/flags.json"
+    }
+  ],
+  "started_at": "2026-10-14T12:53:48.92692",
+  "transaction_started_at": "2026-10-14T12:53:45.94886",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 112,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "W0I2kbbIXQTO/egKBYJ4LgKyesY=",
+            "created_at": "2026-10-14T12:53:46.946703",
+            "rotated_at": "2026-10-14T12:53:46.94362",
+            "updated_at": "2026-10-14T12:53:46.946703",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "W0I2kbbIXQTO/egKBYJ4LgKyesY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 112,
+            "seen_at": "2026-10-14T12:53:48.939663",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "W0I2kbbIXQTO/egKBYJ4LgKyesY=",
+            "created_at": "2026-10-14T12:53:46.946703",
+            "rotated_at": "2026-10-14T12:53:46.94362",
+            "updated_at": "2026-10-14T12:53:46.946703",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "W0I2kbbIXQTO/egKBYJ4LgKyesY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE users SET moderator = true WHERE id = 3",
+    "SELECT setval('flags_id_seq', 1000, true)"
+  ],
+  "recorded_from": {
+    "case": "c147138b3242a706ce4bd1756993ebc0e691caf9ee811bf5f33d838d6bbfadf4",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

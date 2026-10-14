@@ -1,0 +1,17 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO flags (id, name, name_key, description, notify_type, auto_action_type, applies_to, position, enabled, require_message, score_type, created_at, updated_at) VALUES (1001, 'Old', 'custom_old', 'An old one', true, false, '{Post}', 9, true, false, false, now() - interval '1 day', now() - interval '1 day'), (1002, 'Other', 'custom_other', 'Another', true, false, '{Topic}', 10, true, false, false, now() - interval '1 day', now() - interval '1 day')",
+    "INSERT INTO post_actions (post_id, user_id, post_action_type_id, created_at, updated_at) VALUES (52, 4, 1001, now() - interval '1 hour', now() - interval '1 hour')",
+    "SELECT setval('flags_id_seq', 1002, true)"
+  ],
+  "requests": [
+    {"method": "PUT", "path": "/admin/config/flags/1001.json", "params": {"name": "Renamed flag", "description": "New words", "applies_to": ["Post", "Topic"], "require_message": true, "enabled": false, "auto_action_type": true}},
+    {"method": "PUT", "path": "/admin/config/flags/1002.json", "params": {"name": "Other", "description": "Description only", "applies_to": ["Topic"], "require_message": false, "enabled": true, "auto_action_type": false}},
+    {"method": "PUT", "path": "/admin/config/flags/1002.json", "params": {"name": "Renamed flag", "description": "Clash", "applies_to": ["Topic"], "require_message": false, "enabled": true, "auto_action_type": false}},
+    {"method": "PUT", "path": "/admin/config/flags/3.json", "params": {"name": "Off", "description": "System", "applies_to": ["Post"], "require_message": false, "enabled": true, "auto_action_type": false}},
+    {"method": "PUT", "path": "/admin/config/flags/1500.json", "params": {"name": "Missing", "description": "None", "applies_to": ["Post"], "require_message": false, "enabled": true, "auto_action_type": false}},
+    {"method": "PUT", "path": "/admin/config/flags/1002.json", "params": {"name": "Other", "description": "", "applies_to": ["Post"]}},
+    {"method": "GET", "path": "/admin/config/flags/1001/edit.json"}
+  ]
+}

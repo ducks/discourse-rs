@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "settings": {"custom_flags_limit": 1},
+  "setup": [
+    "INSERT INTO flags (id, name, name_key, description, notify_type, auto_action_type, applies_to, position, enabled, require_message, score_type, created_at, updated_at) VALUES (1001, 'Old', 'custom_old', 'An old one', true, false, '{Post}', 9, true, false, false, now() - interval '1 day', now() - interval '1 day')",
+    "SELECT setval('flags_id_seq', 1001, true)"
+  ],
+  "requests": [
+    {"method": "POST", "path": "/admin/config/flags.json", "params": {"name": "Another", "description": "Over the limit", "applies_to": ["Post"], "require_message": false, "enabled": true, "auto_action_type": false}},
+    {"method": "POST", "path": "/admin/config/flags.json", "params": {"name": "", "description": "Over the limit and invalid", "applies_to": ["Post"]}}
+  ]
+}
