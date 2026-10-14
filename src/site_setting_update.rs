@@ -211,16 +211,33 @@ pub async fn update(
     if let Some(message) = invalid(def, &new_value, i18n)? {
         return Ok(Outcome::Invalid(format!("{name}: {message}")));
     }
-    let db_value = match &new_value {
-        Value::Bool(b) => if *b { "t" } else { "f" }.to_string(),
-        other => other.to_s(),
-    };
-    if def.client && def.data_type == DataType::String && db_value.contains(['<', '>', '&']) {
-        return Err(Unsupported("client string settings with markup (sanitize_field)").into());
-    }
-
     set_and_log(&mut *conn, bus, def, &previous, &new_value, actor.id).await?;
     Ok(Outcome::Done)
+}
+
+/// `add_override!`'s `sanitize_field` of a client setting's string: the
+/// value stored and published (the log keeps the given one). Applied to
+/// string settings; the port leaves the other string-valued types (lists,
+/// enums) as given.
+fn stored_value(
+    def: &crate::site_settings::Definition,
+    new_value: &Value,
+) -> Result<Value, AppError> {
+    if !def.client || def.data_type != DataType::String {
+        return Ok(new_value.clone());
+    }
+    match new_value {
+        Value::Bool(_) | Value::Int(_) | Value::Float(_) => Ok(new_value.clone()),
+        other => {
+            let text = other.to_s();
+            let sanitized = crate::sanitize_field::sanitize_field(&text, &[])?;
+            Ok(if sanitized == text {
+                new_value.clone()
+            } else {
+                Value::Str(sanitized)
+            })
+        }
+    }
 }
 
 /// `SiteSetting.<name> = value` for a boolean (`add_override!`): the
@@ -258,14 +275,15 @@ pub async fn set_and_log(
     actor_id: i32,
 ) -> Result<(), AppError> {
     let name = def.name.as_str();
-    let db_value = match new_value {
+    let stored = stored_value(def, new_value)?;
+    let db_value = match &stored {
         Value::Bool(b) => if *b { "t" } else { "f" }.to_string(),
         other => other.to_s(),
     };
     save_override(&mut *conn, def, &db_value).await?;
     // notify_clients!: the new value to every client, for client settings.
     if def.client {
-        let value = match new_value {
+        let value = match &stored {
             Value::Bool(b) => serde_json::json!(b),
             Value::Int(i) => serde_json::json!(i),
             Value::Float(f) => serde_json::json!(f),

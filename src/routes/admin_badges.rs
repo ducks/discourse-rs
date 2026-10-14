@@ -510,17 +510,35 @@ pub async fn mass_award(
             });
         return Ok(json_errors(&[message]));
     }
-    let Some(entries) = service::read_csv(&file)? else {
-        let count = service::MAX_CSV_LINES.to_string();
-        let message = state
-            .i18n
-            .t_with("badges.mass_award.errors.too_many_csv_entries", &[("count", &count)])
-            .unwrap_or_else(|| format!("Too many entries in the CSV file. Please upload a file with less than {count} rows."));
-        return Ok((
+    // render_json_error(error, status: 400)
+    let bad_request = |message: String| {
+        (
             StatusCode::BAD_REQUEST,
             Json(json!({ "errors": [message] })),
         )
-            .into_response());
+            .into_response()
+    };
+    let entries = match service::read_csv(&file)? {
+        service::Csv::Entries(entries) => entries,
+        service::Csv::TooMany => {
+            let count = service::MAX_CSV_LINES as i64;
+            let message = state
+                .i18n
+                .t_count("badges.mass_award.errors.too_many_csv_entries", count, &[])
+                .ok_or(Unsupported("the too_many_csv_entries message"))?;
+            return Ok(bad_request(message));
+        }
+        service::Csv::Malformed(line) => {
+            let line = line.to_string();
+            let message = state
+                .i18n
+                .t_with(
+                    "badges.mass_award.errors.invalid_csv",
+                    &[("line_number", &line)],
+                )
+                .ok_or(Unsupported("the invalid_csv message"))?;
+            return Ok(bad_request(message));
+        }
     };
     if replace {
         service::revoke_all(&mut tx, &badge).await?;
