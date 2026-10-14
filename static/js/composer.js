@@ -70,10 +70,13 @@
     control.classList.toggle("edit-title", mode === "create-topic");
     control.classList.toggle("topic", mode === "create-topic");
     fields.hidden = mode !== "create-topic";
-    var key = mode.replace("-", "");
-    var camel = { reply: "Reply", createtopic: "CreateTopic", edit: "Edit" }[key];
-    actionButton.innerHTML = data["action" + camel];
-    submit.innerHTML = data["submit" + camel];
+    actionButton.innerHTML = data["action" + modeName(mode)];
+    submit.innerHTML = data["submit" + modeName(mode)];
+  }
+
+  // The mode as the data attributes name it.
+  function modeName(mode) {
+    return { reply: "Reply", "create-topic": "CreateTopic", edit: "Edit" }[mode];
   }
 
   function showError(messages) {
@@ -343,6 +346,18 @@
   // area once the composer is visible.
   var replyArea = control.querySelector(".reply-area");
 
+  // The mobile view's icon discard: cancelIcon.
+  function applyDiscardIcon(mode) {
+    var discardIcon = control.querySelector(".discard-button.no-text use");
+    if (discardIcon) {
+      discardIcon.setAttribute("href", mode === "edit" ? "#xmark" : "#trash-can");
+      discardIcon.parentNode.setAttribute(
+        "class",
+        "fa d-icon d-icon-" + (mode === "edit" ? "xmark" : "trash-can") + " svg-icon fa-width-auto svg-string"
+      );
+    }
+  }
+
   function open(opts) {
     replyArea.hidden = false;
     if (state && state.mode === opts.mode && control.classList.contains("draft")) {
@@ -352,15 +367,7 @@
     state = opts;
     var s = state;
     setMode(opts.mode);
-    // The mobile view's icon discard: cancelIcon.
-    var discardIcon = control.querySelector(".discard-button.no-text use");
-    if (discardIcon) {
-      discardIcon.setAttribute("href", opts.mode === "edit" ? "#xmark" : "#trash-can");
-      discardIcon.parentNode.setAttribute(
-        "class",
-        "fa d-icon d-icon-" + (opts.mode === "edit" ? "xmark" : "trash-can") + " svg-icon fa-width-auto svg-string"
-      );
-    }
+    applyDiscardIcon(opts.mode);
     if (opts.mode === "reply" && opts.replyToUsername) {
       actionButton.querySelector(".d-button-label").textContent =
         opts.replyToUsername;
@@ -475,10 +482,17 @@
 
   function toggleFullscreen() {
     saveDraft();
-    var on = !control.classList.contains("fullscreen");
-    control.classList.toggle("fullscreen", on);
+    control.classList.toggle("fullscreen", !control.classList.contains("fullscreen"));
+    applyFullscreen();
+  }
+
+  function applyFullscreen() {
+    var on = control.classList.contains("fullscreen");
     document.body.classList.toggle("fullscreen-composer", on);
     var button = control.querySelector(".toggle-fullscreen");
+    if (!button) {
+      return;
+    }
     button.title = on ? data.labelExitFullscreen : data.labelFullscreen;
     button.querySelector("use").setAttribute(
       "href",
@@ -685,13 +699,14 @@
     previewTimer = setTimeout(updatePreview, 30);
   }
 
+  // The mobile view has no preview toggle, and shows no preview.
   function applyPreviewShown() {
+    var shown = Boolean(previewToggle) && previewShown();
+    control.classList.toggle("show-preview", shown);
+    control.classList.toggle("hide-preview", !shown);
     if (!previewToggle) {
       return;
     }
-    var shown = previewShown();
-    control.classList.toggle("show-preview", shown);
-    control.classList.toggle("hide-preview", !shown);
     previewToggle.hidden = data.allowPreview === "false";
     previewToggle.classList.toggle("active", !shown);
     previewToggle.title = shown ? data.labelHidePreview : data.labelShowPreview;
@@ -890,6 +905,49 @@
     } else if (control.classList.contains("draft")) {
       expand();
     }
+  });
+
+  // A redraw in the other layout (page.js) keeps the composer, its text
+  // and its state, and takes the layout's controls from the new page:
+  // ComposerToggles, and the save and discard buttons with what goes
+  // beside them (the panel's nodes before the upload line).
+  function lead(panel) {
+    var nodes = [];
+    for (var n = panel.firstChild; n && !(n.matches && n.matches("#file-uploading, #draft-status, .composer-error")); n = n.nextSibling) {
+      nodes.push(n);
+    }
+    return nodes;
+  }
+
+  control.addEventListener("discourse:redraw", function (event) {
+    var incoming = event.detail;
+    control.querySelector(".composer-controls").replaceWith(incoming.querySelector(".composer-controls"));
+    var panel = control.querySelector(".submit-panel");
+    var before = lead(panel);
+    var rest = before.length ? before[before.length - 1].nextSibling : panel.firstChild;
+    before.forEach(function (n) {
+      n.remove();
+    });
+    lead(incoming.querySelector(".submit-panel")).forEach(function (n) {
+      panel.insertBefore(n, rest);
+    });
+    var saving = submit.disabled;
+    submit = control.querySelector(".save-or-cancel .create");
+    submit.disabled = saving;
+    previewToggle = control.querySelector(".toggle-preview");
+    if (state) {
+      submit.innerHTML = data["submit" + modeName(state.mode)];
+      applyDiscardIcon(state.mode);
+    }
+    var toolbar = control.querySelector(".toggle-toolbar");
+    if (toolbar) {
+      toolbar.title = control.querySelector(".wmd-controls").classList.contains("toolbar-visible")
+        ? data.labelHideToolbar
+        : data.labelShowToolbar;
+    }
+    applyFullscreen();
+    applyPreviewShown();
+    updatePreview();
   });
 
   // d-editor's focus ring is on the wrapper.

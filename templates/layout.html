@@ -2,8 +2,8 @@
 {% import "macros.html" as m %}
 {#- The classes the Ember client sets on <html>: DStyles' mobile-view or
     desktop-view for the layout the page is rendered in (crate::mobile), and
-    sniff-capabilities' touch classes, which the head script below corrects
-    for the browser. -#}
+    sniff-capabilities' touch classes, which page.js corrects for the
+    browser. -#}
 {%- let mobile = crate::mobile::mobile_view() %}
 {#- The mobile header's buttons (Header::Icons): search, which opens the
     full-page search with the route's search context (Header#toggleSearchMenu
@@ -20,53 +20,6 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script>
-      // sniff-capabilities: touch when any pointer is coarse, and the iOS
-      // classes. Then Site#mobileView: below 40rem the page is the mobile
-      // layout. The server renders the one the mobile_view cookie names
-      // (its guess from the user agent without one, crate::mobile), so the
-      // cookie follows the viewport and a page in the wrong layout, or a
-      // window crossing the breakpoint, loads again in the right one.
-      (function () {
-        var html = document.documentElement;
-        var ua = navigator.userAgent;
-        var touch = window.matchMedia("(any-pointer: coarse)").matches;
-        if (touch) {
-          html.classList.remove("no-touch", "discourse-no-touch");
-          html.classList.add("touch", "discourse-touch");
-        }
-        var ipados = ua.indexOf("Mac OS") !== -1 && !/iPhone|iPod/.test(ua) && touch;
-        if (ipados) {
-          html.classList.add("ipados-device");
-        }
-        if (/iPhone|iPod/.test(ua) || ipados) {
-          html.classList.add("ios-device");
-        }
-        var sm = window.matchMedia("(min-width: 40rem)");
-        function sync() {
-          var value = "mobile_view=" + (sm.matches ? "0" : "1");
-          document.cookie = value + "; path={{ base_path }}/; max-age=31536000; samesite=lax";
-          var rendered = html.classList.contains("mobile-view") ? "1" : "0";
-          var wanted = sm.matches ? "0" : "1";
-          // Only when the cookie took, so a browser without cookies keeps
-          // the server's guess instead of reloading forever, and not again
-          // for a page that came back in the wrong layout just now.
-          if (rendered !== wanted && document.cookie.split("; ").indexOf(value) !== -1) {
-            var last = null;
-            try { last = JSON.parse(sessionStorage.getItem("mobile-view-reload")); } catch (_) {}
-            if (last && last.url === location.href && last.wanted === wanted && Date.now() - last.at < 5000) {
-              return;
-            }
-            try {
-              sessionStorage.setItem("mobile-view-reload", JSON.stringify({ url: location.href, wanted: wanted, at: Date.now() }));
-            } catch (_) {}
-            window.location.reload();
-          }
-        }
-        sync();
-        sm.addEventListener("change", sync);
-      })();
-    </script>
     {%- if !chrome.favicon_url.is_empty() %}
     <link rel="icon" type="{{ chrome.favicon_type }}" href="{{ chrome.favicon_url }}">
     {%- endif %}
@@ -109,9 +62,9 @@
     <script src="{{ crate::assets::url(base_path, "floating-ui.core.umd.min.js") }}"></script>
     <script src="{{ crate::assets::url(base_path, "floating-ui.dom.umd.min.js") }}"></script>
     <script src="{{ crate::assets::url(base_path, "float.js") }}"></script>
-    {%- if mobile %}
+    {#- The mobile view's nav menu; loaded in both views, so a redraw in the
+        other layout (page.js) brings no head of its own. -#}
     <script src="{{ crate::assets::url(base_path, "navigation-bar.js") }}" defer></script>
-    {%- endif %}
     <script src="{{ crate::assets::url(base_path, "lightbox.js") }}" defer data-lightbox="{{ crate::assets::url(base_path, "photoswipe-lightbox.esm.min.js") }}" data-photoswipe="{{ crate::assets::url(base_path, "photoswipe.esm.min.js") }}"{{ chrome.lightbox_attrs|safe }}></script>
     {%- if !chrome.highlight_js_path.is_empty() %}
     <meta name="discourse-highlight-js" content="{{ chrome.highlight_js_path }}" data-core="{{ crate::assets::url(base_path, "highlightjs-core.min.js") }}"{% if chrome.autohighlight_all_code %} data-all-code{% endif %}>

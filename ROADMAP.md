@@ -622,20 +622,17 @@ with the viewport, guessing from the user agent without it
     the hamburger's slide-in sidebar, the nav items as a bottom sheet,
     the topic list's mobile rows and last visit marker, the categories
     page's mobile style
-92b. `feat/mobile-redraw` M: crossing the 40rem breakpoint redraws the
-    page in place, as Ember does, instead of reloading it. Today the
-    layout's head script (templates/layout.html) writes the
-    `mobile_view` cookie and calls `location.reload()`, which flashes,
-    drops scroll position and loses open menus and the composer. Instead
-    the client asks for the current URL again with the new cookie and
-    swaps the body and the `<html>` classes as page.js does for a boosted
-    navigation (the stylesheets carry both layouts' media queries, so
-    none load), keeping the scroll position on the same post, an open
-    composer with its draft, and the sidebar's state. The first visit's
-    wrong guess (no cookie, the user agent guessed wrong) swaps the same
-    way rather than reloading. Measured with `scripts/parity-screenshots
-    --mobile` and a resize across the breakpoint on the topic page, the
-    topic list and the composer.
+92b. ~~`feat/mobile-redraw`~~ (done) M: crossing the 40rem breakpoint
+    redraws the page in place, as Ember does, instead of reloading it:
+    page.js writes the `mobile_view` cookie, asks for the current URL
+    again and swaps the body and the `<html>` classes as for a boosted
+    navigation (both layouts load the same head), keeping the post or
+    topic row being read where it was, an open composer with its text,
+    caret and state (composer.js takes the new layout's controls), and
+    the sidebar's state. A first visit the user agent guessed wrong
+    stays blank until the right layout is in; a failed request falls
+    back to a reload, guarded against loops; a browser without cookies
+    keeps the server's guess
 93. ~~`feat/mobile-topic-page`~~ (done) M: the progress bar for the
     timeline, the topic map without participants, the post menu's icon
     Reply, suggested topics' mobile rows
