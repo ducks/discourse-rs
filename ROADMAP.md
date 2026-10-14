@@ -278,8 +278,10 @@ then by what running a forum needs (milestone 6). Briefs:
     82d. ~~`feat/group-email-domains`~~ (done) S
     (automatic_group_membership, set_automatic_groups on confirmation;
     DiscourseConnect external emails refused),
-    82e. `feat/group-membership-requests` S (join, leave,
-    request_membership, handle_membership_request, set_notifications)
+    82e. ~~`feat/group-membership-requests`~~ (done) S (join, leave,
+    request_membership, handle_membership_request, set_notifications,
+    the request message's topic custom field and requested_group_name;
+    requests in locales other than English refused)
 83. `feat/web-hooks` L: web hooks, their events from core, deliveries
     and the scheduled jobs, 84. `feat/user-api-keys` M (and their jobs)
 85. `feat/admin-badges` M: creating, editing, deleting badges and

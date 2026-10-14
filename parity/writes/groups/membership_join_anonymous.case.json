@@ -1,0 +1,11 @@
+{
+  "setup": [
+    "INSERT INTO groups (id, name, public_admission, created_at, updated_at) VALUES (9001, 'open', TRUE, '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/groups/9001/join.json"
+    }
+  ]
+}

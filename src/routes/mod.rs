@@ -16,6 +16,7 @@ mod do_not_disturb;
 mod drafts;
 mod email;
 mod emojis;
+mod group_membership;
 mod groups;
 mod hashtags;
 mod highlight_js;
@@ -835,6 +836,62 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/groups/{name}/owners.json", put(admin_groups::add_owners))
         .route("/g/{name}/owners", put(admin_groups::add_owners))
         .route("/g/{name}/owners.json", put(admin_groups::add_owners))
+        .route("/groups/{name}/join", put(group_membership::join))
+        .route("/groups/{name}/leave", delete(group_membership::leave))
+        .route(
+            "/groups/{name}/handle_membership_request",
+            put(group_membership::handle_membership_request),
+        )
+        .route(
+            "/groups/{name}/request_membership",
+            post(group_membership::request_membership),
+        )
+        .route(
+            "/groups/{name}/notifications",
+            post(group_membership::set_notifications),
+        )
+        .route("/groups/{name}/join.json", put(group_membership::join))
+        .route("/groups/{name}/leave.json", delete(group_membership::leave))
+        .route(
+            "/groups/{name}/handle_membership_request.json",
+            put(group_membership::handle_membership_request),
+        )
+        .route(
+            "/groups/{name}/request_membership.json",
+            post(group_membership::request_membership),
+        )
+        .route(
+            "/groups/{name}/notifications.json",
+            post(group_membership::set_notifications),
+        )
+        .route("/g/{name}/join", put(group_membership::join))
+        .route("/g/{name}/leave", delete(group_membership::leave))
+        .route(
+            "/g/{name}/handle_membership_request",
+            put(group_membership::handle_membership_request),
+        )
+        .route(
+            "/g/{name}/request_membership",
+            post(group_membership::request_membership),
+        )
+        .route(
+            "/g/{name}/notifications",
+            post(group_membership::set_notifications),
+        )
+        .route("/g/{name}/join.json", put(group_membership::join))
+        .route("/g/{name}/leave.json", delete(group_membership::leave))
+        .route(
+            "/g/{name}/handle_membership_request.json",
+            put(group_membership::handle_membership_request),
+        )
+        .route(
+            "/g/{name}/request_membership.json",
+            post(group_membership::request_membership),
+        )
+        .route(
+            "/g/{name}/notifications.json",
+            post(group_membership::set_notifications),
+        )
         .route("/admin/groups", post(admin_groups::create))
         .route("/admin/groups.json", post(admin_groups::create))
         .route(

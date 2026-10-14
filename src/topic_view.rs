@@ -520,6 +520,27 @@ impl TopicView<'_> {
             out.insert("queued_posts_count".into(), json!(count));
         }
         out.insert("show_read_indicator".into(), json!(false));
+        // requested_group_name: a membership request's message, named for
+        // the owners of the group it asks to join.
+        let requested: Option<Option<String>> = sqlx::query_scalar(
+            "SELECT tcf.value FROM topic_custom_fields tcf JOIN topics t ON t.id = tcf.topic_id \
+             WHERE tcf.topic_id = $1 AND tcf.name = 'requested_group_id' \
+               AND t.archetype = 'private_message' ORDER BY tcf.id LIMIT 1",
+        )
+        .bind(topic.id)
+        .fetch_optional(&mut *self.conn)
+        .await?;
+        if let Some(Some(group_id)) = requested {
+            let name: Option<String> = sqlx::query_scalar(
+                "SELECT g.name FROM groups g JOIN group_users gu ON gu.group_id = g.id \
+                 WHERE g.id = $1 AND gu.user_id = $2 AND gu.owner LIMIT 1",
+            )
+            .bind(crate::ruby::to_i(&group_id) as i32)
+            .bind(self.guardian.user_id().unwrap_or(0))
+            .fetch_optional(&mut *self.conn)
+            .await?;
+            out.insert("requested_group_name".into(), json!(name));
+        }
         if topic.image_upload_id.is_some() {
             return Err(Unsupported("topic thumbnails").into());
         }
