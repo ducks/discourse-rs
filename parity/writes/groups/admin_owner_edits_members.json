@@ -1,0 +1,146 @@
+{
+  "name": "admin_owner_edits_members",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/groups/9001/members.json",
+      "params": {
+        "usernames": "user2"
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/groups/9001/members.json",
+      "params": {
+        "usernames": "user2"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/groups/9002/members.json",
+      "params": {
+        "usernames": "user2"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T08:19:52.275662",
+  "transaction_started_at": "2026-10-14T08:19:51.187062",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "usernames": [
+          "user2"
+        ],
+        "emails": []
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "usernames": [
+          "user2"
+        ],
+        "skipped_usernames": []
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {
+    "group_histories": {
+      "inserted": [
+        {
+          "id": 1,
+          "action": 2,
+          "subject": null,
+          "group_id": 9001,
+          "new_value": null,
+          "created_at": "2026-10-14T08:19:52.317636",
+          "prev_value": null,
+          "updated_at": "2026-10-14T08:19:52.317636",
+          "acting_user_id": 3,
+          "target_user_id": 4
+        },
+        {
+          "id": 2,
+          "action": 3,
+          "subject": null,
+          "group_id": 9001,
+          "new_value": null,
+          "created_at": "2026-10-14T08:19:52.387259",
+          "prev_value": null,
+          "updated_at": "2026-10-14T08:19:52.387259",
+          "acting_user_id": 3,
+          "target_user_id": 4
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 82,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "wkGMqnhwodprl8T0VbMnyysRZQU=",
+            "created_at": "2026-10-14T08:19:51.608658",
+            "rotated_at": "2026-10-14T08:19:51.607262",
+            "updated_at": "2026-10-14T08:19:51.608658",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "wkGMqnhwodprl8T0VbMnyysRZQU=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 82,
+            "seen_at": "2026-10-14T08:19:52.283986",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "wkGMqnhwodprl8T0VbMnyysRZQU=",
+            "created_at": "2026-10-14T08:19:51.608658",
+            "rotated_at": "2026-10-14T08:19:51.607262",
+            "updated_at": "2026-10-14T08:19:51.608658",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "wkGMqnhwodprl8T0VbMnyysRZQU=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "group_histories": 1
+  },
+  "setup": [
+    "INSERT INTO groups (id, name, user_count, created_at, updated_at) VALUES (9001, 'testers', 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO group_users (id, group_id, user_id, owner, notification_level, created_at, updated_at) VALUES (90001, 9001, 3, TRUE, 3, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO groups (id, name, user_count, created_at, updated_at) VALUES (9002, 'others', 0, '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "recorded_from": {
+    "case": "5933d5ffdb043f0e95851d68f8df30f6bcd277cbbb5e1f8878f3e273764bbcb8",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

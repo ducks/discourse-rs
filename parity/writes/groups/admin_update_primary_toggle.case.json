@@ -1,0 +1,29 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO groups (id, name, user_count, created_at, updated_at) VALUES (9001, 'testers', 2, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO group_users (id, group_id, user_id, owner, notification_level, created_at, updated_at) VALUES (90001, 9001, 3, FALSE, 3, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO group_users (id, group_id, user_id, owner, notification_level, created_at, updated_at) VALUES (90002, 9001, 4, FALSE, 3, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "UPDATE users SET flair_group_id = 12 WHERE id = 4"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/groups/9001.json",
+      "params": {
+        "group": {
+          "primary_group": "true"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/groups/9001.json",
+      "params": {
+        "group": {
+          "primary_group": "false"
+        }
+      }
+    }
+  ]
+}

@@ -130,12 +130,46 @@ pub async fn create(
     params: &[(String, String)],
     post_alert_options: Option<Value>,
 ) -> Result<i32, AppError> {
-    if !ctx
-        .settings
-        .get("site_contact_group_name")?
-        .to_s()
-        .trim()
-        .is_empty()
+    create_as(
+        pool,
+        ctx,
+        recipient_id,
+        message_type,
+        params,
+        post_alert_options,
+        false,
+    )
+    .await
+}
+
+/// `SystemMessage.create_from_system_user`: from the system user, not
+/// archived for it, no site contact group.
+pub async fn create_from_system_user(
+    pool: &PgPool,
+    ctx: &Ctx<'_>,
+    recipient_id: i32,
+    message_type: &str,
+    params: &[(String, String)],
+) -> Result<i32, AppError> {
+    create_as(pool, ctx, recipient_id, message_type, params, None, true).await
+}
+
+async fn create_as(
+    pool: &PgPool,
+    ctx: &Ctx<'_>,
+    recipient_id: i32,
+    message_type: &str,
+    params: &[(String, String)],
+    post_alert_options: Option<Value>,
+    from_system: bool,
+) -> Result<i32, AppError> {
+    if !from_system
+        && !ctx
+            .settings
+            .get("site_contact_group_name")?
+            .to_s()
+            .trim()
+            .is_empty()
     {
         return Err(Unsupported("system messages copied to a site contact group").into());
     }
@@ -158,7 +192,15 @@ pub async fn create(
     let title = template("subject_template")?;
     let raw = template("text_body_template")?;
 
-    let sender = site_contact(&mut conn, ctx).await?;
+    let sender = if from_system {
+        sqlx::query_as(&format!(
+            "SELECT {SESSION_USER_COLUMNS} FROM users WHERE users.id = -1"
+        ))
+        .fetch_one(&mut *conn)
+        .await?
+    } else {
+        site_contact(&mut conn, ctx).await?
+    };
     let guardian = Guardian::for_user(&mut conn, &sender).await?;
     drop(conn);
     let outcome = create::create(
@@ -188,6 +230,9 @@ pub async fn create(
             .truthy()
     {
         narrative_advanced_invite(pool, ctx, &recipient).await?;
+    }
+    if from_system {
+        return Ok(post_id);
     }
     // UserArchivedMessage.create!(user: site_contact_user, topic:)
     sqlx::query(

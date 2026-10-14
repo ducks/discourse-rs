@@ -1,0 +1,50 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO groups (id, name, automatic_membership_email_domains, created_at, updated_at) VALUES (9001, 'domains', 'example.com', '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/groups/automatic_membership_count.json",
+      "params": {
+        "automatic_membership_email_domains": "example.com"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/groups/automatic_membership_count.json",
+      "params": {
+        "automatic_membership_email_domains": "Example.com|nothing.org"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/groups/automatic_membership_count.json",
+      "params": {
+        "automatic_membership_email_domains": "example.com",
+        "id": "9001"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/groups/automatic_membership_count.json",
+      "params": {
+        "automatic_membership_email_domains": "d0.com|d1.com|d2.com|d3.com|d4.com|d5.com|d6.com|d7.com|d8.com|d9.com|d10.com"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/groups/automatic_membership_count.json",
+      "params": {
+        "automatic_membership_email_domains": "example.com",
+        "id": "11"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/groups/automatic_membership_count.json",
+      "params": {}
+    }
+  ]
+}

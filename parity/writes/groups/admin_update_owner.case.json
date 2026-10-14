@@ -1,0 +1,40 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO groups (id, name, user_count, created_at, updated_at) VALUES (9001, 'testers', 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO group_users (id, group_id, user_id, owner, notification_level, created_at, updated_at) VALUES (90001, 9001, 3, TRUE, 3, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO groups (id, name, created_at, updated_at) VALUES (9002, 'others', '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/groups/9001.json",
+      "params": {
+        "group": {
+          "full_name": "Owned",
+          "title": "Ignored",
+          "visibility_level": "2",
+          "public_admission": "true"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/groups/9002.json",
+      "params": {
+        "group": {
+          "full_name": "Nope"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/groups/11.json",
+      "params": {
+        "group": {
+          "full_name": "Nope"
+        }
+      }
+    }
+  ]
+}

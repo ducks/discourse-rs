@@ -1,0 +1,587 @@
+{
+  "name": "admin_add_members_notify",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/groups/9001/members.json",
+      "params": {
+        "usernames": "user1",
+        "notify_users": "true"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T08:19:25.635882",
+  "transaction_started_at": "2026-10-14T08:19:23.680404",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "usernames": [
+          "user1"
+        ],
+        "emails": []
+      }
+    }
+  ],
+  "changes": {
+    "group_histories": {
+      "inserted": [
+        {
+          "id": 1,
+          "action": 2,
+          "subject": null,
+          "group_id": 9001,
+          "new_value": null,
+          "created_at": "2026-10-14T08:19:25.715695",
+          "prev_value": null,
+          "updated_at": "2026-10-14T08:19:25.715695",
+          "acting_user_id": 1,
+          "target_user_id": 3
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "group_users": {
+      "inserted": [
+        {
+          "id": 68,
+          "owner": false,
+          "user_id": 3,
+          "group_id": 9001,
+          "created_at": "2026-10-14T08:19:23.680404",
+          "updated_at": "2026-10-14T08:19:23.680404",
+          "first_unread_pm_at": "2026-10-14T08:19:23.680404",
+          "notification_level": 3
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "groups": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 9001,
+            "name": "testers",
+            "title": null,
+            "bio_raw": null,
+            "imap_ssl": null,
+            "automatic": false,
+            "full_name": "Test Team",
+            "imap_port": null,
+            "smtp_port": null,
+            "bio_cooked": null,
+            "created_at": "2026-10-01T10:00:00",
+            "flair_icon": null,
+            "updated_at": "2026-10-01T10:00:00",
+            "user_count": 0,
+            "flair_color": null,
+            "imap_server": null,
+            "public_exit": false,
+            "smtp_server": null,
+            "has_messages": false,
+            "imap_enabled": false,
+            "smtp_enabled": false,
+            "imap_last_uid": 0,
+            "primary_group": false,
+            "smtp_ssl_mode": 0,
+            "email_password": null,
+            "email_username": null,
+            "flair_bg_color": null,
+            "incoming_email": null,
+            "flair_upload_id": null,
+            "imap_last_error": null,
+            "imap_new_emails": null,
+            "imap_old_emails": null,
+            "imap_updated_at": null,
+            "smtp_updated_at": null,
+            "assignable_level": 0,
+            "email_from_alias": null,
+            "public_admission": false,
+            "visibility_level": 0,
+            "grant_trust_level": null,
+            "imap_mailbox_name": "",
+            "imap_uid_validity": 0,
+            "mentionable_level": 0,
+            "messageable_level": 0,
+            "imap_updated_by_id": null,
+            "publish_read_state": false,
+            "smtp_updated_by_id": null,
+            "members_visibility_level": 0,
+            "allow_membership_requests": false,
+            "default_notification_level": 3,
+            "membership_request_template": null,
+            "allow_unknown_sender_topic_replies": false,
+            "automatic_membership_email_domains": null
+          },
+          "after": {
+            "id": 9001,
+            "name": "testers",
+            "title": null,
+            "bio_raw": null,
+            "imap_ssl": null,
+            "automatic": false,
+            "full_name": "Test Team",
+            "imap_port": null,
+            "smtp_port": null,
+            "bio_cooked": null,
+            "created_at": "2026-10-01T10:00:00",
+            "flair_icon": null,
+            "updated_at": "2026-10-01T10:00:00",
+            "user_count": 1,
+            "flair_color": null,
+            "imap_server": null,
+            "public_exit": false,
+            "smtp_server": null,
+            "has_messages": false,
+            "imap_enabled": false,
+            "smtp_enabled": false,
+            "imap_last_uid": 0,
+            "primary_group": false,
+            "smtp_ssl_mode": 0,
+            "email_password": null,
+            "email_username": null,
+            "flair_bg_color": null,
+            "incoming_email": null,
+            "flair_upload_id": null,
+            "imap_last_error": null,
+            "imap_new_emails": null,
+            "imap_old_emails": null,
+            "imap_updated_at": null,
+            "smtp_updated_at": null,
+            "assignable_level": 0,
+            "email_from_alias": null,
+            "public_admission": false,
+            "visibility_level": 0,
+            "grant_trust_level": null,
+            "imap_mailbox_name": "",
+            "imap_uid_validity": 0,
+            "mentionable_level": 0,
+            "messageable_level": 0,
+            "imap_updated_by_id": null,
+            "publish_read_state": false,
+            "smtp_updated_by_id": null,
+            "members_visibility_level": 0,
+            "allow_membership_requests": false,
+            "default_notification_level": 3,
+            "membership_request_template": null,
+            "allow_unknown_sender_topic_replies": false,
+            "automatic_membership_email_domains": null
+          }
+        }
+      ]
+    },
+    "post_search_data": {
+      "inserted": [
+        {
+          "locale": "en",
+          "post_id": 53,
+          "version": 5,
+          "raw_data": "You have been added as a member of the Test Team group.",
+          "search_data": "'ad':4A,16 'group':12A,24 'member':7A,19 'team':11A,23 'test':10A,22",
+          "private_message": true
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_stats": {
+      "inserted": [
+        {
+          "id": 52,
+          "post_id": 53,
+          "created_at": "2026-10-14T08:19:27.205147",
+          "updated_at": "2026-10-14T08:19:27.205147",
+          "drafts_saved": 0,
+          "writing_device": null,
+          "composer_version": null,
+          "typing_duration_msecs": 0,
+          "writing_device_user_agent": null,
+          "composer_open_duration_msecs": 0
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "post_timings": {
+      "inserted": [
+        {
+          "msecs": 5000,
+          "user_id": -1,
+          "topic_id": 45,
+          "post_number": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "posts": {
+      "inserted": [
+        {
+          "id": 53,
+          "raw": "You have been added as a member of the [Test Team](http://localhost:3048/g/testers) group.",
+          "wiki": false,
+          "reads": 1,
+          "score": null,
+          "cooked": "<p>You have been added as a member of the <a href=\"http://localhost:3048/g/testers\">Test Team</a> group.</p>",
+          "hidden": false,
+          "locale": null,
+          "user_id": -1,
+          "version": 1,
+          "baked_at": "2026-10-14T08:19:27.147223",
+          "topic_id": 45,
+          "hidden_at": null,
+          "post_type": 1,
+          "raw_email": null,
+          "via_email": false,
+          "created_at": "2026-10-14T08:19:27.147292",
+          "deleted_at": null,
+          "like_count": 0,
+          "like_score": 0,
+          "self_edits": 0,
+          "sort_order": 1,
+          "spam_count": 0,
+          "updated_at": "2026-10-14T08:19:27.147292",
+          "word_count": 17,
+          "action_code": null,
+          "cook_method": 1,
+          "edit_reason": null,
+          "post_number": 1,
+          "quote_count": 0,
+          "reply_count": 0,
+          "locked_by_id": null,
+          "percent_rank": 1,
+          "reply_quoted": false,
+          "user_deleted": false,
+          "baked_version": 2,
+          "deleted_by_id": null,
+          "illegal_count": 0,
+          "qa_vote_count": 0,
+          "bookmark_count": 0,
+          "last_editor_id": -1,
+          "public_version": 1,
+          "image_upload_id": null,
+          "last_version_at": "2026-10-14T08:19:27.203048",
+          "off_topic_count": 0,
+          "hidden_reason_id": null,
+          "reply_to_user_id": null,
+          "notify_user_count": 0,
+          "inappropriate_count": 0,
+          "incoming_link_count": 0,
+          "outbound_message_id": null,
+          "reply_to_post_number": null,
+          "notify_moderators_count": 0
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_allowed_users": {
+      "inserted": [
+        {
+          "id": 9,
+          "user_id": 3,
+          "topic_id": 45,
+          "created_at": "2026-10-14T08:19:27.106942",
+          "updated_at": "2026-10-14T08:19:27.106942"
+        },
+        {
+          "id": 10,
+          "user_id": -1,
+          "topic_id": 45,
+          "created_at": "2026-10-14T08:19:27.109115",
+          "updated_at": "2026-10-14T08:19:27.109115"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_links": {
+      "inserted": [
+        {
+          "id": 20,
+          "url": "http://localhost:3048/g/testers",
+          "quote": false,
+          "title": null,
+          "clicks": 0,
+          "domain": "localhost",
+          "post_id": 53,
+          "user_id": -1,
+          "internal": true,
+          "topic_id": 45,
+          "extension": null,
+          "crawled_at": null,
+          "created_at": "2026-10-14T08:19:27.210814",
+          "reflection": false,
+          "updated_at": "2026-10-14T08:19:27.210814",
+          "link_post_id": null,
+          "link_topic_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_search_data": {
+      "inserted": [
+        {
+          "locale": "en",
+          "version": 4,
+          "raw_data": "You have been added as a member of the Test Team group You have been added as a member of the Test Team group.",
+          "topic_id": 45,
+          "search_data": "'ad':4A,16B 'group':12A,24B 'member':7A,19B 'team':11A,23B 'test':10A,22B"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_users": {
+      "inserted": [
+        {
+          "id": 56,
+          "liked": false,
+          "posted": false,
+          "user_id": 3,
+          "topic_id": 45,
+          "bookmarked": false,
+          "last_posted_at": null,
+          "last_visited_at": "2026-10-14T08:19:27.126938",
+          "first_visited_at": "2026-10-14T08:19:27.126938",
+          "cleared_pinned_at": null,
+          "notification_level": 3,
+          "total_msecs_viewed": 0,
+          "last_read_post_number": null,
+          "notifications_reason_id": 2,
+          "last_emailed_post_number": null,
+          "notifications_changed_at": "2026-10-14T08:19:27.12624"
+        },
+        {
+          "id": 55,
+          "liked": false,
+          "posted": true,
+          "user_id": -1,
+          "topic_id": 45,
+          "bookmarked": false,
+          "last_posted_at": "2026-10-14T08:19:27.21541",
+          "last_visited_at": "2026-10-14T08:19:27.117245",
+          "first_visited_at": "2026-10-14T08:19:27.117245",
+          "cleared_pinned_at": null,
+          "notification_level": 3,
+          "total_msecs_viewed": 0,
+          "last_read_post_number": 1,
+          "notifications_reason_id": 1,
+          "last_emailed_post_number": null,
+          "notifications_changed_at": "2026-10-14T08:19:27.116021"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topics": {
+      "inserted": [
+        {
+          "id": 45,
+          "slug": "you-have-been-added-as-a-member-of-the-test-team-group",
+          "score": null,
+          "title": "You have been added as a member of the Test Team group",
+          "views": 0,
+          "closed": false,
+          "locale": null,
+          "excerpt": "You have been added as a member of the Test Team group.",
+          "subtype": "system_message",
+          "user_id": -1,
+          "visible": true,
+          "archived": false,
+          "archetype": "private_message",
+          "bumped_at": "2026-10-14T08:19:27.147292",
+          "pinned_at": null,
+          "created_at": "2026-10-14T08:19:27.102843",
+          "deleted_at": null,
+          "like_count": 0,
+          "spam_count": 0,
+          "updated_at": "2026-10-14T08:19:27.219735",
+          "word_count": 17,
+          "category_id": null,
+          "external_id": null,
+          "fancy_title": "You have been added as a member of the Test Team group",
+          "has_summary": false,
+          "posts_count": 1,
+          "reply_count": 0,
+          "percent_rank": 1,
+          "pinned_until": null,
+          "deleted_by_id": null,
+          "featured_link": null,
+          "bannered_until": null,
+          "last_posted_at": "2026-10-14T08:19:27.147292",
+          "image_upload_id": null,
+          "pinned_globally": false,
+          "reviewable_score": 0,
+          "featured_user1_id": null,
+          "featured_user2_id": null,
+          "featured_user3_id": null,
+          "featured_user4_id": null,
+          "last_post_user_id": -1,
+          "participant_count": 1,
+          "slow_mode_seconds": 0,
+          "og_image_upload_id": null,
+          "highest_post_number": 1,
+          "incoming_link_count": 0,
+          "visibility_reason_id": null,
+          "moderator_posts_count": 0,
+          "notify_moderators_count": 0,
+          "highest_staff_post_number": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_actions": {
+      "inserted": [
+        {
+          "id": 65,
+          "user_id": -1,
+          "created_at": "2026-10-14T08:19:27.102843",
+          "updated_at": "2026-10-14T08:19:27.137585",
+          "action_type": 12,
+          "acting_user_id": -1,
+          "target_post_id": -1,
+          "target_user_id": null,
+          "target_topic_id": 45
+        },
+        {
+          "id": 66,
+          "user_id": 3,
+          "created_at": "2026-10-14T08:19:27.102843",
+          "updated_at": "2026-10-14T08:19:27.143101",
+          "action_type": 13,
+          "acting_user_id": -1,
+          "target_post_id": -1,
+          "target_user_id": null,
+          "target_topic_id": 45
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 82,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "rB5KZ9aD0VlUnectpSIsxIwC7ZQ=",
+            "created_at": "2026-10-14T08:19:24.149149",
+            "rotated_at": "2026-10-14T08:19:24.148008",
+            "updated_at": "2026-10-14T08:19:24.149149",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "rB5KZ9aD0VlUnectpSIsxIwC7ZQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 82,
+            "seen_at": "2026-10-14T08:19:25.648692",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "rB5KZ9aD0VlUnectpSIsxIwC7ZQ=",
+            "created_at": "2026-10-14T08:19:24.149149",
+            "rotated_at": "2026-10-14T08:19:24.148008",
+            "updated_at": "2026-10-14T08:19:24.149149",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "rB5KZ9aD0VlUnectpSIsxIwC7ZQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "notify_users_added_to_group",
+      {
+        "user_ids": [
+          3
+        ],
+        "group_id": 9001
+      }
+    ]
+  ],
+  "next_ids": {
+    "group_histories": 1,
+    "group_users": 68,
+    "post_stats": 52,
+    "posts": 53,
+    "topic_allowed_users": 9,
+    "topic_links": 20,
+    "topic_users": 55,
+    "topics": 45,
+    "user_actions": 65
+  },
+  "setup": [
+    "INSERT INTO groups (id, name, full_name, created_at, updated_at) VALUES (9001, 'testers', 'Test Team', '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "jobs_from_jobs": [
+    [
+      "bot_input",
+      {
+        "user_id": 3,
+        "topic_id": 45,
+        "input": "topic_notification_level_changed"
+      }
+    ],
+    [
+      "crawl_topic_link",
+      {
+        "topic_link_id": 20
+      }
+    ],
+    [
+      "post_alert",
+      {
+        "post_id": 53,
+        "new_record": true,
+        "options": null
+      }
+    ],
+    [
+      "feature_topic_users",
+      {
+        "topic_id": 45
+      }
+    ],
+    [
+      "process_post",
+      {
+        "bypass_bump": false,
+        "cooking_options": null,
+        "new_post": true,
+        "post_id": 53,
+        "skip_pull_hotlinked_images": false
+      }
+    ],
+    [
+      "post_update_topic_tracking_state",
+      {
+        "post_id": 53
+      }
+    ]
+  ],
+  "recorded_from": {
+    "case": "b5fa57d21f33b1ded777aabf845726720f07987e4ee792f48fb1b3c6cb4c9bee",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

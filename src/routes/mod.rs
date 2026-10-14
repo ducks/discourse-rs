@@ -2,6 +2,7 @@ mod about;
 mod accounts;
 mod admin_email;
 mod admin_emoji;
+mod admin_groups;
 mod admin_logs;
 mod admin_site_settings;
 mod admin_users;
@@ -903,14 +904,73 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/groups/check-name.json", get(groups::check_name))
         .route("/groups/by-id/{id}", get(groups::show_by_id))
         .route("/g/by-id/{id}", get(groups::show_by_id))
-        .route("/groups/{name}", get(groups::show))
-        .route("/g/{name}", get(groups::show))
+        .route(
+            "/groups/{name}",
+            get(groups::show).put(admin_groups::update),
+        )
+        .route("/g/{name}", get(groups::show).put(admin_groups::update))
+        .route("/groups/{name}/owners", put(admin_groups::add_owners))
+        .route("/groups/{name}/owners.json", put(admin_groups::add_owners))
+        .route("/g/{name}/owners", put(admin_groups::add_owners))
+        .route("/g/{name}/owners.json", put(admin_groups::add_owners))
+        .route("/admin/groups", post(admin_groups::create))
+        .route("/admin/groups.json", post(admin_groups::create))
+        .route(
+            "/admin/groups/automatic_membership_count",
+            put(admin_groups::automatic_membership_count),
+        )
+        .route(
+            "/admin/groups/automatic_membership_count.json",
+            put(admin_groups::automatic_membership_count),
+        )
+        .route("/admin/groups/{id}", delete(admin_groups::destroy))
+        .route(
+            "/admin/groups/{id}/owners",
+            delete(admin_groups::remove_owner),
+        )
+        .route(
+            "/admin/groups/{id}/owners.json",
+            delete(admin_groups::remove_owner),
+        )
+        .route("/admin/groups/{id}/primary", put(admin_groups::set_primary))
+        .route(
+            "/admin/groups/{id}/primary.json",
+            put(admin_groups::set_primary),
+        )
+        .route(
+            "/admin/groups/{id}/members",
+            put(admin_groups::add_members).delete(admin_groups::remove_member),
+        )
+        .route(
+            "/admin/groups/{id}/members.json",
+            put(admin_groups::add_members).delete(admin_groups::remove_member),
+        )
         .route("/groups/{name}/{*tab}", get(groups::show_tab))
         .route("/g/{name}/{*tab}", get(groups::show_tab))
-        .route("/groups/{name}/members", get(groups::members))
-        .route("/groups/{name}/members.json", get(groups::members))
-        .route("/g/{name}/members", get(groups::members))
-        .route("/g/{name}/members.json", get(groups::members))
+        .route(
+            "/groups/{name}/members",
+            get(groups::members)
+                .put(admin_groups::add_members)
+                .delete(admin_groups::remove_member),
+        )
+        .route(
+            "/groups/{name}/members.json",
+            get(groups::members)
+                .put(admin_groups::add_members)
+                .delete(admin_groups::remove_member),
+        )
+        .route(
+            "/g/{name}/members",
+            get(groups::members)
+                .put(admin_groups::add_members)
+                .delete(admin_groups::remove_member),
+        )
+        .route(
+            "/g/{name}/members.json",
+            get(groups::members)
+                .put(admin_groups::add_members)
+                .delete(admin_groups::remove_member),
+        )
         .route("/groups/{name}/logs", get(groups::histories))
         .route("/groups/{name}/logs.json", get(groups::histories))
         .route("/g/{name}/logs", get(groups::histories))

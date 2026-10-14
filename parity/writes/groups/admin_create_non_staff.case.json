@@ -1,0 +1,14 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/groups.json",
+      "params": {
+        "group": {
+          "name": "newgroup"
+        }
+      }
+    }
+  ]
+}

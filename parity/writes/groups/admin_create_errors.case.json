@@ -1,0 +1,124 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/groups.json",
+      "params": {
+        "group": {
+          "name": "a"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/groups.json",
+      "params": {
+        "group": {
+          "name": "user1"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/groups.json",
+      "params": {
+        "group": {
+          "name": "Moderators"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/groups.json",
+      "params": {
+        "group": {
+          "name": "by-id"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/groups.json",
+      "params": {
+        "group": {
+          "name": "bad name!"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/groups.json",
+      "params": {
+        "group": {
+          "name": "baddomain",
+          "automatic_membership_email_domains": "not a domain|ok.com"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/groups.json",
+      "params": {
+        "group": {
+          "name": "reqgroup",
+          "allow_membership_requests": "true"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/groups.json",
+      "params": {
+        "group": {
+          "full_name": "No name"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/groups.json",
+      "params": {
+        "group": {
+          "name": "badlevel",
+          "default_notification_level": "7"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/groups.json",
+      "params": {
+        "group": {
+          "name": "badtl",
+          "grant_trust_level": "9"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/groups.json",
+      "params": {
+        "group": {
+          "name": "longfull",
+          "full_name": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/groups.json",
+      "params": {
+        "group": {
+          "name": "bademail",
+          "incoming_email": "notanemail"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/groups.json",
+      "params": {}
+    }
+  ]
+}

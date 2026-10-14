@@ -1,0 +1,17 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/groups/11.json",
+      "params": {
+        "group": {
+          "full_name": "TL1",
+          "mentionable_level": "99",
+          "title": "Ignored",
+          "visibility_level": "1"
+        }
+      }
+    }
+  ]
+}

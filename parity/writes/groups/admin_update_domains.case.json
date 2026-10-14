@@ -1,0 +1,26 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO groups (id, name, created_at, updated_at) VALUES (9001, 'testers', '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/groups/9001.json",
+      "params": {
+        "group": {
+          "automatic_membership_email_domains": "Example.com"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/groups/9001.json",
+      "params": {
+        "group": {
+          "full_name": "Again"
+        }
+      }
+    }
+  ]
+}
