@@ -1,0 +1,8 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "GET", "path": "/admin/customize/form-templates/preview.json", "params": {"name": "Preview", "template": "- type: radio\n  id: x\n"}},
+    {"method": "GET", "path": "/admin/customize/form-templates/preview.json", "params": {"name": "Preview"}},
+    {"method": "GET", "path": "/admin/customize/form-templates/preview.json", "params": {"name": "Preview", "template": "- type: input\n  id: x\n", "id": "999"}}
+  ]
+}

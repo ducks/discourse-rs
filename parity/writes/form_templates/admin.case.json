@@ -1,0 +1,23 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "GET", "path": "/admin/customize/form-templates.json"},
+    {"method": "POST", "path": "/admin/customize/form-templates.json", "params": {"name": "Bug report", "template": "- type: input\n  id: summary\n  attributes:\n    label: Summary\n    description: \"Say what <a href='https://example.com' target='_blank'>broke</a>\"\n- type: textarea\n  id: steps\n"}},
+    {"method": "POST", "path": "/admin/customize/form-templates.json", "params": {"name": "Bug report", "template": "- type: input\n  id: other\n"}},
+    {"method": "POST", "path": "/admin/customize/form-templates.json", "params": {"name": "Not a list", "template": "type: input\nid: x\n"}},
+    {"method": "POST", "path": "/admin/customize/form-templates.json", "params": {"name": "Broken", "template": "- type: [input\n"}},
+    {"method": "POST", "path": "/admin/customize/form-templates.json", "params": {"name": "Reserved", "template": "- type: input\n  id: title\n- type: radio\n  id: dup\n- type: input\n  id: dup\n- id: notype\n- type: input\n"}},
+    {"method": "POST", "path": "/admin/customize/form-templates.json", "params": {"name": "Unsafe", "template": "- type: input\n  id: a\n  attributes:\n    description: \"<b>bold</b>\"\n"}},
+    {"method": "POST", "path": "/admin/customize/form-templates.json", "params": {"name": "Tags", "template": "- type: tag-chooser\n  id: t\n  tag_group: Missing Group\n"}},
+    {"method": "POST", "path": "/admin/customize/form-templates.json", "params": {"name": "", "template": ""}},
+    {"method": "POST", "path": "/admin/customize/form-templates.json", "params": {"name": "Only name"}},
+    {"method": "GET", "path": "/admin/customize/form-templates/{{responses.1.body.form_template.id}}.json"},
+    {"method": "PUT", "path": "/admin/customize/form-templates/{{responses.1.body.form_template.id}}.json", "params": {"name": "Bug report v2", "template": "- type: checkbox\n  id: agree\n"}},
+    {"method": "PUT", "path": "/admin/customize/form-templates/{{responses.1.body.form_template.id}}.json", "params": {"template": "- type: checkbox\n  id: agree\n"}},
+    {"method": "GET", "path": "/admin/customize/form-templates/{{responses.1.body.form_template.id}}/edit.json"},
+    {"method": "GET", "path": "/admin/customize/form-templates/999/edit.json"},
+    {"method": "GET", "path": "/admin/customize/form-templates/new.json"},
+    {"method": "GET", "path": "/admin/customize/form-templates.json"},
+    {"method": "GET", "path": "/admin/customize/form-templates/999.json"}
+  ]
+}

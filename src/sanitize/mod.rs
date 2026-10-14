@@ -241,6 +241,13 @@ pub fn fragment(html: &str, config: &Config) -> Result<String, Error> {
     Sanitizer::new(config).fragment(html)
 }
 
+/// `Loofah.html5_fragment(html).to_s`: the fragment parsed and written
+/// back as Nokogiri's HTML5 serializer does, nothing removed.
+pub fn html5_fragment_to_s(html: &str) -> Result<String, Error> {
+    let frag = dom::parse_fragment(html, &config::ParserOptions::default())?;
+    Ok(dom::serialize(&frag))
+}
+
 /// `Sanitize.document(html, config)`
 pub fn document(html: &str, config: &Config) -> Result<String, Error> {
     Sanitizer::new(config).document(html)

@@ -46,6 +46,7 @@ pub mod excerpt;
 pub mod file_store;
 pub mod final_destination;
 pub mod flags;
+pub mod form_templates;
 pub mod group_manager;
 pub mod group_message;
 pub mod group_writes;
