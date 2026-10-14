@@ -48,6 +48,7 @@ mod topic_status;
 mod topic_voting;
 mod topics;
 mod user_avatars;
+mod user_badges;
 pub(crate) mod user_menu;
 mod user_search;
 mod user_update;
@@ -420,7 +421,10 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/u/{username}/user-menu-bookmarks.json",
             get(bookmarks::user_menu),
         )
-        .route("/u/{username}/{*rest}", get(users::show_with_tail))
+        .route(
+            "/u/{username}/{*rest}",
+            get(users::show_with_tail).put(user_badges::put_user_tail),
+        )
         .route("/users/{username}", get(users::show))
         .route("/users/{username}/bookmarks", get(bookmarks::index))
         .route("/users/{username}/bookmarks.json", get(bookmarks::index))
@@ -432,7 +436,10 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/users/{username}/user-menu-bookmarks.json",
             get(bookmarks::user_menu),
         )
-        .route("/users/{username}/{*rest}", get(users::show_with_tail))
+        .route(
+            "/users/{username}/{*rest}",
+            get(users::show_with_tail).put(user_badges::put_user_tail),
+        )
         .route("/user_actions.json", get(users::actions))
         .route("/c/{*path}", cached!(get(list::category)))
         .route("/robots.txt", get(robots::index))
@@ -659,6 +666,17 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/post_actions", post(post_actions::create))
         .route("/post_actions.json", post(post_actions::create))
         .route("/post_actions/{id}", delete(post_actions::destroy))
+        .route("/user_badges", post(user_badges::create))
+        .route("/user_badges.json", post(user_badges::create))
+        .route("/user_badges/{id}", delete(user_badges::destroy))
+        .route(
+            "/user_badges/{id}/toggle_favorite",
+            put(user_badges::toggle_favorite),
+        )
+        .route(
+            "/user_badges/{id}/toggle_favorite.json",
+            put(user_badges::toggle_favorite),
+        )
         .route("/posts", post(posts::create))
         .route("/posts.json", post(posts::create))
         .route(

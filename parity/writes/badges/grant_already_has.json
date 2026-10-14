@@ -1,0 +1,119 @@
+{
+  "name": "grant_already_has",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/user_badges.json",
+      "params": {
+        "username": "user1",
+        "badge_id": 1
+      }
+    }
+  ],
+  "started_at": "2026-10-13T23:45:26.420594",
+  "transaction_started_at": "2026-10-13T23:45:23.822123",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "badges": [
+          {
+            "id": 1,
+            "name": "Basic",
+            "description": "<a href=\"https://blog.discourse.org/2018/06/understanding-discourse-trust-levels/\">Granted</a> all essential community functions",
+            "grant_count": 5,
+            "allow_title": false,
+            "multiple_grant": false,
+            "icon": "user",
+            "image_url": null,
+            "listable": true,
+            "enabled": true,
+            "badge_grouping_id": 4,
+            "system": true,
+            "slug": "basic",
+            "manually_grantable": false,
+            "show_in_post_header": false,
+            "badge_type_id": 3
+          }
+        ],
+        "badge_types": [
+          {
+            "id": 3,
+            "name": "Bronze",
+            "sort_order": 7
+          }
+        ],
+        "granted_bies": [
+          {
+            "id": -1,
+            "username": "system",
+            "name": "system",
+            "avatar_template": "/images/discourse-logo-sketch-small.png",
+            "admin": true,
+            "moderator": true,
+            "trust_level": 4
+          }
+        ],
+        "user_badge": {
+          "id": 3,
+          "granted_at": "2026-09-30T06:20:02.086Z",
+          "grouping_position": 13,
+          "is_favorite": null,
+          "can_favorite": false,
+          "badge_id": 1,
+          "granted_by_id": -1
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "EDjjfEdXiGxfXZgR7oQy9TuzHjk=",
+            "created_at": "2026-10-13T23:45:24.57459",
+            "rotated_at": "2026-10-13T23:45:24.572772",
+            "updated_at": "2026-10-13T23:45:24.57459",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "EDjjfEdXiGxfXZgR7oQy9TuzHjk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 1,
+            "seen_at": "2026-10-13T23:45:26.445439",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "EDjjfEdXiGxfXZgR7oQy9TuzHjk=",
+            "created_at": "2026-10-13T23:45:24.57459",
+            "rotated_at": "2026-10-13T23:45:24.572772",
+            "updated_at": "2026-10-13T23:45:24.57459",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "EDjjfEdXiGxfXZgR7oQy9TuzHjk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "8b2248cdd0abce2674c3f7db882ba90d5f355ddfeb4dec35f57de6f3813e82dc",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -7,6 +7,7 @@ pub mod archived_messages;
 pub mod assets;
 pub mod avatar;
 pub mod badge_granter;
+pub mod badges_view;
 pub mod bookmark_manager;
 pub mod bookmarks;
 pub mod bus;

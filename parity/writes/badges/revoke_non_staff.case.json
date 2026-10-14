@@ -1,0 +1,9 @@
+{
+  "user": "user1",
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/user_badges/15.json"
+    }
+  ]
+}

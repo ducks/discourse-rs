@@ -1,0 +1,79 @@
+{
+  "name": "grant_disabled_badge",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/user_badges.json",
+      "params": {
+        "username": "user1",
+        "badge_id": 100
+      }
+    }
+  ],
+  "started_at": "2026-10-13T23:45:29.307658",
+  "transaction_started_at": "2026-10-13T23:45:28.387678",
+  "responses": [
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "Zd6arHIQRMyQ0qVNrDAhUzuTCGo=",
+            "created_at": "2026-10-13T23:45:28.806366",
+            "rotated_at": "2026-10-13T23:45:28.805344",
+            "updated_at": "2026-10-13T23:45:28.806366",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "Zd6arHIQRMyQ0qVNrDAhUzuTCGo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 1,
+            "seen_at": "2026-10-13T23:45:29.3135",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "Zd6arHIQRMyQ0qVNrDAhUzuTCGo=",
+            "created_at": "2026-10-13T23:45:28.806366",
+            "rotated_at": "2026-10-13T23:45:28.805344",
+            "updated_at": "2026-10-13T23:45:28.806366",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "Zd6arHIQRMyQ0qVNrDAhUzuTCGo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "UPDATE badges SET enabled = FALSE WHERE id = 100"
+  ],
+  "recorded_from": {
+    "case": "f065828cb6abd1c42c581751f021a7fbe31c8ce7e98fc38872ce67441cbb2625",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
