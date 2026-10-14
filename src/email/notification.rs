@@ -529,13 +529,15 @@ pub async fn build(
     } else {
         format!("---\n{}", t(ctx, &respond_key, &respond_args)?)
     };
-    let unsubscribe_key_name = if user.mailing_list_mode {
-        "unsubscribe_mailing_list"
-    } else if s.get("unsubscribe_via_email_footer")?.truthy() {
-        "unsubscribe_link_and_mail"
-    } else {
-        "unsubscribe_link"
-    };
+    // UserOption#mailing_list_mode reads false while the site disables it.
+    let unsubscribe_key_name =
+        if user.mailing_list_mode && !s.get("disable_mailing_list_mode")?.truthy() {
+            "unsubscribe_mailing_list"
+        } else if s.get("unsubscribe_via_email_footer")?.truthy() {
+            "unsubscribe_link_and_mail"
+        } else {
+            "unsubscribe_link"
+        };
     let unsubscribe_instructions = t(
         ctx,
         unsubscribe_key_name,

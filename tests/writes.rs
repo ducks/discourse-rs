@@ -445,6 +445,11 @@ fn unrandom(s: &str) -> String {
     } else {
         s.to_string()
     };
+    // The reference's own port in its absolute URLs (each agent's
+    // reference listens on its own; the replay's config has rs-parity's).
+    static PORT: std::sync::LazyLock<regex::Regex> =
+        std::sync::LazyLock::new(|| regex::Regex::new(r"//localhost:\d{4}\b").unwrap());
+    let s = PORT.replace_all(&s, "//localhost:<port>");
     // EmailController's cache key for the unsubscribed page.
     static UNSUB: std::sync::LazyLock<regex::Regex> =
         std::sync::LazyLock::new(|| regex::Regex::new(r"\bunsub_[0-9a-f]{32}\b").unwrap());

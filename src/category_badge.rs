@@ -122,6 +122,60 @@ pub async fn html_for_with(
     ))
 }
 
+/// `CategoryBadge.html_for(category, inline_style: true, absolute_url:
+/// true)` (style_for_email): the badge as emails show it, a coloured
+/// square (the parent's colour in its left half) and the name. "" for
+/// Uncategorized.
+pub async fn email_html_for(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    base_url_no_prefix: &str,
+    base_path: &str,
+    category_id: i32,
+) -> Result<String, AppError> {
+    if i64::from(category_id) == settings.get("uncategorized_category_id")?.to_i() {
+        return Ok(String::new());
+    }
+    let Some(category) = Category::find(&mut *conn, category_id).await? else {
+        return Ok(String::new());
+    };
+    let parent: Option<(i32, String)> = match category.parent_category_id {
+        Some(id) => {
+            sqlx::query_as("SELECT id, color FROM categories WHERE id = $1")
+                .bind(id)
+                .fetch_optional(&mut *conn)
+                .await?
+        }
+        None => None,
+    };
+    let (name, color) = (category.name.clone(), category.color.clone());
+    let url = format!(
+        "{base_url_no_prefix}{}",
+        category.url(&mut *conn, base_path).await?
+    );
+    let mut out = format!("<span data-category-id='{category_id}'");
+    if let Some((id, _)) = &parent {
+        out.push_str(&format!(" data-parent-category-id='{id}'"));
+    }
+    out.push_str(" data-drop-close='true'><span>");
+    out.push_str(&format!(
+        "<span style='display: inline-block; width: 0.72em; height: 0.72em; margin-right: 0.33em; background-color: {};'>",
+        html_escape(&format!("#{color}"))
+    ));
+    if let Some((_, parent_color)) = &parent {
+        out.push_str(&format!(
+            "<span style='display: block; width: 0.36em; height: 0.72em; background-color: {};'></span>",
+            html_escape(&format!("#{parent_color}"))
+        ));
+    }
+    out.push_str("</span>");
+    out.push_str(&html_escape(&name));
+    out.push_str("</span></span>");
+    Ok(format!(
+        "<a class='badge-category__wrapper ' href='{url}'>{out}</a>"
+    ))
+}
+
 /// `ERB::Util.html_escape_once`: like html_escape, but an entity already
 /// there is left alone.
 pub fn html_escape_once(s: &str) -> String {

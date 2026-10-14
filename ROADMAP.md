@@ -192,7 +192,7 @@ Bugs or silent gaps in what is merged, small and independent.
 66. `refactor/notification-insert` S: one path for the ten places that
     insert notifications, which shelving hooks into
 67. `feat/dnd-shelving` M, 68. `feat/dnd-schedules` M
-69. ~~`feat/email-unsubscribe`~~ (done) M, 70. `feat/digest-email` L,
+69. ~~`feat/email-unsubscribe`~~ (done) M, 70. ~~`feat/digest-email`~~ (done) L,
     71. `feat/jobs-digest` S, 72. `feat/admin-email-digest` S
 73. ~~`feat/about-stats`~~ (done) S/M (about.json with Stat.api_stats and
     their cache, the about_stats job, live_post_counts. Left: the about
