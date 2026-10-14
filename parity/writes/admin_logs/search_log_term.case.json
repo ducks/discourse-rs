@@ -1,0 +1,20 @@
+{
+  "user": "admin",
+  "settings": {"log_search_queries": true},
+  "setup": [
+    "DELETE FROM search_logs",
+    "INSERT INTO search_logs (term, user_id, search_type, search_result_id, created_at) VALUES ('Fixture', 1, 1, NULL, now() - interval '2 days'), ('fixture', 2, 2, 35, now() - interval '2 days'), ('fixture', NULL, 2, NULL, now() - interval '3 days'), ('FIXTURE', 3, 1, NULL, now() - interval '40 days'), ('fixture', 3, 1, 36, now() - interval '200 days'), ('other', 4, 2, 37, now() - interval '1 day')"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/admin/logs/search_logs/term.json", "params": {"term": "fixture"}},
+    {"method": "GET", "path": "/admin/logs/search_logs/term.json", "params": {"term": "Fixture", "period": "weekly", "search_type": "header"}},
+    {"method": "GET", "path": "/admin/logs/search_logs/term.json", "params": {"term": "fixture", "period": "yearly", "search_type": "full_page"}},
+    {"method": "GET", "path": "/admin/logs/search_logs/term.json", "params": {"term": "fixture", "period": "all", "search_type": "click_through_only"}},
+    {"method": "GET", "path": "/admin/logs/search_logs/term.json", "params": {"term": "fixture", "period": "monthly", "search_type": "non_staff_only"}},
+    {"method": "GET", "path": "/admin/logs/search_logs/term.json", "params": {"term": "fixture", "period": "all", "search_type": "human_only"}},
+    {"method": "GET", "path": "/admin/logs/search_logs/term.json", "params": {"term": "fixture", "period": "daily", "search_type": "nonsense"}},
+    {"method": "GET", "path": "/admin/logs/search_logs/term.json", "params": {"term": "nothing-like-this"}},
+    {"method": "GET", "path": "/admin/logs/search_logs/term.json"},
+    {"method": "GET", "path": "/admin/logs/search_logs.json", "params": {"search_type": "human_only"}}
+  ]
+}

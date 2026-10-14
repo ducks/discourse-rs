@@ -1,0 +1,9 @@
+{
+  "user": "admin",
+  "settings": {"enable_form_templates": false},
+  "requests": [
+    {"method": "GET", "path": "/admin/customize/form-templates.json"},
+    {"method": "POST", "path": "/admin/customize/form-templates.json", "params": {"name": "X", "template": "- type: input\n  id: a\n"}},
+    {"method": "GET", "path": "/form-templates.json"}
+  ]
+}

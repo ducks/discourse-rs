@@ -557,6 +557,58 @@ impl Incoming {
     }
 }
 
+impl Incoming {
+    /// `Mail.new(raw).header.to_s`: each top-level field as its field
+    /// class encodes it, in the gem's FIELD_ORDER.
+    pub fn header_to_s(&self) -> Result<String, Unsupported> {
+        let mut fields: Vec<(usize, usize, String)> = Vec::new();
+        for (i, f) in self.root.fields.iter().enumerate() {
+            let lower = f.name.to_ascii_lowercase();
+            let rendered = match lower.as_str() {
+                "content-type" => content_type(&f.value, false)?,
+                "content-transfer-encoding" => format!(
+                    "Content-Transfer-Encoding: {}\r\n",
+                    f.value.trim().to_ascii_lowercase()
+                ),
+                _ => render_field(f)?,
+            };
+            let order = super::sender::FIELD_ORDER
+                .iter()
+                .position(|o| *o == lower)
+                .unwrap_or(100);
+            fields.push((order, i, rendered));
+        }
+        fields.sort_by_key(|(o, i, _)| (*o, *i));
+        Ok(fields.into_iter().map(|(_, _, text)| text).collect())
+    }
+
+    /// IncomingEmailDetailsSerializer#body's source: the text part's
+    /// decoded body, else the HTML part's (both only in a multipart
+    /// message, as the gem finds them), else the message body's. Invalid
+    /// UTF-8 is dropped (`encode(invalid: :replace, replace: "")`).
+    pub fn details_body(&self) -> Result<String, Unsupported> {
+        let part = if self.root.multipart() {
+            self.root
+                .find_first("text/plain")
+                .or_else(|| self.root.find_first("text/html"))
+        } else {
+            Some(&self.root)
+        };
+        let Some(part) = part else {
+            return Err(Unsupported("a multipart email without a text or HTML part"));
+        };
+        let charset = part.charset().map(|c| c.to_ascii_lowercase());
+        if !matches!(
+            charset.as_deref(),
+            None | Some("utf-8") | Some("utf8") | Some("us-ascii")
+        ) {
+            return Err(Unsupported("email bodies in a charset other than UTF-8"));
+        }
+        let decoded = part.decoded()?;
+        Ok(decoded.utf8_chunks().map(|c| c.valid()).collect())
+    }
+}
+
 // --- Email::Cleaner -------------------------------------------------------
 
 /// `Email::Cleaner.new(raw).execute` with attachments removed and bodies

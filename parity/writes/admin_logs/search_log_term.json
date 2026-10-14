@@ -1,0 +1,1762 @@
+{
+  "name": "search_log_term",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/logs/search_logs/term.json",
+      "params": {
+        "term": "fixture"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/logs/search_logs/term.json",
+      "params": {
+        "term": "Fixture",
+        "period": "weekly",
+        "search_type": "header"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/logs/search_logs/term.json",
+      "params": {
+        "term": "fixture",
+        "period": "yearly",
+        "search_type": "full_page"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/logs/search_logs/term.json",
+      "params": {
+        "term": "fixture",
+        "period": "all",
+        "search_type": "click_through_only"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/logs/search_logs/term.json",
+      "params": {
+        "term": "fixture",
+        "period": "monthly",
+        "search_type": "non_staff_only"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/logs/search_logs/term.json",
+      "params": {
+        "term": "fixture",
+        "period": "all",
+        "search_type": "human_only"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/logs/search_logs/term.json",
+      "params": {
+        "term": "fixture",
+        "period": "daily",
+        "search_type": "nonsense"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/logs/search_logs/term.json",
+      "params": {
+        "term": "nothing-like-this"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/logs/search_logs/term.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/logs/search_logs.json",
+      "params": {
+        "search_type": "human_only"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T13:16:45.73725",
+  "transaction_started_at": "2026-10-14T13:16:43.535316",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "term": {
+          "type": "search_log_term",
+          "title": "Search Count",
+          "start_date": "2026-07-14",
+          "end_date": "2026-10-14T13:16:45.760Z",
+          "data": [
+            {
+              "x": "2026-09-04",
+              "y": 1
+            },
+            {
+              "x": "2026-10-11",
+              "y": 1
+            },
+            {
+              "x": "2026-10-12",
+              "y": 2
+            }
+          ],
+          "period": "quarterly",
+          "search_result": {
+            "posts": [
+              {
+                "id": 35,
+                "name": "User0",
+                "username": "user0",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+                "created_at": "2026-09-30T07:28:28.901Z",
+                "like_count": 0,
+                "blurb": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+                "post_number": 1,
+                "topic_id": 35
+              },
+              {
+                "id": 42,
+                "name": "User1",
+                "username": "user1",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+                "created_at": "2026-09-30T07:28:29.580Z",
+                "like_count": 0,
+                "blurb": "A topic in a subcategory carrying a tag, so tags and category ids show up.",
+                "post_number": 1,
+                "topic_id": 38
+              },
+              {
+                "id": 40,
+                "name": "Admin",
+                "username": "admin",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+                "created_at": "2026-09-30T07:28:29.358Z",
+                "like_count": 0,
+                "blurb": "A pinned, closed topic in Site Feedback with an excerpt that should be shown in the list.",
+                "post_number": 1,
+                "topic_id": 37
+              },
+              {
+                "id": 46,
+                "name": "User0",
+                "username": "user0",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+                "created_at": "2026-09-30T07:28:30.163Z",
+                "like_count": 1,
+                "blurb": "An archived topic whose first post got a like, for like_count and op_like_count.",
+                "post_number": 1,
+                "topic_id": 41
+              }
+            ],
+            "topics": [
+              {
+                "fancy_title": "Parity fixture: replies and posters",
+                "id": 35,
+                "title": "Parity fixture: replies and posters",
+                "slug": "parity-fixture-replies-and-posters",
+                "posts_count": 5,
+                "reply_count": 0,
+                "highest_post_number": 5,
+                "created_at": "2026-09-30T07:28:28.864Z",
+                "last_posted_at": "2026-10-01T15:39:51.834Z",
+                "bumped": true,
+                "bumped_at": "2026-10-01T15:39:51.834Z",
+                "archetype": "regular",
+                "unseen": true,
+                "pinned": false,
+                "unpinned": null,
+                "visible": true,
+                "closed": false,
+                "archived": false,
+                "bookmarked": null,
+                "liked": null,
+                "tags": [
+                  {
+                    "id": 2,
+                    "name": "guide",
+                    "slug": "guide"
+                  }
+                ],
+                "tags_descriptions": {},
+                "category_id": 4,
+                "has_accepted_answer": false
+              },
+              {
+                "fancy_title": "Parity fixture: tagged in a subcategory",
+                "id": 38,
+                "title": "Parity fixture: tagged in a subcategory",
+                "slug": "parity-fixture-tagged-in-a-subcategory",
+                "posts_count": 1,
+                "reply_count": 0,
+                "highest_post_number": 1,
+                "created_at": "2026-09-30T07:28:29.543Z",
+                "last_posted_at": "2026-09-30T07:28:29.580Z",
+                "bumped": true,
+                "bumped_at": "2026-09-30T07:28:29.580Z",
+                "archetype": "regular",
+                "unseen": true,
+                "pinned": false,
+                "unpinned": null,
+                "visible": true,
+                "closed": false,
+                "archived": false,
+                "bookmarked": null,
+                "liked": null,
+                "tags": [
+                  {
+                    "id": 1,
+                    "name": "howto",
+                    "slug": "howto"
+                  }
+                ],
+                "tags_descriptions": {},
+                "category_id": 34,
+                "has_accepted_answer": false
+              },
+              {
+                "fancy_title": "Parity fixture: pinned and closed",
+                "id": 37,
+                "title": "Parity fixture: pinned and closed",
+                "slug": "parity-fixture-pinned-and-closed",
+                "posts_count": 1,
+                "reply_count": 0,
+                "highest_post_number": 1,
+                "created_at": "2026-09-30T07:28:29.325Z",
+                "last_posted_at": "2026-09-30T07:28:29.358Z",
+                "bumped": true,
+                "bumped_at": "2026-09-30T07:28:29.358Z",
+                "archetype": "regular",
+                "unseen": true,
+                "pinned": true,
+                "unpinned": null,
+                "excerpt": "A pinned, closed topic in Site Feedback with an excerpt that should be shown in the list.",
+                "visible": true,
+                "closed": true,
+                "archived": false,
+                "bookmarked": null,
+                "liked": null,
+                "tags": [],
+                "tags_descriptions": {},
+                "category_id": 2,
+                "has_accepted_answer": false
+              },
+              {
+                "fancy_title": "Parity fixture: liked and archived",
+                "id": 41,
+                "title": "Parity fixture: liked and archived",
+                "slug": "parity-fixture-liked-and-archived",
+                "posts_count": 1,
+                "reply_count": 0,
+                "highest_post_number": 1,
+                "created_at": "2026-09-30T07:28:30.067Z",
+                "last_posted_at": "2026-09-30T07:28:30.163Z",
+                "bumped": true,
+                "bumped_at": "2026-09-30T07:28:30.163Z",
+                "archetype": "regular",
+                "unseen": true,
+                "pinned": false,
+                "unpinned": null,
+                "visible": true,
+                "closed": false,
+                "archived": true,
+                "bookmarked": null,
+                "liked": null,
+                "tags": [
+                  {
+                    "id": 2,
+                    "name": "guide",
+                    "slug": "guide"
+                  },
+                  {
+                    "id": 1,
+                    "name": "howto",
+                    "slug": "howto"
+                  }
+                ],
+                "tags_descriptions": {},
+                "category_id": 4,
+                "has_accepted_answer": false
+              }
+            ],
+            "users": [],
+            "categories": [],
+            "tags": [],
+            "groups": [],
+            "grouped_search_result": {
+              "more_posts": null,
+              "more_users": null,
+              "more_categories": null,
+              "term": "fixture",
+              "more_full_page_results": null,
+              "can_create_topic": true,
+              "error": null,
+              "extra": {},
+              "post_ids": [
+                35,
+                42,
+                40,
+                46
+              ],
+              "user_ids": [],
+              "category_ids": [],
+              "tag_ids": [],
+              "group_ids": []
+            }
+          }
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "term": {
+          "type": "search_log_term",
+          "title": "Search Count",
+          "start_date": "2026-10-07",
+          "end_date": "2026-10-14T13:16:45.941Z",
+          "data": [
+            {
+              "x": "2026-10-12",
+              "y": 1
+            }
+          ],
+          "period": "weekly",
+          "search_result": {
+            "posts": [
+              {
+                "id": 35,
+                "name": "User0",
+                "username": "user0",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+                "created_at": "2026-09-30T07:28:28.901Z",
+                "like_count": 0,
+                "blurb": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+                "post_number": 1,
+                "topic_id": 35
+              },
+              {
+                "id": 42,
+                "name": "User1",
+                "username": "user1",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+                "created_at": "2026-09-30T07:28:29.580Z",
+                "like_count": 0,
+                "blurb": "A topic in a subcategory carrying a tag, so tags and category ids show up.",
+                "post_number": 1,
+                "topic_id": 38
+              },
+              {
+                "id": 40,
+                "name": "Admin",
+                "username": "admin",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+                "created_at": "2026-09-30T07:28:29.358Z",
+                "like_count": 0,
+                "blurb": "A pinned, closed topic in Site Feedback with an excerpt that should be shown in the list.",
+                "post_number": 1,
+                "topic_id": 37
+              },
+              {
+                "id": 46,
+                "name": "User0",
+                "username": "user0",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+                "created_at": "2026-09-30T07:28:30.163Z",
+                "like_count": 1,
+                "blurb": "An archived topic whose first post got a like, for like_count and op_like_count.",
+                "post_number": 1,
+                "topic_id": 41
+              }
+            ],
+            "topics": [
+              {
+                "fancy_title": "Parity fixture: replies and posters",
+                "id": 35,
+                "title": "Parity fixture: replies and posters",
+                "slug": "parity-fixture-replies-and-posters",
+                "posts_count": 5,
+                "reply_count": 0,
+                "highest_post_number": 5,
+                "created_at": "2026-09-30T07:28:28.864Z",
+                "last_posted_at": "2026-10-01T15:39:51.834Z",
+                "bumped": true,
+                "bumped_at": "2026-10-01T15:39:51.834Z",
+                "archetype": "regular",
+                "unseen": true,
+                "pinned": false,
+                "unpinned": null,
+                "visible": true,
+                "closed": false,
+                "archived": false,
+                "bookmarked": null,
+                "liked": null,
+                "tags": [
+                  {
+                    "id": 2,
+                    "name": "guide",
+                    "slug": "guide"
+                  }
+                ],
+                "tags_descriptions": {},
+                "category_id": 4,
+                "has_accepted_answer": false
+              },
+              {
+                "fancy_title": "Parity fixture: tagged in a subcategory",
+                "id": 38,
+                "title": "Parity fixture: tagged in a subcategory",
+                "slug": "parity-fixture-tagged-in-a-subcategory",
+                "posts_count": 1,
+                "reply_count": 0,
+                "highest_post_number": 1,
+                "created_at": "2026-09-30T07:28:29.543Z",
+                "last_posted_at": "2026-09-30T07:28:29.580Z",
+                "bumped": true,
+                "bumped_at": "2026-09-30T07:28:29.580Z",
+                "archetype": "regular",
+                "unseen": true,
+                "pinned": false,
+                "unpinned": null,
+                "visible": true,
+                "closed": false,
+                "archived": false,
+                "bookmarked": null,
+                "liked": null,
+                "tags": [
+                  {
+                    "id": 1,
+                    "name": "howto",
+                    "slug": "howto"
+                  }
+                ],
+                "tags_descriptions": {},
+                "category_id": 34,
+                "has_accepted_answer": false
+              },
+              {
+                "fancy_title": "Parity fixture: pinned and closed",
+                "id": 37,
+                "title": "Parity fixture: pinned and closed",
+                "slug": "parity-fixture-pinned-and-closed",
+                "posts_count": 1,
+                "reply_count": 0,
+                "highest_post_number": 1,
+                "created_at": "2026-09-30T07:28:29.325Z",
+                "last_posted_at": "2026-09-30T07:28:29.358Z",
+                "bumped": true,
+                "bumped_at": "2026-09-30T07:28:29.358Z",
+                "archetype": "regular",
+                "unseen": true,
+                "pinned": true,
+                "unpinned": null,
+                "excerpt": "A pinned, closed topic in Site Feedback with an excerpt that should be shown in the list.",
+                "visible": true,
+                "closed": true,
+                "archived": false,
+                "bookmarked": null,
+                "liked": null,
+                "tags": [],
+                "tags_descriptions": {},
+                "category_id": 2,
+                "has_accepted_answer": false
+              },
+              {
+                "fancy_title": "Parity fixture: liked and archived",
+                "id": 41,
+                "title": "Parity fixture: liked and archived",
+                "slug": "parity-fixture-liked-and-archived",
+                "posts_count": 1,
+                "reply_count": 0,
+                "highest_post_number": 1,
+                "created_at": "2026-09-30T07:28:30.067Z",
+                "last_posted_at": "2026-09-30T07:28:30.163Z",
+                "bumped": true,
+                "bumped_at": "2026-09-30T07:28:30.163Z",
+                "archetype": "regular",
+                "unseen": true,
+                "pinned": false,
+                "unpinned": null,
+                "visible": true,
+                "closed": false,
+                "archived": true,
+                "bookmarked": null,
+                "liked": null,
+                "tags": [
+                  {
+                    "id": 2,
+                    "name": "guide",
+                    "slug": "guide"
+                  },
+                  {
+                    "id": 1,
+                    "name": "howto",
+                    "slug": "howto"
+                  }
+                ],
+                "tags_descriptions": {},
+                "category_id": 4,
+                "has_accepted_answer": false
+              }
+            ],
+            "users": [],
+            "categories": [],
+            "tags": [],
+            "groups": [],
+            "grouped_search_result": {
+              "more_posts": null,
+              "more_users": null,
+              "more_categories": null,
+              "term": "Fixture",
+              "more_full_page_results": null,
+              "can_create_topic": true,
+              "error": null,
+              "extra": {},
+              "post_ids": [
+                35,
+                42,
+                40,
+                46
+              ],
+              "user_ids": [],
+              "category_ids": [],
+              "tag_ids": [],
+              "group_ids": []
+            }
+          }
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "term": {
+          "type": "search_log_term",
+          "title": "Search Count",
+          "start_date": "2025-10-14",
+          "end_date": "2026-10-14T13:16:46.036Z",
+          "data": [
+            {
+              "x": "2026-10-11",
+              "y": 1
+            },
+            {
+              "x": "2026-10-12",
+              "y": 1
+            }
+          ],
+          "period": "yearly",
+          "search_result": {
+            "posts": [
+              {
+                "id": 35,
+                "name": "User0",
+                "username": "user0",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+                "created_at": "2026-09-30T07:28:28.901Z",
+                "like_count": 0,
+                "blurb": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+                "post_number": 1,
+                "topic_id": 35
+              },
+              {
+                "id": 42,
+                "name": "User1",
+                "username": "user1",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+                "created_at": "2026-09-30T07:28:29.580Z",
+                "like_count": 0,
+                "blurb": "A topic in a subcategory carrying a tag, so tags and category ids show up.",
+                "post_number": 1,
+                "topic_id": 38
+              },
+              {
+                "id": 40,
+                "name": "Admin",
+                "username": "admin",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+                "created_at": "2026-09-30T07:28:29.358Z",
+                "like_count": 0,
+                "blurb": "A pinned, closed topic in Site Feedback with an excerpt that should be shown in the list.",
+                "post_number": 1,
+                "topic_id": 37
+              },
+              {
+                "id": 46,
+                "name": "User0",
+                "username": "user0",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+                "created_at": "2026-09-30T07:28:30.163Z",
+                "like_count": 1,
+                "blurb": "An archived topic whose first post got a like, for like_count and op_like_count.",
+                "post_number": 1,
+                "topic_id": 41
+              }
+            ],
+            "topics": [
+              {
+                "fancy_title": "Parity fixture: replies and posters",
+                "id": 35,
+                "title": "Parity fixture: replies and posters",
+                "slug": "parity-fixture-replies-and-posters",
+                "posts_count": 5,
+                "reply_count": 0,
+                "highest_post_number": 5,
+                "created_at": "2026-09-30T07:28:28.864Z",
+                "last_posted_at": "2026-10-01T15:39:51.834Z",
+                "bumped": true,
+                "bumped_at": "2026-10-01T15:39:51.834Z",
+                "archetype": "regular",
+                "unseen": true,
+                "pinned": false,
+                "unpinned": null,
+                "visible": true,
+                "closed": false,
+                "archived": false,
+                "bookmarked": null,
+                "liked": null,
+                "tags": [
+                  {
+                    "id": 2,
+                    "name": "guide",
+                    "slug": "guide"
+                  }
+                ],
+                "tags_descriptions": {},
+                "category_id": 4,
+                "has_accepted_answer": false
+              },
+              {
+                "fancy_title": "Parity fixture: tagged in a subcategory",
+                "id": 38,
+                "title": "Parity fixture: tagged in a subcategory",
+                "slug": "parity-fixture-tagged-in-a-subcategory",
+                "posts_count": 1,
+                "reply_count": 0,
+                "highest_post_number": 1,
+                "created_at": "2026-09-30T07:28:29.543Z",
+                "last_posted_at": "2026-09-30T07:28:29.580Z",
+                "bumped": true,
+                "bumped_at": "2026-09-30T07:28:29.580Z",
+                "archetype": "regular",
+                "unseen": true,
+                "pinned": false,
+                "unpinned": null,
+                "visible": true,
+                "closed": false,
+                "archived": false,
+                "bookmarked": null,
+                "liked": null,
+                "tags": [
+                  {
+                    "id": 1,
+                    "name": "howto",
+                    "slug": "howto"
+                  }
+                ],
+                "tags_descriptions": {},
+                "category_id": 34,
+                "has_accepted_answer": false
+              },
+              {
+                "fancy_title": "Parity fixture: pinned and closed",
+                "id": 37,
+                "title": "Parity fixture: pinned and closed",
+                "slug": "parity-fixture-pinned-and-closed",
+                "posts_count": 1,
+                "reply_count": 0,
+                "highest_post_number": 1,
+                "created_at": "2026-09-30T07:28:29.325Z",
+                "last_posted_at": "2026-09-30T07:28:29.358Z",
+                "bumped": true,
+                "bumped_at": "2026-09-30T07:28:29.358Z",
+                "archetype": "regular",
+                "unseen": true,
+                "pinned": true,
+                "unpinned": null,
+                "excerpt": "A pinned, closed topic in Site Feedback with an excerpt that should be shown in the list.",
+                "visible": true,
+                "closed": true,
+                "archived": false,
+                "bookmarked": null,
+                "liked": null,
+                "tags": [],
+                "tags_descriptions": {},
+                "category_id": 2,
+                "has_accepted_answer": false
+              },
+              {
+                "fancy_title": "Parity fixture: liked and archived",
+                "id": 41,
+                "title": "Parity fixture: liked and archived",
+                "slug": "parity-fixture-liked-and-archived",
+                "posts_count": 1,
+                "reply_count": 0,
+                "highest_post_number": 1,
+                "created_at": "2026-09-30T07:28:30.067Z",
+                "last_posted_at": "2026-09-30T07:28:30.163Z",
+                "bumped": true,
+                "bumped_at": "2026-09-30T07:28:30.163Z",
+                "archetype": "regular",
+                "unseen": true,
+                "pinned": false,
+                "unpinned": null,
+                "visible": true,
+                "closed": false,
+                "archived": true,
+                "bookmarked": null,
+                "liked": null,
+                "tags": [
+                  {
+                    "id": 2,
+                    "name": "guide",
+                    "slug": "guide"
+                  },
+                  {
+                    "id": 1,
+                    "name": "howto",
+                    "slug": "howto"
+                  }
+                ],
+                "tags_descriptions": {},
+                "category_id": 4,
+                "has_accepted_answer": false
+              }
+            ],
+            "users": [],
+            "categories": [],
+            "tags": [],
+            "groups": [],
+            "grouped_search_result": {
+              "more_posts": null,
+              "more_users": null,
+              "more_categories": null,
+              "term": "fixture",
+              "more_full_page_results": null,
+              "can_create_topic": true,
+              "error": null,
+              "extra": {},
+              "post_ids": [
+                35,
+                42,
+                40,
+                46
+              ],
+              "user_ids": [],
+              "category_ids": [],
+              "tag_ids": [],
+              "group_ids": []
+            }
+          }
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "term": {
+          "type": "search_log_term",
+          "title": "Search Count",
+          "start_date": "1026-10-08",
+          "end_date": "2026-10-14T13:16:46.158Z",
+          "data": [
+            {
+              "x": "2026-03-28",
+              "y": 1
+            },
+            {
+              "x": "2026-10-12",
+              "y": 1
+            }
+          ],
+          "period": "all",
+          "search_result": {
+            "posts": [
+              {
+                "id": 35,
+                "name": "User0",
+                "username": "user0",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+                "created_at": "2026-09-30T07:28:28.901Z",
+                "like_count": 0,
+                "blurb": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+                "post_number": 1,
+                "topic_id": 35
+              },
+              {
+                "id": 42,
+                "name": "User1",
+                "username": "user1",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+                "created_at": "2026-09-30T07:28:29.580Z",
+                "like_count": 0,
+                "blurb": "A topic in a subcategory carrying a tag, so tags and category ids show up.",
+                "post_number": 1,
+                "topic_id": 38
+              },
+              {
+                "id": 40,
+                "name": "Admin",
+                "username": "admin",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+                "created_at": "2026-09-30T07:28:29.358Z",
+                "like_count": 0,
+                "blurb": "A pinned, closed topic in Site Feedback with an excerpt that should be shown in the list.",
+                "post_number": 1,
+                "topic_id": 37
+              },
+              {
+                "id": 46,
+                "name": "User0",
+                "username": "user0",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+                "created_at": "2026-09-30T07:28:30.163Z",
+                "like_count": 1,
+                "blurb": "An archived topic whose first post got a like, for like_count and op_like_count.",
+                "post_number": 1,
+                "topic_id": 41
+              }
+            ],
+            "topics": [
+              {
+                "fancy_title": "Parity fixture: replies and posters",
+                "id": 35,
+                "title": "Parity fixture: replies and posters",
+                "slug": "parity-fixture-replies-and-posters",
+                "posts_count": 5,
+                "reply_count": 0,
+                "highest_post_number": 5,
+                "created_at": "2026-09-30T07:28:28.864Z",
+                "last_posted_at": "2026-10-01T15:39:51.834Z",
+                "bumped": true,
+                "bumped_at": "2026-10-01T15:39:51.834Z",
+                "archetype": "regular",
+                "unseen": true,
+                "pinned": false,
+                "unpinned": null,
+                "visible": true,
+                "closed": false,
+                "archived": false,
+                "bookmarked": null,
+                "liked": null,
+                "tags": [
+                  {
+                    "id": 2,
+                    "name": "guide",
+                    "slug": "guide"
+                  }
+                ],
+                "tags_descriptions": {},
+                "category_id": 4,
+                "has_accepted_answer": false
+              },
+              {
+                "fancy_title": "Parity fixture: tagged in a subcategory",
+                "id": 38,
+                "title": "Parity fixture: tagged in a subcategory",
+                "slug": "parity-fixture-tagged-in-a-subcategory",
+                "posts_count": 1,
+                "reply_count": 0,
+                "highest_post_number": 1,
+                "created_at": "2026-09-30T07:28:29.543Z",
+                "last_posted_at": "2026-09-30T07:28:29.580Z",
+                "bumped": true,
+                "bumped_at": "2026-09-30T07:28:29.580Z",
+                "archetype": "regular",
+                "unseen": true,
+                "pinned": false,
+                "unpinned": null,
+                "visible": true,
+                "closed": false,
+                "archived": false,
+                "bookmarked": null,
+                "liked": null,
+                "tags": [
+                  {
+                    "id": 1,
+                    "name": "howto",
+                    "slug": "howto"
+                  }
+                ],
+                "tags_descriptions": {},
+                "category_id": 34,
+                "has_accepted_answer": false
+              },
+              {
+                "fancy_title": "Parity fixture: pinned and closed",
+                "id": 37,
+                "title": "Parity fixture: pinned and closed",
+                "slug": "parity-fixture-pinned-and-closed",
+                "posts_count": 1,
+                "reply_count": 0,
+                "highest_post_number": 1,
+                "created_at": "2026-09-30T07:28:29.325Z",
+                "last_posted_at": "2026-09-30T07:28:29.358Z",
+                "bumped": true,
+                "bumped_at": "2026-09-30T07:28:29.358Z",
+                "archetype": "regular",
+                "unseen": true,
+                "pinned": true,
+                "unpinned": null,
+                "excerpt": "A pinned, closed topic in Site Feedback with an excerpt that should be shown in the list.",
+                "visible": true,
+                "closed": true,
+                "archived": false,
+                "bookmarked": null,
+                "liked": null,
+                "tags": [],
+                "tags_descriptions": {},
+                "category_id": 2,
+                "has_accepted_answer": false
+              },
+              {
+                "fancy_title": "Parity fixture: liked and archived",
+                "id": 41,
+                "title": "Parity fixture: liked and archived",
+                "slug": "parity-fixture-liked-and-archived",
+                "posts_count": 1,
+                "reply_count": 0,
+                "highest_post_number": 1,
+                "created_at": "2026-09-30T07:28:30.067Z",
+                "last_posted_at": "2026-09-30T07:28:30.163Z",
+                "bumped": true,
+                "bumped_at": "2026-09-30T07:28:30.163Z",
+                "archetype": "regular",
+                "unseen": true,
+                "pinned": false,
+                "unpinned": null,
+                "visible": true,
+                "closed": false,
+                "archived": true,
+                "bookmarked": null,
+                "liked": null,
+                "tags": [
+                  {
+                    "id": 2,
+                    "name": "guide",
+                    "slug": "guide"
+                  },
+                  {
+                    "id": 1,
+                    "name": "howto",
+                    "slug": "howto"
+                  }
+                ],
+                "tags_descriptions": {},
+                "category_id": 4,
+                "has_accepted_answer": false
+              }
+            ],
+            "users": [],
+            "categories": [],
+            "tags": [],
+            "groups": [],
+            "grouped_search_result": {
+              "more_posts": null,
+              "more_users": null,
+              "more_categories": null,
+              "term": "fixture",
+              "more_full_page_results": null,
+              "can_create_topic": true,
+              "error": null,
+              "extra": {},
+              "post_ids": [
+                35,
+                42,
+                40,
+                46
+              ],
+              "user_ids": [],
+              "category_ids": [],
+              "tag_ids": [],
+              "group_ids": []
+            }
+          }
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "term": {
+          "type": "search_log_term",
+          "title": "Search Count",
+          "start_date": "2026-09-14",
+          "end_date": "2026-10-14T13:16:46.290Z",
+          "data": [
+            {
+              "x": "2026-10-12",
+              "y": 1
+            }
+          ],
+          "period": "monthly",
+          "search_result": {
+            "posts": [
+              {
+                "id": 35,
+                "name": "User0",
+                "username": "user0",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+                "created_at": "2026-09-30T07:28:28.901Z",
+                "like_count": 0,
+                "blurb": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+                "post_number": 1,
+                "topic_id": 35
+              },
+              {
+                "id": 42,
+                "name": "User1",
+                "username": "user1",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+                "created_at": "2026-09-30T07:28:29.580Z",
+                "like_count": 0,
+                "blurb": "A topic in a subcategory carrying a tag, so tags and category ids show up.",
+                "post_number": 1,
+                "topic_id": 38
+              },
+              {
+                "id": 40,
+                "name": "Admin",
+                "username": "admin",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+                "created_at": "2026-09-30T07:28:29.358Z",
+                "like_count": 0,
+                "blurb": "A pinned, closed topic in Site Feedback with an excerpt that should be shown in the list.",
+                "post_number": 1,
+                "topic_id": 37
+              },
+              {
+                "id": 46,
+                "name": "User0",
+                "username": "user0",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+                "created_at": "2026-09-30T07:28:30.163Z",
+                "like_count": 1,
+                "blurb": "An archived topic whose first post got a like, for like_count and op_like_count.",
+                "post_number": 1,
+                "topic_id": 41
+              }
+            ],
+            "topics": [
+              {
+                "fancy_title": "Parity fixture: replies and posters",
+                "id": 35,
+                "title": "Parity fixture: replies and posters",
+                "slug": "parity-fixture-replies-and-posters",
+                "posts_count": 5,
+                "reply_count": 0,
+                "highest_post_number": 5,
+                "created_at": "2026-09-30T07:28:28.864Z",
+                "last_posted_at": "2026-10-01T15:39:51.834Z",
+                "bumped": true,
+                "bumped_at": "2026-10-01T15:39:51.834Z",
+                "archetype": "regular",
+                "unseen": true,
+                "pinned": false,
+                "unpinned": null,
+                "visible": true,
+                "closed": false,
+                "archived": false,
+                "bookmarked": null,
+                "liked": null,
+                "tags": [
+                  {
+                    "id": 2,
+                    "name": "guide",
+                    "slug": "guide"
+                  }
+                ],
+                "tags_descriptions": {},
+                "category_id": 4,
+                "has_accepted_answer": false
+              },
+              {
+                "fancy_title": "Parity fixture: tagged in a subcategory",
+                "id": 38,
+                "title": "Parity fixture: tagged in a subcategory",
+                "slug": "parity-fixture-tagged-in-a-subcategory",
+                "posts_count": 1,
+                "reply_count": 0,
+                "highest_post_number": 1,
+                "created_at": "2026-09-30T07:28:29.543Z",
+                "last_posted_at": "2026-09-30T07:28:29.580Z",
+                "bumped": true,
+                "bumped_at": "2026-09-30T07:28:29.580Z",
+                "archetype": "regular",
+                "unseen": true,
+                "pinned": false,
+                "unpinned": null,
+                "visible": true,
+                "closed": false,
+                "archived": false,
+                "bookmarked": null,
+                "liked": null,
+                "tags": [
+                  {
+                    "id": 1,
+                    "name": "howto",
+                    "slug": "howto"
+                  }
+                ],
+                "tags_descriptions": {},
+                "category_id": 34,
+                "has_accepted_answer": false
+              },
+              {
+                "fancy_title": "Parity fixture: pinned and closed",
+                "id": 37,
+                "title": "Parity fixture: pinned and closed",
+                "slug": "parity-fixture-pinned-and-closed",
+                "posts_count": 1,
+                "reply_count": 0,
+                "highest_post_number": 1,
+                "created_at": "2026-09-30T07:28:29.325Z",
+                "last_posted_at": "2026-09-30T07:28:29.358Z",
+                "bumped": true,
+                "bumped_at": "2026-09-30T07:28:29.358Z",
+                "archetype": "regular",
+                "unseen": true,
+                "pinned": true,
+                "unpinned": null,
+                "excerpt": "A pinned, closed topic in Site Feedback with an excerpt that should be shown in the list.",
+                "visible": true,
+                "closed": true,
+                "archived": false,
+                "bookmarked": null,
+                "liked": null,
+                "tags": [],
+                "tags_descriptions": {},
+                "category_id": 2,
+                "has_accepted_answer": false
+              },
+              {
+                "fancy_title": "Parity fixture: liked and archived",
+                "id": 41,
+                "title": "Parity fixture: liked and archived",
+                "slug": "parity-fixture-liked-and-archived",
+                "posts_count": 1,
+                "reply_count": 0,
+                "highest_post_number": 1,
+                "created_at": "2026-09-30T07:28:30.067Z",
+                "last_posted_at": "2026-09-30T07:28:30.163Z",
+                "bumped": true,
+                "bumped_at": "2026-09-30T07:28:30.163Z",
+                "archetype": "regular",
+                "unseen": true,
+                "pinned": false,
+                "unpinned": null,
+                "visible": true,
+                "closed": false,
+                "archived": true,
+                "bookmarked": null,
+                "liked": null,
+                "tags": [
+                  {
+                    "id": 2,
+                    "name": "guide",
+                    "slug": "guide"
+                  },
+                  {
+                    "id": 1,
+                    "name": "howto",
+                    "slug": "howto"
+                  }
+                ],
+                "tags_descriptions": {},
+                "category_id": 4,
+                "has_accepted_answer": false
+              }
+            ],
+            "users": [],
+            "categories": [],
+            "tags": [],
+            "groups": [],
+            "grouped_search_result": {
+              "more_posts": null,
+              "more_users": null,
+              "more_categories": null,
+              "term": "fixture",
+              "more_full_page_results": null,
+              "can_create_topic": true,
+              "error": null,
+              "extra": {},
+              "post_ids": [
+                35,
+                42,
+                40,
+                46
+              ],
+              "user_ids": [],
+              "category_ids": [],
+              "tag_ids": [],
+              "group_ids": []
+            }
+          }
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "term": {
+          "type": "search_log_term",
+          "title": "Search Count",
+          "start_date": "1026-10-08",
+          "end_date": "2026-10-14T13:16:46.476Z",
+          "data": [
+            {
+              "x": "2026-03-28",
+              "y": 1
+            },
+            {
+              "x": "2026-09-04",
+              "y": 1
+            },
+            {
+              "x": "2026-10-12",
+              "y": 1
+            }
+          ],
+          "period": "all",
+          "search_result": {
+            "posts": [
+              {
+                "id": 35,
+                "name": "User0",
+                "username": "user0",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+                "created_at": "2026-09-30T07:28:28.901Z",
+                "like_count": 0,
+                "blurb": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+                "post_number": 1,
+                "topic_id": 35
+              },
+              {
+                "id": 42,
+                "name": "User1",
+                "username": "user1",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+                "created_at": "2026-09-30T07:28:29.580Z",
+                "like_count": 0,
+                "blurb": "A topic in a subcategory carrying a tag, so tags and category ids show up.",
+                "post_number": 1,
+                "topic_id": 38
+              },
+              {
+                "id": 40,
+                "name": "Admin",
+                "username": "admin",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+                "created_at": "2026-09-30T07:28:29.358Z",
+                "like_count": 0,
+                "blurb": "A pinned, closed topic in Site Feedback with an excerpt that should be shown in the list.",
+                "post_number": 1,
+                "topic_id": 37
+              },
+              {
+                "id": 46,
+                "name": "User0",
+                "username": "user0",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+                "created_at": "2026-09-30T07:28:30.163Z",
+                "like_count": 1,
+                "blurb": "An archived topic whose first post got a like, for like_count and op_like_count.",
+                "post_number": 1,
+                "topic_id": 41
+              }
+            ],
+            "topics": [
+              {
+                "fancy_title": "Parity fixture: replies and posters",
+                "id": 35,
+                "title": "Parity fixture: replies and posters",
+                "slug": "parity-fixture-replies-and-posters",
+                "posts_count": 5,
+                "reply_count": 0,
+                "highest_post_number": 5,
+                "created_at": "2026-09-30T07:28:28.864Z",
+                "last_posted_at": "2026-10-01T15:39:51.834Z",
+                "bumped": true,
+                "bumped_at": "2026-10-01T15:39:51.834Z",
+                "archetype": "regular",
+                "unseen": true,
+                "pinned": false,
+                "unpinned": null,
+                "visible": true,
+                "closed": false,
+                "archived": false,
+                "bookmarked": null,
+                "liked": null,
+                "tags": [
+                  {
+                    "id": 2,
+                    "name": "guide",
+                    "slug": "guide"
+                  }
+                ],
+                "tags_descriptions": {},
+                "category_id": 4,
+                "has_accepted_answer": false
+              },
+              {
+                "fancy_title": "Parity fixture: tagged in a subcategory",
+                "id": 38,
+                "title": "Parity fixture: tagged in a subcategory",
+                "slug": "parity-fixture-tagged-in-a-subcategory",
+                "posts_count": 1,
+                "reply_count": 0,
+                "highest_post_number": 1,
+                "created_at": "2026-09-30T07:28:29.543Z",
+                "last_posted_at": "2026-09-30T07:28:29.580Z",
+                "bumped": true,
+                "bumped_at": "2026-09-30T07:28:29.580Z",
+                "archetype": "regular",
+                "unseen": true,
+                "pinned": false,
+                "unpinned": null,
+                "visible": true,
+                "closed": false,
+                "archived": false,
+                "bookmarked": null,
+                "liked": null,
+                "tags": [
+                  {
+                    "id": 1,
+                    "name": "howto",
+                    "slug": "howto"
+                  }
+                ],
+                "tags_descriptions": {},
+                "category_id": 34,
+                "has_accepted_answer": false
+              },
+              {
+                "fancy_title": "Parity fixture: pinned and closed",
+                "id": 37,
+                "title": "Parity fixture: pinned and closed",
+                "slug": "parity-fixture-pinned-and-closed",
+                "posts_count": 1,
+                "reply_count": 0,
+                "highest_post_number": 1,
+                "created_at": "2026-09-30T07:28:29.325Z",
+                "last_posted_at": "2026-09-30T07:28:29.358Z",
+                "bumped": true,
+                "bumped_at": "2026-09-30T07:28:29.358Z",
+                "archetype": "regular",
+                "unseen": true,
+                "pinned": true,
+                "unpinned": null,
+                "excerpt": "A pinned, closed topic in Site Feedback with an excerpt that should be shown in the list.",
+                "visible": true,
+                "closed": true,
+                "archived": false,
+                "bookmarked": null,
+                "liked": null,
+                "tags": [],
+                "tags_descriptions": {},
+                "category_id": 2,
+                "has_accepted_answer": false
+              },
+              {
+                "fancy_title": "Parity fixture: liked and archived",
+                "id": 41,
+                "title": "Parity fixture: liked and archived",
+                "slug": "parity-fixture-liked-and-archived",
+                "posts_count": 1,
+                "reply_count": 0,
+                "highest_post_number": 1,
+                "created_at": "2026-09-30T07:28:30.067Z",
+                "last_posted_at": "2026-09-30T07:28:30.163Z",
+                "bumped": true,
+                "bumped_at": "2026-09-30T07:28:30.163Z",
+                "archetype": "regular",
+                "unseen": true,
+                "pinned": false,
+                "unpinned": null,
+                "visible": true,
+                "closed": false,
+                "archived": true,
+                "bookmarked": null,
+                "liked": null,
+                "tags": [
+                  {
+                    "id": 2,
+                    "name": "guide",
+                    "slug": "guide"
+                  },
+                  {
+                    "id": 1,
+                    "name": "howto",
+                    "slug": "howto"
+                  }
+                ],
+                "tags_descriptions": {},
+                "category_id": 4,
+                "has_accepted_answer": false
+              }
+            ],
+            "users": [],
+            "categories": [],
+            "tags": [],
+            "groups": [],
+            "grouped_search_result": {
+              "more_posts": null,
+              "more_users": null,
+              "more_categories": null,
+              "term": "fixture",
+              "more_full_page_results": null,
+              "can_create_topic": true,
+              "error": null,
+              "extra": {},
+              "post_ids": [
+                35,
+                42,
+                40,
+                46
+              ],
+              "user_ids": [],
+              "category_ids": [],
+              "tag_ids": [],
+              "group_ids": []
+            }
+          }
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "term": {
+          "type": "search_log_term",
+          "title": "Search Count",
+          "start_date": "2026-10-14",
+          "end_date": "2026-10-14T13:16:46.771Z",
+          "data": [],
+          "period": "daily",
+          "search_result": {
+            "posts": [
+              {
+                "id": 35,
+                "name": "User0",
+                "username": "user0",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+                "created_at": "2026-09-30T07:28:28.901Z",
+                "like_count": 0,
+                "blurb": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+                "post_number": 1,
+                "topic_id": 35
+              },
+              {
+                "id": 42,
+                "name": "User1",
+                "username": "user1",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+                "created_at": "2026-09-30T07:28:29.580Z",
+                "like_count": 0,
+                "blurb": "A topic in a subcategory carrying a tag, so tags and category ids show up.",
+                "post_number": 1,
+                "topic_id": 38
+              },
+              {
+                "id": 40,
+                "name": "Admin",
+                "username": "admin",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+                "created_at": "2026-09-30T07:28:29.358Z",
+                "like_count": 0,
+                "blurb": "A pinned, closed topic in Site Feedback with an excerpt that should be shown in the list.",
+                "post_number": 1,
+                "topic_id": 37
+              },
+              {
+                "id": 46,
+                "name": "User0",
+                "username": "user0",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+                "created_at": "2026-09-30T07:28:30.163Z",
+                "like_count": 1,
+                "blurb": "An archived topic whose first post got a like, for like_count and op_like_count.",
+                "post_number": 1,
+                "topic_id": 41
+              }
+            ],
+            "topics": [
+              {
+                "fancy_title": "Parity fixture: replies and posters",
+                "id": 35,
+                "title": "Parity fixture: replies and posters",
+                "slug": "parity-fixture-replies-and-posters",
+                "posts_count": 5,
+                "reply_count": 0,
+                "highest_post_number": 5,
+                "created_at": "2026-09-30T07:28:28.864Z",
+                "last_posted_at": "2026-10-01T15:39:51.834Z",
+                "bumped": true,
+                "bumped_at": "2026-10-01T15:39:51.834Z",
+                "archetype": "regular",
+                "unseen": true,
+                "pinned": false,
+                "unpinned": null,
+                "visible": true,
+                "closed": false,
+                "archived": false,
+                "bookmarked": null,
+                "liked": null,
+                "tags": [
+                  {
+                    "id": 2,
+                    "name": "guide",
+                    "slug": "guide"
+                  }
+                ],
+                "tags_descriptions": {},
+                "category_id": 4,
+                "has_accepted_answer": false
+              },
+              {
+                "fancy_title": "Parity fixture: tagged in a subcategory",
+                "id": 38,
+                "title": "Parity fixture: tagged in a subcategory",
+                "slug": "parity-fixture-tagged-in-a-subcategory",
+                "posts_count": 1,
+                "reply_count": 0,
+                "highest_post_number": 1,
+                "created_at": "2026-09-30T07:28:29.543Z",
+                "last_posted_at": "2026-09-30T07:28:29.580Z",
+                "bumped": true,
+                "bumped_at": "2026-09-30T07:28:29.580Z",
+                "archetype": "regular",
+                "unseen": true,
+                "pinned": false,
+                "unpinned": null,
+                "visible": true,
+                "closed": false,
+                "archived": false,
+                "bookmarked": null,
+                "liked": null,
+                "tags": [
+                  {
+                    "id": 1,
+                    "name": "howto",
+                    "slug": "howto"
+                  }
+                ],
+                "tags_descriptions": {},
+                "category_id": 34,
+                "has_accepted_answer": false
+              },
+              {
+                "fancy_title": "Parity fixture: pinned and closed",
+                "id": 37,
+                "title": "Parity fixture: pinned and closed",
+                "slug": "parity-fixture-pinned-and-closed",
+                "posts_count": 1,
+                "reply_count": 0,
+                "highest_post_number": 1,
+                "created_at": "2026-09-30T07:28:29.325Z",
+                "last_posted_at": "2026-09-30T07:28:29.358Z",
+                "bumped": true,
+                "bumped_at": "2026-09-30T07:28:29.358Z",
+                "archetype": "regular",
+                "unseen": true,
+                "pinned": true,
+                "unpinned": null,
+                "excerpt": "A pinned, closed topic in Site Feedback with an excerpt that should be shown in the list.",
+                "visible": true,
+                "closed": true,
+                "archived": false,
+                "bookmarked": null,
+                "liked": null,
+                "tags": [],
+                "tags_descriptions": {},
+                "category_id": 2,
+                "has_accepted_answer": false
+              },
+              {
+                "fancy_title": "Parity fixture: liked and archived",
+                "id": 41,
+                "title": "Parity fixture: liked and archived",
+                "slug": "parity-fixture-liked-and-archived",
+                "posts_count": 1,
+                "reply_count": 0,
+                "highest_post_number": 1,
+                "created_at": "2026-09-30T07:28:30.067Z",
+                "last_posted_at": "2026-09-30T07:28:30.163Z",
+                "bumped": true,
+                "bumped_at": "2026-09-30T07:28:30.163Z",
+                "archetype": "regular",
+                "unseen": true,
+                "pinned": false,
+                "unpinned": null,
+                "visible": true,
+                "closed": false,
+                "archived": true,
+                "bookmarked": null,
+                "liked": null,
+                "tags": [
+                  {
+                    "id": 2,
+                    "name": "guide",
+                    "slug": "guide"
+                  },
+                  {
+                    "id": 1,
+                    "name": "howto",
+                    "slug": "howto"
+                  }
+                ],
+                "tags_descriptions": {},
+                "category_id": 4,
+                "has_accepted_answer": false
+              }
+            ],
+            "users": [],
+            "categories": [],
+            "tags": [],
+            "groups": [],
+            "grouped_search_result": {
+              "more_posts": null,
+              "more_users": null,
+              "more_categories": null,
+              "term": "fixture",
+              "more_full_page_results": null,
+              "can_create_topic": true,
+              "error": null,
+              "extra": {},
+              "post_ids": [
+                35,
+                42,
+                40,
+                46
+              ],
+              "user_ids": [],
+              "category_ids": [],
+              "tag_ids": [],
+              "group_ids": []
+            }
+          }
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "term": {
+          "type": "search_log_term",
+          "title": "Search Count",
+          "start_date": "2026-07-14",
+          "end_date": "2026-10-14T13:16:47.026Z",
+          "data": [],
+          "period": "quarterly",
+          "search_result": {
+            "posts": [],
+            "users": [],
+            "categories": [],
+            "tags": [],
+            "groups": [],
+            "grouped_search_result": {
+              "more_posts": null,
+              "more_users": null,
+              "more_categories": null,
+              "term": "nothing-like-this",
+              "more_full_page_results": null,
+              "can_create_topic": true,
+              "error": null,
+              "extra": {},
+              "post_ids": [],
+              "user_ids": [],
+              "category_ids": [],
+              "tag_ids": [],
+              "group_ids": []
+            }
+          }
+        }
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "param is missing or the value is empty or invalid: term"
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": [
+        {
+          "term": "fixture",
+          "searches": 3,
+          "ctr": 66.7
+        },
+        {
+          "term": "other",
+          "searches": 1,
+          "ctr": 100.0
+        }
+      ]
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 112,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "VcnCtwUWDmrmtGw1zQLgq585a2Q=",
+            "created_at": "2026-10-14T13:16:44.551083",
+            "rotated_at": "2026-10-14T13:16:44.549219",
+            "updated_at": "2026-10-14T13:16:44.551083",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "VcnCtwUWDmrmtGw1zQLgq585a2Q=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 112,
+            "seen_at": "2026-10-14T13:16:45.743122",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "VcnCtwUWDmrmtGw1zQLgq585a2Q=",
+            "created_at": "2026-10-14T13:16:44.551083",
+            "rotated_at": "2026-10-14T13:16:44.549219",
+            "updated_at": "2026-10-14T13:16:44.551083",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "VcnCtwUWDmrmtGw1zQLgq585a2Q=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "log_search_queries": true
+  },
+  "setup": [
+    "DELETE FROM search_logs",
+    "INSERT INTO search_logs (term, user_id, search_type, search_result_id, created_at) VALUES ('Fixture', 1, 1, NULL, now() - interval '2 days'), ('fixture', 2, 2, 35, now() - interval '2 days'), ('fixture', NULL, 2, NULL, now() - interval '3 days'), ('FIXTURE', 3, 1, NULL, now() - interval '40 days'), ('fixture', 3, 1, 36, now() - interval '200 days'), ('other', 4, 2, 37, now() - interval '1 day')"
+  ],
+  "recorded_from": {
+    "case": "ea7622bf19056e104630d5f6d8f91d100e0c2cdc83409490c7058ffe1105439d",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

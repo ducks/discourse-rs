@@ -126,6 +126,9 @@ pub struct SearchArgs {
     pub ip_address: String,
     pub user_agent: Option<String>,
     pub session_id: Option<String>,
+    /// A `search_type` was given: `log_query?` may log it (search_logs#term
+    /// passes none).
+    pub log: bool,
 }
 
 /// `SearchLog.log`'s redis dedupe key, `__SEARCH__LOG_<ip>` with a 5 s
@@ -437,7 +440,8 @@ impl Search<'_> {
 
         let mut results = Results::default();
         // log_query?: not while the site is read only.
-        if self.settings.get("log_search_queries")?.truthy()
+        if args.log
+            && self.settings.get("log_search_queries")?.truthy()
             && args.type_filter != Some(TypeFilter::ExcludeTopics)
             && !crate::readonly::mode(&mut *self.conn)
                 .await?

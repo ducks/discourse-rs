@@ -1,0 +1,105 @@
+{
+  "name": "disabled",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/customize/form-templates.json"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/customize/form-templates.json",
+      "params": {
+        "name": "X",
+        "template": "- type: input\n  id: a\n"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/form-templates.json"
+    }
+  ],
+  "started_at": "2026-10-14T13:37:21.141625",
+  "transaction_started_at": "2026-10-14T13:37:19.961824",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 112,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "mEicS/ff0K+woTlpOuPk5TT7cms=",
+            "created_at": "2026-10-14T13:37:20.321898",
+            "rotated_at": "2026-10-14T13:37:20.320878",
+            "updated_at": "2026-10-14T13:37:20.321898",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "mEicS/ff0K+woTlpOuPk5TT7cms=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 112,
+            "seen_at": "2026-10-14T13:37:21.147843",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "mEicS/ff0K+woTlpOuPk5TT7cms=",
+            "created_at": "2026-10-14T13:37:20.321898",
+            "rotated_at": "2026-10-14T13:37:20.320878",
+            "updated_at": "2026-10-14T13:37:20.321898",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "mEicS/ff0K+woTlpOuPk5TT7cms=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "enable_form_templates": false
+  },
+  "recorded_from": {
+    "case": "8e46fa3817b3fd94ad53d98cc8ab154e6c5580a76d2eeff18140d8e347b60935",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

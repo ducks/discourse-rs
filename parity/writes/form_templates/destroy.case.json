@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO form_templates (id, name, template, created_at, updated_at) VALUES (1, 'Open', E'- type: input\\n  id: a\\n', now(), now()), (2, 'Assigned', E'- type: input\\n  id: b\\n', now(), now())",
+    "INSERT INTO category_form_templates (category_id, form_template_id, created_at, updated_at) VALUES (4, 2, now(), now())"
+  ],
+  "requests": [
+    {"method": "DELETE", "path": "/admin/customize/form-templates/2.json"},
+    {"method": "DELETE", "path": "/admin/customize/form-templates/999.json"},
+    {"method": "GET", "path": "/form-templates.json"}
+  ]
+}

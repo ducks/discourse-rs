@@ -1,0 +1,6 @@
+{
+  "requests": [
+    {"method": "GET", "path": "/form-templates.json"},
+    {"method": "GET", "path": "/admin/customize/form-templates.json"}
+  ]
+}

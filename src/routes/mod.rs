@@ -3,8 +3,10 @@ mod accounts;
 mod admin_api_keys;
 mod admin_badges;
 mod admin_email;
+mod admin_embedding;
 mod admin_emoji;
 mod admin_flags;
+mod admin_form_templates;
 mod admin_groups;
 mod admin_logs;
 mod admin_site_settings;
@@ -671,6 +673,58 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/admin/config/flags/{flag_id}/reorder/{direction}",
             put(admin_flags::reorder),
         )
+        .route(
+            "/admin/customize/embedding",
+            get(admin_embedding::show).put(admin_embedding::update),
+        )
+        .route(
+            "/admin/customize/embedding.json",
+            get(admin_embedding::show).put(admin_embedding::update),
+        )
+        .route(
+            "/admin/customize/embedding/{id}",
+            get(admin_embedding::edit),
+        )
+        .route("/admin/embeddable_hosts", post(admin_embedding::create))
+        .route(
+            "/admin/embeddable_hosts.json",
+            post(admin_embedding::create),
+        )
+        .route(
+            "/admin/embeddable_hosts/{id}",
+            put(admin_embedding::update_host).delete(admin_embedding::destroy_host),
+        )
+        .route(
+            "/admin/customize/form-templates",
+            get(admin_form_templates::index).post(admin_form_templates::create),
+        )
+        .route(
+            "/admin/customize/form-templates.json",
+            get(admin_form_templates::index).post(admin_form_templates::create),
+        )
+        .route(
+            "/admin/customize/form-templates/{id}",
+            get(admin_form_templates::show)
+                .put(admin_form_templates::update)
+                .delete(admin_form_templates::destroy),
+        )
+        .route(
+            "/admin/customize/form-templates/{id}/edit",
+            get(admin_form_templates::edit),
+        )
+        .route(
+            "/admin/customize/form-templates/{id}/edit.json",
+            get(admin_form_templates::edit),
+        )
+        .route("/form-templates", get(admin_form_templates::public_index))
+        .route(
+            "/form-templates.json",
+            get(admin_form_templates::public_index),
+        )
+        .route(
+            "/form-templates/{id}",
+            get(admin_form_templates::public_show),
+        )
         .route("/site/emoji", get(admin_emoji::site_emoji))
         .route("/site/emoji.json", get(admin_emoji::site_emoji))
         .route(
@@ -722,8 +776,24 @@ pub fn router(state: &AppState) -> Router<AppState> {
             delete(admin_logs::destroy_screened_email),
         )
         .route("/admin/email-logs/{kind}", get(admin_logs::email_logs))
+        .route(
+            "/admin/email-logs/incoming/{id}",
+            get(admin_logs::incoming_email),
+        )
+        .route(
+            "/admin/email-logs/incoming_from_bounced/{id}",
+            get(admin_logs::incoming_from_bounced),
+        )
         .route("/admin/logs/search_logs", get(admin_logs::search_logs))
         .route("/admin/logs/search_logs.json", get(admin_logs::search_logs))
+        .route(
+            "/admin/logs/search_logs/term",
+            get(admin_logs::search_log_term),
+        )
+        .route(
+            "/admin/logs/search_logs/term.json",
+            get(admin_logs::search_log_term),
+        )
         .route("/admin/logs/screened_urls", get(admin_logs::screened_urls))
         .route(
             "/admin/logs/screened_urls.json",

@@ -1,0 +1,271 @@
+{
+  "name": "settings",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/customize/embedding.json",
+      "params": {
+        "embedding": {
+          "type": "posts_and_topics",
+          "embed_by_username": "user1",
+          "embed_post_limit": "25",
+          "embed_title_scrubber": " - My Blog$",
+          "embed_truncate": "false",
+          "embed_unlisted": "true",
+          "allowed_embed_selectors": "ignored"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/customize/embedding.json",
+      "params": {
+        "embedding": {
+          "type": "crawlers",
+          "allowed_embed_selectors": "article",
+          "blocked_embed_selectors": ".ad, .footer"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/customize/embedding.json",
+      "params": {
+        "embedding": {
+          "type": "posts_and_topics",
+          "embed_by_username": "nobody",
+          "embed_post_limit": "",
+          "embed_truncate": true
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/customize/embedding.json"
+    }
+  ],
+  "started_at": "2026-10-14T13:33:18.273074",
+  "transaction_started_at": "2026-10-14T13:33:13.394846",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "embeddable_hosts": [],
+        "embedding": {
+          "id": "default",
+          "fields": [
+            "embed_by_username",
+            "embed_post_limit",
+            "embed_title_scrubber",
+            "embed_truncate",
+            "embed_unlisted",
+            "allowed_embed_selectors",
+            "blocked_embed_selectors",
+            "allowed_embed_classnames"
+          ],
+          "base_url": "http://localhost:3048",
+          "embed_by_username": "user1",
+          "embed_post_limit": 25,
+          "embed_title_scrubber": " - My Blog$",
+          "embed_truncate": false,
+          "embed_unlisted": true,
+          "allowed_embed_selectors": "",
+          "blocked_embed_selectors": "",
+          "allowed_embed_classnames": "emoji",
+          "embeddable_host_ids": []
+        },
+        "__rest_serializer": "1"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "embeddable_hosts": [],
+        "embedding": {
+          "id": "default",
+          "fields": [
+            "embed_by_username",
+            "embed_post_limit",
+            "embed_title_scrubber",
+            "embed_truncate",
+            "embed_unlisted",
+            "allowed_embed_selectors",
+            "blocked_embed_selectors",
+            "allowed_embed_classnames"
+          ],
+          "base_url": "http://localhost:3048",
+          "embed_by_username": "user1",
+          "embed_post_limit": 25,
+          "embed_title_scrubber": " - My Blog$",
+          "embed_truncate": false,
+          "embed_unlisted": true,
+          "allowed_embed_selectors": "article",
+          "blocked_embed_selectors": ".ad, .footer",
+          "allowed_embed_classnames": "",
+          "embeddable_host_ids": []
+        },
+        "__rest_serializer": "1"
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "embed_by_username: There's no user with that username."
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "embeddable_hosts": [],
+        "embedding": {
+          "id": "default",
+          "fields": [
+            "embed_by_username",
+            "embed_post_limit",
+            "embed_title_scrubber",
+            "embed_truncate",
+            "embed_unlisted",
+            "allowed_embed_selectors",
+            "blocked_embed_selectors",
+            "allowed_embed_classnames"
+          ],
+          "base_url": "http://localhost:3048",
+          "embed_by_username": "user1",
+          "embed_post_limit": 25,
+          "embed_title_scrubber": " - My Blog$",
+          "embed_truncate": false,
+          "embed_unlisted": true,
+          "allowed_embed_selectors": "article",
+          "blocked_embed_selectors": ".ad, .footer",
+          "allowed_embed_classnames": "",
+          "embeddable_host_ids": []
+        },
+        "__rest_serializer": "1"
+      }
+    }
+  ],
+  "changes": {
+    "site_settings": {
+      "inserted": [
+        {
+          "id": 37,
+          "name": "embed_by_username",
+          "value": "user1",
+          "data_type": 15,
+          "created_at": "2026-10-14T13:33:18.294344",
+          "updated_at": "2026-10-14T13:33:18.294344"
+        },
+        {
+          "id": 38,
+          "name": "embed_post_limit",
+          "value": "25",
+          "data_type": 3,
+          "created_at": "2026-10-14T13:33:18.300402",
+          "updated_at": "2026-10-14T13:33:18.300402"
+        },
+        {
+          "id": 39,
+          "name": "embed_title_scrubber",
+          "value": " - My Blog$",
+          "data_type": 1,
+          "created_at": "2026-10-14T13:33:18.307929",
+          "updated_at": "2026-10-14T13:33:18.307929"
+        },
+        {
+          "id": 40,
+          "name": "embed_truncate",
+          "value": "f",
+          "data_type": 5,
+          "created_at": "2026-10-14T13:33:18.315909",
+          "updated_at": "2026-10-14T13:33:18.315909"
+        },
+        {
+          "id": 41,
+          "name": "embed_unlisted",
+          "value": "t",
+          "data_type": 5,
+          "created_at": "2026-10-14T13:33:18.322489",
+          "updated_at": "2026-10-14T13:33:18.322489"
+        },
+        {
+          "id": 42,
+          "name": "allowed_embed_selectors",
+          "value": "article",
+          "data_type": 1,
+          "created_at": "2026-10-14T13:33:18.330028",
+          "updated_at": "2026-10-14T13:33:18.413526"
+        },
+        {
+          "id": 43,
+          "name": "blocked_embed_selectors",
+          "value": ".ad, .footer",
+          "data_type": 1,
+          "created_at": "2026-10-14T13:33:18.337583",
+          "updated_at": "2026-10-14T13:33:18.428287"
+        },
+        {
+          "id": 44,
+          "name": "allowed_embed_classnames",
+          "value": "",
+          "data_type": 1,
+          "created_at": "2026-10-14T13:33:18.345173",
+          "updated_at": "2026-10-14T13:33:18.43937"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 112,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "fDAPZ7eZrDT+ZfDFi0IG0b/FhbI=",
+            "created_at": "2026-10-14T13:33:15.74329",
+            "rotated_at": "2026-10-14T13:33:15.734832",
+            "updated_at": "2026-10-14T13:33:15.74329",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "fDAPZ7eZrDT+ZfDFi0IG0b/FhbI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 112,
+            "seen_at": "2026-10-14T13:33:18.281038",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "fDAPZ7eZrDT+ZfDFi0IG0b/FhbI=",
+            "created_at": "2026-10-14T13:33:15.74329",
+            "rotated_at": "2026-10-14T13:33:15.734832",
+            "updated_at": "2026-10-14T13:33:15.74329",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "fDAPZ7eZrDT+ZfDFi0IG0b/FhbI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "site_settings": 37
+  },
+  "recorded_from": {
+    "case": "430a6df7fbe8d675f73e82621c9d0b3997549f680a677166e4dec4cea1c33a66",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
