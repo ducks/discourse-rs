@@ -1,0 +1,19 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO unsubscribe_keys (key, user_id, unsubscribe_key_type, topic_id, post_id, created_at, updated_at) VALUES ('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 4, 'topic', 35, 35, now(), now())",
+    "UPDATE topic_users SET notification_level = 2 WHERE user_id = 4 AND topic_id = 35"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/email/unsubscribe/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "params": {
+        "mute_topic": "1"
+      }
+    }
+  ],
+  "keep_headers": [
+    "Location"
+  ]
+}

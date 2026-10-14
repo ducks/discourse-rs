@@ -24,10 +24,16 @@ use sqlx::PgPool;
 use tower::ServiceExt;
 
 /// Not compared: written by the agent's scheduler during a recording
-/// (scheduler_stats, top_topics), or the login's token row, whose id and
-/// random token cannot line up (the seed leaves tokens out); tests/sessions.rs
-/// covers it.
-const BACKGROUND_TABLES: [&str; 3] = ["scheduler_stats", "top_topics", "user_auth_tokens"];
+/// (scheduler_stats, top_topics), the login's token row, whose id and
+/// random token cannot line up (the seed leaves tokens out; tests/sessions.rs
+/// covers it), or the stylesheet the reference compiles the first time a
+/// server-rendered page links it (stylesheet_cache).
+const BACKGROUND_TABLES: [&str; 4] = [
+    "scheduler_stats",
+    "stylesheet_cache",
+    "top_topics",
+    "user_auth_tokens",
+];
 
 /// A background table is compared when the case names it in
 /// `include_tables` (it runs the job that writes it).
@@ -140,6 +146,20 @@ struct Client {
     csrf: Option<String>,
     /// The last response's rate limit headers, as the recorder keeps them.
     rate_headers: Map<String, Value>,
+    /// The headers the case names in `keep_headers`, kept as well.
+    keep_headers: Vec<String>,
+}
+
+/// A Location as the recorder keeps it: its path and query, the host being
+/// each side's own.
+fn location_path(url: &str) -> String {
+    match url.split_once("://") {
+        Some((_, rest)) => match rest.find('/') {
+            Some(i) => rest[i..].to_string(),
+            None => "/".to_string(),
+        },
+        None => url.to_string(),
+    }
 }
 
 /// The response headers recordings keep (when a response has any).
@@ -209,9 +229,16 @@ impl Client {
         let status = response.status().as_u16();
         self.rate_headers = RATE_HEADERS
             .iter()
+            .copied()
+            .chain(self.keep_headers.iter().map(String::as_str))
             .filter_map(|name| {
-                let value = response.headers().get(*name)?.to_str().ok()?;
-                Some((name.to_string(), Value::String(value.to_string())))
+                let value = response.headers().get(name)?.to_str().ok()?;
+                let value = if name == "Location" {
+                    location_path(value)
+                } else {
+                    value.to_string()
+                };
+                Some((name.to_string(), Value::String(value)))
             })
             .collect();
         for value in response.headers().get_all(header::SET_COOKIE) {
@@ -418,6 +445,10 @@ fn unrandom(s: &str) -> String {
     } else {
         s.to_string()
     };
+    // EmailController's cache key for the unsubscribed page.
+    static UNSUB: std::sync::LazyLock<regex::Regex> =
+        std::sync::LazyLock::new(|| regex::Regex::new(r"\bunsub_[0-9a-f]{32}\b").unwrap());
+    let s = UNSUB.replace_all(&s, "unsub_<hex>");
     let s = KEY.replace_all(&s, "<key>");
     let s = UUID.replace_all(&s, "<uuid>");
     BOUNDARY.replace_all(&s, "boundary=<boundary>").into_owned()
@@ -1155,6 +1186,12 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
         cookies: Vec::new(),
         csrf: None,
         rate_headers: Map::new(),
+        keep_headers: case["keep_headers"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .filter_map(|h| h.as_str().map(str::to_string))
+            .collect(),
     };
     if let Some(user) = case["user"].as_str() {
         client.login(user).await;
@@ -1387,6 +1424,30 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
         if routing_error && ours["responses"][i]["status"] == 404 {
             rails["responses"][i]["body"] = Value::String("<not found>".into());
             ours["responses"][i]["body"] = Value::String("<not found>".into());
+        }
+    }
+    // `fragment` ([start, end]): an HTML page is compared from the first
+    // `start` through the `end` after it, the view without its layout
+    // (theme, plugin stylesheets, the profiler). A form's token is left
+    // out: the recorder turns forgery protection off.
+    if let Some([start, end]) = case["fragment"].as_array().map(Vec::as_slice) {
+        static TOKEN: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
+            regex::Regex::new(r#"<input type="hidden" name="authenticity_token" value="[^"]*" />"#)
+                .unwrap()
+        });
+        let (start, end) = (start.as_str().unwrap_or(""), end.as_str().unwrap_or(""));
+        for doc in [&mut rails, &mut ours] {
+            for response in doc["responses"].as_array_mut().into_iter().flatten() {
+                let Some(body) = response["body"].as_str() else {
+                    continue;
+                };
+                let Some(from) = body.find(start) else {
+                    continue;
+                };
+                let rest = &body[from..];
+                let to = rest.find(end).map_or(rest.len(), |i| i + end.len());
+                response["body"] = Value::String(TOKEN.replace_all(&rest[..to], "").into_owned());
+            }
         }
     }
     for doc in [&mut rails, &mut ours] {

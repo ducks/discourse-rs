@@ -14,6 +14,7 @@ pub mod receiver;
 pub mod reply_trimmer;
 pub mod sender;
 pub mod styles;
+pub mod unsubscribe;
 
 use std::sync::{Arc, Mutex};
 use std::time::Duration;

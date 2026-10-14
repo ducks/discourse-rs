@@ -1,0 +1,40 @@
+{
+  "name": "unsubscribe_post_owner_missing",
+  "user": null,
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/email/unsubscribe/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "params": {
+        "unsubscribe_all": "1"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T01:57:52.504867",
+  "transaction_started_at": "2026-10-14T01:57:50.865665",
+  "responses": [
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO unsubscribe_keys (key, user_id, unsubscribe_key_type, topic_id, post_id, created_at, updated_at) VALUES ('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 999, 'all', NULL, NULL, now(), now())"
+  ],
+  "keep_headers": [
+    "Location"
+  ],
+  "recorded_from": {
+    "case": "60aa11c4d449083a81474c50c4da74657e42cb5a0a0339af4941e1c844d22ef4",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

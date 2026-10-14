@@ -1,0 +1,19 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO unsubscribe_keys (key, user_id, unsubscribe_key_type, topic_id, post_id, created_at, updated_at) VALUES ('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 2, 'all', NULL, NULL, now(), now())",
+    "UPDATE user_options SET mailing_list_mode = true WHERE user_id = 2"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/email/unsubscribe/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "params": {
+        "disable_mailing_list": "1"
+      }
+    }
+  ],
+  "keep_headers": [
+    "Location"
+  ]
+}

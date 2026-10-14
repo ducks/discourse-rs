@@ -296,8 +296,11 @@ cases.each do |c|
         session.public_send(r["method"].downcase, path, **options)
         body = session.response.body
         response = { status: session.response.status, body: (JSON.parse(body) rescue body) }
-        # The rate limit headers, kept only when a response has them.
-        kept = session.response.headers.to_h.slice("Retry-After", "Discourse-Rate-Limit-Error-Code", "Discourse-Actions-Remaining", "Discourse-Actions-Max")
+        # The rate limit headers, kept only when a response has them, and
+        # those the case names in `keep_headers` (a redirect's Location, as
+        # its path, the host being each side's own).
+        kept = session.response.headers.to_h.slice("Retry-After", "Discourse-Rate-Limit-Error-Code", "Discourse-Actions-Remaining", "Discourse-Actions-Max", *(c["keep_headers"] || []))
+        kept["Location"] = URI(kept["Location"]).request_uri if kept["Location"]
         response[:headers] = kept if kept.any?
         responses << response
       end
@@ -351,6 +354,8 @@ cases.each do |c|
     record[:files] = c["files"] if c["files"]
     record[:remote] = c["remote"] if c["remote"]
     record[:rate_limits] = c["rate_limits"] if c["rate_limits"]
+    record[:keep_headers] = c["keep_headers"] if c["keep_headers"]
+    record[:fragment] = c["fragment"] if c["fragment"]
     record[:jobs_from_jobs] = ENQUEUED.dup if c["run_jobs"]
     record[:emails] = emails if emails.any?
     File.write("#{out}/#{c["name"]}.json", JSON.pretty_generate(record) + "\n")

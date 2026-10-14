@@ -1,0 +1,38 @@
+{
+  "name": "unsubscribe_post_missing_key",
+  "user": null,
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/email/unsubscribe/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "params": {
+        "unsubscribe_all": "1"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T01:57:50.315531",
+  "transaction_started_at": "2026-10-14T01:57:49.419776",
+  "responses": [
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "setup": [],
+  "keep_headers": [
+    "Location"
+  ],
+  "recorded_from": {
+    "case": "d48fee957cc58e1555d142e4e3970d11bb7763473fb4075664bfed946bd94c57",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -458,7 +458,13 @@ pub async fn build(
         )],
     )
     .await?;
-    let key = unsubscribe_key(&mut *conn, req.user_id, &post).await?;
+    let key = super::unsubscribe::create_key_for(
+        &mut *conn,
+        req.user_id,
+        super::unsubscribe::TOPIC_TYPE,
+        Some((post.topic_id, post.id)),
+    )
+    .await?;
     let unsubscribe_url = format!("{base_url}/email/unsubscribe/{key}");
 
     // Email::MessageBuilder
@@ -715,29 +721,6 @@ pub async fn build(
         html_part,
         view_rendered: false,
     })
-}
-
-/// `UnsubscribeKey.create_key_for(user, "topic", post:)`
-async fn unsubscribe_key(
-    conn: &mut PgConnection,
-    user_id: i32,
-    post: &PostRow,
-) -> Result<String, AppError> {
-    use rand::RngCore;
-    let mut bytes = [0u8; 32];
-    rand::thread_rng().fill_bytes(&mut bytes);
-    let key: String = bytes.iter().map(|b| format!("{b:02x}")).collect();
-    sqlx::query(
-        "INSERT INTO unsubscribe_keys (key, user_id, unsubscribe_key_type, topic_id, post_id, created_at, updated_at) \
-         VALUES ($1, $2, 'topic', $3, $4, clock_timestamp(), clock_timestamp())",
-    )
-    .bind(&key)
-    .bind(user_id)
-    .bind(post.topic_id)
-    .bind(post.id)
-    .execute(&mut *conn)
-    .await?;
-    Ok(key)
 }
 
 /// `PrettyText.format_for_email(cooked, post)`: reduce_cooked's changes

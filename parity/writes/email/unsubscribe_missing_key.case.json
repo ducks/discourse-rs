@@ -1,0 +1,18 @@
+{
+  "user": null,
+  "setup": [],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/email/unsubscribe/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "headers": {
+        "Accept": "text/html",
+        "X-Requested-With": ""
+      }
+    }
+  ],
+  "fragment": [
+    "<div class='container unsubscribe'>",
+    "\n</div>\n"
+  ]
+}
