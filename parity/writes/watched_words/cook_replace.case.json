@@ -1,0 +1,19 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (911, 'cat', 5, 'dog', FALSE, FALSE, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (912, 'kitty', 5, '<b>meow</b>', FALSE, TRUE, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (913, 'Lion', 5, 'tiger', TRUE, FALSE, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "My cat and CAT, a kitty, a Lion and a lion, concatenate, [cat link](https://example.com/cat), `cat` and @user1 cat.",
+        "typing_duration_msecs": 5000
+      }
+    }
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "name": "ww_create_too_long",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/customize/watched_words.json",
+      "params": {
+        "words": [
+          "ok",
+          "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        ],
+        "action_key": "censor"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T06:47:38.663485",
+  "transaction_started_at": "2026-10-14T06:47:37.714209",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Word is too long (maximum is 100 characters)",
+          "Watched words is invalid"
+        ],
+        "error_type": "record_invalid"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "BRzD4dB4G7NmYhbTJQZ2uoxxMZk=",
+            "created_at": "2026-10-14T06:47:38.078153",
+            "rotated_at": "2026-10-14T06:47:38.077163",
+            "updated_at": "2026-10-14T06:47:38.078153",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "BRzD4dB4G7NmYhbTJQZ2uoxxMZk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T06:47:38.6682",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "BRzD4dB4G7NmYhbTJQZ2uoxxMZk=",
+            "created_at": "2026-10-14T06:47:38.078153",
+            "rotated_at": "2026-10-14T06:47:38.077163",
+            "updated_at": "2026-10-14T06:47:38.078153",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "BRzD4dB4G7NmYhbTJQZ2uoxxMZk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "043773e598f8c9fab0a01eb382ba3e43171361cec491c1424c3d351b8db0d760",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

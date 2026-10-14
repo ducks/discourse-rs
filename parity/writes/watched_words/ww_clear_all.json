@@ -1,0 +1,153 @@
+{
+  "name": "ww_clear_all",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/admin/customize/watched_words/action/censor.json"
+    }
+  ],
+  "started_at": "2026-10-14T06:47:07.70227",
+  "transaction_started_at": "2026-10-14T06:47:01.880278",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "pzhl+5iJn3ap9OMM7EYd/zcpOYI=",
+            "created_at": "2026-10-14T06:47:04.032497",
+            "rotated_at": "2026-10-14T06:47:04.023252",
+            "updated_at": "2026-10-14T06:47:04.032497",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "pzhl+5iJn3ap9OMM7EYd/zcpOYI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T06:47:07.724548",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "pzhl+5iJn3ap9OMM7EYd/zcpOYI=",
+            "created_at": "2026-10-14T06:47:04.032497",
+            "rotated_at": "2026-10-14T06:47:04.023252",
+            "updated_at": "2026-10-14T06:47:04.032497",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "pzhl+5iJn3ap9OMM7EYd/zcpOYI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 98,
+          "context": "censor",
+          "details": "bad",
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": false,
+          "created_at": "2026-10-14T06:47:07.816597",
+          "ip_address": null,
+          "updated_at": "2026-10-14T06:47:07.816597",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 75,
+          "email": null,
+          "action": 98,
+          "context": "censor",
+          "details": "worse",
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": false,
+          "created_at": "2026-10-14T06:47:07.844334",
+          "ip_address": null,
+          "updated_at": "2026-10-14T06:47:07.844334",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "watched_words": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 901,
+          "html": false,
+          "word": "bad",
+          "action": 2,
+          "created_at": "2026-10-14T06:47:01.880278",
+          "updated_at": "2026-10-14T06:47:01.880278",
+          "replacement": null,
+          "case_sensitive": false,
+          "watched_word_group_id": 950
+        },
+        {
+          "id": 902,
+          "html": false,
+          "word": "worse",
+          "action": 2,
+          "created_at": "2026-10-14T06:47:01.880278",
+          "updated_at": "2026-10-14T06:47:01.880278",
+          "replacement": null,
+          "case_sensitive": false,
+          "watched_word_group_id": null
+        }
+      ],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "user_histories": 74
+  },
+  "setup": [
+    "INSERT INTO watched_word_groups (id, action, created_at, updated_at) VALUES (950, 2, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, watched_word_group_id, created_at, updated_at) VALUES (901, 'bad', 2, NULL, FALSE, FALSE, 950, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, watched_word_group_id, created_at, updated_at) VALUES (902, 'worse', 2, NULL, FALSE, FALSE, NULL, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, watched_word_group_id, created_at, updated_at) VALUES (905, 'spam', 1, NULL, FALSE, FALSE, NULL, now(), now())"
+  ],
+  "recorded_from": {
+    "case": "99fd9ba1356823604de3481404b6ed655865af0da3df2dc15e5f7fe41a792b95",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

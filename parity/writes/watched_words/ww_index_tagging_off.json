@@ -1,0 +1,170 @@
+{
+  "name": "ww_index_tagging_off",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/customize/watched_words/action/censor.json"
+    }
+  ],
+  "started_at": "2026-10-14T06:48:03.444591",
+  "transaction_started_at": "2026-10-14T06:48:02.381532",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "actions": [
+          "block",
+          "censor",
+          "require_approval",
+          "flag",
+          "link",
+          "replace",
+          "silence"
+        ],
+        "words": [
+          {
+            "id": 905,
+            "word": "spam",
+            "regexp": "(?:(?<![\\p{L}\\p{M}\\p{N}\\p{Pc}])|(?<=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF])|(?=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF]))(spam)(?:(?![\\p{L}\\p{M}\\p{N}\\p{Pc}])|(?=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF])|(?<=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF]))",
+            "action": "block",
+            "case_sensitive": false,
+            "watched_word_group_id": null
+          },
+          {
+            "id": 901,
+            "word": "bad",
+            "regexp": "(?:(?<![\\p{L}\\p{M}\\p{N}\\p{Pc}])|(?<=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF])|(?=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF]))(bad)(?:(?![\\p{L}\\p{M}\\p{N}\\p{Pc}])|(?=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF])|(?<=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF]))",
+            "action": "censor",
+            "case_sensitive": false,
+            "watched_word_group_id": null
+          },
+          {
+            "id": 902,
+            "word": "shout",
+            "regexp": "(?:(?<![\\p{L}\\p{M}\\p{N}\\p{Pc}])|(?<=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF])|(?=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF]))(shout)(?:(?![\\p{L}\\p{M}\\p{N}\\p{Pc}])|(?=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF])|(?<=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF]))",
+            "action": "censor",
+            "case_sensitive": true,
+            "watched_word_group_id": null
+          },
+          {
+            "id": 903,
+            "word": "cat",
+            "regexp": "(?:(?<![\\p{L}\\p{M}\\p{N}\\p{Pc}])|(?<=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF])|(?=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF]))(cat)(?:(?![\\p{L}\\p{M}\\p{N}\\p{Pc}])|(?=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF])|(?<=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF]))",
+            "replacement": "dog",
+            "action": "replace",
+            "case_sensitive": false,
+            "watched_word_group_id": null
+          },
+          {
+            "id": 904,
+            "word": "meta",
+            "regexp": "(?:(?<![\\p{L}\\p{M}\\p{N}\\p{Pc}])|(?<=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF])|(?=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF]))(meta)(?:(?![\\p{L}\\p{M}\\p{N}\\p{Pc}])|(?=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF])|(?<=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF]))",
+            "replacement": "https://meta.discourse.org",
+            "action": "link",
+            "case_sensitive": false,
+            "watched_word_group_id": null
+          }
+        ],
+        "compiled_regular_expressions": {
+          "block": [
+            {
+              "(?:(?<![\\p{L}\\p{M}\\p{N}\\p{Pc}])|(?<=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF])|(?=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF]))(spam)(?:(?![\\p{L}\\p{M}\\p{N}\\p{Pc}])|(?=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF])|(?<=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF]))": {
+                "case_sensitive": false
+              }
+            }
+          ],
+          "censor": [
+            {
+              "(?:(?<![\\p{L}\\p{M}\\p{N}\\p{Pc}])|(?<=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF])|(?=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF]))(bad)(?:(?![\\p{L}\\p{M}\\p{N}\\p{Pc}])|(?=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF])|(?<=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF]))": {
+                "case_sensitive": false
+              }
+            },
+            {
+              "(?:(?<![\\p{L}\\p{M}\\p{N}\\p{Pc}])|(?<=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF])|(?=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF]))(shout)(?:(?![\\p{L}\\p{M}\\p{N}\\p{Pc}])|(?=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF])|(?<=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF]))": {
+                "case_sensitive": true
+              }
+            }
+          ],
+          "require_approval": [],
+          "flag": [],
+          "link": [
+            {
+              "(?:(?<![\\p{L}\\p{M}\\p{N}\\p{Pc}])|(?<=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF])|(?=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF]))(meta)(?:(?![\\p{L}\\p{M}\\p{N}\\p{Pc}])|(?=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF])|(?<=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF]))": {
+                "case_sensitive": false
+              }
+            }
+          ],
+          "replace": [
+            {
+              "(?:(?<![\\p{L}\\p{M}\\p{N}\\p{Pc}])|(?<=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF])|(?=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF]))(cat)(?:(?![\\p{L}\\p{M}\\p{N}\\p{Pc}])|(?=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF])|(?<=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF]))": {
+                "case_sensitive": false
+              }
+            }
+          ],
+          "silence": []
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "maA2WiqUUv6ITVVgGV4/6IQ9cno=",
+            "created_at": "2026-10-14T06:48:02.77788",
+            "rotated_at": "2026-10-14T06:48:02.776771",
+            "updated_at": "2026-10-14T06:48:02.77788",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "maA2WiqUUv6ITVVgGV4/6IQ9cno=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T06:48:03.451035",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "maA2WiqUUv6ITVVgGV4/6IQ9cno=",
+            "created_at": "2026-10-14T06:48:02.77788",
+            "rotated_at": "2026-10-14T06:48:02.776771",
+            "updated_at": "2026-10-14T06:48:02.77788",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "maA2WiqUUv6ITVVgGV4/6IQ9cno=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "tagging_enabled": false
+  },
+  "setup": [
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, watched_word_group_id, created_at, updated_at) VALUES (901, 'bad', 2, NULL, FALSE, FALSE, NULL, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, watched_word_group_id, created_at, updated_at) VALUES (902, 'shout', 2, NULL, TRUE, FALSE, NULL, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, watched_word_group_id, created_at, updated_at) VALUES (903, 'cat', 5, 'dog', FALSE, FALSE, NULL, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, watched_word_group_id, created_at, updated_at) VALUES (904, 'meta', 8, 'https://meta.discourse.org', FALSE, FALSE, NULL, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, watched_word_group_id, created_at, updated_at) VALUES (905, 'spam', 1, NULL, FALSE, FALSE, NULL, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, watched_word_group_id, created_at, updated_at) VALUES (906, 'howto', 6, 'guide', FALSE, FALSE, NULL, now(), now())"
+  ],
+  "recorded_from": {
+    "case": "68a52ff8b2b5ef26da4b42157e0255846fbbaefb115e4ec712c4b35252045dd2",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

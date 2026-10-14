@@ -180,12 +180,9 @@ pub async fn make_anonymous(
         return Err(Unsupported("anonymizing with an IP that is not an address").into());
     }
     event_unsupported(&mut *conn, "user_anonymized").await?;
-    let watched: bool = sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM watched_words)")
-        .fetch_one(&mut *conn)
-        .await?;
-    if watched {
-        return Err(Unsupported("watched words on a user save").into());
-    }
+    // Watched words: the user's custom fields are clean on its save
+    // (anonymize_user_fields deletes them after), and the profile's
+    // location and bio become nil.
 
     // UserEmail.where(user_id:).pluck(:email) | the associated accounts'
     let mut prev_emails: Vec<String> =

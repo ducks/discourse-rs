@@ -1,0 +1,83 @@
+{
+  "name": "topic_title_censored",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "This title is bad and BAD and heckish",
+        "raw": "A body that is fine and long enough to pass the length checks.",
+        "category": 4,
+        "typing_duration_msecs": 5000
+      }
+    }
+  ],
+  "started_at": "2026-10-14T07:06:45.279037",
+  "transaction_started_at": "2026-10-14T07:06:44.124278",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "action": "create_post",
+        "errors": [
+          "Title contains the following censored words: bad, heckish"
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "97NQB4OaZHPBIT9m7/k/YVTjCw0=",
+            "created_at": "2026-10-14T07:06:44.594529",
+            "rotated_at": "2026-10-14T07:06:44.593466",
+            "updated_at": "2026-10-14T07:06:44.594529",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "97NQB4OaZHPBIT9m7/k/YVTjCw0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T07:06:45.287734",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "97NQB4OaZHPBIT9m7/k/YVTjCw0=",
+            "created_at": "2026-10-14T07:06:44.594529",
+            "rotated_at": "2026-10-14T07:06:44.593466",
+            "updated_at": "2026-10-14T07:06:44.594529",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "97NQB4OaZHPBIT9m7/k/YVTjCw0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (901, 'bad', 2, NULL, FALSE, FALSE, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (902, 'heck*', 2, NULL, FALSE, FALSE, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (903, 'Shout', 2, NULL, TRUE, FALSE, now(), now())"
+  ],
+  "recorded_from": {
+    "case": "993a2ee3b76f6be2659dfc4f99eb3dbbdc9c5b84028a3ac09f1527875a41be50",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

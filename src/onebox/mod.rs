@@ -987,7 +987,7 @@ async fn inline_title(
                 };
                 title = format!("{title} - {}", suffix.unwrap_or_default());
             }
-            Ok(Some(Some(censored(conn, title).await?)))
+            Ok(Some(Some(censored(conn, site.settings, title).await?)))
         }
         // No handler: InlineOneboxer goes on as for another site's link,
         // whose title it crawls.
@@ -1072,7 +1072,7 @@ async fn crawled_title(
     // onebox_for
     .map(|t| s.emojis().gsub_to_unicode(&t));
     let title = match title {
-        Some(t) if !t.trim().is_empty() => Some(censored(conn, t).await?),
+        Some(t) if !t.trim().is_empty() => Some(censored(conn, s, t).await?),
         t => t,
     };
     let ttl = if title.as_deref().is_none_or(str::is_empty) {
@@ -1085,23 +1085,14 @@ async fn crawled_title(
 }
 
 /// `WordWatcher.censor_text`, which onebox_for runs on a title.
-async fn censored(conn: &mut PgConnection, title: String) -> Result<String, AppError> {
-    refuse_censored(conn).await?;
-    Ok(title)
-}
-
-/// `WordWatcher.censor` on onebox HTML or titles: refused while there are
-/// words to censor.
-async fn refuse_censored(conn: &mut PgConnection) -> Result<(), AppError> {
-    // WatchedWord.actions: censor 2.
-    let censor: bool =
-        sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM watched_words WHERE action = 2)")
-            .fetch_one(&mut *conn)
-            .await?;
-    if censor {
-        return Err(Unsupported("censored watched words in oneboxes").into());
-    }
-    Ok(())
+async fn censored(
+    conn: &mut PgConnection,
+    s: &SiteSettings,
+    title: String,
+) -> Result<String, AppError> {
+    use crate::word_watcher as ww;
+    let censor = ww::compiled_for_action(conn, s, ww::CENSOR).await?;
+    ww::censor_text(&title, &censor)
 }
 
 /// What the post processor would refuse to onebox, refused before the post

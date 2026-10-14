@@ -1,0 +1,17 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (904, '猫', 2, NULL, FALSE, FALSE, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "Censoring in a sentence: 我的猫很好, and 猫 alone, and X猫Y.",
+        "typing_duration_msecs": 5000
+      }
+    }
+  ]
+}

@@ -7,9 +7,10 @@
 //! Refused: viewers other than admins (moderators and category group
 //! moderators go through the post visibility scopes), reviewable types
 //! other than flagged posts on a page, the `ids`, date and additional
-//! filters, claimed topics, notes, score reasons and conversations,
+//! filters, claimed topics, notes, score reasons other than watched words
+//! and conversations,
 //! authors under a penalty, posts the user deleted, potential spam and
-//! illegal content (the delete user actions), system users, and content
+//! illegal content (the delete user actions), bot users, and content
 //! localization.
 
 use std::collections::HashSet;
@@ -602,7 +603,7 @@ async fn serialize(
         None => None,
     };
     let author = match r.target_created_by_id {
-        Some(uid) => Some(load_user(&mut *conn, uid).await?),
+        Some(uid) => Some(load_user(&mut *conn, ctx, uid).await?),
         None => None,
     };
     if author
@@ -738,7 +739,7 @@ async fn serialize(
     // has_one :created_by (UserWithCustomFieldsSerializer)
     d.insert("created_by_id".into(), json!(r.created_by_id));
     if seen.users.insert(r.created_by_id) {
-        let u = load_user(&mut *conn, r.created_by_id).await?;
+        let u = load_user(&mut *conn, ctx, r.created_by_id).await?;
         let mut v = basic_user(ctx, &urls, &u)?;
         v["custom_fields"] = custom_fields(&mut *conn, ctx, guardian, u.id).await?;
         out.users.push(v);
@@ -747,7 +748,7 @@ async fn serialize(
     if let Some(uid) = deleted_by {
         d.insert("target_deleted_by_id".into(), json!(uid));
         if seen.users.insert(uid) {
-            let u = load_user(&mut *conn, uid).await?;
+            let u = load_user(&mut *conn, ctx, uid).await?;
             out.users.push(basic_user(ctx, &urls, &u)?);
         }
     }
@@ -796,7 +797,7 @@ async fn serialize(
     let mut history_ids = Vec::new();
     for (hid, at, kind, status, by) in histories {
         if seen.users.insert(by) {
-            let u = load_user(&mut *conn, by).await?;
+            let u = load_user(&mut *conn, ctx, by).await?;
             out.users.push(basic_user(ctx, &urls, &u)?);
         }
         out.histories.push(json!({
@@ -836,10 +837,11 @@ async fn scores(
         meta_topic_id: Option<i32>,
         created_at: NaiveDateTime,
         reason: Option<String>,
+        context: Option<String>,
     }
     let rows: Vec<Score> = sqlx::query_as(
         "SELECT id, user_id, reviewable_score_type, status, score, reviewed_by_id, reviewed_at, meta_topic_id, \
-                created_at, reason \
+                created_at, reason, context \
          FROM reviewable_scores WHERE reviewable_id = $1 ORDER BY created_at DESC",
     )
     .bind(r.id)
@@ -848,31 +850,50 @@ async fn scores(
     let types = score_types(&mut *conn).await?;
     let mut ids = Vec::new();
     for sc in rows {
-        if sc.reason.is_some() || sc.meta_topic_id.is_some() {
-            return Err(Unsupported("score reasons and conversations in the queue").into());
+        if sc.meta_topic_id.is_some() {
+            return Err(Unsupported("score conversations in the queue").into());
         }
+        let (reason, reason_type, reason_data) = match sc.reason.as_deref() {
+            None => (None, Value::Null, Value::Null),
+            Some("watched_word") => {
+                let words = watched_words_found(sc.context.as_deref())?;
+                (
+                    Some(watched_word_reason(ctx, urls, &words)?),
+                    json!("watched_word"),
+                    json!(words),
+                )
+            }
+            Some(_) => return Err(Unsupported("score reasons other than watched words").into()),
+        };
         let stats: (i32, i32, i32) = sqlx::query_as(
             "SELECT flags_agreed, flags_disagreed, flags_ignored FROM user_stats WHERE user_id = $1",
         )
         .bind(sc.user_id)
         .fetch_one(&mut *conn)
         .await?;
-        out.scores.push(json!({
-            "id": sc.id,
-            "score": sc.score,
-            "agree_stats": { "agreed": stats.0, "disagreed": stats.1, "ignored": stats.2 },
-            "reason_type": null,
-            "reason_data": null,
-            "created_at": time_json(sc.created_at),
-            "reviewed_at": sc.reviewed_at.map(time_json),
-            "status": sc.status,
-            "user_id": sc.user_id,
-            "score_type_id": sc.reviewable_score_type,
-            "reviewed_by_id": sc.reviewed_by_id,
-        }));
+        let mut score = Map::new();
+        score.insert("id".into(), json!(sc.id));
+        score.insert("score".into(), json!(sc.score));
+        score.insert(
+            "agree_stats".into(),
+            json!({ "agreed": stats.0, "disagreed": stats.1, "ignored": stats.2 }),
+        );
+        // include_reason?: only when present.
+        if let Some(reason) = reason {
+            score.insert("reason".into(), json!(reason));
+        }
+        score.insert("reason_type".into(), reason_type);
+        score.insert("reason_data".into(), reason_data);
+        score.insert("created_at".into(), json!(time_json(sc.created_at)));
+        score.insert("reviewed_at".into(), json!(sc.reviewed_at.map(time_json)));
+        score.insert("status".into(), json!(sc.status));
+        score.insert("user_id".into(), json!(sc.user_id));
+        score.insert("score_type_id".into(), json!(sc.reviewable_score_type));
+        score.insert("reviewed_by_id".into(), json!(sc.reviewed_by_id));
+        out.scores.push(Value::Object(score));
         // has_one :user, :score_type, :reviewed_by in that order.
         if seen.users.insert(sc.user_id) {
-            let u = load_user(&mut *conn, sc.user_id).await?;
+            let u = load_user(&mut *conn, ctx, sc.user_id).await?;
             out.users.push(basic_user(ctx, urls, &u)?);
         }
         let Some(t) = types
@@ -890,12 +911,76 @@ async fn scores(
         if let Some(by) = sc.reviewed_by_id
             && seen.users.insert(by)
         {
-            let u = load_user(&mut *conn, by).await?;
+            let u = load_user(&mut *conn, ctx, by).await?;
             out.users.push(basic_user(ctx, urls, &u)?);
         }
         ids.push(sc.id);
     }
     Ok(ids)
+}
+
+/// `watched_words_found`: the score's context split on commas, downcased
+/// and unique. Without a context Rails guesses from the post's current
+/// raw, which isn't ported.
+fn watched_words_found(context: Option<&str>) -> Result<Vec<String>, AppError> {
+    let context = context.ok_or(Unsupported("watched word scores without their words"))?;
+    let mut words: Vec<String> = Vec::new();
+    // Ruby's split drops trailing empty strings.
+    let mut parts: Vec<&str> = context.split(',').collect();
+    while parts.last() == Some(&"") {
+        parts.pop();
+    }
+    for w in parts {
+        let w = w.to_lowercase();
+        if !words.contains(&w) {
+            words.push(w);
+        }
+    }
+    Ok(words)
+}
+
+/// ReviewableScoreSerializer#reason for "watched_word", as staff see it:
+/// `PrettyText.sanitize("<p>#{watched_word_reason(link)}</p>")`.
+fn watched_word_reason(
+    ctx: &Ctx<'_>,
+    urls: &Urls<'_>,
+    words: &[String],
+) -> Result<String, AppError> {
+    let link_text = ctx
+        .t("reviewables.reasons.links.watched_word")
+        .replace('_', " ");
+    let link = format!(
+        "<a href=\"{}/admin/customize/watched_words\">{link_text}</a>",
+        urls.base_url()?
+    );
+    let text = if words.is_empty() {
+        ctx.i18n
+            .t_with(
+                "reviewables.reasons.no_context.watched_word",
+                &[("link", &link)],
+            )
+            .unwrap_or_default()
+    } else {
+        let escaped: Vec<String> = words
+            .iter()
+            .map(|w| crate::category_badge::html_escape(w))
+            .collect();
+        let form = if words.len() == 1 { "one" } else { "other" };
+        ctx.i18n
+            .t_with(
+                &format!("reviewables.reasons.watched_word.{form}"),
+                &[
+                    ("link", &link),
+                    ("words", &escaped.join(", ")),
+                    ("count", &words.len().to_string()),
+                ],
+            )
+            .unwrap_or_default()
+    };
+    Ok(discourse_markdown::sanitizer::sanitize(
+        &format!("<p>{text}</p>"),
+        &discourse_markdown::sanitizer::AllowList::new(),
+    ))
 }
 
 /// A bundle being built: its id, icon, label key, secondary flag and the
@@ -1193,6 +1278,9 @@ struct UserRow {
     ip_address: Option<String>,
     silenced_till: Option<NaiveDateTime>,
     suspended_till: Option<NaiveDateTime>,
+    /// The small logo's url, for the system user (its avatar when the site
+    /// uses it).
+    logo_small_url: Option<String>,
 }
 
 impl UserRow {
@@ -1207,16 +1295,19 @@ impl UserRow {
     }
 }
 
-async fn load_user(conn: &mut PgConnection, id: i32) -> Result<UserRow, AppError> {
-    if id <= 0 {
-        return Err(Unsupported("system users in the review queue").into());
+async fn load_user(conn: &mut PgConnection, ctx: &Ctx<'_>, id: i32) -> Result<UserRow, AppError> {
+    // The system user (watched word flags) is ported; bots are not.
+    if id < crate::avatar::SYSTEM_USER_ID || id == 0 {
+        return Err(Unsupported("bot users in the review queue").into());
     }
     Ok(sqlx::query_as(
         "SELECT id, username, name, uploaded_avatar_id, admin, moderator, trust_level, created_at, \
-                host(ip_address) AS ip_address, silenced_till, suspended_till \
+                host(ip_address) AS ip_address, silenced_till, suspended_till, \
+                CASE WHEN id = -1 THEN (SELECT url FROM uploads WHERE id = $2) END AS logo_small_url \
          FROM users WHERE id = $1",
     )
     .bind(id)
+    .bind(ctx.settings.get("logo_small")?.to_i() as i32)
     .fetch_one(conn)
     .await?)
 }
@@ -1236,7 +1327,7 @@ fn basic_user(ctx: &Ctx<'_>, urls: &Urls<'_>, u: &UserRow) -> Result<Value, AppE
             u.id,
             &u.username,
             u.uploaded_avatar_id,
-            None
+            u.logo_small_url.as_deref()
         )?),
     );
     Ok(Value::Object(v))

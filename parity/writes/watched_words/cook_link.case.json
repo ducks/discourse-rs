@@ -1,0 +1,17 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (921, 'meta', 8, 'https://meta.discourse.org', FALSE, FALSE, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "See meta, META and [meta](https://example.com) and <a href=\\\"https://example.com\\\">meta</a> and metadata.",
+        "typing_duration_msecs": 5000
+      }
+    }
+  ]
+}

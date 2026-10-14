@@ -284,12 +284,24 @@ async fn recook_bio(
     .bind(user_id)
     .fetch_one(&mut *conn)
     .await?;
-    if p.location.as_deref().is_some_and(|l| !l.trim().is_empty()) {
-        let watched: bool = sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM watched_words)")
-            .fetch_one(&mut *conn)
-            .await?;
-        if watched {
-            return Err(Unsupported("watched words in a profile location").into());
+    // save!'s watched_words validations: an invalid profile raises.
+    for v in [&p.bio_raw, &p.location].into_iter().flatten() {
+        if crate::word_watcher::block_error(&mut *conn, s, cx.i18n, v)
+            .await?
+            .is_some()
+        {
+            return Err(Unsupported("a profile its watched words make invalid").into());
+        }
+    }
+    // before_save :apply_watched_words, if: :location?
+    if let Some(location) = p.location.as_deref().filter(|l| !l.trim().is_empty()) {
+        let applied = crate::word_watcher::apply_to_text(&mut *conn, s, location).await?;
+        if applied != location {
+            sqlx::query("UPDATE user_profiles SET location = $2 WHERE user_id = $1")
+                .bind(user_id)
+                .bind(&applied)
+                .execute(&mut *conn)
+                .await?;
         }
     }
     let raw = p.bio_raw.as_deref().filter(|b| !b.trim().is_empty());

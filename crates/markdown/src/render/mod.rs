@@ -35,6 +35,7 @@ mod tight;
 mod typographer;
 mod untrimmed;
 mod uploads;
+pub mod watched_words;
 
 use std::sync::Arc;
 
@@ -120,6 +121,15 @@ pub struct RenderSettings {
     /// details off. The other features chat leaves out (poll, checklist,
     /// footnotes, policy) are off in the settings it cooks with.
     pub chat: bool,
+    /// `censoredRegexp` (serialized_regexps_for_action(:censor)).
+    #[serde(default)]
+    pub censored: Vec<watched_words::Censored>,
+    /// `watchedWordsReplace` and `watchedWordsLink` (regexps_for_action),
+    /// in the words' order.
+    #[serde(default)]
+    pub watched_replace: Vec<watched_words::WatchedWord>,
+    #[serde(default)]
+    pub watched_link: Vec<watched_words::WatchedWord>,
 }
 
 impl MarkdownItExt for RenderSettings {}
@@ -234,7 +244,9 @@ pub fn render(
     checklist::run(&mut root, settings);
     uploads::run(&mut root, settings, ctx);
     text_post_process::apply(&mut root, settings, ctx);
-    emoji::run(&mut root, settings);
+    emoji::run(&mut root, settings).map_err(Unsupported)?;
+    // features/index.js: censored after emoji and code, before anchor.
+    watched_words::censor(&mut root, settings).map_err(Unsupported)?;
     anchor::apply(&mut root, settings);
     if settings.breaks {
         root.walk_mut(|node, _| {
@@ -244,6 +256,8 @@ pub fn render(
         });
     }
     code::apply(&mut root, settings);
+    // watched-words: priority 1, after every other feature's rule.
+    watched_words::apply(&mut root, settings, &md).map_err(Unsupported)?;
     table::apply(&mut root);
     tight::apply(&mut root);
     let html = sanitize(&table::unglue(&root.render()), &allow_list(settings))

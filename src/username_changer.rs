@@ -92,13 +92,8 @@ async fn validate(
     if !username.is_ascii() {
         return Err(Unsupported("non-ASCII usernames").into());
     }
-    // apply_watched_words and the user fields' watched words validation.
-    let watched: bool = sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM watched_words)")
-        .fetch_one(&mut *conn)
-        .await?;
-    if watched {
-        return Err(Unsupported("watched words on a user save").into());
-    }
+    // apply_watched_words and the user fields' watched words validation
+    // skip a user whose custom fields are clean, as here.
     let has_email: bool = sqlx::query_scalar(
         "SELECT EXISTS (SELECT 1 FROM user_emails WHERE user_id = $1 AND \"primary\")",
     )

@@ -1,0 +1,85 @@
+{
+  "name": "ww_download",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/customize/watched_words/action/replace/download"
+    }
+  ],
+  "started_at": "2026-10-14T06:47:53.325398",
+  "transaction_started_at": "2026-10-14T06:47:51.507668",
+  "responses": [
+    {
+      "status": 200,
+      "body": "﻿cat,dog,false\n",
+      "headers": {
+        "Content-Type": "text/csv",
+        "Content-Disposition": "attachment; filename=\"localhost-watched-words-replace.csv\"; filename*=UTF-8''localhost-watched-words-replace.csv",
+        "Content-Length": "17"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "Q6H8JthtT/L90D4NQOsejFtS4Yo=",
+            "created_at": "2026-10-14T06:47:52.365406",
+            "rotated_at": "2026-10-14T06:47:52.362955",
+            "updated_at": "2026-10-14T06:47:52.365406",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "Q6H8JthtT/L90D4NQOsejFtS4Yo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T06:47:53.330763",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "Q6H8JthtT/L90D4NQOsejFtS4Yo=",
+            "created_at": "2026-10-14T06:47:52.365406",
+            "rotated_at": "2026-10-14T06:47:52.362955",
+            "updated_at": "2026-10-14T06:47:52.365406",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "Q6H8JthtT/L90D4NQOsejFtS4Yo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, watched_word_group_id, created_at, updated_at) VALUES (901, 'bad', 2, NULL, FALSE, FALSE, NULL, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, watched_word_group_id, created_at, updated_at) VALUES (902, 'shout', 2, NULL, TRUE, FALSE, NULL, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, watched_word_group_id, created_at, updated_at) VALUES (903, 'cat', 5, 'dog', FALSE, FALSE, NULL, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, watched_word_group_id, created_at, updated_at) VALUES (904, 'meta', 8, 'https://meta.discourse.org', FALSE, FALSE, NULL, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, watched_word_group_id, created_at, updated_at) VALUES (905, 'spam', 1, NULL, FALSE, FALSE, NULL, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, watched_word_group_id, created_at, updated_at) VALUES (906, 'howto', 6, 'guide', FALSE, FALSE, NULL, now(), now())"
+  ],
+  "keep_headers": [
+    "Content-Type",
+    "Content-Disposition",
+    "Content-Length"
+  ],
+  "recorded_from": {
+    "case": "74c1032c5ff8f153f336039c3975b62067666593b5e535da08f9a5624a9c36b8",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

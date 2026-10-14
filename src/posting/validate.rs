@@ -15,17 +15,6 @@ use crate::guardian::Guardian;
 use crate::pretty_text::cleanup::{attr, element_name, fragment_root, has_class, parse, text};
 use crate::{AppError, Unsupported};
 
-/// Watched words (block, censor, require approval, tag) are not ported.
-pub async fn refuse_watched_words(conn: &mut PgConnection) -> Result<(), AppError> {
-    let watched: bool = sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM watched_words)")
-        .fetch_one(conn)
-        .await?;
-    if watched {
-        return Err(Unsupported("watched words").into());
-    }
-    Ok(())
-}
-
 /// Why `NewPostManager.post_needs_approval?` sends a post to the review
 /// queue: the needs_approval score's reason.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -33,6 +22,7 @@ pub enum Reason {
     PostCount,
     Group,
     NewTopicsUnlessAllowedGroups,
+    WatchedWord,
     FastTyper,
     AutoSilenceRegex,
     Category,
@@ -45,6 +35,7 @@ impl Reason {
             Reason::PostCount => "post_count",
             Reason::Group => "group",
             Reason::NewTopicsUnlessAllowedGroups => "new_topics_unless_allowed_groups",
+            Reason::WatchedWord => "watched_word",
             Reason::FastTyper => "fast_typer",
             Reason::AutoSilenceRegex => "auto_silence_regex",
             Reason::Category => "category",
@@ -74,8 +65,7 @@ pub struct Approval {
     pub reason: Option<Reason>,
     /// `is_fast_typer?`
     pub fast_typer: bool,
-    /// `matches_auto_silence_regex?` (watched silence words are refused
-    /// with the other watched words).
+    /// `auto_silence?` (watched silence words) or `matches_auto_silence_regex?`.
     pub auto_silence: bool,
 }
 
@@ -114,7 +104,17 @@ pub async fn post_needs_approval(
             && i64::from(user.trust_level)
                 <= s.get("auto_silence_fast_typers_max_trust_level")?.to_i()
     };
-    let auto_silence = first_post && matches_auto_silence_regex(s, args)?;
+    // WordWatcher over "#{title} #{raw}".
+    let text = format!("{} {}", args.title.unwrap_or(""), args.raw);
+    use crate::word_watcher as ww;
+    let approval_words = ww::compiled_for_action(&mut *conn, s, ww::REQUIRE_APPROVAL).await?;
+    let requires_approval = !ww::matches(&text, &approval_words, false)?.is_empty();
+    // auto_silence? or matches_auto_silence_regex?
+    let auto_silence = first_post && {
+        let silence_words = ww::compiled_for_action(&mut *conn, s, ww::SILENCE).await?;
+        !ww::matches(&text, &silence_words, false)?.is_empty()
+            || matches_auto_silence_regex(s, args)?
+    };
     let reason = if user.trust_level <= 1
         && i64::from(post_count + topic_count) < s.get("approve_post_count")?.to_i()
     {
@@ -125,6 +125,8 @@ pub async fn post_needs_approval(
         && !guardian.in_setting_groups(s, "approve_new_topics_unless_allowed_groups")?
     {
         Some(Reason::NewTopicsUnlessAllowedGroups)
+    } else if requires_approval {
+        Some(Reason::WatchedWord)
     } else if fast_typer {
         Some(Reason::FastTyper)
     } else if auto_silence {
@@ -429,25 +431,52 @@ pub async fn validate_post(
     post: &PostInput<'_>,
     analysis: &Analysis,
 ) -> Result<Vec<String>, AppError> {
-    let raw = raw_errors(&mut *conn, ctx, acting, post).await?;
-    if !raw.is_empty() {
-        return Ok(raw
+    let body = body_errors(&mut *conn, ctx, acting, post).await?;
+    if !body.is_empty() {
+        return Ok(body
             .iter()
-            .map(|m| ctx.full_message("activerecord.attributes.post.raw", m))
+            .map(|e| match e {
+                BodyError::Raw(m) => ctx.full_message("activerecord.attributes.post.raw", m),
+                BodyError::Base(m) => m.clone(),
+            })
             .collect());
     }
     base_errors(conn, ctx, acting, post, analysis).await
 }
 
-/// PostValidator's `errors[:raw]`: post_body_validator (stripped_length,
-/// raw_quality) and unique_post_validator, as messages without the
-/// attribute. The other validators only run once these pass.
+/// An error of PostValidator's first validators: on `raw` (a message
+/// without the attribute) or on base (watched words that block).
+pub enum BodyError {
+    Raw(String),
+    Base(String),
+}
+
+/// PostValidator's `errors[:raw]`, without the attribute.
 pub async fn raw_errors(
     conn: &mut PgConnection,
     ctx: &Ctx<'_>,
     acting: &Guardian,
     post: &PostInput<'_>,
 ) -> Result<Vec<String>, AppError> {
+    Ok(body_errors(conn, ctx, acting, post)
+        .await?
+        .into_iter()
+        .filter_map(|e| match e {
+            BodyError::Raw(m) => Some(m),
+            BodyError::Base(_) => None,
+        })
+        .collect())
+}
+
+/// PostValidator's first validators: post_body_validator (stripped_length,
+/// raw_quality, WatchedWordsValidator) and unique_post_validator. The
+/// other validators only run once these pass.
+pub async fn body_errors(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    acting: &Guardian,
+    post: &PostInput<'_>,
+) -> Result<Vec<BodyError>, AppError> {
     let s = ctx.settings;
     let mut errors = Vec::new();
 
@@ -462,7 +491,7 @@ pub async fn raw_errors(
     };
     let raw_chars = post.raw.chars().count() as i64;
     if post.raw.trim().is_empty() && min > 0 {
-        errors.push(ctx.t("errors.messages.blank"));
+        errors.push(BodyError::Raw(ctx.t("errors.messages.blank")));
     } else if raw_chars > max {
         let form = if max == 1 { "one" } else { "other" };
         let message = ctx
@@ -475,12 +504,12 @@ pub async fn raw_errors(
                 ],
             )
             .unwrap_or_default();
-        errors.push(message);
+        errors.push(BodyError::Raw(message));
     } else {
         let strip_uploads = s.get("prevent_uploads_only_posts")?.truthy();
         if (sanitized_length(post.raw, strip_uploads) as i64) < min {
             let message = ctx.t_count("errors.messages.too_short", min);
-            errors.push(message);
+            errors.push(BodyError::Raw(message));
         }
     }
     // TextSentinel.body_sentinel
@@ -506,7 +535,13 @@ pub async fn raw_errors(
         skip_word_length: false,
     };
     if !sentinel.valid() {
-        errors.push(ctx.t("is_invalid"));
+        errors.push(BodyError::Raw(ctx.t("is_invalid")));
+    }
+    // WatchedWordsValidator (staged authors are refused).
+    if let Some(message) =
+        crate::word_watcher::block_error(&mut *conn, s, ctx.i18n, post.raw).await?
+    {
+        errors.push(BodyError::Base(message));
     }
 
     // unique_post_validator: Rails keeps the key in Redis for
@@ -527,7 +562,7 @@ pub async fn raw_errors(
         .fetch_one(&mut *conn)
         .await?;
         if dupe {
-            errors.push(ctx.t("just_posted_that"));
+            errors.push(BodyError::Raw(ctx.t("just_posted_that")));
         }
     }
     Ok(errors)
@@ -652,6 +687,25 @@ pub async fn validate_topic(
         } else if len < min {
             errors
                 .push(ctx.full_message(title_attr, &ctx.t_count("errors.messages.too_short", min)));
+        }
+        // censored_words, then watched_words (on base).
+        let censor =
+            crate::word_watcher::compiled_for_action(&mut *conn, s, crate::word_watcher::CENSOR)
+                .await?;
+        if let Some(words) = crate::word_watcher::censored_words(title, &censor)? {
+            let message = ctx
+                .i18n
+                .t_with(
+                    "errors.messages.contains_censored_words",
+                    &[("censored_words", &words)],
+                )
+                .unwrap_or_default();
+            errors.push(ctx.full_message(title_attr, &message));
+        }
+        if let Some(message) =
+            crate::word_watcher::block_error(&mut *conn, s, ctx.i18n, title).await?
+        {
+            errors.push(message);
         }
         // quality_title
         if !topic.private_message {

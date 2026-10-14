@@ -1,0 +1,17 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, watched_word_group_id, created_at, updated_at) VALUES (901, 'bad', 2, NULL, FALSE, FALSE, NULL, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, watched_word_group_id, created_at, updated_at) VALUES (902, 'shout', 2, NULL, TRUE, FALSE, NULL, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, watched_word_group_id, created_at, updated_at) VALUES (903, 'cat', 5, 'dog', FALSE, FALSE, NULL, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, watched_word_group_id, created_at, updated_at) VALUES (904, 'meta', 8, 'https://meta.discourse.org', FALSE, FALSE, NULL, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, watched_word_group_id, created_at, updated_at) VALUES (905, 'spam', 1, NULL, FALSE, FALSE, NULL, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, watched_word_group_id, created_at, updated_at) VALUES (906, 'howto', 6, 'guide', FALSE, FALSE, NULL, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/admin/customize/watched_words/903.json"
+    }
+  ]
+}

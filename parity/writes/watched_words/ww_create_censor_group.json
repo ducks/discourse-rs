@@ -1,0 +1,190 @@
+{
+  "name": "ww_create_censor_group",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/customize/watched_words.json",
+      "params": {
+        "words": [
+          "darn",
+          "heck*"
+        ],
+        "action_key": "censor"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T06:47:21.272025",
+  "transaction_started_at": "2026-10-14T06:47:18.160312",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "actions": [
+          "block",
+          "censor",
+          "require_approval",
+          "flag",
+          "link",
+          "replace",
+          "tag",
+          "silence"
+        ],
+        "words": [
+          {
+            "id": 1,
+            "word": "darn",
+            "regexp": "(?:(?<![\\p{L}\\p{M}\\p{N}\\p{Pc}])|(?<=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF])|(?=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF]))(darn)(?:(?![\\p{L}\\p{M}\\p{N}\\p{Pc}])|(?=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF])|(?<=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF]))",
+            "action": "censor",
+            "case_sensitive": false,
+            "watched_word_group_id": 1
+          },
+          {
+            "id": 2,
+            "word": "heck*",
+            "regexp": "(?:(?<![\\p{L}\\p{M}\\p{N}\\p{Pc}])|(?<=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF])|(?=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF]))(heck\\S*)(?:(?![\\p{L}\\p{M}\\p{N}\\p{Pc}])|(?=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF])|(?<=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF]))",
+            "action": "censor",
+            "case_sensitive": false,
+            "watched_word_group_id": 1
+          }
+        ],
+        "compiled_regular_expressions": {
+          "block": [],
+          "censor": [
+            {
+              "(?:(?<![\\p{L}\\p{M}\\p{N}\\p{Pc}])|(?<=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF])|(?=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF]))(darn|heck\\S*)(?:(?![\\p{L}\\p{M}\\p{N}\\p{Pc}])|(?=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF])|(?<=[\\u4E00-\\u9FFF\\u3400-\\u4DBF\\u3040-\\u309F\\u30A0-\\u30FF\\uAC00-\\uD7AF\\u0E00-\\u0E7F\\u0E80-\\u0EFF\\u1000-\\u109F\\u1780-\\u17FF\\u0F00-\\u0FFF]))": {
+                "case_sensitive": false
+              }
+            }
+          ],
+          "require_approval": [],
+          "flag": [],
+          "link": [],
+          "replace": [],
+          "tag": [],
+          "silence": []
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "/2LvTDayFO3dGRAHh6Tgxu7aOak=",
+            "created_at": "2026-10-14T06:47:19.628313",
+            "rotated_at": "2026-10-14T06:47:19.626366",
+            "updated_at": "2026-10-14T06:47:19.628313",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "/2LvTDayFO3dGRAHh6Tgxu7aOak=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T06:47:21.281092",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "/2LvTDayFO3dGRAHh6Tgxu7aOak=",
+            "created_at": "2026-10-14T06:47:19.628313",
+            "rotated_at": "2026-10-14T06:47:19.626366",
+            "updated_at": "2026-10-14T06:47:19.628313",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "/2LvTDayFO3dGRAHh6Tgxu7aOak=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 105,
+          "context": "censor",
+          "details": "censor → darn, heck*",
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": false,
+          "created_at": "2026-10-14T06:47:21.378781",
+          "ip_address": null,
+          "updated_at": "2026-10-14T06:47:21.378781",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "watched_word_groups": {
+      "inserted": [
+        {
+          "id": 1,
+          "action": 2,
+          "created_at": "2026-10-14T06:47:21.344245",
+          "updated_at": "2026-10-14T06:47:21.344245"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "watched_words": {
+      "inserted": [
+        {
+          "id": 1,
+          "html": false,
+          "word": "darn",
+          "action": 2,
+          "created_at": "2026-10-14T06:47:21.310021",
+          "updated_at": "2026-10-14T06:47:21.354744",
+          "replacement": null,
+          "case_sensitive": false,
+          "watched_word_group_id": 1
+        },
+        {
+          "id": 2,
+          "html": false,
+          "word": "heck*",
+          "action": 2,
+          "created_at": "2026-10-14T06:47:21.326119",
+          "updated_at": "2026-10-14T06:47:21.368247",
+          "replacement": null,
+          "case_sensitive": false,
+          "watched_word_group_id": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "user_histories": 74,
+    "watched_word_groups": 1,
+    "watched_words": 1
+  },
+  "recorded_from": {
+    "case": "1dfb19a588335ff511f37eccb80b9cfc99158aa348ce466fa4e973d83f72cf66",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

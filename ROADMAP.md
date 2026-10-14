@@ -269,9 +269,10 @@ then by what running a forum needs (milestone 6). Briefs:
     InvalidAccess rescue now runs Notification.remove_for. Refused:
     `permalink_normalizations` (Ruby regexes) and urls
     Addressable::URI.encode would change
-80. `feat/watched-words` L: the four cooking actions (censor, replace,
-    link, tag) and the posting ones (block, require approval, silence,
-    flag), the admin CRUD and its regex/case rules,
+80. ~~`feat/watched-words`~~ (done) L (the tag action, the CSV upload
+    and words Ruby case-folds to several characters stay refused),
+    80b. `feat/watched-words-regex` M (watched_words_regular_expressions:
+    admin regexps run as Ruby and as JavaScript),
     81. ~~`feat/custom-emoji`~~ (done) M (admin index, create, destroy,
     /site/emoji, the rebake job; custom emoji and the deny list in
     cooking, emojiUnescape, codes_to_img, unicode titles and every emoji
@@ -340,7 +341,8 @@ how often a backup trips them.
 - [ ] Hidden and deleted posts (`hidden`, `deleted_at`, staff whispers stay
       hidden)
 - [ ] Topic thumbnails and topic images behind a CDN, secure uploads
-- [ ] Watched words (`WordWatcher` regexps and actions)
+- [x] Watched words (`WordWatcher` regexps and actions; regular expression
+      mode in 80b)
 - [ ] Topic timers, topic links with clicks (`TopicLink.topic_map`)
 - [ ] Featured links (`featured_link_root_domain`)
 - [ ] `subcategory_list` styles, paginated category lists
@@ -790,7 +792,7 @@ API keys for posting, and grant_moderation! for the first admin's login.
       app (scripts/restore-backup restores today), read-only mode
 - [ ] Badges: creating, editing and deleting, groupings, granting and
       revoking, badge SQL, and the BadgeGranter jobs that award them
-- [ ] Watched words, permalinks, embeddable hosts, user fields, form
+- [ ] Permalinks, embeddable hosts, user fields, form
       templates, custom flags, custom emoji
 - [ ] API keys and their scopes, web hooks and their deliveries (the
       events core sends to them)

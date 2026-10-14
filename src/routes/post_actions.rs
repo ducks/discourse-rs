@@ -155,6 +155,8 @@ pub async fn create(
             take_action: is_true(&p, "take_action"),
             queue_for_review: is_true(&p, "queue_for_review"),
             message: p.get("message").and_then(params::scalar),
+            reason: None,
+            context: None,
         };
         flags::flag(&state.pool, &ctx, &guardian, post_id, &request).await?
     };

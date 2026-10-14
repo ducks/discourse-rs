@@ -28,6 +28,10 @@ pub struct FlagRequest {
     pub take_action: bool,
     pub queue_for_review: bool,
     pub message: Option<String>,
+    /// `reason:` and `context:`, which the reviewable score keeps (a
+    /// watched word flag's).
+    pub reason: Option<&'static str>,
+    pub context: Option<String>,
 }
 
 /// The post's author as the rules read them.
@@ -257,6 +261,8 @@ pub async fn flag(
                 score_type: req.type_id,
                 created_at,
                 take_action,
+                reason: req.reason,
+                context: req.context.clone(),
             },
             ctx.settings,
         )

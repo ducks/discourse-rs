@@ -1,0 +1,15 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO watched_word_groups (id, action, created_at, updated_at) VALUES (950, 2, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, watched_word_group_id, created_at, updated_at) VALUES (901, 'bad', 2, NULL, FALSE, FALSE, 950, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, watched_word_group_id, created_at, updated_at) VALUES (902, 'worse', 2, NULL, FALSE, FALSE, NULL, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, watched_word_group_id, created_at, updated_at) VALUES (905, 'spam', 1, NULL, FALSE, FALSE, NULL, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/admin/customize/watched_words/action/censor.json"
+    }
+  ]
+}

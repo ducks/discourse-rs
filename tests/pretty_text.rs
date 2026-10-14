@@ -225,15 +225,23 @@ async fn unported_inputs_are_refused() {
     assert_eq!(found["type"], "channel", "{found}");
     assert_eq!(found["relative_url"], "/chat/c/lounge/50");
 
-    // A censored watched word (action 2) changes the options.
+    // A censored watched word (action 2) is in the options' censoredRegexp.
     sqlx::query(
         "INSERT INTO watched_words (word, action, created_at, updated_at) VALUES ('darn', 2, now(), now())",
     )
     .execute(&db.pool)
     .await
     .unwrap();
+    let opts = options(&host, &mut conn, &settings).await.unwrap();
+    let censored = opts["censoredRegexp"].as_array().unwrap();
+    assert_eq!(censored.len(), 1, "{censored:?}");
+    // Regular expression mode is not ported.
+    common::set_setting(&db.pool, "watched_words_regular_expressions", 5, "t").await;
+    let settings = SiteSettings::load(&mut conn, &host.site_setting_defs, &host.config.globals)
+        .await
+        .unwrap();
     let error = options(&host, &mut conn, &settings).await.unwrap_err();
-    assert!(matches!(error, CookError::Unsupported(_)), "{error}");
+    assert!(matches!(error, CookError::App(_)), "{error}");
 }
 
 /// The policy plugin is off on the reference, so the recorded corpus only

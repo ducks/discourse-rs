@@ -1,0 +1,87 @@
+{
+  "name": "cook_all",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "A topic with bad cat in the title for meta",
+        "raw": "The first post: bad cat kitty meta, heckler and Shout.",
+        "category": 4,
+        "typing_duration_msecs": 5000
+      }
+    }
+  ],
+  "started_at": "2026-10-14T07:06:03.584629",
+  "transaction_started_at": "2026-10-14T07:06:01.142417",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "action": "create_post",
+        "errors": [
+          "Title contains the following censored words: bad"
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "DX6JdBXzn3Ek0OfxAkdmtjQi6v8=",
+            "created_at": "2026-10-14T07:06:02.612377",
+            "rotated_at": "2026-10-14T07:06:02.609612",
+            "updated_at": "2026-10-14T07:06:02.612377",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "DX6JdBXzn3Ek0OfxAkdmtjQi6v8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T07:06:03.605533",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "DX6JdBXzn3Ek0OfxAkdmtjQi6v8=",
+            "created_at": "2026-10-14T07:06:02.612377",
+            "rotated_at": "2026-10-14T07:06:02.609612",
+            "updated_at": "2026-10-14T07:06:02.612377",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "DX6JdBXzn3Ek0OfxAkdmtjQi6v8=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (901, 'bad', 2, NULL, FALSE, FALSE, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (902, 'heck*', 2, NULL, FALSE, FALSE, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (903, 'Shout', 2, NULL, TRUE, FALSE, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (911, 'cat', 5, 'dog', FALSE, FALSE, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (912, 'kitty', 5, '<b>meow</b>', FALSE, TRUE, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (913, 'Lion', 5, 'tiger', TRUE, FALSE, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (921, 'meta', 8, 'https://meta.discourse.org', FALSE, FALSE, now(), now())"
+  ],
+  "recorded_from": {
+    "case": "521a723bac47c74c0e6a4161c92bdfb455ff4b2dc55c390d515ba1380c94b042",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

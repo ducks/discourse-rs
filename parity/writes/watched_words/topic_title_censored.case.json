@@ -1,0 +1,20 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (901, 'bad', 2, NULL, FALSE, FALSE, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (902, 'heck*', 2, NULL, FALSE, FALSE, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (903, 'Shout', 2, NULL, TRUE, FALSE, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "title": "This title is bad and BAD and heckish",
+        "raw": "A body that is fine and long enough to pass the length checks.",
+        "category": 4,
+        "typing_duration_msecs": 5000
+      }
+    }
+  ]
+}

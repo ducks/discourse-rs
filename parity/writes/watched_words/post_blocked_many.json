@@ -1,0 +1,81 @@
+{
+  "name": "post_blocked_many",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "This reply is SPAM and a scam, and spam again, refused by watched words.",
+        "typing_duration_msecs": 5000
+      }
+    }
+  ],
+  "started_at": "2026-10-14T07:06:17.984477",
+  "transaction_started_at": "2026-10-14T07:06:16.677236",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "action": "created_post",
+        "errors": [
+          "Sorry, you can't post that. Not allowed: SPAM, scam, spam."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "oNRpcnZocO2cMLuTf5zGy/RIwmE=",
+            "created_at": "2026-10-14T07:06:17.404695",
+            "rotated_at": "2026-10-14T07:06:17.403426",
+            "updated_at": "2026-10-14T07:06:17.404695",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "oNRpcnZocO2cMLuTf5zGy/RIwmE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T07:06:17.991315",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "oNRpcnZocO2cMLuTf5zGy/RIwmE=",
+            "created_at": "2026-10-14T07:06:17.404695",
+            "rotated_at": "2026-10-14T07:06:17.403426",
+            "updated_at": "2026-10-14T07:06:17.404695",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "oNRpcnZocO2cMLuTf5zGy/RIwmE=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (931, 'spam', 1, NULL, FALSE, FALSE, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (932, 'scam', 1, NULL, FALSE, FALSE, now(), now())"
+  ],
+  "recorded_from": {
+    "case": "2b65168150c7f6962bf0a4c2ff0c7ee7765e0951f9b61b96cab97a05cfe9c61e",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

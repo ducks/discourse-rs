@@ -9,7 +9,7 @@
 //! fields and custom fields, external ids, profile and card backgrounds,
 //! titles, primary and flair groups, date of birth, tag tracking, sidebar
 //! links, user status, themes and the array options, uploads in the bio,
-//! watched words, and gravatar downloads.
+//! and gravatar downloads.
 
 use serde_json::{Map, Value, json};
 use sqlx::PgConnection;
@@ -292,13 +292,6 @@ pub async fn update(
             return Err(Unsupported("changing the title, primary group or flair group").into());
         }
     }
-    let watched: bool = sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM watched_words)")
-        .fetch_one(&mut *conn)
-        .await?;
-    if watched {
-        return Err(Unsupported("watched words on profile updates").into());
-    }
-
     // LEGACY_SHOW_ORIGINAL_CONTENT_ATTR
     let mut attrs = attrs.clone();
     if let Some(legacy) = attrs.remove("show_original_content")
@@ -915,6 +908,15 @@ async fn update_profile(
     if too_long(&bio_raw) || too_long(&location) {
         return invalid();
     }
+    // watched_words: true on bio_raw and location.
+    for v in [&bio_raw, &location].into_iter().flatten() {
+        if crate::word_watcher::block_error(&mut *conn, s, ctx.i18n, v)
+            .await?
+            .is_some()
+        {
+            return invalid();
+        }
+    }
     if website != before.website
         && let Some(w) = website.as_deref().filter(|w| !blank(Some(w)))
     {
@@ -930,6 +932,13 @@ async fn update_profile(
         }
     }
 
+    // before_save :apply_watched_words, if: :location?
+    let location = match location {
+        Some(l) if !blank(Some(&l)) => {
+            Some(crate::word_watcher::apply_to_text(&mut *conn, s, &l).await?)
+        }
+        l => l,
+    };
     // before_save :cook
     let bio_changed = bio_raw != before.bio_raw;
     let mut bio_cooked = before.bio_cooked.clone();

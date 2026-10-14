@@ -5,6 +5,7 @@ mod admin_emoji;
 mod admin_logs;
 mod admin_site_settings;
 mod admin_users;
+mod admin_watched_words;
 mod archive_message;
 mod backups;
 mod badges;
@@ -533,6 +534,30 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route(
             "/admin/logs/screened_ip_addresses/{id}",
             put(admin_logs::update_screened_ip).delete(admin_logs::destroy_screened_ip),
+        )
+        .route(
+            "/admin/customize/watched_words",
+            get(admin_watched_words::index).post(admin_watched_words::create),
+        )
+        .route(
+            "/admin/customize/watched_words.json",
+            get(admin_watched_words::index).post(admin_watched_words::create),
+        )
+        .route(
+            "/admin/customize/watched_words/upload",
+            post(admin_watched_words::upload),
+        )
+        .route(
+            "/admin/customize/watched_words/{id}",
+            delete(admin_watched_words::destroy),
+        )
+        .route(
+            "/admin/customize/watched_words/action/{id}",
+            get(admin_watched_words::index_action).delete(admin_watched_words::clear_all),
+        )
+        .route(
+            "/admin/customize/watched_words/action/{id}/download",
+            get(admin_watched_words::download),
         )
         .route("/admin/logs", get(admin_logs::staff_action_logs))
         .route("/admin/logs.json", get(admin_logs::staff_action_logs))
