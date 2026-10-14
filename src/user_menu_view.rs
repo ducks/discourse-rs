@@ -18,6 +18,8 @@ use crate::topic_list_view::{emoji_unescape, escape, icon};
 pub struct MenuContext<'a> {
     pub i18n: &'a I18n,
     pub base_path: &'a str,
+    /// The slide-in mode (GlimmerSiteHeader#slideInMode): the mobile view
+    /// or the narrow desktop, where the menu slides in over a cloak.
     pub mobile: bool,
     /// The serialized current user (/session/current.json's), which the
     /// client's menu reads its counts and flags from.

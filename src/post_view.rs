@@ -1692,6 +1692,16 @@ fn no_answer(cx: &PostContext, view: &Value) -> String {
     format!("<div class=\"topic-navigation-outlet no-answer\">{popup}</div>")
 }
 
+/// TopicNavigation's width query on desktop: below 925px the template's
+/// progress bar takes the timeline's place. page.js redraws the page in
+/// place when the window crosses the width.
+const NARROW_TIMELINE_SCRIPT: &str = "<script>(function () {\
+var template = document.currentScript.previousElementSibling;\
+var nav = template.previousElementSibling;\
+if (!window.matchMedia(\"(min-width: 925px)\").matches) { nav.replaceWith(template.content.cloneNode(true)); }\
+template.remove();\
+})();</script>";
+
 pub fn timeline(cx: &PostContext, view: &Value) -> String {
     let base = cx.list.base_path;
     let url = format!("{base}/t/{}/{}", cx.topic.slug, cx.topic.id);
@@ -1704,10 +1714,16 @@ pub fn timeline(cx: &PostContext, view: &Value) -> String {
     if crate::mobile::mobile_view() {
         return topic_progress(cx, &stream, view, &url);
     }
+    // Nor in a desktop window under MIN_WIDTH_TIMELINE (925px), which the
+    // server can't see: the progress bar comes along in a template, put in
+    // the timeline's place before the page's scripts set them up; a window
+    // crossing the width has the page redrawn in place (page.js), where
+    // Ember re-renders.
     format!(
-        "<div class=\"with-timeline topic-navigation\">{}{}</div>",
+        "<div class=\"with-timeline topic-navigation\">{}{}</div><template class=\"topic-navigation-narrow\">{}</template>{NARROW_TIMELINE_SCRIPT}",
         no_answer(cx, view),
-        timeline_container(cx, view, &url, &stream, false)
+        timeline_container(cx, view, &url, &stream, false),
+        topic_progress(cx, &stream, view, &url)
     )
 }
 

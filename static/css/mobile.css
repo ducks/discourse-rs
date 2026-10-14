@@ -984,20 +984,6 @@
   }
 }
 
-/* welcome-banner.scss:174 */
-@media (width < 48rem) {
-  .welcome-banner__title {
-    font-size: var(--font-up-4);
-  }
-}
-
-/* welcome-banner.scss:174 */
-@media (width < 40rem) {
-  .welcome-banner__title {
-    font-size: var(--font-up-1);
-  }
-}
-
 /* modal-overrides.scss:271 */
 @media (width < 40rem) {
   .d-modal.group-add-members-modal .d-modal__body {

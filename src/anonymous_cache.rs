@@ -174,6 +174,7 @@ fn key(request: &Request) -> String {
     // key_is_mobile?: the layout the page is rendered in, which the port
     // decides from the viewport cookie before the user agent (crate::mobile).
     key.push_str(&format!("|m={}", crate::mobile::decide(headers)));
+    key.push_str(&format!("|nd={}", crate::mobile::decide_narrow(headers)));
     // key_has_brotli?, and gzip, which the port negotiates too: the stored
     // body is the one sent, compressed for that encoding.
     let encodings = h(header::ACCEPT_ENCODING);
