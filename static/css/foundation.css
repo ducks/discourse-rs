@@ -399,6 +399,26 @@ input[type="number"] {
   color-scheme: var(--scheme-type);
 }
 
+/* discourse.scss:401 */
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="datetime"]:focus,
+input[type="datetime-local"]:focus,
+input[type="date"]:focus,
+input[type="month"]:focus,
+input[type="time"]:focus,
+input[type="week"]:focus,
+input[type="number"]:focus,
+input[type="email"]:focus,
+input[type="url"]:focus,
+input[type="search"]:focus,
+input[type="tel"]:focus,
+input[type="color"]:focus {
+  border-color: var(--d-input-focused-color);
+  outline: 2px solid var(--d-input-focused-color);
+  outline-offset: -2px;
+}
+
 input[type="search"]::-webkit-search-cancel-button,
 input[type="search"]::-webkit-search-decoration {
   appearance: none;
@@ -442,6 +462,45 @@ select,
 textarea {
   color: var(--d-input-text-color);
   caret-color: currentcolor;
+}
+
+/* discourse.scss:321 */
+label {
+  display: flex;
+  margin-bottom: 5px;
+  align-items: flex-start;
+  color: var(--primary-high);
+}
+
+/* discourse.scss:327 */
+label:not(.checkbox-label, .d-segmented-control__label) {
+  font-weight: bold;
+}
+
+/* discourse.scss:349 */
+input[type="radio"],
+input[type="checkbox"] {
+  margin-top: 0.17em;
+  margin-right: 0.43em;
+  margin-left: 0.1em;
+  line-height: var(--line-height-small);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* discourse.scss:359 */
+input[type="submit"],
+input[type="reset"],
+input[type="button"],
+input[type="radio"],
+input[type="checkbox"] {
+  width: auto;
+}
+
+/* base.scss:218 */
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--tertiary);
 }
 
 @media (width >= 40rem) {

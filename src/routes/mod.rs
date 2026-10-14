@@ -1303,6 +1303,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/messages-dropdown.js", get(asset))
         .route("/assets/users-directory.js", get(asset))
         .route("/assets/groups.js", get(asset))
+        .route("/assets/search-page.js", get(asset))
         .route("/assets/composer.js", get(asset))
         .route("/assets/screen-track.js", get(asset))
         .route("/assets/js/onpopstate-handler.js", get(asset))

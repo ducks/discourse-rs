@@ -31,6 +31,10 @@ pub struct ShowParams {
     search_context: Option<String>,
     context: Option<String>,
     context_id: Option<String>,
+    /// The page's query params (FullPageSearchController#queryParams).
+    search_type: Option<String>,
+    expanded: Option<String>,
+    skip_context: Option<String>,
 }
 
 #[derive(Deserialize, Default)]
@@ -331,10 +335,25 @@ async fn show_response(
     } else {
         crate::bus::page_position(&state.bus).await?
     };
-    if params.search_context.is_some() || params.context.is_some() || params.context_id.is_some() {
+    let term = params.q.clone().unwrap_or_default();
+    // The page's route searches with the context whenever it has a
+    // context_id (FullPageSearchRoute#model reads skip_context off the
+    // wrong object), so only a page without a term can carry one.
+    let page_context_only = !json
+        && params.search_context.is_none()
+        && (term.is_empty() || params.context_id.is_none());
+    if (params.search_context.is_some() || params.context.is_some() || params.context_id.is_some())
+        && !page_context_only
+    {
         return Err(Unsupported("search contexts (user, topic, category, tag)").into());
     }
-    let term = params.q.clone().unwrap_or_default();
+    let search_type = crate::search_view::SearchType::parse(params.search_type.as_deref());
+    if !json && search_type == crate::search_view::SearchType::CategoriesTags {
+        return Err(Unsupported(
+            "the full-page search's categories & tags type (Category.search, tags/filter/search)",
+        )
+        .into());
+    }
     {
         let mut conn = state.pool.acquire().await?;
         let settings =
@@ -396,13 +415,77 @@ async fn show_response(
     )
     .await?;
     site.bus_position = bus_position;
-    let mut page = search_page(&state, site, &term, &doc, page, &mut conn).await?;
-    // No crawlable_meta_data on search; the description meta and the
-    // default canonical (only the page param survives) remain.
+    // The search button isn't in the header on the full-page search
+    // (ALL_PAGES_EXCLUDED_ROUTES).
+    site.chrome.can_search = false;
     let urls = Urls {
         config: &state.config,
         settings: &settings,
     };
+    // The users type's userSearch({term, limit: 20}) after the route's
+    // search.
+    let users = if search_type == crate::search_view::SearchType::Users
+        && valid_search_term(&term, &settings)?
+    {
+        let options = crate::user_search::Options {
+            limit: Some(20),
+            ..Default::default()
+        };
+        let mut search = match crate::user_search::UserSearch::new(
+            &mut conn,
+            &settings,
+            &guardian,
+            crate::ruby::strip(term.strip_prefix('@').unwrap_or(&term)),
+            options,
+        )
+        .await?
+        {
+            Ok(search) => search,
+            Err(_) => return Err(Unsupported("a refused user search on the search page").into()),
+        };
+        let ids = search.search_ids().await?;
+        crate::user_search::found_users(&mut conn, &urls, &guardian, &ids).await?
+    } else {
+        Vec::new()
+    };
+    let context = match (params.context.as_deref(), params.skip_context.as_deref()) {
+        (Some(kind), skip) => Some((
+            kind,
+            params.context_id.as_deref().unwrap_or("undefined"),
+            // searchContextEnabled
+            skip.is_none() || skip == Some("false"),
+        )),
+        _ => None,
+    };
+    let context_category_name = match context {
+        Some(("category", id, _)) => {
+            sqlx::query_scalar("SELECT name FROM categories WHERE id::text = $1")
+                .bind(id)
+                .fetch_optional(&mut *conn)
+                .await?
+        }
+        _ => None,
+    };
+    let view = crate::search_view::SearchView {
+        q: &term,
+        search_type,
+        expanded: params.expanded.as_deref() == Some("true"),
+        context,
+        context_category_name,
+        default_order: settings.get("search_default_sort_order")?.to_i(),
+        member: guardian.user().is_some(),
+        staff: guardian.is_staff(),
+        search_active: valid_search_term(&term, &settings)?,
+        login_required: settings.get("login_required")?.truthy(),
+        doc: Some(&doc),
+        users: &users,
+        page,
+        avatar_size: 0,
+        site_url: format!("{}/", urls.base_url()?),
+    };
+    let mut page = search_page(&state, site, &settings, view, &mut conn).await?;
+    // No crawlable_meta_data on search; the description meta and the
+    // default canonical (only the page param survives) remain.
     page.crawler = crate::html::Crawler::for_request(&urls, &uri.unwrap_or_default(), None)?;
     page.crawler.description = settings.get("site_description")?.to_s();
     let response = (
@@ -490,64 +573,60 @@ pub struct SearchPage {
     pub viewer: Option<crate::html::Viewer>,
     pub bus_position: String,
     pub chrome: Chrome,
+    /// The cleaned term the route's title names (FullPageSearchRoute#titleToken).
     pub term: String,
-    pub results: Vec<SearchResult>,
-    pub searched: bool,
-    pub next_url: Option<String>,
+    pub body: String,
+    /// What search-page.js reads: min_search_term_length and its strings.
+    pub min_length: i64,
+    pub too_short: String,
+    pub clear_label: String,
 }
 
-pub struct SearchResult {
-    pub title: String,
-    pub url: String,
-    pub blurb: String,
-    pub username: Option<String>,
-    pub created_at: String,
-    pub category: Option<crate::html::CategoryBadge>,
+/// `isValidSearchTerm`: a term the client searches for.
+fn valid_search_term(term: &str, settings: &SiteSettings) -> Result<bool, AppError> {
+    let trimmed = term.trim();
+    if trimmed.is_empty() {
+        return Ok(false);
+    }
+    static BYPASS: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
+        regex::Regex::new(
+            r"(?i)^(l|r)$|order:|category:|categories:|tags?:|before:|after:|status:|user:|group:|badge:|in:|with:|#|@",
+        )
+        .unwrap()
+    });
+    if BYPASS.is_match(trimmed) {
+        return Ok(true);
+    }
+    let min = settings.get("min_search_term_length")?.to_i();
+    Ok(trimmed.chars().count() as i64 >= min)
 }
 
-/// The server-rendered results page from the /search.json document.
+/// The full-page search as the client renders it (crate::search_view).
 async fn search_page(
     state: &AppState,
-    site: crate::html::Site,
-    term: &str,
-    doc: &Value,
-    page: i64,
+    mut site: crate::html::Site,
+    settings: &SiteSettings,
+    mut view: crate::search_view::SearchView<'_>,
     conn: &mut sqlx::PgConnection,
 ) -> Result<SearchPage, AppError> {
-    let base = site.base_path.clone();
-    let cats = crate::html::categories(conn).await?;
-    let topics = doc["topics"].as_array().cloned().unwrap_or_default();
-    let mut results = Vec::new();
-    for p in doc["posts"].as_array().into_iter().flatten() {
-        let topic = topics
-            .iter()
-            .find(|t| t["id"] == p["topic_id"])
-            .cloned()
-            .unwrap_or(Value::Null);
-        let slug = topic["slug"].as_str().unwrap_or("topic");
-        let post_number = p["post_number"].as_i64().unwrap_or(1);
-        let mut url = format!("{base}/t/{slug}/{}", p["topic_id"]);
-        if post_number > 1 {
-            url.push_str(&format!("/{post_number}"));
-        }
-        results.push(SearchResult {
-            title: topic["title"].as_str().unwrap_or("").to_string(),
-            url,
-            blurb: p["blurb"].as_str().unwrap_or("").to_string(),
-            username: p["username"].as_str().map(str::to_string),
-            created_at: p["created_at"].as_str().unwrap_or("").to_string(),
-            category: crate::html::badge(&base, &cats, topic["category_id"].as_i64()),
-        });
-    }
-    let more = doc["grouped_search_result"]["more_full_page_results"] == json!(true);
-    let next_url = more.then(|| {
-        format!(
-            "{base}/search?q={}&page={}",
-            form_urlencoded::byte_serialize(term.as_bytes()).collect::<String>(),
-            page + 1
-        )
-    });
-    let _ = state;
+    let categories = crate::topic_list_view::categories(conn).await?;
+    let cx = crate::topic_list_view::ListContext {
+        i18n: &state.i18n,
+        base_path: &site.base_path,
+        now: crate::clock::now(),
+        categories: &categories,
+        expand_all_pinned: false,
+        member_trust_level: site.viewer.as_ref().map(|v| v.trust_level),
+        settings: crate::topic_list_view::ListSettings::load(settings)?,
+    };
+    view.avatar_size = cx.settings.avatar_size_48;
+    let body = crate::search_view::render(&cx, &view);
+    let term = crate::search_view::clean_term(view.q, view.default_order).0;
+    let too_short = crate::topic_list_view::t(&cx, "search.too_short");
+    let clear_label = crate::topic_list_view::t(&cx, "search.clear_search");
+    drop(cx);
+    // The template's bodyClass.
+    site.chrome.body_classes.push_str(" search-page");
     Ok(SearchPage {
         site_title: site.site_title,
         viewer: site.viewer,
@@ -556,9 +635,10 @@ async fn search_page(
         lang: site.lang,
         base_path: site.base_path,
         crawler: Crawler::default(),
-        term: term.to_string(),
-        results,
-        searched: !term.is_empty(),
-        next_url,
+        term,
+        body,
+        min_length: settings.get("min_search_term_length")?.to_i(),
+        too_short,
+        clear_label,
     })
 }

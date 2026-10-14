@@ -474,6 +474,17 @@ async fn show_list(
     site.load_chrome(&mut conn, &state, &settings, &guardian, active)
         .await?;
     site.bus_position = bus_position;
+    // TagShowRoute#setupController: the tag's searchContext (its id); a
+    // tag in a category is an intersection the port's search can't scope.
+    if category.is_none() {
+        let id: Option<i32> = sqlx::query_scalar("SELECT id FROM tags WHERE lower(name) = $1")
+            .bind(tag_name.to_lowercase())
+            .fetch_optional(&mut *conn)
+            .await?;
+        if let Some(id) = id {
+            site.chrome.set_search_context("tag", &id.to_string());
+        }
+    }
     let mut page = crate::html::latest_page(
         &mut conn,
         site,

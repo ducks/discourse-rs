@@ -245,6 +245,10 @@ pub struct Chrome {
     /// What static/js/local-dates.js reads, as data attributes for its
     /// script tag; empty while discourse_local_dates_enabled is off.
     pub local_dates_attrs: String,
+    /// The search service's searchContext as the mobile search button
+    /// passes it to the full-page search (Header#toggleSearchMenu): a
+    /// query string, empty on pages without one.
+    pub search_context: String,
 }
 
 /// The client strings local-dates.js shows, by their js.* key.
@@ -358,6 +362,18 @@ fn cooked_config(settings: &SiteSettings, i18n: &I18n) -> Result<String, Setting
 }
 
 impl Chrome {
+    /// The route's searchContext (a topic's, a category's, a user's, a
+    /// tag's, an inbox's): the mobile search button opens the full-page
+    /// search with it, its checkbox off (`skip_context`).
+    pub fn set_search_context(&mut self, kind: &str, id: &str) {
+        let enc = |v: &str| form_urlencoded::byte_serialize(v.as_bytes()).collect::<String>();
+        self.search_context = format!(
+            "?context={}&context_id={}&skip_context=true",
+            enc(kind),
+            enc(id)
+        );
+    }
+
     /// Adds a parameter for the page's live updates.
     pub fn live_param(&mut self, name: &str, value: &str) {
         self.live_params.push_str(&format!(
@@ -469,6 +485,10 @@ impl Site {
                 crate::site_icons::site_url(&mut *conn, &urls, "mobile_logo").await?;
         }
         self.chrome.can_search = guardian.can_search(settings)?;
+        // build-category-route sets the category's searchContext.
+        if let crate::sidebar::Active::Category(id) = &active {
+            self.chrome.set_search_context("category", &id.to_string());
+        }
         self.chrome.favicon_url = crate::site_icons::site_url(&mut *conn, &urls, "favicon").await?;
         self.chrome.favicon_type = crate::site_icons::mime_type(&self.chrome.favicon_url);
         self.chrome.apple_touch_icon_url =
