@@ -2,8 +2,8 @@
   "name": "job_new_user_of_the_month",
   "user": null,
   "requests": [],
-  "started_at": "2026-10-14T01:04:00.065068",
-  "transaction_started_at": "2026-10-14T01:03:58.391877",
+  "started_at": "2026-10-14T02:08:18.707369",
+  "transaction_started_at": "2026-10-14T02:08:17.740317",
   "responses": [],
   "changes": {
     "badges": {
@@ -81,8 +81,8 @@
         {
           "id": 52,
           "post_id": 53,
-          "created_at": "2026-10-14T01:04:03.493988",
-          "updated_at": "2026-10-14T01:04:03.493988",
+          "created_at": "2026-10-14T02:08:18.902969",
+          "updated_at": "2026-10-14T02:08:18.902969",
           "drafts_saved": 0,
           "writing_device": null,
           "composer_version": null,
@@ -110,29 +110,29 @@
       "inserted": [
         {
           "id": 53,
-          "raw": "Congratulations, you've earned the **New User of the Month award for September 2026**. :trophy:\n\nThis award is only granted to two new users per month, and it will be permanently visible on [the badges page](http://localhost:3048/badges).\n\nYou've quickly become a valuable member of our community. Thanks for joining, and keep up the great work!",
+          "raw": "Congratulations, you've earned the **New User of the Month award for September 2026**. :trophy:\n\nThis award is only granted to two new users per month, and it will be permanently visible on [the badges page](http://localhost:3042/badges).\n\nYou've quickly become a valuable member of our community. Thanks for joining, and keep up the great work!",
           "wiki": false,
           "reads": 1,
           "score": null,
-          "cooked": "<p>Congratulations, you’ve earned the <strong>New User of the Month award for September 2026</strong>. <img src=\"/images/emoji/twitter/trophy.png?v=15\" title=\":trophy:\" class=\"emoji\" alt=\":trophy:\" loading=\"lazy\" width=\"20\" height=\"20\"></p>\n<p>This award is only granted to two new users per month, and it will be permanently visible on <a href=\"http://localhost:3048/badges\">the badges page</a>.</p>\n<p>You’ve quickly become a valuable member of our community. Thanks for joining, and keep up the great work!</p>",
+          "cooked": "<p>Congratulations, you’ve earned the <strong>New User of the Month award for September 2026</strong>. <img src=\"/images/emoji/twitter/trophy.png?v=15\" title=\":trophy:\" class=\"emoji\" alt=\":trophy:\" loading=\"lazy\" width=\"20\" height=\"20\"></p>\n<p>This award is only granted to two new users per month, and it will be permanently visible on <a href=\"http://localhost:3042/badges\">the badges page</a>.</p>\n<p>You’ve quickly become a valuable member of our community. Thanks for joining, and keep up the great work!</p>",
           "hidden": false,
           "locale": null,
           "user_id": -1,
           "version": 1,
-          "baked_at": "2026-10-14T01:04:03.399684",
+          "baked_at": "2026-10-14T02:08:18.846239",
           "topic_id": 45,
           "hidden_at": null,
           "post_type": 1,
           "raw_email": null,
           "via_email": false,
-          "created_at": "2026-10-14T01:04:03.399762",
+          "created_at": "2026-10-14T02:08:18.846326",
           "deleted_at": null,
           "like_count": 0,
           "like_score": 0,
           "self_edits": 0,
           "sort_order": 1,
           "spam_count": 0,
-          "updated_at": "2026-10-14T01:04:03.399762",
+          "updated_at": "2026-10-14T02:08:18.846326",
           "word_count": 59,
           "action_code": null,
           "cook_method": 1,
@@ -152,7 +152,7 @@
           "last_editor_id": -1,
           "public_version": 1,
           "image_upload_id": null,
-          "last_version_at": "2026-10-14T01:04:03.491783",
+          "last_version_at": "2026-10-14T02:08:18.898642",
           "off_topic_count": 0,
           "hidden_reason_id": null,
           "reply_to_user_id": null,
@@ -173,15 +173,15 @@
           "id": 9,
           "user_id": 2,
           "topic_id": 45,
-          "created_at": "2026-10-14T01:04:03.320417",
-          "updated_at": "2026-10-14T01:04:03.320417"
+          "created_at": "2026-10-14T02:08:18.778732",
+          "updated_at": "2026-10-14T02:08:18.778732"
         },
         {
           "id": 10,
           "user_id": -1,
           "topic_id": 45,
-          "created_at": "2026-10-14T01:04:03.324049",
-          "updated_at": "2026-10-14T01:04:03.324049"
+          "created_at": "2026-10-14T02:08:18.782088",
+          "updated_at": "2026-10-14T02:08:18.782088"
         }
       ],
       "deleted": [],
@@ -191,7 +191,7 @@
       "inserted": [
         {
           "id": 20,
-          "url": "http://localhost:3048/badges",
+          "url": "http://localhost:3042/badges",
           "quote": false,
           "title": null,
           "clicks": 0,
@@ -202,11 +202,24 @@
           "topic_id": 45,
           "extension": null,
           "crawled_at": null,
-          "created_at": "2026-10-14T01:04:03.572211",
+          "created_at": "2026-10-14T02:08:18.910494",
           "reflection": false,
-          "updated_at": "2026-10-14T01:04:03.572211",
+          "updated_at": "2026-10-14T02:08:18.910494",
           "link_post_id": null,
           "link_topic_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "topic_search_data": {
+      "inserted": [
+        {
+          "locale": "en",
+          "version": 4,
+          "raw_data": "You're a new user of the month! Congratulations, you've earned the New User of the Month award for September 2026 . :trophy: This award is only granted to two new users per month, and it will be permanently visible on the badges pag",
+          "topic_id": 45,
+          "search_data": "'2026':22B 'award':19B,25B 'badg':43B 'congratul':9B 'earn':12B 'grant':28B 'month':8A,18B,34B 'new':4A,14B,31B 'pag':44B 'per':33B 'perman':39B 're':2A 'septemb':21B 'trophi':23B 'two':30B 'user':5A,15B,32B 've':11B 'visibl':40B"
         }
       ],
       "deleted": [],
@@ -222,15 +235,15 @@
           "topic_id": 45,
           "bookmarked": false,
           "last_posted_at": null,
-          "last_visited_at": "2026-10-14T01:04:03.360836",
-          "first_visited_at": "2026-10-14T01:04:03.360836",
+          "last_visited_at": "2026-10-14T02:08:18.810862",
+          "first_visited_at": "2026-10-14T02:08:18.810862",
           "cleared_pinned_at": null,
           "notification_level": 3,
           "total_msecs_viewed": 0,
           "last_read_post_number": null,
           "notifications_reason_id": 2,
           "last_emailed_post_number": null,
-          "notifications_changed_at": "2026-10-14T01:04:03.359954"
+          "notifications_changed_at": "2026-10-14T02:08:18.809501"
         },
         {
           "id": 55,
@@ -239,16 +252,16 @@
           "user_id": -1,
           "topic_id": 45,
           "bookmarked": false,
-          "last_posted_at": "2026-10-14T01:04:03.576776",
-          "last_visited_at": "2026-10-14T01:04:03.34862",
-          "first_visited_at": "2026-10-14T01:04:03.34862",
+          "last_posted_at": "2026-10-14T02:08:18.914599",
+          "last_visited_at": "2026-10-14T02:08:18.792979",
+          "first_visited_at": "2026-10-14T02:08:18.792979",
           "cleared_pinned_at": null,
           "notification_level": 3,
           "total_msecs_viewed": 0,
           "last_read_post_number": 1,
           "notifications_reason_id": 1,
           "last_emailed_post_number": null,
-          "notifications_changed_at": "2026-10-14T01:04:03.346201"
+          "notifications_changed_at": "2026-10-14T02:08:18.791252"
         }
       ],
       "deleted": [],
@@ -270,13 +283,13 @@
           "visible": true,
           "archived": false,
           "archetype": "private_message",
-          "bumped_at": "2026-10-14T01:04:03.399762",
+          "bumped_at": "2026-10-14T02:08:18.846326",
           "pinned_at": null,
-          "created_at": "2026-10-14T01:04:03.315684",
+          "created_at": "2026-10-14T02:08:18.772732",
           "deleted_at": null,
           "like_count": 0,
           "spam_count": 0,
-          "updated_at": "2026-10-14T01:04:03.587189",
+          "updated_at": "2026-10-14T02:08:18.922502",
           "word_count": 59,
           "category_id": null,
           "external_id": null,
@@ -289,7 +302,7 @@
           "deleted_by_id": null,
           "featured_link": null,
           "bannered_until": null,
-          "last_posted_at": "2026-10-14T01:04:03.399762",
+          "last_posted_at": "2026-10-14T02:08:18.846326",
           "image_upload_id": null,
           "pinned_globally": false,
           "reviewable_score": 0,
@@ -317,8 +330,8 @@
         {
           "id": 65,
           "user_id": -1,
-          "created_at": "2026-10-14T01:04:03.315684",
-          "updated_at": "2026-10-14T01:04:03.3799",
+          "created_at": "2026-10-14T02:08:18.772732",
+          "updated_at": "2026-10-14T02:08:18.827887",
           "action_type": 12,
           "acting_user_id": -1,
           "target_post_id": -1,
@@ -328,8 +341,8 @@
         {
           "id": 66,
           "user_id": 2,
-          "created_at": "2026-10-14T01:04:03.315684",
-          "updated_at": "2026-10-14T01:04:03.391399",
+          "created_at": "2026-10-14T02:08:18.772732",
+          "updated_at": "2026-10-14T02:08:18.837606",
           "action_type": 13,
           "acting_user_id": -1,
           "target_post_id": -1,
@@ -346,8 +359,8 @@
           "id": 2,
           "user_id": -1,
           "topic_id": 45,
-          "created_at": "2026-10-14T01:04:03.709872",
-          "updated_at": "2026-10-14T01:04:03.709872"
+          "created_at": "2026-10-14T02:08:18.991891",
+          "updated_at": "2026-10-14T02:08:18.991891"
         }
       ],
       "deleted": [],
@@ -356,12 +369,12 @@
     "user_badges": {
       "inserted": [
         {
-          "id": 20,
+          "id": 19,
           "seq": 0,
           "post_id": null,
           "user_id": 2,
           "badge_id": 44,
-          "created_at": "2026-10-14T01:04:00.077027",
+          "created_at": "2026-10-14T02:08:18.730201",
           "granted_at": "2026-09-30T23:59:59.999999",
           "is_favorite": null,
           "featured_rank": 2,
@@ -454,7 +467,7 @@
             "post_edits_count": null,
             "posts_read_count": 3,
             "first_unread_pm_at": "2026-10-01T18:21:56.284939",
-            "digest_attempted_at": "2026-10-13T23:11:11.711128",
+            "digest_attempted_at": null,
             "pending_posts_count": 0,
             "distinct_badge_count": 3,
             "first_post_created_at": "2026-09-30T07:28:28.901913",
@@ -480,7 +493,7 @@
             "post_edits_count": null,
             "posts_read_count": 3,
             "first_unread_pm_at": "2026-10-01T18:21:56.284939",
-            "digest_attempted_at": "2026-10-13T23:11:11.711128",
+            "digest_attempted_at": null,
             "pending_posts_count": 0,
             "distinct_badge_count": 4,
             "first_post_created_at": "2026-09-30T07:28:28.901913",
@@ -500,7 +513,7 @@
     "topics": 45,
     "user_actions": 65,
     "user_archived_messages": 2,
-    "user_badges": 20
+    "user_badges": 19
   },
   "setup": [
     "DELETE FROM user_badges WHERE id > 18",

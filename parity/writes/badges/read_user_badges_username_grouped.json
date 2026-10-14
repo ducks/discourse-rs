@@ -1,0 +1,145 @@
+{
+  "name": "read_user_badges_username_grouped",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/user-badges/user0.json?grouped=true"
+    }
+  ],
+  "started_at": "2026-10-14T02:17:27.100691",
+  "transaction_started_at": "2026-10-14T02:17:25.641363",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "badges": [
+          {
+            "id": 1,
+            "name": "Basic",
+            "description": "<a href=\"https://blog.discourse.org/2018/06/understanding-discourse-trust-levels/\">Granted</a> all essential community functions",
+            "grant_count": 5,
+            "allow_title": false,
+            "multiple_grant": false,
+            "icon": "user",
+            "image_url": null,
+            "listable": true,
+            "enabled": true,
+            "badge_grouping_id": 4,
+            "system": true,
+            "slug": "basic",
+            "manually_grantable": false,
+            "show_in_post_header": false,
+            "badge_type_id": 3
+          },
+          {
+            "id": 5,
+            "name": "Welcome",
+            "description": "Received a like",
+            "grant_count": 2,
+            "allow_title": false,
+            "multiple_grant": false,
+            "icon": "heart",
+            "image_url": null,
+            "listable": true,
+            "enabled": true,
+            "badge_grouping_id": 2,
+            "system": true,
+            "slug": "welcome",
+            "manually_grantable": false,
+            "show_in_post_header": false,
+            "badge_type_id": 3
+          },
+          {
+            "id": 11,
+            "name": "First Like",
+            "description": "Liked a post",
+            "grant_count": 2,
+            "allow_title": false,
+            "multiple_grant": false,
+            "icon": "heart",
+            "image_url": null,
+            "listable": true,
+            "enabled": true,
+            "badge_grouping_id": 1,
+            "system": true,
+            "slug": "first-like",
+            "manually_grantable": false,
+            "show_in_post_header": false,
+            "badge_type_id": 3
+          }
+        ],
+        "badge_types": [
+          {
+            "id": 3,
+            "name": "Bronze",
+            "sort_order": 7
+          }
+        ],
+        "granted_bies": [
+          {
+            "id": -1,
+            "username": "system",
+            "name": "system",
+            "avatar_template": "/images/discourse-logo-sketch-small.png",
+            "admin": true,
+            "moderator": true,
+            "trust_level": 4
+          }
+        ],
+        "user_badges": [
+          {
+            "id": 2,
+            "granted_at": "2026-09-30T06:20:02.086Z",
+            "count": 1,
+            "grouping_position": 13,
+            "is_favorite": null,
+            "can_favorite": false,
+            "badge_id": 1,
+            "granted_by_id": -1
+          },
+          {
+            "id": 16,
+            "granted_at": "2026-09-30T07:28:30.313Z",
+            "count": 1,
+            "grouping_position": 11,
+            "post_number": 1,
+            "topic_id": 41,
+            "topic_title": "Parity fixture: liked and archived",
+            "is_favorite": null,
+            "can_favorite": false,
+            "badge_id": 5,
+            "granted_by_id": -1
+          },
+          {
+            "id": 17,
+            "granted_at": "2026-10-01T15:39:52.050Z",
+            "count": 1,
+            "grouping_position": 10,
+            "post_number": 2,
+            "topic_id": 35,
+            "topic_title": "Parity fixture: replies and posters",
+            "is_favorite": null,
+            "can_favorite": false,
+            "badge_id": 11,
+            "granted_by_id": -1
+          }
+        ]
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "DELETE FROM user_badges WHERE id > 18",
+    "UPDATE badges SET grant_count = 0 WHERE id = 40",
+    "UPDATE user_stats SET distinct_badge_count = 3 WHERE user_id = 2",
+    "UPDATE user_badges SET featured_rank = CASE id WHEN 3 THEN 4 WHEN 16 THEN 3 WHEN 17 THEN 2 WHEN 18 THEN 3 END WHERE id IN (3, 16, 17, 18)"
+  ],
+  "recorded_from": {
+    "case": "6be4597cf34a3c1767d2af4710a093f2165f7ccb354d80bbcb954ff646d302c9",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

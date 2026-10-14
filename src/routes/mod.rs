@@ -5,6 +5,7 @@ mod admin_logs;
 mod admin_site_settings;
 mod admin_users;
 mod archive_message;
+mod badges;
 mod bookmark_writes;
 mod bookmarks;
 mod bus;
@@ -684,8 +685,19 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/post_actions", post(post_actions::create))
         .route("/post_actions.json", post(post_actions::create))
         .route("/post_actions/{id}", delete(post_actions::destroy))
-        .route("/user_badges", post(user_badges::create))
-        .route("/user_badges.json", post(user_badges::create))
+        .route(
+            "/user_badges",
+            get(badges::user_badges_index).post(user_badges::create),
+        )
+        .route(
+            "/user_badges.json",
+            get(badges::user_badges_index).post(user_badges::create),
+        )
+        .route("/badges", get(badges::index))
+        .route("/badges.json", get(badges::index))
+        .route("/badges/{id}", get(badges::show))
+        .route("/badges/{id}/{slug}", get(badges::show_with_slug))
+        .route("/user-badges/{username}", get(badges::username))
         .route("/user_badges/{id}", delete(user_badges::destroy))
         .route(
             "/user_badges/{id}/toggle_favorite",

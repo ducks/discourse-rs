@@ -83,7 +83,7 @@ fn badge_text(
 }
 
 /// BadgeSerializer, its badge_type as an id; `long_description` with
-/// `include_long_description`, `has_badge` when the viewer has it.
+/// `include_long_description`, `has_badge` when given.
 pub(crate) fn badge_json(
     i18n: &I18n,
     settings: &SiteSettings,
@@ -91,7 +91,7 @@ pub(crate) fn badge_json(
     base_path: &str,
     b: &BadgeRow,
     long_description: bool,
-    has_badge: bool,
+    has_badge: Option<bool>,
 ) -> Result<Value, AppError> {
     let name = b.display_name(i18n);
     let key = b.i18n_name();
@@ -129,8 +129,8 @@ pub(crate) fn badge_json(
         out.insert("long_description".into(), json!(long));
     }
     out.insert("slug".into(), json!(slug_for(&name)));
-    if has_badge {
-        out.insert("has_badge".into(), json!(true));
+    if let Some(has_badge) = has_badge {
+        out.insert("has_badge".into(), json!(has_badge));
     }
     out.insert("manually_grantable".into(), json!(!b.system));
     out.insert("show_in_post_header".into(), json!(b.show_in_post_header));
@@ -174,14 +174,14 @@ pub(crate) struct UserBadgeRow {
     pub user_id: i32,
     pub granted_at: NaiveDateTime,
     pub granted_by_id: i32,
-
+    pub created_at: NaiveDateTime,
     pub post_id: Option<i32>,
     pub is_favorite: Option<bool>,
     pub count: Option<i64>,
 }
 
 pub(crate) const USER_BADGE_COLUMNS: &str = "user_badges.id, user_badges.badge_id, user_badges.user_id, \
-     user_badges.granted_at, user_badges.granted_by_id, \
+     user_badges.granted_at, user_badges.granted_by_id, user_badges.created_at, \
      user_badges.post_id, user_badges.is_favorite, NULL::bigint AS count";
 
 /// The objects a document side-loads, deduped, in first-seen order.
@@ -190,9 +190,35 @@ pub(crate) struct Side {
     pub badges: Vec<Value>,
     pub badge_types: Vec<Value>,
     pub users: Vec<Value>,
+    pub topics: Vec<Value>,
     badge_ids: Vec<i32>,
     badge_type_ids: Vec<i32>,
     user_ids: Vec<i32>,
+    topic_ids: Vec<i32>,
+}
+
+/// The grouped rows of `select_for_grouping`: MAX of each column,
+/// BOOL_OR of is_favorite, and the count.
+pub(crate) const GROUPED_COLUMNS: &str = "MAX(user_badges.id) AS id, MAX(user_badges.badge_id) AS badge_id, \
+     MAX(user_badges.user_id) AS user_id, MAX(user_badges.granted_at) AS granted_at, \
+     MAX(user_badges.granted_by_id) AS granted_by_id, MAX(user_badges.created_at) AS created_at, \
+     MAX(user_badges.post_id) AS post_id, BOOL_OR(user_badges.is_favorite) AS is_favorite, \
+     COUNT(*) AS count";
+
+/// BadgeGroupingSerializer
+pub(crate) async fn badge_grouping_json(
+    conn: &mut PgConnection,
+    id: i32,
+) -> Result<Option<Value>, sqlx::Error> {
+    let row: Option<(i32, String, Option<String>, i32)> =
+        sqlx::query_as("SELECT id, name, description, position FROM badge_groupings WHERE id = $1")
+            .bind(id)
+            .fetch_optional(conn)
+            .await?;
+    // system?: the seeded groupings, ids up to 5.
+    Ok(row.map(|(id, name, description, position)| {
+        json!({"id": id, "name": name, "description": description, "position": position, "system": id <= 5})
+    }))
 }
 
 pub(crate) struct BadgesView<'a> {
@@ -243,7 +269,7 @@ impl BadgesView<'_> {
                 self.base_path,
                 &badge,
                 long_description,
-                false,
+                None,
             )?);
             if !side.badge_type_ids.contains(&badge.badge_type_id) {
                 side.badge_type_ids.push(badge.badge_type_id);
@@ -332,7 +358,7 @@ impl BadgesView<'_> {
                         self.base_path,
                         &b,
                         false,
-                        false,
+                        None,
                     )?);
                     if !side.badge_type_ids.contains(&b.badge_type_id) {
                         side.badge_type_ids.push(b.badge_type_id);
@@ -371,6 +397,122 @@ impl BadgesView<'_> {
         ub.insert("granted_by_id".into(), json!(row.granted_by_id));
         self.side_user(side, row.granted_by_id).await?;
         Ok(Value::Object(ub))
+    }
+
+    /// `guardian.can_see_topic_ids(topic_ids:)` of the grants' posts'
+    /// topics (`user_badge.post&.topic_id`).
+    pub(crate) async fn allowed_topic_ids(
+        &mut self,
+        rows: &[UserBadgeRow],
+    ) -> Result<Vec<i32>, AppError> {
+        let post_ids: Vec<i32> = rows.iter().filter_map(|r| r.post_id).collect();
+        let topic_ids: Vec<i32> = sqlx::query_scalar(
+            "SELECT DISTINCT topic_id FROM posts WHERE id = ANY($1) AND deleted_at IS NULL",
+        )
+        .bind(&post_ids)
+        .fetch_all(&mut *self.conn)
+        .await?;
+        Ok(self
+            .guardian
+            .can_see_topic_ids(&mut *self.conn, self.settings, &topic_ids)
+            .await?)
+    }
+
+    /// A topic (BasicTopicSerializer) side-loaded once.
+    async fn side_topic(&mut self, side: &mut Side, id: i32) -> Result<(), AppError> {
+        if side.topic_ids.contains(&id) {
+            return Ok(());
+        }
+        let topic: Option<(String, Option<String>, Option<String>, i32)> = sqlx::query_as(
+            "SELECT title, fancy_title, slug, posts_count FROM topics WHERE id = $1 AND deleted_at IS NULL",
+        )
+        .bind(id)
+        .fetch_optional(&mut *self.conn)
+        .await?;
+        if let Some((title, fancy, slug, posts_count)) = topic {
+            side.topic_ids.push(id);
+            side.topics.push(json!({
+                "fancy_title": fancy.unwrap_or_else(|| title.clone()),
+                "id": id, "title": title, "slug": slug, "posts_count": posts_count,
+            }));
+        }
+        Ok(())
+    }
+
+    /// UserBadgeSerializer, embedded: its badge (with the long
+    /// description), user, granter and topic side-loaded.
+    pub(crate) async fn user_badge_json(
+        &mut self,
+        side: &mut Side,
+        row: &UserBadgeRow,
+        allowed_topic_ids: &[i32],
+    ) -> Result<Value, AppError> {
+        let badge = self.side_badge(side, row.badge_id, true).await?;
+        let post = self
+            .grant_post(&badge, row.post_id, Some(allowed_topic_ids))
+            .await?;
+        let mut ub = Map::new();
+        ub.insert("id".into(), json!(row.id));
+        ub.insert("granted_at".into(), json!(time_json(row.granted_at)));
+        ub.insert("created_at".into(), json!(time_json(row.created_at)));
+        if let Some(count) = row.count {
+            ub.insert("count".into(), json!(count));
+        }
+        if let Some(p) = &post {
+            ub.insert("post_id".into(), json!(row.post_id));
+            ub.insert("post_number".into(), json!(p.post_number));
+        }
+        ub.insert("badge_id".into(), json!(row.badge_id));
+        ub.insert("user_id".into(), json!(row.user_id));
+        ub.insert("granted_by_id".into(), json!(row.granted_by_id));
+        self.side_user(side, row.user_id).await?;
+        self.side_user(side, row.granted_by_id).await?;
+        if let Some(p) = post.as_ref().filter(|p| p.topic_title.is_some()) {
+            ub.insert("topic_id".into(), json!(p.topic_id));
+            self.side_topic(side, p.topic_id).await?;
+        }
+        Ok(Value::Object(ub))
+    }
+
+    /// The post header's `badges_granted`: each of the author's grants for
+    /// the post of a badge shown there, as BasicUserBadgeSerializer's own
+    /// document.
+    pub(crate) async fn badges_granted(
+        &mut self,
+        post_id: i32,
+        author_id: Option<i32>,
+    ) -> Result<Vec<Value>, AppError> {
+        if !self.settings.get("enable_badges")?.truthy()
+            || !self.settings.get("show_badges_in_post_header")?.truthy()
+        {
+            return Ok(Vec::new());
+        }
+        let rows: Vec<(i32, i32, NaiveDateTime)> = sqlx::query_as(
+            "SELECT id, badge_id, granted_at FROM user_badges \
+             WHERE post_id = $1 AND user_id = $2 AND badge_id IN \
+               (SELECT id FROM badges WHERE show_posts AND enabled AND listable AND show_in_post_header) \
+             ORDER BY id",
+        )
+        .bind(post_id)
+        .bind(author_id)
+        .fetch_all(&mut *self.conn)
+        .await?;
+        let mut out = Vec::new();
+        for (id, badge_id, granted_at) in rows {
+            let mut side = Side::default();
+            let badge = self.side_badge(&mut side, badge_id, false).await?;
+            out.push(json!({
+                "badges": side.badges,
+                "badge_types": side.badge_types,
+                "basic_user_badge": {
+                    "id": id,
+                    "granted_at": time_json(granted_at),
+                    "grouping_position": badge.grouping_position,
+                    "badge_id": badge_id,
+                },
+            }));
+        }
+        Ok(out)
     }
 
     pub(crate) async fn user_badge_row(&mut self, id: i32) -> Result<UserBadgeRow, sqlx::Error> {

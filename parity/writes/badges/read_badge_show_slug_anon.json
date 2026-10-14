@@ -1,0 +1,59 @@
+{
+  "name": "read_badge_show_slug_anon",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/badges/11/first-like.json"
+    }
+  ],
+  "started_at": "2026-10-14T02:08:29.10884",
+  "transaction_started_at": "2026-10-14T02:08:28.170446",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "badge_types": [
+          {
+            "id": 3,
+            "name": "Bronze",
+            "sort_order": 7
+          }
+        ],
+        "badge": {
+          "id": 11,
+          "name": "First Like",
+          "description": "Liked a post",
+          "grant_count": 2,
+          "allow_title": false,
+          "multiple_grant": false,
+          "icon": "heart",
+          "image_url": null,
+          "listable": true,
+          "enabled": true,
+          "badge_grouping_id": 1,
+          "system": true,
+          "long_description": "This badge is granted the first time you like a post using the :heart: button. Liking posts is a great way to let your fellow community members know that what they posted was interesting, useful, cool, or fun. Share the love!\n",
+          "slug": "first-like",
+          "manually_grantable": false,
+          "show_in_post_header": false,
+          "badge_type_id": 3
+        }
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "DELETE FROM user_badges WHERE id > 18",
+    "UPDATE badges SET grant_count = 0 WHERE id = 40",
+    "UPDATE user_stats SET distinct_badge_count = 3 WHERE user_id = 2",
+    "UPDATE user_badges SET featured_rank = CASE id WHEN 3 THEN 4 WHEN 16 THEN 3 WHEN 17 THEN 2 WHEN 18 THEN 3 END WHERE id IN (3, 16, 17, 18)"
+  ],
+  "recorded_from": {
+    "case": "4ccb43fc712745d7f3bd5abbe9819cd39b44b1c6b718af62b4561c2c31cc761f",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

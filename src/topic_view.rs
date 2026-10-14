@@ -34,6 +34,14 @@ pub enum TopicViewError {
     Unsupported(Unsupported),
     /// `Discourse::NotFound`: missing, deleted, or not visible to the viewer.
     NotFound,
+    /// A shared serializer's failure (the post header's badges).
+    App(crate::AppError),
+}
+
+impl From<crate::AppError> for TopicViewError {
+    fn from(e: crate::AppError) -> Self {
+        TopicViewError::App(e)
+    }
 }
 
 impl std::fmt::Display for TopicViewError {
@@ -44,6 +52,7 @@ impl std::fmt::Display for TopicViewError {
             TopicViewError::Url(e) => e.fmt(f),
             TopicViewError::Unsupported(e) => e.fmt(f),
             TopicViewError::NotFound => write!(f, "topic not found"),
+            TopicViewError::App(e) => e.fmt(f),
         }
     }
 }
@@ -1420,8 +1429,6 @@ impl TopicView<'_> {
     ) -> Result<Vec<Value>, TopicViewError> {
         let logo_small_url = self.list_serializer().logo_small_url().await?;
         let enable_names = self.settings.get("enable_names")?.truthy();
-        let show_badges = self.settings.get("enable_badges")?.truthy()
-            && self.settings.get("show_badges_in_post_header")?.truthy();
         let suppress_reply_when_quoting =
             self.settings.get("suppress_reply_when_quoting")?.truthy();
 
@@ -1553,20 +1560,17 @@ impl TopicView<'_> {
             };
             let can_see_post = g.can_see_post(s, &ctx, viewer.can_see)?;
             let taken = viewer.taken.get(&post.id);
-            // UserBadge.for_post_header_badges: badges granted to the author
-            // for this post; serializing one isn't ported.
-            let badges: i64 = sqlx::query_scalar(
-                "SELECT count(*) FROM user_badges ub \
-                 WHERE ub.post_id = $1 AND ub.user_id = $2 AND ub.badge_id IN \
-                   (SELECT id FROM badges WHERE show_posts AND enabled AND listable AND show_in_post_header)",
-            )
-            .bind(post.id)
-            .bind(post.user_id)
-            .fetch_one(&mut *self.conn)
-            .await?;
-            if show_badges && badges > 0 {
-                return Err(Unsupported("badges_granted (BasicUserBadgeSerializer)").into());
+            // badges_granted: UserBadge.for_post_header_badges.
+            let badges_granted = crate::badges_view::BadgesView {
+                conn: &mut *self.conn,
+                settings: self.settings,
+                i18n: self.i18n,
+                guardian: g,
+                urls: self.urls,
+                base_path: self.urls.config.globals.relative_url_root(),
             }
+            .badges_granted(post.id, post.user_id)
+            .await?;
 
             let mut p = Map::new();
             p.insert("id".into(), json!(post.id));
@@ -1652,7 +1656,7 @@ impl TopicView<'_> {
                 "flair_group_id".into(),
                 json!(u.and_then(|u| u.flair_group_id)),
             );
-            p.insert("badges_granted".into(), json!([]));
+            p.insert("badges_granted".into(), json!(badges_granted));
             p.insert(
                 "version".into(),
                 // Hidden revisions are for staff (can_view_hidden_post_revisions?).

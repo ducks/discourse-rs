@@ -1,0 +1,37 @@
+{
+  "name": "read_user_badges_username_missing",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/user-badges/nobody.json"
+    }
+  ],
+  "started_at": "2026-10-14T02:17:28.552993",
+  "transaction_started_at": "2026-10-14T02:17:27.382166",
+  "responses": [
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "DELETE FROM user_badges WHERE id > 18",
+    "UPDATE badges SET grant_count = 0 WHERE id = 40",
+    "UPDATE user_stats SET distinct_badge_count = 3 WHERE user_id = 2",
+    "UPDATE user_badges SET featured_rank = CASE id WHEN 3 THEN 4 WHEN 16 THEN 3 WHEN 17 THEN 2 WHEN 18 THEN 3 END WHERE id IN (3, 16, 17, 18)"
+  ],
+  "recorded_from": {
+    "case": "ca1991ad24fe2c2d377d1b7bf4771653f1055089794e78db28bf668081334999",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

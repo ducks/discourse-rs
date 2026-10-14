@@ -428,6 +428,20 @@ fn unrandom(s: &str) -> String {
 /// both sides: their last digits follow rounding in the arithmetic, the
 /// connection's float output (extra_float_digits) and Ruby's sub-microsecond
 /// clock against the stored timestamp.
+/// `unordered_responses`: JSON pointers to arrays in the recording that
+/// Rails returns in heap order (a query without ORDER BY), compared
+/// sorted by `id` since neither database's heap order can be lined up.
+fn unordered_responses(doc: &mut Value, case: &Value) {
+    for pointer in case["unordered_responses"].as_array().into_iter().flatten() {
+        let Some(pointer) = pointer.as_str() else {
+            continue;
+        };
+        if let Some(Value::Array(items)) = doc.pointer_mut(pointer) {
+            items.sort_by_key(|item| item["id"].as_i64());
+        }
+    }
+}
+
 fn approximate(doc: &mut Value, case: &Value) {
     let round = |v: &mut Value| {
         if let Some(f) = v.as_f64().filter(|f| *f != 0.0 && f.is_finite()) {
@@ -1470,6 +1484,7 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
                     hide_secrets(&mut rails);
                     approximate(&mut rails, case);
                     unordered(&mut rails, case);
+                    unordered_responses(&mut rails, case);
                     rails
                 },
                 rails_started,
@@ -1482,6 +1497,7 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
                     hide_secrets(&mut ours);
                     approximate(&mut ours, case);
                     unordered(&mut ours, case);
+                    unordered_responses(&mut ours, case);
                     ours
                 },
                 started,

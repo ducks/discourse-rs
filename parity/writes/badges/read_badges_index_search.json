@@ -1,0 +1,292 @@
+{
+  "name": "read_badges_index_search",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/badges.json?search=first"
+    }
+  ],
+  "started_at": "2026-10-14T02:08:35.77516",
+  "transaction_started_at": "2026-10-14T02:08:33.821279",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "badge_types": [
+          {
+            "id": 3,
+            "name": "Bronze",
+            "sort_order": 7
+          }
+        ],
+        "badge_groupings": [
+          {
+            "id": 1,
+            "name": "Getting Started",
+            "description": null,
+            "position": 10,
+            "system": true
+          }
+        ],
+        "badges": [
+          {
+            "id": 14,
+            "name": "First Link",
+            "description": "Added a link to another topic",
+            "grant_count": 0,
+            "allow_title": false,
+            "multiple_grant": false,
+            "icon": "link",
+            "image_url": null,
+            "listable": true,
+            "enabled": true,
+            "badge_grouping_id": 1,
+            "system": true,
+            "long_description": "This badge is granted the first time you add a link to another topic. Linking topics helps fellow readers find interesting related conversations, by showing the connections between topics in both directions. Link freely!\n",
+            "slug": "first-link",
+            "has_badge": false,
+            "manually_grantable": false,
+            "show_in_post_header": false,
+            "badge_type_id": 3
+          },
+          {
+            "id": 15,
+            "name": "First Quote",
+            "description": "Quoted a post",
+            "grant_count": 0,
+            "allow_title": false,
+            "multiple_grant": false,
+            "icon": "quote-right",
+            "image_url": null,
+            "listable": true,
+            "enabled": true,
+            "badge_grouping_id": 1,
+            "system": true,
+            "long_description": "This badge is granted the first time you quote a post in your reply. Quoting relevant parts of earlier posts in your reply helps keep discussions connected together and on topic. The easiest way to quote is to highlight a section of a post, and then press any reply button. Quote generously!\n",
+            "slug": "first-quote",
+            "has_badge": false,
+            "manually_grantable": false,
+            "show_in_post_header": false,
+            "badge_type_id": 3
+          },
+          {
+            "id": 13,
+            "name": "First Flag",
+            "description": "Flagged a post",
+            "grant_count": 0,
+            "allow_title": false,
+            "multiple_grant": false,
+            "icon": "flag",
+            "image_url": null,
+            "listable": true,
+            "enabled": true,
+            "badge_grouping_id": 1,
+            "system": true,
+            "long_description": "This badge is granted the first time you flag a post. Flagging is how we all help keep this a nice place for everyone. If you notice any posts that require moderator attention for any reason please don’t hesitate to flag. If you see a problem, :flag_black: flag it!\n",
+            "slug": "first-flag",
+            "has_badge": false,
+            "manually_grantable": false,
+            "show_in_post_header": false,
+            "badge_type_id": 3
+          },
+          {
+            "id": 12,
+            "name": "First Share",
+            "description": "Shared a post",
+            "grant_count": 0,
+            "allow_title": false,
+            "multiple_grant": false,
+            "icon": "share-nodes",
+            "image_url": null,
+            "listable": true,
+            "enabled": true,
+            "badge_grouping_id": 1,
+            "system": true,
+            "long_description": "This badge is granted the first time you share a link to a reply or topic using the share button. Sharing links is a great way to show off interesting discussions with the rest of the world and grow your community.\n",
+            "slug": "first-share",
+            "has_badge": false,
+            "manually_grantable": false,
+            "show_in_post_header": false,
+            "badge_type_id": 3
+          },
+          {
+            "id": 11,
+            "name": "First Like",
+            "description": "Liked a post",
+            "grant_count": 2,
+            "allow_title": false,
+            "multiple_grant": false,
+            "icon": "heart",
+            "image_url": null,
+            "listable": true,
+            "enabled": true,
+            "badge_grouping_id": 1,
+            "system": true,
+            "long_description": "This badge is granted the first time you like a post using the :heart: button. Liking posts is a great way to let your fellow community members know that what they posted was interesting, useful, cool, or fun. Share the love!\n",
+            "slug": "first-like",
+            "has_badge": true,
+            "manually_grantable": false,
+            "show_in_post_header": false,
+            "badge_type_id": 3
+          },
+          {
+            "id": 41,
+            "name": "First Emoji",
+            "description": "Used an Emoji in a Post",
+            "grant_count": 0,
+            "allow_title": false,
+            "multiple_grant": false,
+            "icon": "face-smile",
+            "image_url": null,
+            "listable": true,
+            "enabled": true,
+            "badge_grouping_id": 1,
+            "system": true,
+            "long_description": "This badge is granted the first time you add an Emoji to your post :thumbsup:. Emoji let you convey emotion in your posts, from happiness :smiley: to sadness :anguished: to anger :angry: and everything in between :sunglasses:. Just type a : (colon) or press the Emoji toolbar button in the editor to select from hundreds of choices :ok_hand:\n",
+            "slug": "first-emoji",
+            "has_badge": false,
+            "manually_grantable": false,
+            "show_in_post_header": false,
+            "badge_type_id": 3
+          },
+          {
+            "id": 42,
+            "name": "First Onebox",
+            "description": "Posted a link that was oneboxed",
+            "grant_count": 0,
+            "allow_title": false,
+            "multiple_grant": false,
+            "icon": "cube",
+            "image_url": null,
+            "listable": true,
+            "enabled": true,
+            "badge_grouping_id": 1,
+            "system": true,
+            "long_description": "This badge is granted the first time you post a link on a line by itself, which automatically expanded into a onebox with a summary, title, and (when available) picture.\n",
+            "slug": "first-onebox",
+            "has_badge": false,
+            "manually_grantable": false,
+            "show_in_post_header": false,
+            "badge_type_id": 3
+          },
+          {
+            "id": 43,
+            "name": "First Reply By Email",
+            "description": "Replied to a post via email",
+            "grant_count": 0,
+            "allow_title": false,
+            "multiple_grant": false,
+            "icon": "envelope",
+            "image_url": null,
+            "listable": true,
+            "enabled": true,
+            "badge_grouping_id": 1,
+            "system": true,
+            "long_description": "This badge is granted the first time you reply to a post via email :e-mail:.\n",
+            "slug": "first-reply-by-email",
+            "has_badge": false,
+            "manually_grantable": false,
+            "show_in_post_header": false,
+            "badge_type_id": 3
+          },
+          {
+            "id": 102,
+            "name": "First Reaction",
+            "description": "Reacted to the post",
+            "grant_count": 0,
+            "allow_title": false,
+            "multiple_grant": false,
+            "icon": "face-smile",
+            "image_url": null,
+            "listable": true,
+            "enabled": true,
+            "badge_grouping_id": 1,
+            "system": true,
+            "long_description": "This badge is granted the first time you use the emoji reactions picker to react to a post. This is different from a standard Like: it's a great way to let your fellow community members know that what they posted was interesting, useful, cool, or fun!”\n",
+            "slug": "first-reaction",
+            "has_badge": false,
+            "manually_grantable": false,
+            "show_in_post_header": false,
+            "badge_type_id": 3
+          },
+          {
+            "id": 40,
+            "name": "First Mention",
+            "description": "Mentioned a user in a post",
+            "grant_count": 0,
+            "allow_title": false,
+            "multiple_grant": false,
+            "icon": "at",
+            "image_url": null,
+            "listable": true,
+            "enabled": true,
+            "badge_grouping_id": 1,
+            "system": true,
+            "long_description": "This badge is granted the first time you mention someone’s @username in your post. Each mention generates a notification to that person, so they know about your post. Just begin typing @ (at symbol) to mention any user or, if allowed, group – it’s a convenient way to bring something to their attention.\n",
+            "slug": "first-mention",
+            "has_badge": false,
+            "manually_grantable": false,
+            "show_in_post_header": false,
+            "badge_type_id": 3
+          }
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 529,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "HHZRG6CK9LFpAZiFQN+vnLSBTPs=",
+            "created_at": "2026-10-14T02:08:34.198706",
+            "rotated_at": "2026-10-14T02:08:34.197691",
+            "updated_at": "2026-10-14T02:08:34.198706",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "HHZRG6CK9LFpAZiFQN+vnLSBTPs=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 529,
+            "seen_at": "2026-10-14T02:08:35.785891",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "HHZRG6CK9LFpAZiFQN+vnLSBTPs=",
+            "created_at": "2026-10-14T02:08:34.198706",
+            "rotated_at": "2026-10-14T02:08:34.197691",
+            "updated_at": "2026-10-14T02:08:34.198706",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "HHZRG6CK9LFpAZiFQN+vnLSBTPs=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "DELETE FROM user_badges WHERE id > 18",
+    "UPDATE badges SET grant_count = 0 WHERE id = 40",
+    "UPDATE user_stats SET distinct_badge_count = 3 WHERE user_id = 2",
+    "UPDATE user_badges SET featured_rank = CASE id WHEN 3 THEN 4 WHEN 16 THEN 3 WHEN 17 THEN 2 WHEN 18 THEN 3 END WHERE id IN (3, 16, 17, 18)"
+  ],
+  "recorded_from": {
+    "case": "8ea22bfee5aadf421eb6cffa800da99258ba3c9f910cee2fced0020c8a943b75",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

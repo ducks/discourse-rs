@@ -2,8 +2,8 @@
   "name": "job_ensure_badges_consistency",
   "user": null,
   "requests": [],
-  "started_at": "2026-10-14T01:03:55.795779",
-  "transaction_started_at": "2026-10-14T01:03:53.128166",
+  "started_at": "2026-10-14T02:08:14.677304",
+  "transaction_started_at": "2026-10-14T02:08:12.584037",
   "responses": [],
   "changes": {
     "user_badges": {

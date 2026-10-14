@@ -12,8 +12,8 @@
       }
     }
   ],
-  "started_at": "2026-10-14T00:23:42.095265",
-  "transaction_started_at": "2026-10-14T00:23:38.266633",
+  "started_at": "2026-10-14T02:06:36.073726",
+  "transaction_started_at": "2026-10-14T02:06:34.333502",
   "responses": [
     {
       "status": 200,
@@ -28,7 +28,7 @@
           "post_number": 2,
           "post_type": 1,
           "posts_count": 5,
-          "updated_at": "2026-10-14T00:23:44.403Z",
+          "updated_at": "2026-10-14T02:06:38.363Z",
           "reply_count": 0,
           "reply_to_post_number": null,
           "quote_count": 0,
@@ -158,7 +158,7 @@
             "listable": true,
             "created_at": "2026-07-25T05:58:07.358738",
             "show_posts": false,
-            "updated_at": "2026-10-14T00:23:44.673906",
+            "updated_at": "2026-10-14T02:06:38.658554",
             "allow_title": false,
             "auto_revoke": true,
             "description": null,
@@ -194,8 +194,8 @@
           "number": 2,
           "post_id": 36,
           "user_id": 3,
-          "created_at": "2026-10-14T00:23:44.420463",
-          "updated_at": "2026-10-14T00:23:44.420463",
+          "created_at": "2026-10-14T02:06:38.385917",
+          "updated_at": "2026-10-14T02:06:38.385917",
           "modifications": "--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\nraw:\n- Reply one from user1, also long enough to pass the minimum length check.\n- An edited reply, long enough to pass the validations for the editor badge.\ncooked:\n- \"<p>Reply one from user1, also long enough to pass the minimum length check.</p>\"\n- \"<p>An edited reply, long enough to pass the validations for the editor badge.</p>\"\n"
         }
       ],
@@ -297,7 +297,7 @@
             "locale": null,
             "user_id": 3,
             "version": 2,
-            "baked_at": "2026-10-14T00:23:44.403163",
+            "baked_at": "2026-10-14T02:06:38.363659",
             "topic_id": 35,
             "hidden_at": null,
             "post_type": 1,
@@ -310,7 +310,7 @@
             "self_edits": 1,
             "sort_order": 2,
             "spam_count": 0,
-            "updated_at": "2026-10-14T00:23:44.403425",
+            "updated_at": "2026-10-14T02:06:38.363921",
             "word_count": 13,
             "action_code": null,
             "cook_method": 1,
@@ -330,7 +330,7 @@
             "last_editor_id": 3,
             "public_version": 2,
             "image_upload_id": null,
-            "last_version_at": "2026-10-14T00:23:42.187918",
+            "last_version_at": "2026-10-14T02:06:36.134947",
             "off_topic_count": 0,
             "hidden_reason_id": null,
             "reply_to_user_id": null,
@@ -350,33 +350,33 @@
       "updated": [
         {
           "before": {
-            "id": 1,
+            "id": 529,
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "+SwzUZKilOYBqteYp2DCl6F89Ts=",
-            "created_at": "2026-10-14T00:23:39.982428",
-            "rotated_at": "2026-10-14T00:23:39.979435",
-            "updated_at": "2026-10-14T00:23:39.982428",
+            "auth_token": "AYIrZ6R383lnQWOF2/PJxUD533A=",
+            "created_at": "2026-10-14T02:06:34.941952",
+            "rotated_at": "2026-10-14T02:06:34.939884",
+            "updated_at": "2026-10-14T02:06:34.941952",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "+SwzUZKilOYBqteYp2DCl6F89Ts=",
+            "prev_auth_token": "AYIrZ6R383lnQWOF2/PJxUD533A=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 1,
-            "seen_at": "2026-10-14T00:23:42.117187",
+            "id": 529,
+            "seen_at": "2026-10-14T02:06:36.090141",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "+SwzUZKilOYBqteYp2DCl6F89Ts=",
-            "created_at": "2026-10-14T00:23:39.982428",
-            "rotated_at": "2026-10-14T00:23:39.979435",
-            "updated_at": "2026-10-14T00:23:39.982428",
+            "auth_token": "AYIrZ6R383lnQWOF2/PJxUD533A=",
+            "created_at": "2026-10-14T02:06:34.941952",
+            "rotated_at": "2026-10-14T02:06:34.939884",
+            "updated_at": "2026-10-14T02:06:34.941952",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "+SwzUZKilOYBqteYp2DCl6F89Ts=",
+            "prev_auth_token": "AYIrZ6R383lnQWOF2/PJxUD533A=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -387,12 +387,12 @@
     "user_badges": {
       "inserted": [
         {
-          "id": 20,
+          "id": 19,
           "seq": 0,
           "post_id": null,
           "user_id": 3,
           "badge_id": 10,
-          "created_at": "2026-10-14T00:23:38.266633",
+          "created_at": "2026-10-14T02:06:34.333502",
           "granted_at": "2026-09-30T07:28:29.079439",
           "is_favorite": null,
           "featured_rank": null,
@@ -428,7 +428,7 @@
             "post_edits_count": null,
             "posts_read_count": 2,
             "first_unread_pm_at": "2026-10-01T15:39:51.342717",
-            "digest_attempted_at": "2026-10-13T23:11:11.706976",
+            "digest_attempted_at": null,
             "pending_posts_count": 0,
             "distinct_badge_count": 4,
             "first_post_created_at": "2026-09-30T07:28:29.079439",
@@ -454,7 +454,7 @@
             "post_edits_count": 1,
             "posts_read_count": 2,
             "first_unread_pm_at": "2026-10-01T15:39:51.342717",
-            "digest_attempted_at": "2026-10-13T23:11:11.706976",
+            "digest_attempted_at": null,
             "pending_posts_count": 0,
             "distinct_badge_count": 4,
             "first_post_created_at": "2026-09-30T07:28:29.079439",
@@ -494,7 +494,7 @@
   "next_ids": {
     "draft_sequences": 1,
     "post_revisions": 1,
-    "user_badges": 20
+    "user_badges": 19
   },
   "setup": [
     "DELETE FROM user_badges WHERE id > 18",
