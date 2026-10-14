@@ -202,6 +202,8 @@ fn admin_only(route: &str) -> bool {
         || route.starts_with("/admin/email/")
         || route.starts_with("/admin/backups")
         || route.starts_with("/admin/permalinks")
+        // resources :api (the web hooks), AdminConstraint.
+        || route.starts_with("/admin/api/")
         || matches!(
             route,
             "/admin/users/{user_id}/grant_moderation"

@@ -129,6 +129,13 @@ pub async fn run(state: &AppState, job: &Job) -> Result<(), JobError> {
         name if super::topic_timers::JOBS.contains(&name) => {
             super::topic_timers::run(state, name, &job.args).await
         }
+        crate::web_hooks::emit::EMIT_WEB_HOOK_EVENT => {
+            crate::web_hooks::emit::emit_web_hook_event(state, &job.args).await
+        }
+        // Scheduled, but it takes a date.
+        crate::web_hooks::jobs::AGGREGATE_WEB_HOOKS_EVENTS => {
+            crate::web_hooks::jobs::aggregate_web_hooks_events(state, &job.args).await
+        }
         name if super::is_scheduled(name) => super::run_scheduled(state, name).await,
         "Jobs::DiscourseTopicVoting::VoteReclaim" => {
             let mut tx = match state.pool.begin().await {

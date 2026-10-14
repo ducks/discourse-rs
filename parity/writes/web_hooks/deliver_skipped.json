@@ -1,0 +1,194 @@
+{
+  "name": "deliver_skipped",
+  "user": "admin",
+  "requests": [],
+  "started_at": "2026-10-14T07:46:43.799071",
+  "transaction_started_at": "2026-10-14T07:46:41.662914",
+  "responses": [],
+  "changes": {
+    "web_hook_events": {
+      "inserted": [
+        {
+          "id": 1,
+          "status": 200,
+          "headers": "{\"Accept\":\"*/*\",\"Connection\":\"close\",\"Content-Length\":\"13\",\"Content-Type\":\"application/json\",\"Host\":\"fixtures.localhost\",\"User-Agent\":\"Discourse/2026.10.0-latest-bf55a44c2872738f7ae2664d6fec3d6d8779190f; +https://www.discourse.org/\",\"X-Discourse-Instance\":\"http://localhost:3049\",\"X-Discourse-Event-Id\":\"1\",\"X-Discourse-Event-Type\":\"ping\"}",
+          "payload": "{\"ping\":\"OK\"}",
+          "duration": 52,
+          "created_at": "2026-10-14T07:46:43.810395",
+          "updated_at": "2026-10-14T07:46:43.866437",
+          "web_hook_id": 9002,
+          "response_body": "ok",
+          "response_headers": "{\"user-agent\":\"Discourse/2026.10.0-latest-bf55a44c2872738f7ae2664d6fec3d6d8779190f; +https://www.discourse.org/\",\"connection\":\"close\",\"content-length\":\"2\"}"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "web_hooks": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 9002,
+            "active": true,
+            "secret": "",
+            "status": 1,
+            "created_at": "2026-10-01T10:00:00",
+            "updated_at": "2026-10-01T10:00:00",
+            "payload_url": "http://fixtures.localhost:8099/hook",
+            "content_type": 1,
+            "wildcard_web_hook": false,
+            "verify_certificate": true,
+            "last_delivery_status": 3
+          },
+          "after": {
+            "id": 9002,
+            "active": true,
+            "secret": "",
+            "status": 1,
+            "created_at": "2026-10-01T10:00:00",
+            "updated_at": "2026-10-14T07:46:43.867766",
+            "payload_url": "http://fixtures.localhost:8099/hook",
+            "content_type": 1,
+            "wildcard_web_hook": false,
+            "verify_certificate": true,
+            "last_delivery_status": 3
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "web_hook_events": 1
+  },
+  "settings": {
+    "allowed_internal_hosts": "fixtures.localhost"
+  },
+  "setup": [
+    "INSERT INTO web_hooks (id, payload_url, content_type, last_delivery_status, status, secret, wildcard_web_hook, verify_certificate, active, created_at, updated_at) VALUES (9001, 'http://fixtures.localhost:8099/hook', 1, 3, 1, '', false, true, false, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO web_hook_event_types_hooks (web_hook_id, web_hook_event_type_id) VALUES (9001, 201)",
+    "INSERT INTO web_hooks (id, payload_url, content_type, last_delivery_status, status, secret, wildcard_web_hook, verify_certificate, active, created_at, updated_at) VALUES (9002, 'http://fixtures.localhost:8099/hook', 1, 3, 1, '', false, true, true, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO web_hook_event_types_hooks (web_hook_id, web_hook_event_type_id) VALUES (9002, 201)",
+    "INSERT INTO categories_web_hooks (web_hook_id, category_id) VALUES (9002, 4)",
+    "INSERT INTO web_hooks (id, payload_url, content_type, last_delivery_status, status, secret, wildcard_web_hook, verify_certificate, active, created_at, updated_at) VALUES (9003, 'http://fixtures.localhost:8099/hook', 1, 3, 1, '', false, true, true, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO web_hook_event_types_hooks (web_hook_id, web_hook_event_type_id) VALUES (9003, 201)",
+    "INSERT INTO groups_web_hooks (web_hook_id, group_id) VALUES (9003, 10)",
+    "INSERT INTO web_hooks (id, payload_url, content_type, last_delivery_status, status, secret, wildcard_web_hook, verify_certificate, active, created_at, updated_at) VALUES (9004, 'http://fixtures.localhost:8099/hook', 1, 3, 1, '', false, true, true, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO web_hook_event_types_hooks (web_hook_id, web_hook_event_type_id) VALUES (9004, 201)",
+    "INSERT INTO tags_web_hooks (web_hook_id, tag_id) VALUES (9004, 1)"
+  ],
+  "enqueue": [
+    [
+      "emit_web_hook_event",
+      {
+        "id": 7,
+        "payload": "{\"id\":7}",
+        "web_hook_id": 9001,
+        "event_name": "post_created",
+        "event_type": "post"
+      }
+    ],
+    [
+      "emit_web_hook_event",
+      {
+        "id": 7,
+        "category_id": 2,
+        "payload": "{\"id\":7}",
+        "web_hook_id": 9002,
+        "event_name": "post_created",
+        "event_type": "post"
+      }
+    ],
+    [
+      "emit_web_hook_event",
+      {
+        "id": 7,
+        "payload": "{\"id\":7}",
+        "web_hook_id": 9002,
+        "event_name": "post_created",
+        "event_type": "post"
+      }
+    ],
+    [
+      "emit_web_hook_event",
+      {
+        "id": 7,
+        "group_ids": [
+          11
+        ],
+        "payload": "{\"id\":7}",
+        "web_hook_id": 9003,
+        "event_name": "post_created",
+        "event_type": "post"
+      }
+    ],
+    [
+      "emit_web_hook_event",
+      {
+        "id": 7,
+        "payload": "{\"id\":7}",
+        "web_hook_id": 9003,
+        "event_name": "post_created",
+        "event_type": "post"
+      }
+    ],
+    [
+      "emit_web_hook_event",
+      {
+        "id": 7,
+        "tag_ids": [
+          2
+        ],
+        "payload": "{\"id\":7}",
+        "web_hook_id": 9004,
+        "event_name": "post_created",
+        "event_type": "post"
+      }
+    ],
+    [
+      "emit_web_hook_event",
+      {
+        "id": 7,
+        "tag_ids": [],
+        "payload": "{\"id\":7}",
+        "web_hook_id": 9004,
+        "event_name": "post_created",
+        "event_type": "post"
+      }
+    ],
+    [
+      "emit_web_hook_event",
+      {
+        "id": 7,
+        "payload": "{\"id\":7}",
+        "web_hook_id": 9999,
+        "event_name": "post_created",
+        "event_type": "post"
+      }
+    ],
+    [
+      "emit_web_hook_event",
+      {
+        "id": 7,
+        "payload": "{\"id\":7}",
+        "web_hook_id": 9002,
+        "category_id": 4,
+        "event_type": "ping"
+      }
+    ]
+  ],
+  "remote": {
+    "/hook": {
+      "status": 200,
+      "body": "ok"
+    }
+  },
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "993dd39fc09c9633d41bf52bd534811b718ba7359162b9a4ee3736986648ac2e",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

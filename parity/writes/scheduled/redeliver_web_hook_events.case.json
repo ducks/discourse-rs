@@ -1,0 +1,16 @@
+{
+  "user": "admin",
+  "settings": {"allowed_internal_hosts": "fixtures.localhost"},
+  "setup": [
+    "INSERT INTO web_hooks (id, payload_url, content_type, last_delivery_status, status, secret, wildcard_web_hook, verify_certificate, active, created_at, updated_at) VALUES (9001, 'http://fixtures.localhost:8099/hook', 1, 2, 1, '', false, true, true, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO web_hook_event_types_hooks (web_hook_id, web_hook_event_type_id) VALUES (9001, 201)",
+    "INSERT INTO web_hook_events (id, web_hook_id, headers, payload, status, response_headers, response_body, duration, created_at, updated_at) VALUES (9003, 9001, '{\"Accept\":\"*/*\",\"X-Discourse-Event-Id\":\"9003\"}', '{\"post\":{\"id\":3}}', 404, '{}', 'missing', 3, '2026-10-03 11:00:00', '2026-10-03 11:00:00')",
+    "INSERT INTO web_hook_events (id, web_hook_id, headers, payload, status, response_headers, response_body, duration, created_at, updated_at) VALUES (9004, 9001, '{\"Accept\":\"*/*\"}', '{\"post\":{\"id\":4}}', 502, '{}', 'bad', 3, '2026-10-03 12:00:00', '2026-10-03 12:00:00')",
+    "INSERT INTO redelivering_webhook_events (id, web_hook_event_id, processing, created_at, updated_at) VALUES (9001, 9004, false, '2026-10-03 12:30:00', '2026-10-03 12:30:00')",
+    "INSERT INTO redelivering_webhook_events (id, web_hook_event_id, processing, created_at, updated_at) VALUES (9002, 9003, true, '2026-10-03 12:30:00', '2026-10-03 12:30:00')"
+  ],
+  "remote": {"/hook": {"status": 200, "headers": {"Content-Type": "text/plain"}, "body": "thanks"}},
+  "enqueue": [["redeliver_web_hook_events"]],
+  "run_jobs": ["redeliver_web_hook_events"],
+  "requests": []
+}

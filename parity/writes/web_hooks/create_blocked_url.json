@@ -1,0 +1,100 @@
+{
+  "name": "create_blocked_url",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/api/web_hooks.json",
+      "params": {
+        "web_hook": {
+          "payload_url": "http://fixtures.localhost:8099/hook",
+          "web_hook_event_type_ids": [
+            "201"
+          ],
+          "active": "true"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/api/web_hooks.json",
+      "params": {
+        "web_hook": {
+          "payload_url": "http://127.0.0.1/hook",
+          "web_hook_event_type_ids": [
+            "201"
+          ]
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-14T07:46:24.539271",
+  "transaction_started_at": "2026-10-14T07:46:21.741205",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Payload URL cannot be used because it resolves to a blocked or internal IP"
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Payload URL cannot be used because it resolves to a blocked or internal IP"
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "OV0XZLt5MYHzG3qGGYq16d4NSO4=",
+            "created_at": "2026-10-14T07:46:23.436092",
+            "rotated_at": "2026-10-14T07:46:23.43337",
+            "updated_at": "2026-10-14T07:46:23.436092",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "OV0XZLt5MYHzG3qGGYq16d4NSO4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 1,
+            "seen_at": "2026-10-14T07:46:24.598462",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "OV0XZLt5MYHzG3qGGYq16d4NSO4=",
+            "created_at": "2026-10-14T07:46:23.436092",
+            "rotated_at": "2026-10-14T07:46:23.43337",
+            "updated_at": "2026-10-14T07:46:23.436092",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "OV0XZLt5MYHzG3qGGYq16d4NSO4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "9015fd57b725944b552c82552ca7da840f786068af28822fb536fb08474ca8b4",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

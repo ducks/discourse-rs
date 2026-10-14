@@ -1,7 +1,14 @@
-//! Web hooks (WebHook): which hooks an event goes to.
+//! Web hooks (WebHook): which hooks an event goes to, the admin's CRUD
+//! (admin), the delivery (emit) and the scheduled jobs (jobs).
 
+pub mod admin;
+pub mod emit;
+pub mod jobs;
+
+use serde_json::{Map, Value, json};
 use sqlx::PgConnection;
 
+use crate::guardian::Guardian;
 use crate::{AppError, Unsupported};
 
 /// `WebHook.translate_event_name_to_type`: the event type a hook subscribes
@@ -47,6 +54,49 @@ pub async fn active(conn: &mut PgConnection, event: &str) -> Result<bool, sqlx::
     .bind(event_type(event))
     .fetch_one(&mut *conn)
     .await
+}
+
+/// `WebHook.enqueue_hooks(type, event, opts)`: an emit_web_hook_event job
+/// for each active hook, its args the opts then the hook, event and type.
+pub async fn enqueue_hooks(
+    conn: &mut PgConnection,
+    kind: &str,
+    event: &str,
+    opts: Map<String, Value>,
+) -> Result<(), AppError> {
+    for id in active_ids(&mut *conn, event).await? {
+        let mut args = opts.clone();
+        args.insert("web_hook_id".into(), json!(id));
+        args.insert("event_name".into(), json!(event));
+        args.insert("event_type".into(), json!(kind));
+        crate::jobs::enqueue(&mut *conn, emit::EMIT_WEB_HOOK_EVENT, Value::Object(args)).await?;
+    }
+    Ok(())
+}
+
+/// A serializer's `to_json`: ActiveSupport's encoder escapes `<`, `>`
+/// and `&` (and the JavaScript line separators) in its strings.
+pub fn to_json(value: &Value) -> String {
+    let mut out = String::new();
+    for c in value.to_string().chars() {
+        match c {
+            '<' => out.push_str("\\u003c"),
+            '>' => out.push_str("\\u003e"),
+            '&' => out.push_str("\\u0026"),
+            '\u{2028}' => out.push_str("\\u2028"),
+            '\u{2029}' => out.push_str("\\u2029"),
+            c => out.push(c),
+        }
+    }
+    out
+}
+
+/// `Guardian.new(Discourse.system_user)`, the payloads' scope.
+pub async fn system_guardian(conn: &mut PgConnection) -> Result<Guardian, AppError> {
+    let system = crate::session::current::SessionUser::load(&mut *conn, -1)
+        .await?
+        .ok_or(Unsupported("a site without its system user"))?;
+    Ok(Guardian::for_user(&mut *conn, &system).await?)
 }
 
 /// An event whose web hooks are not ported yet: refused when a hook would

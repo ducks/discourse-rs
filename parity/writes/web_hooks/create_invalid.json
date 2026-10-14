@@ -1,0 +1,236 @@
+{
+  "name": "create_invalid",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/api/web_hooks.json",
+      "params": {
+        "web_hook": {
+          "payload_url": "",
+          "content_type": "1"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/api/web_hooks.json",
+      "params": {
+        "web_hook": {
+          "payload_url": "https://fixtures.localhost/x",
+          "secret": "short",
+          "content_type": "",
+          "wildcard_web_hook": "true"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/api/web_hooks.json",
+      "params": {
+        "web_hook": {
+          "payload_url": "ftp://fixtures.localhost/hook",
+          "web_hook_event_type_ids": [
+            "201"
+          ]
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/api/web_hooks.json",
+      "params": {
+        "web_hook": {
+          "payload_url": "http://fixtures.localhost:8099/hook",
+          "secret": "   ",
+          "web_hook_event_type_ids": [
+            "201"
+          ]
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/api/web_hooks.json",
+      "params": {
+        "something": "else"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T08:11:29.212703",
+  "transaction_started_at": "2026-10-14T08:11:24.232556",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Payload url can't be blank",
+          "Payload url URL is invalid. URL should includes http:// or https://. And no blank is allowed.",
+          "Web hook event types can't be blank"
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Secret is too short (minimum is 12 characters)",
+          "Content type can't be blank"
+        ]
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "errors": [
+          "Payload url URL is invalid. URL should includes http:// or https://. And no blank is allowed."
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "categories": [],
+        "web_hook": {
+          "id": 1,
+          "payload_url": "http://fixtures.localhost:8099/hook",
+          "content_type": 1,
+          "last_delivery_status": 4,
+          "secret": "   ",
+          "wildcard_web_hook": false,
+          "verify_certificate": true,
+          "active": false,
+          "category_ids": [],
+          "tags": [],
+          "group_ids": [],
+          "web_hook_event_types": [
+            {
+              "id": 201,
+              "name": "post_created",
+              "group": "post"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "param is missing or the value is empty or invalid: web_hook"
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "BcBK5dgK51x4bhVdrdicJ9ohI4Y=",
+            "created_at": "2026-10-14T08:11:26.414668",
+            "rotated_at": "2026-10-14T08:11:26.405212",
+            "updated_at": "2026-10-14T08:11:26.414668",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "BcBK5dgK51x4bhVdrdicJ9ohI4Y=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 1,
+            "seen_at": "2026-10-14T08:11:29.223895",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "BcBK5dgK51x4bhVdrdicJ9ohI4Y=",
+            "created_at": "2026-10-14T08:11:26.414668",
+            "rotated_at": "2026-10-14T08:11:26.405212",
+            "updated_at": "2026-10-14T08:11:26.414668",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "BcBK5dgK51x4bhVdrdicJ9ohI4Y=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 70,
+          "context": "webhook_id: 1, payload_url: http://fixtures.localhost:8099/hook",
+          "details": null,
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-14T08:11:29.531981",
+          "ip_address": null,
+          "updated_at": "2026-10-14T08:11:29.531981",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "web_hook_event_types_hooks": {
+      "inserted": [
+        {
+          "web_hook_id": 1,
+          "web_hook_event_type_id": 201
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "web_hooks": {
+      "inserted": [
+        {
+          "id": 1,
+          "active": false,
+          "secret": "   ",
+          "status": 1,
+          "created_at": "2026-10-14T08:11:29.515244",
+          "updated_at": "2026-10-14T08:11:29.515244",
+          "payload_url": "http://fixtures.localhost:8099/hook",
+          "content_type": 1,
+          "wildcard_web_hook": false,
+          "verify_certificate": true,
+          "last_delivery_status": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "user_histories": 74,
+    "web_hooks": 1
+  },
+  "settings": {
+    "allowed_internal_hosts": "fixtures.localhost"
+  },
+  "recorded_from": {
+    "case": "4082a035efedea333eebf5588a429519676cb82bafefdebc66a803dcfeedc609",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

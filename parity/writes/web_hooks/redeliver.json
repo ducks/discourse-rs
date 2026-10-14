@@ -1,0 +1,247 @@
+{
+  "name": "redeliver",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/api/web_hooks/9001/events/9001/redeliver.json"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/api/web_hooks/9001/events/9999/redeliver.json"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/api/web_hooks/9001/events/failed_redeliver.json",
+      "params": {
+        "event_ids": [
+          9002,
+          9003,
+          9004,
+          9999
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/api/web_hooks/9001/events/failed_redeliver.json",
+      "params": {
+        "event_ids": [
+          9002
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/api/web_hooks/9001/events/failed_redeliver.json"
+    }
+  ],
+  "started_at": "2026-10-14T07:47:01.563521",
+  "transaction_started_at": "2026-10-14T07:47:00.703008",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "web_hook_event": {
+          "id": 9001,
+          "web_hook_id": 9001,
+          "request_url": "http://fixtures.localhost:8099/hook",
+          "headers": "{\"Accept\":\"*/*\",\"Content-Type\":\"application/json\",\"X-Discourse-Event-Id\":\"9001\",\"X-Discourse-Event-Type\":\"post\"}",
+          "payload": "{\"post\":{\"id\":1}}",
+          "status": 200,
+          "response_headers": "{\"user-agent\":\"Discourse/2026.10.0-latest-bf55a44c2872738f7ae2664d6fec3d6d8779190f; +https://www.discourse.org/\",\"connection\":\"close\",\"content-length\":\"6\",\"content-type\":\"text/plain\"}",
+          "response_body": "thanks",
+          "duration": 44,
+          "created_at": "2026-10-02T10:00:00.000Z",
+          "redelivering": false
+        }
+      }
+    },
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "event_ids": [
+          9004,
+          9003
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    }
+  ],
+  "changes": {
+    "redelivering_webhook_events": {
+      "inserted": [
+        {
+          "id": 1,
+          "created_at": "2026-10-14T07:47:01.696759",
+          "processing": false,
+          "updated_at": "2026-10-14T07:47:01.696759",
+          "web_hook_event_id": 9003
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "g4WjADWAasTkKul9+cFDkq9YjJo=",
+            "created_at": "2026-10-14T07:47:01.061006",
+            "rotated_at": "2026-10-14T07:47:01.060063",
+            "updated_at": "2026-10-14T07:47:01.061006",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "g4WjADWAasTkKul9+cFDkq9YjJo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 1,
+            "seen_at": "2026-10-14T07:47:01.568961",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "g4WjADWAasTkKul9+cFDkq9YjJo=",
+            "created_at": "2026-10-14T07:47:01.061006",
+            "rotated_at": "2026-10-14T07:47:01.060063",
+            "updated_at": "2026-10-14T07:47:01.061006",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "g4WjADWAasTkKul9+cFDkq9YjJo=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "web_hook_events": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 9001,
+            "status": 500,
+            "headers": "{\"Accept\":\"*/*\",\"Content-Type\":\"application/json\",\"X-Discourse-Event-Id\":\"9001\",\"X-Discourse-Event-Type\":\"post\"}",
+            "payload": "{\"post\":{\"id\":1}}",
+            "duration": 17,
+            "created_at": "2026-10-02T10:00:00",
+            "updated_at": "2026-10-02T10:00:00",
+            "web_hook_id": 9001,
+            "response_body": "oops",
+            "response_headers": "{}"
+          },
+          "after": {
+            "id": 9001,
+            "status": 200,
+            "headers": "{\"Accept\":\"*/*\",\"Content-Type\":\"application/json\",\"X-Discourse-Event-Id\":\"9001\",\"X-Discourse-Event-Type\":\"post\"}",
+            "payload": "{\"post\":{\"id\":1}}",
+            "duration": 44,
+            "created_at": "2026-10-02T10:00:00",
+            "updated_at": "2026-10-14T07:47:01.622561",
+            "web_hook_id": 9001,
+            "response_body": "thanks",
+            "response_headers": "{\"user-agent\":\"Discourse/2026.10.0-latest-bf55a44c2872738f7ae2664d6fec3d6d8779190f; +https://www.discourse.org/\",\"connection\":\"close\",\"content-length\":\"6\",\"content-type\":\"text/plain\"}"
+          }
+        }
+      ]
+    },
+    "web_hooks": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 9001,
+            "active": true,
+            "secret": "",
+            "status": 1,
+            "created_at": "2026-10-01T10:00:00",
+            "updated_at": "2026-10-01T10:00:00",
+            "payload_url": "http://fixtures.localhost:8099/hook",
+            "content_type": 1,
+            "wildcard_web_hook": false,
+            "verify_certificate": true,
+            "last_delivery_status": 2
+          },
+          "after": {
+            "id": 9001,
+            "active": true,
+            "secret": "",
+            "status": 1,
+            "created_at": "2026-10-01T10:00:00",
+            "updated_at": "2026-10-14T07:47:01.625973",
+            "payload_url": "http://fixtures.localhost:8099/hook",
+            "content_type": 1,
+            "wildcard_web_hook": false,
+            "verify_certificate": true,
+            "last_delivery_status": 3
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "redelivering_webhook_events": 1
+  },
+  "settings": {
+    "allowed_internal_hosts": "fixtures.localhost"
+  },
+  "setup": [
+    "INSERT INTO web_hooks (id, payload_url, content_type, last_delivery_status, status, secret, wildcard_web_hook, verify_certificate, active, created_at, updated_at) VALUES (9001, 'http://fixtures.localhost:8099/hook', 1, 2, 1, '', false, true, true, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO web_hook_event_types_hooks (web_hook_id, web_hook_event_type_id) VALUES (9001, 201)",
+    "INSERT INTO web_hook_events (id, web_hook_id, headers, payload, status, response_headers, response_body, duration, created_at, updated_at) VALUES (9001, 9001, '{\"Accept\":\"*/*\",\"Content-Type\":\"application/json\",\"X-Discourse-Event-Id\":\"9001\",\"X-Discourse-Event-Type\":\"post\"}', '{\"post\":{\"id\":1}}', 500, '{}', 'oops', 17, '2026-10-02 10:00:00', '2026-10-02 10:00:00')",
+    "INSERT INTO web_hook_events (id, web_hook_id, headers, payload, status, response_headers, response_body, duration, created_at, updated_at) VALUES (9002, 9001, '{\"Accept\":\"*/*\"}', '{\"ping\":\"OK\"}', 0, NULL, NULL, 0, '2026-10-03 10:00:00', '2026-10-03 10:00:00')",
+    "INSERT INTO web_hook_events (id, web_hook_id, headers, payload, status, response_headers, response_body, duration, created_at, updated_at) VALUES (9003, 9001, '{\"Accept\":\"*/*\"}', '{\"post\":{\"id\":3}}', 404, '{}', 'missing', 3, '2026-10-03 11:00:00', '2026-10-03 11:00:00')",
+    "INSERT INTO web_hook_events (id, web_hook_id, headers, payload, status, response_headers, response_body, duration, created_at, updated_at) VALUES (9004, 9001, '{\"Accept\":\"*/*\"}', '{\"post\":{\"id\":4}}', 502, '{}', 'bad', 3, '2026-10-03 12:00:00', '2026-10-03 12:00:00')",
+    "INSERT INTO redelivering_webhook_events (id, web_hook_event_id, processing, created_at, updated_at) VALUES (9001, 9004, false, '2026-10-03 12:30:00', '2026-10-03 12:30:00')"
+  ],
+  "remote": {
+    "/hook": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "text/plain"
+      },
+      "body": "thanks"
+    }
+  },
+  "recorded_from": {
+    "case": "83329374548fd8f9f741a05d83336be17bb107a52303fa4145389d3c3416c3b7",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

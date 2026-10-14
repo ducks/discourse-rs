@@ -1,0 +1,23 @@
+{
+  "user": "admin",
+  "settings": {"allowed_internal_hosts": "fixtures.localhost"},
+  "setup": [
+    "INSERT INTO web_hooks (id, payload_url, content_type, last_delivery_status, status, secret, wildcard_web_hook, verify_certificate, active, created_at, updated_at) VALUES (9001, ' http://fixtures.localhost:8099/hook?x=1 ', 1, 1, 1, 'abcdefghijklmnop', false, true, true, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO web_hook_event_types_hooks (web_hook_id, web_hook_event_type_id) VALUES (9001, 201)",
+    "INSERT INTO categories_web_hooks (web_hook_id, category_id) VALUES (9001, 4), (9001, 2)",
+    "INSERT INTO tags_web_hooks (web_hook_id, tag_id) VALUES (9001, 1)",
+    "INSERT INTO groups_web_hooks (web_hook_id, group_id) VALUES (9001, 10)",
+    "INSERT INTO web_hooks (id, payload_url, content_type, last_delivery_status, status, secret, wildcard_web_hook, verify_certificate, active, created_at, updated_at) VALUES (9002, 'http://fixtures.localhost:8099/form', 2, 2, 1, '', true, false, true, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO web_hook_event_types_hooks (web_hook_id, web_hook_event_type_id) VALUES (9002, 101)"
+  ],
+  "remote": {
+    "/hook?x=1": {"status": 200, "headers": {"Content-Type": "application/json", "X-Thing": "a"}, "body": "{\"ok\":true}"},
+    "/form": {"status": 201, "body": ""}
+  },
+  "enqueue": [
+    ["emit_web_hook_event", {"id": 7, "category_id": 4, "tag_ids": [2, 1], "group_ids": [10, 11], "payload": "{\"id\":7,\"raw\":\"héllo \\u2603\",\"nested\":{\"a\":[1,2]}}", "web_hook_id": 9001, "event_name": "post_created", "event_type": "post"}],
+    ["emit_web_hook_event", {"id": 3, "payload": "{\"id\":3}", "web_hook_id": 9002, "event_name": "topic_closed_status_updated", "event_type": "topic"}]
+  ],
+  "run_jobs": ["emit_web_hook_event"],
+  "requests": []
+}

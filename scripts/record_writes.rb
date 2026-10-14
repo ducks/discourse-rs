@@ -259,6 +259,12 @@ if cases.any? { |c| c["remote"] }
       Thread.new(server.accept) do |s|
         head = +""
         head << s.readpartial(4096) until head.include?("\r\n\r\n")
+        # The request's body is read too (a web hook's POST), so closing
+        # the socket with it unread can't reset the connection.
+        fields, rest = head.split("\r\n\r\n", 2)
+        length = fields[/^content-length:\s*(\d+)/i, 1].to_i
+        rest = rest.to_s
+        rest << s.readpartial(4096) while rest.bytesize < length
         method, target = head.lines.first.to_s.split(" ")
         page = REMOTE[target] || {}
         body = page["body"].to_s

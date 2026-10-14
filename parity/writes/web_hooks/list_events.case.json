@@ -1,0 +1,21 @@
+{
+  "user": "admin",
+  "setup": [
+    "INSERT INTO web_hooks (id, payload_url, content_type, last_delivery_status, status, secret, wildcard_web_hook, verify_certificate, active, created_at, updated_at) VALUES (9001, 'http://fixtures.localhost:8099/hook', 1, 3, 1, '', false, true, true, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO web_hook_event_types_hooks (web_hook_id, web_hook_event_type_id) VALUES (9001, 201)",
+    "INSERT INTO web_hook_events (id, web_hook_id, headers, payload, status, response_headers, response_body, duration, created_at, updated_at) VALUES (9001, 9001, '{\"Accept\":\"*/*\"}', '{\"ping\":\"OK\"}', 200, '{\"content-length\":\"2\"}', 'ok', 5, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO web_hook_events (id, web_hook_id, headers, payload, status, response_headers, response_body, duration, created_at, updated_at) VALUES (9002, 9001, '{\"Accept\":\"*/*\"}', '{\"post\":{\"id\":1}}', 500, '{}', 'oops', 17, '2026-10-02 10:00:00', '2026-10-02 10:00:00')",
+    "INSERT INTO web_hook_events (id, web_hook_id, headers, payload, status, response_headers, response_body, duration, created_at, updated_at) VALUES (9003, 9001, '{\"Accept\":\"*/*\"}', '{\"post\":{\"id\":2}}', -1, '{\"error\":\"nope\"}', NULL, 3, '2026-10-03 10:00:00', '2026-10-03 10:00:00')",
+    "INSERT INTO web_hook_events (id, web_hook_id, headers, payload, status, response_headers, response_body, duration, created_at, updated_at) VALUES (9004, 9001, NULL, '{\"post\":{\"id\":3}}', 0, NULL, NULL, 0, '2026-10-04 10:00:00', '2026-10-04 10:00:00')",
+    "INSERT INTO redelivering_webhook_events (id, web_hook_event_id, processing, created_at, updated_at) VALUES (9001, 9002, false, '2026-10-02 11:00:00', '2026-10-02 11:00:00')"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/admin/api/web_hook_events/9001.json"},
+    {"method": "GET", "path": "/admin/api/web_hook_events/9001.json?status=failed"},
+    {"method": "GET", "path": "/admin/api/web_hook_events/9001.json?status=successful&offset=0"},
+    {"method": "GET", "path": "/admin/api/web_hook_events/9001.json?offset=2"},
+    {"method": "GET", "path": "/admin/api/web_hooks/9001/events/bulk.json?ids[]=9001&ids[]=9003"},
+    {"method": "GET", "path": "/admin/api/web_hooks/9001/events/bulk.json"},
+    {"method": "GET", "path": "/admin/api/web_hook_events/9999.json"}
+  ]
+}

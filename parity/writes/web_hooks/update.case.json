@@ -1,0 +1,17 @@
+{
+  "user": "admin",
+  "settings": {"allowed_internal_hosts": "fixtures.localhost"},
+  "setup": [
+    "INSERT INTO web_hooks (id, payload_url, content_type, last_delivery_status, status, secret, wildcard_web_hook, verify_certificate, active, created_at, updated_at) VALUES (9001, 'http://fixtures.localhost:8099/hook', 1, 3, 1, 'abcdefghijklmnop', false, true, true, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO web_hook_event_types_hooks (web_hook_id, web_hook_event_type_id) VALUES (9001, 201), (9001, 202)",
+    "INSERT INTO categories_web_hooks (web_hook_id, category_id) VALUES (9001, 4)",
+    "INSERT INTO tags_web_hooks (web_hook_id, tag_id) VALUES (9001, 1)"
+  ],
+  "requests": [
+    {"method": "PUT", "path": "/admin/api/web_hooks/9001.json", "params": {"web_hook": {"payload_url": "http://fixtures.localhost:8099/new", "content_type": "2", "secret": "another-secret-key", "web_hook_event_type_ids": ["101", "201"], "category_ids": ["2"], "group_ids": ["10"], "tag_ids": []}}},
+    {"method": "PUT", "path": "/admin/api/web_hooks/9001.json", "params": {"web_hook": {"active": "false", "verify_certificate": "false"}}},
+    {"method": "PUT", "path": "/admin/api/web_hooks/9001.json", "params": {"web_hook": {"active": "false"}}},
+    {"method": "PUT", "path": "/admin/api/web_hooks/9001.json", "params": {"web_hook": {"secret": "short", "web_hook_event_type_ids": []}}},
+    {"method": "PUT", "path": "/admin/api/web_hooks/9999.json", "params": {"web_hook": {"active": "false"}}}
+  ]
+}

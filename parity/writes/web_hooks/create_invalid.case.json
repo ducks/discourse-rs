@@ -1,0 +1,11 @@
+{
+  "user": "admin",
+  "settings": {"allowed_internal_hosts": "fixtures.localhost"},
+  "requests": [
+    {"method": "POST", "path": "/admin/api/web_hooks.json", "params": {"web_hook": {"payload_url": "", "content_type": "1"}}},
+    {"method": "POST", "path": "/admin/api/web_hooks.json", "params": {"web_hook": {"payload_url": "https://fixtures.localhost/x", "secret": "short", "content_type": "", "wildcard_web_hook": "true"}}},
+    {"method": "POST", "path": "/admin/api/web_hooks.json", "params": {"web_hook": {"payload_url": "ftp://fixtures.localhost/hook", "web_hook_event_type_ids": ["201"]}}},
+    {"method": "POST", "path": "/admin/api/web_hooks.json", "params": {"web_hook": {"payload_url": "http://fixtures.localhost:8099/hook", "secret": "   ", "web_hook_event_type_ids": ["201"]}}},
+    {"method": "POST", "path": "/admin/api/web_hooks.json", "params": {"something": "else"}}
+  ]
+}

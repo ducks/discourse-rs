@@ -1,0 +1,348 @@
+{
+  "name": "create",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/api/web_hooks.json",
+      "params": {
+        "web_hook": {
+          "payload_url": " http://fixtures.localhost:8099/hook ",
+          "content_type": "1",
+          "secret": "a-very-secret-key",
+          "wildcard_web_hook": "false",
+          "active": "true",
+          "verify_certificate": "true",
+          "web_hook_event_type_ids": [
+            "202",
+            "201"
+          ],
+          "category_ids": [
+            "4"
+          ],
+          "group_ids": [
+            "11"
+          ],
+          "tag_ids": [
+            "2",
+            "1"
+          ]
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/api/web_hooks.json",
+      "params": {
+        "web_hook": {
+          "payload_url": "http://fixtures.localhost:8099/all",
+          "content_type": 2,
+          "wildcard_web_hook": true,
+          "active": false,
+          "verify_certificate": false
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-14T07:46:27.29958",
+  "transaction_started_at": "2026-10-14T07:46:25.315586",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "categories": [
+          {
+            "id": 4,
+            "name": "General",
+            "color": "25AAE2",
+            "text_color": "FFFFFF",
+            "style_type": "emoji",
+            "icon": null,
+            "emoji": "blue_book",
+            "slug": "general",
+            "topic_count": 3,
+            "post_count": 6,
+            "position": 3,
+            "description": "<p>Create topics here that don’t fit into any other existing category.</p>",
+            "description_text": "Create topics here that don’t fit into any other existing category.",
+            "description_excerpt": "Create topics here that don’t fit into any other existing category.",
+            "topic_url": "/t/about-the-general-category/3",
+            "read_restricted": false,
+            "permission": null,
+            "notification_level": null,
+            "can_edit": true,
+            "topic_template": null,
+            "topic_title_placeholder": null,
+            "has_children": null,
+            "subcategory_count": null,
+            "sort_order": null,
+            "sort_ascending": null,
+            "show_subcategory_list": false,
+            "num_featured_topics": 3,
+            "default_view": null,
+            "subcategory_list_style": "rows_with_featured_topics",
+            "default_top_period": "all",
+            "default_list_filter": "all",
+            "minimum_required_tags": 0,
+            "navigate_to_first_post_after_read": false,
+            "uploaded_logo": null,
+            "uploaded_logo_dark": null,
+            "uploaded_background": null,
+            "uploaded_background_dark": null
+          }
+        ],
+        "web_hook": {
+          "id": 1,
+          "payload_url": "http://fixtures.localhost:8099/hook",
+          "content_type": 1,
+          "last_delivery_status": 1,
+          "secret": "a-very-secret-key",
+          "wildcard_web_hook": false,
+          "verify_certificate": true,
+          "active": true,
+          "category_ids": [
+            4
+          ],
+          "tags": [
+            {
+              "id": 1,
+              "name": "howto",
+              "slug": "howto",
+              "topic_count": 2,
+              "staff": false,
+              "description": null,
+              "description_cooked": null
+            },
+            {
+              "id": 2,
+              "name": "guide",
+              "slug": "guide",
+              "topic_count": 2,
+              "staff": false,
+              "description": null,
+              "description_cooked": null
+            }
+          ],
+          "group_ids": [
+            11
+          ],
+          "web_hook_event_types": [
+            {
+              "id": 202,
+              "name": "post_edited",
+              "group": "post"
+            },
+            {
+              "id": 201,
+              "name": "post_created",
+              "group": "post"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "categories": [],
+        "web_hook": {
+          "id": 2,
+          "payload_url": "http://fixtures.localhost:8099/all",
+          "content_type": 2,
+          "last_delivery_status": 4,
+          "secret": "",
+          "wildcard_web_hook": true,
+          "verify_certificate": false,
+          "active": false,
+          "category_ids": [],
+          "tags": [],
+          "group_ids": [],
+          "web_hook_event_types": []
+        }
+      }
+    }
+  ],
+  "changes": {
+    "categories_web_hooks": {
+      "inserted": [
+        {
+          "category_id": 4,
+          "web_hook_id": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "groups_web_hooks": {
+      "inserted": [
+        {
+          "group_id": 11,
+          "web_hook_id": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "tags_web_hooks": {
+      "inserted": [
+        {
+          "tag_id": 1,
+          "web_hook_id": 1
+        },
+        {
+          "tag_id": 2,
+          "web_hook_id": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "6jISoD5MEUcl2cSh3cY5MrCMLLg=",
+            "created_at": "2026-10-14T07:46:26.222589",
+            "rotated_at": "2026-10-14T07:46:26.220898",
+            "updated_at": "2026-10-14T07:46:26.222589",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "6jISoD5MEUcl2cSh3cY5MrCMLLg=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 1,
+            "seen_at": "2026-10-14T07:46:27.311692",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "6jISoD5MEUcl2cSh3cY5MrCMLLg=",
+            "created_at": "2026-10-14T07:46:26.222589",
+            "rotated_at": "2026-10-14T07:46:26.220898",
+            "updated_at": "2026-10-14T07:46:26.222589",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "6jISoD5MEUcl2cSh3cY5MrCMLLg=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 70,
+          "context": "webhook_id: 1, payload_url: http://fixtures.localhost:8099/hook",
+          "details": null,
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-14T07:46:27.683052",
+          "ip_address": null,
+          "updated_at": "2026-10-14T07:46:27.683052",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 75,
+          "email": null,
+          "action": 70,
+          "context": "webhook_id: 2, payload_url: http://fixtures.localhost:8099/all",
+          "details": null,
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-14T07:46:28.061746",
+          "ip_address": null,
+          "updated_at": "2026-10-14T07:46:28.061746",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "web_hook_event_types_hooks": {
+      "inserted": [
+        {
+          "web_hook_id": 1,
+          "web_hook_event_type_id": 202
+        },
+        {
+          "web_hook_id": 1,
+          "web_hook_event_type_id": 201
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "web_hooks": {
+      "inserted": [
+        {
+          "id": 1,
+          "active": true,
+          "secret": "a-very-secret-key",
+          "status": 1,
+          "created_at": "2026-10-14T07:46:27.583816",
+          "updated_at": "2026-10-14T07:46:27.583816",
+          "payload_url": "http://fixtures.localhost:8099/hook",
+          "content_type": 1,
+          "wildcard_web_hook": false,
+          "verify_certificate": true,
+          "last_delivery_status": 1
+        },
+        {
+          "id": 2,
+          "active": false,
+          "secret": "",
+          "status": 1,
+          "created_at": "2026-10-14T07:46:28.042818",
+          "updated_at": "2026-10-14T07:46:28.042818",
+          "payload_url": "http://fixtures.localhost:8099/all",
+          "content_type": 2,
+          "wildcard_web_hook": true,
+          "verify_certificate": false,
+          "last_delivery_status": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "user_histories": 74,
+    "web_hooks": 1
+  },
+  "settings": {
+    "allowed_internal_hosts": "fixtures.localhost"
+  },
+  "recorded_from": {
+    "case": "ca0a0dc06887d06910d56152d03e9886c54ce5368fa5d995ef26cec6ac866c72",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

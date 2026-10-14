@@ -65,6 +65,10 @@ Classes:
 | process_badge_backlog | 1m (a producer the port misses is invisible until a backlog case covers it) | badges/backlog_* |
 | badge_grant (each badge a backfill_badge job), ensure_badges_consistency, grant_anniversary_badges, grant_new_user_of_the_month_badges | 1d (the scheduler never passes the anniversary job a start_date) | badges/job_* |
 | fix_user_usernames_and_groups_names_clash | 1w (UsernameChanger inline, no staff log) | scheduled/username_group_clash* |
+| purge_old_web_hook_events, purge_old_web_hook_events_daily_aggregate | 1d | scheduled/purge_old_web_hook_events |
+| aggregate_web_hooks_events | 1d (from the worker's start; a `date` arg as the job takes it) | scheduled/aggregate_web_hooks_events |
+| cleanup_redelivering_web_hook_events | 1h | scheduled/cleanup_redelivering_web_hook_events |
+| redeliver_web_hook_events | 1m (without Rails' two-second sleep between events) | scheduled/redeliver_web_hook_events |
 
 ## Ready, in porting order
 
@@ -77,7 +81,6 @@ the features below (ROADMAP.md's queue has them).
 |---|---|
 | ignored_users_summary, pending_reviewables_reminder | messages to a group (PostCreator target_group_names; group message alerts are refused) |
 | pending_queued_posts_reminder, pending_users_reminder, enqueue_suspect_users | queued posts, user review |
-| aggregate_web_hooks_events, cleanup_redelivering_web_hook_events, redeliver_web_hook_events, purge_old_web_hook_events, purge_old_web_hook_events_daily_aggregate | web hooks |
 | clear_expired_impersonations | impersonation |
 | clean_up_associated_accounts, clean_up_associated_groups | external auth |
 | check_out_of_date_themes | themes |

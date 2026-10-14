@@ -1,0 +1,17 @@
+{
+  "user": "user2",
+  "setup": [
+    "UPDATE users SET moderator = TRUE WHERE id = 4",
+    "INSERT INTO web_hooks (id, payload_url, content_type, last_delivery_status, status, secret, wildcard_web_hook, verify_certificate, active, created_at, updated_at) VALUES (9001, 'http://fixtures.localhost:8099/hook', 1, 3, 1, '', false, true, true, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO web_hook_event_types_hooks (web_hook_id, web_hook_event_type_id) VALUES (9001, 201)"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/admin/api/web_hooks.json"},
+    {"method": "GET", "path": "/admin/api/web_hooks/9001.json"},
+    {"method": "POST", "path": "/admin/api/web_hooks.json", "params": {"web_hook": {"payload_url": "http://fixtures.localhost:8099/hook", "web_hook_event_type_ids": ["201"]}}},
+    {"method": "PUT", "path": "/admin/api/web_hooks/9001.json", "params": {"web_hook": {"active": "false"}}},
+    {"method": "DELETE", "path": "/admin/api/web_hooks/9001.json"},
+    {"method": "POST", "path": "/admin/api/web_hooks/9001/ping.json"},
+    {"method": "GET", "path": "/admin/api/web_hook_events/9001.json"}
+  ]
+}

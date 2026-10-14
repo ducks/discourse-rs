@@ -429,6 +429,26 @@ const SCHEDULED: &[(&str, Duration)] = &[
         crate::username_changer::FIX_CLASH,
         Duration::from_secs(7 * 24 * 3600),
     ),
+    (
+        crate::web_hooks::jobs::PURGE_OLD_WEB_HOOK_EVENTS,
+        Duration::from_secs(24 * 3600),
+    ),
+    (
+        crate::web_hooks::jobs::PURGE_OLD_WEB_HOOK_EVENTS_DAILY_AGGREGATE,
+        Duration::from_secs(24 * 3600),
+    ),
+    (
+        crate::web_hooks::jobs::AGGREGATE_WEB_HOOKS_EVENTS,
+        Duration::from_secs(24 * 3600),
+    ),
+    (
+        crate::web_hooks::jobs::CLEANUP_REDELIVERING_WEB_HOOK_EVENTS,
+        Duration::from_secs(3600),
+    ),
+    (
+        crate::web_hooks::jobs::REDELIVER_WEB_HOOK_EVENTS,
+        Duration::from_secs(60),
+    ),
     // The rate limiters' expired lists (Redis expires them itself).
     ("rate_limits_cleanup", Duration::from_secs(15 * 60)),
 ];
@@ -555,6 +575,22 @@ pub async fn run_scheduled(state: &AppState, name: &str) -> Result<(), AppError>
         upload_cleanup::CLEAN_UP_UPLOADS => upload_cleanup::clean_up_uploads(state).await,
         upload_cleanup::PURGE_DELETED_UPLOADS => upload_cleanup::purge_deleted_uploads(state).await,
         crate::username_changer::FIX_CLASH => crate::username_changer::fix_clash(state).await,
+        crate::web_hooks::jobs::PURGE_OLD_WEB_HOOK_EVENTS => {
+            crate::web_hooks::jobs::purge_old_web_hook_events(state).await
+        }
+        crate::web_hooks::jobs::PURGE_OLD_WEB_HOOK_EVENTS_DAILY_AGGREGATE => {
+            crate::web_hooks::jobs::purge_old_web_hook_events_daily_aggregate(state).await
+        }
+        crate::web_hooks::jobs::AGGREGATE_WEB_HOOKS_EVENTS => {
+            crate::web_hooks::jobs::aggregate_web_hooks_events(state, &serde_json::Value::Null)
+                .await
+        }
+        crate::web_hooks::jobs::CLEANUP_REDELIVERING_WEB_HOOK_EVENTS => {
+            crate::web_hooks::jobs::cleanup_redelivering_web_hook_events(state).await
+        }
+        crate::web_hooks::jobs::REDELIVER_WEB_HOOK_EVENTS => {
+            crate::web_hooks::jobs::redeliver_web_hook_events(state).await
+        }
         "rate_limits_cleanup" => Ok(crate::rate_limiter::cleanup(&state.pool).await?),
         _ => unreachable!("every SCHEDULED job has a handler"),
     }

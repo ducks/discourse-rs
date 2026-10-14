@@ -6,8 +6,8 @@
 //!
 //! Timestamps the case itself wrote (at or after its start) compare as
 //! `<now>`. Ids line up because both sides set every sequence to its
-//! table's max(id) first. The jobs Rails enqueued are not compared: the
-//! port has no job runner yet.
+//! table's max(id) first. The jobs the requests enqueued are compared,
+//! and those the case's `run_jobs` enqueue in turn.
 
 mod common;
 
@@ -711,6 +711,97 @@ fn hide_secrets(doc: &mut Value) {
     walk(doc, &secrets);
 }
 
+/// Web hook deliveries: the JSON a payload carries in a string (the
+/// `emit_web_hook_event` job's `payload`, `web_hook_events.payload`) is
+/// compared as the JSON it holds, so the times in it normalize, and a
+/// delivery's duration (milliseconds of a real request) is left out. The
+/// signature header, an HMAC over a body with those times, is masked as
+/// every 64-hex value is (`unrandom`).
+fn web_hook_values(doc: &mut Value) {
+    fn expand(v: &mut Value) {
+        if let Some(parsed) = v
+            .as_str()
+            .and_then(|s| serde_json::from_str::<Value>(s).ok())
+            .filter(|p| p.is_object() || p.is_array())
+        {
+            *v = parsed;
+        }
+    }
+    for list in ["jobs", "jobs_from_jobs"] {
+        for job in doc
+            .get_mut(list)
+            .and_then(Value::as_array_mut)
+            .into_iter()
+            .flatten()
+        {
+            if job[0]
+                .as_str()
+                .is_some_and(|n| n.starts_with("emit_web_hook_event"))
+                && let Some(payload) = job[1].get_mut("payload")
+            {
+                expand(payload);
+            }
+        }
+    }
+    // The events the case delivered (or delivered again).
+    let mut delivered: Vec<i64> = Vec::new();
+    if let Some(Value::Object(kinds)) = doc
+        .get_mut("changes")
+        .and_then(|c| c.get_mut("web_hook_events"))
+    {
+        for kind in ["inserted", "updated"] {
+            for row in kinds
+                .get(kind)
+                .and_then(Value::as_array)
+                .into_iter()
+                .flatten()
+            {
+                if let Some(id) = row["id"].as_i64().or_else(|| row["after"]["id"].as_i64()) {
+                    delivered.push(id);
+                }
+            }
+        }
+        let fix = |row: &mut Value| {
+            if let Some(payload) = row.get_mut("payload") {
+                expand(payload);
+            }
+            if let Some(duration) = row.get_mut("duration") {
+                *duration = Value::String("<duration>".into());
+            }
+        };
+        for (kind, list) in kinds.iter_mut() {
+            for row in list.as_array_mut().into_iter().flatten() {
+                match (kind.as_str(), row) {
+                    ("updated", Value::Object(sides)) => sides.values_mut().for_each(fix),
+                    (_, row) => fix(row),
+                }
+            }
+        }
+    }
+    // AdminWebHookEventSerializer in a response, for a delivered event: its
+    // duration too.
+    fn walk(v: &mut Value, delivered: &[i64]) {
+        match v {
+            Value::Object(m) => {
+                if m.contains_key("request_url")
+                    && m.contains_key("duration")
+                    && m.get("id")
+                        .and_then(Value::as_i64)
+                        .is_some_and(|id| delivered.contains(&id))
+                {
+                    m.insert("duration".into(), Value::String("<duration>".into()));
+                }
+                m.values_mut().for_each(|x| walk(x, delivered));
+            }
+            Value::Array(a) => a.iter_mut().for_each(|x| walk(x, delivered)),
+            _ => {}
+        }
+    }
+    for response in doc["responses"].as_array_mut().into_iter().flatten() {
+        walk(&mut response["body"], &delivered);
+    }
+}
+
 /// DateTime#to_s times inside a longer text (a staff log's details), in
 /// whole seconds, taken during the case: `<now>`.
 fn embedded_now(s: &str, started: NaiveDateTime) -> String {
@@ -1268,6 +1359,28 @@ async fn answer_remote(
             Ok(n) => request.extend_from_slice(&buf[..n]),
         }
     }
+    // The body too (a web hook's POST): closing the socket with it unread
+    // could reset the connection before the client reads the answer.
+    let end = request
+        .windows(4)
+        .position(|w| w == b"\r\n\r\n")
+        .unwrap_or(0)
+        + 4;
+    let length = String::from_utf8_lossy(&request[..end])
+        .lines()
+        .find_map(|l| {
+            let (name, value) = l.split_once(':')?;
+            name.trim()
+                .eq_ignore_ascii_case("content-length")
+                .then(|| value.trim().parse::<usize>().ok())?
+        })
+        .unwrap_or(0);
+    while request.len() - end < length {
+        match socket.read(&mut buf).await {
+            Ok(0) | Err(_) => break,
+            Ok(n) => request.extend_from_slice(&buf[..n]),
+        }
+    }
     let request = String::from_utf8_lossy(&request);
     let mut line = request.lines().next().unwrap_or("").split(' ');
     let method = line.next().unwrap_or("");
@@ -1714,6 +1827,7 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
                 &{
                     decrypt_user_api_payloads(&mut rails);
                     hide_secrets(&mut rails);
+                    web_hook_values(&mut rails);
                     approximate(&mut rails, case);
                     unordered(&mut rails, case);
                     unordered_responses(&mut rails, case);
@@ -1728,6 +1842,7 @@ async fn replay(case: &Value, run_jobs: &[String], ignore: &[String]) -> Vec<Str
                 &{
                     decrypt_user_api_payloads(&mut ours);
                     hide_secrets(&mut ours);
+                    web_hook_values(&mut ours);
                     approximate(&mut ours, case);
                     unordered(&mut ours, case);
                     unordered_responses(&mut ours, case);

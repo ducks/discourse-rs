@@ -1,0 +1,14 @@
+{
+  "user": null,
+  "settings": {"retain_web_hook_events_period_days": 10, "retain_web_hook_events_aggregate_days": 40},
+  "setup": [
+    "INSERT INTO web_hooks (id, payload_url, content_type, last_delivery_status, status, secret, wildcard_web_hook, verify_certificate, active, created_at, updated_at) VALUES (9001, 'http://fixtures.localhost:8099/hook', 1, 3, 1, '', false, true, true, '2026-09-01 10:00:00', '2026-09-01 10:00:00')",
+    "INSERT INTO web_hook_events (id, web_hook_id, headers, payload, status, duration, created_at, updated_at) VALUES (9001, 9001, '{}', '{}', 200, 1, now() - interval '11 days', now() - interval '11 days')",
+    "INSERT INTO web_hook_events (id, web_hook_id, headers, payload, status, duration, created_at, updated_at) VALUES (9002, 9001, '{}', '{}', 200, 1, now() - interval '9 days', now() - interval '9 days')",
+    "INSERT INTO web_hook_events_daily_aggregates (id, web_hook_id, date, successful_event_count, failed_event_count, mean_duration, created_at, updated_at) VALUES (9001, 9001, '2026-08-01', 1, 0, 5, now() - interval '41 days', now() - interval '41 days')",
+    "INSERT INTO web_hook_events_daily_aggregates (id, web_hook_id, date, successful_event_count, failed_event_count, mean_duration, created_at, updated_at) VALUES (9002, 9001, '2026-09-01', 1, 0, 5, now() - interval '39 days', now() - interval '39 days')"
+  ],
+  "requests": [],
+  "enqueue": [["purge_old_web_hook_events", {}], ["purge_old_web_hook_events_daily_aggregate", {}]],
+  "run_jobs": ["purge_old_web_hook_events", "purge_old_web_hook_events_daily_aggregate"]
+}
