@@ -161,6 +161,114 @@ pub async fn new_message_update(
     topic_id: i32,
     post_number: i32,
 ) -> Result<(), AppError> {
+    update_read_counts(conn, user_id, topic_id, post_number).await?;
+    publish_read_indicator_on_write(bus, conn, topic_id, user_id).await
+}
+
+/// `TopicGroup.update_last_read(user, topic_id, post_number)`, after a
+/// read: the reader's groups' read counts as for a new message, then
+/// `TopicTrackingState.publish_read_indicator_on_read`.
+pub async fn update_last_read(
+    bus: &pg_bus::Bus,
+    conn: &mut PgConnection,
+    user_id: i32,
+    topic_id: i32,
+    post_number: i32,
+) -> Result<(), AppError> {
+    update_read_counts(conn, user_id, topic_id, post_number).await?;
+    publish_read_indicator_on_read(bus, conn, topic_id, post_number, user_id).await
+}
+
+/// `TopicTrackingState.publish_read_indicator_on_read`: on a message, the
+/// read post's readers count (when one of its groups publishes its read
+/// state) and, once the reader reached the last post, to the members of
+/// those groups the reader is in, that the message has no news.
+async fn publish_read_indicator_on_read(
+    bus: &pg_bus::Bus,
+    conn: &mut PgConnection,
+    topic_id: i32,
+    last_read_post_number: i32,
+    user_id: i32,
+) -> Result<(), AppError> {
+    let topic: Option<(String, i32)> =
+        sqlx::query_as("SELECT archetype, highest_post_number FROM topics WHERE id = $1")
+            .bind(topic_id)
+            .fetch_optional(&mut *conn)
+            .await?;
+    let Some((archetype, highest)) = topic else {
+        return Ok(());
+    };
+    if archetype != "private_message" {
+        return Ok(());
+    }
+    let groups = read_allowed_group_members(conn, topic_id).await?;
+    // trigger_post_read_count_update
+    let post: Option<(i32, i32)> = sqlx::query_as(
+        "SELECT id, reads FROM posts WHERE topic_id = $1 AND post_number = $2 AND deleted_at IS NULL",
+    )
+    .bind(topic_id)
+    .bind(last_read_post_number)
+    .fetch_optional(&mut *conn)
+    .await?;
+    if let Some((post_id, reads)) = post
+        && !groups.is_empty()
+    {
+        let mut opts = serde_json::Map::new();
+        // Post#readers_count: the poster excluded.
+        opts.insert("readers_count".into(), json!((reads - 1).max(0)));
+        crate::bus::publish_post_change_message(bus, conn, post_id, "read", opts).await?;
+    }
+    // update_topic_list_read_indicator(write_event: false)
+    if last_read_post_number != highest {
+        return Ok(());
+    }
+    let members: Vec<i32> = groups
+        .into_iter()
+        .filter(|members| members.contains(&user_id))
+        .flatten()
+        .collect();
+    if members.is_empty() {
+        return Ok(());
+    }
+    let tags: Vec<String> = members.into_iter().map(crate::bus::user_tag).collect();
+    bus.publish(
+        conn,
+        &format!("/private-messages/unread-indicator/{topic_id}"),
+        &json!({"topic_id": topic_id, "show_indicator": false}),
+        Some(&tags),
+    )
+    .await?;
+    Ok(())
+}
+
+/// `TopicTrackingState.read_allowed_groups_of(topic)`: the members of each
+/// of the message's groups that publish their read state.
+async fn read_allowed_group_members(
+    conn: &mut PgConnection,
+    topic_id: i32,
+) -> Result<Vec<Vec<i32>>, AppError> {
+    Ok(sqlx::query_scalar(
+        "SELECT ARRAY_AGG(group_users.user_id) AS members FROM groups \
+         INNER JOIN topic_allowed_groups ON groups.id = topic_allowed_groups.group_id \
+         INNER JOIN group_users ON group_users.group_id = groups.id \
+         WHERE topic_allowed_groups.topic_id = $1 AND groups.publish_read_state = TRUE \
+         GROUP BY groups.id",
+    )
+    .bind(topic_id)
+    .fetch_all(&mut *conn)
+    .await?)
+}
+
+/// `TopicGroup.update_read_count` then `create_topic_group`: the update is
+/// Rails' own, which touches every topic_groups row of the message once
+/// the user is in any of its groups; then rows for the user's groups not
+/// yet updated.
+async fn update_read_counts(
+    conn: &mut PgConnection,
+    user_id: i32,
+    topic_id: i32,
+    post_number: i32,
+) -> Result<(), AppError> {
     let now = crate::clock::now_naive();
     let updated: Vec<i32> = sqlx::query_scalar(
         "UPDATE topic_groups tg \
@@ -193,7 +301,7 @@ pub async fn new_message_update(
     .bind(&updated)
     .execute(&mut *conn)
     .await?;
-    publish_read_indicator_on_write(bus, conn, topic_id, user_id).await
+    Ok(())
 }
 
 /// `TopicTrackingState.publish_read_indicator_on_write`: to the members of
@@ -205,16 +313,7 @@ async fn publish_read_indicator_on_write(
     topic_id: i32,
     user_id: i32,
 ) -> Result<(), AppError> {
-    let groups: Vec<Vec<i32>> = sqlx::query_scalar(
-        "SELECT ARRAY_AGG(group_users.user_id) AS members FROM groups \
-         INNER JOIN topic_allowed_groups ON groups.id = topic_allowed_groups.group_id \
-         INNER JOIN group_users ON group_users.group_id = groups.id \
-         WHERE topic_allowed_groups.topic_id = $1 AND groups.publish_read_state = TRUE \
-         GROUP BY groups.id",
-    )
-    .bind(topic_id)
-    .fetch_all(&mut *conn)
-    .await?;
+    let groups = read_allowed_group_members(conn, topic_id).await?;
     let members: Vec<i32> = groups
         .into_iter()
         .filter(|members| !members.contains(&user_id))

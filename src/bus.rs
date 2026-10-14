@@ -312,6 +312,26 @@ pub async fn publish_post_change(
     opts: Map<String, Value>,
     skip_topic_stats: bool,
 ) -> Result<(), AppError> {
+    let Some(topic_id) = publish_post_change_message(ctx.bus, conn, post_id, kind, opts).await?
+    else {
+        return Ok(());
+    };
+    if !skip_topic_stats {
+        publish_topic_stats(ctx, conn, topic_id, kind).await?;
+    }
+    Ok(())
+}
+
+/// [`publish_post_change`]'s message on `/topic/<id>`, without the
+/// topic's stats (none for a kind other than likes and post counts):
+/// the post's topic, or None for a post without one.
+pub async fn publish_post_change_message(
+    bus: &pg_bus::Bus,
+    conn: &mut PgConnection,
+    post_id: i32,
+    kind: &str,
+    opts: Map<String, Value>,
+) -> Result<Option<i32>, AppError> {
     type PostRow = (i32, i32, Option<i32>, Option<i32>, i32, i32, Option<String>);
     let post: Option<PostRow> = sqlx::query_as(
         "SELECT p.topic_id, p.post_number, p.user_id, p.last_editor_id, p.version, p.post_type, \
@@ -325,7 +345,7 @@ pub async fn publish_post_change(
     // A post without its topic is skipped, as Rails does.
     let Some((topic_id, post_number, user_id, last_editor_id, version, post_type, username)) = post
     else {
-        return Ok(());
+        return Ok(None);
     };
     let mut message = Map::new();
     message.insert("id".into(), json!(post_id));
@@ -341,19 +361,15 @@ pub async fn publish_post_change(
     message.extend(opts);
 
     if let Some(tags) = post_audience(conn, topic_id, post_type, user_id).await? {
-        ctx.bus
-            .publish(
-                conn,
-                &topic_channel(topic_id),
-                &Value::Object(message),
-                tags.as_deref(),
-            )
-            .await?;
+        bus.publish(
+            conn,
+            &topic_channel(topic_id),
+            &Value::Object(message),
+            tags.as_deref(),
+        )
+        .await?;
     }
-    if !skip_topic_stats {
-        publish_topic_stats(ctx, conn, topic_id, kind).await?;
-    }
-    Ok(())
+    Ok(Some(topic_id))
 }
 
 /// `Topic.publish_stats_to_clients!(topic_id, type)`: the like count after

@@ -2248,11 +2248,9 @@ impl TopicView<'_> {
     }
 
     /// `TopicQuery#get_pm_params`: the viewer's groups among the PM's,
-    /// every addressed group, and the other addressed users.
-    async fn pm_params(
-        &mut self,
-        topic_id: i32,
-    ) -> Result<(Vec<i32>, Vec<i32>, Vec<i32>), TopicViewError> {
+    /// every addressed group, and the other addressed users (less those
+    /// in the viewer's addressed groups).
+    async fn pm_params(&mut self, topic_id: i32) -> Result<PmParams, TopicViewError> {
         let uid = self.guardian.user_id().unwrap_or(0);
         let my_groups: Vec<i32> = sqlx::query_scalar(
             "SELECT tag.group_id FROM topic_allowed_groups tag \
@@ -2268,46 +2266,68 @@ impl TopicView<'_> {
                 .bind(topic_id)
                 .fetch_all(&mut *self.conn)
                 .await?;
-        if !my_groups.is_empty() {
-            return Err(Unsupported("group private messages (messages_for_groups_or_user)").into());
-        }
         let target_users: Vec<i32> = sqlx::query_scalar(
-            "SELECT user_id FROM topic_allowed_users WHERE topic_id = $1 AND NOT user_id = $2",
+            "SELECT tau.user_id FROM topic_allowed_users tau \
+             LEFT JOIN group_users gu ON gu.user_id = tau.user_id AND gu.group_id = ANY($3) \
+             WHERE tau.topic_id = $1 AND gu.group_id IS NULL AND NOT tau.user_id = $2",
         )
         .bind(topic_id)
         .bind(uid)
+        .bind(&my_groups)
         .fetch_all(&mut *self.conn)
         .await?;
-        Ok((my_groups, target_groups, target_users))
+        Ok(PmParams {
+            my_groups,
+            target_groups,
+            target_users,
+        })
     }
 
-    /// `list_related_for`: the viewer's other PMs with the same people,
-    /// newest first, as suggested topics.
+    /// `list_related_for`: the viewer's other messages with the same
+    /// people or groups, newest first, as suggested topics
+    /// (related_messages_group through the viewer's addressed groups,
+    /// related_messages_user otherwise, then allowed_messages).
     async fn related_messages(&mut self, topic: &TopicRow) -> Result<Value, TopicViewError> {
-        let (_, target_groups, target_users) = self.pm_params(topic.id).await?;
+        let params = self.pm_params(topic.id).await?;
         let uid = self.guardian.user_id().unwrap_or(0);
-        if !target_groups.is_empty() {
-            return Err(Unsupported("related messages through allowed groups").into());
-        }
+        let user_ids = &params.target_users;
+        let group_ids: Vec<i32> = params
+            .target_groups
+            .iter()
+            .copied()
+            .filter(|g| !params.my_groups.contains(g))
+            .collect();
+        // allowed_messages: nothing when there is no one else to match.
+        let matched = match (user_ids.is_empty(), group_ids.is_empty()) {
+            (false, false) => "(ta2.topic_id IS NOT NULL OR tg2.topic_id IS NOT NULL)",
+            (false, true) => "ta2.topic_id IS NOT NULL",
+            (true, false) => "tg2.topic_id IS NOT NULL",
+            (true, true) => return Ok(json!([])),
+        };
         let count = self.settings.get("suggested_topics")?.to_i().max(6);
         let sql = format!(
             "SELECT {TOPIC_COLUMNS} FROM topics \
              LEFT JOIN topic_users tu ON topics.id = tu.topic_id AND tu.user_id = $1 \
-             LEFT JOIN topic_allowed_users ta ON topics.id = ta.topic_id AND ta.user_id = $1 \
-             LEFT JOIN topic_allowed_users ta2 ON topics.id = ta2.topic_id AND ta2.user_id = ANY($2) \
-             WHERE topics.deleted_at IS NULL AND topics.archetype = 'private_message' \
-             AND ta.topic_id IS NOT NULL AND ta2.topic_id IS NOT NULL AND topics.id <> $3 AND topics.visible = TRUE \
+             {} \
+             LEFT JOIN topic_allowed_users ta2 ON topics.id = ta2.topic_id AND ta2.user_id = ANY($3) \
+             LEFT JOIN topic_allowed_groups tg2 ON topics.id = tg2.topic_id AND tg2.group_id = ANY($4) \
+             WHERE topics.deleted_at IS NULL AND topics.archetype = 'private_message' AND {} \
+             AND {matched} AND topics.id <> $5 AND topics.visible = TRUE \
              AND topics.id NOT IN (SELECT topic_id FROM categories WHERE topic_id IS NOT NULL) \
-             ORDER BY topics.bumped_at DESC LIMIT $4"
+             ORDER BY topics.bumped_at DESC LIMIT $6",
+            messages_join(&params.my_groups),
+            messages_where(&params.my_groups),
         );
         let rows: Vec<TopicRow> = sqlx::query_as(&sql)
             .bind(uid)
-            .bind(&target_users)
+            .bind(&params.my_groups)
+            .bind(user_ids)
+            .bind(&group_ids)
             .bind(topic.id)
             .bind(count)
             .fetch_all(&mut *self.conn)
             .await?;
-        // Each row once, in order (the ta2 join repeats per shared member).
+        // Each row once, in order (the joins repeat a topic per match).
         let mut seen = Vec::new();
         let rows: Vec<TopicRow> = rows
             .into_iter()
@@ -2324,9 +2344,11 @@ impl TopicView<'_> {
     }
 
     /// `list_suggested_for` on a PM: new messages, then unread ones, up
-    /// to suggested_topics; no random fill.
+    /// to suggested_topics; no random fill. Both come from the viewer's
+    /// addressed groups' messages when there are any
+    /// (messages_for_groups_or_user), else the viewer's own.
     async fn suggested_messages(&mut self, topic: &TopicRow) -> Result<Value, TopicViewError> {
-        let (_, _, _) = self.pm_params(topic.id).await?;
+        let params = self.pm_params(topic.id).await?;
         let uid = self.guardian.user_id().unwrap_or(0);
         let limit = self.settings.get("suggested_topics")?.to_i();
         let min_new =
@@ -2336,48 +2358,80 @@ impl TopicView<'_> {
         let base = format!(
             "SELECT {TOPIC_COLUMNS} FROM topics \
              LEFT JOIN topic_users tu ON topics.id = tu.topic_id AND tu.user_id = $1 \
-             LEFT JOIN topic_allowed_users ta ON topics.id = ta.topic_id AND ta.user_id = $1 \
-             WHERE topics.deleted_at IS NULL AND topics.archetype = 'private_message' AND ta.topic_id IS NOT NULL"
+             {} \
+             WHERE topics.deleted_at IS NULL AND topics.archetype = 'private_message' AND {}",
+            messages_join(&params.my_groups),
+            messages_where(&params.my_groups),
         );
-        let mut rows: Vec<TopicRow> = sqlx::query_as(&format!(
-            "{base} AND topics.created_at >= $2 AND tu.last_read_post_number IS NULL \
-             AND COALESCE(tu.notification_level, 2) >= 2 AND topics.id <> $3 AND topics.visible = TRUE \
-             ORDER BY topics.bumped_at DESC LIMIT $4"
+        let new: Vec<TopicRow> = sqlx::query_as(&format!(
+            "{base} AND topics.created_at >= $3 AND tu.last_read_post_number IS NULL \
+             AND COALESCE(tu.notification_level, 2) >= 2 AND topics.id <> $4 AND topics.visible = TRUE \
+             ORDER BY topics.bumped_at DESC LIMIT $5"
         ))
         .bind(uid)
+        .bind(&params.my_groups)
         .bind(min_new)
         .bind(topic.id)
         .bind(limit)
         .fetch_all(&mut *self.conn)
         .await?;
+        // SuggestedTopicsBuilder#add_results: each topic once.
+        let mut rows: Vec<TopicRow> = Vec::new();
+        for row in new {
+            if !rows.iter().any(|r| r.id == row.id) {
+                rows.push(row);
+            }
+        }
         let left = limit - rows.len() as i64;
         if left > 0 {
-            let first_unread: Option<Option<NaiveDateTime>> =
+            let first_unread: Option<NaiveDateTime> = if params.my_groups.is_empty() {
                 sqlx::query_scalar("SELECT first_unread_pm_at FROM user_stats WHERE user_id = $1")
                     .bind(uid)
                     .fetch_optional(&mut *self.conn)
-                    .await?;
+                    .await?
+                    .flatten()
+            } else {
+                sqlx::query_scalar(
+                    "SELECT MIN(first_unread_pm_at) FROM group_users \
+                     WHERE user_id = $1 AND group_id = ANY($2)",
+                )
+                .bind(uid)
+                .bind(&params.my_groups)
+                .fetch_one(&mut *self.conn)
+                .await?
+            };
             let mut excluded: Vec<i32> = rows.iter().map(|t| t.id).collect();
             excluded.push(topic.id);
-            let age = match first_unread.flatten() {
+            let age = match first_unread {
                 Some(at) => format!(
                     " AND topics.updated_at >= '{}'",
                     at.format("%Y-%m-%d %H:%M:%S%.6f")
                 ),
                 None => String::new(),
             };
+            let highest = if self.guardian.is_whisperer(self.settings)? {
+                "highest_staff_post_number"
+            } else {
+                "highest_post_number"
+            };
             let unread: Vec<TopicRow> = sqlx::query_as(&format!(
-                "{base} AND tu.last_read_post_number < topics.highest_post_number \
-                 AND COALESCE(tu.notification_level, 1) >= 2{age} AND NOT (topics.id = ANY($2)) \
-                 AND topics.visible = TRUE ORDER BY topics.bumped_at DESC LIMIT $3"
+                "{base} AND tu.last_read_post_number < topics.{highest} \
+                 AND COALESCE(tu.notification_level, 1) >= 2{age} AND NOT (topics.id = ANY($3)) \
+                 AND topics.visible = TRUE ORDER BY topics.bumped_at DESC LIMIT $4"
             ))
             .bind(uid)
+            .bind(&params.my_groups)
             .bind(&excluded)
             .bind(left)
             .fetch_all(&mut *self.conn)
             .await?;
-            rows.extend(unread);
+            for row in unread {
+                if !rows.iter().any(|r| r.id == row.id) {
+                    rows.push(row);
+                }
+            }
         }
+        rows.truncate(limit.max(0) as usize);
         self.suggested_items(&rows).await
     }
 
@@ -2629,6 +2683,35 @@ impl Suggested {
             }
             _ => self.results.extend(fresh),
         }
+    }
+}
+
+/// `TopicQuery#get_pm_params`'s result.
+struct PmParams {
+    my_groups: Vec<i32>,
+    target_groups: Vec<i32>,
+    target_users: Vec<i32>,
+}
+
+/// `messages_for_groups_or_user`'s join, `$1` the viewer and `$2` their
+/// addressed groups: messages to those groups when there are any, else
+/// the viewer's own (messages_for_user).
+fn messages_join(my_groups: &[i32]) -> &'static str {
+    if my_groups.is_empty() {
+        "LEFT JOIN topic_allowed_users ta ON topics.id = ta.topic_id AND ta.user_id = $1"
+    } else {
+        "LEFT JOIN (SELECT _tg.topic_id FROM topic_allowed_groups _tg \
+         LEFT JOIN group_users gu ON gu.user_id = $1 AND gu.group_id = _tg.group_id \
+         WHERE gu.group_id = ANY($2)) tg ON topics.id = tg.topic_id"
+    }
+}
+
+/// The condition that goes with [`messages_join`].
+fn messages_where(my_groups: &[i32]) -> &'static str {
+    if my_groups.is_empty() {
+        "ta.topic_id IS NOT NULL"
+    } else {
+        "tg.topic_id IS NOT NULL"
     }
 }
 
