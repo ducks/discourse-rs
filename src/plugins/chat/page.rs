@@ -21,6 +21,10 @@ use crate::{AppError, Unsupported};
 
 /// `DEFAULT_MESSAGE_PAGE_SIZE`
 const PAGE_SIZE: i64 = 50;
+
+/// Where the mobile channel route's back button takes its unread indicator,
+/// which the page's chrome knows (routes::chat_pages).
+pub const BACK_INDICATOR: &str = "<!--chat-back-indicator-->";
 /// The empty state's facepile (MAX_AVATARS).
 const MAX_AVATARS: i64 = 5;
 
@@ -519,6 +523,23 @@ impl Context<'_> {
         let slug = &slugified_title(c);
         let id = c["id"].as_i64().unwrap_or(0);
         let mut out = String::from("<div class=\"c-navbar-container\"><nav class=\"c-navbar\">");
+        let mobile = crate::mobile::mobile_view();
+        if mobile {
+            // ChatNavbarBackButton to the channels (or a DM's list), with
+            // the other channels' unread indicator, which the page's
+            // chrome puts in place of BACK_INDICATOR.
+            let route = if c["chatable_type"] == "DirectMessage" {
+                "direct-messages"
+            } else {
+                "channels"
+            };
+            out.push_str(&format!(
+                "<a class=\"c-navbar__back-button no-text btn-transparent btn\" title=\"{}\" href=\"{}/chat/{route}\">{}{BACK_INDICATOR}</a>",
+                escape(&t("chat.browse.back")),
+                self.base_path,
+                d_icon("chevron-left", None)
+            ));
+        }
         out.push_str(&format!(
             "<a class=\"c-navbar__channel-title\" href=\"{}/chat/c/{}/{id}/info/settings\">{}</a>",
             self.base_path,
@@ -545,11 +566,14 @@ impl Context<'_> {
                 d_icon("discourse-chat-search", None)
             ));
         }
-        out.push_str(&format!(
-            "<button class=\"btn no-text btn-icon c-navbar__open-drawer-button btn-transparent\" title=\"{}\" type=\"button\">{}<span aria-hidden=\"true\">&#8203;</span></button>",
-            escape(&t("chat.close_full_page")),
-            d_icon("discourse-compress", None)
-        ));
+        // OpenDrawerButton: desktop only.
+        if !mobile {
+            out.push_str(&format!(
+                "<button class=\"btn no-text btn-icon c-navbar__open-drawer-button btn-transparent\" title=\"{}\" type=\"button\">{}<span aria-hidden=\"true\">&#8203;</span></button>",
+                escape(&t("chat.close_full_page")),
+                d_icon("discourse-compress", None)
+            ));
+        }
         if self.settings.get("chat_pinned_messages")?.truthy()
             && c["pinned_messages_count"].as_i64().unwrap_or(0) > 0
         {
@@ -775,31 +799,49 @@ impl Context<'_> {
             escape(&replying.to_string())
         );
         out.push_str(&draft.details);
+        // In the mobile view the toolbar trigger and the send button sit
+        // outside the input's container, and there is no emoji button.
+        let mobile = crate::mobile::mobile_view();
         out.push_str(&format!(
-            "<div aria-label=\"{}\" class=\"chat-composer is-send-disabled {} is-draft-saved\" role=\"region\"><div class=\"chat-composer__outer-container\"><div class=\"chat-composer__inner-container\">",
+            "<div aria-label=\"{}\" class=\"chat-composer is-send-disabled {} is-draft-saved\" role=\"region\"><div class=\"chat-composer__outer-container\">",
             escape(&t("chat.aria_roles.composer")),
             if disabled { "is-disabled" } else { "is-enabled" }
         ));
-        out.push_str(&format!(
+        let trigger = format!(
             "<button aria-expanded=\"false\" class=\"btn no-text btn-icon fk-d-menu__trigger chat-composer-dropdown__menu-trigger chat-composer-dropdown__trigger-btn btn-flat\" title=\"{}\" data-identifier=\"chat-composer-dropdown__menu\" data-trigger=\"\" type=\"button\"{disabled_attr}>{}</button>",
             escape(&t("chat.composer.toggle_toolbar")),
             d_icon("plus", None)
-        ));
+        );
+        if mobile {
+            out.push_str(&trigger);
+            out.push_str("<div class=\"chat-composer__inner-container\">");
+        } else {
+            out.push_str("<div class=\"chat-composer__inner-container\">");
+            out.push_str(&trigger);
+        }
         out.push_str(&format!(
             "<div class=\"chat-composer__input-container\"><textarea placeholder=\"{}\" autocorrect=\"on\" autocapitalize=\"sentences\" rows=\"1\" id=\"channel-composer\" class=\"chat-composer__input\" data-chat-composer-context=\"channel\" type=\"text\"{disabled_attr}>{}</textarea></div>",
             escape(&placeholder),
             escape(&draft.message)
         ));
-        out.push_str(&format!(
-            "<button aria-expanded=\"false\" class=\"btn no-text fk-d-menu__trigger emoji-picker-trigger chat-composer-button btn-transparent --emoji\" data-identifier=\"emoji-picker\" data-trigger=\"\" type=\"button\"{disabled_attr}>{}&#8203;</button><div class=\"chat-composer-separator\"></div>",
-            d_icon("far-face-smile", None)
-        ));
+        if mobile {
+            out.push_str("</div>");
+        } else {
+            out.push_str(&format!(
+                "<button aria-expanded=\"false\" class=\"btn no-text fk-d-menu__trigger emoji-picker-trigger chat-composer-button btn-transparent --emoji\" data-identifier=\"emoji-picker\" data-trigger=\"\" type=\"button\"{disabled_attr}>{}&#8203;</button><div class=\"chat-composer-separator\"></div>",
+                d_icon("far-face-smile", None)
+            ));
+        }
         out.push_str(&format!(
             "<div class=\"chat-composer-button__wrapper\"><button class=\"chat-composer-button -send\" disabled=\"\" tabindex=\"-1\" title=\"{}\" type=\"button\">{}</button></div>",
             escape(&t("chat.composer.send")),
             d_icon("paper-plane", None)
         ));
-        out.push_str("</div></div></div>");
+        out.push_str(if mobile {
+            "</div></div>"
+        } else {
+            "</div></div></div>"
+        });
         if self.settings.get("chat_allow_uploads")?.truthy() {
             out.push_str(&format!(
                 "<div class=\"chat-composer-uploads\"><div class=\"pick-files-button\"><input accept=\"{}\" class=\"hidden-upload-field\" id=\"channel-file-uploader\" multiple=\"\" type=\"file\"></div></div>",
@@ -933,8 +975,6 @@ impl Context<'_> {
     }
 }
 
-/// ChatChannelTitle: the channel's icon (its emoji, else the chat icon in
-/// the category's color, locked for a restricted category) and its name.
 /// ChatChannel#slugifiedTitle: the slug, else the title slugified.
 pub(crate) fn slugified_title(c: &Value) -> String {
     crate::routes::user_menu::slugify_channel(c["slug"].as_str(), &escape(s(&c["title"])))
@@ -959,6 +999,27 @@ fn channel_title(
     base_path: &str,
     online: &[i64],
 ) -> String {
+    let icon = channel_icon(c, emojis, base_path, online);
+    if c["chatable_type"] == "DirectMessage" {
+        return format!(
+            "<div class=\"chat-channel-title is-dm\">{icon}<div class=\"chat-channel-name\"><div class=\"chat-channel-name__label\">{}</div></div></div>",
+            escape(c["unicode_title"].as_str().unwrap_or(s(&c["title"])))
+        );
+    }
+    format!(
+        "<div class=\"chat-channel-title is-category\">{icon}<div class=\"chat-channel-name\"><div class=\"chat-channel-name__label\">{}</div></div></div>",
+        escape(s(&c["unicode_title"]))
+    )
+}
+
+/// ChannelIcon: a DM's first user, emoji or member count, a category
+/// channel's emoji or chat icon in the category's color.
+pub(crate) fn channel_icon(
+    c: &Value,
+    emojis: &crate::emojis::Emojis,
+    base_path: &str,
+    online: &[i64],
+) -> String {
     if c["chatable_type"] == "DirectMessage" {
         let users = c["chatable"]["users"]
             .as_array()
@@ -972,7 +1033,7 @@ fn channel_title(
             ),
             None => "<div class=\"chat-channel-icon --avatar\"></div>".to_string(),
         };
-        let icon = if c["chatable"]["group"] == true {
+        return if c["chatable"]["group"] == true {
             if let Some(emoji) = c["emoji"].as_str() {
                 format!(
                     "<div class=\"chat-channel-icon --emoji\">{}</div>",
@@ -989,10 +1050,6 @@ fn channel_title(
         } else {
             face(first)
         };
-        return format!(
-            "<div class=\"chat-channel-title is-dm\">{icon}<div class=\"chat-channel-name\"><div class=\"chat-channel-name__label\">{}</div></div></div>",
-            escape(c["unicode_title"].as_str().unwrap_or(s(&c["title"])))
-        );
     }
     let icon = match c["emoji"].as_str() {
         Some(emoji) => emoji_img(emojis, base_path, emoji),
@@ -1004,9 +1061,8 @@ fn channel_title(
         String::new()
     };
     format!(
-        "<div class=\"chat-channel-title is-category\"><div class=\"chat-channel-icon --icon\" style=\"color: #{}\">{icon}{lock}</div><div class=\"chat-channel-name\"><div class=\"chat-channel-name__label\">{}</div></div></div>",
-        escape(s(&c["chatable"]["color"])),
-        escape(s(&c["unicode_title"]))
+        "<div class=\"chat-channel-icon --icon\" style=\"color: #{}\">{icon}{lock}</div>",
+        escape(s(&c["chatable"]["color"]))
     )
 }
 

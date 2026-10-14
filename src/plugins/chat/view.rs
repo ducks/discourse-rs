@@ -26,6 +26,9 @@ pub struct ChatChrome {
     pub header_icon: String,
     /// The sidebar sections after the core ones.
     pub sidebar_sections: String,
+    /// ChatHeaderIconUnreadIndicator for the channel route's back button
+    /// in the mobile view, counting the channels but the open one.
+    pub back_indicator: String,
 }
 
 /// A direct message channel's part of its sidebar link.
@@ -295,10 +298,218 @@ impl Context<'_> {
             }
             None => String::new(),
         };
+        // The mobile channel route's back button: the other channels' count.
+        let back_indicator = match active_channel(active) {
+            Some(id) => unread_indicator(&channels, &dms, &options, Some(id)),
+            None => String::new(),
+        };
         Ok(Some(ChatChrome {
             header_icon,
             sidebar_sections,
+            back_indicator,
         }))
+    }
+
+    /// The mobile view's channels route (ChatChannelsRoute with
+    /// ChannelsListPublic): the navbar, every followed public channel by
+    /// the member's channel list preferences, and the chat footer.
+    pub async fn channels_route(&mut self) -> Result<String, AppError> {
+        let settings = self.settings;
+        let Some(user_id) = self.guardian.user_id() else {
+            return Err(Unsupported("chat's channels list without a member").into());
+        };
+        let Some(options) = super::options(&mut *self.conn, user_id).await? else {
+            return Err(Unsupported("chat's channels list without chat options").into());
+        };
+        let me = self.me_channels().await?;
+        let tracking = &me["tracking"]["channel_tracking"];
+        let json = |key: &str| me[key].as_array().cloned().unwrap_or_default();
+        let public = json("public_channels");
+        let channels = public
+            .iter()
+            .map(|c| SidebarChannel::from_json(c, tracking))
+            .collect::<Result<Vec<_>, _>>()?;
+        let dms = json("direct_message_channels")
+            .iter()
+            .map(|c| SidebarChannel::from_json(c, tracking))
+            .collect::<Result<Vec<_>, _>>()?;
+        let channel_prefs = prefs(
+            options.chat_channel_list_filter,
+            options.chat_channel_list_sort,
+        );
+        if channels.is_empty() {
+            return Err(Unsupported("chat's empty channels list").into());
+        }
+        let list = filter_and_sort(channels.iter().collect(), channel_prefs, None);
+        if list.is_empty() {
+            return Err(Unsupported("chat's filtered channels list empty state").into());
+        }
+
+        let title = escape(&self.t("chat.chat_channels"));
+        let mut out = format!(
+            "<div class=\"c-routes --channels\"><div class=\"c-navbar-container\"><nav class=\"c-navbar\"><div class=\"c-navbar__title\" title=\"{title}\"><span class=\"c-navbar__title-text\">{title}</span></div><nav class=\"c-navbar__actions\"><button class=\"btn no-text btn-icon btn-transparent chat-channel-list-options-button title-action\" title=\"{}\" type=\"button\">{}<span aria-hidden=\"true\">&#8203;</span></button></nav></nav></div><div class=\"channels-list-container public-channels\" id=\"public-channels\">",
+            escape(&self.t("chat.channel_list.options.title")),
+            d_icon("ellipsis-vertical", None)
+        );
+        let emojis = settings.emojis().clone();
+        let now = crate::clock::now();
+        for channel in list {
+            let Some(c) = public.iter().find(|c| c["id"].as_i64() == Some(channel.id)) else {
+                continue;
+            };
+            out.push_str(&self.channel_row(c, channel, &emojis, now));
+        }
+        out.push_str("</div></div>");
+
+        // ChatFooter: shown with more than one of starred, threads (refused
+        // upstream while unported), DMs and public channels.
+        let dms_enabled = !dms.is_empty()
+            || super::user_can_direct_message(&mut *self.conn, settings, self.guardian).await?;
+        let starred = channels.iter().chain(&dms).any(|c| c.starred);
+        let routes = [starred, dms_enabled, true].iter().filter(|x| **x).count();
+        if routes > 1 {
+            out.push_str("<nav class=\"c-footer\">");
+            let item = |id: &str,
+                        active: bool,
+                        aria: &str,
+                        icon: &str,
+                        label: &str,
+                        href: &str,
+                        indicator: String| {
+                format!(
+                    "<button aria-label=\"{}\" class=\"btn btn-icon-text btn-transparent c-footer__item{}\" id=\"c-footer-{id}\" type=\"button\" data-href=\"{}{href}\">{}<span class=\"d-button-label\">{}</span>{indicator}</button>",
+                    escape(&self.t(aria)),
+                    if active { " --active" } else { "" },
+                    self.base_path,
+                    d_icon(icon, None),
+                    escape(&self.t(label))
+                )
+            };
+            if starred {
+                let urgent: i64 = channels
+                    .iter()
+                    .filter(|c| c.starred)
+                    .map(|c| c.mentions)
+                    .chain(dms.iter().filter(|c| c.starred).map(|c| c.unread))
+                    .sum();
+                let unread: i64 = channels
+                    .iter()
+                    .filter(|c| c.starred)
+                    .map(|c| c.unread)
+                    .sum();
+                out.push_str(&item(
+                    "starred",
+                    false,
+                    "chat.starred",
+                    "star",
+                    "chat.starred",
+                    "/chat/starred-channels",
+                    footer_indicator(urgent, unread),
+                ));
+            }
+            let unstarred = channels.iter().filter(|c| !c.starred);
+            out.push_str(&item(
+                "channels",
+                true,
+                "chat.channel_list.aria_label",
+                "comments",
+                "chat.channel_list.title",
+                "/chat/channels",
+                footer_indicator(
+                    unstarred.clone().map(|c| c.mentions).sum(),
+                    unstarred.map(|c| c.unread).sum(),
+                ),
+            ));
+            if dms_enabled {
+                out.push_str(&item(
+                    "direct-messages",
+                    false,
+                    "chat.direct_messages.aria_label",
+                    "users",
+                    "chat.direct_messages.title",
+                    "/chat/direct-messages",
+                    footer_indicator(
+                        dms.iter()
+                            .filter(|c| !c.starred)
+                            .map(|c| c.unread + c.mentions)
+                            .sum(),
+                        0,
+                    ),
+                ));
+            }
+            if settings.get("chat_search_enabled")?.truthy() {
+                out.push_str(&item(
+                    "search",
+                    false,
+                    "chat.search.aria_label",
+                    "magnifying-glass",
+                    "chat.search.short_title",
+                    "/chat/search",
+                    String::new(),
+                ));
+            }
+            out.push_str("</nav>");
+        }
+        Ok(out)
+    }
+
+    /// ChatChannelRow for a public channel in the mobile list: its icon,
+    /// name with the unread indicator, and the last message's date
+    /// (ChatChannelMetadata, drawn in UTC here and in the member's zone by
+    /// chat.js).
+    fn channel_row(
+        &self,
+        c: &Value,
+        channel: &SidebarChannel,
+        emojis: &crate::emojis::Emojis,
+        now: chrono::DateTime<chrono::Utc>,
+    ) -> String {
+        let has_unread = channel.unread > 0;
+        let urgent = channel.mentions + channel.watched_threads;
+        let indicator = if channel.unread + channel.mentions > 0 {
+            format!(
+                "<div class=\"chat-channel-unread-indicator{}\"><div class=\"chat-channel-unread-indicator__number\">{}</div></div>",
+                if urgent > 0 { " -urgent" } else { "" },
+                match urgent {
+                    0 => "&nbsp;".to_string(),
+                    n if n > 99 => "99+".to_string(),
+                    n => n.to_string(),
+                }
+            )
+        } else {
+            String::new()
+        };
+        let date = match c["last_message"]["id"].as_i64() {
+            Some(_) => {
+                let at = c["last_message"]["created_at"].as_str().unwrap_or_default();
+                let text = chrono::DateTime::parse_from_rfc3339(at)
+                    .map(|at| {
+                        channel_calendar(
+                            at.with_timezone(&chrono::Utc),
+                            now,
+                            &self.t("chat.dates.yesterday"),
+                        )
+                    })
+                    .unwrap_or_default();
+                format!(
+                    "<div class=\"chat-channel__metadata-date\" data-at=\"{}\" data-label-yesterday=\"{}\">{}</div>",
+                    escape(at),
+                    escape(&self.t("chat.dates.yesterday")),
+                    escape(&text)
+                )
+            }
+            None => "<div class=\"chat-channel__metadata-date\">&ndash;</div>".to_string(),
+        };
+        format!(
+            "<a class=\"chat-channel-row{}{}\" tabindex=\"0\" data-chat-channel-id=\"{id}\" href=\"{}/chat/c/{}/{id}\"><div class=\"chat-channel-row__content is-category\">{}<div class=\"chat-channel-row__info\"><div class=\"chat-channel-row__name-container\"><div class=\"chat-channel-name\"><div class=\"chat-channel-name__label\">{}</div>{indicator}</div></div><div class=\"chat-channel__metadata\">{date}</div></div></div></a>",
+            if channel.muted { " muted" } else { "" },
+            if has_unread { " has-unread" } else { "" },
+            self.base_path,
+            escape(&channel.slug),
+            super::page::channel_icon(c, emojis, self.base_path, &[]),
+            escape(c["unicode_title"].as_str().unwrap_or(&channel.title)),
+            id = channel.id,
+        )
     }
 
     fn t(&self, key: &str) -> String {
@@ -314,38 +525,16 @@ impl Context<'_> {
         options: &super::ChatOptions,
         full_page: bool,
     ) -> Result<String, AppError> {
-        let mut indicator = String::new();
-        if !full_page {
-            // ChatHeaderIconUnreadIndicator, without threads: a DM's
-            // unread messages are urgent; the unread dot counts public
-            // channels only.
-            let preference = super::HEADER_INDICATORS
-                .get(usize::try_from(options.chat_header_indicator_preference).unwrap_or(0))
-                .copied()
-                .unwrap_or("all_new");
-            let urgent: i64 = channels.iter().map(SidebarChannel::urgent).sum::<i64>()
-                + dms.iter().map(|c| c.urgent() + c.unread).sum::<i64>();
-            let mentions: i64 = channels.iter().chain(dms).map(|c| c.mentions).sum();
-            let unread: i64 = channels.iter().map(|c| c.unread).sum();
-            let label = |n: i64| {
-                if n > 99 {
-                    "99+".to_string()
-                } else {
-                    n.to_string()
-                }
-            };
-            if preference == "only_mentions" {
-                if mentions > 0 {
-                    indicator = urgent_indicator(&label(mentions));
-                }
-            } else if preference != "never" {
-                if urgent > 0 && (preference == "all_new" || preference == "dm_and_mentions") {
-                    indicator = urgent_indicator(&label(urgent));
-                } else if unread > 0 && preference == "all_new" {
-                    indicator = "<div class=\"chat-channel-unread-indicator\"></div>".into();
-                }
-            }
+        // The mobile view's full-page chat has its own header (the chat
+        // header, ChatHeader), without the icon.
+        if full_page && crate::mobile::mobile_view() {
+            return Ok(String::new());
         }
+        let indicator = if full_page {
+            String::new()
+        } else {
+            unread_indicator(channels, dms, options, None)
+        };
         Ok(format!(
             "<li class=\"header-dropdown-toggle chat-header-icon\"><a class=\"btn no-text icon btn-flat{}\" href=\"{}/chat\" tabindex=\"0\" title=\"{}\">{}{indicator}</a></li>",
             if full_page { " active" } else { "" },
@@ -740,6 +929,93 @@ fn raw_avatar_size(settings: &crate::site_settings::SiteSettings, size: i64) -> 
 
 /// `DIRECT_MESSAGE_CHANNELS_LIMIT`
 const DIRECT_MESSAGE_CHANNELS_LIMIT: usize = 50;
+
+/// ChatHeaderIconUnreadIndicator, without threads: a DM's unread messages
+/// are urgent; the unread dot counts public channels only. `exclude`
+/// leaves a channel out (the channel route's back button counts the other
+/// channels).
+fn unread_indicator(
+    channels: &[SidebarChannel],
+    dms: &[SidebarChannel],
+    options: &super::ChatOptions,
+    exclude: Option<i64>,
+) -> String {
+    let others = |c: &&SidebarChannel| Some(c.id) != exclude;
+    let preference = super::HEADER_INDICATORS
+        .get(usize::try_from(options.chat_header_indicator_preference).unwrap_or(0))
+        .copied()
+        .unwrap_or("all_new");
+    let urgent: i64 = channels
+        .iter()
+        .filter(others)
+        .map(SidebarChannel::urgent)
+        .sum::<i64>()
+        + dms
+            .iter()
+            .filter(others)
+            .map(|c| c.urgent() + c.unread)
+            .sum::<i64>();
+    let mentions: i64 = channels
+        .iter()
+        .chain(dms)
+        .filter(others)
+        .map(|c| c.mentions)
+        .sum();
+    let unread: i64 = channels.iter().filter(others).map(|c| c.unread).sum();
+    let label = |n: i64| {
+        if n > 99 {
+            "99+".to_string()
+        } else {
+            n.to_string()
+        }
+    };
+    if preference == "only_mentions" {
+        if mentions > 0 {
+            return urgent_indicator(&label(mentions));
+        }
+    } else if preference != "never" {
+        if urgent > 0 && (preference == "all_new" || preference == "dm_and_mentions") {
+            return urgent_indicator(&label(urgent));
+        } else if unread > 0 && preference == "all_new" {
+            return "<div class=\"chat-channel-unread-indicator\"></div>".into();
+        }
+    }
+    String::new()
+}
+
+/// FooterUnreadIndicator: the urgent count, else a dot for unread ones.
+fn footer_indicator(urgent: i64, unread: i64) -> String {
+    if urgent > 0 {
+        let label = if urgent > 99 {
+            "99+".to_string()
+        } else {
+            urgent.to_string()
+        };
+        format!(
+            "<div class=\"c-unread-indicator -urgent\"><div class=\"c-unread-indicator__number\">{label}</div></div>"
+        )
+    } else if unread > 0 {
+        "<div class=\"c-unread-indicator\"></div>".into()
+    } else {
+        String::new()
+    }
+}
+
+/// ChatChannelMetadata's `moment(at).calendar` with sameDay "LT", lastDay
+/// Yesterday, lastWeek "dddd" and sameElse "l", in English.
+fn channel_calendar(
+    at: chrono::DateTime<chrono::Utc>,
+    now: chrono::DateTime<chrono::Utc>,
+    yesterday: &str,
+) -> String {
+    let days = (at.date_naive() - now.date_naive()).num_days();
+    match days {
+        0 => at.format("%-I:%M %p").to_string(),
+        -1 => yesterday.to_string(),
+        -6..=-2 => at.format("%A").to_string(),
+        _ => at.format("%-m/%-d/%Y").to_string(),
+    }
+}
 
 fn urgent_indicator(label: &str) -> String {
     format!(

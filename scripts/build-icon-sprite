@@ -168,6 +168,9 @@ ICONS=(
   ban
   user-xmark
   id-card
+  # The mobile view's chat: the chat header's way back, the footer's channels.
+  arrow-left
+  comments
 )
 
 root="$(cd "$(dirname "$0")/.." && pwd)"

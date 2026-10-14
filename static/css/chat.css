@@ -1,5 +1,6 @@
 /* chat: assets/stylesheets/common and desktop, as Rails compiles them
-   (/stylesheets/chat_<digest>.css and chat_desktop_<digest>.css). */
+   (/stylesheets/chat_<digest>.css and chat_desktop_<digest>.css). The
+   mobile bundle is at the end of mobile.css. */
 
 .chat-message-text pre {
   scrollbar-color: var(--primary-300) rgba(0,0,0,0);
@@ -5161,7 +5162,8 @@ html.footer-nav-visible:not(.keyboard-visible) .chat-pinned-messages-list.chat-m
   border: 2px solid var(--secondary);
 }
 
-/* desktop */
+/* chat_desktop.css, linked with media="(width >= 40rem)" */
+@media (width >= 40rem) {
 .fk-d-menu[data-identifier=usercard] {
   z-index: 500;
 }
@@ -5403,4 +5405,5 @@ html.footer-nav-visible:not(.keyboard-visible) .chat-pinned-messages-list.chat-m
 }
 #main-chat-outlet .chat-side-panel .c-navbar__title {
   margin-left: 0;
+}
 }

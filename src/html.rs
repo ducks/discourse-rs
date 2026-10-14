@@ -245,6 +245,12 @@ pub struct Chrome {
     /// What static/js/local-dates.js reads, as data attributes for its
     /// script tag; empty while discourse_local_dates_enabled is off.
     pub local_dates_attrs: String,
+    /// The mobile view's full-page chat: the header's logo gives way to
+    /// chat's (ChatHeader: back to the forum, the Chat heading).
+    pub chat_header: String,
+    /// The chat channel route's back button indicator in the mobile view
+    /// (plugins::chat::view).
+    pub chat_back_indicator: String,
 }
 
 /// The client strings local-dates.js shows, by their js.* key.
@@ -633,6 +639,7 @@ impl Site {
             // Kept current over the live stream.
             self.chrome.live_param("chat", &active.key());
             self.chrome.chat_header_icon = chat.header_icon;
+            self.chrome.chat_back_indicator = chat.back_indicator;
         }
         if let Some(user_id) = guardian.user_id() {
             self.chrome.can_create_topic = guardian.can_create_topic(&mut *conn, settings).await?;

@@ -2621,7 +2621,11 @@
     if (parts) {
       updateSendState(parts);
       if (!parts.input.disabled) {
-        parts.input.focus({ preventScroll: true });
+        // ChatComposer autofocuses on desktop only: on a phone it would
+        // open the keyboard.
+        if (!document.documentElement.classList.contains("mobile-view")) {
+          parts.input.focus({ preventScroll: true });
+        }
         refreshHeight(parts.input);
       }
     }
@@ -2643,7 +2647,40 @@
     }
   }
 
+  // ChatChannelMetadata: moment(at).calendar in the local zone, with
+  // sameDay "LT", lastDay Yesterday, lastWeek "dddd" and sameElse "l".
+  function drawChannelDates() {
+    document.querySelectorAll(".chat-channel__metadata-date[data-at]").forEach(function (node) {
+      var at = new Date(node.dataset.at);
+      var today = new Date();
+      var startOfDay = function (d) {
+        return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+      };
+      var days = Math.round((startOfDay(at) - startOfDay(today)) / 86400000);
+      var text;
+      if (days === 0) {
+        text = at.toLocaleTimeString(lang, { hour: "numeric", minute: "2-digit" });
+      } else if (days === -1) {
+        text = node.dataset.labelYesterday;
+      } else if (days >= -6 && days < -1) {
+        text = at.toLocaleString(lang, { weekday: "long" });
+      } else {
+        text = at.getMonth() + 1 + "/" + at.getDate() + "/" + at.getFullYear();
+      }
+      node.textContent = text;
+    });
+  }
+
+  // The chat footer's buttons are routes (DButton @route).
+  document.addEventListener("click", function (event) {
+    var button = event.target.closest(".c-footer__item[data-href]");
+    if (button) {
+      window.location.assign(button.dataset.href);
+    }
+  });
+
   Discourse.onPage(function () {
+    drawChannelDates();
     setup();
     startLive();
     startPresence();
