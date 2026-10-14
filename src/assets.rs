@@ -38,6 +38,7 @@ const DISCOURSE_CSS: &str = concat!(
     include_str!("../static/css/modal.css"),
     include_str!("../static/css/form-kit.css"),
     include_str!("../static/css/menus.css"),
+    include_str!("../static/css/directory.css"),
     include_str!("../static/css/tooltip.css"),
     include_str!("../static/css/filter-controls.css"),
     include_str!("../static/css/not-found.css"),
@@ -207,6 +208,11 @@ const ASSETS: &[(&str, &str, &str)] = &[
         "messages-dropdown.js",
         JS,
         include_str!("../static/js/messages-dropdown.js"),
+    ),
+    (
+        "users-directory.js",
+        JS,
+        include_str!("../static/js/users-directory.js"),
     ),
     ("composer.js", JS, include_str!("../static/js/composer.js")),
     (

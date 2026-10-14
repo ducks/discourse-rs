@@ -45,6 +45,17 @@
 /u/user0/activity/solved as=user0
 /u/user2/summary as=user0
 
+# The users directory. Its numbers and Last Updated come from each
+# side's last directory_refresh: the port's screens server runs no jobs,
+# so compare after both have refreshed (or copy the reference's
+# directory_items and directory_<period> timestamps across); the dates
+# are the browser's on the reference and UTC on the port.
+/u mask=.top-date-string,.directory-last-updated
+/u as=user1 mask=.top-date-string,.directory-last-updated
+/u as=admin mask=.top-date-string,.directory-last-updated
+/u?order=topic_count&asc=true&period=all as=admin mask=.top-date-string,.directory-last-updated
+/u?period=fortnightly
+
 # chat (full page)
 /chat/c/general/2 as=user1 wait=3000 mask=.chat-time
 /chat/c/general/2 as=admin wait=3000 mask=.chat-time

@@ -1,0 +1,529 @@
+/*
+ * The users directory (templates/users.gjs), ported from
+ * common/base/directory.scss, the .sortable rules of discourse.scss that
+ * foundation.css leaves out, the .inline-form ones of base.scss,
+ * common/select-kit/period-chooser.scss and
+ * common/components/load-more.scss as Rails compiles them into
+ * common.css (the group members table's rules are left out). After
+ * kit.css: the period chooser overrides dropdown-select-box as it does
+ * there. viewport.until(sm) is width < 40rem, (md) width < 48rem.
+ */
+
+/* discourse.scss:555 */
+.discourse-no-touch .sortable:hover,
+.discourse-no-touch .sortable:focus {
+  background-color: var(--d-hover);
+}
+/* discourse.scss:561 */
+.sortable .d-icon {
+  margin-left: var(--space-1);
+}
+/* base.scss:184 */
+.inline-form {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+/* base.scss:189 */
+.inline-form.full-width {
+  display: flex;
+}
+/* base.scss:193 */
+.inline-form>input[type=text],
+.inline-form>input[type=search],
+.inline-form>input[type=password] {
+  display: inline-flex;
+  flex: 1;
+}
+/* base.scss:200 */
+.inline-form>.select-kit,
+.inline-form>input[type=text],
+.inline-form>input[type=search],
+.inline-form>input[type=password],
+.inline-form>label,
+.inline-form>.btn,
+.d-modal.json-schema-editor-modal .je-ready .inline-form>button,
+.d-modal.json-schema-editor-modal .je-ready .inline-form>.json-editor-btn-add,
+.inline-form>.d-date-input {
+  margin-bottom: .5em;
+  margin-right: .5em;
+}
+/* base.scss:210 */
+.inline-form>.select-kit:last-child,
+.inline-form>input[type=text]:last-child,
+.inline-form>input[type=search]:last-child,
+.inline-form>input[type=password]:last-child,
+.inline-form>label:last-child,
+.inline-form>.btn:last-child,
+.d-modal.json-schema-editor-modal .je-ready .inline-form>button:last-child,
+.d-modal.json-schema-editor-modal .je-ready .inline-form>.json-editor-btn-add:last-child,
+.inline-form>.d-date-input:last-child {
+  margin-right: 0;
+}
+/* period-chooser.scss:3 */
+.select-kit.dropdown-select-box.period-chooser {
+  display: inline-flex;
+  position: relative;
+}
+/* period-chooser.scss:7 */
+.select-kit.dropdown-select-box.period-chooser .select-kit-collection {
+  padding: 5px;
+}
+/* period-chooser.scss:11 */
+.select-kit.dropdown-select-box.period-chooser .period-chooser-header {
+  display: inline-block;
+  background: rgba(0,0,0,0);
+  border-color: rgba(0,0,0,0);
+  padding: 0;
+  border-radius: 0;
+}
+/* period-chooser.scss:18 */
+.select-kit.dropdown-select-box.period-chooser .period-chooser-header h2.selected-name {
+  color: var(--secondary);
+  display: inline-block;
+}
+/* period-chooser.scss:22 */
+.select-kit.dropdown-select-box.period-chooser .period-chooser-header h2.selected-name .date-section {
+  color: var(--primary);
+  margin-right: 5px;
+}
+/* period-chooser.scss:27 */
+.select-kit.dropdown-select-box.period-chooser .period-chooser-header h2.selected-name .top-date-string {
+  font-size: var(--font-down-1);
+  color: var(--primary-med-or-secondary-high);
+  font-weight: normal;
+  text-transform: uppercase;
+}
+/* period-chooser.scss:35 */
+.select-kit.dropdown-select-box.period-chooser .period-chooser-header .d-icon {
+  color: var(--primary);
+  opacity: 1;
+  font-size: var(--font-up-3);
+}
+/* period-chooser.scss:41 */
+.select-kit.dropdown-select-box.period-chooser .period-chooser-header.is-focused,
+.select-kit.dropdown-select-box.period-chooser .period-chooser-header:focus,
+.select-kit.dropdown-select-box.period-chooser .period-chooser-header:hover {
+  background: rgba(0,0,0,0);
+  border-color: rgba(0,0,0,0);
+  outline: none;
+}
+/* period-chooser.scss:50 */
+.select-kit.dropdown-select-box.period-chooser .period-chooser-row {
+  font-weight: bold;
+  padding: 5px;
+  font-size: var(--font-up-1);
+  align-items: center;
+  display: flex;
+}
+/* period-chooser.scss:57 */
+.select-kit.dropdown-select-box.period-chooser .period-chooser-row .period-title {
+  flex: 1 0 0px;
+}
+/* period-chooser.scss:61 */
+.select-kit.dropdown-select-box.period-chooser .period-chooser-row .date-section {
+  color: var(--primary);
+}
+/* period-chooser.scss:65 */
+.select-kit.dropdown-select-box.period-chooser .period-chooser-row .top-date-string {
+  font-weight: normal;
+  font-size: var(--font-down-1);
+  color: var(--primary-med-or-secondary-high);
+  text-transform: uppercase;
+  margin-left: 5px;
+}
+/* load-more.scss:1 */
+.load-more-sentinel {
+  height: 1px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  pointer-events: none;
+  -webkit-user-select: none;
+  user-select: none;
+  visibility: hidden;
+  position: relative;
+}
+/* directory.scss:4 */
+.horizontal-scroll-sync__container {
+  width: 100%;
+}
+/* directory.scss:8 */
+.horizontal-scroll-sync__top-scroll {
+  width: 100%;
+  overflow-x: auto;
+}
+/* directory.scss:13 */
+.horizontal-scroll-sync__fake-content {
+  pointer-events: auto;
+}
+/* directory.scss:17 */
+.horizontal-scroll-sync__content {
+  overflow-x: auto;
+}
+/* directory.scss:22 */
+.directory {
+  margin-bottom: 100px;
+  background: var(--d-content-background);
+}
+/* directory.scss:26 */
+.directory .directory-value-list-item:not(:empty)~.directory-value-list-item:not(:empty)::before {
+  content: "| ";
+}
+/* directory.scss:32 */
+.directory.users-directory .directory-group-selector {
+  vertical-align: top;
+}
+/* directory.scss:37 */
+@media (width < 40rem) {
+  .directory.users-directory .filter-name {
+    width: 100%;
+  }
+}
+/* directory.scss:43 */
+.directory .user-info {
+  margin-bottom: 0;
+}
+/* directory.scss:47 */
+.directory .spinner {
+  clear: both;
+}
+/* directory.scss:51 */
+.directory .directory-controls {
+  display: flex;
+  justify-content: space-between;
+}
+/* directory.scss:51 */
+@media (width < 40rem) {
+  .directory .directory-controls {
+    display: block;
+  }
+}
+/* directory.scss:59 */
+.directory .directory-controls .total-rows {
+  color: var(--primary-medium);
+  font-weight: normal;
+}
+/* directory.scss:59 */
+@media (width < 40rem) {
+  .directory .directory-controls .total-rows {
+    display: block;
+  }
+}
+/* directory.scss:69 */
+.directory .directory-last-updated {
+  color: var(--primary-medium);
+  font-size: var(--font-down-1);
+  margin-bottom: var(--space-2);
+}
+/* directory.scss:69 */
+@media (width < 40rem) {
+  .directory .directory-last-updated {
+    margin-bottom: var(--space-1);
+  }
+}
+/* directory.scss:80 */
+@media (width < 48rem) {
+  .directory .period-chooser .period-chooser-header h2.selected-name {
+    font-size: var(--font-up-1);
+  }
+}
+/* directory.scss:88 */
+.edit-user-directory-columns-modal .edit-directory-columns-container .edit-directory-column {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--table-border-color);
+}
+/* directory.scss:94 */
+.edit-user-directory-columns-modal .edit-directory-columns-container .edit-directory-column .column-name {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0;
+}
+/* directory.scss:100 */
+.edit-user-directory-columns-modal .edit-directory-columns-container .edit-directory-column .d-icon-heart {
+  color: var(--love);
+  margin: 0 var(--space-1) 0 0;
+}
+/* directory.scss:105 */
+.edit-user-directory-columns-modal .edit-directory-columns-container .edit-directory-column .move-column-up {
+  margin-right: 5px;
+}
+/* directory.scss:109 */
+.edit-user-directory-columns-modal .edit-directory-columns-container .edit-directory-column .left-content,
+.edit-user-directory-columns-modal .edit-directory-columns-container .edit-directory-column .right-content {
+  display: flex;
+  align-items: center;
+}
+/* directory.scss:115 */
+.edit-user-directory-columns-modal .edit-directory-columns-container .edit-directory-column:last-of-type {
+  border-bottom: none;
+}
+/* directory.scss:121 */
+.edit-user-directory-columns-modal .d-modal__footer {
+  justify-content: space-between;
+}
+/* directory.scss:129 */
+@container (min-width: 47em) {
+  .users-directory .directory-table__value {
+    white-space: nowrap;
+    font-size: var(--font-up-2);
+  }
+}
+/* directory.scss:133 */
+@container (min-width: 47em) {
+  .users-directory .directory-table__value,
+  .users-directory .directory-table__value--user-field {
+    color: var(--primary-medium);
+  }
+}
+/* directory.scss:142 */
+.directory-table-container {
+  container-type: inline-size;
+  container-name: directory-table;
+  transform: translateX(0);
+}
+/* directory.scss:152 */
+.directory-table {
+  display: grid;
+  gap: 0;
+  width: 100%;
+  margin-top: var(--space-1);
+}
+/* directory.scss:160 */
+.directory-table .me .directory-table__cell,
+.directory-table .me .directory-table__cell--user-field {
+  background-color: var(--highlight-low-or-medium);
+}
+/* directory.scss:167 */
+.directory-table__header,
+.directory-table__body,
+.directory-table__row {
+  display: grid;
+  grid-column: 1/-1;
+  grid-template-columns: subgrid;
+}
+/* directory.scss:175 */
+.directory-table__column-header,
+.directory-table__cell,
+.directory-table__cell--empty,
+.directory-table__cell--user-field {
+  display: flex;
+  border-bottom: 1px solid var(--table-border-color);
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+}
+/* directory.scss:186 */
+.directory-table__column-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  color: var(--primary-medium);
+  padding: var(--space-2);
+}
+/* directory.scss:194 */
+.directory-table__column-header .d-icon {
+  margin-right: var(--space-1);
+}
+/* directory.scss:199 */
+.directory-table__column-header:first-child .header-contents {
+  text-align: left;
+}
+/* directory.scss:205 */
+.directory-table__cell {
+  min-width: 0;
+}
+/* directory.scss:208 */
+.directory-table__cell,
+.directory-table__cell--user-field {
+  padding: var(--space-3) var(--space-2);
+}
+/* directory.scss:214 */
+.directory-table__value {
+  white-space: nowrap;
+}
+/* directory.scss:217 */
+.directory-table__value--user-field {
+  max-width: 30em;
+}
+/* directory.scss:222 */
+.directory-table__label {
+  display: none;
+}
+/* directory.scss:226 */
+.directory-table .d-icon-heart {
+  font-size: var(--font-down-1);
+  color: var(--love);
+}
+/* directory.scss:231 */
+.directory-table .user-detail {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+/* directory.scss:237 */
+.directory-table .user-info {
+  display: flex;
+  min-width: 0;
+  width: 100%;
+}
+/* directory.scss:242 */
+.directory-table .user-info .user-detail {
+  padding: 0;
+  width: 100%;
+}
+/* directory.scss:242 */
+@media (width < 48rem) {
+  .directory-table .user-info .user-detail {
+    font-size: var(--font-0);
+  }
+}
+/* directory.scss:242 */
+@media (width < 40rem) {
+  .directory-table .user-info .user-detail {
+    font-size: var(--font-down-1);
+  }
+}
+/* directory.scss:256 */
+.directory-table .user-info .title {
+  margin: 0;
+}
+/* directory.scss:261 */
+.directory-table .header-contents {
+  width: 100%;
+  text-align: center;
+}
+/* directory.scss:272 */
+@container (max-width: 47em) {
+  .directory-table {
+    display: flex;
+    flex-direction: column;
+  }
+}
+/* directory.scss:276 */
+@container (max-width: 47em) {
+  .directory-table .me {
+    background-color: var(--highlight-low-or-medium);
+  }
+}
+/* directory.scss:280 */
+@container (max-width: 47em) {
+  .directory-table__label {
+    display: inline-flex;
+    color: var(--primary-medium);
+    padding-right: var(--space-2);
+    align-items: baseline;
+    align-self: start;
+    white-space: nowrap;
+    overflow: hidden;
+    flex: 1 0 calc(50% - var(--space-2) + 5%);
+  }
+}
+/* directory.scss:290 */
+@container (max-width: 47em) {
+  .directory-table__label span {
+    flex: 0 1 auto;
+    margin-right: var(--space-1);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+}
+/* directory.scss:299 */
+@container (max-width: 47em) {
+  .directory-table__label::after {
+    flex: 1 1 0;
+    color: var(--primary-300);
+    min-width: 0;
+    overflow: hidden;
+    content: "................................................................................................................................................................";
+  }
+}
+/* directory.scss:309 */
+@container (max-width: 47em) {
+  .directory-table__label .d-icon {
+    font-size: .8em;
+    vertical-align: baseline;
+  }
+}
+/* directory.scss:315 */
+@container (max-width: 47em) {
+  .directory-table__value {
+    font-size: var(--font-0);
+    color: var(--primary);
+    align-self: start;
+  }
+}
+/* directory.scss:320 */
+@container (max-width: 47em) {
+  .directory-table__value--user-field {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+  }
+}
+/* directory.scss:327 */
+@container (max-width: 47em) {
+  .directory-table__row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(11em, 1fr));
+    border-bottom: 1px solid var(--table-border-color);
+    padding: var(--space-3) var(--space-2) var(--space-4);
+    gap: 0 10%;
+  }
+}
+/* directory.scss:334 */
+@container (max-width: 47em) {
+  .directory-table__row:first-child {
+    border-top: 1px solid var(--table-border-color);
+  }
+}
+/* directory.scss:339 */
+@container (max-width: 47em) {
+  .directory-table__header {
+    display: none;
+  }
+}
+/* directory.scss:344 */
+@container (max-width: 47em) {
+  .directory-table__cell,
+  .directory-table__cell--user-field {
+    padding: var(--space-1);
+    border: none;
+  }
+}
+/* directory.scss:349 */
+@container (max-width: 47em) {
+  .directory-table__cell:first-child,
+  .directory-table__cell--user-field:first-child {
+    width: 100%;
+    padding: var(--space-2) var(--space-1) var(--space-1);
+    justify-content: start;
+    grid-column-start: 1;
+    grid-column-end: -1;
+  }
+}
+/* directory.scss:360 */
+@container (max-width: 47em) {
+  .directory-table__cell--user-field {
+    display: flex;
+    order: 2;
+    grid-column-start: 1;
+    grid-column-end: -1;
+  }
+}
+/* directory.scss:369 */
+@container (max-width: 47em) {
+  .directory-table__cell--user-field .directory-table__label {
+    margin-right: var(--space-1);
+  }
+}
+/* directory.scss:375 */
+@container (max-width: 47em) {
+  .directory-table .--empty {
+    display: none;
+  }
+}
