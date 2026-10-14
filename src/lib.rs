@@ -43,6 +43,7 @@ pub mod flags;
 pub mod group_manager;
 pub mod group_message;
 pub mod groups;
+pub mod groups_view;
 pub mod guardian;
 pub mod hashtag_decorator;
 pub mod hashtags;

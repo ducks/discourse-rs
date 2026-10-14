@@ -80,3 +80,9 @@
 /about
 /about as=user1
 /about as=admin
+
+# The groups pages on the seed's automatic groups (parity/screens/groups-pages
+# has custom ones). Added dates are drawn in the browser's zone there.
+/groups as=user1
+/groups as=admin
+/g/trust_level_1 as=admin mask=.directory-table__cell--last-seen,.directory-table__cell--added>.directory-table__value

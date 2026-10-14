@@ -1,0 +1,17 @@
+# The groups pages with custom groups (parity/screens/groups-setup.sql):
+#   scripts/parity-screenshots --setup parity/screens/groups-setup.sql \
+#     --pages parity/screens/groups-pages <our-url>
+# Seen dates move with the recording's own visits, and added dates are
+# drawn in the browser's zone there and in UTC here: both are masked.
+/groups
+/groups as=user1
+/groups as=admin
+/groups?type=close as=user1
+/groups?filter=zzz as=user1
+/g/testers mask=.directory-table__cell--last-seen,.directory-table__cell--added>.directory-table__value
+/g/testers as=user1 mask=.directory-table__cell--last-seen,.directory-table__cell--added>.directory-table__value
+/g/testers as=user2 mask=.directory-table__cell--last-seen,.directory-table__cell--added>.directory-table__value
+/g/testers as=admin mask=.directory-table__cell--last-seen,.directory-table__cell--added>.directory-table__value
+/g/members_only as=user1 mask=.directory-table__cell--last-seen,.directory-table__cell--added>.directory-table__value
+/g/hidden_members as=user1
+/g/trust_level_1 as=admin mask=.directory-table__cell--last-seen,.directory-table__cell--added>.directory-table__value

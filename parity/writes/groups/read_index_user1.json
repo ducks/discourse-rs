@@ -1,0 +1,1286 @@
+{
+  "name": "read_index_user1",
+  "user": "user1",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/groups.json"
+    },
+    {
+      "method": "GET",
+      "path": "/groups.json?type=my"
+    },
+    {
+      "method": "GET",
+      "path": "/groups.json?type=owner"
+    },
+    {
+      "method": "GET",
+      "path": "/groups.json?type=public"
+    },
+    {
+      "method": "GET",
+      "path": "/groups.json?type=close"
+    },
+    {
+      "method": "GET",
+      "path": "/groups.json?type=automatic"
+    },
+    {
+      "method": "GET",
+      "path": "/groups.json?type=non_automatic"
+    },
+    {
+      "method": "GET",
+      "path": "/groups.json?type=bogus"
+    },
+    {
+      "method": "GET",
+      "path": "/groups.json?filter=TEST"
+    },
+    {
+      "method": "GET",
+      "path": "/groups.json?order=user_count"
+    },
+    {
+      "method": "GET",
+      "path": "/groups.json?order=user_count&asc=true"
+    },
+    {
+      "method": "GET",
+      "path": "/groups.json?order=name&asc=true"
+    },
+    {
+      "method": "GET",
+      "path": "/groups.json?username=user1"
+    },
+    {
+      "method": "GET",
+      "path": "/groups.json?username=nobody"
+    },
+    {
+      "method": "GET",
+      "path": "/groups.json?page=1"
+    },
+    {
+      "method": "GET",
+      "path": "/groups.json?filter=member&type=close"
+    }
+  ],
+  "started_at": "2026-10-14T07:06:59.564563",
+  "transaction_started_at": "2026-10-14T07:06:58.103693",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "groups": [
+          {
+            "id": 9003,
+            "automatic": false,
+            "name": "hidden_members",
+            "mentionable_level": 4,
+            "messageable_level": 1,
+            "visibility_level": 1,
+            "primary_group": false,
+            "title": null,
+            "grant_trust_level": null,
+            "flair_url": null,
+            "flair_bg_color": null,
+            "flair_color": null,
+            "bio_cooked": null,
+            "bio_excerpt": null,
+            "public_admission": false,
+            "public_exit": false,
+            "allow_membership_requests": false,
+            "full_name": "Hidden Members",
+            "default_notification_level": 1,
+            "membership_request_template": null,
+            "is_group_user": false,
+            "is_group_owner": false,
+            "members_visibility_level": 4,
+            "can_see_members": false,
+            "publish_read_state": false
+          },
+          {
+            "id": 9002,
+            "automatic": false,
+            "name": "members_only",
+            "user_count": 1,
+            "mentionable_level": 3,
+            "messageable_level": 3,
+            "visibility_level": 2,
+            "primary_group": false,
+            "title": null,
+            "grant_trust_level": null,
+            "has_messages": false,
+            "flair_url": null,
+            "flair_bg_color": null,
+            "flair_color": null,
+            "bio_raw": null,
+            "bio_cooked": null,
+            "bio_excerpt": null,
+            "public_admission": false,
+            "public_exit": false,
+            "allow_membership_requests": true,
+            "full_name": null,
+            "default_notification_level": 3,
+            "membership_request_template": "Why?",
+            "is_group_user": true,
+            "is_group_owner": true,
+            "members_visibility_level": 2,
+            "can_see_members": true,
+            "can_edit_group": true,
+            "publish_read_state": false
+          },
+          {
+            "id": 2,
+            "automatic": true,
+            "name": "moderators",
+            "display_name": "moderators",
+            "user_count": 1,
+            "mentionable_level": 0,
+            "messageable_level": 99,
+            "visibility_level": 1,
+            "primary_group": false,
+            "title": null,
+            "grant_trust_level": null,
+            "flair_url": null,
+            "flair_bg_color": null,
+            "flair_color": null,
+            "bio_cooked": "Responsible for responding to flags, moderating discussions, and helping members with their accounts",
+            "bio_excerpt": "Responsible for responding to flags, moderating discussions, and helping members with their accounts",
+            "public_admission": false,
+            "public_exit": false,
+            "allow_membership_requests": false,
+            "full_name": "Moderators",
+            "default_notification_level": 2,
+            "membership_request_template": null,
+            "is_group_user": false,
+            "is_group_owner": false,
+            "members_visibility_level": 0,
+            "can_see_members": true,
+            "publish_read_state": false
+          },
+          {
+            "id": 9001,
+            "automatic": false,
+            "name": "testers",
+            "user_count": 3,
+            "mentionable_level": 99,
+            "messageable_level": 99,
+            "visibility_level": 0,
+            "primary_group": false,
+            "title": "Tester",
+            "grant_trust_level": null,
+            "has_messages": false,
+            "flair_url": "bug",
+            "flair_bg_color": "ff0000",
+            "flair_color": "00ff00",
+            "bio_cooked": "<p>We <strong>test</strong> things. See <a href=\"https://example.com\">https://example.com</a></p>",
+            "bio_excerpt": "We test things. See <a href=\"https://example.com\">https://example.com</a>",
+            "public_admission": true,
+            "public_exit": true,
+            "allow_membership_requests": false,
+            "full_name": "test team",
+            "default_notification_level": 3,
+            "membership_request_template": null,
+            "is_group_user": true,
+            "is_group_owner": false,
+            "members_visibility_level": 0,
+            "can_see_members": true,
+            "publish_read_state": false
+          }
+        ],
+        "extras": {
+          "type_filters": [
+            "my",
+            "owner",
+            "public",
+            "close"
+          ]
+        },
+        "total_rows_groups": 4,
+        "load_more_groups": "/groups?page=1"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "groups": [
+          {
+            "id": 9002,
+            "automatic": false,
+            "name": "members_only",
+            "user_count": 1,
+            "mentionable_level": 3,
+            "messageable_level": 3,
+            "visibility_level": 2,
+            "primary_group": false,
+            "title": null,
+            "grant_trust_level": null,
+            "has_messages": false,
+            "flair_url": null,
+            "flair_bg_color": null,
+            "flair_color": null,
+            "bio_raw": null,
+            "bio_cooked": null,
+            "bio_excerpt": null,
+            "public_admission": false,
+            "public_exit": false,
+            "allow_membership_requests": true,
+            "full_name": null,
+            "default_notification_level": 3,
+            "membership_request_template": "Why?",
+            "is_group_user": true,
+            "is_group_owner": true,
+            "members_visibility_level": 2,
+            "can_see_members": true,
+            "can_edit_group": true,
+            "publish_read_state": false
+          },
+          {
+            "id": 9001,
+            "automatic": false,
+            "name": "testers",
+            "user_count": 3,
+            "mentionable_level": 99,
+            "messageable_level": 99,
+            "visibility_level": 0,
+            "primary_group": false,
+            "title": "Tester",
+            "grant_trust_level": null,
+            "has_messages": false,
+            "flair_url": "bug",
+            "flair_bg_color": "ff0000",
+            "flair_color": "00ff00",
+            "bio_cooked": "<p>We <strong>test</strong> things. See <a href=\"https://example.com\">https://example.com</a></p>",
+            "bio_excerpt": "We test things. See <a href=\"https://example.com\">https://example.com</a>",
+            "public_admission": true,
+            "public_exit": true,
+            "allow_membership_requests": false,
+            "full_name": "test team",
+            "default_notification_level": 3,
+            "membership_request_template": null,
+            "is_group_user": true,
+            "is_group_owner": false,
+            "members_visibility_level": 0,
+            "can_see_members": true,
+            "publish_read_state": false
+          }
+        ],
+        "extras": {
+          "type_filters": [
+            "my",
+            "owner",
+            "public",
+            "close"
+          ]
+        },
+        "total_rows_groups": 2,
+        "load_more_groups": "/groups?page=1&type=my"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "groups": [
+          {
+            "id": 9002,
+            "automatic": false,
+            "name": "members_only",
+            "user_count": 1,
+            "mentionable_level": 3,
+            "messageable_level": 3,
+            "visibility_level": 2,
+            "primary_group": false,
+            "title": null,
+            "grant_trust_level": null,
+            "has_messages": false,
+            "flair_url": null,
+            "flair_bg_color": null,
+            "flair_color": null,
+            "bio_raw": null,
+            "bio_cooked": null,
+            "bio_excerpt": null,
+            "public_admission": false,
+            "public_exit": false,
+            "allow_membership_requests": true,
+            "full_name": null,
+            "default_notification_level": 3,
+            "membership_request_template": "Why?",
+            "is_group_user": true,
+            "is_group_owner": true,
+            "members_visibility_level": 2,
+            "can_see_members": true,
+            "can_edit_group": true,
+            "publish_read_state": false
+          }
+        ],
+        "extras": {
+          "type_filters": [
+            "my",
+            "owner",
+            "public",
+            "close"
+          ]
+        },
+        "total_rows_groups": 1,
+        "load_more_groups": "/groups?page=1&type=owner"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "groups": [
+          {
+            "id": 9001,
+            "automatic": false,
+            "name": "testers",
+            "user_count": 3,
+            "mentionable_level": 99,
+            "messageable_level": 99,
+            "visibility_level": 0,
+            "primary_group": false,
+            "title": "Tester",
+            "grant_trust_level": null,
+            "has_messages": false,
+            "flair_url": "bug",
+            "flair_bg_color": "ff0000",
+            "flair_color": "00ff00",
+            "bio_cooked": "<p>We <strong>test</strong> things. See <a href=\"https://example.com\">https://example.com</a></p>",
+            "bio_excerpt": "We test things. See <a href=\"https://example.com\">https://example.com</a>",
+            "public_admission": true,
+            "public_exit": true,
+            "allow_membership_requests": false,
+            "full_name": "test team",
+            "default_notification_level": 3,
+            "membership_request_template": null,
+            "is_group_user": true,
+            "members_visibility_level": 0,
+            "can_see_members": true,
+            "publish_read_state": false
+          }
+        ],
+        "extras": {
+          "type_filters": [
+            "my",
+            "owner",
+            "public",
+            "close"
+          ]
+        },
+        "total_rows_groups": 1,
+        "load_more_groups": "/groups?page=1&type=public"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "groups": [
+          {
+            "id": 9003,
+            "automatic": false,
+            "name": "hidden_members",
+            "mentionable_level": 4,
+            "messageable_level": 1,
+            "visibility_level": 1,
+            "primary_group": false,
+            "title": null,
+            "grant_trust_level": null,
+            "flair_url": null,
+            "flair_bg_color": null,
+            "flair_color": null,
+            "bio_cooked": null,
+            "bio_excerpt": null,
+            "public_admission": false,
+            "public_exit": false,
+            "allow_membership_requests": false,
+            "full_name": "Hidden Members",
+            "default_notification_level": 1,
+            "membership_request_template": null,
+            "is_group_user": false,
+            "is_group_owner": false,
+            "members_visibility_level": 4,
+            "can_see_members": false,
+            "publish_read_state": false
+          },
+          {
+            "id": 9002,
+            "automatic": false,
+            "name": "members_only",
+            "user_count": 1,
+            "mentionable_level": 3,
+            "messageable_level": 3,
+            "visibility_level": 2,
+            "primary_group": false,
+            "title": null,
+            "grant_trust_level": null,
+            "has_messages": false,
+            "flair_url": null,
+            "flair_bg_color": null,
+            "flair_color": null,
+            "bio_raw": null,
+            "bio_cooked": null,
+            "bio_excerpt": null,
+            "public_admission": false,
+            "public_exit": false,
+            "allow_membership_requests": true,
+            "full_name": null,
+            "default_notification_level": 3,
+            "membership_request_template": "Why?",
+            "is_group_user": true,
+            "is_group_owner": true,
+            "members_visibility_level": 2,
+            "can_see_members": true,
+            "can_edit_group": true,
+            "publish_read_state": false
+          }
+        ],
+        "extras": {
+          "type_filters": [
+            "my",
+            "owner",
+            "public",
+            "close"
+          ]
+        },
+        "total_rows_groups": 2,
+        "load_more_groups": "/groups?page=1&type=close"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "groups": [
+          {
+            "id": 2,
+            "automatic": true,
+            "name": "moderators",
+            "display_name": "moderators",
+            "user_count": 1,
+            "mentionable_level": 0,
+            "messageable_level": 99,
+            "visibility_level": 1,
+            "primary_group": false,
+            "title": null,
+            "grant_trust_level": null,
+            "flair_url": null,
+            "flair_bg_color": null,
+            "flair_color": null,
+            "bio_cooked": "Responsible for responding to flags, moderating discussions, and helping members with their accounts",
+            "bio_excerpt": "Responsible for responding to flags, moderating discussions, and helping members with their accounts",
+            "public_admission": false,
+            "public_exit": false,
+            "allow_membership_requests": false,
+            "full_name": "Moderators",
+            "default_notification_level": 2,
+            "membership_request_template": null,
+            "members_visibility_level": 0,
+            "can_see_members": true,
+            "publish_read_state": false
+          }
+        ],
+        "extras": {
+          "type_filters": [
+            "my",
+            "owner",
+            "public",
+            "close"
+          ]
+        },
+        "total_rows_groups": 1,
+        "load_more_groups": "/groups?page=1&type=automatic"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "groups": [
+          {
+            "id": 9003,
+            "automatic": false,
+            "name": "hidden_members",
+            "mentionable_level": 4,
+            "messageable_level": 1,
+            "visibility_level": 1,
+            "primary_group": false,
+            "title": null,
+            "grant_trust_level": null,
+            "flair_url": null,
+            "flair_bg_color": null,
+            "flair_color": null,
+            "bio_cooked": null,
+            "bio_excerpt": null,
+            "public_admission": false,
+            "public_exit": false,
+            "allow_membership_requests": false,
+            "full_name": "Hidden Members",
+            "default_notification_level": 1,
+            "membership_request_template": null,
+            "is_group_user": false,
+            "is_group_owner": false,
+            "members_visibility_level": 4,
+            "can_see_members": false,
+            "publish_read_state": false
+          },
+          {
+            "id": 9002,
+            "automatic": false,
+            "name": "members_only",
+            "user_count": 1,
+            "mentionable_level": 3,
+            "messageable_level": 3,
+            "visibility_level": 2,
+            "primary_group": false,
+            "title": null,
+            "grant_trust_level": null,
+            "has_messages": false,
+            "flair_url": null,
+            "flair_bg_color": null,
+            "flair_color": null,
+            "bio_raw": null,
+            "bio_cooked": null,
+            "bio_excerpt": null,
+            "public_admission": false,
+            "public_exit": false,
+            "allow_membership_requests": true,
+            "full_name": null,
+            "default_notification_level": 3,
+            "membership_request_template": "Why?",
+            "is_group_user": true,
+            "is_group_owner": true,
+            "members_visibility_level": 2,
+            "can_see_members": true,
+            "can_edit_group": true,
+            "publish_read_state": false
+          },
+          {
+            "id": 9001,
+            "automatic": false,
+            "name": "testers",
+            "user_count": 3,
+            "mentionable_level": 99,
+            "messageable_level": 99,
+            "visibility_level": 0,
+            "primary_group": false,
+            "title": "Tester",
+            "grant_trust_level": null,
+            "has_messages": false,
+            "flair_url": "bug",
+            "flair_bg_color": "ff0000",
+            "flair_color": "00ff00",
+            "bio_cooked": "<p>We <strong>test</strong> things. See <a href=\"https://example.com\">https://example.com</a></p>",
+            "bio_excerpt": "We test things. See <a href=\"https://example.com\">https://example.com</a>",
+            "public_admission": true,
+            "public_exit": true,
+            "allow_membership_requests": false,
+            "full_name": "test team",
+            "default_notification_level": 3,
+            "membership_request_template": null,
+            "is_group_user": true,
+            "is_group_owner": false,
+            "members_visibility_level": 0,
+            "can_see_members": true,
+            "publish_read_state": false
+          }
+        ],
+        "extras": {
+          "type_filters": [
+            "my",
+            "owner",
+            "public",
+            "close"
+          ]
+        },
+        "total_rows_groups": 3,
+        "load_more_groups": "/groups?page=1&type=non_automatic"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: type"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "groups": [
+          {
+            "id": 9001,
+            "automatic": false,
+            "name": "testers",
+            "user_count": 3,
+            "mentionable_level": 99,
+            "messageable_level": 99,
+            "visibility_level": 0,
+            "primary_group": false,
+            "title": "Tester",
+            "grant_trust_level": null,
+            "has_messages": false,
+            "flair_url": "bug",
+            "flair_bg_color": "ff0000",
+            "flair_color": "00ff00",
+            "bio_cooked": "<p>We <strong>test</strong> things. See <a href=\"https://example.com\">https://example.com</a></p>",
+            "bio_excerpt": "We test things. See <a href=\"https://example.com\">https://example.com</a>",
+            "public_admission": true,
+            "public_exit": true,
+            "allow_membership_requests": false,
+            "full_name": "test team",
+            "default_notification_level": 3,
+            "membership_request_template": null,
+            "is_group_user": true,
+            "members_visibility_level": 0,
+            "can_see_members": true,
+            "publish_read_state": false
+          }
+        ],
+        "extras": {
+          "type_filters": [
+            "my",
+            "owner",
+            "public",
+            "close"
+          ]
+        },
+        "total_rows_groups": 1,
+        "load_more_groups": "/groups?filter=TEST&page=1"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "groups": [
+          {
+            "id": 9003,
+            "automatic": false,
+            "name": "hidden_members",
+            "mentionable_level": 4,
+            "messageable_level": 1,
+            "visibility_level": 1,
+            "primary_group": false,
+            "title": null,
+            "grant_trust_level": null,
+            "flair_url": null,
+            "flair_bg_color": null,
+            "flair_color": null,
+            "bio_cooked": null,
+            "bio_excerpt": null,
+            "public_admission": false,
+            "public_exit": false,
+            "allow_membership_requests": false,
+            "full_name": "Hidden Members",
+            "default_notification_level": 1,
+            "membership_request_template": null,
+            "is_group_user": false,
+            "is_group_owner": false,
+            "members_visibility_level": 4,
+            "can_see_members": false,
+            "publish_read_state": false
+          },
+          {
+            "id": 9002,
+            "automatic": false,
+            "name": "members_only",
+            "user_count": 1,
+            "mentionable_level": 3,
+            "messageable_level": 3,
+            "visibility_level": 2,
+            "primary_group": false,
+            "title": null,
+            "grant_trust_level": null,
+            "has_messages": false,
+            "flair_url": null,
+            "flair_bg_color": null,
+            "flair_color": null,
+            "bio_raw": null,
+            "bio_cooked": null,
+            "bio_excerpt": null,
+            "public_admission": false,
+            "public_exit": false,
+            "allow_membership_requests": true,
+            "full_name": null,
+            "default_notification_level": 3,
+            "membership_request_template": "Why?",
+            "is_group_user": true,
+            "is_group_owner": true,
+            "members_visibility_level": 2,
+            "can_see_members": true,
+            "can_edit_group": true,
+            "publish_read_state": false
+          },
+          {
+            "id": 2,
+            "automatic": true,
+            "name": "moderators",
+            "display_name": "moderators",
+            "user_count": 1,
+            "mentionable_level": 0,
+            "messageable_level": 99,
+            "visibility_level": 1,
+            "primary_group": false,
+            "title": null,
+            "grant_trust_level": null,
+            "flair_url": null,
+            "flair_bg_color": null,
+            "flair_color": null,
+            "bio_cooked": "Responsible for responding to flags, moderating discussions, and helping members with their accounts",
+            "bio_excerpt": "Responsible for responding to flags, moderating discussions, and helping members with their accounts",
+            "public_admission": false,
+            "public_exit": false,
+            "allow_membership_requests": false,
+            "full_name": "Moderators",
+            "default_notification_level": 2,
+            "membership_request_template": null,
+            "is_group_user": false,
+            "is_group_owner": false,
+            "members_visibility_level": 0,
+            "can_see_members": true,
+            "publish_read_state": false
+          },
+          {
+            "id": 9001,
+            "automatic": false,
+            "name": "testers",
+            "user_count": 3,
+            "mentionable_level": 99,
+            "messageable_level": 99,
+            "visibility_level": 0,
+            "primary_group": false,
+            "title": "Tester",
+            "grant_trust_level": null,
+            "has_messages": false,
+            "flair_url": "bug",
+            "flair_bg_color": "ff0000",
+            "flair_color": "00ff00",
+            "bio_cooked": "<p>We <strong>test</strong> things. See <a href=\"https://example.com\">https://example.com</a></p>",
+            "bio_excerpt": "We test things. See <a href=\"https://example.com\">https://example.com</a>",
+            "public_admission": true,
+            "public_exit": true,
+            "allow_membership_requests": false,
+            "full_name": "test team",
+            "default_notification_level": 3,
+            "membership_request_template": null,
+            "is_group_user": true,
+            "is_group_owner": false,
+            "members_visibility_level": 0,
+            "can_see_members": true,
+            "publish_read_state": false
+          }
+        ],
+        "extras": {
+          "type_filters": [
+            "my",
+            "owner",
+            "public",
+            "close"
+          ]
+        },
+        "total_rows_groups": 4,
+        "load_more_groups": "/groups?page=1"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "groups": [
+          {
+            "id": 9003,
+            "automatic": false,
+            "name": "hidden_members",
+            "mentionable_level": 4,
+            "messageable_level": 1,
+            "visibility_level": 1,
+            "primary_group": false,
+            "title": null,
+            "grant_trust_level": null,
+            "flair_url": null,
+            "flair_bg_color": null,
+            "flair_color": null,
+            "bio_cooked": null,
+            "bio_excerpt": null,
+            "public_admission": false,
+            "public_exit": false,
+            "allow_membership_requests": false,
+            "full_name": "Hidden Members",
+            "default_notification_level": 1,
+            "membership_request_template": null,
+            "is_group_user": false,
+            "is_group_owner": false,
+            "members_visibility_level": 4,
+            "can_see_members": false,
+            "publish_read_state": false
+          },
+          {
+            "id": 9002,
+            "automatic": false,
+            "name": "members_only",
+            "user_count": 1,
+            "mentionable_level": 3,
+            "messageable_level": 3,
+            "visibility_level": 2,
+            "primary_group": false,
+            "title": null,
+            "grant_trust_level": null,
+            "has_messages": false,
+            "flair_url": null,
+            "flair_bg_color": null,
+            "flair_color": null,
+            "bio_raw": null,
+            "bio_cooked": null,
+            "bio_excerpt": null,
+            "public_admission": false,
+            "public_exit": false,
+            "allow_membership_requests": true,
+            "full_name": null,
+            "default_notification_level": 3,
+            "membership_request_template": "Why?",
+            "is_group_user": true,
+            "is_group_owner": true,
+            "members_visibility_level": 2,
+            "can_see_members": true,
+            "can_edit_group": true,
+            "publish_read_state": false
+          },
+          {
+            "id": 2,
+            "automatic": true,
+            "name": "moderators",
+            "display_name": "moderators",
+            "user_count": 1,
+            "mentionable_level": 0,
+            "messageable_level": 99,
+            "visibility_level": 1,
+            "primary_group": false,
+            "title": null,
+            "grant_trust_level": null,
+            "flair_url": null,
+            "flair_bg_color": null,
+            "flair_color": null,
+            "bio_cooked": "Responsible for responding to flags, moderating discussions, and helping members with their accounts",
+            "bio_excerpt": "Responsible for responding to flags, moderating discussions, and helping members with their accounts",
+            "public_admission": false,
+            "public_exit": false,
+            "allow_membership_requests": false,
+            "full_name": "Moderators",
+            "default_notification_level": 2,
+            "membership_request_template": null,
+            "is_group_user": false,
+            "is_group_owner": false,
+            "members_visibility_level": 0,
+            "can_see_members": true,
+            "publish_read_state": false
+          },
+          {
+            "id": 9001,
+            "automatic": false,
+            "name": "testers",
+            "user_count": 3,
+            "mentionable_level": 99,
+            "messageable_level": 99,
+            "visibility_level": 0,
+            "primary_group": false,
+            "title": "Tester",
+            "grant_trust_level": null,
+            "has_messages": false,
+            "flair_url": "bug",
+            "flair_bg_color": "ff0000",
+            "flair_color": "00ff00",
+            "bio_cooked": "<p>We <strong>test</strong> things. See <a href=\"https://example.com\">https://example.com</a></p>",
+            "bio_excerpt": "We test things. See <a href=\"https://example.com\">https://example.com</a>",
+            "public_admission": true,
+            "public_exit": true,
+            "allow_membership_requests": false,
+            "full_name": "test team",
+            "default_notification_level": 3,
+            "membership_request_template": null,
+            "is_group_user": true,
+            "is_group_owner": false,
+            "members_visibility_level": 0,
+            "can_see_members": true,
+            "publish_read_state": false
+          }
+        ],
+        "extras": {
+          "type_filters": [
+            "my",
+            "owner",
+            "public",
+            "close"
+          ]
+        },
+        "total_rows_groups": 4,
+        "load_more_groups": "/groups?page=1"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "groups": [
+          {
+            "id": 9003,
+            "automatic": false,
+            "name": "hidden_members",
+            "mentionable_level": 4,
+            "messageable_level": 1,
+            "visibility_level": 1,
+            "primary_group": false,
+            "title": null,
+            "grant_trust_level": null,
+            "flair_url": null,
+            "flair_bg_color": null,
+            "flair_color": null,
+            "bio_cooked": null,
+            "bio_excerpt": null,
+            "public_admission": false,
+            "public_exit": false,
+            "allow_membership_requests": false,
+            "full_name": "Hidden Members",
+            "default_notification_level": 1,
+            "membership_request_template": null,
+            "is_group_user": false,
+            "is_group_owner": false,
+            "members_visibility_level": 4,
+            "can_see_members": false,
+            "publish_read_state": false
+          },
+          {
+            "id": 9002,
+            "automatic": false,
+            "name": "members_only",
+            "user_count": 1,
+            "mentionable_level": 3,
+            "messageable_level": 3,
+            "visibility_level": 2,
+            "primary_group": false,
+            "title": null,
+            "grant_trust_level": null,
+            "has_messages": false,
+            "flair_url": null,
+            "flair_bg_color": null,
+            "flair_color": null,
+            "bio_raw": null,
+            "bio_cooked": null,
+            "bio_excerpt": null,
+            "public_admission": false,
+            "public_exit": false,
+            "allow_membership_requests": true,
+            "full_name": null,
+            "default_notification_level": 3,
+            "membership_request_template": "Why?",
+            "is_group_user": true,
+            "is_group_owner": true,
+            "members_visibility_level": 2,
+            "can_see_members": true,
+            "can_edit_group": true,
+            "publish_read_state": false
+          },
+          {
+            "id": 2,
+            "automatic": true,
+            "name": "moderators",
+            "display_name": "moderators",
+            "user_count": 1,
+            "mentionable_level": 0,
+            "messageable_level": 99,
+            "visibility_level": 1,
+            "primary_group": false,
+            "title": null,
+            "grant_trust_level": null,
+            "flair_url": null,
+            "flair_bg_color": null,
+            "flair_color": null,
+            "bio_cooked": "Responsible for responding to flags, moderating discussions, and helping members with their accounts",
+            "bio_excerpt": "Responsible for responding to flags, moderating discussions, and helping members with their accounts",
+            "public_admission": false,
+            "public_exit": false,
+            "allow_membership_requests": false,
+            "full_name": "Moderators",
+            "default_notification_level": 2,
+            "membership_request_template": null,
+            "is_group_user": false,
+            "is_group_owner": false,
+            "members_visibility_level": 0,
+            "can_see_members": true,
+            "publish_read_state": false
+          },
+          {
+            "id": 9001,
+            "automatic": false,
+            "name": "testers",
+            "user_count": 3,
+            "mentionable_level": 99,
+            "messageable_level": 99,
+            "visibility_level": 0,
+            "primary_group": false,
+            "title": "Tester",
+            "grant_trust_level": null,
+            "has_messages": false,
+            "flair_url": "bug",
+            "flair_bg_color": "ff0000",
+            "flair_color": "00ff00",
+            "bio_cooked": "<p>We <strong>test</strong> things. See <a href=\"https://example.com\">https://example.com</a></p>",
+            "bio_excerpt": "We test things. See <a href=\"https://example.com\">https://example.com</a>",
+            "public_admission": true,
+            "public_exit": true,
+            "allow_membership_requests": false,
+            "full_name": "test team",
+            "default_notification_level": 3,
+            "membership_request_template": null,
+            "is_group_user": true,
+            "is_group_owner": false,
+            "members_visibility_level": 0,
+            "can_see_members": true,
+            "publish_read_state": false
+          }
+        ],
+        "extras": {
+          "type_filters": [
+            "my",
+            "owner",
+            "public",
+            "close"
+          ]
+        },
+        "total_rows_groups": 4,
+        "load_more_groups": "/groups?asc=true&order=name&page=1"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "groups": [
+          {
+            "id": 9002,
+            "automatic": false,
+            "name": "members_only",
+            "user_count": 1,
+            "mentionable_level": 3,
+            "messageable_level": 3,
+            "visibility_level": 2,
+            "primary_group": false,
+            "title": null,
+            "grant_trust_level": null,
+            "has_messages": false,
+            "flair_url": null,
+            "flair_bg_color": null,
+            "flair_color": null,
+            "bio_raw": null,
+            "bio_cooked": null,
+            "bio_excerpt": null,
+            "public_admission": false,
+            "public_exit": false,
+            "allow_membership_requests": true,
+            "full_name": null,
+            "default_notification_level": 3,
+            "membership_request_template": "Why?",
+            "is_group_user": true,
+            "is_group_owner": true,
+            "members_visibility_level": 2,
+            "can_see_members": true,
+            "can_edit_group": true,
+            "publish_read_state": false
+          },
+          {
+            "id": 9001,
+            "automatic": false,
+            "name": "testers",
+            "user_count": 3,
+            "mentionable_level": 99,
+            "messageable_level": 99,
+            "visibility_level": 0,
+            "primary_group": false,
+            "title": "Tester",
+            "grant_trust_level": null,
+            "has_messages": false,
+            "flair_url": "bug",
+            "flair_bg_color": "ff0000",
+            "flair_color": "00ff00",
+            "bio_cooked": "<p>We <strong>test</strong> things. See <a href=\"https://example.com\">https://example.com</a></p>",
+            "bio_excerpt": "We test things. See <a href=\"https://example.com\">https://example.com</a>",
+            "public_admission": true,
+            "public_exit": true,
+            "allow_membership_requests": false,
+            "full_name": "test team",
+            "default_notification_level": 3,
+            "membership_request_template": null,
+            "is_group_user": true,
+            "is_group_owner": false,
+            "members_visibility_level": 0,
+            "can_see_members": true,
+            "publish_read_state": false
+          }
+        ],
+        "extras": {
+          "type_filters": [
+            "public",
+            "close"
+          ]
+        },
+        "total_rows_groups": 2,
+        "load_more_groups": "/groups?page=1"
+      }
+    },
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "groups": [],
+        "extras": {
+          "type_filters": [
+            "my",
+            "owner",
+            "public",
+            "close"
+          ]
+        },
+        "total_rows_groups": 4,
+        "load_more_groups": "/groups?page=2"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "groups": [
+          {
+            "id": 9003,
+            "automatic": false,
+            "name": "hidden_members",
+            "mentionable_level": 4,
+            "messageable_level": 1,
+            "visibility_level": 1,
+            "primary_group": false,
+            "title": null,
+            "grant_trust_level": null,
+            "flair_url": null,
+            "flair_bg_color": null,
+            "flair_color": null,
+            "bio_cooked": null,
+            "bio_excerpt": null,
+            "public_admission": false,
+            "public_exit": false,
+            "allow_membership_requests": false,
+            "full_name": "Hidden Members",
+            "default_notification_level": 1,
+            "membership_request_template": null,
+            "is_group_user": false,
+            "is_group_owner": false,
+            "members_visibility_level": 4,
+            "can_see_members": false,
+            "publish_read_state": false
+          },
+          {
+            "id": 9002,
+            "automatic": false,
+            "name": "members_only",
+            "user_count": 1,
+            "mentionable_level": 3,
+            "messageable_level": 3,
+            "visibility_level": 2,
+            "primary_group": false,
+            "title": null,
+            "grant_trust_level": null,
+            "has_messages": false,
+            "flair_url": null,
+            "flair_bg_color": null,
+            "flair_color": null,
+            "bio_raw": null,
+            "bio_cooked": null,
+            "bio_excerpt": null,
+            "public_admission": false,
+            "public_exit": false,
+            "allow_membership_requests": true,
+            "full_name": null,
+            "default_notification_level": 3,
+            "membership_request_template": "Why?",
+            "is_group_user": true,
+            "is_group_owner": true,
+            "members_visibility_level": 2,
+            "can_see_members": true,
+            "can_edit_group": true,
+            "publish_read_state": false
+          }
+        ],
+        "extras": {
+          "type_filters": [
+            "my",
+            "owner",
+            "public",
+            "close"
+          ]
+        },
+        "total_rows_groups": 2,
+        "load_more_groups": "/groups?filter=member&page=1&type=close"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "seen_at": null,
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "gx4WaC9aTkUEDziXKPvU+V1QIms=",
+            "created_at": "2026-10-14T07:06:58.587522",
+            "rotated_at": "2026-10-14T07:06:58.586053",
+            "updated_at": "2026-10-14T07:06:58.587522",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "gx4WaC9aTkUEDziXKPvU+V1QIms=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 1,
+            "seen_at": "2026-10-14T07:06:59.573665",
+            "user_id": 3,
+            "client_ip": "127.0.0.1",
+            "auth_token": "gx4WaC9aTkUEDziXKPvU+V1QIms=",
+            "created_at": "2026-10-14T07:06:58.587522",
+            "rotated_at": "2026-10-14T07:06:58.586053",
+            "updated_at": "2026-10-14T07:06:58.587522",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "gx4WaC9aTkUEDziXKPvU+V1QIms=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO groups (id, name, full_name, bio_raw, bio_cooked, visibility_level, members_visibility_level, public_admission, public_exit, title, flair_icon, flair_bg_color, flair_color, mentionable_level, messageable_level, user_count, created_at, updated_at) VALUES (9001, 'testers', 'test team', 'We **test** things. See https://example.com', '<p>We <strong>test</strong> things. See <a href=\"https://example.com\">https://example.com</a></p>', 0, 0, TRUE, TRUE, 'Tester', 'bug', 'ff0000', '00ff00', 99, 99, 3, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO groups (id, name, visibility_level, members_visibility_level, allow_membership_requests, membership_request_template, mentionable_level, messageable_level, user_count, created_at, updated_at) VALUES (9002, 'members_only', 2, 2, TRUE, 'Why?', 3, 3, 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO groups (id, name, full_name, visibility_level, members_visibility_level, mentionable_level, messageable_level, default_notification_level, user_count, created_at, updated_at) VALUES (9003, 'hidden_members', 'Hidden Members', 1, 4, 4, 1, 1, 2, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO group_users (id, group_id, user_id, owner, notification_level, created_at, updated_at) VALUES (90001, 9001, 1, TRUE, 3, '2026-10-01 10:00:00', '2026-10-01 10:00:00'), (90002, 9001, 3, FALSE, 3, '2026-10-01 11:00:00', '2026-10-01 11:00:00'), (90003, 9001, 4, FALSE, 3, '2026-10-01 12:00:00', '2026-10-01 12:00:00'), (90004, 9002, 3, TRUE, 3, '2026-10-01 10:00:00', '2026-10-01 10:00:00'), (90005, 9003, 2, FALSE, 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00'), (90006, 9003, 4, TRUE, 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
+    "INSERT INTO group_requests (id, group_id, user_id, reason, created_at, updated_at) VALUES (9001, 9002, 2, 'Let me in', '2026-10-02 10:00:00', '2026-10-02 10:00:00'), (9002, 9002, 5, NULL, '2026-10-02 11:00:00', '2026-10-02 11:00:00')",
+    "INSERT INTO group_histories (id, group_id, acting_user_id, target_user_id, action, subject, prev_value, new_value, created_at, updated_at) VALUES (9001, 9001, 1, 3, 2, NULL, NULL, NULL, '2026-10-01 11:00:00', '2026-10-01 11:00:00'), (9002, 9001, 1, 4, 2, NULL, NULL, NULL, '2026-10-01 12:00:00', '2026-10-01 12:00:00'), (9003, 9001, 1, NULL, 1, 'title', NULL, 'Tester', '2026-10-01 13:00:00', '2026-10-01 13:00:00'), (9004, 9001, 1, 1, 4, NULL, NULL, NULL, '2026-10-01 14:00:00', '2026-10-01 14:00:00'), (9005, 9002, 1, 3, 4, NULL, NULL, NULL, '2026-10-01 14:00:00', '2026-10-01 14:00:00')",
+    "INSERT INTO category_groups (id, category_id, group_id, permission_type, created_at, updated_at) VALUES (9001, 4, 9001, 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00'), (9002, 3, 9001, 2, '2026-10-01 10:00:00', '2026-10-01 10:00:00')"
+  ],
+  "recorded_from": {
+    "case": "5be5ef8640f8fc591f3086575841ea8eec075e761973c9dc1f63d37eff07b334",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

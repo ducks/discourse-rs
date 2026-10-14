@@ -87,7 +87,18 @@ fn flair(u: &Value) -> Option<String> {
     if url.is_none() && bg.is_none() {
         return None;
     }
-    let name = s(&u["flair_name"]);
+    let color = u["flair_color"].as_str().filter(|v| !v.is_empty());
+    Some(avatar_flair(s(&u["flair_name"]), url, bg, color))
+}
+
+/// DAvatarFlair for a group's flair (`flairName`, `flairUrl`,
+/// `flairBgColor`, `flairColor`).
+pub(crate) fn avatar_flair(
+    name: &str,
+    url: Option<&str>,
+    bg: Option<&str>,
+    color: Option<&str>,
+) -> String {
     let is_icon = url.is_some_and(|u| !u.contains('/'));
     let mut css = Vec::new();
     if !is_icon {
@@ -99,7 +110,7 @@ fn flair(u: &Value) -> Option<String> {
     if let Some(bg) = bg {
         css.push(format!("background-color: #{}", escape(bg)));
     }
-    if let Some(color) = u["flair_color"].as_str().filter(|v| !v.is_empty()) {
+    if let Some(color) = color {
         css.push(format!("color: #{}", escape(color)));
     }
     let mut classes = format!("avatar-flair avatar-flair-{}", escape(name));
@@ -133,10 +144,10 @@ fn flair(u: &Value) -> Option<String> {
         }
         None => String::new(),
     };
-    Some(format!(
+    format!(
         "<div class=\"{classes}\"{style} title=\"{}\">{inner}</div>",
         escape(name)
-    ))
+    )
 }
 
 /// `domFromString("<div>" + description + "</div>").innerText`, the

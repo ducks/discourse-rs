@@ -164,6 +164,10 @@ ICONS=(
   calendar-days
   scroll
   comment-dots
+  # The groups pages: closed groups, leaving one, the permissions tab.
+  ban
+  user-xmark
+  id-card
 )
 
 root="$(cd "$(dirname "$0")/.." && pwd)"

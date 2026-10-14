@@ -205,6 +205,66 @@ svg > use {
   color: var(--d-button-primary-icon-color--hover);
 }
 
+/* .btn-danger */
+.btn-danger {
+  border-radius: var(--d-button-border-radius);
+  color: var(--d-button-danger-text-color);
+  background-color: var(--d-button-danger-bg-color);
+  transition: var(--d-button-transition);
+  border: var(--d-button-danger-border);
+}
+
+.btn-danger:visited {
+  color: var(--d-button-danger-text-color);
+}
+
+.btn-danger .d-icon {
+  color: var(--d-button-danger-icon-color);
+  margin-right: 0.45em;
+  transition: var(--d-button-transition);
+}
+
+.btn-danger .d-button-label + .d-icon {
+  margin-left: 0.45em;
+  margin-right: 0;
+}
+
+.btn-danger.no-text .d-icon {
+  margin-right: 0;
+}
+
+.discourse-no-touch .btn-danger:hover,
+.discourse-no-touch .btn-danger.btn-hover {
+  background-color: var(--d-button-danger-bg-color--hover);
+  color: var(--d-button-danger-text-color--hover);
+  border: var(--d-button-danger-border--hover);
+}
+
+.discourse-no-touch .btn-danger:hover .d-icon,
+.discourse-no-touch .btn-danger.btn-hover .d-icon {
+  color: var(--d-button-danger-icon-color--hover);
+}
+
+.btn-danger:focus-visible {
+  outline: none;
+  background-color: var(--d-button-danger-bg-color--hover);
+  color: var(--d-button-danger-text-color--hover);
+}
+
+.btn-danger:focus-visible .d-icon {
+  color: var(--d-button-danger-icon-color--hover);
+}
+
+.btn-danger[disabled],
+.btn-danger.disabled {
+  cursor: not-allowed;
+}
+
+.btn-danger[disabled]:not(.is-loading),
+.btn-danger.disabled:not(.is-loading) {
+  opacity: 0.4;
+}
+
 /* .btn-small */
 .btn-small {
   font-size: var(--font-down-1);

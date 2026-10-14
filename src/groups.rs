@@ -353,3 +353,128 @@ pub fn visible_groups_where(guardian: &Guardian, alias: &str) -> String {
         ),
     }
 }
+
+/// `Group.visible_groups(user, order, include_everyone:,
+/// include_pseudogroups:)` without its order: the pseudo groups left out
+/// unless asked for, then `visible_groups_where`.
+pub fn visible_groups_scope(
+    guardian: &Guardian,
+    alias: &str,
+    include_everyone: bool,
+    include_pseudogroups: bool,
+) -> String {
+    let mut parts = Vec::new();
+    if !include_everyone {
+        parts.push(format!("{alias}.id > 0"));
+    }
+    if !include_pseudogroups {
+        parts.push(format!("{alias}.id NOT IN (4, 5)"));
+    }
+    parts.push(format!("({})", visible_groups_where(guardian, alias)));
+    parts.join(" AND ")
+}
+
+/// A group by `LOWER(name)` or by id, with BasicGroup's columns.
+pub async fn find_basic(
+    conn: &mut PgConnection,
+    name: Option<&str>,
+    id: Option<i32>,
+) -> Result<Option<BasicGroup>, sqlx::Error> {
+    let sql = format!(
+        "SELECT {BASIC_GROUP_COLUMNS} FROM groups g LEFT JOIN uploads u ON u.id = g.flair_upload_id \
+         WHERE ($1::text IS NOT NULL AND LOWER(g.name) = LOWER($1)) OR g.id = $2 LIMIT 1"
+    );
+    sqlx::query_as(&sql)
+        .bind(name)
+        .bind(id)
+        .fetch_optional(conn)
+        .await
+}
+
+/// The viewer's `group_users` row on a group, as `Some(owner)`.
+pub async fn membership(
+    conn: &mut PgConnection,
+    guardian: &Guardian,
+    group_id: i32,
+) -> Result<Option<bool>, sqlx::Error> {
+    let Some(user_id) = guardian.user_id() else {
+        return Ok(None);
+    };
+    sqlx::query_scalar("SELECT owner FROM group_users WHERE group_id = $1 AND user_id = $2")
+        .bind(group_id)
+        .bind(user_id)
+        .fetch_optional(conn)
+        .await
+}
+
+/// `can_see_group?` (`level` the visibility_level) and
+/// `can_see_group_members?` (`level` the members_visibility_level): the
+/// same rule over the viewer's membership.
+pub fn can_see_level(guardian: &Guardian, level: i32, membership: Option<bool>) -> bool {
+    // public 0, logged_on_users 1, members 2, staff 3, owners 4
+    if guardian.is_admin() || level == 0 {
+        return true;
+    }
+    if guardian.is_staff() && (level == 3 || level == 2) {
+        return true;
+    }
+    if guardian.is_authenticated() && level == 1 {
+        return true;
+    }
+    match membership {
+        None => false,
+        Some(true) => true,
+        Some(false) => level != 4 && level != 3,
+    }
+}
+
+/// `Guardian#can_admin_group?`: admins, or moderators when
+/// moderators_manage_groups for a group they can see other than admins.
+pub fn can_admin_group(
+    guardian: &Guardian,
+    settings: &crate::site_settings::SiteSettings,
+    group: &BasicGroup,
+    membership: Option<bool>,
+) -> Result<bool, crate::site_settings::SettingError> {
+    Ok(guardian.is_admin()
+        || (settings.get("moderators_manage_groups")?.truthy()
+            && guardian.is_moderator()
+            && can_see_level(guardian, group.visibility_level, membership)
+            && group.id != crate::guardian::auto_groups::ADMINS as i32))
+}
+
+/// `Guardian#can_edit_group?`: not automatic, and an admin of it or an
+/// owner.
+pub fn can_edit_group(
+    guardian: &Guardian,
+    settings: &crate::site_settings::SiteSettings,
+    group: &BasicGroup,
+    membership: Option<bool>,
+) -> Result<bool, crate::site_settings::SettingError> {
+    Ok(!group.automatic
+        && (can_admin_group(guardian, settings, group, membership)? || membership == Some(true)))
+}
+
+/// Inserts `key` before `before` in a serialized object (at the end when
+/// `before` is missing), keeping the serializer's attribute order.
+pub fn insert_before(
+    out: &mut serde_json::Map<String, Value>,
+    before: &str,
+    key: &str,
+    value: Value,
+) {
+    let mut rebuilt = serde_json::Map::new();
+    let mut value = Some(value);
+    for (k, v) in std::mem::take(out) {
+        if k == before
+            && let Some(value) = value.take()
+        {
+            rebuilt.insert(key.to_string(), value);
+        }
+        rebuilt.insert(k, v);
+    }
+    if let Some(value) = value {
+        rebuilt.insert(key.to_string(), value);
+    }
+    *out = rebuilt;
+}
