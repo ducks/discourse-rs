@@ -1,0 +1,4 @@
+{
+  "user": "admin",
+  "requests": [{"method": "POST", "path": "/admin/badges/award/100.json", "params": {"file": {"fixture": "badge_award_malformed.csv"}}}]
+}

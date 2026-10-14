@@ -1,0 +1,76 @@
+{
+  "name": "mass_award_malformed_csv",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/badges/award/100.json",
+      "params": {
+        "file": {
+          "fixture": "badge_award_malformed.csv"
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-14T11:34:21.032792",
+  "transaction_started_at": "2026-10-14T11:34:20.036962",
+  "responses": [
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "We encountered an error on line 2. Please confirm the CSV has one email per line."
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 112,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "VQx7b5LsskOeAFdB7Idkl1J0wQc=",
+            "created_at": "2026-10-14T11:34:20.457705",
+            "rotated_at": "2026-10-14T11:34:20.45687",
+            "updated_at": "2026-10-14T11:34:20.457705",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "VQx7b5LsskOeAFdB7Idkl1J0wQc=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 112,
+            "seen_at": "2026-10-14T11:34:21.071946",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "VQx7b5LsskOeAFdB7Idkl1J0wQc=",
+            "created_at": "2026-10-14T11:34:20.457705",
+            "rotated_at": "2026-10-14T11:34:20.45687",
+            "updated_at": "2026-10-14T11:34:20.457705",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "VQx7b5LsskOeAFdB7Idkl1J0wQc=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "450f19beedc25fab5c2d7139e6f53ccdb9d8dfe82dc5f571c2cea93a7f45a6c0",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

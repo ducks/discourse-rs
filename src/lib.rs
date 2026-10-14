@@ -102,6 +102,7 @@ pub mod routes;
 pub mod ruby;
 pub mod ruby_date;
 pub mod sanitize;
+pub mod sanitize_field;
 pub mod schema;
 pub mod screened;
 pub mod search;

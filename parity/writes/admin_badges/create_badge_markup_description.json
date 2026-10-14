@@ -1,0 +1,165 @@
+{
+  "name": "create_badge_markup_description",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/badges.json",
+      "params": {
+        "name": "Marked Up",
+        "badge_type_id": "3",
+        "description": "See <a href=\"/my/preferences\" target=\"_blank\">your <b>profile</b></a> &amp; %7Bmore%7D &#169"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T11:34:19.762448",
+  "transaction_started_at": "2026-10-14T11:34:16.107759",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "badge_types": [
+          {
+            "id": 3,
+            "name": "Bronze",
+            "sort_order": 7
+          }
+        ],
+        "badge": {
+          "id": 138,
+          "name": "Marked Up",
+          "description": "See <a href=\"/my/preferences\">your <b>profile</b></a> & {more} ©",
+          "grant_count": 0,
+          "allow_title": false,
+          "multiple_grant": false,
+          "icon": "certificate",
+          "image_url": null,
+          "listable": true,
+          "enabled": true,
+          "badge_grouping_id": 5,
+          "system": false,
+          "long_description": "",
+          "slug": "marked-up",
+          "manually_grantable": true,
+          "show_in_post_header": false,
+          "query": null,
+          "trigger": null,
+          "target_posts": false,
+          "auto_revoke": true,
+          "show_posts": false,
+          "image_upload_id": null,
+          "badge_type_id": 3
+        }
+      }
+    }
+  ],
+  "changes": {
+    "badges": {
+      "inserted": [
+        {
+          "id": 138,
+          "icon": "certificate",
+          "name": "Marked Up",
+          "query": null,
+          "system": false,
+          "enabled": true,
+          "trigger": null,
+          "listable": true,
+          "created_at": "2026-10-14T11:34:19.788767",
+          "show_posts": false,
+          "updated_at": "2026-10-14T11:34:19.788767",
+          "allow_title": false,
+          "auto_revoke": true,
+          "description": "See <a href=\"/my/preferences\">your <b>profile</b></a> & {more} ©",
+          "grant_count": 0,
+          "target_posts": false,
+          "badge_type_id": 3,
+          "multiple_grant": false,
+          "image_upload_id": null,
+          "long_description": null,
+          "badge_grouping_id": 5,
+          "show_in_post_header": false
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 112,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "/gjIxmNoz+42/Iy2oK4H8A7/Zu4=",
+            "created_at": "2026-10-14T11:34:17.898937",
+            "rotated_at": "2026-10-14T11:34:17.889528",
+            "updated_at": "2026-10-14T11:34:17.898937",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "/gjIxmNoz+42/Iy2oK4H8A7/Zu4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 112,
+            "seen_at": "2026-10-14T11:34:19.771706",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "/gjIxmNoz+42/Iy2oK4H8A7/Zu4=",
+            "created_at": "2026-10-14T11:34:17.898937",
+            "rotated_at": "2026-10-14T11:34:17.889528",
+            "updated_at": "2026-10-14T11:34:17.898937",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "/gjIxmNoz+42/Iy2oK4H8A7/Zu4=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 57,
+          "context": null,
+          "details": "id: 138\nname: Marked Up\ndescription: See <a href=\"/my/preferences\">your <b>profile</b></a> & {more} ©\nicon: certificate\nbadge_type_id: 3\nbadge_grouping_id: 5\nlistable: true\nenabled: true\nauto_revoke: true",
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-10-14T11:34:19.802255",
+          "ip_address": null,
+          "updated_at": "2026-10-14T11:34:19.802255",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "badges": 138,
+    "user_histories": 74
+  },
+  "recorded_from": {
+    "case": "f688653c10b1beaeaa16028a69d72c9c7cfadb5524e67c00548580cc684f3be8",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

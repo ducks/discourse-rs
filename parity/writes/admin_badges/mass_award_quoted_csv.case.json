@@ -1,0 +1,6 @@
+{
+  "user": "admin",
+  "setup": ["DELETE FROM user_badges WHERE id > 18"],
+  "requests": [{"method": "POST", "path": "/admin/badges/award/100.json", "params": {"file": {"fixture": "badge_award_quoted.csv"}}}],
+  "run_jobs": ["mass_award_badge"]
+}

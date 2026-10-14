@@ -1,0 +1,114 @@
+{
+  "name": "setting_string_sanitized",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/site_settings/short_site_description.json",
+      "params": {
+        "short_site_description": "A <b>forum</b> &amp; <a href=\"/about\" target=\"_blank\">more</a> for %7Bparity%7D, AT&T"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T11:34:24.171872",
+  "transaction_started_at": "2026-10-14T11:34:22.828669",
+  "responses": [
+    {
+      "status": 204,
+      "body": ""
+    }
+  ],
+  "changes": {
+    "site_settings": {
+      "inserted": [
+        {
+          "id": 37,
+          "name": "short_site_description",
+          "value": "A <b>forum</b> & <a href=\"/about\">more</a> for {parity}, AT&T",
+          "data_type": 1,
+          "created_at": "2026-10-14T11:34:24.214884",
+          "updated_at": "2026-10-14T11:34:24.214884"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 112,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "bugY1DoauCirTu/dvEhk3NyunrM=",
+            "created_at": "2026-10-14T11:34:23.476671",
+            "rotated_at": "2026-10-14T11:34:23.475759",
+            "updated_at": "2026-10-14T11:34:23.476671",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "bugY1DoauCirTu/dvEhk3NyunrM=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 112,
+            "seen_at": "2026-10-14T11:34:24.191332",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "bugY1DoauCirTu/dvEhk3NyunrM=",
+            "created_at": "2026-10-14T11:34:23.476671",
+            "rotated_at": "2026-10-14T11:34:23.475759",
+            "updated_at": "2026-10-14T11:34:23.476671",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "bugY1DoauCirTu/dvEhk3NyunrM=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 3,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "short_site_description",
+          "topic_id": null,
+          "new_value": "A <b>forum</b> &amp; <a href=\"/about\" target=\"_blank\">more</a> for %7Bparity%7D, AT&T",
+          "admin_only": true,
+          "created_at": "2026-10-14T11:34:24.218004",
+          "ip_address": null,
+          "updated_at": "2026-10-14T11:34:24.218004",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "",
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "site_settings": 37,
+    "user_histories": 74
+  },
+  "recorded_from": {
+    "case": "553ef1fe88ef9a0d5fe09086cfd4081e9cea2cff1a88173b56197ecddff64117",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

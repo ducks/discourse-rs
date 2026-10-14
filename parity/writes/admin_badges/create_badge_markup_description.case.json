@@ -1,0 +1,6 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "POST", "path": "/admin/badges.json", "params": {"name": "Marked Up", "badge_type_id": "3", "description": "See <a href=\"/my/preferences\" target=\"_blank\">your <b>profile</b></a> &amp; %7Bmore%7D &#169"}}
+  ]
+}

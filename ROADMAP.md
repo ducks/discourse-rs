@@ -329,6 +329,13 @@ then by what running a forum needs (milestone 6). Briefs:
     title picker of a badge the viewer may title themselves with, more
     grants than the first page, emoji in long descriptions,
     /user-badges/:username in a browser, Ember's unknown route),
+    85c. ~~`feat/admin-badges-follow-up`~~ (done) S (Ruby CSV's quoting
+    and malformed-row line numbers for the mass award, `sanitize_field`
+    for badge descriptions and client string settings over the markup
+    whose result follows from the markup alone: inline safe-list
+    elements, quoted attributes, plain URLs, XML and numeric references;
+    the rest refused (block elements, repairs, named HTML entities);
+    libpq's error positions landed with 85a),
 86. `feat/admin-users-rest` M: granting admin (second factor or email
     confirmation), impersonation, penalties on several users
 87. `feat/admin-lists` M: permalinks, embeddable hosts, user fields,

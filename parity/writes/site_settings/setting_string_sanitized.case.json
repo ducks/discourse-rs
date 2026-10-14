@@ -1,0 +1,6 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "PUT", "path": "/admin/site_settings/short_site_description.json", "params": {"short_site_description": "A <b>forum</b> &amp; <a href=\"/about\" target=\"_blank\">more</a> for %7Bparity%7D, AT&T"}}
+  ]
+}

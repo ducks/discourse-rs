@@ -5,9 +5,8 @@
 //! mass award from a CSV of usernames and emails with its two jobs
 //! (MassAwardBadge, BulkUserTitleUpdate).
 //!
-//! Refused: a custom description that Rails' sanitizer would rewrite
-//! (markup, entities), and CSV files Ruby's CSV parser reads differently
-//! from a plain split (quotes, stray carriage returns, other encodings).
+//! Refused: custom descriptions crate::sanitize_field refuses, and CSV
+//! files that aren't UTF-8.
 
 use serde_json::{Map, Value, json};
 use sqlx::PgConnection;
@@ -552,7 +551,7 @@ pub async fn update_from_params(
     // before_save sanitize_description
     if record.changed("description") {
         let current = record.text_getter(ctx, "description")?;
-        let sanitized = sanitize_field(&current)?;
+        let sanitized = crate::sanitize_field::sanitize_field(&current, &[])?;
         if sanitized != current {
             record.set("description", Val::Text(sanitized));
         }
@@ -652,16 +651,6 @@ async fn update(
     }
     q.execute(conn).await?;
     Ok(())
-}
-
-/// `sanitize_field` (Rails' safe list sanitizer, then `CGI.unescape_html`
-/// and the interpolation braces put back): the identity for text without
-/// markup or entities, which is all the port sanitizes.
-pub fn sanitize_field(text: &str) -> Result<String, AppError> {
-    if text.contains(['<', '&', '\u{a0}']) {
-        return Err(Unsupported("sanitizing badge descriptions with markup or entities").into());
-    }
-    Ok(text.replace("%7B", "{").replace("%7D", "}"))
 }
 
 /// An admin-only staff action log (`UserHistory.create!`).
@@ -856,37 +845,141 @@ fn ruby_strip(s: &str) -> &str {
     s.trim_matches(|c: char| matches!(c, '\0' | '\t' | '\n' | '\u{b}' | '\u{c}' | '\r' | ' '))
 }
 
-/// `CSV.foreach(file) { |row| row.first&.strip }` for files Ruby's CSV
-/// reads as plain lines of comma separated fields; None when there are
-/// more than MAX_CSV_LINES entries.
-pub fn read_csv(bytes: &[u8]) -> Result<Option<CsvEntries>, AppError> {
+/// What reading the mass award's CSV came to.
+pub enum Csv {
+    Entries(CsvEntries),
+    /// More than MAX_CSV_LINES entries.
+    TooMany,
+    /// `CSV::MalformedCSVError#line_number`: the row it broke on.
+    Malformed(usize),
+}
+
+/// One row's first field as Ruby's CSV parses it (strict, quote `"`,
+/// comma separated): None for an empty unquoted field. `Err` is the
+/// malformation.
+struct Rows<'a> {
+    chars: std::iter::Peekable<std::str::Chars<'a>>,
+    sep: &'static str,
+}
+
+enum Row {
+    First(Option<String>),
+    Malformed,
+}
+
+impl Rows<'_> {
+    /// At a row separator: consumes it.
+    fn at_sep(&mut self, c: char) -> bool {
+        match self.sep {
+            "\r\n" => {
+                if c == '\r' && self.chars.peek() == Some(&'\n') {
+                    self.chars.next();
+                    true
+                } else {
+                    false
+                }
+            }
+            "\r" => c == '\r',
+            _ => c == '\n',
+        }
+    }
+
+    /// The next row, None at the end.
+    fn next_row(&mut self) -> Option<Row> {
+        self.chars.peek()?;
+        let mut first: Option<Option<String>> = None;
+        loop {
+            // A field.
+            let mut value: Option<String> = None;
+            let ended_row;
+            if self.chars.peek() == Some(&'"') {
+                self.chars.next();
+                let mut text = String::new();
+                loop {
+                    match self.chars.next() {
+                        None => return Some(Row::Malformed),
+                        Some('"') if self.chars.peek() == Some(&'"') => {
+                            self.chars.next();
+                            text.push('"');
+                        }
+                        Some('"') => break,
+                        Some(c) => text.push(c),
+                    }
+                }
+                value = Some(text);
+                match self.chars.next() {
+                    None => ended_row = true,
+                    Some(',') => ended_row = false,
+                    Some(c) if self.at_sep(c) => ended_row = true,
+                    Some(_) => return Some(Row::Malformed),
+                }
+            } else {
+                let mut text = String::new();
+                loop {
+                    match self.chars.next() {
+                        None => {
+                            ended_row = true;
+                            break;
+                        }
+                        Some(',') => {
+                            ended_row = false;
+                            break;
+                        }
+                        Some(c) if self.at_sep(c) => {
+                            ended_row = true;
+                            break;
+                        }
+                        Some('"' | '\r' | '\n') => return Some(Row::Malformed),
+                        Some(c) => text.push(c),
+                    }
+                }
+                if !text.is_empty() {
+                    value = Some(text);
+                }
+            }
+            if first.is_none() {
+                first = Some(value);
+            }
+            if ended_row {
+                return Some(Row::First(first.flatten()));
+            }
+        }
+    }
+}
+
+/// `CSV.foreach(file) { |row| row.first&.strip }` as the mass award
+/// reads it: each row's stripped first field, emails (with an @) and
+/// usernames apart, blank ones skipped, stopping at more than
+/// MAX_CSV_LINES entries or the first malformed row. The row separator
+/// is the first line ending in the file; a leading UTF-8 BOM is skipped.
+pub fn read_csv(bytes: &[u8]) -> Result<Csv, AppError> {
     let text = std::str::from_utf8(bytes)
         .map_err(|_| Unsupported("mass award CSV files that aren't UTF-8"))?;
-    if text.contains('"') {
-        return Err(Unsupported("mass award CSV files with quotes").into());
-    }
-    // The row separator is the first line ending found.
+    let text = text.strip_prefix('\u{feff}').unwrap_or(text);
     let sep = match text.find(['\r', '\n']) {
         Some(i) if text[i..].starts_with("\r\n") => "\r\n",
         Some(i) if text[i..].starts_with('\r') => "\r",
         _ => "\n",
     };
-    let stray = match sep {
-        "\r\n" => text.replace("\r\n", "").contains(['\r', '\n']),
-        "\r" => text.contains('\n'),
-        _ => text.contains('\r'),
+    let mut rows = Rows {
+        chars: text.chars().peekable(),
+        sep,
     };
-    if stray {
-        return Err(Unsupported("mass award CSV files with mixed line endings").into());
-    }
     let mut out = CsvEntries {
         emails: Vec::new(),
         usernames: Vec::new(),
     };
-    let body = text.strip_suffix(sep).unwrap_or(text);
-    for line in body.split(sep) {
-        let first = line.split(',').next().unwrap_or("");
-        let entry = ruby_strip(first);
+    let mut line = 0;
+    while let Some(row) = rows.next_row() {
+        line += 1;
+        let first = match row {
+            Row::Malformed => return Ok(Csv::Malformed(line)),
+            Row::First(first) => first,
+        };
+        let Some(first) = first else {
+            continue;
+        };
+        let entry = ruby_strip(&first);
         if ruby_blank(entry) {
             continue;
         }
@@ -896,10 +989,10 @@ pub fn read_csv(bytes: &[u8]) -> Result<Option<CsvEntries>, AppError> {
             out.usernames.push(entry.to_string());
         }
         if out.emails.len() + out.usernames.len() > MAX_CSV_LINES {
-            return Ok(None);
+            return Ok(Csv::TooMany);
         }
     }
-    Ok(Some(out))
+    Ok(Csv::Entries(out))
 }
 
 /// `BadgeGranter.revoke_all(badge)`: the holders whose title is the
@@ -1175,12 +1268,55 @@ mod tests {
 
     #[test]
     fn reads_plain_csv() {
-        let e = read_csv(b"user1,x\r\n  a@b.c \r\n\r\nUser2\r\n")
-            .unwrap()
-            .unwrap();
+        let Csv::Entries(e) = read_csv(b"user1,x\r\n  a@b.c \r\n\r\nUser2\r\n").unwrap() else {
+            panic!("entries");
+        };
         assert_eq!(e.usernames, ["user1", "User2"]);
         assert_eq!(e.emails, ["a@b.c"]);
-        assert!(read_csv(b"\"user1\"\n").is_err());
-        assert!(read_csv(b"a\nb\rc\n").is_err());
+    }
+
+    /// Ruby's CSV.foreach on the reference (Ruby 3.4): each input's
+    /// non-blank first fields, stripped, and the malformed row's number.
+    #[test]
+    fn reads_csv_like_ruby() {
+        let table: &[(&str, &[&str], Option<usize>)] = &[
+            ("a\nb\n", &["a", "b"], None),
+            ("\"a\"\nb\n", &["a", "b"], None),
+            ("\"a,b\",c\nd\n", &["a,b", "d"], None),
+            ("\"a\"\"b\"\nc\n", &["a\"b", "c"], None),
+            ("\"a\nb\"\nc\n", &["a\nb", "c"], None),
+            ("\"a\nb\"\n\"c\n", &["a\nb"], Some(2)),
+            ("a\n\"b\n", &["a"], Some(2)),
+            ("a\nb\"c\nd\n", &["a"], Some(2)),
+            ("a\n\"b\"c\nd\n", &["a"], Some(2)),
+            ("a\r\nb\r\n", &["a", "b"], None),
+            ("a\r\nb\nc\r\n", &["a"], Some(2)),
+            ("a\nb\rc\n", &["a"], Some(2)),
+            ("a\rb\rc", &["a", "b", "c"], None),
+            ("\"a\r\nb\"\r\nc\r\n", &["a\r\nb", "c"], None),
+            ("  \"a\"  \nb\n", &[], Some(1)),
+            ("\"a\" \nb\n", &[], Some(1)),
+            ("x,\"y\nz\"\nw\n", &["x", "w"], None),
+            ("\"\"\nb\n", &["b"], None),
+            ("\"\n", &[], Some(1)),
+            ("a,\"b\nc\nd\ne\"f\n", &[], Some(1)),
+            ("\u{feff}user1\nuser2\n", &["user1", "user2"], None),
+            ("a\n\n\nb\"\n", &["a"], Some(4)),
+            ("a\"\n", &[], Some(1)),
+            ("\"a\"\n\"b\" \n", &["a"], Some(2)),
+            ("u1\n\"\"\"u2\"\"\"\n", &["u1", "\"u2\""], None),
+            ("\"a\nb\nc\"\"d\n", &[], Some(1)),
+            (",x\n y ,z\n", &["y"], None),
+        ];
+        for (input, rows, error) in table {
+            match read_csv(input.as_bytes()).unwrap() {
+                Csv::Entries(e) => {
+                    assert_eq!(error, &None, "{input:?}");
+                    assert_eq!(&e.usernames, rows, "{input:?}");
+                }
+                Csv::Malformed(line) => assert_eq!(*error, Some(line), "{input:?}"),
+                Csv::TooMany => panic!("{input:?}"),
+            }
+        }
     }
 }
