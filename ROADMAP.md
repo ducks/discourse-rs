@@ -607,8 +607,46 @@ then by what running a forum needs (milestone 6). Briefs:
     generate_theme_screenshot_thumbnails job (171); the wizards' pages
     (90g)), 90g.
     `feat/admin-shell` L (the
-    admin pages' HTML: the port has none; /admin/customize/* and
-    /admin/config/* refuse non-JSON requests today), 90h.
+    admin pages' HTML as Ember renders them, over the JSON the port
+    already serves; /admin/customize/* and /admin/config/* refuse
+    non-JSON requests today). Split by admin usage, each branch stacked
+    on the one before, interactive parts through the existing JSON write
+    endpoints with small scripts as the rest of the client: 90g1.
+    `feat/admin-shell-dashboard` L (the shell: the admin stylesheet,
+    AdminSidebarPanel's sections from ADMIN_NAV_MAP filtered for
+    moderators, Back to Forum, the admin pages' `admin-area` and
+    `admin-interface` classes, DPageHeader with its breadcrumbs, the
+    mobile view's menu; GET /admin as the dashboard: site advice
+    (problems) with ignore and refresh, the redesigned dashboard's
+    sections from /admin/dashboard.json, the period picker, the
+    configure menu; the legacy dashboard while dashboard_improvements
+    is off), 90g2. `feat/admin-shell-users` M (/admin/users/list/:filter
+    with its search, ordering and bulk select, /admin/users/:id/:username
+    with its actions: trust level, groups, suspend and silence, activate,
+    approve, log out, grant and revoke moderation and admin, delete,
+    anonymize, merge, impersonate; badges and TL3 requirements tabs),
+    90g3. `feat/admin-shell-site-settings` L (/admin/site_settings and
+    /admin/site_settings/category/:id: the categories, the filter, every
+    setting type's editor, saving through PUT /admin/site_settings, the
+    default and undo buttons; AdminAreaSettings, which the /admin/config
+    settings tabs reuse), 90g4. `feat/admin-shell-groups` S
+    (/admin/groups and its settings tab), 90g5. `feat/admin-shell-reports-logs`
+    M (/admin/reports and a report's page, /admin/logs: staff actions,
+    screened emails, IPs and URLs, search logs and a term; email logs),
+    90g6. `feat/admin-shell-config` L (the /admin/config areas: about,
+    content and category management, login, notifications, localization,
+    analytics, permalinks, user defaults, trust levels, group
+    permissions, user fields, watched words, site admin, legal, flags,
+    logo, fonts, interface, emoji, navigation, welcome banner, security,
+    spam, developer, rate limits, onebox, files, search, experimental,
+    upcoming changes, what's new), 90g7. `feat/admin-shell-customize` L
+    (themes and components with their editor, theme site settings, color
+    palettes, site texts, email style, form templates, embedding, robots
+    txt), 90g8. `feat/admin-shell-advanced` M (backups and their logs,
+    API keys, web hooks, email server settings, preview and templates,
+    problem checks, badges, installed plugins), 90g9.
+    `feat/admin-shell-search` S (the admin search modal and the sidebar
+    filter's keyword index), 90h.
     ~~`feat/template-client-strings`~~ (done) M (the templates' and
     views' literal English client strings through the locale with
     Ember's keys, site texts included: the header's buttons, the topic
