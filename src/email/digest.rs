@@ -480,16 +480,6 @@ pub async fn build(
     if locale != "en" {
         return Err(Unsupported("digests in locales other than English").into());
     }
-    let overridden: bool = sqlx::query_scalar(
-        "SELECT EXISTS (SELECT 1 FROM translation_overrides WHERE locale = $1 \
-         AND translation_key LIKE 'user_notifications.digest.%')",
-    )
-    .bind(&locale)
-    .fetch_one(&mut *conn)
-    .await?;
-    if overridden {
-        return Err(Unsupported("translation overrides of the digest").into());
-    }
     let session = SessionUser::load(&mut *conn, user_id)
         .await?
         .ok_or(Unsupported("a user that vanished"))?;
@@ -835,7 +825,20 @@ pub async fn build(
     } else {
         "subject_template"
     };
-    let subject = t(subject_key, &[("email_prefix", &site_name)])?;
+    // short_date(Time.now): this year's date without it.
+    let date_format = i18n
+        .t("time.formats.short_no_year")
+        .ok_or(Unsupported("a missing date format"))?;
+    let mut date = String::new();
+    std::fmt::Write::write_fmt(
+        &mut date,
+        format_args!("{}", crate::clock::now().format(date_format)),
+    )
+    .map_err(|_| Unsupported("a date format strftime reads differently"))?;
+    let subject = t(
+        subject_key,
+        &[("email_prefix", &site_name), ("date", &date)],
+    )?;
     let email_site_title = s
         .get("email_site_title")?
         .presence()

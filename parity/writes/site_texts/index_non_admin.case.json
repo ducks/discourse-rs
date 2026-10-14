@@ -1,0 +1,8 @@
+{
+  "user": "user1",
+  "requests": [
+    {"method": "GET", "path": "/admin/customize/site_texts.json?locale=en"},
+    {"method": "GET", "path": "/admin/customize/site_texts/js.topic.create.json?locale=en"},
+    {"method": "PUT", "path": "/admin/customize/site_texts/js.topic.create.json", "params": {"site_text": {"value": "x", "locale": "en"}}}
+  ]
+}

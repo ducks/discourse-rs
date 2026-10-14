@@ -1,0 +1,232 @@
+{
+  "name": "update_badge_name",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/customize/site_texts/badges.first_like.name.json",
+      "params": {
+        "site_text": {
+          "value": "Liked once",
+          "locale": "en"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/badges/11.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/customize/site_texts/badges.first_like.description.json",
+      "params": {
+        "site_text": {
+          "value": "Liked a post once",
+          "locale": "en"
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-14T14:30:49.947517",
+  "transaction_started_at": "2026-10-14T14:30:47.963322",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "site_text": {
+          "id": "badges.first_like.name",
+          "value": "Liked once",
+          "status": "up_to_date",
+          "old_default": "First Like",
+          "new_default": "First Like",
+          "interpolation_keys": [],
+          "overridden": true,
+          "can_revert": true
+        },
+        "__rest_serializer": "1"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "badge_types": [
+          {
+            "id": 3,
+            "name": "Bronze",
+            "sort_order": 7
+          }
+        ],
+        "badge": {
+          "id": 11,
+          "name": "Liked once",
+          "description": "Liked a post",
+          "grant_count": 2,
+          "allow_title": false,
+          "multiple_grant": false,
+          "icon": "heart",
+          "image_url": null,
+          "listable": true,
+          "enabled": true,
+          "badge_grouping_id": 1,
+          "system": true,
+          "long_description": "This badge is granted the first time you like a post using the :heart: button. Liking posts is a great way to let your fellow community members know that what they posted was interesting, useful, cool, or fun. Share the love!\n",
+          "slug": "liked-once",
+          "manually_grantable": false,
+          "show_in_post_header": false,
+          "badge_type_id": 3
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "site_text": {
+          "id": "badges.first_like.description",
+          "value": "Liked a post once",
+          "status": "up_to_date",
+          "old_default": "Liked a post",
+          "new_default": "Liked a post",
+          "interpolation_keys": [],
+          "overridden": true,
+          "can_revert": true
+        },
+        "__rest_serializer": "1"
+      }
+    }
+  ],
+  "changes": {
+    "translation_overrides": {
+      "inserted": [
+        {
+          "id": 1,
+          "value": "Liked once",
+          "locale": "en",
+          "status": 0,
+          "created_at": "2026-10-14T14:30:49.980619",
+          "updated_at": "2026-10-14T14:30:49.980619",
+          "translation_key": "badges.first_like.name",
+          "original_translation": "First Like"
+        },
+        {
+          "id": 2,
+          "value": "Liked a post once",
+          "locale": "en",
+          "status": 0,
+          "created_at": "2026-10-14T14:30:50.285228",
+          "updated_at": "2026-10-14T14:30:50.285228",
+          "translation_key": "badges.first_like.description",
+          "original_translation": "Liked a post"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 112,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "AAhcZcoFg2TM6aZhVyo+c8DSsmQ=",
+            "created_at": "2026-10-14T14:30:49.018818",
+            "rotated_at": "2026-10-14T14:30:49.017299",
+            "updated_at": "2026-10-14T14:30:49.018818",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "AAhcZcoFg2TM6aZhVyo+c8DSsmQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 112,
+            "seen_at": "2026-10-14T14:30:49.958224",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "AAhcZcoFg2TM6aZhVyo+c8DSsmQ=",
+            "created_at": "2026-10-14T14:30:49.018818",
+            "rotated_at": "2026-10-14T14:30:49.017299",
+            "updated_at": "2026-10-14T14:30:49.018818",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "AAhcZcoFg2TM6aZhVyo+c8DSsmQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 29,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "badges.first_like.name",
+          "topic_id": null,
+          "new_value": "Liked once",
+          "admin_only": true,
+          "created_at": "2026-10-14T14:30:49.98724",
+          "ip_address": null,
+          "updated_at": "2026-10-14T14:30:49.98724",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "First Like",
+          "target_user_id": null
+        },
+        {
+          "id": 75,
+          "email": null,
+          "action": 29,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "badges.first_like.description",
+          "topic_id": null,
+          "new_value": "Liked a post once",
+          "admin_only": true,
+          "created_at": "2026-10-14T14:30:50.293317",
+          "ip_address": null,
+          "updated_at": "2026-10-14T14:30:50.293317",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "Liked a post",
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [
+    [
+      "bulk_user_title_update",
+      {
+        "new_title": "Liked once",
+        "granted_badge_id": 11,
+        "action": "update"
+      }
+    ]
+  ],
+  "next_ids": {
+    "translation_overrides": 1,
+    "user_histories": 74
+  },
+  "recorded_from": {
+    "case": "3202217417a48853d020b74730538b4437c6cdc9792fff059a74001aa15c0aaa",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

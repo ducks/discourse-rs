@@ -464,8 +464,7 @@ pub async fn test(
     let host = crate::pretty_text::Host::from_state(&state);
     let ctx = sender_ctx(&state, &host, &s);
     let built =
-        crate::email::account::build_template(&mut tx, &ctx, "test_mailer", &address, &[], None)
-            .await?;
+        crate::email::account::build_template(&ctx, "test_mailer", &address, &[], None).await?;
     // Rails answers any error with a 422 and Ruby's message, which only
     // an SMTP server's refusal would give the same: the port's errors
     // stay errors.

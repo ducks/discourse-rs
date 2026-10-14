@@ -147,6 +147,10 @@ pub async fn claim(pool: &PgPool) -> Result<Option<Job>, sqlx::Error> {
 /// Runs a claimed job and records how it ended.
 pub async fn perform(state: &AppState, job: Job) -> Result<(), sqlx::Error> {
     stamp_performed(&state.pool).await?;
+    state
+        .i18n
+        .refresh_overrides(&mut *state.pool.acquire().await?)
+        .await?;
     let result = handlers::run(state, &job).await;
     let pool = &state.pool;
     match result {
@@ -543,6 +547,7 @@ pub async fn run_scheduled(state: &AppState, name: &str) -> Result<(), AppError>
         if crate::readonly::mode(&mut conn).await?.site_readonly() {
             return Ok(());
         }
+        state.i18n.refresh_overrides(&mut conn).await?;
     }
     match name {
         "regenerate_sitemaps" => crate::routes::regenerate_sitemaps(state).await,

@@ -1,0 +1,7 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "GET", "path": "/admin/customize/site_texts.json?q=topic%20timer&locale=en&page=1"},
+    {"method": "GET", "path": "/admin/customize/site_texts.json?q=topic%20timer&locale=en&page=-1"}
+  ]
+}

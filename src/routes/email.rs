@@ -38,24 +38,11 @@ struct EmailPage {
     html: String,
 }
 
-/// The views' texts in English, as the site has them.
-async fn refuse_untranslated(
-    conn: &mut sqlx::PgConnection,
-    settings: &SiteSettings,
-) -> Result<(), AppError> {
+/// The views' texts in English (with the site's overrides).
+fn refuse_untranslated(settings: &SiteSettings) -> Result<(), AppError> {
     let locale = settings.get("default_locale")?.to_s();
     if locale != "en" {
         return Err(Unsupported("the unsubscribe pages in locales other than English").into());
-    }
-    let overridden: bool = sqlx::query_scalar(
-        "SELECT EXISTS (SELECT 1 FROM translation_overrides WHERE locale = $1 \
-         AND (translation_key LIKE 'unsubscribe.%' OR translation_key LIKE 'unsubscribed.%'))",
-    )
-    .bind(&locale)
-    .fetch_one(&mut *conn)
-    .await?;
-    if overridden {
-        return Err(Unsupported("translation overrides of the unsubscribe pages").into());
     }
     Ok(())
 }
@@ -121,7 +108,7 @@ pub async fn unsubscribe(
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
-    refuse_untranslated(&mut conn, &settings).await?;
+    refuse_untranslated(&settings)?;
     let urls = Urls {
         config: &state.config,
         settings: &settings,
@@ -327,7 +314,7 @@ pub async fn unsubscribed(
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
-    refuse_untranslated(&mut conn, &settings).await?;
+    refuse_untranslated(&settings)?;
     let email = match crate::params::string(&params, "key") {
         Some(key) => crate::owned_schema::cached_get(&mut conn, &format!("_CACHE:{key}")).await?,
         None => None,

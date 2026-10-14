@@ -474,7 +474,20 @@ then by what running a forum needs (milestone 6). Briefs:
     and networks (none configured, as without one in Rails), IDNA hosts,
     enable_performance_http_headers' SQL and Redis timings)
 90. `feat/themes` L: themes and components, color schemes, site texts
-    (translation overrides), sidebar defaults, the /admin/config pages,
+    (translation overrides), sidebar defaults, the /admin/config pages.
+    Split: 90a. ~~`feat/site-texts`~~ (done) M (translation overrides
+    over every `I18n.t` of the port, server and client strings alike,
+    read again when the table changes; Admin::SiteTextsController's
+    index with I18n.search over the reference's recorded English tree,
+    glibc's merge sort for its ties, show, update with sanitize_field
+    and TranslationOverride's validations and statuses, revert,
+    dismiss_outdated, theme translations, the reseed options; overridden
+    email templates (subjects with MessageBuilder's augmented arguments,
+    bodies cooked without the notification view), digests and
+    unsubscribe pages no longer refused. Refused: other locales,
+    MessageFormat (`_MF`) keys, POST reseed, the Ember admin page),
+    90b. `feat/color-schemes` M, 90c. `feat/sidebar-defaults` M, 90d.
+    `feat/themes` L,
     91. `feat/backups` L (creating, listing, downloading, restoring
     through the app; read-only mode is 79c), split:
     91a. ~~`feat/backup-files`~~ (done) M (the local store under

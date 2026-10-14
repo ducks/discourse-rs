@@ -1,0 +1,134 @@
+{
+  "name": "index_recommended",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/customize/site_texts.json?locale=en"
+    }
+  ],
+  "started_at": "2026-10-14T14:30:22.611075",
+  "transaction_started_at": "2026-10-14T14:30:19.849385",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "site_texts": [
+          {
+            "id": "education.new-reply",
+            "value": "Thanks for contributing to %{site_name}!\n\nRemember, we're all real people. Please be kind to your fellow community members.\n\nFor more tips and advice on participating in our community, [check out our community guidelines](%{base_path}/guidelines).\n",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "base_path",
+              "site_name"
+            ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "education.new-topic",
+            "value": "Thanks for contributing to %{site_name}!\n\nBefore you post, please select a category or tag to group this topic with related discussions so that it's easy for others to find it.\n\nFor more tips and advice on participating in our community, [check out our community guidelines](%{base_path}/guidelines).\n",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "base_path",
+              "site_name"
+            ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "login_required.welcome_message",
+            "value": "# Welcome to %{title}",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "title"
+            ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "system_messages.usage_tips.text_body_template",
+            "value": "For a few quick tips on getting started as a new user, [check out this blog post](https://blog.discourse.org/2016/12/discourse-new-user-tips-and-tricks/).\n\nAs you participate here, we’ll get to know you, and temporary new user limitations will be lifted. Over time you’ll gain [trust levels](https://blog.discourse.org/2018/06/understanding-discourse-trust-levels/) that include special abilities to help us manage our community together.\n",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          }
+        ],
+        "__rest_serializer": "1",
+        "extras": {
+          "themes": [
+            {
+              "id": -1,
+              "name": "Foundation",
+              "enabled": true
+            },
+            {
+              "id": -2,
+              "name": "Horizon",
+              "enabled": true
+            }
+          ],
+          "recommended": true
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 112,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "yxsbNQJ95nnAcWC4FqtTLuFcRgY=",
+            "created_at": "2026-10-14T14:30:21.480563",
+            "rotated_at": "2026-10-14T14:30:21.474397",
+            "updated_at": "2026-10-14T14:30:21.480563",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "yxsbNQJ95nnAcWC4FqtTLuFcRgY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 112,
+            "seen_at": "2026-10-14T14:30:22.62223",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "yxsbNQJ95nnAcWC4FqtTLuFcRgY=",
+            "created_at": "2026-10-14T14:30:21.480563",
+            "rotated_at": "2026-10-14T14:30:21.474397",
+            "updated_at": "2026-10-14T14:30:21.480563",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "yxsbNQJ95nnAcWC4FqtTLuFcRgY=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "a5812f5764b17ca0130bdbb4eb8fd16e439fcc1c95352a6adb91adcddcbbe5d5",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

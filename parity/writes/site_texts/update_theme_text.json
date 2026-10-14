@@ -1,0 +1,1725 @@
+{
+  "name": "update_theme_text",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/customize/site_texts/js.theme_translations.-2.solved.json",
+      "params": {
+        "site_text": {
+          "value": "Answered",
+          "locale": "en"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/customize/site_texts/js.theme_translations.-2.solved.json",
+      "params": {
+        "site_text": {
+          "value": "Done",
+          "locale": "en"
+        }
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/customize/site_texts/js.theme_translations.-2.solved.json?locale=en"
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/customize/site_texts/js.theme_translations.-2.unsolved.json",
+      "params": {
+        "site_text": {
+          "value": "Unsolved",
+          "locale": "en"
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-14T14:30:58.775524",
+  "transaction_started_at": "2026-10-14T14:30:57.38426",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "site_text": {
+          "id": "js.theme_translations.-2.solved",
+          "value": "Answered",
+          "status": "up_to_date",
+          "old_default": null,
+          "new_default": "Solved",
+          "overridden": true,
+          "can_revert": true,
+          "interpolation_keys": []
+        },
+        "__rest_serializer": "1"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "site_text": {
+          "id": "js.theme_translations.-2.solved",
+          "value": "Done",
+          "status": "up_to_date",
+          "old_default": null,
+          "new_default": "Solved",
+          "overridden": true,
+          "can_revert": true,
+          "interpolation_keys": []
+        },
+        "__rest_serializer": "1"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "site_text": {
+          "id": "js.theme_translations.-2.solved",
+          "value": "Solved",
+          "status": "up_to_date",
+          "old_default": null,
+          "new_default": "Solved",
+          "overridden": false,
+          "can_revert": false,
+          "interpolation_keys": []
+        },
+        "__rest_serializer": "1"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "site_text": {
+          "id": "js.theme_translations.-2.unsolved",
+          "value": "Unsolved",
+          "status": "up_to_date",
+          "old_default": null,
+          "new_default": "Unsolved",
+          "overridden": false,
+          "can_revert": false,
+          "interpolation_keys": []
+        },
+        "__rest_serializer": "1"
+      }
+    }
+  ],
+  "changes": {
+    "theme_fields": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 119,
+            "name": "sw",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nsw:\n  solved: \"Imetatuliwa\"\n  posted: \"ameandika\"\n  reply_count:\n    one: \"%{count} jibu\"\n    other: \"%{count} majibu\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.827633",
+            "updated_at": "2026-07-25T05:58:17.827633",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/6d204ae10f27940cda4b45587ae5245b962313e8.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 119,
+            "name": "sw",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nsw:\n  solved: \"Imetatuliwa\"\n  posted: \"ameandika\"\n  reply_count:\n    one: \"%{count} jibu\"\n    other: \"%{count} majibu\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.827633",
+            "updated_at": "2026-07-25T05:58:17.827633",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 121,
+            "name": "th",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nth:\n  solved: \"แก้ไขแล้ว\"\n  posted: \"โพสต์แล้ว\"\n  reply_count:\n    other: \"%{count} ตอบ\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.830617",
+            "updated_at": "2026-07-25T05:58:17.830617",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/cbb18b5401751fe9fba3047c804f4be8cdb8afcc.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 121,
+            "name": "th",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nth:\n  solved: \"แก้ไขแล้ว\"\n  posted: \"โพสต์แล้ว\"\n  reply_count:\n    other: \"%{count} ตอบ\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.830617",
+            "updated_at": "2026-07-25T05:58:17.830617",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 90,
+            "name": "en_GB",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nen_GB:\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.786091",
+            "updated_at": "2026-07-25T05:58:17.786091",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/88d86c6f3598a059978fa451efbbc14e354ea89c.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 90,
+            "name": "en_GB",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nen_GB:\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.786091",
+            "updated_at": "2026-07-25T05:58:17.786091",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 103,
+            "name": "ja",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nja:\n  solved: \"解決済み\"\n  unsolved: \"未解決\"\n  posted: \"投稿しました\"\n  by_username: \"作成者: @%{username}\"\n  replied: \"返信済み\"\n  vote_count:\n    other: \"%{count} 票\"\n  like_count:\n    other: \"「いいね！」 %{count}\"\n  reply_count:\n    other: \"返信: %{count} 件\"\n  theme_metadata:\n    description: \"Discourse サイトのすぐに使用できるエクスペリエンスを向上させる、シンプルで美しいテーマ\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.804627",
+            "updated_at": "2026-07-25T05:58:17.804627",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/472955703883467aee23a992b07692772a6dbf80.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 103,
+            "name": "ja",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nja:\n  solved: \"解決済み\"\n  unsolved: \"未解決\"\n  posted: \"投稿しました\"\n  by_username: \"作成者: @%{username}\"\n  replied: \"返信済み\"\n  vote_count:\n    other: \"%{count} 票\"\n  like_count:\n    other: \"「いいね！」 %{count}\"\n  reply_count:\n    other: \"返信: %{count} 件\"\n  theme_metadata:\n    description: \"Discourse サイトのすぐに使用できるエクスペリエンスを向上させる、シンプルで美しいテーマ\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.804627",
+            "updated_at": "2026-07-25T05:58:17.804627",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 106,
+            "name": "lv",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nlv:\n  posted: \"ierakstīts\"\n  reply_count:\n    zero: \"%{count} atbildes\"\n    one: \"%{count} atbilde\"\n    other: \"%{count} atbildes\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.808916",
+            "updated_at": "2026-07-25T05:58:17.808916",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/77e92afc66b2645a6ede203aa7c74ffd4ac41c64.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 106,
+            "name": "lv",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nlv:\n  posted: \"ierakstīts\"\n  reply_count:\n    zero: \"%{count} atbildes\"\n    one: \"%{count} atbilde\"\n    other: \"%{count} atbildes\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.808916",
+            "updated_at": "2026-07-25T05:58:17.808916",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 86,
+            "name": "da",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nda:\n  solved: \"Løst\"\n  posted: \"sidste indlæg\"\n  vote_count:\n    one: \"%{count} stemme\"\n    other: \"%{count} stemmer\"\n  like_count:\n    one: \"%{count} Synes om\"\n    other: \"%{count} Synes om\"\n  reply_count:\n    one: \"%{count} svar\"\n    other: \"%{count} svar\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.768709",
+            "updated_at": "2026-07-25T05:58:17.768709",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/41fba44c71c7b9f227681508e79f695dddea3a86.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 86,
+            "name": "da",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nda:\n  solved: \"Løst\"\n  posted: \"sidste indlæg\"\n  vote_count:\n    one: \"%{count} stemme\"\n    other: \"%{count} stemmer\"\n  like_count:\n    one: \"%{count} Synes om\"\n    other: \"%{count} Synes om\"\n  reply_count:\n    one: \"%{count} svar\"\n    other: \"%{count} svar\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.768709",
+            "updated_at": "2026-07-25T05:58:17.768709",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 82,
+            "name": "bg",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nbg:\n  posted: \"публикувано\"\n  vote_count:\n    one: \"%{count} глас\"\n    other: \"%{count} гласа\"\n  reply_count:\n    one: \"%{count} отговор\"\n    other: \"%{count} отговора\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.763272",
+            "updated_at": "2026-07-25T05:58:17.763272",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/e571404bf5dc214017f1066eaa64486471256d27.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 82,
+            "name": "bg",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nbg:\n  posted: \"публикувано\"\n  vote_count:\n    one: \"%{count} глас\"\n    other: \"%{count} гласа\"\n  reply_count:\n    one: \"%{count} отговор\"\n    other: \"%{count} отговора\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.763272",
+            "updated_at": "2026-07-25T05:58:17.763272",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 89,
+            "name": "en",
+            "error": null,
+            "value": "en:\n  solved: \"Solved\"\n  unsolved: \"Unsolved\"\n  posted: \"posted\"\n  by_username: \"by @%{username}\"\n  replied: \"replied\"\n  vote_count:\n    one: \"%{count} vote\"\n    other: \"%{count} votes\"\n  like_count:\n    one: \"%{count} like\"\n    other: \"%{count} likes\"\n  reply_count:\n    one: \"%{count} reply\"\n    other: \"%{count} replies\"\n  theme_metadata:\n    description: \"A simple, beautiful theme that improves the out of the box experience for Discourse sites.\"\n    settings:\n      topic_card_high_context:\n        description: \"When enabled, displays additional context on topic cards including tags, excerpts, solved status, assigned users, and vote counts\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.772771",
+            "updated_at": "2026-07-25T05:58:17.772771",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/5f7ea291bd7a34bc754eacf2f2e3c7423d261662.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 89,
+            "name": "en",
+            "error": null,
+            "value": "en:\n  solved: \"Solved\"\n  unsolved: \"Unsolved\"\n  posted: \"posted\"\n  by_username: \"by @%{username}\"\n  replied: \"replied\"\n  vote_count:\n    one: \"%{count} vote\"\n    other: \"%{count} votes\"\n  like_count:\n    one: \"%{count} like\"\n    other: \"%{count} likes\"\n  reply_count:\n    one: \"%{count} reply\"\n    other: \"%{count} replies\"\n  theme_metadata:\n    description: \"A simple, beautiful theme that improves the out of the box experience for Discourse sites.\"\n    settings:\n      topic_card_high_context:\n        description: \"When enabled, displays additional context on topic cards including tags, excerpts, solved status, assigned users, and vote counts\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.772771",
+            "updated_at": "2026-07-25T05:58:17.772771",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 81,
+            "name": "be",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nbe:\n  posted: \"адправіў\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.761648",
+            "updated_at": "2026-07-25T05:58:17.761648",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/d21f1012b79009af0d1566e0262f3d6e46a57844.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 81,
+            "name": "be",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nbe:\n  posted: \"адправіў\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.761648",
+            "updated_at": "2026-07-25T05:58:17.761648",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 85,
+            "name": "cs",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\ncs:\n  solved: \"Vyřešeno\"\n  unsolved: \"Nevyřešeno\"\n  posted: \"poslední příspěvek\"\n  by_username: \"@%{username}\"\n  replied: \"odpověděl/a\"\n  vote_count:\n    one: \"%{count} hlas\"\n    few: \"%{count} hlasy\"\n    many: \"%{count} hlasy\"\n    other: \"%{count} hlasy\"\n  like_count:\n    one: \"%{count} líbí se\"\n    few: \"%{count} líbí se\"\n    many: \"%{count} líbí se\"\n    other: \"%{count} líbí se\"\n  reply_count:\n    one: \"%{count} odpověď\"\n    few: \"%{count} odpovědí\"\n    many: \"%{count} odpovědí\"\n    other: \"%{count} odpovědí\"\n  theme_metadata:\n    description: \"Jednoduché a krásné téma, které vylepšuje zážitek z prostředí Discourse ihned po instalaci.\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.767393",
+            "updated_at": "2026-07-25T05:58:17.767393",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/8866d89a599710462abd73fff68d503fae8de5c9.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 85,
+            "name": "cs",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\ncs:\n  solved: \"Vyřešeno\"\n  unsolved: \"Nevyřešeno\"\n  posted: \"poslední příspěvek\"\n  by_username: \"@%{username}\"\n  replied: \"odpověděl/a\"\n  vote_count:\n    one: \"%{count} hlas\"\n    few: \"%{count} hlasy\"\n    many: \"%{count} hlasy\"\n    other: \"%{count} hlasy\"\n  like_count:\n    one: \"%{count} líbí se\"\n    few: \"%{count} líbí se\"\n    many: \"%{count} líbí se\"\n    other: \"%{count} líbí se\"\n  reply_count:\n    one: \"%{count} odpověď\"\n    few: \"%{count} odpovědí\"\n    many: \"%{count} odpovědí\"\n    other: \"%{count} odpovědí\"\n  theme_metadata:\n    description: \"Jednoduché a krásné téma, které vylepšuje zážitek z prostředí Discourse ihned po instalaci.\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.767393",
+            "updated_at": "2026-07-25T05:58:17.767393",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 118,
+            "name": "sv",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nsv:\n  solved: \"Löst\"\n  posted: \"publicerade\"\n  by_username: \"av @%{username}\"\n  vote_count:\n    one: \"%{count} röst\"\n    other: \"%{count} röster\"\n  like_count:\n    one: \"%{count} gillning\"\n    other: \"%{count} gillningar\"\n  reply_count:\n    one: \"%{count} svar\"\n    other: \"%{count} svar\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.826267",
+            "updated_at": "2026-07-25T05:58:17.826267",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/c6b6c77b7dab025c22a7b96be80e1328f38cda9d.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 118,
+            "name": "sv",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nsv:\n  solved: \"Löst\"\n  posted: \"publicerade\"\n  by_username: \"av @%{username}\"\n  vote_count:\n    one: \"%{count} röst\"\n    other: \"%{count} röster\"\n  like_count:\n    one: \"%{count} gillning\"\n    other: \"%{count} gillningar\"\n  reply_count:\n    one: \"%{count} svar\"\n    other: \"%{count} svar\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.826267",
+            "updated_at": "2026-07-25T05:58:17.826267",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 102,
+            "name": "it",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nit:\n  solved: \"Risolti\"\n  posted: \"pubblicato\"\n  by_username: \"da @%{username}\"\n  vote_count:\n    one: \"%{count} voto\"\n    other: \"%{count} voti\"\n  like_count:\n    one: \"%{count} \\\"Mi piace\\\"\"\n    other: \"%{count} \\\"Mi piace\\\"\"\n  reply_count:\n    one: \"%{count} risposta\"\n    other: \"%{count} risposte\"\n  theme_metadata:\n    description: \"Un tema semplice e accattivante che migliora l'esperienza immediata dei siti Discourse.\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.803292",
+            "updated_at": "2026-07-25T05:58:17.803292",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/bf9b9b3bf1f6c9d15fb2eedd0562c60e1a812b82.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 102,
+            "name": "it",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nit:\n  solved: \"Risolti\"\n  posted: \"pubblicato\"\n  by_username: \"da @%{username}\"\n  vote_count:\n    one: \"%{count} voto\"\n    other: \"%{count} voti\"\n  like_count:\n    one: \"%{count} \\\"Mi piace\\\"\"\n    other: \"%{count} \\\"Mi piace\\\"\"\n  reply_count:\n    one: \"%{count} risposta\"\n    other: \"%{count} risposte\"\n  theme_metadata:\n    description: \"Un tema semplice e accattivante che migliora l'esperienza immediata dei siti Discourse.\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.803292",
+            "updated_at": "2026-07-25T05:58:17.803292",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 120,
+            "name": "te",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nte:\n  posted: \"పోస్ట్ చేయబడింది\"\n  like_count:\n    one: \"%{count} ఇష్టం\"\n    other: \"%{count} ఇష్టాలు\"\n  reply_count:\n    one: \"%{count} ప్రత్యుత్తరం\"\n    other: \"%{count} ప్రత్యుత్తరాలు\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.828967",
+            "updated_at": "2026-07-25T05:58:17.828967",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/c36e6ec9b7aeeb00e909308f4ca180f99bc45b96.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 120,
+            "name": "te",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nte:\n  posted: \"పోస్ట్ చేయబడింది\"\n  like_count:\n    one: \"%{count} ఇష్టం\"\n    other: \"%{count} ఇష్టాలు\"\n  reply_count:\n    one: \"%{count} ప్రత్యుత్తరం\"\n    other: \"%{count} ప్రత్యుత్తరాలు\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.828967",
+            "updated_at": "2026-07-25T05:58:17.828967",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 80,
+            "name": "ar",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nar:\n  solved: \"تم الحل\"\n  unsolved: \"لم يُحل بعد\"\n  posted: \"تم النشر\"\n  by_username: \"من قِبل @%{username}\"\n  replied: \"تم الرد\"\n  vote_count:\n    zero: \"%{count} من الأصوات\"\n    one: \"صوت واحد %{count}\"\n    two: \"صوتان %{count}\"\n    few: \"%{count} أصوات\"\n    many: \"%{count} صوتًا\"\n    other: \"%{count} صوت\"\n  like_count:\n    zero: \"%{count} من الإعجابات\"\n    one: \"إعجاب واحد (%{count})\"\n    two: \"إعجابان (%{count})\"\n    few: \"%{count} إعجابات\"\n    many: \"%{count} إعجابًا\"\n    other: \"%{count} إعجاب\"\n  reply_count:\n    zero: \"%{count} من الردود\"\n    one: \"رد واحد (%{count})\"\n    two: \"ردَّان (%{count})\"\n    few: \"%{count} ردود\"\n    many: \"%{count} ردًا\"\n    other: \"%{count} رد\"\n  theme_metadata:\n    description: \"سمة سهلة وجذابة تسهم في تحسين تجربة التشغيل الافتراضية لمواقع Discourse.\"\n    settings:\n      topic_card_high_context:\n        description: \"عند تفعيله، يعرض السياق الإضافي على بطاقات الموضوعات، بما في ذلك الوسوم والمقتطفات وحالة الحل والمستخدمين المعيَّنين وأعداد الأصوات\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.760353",
+            "updated_at": "2026-09-27T21:00:29.481814",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/73fbb88a09b46bf77d25d9f33f7f87a173c3b191.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 80,
+            "name": "ar",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nar:\n  solved: \"تم الحل\"\n  unsolved: \"لم يُحل بعد\"\n  posted: \"تم النشر\"\n  by_username: \"من قِبل @%{username}\"\n  replied: \"تم الرد\"\n  vote_count:\n    zero: \"%{count} من الأصوات\"\n    one: \"صوت واحد %{count}\"\n    two: \"صوتان %{count}\"\n    few: \"%{count} أصوات\"\n    many: \"%{count} صوتًا\"\n    other: \"%{count} صوت\"\n  like_count:\n    zero: \"%{count} من الإعجابات\"\n    one: \"إعجاب واحد (%{count})\"\n    two: \"إعجابان (%{count})\"\n    few: \"%{count} إعجابات\"\n    many: \"%{count} إعجابًا\"\n    other: \"%{count} إعجاب\"\n  reply_count:\n    zero: \"%{count} من الردود\"\n    one: \"رد واحد (%{count})\"\n    two: \"ردَّان (%{count})\"\n    few: \"%{count} ردود\"\n    many: \"%{count} ردًا\"\n    other: \"%{count} رد\"\n  theme_metadata:\n    description: \"سمة سهلة وجذابة تسهم في تحسين تجربة التشغيل الافتراضية لمواقع Discourse.\"\n    settings:\n      topic_card_high_context:\n        description: \"عند تفعيله، يعرض السياق الإضافي على بطاقات الموضوعات، بما في ذلك الوسوم والمقتطفات وحالة الحل والمستخدمين المعيَّنين وأعداد الأصوات\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.760353",
+            "updated_at": "2026-09-27T21:00:29.481814",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 107,
+            "name": "nb_NO",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nnb_NO:\n  solved: \"Løst\"\n  posted: \"skrevet\"\n  reply_count:\n    one: \"%{count} svar\"\n    other: \"%{count} svar\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.810144",
+            "updated_at": "2026-07-25T05:58:17.810144",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/e4349ee2ae34311471263fd0f9c7a9d77163ec92.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 107,
+            "name": "nb_NO",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nnb_NO:\n  solved: \"Løst\"\n  posted: \"skrevet\"\n  reply_count:\n    one: \"%{count} svar\"\n    other: \"%{count} svar\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.810144",
+            "updated_at": "2026-07-25T05:58:17.810144",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 95,
+            "name": "fr",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nfr:\n  solved: \"Résolu\"\n  unsolved: \"Non résolu\"\n  posted: \"publié\"\n  by_username: \"par @%{username}\"\n  replied: \"a répondu\"\n  vote_count:\n    one: \"%{count} vote\"\n    other: \"%{count} votes\"\n  like_count:\n    one: \"%{count} « J'aime »\"\n    other: \"%{count} « J'aime »\"\n  reply_count:\n    one: \"%{count} réponse\"\n    other: \"%{count} réponses\"\n  theme_metadata:\n    description: \"Un thème simple et élégant qui améliore l'expérience prête à l'emploi pour les sites Discourse.\"\n    settings:\n      topic_card_high_context:\n        description: \"Lorsque ce paramètre est activé, des informations contextuelles supplémentaires sont affichées sur les cartes de sujet, notamment les étiquettes, les extraits, le statut de résolution, les utilisateurs assignés et le nombre de votes.\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.793165",
+            "updated_at": "2026-09-27T21:00:29.482699",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/0277d927cfd77060e4c7071e808beb2029a8651f.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 95,
+            "name": "fr",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nfr:\n  solved: \"Résolu\"\n  unsolved: \"Non résolu\"\n  posted: \"publié\"\n  by_username: \"par @%{username}\"\n  replied: \"a répondu\"\n  vote_count:\n    one: \"%{count} vote\"\n    other: \"%{count} votes\"\n  like_count:\n    one: \"%{count} « J'aime »\"\n    other: \"%{count} « J'aime »\"\n  reply_count:\n    one: \"%{count} réponse\"\n    other: \"%{count} réponses\"\n  theme_metadata:\n    description: \"Un thème simple et élégant qui améliore l'expérience prête à l'emploi pour les sites Discourse.\"\n    settings:\n      topic_card_high_context:\n        description: \"Lorsque ce paramètre est activé, des informations contextuelles supplémentaires sont affichées sur les cartes de sujet, notamment les étiquettes, les extraits, le statut de résolution, les utilisateurs assignés et le nombre de votes.\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.793165",
+            "updated_at": "2026-09-27T21:00:29.482699",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 97,
+            "name": "he",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nhe:\n  solved: \"נפתר\"\n  posted: \"פורסם\"\n  by_username: \"מאת ‎@%{username}\"\n  vote_count:\n    one: \"הצבעה\"\n    two: \"שתי הצבעות\"\n    other: \"%{count} הצבעות\"\n  like_count:\n    one: \"לייק %{count}\"\n    two: \"%{count} לייקים\"\n    other: \"%{count} לייקים\"\n  reply_count:\n    one: \"תגובה\"\n    two: \"שתי תגובות\"\n    other: \"%{count} תגובות\"\n  theme_metadata:\n    description: \"ערכת נושא פשוטה ויפה שמשפרת את חוויית השימוש באתרי Discourse.\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.79597",
+            "updated_at": "2026-09-27T21:00:29.483717",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/54cdff2b1124f470c07d5ac11ad3399d075ff25d.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 97,
+            "name": "he",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nhe:\n  solved: \"נפתר\"\n  posted: \"פורסם\"\n  by_username: \"מאת ‎@%{username}\"\n  vote_count:\n    one: \"הצבעה\"\n    two: \"שתי הצבעות\"\n    other: \"%{count} הצבעות\"\n  like_count:\n    one: \"לייק %{count}\"\n    two: \"%{count} לייקים\"\n    other: \"%{count} לייקים\"\n  reply_count:\n    one: \"תגובה\"\n    two: \"שתי תגובות\"\n    other: \"%{count} תגובות\"\n  theme_metadata:\n    description: \"ערכת נושא פשוטה ויפה שמשפרת את חוויית השימוש באתרי Discourse.\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.79597",
+            "updated_at": "2026-09-27T21:00:29.483717",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 93,
+            "name": "fa_IR",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nfa_IR:\n  solved: \"حل شده\"\n  posted: \"ارسال شده\"\n  vote_count:\n    one: \"%{count} رای\"\n    other: \"%{count} رای\"\n  like_count:\n    one: \"%{count} پسندیده\"\n    other: \"%{count} پسندیده\"\n  reply_count:\n    one: \"%{count} پاسخ\"\n    other: \"%{count} پاسخ\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.790456",
+            "updated_at": "2026-07-25T05:58:17.790456",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/90bf79f775db0e0b140b9a111d93c9eb448f93a1.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 93,
+            "name": "fa_IR",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nfa_IR:\n  solved: \"حل شده\"\n  posted: \"ارسال شده\"\n  vote_count:\n    one: \"%{count} رای\"\n    other: \"%{count} رای\"\n  like_count:\n    one: \"%{count} پسندیده\"\n    other: \"%{count} پسندیده\"\n  reply_count:\n    one: \"%{count} پاسخ\"\n    other: \"%{count} پاسخ\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.790456",
+            "updated_at": "2026-07-25T05:58:17.790456",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 125,
+            "name": "ur",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nur:\n  solved: \"حل شدہ\"\n  unsolved: \"غیر حل شدہ\"\n  posted: \"نشر کیا\"\n  by_username: \"@%{username} کی تخلیق\"\n  replied: \"نے جواب دیا\"\n  vote_count:\n    one: \"%{count} ووٹ\"\n    other: \"%{count} ووٹ\"\n  like_count:\n    one: \"%{count} پسندیدگی\"\n    other: \"%{count} پسندیدگیاں\"\n  reply_count:\n    one: \"%{count} جواب\"\n    other: \"%{count} جوابات\"\n  theme_metadata:\n    description: \"ایک سادہ، خوبصورت تھیم جو Discourse فورم کے آؤٹ آف دی باکس تجربے کو بہتر بناتی ہے۔\"\n    settings:\n      topic_card_high_context:\n        description: \"فعال ہو تو، ٹاپک کارڈز پر اضافی سیاق و سباق بشمول ٹیگز، اقتباسات، حل شدہ حیثیت، تفویض کردہ صارفین، اور ووٹوں کی تعداد دکھاتا ہے\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.836538",
+            "updated_at": "2026-09-27T21:00:29.484459",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/0f24989f311b8d64d346b33adf94bdaca3a607bd.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 125,
+            "name": "ur",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nur:\n  solved: \"حل شدہ\"\n  unsolved: \"غیر حل شدہ\"\n  posted: \"نشر کیا\"\n  by_username: \"@%{username} کی تخلیق\"\n  replied: \"نے جواب دیا\"\n  vote_count:\n    one: \"%{count} ووٹ\"\n    other: \"%{count} ووٹ\"\n  like_count:\n    one: \"%{count} پسندیدگی\"\n    other: \"%{count} پسندیدگیاں\"\n  reply_count:\n    one: \"%{count} جواب\"\n    other: \"%{count} جوابات\"\n  theme_metadata:\n    description: \"ایک سادہ، خوبصورت تھیم جو Discourse فورم کے آؤٹ آف دی باکس تجربے کو بہتر بناتی ہے۔\"\n    settings:\n      topic_card_high_context:\n        description: \"فعال ہو تو، ٹاپک کارڈز پر اضافی سیاق و سباق بشمول ٹیگز، اقتباسات، حل شدہ حیثیت، تفویض کردہ صارفین، اور ووٹوں کی تعداد دکھاتا ہے\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.836538",
+            "updated_at": "2026-09-27T21:00:29.484459",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 127,
+            "name": "zh_CN",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nzh_CN:\n  solved: \"已解决\"\n  unsolved: \"未解决\"\n  posted: \"已发布\"\n  by_username: \"作者：@%{username}\"\n  replied: \"回复\"\n  vote_count:\n    other: \"%{count} 票\"\n  like_count:\n    other: \"%{count} 个赞\"\n  reply_count:\n    other: \"%{count} 条回复\"\n  theme_metadata:\n    description: \"一个简单、美观的主题，可以改善 Discourse 站点的开箱即用体验。\"\n    settings:\n      topic_card_high_context:\n        description: \"启用后，会在话题卡片上显示更多上下文信息，包括标签、摘要、已解决状态、指定的用户和投票数\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.865158",
+            "updated_at": "2026-09-27T21:00:29.485051",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/bd7f677900c8510ae27921422405239d376beb3d.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 127,
+            "name": "zh_CN",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nzh_CN:\n  solved: \"已解决\"\n  unsolved: \"未解决\"\n  posted: \"已发布\"\n  by_username: \"作者：@%{username}\"\n  replied: \"回复\"\n  vote_count:\n    other: \"%{count} 票\"\n  like_count:\n    other: \"%{count} 个赞\"\n  reply_count:\n    other: \"%{count} 条回复\"\n  theme_metadata:\n    description: \"一个简单、美观的主题，可以改善 Discourse 站点的开箱即用体验。\"\n    settings:\n      topic_card_high_context:\n        description: \"启用后，会在话题卡片上显示更多上下文信息，包括标签、摘要、已解决状态、指定的用户和投票数\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.865158",
+            "updated_at": "2026-09-27T21:00:29.485051",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 128,
+            "name": "zh_TW",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nzh_TW:\n  solved: \"已解決\"\n  unsolved: \"未解決\"\n  posted: \"發表於\"\n  by_username: \"由 @%{username}\"\n  replied: \"已回覆\"\n  vote_count:\n    other: \"%{count} 票\"\n  like_count:\n    other: \"%{count}個讚\"\n  reply_count:\n    other: \"%{count}個回覆\"\n  theme_metadata:\n    description: \"簡潔優美的佈景主題，可改善 Discourse 網站的預設使用體驗。\"\n    settings:\n      topic_card_high_context:\n        description: \"啟用時會在主題卡片顯示額外脈絡資訊，包括標籤、摘要、解決狀態、指派使用者及票數。\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.86684",
+            "updated_at": "2026-09-27T21:00:29.485629",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/d6d66cbc2d505681bc78eba3017baaa4717e3b1e.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 128,
+            "name": "zh_TW",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nzh_TW:\n  solved: \"已解決\"\n  unsolved: \"未解決\"\n  posted: \"發表於\"\n  by_username: \"由 @%{username}\"\n  replied: \"已回覆\"\n  vote_count:\n    other: \"%{count} 票\"\n  like_count:\n    other: \"%{count}個讚\"\n  reply_count:\n    other: \"%{count}個回覆\"\n  theme_metadata:\n    description: \"簡潔優美的佈景主題，可改善 Discourse 網站的預設使用體驗。\"\n    settings:\n      topic_card_high_context:\n        description: \"啟用時會在主題卡片顯示額外脈絡資訊，包括標籤、摘要、解決狀態、指派使用者及票數。\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.86684",
+            "updated_at": "2026-09-27T21:00:29.485629",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 83,
+            "name": "bs_BA",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nbs_BA:\n  solved: \"Riješeno\"\n  posted: \"zadnja objava\"\n  vote_count:\n    one: \"%{count} glas\"\n    few: \"%{count} glasova\"\n    other: \"%{count} glasova\"\n  reply_count:\n    one: \"%{count} odgovor\"\n    few: \"%{count} odgovora\"\n    other: \"%{count} odgovora\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.764604",
+            "updated_at": "2026-07-25T05:58:17.764604",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/4d6bdefe652e07214fa632b53cf538ad25d2df57.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 83,
+            "name": "bs_BA",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nbs_BA:\n  solved: \"Riješeno\"\n  posted: \"zadnja objava\"\n  vote_count:\n    one: \"%{count} glas\"\n    few: \"%{count} glasova\"\n    other: \"%{count} glasova\"\n  reply_count:\n    one: \"%{count} odgovor\"\n    few: \"%{count} odgovora\"\n    other: \"%{count} odgovora\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.764604",
+            "updated_at": "2026-07-25T05:58:17.764604",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 84,
+            "name": "ca",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nca:\n  solved: \"Solucionat\"\n  posted: \"publicat\"\n  vote_count:\n    one: \" %{count} vot\"\n    other: \"%{count} vots\"\n  like_count:\n    one: \"%{count} 'm'agrada'\"\n    other: \"%{count} 'm'agrada'\"\n  reply_count:\n    one: \"%{count} resposta\"\n    other: \"%{count} respostes\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.765803",
+            "updated_at": "2026-07-25T05:58:17.765803",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/095350703c0e38fe00a61da743b17b1acb77a2b6.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 84,
+            "name": "ca",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nca:\n  solved: \"Solucionat\"\n  posted: \"publicat\"\n  vote_count:\n    one: \" %{count} vot\"\n    other: \"%{count} vots\"\n  like_count:\n    one: \"%{count} 'm'agrada'\"\n    other: \"%{count} 'm'agrada'\"\n  reply_count:\n    one: \"%{count} resposta\"\n    other: \"%{count} respostes\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.765803",
+            "updated_at": "2026-07-25T05:58:17.765803",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 87,
+            "name": "de",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nde:\n  solved: \"Gelöst\"\n  unsolved: \"Ungelöst\"\n  posted: \"hat geschrieben\"\n  by_username: \"von @%{username}\"\n  replied: \"antwortete\"\n  vote_count:\n    one: \"%{count} Stimme\"\n    other: \"%{count} Stimmen\"\n  like_count:\n    one: \"%{count} „Gefällt mir“\"\n    other: \"%{count} „Gefällt mir“\"\n  reply_count:\n    one: \"%{count} Antwort\"\n    other: \"%{count} Antworten\"\n  theme_metadata:\n    description: \"Ein einfaches, schönes Theme, das die standardmäßige Benutzererfahrung für Discourse-Seiten verbessert.\"\n    settings:\n      topic_card_high_context:\n        description: \"Wenn diese Option aktiviert ist, werden zusätzliche Kontextinformationen in den Themenkarten angezeigt; darunter Schlagwörter, Auszüge, Lösungsstatus, zugeordnete Benutzer und die Anzahl der Stimmen.\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.769935",
+            "updated_at": "2026-07-25T05:58:17.769935",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/c700d13064ed8540a6d8b84d799751968a6bf578.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 87,
+            "name": "de",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nde:\n  solved: \"Gelöst\"\n  unsolved: \"Ungelöst\"\n  posted: \"hat geschrieben\"\n  by_username: \"von @%{username}\"\n  replied: \"antwortete\"\n  vote_count:\n    one: \"%{count} Stimme\"\n    other: \"%{count} Stimmen\"\n  like_count:\n    one: \"%{count} „Gefällt mir“\"\n    other: \"%{count} „Gefällt mir“\"\n  reply_count:\n    one: \"%{count} Antwort\"\n    other: \"%{count} Antworten\"\n  theme_metadata:\n    description: \"Ein einfaches, schönes Theme, das die standardmäßige Benutzererfahrung für Discourse-Seiten verbessert.\"\n    settings:\n      topic_card_high_context:\n        description: \"Wenn diese Option aktiviert ist, werden zusätzliche Kontextinformationen in den Themenkarten angezeigt; darunter Schlagwörter, Auszüge, Lösungsstatus, zugeordnete Benutzer und die Anzahl der Stimmen.\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.769935",
+            "updated_at": "2026-07-25T05:58:17.769935",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 88,
+            "name": "el",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nel:\n  solved: \"Λυμένο\"\n  unsolved: \"Άλυτο\"\n  posted: \"ανάρτησε\"\n  vote_count:\n    one: \"%{count} ψήφος\"\n    other: \"%{count} ψήφοι\"\n  like_count:\n    one: \"%{count} «μου αρέσει»\"\n    other: \"%{count} «μου αρέσει»\"\n  reply_count:\n    one: \"%{count} απάντηση\"\n    other: \"%{count} απαντήσεις\"\n  theme_metadata:\n    settings:\n      topic_card_high_context:\n        description: \"Όταν είναι ενεργοποιημένη, εμφανίζει πρόσθετο περιεχόμενο στις κάρτες θεμάτων, συμπεριλαμβανομένων ετικετών, αποσπασμάτων, κατάστασης επίλυσης, χρηστών με ανάθεση και αριθμού ψήφων.\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.771161",
+            "updated_at": "2026-07-25T05:58:17.771161",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/3355276479cdceca659bfa9d9ef2aad8cc306d1f.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 88,
+            "name": "el",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nel:\n  solved: \"Λυμένο\"\n  unsolved: \"Άλυτο\"\n  posted: \"ανάρτησε\"\n  vote_count:\n    one: \"%{count} ψήφος\"\n    other: \"%{count} ψήφοι\"\n  like_count:\n    one: \"%{count} «μου αρέσει»\"\n    other: \"%{count} «μου αρέσει»\"\n  reply_count:\n    one: \"%{count} απάντηση\"\n    other: \"%{count} απαντήσεις\"\n  theme_metadata:\n    settings:\n      topic_card_high_context:\n        description: \"Όταν είναι ενεργοποιημένη, εμφανίζει πρόσθετο περιεχόμενο στις κάρτες θεμάτων, συμπεριλαμβανομένων ετικετών, αποσπασμάτων, κατάστασης επίλυσης, χρηστών με ανάθεση και αριθμού ψήφων.\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.771161",
+            "updated_at": "2026-07-25T05:58:17.771161",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 91,
+            "name": "es",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nes:\n  solved: \"Solucionado\"\n  unsolved: \"Sin solucionar\"\n  posted: \"publicó\"\n  by_username: \"por @%{username}\"\n  replied: \"respondió\"\n  vote_count:\n    one: \"%{count} voto\"\n    other: \"%{count} votos\"\n  like_count:\n    one: \"%{count} me gusta\"\n    other: \"%{count} me gusta\"\n  reply_count:\n    one: \"%{count} respuesta\"\n    other: \"%{count} respuestas\"\n  theme_metadata:\n    description: \"Un tema sencillo y bonito que mejora la experiencia inigualable de los sitios de Discourse.\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.787459",
+            "updated_at": "2026-07-25T05:58:17.787459",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/ec96db94741097c92dfc413f52ad2ef324ca1eea.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 91,
+            "name": "es",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nes:\n  solved: \"Solucionado\"\n  unsolved: \"Sin solucionar\"\n  posted: \"publicó\"\n  by_username: \"por @%{username}\"\n  replied: \"respondió\"\n  vote_count:\n    one: \"%{count} voto\"\n    other: \"%{count} votos\"\n  like_count:\n    one: \"%{count} me gusta\"\n    other: \"%{count} me gusta\"\n  reply_count:\n    one: \"%{count} respuesta\"\n    other: \"%{count} respuestas\"\n  theme_metadata:\n    description: \"Un tema sencillo y bonito que mejora la experiencia inigualable de los sitios de Discourse.\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.787459",
+            "updated_at": "2026-07-25T05:58:17.787459",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 92,
+            "name": "et",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\net:\n  solved: \"Lahendatud\"\n  posted: \"postitatud\"\n  reply_count:\n    one: \"%{count} vastus\"\n    other: \"%{count} vastust\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.789075",
+            "updated_at": "2026-07-25T05:58:17.789075",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/80cc29e0b44260e7a6dca1a5c87a8ad259986892.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 92,
+            "name": "et",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\net:\n  solved: \"Lahendatud\"\n  posted: \"postitatud\"\n  reply_count:\n    one: \"%{count} vastus\"\n    other: \"%{count} vastust\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.789075",
+            "updated_at": "2026-07-25T05:58:17.789075",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 94,
+            "name": "fi",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nfi:\n  solved: \"Ratkaistu\"\n  posted: \"lähetti viestin\"\n  by_username: \"käyttäjältä @%{username}\"\n  vote_count:\n    one: \"%{count} ääni\"\n    other: \"%{count} ääntä\"\n  like_count:\n    one: \"%{count} tykkäys\"\n    other: \"%{count} tykkäystä\"\n  reply_count:\n    one: \"%{count} vastaus\"\n    other: \"%{count} vastausta\"\n  theme_metadata:\n    description: \"Yksinkertainen ja upea teema, joka parantaa Discourse-sivustojen alustavaa käyttökokemusta.\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.791741",
+            "updated_at": "2026-07-25T05:58:17.791741",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/c85327c7ae9ff3affd015a8491289b4dd9801813.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 94,
+            "name": "fi",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nfi:\n  solved: \"Ratkaistu\"\n  posted: \"lähetti viestin\"\n  by_username: \"käyttäjältä @%{username}\"\n  vote_count:\n    one: \"%{count} ääni\"\n    other: \"%{count} ääntä\"\n  like_count:\n    one: \"%{count} tykkäys\"\n    other: \"%{count} tykkäystä\"\n  reply_count:\n    one: \"%{count} vastaus\"\n    other: \"%{count} vastausta\"\n  theme_metadata:\n    description: \"Yksinkertainen ja upea teema, joka parantaa Discourse-sivustojen alustavaa käyttökokemusta.\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.791741",
+            "updated_at": "2026-07-25T05:58:17.791741",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 96,
+            "name": "gl",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\ngl:\n  posted: \"publicado\"\n  by_username: \"de %{username}\"\n  like_count:\n    one: \"%{count} gústame\"\n    other: \"%{count} gústame\"\n  reply_count:\n    one: \"%{count} resposta\"\n    other: \"%{count} repostas\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.794751",
+            "updated_at": "2026-07-25T05:58:17.794751",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/e313b516eda5c5179fedf55920952969fec5d7a4.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 96,
+            "name": "gl",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\ngl:\n  posted: \"publicado\"\n  by_username: \"de %{username}\"\n  like_count:\n    one: \"%{count} gústame\"\n    other: \"%{count} gústame\"\n  reply_count:\n    one: \"%{count} resposta\"\n    other: \"%{count} repostas\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.794751",
+            "updated_at": "2026-07-25T05:58:17.794751",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 98,
+            "name": "hr",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nhr:\n  solved: \"Riješeno\"\n  posted: \"objavljeno\"\n  vote_count:\n    one: \"%{count} glas\"\n    few: \"%{count} glasa\"\n    other: \"%{count} glasa\"\n  like_count:\n    one: \"%{count} lajk\"\n    few: \"%{count} lajka\"\n    other: \"%{count} lajkova\"\n  reply_count:\n    one: \"%{count} odgovor\"\n    few: \"%{count} odgovora\"\n    other: \"%{count} odgovora\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.797524",
+            "updated_at": "2026-07-25T05:58:17.797524",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/466900eb9eb49b48444e0c9d10e458c7d3e1c532.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 98,
+            "name": "hr",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nhr:\n  solved: \"Riješeno\"\n  posted: \"objavljeno\"\n  vote_count:\n    one: \"%{count} glas\"\n    few: \"%{count} glasa\"\n    other: \"%{count} glasa\"\n  like_count:\n    one: \"%{count} lajk\"\n    few: \"%{count} lajka\"\n    other: \"%{count} lajkova\"\n  reply_count:\n    one: \"%{count} odgovor\"\n    few: \"%{count} odgovora\"\n    other: \"%{count} odgovora\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.797524",
+            "updated_at": "2026-07-25T05:58:17.797524",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 99,
+            "name": "hu",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nhu:\n  solved: \"Megoldva\"\n  unsolved: \"Megoldatlan\"\n  posted: \"közzétett\"\n  by_username: \"szerző: @%{username}\"\n  replied: \"válaszolt\"\n  vote_count:\n    one: \"%{count} szavazat\"\n    other: \"%{count} szavazat\"\n  like_count:\n    one: \"%{count} kedvelés\"\n    other: \"%{count} kedvelés\"\n  reply_count:\n    one: \"%{count} válasz\"\n    other: \"%{count} válasz\"\n  theme_metadata:\n    description: \"Egy egyszerű, gyönyörű téma, amely javítja a Discourse webhelyek élményét.\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.799111",
+            "updated_at": "2026-07-25T05:58:17.799111",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/75694ea1b4f78b9d21443b7d19a7bede8aa820dc.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 99,
+            "name": "hu",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nhu:\n  solved: \"Megoldva\"\n  unsolved: \"Megoldatlan\"\n  posted: \"közzétett\"\n  by_username: \"szerző: @%{username}\"\n  replied: \"válaszolt\"\n  vote_count:\n    one: \"%{count} szavazat\"\n    other: \"%{count} szavazat\"\n  like_count:\n    one: \"%{count} kedvelés\"\n    other: \"%{count} kedvelés\"\n  reply_count:\n    one: \"%{count} válasz\"\n    other: \"%{count} válasz\"\n  theme_metadata:\n    description: \"Egy egyszerű, gyönyörű téma, amely javítja a Discourse webhelyek élményét.\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.799111",
+            "updated_at": "2026-07-25T05:58:17.799111",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 100,
+            "name": "hy",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nhy:\n  solved: \"Լուծված է\"\n  posted: \"հրապարակված\"\n  reply_count:\n    one: \"%{count} պատասխան\"\n    other: \"%{count} պատասխան\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.800402",
+            "updated_at": "2026-07-25T05:58:17.800402",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/39575b86be2a2beabc7303cc0bc3b357b41e734d.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 100,
+            "name": "hy",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nhy:\n  solved: \"Լուծված է\"\n  posted: \"հրապարակված\"\n  reply_count:\n    one: \"%{count} պատասխան\"\n    other: \"%{count} պատասխան\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.800402",
+            "updated_at": "2026-07-25T05:58:17.800402",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 101,
+            "name": "id",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nid:\n  vote_count:\n    other: \"%{count} suara\"\n  like_count:\n    other: \"%{count} suka\"\n  reply_count:\n    other: \"%{count} balasan\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.801625",
+            "updated_at": "2026-07-25T05:58:17.801625",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/73c54c97e9c923acde15109d772fb75179e9883e.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 101,
+            "name": "id",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nid:\n  vote_count:\n    other: \"%{count} suara\"\n  like_count:\n    other: \"%{count} suka\"\n  reply_count:\n    other: \"%{count} balasan\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.801625",
+            "updated_at": "2026-07-25T05:58:17.801625",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 104,
+            "name": "ko",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nko:\n  solved: \"해결됨\"\n  posted: \"게시\"\n  vote_count:\n    other: \"%{count} 투표\"\n  like_count:\n    other: \"좋아요 %{count}\"\n  reply_count:\n    other: \"%{count} 댓글\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.805854",
+            "updated_at": "2026-07-25T05:58:17.805854",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/418384e45b97e52d4b51619a385b2c112b36cc20.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 104,
+            "name": "ko",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nko:\n  solved: \"해결됨\"\n  posted: \"게시\"\n  vote_count:\n    other: \"%{count} 투표\"\n  like_count:\n    other: \"좋아요 %{count}\"\n  reply_count:\n    other: \"%{count} 댓글\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.805854",
+            "updated_at": "2026-07-25T05:58:17.805854",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 105,
+            "name": "lt",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nlt:\n  solved: \"Išspresta\"\n  posted: \"paskelbta\"\n  like_count:\n    one: \"%{count} patinka\"\n    few: \"%{count} patinka\"\n    many: \"%{count} patinka\"\n    other: \"%{count} patinka\"\n  reply_count:\n    one: \"%{count} atsakymas\"\n    few: \"%{count} atsakymai\"\n    many: \"%{count} atsakymai\"\n    other: \"%{count} atsakymai\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.807259",
+            "updated_at": "2026-07-25T05:58:17.807259",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/44c8126b75479fc70c0683e2250359e2b82937a3.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 105,
+            "name": "lt",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nlt:\n  solved: \"Išspresta\"\n  posted: \"paskelbta\"\n  like_count:\n    one: \"%{count} patinka\"\n    few: \"%{count} patinka\"\n    many: \"%{count} patinka\"\n    other: \"%{count} patinka\"\n  reply_count:\n    one: \"%{count} atsakymas\"\n    few: \"%{count} atsakymai\"\n    many: \"%{count} atsakymai\"\n    other: \"%{count} atsakymai\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.807259",
+            "updated_at": "2026-07-25T05:58:17.807259",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 108,
+            "name": "nl",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nnl:\n  solved: \"Opgelost\"\n  unsolved: \"Onopgelost\"\n  posted: \"geplaatst\"\n  by_username: \"van @%{username}\"\n  replied: \"beantwoord\"\n  vote_count:\n    one: \"%{count} stem\"\n    other: \"%{count} stemmen\"\n  like_count:\n    one: \"%{count} like\"\n    other: \"%{count} likes\"\n  reply_count:\n    one: \"%{count} antwoord\"\n    other: \"%{count} antwoorden\"\n  theme_metadata:\n    description: \"Een eenvoudig, mooi thema dat de out-of-the-box ervaring voor Discourse-sites verbetert.\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.811593",
+            "updated_at": "2026-07-25T05:58:17.811593",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/3168cc7c98f52ea0e210645fb4d3ca43f4aca1f0.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 108,
+            "name": "nl",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nnl:\n  solved: \"Opgelost\"\n  unsolved: \"Onopgelost\"\n  posted: \"geplaatst\"\n  by_username: \"van @%{username}\"\n  replied: \"beantwoord\"\n  vote_count:\n    one: \"%{count} stem\"\n    other: \"%{count} stemmen\"\n  like_count:\n    one: \"%{count} like\"\n    other: \"%{count} likes\"\n  reply_count:\n    one: \"%{count} antwoord\"\n    other: \"%{count} antwoorden\"\n  theme_metadata:\n    description: \"Een eenvoudig, mooi thema dat de out-of-the-box ervaring voor Discourse-sites verbetert.\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.811593",
+            "updated_at": "2026-07-25T05:58:17.811593",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 109,
+            "name": "pl_PL",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\npl_PL:\n  solved: \"Rozwiązany\"\n  unsolved: \"Nierozwiązano\"\n  posted: \"wysłano\"\n  by_username: \"przez @%{username}\"\n  replied: \"odpowiedziano\"\n  vote_count:\n    one: \"%{count} głos\"\n    few: \"%{count} głosy\"\n    many: \"%{count} głosy\"\n    other: \"%{count} głosy\"\n  like_count:\n    one: \"%{count} polubienie\"\n    few: \"%{count} polubienia\"\n    many: \"%{count} polubień\"\n    other: \"%{count} polubień\"\n  reply_count:\n    one: \"%{count} odpowiedź\"\n    few: \"%{count} odpowiedzi\"\n    many: \"%{count} odpowiedzi\"\n    other: \"%{count} odpowiedzi\"\n  theme_metadata:\n    description: \"Prosty, piękny motyw, który od razu po zainstalowaniu poprawia komfort korzystania ze stron Discourse.\"\n    settings:\n      topic_card_high_context:\n        description: \"Po włączeniu wyświetla dodatkowy kontekst na kartach tematów, w tym tagi, fragmenty, status rozwiązania, przypisanych użytkowników i liczbę głosów\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.813179",
+            "updated_at": "2026-07-25T05:58:17.813179",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/fb6517fbf9db3a065f5101898bfc06cd05f2d4b3.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 109,
+            "name": "pl_PL",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\npl_PL:\n  solved: \"Rozwiązany\"\n  unsolved: \"Nierozwiązano\"\n  posted: \"wysłano\"\n  by_username: \"przez @%{username}\"\n  replied: \"odpowiedziano\"\n  vote_count:\n    one: \"%{count} głos\"\n    few: \"%{count} głosy\"\n    many: \"%{count} głosy\"\n    other: \"%{count} głosy\"\n  like_count:\n    one: \"%{count} polubienie\"\n    few: \"%{count} polubienia\"\n    many: \"%{count} polubień\"\n    other: \"%{count} polubień\"\n  reply_count:\n    one: \"%{count} odpowiedź\"\n    few: \"%{count} odpowiedzi\"\n    many: \"%{count} odpowiedzi\"\n    other: \"%{count} odpowiedzi\"\n  theme_metadata:\n    description: \"Prosty, piękny motyw, który od razu po zainstalowaniu poprawia komfort korzystania ze stron Discourse.\"\n    settings:\n      topic_card_high_context:\n        description: \"Po włączeniu wyświetla dodatkowy kontekst na kartach tematów, w tym tagi, fragmenty, status rozwiązania, przypisanych użytkowników i liczbę głosów\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.813179",
+            "updated_at": "2026-07-25T05:58:17.813179",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 110,
+            "name": "pt",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\npt:\n  solved: \"Resolvido\"\n  posted: \"publicou\"\n  vote_count:\n    one: \"%{count} voto\"\n    other: \"%{count} votos\"\n  like_count:\n    one: \"%{count} curtiu\"\n    other: \"%{count} curtiram\"\n  reply_count:\n    one: \"%{count} resposta\"\n    other: \"%{count} respostas\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.814518",
+            "updated_at": "2026-07-25T05:58:17.814518",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/4a2a2d085506c4898084e55e6e1bd06515f80e8b.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 110,
+            "name": "pt",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\npt:\n  solved: \"Resolvido\"\n  posted: \"publicou\"\n  vote_count:\n    one: \"%{count} voto\"\n    other: \"%{count} votos\"\n  like_count:\n    one: \"%{count} curtiu\"\n    other: \"%{count} curtiram\"\n  reply_count:\n    one: \"%{count} resposta\"\n    other: \"%{count} respostas\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.814518",
+            "updated_at": "2026-07-25T05:58:17.814518",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 111,
+            "name": "pt_BR",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\npt_BR:\n  solved: \"Resolvido\"\n  unsolved: \"Não resolvido\"\n  posted: \"postou\"\n  by_username: \"por @%{username}\"\n  replied: \"respondeu\"\n  vote_count:\n    one: \"%{count} voto\"\n    other: \"%{count} votos\"\n  like_count:\n    one: \"%{count} curtida\"\n    other: \"%{count} curtidas\"\n  reply_count:\n    one: \"%{count} resposta\"\n    other: \"%{count} respostas\"\n  theme_metadata:\n    description: \"Um tema simples e elegante que melhora a experiência pronta para uso dos sites do Discourse.\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.816194",
+            "updated_at": "2026-07-25T05:58:17.816194",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/9825dcc1f2b5786e08f5077897198f9d77f3596c.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 111,
+            "name": "pt_BR",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\npt_BR:\n  solved: \"Resolvido\"\n  unsolved: \"Não resolvido\"\n  posted: \"postou\"\n  by_username: \"por @%{username}\"\n  replied: \"respondeu\"\n  vote_count:\n    one: \"%{count} voto\"\n    other: \"%{count} votos\"\n  like_count:\n    one: \"%{count} curtida\"\n    other: \"%{count} curtidas\"\n  reply_count:\n    one: \"%{count} resposta\"\n    other: \"%{count} respostas\"\n  theme_metadata:\n    description: \"Um tema simples e elegante que melhora a experiência pronta para uso dos sites do Discourse.\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.816194",
+            "updated_at": "2026-07-25T05:58:17.816194",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 112,
+            "name": "ro",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nro:\n  solved: \"Rezolvat\"\n  posted: \"postat\"\n  by_username: \"de @%{username}\"\n  vote_count:\n    one: \"%{count} vot\"\n    few: \"%{count} voturi\"\n    other: \"%{count} voturi\"\n  reply_count:\n    one: \"%{count} răspuns\"\n    few: \"%{count} răspunsuri\"\n    other: \"%{count} de răspunsuri\"\n  theme_metadata:\n    description: \"O temă simplă și frumoasă care îmbunătățește experiența de utilizare pentru site-urile Discourse.\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.817591",
+            "updated_at": "2026-07-25T05:58:17.817591",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/01014aea76084302fca2e94ae34916e38230099b.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 112,
+            "name": "ro",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nro:\n  solved: \"Rezolvat\"\n  posted: \"postat\"\n  by_username: \"de @%{username}\"\n  vote_count:\n    one: \"%{count} vot\"\n    few: \"%{count} voturi\"\n    other: \"%{count} voturi\"\n  reply_count:\n    one: \"%{count} răspuns\"\n    few: \"%{count} răspunsuri\"\n    other: \"%{count} de răspunsuri\"\n  theme_metadata:\n    description: \"O temă simplă și frumoasă care îmbunătățește experiența de utilizare pentru site-urile Discourse.\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.817591",
+            "updated_at": "2026-07-25T05:58:17.817591",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 113,
+            "name": "ru",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nru:\n  solved: \"Решённые\"\n  unsolved: \"Нерешенные\"\n  posted: \"отправлено\"\n  by_username: \"от @%{username}\"\n  replied: \"ответил\"\n  vote_count:\n    one: \"%{count} голос\"\n    few: \"%{count} голоса\"\n    many: \"%{count} голосов\"\n    other: \"%{count} голосов\"\n  like_count:\n    one: \"%{count} лайк\"\n    few: \"%{count} лайка\"\n    many: \"%{count} лайков\"\n    other: \"%{count} лайков\"\n  reply_count:\n    one: \"%{count} ответ\"\n    few: \"%{count} ответа\"\n    many: \"%{count} ответов\"\n    other: \"%{count} ответа\"\n  theme_metadata:\n    description: \"Простая и красивая тема, которая улучшает работу сайтов с Discourse сразу после установки.\"\n    settings:\n      topic_card_high_context:\n        description: \"Показывать на карточках тем дополнительную информацию: теги, выдержки из сообщений, статус решения, назначенных пользователей и число голосов\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.818864",
+            "updated_at": "2026-07-25T05:58:17.818864",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/438d18d49cab961e7be72ae0a7ad4540362361f9.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 113,
+            "name": "ru",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nru:\n  solved: \"Решённые\"\n  unsolved: \"Нерешенные\"\n  posted: \"отправлено\"\n  by_username: \"от @%{username}\"\n  replied: \"ответил\"\n  vote_count:\n    one: \"%{count} голос\"\n    few: \"%{count} голоса\"\n    many: \"%{count} голосов\"\n    other: \"%{count} голосов\"\n  like_count:\n    one: \"%{count} лайк\"\n    few: \"%{count} лайка\"\n    many: \"%{count} лайков\"\n    other: \"%{count} лайков\"\n  reply_count:\n    one: \"%{count} ответ\"\n    few: \"%{count} ответа\"\n    many: \"%{count} ответов\"\n    other: \"%{count} ответа\"\n  theme_metadata:\n    description: \"Простая и красивая тема, которая улучшает работу сайтов с Discourse сразу после установки.\"\n    settings:\n      topic_card_high_context:\n        description: \"Показывать на карточках тем дополнительную информацию: теги, выдержки из сообщений, статус решения, назначенных пользователей и число голосов\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.818864",
+            "updated_at": "2026-07-25T05:58:17.818864",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 114,
+            "name": "sk",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nsk:\n  solved: \"Vyriešené\"\n  posted: \"zverejnené\"\n  by_username: \"od @%{username}\"\n  vote_count:\n    one: \"%{count} hlas\"\n    few: \"%{count} hlasy\"\n    many: \"%{count} hlasy\"\n    other: \"%{count} hlasy\"\n  like_count:\n    one: \"%{count} lajk\"\n    few: \"%{count} lajkov\"\n    many: \"%{count} lajky\"\n    other: \"%{count} lajky\"\n  reply_count:\n    one: \"%{count} odpoveď\"\n    few: \"%{count} odpovede\"\n    many: \"%{count} odpovedí\"\n    other: \"%{count} odpovedí\"\n  theme_metadata:\n    description: \"Jednoduchá a krásna téma, ktorá zlepšuje používateľské prostredie stránok Discourse.\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.820547",
+            "updated_at": "2026-07-25T05:58:17.820547",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/a7bd81881b918339d20d527470946d9c3f77bfb0.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 114,
+            "name": "sk",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nsk:\n  solved: \"Vyriešené\"\n  posted: \"zverejnené\"\n  by_username: \"od @%{username}\"\n  vote_count:\n    one: \"%{count} hlas\"\n    few: \"%{count} hlasy\"\n    many: \"%{count} hlasy\"\n    other: \"%{count} hlasy\"\n  like_count:\n    one: \"%{count} lajk\"\n    few: \"%{count} lajkov\"\n    many: \"%{count} lajky\"\n    other: \"%{count} lajky\"\n  reply_count:\n    one: \"%{count} odpoveď\"\n    few: \"%{count} odpovede\"\n    many: \"%{count} odpovedí\"\n    other: \"%{count} odpovedí\"\n  theme_metadata:\n    description: \"Jednoduchá a krásna téma, ktorá zlepšuje používateľské prostredie stránok Discourse.\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.820547",
+            "updated_at": "2026-07-25T05:58:17.820547",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 115,
+            "name": "sl",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nsl:\n  solved: \"Rešeno\"\n  posted: \"objavljeno\"\n  like_count:\n    one: \"%{count} všeček\"\n    two: \"%{count} všečka\"\n    few: \"%{count} všečke\"\n    other: \"%{count} všečkov\"\n  reply_count:\n    one: \"%{count} odgovor\"\n    two: \"%{count} odgovora\"\n    few: \"%{count} odgovori\"\n    other: \"%{count} odgovorov\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.821753",
+            "updated_at": "2026-07-25T05:58:17.821753",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/088a7b3bb9e16d1fd90aaac8e7f742071bc33dc1.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 115,
+            "name": "sl",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nsl:\n  solved: \"Rešeno\"\n  posted: \"objavljeno\"\n  like_count:\n    one: \"%{count} všeček\"\n    two: \"%{count} všečka\"\n    few: \"%{count} všečke\"\n    other: \"%{count} všečkov\"\n  reply_count:\n    one: \"%{count} odgovor\"\n    two: \"%{count} odgovora\"\n    few: \"%{count} odgovori\"\n    other: \"%{count} odgovorov\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.821753",
+            "updated_at": "2026-07-25T05:58:17.821753",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 116,
+            "name": "sq",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nsq:\n  posted: \"postuar\"\n  reply_count:\n    one: \"%{count} përgjigje\"\n    other: \"%{count} përgjigje\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.823271",
+            "updated_at": "2026-07-25T05:58:17.823271",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/0a5a62503fccf898436a5164dbd64fd2a5b32aaa.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 116,
+            "name": "sq",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nsq:\n  posted: \"postuar\"\n  reply_count:\n    one: \"%{count} përgjigje\"\n    other: \"%{count} përgjigje\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.823271",
+            "updated_at": "2026-07-25T05:58:17.823271",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 117,
+            "name": "sr",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nsr:\n  posted: \"pisao\"\n  reply_count:\n    one: \"%{count} odgovor\"\n    few: \"%{count} odgovora\"\n    other: \"%{count} odgovora\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.824587",
+            "updated_at": "2026-07-25T05:58:17.824587",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/ce970f8ff7dec12046d9fe6441b692eb54b91dad.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 117,
+            "name": "sr",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nsr:\n  posted: \"pisao\"\n  reply_count:\n    one: \"%{count} odgovor\"\n    few: \"%{count} odgovora\"\n    other: \"%{count} odgovora\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.824587",
+            "updated_at": "2026-07-25T05:58:17.824587",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 122,
+            "name": "tr_TR",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\ntr_TR:\n  solved: \"Çözüldü\"\n  unsolved: \"Çözülmemiş\"\n  posted: \"gönderildi\"\n  by_username: \"@%{username} tarafından\"\n  replied: \"yanıtladı\"\n  vote_count:\n    one: \"%{count} oy\"\n    other: \"%{count} oy\"\n  like_count:\n    one: \"%{count} beğeni\"\n    other: \"%{count} beğeni\"\n  reply_count:\n    one: \"%{count} yanıt\"\n    other: \"%{count} yanıt\"\n  theme_metadata:\n    description: \"Discourse siteleri için kullanıma hazır deneyimi geliştiren basit ve güzel bir tema.\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.831949",
+            "updated_at": "2026-07-25T05:58:17.831949",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/f6b3555c2f65770f3243b8bc566c644961beecf9.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 122,
+            "name": "tr_TR",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\ntr_TR:\n  solved: \"Çözüldü\"\n  unsolved: \"Çözülmemiş\"\n  posted: \"gönderildi\"\n  by_username: \"@%{username} tarafından\"\n  replied: \"yanıtladı\"\n  vote_count:\n    one: \"%{count} oy\"\n    other: \"%{count} oy\"\n  like_count:\n    one: \"%{count} beğeni\"\n    other: \"%{count} beğeni\"\n  reply_count:\n    one: \"%{count} yanıt\"\n    other: \"%{count} yanıt\"\n  theme_metadata:\n    description: \"Discourse siteleri için kullanıma hazır deneyimi geliştiren basit ve güzel bir tema.\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.831949",
+            "updated_at": "2026-07-25T05:58:17.831949",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 123,
+            "name": "ug",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nug:\n  posted: \"يوللانغان ۋاقىت\"\n  vote_count:\n    one: \"%{count} بېلەت\"\n    other: \"%{count} بېلەت\"\n  like_count:\n    one: \"%{count} ياقتۇرۇش\"\n    other: \"%{count} ياقتۇرۇش\"\n  reply_count:\n    one: \"%{count} جاۋاب\"\n    other: \"%{count} جاۋاب\"\n  theme_metadata:\n    description: \"ئاددىي، چىرايلىق ئۆرنەك، Discourse تور بېكىتىنىڭ قولغا ئېلىپلا ئىشلىتىش تەسىراتىنى ياخشىلايدۇ.\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.833385",
+            "updated_at": "2026-07-25T05:58:17.833385",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/262c813587388f3b41406f645c33fba4c9708394.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 123,
+            "name": "ug",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nug:\n  posted: \"يوللانغان ۋاقىت\"\n  vote_count:\n    one: \"%{count} بېلەت\"\n    other: \"%{count} بېلەت\"\n  like_count:\n    one: \"%{count} ياقتۇرۇش\"\n    other: \"%{count} ياقتۇرۇش\"\n  reply_count:\n    one: \"%{count} جاۋاب\"\n    other: \"%{count} جاۋاب\"\n  theme_metadata:\n    description: \"ئاددىي، چىرايلىق ئۆرنەك، Discourse تور بېكىتىنىڭ قولغا ئېلىپلا ئىشلىتىش تەسىراتىنى ياخشىلايدۇ.\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.833385",
+            "updated_at": "2026-07-25T05:58:17.833385",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 124,
+            "name": "uk",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nuk:\n  solved: \"Вирішено\"\n  unsolved: \"Невирішено\"\n  posted: \"розміщено\"\n  by_username: \"від @%{username}\"\n  replied: \"відповів\"\n  vote_count:\n    one: \"%{count} голос\"\n    few: \"%{count} голосів\"\n    many: \"%{count} голосів\"\n    other: \"%{count} голосів\"\n  like_count:\n    one: \"%{count} вподобання\"\n    few: \"%{count} вподобання\"\n    many: \"%{count} вподобань\"\n    other: \"%{count} вподобань\"\n  reply_count:\n    one: \"%{count} відповідь\"\n    few: \"%{count} відповідей\"\n    many: \"%{count} відповідей\"\n    other: \"%{count} відповідей\"\n  theme_metadata:\n    description: \"Проста прекрасна тема, яка покращує роботу з коробки для веб-сайтів Discourse.\"\n    settings:\n      topic_card_high_context:\n        description: \"Якщо ввімкнено, відображається додатковий контекст на картках тем, включаючи теги, уривки, статус розв’язання, призначених користувачів та кількість голосів.\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.83519",
+            "updated_at": "2026-07-25T05:58:17.83519",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/37f6818ec704f4836d8dbe3947396dbb3c6c4e9d.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 124,
+            "name": "uk",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nuk:\n  solved: \"Вирішено\"\n  unsolved: \"Невирішено\"\n  posted: \"розміщено\"\n  by_username: \"від @%{username}\"\n  replied: \"відповів\"\n  vote_count:\n    one: \"%{count} голос\"\n    few: \"%{count} голосів\"\n    many: \"%{count} голосів\"\n    other: \"%{count} голосів\"\n  like_count:\n    one: \"%{count} вподобання\"\n    few: \"%{count} вподобання\"\n    many: \"%{count} вподобань\"\n    other: \"%{count} вподобань\"\n  reply_count:\n    one: \"%{count} відповідь\"\n    few: \"%{count} відповідей\"\n    many: \"%{count} відповідей\"\n    other: \"%{count} відповідей\"\n  theme_metadata:\n    description: \"Проста прекрасна тема, яка покращує роботу з коробки для веб-сайтів Discourse.\"\n    settings:\n      topic_card_high_context:\n        description: \"Якщо ввімкнено, відображається додатковий контекст на картках тем, включаючи теги, уривки, статус розв’язання, призначених користувачів та кількість голосів.\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.83519",
+            "updated_at": "2026-07-25T05:58:17.83519",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        },
+        {
+          "before": {
+            "id": 126,
+            "name": "vi",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nvi:\n  solved: \"Giải pháp\"\n  unsolved: \"Chưa có giải pháp\"\n  posted: \"ngày đăng\"\n  by_username: \"bởi @%{username}\"\n  replied: \"đã trả lời\"\n  vote_count:\n    other: \"%{count} lượt bình chọn\"\n  like_count:\n    other: \"%{count} lượt thích\"\n  reply_count:\n    other: \"%{count} trả lời\"\n  theme_metadata:\n    description: \"Một giao diện đơn giản, đẹp mắt giúp cải thiện trải nghiệm mặc định cho các trang web Discourse.\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.838183",
+            "updated_at": "2026-07-25T05:58:17.838183",
+            "value_baked": "<script type=\"module\" src=\"/theme-javascripts/132c15df03a17d3024ba066925280f95bd09e7b9.js?__ws=localhost\" data-theme-id=\"-2\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          },
+          "after": {
+            "id": 126,
+            "name": "vi",
+            "error": null,
+            "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nvi:\n  solved: \"Giải pháp\"\n  unsolved: \"Chưa có giải pháp\"\n  posted: \"ngày đăng\"\n  by_username: \"bởi @%{username}\"\n  replied: \"đã trả lời\"\n  vote_count:\n    other: \"%{count} lượt bình chọn\"\n  like_count:\n    other: \"%{count} lượt thích\"\n  reply_count:\n    other: \"%{count} trả lời\"\n  theme_metadata:\n    description: \"Một giao diện đơn giản, đẹp mắt giúp cải thiện trải nghiệm mặc định cho các trang web Discourse.\"\n",
+            "type_id": 5,
+            "theme_id": -2,
+            "target_id": 4,
+            "upload_id": null,
+            "created_at": "2026-07-25T05:58:17.838183",
+            "updated_at": "2026-07-25T05:58:17.838183",
+            "value_baked": null,
+            "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 112,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "2heTvxh0mf3w+r8Ct54srUW0bs0=",
+            "created_at": "2026-10-14T14:30:58.021557",
+            "rotated_at": "2026-10-14T14:30:58.018187",
+            "updated_at": "2026-10-14T14:30:58.021557",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "2heTvxh0mf3w+r8Ct54srUW0bs0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 112,
+            "seen_at": "2026-10-14T14:30:58.782224",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "2heTvxh0mf3w+r8Ct54srUW0bs0=",
+            "created_at": "2026-10-14T14:30:58.021557",
+            "rotated_at": "2026-10-14T14:30:58.018187",
+            "updated_at": "2026-10-14T14:30:58.021557",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "2heTvxh0mf3w+r8Ct54srUW0bs0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 74,
+          "email": null,
+          "action": 29,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "js.theme_translations.-2.solved",
+          "topic_id": null,
+          "new_value": "Answered",
+          "admin_only": true,
+          "created_at": "2026-10-14T14:30:58.80877",
+          "ip_address": null,
+          "updated_at": "2026-10-14T14:30:58.80877",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "Solved",
+          "target_user_id": null
+        },
+        {
+          "id": 75,
+          "email": null,
+          "action": 29,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "js.theme_translations.-2.solved",
+          "topic_id": null,
+          "new_value": "Done",
+          "admin_only": true,
+          "created_at": "2026-10-14T14:30:58.853564",
+          "ip_address": null,
+          "updated_at": "2026-10-14T14:30:58.853564",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "Answered",
+          "target_user_id": null
+        },
+        {
+          "id": 76,
+          "email": null,
+          "action": 29,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "js.theme_translations.-2.solved",
+          "topic_id": null,
+          "new_value": "Solved",
+          "admin_only": true,
+          "created_at": "2026-10-14T14:30:58.905815",
+          "ip_address": null,
+          "updated_at": "2026-10-14T14:30:58.905815",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "Done",
+          "target_user_id": null
+        },
+        {
+          "id": 77,
+          "email": null,
+          "action": 29,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "js.theme_translations.-2.unsolved",
+          "topic_id": null,
+          "new_value": "Unsolved",
+          "admin_only": true,
+          "created_at": "2026-10-14T14:30:58.956587",
+          "ip_address": null,
+          "updated_at": "2026-10-14T14:30:58.956587",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "Unsolved",
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "user_histories": 74
+  },
+  "recorded_from": {
+    "case": "ffda80ed4a842b93b0bed66239614fbe80cfdeaca55e179ea048b80af6ac6d7c",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

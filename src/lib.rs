@@ -133,6 +133,7 @@ pub mod site;
 pub mod site_icons;
 pub mod site_setting_update;
 pub mod site_settings;
+pub mod site_texts;
 pub mod staff_action_logs;
 pub mod stylesheet;
 pub mod svg_sprite;
@@ -212,6 +213,10 @@ pub fn app(state: AppState) -> Router {
     let routed = routes::router(&state).with_state(state.clone());
     Router::new()
         .fallback_service(routed)
+        .layer(axum::middleware::from_fn_with_state(
+            state.clone(),
+            translation_overrides,
+        ))
         .layer(axum::middleware::from_fn(mobile::layer))
         .layer(axum::middleware::from_fn(routes::method_override))
         .layer(axum::middleware::from_fn(routes::request_format))
@@ -232,6 +237,26 @@ pub fn app(state: AppState) -> Router {
             request_tracker::layer,
         ))
         .layer(TraceLayer::new_for_http())
+}
+
+/// The site texts as of this request: the translation overrides read again
+/// when the table changed (Rails reloads them on TranslationOverride's
+/// writes).
+async fn translation_overrides(
+    axum::extract::State(state): axum::extract::State<AppState>,
+    request: axum::extract::Request,
+    next: axum::middleware::Next,
+) -> Response {
+    let refreshed = match state.pool.acquire().await {
+        Ok(mut conn) => state.i18n.refresh_overrides(&mut conn).await,
+        Err(e) => Err(e),
+    };
+    // A database that cannot be reached is the handler's to answer (the
+    // failover pages); the overrides read last stay meanwhile.
+    if let Err(e) = refreshed {
+        tracing::warn!(error = %e, "translation overrides not read");
+    }
+    next.run(request).await
 }
 
 /// Responses compressed for browsers that accept it (nginx's role in front

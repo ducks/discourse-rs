@@ -68,6 +68,7 @@ mod required_fields;
 mod session;
 mod session_2fa;
 mod site;
+mod site_texts;
 mod sitemap;
 mod solved;
 mod srv;
@@ -1174,6 +1175,30 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route(
             "/admin/users/{user_id}/merge.json",
             post(admin_users::merge),
+        )
+        .route("/admin/customize/site_texts", get(site_texts::index))
+        .route("/admin/customize/site_texts.json", get(site_texts::index))
+        .route(
+            "/admin/customize/site_texts/{id}",
+            get(site_texts::show)
+                .put(site_texts::update)
+                .delete(site_texts::revert),
+        )
+        .route(
+            "/admin/customize/site_texts/{id}/dismiss_outdated",
+            put(site_texts::dismiss_outdated),
+        )
+        .route(
+            "/admin/customize/site_texts/{id}/dismiss_outdated.json",
+            put(site_texts::dismiss_outdated),
+        )
+        .route(
+            "/admin/customize/reseed",
+            get(site_texts::reseed_options).post(site_texts::reseed),
+        )
+        .route(
+            "/admin/customize/reseed.json",
+            get(site_texts::reseed_options).post(site_texts::reseed),
         )
         .route(
             "/admin/api/web_hooks",

@@ -1,0 +1,1740 @@
+{
+  "name": "index_query",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/customize/site_texts.json?q=bookmark%20reminder&locale=en"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/customize/site_texts.json?q=Solved&locale=en"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/customize/site_texts.json?q=don%27t%20have&locale=en"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/customize/site_texts.json?q=new%20topic&locale=en&only_selected_locale=true"
+    }
+  ],
+  "started_at": "2026-10-14T14:30:16.746015",
+  "transaction_started_at": "2026-10-14T14:30:13.433435",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "site_texts": [
+          {
+            "id": "js.notifications.titles.bookmark_reminder",
+            "value": "bookmark reminder",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.user.calendar_subscriptions.bookmarks",
+            "value": "Bookmark Reminders",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "user_api_key.scopes.bookmarks_calendar",
+            "value": "Read bookmark reminders",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.bookmarks.bulk.reminders_cleared",
+            "value": "Bookmark reminders successfully cleared.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.user.dismiss_bookmarks_tooltip",
+            "value": "Mark all unread bookmark reminders as read",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "calendar_subscriptions.bookmarks_feed_name",
+            "value": "%{site_title} - Bookmark reminders",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "site_title"
+            ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.notifications.titles.bookmark_reminder_with_name",
+            "value": "bookmark reminder - %{name}",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "name"
+            ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.user.bookmark_after_notification.title",
+            "value": "After a bookmark reminder notification is sent:",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "bookmarks.errors.cannot_set_past_reminder",
+            "value": "You cannot set a bookmark reminder in the past.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.bookmarks.auto_delete_preference.after_reminder_checkbox",
+            "value": "Set this as default for all future bookmark reminders",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.notifications.dismiss_confirmation.body.bookmarks.one",
+            "value": "Are you sure? You have %{count} unread bookmark reminder.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "count"
+            ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.notifications.dismiss_confirmation.body.bookmarks.other",
+            "value": "Are you sure? You have %{count} unread bookmark reminders.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "count"
+            ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "bookmarks.errors.cannot_set_reminder_in_distant_future",
+            "value": "You cannot set a bookmark reminder more than 10 years in the future.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "admin_js.admin.api.scopes.descriptions.users.bookmarks",
+            "value": "List user bookmarks. It returns bookmark reminders when using the ICS format.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.user.calendar_subscriptions.description",
+            "value": "Generate subscription URLs to sync with your favorite calendar app (Google Calendar, Apple Calendar, Outlook, etc.). These URLs are private links to calendar events for your account (bookmark reminders, calendar events, etc). You can always revoke or renew the generated subscription URLs.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          }
+        ],
+        "__rest_serializer": "1",
+        "extras": {
+          "themes": [
+            {
+              "id": -1,
+              "name": "Foundation",
+              "enabled": true
+            },
+            {
+              "id": -2,
+              "name": "Horizon",
+              "enabled": true
+            }
+          ],
+          "regex": "bookmark\\ reminder"
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "site_texts": [
+          {
+            "id": "js.notifications.alt.solved.topic_solved_notification",
+            "value": "solved",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.solved.title",
+            "value": "Solved",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.solved.topic_status_filter.solved",
+            "value": "solved",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.theme_translations.-2.solved",
+            "value": "Solved",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": "Solved",
+            "overridden": false,
+            "can_revert": false,
+            "interpolation_keys": []
+          },
+          {
+            "id": "js.solved.solution",
+            "value": "Solution",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "badges.solved_1.name",
+            "value": "Solved!",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "badges.solved_3.name",
+            "value": "Know-it-All",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.solved.move_post_cancel",
+            "value": "Cancel",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.solved.accepted_answer",
+            "value": "Solution",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.solved.shared_issue.label",
+            "value": "Me too",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.solved.topic_status_filter.all",
+            "value": "all",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.solved.solution_summary.one",
+            "value": "solution",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "badges.solved_2.name",
+            "value": "Guidance Counsellor",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.solved.move_post_confirm.one",
+            "value": "Move post",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "badges.solved_4.name",
+            "value": "Solution Institution",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.solved.solution_summary.other",
+            "value": "solutions",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.theme_translations.-2.unsolved",
+            "value": "Unsolved",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": "Unsolved",
+            "overridden": false,
+            "can_revert": false,
+            "interpolation_keys": []
+          },
+          {
+            "id": "js.solved.move_post_confirm.other",
+            "value": "Move posts",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.search.advanced.statuses.solved",
+            "value": "are solved",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.solved.category_type_support.title",
+            "value": "Support",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.solved.marked_solved_by",
+            "value": "accepted by %{user}",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "user"
+            ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.solved.confirm_solved_removal_cancel",
+            "value": "Cancel",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.solved.topic_status_filter.unsolved",
+            "value": "unsolved",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.solved.confirm_solved_removal_confirm",
+            "value": "Confirm",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.search.advanced.statuses.unsolved",
+            "value": "are unsolved",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "solved.no_solutions.others",
+            "value": "No accepted solutions.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.solved.notification.topic_solved_title",
+            "value": "Topic solved",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.topic_statuses.solved.help",
+            "value": "This topic has a solution",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.admin.web_hooks.solved_event.group_name",
+            "value": "Solved Event",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.solved.confirm_move_solution_title",
+            "value": "Move solution post",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.solved.shared_issue.closed_title",
+            "value": "This topic is closed",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.admin.reports.related_items.labels.solved_by",
+            "value": "Solved by",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.solved.accepted_answer_post_number",
+            "value": "post %{post_number}",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "post_number"
+            ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.notifications.alt.solved.accepted_notification",
+            "value": "accepted",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.solved.dont_show_again",
+            "value": "Got it, don't show me this again",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.solved.shared_issue.author_title",
+            "value": "You started this topic",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.solved.no_answer.title",
+            "value": "Has your question been answered?",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.solved.has_no_accepted_answer",
+            "value": "This topic has no solution",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.solved.accepted_answer_solver_info",
+            "value": "by %{user} in %{post}",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "post",
+              "user"
+            ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.solved.shared_issue.label_with_count",
+            "value": "%{label} (%{count})",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "count",
+              "label"
+            ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.solved.shared_issue.archived_title",
+            "value": "This topic is archived",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "solved.no_solutions.self",
+            "value": "You have no accepted solutions yet.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.solved.notification.title",
+            "value": "your post was marked as solution",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "badges.solved_1.description",
+            "value": "Have a reply marked as a Solution",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.solved.shared_issue.title",
+            "value": "I am also experiencing this issue",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "discourse_ai.ai_bot.tool_summary.mark_as_solved",
+            "value": "Mark as solved",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.solved.accept_answer",
+            "value": "Select if this reply solves the problem",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.solved.confirm_solved_removal_title",
+            "value": "Solution will be removed",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "badges.solved_2.description",
+            "value": "Have 10 replies marked as Solutions",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "badges.solved_3.description",
+            "value": "Have 50 replies marked as Solutions",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          }
+        ],
+        "__rest_serializer": "1",
+        "extras": {
+          "themes": [
+            {
+              "id": -1,
+              "name": "Foundation",
+              "enabled": true
+            },
+            {
+              "id": -2,
+              "name": "Horizon",
+              "enabled": true
+            }
+          ],
+          "regex": "Solved",
+          "has_more": true
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "site_texts": [
+          {
+            "id": "js.user.no_messages_title",
+            "value": "You don’t have any messages",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.create_account.no_account_yet",
+            "value": "Don't have an account?",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "admin_js.admin.web_hooks.none",
+            "value": "You don't have any webhooks yet",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.user.no_assignments_title",
+            "value": "You don’t have any assignments yet",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "admin_js.admin.emoji.no_emoji",
+            "value": "You don't have any custom emoji yet.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.user.no_notifications_title",
+            "value": "You don’t have any notifications yet",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "admin_js.admin.api_keys.no_api_keys",
+            "value": "You don't have any API keys yet.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.chat.invalid_access",
+            "value": "You don't have access to view this chat channel",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.user.no_notifications_page_title",
+            "value": "You don’t have any notifications yet",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "admin_js.admin.permalink.no_permalinks",
+            "value": "You don't have any permalinks yet.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "admin_js.admin.plugins.none_installed",
+            "value": "You don't have any plugins installed.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.user.no_other_notifications_title",
+            "value": "You don’t have any other notifications yet",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.topic.invalid_access.description",
+            "value": "Sorry, you don't have access to that topic!",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.user_menu.no_chat_notifications_title",
+            "value": "You don’t have any chat notifications yet",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "admin_js.admin.user_fields.no_user_fields",
+            "value": "You don't have any custom user fields yet.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.post.controls.delete_topic_disallowed",
+            "value": "you don't have permission to delete this topic",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "discourse_workflows.errors.no_permission_to_manage",
+            "value": "You don't have permission to manage workflows.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.voice.invite.skipped",
+            "value": "%{usernames} can't be invited because they don't have access to voice rooms.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "usernames"
+            ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.tagging.category_restricted",
+            "value": "This tag is restricted to categories you don't have permission to access.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.chat.empty_state.my_threads",
+            "value": "You don't have any threads yet. Threads you participate in will be displayed here.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.user.passkeys.already_added_error",
+            "value": "You have already registered this passkey. You don’t have to register it again.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.theme_preview_failed",
+            "value": "Failed to preview theme because it doesn't exist, or you don't have permission to access it.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "discourse_assign.forbidden_assignee_cant_see_topic",
+            "value": "@%{username} can't be assigned because they don't have access to this topic.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "username"
+            ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "site_settings.allowed_link_domains",
+            "value": "Domains that users may link to even if they don't have the appropriate trust level to post links",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.user.second_factor.security_key.already_added_error",
+            "value": "You have already registered this security key. You don’t have to register it again.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.user.invited.cannot_invite_to_forum",
+            "value": "Sorry, you don't have permission to create invites. Please contact an admin to grant you invite permission.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "admin_js.admin.config.logo.form.og_image_source.description",
+            "value": "Choose how OpenGraph preview images are provided for topics that don't have their own image.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "emails.incoming.errors.insufficient_trust_level_error",
+            "value": "Happens when a user tried to create a new topic in a category they don't have the required trust level for.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "site_settings.generate_topic_og_image",
+            "value": "Automatically generate OpenGraph preview images for topics that don't have an image. Uses topic title, category, and site colors.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.tagging.add_synonyms_failed",
+            "value": "The following tags couldn't be added as synonyms: <b>%{tag_names}</b>. Ensure they don't have synonyms and aren't synonyms of another tag.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "tag_names"
+            ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "discourse_assign.forbidden_assignee_not_pm_participant",
+            "value": "@%{username} can't be assigned because they don't have access to this PM. You can grant @%{username} access by inviting them to this PM.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "username"
+            ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.post.controls.delete_topic_disallowed_modal",
+            "value": "You don't have permission to delete this topic. If you really want it to be deleted, submit a flag for moderator attention together with reasoning.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "admin_js.admin.config.logo.form.generate_topic_og_image.description",
+            "value": "Automatically generate OpenGraph preview images for topics that don't have an image. Uses topic title, category, and site colors.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "system_messages.email_reject_reply_not_allowed.text_body_template",
+            "value": "We're sorry, but your email message to %{destination} (titled %{former_title}) didn't work.\n\nYou don't have permissions to reply to the topic. If you believe this is an error, [contact a staff member](%{base_url}/about).\n",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "base_url",
+              "destination",
+              "former_title"
+            ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "admin_js.admin.config.flags.header_description",
+            "value": "The flagging system in Discourse helps you and your moderator team manage content and user behavior, keeping your community respectful and healthy. The defaults are suitable for most communities and you don’t have to change them. However, if your site has particular requirements you can disable flags you don’t need and add your own custom flags.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "tos_topic.body",
+            "value": "<h2 id=\"heading--change-me\"><a href=\"#heading--change-me\">Change Me</a></h2>\n\nForum Admin, please find below an example starting template for a privacy policy that you should customise to meet your site's needs.\n\nThese terms do not, but might one day, govern use of the Internet forum at <%{base_url}>. In that event, to use the forum, you must agree to these terms with %{company_name}, the company that runs the forum.\n\nThe company may offer other products and services, under different terms. These terms apply only to use of the forum.\n\nSkip to:\n\n- [Important Terms](#heading--important-terms)\n- [Your Permission to Use the Forum](#heading--permission)\n- [Conditions for Use of the Forum](#heading--conditions)\n- [Acceptable Use](#heading--acceptable-use)\n- [Content Standards](#heading--content-standards)\n- [Enforcement](#heading--enforcement)\n- [Your Account](#heading--your-account)\n- [Your Content](#heading--your-content)\n- [Your Responsibility](#heading--responsibility)\n- [Disclaimers](#heading--disclaimers)\n- [Limits on Liability](#heading--liability)\n- [Feedback](#heading--feedback)\n- [Termination](#heading--termination)\n- [Disputes](#heading--disputes)\n- [General Terms](#heading--general)\n- [Contact](#heading--contact)\n- [Changes](#heading--changes)\n\n<h2 id=\"heading--important-terms\"><a href=\"#heading--important-terms\">Important Terms</a></h2>\n\n***These terms include a number of important provisions that affect your rights and responsibilities, such as the disclaimers in [Disclaimers](#heading--disclaimers), limits on the company's liability to you in [Limits on Liability](#heading--liability), your agreement to cover the company for damages caused by your misuse of the forum in [Responsibility for Your Use](#heading--responsibility), and an agreement to arbitrate disputes in [Disputes](#heading--disputes).***\n\n<h2 id=\"heading--permission\"><a href=\"#heading--permission\">Your Permission to Use the Forum</a></h2>\n\nSubject to these terms, the company gives you permission to use the forum. Everyone needs to agree to these terms to use the forum.\n\n<h2 id=\"heading--conditions\"><a href=\"#heading--conditions\">Conditions for Use of the Forum</a></h2>\n\nYour permission to use the forum is subject to the following conditions:\n\n1. You must be at least eighteen years old.\n\n2. You may no longer use the forum if the company contacts you directly to say that you may not.\n\n3. You must use the forum in accordance with [Acceptable Use](#heading--acceptable-use) and [Content Standards](#heading--content-standards).\n\n<h2 id=\"heading--acceptable-use\"><a href=\"#heading--acceptable-use\">Acceptable Use</a></h2>\n\n1. You may not break the law using the forum.\n\n2. You may not use or try to use another's account on the forum without their specific permission.\n\n3. You may not buy, sell, or otherwise trade in user names or other unique identifiers on the forum.\n\n4. You may not send advertisements, chain letters, or other solicitations through the forum, or use the forum to gather addresses or other personal data for commercial mailing lists or databases.\n\n5. You may not automate access to the forum, or monitor the forum, such as with a web crawler, browser plug-in or add-on, or other computer program that is not a web browser. You may crawl the forum to index it for a publicly available search engine, if you run one.\n\n6. You may not use the forum to send e-mail to distribution lists, newsgroups, or group mail aliases.\n\n7. You may not falsely imply that you're affiliated with or endorsed by the company.\n\n8. You may not hyperlink to images or other non-hypertext content on the forum on other webpages.\n\n9. You may not remove any marks showing proprietary ownership from materials you download from the forum.\n\n10. You may not show any part of the forum on other websites with `<iframe>`.\n\n11. You may not disable, avoid, or circumvent any security or access restrictions of the forum.\n\n12. You may not strain infrastructure of the forum with an unreasonable volume of requests, or requests designed to impose an unreasonable load on information systems underlying the forum.\n\n13. You may not impersonate others through the forum.\n\n14. You may not encourage or help anyone in violation of these terms.\n\n<h2 id=\"heading--content-standards\"><a href=\"#heading--content-standards\">Content Standards</a></h2>\n\n1. You may not submit content to the forum that is illegal, offensive, or otherwise harmful to others. This includes content that is harassing, inappropriate, abusive, or hateful conduct.\n\n2. You may not submit content to the forum that violates the law, infringes anyone's intellectual property rights, violates anyone's privacy, or breaches agreements you have with others.\n\n3. You may not submit content to the forum containing malicious computer code, such as computer viruses or spyware.\n\n4. You may not submit content to the forum as a mere placeholder, to hold a particular address, user name, or other unique identifier.\n\n5. You may not use the forum to disclose information that you don't have the right to disclose, like others' confidential or personal information.\n\n<h2 id=\"heading--enforcement\"><a href=\"#heading--enforcement\">Enforcement</a></h2>\n\nThe company may investigate and prosecute violations of these terms to the fullest legal extent. The company may notify and cooperate with law enforcement authorities in prosecuting violations of the law and these terms.\n\nThe company reserves the right to change, redact, and delete content on the forum for any reason. If you believe someone has submitted content to the forum in violation of these terms, [contact us immediately](#heading--contact).\n\n<h2 id=\"heading--your-account\"><a href=\"#heading--your-account\">Your Account</a></h2>\n\nYou must create and log into an account to use some features of the forum.\n\nTo create an account, you must provide some information about yourself. If you create an account, you agree to provide, at a minimum, a valid e-mail address, and to keep that address up-to-date. You may close your account at any time by e-mailing <%{contact_email}>.\n\nYou agree to be responsible for all action taken using your account, whether authorized by you or not, until you either close your account or notify the company that your account has been compromised. You agree to notify the company immediately if you suspect your account has been compromised. You agree to select a secure password for your account, and keep it secret.\n\nThe company may restrict, suspend, or close your account on the forum according to its policy for handling copyright-related takedown requests, or if the company reasonably believes that you've broken any rule in these terms.\n\n<h2 id=\"heading--your-content\"><a href=\"#heading--your-content\">Your Content</a></h2>\n\nNothing in these terms gives the company any ownership rights in intellectual property that you share with the forum, such as your account information, posts, or other content you submit to the forum. Nothing in these terms gives you any ownership rights in the company's intellectual property, either.\n\nBetween you and the company, you remain solely responsible for content you submit to the forum. You agree not to wrongly imply that content you submit to the forum is sponsored or approved by the company. These terms do not obligate the company to store, maintain, or provide copies of content you submit, and to change it, according to these terms.\n\nContent you submit to the forum belongs to you, and you decide what permission to give others for it. But at a minimum, you license the company to provide content that you submit to the forum to other users of the forum. That special license allows the company to copy, publish, and analyze content you submit to the forum.\n\nWhen content you submit is removed from the forum, whether by you or by the company, the company's special license ends when the last copy disappears from the company's backups, caches, and other systems. Other licenses you apply to content you submit, such as [Creative Commons](https://creativecommons.org) licenses, may continue after your content is removed. Those licenses may give others, or the company itself, the right to share your content through the forum again.\n\nOthers who receive content you submit to the forum may violate the terms on which you license your content. You agree that the company will not be liable to you for those violations or their consequences.\n\n<h2 id=\"heading--responsibility\"><a href=\"#heading--responsibility\">Your Responsibility</a></h2>\n\nYou agree to indemnify the company from legal claims by others related to your breach of these terms, or breach of these terms by others using your account on the forum. Both you and the company agree to notify the other side of any legal claims for which you might have to indemnify the company as soon as possible. If the company fails to notify you of a legal claim promptly, you won't have to indemnify the company for damages that you could have defended against or mitigated with prompt notice. You agree to allow the company to control investigation, defense, and settlement of legal claims for which you would have to indemnify the company, and to cooperate with those efforts. The company agrees not to agree to any settlement that admits fault for you or imposes obligations on you without your prior agreement.\n\n<h2 id=\"heading--disclaimers\"><a href=\"#heading--disclaimers\">Disclaimers</a></h2>\n\n***You accept all risk of using the forum and content on the forum. As far as the law allows, the company and its suppliers provide the forum as is, without any warranty whatsoever.***\n\nThe forum may hyperlink to and integrate forums and services run by others. The company does not make any warranty about services run by others, or content they may provide. Use of services run by others may be governed by other terms between you and the one running service.\n\n<h2 id=\"heading--liability\"><a href=\"#heading--liability\">Limits on Liability</a></h2>\n\n***Neither the company nor its suppliers will be liable to you for breach-of-contract damages their personnel could not have reasonably foreseen when you agreed to these terms.***\n\n***As far as the law allows, the total liability to you for claims of any kind that are related to the forum or content on the forum will be limited to $50.***\n\n<h2 id=\"heading--feedback\"><a href=\"#heading--feedback\">Feedback</a></h2>\n\nThe company welcomes your feedback and suggestions for the forum. See the [Contact](#heading--contact) section below for ways to get in touch with us.\n\nYou agree that the company will be free to act on feedback and suggestions you provide, and that the company won't have to notify you that your feedback was used, get your permission to use it, or pay you. You agree not to submit feedback or suggestions that you believe might be confidential or proprietary, to you or others.\n\n<h2 id=\"heading--termination\"><a href=\"#heading--termination\">Termination</a></h2>\n\nEither you or the company may end the agreement written out in these terms at any time. When our agreement ends, your permission to use the forum also ends.\n\nThe following provisions survive the end of our agreement: [Your Content](#heading--your-content), [Feedback](#heading--feedback), [Your Responsibility](#heading--responsibility), [Disclaimers](#heading--disclaimers), [Limits on Liability](#heading--liability), and [General Terms](#heading--general).\n\n<h2 id=\"heading--disputes\"><a href=\"#heading--disputes\">Disputes</a></h2>\n\n%{governing_law} will govern any dispute related to these terms or your use of the forum.\n\nYou and the company agree to seek injunctions related to these terms only in state or federal court in %{city_for_disputes}. Neither you nor the company will object to jurisdiction, forum, or venue in those courts.\n\n***Other than to seek an injunction or for claims under the Computer Fraud and Abuse Act, you and the company will resolve any dispute by binding American Arbitration Association arbitration. Arbitration will follow the AAA's Commercial Arbitration Rules and Supplementary Procedures for Consumer Related Disputes. Arbitration will happen in %{city_for_disputes}. You will settle any dispute as an individual, and not as part of a class action or other representative proceeding, whether as the plaintiff or a class member. No arbitrator will consolidate any dispute with any other arbitration without the company's permission.***\n\nAny arbitration award will include costs of the arbitration, reasonable attorneys' fees, and reasonable costs for witnesses. You and the company may enter arbitration awards in any court with jurisdiction.\n\n<h2 id=\"heading--general\"><a href=\"#heading--general\">General Terms</a></h2>\n\nIf a provision of these terms is unenforceable as written, but could be changed to make it enforceable, that provision should be modified to the minimum extent necessary to make it enforceable. Otherwise, that provision should be removed.\n\nYou may not assign your agreement with the company. The company may assign your agreement to any affiliate of the company, any other company that obtains control of the company, or any other company that buys assets of the company related to the forum. Any attempted assignment against these terms has no legal effect.\n\nNeither the exercise of any right under this Agreement, nor waiver of any breach of this Agreement, waives any other breach of this Agreement.\n\nThese terms embody all the terms of agreement between you and the company about use of the forum. These terms entirely replace any other agreements about your use of the forum, written or not.\n\n<h2 id=\"heading--contact\"><a href=\"#heading--contact\">Contact</a></h2>\n\nYou may notify the company under these terms, and send questions to the company, at <%{contact_email}>.\n\nThe company may notify you under these terms using the e-mail address you provide for your account on the forum, or by posting a message to the homepage of the forum or your account page.\n\n<h2 id=\"heading--changes\"><a href=\"#heading--changes\">Changes</a></h2>\n\nThe company last updated these terms on [INSERT LAST UPDATE DATE HERE], and may update these terms again. The company will post all updates to the forum. For updates that contain substantial changes, the company agrees to e-mail you, if you've created an account and provided a valid e-mail address. The company may also announce updates with special messages or alerts on the forum.\n\nOnce you get notice of an update to these terms, you must agree to the new terms in order to keep using the forum.\n",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "base_url",
+              "city_for_disputes",
+              "company_name",
+              "contact_email",
+              "governing_law"
+            ],
+            "overridden": false,
+            "can_revert": false
+          }
+        ],
+        "__rest_serializer": "1",
+        "extras": {
+          "themes": [
+            {
+              "id": -1,
+              "name": "Foundation",
+              "enabled": true
+            },
+            {
+              "id": -2,
+              "name": "Horizon",
+              "enabled": true
+            }
+          ],
+          "regex": "don['‘’‚‹›]t\\ have"
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "site_texts": [
+          {
+            "id": "js.notifications.watching_first_post_label",
+            "value": "New Topic",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.notifications.titles.watching_first_post",
+            "value": "new topic",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.share_target.new_topic",
+            "value": "New topic",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.topic.create",
+            "value": "New Topic",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.topic.new",
+            "value": "new topic",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.topic.split_topic.radio_label",
+            "value": "New Topic",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "embed.new_topic",
+            "value": "Create new topic",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.drafts.new_topic",
+            "value": "New topic draft",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.boards.board.new_topic",
+            "value": "New topic...",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.topic.create_long",
+            "value": "Create a new topic",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "reports.topics.yaxis",
+            "value": "Number of new topics",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.topics.none.new",
+            "value": "You have no new topics.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.topic.create_group",
+            "value": "New topic and drafts",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.topic.new_topics.one",
+            "value": "%{count} new topic",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "count"
+            ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.topic.browse_new_topics",
+            "value": "Browse new topics",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.topic.split_topic.title",
+            "value": "Move to New Topic",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.filters.new.new_topics_tooltip",
+            "value": "New topics",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.discovery.headings.all.new",
+            "value": "All new topics",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.topic_count_all.one",
+            "value": "See %{count} new topic",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "count"
+            ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.topic_count_new.one",
+            "value": "See %{count} new topic",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "count"
+            ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.topic.new_topics.other",
+            "value": "%{count} new topics",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "count"
+            ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.topic.split_topic.action",
+            "value": "move to new topic",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.templates.new_topic",
+            "value": "New topic from template",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.topic.split_topic.topic_name",
+            "value": "New Topic Title",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "user_notifications.digest.new_topics",
+            "value": "New Topics",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.topic_count_all.other",
+            "value": "See %{count} new topics",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "count"
+            ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.topic_count_new.other",
+            "value": "See %{count} new topics",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "count"
+            ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "filter.description.in_new_topics",
+            "value": "Show new topics",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.category.new_topic_approval",
+            "value": "New topic approval",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.tagging.topics.none.new",
+            "value": "You have no new topics.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.chat.selection.new_topic.title",
+            "value": "Move to New Topic",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.search.start_new_topic",
+            "value": "Perhaps start a new topic?",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.topics.bulk.dismiss_new_topics",
+            "value": "Dismiss new topics",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.topics.bulk.dismiss_new_modal.topics",
+            "value": "Dismiss new topics",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.category.all_topics_wiki",
+            "value": "Make new topics wikis by default",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.discovery.headings.category.new",
+            "value": "New topics in %{category}",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "category"
+            ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.discovery.headings.single_tag.new",
+            "value": "New topics tagged %{tag}",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "tag"
+            ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.discovery.headings.no_tags.all.new",
+            "value": "New topics without tags",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.review.new_topic",
+            "value": "Approving this item will create a new topic",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.user.feature_topic_on_profile.open_search",
+            "value": "Select a New Topic",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.composer.composer_actions.create_topic.desc",
+            "value": "Create a new topic",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "reports.topics.description",
+            "value": "New topics created during this period.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.admin.rss_polling.history.imported_plain",
+            "value": "Imported as a new topic.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "chat_integration.provider.google.new_topic",
+            "value": "New topic on %{site_title}",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "site_title"
+            ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "reports.bookmarks.description",
+            "value": "Number of new topics and posts bookmarked.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.notifications.watching_first_post",
+            "value": "<span>New Topic</span> %{description}",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "description"
+            ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.topic.split_topic.error",
+            "value": "There was an error moving posts to the new topic.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.discovery.headings.category_tag.new",
+            "value": "New topics in %{category} tagged %{tag}",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "category",
+              "tag"
+            ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.categories.topic_stat_sentence_week.one",
+            "value": "%{count} new topic in the past week.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "count"
+            ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.category.require_topic_approval",
+            "value": "Require moderator approval of all new topics",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          }
+        ],
+        "__rest_serializer": "1",
+        "extras": {
+          "themes": [
+            {
+              "id": -1,
+              "name": "Foundation",
+              "enabled": true
+            },
+            {
+              "id": -2,
+              "name": "Horizon",
+              "enabled": true
+            }
+          ],
+          "regex": "new\\ topic",
+          "has_more": true
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 112,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "HTJub3SBoDH3BYgh+zqE/SjIg2U=",
+            "created_at": "2026-10-14T14:30:14.974349",
+            "rotated_at": "2026-10-14T14:30:14.969815",
+            "updated_at": "2026-10-14T14:30:14.974349",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "HTJub3SBoDH3BYgh+zqE/SjIg2U=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 112,
+            "seen_at": "2026-10-14T14:30:16.757215",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "HTJub3SBoDH3BYgh+zqE/SjIg2U=",
+            "created_at": "2026-10-14T14:30:14.974349",
+            "rotated_at": "2026-10-14T14:30:14.969815",
+            "updated_at": "2026-10-14T14:30:14.974349",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "HTJub3SBoDH3BYgh+zqE/SjIg2U=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "5182380a51c6733278c8743f2d717fbb561b45a27782c6beaed27c66175b0e2f",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

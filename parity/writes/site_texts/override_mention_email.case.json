@@ -1,0 +1,22 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO translation_overrides (locale, translation_key, value, original_translation, status, created_at, updated_at) VALUES ('en', 'user_notifications.user_mentioned.text_body_template', '%{username} named you in \"%{topic_title}\" (post %{post_id}):\n\n%{message}\n\n%{respond_instructions}', NULL, 0, now(), now())",
+    "INSERT INTO translation_overrides (locale, translation_key, value, original_translation, status, created_at, updated_at) VALUES ('en', 'user_notifications.user_mentioned.subject_template', '%{optional_re}%{site_name}: %{username} mentioned you in %{topic_title}', NULL, 0, now(), now())",
+    "INSERT INTO translation_overrides (locale, translation_key, value, original_translation, status, created_at, updated_at) VALUES ('en', 'user_notifications.header_instructions', '', NULL, 0, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "A mention of @user0 & <friends> in a reply long enough to post."
+      }
+    }
+  ],
+  "run_jobs": [
+    "post_alert",
+    "user_email"
+  ]
+}

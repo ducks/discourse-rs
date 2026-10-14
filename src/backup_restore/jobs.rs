@@ -84,11 +84,10 @@ pub async fn download_backup_email(state: &AppState, args: &Value) -> Result<(),
         mailer: &state.mailer,
     };
     let built = crate::email::account::build_template(
-        &mut tx,
         &ctx,
         "download_backup_mailer",
         &email,
-        &[("backup_file_path", &url)],
+        &[("backup_file_path", url.as_str())],
         None,
     )
     .await?;

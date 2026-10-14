@@ -1401,7 +1401,6 @@ async fn send_email_login_code(state: &AppState, args: &Value) -> Result<(), App
     };
     let mut tx = state.pool.begin().await?;
     let built = crate::email::account::build_template(
-        &mut tx,
         &ctx,
         template,
         to,
@@ -1451,7 +1450,6 @@ async fn admin_confirmation_email(state: &AppState, args: &Value) -> Result<(), 
     let admin_confirm_url = format!("{base_url}/u/confirm-admin/{token}");
     let mut tx = state.pool.begin().await?;
     let built = crate::email::account::build_template(
-        &mut tx,
         &ctx,
         "admin_confirmation_mailer",
         to,

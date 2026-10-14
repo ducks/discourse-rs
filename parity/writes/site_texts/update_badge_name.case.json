@@ -1,0 +1,8 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "PUT", "path": "/admin/customize/site_texts/badges.first_like.name.json", "params": {"site_text": {"value": "Liked once", "locale": "en"}}},
+    {"method": "GET", "path": "/badges/11.json"},
+    {"method": "PUT", "path": "/admin/customize/site_texts/badges.first_like.description.json", "params": {"site_text": {"value": "Liked a post once", "locale": "en"}}}
+  ]
+}

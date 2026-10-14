@@ -7,8 +7,15 @@
 //! returned literally; with some, a placeholder that has no argument makes
 //! the lookup fail (Discourse's handler raises and the caller's default is
 //! used instead).
+//!
+//! Translation overrides (`translation_overrides`, the admin's site texts)
+//! sit over the files as in Discourse's I18n backend: `t` returns the
+//! override of a key once a row exists, and interpolation and plural forms
+//! run on it. They are read again whenever the table changed
+//! ([`I18n::refresh_overrides`], before every request and job).
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
+use std::sync::{Mutex, RwLock};
 
 use serde_yaml_ng::Value as Yaml;
 
@@ -20,9 +27,36 @@ const PLUGIN_CLIENT_EN_YML: &str =
 const PLUGIN_SERVER_EN_YML: &str =
     include_str!("../vendor/discourse/config/locales/plugin_server.en.yml");
 
+/// The locale whose overrides apply: the port serves English only (the
+/// places that would translate refuse other locales).
+pub const OVERRIDE_LOCALE: &str = "en";
+
 #[derive(Debug)]
 pub struct I18n {
     strings: HashMap<String, String>,
+    overrides: RwLock<Overrides>,
+}
+
+#[derive(Debug, Default)]
+struct Overrides {
+    /// What the table held when the map was read.
+    fingerprint: Option<String>,
+    values: HashMap<String, &'static str>,
+}
+
+/// Override values handed out as `&str` for as long as the I18n lives,
+/// though a later reload drops them from the map: each distinct value is
+/// kept once for the process (admins write a handful).
+fn intern(value: String) -> &'static str {
+    static VALUES: Mutex<Option<HashSet<&'static str>>> = Mutex::new(None);
+    let mut guard = VALUES.lock().unwrap_or_else(|e| e.into_inner());
+    let set = guard.get_or_insert_with(HashSet::new);
+    if let Some(existing) = set.get(value.as_str()) {
+        return existing;
+    }
+    let leaked: &'static str = Box::leak(value.into_boxed_str());
+    set.insert(leaked);
+    leaked
 }
 
 impl I18n {
@@ -55,6 +89,83 @@ impl I18n {
         Self::from_yaml(root)
     }
 
+    fn new(strings: HashMap<String, String>) -> Self {
+        I18n {
+            strings,
+            overrides: RwLock::new(Overrides::default()),
+        }
+    }
+
+    /// `I18n.overrides_by_locale`: the overrides read again when the
+    /// table's rows for the locale changed since the last read.
+    pub async fn refresh_overrides(
+        &self,
+        conn: &mut sqlx::PgConnection,
+    ) -> Result<(), sqlx::Error> {
+        let fingerprint: String = sqlx::query_scalar(
+            "SELECT count(*)::text || '/' || COALESCE(md5(string_agg(translation_key || chr(31) \
+             || value, chr(30) ORDER BY id)), '') FROM translation_overrides WHERE locale = $1",
+        )
+        .bind(OVERRIDE_LOCALE)
+        .fetch_one(&mut *conn)
+        .await?;
+        {
+            let current = self.overrides.read().unwrap_or_else(|e| e.into_inner());
+            if current.fingerprint.as_deref() == Some(fingerprint.as_str()) {
+                return Ok(());
+            }
+        }
+        let rows: Vec<(String, String)> = sqlx::query_as(
+            "SELECT translation_key, value FROM translation_overrides WHERE locale = $1",
+        )
+        .bind(OVERRIDE_LOCALE)
+        .fetch_all(&mut *conn)
+        .await?;
+        self.set_overrides(rows, Some(fingerprint));
+        Ok(())
+    }
+
+    /// Replaces the overrides (the read above, and tests).
+    pub fn set_overrides(&self, rows: Vec<(String, String)>, fingerprint: Option<String>) {
+        let values = rows.into_iter().map(|(k, v)| (k, intern(v))).collect();
+        let mut current = self.overrides.write().unwrap_or_else(|e| e.into_inner());
+        *current = Overrides {
+            fingerprint,
+            values,
+        };
+    }
+
+    /// The override of a key, if an admin wrote one.
+    pub fn override_of(&self, key: &str) -> Option<&str> {
+        let current = self.overrides.read().unwrap_or_else(|e| e.into_inner());
+        current.values.get(key).copied()
+    }
+
+    /// The overridden keys.
+    pub fn overridden_keys(&self) -> Vec<String> {
+        let current = self.overrides.read().unwrap_or_else(|e| e.into_inner());
+        current.values.keys().cloned().collect()
+    }
+
+    /// `I18n.overrides_disabled { I18n.t(key) }`: the file's string.
+    pub fn t_default(&self, key: &str) -> Option<&str> {
+        self.strings.get(key).map(String::as_str)
+    }
+
+    /// `I18n.exists?(key, :en)`: a string leaf or a hash of them.
+    pub fn exists(&self, key: &str) -> bool {
+        if self.strings.contains_key(key) {
+            return true;
+        }
+        let prefix = format!("{key}.");
+        self.strings.keys().any(|k| k.starts_with(&prefix))
+    }
+
+    /// Every string of the files, for the site texts search.
+    pub fn strings(&self) -> impl Iterator<Item = (&str, &str)> {
+        self.strings.iter().map(|(k, v)| (k.as_str(), v.as_str()))
+    }
+
     fn from_yaml(mut root: Yaml) -> Result<Self, String> {
         root.apply_merge()
             .map_err(|e| format!("server.en.yml merge keys: {e}"))?;
@@ -65,12 +176,13 @@ impl I18n {
 
         let mut strings = HashMap::new();
         flatten(locale, String::new(), &mut strings);
-        Ok(I18n { strings })
+        Ok(I18n::new(strings))
     }
 
-    /// `I18n.t(key)` with no arguments: the raw string, placeholders intact.
+    /// `I18n.t(key)` with no arguments: the raw string, placeholders
+    /// intact, the key's override first.
     pub fn t(&self, key: &str) -> Option<&str> {
-        self.strings.get(key).map(String::as_str)
+        self.override_of(key).or_else(|| self.t_default(key))
     }
 
     /// `I18n.t(key)` for a key holding a hash: its strings, nested as in

@@ -1,0 +1,167 @@
+{
+  "name": "update_invalid",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/customize/site_texts/js.topic.filter_to.one.json",
+      "params": {
+        "site_text": {
+          "value": "There is %{unknown} and %{other_key} left",
+          "locale": "en"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/customize/site_texts/system_messages.welcome_user.subject_template.json",
+      "params": {
+        "site_text": {
+          "value": "Welcome %{nope}",
+          "locale": "en"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/customize/site_texts/js.powered_by_discourse.json",
+      "params": {
+        "site_text": {
+          "value": "x",
+          "locale": "en"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/customize/site_texts/no.such.key.json",
+      "params": {
+        "site_text": {
+          "value": "x",
+          "locale": "en"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/customize/site_texts/js.topic.create.json",
+      "params": {
+        "site_text": {
+          "value": "x",
+          "locale": "xx"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/customize/site_texts/js.topic.create.json",
+      "params": {
+        "site_text": {
+          "value": "",
+          "locale": "en"
+        }
+      }
+    }
+  ],
+  "started_at": "2026-10-14T14:30:56.884379",
+  "transaction_started_at": "2026-10-14T14:30:55.517452",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "failed": "FAILED",
+        "message": "The following interpolation keys are invalid: unknown, other_key"
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "failed": "FAILED",
+        "message": "The following interpolation key is invalid: nope"
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "This email template can't be modified"
+        ],
+        "error_type": "invalid_access"
+      }
+    },
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: locale"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "failed": "FAILED",
+        "message": "Value can't be blank"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 112,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "TlV3f8VdgvrITFVMH6PYV04iw6s=",
+            "created_at": "2026-10-14T14:30:56.035854",
+            "rotated_at": "2026-10-14T14:30:56.034532",
+            "updated_at": "2026-10-14T14:30:56.035854",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "TlV3f8VdgvrITFVMH6PYV04iw6s=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 112,
+            "seen_at": "2026-10-14T14:30:56.894246",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "TlV3f8VdgvrITFVMH6PYV04iw6s=",
+            "created_at": "2026-10-14T14:30:56.035854",
+            "rotated_at": "2026-10-14T14:30:56.034532",
+            "updated_at": "2026-10-14T14:30:56.035854",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "TlV3f8VdgvrITFVMH6PYV04iw6s=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "7c2230c7dad52d364bee59e0751fac1593a21e798b9b6696a94ca3eb44bee666",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -202,6 +202,10 @@ def reset_plugin_caches
   # which a flags case's after_commit fills with a flag the rollback
   # removes.
   PostActionType.reload_types
+  # The translation overrides I18n keeps per site (translate_accelerator),
+  # which TranslationOverride's own writes reload but setup SQL and the
+  # rollback do not.
+  I18n.instance_variable_set(:@overrides_by_site, {})
 end
 
 # Every file and directory under public/backups.

@@ -1083,7 +1083,6 @@ async fn delete_author(
         mailer,
     };
     let built = crate::email::account::build_template(
-        &mut *conn,
         &sender,
         "user_notifications.account_deleted",
         &email,

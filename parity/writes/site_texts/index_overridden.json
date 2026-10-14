@@ -1,0 +1,1078 @@
+{
+  "name": "index_overridden",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/customize/site_texts.json?overridden=true&locale=en"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/customize/site_texts.json?q=discussion&locale=en"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/customize/site_texts.json?q=Create%20a%20new%20topic&locale=en"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/customize/site_texts.json?outdated=true&locale=en"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/customize/site_texts.json?q=filter_to&locale=en"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/customize/site_texts.json?locale=en"
+    }
+  ],
+  "started_at": "2026-10-14T14:30:09.613424",
+  "transaction_started_at": "2026-10-14T14:30:07.681955",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "site_texts": [
+          {
+            "id": "js.composer.reply",
+            "value": "Answer",
+            "status": "outdated",
+            "old_default": "Reply",
+            "new_default": "Reply",
+            "interpolation_keys": [],
+            "overridden": true,
+            "can_revert": true
+          },
+          {
+            "id": "js.topic.filter_to.one",
+            "value": "One more",
+            "status": "outdated",
+            "old_default": "There is <a href=\"%{basePath}/unread\">1 unread</a>",
+            "new_default": "%{count} post in topic",
+            "interpolation_keys": [
+              "count"
+            ],
+            "overridden": true,
+            "can_revert": true
+          },
+          {
+            "id": "badges.first_like.name",
+            "value": "Liked once",
+            "status": "up_to_date",
+            "old_default": "First Like",
+            "new_default": "First Like",
+            "interpolation_keys": [],
+            "overridden": true,
+            "can_revert": true
+          },
+          {
+            "id": "js.topic.create",
+            "value": "Start a discussion",
+            "status": "up_to_date",
+            "old_default": "New Topic",
+            "new_default": "New Topic",
+            "interpolation_keys": [],
+            "overridden": true,
+            "can_revert": true
+          },
+          {
+            "id": "js.topic.filter_to.other",
+            "value": "%{count} posts in topic",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "count"
+            ],
+            "overridden": false,
+            "can_revert": false
+          }
+        ],
+        "__rest_serializer": "1",
+        "extras": {
+          "themes": [
+            {
+              "id": -1,
+              "name": "Foundation",
+              "enabled": true
+            },
+            {
+              "id": -2,
+              "name": "Horizon",
+              "enabled": true
+            }
+          ],
+          "regex": ""
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "site_texts": [
+          {
+            "id": "category_types.discussion.name",
+            "value": "Discussion",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "category_types.discussion.title",
+            "value": "discussion",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "embed.loading",
+            "value": "Loading Discussion…",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "embed.continue",
+            "value": "Continue Discussion",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.topic.create",
+            "value": "Start a discussion",
+            "status": "up_to_date",
+            "old_default": "New Topic",
+            "new_default": "New Topic",
+            "interpolation_keys": [],
+            "overridden": true,
+            "can_revert": true
+          },
+          {
+            "id": "embed.start_discussion",
+            "value": "Start Discussion",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "llms_txt.links.latest.label",
+            "value": "Latest discussions",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "user_notifications.previous_discussion",
+            "value": "Previous Replies",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "user_notifications.digest.join_the_discussion",
+            "value": "Read More",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "llms_txt.links.categories.note",
+            "value": "Browse public discussion categories",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.chat.unread_threads_count.one",
+            "value": "You have %{count} unread discussion",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "count"
+            ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.post.continue_discussion",
+            "value": "Continuing the discussion from %{postLink}:",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "postLink"
+            ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.chat.unread_threads_count.other",
+            "value": "You have %{count} unread discussions",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "count"
+            ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "post_action_types.off_topic.short_description",
+            "value": "Not relevant to the discussion",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "create_linked_topic.small_action_post_raw",
+            "value": "Continue discussion at %{new_title}.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "new_title"
+            ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.discourse_ai.discobot_discoveries.sources.related_discussions",
+            "value": "Related topics",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.composer.title_placeholder",
+            "value": "What is this discussion about in one brief sentence?",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "site_settings.github_linkback_enabled",
+            "value": "Link GitHub issues back to forum discussions",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "embed.imported_from",
+            "value": "This is a companion discussion topic for the original entry at %{link}",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "link"
+            ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "discourse_ai.ai_bot.discoveries.continue_conversation.sources",
+            "value": "Selected discussions:\n%{sources}",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "sources"
+            ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "category_types.discussion.description",
+            "value": "A standard category with all the essentials for conversation.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "discourse_ai.ai_bot.navigation.categories.description",
+            "value": "Browse, create, and manage discussion categories.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "admin_js.admin.config.category_management.keywords",
+            "value": "categories|category types|discussion|category management",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "llms_txt.links.search.note",
+            "value": "Search public discussions for a specific user request; do not crawl result pages",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "meta_category_description",
+            "value": "Discussion about this site, its organization, how it works, and how we can improve it.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.signup_cta.intro",
+            "value": "Hello! Looks like you’re enjoying the discussion, but you haven’t signed up for an account yet.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "staff_category_description",
+            "value": "Private category for staff discussions. Topics are only visible to admins and moderators.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "create_linked_topic.post_raw",
+            "value": "Continuing the discussion from %{parent_url}.\n\nPrevious discussions:\n\n%{previous_topics}",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "parent_url",
+              "previous_topics"
+            ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "admin_js.admin.config.welcome_banner.form.subheader_anonymous.placeholder",
+            "value": "Join our community to participate in discussions",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "site_settings.ai_ask_ai_related_count",
+            "value": "Set the maximum number of related discussions Ask AI selects and shows with each answer.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "groups.default_descriptions.moderators",
+            "value": "Responsible for responding to flags, moderating discussions, and helping members with their accounts",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.admin_onboarding_banner.start_posting.predefined_topics_description",
+            "value": "Pick from a collection of conversation starters to get discussions going",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "emails.incoming.continuing_old_discussion.one",
+            "value": "Continuing the discussion from [%{title}](%{url}), because it was created more than %{count} day ago.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "count",
+              "title",
+              "url"
+            ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "emails.incoming.continuing_old_discussion.other",
+            "value": "Continuing the discussion from [%{title}](%{url}), because it was created more than %{count} days ago.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "count",
+              "title",
+              "url"
+            ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.chat.flags.off_topic",
+            "value": "This message is not relevant to the current discussion as defined by the channel title, and should probably be moved elsewhere.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "admin_js.admin.user.delete_confirm",
+            "value": "It is generally preferable to anonymize users rather than deleting them, to avoid removing content from existing discussions.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.topic.slow_mode_update.description",
+            "value": "To promote thoughtful discussion in fast moving or contentious discussions, users must wait before posting again in this topic.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "post_action_types.off_topic.description",
+            "value": "This post is not relevant to the current discussion as defined by the title and first post, and should probably be moved elsewhere.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "cannot_edit_on_slow_mode",
+            "value": "This topic is in slow mode. To encourage thoughtful, considered discussion, editing old posts in this topic is not currently allowed during slow mode.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "discourse_narrative_bot.advanced_user_narrative.delete.reply",
+            "value": "Whoa! :boom:\n\nTo preserve continuity of discussions, deletes aren’t immediate, so the post will be removed after some time.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "badges.great_topic.long_description",
+            "value": "This badge is granted when your topic gets 50 likes. You kicked off a fascinating conversation and the community loved the lively discussion that resulted!\n",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "badges.nice_share.long_description",
+            "value": "This badge is granted for sharing a link that was clicked by 25 unique outside visitors. Thanks for spreading the word about our discussions, and this community.\n",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "site_settings.ai_toxicity_flag_threshold_toxicity",
+            "value": "Toxicity: a rude, disrespectful, or unreasonable comment that is somewhat likely to make you leave a discussion or give up on sharing your perspective",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "badges.hot_link.long_description",
+            "value": "This badge is granted when a link you shared gets 300 clicks. Thanks for posting a fascinating link that drove the conversation forward and illuminated the discussion!\n",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "assign_mailer.text_body_template",
+            "value": "Hey, %{assignee_name} **assigned** you to a discussion\n> **%{topic_title}**\n>\n> %{topic_excerpt}\n\nIf you're interested, click the link below:\n[%{topic_link}](%{topic_link})\n",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "assignee_name",
+              "topic_excerpt",
+              "topic_link",
+              "topic_title"
+            ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "badges.licensed.long_description",
+            "value": "This badge is granted upon successful completion of the interactive advanced user tutorial. You’ve mastered the advanced tools of discussion — and now you’re fully licensed!\n",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "badges.certified.long_description",
+            "value": "This badge is granted upon successful completion of the interactive new user tutorial. You’ve taken the initiative to learn the basic tools of discussion, and now you're certified!\n",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "site_settings.ai_toxicity_flag_threshold_severe_toxicity",
+            "value": "Severe Toxicity: a very hateful, aggressive, or disrespectful comment that is very likely to make you leave a discussion or give up on sharing your perspective",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "invite_mailer.text_body_template",
+            "value": "%{inviter_name} invited you to a discussion\n\n> **%{topic_title}**\n>\n> %{topic_excerpt}\n\nat\n\n> %{site_title} -- %{site_description}\n\nIf you're interested, click the link below:\n\n%{invite_link}\n",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "invite_link",
+              "inviter_name",
+              "site_description",
+              "site_title",
+              "topic_excerpt",
+              "topic_title"
+            ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "badges.good_share.long_description",
+            "value": "This badge is granted for sharing a link that was clicked by 300 unique outside visitors. Good work! You’ve shown off a great discussion to a bunch of new people and helped this community grow.\n",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          }
+        ],
+        "__rest_serializer": "1",
+        "extras": {
+          "themes": [
+            {
+              "id": -1,
+              "name": "Foundation",
+              "enabled": true
+            },
+            {
+              "id": -2,
+              "name": "Horizon",
+              "enabled": true
+            }
+          ],
+          "regex": "discussion",
+          "has_more": true
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "site_texts": [
+          {
+            "id": "js.composer.composer_actions.create_topic.desc",
+            "value": "Create a new topic",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.topic.create_long",
+            "value": "Create a new topic",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.review.new_topic",
+            "value": "Approving this item will create a new topic",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.keyboard_shortcuts_help.application.create",
+            "value": "Create a new topic or personal message",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.composer.composer_actions.reply_as_new_topic.desc",
+            "value": "Create a new topic linked to this topic",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "admin_js.admin.api.scopes.descriptions.topics.write",
+            "value": "Create a new topic or post to an existing one.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.topic.split_topic.instructions.one",
+            "value": "You are about to create a new topic and populate it with the post you've selected.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.chat.selection.new_topic.instructions_channel_archive",
+            "value": "You are about to create a new topic and archive the channel messages to it.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.chat.selection.new_topic.instructions.one",
+            "value": "You are about to create a new topic and populate it with the chat message you've selected.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "emails.incoming.errors.strangers_not_allowed_error",
+            "value": "Happens when a user tried to create a new topic in a category they're not a member of.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.topic.split_topic.instructions.other",
+            "value": "You are about to create a new topic and populate it with the <b>%{count}</b> posts you've selected.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "count"
+            ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.chat.selection.new_topic.instructions.other",
+            "value": "You are about to create a new topic and populate it with the <b>%{count}</b> chat messages you've selected.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "count"
+            ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "emails.incoming.errors.insufficient_trust_level_error",
+            "value": "Happens when a user tried to create a new topic in a category they don't have the required trust level for.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "site_settings.default_subcategory_on_read_only_category",
+            "value": "Enables 'New Topic' button and selects a default subcategory to post on categories where the user is not allowed to create a new topic.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "js.groups.manage.email.settings.allow_unknown_sender_topic_replies_hint",
+            "value": "Allows unknown senders to reply to group topics. If this is not enabled, replies from email addresses not already invited to the topic will create a new topic.",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          }
+        ],
+        "__rest_serializer": "1",
+        "extras": {
+          "themes": [
+            {
+              "id": -1,
+              "name": "Foundation",
+              "enabled": true
+            },
+            {
+              "id": -2,
+              "name": "Horizon",
+              "enabled": true
+            }
+          ],
+          "regex": "Create\\ a\\ new\\ topic"
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "site_texts": [
+          {
+            "id": "js.composer.reply",
+            "value": "Answer",
+            "status": "outdated",
+            "old_default": "Reply",
+            "new_default": "Reply",
+            "interpolation_keys": [],
+            "overridden": true,
+            "can_revert": true
+          },
+          {
+            "id": "js.topic.filter_to.one",
+            "value": "One more",
+            "status": "outdated",
+            "old_default": "There is <a href=\"%{basePath}/unread\">1 unread</a>",
+            "new_default": "%{count} post in topic",
+            "interpolation_keys": [
+              "count"
+            ],
+            "overridden": true,
+            "can_revert": true
+          },
+          {
+            "id": "js.topic.filter_to.other",
+            "value": "%{count} posts in topic",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "count"
+            ],
+            "overridden": false,
+            "can_revert": false
+          }
+        ],
+        "__rest_serializer": "1",
+        "extras": {
+          "themes": [
+            {
+              "id": -1,
+              "name": "Foundation",
+              "enabled": true
+            },
+            {
+              "id": -2,
+              "name": "Horizon",
+              "enabled": true
+            }
+          ],
+          "regex": ""
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "site_texts": [
+          {
+            "id": "js.topic.filter_to.one",
+            "value": "One more",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "count"
+            ],
+            "overridden": true,
+            "can_revert": true
+          },
+          {
+            "id": "js.topic.filter_to.other",
+            "value": "%{count} posts in topic",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "count"
+            ],
+            "overridden": false,
+            "can_revert": false
+          }
+        ],
+        "__rest_serializer": "1",
+        "extras": {
+          "themes": [
+            {
+              "id": -1,
+              "name": "Foundation",
+              "enabled": true
+            },
+            {
+              "id": -2,
+              "name": "Horizon",
+              "enabled": true
+            }
+          ],
+          "regex": "filter_to"
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "site_texts": [
+          {
+            "id": "education.new-reply",
+            "value": "Thanks for contributing to %{site_name}!\n\nRemember, we're all real people. Please be kind to your fellow community members.\n\nFor more tips and advice on participating in our community, [check out our community guidelines](%{base_path}/guidelines).\n",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "base_path",
+              "site_name"
+            ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "education.new-topic",
+            "value": "Thanks for contributing to %{site_name}!\n\nBefore you post, please select a category or tag to group this topic with related discussions so that it's easy for others to find it.\n\nFor more tips and advice on participating in our community, [check out our community guidelines](%{base_path}/guidelines).\n",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "base_path",
+              "site_name"
+            ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "login_required.welcome_message",
+            "value": "# Welcome to %{title}",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [
+              "title"
+            ],
+            "overridden": false,
+            "can_revert": false
+          },
+          {
+            "id": "system_messages.usage_tips.text_body_template",
+            "value": "For a few quick tips on getting started as a new user, [check out this blog post](https://blog.discourse.org/2016/12/discourse-new-user-tips-and-tricks/).\n\nAs you participate here, we’ll get to know you, and temporary new user limitations will be lifted. Over time you’ll gain [trust levels](https://blog.discourse.org/2018/06/understanding-discourse-trust-levels/) that include special abilities to help us manage our community together.\n",
+            "status": "up_to_date",
+            "old_default": null,
+            "new_default": null,
+            "interpolation_keys": [],
+            "overridden": false,
+            "can_revert": false
+          }
+        ],
+        "__rest_serializer": "1",
+        "extras": {
+          "themes": [
+            {
+              "id": -1,
+              "name": "Foundation",
+              "enabled": true
+            },
+            {
+              "id": -2,
+              "name": "Horizon",
+              "enabled": true
+            }
+          ],
+          "recommended": true
+        }
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 112,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "n5Lip7Cm/NdyuMy6iLi10thfM6I=",
+            "created_at": "2026-10-14T14:30:08.722482",
+            "rotated_at": "2026-10-14T14:30:08.719376",
+            "updated_at": "2026-10-14T14:30:08.722482",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "n5Lip7Cm/NdyuMy6iLi10thfM6I=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 112,
+            "seen_at": "2026-10-14T14:30:09.624586",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "n5Lip7Cm/NdyuMy6iLi10thfM6I=",
+            "created_at": "2026-10-14T14:30:08.722482",
+            "rotated_at": "2026-10-14T14:30:08.719376",
+            "updated_at": "2026-10-14T14:30:08.722482",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "n5Lip7Cm/NdyuMy6iLi10thfM6I=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO translation_overrides (locale, translation_key, value, original_translation, status, created_at, updated_at) VALUES ('en', 'js.topic.create', 'Start a discussion', 'New Topic', 0, now(), now())",
+    "INSERT INTO translation_overrides (locale, translation_key, value, original_translation, status, created_at, updated_at) VALUES ('en', 'badges.first_like.name', 'Liked once', 'First Like', 0, now(), now())",
+    "INSERT INTO translation_overrides (locale, translation_key, value, original_translation, status, created_at, updated_at) VALUES ('en', 'js.composer.reply', 'Answer', 'Reply', 1, now(), now())",
+    "INSERT INTO translation_overrides (locale, translation_key, value, original_translation, status, created_at, updated_at) VALUES ('en', 'js.topic.filter_to.one', 'One more', 'There is <a href=\"%{basePath}/unread\">1 unread</a>', 1, now(), now())",
+    "INSERT INTO translation_overrides (locale, translation_key, value, original_translation, status, created_at, updated_at) VALUES ('de', 'js.topic.create', 'Neues Thema', 'New Topic', 0, now(), now())"
+  ],
+  "recorded_from": {
+    "case": "f0bba5e92cd378ccbd272108607bf5020bc1aef323d9f5b807696eec6f3b9e76",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
