@@ -1,0 +1,17 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO user_api_key_clients (id, client_id, application_name, public_key, auth_redirect, created_at, updated_at) VALUES (9101, 'parity-client', 'Parity App', NULL, NULL, now() - interval '3 days', now() - interval '3 days')",
+    "INSERT INTO user_api_keys (id, user_id, key_hash, push_url, created_at, updated_at, last_used_at, user_api_key_client_id, revoked_at, expires_at) VALUES (9101, 3, encode(sha256(convert_to('parity-user-key-9101', 'UTF8')), 'hex'), NULL, now() - interval '2 days', now() - interval '2 days', now() - interval '1 day', 9101, now() - interval '1 hour', NULL)",
+    "INSERT INTO user_api_key_scopes (id, user_api_key_id, name, created_at, updated_at) VALUES (9101, 9101, 'read', now() - interval '2 days', now() - interval '2 days')"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/user-api-key/undo-revoke.json",
+      "params": {
+        "id": 9101
+      }
+    }
+  ]
+}

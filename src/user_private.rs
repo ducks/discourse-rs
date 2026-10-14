@@ -355,16 +355,7 @@ impl Private<'_> {
             "can_change_tracking_preferences".into(),
             json!(s.get("allow_changing_staged_user_tracking")?.truthy() || !user.staged),
         );
-        let api_keys: i64 = sqlx::query_scalar(
-            "SELECT count(*) FROM user_api_keys WHERE user_id = $1 AND revoked_at IS NULL",
-        )
-        .bind(uid)
-        .fetch_one(&mut *self.conn)
-        .await?;
-        if api_keys > 0 {
-            return Err(Unsupported("user_api_keys (scope translations)").into());
-        }
-        out.insert("user_api_keys".into(), Value::Null);
+        out.insert("user_api_keys".into(), self.user_api_keys(uid).await?);
         if g.is_me(uid) && s.get("enable_passkeys")?.truthy() {
             let keys: Vec<(i64, Option<String>, Option<NaiveDateTime>, NaiveDateTime)> =
                 sqlx::query_as(
@@ -483,6 +474,63 @@ impl Private<'_> {
             out.insert("display_sidebar_tags".into(), json!(display));
         }
         Ok(())
+    }
+
+    /// `user_api_keys`: the unrevoked keys (expired ones too) with their
+    /// client's name and translated scopes, by last use (Ruby's sort!,
+    /// unstable for ties), nil when there are none.
+    async fn user_api_keys(&mut self, uid: i32) -> Result<Value, UsersError> {
+        type Row = (
+            i32,
+            Option<String>,
+            bool,
+            NaiveDateTime,
+            NaiveDateTime,
+            Option<NaiveDateTime>,
+        );
+        let keys: Vec<Row> = sqlx::query_as(
+            "SELECT k.id, c.application_name, c.id IS NOT NULL, k.created_at, k.last_used_at, k.expires_at \
+             FROM user_api_keys k LEFT JOIN user_api_key_clients c ON c.id = k.user_api_key_client_id \
+             WHERE k.user_id = $1 AND k.revoked_at IS NULL ORDER BY k.last_used_at, k.id",
+        )
+        .bind(uid)
+        .fetch_all(&mut *self.conn)
+        .await?;
+        if keys.is_empty() {
+            return Ok(Value::Null);
+        }
+        let mut out = Vec::with_capacity(keys.len());
+        for (id, application_name, has_client, created_at, last_used_at, expires_at) in keys {
+            // `k.client.application_name` on a key without a client raises.
+            if !has_client {
+                return Err(Unsupported("a user API key without a client").into());
+            }
+            let names: Vec<String> = sqlx::query_scalar(
+                "SELECT name FROM user_api_key_scopes WHERE user_api_key_id = $1 ORDER BY id",
+            )
+            .bind(id)
+            .fetch_all(&mut *self.conn)
+            .await?;
+            let scopes: Vec<String> = names
+                .iter()
+                .map(|n| {
+                    let key = format!("user_api_key.scopes.{n}");
+                    self.i18n
+                        .t(&key)
+                        .map(str::to_string)
+                        .unwrap_or_else(|| format!("Translation missing: en.{key}"))
+                })
+                .collect();
+            out.push(json!({
+                "id": id,
+                "application_name": application_name,
+                "scopes": scopes,
+                "created_at": time_json(created_at),
+                "last_used_at": time_json(last_used_at),
+                "expires_at": expires_at.map(time_json),
+            }));
+        }
+        Ok(Value::Array(out))
     }
 
     /// UserAuthTokenSerializer for every token of the user.

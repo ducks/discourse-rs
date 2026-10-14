@@ -6,8 +6,9 @@
 //! `Api-User-Id` names. Granular scopes are matched for the one route
 //! this port serves API clients on purpose, handle_mail (the email
 //! resource's receive_emails); a scoped key anywhere else is refused.
-//! User API keys, keys in query parameters and external ids are not
-//! ported. The admin API rate limit is the session layer's.
+//! User API keys are crate::session::user_api_key; keys in query
+//! parameters and external ids are not ported. The admin API rate limit
+//! is the session layer's.
 
 use axum::http::{HeaderMap, Method};
 use sha2::{Digest, Sha256};

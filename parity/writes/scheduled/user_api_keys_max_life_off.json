@@ -1,0 +1,27 @@
+{
+  "name": "user_api_keys_max_life_off",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-14T08:19:32.903866",
+  "transaction_started_at": "2026-10-14T08:19:31.288584",
+  "responses": [],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO user_api_key_clients (id, client_id, application_name, public_key, auth_redirect, created_at, updated_at) VALUES (9101, 'parity-client', 'Parity App', NULL, NULL, now() - interval '3 days', now() - interval '3 days')",
+    "INSERT INTO user_api_keys (id, user_id, key_hash, push_url, created_at, updated_at, last_used_at, user_api_key_client_id, revoked_at, expires_at) VALUES (9101, 3, encode(sha256(convert_to('parity-user-key-9101', 'UTF8')), 'hex'), NULL, now() - interval '400 days', now() - interval '400 days', now() - interval '1 day', 9101, NULL, NULL)"
+  ],
+  "enqueue": [
+    [
+      "clean_up_user_api_keys_max_life",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "5ec1a7e07f67b15d40745a23b2ea09274ce1c575bf6cabd1fd86e1516d6290d2",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

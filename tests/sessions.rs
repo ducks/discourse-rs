@@ -2423,11 +2423,11 @@ async fn admin_api_keys_share_one_limit() {
     );
 }
 
-/// A user API key would act as its user (lookup_user_api_user_and_update_key);
-/// until those keys are ported the request is refused, not served as
-/// anonymous or as the cookie's user.
+/// An unknown user API key is invalid access, never anonymous; one sent
+/// with an auth cookie (which Rails looks up first, then overrides) is
+/// refused rather than guessed at.
 #[tokio::test]
-async fn user_api_keys_are_refused() {
+async fn user_api_keys_unknown_or_with_a_cookie() {
     let db = TestDb::new().await;
     let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
     let mut client = Client::new(app_state);
@@ -2435,6 +2435,16 @@ async fn user_api_keys_are_refused() {
     assert_eq!(reply.status, StatusCode::OK);
     let reply = client
         .send(Method::GET, "/latest.json", &[("user-api-key", "abc")], "")
+        .await;
+    assert_eq!(reply.status, StatusCode::FORBIDDEN);
+    assert_eq!(reply.json()["error_type"], "invalid_access");
+    let reply = client
+        .send(
+            Method::GET,
+            "/latest.json",
+            &[("user-api-key", "abc"), ("cookie", "_t=abc")],
+            "",
+        )
         .await;
     assert_eq!(reply.status, StatusCode::INTERNAL_SERVER_ERROR);
 }

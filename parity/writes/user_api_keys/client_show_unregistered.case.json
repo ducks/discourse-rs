@@ -1,0 +1,20 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO user_api_key_clients (id, client_id, application_name, public_key, auth_redirect, created_at, updated_at) VALUES (9101, 'parity-client', 'Parity App', NULL, NULL, now() - interval '3 days', now() - interval '3 days')"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=parity-client"
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope"
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json"
+    }
+  ]
+}

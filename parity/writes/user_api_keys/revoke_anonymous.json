@@ -1,0 +1,39 @@
+{
+  "name": "revoke_anonymous",
+  "user": null,
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/user-api-key/revoke.json",
+      "params": {
+        "id": 9101
+      }
+    }
+  ],
+  "started_at": "2026-10-14T08:20:38.144715",
+  "transaction_started_at": "2026-10-14T08:20:36.593782",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You need to be logged in to do that."
+        ],
+        "error_type": "not_logged_in"
+      }
+    }
+  ],
+  "changes": {},
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO user_api_key_clients (id, client_id, application_name, public_key, auth_redirect, created_at, updated_at) VALUES (9101, 'parity-client', 'Parity App', NULL, NULL, now() - interval '3 days', now() - interval '3 days')",
+    "INSERT INTO user_api_keys (id, user_id, key_hash, push_url, created_at, updated_at, last_used_at, user_api_key_client_id, revoked_at, expires_at) VALUES (9101, 3, encode(sha256(convert_to('parity-user-key-9101', 'UTF8')), 'hex'), NULL, now() - interval '2 days', now() - interval '2 days', now() - interval '1 day', 9101, NULL, NULL)",
+    "INSERT INTO user_api_key_scopes (id, user_api_key_id, name, created_at, updated_at) VALUES (9101, 9101, 'read', now() - interval '2 days', now() - interval '2 days')"
+  ],
+  "recorded_from": {
+    "case": "36e802b3906cd436956aedcf5e5d284862d76039429e50355022061ffe5e411c",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

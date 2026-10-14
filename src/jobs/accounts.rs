@@ -16,6 +16,13 @@ pub const INVALIDATE_INACTIVE_ADMINS: &str = "invalidate_inactive_admins";
 pub const CLEAN_UP_API_KEYS_MAX_LIFE: &str = "clean_up_api_keys_max_life";
 /// `Jobs::CleanUpUnusedApiKeys`, daily.
 pub const CLEAN_UP_UNUSED_API_KEYS: &str = "clean_up_unused_api_keys";
+/// `Jobs::CleanUpUnusedUserApiKeys`, daily.
+pub const CLEAN_UP_UNUSED_USER_API_KEYS: &str = "clean_up_unused_user_api_keys";
+/// `Jobs::CleanUpUserApiKeysMaxLife`, daily.
+pub const CLEAN_UP_USER_API_KEYS_MAX_LIFE: &str = "clean_up_user_api_keys_max_life";
+/// `Jobs::CleanUpUnusedRegisteredUserApiKeyClients`, daily.
+pub const CLEAN_UP_UNUSED_REGISTERED_USER_API_KEY_CLIENTS: &str =
+    "clean_up_unused_registered_user_api_key_clients";
 /// `Jobs::CleanUpEmailTokens`, daily.
 pub const CLEAN_UP_EMAIL_TOKENS: &str = "clean_up_email_tokens";
 /// `Jobs::CleanUpEmailLoginCodes`, daily.
@@ -261,6 +268,83 @@ pub async fn clean_up_unused_api_keys(state: &AppState) -> Result<(), AppError> 
     .fetch_all(&state.pool)
     .await?;
     revoke_api_keys(state, ids, &context).await
+}
+
+/// `UserApiKey.active.where("<column> < ?", days.ago).update_all(revoked_at:)`
+/// (no updated_at).
+async fn revoke_user_api_keys(state: &AppState, column: &str, days: i64) -> Result<(), AppError> {
+    sqlx::query(&format!(
+        "UPDATE user_api_keys SET revoked_at = now() \
+         WHERE revoked_at IS NULL AND (expires_at IS NULL OR expires_at > now()) \
+           AND {column} < now() - make_interval(days => $1)"
+    ))
+    .bind(days as i32)
+    .execute(&state.pool)
+    .await?;
+    Ok(())
+}
+
+/// `Jobs::CleanUpUnusedUserApiKeys`: keys unused for
+/// revoke_user_api_keys_unused_days.
+pub async fn clean_up_unused_user_api_keys(state: &AppState) -> Result<(), AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let s = settings(state, &mut conn).await?;
+    drop(conn);
+    let days = s.get("revoke_user_api_keys_unused_days")?.to_i();
+    if days > 0 {
+        revoke_user_api_keys(state, "last_used_at", days).await?;
+    }
+    Ok(())
+}
+
+/// `Jobs::CleanUpUserApiKeysMaxLife`: keys created over
+/// revoke_user_api_keys_maxlife_days ago.
+pub async fn clean_up_user_api_keys_max_life(state: &AppState) -> Result<(), AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let s = settings(state, &mut conn).await?;
+    drop(conn);
+    let days = s.get("revoke_user_api_keys_maxlife_days")?.to_i();
+    if days > 0 {
+        revoke_user_api_keys(state, "created_at", days).await?;
+    }
+    Ok(())
+}
+
+/// `Jobs::CleanUpUnusedRegisteredUserApiKeyClients`: registered clients
+/// (with an auth redirect) none of whose keys were used in
+/// unused_registered_user_api_key_clients_days, destroyed with their keys,
+/// the keys' scopes and their own scopes. Rails' `NOT IN` is kept: one
+/// recently used key without a client makes it match nothing.
+pub async fn clean_up_unused_registered_user_api_key_clients(
+    state: &AppState,
+) -> Result<(), AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let s = settings(state, &mut conn).await?;
+    drop(conn);
+    let days = s.get("unused_registered_user_api_key_clients_days")?.to_i();
+    if days <= 0 {
+        return Ok(());
+    }
+    let mut tx = state.pool.begin().await?;
+    let clients: Vec<i64> = sqlx::query_scalar(
+        "SELECT DISTINCT id FROM user_api_key_clients WHERE auth_redirect IS NOT NULL \
+           AND id NOT IN (SELECT user_api_key_client_id FROM user_api_keys \
+                          WHERE user_api_keys.last_used_at > now() - make_interval(days => $1))",
+    )
+    .bind(days as i32)
+    .fetch_all(&mut *tx)
+    .await?;
+    for sql in [
+        "DELETE FROM user_api_key_scopes WHERE user_api_key_id IN \
+           (SELECT id FROM user_api_keys WHERE user_api_key_client_id = ANY($1))",
+        "DELETE FROM user_api_keys WHERE user_api_key_client_id = ANY($1)",
+        "DELETE FROM user_api_key_client_scopes WHERE user_api_key_client_id = ANY($1)",
+        "DELETE FROM user_api_key_clients WHERE id = ANY($1)",
+    ] {
+        sqlx::query(sql).bind(&clients).execute(&mut *tx).await?;
+    }
+    tx.commit().await?;
+    Ok(())
 }
 
 async fn delete(state: &AppState, sql: &str) -> Result<(), AppError> {

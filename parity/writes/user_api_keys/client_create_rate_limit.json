@@ -1,0 +1,185 @@
+{
+  "name": "client_create_rate_limit",
+  "user": null,
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/user-api-key-client.json",
+      "params": {
+        "client_id": "app-0",
+        "application_name": "Registered App",
+        "public_key": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqwmoi0ReR8abVU8G09ok\n3v/02ZaCQStHEzr8b4Wx6vTbOutpe7EoVL2O8OEeo49fpUJbTmmRsgJV7rm1rQVP\nVBQNGKHkpYLI+N24IyPyocJjZCsDdif7Fl2uVB8c1ASrI3PLb7PFV4Se1T3sgE7X\nB0ToQHK5gr/+1VCi0yW07GnZhXdmXZFuZNyGasalwxIcxwQtIVmWGriU80qNSsIV\nHI+phkrECrIa7V+qlqAUNb/XfGYQiiJYHSxkWsq29ZrSElF6P7+HwP5fVFBgnTQA\n9CspTQ6y6FmB4XqHeeFw1Nw2S4UGwEVCztVWdw2M0xOAYS//J9QES++Bkp3NDfMA\newIDAQAB\n-----END PUBLIC KEY-----\n",
+        "auth_redirect": "https://app.example.com/auth",
+        "scopes": "read, write"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/user-api-key-client.json",
+      "params": {
+        "client_id": "app-1",
+        "application_name": "Registered App",
+        "public_key": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqwmoi0ReR8abVU8G09ok\n3v/02ZaCQStHEzr8b4Wx6vTbOutpe7EoVL2O8OEeo49fpUJbTmmRsgJV7rm1rQVP\nVBQNGKHkpYLI+N24IyPyocJjZCsDdif7Fl2uVB8c1ASrI3PLb7PFV4Se1T3sgE7X\nB0ToQHK5gr/+1VCi0yW07GnZhXdmXZFuZNyGasalwxIcxwQtIVmWGriU80qNSsIV\nHI+phkrECrIa7V+qlqAUNb/XfGYQiiJYHSxkWsq29ZrSElF6P7+HwP5fVFBgnTQA\n9CspTQ6y6FmB4XqHeeFw1Nw2S4UGwEVCztVWdw2M0xOAYS//J9QES++Bkp3NDfMA\newIDAQAB\n-----END PUBLIC KEY-----\n",
+        "auth_redirect": "https://app.example.com/auth",
+        "scopes": "read, write"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/user-api-key-client.json",
+      "params": {
+        "client_id": "app-2",
+        "application_name": "Registered App",
+        "public_key": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqwmoi0ReR8abVU8G09ok\n3v/02ZaCQStHEzr8b4Wx6vTbOutpe7EoVL2O8OEeo49fpUJbTmmRsgJV7rm1rQVP\nVBQNGKHkpYLI+N24IyPyocJjZCsDdif7Fl2uVB8c1ASrI3PLb7PFV4Se1T3sgE7X\nB0ToQHK5gr/+1VCi0yW07GnZhXdmXZFuZNyGasalwxIcxwQtIVmWGriU80qNSsIV\nHI+phkrECrIa7V+qlqAUNb/XfGYQiiJYHSxkWsq29ZrSElF6P7+HwP5fVFBgnTQA\n9CspTQ6y6FmB4XqHeeFw1Nw2S4UGwEVCztVWdw2M0xOAYS//J9QES++Bkp3NDfMA\newIDAQAB\n-----END PUBLIC KEY-----\n",
+        "auth_redirect": "https://app.example.com/auth",
+        "scopes": "read, write"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/user-api-key-client.json",
+      "params": {
+        "client_id": "app-3",
+        "application_name": "Registered App",
+        "public_key": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqwmoi0ReR8abVU8G09ok\n3v/02ZaCQStHEzr8b4Wx6vTbOutpe7EoVL2O8OEeo49fpUJbTmmRsgJV7rm1rQVP\nVBQNGKHkpYLI+N24IyPyocJjZCsDdif7Fl2uVB8c1ASrI3PLb7PFV4Se1T3sgE7X\nB0ToQHK5gr/+1VCi0yW07GnZhXdmXZFuZNyGasalwxIcxwQtIVmWGriU80qNSsIV\nHI+phkrECrIa7V+qlqAUNb/XfGYQiiJYHSxkWsq29ZrSElF6P7+HwP5fVFBgnTQA\n9CspTQ6y6FmB4XqHeeFw1Nw2S4UGwEVCztVWdw2M0xOAYS//J9QES++Bkp3NDfMA\newIDAQAB\n-----END PUBLIC KEY-----\n",
+        "auth_redirect": "https://app.example.com/auth",
+        "scopes": "read, write"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T08:19:50.3678",
+  "transaction_started_at": "2026-10-14T08:19:48.488127",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 429,
+      "body": {
+        "errors": [
+          "You’ve performed this action too many times. Please wait 24 hours before trying again."
+        ],
+        "error_type": "rate_limit",
+        "extras": {
+          "wait_seconds": 86400,
+          "time_left": "24 hours"
+        }
+      },
+      "headers": {
+        "Retry-After": "86400"
+      }
+    }
+  ],
+  "changes": {
+    "user_api_key_client_scopes": {
+      "inserted": [
+        {
+          "id": 1,
+          "name": "read",
+          "created_at": "2026-10-14T08:19:50.382589",
+          "updated_at": "2026-10-14T08:19:50.382589",
+          "user_api_key_client_id": 1
+        },
+        {
+          "id": 2,
+          "name": "write",
+          "created_at": "2026-10-14T08:19:50.385174",
+          "updated_at": "2026-10-14T08:19:50.385174",
+          "user_api_key_client_id": 1
+        },
+        {
+          "id": 3,
+          "name": "read",
+          "created_at": "2026-10-14T08:19:50.401832",
+          "updated_at": "2026-10-14T08:19:50.401832",
+          "user_api_key_client_id": 2
+        },
+        {
+          "id": 4,
+          "name": "write",
+          "created_at": "2026-10-14T08:19:50.403334",
+          "updated_at": "2026-10-14T08:19:50.403334",
+          "user_api_key_client_id": 2
+        },
+        {
+          "id": 5,
+          "name": "read",
+          "created_at": "2026-10-14T08:19:50.421398",
+          "updated_at": "2026-10-14T08:19:50.421398",
+          "user_api_key_client_id": 3
+        },
+        {
+          "id": 6,
+          "name": "write",
+          "created_at": "2026-10-14T08:19:50.423396",
+          "updated_at": "2026-10-14T08:19:50.423396",
+          "user_api_key_client_id": 3
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_api_key_clients": {
+      "inserted": [
+        {
+          "id": 1,
+          "client_id": "app-0",
+          "created_at": "2026-10-14T08:19:50.380314",
+          "public_key": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqwmoi0ReR8abVU8G09ok\n3v/02ZaCQStHEzr8b4Wx6vTbOutpe7EoVL2O8OEeo49fpUJbTmmRsgJV7rm1rQVP\nVBQNGKHkpYLI+N24IyPyocJjZCsDdif7Fl2uVB8c1ASrI3PLb7PFV4Se1T3sgE7X\nB0ToQHK5gr/+1VCi0yW07GnZhXdmXZFuZNyGasalwxIcxwQtIVmWGriU80qNSsIV\nHI+phkrECrIa7V+qlqAUNb/XfGYQiiJYHSxkWsq29ZrSElF6P7+HwP5fVFBgnTQA\n9CspTQ6y6FmB4XqHeeFw1Nw2S4UGwEVCztVWdw2M0xOAYS//J9QES++Bkp3NDfMA\newIDAQAB\n-----END PUBLIC KEY-----\n",
+          "updated_at": "2026-10-14T08:19:50.380314",
+          "auth_redirect": "https://app.example.com/auth",
+          "application_name": "Registered App"
+        },
+        {
+          "id": 2,
+          "client_id": "app-1",
+          "created_at": "2026-10-14T08:19:50.399773",
+          "public_key": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqwmoi0ReR8abVU8G09ok\n3v/02ZaCQStHEzr8b4Wx6vTbOutpe7EoVL2O8OEeo49fpUJbTmmRsgJV7rm1rQVP\nVBQNGKHkpYLI+N24IyPyocJjZCsDdif7Fl2uVB8c1ASrI3PLb7PFV4Se1T3sgE7X\nB0ToQHK5gr/+1VCi0yW07GnZhXdmXZFuZNyGasalwxIcxwQtIVmWGriU80qNSsIV\nHI+phkrECrIa7V+qlqAUNb/XfGYQiiJYHSxkWsq29ZrSElF6P7+HwP5fVFBgnTQA\n9CspTQ6y6FmB4XqHeeFw1Nw2S4UGwEVCztVWdw2M0xOAYS//J9QES++Bkp3NDfMA\newIDAQAB\n-----END PUBLIC KEY-----\n",
+          "updated_at": "2026-10-14T08:19:50.399773",
+          "auth_redirect": "https://app.example.com/auth",
+          "application_name": "Registered App"
+        },
+        {
+          "id": 3,
+          "client_id": "app-2",
+          "created_at": "2026-10-14T08:19:50.418388",
+          "public_key": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqwmoi0ReR8abVU8G09ok\n3v/02ZaCQStHEzr8b4Wx6vTbOutpe7EoVL2O8OEeo49fpUJbTmmRsgJV7rm1rQVP\nVBQNGKHkpYLI+N24IyPyocJjZCsDdif7Fl2uVB8c1ASrI3PLb7PFV4Se1T3sgE7X\nB0ToQHK5gr/+1VCi0yW07GnZhXdmXZFuZNyGasalwxIcxwQtIVmWGriU80qNSsIV\nHI+phkrECrIa7V+qlqAUNb/XfGYQiiJYHSxkWsq29ZrSElF6P7+HwP5fVFBgnTQA\n9CspTQ6y6FmB4XqHeeFw1Nw2S4UGwEVCztVWdw2M0xOAYS//J9QES++Bkp3NDfMA\newIDAQAB\n-----END PUBLIC KEY-----\n",
+          "updated_at": "2026-10-14T08:19:50.418388",
+          "auth_redirect": "https://app.example.com/auth",
+          "application_name": "Registered App"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "user_api_key_client_scopes": 1,
+    "user_api_key_clients": 1
+  },
+  "settings": {
+    "allow_user_api_key_client_scopes": "read|write"
+  },
+  "rate_limits": true,
+  "recorded_from": {
+    "case": "80596664ec041cad7c5c98a10d4702da72d90d1a56941d455f4bee33541ba9bb",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

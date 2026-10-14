@@ -1,0 +1,19 @@
+{
+  "user": null,
+  "setup": [
+    "INSERT INTO user_api_key_clients (id, client_id, application_name, public_key, auth_redirect, created_at, updated_at) VALUES (9101, 'parity-client', 'Parity App', NULL, NULL, now() - interval '3 days', now() - interval '3 days')",
+    "INSERT INTO user_api_keys (id, user_id, key_hash, push_url, created_at, updated_at, last_used_at, user_api_key_client_id, revoked_at, expires_at) VALUES (9101, 3, encode(sha256(convert_to('parity-user-key-9101', 'UTF8')), 'hex'), NULL, now() - interval '300 days', now() - interval '300 days', now() - interval '200 days', 9101, NULL, NULL)",
+    "INSERT INTO user_api_keys (id, user_id, key_hash, push_url, created_at, updated_at, last_used_at, user_api_key_client_id, revoked_at, expires_at) VALUES (9102, 3, encode(sha256(convert_to('k9102', 'UTF8')), 'hex'), NULL, now() - interval '300 days', now() - interval '300 days', now() - interval '100 days', 9101, NULL, NULL)"
+  ],
+  "requests": [],
+  "enqueue": [
+    [
+      "clean_up_unused_user_api_keys",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "clean_up_unused_user_api_keys"
+  ],
+  "job_clock": "user_api_keys.revoked_at"
+}

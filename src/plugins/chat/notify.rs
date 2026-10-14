@@ -363,7 +363,7 @@ impl Job<'_> {
                 Some(&[crate::bus::user_tag(membership.user_id)]),
             )
             .await?;
-        crate::jobs::post_alert::push_notification(conn, membership.user_id).await?;
+        crate::jobs::post_alert::push_notification(conn, self.settings, membership.user_id).await?;
         Ok(())
     }
 }
@@ -652,7 +652,7 @@ pub async fn notify_watching(
                 Some(&[crate::bus::user_tag(membership.user_id)]),
             )
             .await?;
-        crate::jobs::post_alert::push_notification(conn, membership.user_id).await?;
+        crate::jobs::post_alert::push_notification(conn, settings, membership.user_id).await?;
     }
     Ok(())
 }

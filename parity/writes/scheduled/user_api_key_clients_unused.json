@@ -1,0 +1,97 @@
+{
+  "name": "user_api_key_clients_unused",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-14T08:19:28.819323",
+  "transaction_started_at": "2026-10-14T08:19:27.232275",
+  "responses": [],
+  "changes": {
+    "user_api_key_client_scopes": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 9101,
+          "name": "read",
+          "created_at": "2026-10-14T08:19:27.232275",
+          "updated_at": "2026-10-14T08:19:27.232275",
+          "user_api_key_client_id": 9101
+        }
+      ],
+      "updated": []
+    },
+    "user_api_key_clients": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 9101,
+          "client_id": "unused-app",
+          "created_at": "2026-07-06T08:19:27.232275",
+          "public_key": null,
+          "updated_at": "2026-07-06T08:19:27.232275",
+          "auth_redirect": "https://a.example.com/auth",
+          "application_name": "Unused"
+        }
+      ],
+      "updated": []
+    },
+    "user_api_key_scopes": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 9101,
+          "name": "read",
+          "created_at": "2026-10-12T08:19:27.232275",
+          "updated_at": "2026-10-12T08:19:27.232275",
+          "user_api_key_id": 9101,
+          "allowed_parameters": null
+        }
+      ],
+      "updated": []
+    },
+    "user_api_keys": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 9101,
+          "user_id": 3,
+          "key_hash": "6d29574cad155c0d372117af333d007c36d5ca2febd398c678f9fa227b7c2e3c",
+          "push_url": null,
+          "client_id": null,
+          "created_at": "2026-08-15T08:19:27.232275",
+          "expires_at": null,
+          "revoked_at": null,
+          "updated_at": "2026-08-15T08:19:27.232275",
+          "last_used_at": "2026-09-04T08:19:27.232275",
+          "application_name": null,
+          "user_api_key_client_id": 9101
+        }
+      ],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO user_api_key_clients (id, client_id, application_name, public_key, auth_redirect, created_at, updated_at) VALUES (9101, 'unused-app', 'Unused', NULL, 'https://a.example.com/auth', now() - interval '100 days', now() - interval '100 days')",
+    "INSERT INTO user_api_key_clients (id, client_id, application_name, public_key, auth_redirect, created_at, updated_at) VALUES (9102, 'used-app', 'Used', NULL, 'https://b.example.com/auth', now() - interval '100 days', now() - interval '100 days')",
+    "INSERT INTO user_api_key_clients (id, client_id, application_name, public_key, auth_redirect, created_at, updated_at) VALUES (9103, 'unregistered-app', 'Unregistered', NULL, NULL, now() - interval '100 days', now() - interval '100 days')",
+    "INSERT INTO user_api_keys (id, user_id, key_hash, push_url, created_at, updated_at, last_used_at, user_api_key_client_id, revoked_at, expires_at) VALUES (9101, 3, encode(sha256(convert_to('parity-user-key-9101', 'UTF8')), 'hex'), NULL, now() - interval '60 days', now() - interval '60 days', now() - interval '40 days', 9101, NULL, NULL)",
+    "INSERT INTO user_api_keys (id, user_id, key_hash, push_url, created_at, updated_at, last_used_at, user_api_key_client_id, revoked_at, expires_at) VALUES (9102, 3, encode(sha256(convert_to('k9102', 'UTF8')), 'hex'), NULL, now() - interval '60 days', now() - interval '60 days', now() - interval '10 days', 9102, NULL, NULL)",
+    "INSERT INTO user_api_keys (id, user_id, key_hash, push_url, created_at, updated_at, last_used_at, user_api_key_client_id, revoked_at, expires_at) VALUES (9103, 4, encode(sha256(convert_to('k9103', 'UTF8')), 'hex'), NULL, now() - interval '60 days', now() - interval '60 days', now() - interval '40 days', 9103, NULL, NULL)",
+    "INSERT INTO user_api_key_scopes (id, user_api_key_id, name, created_at, updated_at) VALUES (9101, 9101, 'read', now() - interval '2 days', now() - interval '2 days')",
+    "INSERT INTO user_api_key_scopes (id, user_api_key_id, name, created_at, updated_at) VALUES (9102, 9102, 'read', now() - interval '2 days', now() - interval '2 days')",
+    "INSERT INTO user_api_key_client_scopes (id, user_api_key_client_id, name, created_at, updated_at) VALUES (9101, 9101, 'read', now(), now())"
+  ],
+  "enqueue": [
+    [
+      "clean_up_unused_registered_user_api_key_clients",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "76f9f487cfe0c80298e4d806bc6dd6cddbc114b74cec8aae1062c6afdda8ebe7",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

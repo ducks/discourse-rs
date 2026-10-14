@@ -1,0 +1,71 @@
+{
+  "name": "user_api_keys_unused",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-14T08:19:34.739845",
+  "transaction_started_at": "2026-10-14T08:19:33.844994",
+  "responses": [],
+  "changes": {
+    "user_api_keys": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 9101,
+            "user_id": 3,
+            "key_hash": "6d29574cad155c0d372117af333d007c36d5ca2febd398c678f9fa227b7c2e3c",
+            "push_url": null,
+            "client_id": null,
+            "created_at": "2026-08-15T08:19:33.844994",
+            "expires_at": null,
+            "revoked_at": null,
+            "updated_at": "2026-08-15T08:19:33.844994",
+            "last_used_at": "2026-09-04T08:19:33.844994",
+            "application_name": null,
+            "user_api_key_client_id": 9101
+          },
+          "after": {
+            "id": 9101,
+            "user_id": 3,
+            "key_hash": "6d29574cad155c0d372117af333d007c36d5ca2febd398c678f9fa227b7c2e3c",
+            "push_url": null,
+            "client_id": null,
+            "created_at": "2026-08-15T08:19:33.844994",
+            "expires_at": null,
+            "revoked_at": "2026-10-14T08:19:34.741",
+            "updated_at": "2026-08-15T08:19:33.844994",
+            "last_used_at": "2026-09-04T08:19:33.844994",
+            "application_name": null,
+            "user_api_key_client_id": 9101
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "revoke_user_api_keys_unused_days": 30
+  },
+  "setup": [
+    "INSERT INTO user_api_key_clients (id, client_id, application_name, public_key, auth_redirect, created_at, updated_at) VALUES (9101, 'parity-client', 'Parity App', NULL, NULL, now() - interval '3 days', now() - interval '3 days')",
+    "INSERT INTO user_api_keys (id, user_id, key_hash, push_url, created_at, updated_at, last_used_at, user_api_key_client_id, revoked_at, expires_at) VALUES (9101, 3, encode(sha256(convert_to('parity-user-key-9101', 'UTF8')), 'hex'), NULL, now() - interval '60 days', now() - interval '60 days', now() - interval '40 days', 9101, NULL, NULL)",
+    "INSERT INTO user_api_keys (id, user_id, key_hash, push_url, created_at, updated_at, last_used_at, user_api_key_client_id, revoked_at, expires_at) VALUES (9102, 3, encode(sha256(convert_to('k9102', 'UTF8')), 'hex'), NULL, now() - interval '60 days', now() - interval '60 days', now() - interval '10 days', 9101, NULL, NULL)",
+    "INSERT INTO user_api_keys (id, user_id, key_hash, push_url, created_at, updated_at, last_used_at, user_api_key_client_id, revoked_at, expires_at) VALUES (9103, 4, encode(sha256(convert_to('k9103', 'UTF8')), 'hex'), NULL, now() - interval '60 days', now() - interval '60 days', now() - interval '40 days', 9101, NULL, now() - interval '1 day')",
+    "INSERT INTO user_api_keys (id, user_id, key_hash, push_url, created_at, updated_at, last_used_at, user_api_key_client_id, revoked_at, expires_at) VALUES (9104, 4, encode(sha256(convert_to('k9104', 'UTF8')), 'hex'), NULL, now() - interval '60 days', now() - interval '60 days', now() - interval '50 days', 9101, now() - interval '45 days', NULL)"
+  ],
+  "enqueue": [
+    [
+      "clean_up_unused_user_api_keys",
+      {}
+    ]
+  ],
+  "job_clock": "user_api_keys.revoked_at",
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "9234b694e702a852839f6b13ef73d2a9ebe05835299d659c2c46e27428f9e93d",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

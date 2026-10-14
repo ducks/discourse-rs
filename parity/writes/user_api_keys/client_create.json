@@ -1,0 +1,77 @@
+{
+  "name": "client_create",
+  "user": null,
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/user-api-key-client.json",
+      "params": {
+        "client_id": "registered-app",
+        "application_name": "Registered App",
+        "public_key": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqwmoi0ReR8abVU8G09ok\n3v/02ZaCQStHEzr8b4Wx6vTbOutpe7EoVL2O8OEeo49fpUJbTmmRsgJV7rm1rQVP\nVBQNGKHkpYLI+N24IyPyocJjZCsDdif7Fl2uVB8c1ASrI3PLb7PFV4Se1T3sgE7X\nB0ToQHK5gr/+1VCi0yW07GnZhXdmXZFuZNyGasalwxIcxwQtIVmWGriU80qNSsIV\nHI+phkrECrIa7V+qlqAUNb/XfGYQiiJYHSxkWsq29ZrSElF6P7+HwP5fVFBgnTQA\n9CspTQ6y6FmB4XqHeeFw1Nw2S4UGwEVCztVWdw2M0xOAYS//J9QES++Bkp3NDfMA\newIDAQAB\n-----END PUBLIC KEY-----\n",
+        "auth_redirect": "https://app.example.com/auth",
+        "scopes": "read, write"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T08:19:42.773517",
+  "transaction_started_at": "2026-10-14T08:19:41.50841",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    }
+  ],
+  "changes": {
+    "user_api_key_client_scopes": {
+      "inserted": [
+        {
+          "id": 1,
+          "name": "read",
+          "created_at": "2026-10-14T08:19:42.789548",
+          "updated_at": "2026-10-14T08:19:42.789548",
+          "user_api_key_client_id": 1
+        },
+        {
+          "id": 2,
+          "name": "write",
+          "created_at": "2026-10-14T08:19:42.791631",
+          "updated_at": "2026-10-14T08:19:42.791631",
+          "user_api_key_client_id": 1
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_api_key_clients": {
+      "inserted": [
+        {
+          "id": 1,
+          "client_id": "registered-app",
+          "created_at": "2026-10-14T08:19:42.786584",
+          "public_key": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqwmoi0ReR8abVU8G09ok\n3v/02ZaCQStHEzr8b4Wx6vTbOutpe7EoVL2O8OEeo49fpUJbTmmRsgJV7rm1rQVP\nVBQNGKHkpYLI+N24IyPyocJjZCsDdif7Fl2uVB8c1ASrI3PLb7PFV4Se1T3sgE7X\nB0ToQHK5gr/+1VCi0yW07GnZhXdmXZFuZNyGasalwxIcxwQtIVmWGriU80qNSsIV\nHI+phkrECrIa7V+qlqAUNb/XfGYQiiJYHSxkWsq29ZrSElF6P7+HwP5fVFBgnTQA\n9CspTQ6y6FmB4XqHeeFw1Nw2S4UGwEVCztVWdw2M0xOAYS//J9QES++Bkp3NDfMA\newIDAQAB\n-----END PUBLIC KEY-----\n",
+          "updated_at": "2026-10-14T08:19:42.786584",
+          "auth_redirect": "https://app.example.com/auth",
+          "application_name": "Registered App"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "user_api_key_client_scopes": 1,
+    "user_api_key_clients": 1
+  },
+  "settings": {
+    "allow_user_api_key_client_scopes": "read|write"
+  },
+  "recorded_from": {
+    "case": "5a50d334aaf5196d7065e38028facc4f808107aac58b7cda4d4f1b7ba048e764",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

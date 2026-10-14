@@ -1,0 +1,885 @@
+{
+  "name": "key_rate_limit_minute",
+  "user": null,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/user-api-key-client.json?client_id=nope",
+      "headers": {
+        "User-Api-Key": "parity-user-key-9101"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T08:20:06.489095",
+  "transaction_started_at": "2026-10-14T08:20:05.467505",
+  "responses": [
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "You supplied invalid parameters to the request: Discourse::InvalidParameters"
+        ],
+        "error_type": "invalid_parameters"
+      }
+    },
+    {
+      "status": 429,
+      "body": {
+        "errors": [
+          "You’ve performed this action too many times. Please wait 58 seconds before trying again."
+        ],
+        "error_type": "rate_limit",
+        "extras": {
+          "wait_seconds": 58,
+          "time_left": "58 seconds"
+        }
+      },
+      "headers": {
+        "Retry-After": "58",
+        "Discourse-Rate-Limit-Error-Code": "user_api_key_limiter_60_secs"
+      }
+    }
+  ],
+  "changes": {
+    "user_api_keys": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 9101,
+            "user_id": 3,
+            "key_hash": "6d29574cad155c0d372117af333d007c36d5ca2febd398c678f9fa227b7c2e3c",
+            "push_url": null,
+            "client_id": null,
+            "created_at": "2026-10-12T08:20:05.467505",
+            "expires_at": null,
+            "revoked_at": null,
+            "updated_at": "2026-10-12T08:20:05.467505",
+            "last_used_at": "2026-10-13T08:20:05.467505",
+            "application_name": null,
+            "user_api_key_client_id": 9101
+          },
+          "after": {
+            "id": 9101,
+            "user_id": 3,
+            "key_hash": "6d29574cad155c0d372117af333d007c36d5ca2febd398c678f9fa227b7c2e3c",
+            "push_url": null,
+            "client_id": null,
+            "created_at": "2026-10-12T08:20:05.467505",
+            "expires_at": null,
+            "revoked_at": null,
+            "updated_at": "2026-10-12T08:20:05.467505",
+            "last_used_at": "2026-10-14T08:20:07.89092",
+            "application_name": null,
+            "user_api_key_client_id": 9101
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO user_api_key_clients (id, client_id, application_name, public_key, auth_redirect, created_at, updated_at) VALUES (9101, 'parity-client', 'Parity App', NULL, NULL, now() - interval '3 days', now() - interval '3 days')",
+    "INSERT INTO user_api_keys (id, user_id, key_hash, push_url, created_at, updated_at, last_used_at, user_api_key_client_id, revoked_at, expires_at) VALUES (9101, 3, encode(sha256(convert_to('parity-user-key-9101', 'UTF8')), 'hex'), NULL, now() - interval '2 days', now() - interval '2 days', now() - interval '1 day', 9101, NULL, NULL)",
+    "INSERT INTO user_api_key_scopes (id, user_api_key_id, name, created_at, updated_at) VALUES (9101, 9101, 'read', now() - interval '2 days', now() - interval '2 days')"
+  ],
+  "rate_limits": true,
+  "recorded_from": {
+    "case": "d24ebca9678214324b637712be1503a1237ae78417b9718af14f45349f953f6c",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
