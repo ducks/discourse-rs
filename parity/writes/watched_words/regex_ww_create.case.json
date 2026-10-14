@@ -1,0 +1,11 @@
+{
+  "user": "admin",
+  "settings": {"watched_words_regular_expressions": true},
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/customize/watched_words.json",
+      "params": {"words": ["c[a@]t", "do+g"], "action_key": "censor", "case_sensitive": false}
+    }
+  ]
+}

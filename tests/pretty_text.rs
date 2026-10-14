@@ -235,11 +235,20 @@ async fn unported_inputs_are_refused() {
     let opts = options(&host, &mut conn, &settings).await.unwrap();
     let censored = opts["censoredRegexp"].as_array().unwrap();
     assert_eq!(censored.len(), 1, "{censored:?}");
-    // Regular expression mode is not ported.
+    // In regular expression mode the word is a regexp in a group...
     common::set_setting(&db.pool, "watched_words_regular_expressions", 5, "t").await;
     let settings = SiteSettings::load(&mut conn, &host.site_setting_defs, &host.config.globals)
         .await
         .unwrap();
+    let opts = options(&host, &mut conn, &settings).await.unwrap();
+    assert_eq!(opts["censoredRegexp"][0]["(darn)"]["case_sensitive"], false);
+    // ...and one the engines don't read alike is refused.
+    sqlx::query(
+        "INSERT INTO watched_words (word, action, created_at, updated_at) VALUES ('(?i)heck', 2, now(), now())",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
     let error = options(&host, &mut conn, &settings).await.unwrap_err();
     assert!(matches!(error, CookError::App(_)), "{error}");
 }

@@ -8,9 +8,13 @@
 //! table, which is what Rails reads once the cache is cleared on every
 //! save and destroy.
 //!
-//! Refused: `watched_words_regular_expressions` (words are admin regexps,
-//! valid in Ruby and maybe not in JavaScript), and words with a character
-//! Ruby folds to several (`ß` matches `ss` in Onigmo, not here).
+//! With `watched_words_regular_expressions` the words are admin regexps:
+//! each is read by `discourse_markdown::regexp` as Ruby reads it here and
+//! as JavaScript reads it in cooking, and a regexp outside the grammar the
+//! engines share is refused (Rails would run it, or log and skip it).
+//!
+//! Refused: words with a character Ruby folds to several (`ß` matches
+//! `ss` in Onigmo, not here).
 
 use fancy_regex::Regex;
 use serde_json::{Map, Value, json};
@@ -71,12 +75,31 @@ pub struct Word {
     pub replacement: Option<String>,
     pub case_sensitive: bool,
     pub html: bool,
+    /// `watched_words_regular_expressions`: the word is an admin regexp.
+    #[sqlx(default)]
+    pub regex: bool,
 }
 
-/// Refuses what isn't ported before any word is read.
-pub fn refuse_unported(s: &SiteSettings) -> Result<(), AppError> {
-    if s.get("watched_words_regular_expressions")?.truthy() {
-        return Err(Unsupported("watched_words_regular_expressions").into());
+impl Word {
+    /// `word_to_regexp(word, match_word:)` in the word's mode.
+    pub fn regexp(&self, match_word: bool) -> String {
+        word_regexp(&self.word, match_word, self.regex)
+    }
+}
+
+/// `SiteSetting.watched_words_regular_expressions?`
+pub fn regex_mode(s: &SiteSettings) -> Result<bool, AppError> {
+    Ok(s.get("watched_words_regular_expressions")?.truthy())
+}
+
+/// An admin regexp as Ruby runs it here and as JavaScript does in
+/// cooking, or refused when the port can't read it as both do.
+fn check_regex(word: &str, case_sensitive: bool) -> Result<(), AppError> {
+    use discourse_markdown::regexp::{Dialect, translate};
+    for dialect in [Dialect::Ruby, Dialect::JsUnicode] {
+        let t = translate(word, dialect, case_sensitive).map_err(Unsupported)?;
+        Regex::new(&t.source)
+            .map_err(|_| Unsupported("a watched word regexp the port can't compile"))?;
     }
     Ok(())
 }
@@ -88,8 +111,8 @@ pub async fn words_for_action(
     s: &SiteSettings,
     action: i32,
 ) -> Result<Vec<Word>, AppError> {
-    refuse_unported(s)?;
-    let words: Vec<Word> = sqlx::query_as(
+    let regex = regex_mode(s)?;
+    let mut words: Vec<Word> = sqlx::query_as(
         "SELECT word, replacement, case_sensitive, html FROM watched_words \
          WHERE action = $1 ORDER BY id LIMIT $2",
     )
@@ -97,9 +120,13 @@ pub async fn words_for_action(
     .bind(MAX_WORDS_PER_ACTION)
     .fetch_all(conn)
     .await?;
-    for w in &words {
+    for w in &mut words {
         if !w.case_sensitive && w.word.chars().any(multi_fold) {
             return Err(Unsupported("watched words with full case folding").into());
+        }
+        w.regex = regex;
+        if regex {
+            check_regex(&w.word, w.case_sensitive)?;
         }
     }
     Ok(words)
@@ -118,6 +145,16 @@ pub async fn exists(conn: &mut PgConnection, action: i32) -> Result<bool, sqlx::
         .bind(action)
         .fetch_one(conn)
         .await
+}
+
+/// `word_to_regexp(word, match_word:)`: an admin regexp as it is (in a
+/// group when matching a word), else the plain word's regexp.
+pub fn word_regexp(word: &str, match_word: bool, regex: bool) -> String {
+    match (regex, match_word) {
+        (true, true) => format!("({word})"),
+        (true, false) => word.to_string(),
+        (false, _) => word_to_regexp(word, match_word),
+    }
 }
 
 /// `word_to_regexp(word, match_word:)` for plain words: the regexp
@@ -153,18 +190,27 @@ fn match_word_regexp(re: &str) -> String {
 pub struct Compiled {
     pub source: String,
     pub case_sensitive: bool,
+    /// Built from admin regexps.
+    pub regex: bool,
 }
 
 impl Compiled {
     /// The regexp as Ruby runs it (`Regexp::IGNORECASE` unless
     /// case-sensitive).
     pub fn regex(&self) -> Result<Regex, AppError> {
-        ruby_regex(&self.source, self.case_sensitive)
+        ruby_regex(&self.source, self.case_sensitive, self.regex)
     }
 }
 
-/// A regexp source compiled as Ruby would run it.
-pub fn ruby_regex(source: &str, case_sensitive: bool) -> Result<Regex, AppError> {
+/// A regexp source compiled as Ruby would run it; an admin regexp read
+/// as Onigmo reads it.
+pub fn ruby_regex(source: &str, case_sensitive: bool, regex: bool) -> Result<Regex, AppError> {
+    if regex {
+        use discourse_markdown::regexp::{Dialect, translate};
+        let t = translate(source, Dialect::Ruby, case_sensitive).map_err(Unsupported)?;
+        return Regex::new(&t.source)
+            .map_err(|_| Unsupported("a watched word regexp the port can't compile").into());
+    }
     // An inline flag: fancy_regex's builder flag misses the parts its own
     // VM runs (those around lookarounds).
     let source = if case_sensitive {
@@ -178,11 +224,14 @@ pub fn ruby_regex(source: &str, case_sensitive: bool) -> Result<Regex, AppError>
 
 /// `compiled_regexps_for_action`: the words grouped by case sensitivity
 /// (in the order each group is first seen), each group's word regexps
-/// joined with `|` and wrapped once in the word boundaries.
+/// joined with `|` and wrapped once in the word boundaries (admin regexps
+/// each in a group, only joined).
 pub fn compile(words: &[Word]) -> Vec<Compiled> {
+    let regex = words.first().is_some_and(|w| w.regex);
     let mut groups: Vec<(bool, Vec<String>)> = Vec::new();
     for w in words {
-        let re = word_to_regexp(&w.word, false);
+        // match_word: watched_words_regular_expressions?
+        let re = w.regexp(w.regex);
         match groups.iter_mut().find(|(cs, _)| *cs == w.case_sensitive) {
             Some((_, list)) => list.push(re),
             None => groups.push((w.case_sensitive, vec![re])),
@@ -191,8 +240,13 @@ pub fn compile(words: &[Word]) -> Vec<Compiled> {
     groups
         .into_iter()
         .map(|(case_sensitive, list)| Compiled {
-            source: match_word_regexp(&list.join("|")),
+            source: if regex {
+                list.join("|")
+            } else {
+                match_word_regexp(&list.join("|"))
+            },
             case_sensitive,
+            regex,
         })
         .collect()
 }
@@ -240,7 +294,7 @@ pub fn regexps(words: &[Word]) -> Option<Map<String, Value>> {
         if w.html {
             attrs.insert("html".into(), json!(true));
         }
-        out.insert(word_to_regexp(&w.word, true), Value::Object(attrs));
+        out.insert(w.regexp(true), Value::Object(attrs));
     }
     Some(out)
 }
@@ -316,21 +370,22 @@ pub fn censor_html(html: &str, censor: &[Compiled]) -> Result<String, AppError> 
 
 /// `replace_text` / `replace_link` (`replace` over `regexps_for_action`):
 /// each word's matches become its replacement, after the match's first
-/// character when that is a non-word one (`\W`, ASCII).
+/// character when that is a non-word one (`\W`, ASCII; plain words only).
 pub fn replace_text(text: &str, words: &[Word]) -> Result<String, AppError> {
     let mut text = text.to_string();
     if text.trim().is_empty() {
         return Ok(text);
     }
     for w in words {
-        let re = ruby_regex(&word_to_regexp(&w.word, true), w.case_sensitive)?;
+        let re = ruby_regex(&w.regexp(true), w.case_sensitive, w.regex)?;
         let replacement = w.replacement.as_deref().unwrap_or("");
         let mut out = String::with_capacity(text.len());
         let mut last = 0;
         for m in re.find_iter(&text) {
             let m = m.map_err(|_| Unsupported("watched word regexp backtracking limit"))?;
             out.push_str(&text[last..m.start()]);
-            if let Some(first) = m.as_str().chars().next()
+            if !w.regex
+                && let Some(first) = m.as_str().chars().next()
                 && !(first.is_ascii_alphanumeric() || first == '_')
             {
                 out.push(first);
@@ -357,20 +412,34 @@ pub async fn apply_to_text(
     replace_text(&text, &words_for_action(&mut *conn, s, LINK).await?)
 }
 
-/// `word_matches_for_action?(action, all_matches:)` in plain mode: the
-/// first group of every match of each regexp, compacted, unique and
-/// sorted (by bytes, as Ruby sorts strings).
+/// `word_matches_for_action?(action, all_matches:)`: the first group of
+/// every match of each regexp (admin regexps: the first group that isn't
+/// blank, or the match when there are no groups), compacted, unique and
+/// sorted (by bytes, as Ruby sorts strings). Without `all`, the first
+/// match alone.
 pub fn matches(text: &str, compiled: &[Compiled], all: bool) -> Result<Vec<String>, AppError> {
     let mut found = Vec::new();
     for c in compiled {
         let re = c.regex()?;
         for caps in re.captures_iter(text) {
             let caps = caps.map_err(|_| Unsupported("watched word regexp backtracking limit"))?;
-            if let Some(g) = caps.get(1) {
-                found.push(g.as_str().to_string());
-            }
             if !all {
+                // The MatchData itself.
+                found.push(caps.get(0).map_or("", |g| g.as_str()).to_string());
                 return Ok(found);
+            }
+            let word = if !c.regex {
+                caps.get(1).map(|g| g.as_str())
+            } else if caps.len() > 1 {
+                (1..caps.len())
+                    .filter_map(|i| caps.get(i))
+                    .map(|g| g.as_str())
+                    .find(|g| !g.trim().is_empty())
+            } else {
+                caps.get(0).map(|g| g.as_str())
+            };
+            if let Some(g) = word {
+                found.push(g.to_string());
             }
         }
     }
@@ -388,7 +457,7 @@ pub async fn tag_word_matches(
     text: &str,
 ) -> Result<bool, AppError> {
     for w in words_for_action(conn, s, TAG).await? {
-        let re = ruby_regex(&word_to_regexp(&w.word, true), w.case_sensitive)?;
+        let re = ruby_regex(&w.regexp(true), w.case_sensitive, w.regex)?;
         if re
             .is_match(text)
             .map_err(|_| Unsupported("watched word regexp backtracking limit"))?
@@ -441,8 +510,17 @@ pub fn censored_words(value: &str, censor: &[Compiled]) -> Result<Option<String>
         let re = c.regex()?;
         for caps in re.captures_iter(value) {
             let caps = caps.map_err(|_| Unsupported("watched word regexp backtracking limit"))?;
-            if let Some(g) = caps.get(1) {
-                let w = g.as_str().trim_matches(ruby_space).to_string();
+            // `scan`: every group taking part, or the match without any.
+            let found: Vec<&str> = if caps.len() > 1 {
+                (1..caps.len())
+                    .filter_map(|i| caps.get(i))
+                    .map(|g| g.as_str())
+                    .collect()
+            } else {
+                caps.get(0).map(|g| g.as_str()).into_iter().collect()
+            };
+            for g in found {
+                let w = g.trim_matches(ruby_space).to_string();
                 if !w.trim().is_empty() && !words.contains(&w) {
                     words.push(w);
                 }
@@ -469,6 +547,7 @@ mod tests {
             replacement: None,
             case_sensitive: cs,
             html: false,
+            regex: false,
         }
     }
 
@@ -512,5 +591,51 @@ mod tests {
             matches("我的猫很好", &c, true).unwrap(),
             vec!["猫".to_string()]
         );
+    }
+
+    fn regex_word(w: &str, cs: bool) -> Word {
+        Word {
+            regex: true,
+            ..word(w, cs)
+        }
+    }
+
+    #[test]
+    fn regex_mode_like_rails() {
+        let c = compile(&[
+            regex_word("sp[a4]+m", false),
+            regex_word("fr(ee|33) mon(ey)?", false),
+        ]);
+        assert_eq!(c.len(), 1);
+        assert_eq!(c[0].source, "(sp[a4]+m)|(fr(ee|33) mon(ey)?)");
+        // scan: the first group that isn't blank, each word's own.
+        assert_eq!(
+            matches("SPAAM sp4m fr33 money free mon", &c, true).unwrap(),
+            vec![
+                "SPAAM".to_string(),
+                "fr33 money".into(),
+                "free mon".into(),
+                "sp4m".into()
+            ]
+        );
+        let c = compile(&[regex_word("b[a4]d", false), regex_word("he(ck|ll)", false)]);
+        assert_eq!(
+            matches("b4d BAD", &c, true).unwrap(),
+            vec!["BAD".to_string(), "b4d".into()]
+        );
+        // Every group, inner ones too.
+        assert_eq!(
+            censored_words("b4d and BAD and heckish", &c)
+                .unwrap()
+                .as_deref(),
+            Some("b4d, bad, heck, ck")
+        );
+        assert_eq!(
+            censor_text("a b4d day", &c).unwrap(),
+            "a \u{25A0}\u{25A0}\u{25A0} day"
+        );
+        let mut w = regex_word("#c[a@]t", false);
+        w.replacement = Some("dog".into());
+        assert_eq!(replace_text("a #c@t", &[w]).unwrap(), "a dog");
     }
 }

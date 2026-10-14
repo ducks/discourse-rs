@@ -1,0 +1,22 @@
+{
+  "user": "admin",
+  "settings": {"watched_words_regular_expressions": true},
+  "setup": [
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (921, 'colou?r', 5, 'hue', FALSE, FALSE, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (922, '\\bc[a@]t\\b', 5, 'dog', FALSE, FALSE, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (923, 'Docs?(?= page)', 8, 'https://example.com/docs', TRUE, FALSE, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (924, 'darn(it)?', 2, NULL, FALSE, FALSE, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (925, 'secret\\d+', 2, NULL, FALSE, FALSE, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "The COLOR and colour of my cat, a c@t, a concatenate, cats.\n\nSee the Docs page, not the docs page or Docs alone.\n\nDarn, darnit and secret42 in a sentence.\n\nsecret42\n\n`darnit code`",
+        "typing_duration_msecs": 5000
+      }
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "user": "admin",
+  "settings": {"watched_words_regular_expressions": true},
+  "setup": [
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (921, 'cat', 5, 'dog', FALSE, FALSE, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (922, 'li[o0]n', 5, 'tiger', TRUE, FALSE, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/posts.json",
+      "params": {
+        "topic_id": 35,
+        "raw": "A cat :smile: and concatenate :heart: done, a li0n :cat: and a Lion, plus a lone cat here and a scatter.",
+        "typing_duration_msecs": 5000
+      }
+    }
+  ]
+}

@@ -414,6 +414,7 @@ pub async fn watched_words(
         .map(|c| render::watched_words::Censored {
             regexp: c.source,
             case_sensitive: c.case_sensitive,
+            regex: c.regex,
         })
         .collect();
     for action in [ww::REPLACE, ww::LINK] {
@@ -424,10 +425,11 @@ pub async fn watched_words(
         let list: Vec<render::watched_words::WatchedWord> = words
             .iter()
             .map(|w| render::watched_words::WatchedWord {
-                regexp: ww::word_to_regexp(&w.word, true),
+                regexp: w.regexp(true),
                 replacement: w.replacement.clone().unwrap_or_default(),
                 case_sensitive: w.case_sensitive,
                 html: w.html,
+                regex: w.regex,
             })
             .collect();
         if action == ww::REPLACE {

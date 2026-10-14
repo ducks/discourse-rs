@@ -1,0 +1,13 @@
+{
+  "user": "admin",
+  "settings": {"watched_words_regular_expressions": true},
+  "setup": [
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (901, 'b[a4]d', 2, NULL, FALSE, FALSE, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (902, 'Sh(ou)?t', 2, NULL, TRUE, FALSE, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (903, 'colou?r', 5, 'hue', FALSE, FALSE, now(), now())",
+    "INSERT INTO watched_words (id, word, action, replacement, case_sensitive, html, created_at, updated_at) VALUES (904, 'sp[a4]+m', 1, NULL, FALSE, FALSE, now(), now())"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/admin/customize/watched_words.json"}
+  ]
+}
