@@ -1,0 +1,119 @@
+{
+  "name": "merge_refused",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/users/5/merge.json"
+    },
+    {
+      "method": "POST",
+      "path": "/admin/users/5/merge.json",
+      "params": {
+        "target_username": "nobody"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/users/999/merge.json",
+      "params": {
+        "target_username": "user2"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/users/1/merge.json",
+      "params": {
+        "target_username": "user2"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T04:09:03.553889",
+  "transaction_started_at": "2026-10-14T04:09:02.208049",
+  "responses": [
+    {
+      "status": 400,
+      "body": {
+        "errors": [
+          "param is missing or the value is empty or invalid: target_username"
+        ]
+      }
+    },
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    },
+    {
+      "status": 404,
+      "body": {
+        "errors": [
+          "The requested URL or resource could not be found."
+        ],
+        "error_type": "not_found"
+      }
+    },
+    {
+      "status": 403,
+      "body": {
+        "errors": [
+          "You are not permitted to view the requested resource."
+        ],
+        "error_type": "invalid_access"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "71rLT8xhBzeJ72O2ivJ5kvwqTHQ=",
+            "created_at": "2026-10-14T04:09:02.686337",
+            "rotated_at": "2026-10-14T04:09:02.684476",
+            "updated_at": "2026-10-14T04:09:02.686337",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "71rLT8xhBzeJ72O2ivJ5kvwqTHQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 1,
+            "seen_at": "2026-10-14T04:09:03.564621",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "71rLT8xhBzeJ72O2ivJ5kvwqTHQ=",
+            "created_at": "2026-10-14T04:09:02.686337",
+            "rotated_at": "2026-10-14T04:09:02.684476",
+            "updated_at": "2026-10-14T04:09:02.686337",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "71rLT8xhBzeJ72O2ivJ5kvwqTHQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "14694ba60d91fc6f723e2595ce330762ed7c421fb0171f68bcde11fc3b8acabd",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

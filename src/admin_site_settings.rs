@@ -686,6 +686,73 @@ async fn placeholder(
     Ok(Json::Null)
 }
 
+/// What `SiteSetting.all_settings(include_hidden: true)` writes on the
+/// way: each upload setting's upload whose dimensions are missing is
+/// measured and saved (`Upload#width`, `fix_dimensions!`'s
+/// update_columns, the thumbnail size by ImageSizer.resize).
+pub(crate) async fn fix_upload_dimensions(
+    conn: &mut PgConnection,
+    cx: &Context<'_>,
+) -> Result<(), AppError> {
+    for def in cx.defs.iter() {
+        if !matches!(def.data_type, DataType::Upload) {
+            continue;
+        }
+        let mut value = cx.settings.get(&def.name)?.to_s();
+        if def.themeable {
+            let row: Option<(i32, Option<String>)> = sqlx::query_as(
+                "SELECT data_type, value FROM theme_site_settings WHERE theme_id = $1 AND name = $2",
+            )
+            .bind(cx.settings.get("default_theme_id")?.to_i() as i32)
+            .bind(&def.name)
+            .fetch_optional(&mut *conn)
+            .await?;
+            if let Some((data_type, raw)) = row {
+                value = crate::site_settings::to_rb_value(
+                    cx.defs,
+                    &def.name,
+                    data_type,
+                    raw.as_deref(),
+                )?
+                .to_s();
+            }
+        }
+        let id = crate::ruby::to_i(&value) as i32;
+        if id == 0 {
+            continue;
+        }
+        let row: Option<UploadRow> = sqlx::query_as(
+            "SELECT url, original_filename, filesize, width, height, extension FROM uploads WHERE id = $1",
+        )
+        .bind(id)
+        .fetch_optional(&mut *conn)
+        .await?;
+        let Some(row) = row else {
+            continue;
+        };
+        if row.width.is_some() && row.height.is_some() {
+            continue;
+        }
+        let (Some(width), Some(height)) = dimensions(cx, &row).await? else {
+            continue;
+        };
+        let (thumb_w, thumb_h) =
+            crate::uploads::image_sizer_resize(cx.settings, width as u32, height as u32)?;
+        sqlx::query(
+            "UPDATE uploads SET width = $2, height = $3, thumbnail_width = $4, thumbnail_height = $5 \
+             WHERE id = $1",
+        )
+        .bind(id)
+        .bind(width)
+        .bind(height)
+        .bind(thumb_w as i32)
+        .bind(thumb_h as i32)
+        .execute(&mut *conn)
+        .await?;
+    }
+    Ok(())
+}
+
 #[derive(sqlx::FromRow)]
 struct UploadRow {
     url: String,

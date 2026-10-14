@@ -658,6 +658,11 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/admin/users/{user_id}/anonymize.json",
             put(admin_users::anonymize),
         )
+        .route("/admin/users/{user_id}/merge", post(admin_users::merge))
+        .route(
+            "/admin/users/{user_id}/merge.json",
+            post(admin_users::merge),
+        )
         .route("/admin/email/handle_mail", post(admin_email::handle_mail))
         .route(
             "/admin/email/handle_mail.json",

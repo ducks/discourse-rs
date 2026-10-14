@@ -206,7 +206,12 @@ Bugs or silent gaps in what is merged, small and independent.
     refused), 78. ~~`feat/user-anonymizer`~~ (done) M (cases normalize
     the random `anon<n>` name; verbose token logging and non-address IPs
     refused),
-    79. `feat/user-merger` L
+    79. ~~`feat/user-merger`~~ (done) L (a source user with posts is
+    refused until 79b)
+79b. `feat/post-owner-changer` M: PostOwnerChanger (each post revised to
+    its new owner by PostRevisor's owner change, the new owner's like
+    destroyed, topic users, statistics and last poster), which merging a
+    user with posts and the admin's change-owner route need
 
 [users-digests-dnd]
 
