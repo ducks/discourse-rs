@@ -1,0 +1,9 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/u/confirm-admin/0123456789abcdef0123456789abcdef.json"
+    }
+  ]
+}

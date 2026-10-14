@@ -1,0 +1,91 @@
+{
+  "name": "session_2fa_show",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/3/grant_admin.json"
+    },
+    {
+      "method": "GET",
+      "path": "/session/2fa.json?nonce={{responses.0.body.second_factor_challenge_nonce}}"
+    }
+  ],
+  "started_at": "2026-10-14T11:05:23.271207",
+  "transaction_started_at": "2026-10-14T11:05:22.092675",
+  "responses": [
+    {
+      "status": 403,
+      "body": {
+        "second_factor_challenge_nonce": "uzz9UnGQiV2Vc7iWrmMq2vpH5LbDQFOz"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "totp_enabled": true,
+        "backup_enabled": false,
+        "allowed_methods": [
+          1,
+          3,
+          4
+        ],
+        "security_keys_enabled": false,
+        "passkeys_enabled": false,
+        "description": "For additional security measures, you need to confirm your 2FA before @user1 is granted admin access."
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "WZEEw/624XiZZE4fxJb7orBilpQ=",
+            "created_at": "2026-10-14T11:05:22.535076",
+            "rotated_at": "2026-10-14T11:05:22.533236",
+            "updated_at": "2026-10-14T11:05:22.535076",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "WZEEw/624XiZZE4fxJb7orBilpQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T11:05:23.278137",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "WZEEw/624XiZZE4fxJb7orBilpQ=",
+            "created_at": "2026-10-14T11:05:22.535076",
+            "rotated_at": "2026-10-14T11:05:22.533236",
+            "updated_at": "2026-10-14T11:05:22.535076",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "WZEEw/624XiZZE4fxJb7orBilpQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "INSERT INTO user_second_factors (id, user_id, method, data, enabled, name, created_at, updated_at) VALUES (9301, 1, 1, 'JBSWY3DPEHPK3PXP', true, 'parity', now(), now())"
+  ],
+  "recorded_from": {
+    "case": "c783a8347c113c8ea93a24a7899ad869c0805ea2c81448ed423ac7e45b4138b1",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

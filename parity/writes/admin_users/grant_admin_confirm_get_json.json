@@ -1,0 +1,90 @@
+{
+  "name": "grant_admin_confirm_get_json",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/3/grant_admin.json"
+    },
+    {
+      "method": "GET",
+      "path": "/u/confirm-admin/{{jobs.admin_confirmation_email.token}}.json"
+    }
+  ],
+  "started_at": "2026-10-14T11:04:55.143238",
+  "transaction_started_at": "2026-10-14T11:04:53.883641",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "email_confirmation_required": true
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "C1+PF9KYtMYRJMgYq09kOd9/F2M=",
+            "created_at": "2026-10-14T11:04:54.4525",
+            "rotated_at": "2026-10-14T11:04:54.451378",
+            "updated_at": "2026-10-14T11:04:54.4525",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "C1+PF9KYtMYRJMgYq09kOd9/F2M=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T11:04:55.151663",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "C1+PF9KYtMYRJMgYq09kOd9/F2M=",
+            "created_at": "2026-10-14T11:04:54.4525",
+            "rotated_at": "2026-10-14T11:04:54.451378",
+            "updated_at": "2026-10-14T11:04:54.4525",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "C1+PF9KYtMYRJMgYq09kOd9/F2M=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "admin_confirmation_email",
+      {
+        "to_address": "admin@example.com",
+        "target_email": "user1@example.com",
+        "target_username": "user1",
+        "token": "7d4514294a9464a191a01c0262828532"
+      }
+    ]
+  ],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "9a0c2e7852084ddbed42d428c1e538e3c22913de4a27af78b03ee95255ce3509",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

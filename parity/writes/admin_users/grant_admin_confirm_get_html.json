@@ -1,0 +1,96 @@
+{
+  "name": "grant_admin_confirm_get_html",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/3/grant_admin.json"
+    },
+    {
+      "method": "GET",
+      "path": "/u/confirm-admin/{{jobs.admin_confirmation_email.token}}",
+      "headers": {
+        "X-Requested-With": "XMLHttpRequest",
+        "Accept": "text/html"
+      }
+    }
+  ],
+  "started_at": "2026-10-14T11:17:54.573281",
+  "transaction_started_at": "2026-10-14T11:17:50.310089",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK",
+        "email_confirmation_required": true
+      }
+    },
+    {
+      "status": 200,
+      "body": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\">\n  <title>Discourse</title>\n  <meta name=\"description\" content=\"\">\n  <meta name=\"generator\" content=\"Discourse 2026.10.0-latest - https://github.com/discourse/discourse version bf55a44c2872738f7ae2664d6fec3d6d8779190f\">\n<link rel=\"icon\" type=\"image/png\" href=\"http://localhost:3051/uploads/default/optimized/1X/_129430568242d1b7f853bb13ebea28b3f6af4e7_2_32x32.png\">\n<link rel=\"apple-touch-icon\" type=\"image/png\" href=\"http://localhost:3051/uploads/default/optimized/1X/_129430568242d1b7f853bb13ebea28b3f6af4e7_2_180x180.png\">\n<meta name=\"theme-color\" media=\"(prefers-color-scheme: light)\" content=\"#fff\">\n<meta name=\"theme-color\" media=\"(prefers-color-scheme: dark)\" content=\"#111111\">\n\n<meta name=\"color-scheme\" content=\"light dark\">\n\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, minimum-scale=1.0, viewport-fit=cover\">\n<link rel=\"canonical\" href=\"http://localhost:3051/u/confirm-admin/593ee33120836916a3afbb8cb4eb3b74\" />\n\n\n  <link rel=\"search\" type=\"application/opensearchdescription+xml\" href=\"http://localhost:3051/opensearch.xml\" title=\"Discourse Search\">\n\n  <link href=\"/stylesheets/color_definitions_light-default_-1_-1_52d22e96ca4d7c5494a46562d0df099f8b6caa0b.css?__ws=localhost\" media=\"(prefers-color-scheme: light)\" rel=\"stylesheet\" class=\"light-scheme\"/><link href=\"/stylesheets/color_definitions_dark_13_-1_db96197b363568a3e5c31b0004bd50f2cf5856a7.css?__ws=localhost\" media=\"(prefers-color-scheme: dark)\" rel=\"stylesheet\" class=\"dark-scheme\" data-scheme-id=\"13\"/>\n\n<link href=\"/stylesheets/common_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"common\"  />\n\n  <link href=\"/stylesheets/admin_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"admin\"  />\n\n  <link href=\"/stylesheets/wizard_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"wizard\"  />\n\n  <link href=\"/stylesheets/chat_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"chat\"  />\n  <link href=\"/stylesheets/checklist_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"checklist\"  />\n  <link href=\"/stylesheets/discourse-details_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-details\"  />\n  <link href=\"/stylesheets/discourse-lazy-videos_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-lazy-videos\"  />\n  <link href=\"/stylesheets/discourse-local-dates_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-local-dates\"  />\n  <link href=\"/stylesheets/discourse-narrative-bot_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-narrative-bot\"  />\n  <link href=\"/stylesheets/discourse-presence_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-presence\"  />\n  <link href=\"/stylesheets/discourse-reactions_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-reactions\"  />\n  <link href=\"/stylesheets/discourse-solved_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-solved\"  />\n  <link href=\"/stylesheets/discourse-templates_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-templates\"  />\n  <link href=\"/stylesheets/discourse-topic-voting_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-topic-voting\"  />\n  <link href=\"/stylesheets/discourse-workflows_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-workflows\"  />\n  <link href=\"/stylesheets/footnote_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"footnote\"  />\n  <link href=\"/stylesheets/poll_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"poll\"  />\n  <link href=\"/stylesheets/spoiler-alert_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"spoiler-alert\"  />\n  <link href=\"/stylesheets/chat_mobile_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"(width < 40rem)\" rel=\"stylesheet\" data-target=\"chat_mobile\"  />\n  <link href=\"/stylesheets/discourse-reactions_mobile_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"(width < 40rem)\" rel=\"stylesheet\" data-target=\"discourse-reactions_mobile\"  />\n  <link href=\"/stylesheets/chat_desktop_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"(width >= 40rem)\" rel=\"stylesheet\" data-target=\"chat_desktop\"  />\n  <link href=\"/stylesheets/discourse-reactions_desktop_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"(width >= 40rem)\" rel=\"stylesheet\" data-target=\"discourse-reactions_desktop\"  />\n  <link href=\"/stylesheets/poll_desktop_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"(width >= 40rem)\" rel=\"stylesheet\" data-target=\"poll_desktop\"  />\n  <link href=\"/stylesheets/discourse-solved_admin_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-solved_admin\"  />\n\n  \n  \n  \n\n  \n\n    \n\n  \n  \n\n    \n\n\n\n  <script defer src=\"/assets/js/pageview-de2d5660.js\" data-discourse-entrypoint=\"js/pageview\" nonce=\"T5OdYR6c1jJxjTPKkFHAGCn7G\"></script>\n\n</head>\n<body class=\"no-ember \">\n    \n\n    \n\n    \n\n  <section id='main'>\n    \n  <header class=\"d-header\">\n    <div class=\"wrap\">\n      <div class=\"contents clearfix\">\n        <div class=\"title\">\n          <a href=\"/\">\n              <picture>\n                <img src=\"http://localhost:3051/images/discourse-logo-sketch.png\" alt=\"Discourse\" id=\"site-logo\" />\n              </picture>\n          </a>\n        </div>\n        <div class=\"panel clearfix\">\n        </div>\n      </div>\n    </div>\n  </header>\n\n    <div id=\"main-outlet\" class=\"wrap\">\n      <div id='simple-container'>\n  <h2>Confirm Admin Account</h2>\n  <br/>\n\n    Are you sure you want <b>user1 (user1@example.com)</b> to be an administrator?\n    <br/>\n    <br/>\n\n    <form action=\"/users/confirm-admin/593ee33120836916a3afbb8cb4eb3b74\" accept-charset=\"UTF-8\" method=\"post\">\n      <input type=\"submit\" name=\"commit\" value=\"Grant Admin Access\" class=\"btn btn-primary\" data-disable-with=\"Grant Admin Access\" />\n</form>\n</div>\n\n    </div>\n  </section>\n\n    \n    \n\n    \n    \n</body>\n</html>\n"
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 78,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "f6jWWSTCgLI+PPIXLCd6M83nDFM=",
+            "created_at": "2026-10-14T11:17:52.4708",
+            "rotated_at": "2026-10-14T11:17:52.462853",
+            "updated_at": "2026-10-14T11:17:52.4708",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "f6jWWSTCgLI+PPIXLCd6M83nDFM=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 78,
+            "seen_at": "2026-10-14T11:17:54.59307",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "f6jWWSTCgLI+PPIXLCd6M83nDFM=",
+            "created_at": "2026-10-14T11:17:52.4708",
+            "rotated_at": "2026-10-14T11:17:52.462853",
+            "updated_at": "2026-10-14T11:17:52.4708",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "f6jWWSTCgLI+PPIXLCd6M83nDFM=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [
+    [
+      "admin_confirmation_email",
+      {
+        "to_address": "admin@example.com",
+        "target_email": "user1@example.com",
+        "target_username": "user1",
+        "token": "593ee33120836916a3afbb8cb4eb3b74"
+      }
+    ]
+  ],
+  "next_ids": {},
+  "fragment": [
+    "<div id='simple-container'>",
+    "</div>"
+  ],
+  "recorded_from": {
+    "case": "f51eb9efc286ddbc6b6ac79e87c461256afc9856c36301a4e5a073c2528ab540",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

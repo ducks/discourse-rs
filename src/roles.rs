@@ -82,12 +82,30 @@ pub async fn grant_moderation(
     i18n: &I18n,
     user_id: i32,
 ) -> Result<(), AppError> {
+    grant(conn, i18n, user_id, Permission::Moderator).await
+}
+
+/// `grant_moderation!` / `grant_admin!` for a user without the role:
+/// set_permission, auto_approve_user, the staff welcome message and the
+/// group notification defaults.
+pub async fn grant(
+    conn: &mut PgConnection,
+    i18n: &I18n,
+    user_id: i32,
+    permission: Permission,
+) -> Result<(), AppError> {
+    let (column, role, groups) = match permission {
+        Permission::Admin => ("admin", "admin", "1, 3"),
+        Permission::Moderator => ("moderator", "moderator", "2, 3"),
+    };
     // set_permission: save_and_refresh_staff_groups!, in a transaction.
     let mut tx = conn.begin().await?;
-    sqlx::query("UPDATE users SET moderator = TRUE, updated_at = clock_timestamp() WHERE id = $1")
-        .bind(user_id)
-        .execute(&mut *tx)
-        .await?;
+    sqlx::query(&format!(
+        "UPDATE users SET {column} = TRUE, updated_at = clock_timestamp() WHERE id = $1"
+    ))
+    .bind(user_id)
+    .execute(&mut *tx)
+    .await?;
     refresh_staff_groups(&mut tx, i18n).await?;
     tx.commit().await?;
 
@@ -100,7 +118,7 @@ pub async fn grant_moderation(
     .fetch_one(&mut *conn)
     .await?;
     if pending {
-        return Err(Unsupported("approving a pending user on granting moderation").into());
+        return Err(Unsupported("approving a pending user on granting a staff role").into());
     }
     // ReviewableUser.set_approved_fields!, by the system user, then save!.
     sqlx::query(
@@ -113,8 +131,8 @@ pub async fn grant_moderation(
     .execute(&mut *conn)
     .await?;
 
-    // enqueue_staff_welcome_message(:moderator): none for the singular
-    // admin (no other human admin).
+    // enqueue_staff_welcome_message(role): none for the singular admin
+    // (no other human admin).
     let singular: bool = sqlx::query_scalar(
         "SELECT NOT EXISTS (SELECT 1 FROM users WHERE admin AND id > 0 AND id <> $1)",
     )
@@ -128,17 +146,17 @@ pub async fn grant_moderation(
             json!({
                 "user_id": user_id,
                 "message_type": "welcome_staff",
-                "message_options": { "role": "moderator" },
+                "message_options": { "role": role },
             }),
         )
         .await?;
     }
 
-    // set_default_notification_levels(:moderators), and :staff.
-    let defaults: bool = sqlx::query_scalar(
-        "SELECT EXISTS (SELECT 1 FROM group_category_notification_defaults WHERE group_id IN (2, 3)) \
-             OR EXISTS (SELECT 1 FROM group_tag_notification_defaults WHERE group_id IN (2, 3))",
-    )
+    // set_default_notification_levels(:admins / :moderators), and :staff.
+    let defaults: bool = sqlx::query_scalar(&format!(
+        "SELECT EXISTS (SELECT 1 FROM group_category_notification_defaults WHERE group_id IN ({groups})) \
+             OR EXISTS (SELECT 1 FROM group_tag_notification_defaults WHERE group_id IN ({groups}))"
+    ))
     .fetch_one(&mut *conn)
     .await?;
     if defaults {
@@ -361,3 +379,4 @@ pub async fn log(
 pub const REVOKE_ADMIN: i32 = 33;
 pub const REVOKE_MODERATION: i32 = 35;
 pub const LOG_GRANT_MODERATION: i32 = GRANT_MODERATION;
+pub const GRANT_ADMIN: i32 = 32;

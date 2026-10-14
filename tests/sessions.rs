@@ -2681,3 +2681,91 @@ async fn user_api_key_device_flow_through_the_page() {
         .await;
     assert_eq!(reply.json()["status"], "expired_token");
 }
+
+/// Granting admin with a second factor: the 403 nonce, the TOTP code at
+/// /session/2fa, then the replayed PUT; what the reference cannot record
+/// (the code follows the clock).
+#[tokio::test]
+async fn grant_admin_through_the_second_factor_challenge() {
+    let db = TestDb::new().await;
+    let app_state = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut admin = Client::new(app_state.clone());
+    let reply = admin.login("admin", "password").await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    // Enabled after the login, which would ask for it too.
+    let secret = "JBSWY3DPEHPK3PXP";
+    sqlx::query(
+        "INSERT INTO user_second_factors (user_id, method, data, enabled, name, created_at, updated_at) \
+         VALUES (1, 1, $1, true, 'test', now(), now())",
+    )
+    .bind(secret)
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let xhr = [("x-requested-with", "XMLHttpRequest")];
+
+    let reply = admin
+        .send(Method::PUT, "/admin/users/3/grant_admin.json", &xhr, "")
+        .await;
+    assert_eq!(reply.status, StatusCode::FORBIDDEN, "{}", reply.body);
+    let nonce = reply.json()["second_factor_challenge_nonce"]
+        .as_str()
+        .unwrap()
+        .to_string();
+    assert_eq!(nonce.len(), 32);
+
+    let now = chrono::Utc::now().timestamp();
+    let code = discourse_rs::second_factor::code_at(secret, now).unwrap();
+    let form = format!("nonce={nonce}&second_factor_method=1&second_factor_token={code}");
+    let reply = admin
+        .send(Method::POST, "/session/2fa.json", &xhr, &form)
+        .await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    assert_eq!(
+        reply.json(),
+        json!({
+            "ok": true,
+            "callback_method": "PUT",
+            "callback_path": "/admin/users/3/grant_admin.json",
+            "redirect_url": "/admin/users/3/user1",
+        })
+    );
+    let last_used: Option<chrono::NaiveDateTime> =
+        sqlx::query_scalar("SELECT last_used FROM user_second_factors WHERE user_id = 1")
+            .fetch_one(&db.pool)
+            .await
+            .unwrap();
+    assert!(last_used.is_some());
+
+    let replay = format!("second_factor_nonce={nonce}");
+    let reply = admin
+        .send(
+            Method::PUT,
+            "/admin/users/3/grant_admin.json",
+            &xhr,
+            &replay,
+        )
+        .await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    assert_eq!(reply.json(), json!({ "success": "OK" }));
+    let (admin_now, logged): (bool, i64) = sqlx::query_as(
+        "SELECT admin, (SELECT count(*) FROM user_histories WHERE action = 32 AND acting_user_id = 1 \
+                          AND target_user_id = 3) FROM users WHERE id = 3",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert!(admin_now);
+    assert_eq!(logged, 1);
+
+    // The challenge is spent.
+    let reply = admin
+        .send(
+            Method::PUT,
+            "/admin/users/3/grant_admin.json",
+            &xhr,
+            &replay,
+        )
+        .await;
+    assert_eq!(reply.status, StatusCode::NOT_FOUND, "{}", reply.body);
+}

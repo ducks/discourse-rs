@@ -1,0 +1,17 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/users/3/grant_admin.json"
+    },
+    {
+      "method": "POST",
+      "path": "/u/confirm-admin/{{jobs.admin_confirmation_email.token}}.json"
+    },
+    {
+      "method": "POST",
+      "path": "/u/confirm-admin/{{jobs.admin_confirmation_email.token}}.json"
+    }
+  ]
+}
