@@ -49,6 +49,8 @@ const DISCOURSE_CSS: &str = concat!(
     include_str!("../static/css/filter-controls.css"),
     include_str!("../static/css/not-found.css"),
     include_str!("../static/css/about.css"),
+    include_str!("../static/css/d-page-header.css"),
+    include_str!("../static/css/admin-kit.css"),
     include_str!("../static/css/powered-by.css"),
     // The bundled plugins' stylesheets, after core's.
     include_str!("../static/css/topic-voting.css"),
@@ -186,6 +188,27 @@ const ASSETS: &[(&str, &str, &str)] = &[
         include_str!("../static/js/quote-controls.js"),
     ),
     ("sidebar.js", JS, include_str!("../static/js/sidebar.js")),
+    // The admin pages: Rails' compiled admin stylesheet, which it serves to
+    // staff (static/vendor/README), the admin shell's and the dashboard's
+    // scripts, and Chart.js with its moment adapter, which Discourse's
+    // chart-js-bundle loads for the dashboard's charts.
+    ("admin.css", CSS, include_str!("../static/vendor/admin.css")),
+    ("admin.js", JS, include_str!("../static/js/admin.js")),
+    (
+        "admin-dashboard.js",
+        JS,
+        include_str!("../static/js/admin-dashboard.js"),
+    ),
+    (
+        "chart.umd.min.js",
+        JS,
+        include_str!("../static/vendor/chart.umd.min.js"),
+    ),
+    (
+        "chartjs-adapter-moment.min.js",
+        JS,
+        include_str!("../static/vendor/chartjs-adapter-moment.min.js"),
+    ),
     (
         "navigation-bar.js",
         JS,

@@ -571,3 +571,76 @@ body.has-sidebar-page #main-outlet-wrapper {
     opacity: 1;
   }
 }
+
+/* sidebar.scss:191: the admin panel's Back to Forum link. */
+.sidebar-wrapper .sidebar-sections__back-to-forum {
+  color: var(--d-sidebar-link-color);
+  display: flex;
+  align-items: center;
+}
+.sidebar-wrapper .sidebar-sections__back-to-forum svg {
+  margin-right: var(--d-sidebar-section-link-prefix-margin-right);
+  height: 0.75em;
+  width: 0.75em;
+  color: var(--d-sidebar-link-icon-color);
+}
+/* sidebar.scss:517: the admin panel's search, which opens the admin search. */
+.sidebar-search {
+  width: 100%;
+}
+.sidebar-search__input-container {
+  display: flex;
+  align-items: center;
+  border: var(--token-border-width) solid var(--token-color-border-input);
+  background: var(--token-color-background-input);
+  box-sizing: border-box;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+  border-radius: var(--token-radius-normal);
+  overflow: hidden;
+  padding-inline: var(--d-sidebar-row-horizontal-padding);
+  gap: var(--d-sidebar-section-link-prefix-margin-right);
+}
+.sidebar-search__icon.btn.btn-transparent {
+  flex-shrink: 0;
+  font-size: var(--d-sidebar-section-link-icon-size);
+  border: 0;
+  background: var(--token-color-background-input);
+  width: var(--d-sidebar-section-link-prefix-width);
+  padding: 0;
+}
+.sidebar-search__icon.btn.btn-transparent:hover {
+  background: rgba(0, 0, 0, 0) !important;
+}
+.sidebar-search__input[type="text"] {
+  margin-bottom: 0;
+  border: 0;
+  padding: 0;
+  width: 100%;
+  height: var(--d-sidebar-row-height);
+  cursor: pointer;
+}
+.sidebar-search__input[type="text"]:focus {
+  outline: none;
+}
+.sidebar-search__shortcut-hint {
+  margin-right: var(--space-2);
+}
+/* sidebar.scss:565 */
+.sidebar-panel-header__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  color: var(--d-sidebar-link-color);
+  width: calc(
+    var(--d-sidebar-width) * var(--d-sidebar-row-horizontal-padding) + 2px
+  );
+}
+.sidebar-toggle-all-sections.btn-transparent {
+  padding-right: 0;
+  color: var(--d-sidebar-link-color);
+}
+.sidebar-toggle-all-sections.btn-transparent svg {
+  width: 0.75em;
+  height: 0.85em;
+}

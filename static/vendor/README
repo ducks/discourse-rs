@@ -70,3 +70,25 @@ The three tarballs were checked against their npm integrity (sha512); the
 locale files are byte-identical to the tarballs and to the reference's
 node_modules, pikaday.js to the reference's (the tarball's but for the
 patch).
+
+  chart.umd.min.js              chart.js@4.5.1, dist/chart.umd.min.js
+  chart.js-LICENSE.md           chart.js@4.5.1, LICENSE.md (MIT)
+  chartjs-adapter-moment.min.js chartjs-adapter-moment@1.0.1,
+                                dist/chartjs-adapter-moment.min.js
+  chartjs-adapter-moment-LICENSE.md
+                                chartjs-adapter-moment@1.0.1, LICENSE.md (MIT)
+
+Chart.js and its moment adapter are the versions frontend/discourse
+pins and its chart-js-bundle (static/chart-js-bundle.js) imports for the
+admin dashboard's charts, checked against the tarballs' npm integrity and
+byte-identical to the reference's node_modules. The adapter is a UMD
+script that reads window.moment and window.Chart, so both load before it.
+
+  admin.css   Discourse's admin stylesheet as Rails compiles it at the
+              vendored commit (app/assets/stylesheets/admin.scss, served
+              as /stylesheets/admin_<digest>.css to staff), less its byte
+              order mark and source map comment. It is fetched from the
+              reference rather than ported rule by rule: it styles only the
+              admin pages, which take it whole. To update, fetch the
+              admin_<digest>.css a reference page links and strip the same
+              two things.

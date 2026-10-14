@@ -1,0 +1,98 @@
+/*
+ * DPageHeader and DBreadcrumbs (the admin pages' header), ported from
+ * common/components/d-page-header.scss and d-breadcrumbs.scss as Rails
+ * compiles them into common.css. The rules under 700px are in mobile.css.
+ */
+
+/* d-breadcrumbs.scss:1 */
+.d-breadcrumbs {
+  display: flex;
+  flex-wrap: wrap;
+  margin: var(--space-2) 0 var(--space-4) 0;
+}
+.d-breadcrumbs__item {
+  list-style-type: none;
+  white-space: nowrap;
+}
+.d-breadcrumbs__link,
+.d-breadcrumbs__link:visited {
+  color: var(--primary-medium);
+}
+.d-breadcrumbs li .separator {
+  margin-right: var(--space-1);
+}
+.d-breadcrumbs li .separator .d-icon {
+  color: var(--primary-medium);
+  font-size: var(--font-down-1);
+}
+
+/* d-page-header.scss:3 */
+.d-page-header__title-row,
+.d-page-subheader__title-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: stretch;
+  margin-bottom: var(--space-2);
+}
+.d-page-header__title-row h1,
+.d-page-header__title-row h2,
+.d-page-subheader__title-row h1,
+.d-page-subheader__title-row h2 {
+  margin: 0;
+}
+.d-page-header__title-row h2,
+.d-page-subheader__title-row h2 {
+  font-size: var(--font-up-2);
+}
+.d-page-header__title-row .d-page-header__actions,
+.d-page-header__title-row .d-page-subheader__actions,
+.d-page-subheader__title-row .d-page-header__actions,
+.d-page-subheader__title-row .d-page-subheader__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+.d-page-header__title-row .d-page-header__actions button,
+.d-page-header__title-row .d-page-subheader__actions button,
+.d-page-subheader__title-row .d-page-header__actions button,
+.d-page-subheader__title-row .d-page-subheader__actions button {
+  margin-left: var(--space-2);
+}
+/* d-page-header.scss:40 */
+.d-page-header .d-nav-submenu,
+.d-page-subheader .d-nav-submenu {
+  background: rgba(0, 0, 0, 0);
+  border-bottom: 1px solid var(--content-border-color);
+}
+.d-page-header .d-nav-submenu .horizontal-overflow-nav,
+.d-page-subheader .d-nav-submenu .horizontal-overflow-nav {
+  background: rgba(0, 0, 0, 0);
+}
+.d-page-header .d-nav-submenu .horizontal-overflow-nav::before,
+.d-page-subheader .d-nav-submenu .horizontal-overflow-nav::before,
+.d-page-header .d-nav-submenu .horizontal-overflow-nav::after,
+.d-page-subheader .d-nav-submenu .horizontal-overflow-nav::after {
+  display: none;
+}
+.d-page-header .d-nav-submenu .nav-pills,
+.d-page-subheader .d-nav-submenu .nav-pills {
+  width: auto;
+  margin: 0;
+}
+/* d-page-header.scss:80 */
+.d-page-header__drawer {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--space-2);
+}
+.d-page-header__drawer:not(:has(*)) {
+  display: none;
+}
+/* d-page-header.scss:105 */
+.d-page-action-list-item .btn-primary {
+  color: var(--primary);
+}
+.d-page-header__learn-more::before {
+  content: "• ";
+}

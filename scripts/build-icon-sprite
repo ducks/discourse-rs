@@ -172,6 +172,58 @@ ICONS=(
   # The mobile view's chat: the chat header's way back, the footer's channels.
   arrow-left
   comments
+  # The admin sidebar's links and the dashboard's sections.
+  gift
+  flask
+  wand-magic
+  triangle-exclamation
+  far-circle-question
+  arrow-right
+  up-right-from-square
+  database
+  chart-pie
+  chart-bar
+  circle-user
+  user-gear
+  eye
+  screwdriver-wrench
+  gavel
+  font
+  palette
+  discourse-table
+  diagram-project
+  paintbrush
+  sign-hanging
+  language
+  square-envelope
+  robot
+  puzzle-piece
+  key
+  plug
+  rocket
+  discourse-sparkles
+  circle-check
+  grip-vertical
+  chevron-right
+  # The bundled plugins' admin links (setAdminPluginIcon).
+  asterisk
+  bed
+  far-clipboard
+  code-branch
+  wand-magic-sparkles
+  boards=plugin-boards
+  rectangle-ad
+  chart-line
+  fab-github
+  graduation-cap
+  square-root-variable
+  fab-patreon
+  rss
+  far-credit-card
+  pen-to-square
+  headset
+  microphone-lines
+  gif
 )
 
 root="$(cd "$(dirname "$0")/.." && pwd)"
@@ -196,9 +248,9 @@ out="$root/static/vendor/icons.svg"
   for icon in "${ICONS[@]}"; do
     name="${icon%%=*}"
     file="${icon#*=}"
-    # Discourse's own icons (discourse-*, and float-kit's arrow), from its
-    # vendored sprite.
-    if [[ $file == discourse-* || $file == tippy-rounded-arrow ]]; then
+    # Discourse's own icons (discourse-*, float-kit's arrow, and the gif
+    # icon the admin's GIFs link takes), from its vendored sprite.
+    if [[ $file == discourse-* || $file == tippy-rounded-arrow || $file == gif ]]; then
       tr -d '\n' < "$root/vendor/discourse/vendor/assets/svg-icons/discourse-additional.svg" \
         | grep -o "<symbol id=[\"']$file[\"'][^>]*>.*" | sed 's|</symbol>.*|</symbol>|' | sed "s/^/  /"
       continue

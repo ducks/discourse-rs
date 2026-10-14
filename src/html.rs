@@ -273,6 +273,37 @@ pub struct Chrome {
     /// The translations the templates' client strings come from (site
     /// texts included); the vendored files when the page loaded no chrome.
     pub i18n: Option<std::sync::Arc<I18n>>,
+    /// Rails' admin stylesheet, which staff are served on every page.
+    pub admin_stylesheet: bool,
+}
+
+impl Chrome {
+    /// An admin page: the admin panel in place of the forum's sidebar (or
+    /// in the mobile view's header menu), no live sidebar counts for links
+    /// that are not on the page, `admin-area` on `<html>`, `admin-interface`
+    /// on the body, and no Powered by Discourse (hideApplicationFooter).
+    pub fn use_admin_panel(&mut self, sidebar: String, hamburger: String) {
+        let had_sidebar = !self.sidebar.is_empty();
+        self.sidebar = sidebar;
+        self.hamburger = hamburger;
+        self.live_params = remove_param(&self.live_params, "sidebar");
+        if !self.sidebar.is_empty() && !had_sidebar {
+            self.body_classes.push_str(" has-sidebar-page");
+        }
+        self.body_classes.push_str(" admin-interface");
+        self.body_classes = self.body_classes.trim().to_string();
+        self.html_classes.push_str(" admin-area");
+        self.powered_by = false;
+    }
+}
+
+/// `params` (`&a=1&b=2`) less the `name` parameter.
+fn remove_param(params: &str, name: &str) -> String {
+    params
+        .split('&')
+        .filter(|p| !p.is_empty() && !p.starts_with(&format!("{name}=")))
+        .map(|p| format!("&{p}"))
+        .collect()
 }
 
 /// The vendored strings, for chrome that has no translations of its own.
@@ -633,6 +664,7 @@ impl Site {
             }
         }
         self.chrome.powered_by = settings.get("enable_powered_by_discourse")?.truthy();
+        self.chrome.admin_stylesheet = guardian.is_staff();
         self.chrome.user_cards =
             guardian.user().is_some() || !settings.get("hide_user_profiles_from_public")?.truthy();
         self.chrome.enable_badges = settings.get("enable_badges")?.truthy();

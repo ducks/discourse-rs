@@ -1,0 +1,4 @@
+# The admin pages (90g), as admin; see parity/screens/pages for the format.
+# Masked: the status block's relative times and the storage's free space,
+# which the reference reads from its own disk.
+/admin as=admin wait=4000 mask=.db-system__block.--status,.db-system__block.--storage>.db-system__headline>.db-system__label
