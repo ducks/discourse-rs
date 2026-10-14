@@ -1,0 +1,11 @@
+{
+  "user": "admin",
+  "settings": {
+    "content_security_policy": false,
+    "ga_version": "v3_analytics"
+  },
+  "setup": ["DELETE FROM problem_check_trackers"],
+  "requests": [
+    {"method": "POST", "path": "/admin/dashboard/problems.json"}
+  ]
+}

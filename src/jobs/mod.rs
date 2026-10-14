@@ -20,6 +20,7 @@ pub mod housekeeping;
 pub mod list_stats;
 pub mod moderation;
 pub mod periodical;
+pub mod problem_checks;
 pub mod scores;
 pub mod search_jobs;
 pub mod topic_timers;
@@ -143,6 +144,7 @@ pub async fn claim(pool: &PgPool) -> Result<Option<Job>, sqlx::Error> {
 
 /// Runs a claimed job and records how it ended.
 pub async fn perform(state: &AppState, job: Job) -> Result<(), sqlx::Error> {
+    stamp_performed(&state.pool).await?;
     let result = handlers::run(state, &job).await;
     let pool = &state.pool;
     match result {
@@ -199,6 +201,19 @@ pub async fn drain(state: &AppState) -> Result<usize, sqlx::Error> {
         count += 1;
     }
     Ok(count)
+}
+
+/// `last_job_perform_at`, which Jobs::Base sets as each job starts (read
+/// by the sidekiq_check problem check): the epoch second, kept a year.
+async fn stamp_performed(pool: &PgPool) -> Result<(), sqlx::Error> {
+    let mut conn = pool.acquire().await?;
+    crate::owned_schema::cached_setex(
+        &mut conn,
+        crate::problem_checks::LAST_JOB_PERFORMED_KEY,
+        365 * 24 * 3600,
+        &crate::clock::now().timestamp().to_string(),
+    )
+    .await
 }
 
 /// Jobs::Scheduled the port runs: the name and how often. They run when
@@ -449,6 +464,18 @@ const SCHEDULED: &[(&str, Duration)] = &[
         crate::web_hooks::jobs::REDELIVER_WEB_HOOK_EVENTS,
         Duration::from_secs(60),
     ),
+    (
+        problem_checks::RUN_PROBLEM_CHECKS,
+        Duration::from_secs(10 * 60),
+    ),
+    (
+        problem_checks::NOTIFY_ADMINS_OF_PROBLEMS,
+        Duration::from_secs(30 * 60),
+    ),
+    (
+        problem_checks::CLEANUP_PROBLEM_CHECK_TRACKERS,
+        Duration::from_secs(10 * 60),
+    ),
     // The rate limiters' expired lists (Redis expires them itself).
     ("rate_limits_cleanup", Duration::from_secs(15 * 60)),
     // Jobs::ScheduleBackup, daily (from the worker's start; Rails: midnight).
@@ -600,6 +627,13 @@ pub async fn run_scheduled(state: &AppState, name: &str) -> Result<(), AppError>
         crate::web_hooks::jobs::REDELIVER_WEB_HOOK_EVENTS => {
             crate::web_hooks::jobs::redeliver_web_hook_events(state).await
         }
+        problem_checks::RUN_PROBLEM_CHECKS => problem_checks::run_problem_checks(state).await,
+        problem_checks::NOTIFY_ADMINS_OF_PROBLEMS => {
+            problem_checks::notify_admins_of_problems(state).await
+        }
+        problem_checks::CLEANUP_PROBLEM_CHECK_TRACKERS => {
+            problem_checks::cleanup_problem_check_trackers(state).await
+        }
         "rate_limits_cleanup" => Ok(crate::rate_limiter::cleanup(&state.pool).await?),
         crate::backup_restore::jobs::SCHEDULE_BACKUP => {
             crate::backup_restore::jobs::schedule_backup(state).await
@@ -643,6 +677,9 @@ pub async fn work(state: AppState, stop: impl std::future::Future<Output = ()>) 
                 continue;
             }
             last_run[i] = Some(std::time::Instant::now());
+            if let Err(e) = stamp_performed(&state.pool).await {
+                tracing::error!("job queue: {e}");
+            }
             if let Err(e) = run_scheduled(&state, name).await {
                 tracing::error!("scheduled job {name}: {e}");
             }

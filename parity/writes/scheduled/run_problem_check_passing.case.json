@@ -1,0 +1,15 @@
+{
+  "user": null,
+  "setup": [
+    "DELETE FROM problem_check_trackers",
+    "INSERT INTO problem_check_trackers (id, identifier, target, blips, last_run_at, next_run_at, last_success_at, last_problem_at, details, ignored_at) VALUES (9001, 'github_onebox_backoff', '__NULL__', 3, now() - interval '20 minutes', now() - interval '10 minutes', NULL, now() - interval '20 minutes', '{\"base_path\":\"\"}', NULL)",
+    "INSERT INTO admin_notices (id, subject, priority, identifier, details, created_at, updated_at) VALUES (9101, 0, 0, 'github_onebox_backoff', '{\"base_path\":\"\",\"target\":\"__NULL__\"}', now() - interval '20 minutes', now() - interval '20 minutes')"
+  ],
+  "requests": [],
+  "enqueue": [
+    ["run_problem_check", {"check_identifier": "github_onebox_backoff", "target": "__NULL__"}],
+    ["run_problem_check", {"check_identifier": "twitter_login", "target": "__NULL__"}],
+    ["run_problem_check", {"check_identifier": "email_sending_failures", "target": ""}]
+  ],
+  "run_jobs": ["run_problem_check"]
+}

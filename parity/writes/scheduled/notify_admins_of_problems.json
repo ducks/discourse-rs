@@ -1,0 +1,90 @@
+{
+  "name": "notify_admins_of_problems",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-14T14:25:03.562493",
+  "transaction_started_at": "2026-10-14T14:25:01.310856",
+  "responses": [],
+  "changes": {
+    "notifications": {
+      "inserted": [
+        {
+          "id": 53,
+          "data": "{}",
+          "read": false,
+          "user_id": -1,
+          "topic_id": null,
+          "created_at": "2026-10-14T14:25:03.614197",
+          "updated_at": "2026-10-14T14:25:03.614197",
+          "post_number": null,
+          "high_priority": false,
+          "post_action_id": null,
+          "notification_type": 38
+        },
+        {
+          "id": 54,
+          "data": "{}",
+          "read": false,
+          "user_id": -2,
+          "topic_id": null,
+          "created_at": "2026-10-14T14:25:03.643948",
+          "updated_at": "2026-10-14T14:25:03.643948",
+          "post_number": null,
+          "high_priority": false,
+          "post_action_id": null,
+          "notification_type": 38
+        },
+        {
+          "id": 55,
+          "data": "{}",
+          "read": false,
+          "user_id": 1,
+          "topic_id": null,
+          "created_at": "2026-10-14T14:25:03.697375",
+          "updated_at": "2026-10-14T14:25:03.697375",
+          "post_number": null,
+          "high_priority": false,
+          "post_action_id": null,
+          "notification_type": 38
+        }
+      ],
+      "deleted": [
+        {
+          "id": 9201,
+          "data": "{}",
+          "read": false,
+          "user_id": 1,
+          "topic_id": null,
+          "created_at": "2026-10-06T14:25:01.310856",
+          "updated_at": "2026-10-06T14:25:01.310856",
+          "post_number": null,
+          "high_priority": true,
+          "post_action_id": null,
+          "notification_type": 38
+        }
+      ],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "notifications": 53
+  },
+  "setup": [
+    "DELETE FROM problem_check_trackers",
+    "INSERT INTO problem_check_trackers (id, identifier, target, blips, last_run_at, next_run_at, last_success_at, last_problem_at, details, ignored_at) VALUES (9001, 'force_https', '__NULL__', 40, now() - interval '1 hour', NULL, now() - interval '3 days', now() - interval '1 hour', '{\"base_path\":\"\"}', NULL)",
+    "INSERT INTO notifications (id, notification_type, user_id, data, read, created_at, updated_at, high_priority) VALUES (9201, 38, 1, '{}', FALSE, now() - interval '8 days', now() - interval '8 days', TRUE)"
+  ],
+  "enqueue": [
+    [
+      "notify_admins_of_problems",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "790f4650264b554b3b64e0c485390e4107de2fd8b2832c09e64c5dd66798d1b4",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

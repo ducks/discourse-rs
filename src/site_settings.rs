@@ -498,6 +498,45 @@ impl Definitions {
         names
     }
 
+    /// `SiteSetting.upcoming_change_site_settings`: every upcoming change,
+    /// sorted by name.
+    pub fn upcoming_change_names(&self) -> Vec<&str> {
+        let mut names: Vec<&str> = self
+            .list
+            .iter()
+            .filter(|d| d.upcoming_change.is_some())
+            .map(|d| d.name.as_str())
+            .collect();
+        names.sort_unstable();
+        names
+    }
+
+    /// `UpcomingChanges.change_status`
+    pub fn change_status(&self, name: &str) -> Option<ChangeStatus> {
+        self.get(name).and_then(|d| d.upcoming_change)
+    }
+
+    /// `UpcomingChanges.owning_plugin_configurable?` and
+    /// `owning_plugin_enabled?` together: a plugin's change counts only
+    /// while the plugin is on, unless it opts out or is the plugin's own
+    /// enabled setting. Every bundled plugin is configurable.
+    pub fn change_plugin_enabled(&self, name: &str, settings: &SiteSettings) -> bool {
+        let Some(def) = self.get(name) else {
+            return false;
+        };
+        if !def.change_requires_plugin {
+            return true;
+        }
+        let Some(plugin) = &def.plugin else {
+            return true;
+        };
+        match self.plugin_enabled_settings.get(plugin) {
+            Some(Some(setting)) if setting == name => true,
+            Some(Some(setting)) => settings.get(setting).is_ok_and(Value::truthy),
+            _ => true,
+        }
+    }
+
     pub fn iter(&self) -> impl Iterator<Item = &Definition> {
         self.list.iter()
     }

@@ -1,0 +1,126 @@
+{
+  "name": "run_problem_check_upcoming_change",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-14T14:25:13.176626",
+  "transaction_started_at": "2026-10-14T14:25:12.401364",
+  "responses": [],
+  "changes": {
+    "admin_notices": {
+      "inserted": [
+        {
+          "id": 35,
+          "details": {
+            "target": "rename_faq_to_guidelines",
+            "base_path": "",
+            "upcoming_change": "Rename FAQ to guidelines"
+          },
+          "subject": 0,
+          "priority": 0,
+          "created_at": "2026-10-14T14:25:13.19761",
+          "identifier": "upcoming_change_stable_opted_out",
+          "updated_at": "2026-10-14T14:25:13.19761"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "problem_check_trackers": {
+      "inserted": [
+        {
+          "id": 70,
+          "blips": 0,
+          "target": "enable_unified_new",
+          "details": {},
+          "identifier": "upcoming_change_stable_opted_out",
+          "ignored_at": null,
+          "last_run_at": "2026-10-14T14:25:13.181733",
+          "next_run_at": "2026-10-14T15:25:13.178261",
+          "last_problem_at": null,
+          "last_success_at": "2026-10-14T14:25:13.181733"
+        },
+        {
+          "id": 73,
+          "blips": 1,
+          "target": "rename_faq_to_guidelines",
+          "details": {
+            "base_path": "",
+            "upcoming_change": "Rename FAQ to guidelines"
+          },
+          "identifier": "upcoming_change_stable_opted_out",
+          "ignored_at": null,
+          "last_run_at": "2026-10-14T14:25:13.194701",
+          "next_run_at": "2026-10-14T15:25:13.192349",
+          "last_problem_at": "2026-10-14T14:25:13.194701",
+          "last_success_at": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "admin_notices": 35,
+    "problem_check_trackers": 70
+  },
+  "settings": {
+    "rename_faq_to_guidelines": false
+  },
+  "setup": [
+    "DELETE FROM problem_check_trackers"
+  ],
+  "enqueue": [
+    [
+      "run_problem_check",
+      {
+        "check_identifier": "upcoming_change_stable_opted_out",
+        "target": "rename_faq_to_guidelines"
+      }
+    ],
+    [
+      "run_problem_check",
+      {
+        "check_identifier": "upcoming_change_stable_opted_out",
+        "target": "enable_unified_new"
+      }
+    ],
+    [
+      "run_problem_check",
+      {
+        "check_identifier": "upcoming_change_stable_opted_out",
+        "target": "removed_change"
+      }
+    ],
+    [
+      "run_problem_check",
+      {
+        "check_identifier": "upcoming_change_stable_opted_out",
+        "target": "__NULL__"
+      }
+    ]
+  ],
+  "jobs_from_jobs": [
+    [
+      "run_problem_check in 30s",
+      {
+        "check_identifier": "upcoming_change_stable_opted_out",
+        "target": "rename_faq_to_guidelines",
+        "retry_count": 1
+      }
+    ],
+    [
+      "run_problem_check in 30s",
+      {
+        "check_identifier": "upcoming_change_stable_opted_out",
+        "target": "rename_faq_to_guidelines",
+        "retry_count": 2
+      }
+    ]
+  ],
+  "recorded_from": {
+    "case": "e08ea9fe14c7148a4f1f9b7484a50a3109b00eeee3e27adebecb2b813320d331",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

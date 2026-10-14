@@ -1,0 +1,450 @@
+{
+  "name": "problems_run_moderator",
+  "user": "user2",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/dashboard/problems.json"
+    }
+  ],
+  "started_at": "2026-10-14T14:24:47.26375",
+  "transaction_started_at": "2026-10-14T14:24:45.08787",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "problems": [
+          {
+            "id": 1,
+            "priority": "low",
+            "message": "Your website is using SSL. But `<a href=\"/admin/site_settings/category/all_results?filter=force_https\">force_https</a>` is not yet enabled in your site settings.",
+            "identifier": "force_https"
+          },
+          {
+            "id": 2,
+            "priority": "low",
+            "message": "Your config/database.yml file is using the default localhost hostname. Update it to use your site's hostname.",
+            "identifier": "host_names"
+          },
+          {
+            "id": 3,
+            "priority": "low",
+            "message": "Your server is running in development mode.",
+            "identifier": "rails_env"
+          }
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "admin_notices": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 34,
+          "details": {
+            "target": "__NULL__",
+            "base_path": "",
+            "num_failed_jobs": 6
+          },
+          "subject": 0,
+          "priority": 0,
+          "created_at": "2026-09-30T07:45:43.089991",
+          "identifier": "failing_emails",
+          "updated_at": "2026-09-30T07:45:43.089991"
+        }
+      ],
+      "updated": []
+    },
+    "problem_check_trackers": {
+      "inserted": [
+        {
+          "id": 73,
+          "blips": 0,
+          "target": "__NULL__",
+          "details": {},
+          "identifier": "failing_emails",
+          "ignored_at": null,
+          "last_run_at": "2026-10-14T14:24:47.364026",
+          "next_run_at": null,
+          "last_problem_at": null,
+          "last_success_at": "2026-10-14T14:24:47.364026"
+        },
+        {
+          "id": 74,
+          "blips": 1,
+          "target": "__NULL__",
+          "details": {
+            "base_path": ""
+          },
+          "identifier": "force_https",
+          "ignored_at": null,
+          "last_run_at": "2026-10-14T14:24:47.37603",
+          "next_run_at": null,
+          "last_problem_at": "2026-10-14T14:24:47.37603",
+          "last_success_at": null
+        },
+        {
+          "id": 75,
+          "blips": 0,
+          "target": "__NULL__",
+          "details": {},
+          "identifier": "github_config",
+          "ignored_at": null,
+          "last_run_at": "2026-10-14T14:24:47.390301",
+          "next_run_at": null,
+          "last_problem_at": null,
+          "last_success_at": "2026-10-14T14:24:47.390301"
+        },
+        {
+          "id": 76,
+          "blips": 0,
+          "target": "__NULL__",
+          "details": {},
+          "identifier": "google_analytics_version",
+          "ignored_at": null,
+          "last_run_at": "2026-10-14T14:24:47.401065",
+          "next_run_at": null,
+          "last_problem_at": null,
+          "last_success_at": "2026-10-14T14:24:47.401065"
+        },
+        {
+          "id": 77,
+          "blips": 0,
+          "target": "__NULL__",
+          "details": {},
+          "identifier": "google_oauth2_config",
+          "ignored_at": null,
+          "last_run_at": "2026-10-14T14:24:47.410277",
+          "next_run_at": null,
+          "last_problem_at": null,
+          "last_success_at": "2026-10-14T14:24:47.410277"
+        },
+        {
+          "id": 78,
+          "blips": 1,
+          "target": "__NULL__",
+          "details": {
+            "base_path": ""
+          },
+          "identifier": "host_names",
+          "ignored_at": null,
+          "last_run_at": "2026-10-14T14:24:47.419029",
+          "next_run_at": null,
+          "last_problem_at": "2026-10-14T14:24:47.419029",
+          "last_success_at": null
+        },
+        {
+          "id": 79,
+          "blips": 0,
+          "target": "__NULL__",
+          "details": {},
+          "identifier": "image_magick",
+          "ignored_at": null,
+          "last_run_at": "2026-10-14T14:24:47.429807",
+          "next_run_at": null,
+          "last_problem_at": null,
+          "last_success_at": "2026-10-14T14:24:47.429807"
+        },
+        {
+          "id": 80,
+          "blips": 0,
+          "target": "__NULL__",
+          "details": {},
+          "identifier": "landlock",
+          "ignored_at": null,
+          "last_run_at": "2026-10-14T14:24:47.43971",
+          "next_run_at": null,
+          "last_problem_at": null,
+          "last_success_at": "2026-10-14T14:24:47.43971"
+        },
+        {
+          "id": 81,
+          "blips": 0,
+          "target": "__NULL__",
+          "details": {},
+          "identifier": "missing_aws_sns_topic_arn",
+          "ignored_at": null,
+          "last_run_at": "2026-10-14T14:24:47.447604",
+          "next_run_at": null,
+          "last_problem_at": null,
+          "last_success_at": "2026-10-14T14:24:47.447604"
+        },
+        {
+          "id": 82,
+          "blips": 0,
+          "target": "__NULL__",
+          "details": {},
+          "identifier": "missing_mailgun_api_key",
+          "ignored_at": null,
+          "last_run_at": "2026-10-14T14:24:47.45752",
+          "next_run_at": null,
+          "last_problem_at": null,
+          "last_success_at": "2026-10-14T14:24:47.45752"
+        },
+        {
+          "id": 83,
+          "blips": 0,
+          "target": "__NULL__",
+          "details": {},
+          "identifier": "out_of_date_themes",
+          "ignored_at": null,
+          "last_run_at": "2026-10-14T14:24:47.46678",
+          "next_run_at": null,
+          "last_problem_at": null,
+          "last_success_at": "2026-10-14T14:24:47.46678"
+        },
+        {
+          "id": 84,
+          "blips": 0,
+          "target": "__NULL__",
+          "details": {},
+          "identifier": "qq_mail_smtp",
+          "ignored_at": null,
+          "last_run_at": "2026-10-14T14:24:47.481353",
+          "next_run_at": null,
+          "last_problem_at": null,
+          "last_success_at": "2026-10-14T14:24:47.481353"
+        },
+        {
+          "id": 85,
+          "blips": 1,
+          "target": "__NULL__",
+          "details": {
+            "env": "development",
+            "base_path": ""
+          },
+          "identifier": "rails_env",
+          "ignored_at": null,
+          "last_run_at": "2026-10-14T14:24:47.495661",
+          "next_run_at": null,
+          "last_problem_at": "2026-10-14T14:24:47.495661",
+          "last_success_at": null
+        },
+        {
+          "id": 86,
+          "blips": 0,
+          "target": "__NULL__",
+          "details": {},
+          "identifier": "ram",
+          "ignored_at": null,
+          "last_run_at": "2026-10-14T14:24:47.513625",
+          "next_run_at": null,
+          "last_problem_at": null,
+          "last_success_at": "2026-10-14T14:24:47.513625"
+        },
+        {
+          "id": 70,
+          "blips": 0,
+          "target": "__NULL__",
+          "details": {},
+          "identifier": "content_security_policy_disabled",
+          "ignored_at": null,
+          "last_run_at": "2026-10-14T14:24:47.303355",
+          "next_run_at": null,
+          "last_problem_at": null,
+          "last_success_at": "2026-10-14T14:24:47.303355"
+        },
+        {
+          "id": 71,
+          "blips": 0,
+          "target": "__NULL__",
+          "details": {},
+          "identifier": "email_polling_errored_recently",
+          "ignored_at": null,
+          "last_run_at": "2026-10-14T14:24:47.323881",
+          "next_run_at": null,
+          "last_problem_at": null,
+          "last_success_at": "2026-10-14T14:24:47.323881"
+        },
+        {
+          "id": 72,
+          "blips": 0,
+          "target": "__NULL__",
+          "details": {},
+          "identifier": "facebook_config",
+          "ignored_at": null,
+          "last_run_at": "2026-10-14T14:24:47.344554",
+          "next_run_at": null,
+          "last_problem_at": null,
+          "last_success_at": "2026-10-14T14:24:47.344554"
+        },
+        {
+          "id": 87,
+          "blips": 0,
+          "target": "__NULL__",
+          "details": {},
+          "identifier": "s3_backup_config",
+          "ignored_at": null,
+          "last_run_at": "2026-10-14T14:24:47.525157",
+          "next_run_at": null,
+          "last_problem_at": null,
+          "last_success_at": "2026-10-14T14:24:47.525157"
+        },
+        {
+          "id": 88,
+          "blips": 0,
+          "target": "__NULL__",
+          "details": {},
+          "identifier": "s3_cdn",
+          "ignored_at": null,
+          "last_run_at": "2026-10-14T14:24:47.536581",
+          "next_run_at": null,
+          "last_problem_at": null,
+          "last_success_at": "2026-10-14T14:24:47.536581"
+        },
+        {
+          "id": 89,
+          "blips": 0,
+          "target": "__NULL__",
+          "details": {},
+          "identifier": "s3_upload_config",
+          "ignored_at": null,
+          "last_run_at": "2026-10-14T14:24:47.549711",
+          "next_run_at": null,
+          "last_problem_at": null,
+          "last_success_at": "2026-10-14T14:24:47.549711"
+        },
+        {
+          "id": 90,
+          "blips": 0,
+          "target": "__NULL__",
+          "details": {},
+          "identifier": "sidekiq_check",
+          "ignored_at": null,
+          "last_run_at": "2026-10-14T14:24:47.561074",
+          "next_run_at": null,
+          "last_problem_at": null,
+          "last_success_at": "2026-10-14T14:24:47.561074"
+        },
+        {
+          "id": 91,
+          "blips": 0,
+          "target": "__NULL__",
+          "details": {},
+          "identifier": "subfolder_ends_in_slash",
+          "ignored_at": null,
+          "last_run_at": "2026-10-14T14:24:47.571491",
+          "next_run_at": null,
+          "last_problem_at": null,
+          "last_success_at": "2026-10-14T14:24:47.571491"
+        },
+        {
+          "id": 92,
+          "blips": 0,
+          "target": "__NULL__",
+          "details": {},
+          "identifier": "starttls_disabled",
+          "ignored_at": null,
+          "last_run_at": "2026-10-14T14:24:47.582698",
+          "next_run_at": null,
+          "last_problem_at": null,
+          "last_success_at": "2026-10-14T14:24:47.582698"
+        },
+        {
+          "id": 93,
+          "blips": 0,
+          "target": "__NULL__",
+          "details": {},
+          "identifier": "translation_overrides",
+          "ignored_at": null,
+          "last_run_at": "2026-10-14T14:24:47.592516",
+          "next_run_at": null,
+          "last_problem_at": null,
+          "last_success_at": "2026-10-14T14:24:47.592516"
+        },
+        {
+          "id": 94,
+          "blips": 0,
+          "target": "__NULL__",
+          "details": {},
+          "identifier": "twitter_config",
+          "ignored_at": null,
+          "last_run_at": "2026-10-14T14:24:47.601226",
+          "next_run_at": null,
+          "last_problem_at": null,
+          "last_success_at": "2026-10-14T14:24:47.601226"
+        },
+        {
+          "id": 95,
+          "blips": 0,
+          "target": "__NULL__",
+          "details": {},
+          "identifier": "unreachable_themes",
+          "ignored_at": null,
+          "last_run_at": "2026-10-14T14:24:47.611646",
+          "next_run_at": null,
+          "last_problem_at": null,
+          "last_success_at": "2026-10-14T14:24:47.611646"
+        },
+        {
+          "id": 96,
+          "blips": 0,
+          "target": "__NULL__",
+          "details": {},
+          "identifier": "watched_words",
+          "ignored_at": null,
+          "last_run_at": "2026-10-14T14:24:47.630298",
+          "next_run_at": null,
+          "last_problem_at": null,
+          "last_success_at": "2026-10-14T14:24:47.630298"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 222,
+            "seen_at": null,
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "XyLsb0RaE201ZNQTyIwCotgE5KU=",
+            "created_at": "2026-10-14T14:24:45.476188",
+            "rotated_at": "2026-10-14T14:24:45.474851",
+            "updated_at": "2026-10-14T14:24:45.476188",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "XyLsb0RaE201ZNQTyIwCotgE5KU=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 222,
+            "seen_at": "2026-10-14T14:24:47.272758",
+            "user_id": 4,
+            "client_ip": "127.0.0.1",
+            "auth_token": "XyLsb0RaE201ZNQTyIwCotgE5KU=",
+            "created_at": "2026-10-14T14:24:45.476188",
+            "rotated_at": "2026-10-14T14:24:45.474851",
+            "updated_at": "2026-10-14T14:24:45.476188",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "XyLsb0RaE201ZNQTyIwCotgE5KU=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "problem_check_trackers": 70
+  },
+  "setup": [
+    "UPDATE users SET moderator = TRUE WHERE id = 4",
+    "DELETE FROM problem_check_trackers"
+  ],
+  "recorded_from": {
+    "case": "1a11ba4acf555df085732bba835b80bf695eca837c6774a9ca34abe92e736437",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

@@ -548,7 +548,7 @@ pub fn description(cx: &Context<'_>, setting: &str) -> String {
 }
 
 /// LabelFormatter.expand_setting_links
-fn expand_setting_links(cx: &Context<'_>, text: &str) -> String {
+pub(crate) fn expand_setting_links(cx: &Context<'_>, text: &str) -> String {
     if !text.contains("{{setting") {
         return text.to_string();
     }
@@ -621,7 +621,7 @@ fn linkify(cx: &Context<'_>, setting: &str) -> String {
 }
 
 /// `CGI.escapeHTML`
-fn escape_html(s: &str) -> String {
+pub(crate) fn escape_html(s: &str) -> String {
     s.replace('&', "&amp;")
         .replace('<', "&lt;")
         .replace('>', "&gt;")

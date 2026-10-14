@@ -1,0 +1,182 @@
+{
+  "name": "admin_notice_dismiss",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "DELETE",
+      "path": "/admin/admin_notices/1.json"
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/admin_notices/2.json"
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/admin_notices/3.json"
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/admin_notices/99999.json"
+    }
+  ],
+  "started_at": "2026-10-14T14:24:28.14699",
+  "transaction_started_at": "2026-10-14T14:24:22.823747",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    }
+  ],
+  "changes": {
+    "admin_notices": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 1,
+          "details": {
+            "target": "__NULL__",
+            "base_path": ""
+          },
+          "subject": 0,
+          "priority": 0,
+          "created_at": "2026-09-27T21:01:09.802675",
+          "identifier": "force_https",
+          "updated_at": "2026-09-27T21:01:09.802675"
+        },
+        {
+          "id": 2,
+          "details": {
+            "target": "__NULL__",
+            "base_path": ""
+          },
+          "subject": 0,
+          "priority": 0,
+          "created_at": "2026-09-27T21:01:09.970224",
+          "identifier": "host_names",
+          "updated_at": "2026-09-27T21:01:09.970224"
+        },
+        {
+          "id": 3,
+          "details": {
+            "env": "development",
+            "target": "__NULL__",
+            "base_path": ""
+          },
+          "subject": 0,
+          "priority": 0,
+          "created_at": "2026-09-27T21:01:10.348891",
+          "identifier": "rails_env",
+          "updated_at": "2026-09-27T21:01:10.348891"
+        }
+      ],
+      "updated": []
+    },
+    "problem_check_trackers": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 9001,
+            "blips": 4,
+            "target": "__NULL__",
+            "details": {
+              "base_path": ""
+            },
+            "identifier": "force_https",
+            "ignored_at": null,
+            "last_run_at": "2026-10-14T14:14:22.823747",
+            "next_run_at": null,
+            "last_problem_at": "2026-10-14T14:14:22.823747",
+            "last_success_at": null
+          },
+          "after": {
+            "id": 9001,
+            "blips": 4,
+            "target": "__NULL__",
+            "details": {
+              "base_path": ""
+            },
+            "identifier": "force_https",
+            "ignored_at": "2026-10-14T14:24:28.227864",
+            "last_run_at": "2026-10-14T14:14:22.823747",
+            "next_run_at": null,
+            "last_problem_at": "2026-10-14T14:14:22.823747",
+            "last_success_at": null
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 222,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "YOwZbKnH+A8VtioZ0LqICtAFtQw=",
+            "created_at": "2026-10-14T14:24:25.066256",
+            "rotated_at": "2026-10-14T14:24:25.05224",
+            "updated_at": "2026-10-14T14:24:25.066256",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "YOwZbKnH+A8VtioZ0LqICtAFtQw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 222,
+            "seen_at": "2026-10-14T14:24:28.16604",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "YOwZbKnH+A8VtioZ0LqICtAFtQw=",
+            "created_at": "2026-10-14T14:24:25.066256",
+            "rotated_at": "2026-10-14T14:24:25.05224",
+            "updated_at": "2026-10-14T14:24:25.066256",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "YOwZbKnH+A8VtioZ0LqICtAFtQw=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "DELETE FROM problem_check_trackers",
+    "INSERT INTO problem_check_trackers (id, identifier, target, blips, last_run_at, next_run_at, last_success_at, last_problem_at, details, ignored_at) VALUES (9001, 'force_https', '__NULL__', 4, now() - interval '10 minutes', NULL, NULL, now() - interval '10 minutes', '{\"base_path\":\"\"}', NULL), (9003, 'host_names', '__NULL__', 1, now() - interval '10 minutes', NULL, NULL, now() - interval '10 minutes', '{\"base_path\":\"\"}', now() - interval '1 hour')"
+  ],
+  "recorded_from": {
+    "case": "7d497fdb82b787e81497509df500adfd1b923ba4ec4bdeae4431e1ca5b69cdac",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

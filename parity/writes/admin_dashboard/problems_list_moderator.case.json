@@ -1,0 +1,14 @@
+{
+  "user": "user2",
+  "setup": [
+    "UPDATE users SET moderator = TRUE WHERE id = 4",
+    "DELETE FROM problem_check_trackers",
+    "INSERT INTO problem_check_trackers (id, identifier, target, blips, last_run_at, next_run_at, last_success_at, last_problem_at, details, ignored_at) VALUES (9001, 'force_https', '__NULL__', 4, now() - interval '10 minutes', NULL, NULL, now() - interval '10 minutes', '{\"base_path\":\"\"}', NULL)"
+  ],
+  "requests": [
+    {"method": "GET", "path": "/admin/problem-checks.json"},
+    {"method": "GET", "path": "/admin/problem_checks.json"},
+    {"method": "PUT", "path": "/admin/problem_checks/9001/ignore.json"},
+    {"method": "DELETE", "path": "/admin/admin_notices/1.json"}
+  ]
+}

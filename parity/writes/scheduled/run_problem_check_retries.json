@@ -1,0 +1,91 @@
+{
+  "name": "run_problem_check_retries",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-14T14:25:09.155932",
+  "transaction_started_at": "2026-10-14T14:25:07.687873",
+  "responses": [],
+  "changes": {
+    "admin_notices": {
+      "inserted": [
+        {
+          "id": 35,
+          "details": {
+            "count": 2,
+            "target": "__NULL__",
+            "base_path": ""
+          },
+          "subject": 0,
+          "priority": 0,
+          "created_at": "2026-10-14T14:25:09.190019",
+          "identifier": "email_sending_failures",
+          "updated_at": "2026-10-14T14:25:09.190019"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "problem_check_trackers": {
+      "inserted": [
+        {
+          "id": 70,
+          "blips": 1,
+          "target": "__NULL__",
+          "details": {
+            "count": 2,
+            "base_path": ""
+          },
+          "identifier": "email_sending_failures",
+          "ignored_at": null,
+          "last_run_at": "2026-10-14T14:25:09.179476",
+          "next_run_at": "2026-10-14T15:25:09.169632",
+          "last_problem_at": "2026-10-14T14:25:09.179476",
+          "last_success_at": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "admin_notices": 35,
+    "problem_check_trackers": 70
+  },
+  "setup": [
+    "DELETE FROM problem_check_trackers",
+    "INSERT INTO skipped_email_logs (email_type, to_address, user_id, post_id, reason_type, custom_reason, created_at, updated_at) VALUES ('user_mentioned', 'user1@example.com', 3, NULL, 1, 'Net::SMTPAuthenticationError', now() - interval '2 hours', now() - interval '2 hours'), ('digest', 'user0@example.com', 2, NULL, 1, 'Net::ReadTimeout', now() - interval '3 hours', now() - interval '3 hours'), ('digest', 'user0@example.com', 2, NULL, 1, 'Net::ReadTimeout', now() - interval '3 days', now() - interval '3 days')"
+  ],
+  "enqueue": [
+    [
+      "run_problem_check",
+      {
+        "check_identifier": "email_sending_failures",
+        "target": "__NULL__"
+      }
+    ]
+  ],
+  "jobs_from_jobs": [
+    [
+      "run_problem_check in 30s",
+      {
+        "check_identifier": "email_sending_failures",
+        "target": "__NULL__",
+        "retry_count": 1
+      }
+    ],
+    [
+      "run_problem_check in 30s",
+      {
+        "check_identifier": "email_sending_failures",
+        "target": "__NULL__",
+        "retry_count": 2
+      }
+    ]
+  ],
+  "recorded_from": {
+    "case": "d36c2db7559b8d67144243ca8b47582725539c7058a8dc04b5c5624d82c681a5",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

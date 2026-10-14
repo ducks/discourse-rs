@@ -1,0 +1,7 @@
+{
+  "user": "user2",
+  "setup": ["UPDATE users SET moderator = TRUE WHERE id = 4", "DELETE FROM problem_check_trackers"],
+  "requests": [
+    {"method": "POST", "path": "/admin/dashboard/problems.json"}
+  ]
+}
