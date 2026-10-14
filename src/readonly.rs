@@ -215,6 +215,8 @@ fn admin_only(route: &str) -> bool {
                 | "/admin/users/{user_id}/groups"
                 | "/admin/users/{user_id}/groups.json"
                 | "/admin/users/{user_id}/groups/{group_id}"
+                | "/admin/users/{user_id}/penalty_history"
+                | "/admin/users/{user_id}/penalty_history.json"
         )
 }
 
