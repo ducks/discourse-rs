@@ -1,0 +1,13 @@
+{
+  "user": null,
+  "settings": {"rename_faq_to_guidelines": false},
+  "setup": ["DELETE FROM problem_check_trackers"],
+  "requests": [],
+  "enqueue": [
+    ["run_problem_check", {"check_identifier": "upcoming_change_stable_opted_out", "target": "rename_faq_to_guidelines"}],
+    ["run_problem_check", {"check_identifier": "upcoming_change_stable_opted_out", "target": "enable_unified_new"}],
+    ["run_problem_check", {"check_identifier": "upcoming_change_stable_opted_out", "target": "removed_change"}],
+    ["run_problem_check", {"check_identifier": "upcoming_change_stable_opted_out", "target": "__NULL__"}]
+  ],
+  "run_jobs": ["run_problem_check"]
+}

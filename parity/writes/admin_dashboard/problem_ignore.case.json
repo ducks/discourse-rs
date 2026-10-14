@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "setup": [
+    "DELETE FROM problem_check_trackers",
+    "INSERT INTO problem_check_trackers (id, identifier, target, blips, last_run_at, next_run_at, last_success_at, last_problem_at, details, ignored_at) VALUES (9001, 'force_https', '__NULL__', 4, now() - interval '10 minutes', NULL, NULL, now() - interval '10 minutes', '{\"base_path\":\"\"}', NULL), (9002, 'failing_emails', '__NULL__', 0, now() - interval '10 minutes', NULL, now() - interval '10 minutes', now() - interval '1 day', '{}', NULL), (9003, 'host_names', '__NULL__', 1, now() - interval '10 minutes', NULL, NULL, now() - interval '10 minutes', '{\"base_path\":\"\"}', now() - interval '1 hour')"
+  ],
+  "requests": [
+    {"method": "PUT", "path": "/admin/problem_checks/9001/ignore.json"},
+    {"method": "PUT", "path": "/admin/problem_checks/9003/ignore.json"},
+    {"method": "PUT", "path": "/admin/problem_checks/9002/ignore.json"}
+  ]
+}

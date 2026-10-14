@@ -1,0 +1,8 @@
+{
+  "user": "admin",
+  "settings": {"force_https": true},
+  "setup": ["DELETE FROM problem_check_trackers"],
+  "requests": [
+    {"method": "POST", "path": "/admin/dashboard/problems.json"}
+  ]
+}

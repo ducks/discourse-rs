@@ -382,8 +382,20 @@ then by what running a forum needs (milestone 6). Briefs:
 87. `feat/admin-lists` M: permalinks, embeddable hosts, user fields,
     form templates, custom flags, search term and incoming email details
 88. `feat/admin-email` M: the settings test, previews, templates, email
-    style, 89. `feat/admin-dashboard` L (reports, problem checks,
-    admin notices, the pageview jobs)
+    style
+89. `feat/admin-dashboard` L: reports, problem checks, admin notices,
+    the pageview jobs. Split:
+    89a. ~~`feat/admin-problem-checks`~~ (done) M (the 35 core checks
+    answering about the port itself, their trackers and notices with
+    the notice sanitizer, POST /admin/dashboard/problems, the problem
+    checks index, ignore and watch, dismissing a notice; run_problem_checks,
+    run_problem_check with its retries, notify_admins_of_problems and
+    cleanup_problem_check_trackers. Refused: what needs the network
+    (a group's SMTP credentials, Twitter's login health), watched words
+    with regular expressions, two upcoming changes whose display reads
+    themes or categories),
+    89b. `feat/admin-reports` L, 89c. `feat/admin-dashboard-sections`
+    M/L, 89d. `feat/pageview-tracking` L
 90. `feat/themes` L: themes and components, color schemes, site texts
     (translation overrides), sidebar defaults, the /admin/config pages,
     91. `feat/backups` L (creating, listing, downloading, restoring

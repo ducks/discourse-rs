@@ -89,6 +89,7 @@ pub mod post_view;
 pub mod posting;
 pub mod presence;
 pub mod pretty_text;
+pub mod problem_checks;
 pub mod promotion;
 pub mod rate_limiter;
 pub mod read_tracking;

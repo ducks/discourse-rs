@@ -2,6 +2,7 @@ mod about;
 mod accounts;
 mod admin_api_keys;
 mod admin_badges;
+mod admin_dashboard;
 mod admin_email;
 mod admin_emoji;
 mod admin_groups;
@@ -673,6 +674,35 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route(
             "/admin/customize/watched_words/action/{id}/download",
             get(admin_watched_words::download),
+        )
+        .route("/admin/dashboard/problems", post(admin_dashboard::problems))
+        .route(
+            "/admin/dashboard/problems.json",
+            post(admin_dashboard::problems),
+        )
+        .route("/admin/problem-checks", get(admin_dashboard::index))
+        .route("/admin/problem-checks.json", get(admin_dashboard::index))
+        .route("/admin/problem_checks", get(admin_dashboard::index))
+        .route("/admin/problem_checks.json", get(admin_dashboard::index))
+        .route(
+            "/admin/problem_checks/{id}/ignore",
+            put(admin_dashboard::ignore),
+        )
+        .route(
+            "/admin/problem_checks/{id}/ignore.json",
+            put(admin_dashboard::ignore),
+        )
+        .route(
+            "/admin/problem_checks/{id}/watch",
+            put(admin_dashboard::watch),
+        )
+        .route(
+            "/admin/problem_checks/{id}/watch.json",
+            put(admin_dashboard::watch),
+        )
+        .route(
+            "/admin/admin_notices/{id}",
+            delete(admin_dashboard::dismiss),
         )
         .route("/admin/logs", get(admin_logs::staff_action_logs))
         .route("/admin/logs.json", get(admin_logs::staff_action_logs))

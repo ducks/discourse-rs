@@ -1,0 +1,10 @@
+{
+  "user": null,
+  "setup": [
+    "DELETE FROM problem_check_trackers",
+    "INSERT INTO problem_check_trackers (id, identifier, target, blips, last_run_at, next_run_at, last_success_at, last_problem_at, details, ignored_at) VALUES (9001, 'twitter_login', '__NULL__', 0, now() - interval '1 hour', now() + interval '23 hours', now() - interval '1 hour', NULL, '{}', NULL), (9002, 'github_onebox_backoff', '__NULL__', 0, now() - interval '20 minutes', now() - interval '10 minutes', now() - interval '20 minutes', NULL, '{}', NULL), (9003, 'upcoming_change_stable_opted_out', 'enable_unified_new', 0, now() - interval '5 minutes', now() + interval '55 minutes', now() - interval '5 minutes', NULL, '{}', NULL)"
+  ],
+  "requests": [],
+  "enqueue": [["run_problem_checks", {}]],
+  "run_jobs": ["run_problem_checks"]
+}

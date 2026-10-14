@@ -65,6 +65,7 @@ Classes:
 | process_badge_backlog | 1m (a producer the port misses is invisible until a backlog case covers it) | badges/backlog_* |
 | badge_grant (each badge a backfill_badge job), ensure_badges_consistency, grant_anniversary_badges, grant_new_user_of_the_month_badges | 1d (the scheduler never passes the anniversary job a start_date) | badges/job_* |
 | fix_user_usernames_and_groups_names_clash | 1w (UsernameChanger inline, no staff log) | scheduled/username_group_clash* |
+| run_problem_checks (and run_problem_check with its retries), cleanup_problem_check_trackers, notify_admins_of_problems | 10m, 10m, 30m (group_email_credentials with SMTP on and twitter_login while enabled refused: they need the network) | scheduled/run_problem_check*, scheduled/cleanup_problem_check_trackers, scheduled/notify_admins_of_problems* |
 
 ## Ready, in porting order
 
@@ -91,7 +92,6 @@ the features below (ROADMAP.md's queue has them).
 | recalculate_nested_hot_scores, backfill_nested_reply_stats | the nested replies view |
 | flush_browser_pageview_events, clean_up_browser_pageview_events, maintain_browser_pageview_rollups, detect_crawler_pageviews, clean_up_crawler_stats | pageview analytics |
 | maintain_category_activity_daily_rollups, rebuild_category_activity_daily_rollups, maintain_user_visit_daily_rollups, warm_dashboard_reports | the admin dashboard and reports |
-| run_problem_checks, cleanup_problem_check_trackers, notify_admins_of_problems | admin problem checks |
 
 ## Infra
 

@@ -1,0 +1,11 @@
+{
+  "user": null,
+  "setup": [
+    "DELETE FROM problem_check_trackers",
+    "INSERT INTO problem_check_trackers (id, identifier, target, blips, last_run_at, next_run_at, last_success_at, last_problem_at, details, ignored_at) VALUES (9001, 'force_https', '__NULL__', 40, now() - interval '1 hour', NULL, NULL, now() - interval '1 hour', '{\"base_path\":\"\"}', NULL), (9002, 'gone_check', '__NULL__', 2, now() - interval '1 hour', NULL, NULL, now() - interval '1 hour', '{}', NULL), (9003, 'upcoming_change_stable_opted_out', 'removed_change', 1, now() - interval '1 hour', NULL, NULL, now() - interval '1 hour', '{\"upcoming_change\":\"Removed change\",\"base_path\":\"\"}', NULL), (9004, 'upcoming_change_stable_opted_out', 'rename_faq_to_guidelines', 0, now() - interval '1 hour', NULL, now() - interval '1 hour', NULL, '{}', NULL), (9005, 'group_email_credentials', 'nogroup', 1, now() - interval '1 hour', NULL, NULL, now() - interval '1 hour', '{}', NULL)",
+    "INSERT INTO admin_notices (id, subject, priority, identifier, details, created_at, updated_at) VALUES (9101, 0, 0, 'gone_check', '{\"base_path\":\"\",\"target\":\"__NULL__\"}', now() - interval '1 hour', now() - interval '1 hour'), (9102, 0, 0, 'upcoming_change_stable_opted_out', '{\"upcoming_change\":\"Removed change\",\"base_path\":\"\",\"target\":\"removed_change\"}', now() - interval '1 hour', now() - interval '1 hour'), (9103, 0, 0, 'other_gone', '{\"target\":\"__NULL__\"}', now() - interval '1 hour', now() - interval '1 hour')"
+  ],
+  "requests": [],
+  "enqueue": [["cleanup_problem_check_trackers", {}]],
+  "run_jobs": ["cleanup_problem_check_trackers"]
+}

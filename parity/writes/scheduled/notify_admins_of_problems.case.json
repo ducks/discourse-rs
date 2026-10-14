@@ -1,0 +1,11 @@
+{
+  "user": null,
+  "setup": [
+    "DELETE FROM problem_check_trackers",
+    "INSERT INTO problem_check_trackers (id, identifier, target, blips, last_run_at, next_run_at, last_success_at, last_problem_at, details, ignored_at) VALUES (9001, 'force_https', '__NULL__', 40, now() - interval '1 hour', NULL, now() - interval '3 days', now() - interval '1 hour', '{\"base_path\":\"\"}', NULL)",
+    "INSERT INTO notifications (id, notification_type, user_id, data, read, created_at, updated_at, high_priority) VALUES (9201, 38, 1, '{}', FALSE, now() - interval '8 days', now() - interval '8 days', TRUE)"
+  ],
+  "requests": [],
+  "enqueue": [["notify_admins_of_problems", {}]],
+  "run_jobs": ["notify_admins_of_problems"]
+}

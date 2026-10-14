@@ -1,0 +1,104 @@
+{
+  "name": "cleanup_problem_check_trackers",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-14T14:25:00.861519",
+  "transaction_started_at": "2026-10-14T14:24:58.894707",
+  "responses": [],
+  "changes": {
+    "admin_notices": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 9101,
+          "details": {
+            "target": "__NULL__",
+            "base_path": ""
+          },
+          "subject": 0,
+          "priority": 0,
+          "created_at": "2026-10-14T13:24:58.894707",
+          "identifier": "gone_check",
+          "updated_at": "2026-10-14T13:24:58.894707"
+        },
+        {
+          "id": 9102,
+          "details": {
+            "target": "removed_change",
+            "base_path": "",
+            "upcoming_change": "Removed change"
+          },
+          "subject": 0,
+          "priority": 0,
+          "created_at": "2026-10-14T13:24:58.894707",
+          "identifier": "upcoming_change_stable_opted_out",
+          "updated_at": "2026-10-14T13:24:58.894707"
+        },
+        {
+          "id": 9103,
+          "details": {
+            "target": "__NULL__"
+          },
+          "subject": 0,
+          "priority": 0,
+          "created_at": "2026-10-14T13:24:58.894707",
+          "identifier": "other_gone",
+          "updated_at": "2026-10-14T13:24:58.894707"
+        }
+      ],
+      "updated": []
+    },
+    "problem_check_trackers": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 9002,
+          "blips": 2,
+          "target": "__NULL__",
+          "details": {},
+          "identifier": "gone_check",
+          "ignored_at": null,
+          "last_run_at": "2026-10-14T13:24:58.894707",
+          "next_run_at": null,
+          "last_problem_at": "2026-10-14T13:24:58.894707",
+          "last_success_at": null
+        },
+        {
+          "id": 9003,
+          "blips": 1,
+          "target": "removed_change",
+          "details": {
+            "base_path": "",
+            "upcoming_change": "Removed change"
+          },
+          "identifier": "upcoming_change_stable_opted_out",
+          "ignored_at": null,
+          "last_run_at": "2026-10-14T13:24:58.894707",
+          "next_run_at": null,
+          "last_problem_at": "2026-10-14T13:24:58.894707",
+          "last_success_at": null
+        }
+      ],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "DELETE FROM problem_check_trackers",
+    "INSERT INTO problem_check_trackers (id, identifier, target, blips, last_run_at, next_run_at, last_success_at, last_problem_at, details, ignored_at) VALUES (9001, 'force_https', '__NULL__', 40, now() - interval '1 hour', NULL, NULL, now() - interval '1 hour', '{\"base_path\":\"\"}', NULL), (9002, 'gone_check', '__NULL__', 2, now() - interval '1 hour', NULL, NULL, now() - interval '1 hour', '{}', NULL), (9003, 'upcoming_change_stable_opted_out', 'removed_change', 1, now() - interval '1 hour', NULL, NULL, now() - interval '1 hour', '{\"upcoming_change\":\"Removed change\",\"base_path\":\"\"}', NULL), (9004, 'upcoming_change_stable_opted_out', 'rename_faq_to_guidelines', 0, now() - interval '1 hour', NULL, now() - interval '1 hour', NULL, '{}', NULL), (9005, 'group_email_credentials', 'nogroup', 1, now() - interval '1 hour', NULL, NULL, now() - interval '1 hour', '{}', NULL)",
+    "INSERT INTO admin_notices (id, subject, priority, identifier, details, created_at, updated_at) VALUES (9101, 0, 0, 'gone_check', '{\"base_path\":\"\",\"target\":\"__NULL__\"}', now() - interval '1 hour', now() - interval '1 hour'), (9102, 0, 0, 'upcoming_change_stable_opted_out', '{\"upcoming_change\":\"Removed change\",\"base_path\":\"\",\"target\":\"removed_change\"}', now() - interval '1 hour', now() - interval '1 hour'), (9103, 0, 0, 'other_gone', '{\"target\":\"__NULL__\"}', now() - interval '1 hour', now() - interval '1 hour')"
+  ],
+  "enqueue": [
+    [
+      "cleanup_problem_check_trackers",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "10ff5e107d77af05aae79b4d181a948ef6a4a9302a476c2f1ed0b4ab1d3892f4",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

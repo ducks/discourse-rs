@@ -1,0 +1,8 @@
+{
+  "user": "admin",
+  "setup": ["DELETE FROM problem_check_trackers"],
+  "requests": [
+    {"method": "PUT", "path": "/admin/problem_checks/99999/ignore.json"},
+    {"method": "PUT", "path": "/admin/problem_checks/99999/watch.json"}
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "user": null,
+  "setup": [
+    "DELETE FROM problem_check_trackers",
+    "INSERT INTO skipped_email_logs (email_type, to_address, user_id, post_id, reason_type, custom_reason, created_at, updated_at) VALUES ('user_mentioned', 'user1@example.com', 3, NULL, 1, 'Net::SMTPAuthenticationError', now() - interval '2 hours', now() - interval '2 hours'), ('digest', 'user0@example.com', 2, NULL, 1, 'Net::ReadTimeout', now() - interval '3 hours', now() - interval '3 hours'), ('digest', 'user0@example.com', 2, NULL, 1, 'Net::ReadTimeout', now() - interval '3 days', now() - interval '3 days')"
+  ],
+  "requests": [],
+  "enqueue": [["run_problem_check", {"check_identifier": "email_sending_failures", "target": "__NULL__"}]],
+  "run_jobs": ["run_problem_check"]
+}

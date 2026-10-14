@@ -1,0 +1,48 @@
+{
+  "name": "notify_admins_of_problems_none",
+  "user": null,
+  "requests": [],
+  "started_at": "2026-10-14T14:25:05.170508",
+  "transaction_started_at": "2026-10-14T14:25:04.40976",
+  "responses": [],
+  "changes": {
+    "notifications": {
+      "inserted": [],
+      "deleted": [
+        {
+          "id": 9201,
+          "data": "{}",
+          "read": false,
+          "user_id": 1,
+          "topic_id": null,
+          "created_at": "2026-10-06T14:25:04.40976",
+          "updated_at": "2026-10-06T14:25:04.40976",
+          "post_number": null,
+          "high_priority": true,
+          "post_action_id": null,
+          "notification_type": 38
+        }
+      ],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "DELETE FROM problem_check_trackers",
+    "INSERT INTO problem_check_trackers (id, identifier, target, blips, last_run_at, next_run_at, last_success_at, last_problem_at, details, ignored_at) VALUES (9001, 'force_https', '__NULL__', 40, now() - interval '1 hour', NULL, now() - interval '3 days', now() - interval '1 hour', '{\"base_path\":\"\"}', now() - interval '1 day'), (9002, 'host_names', '__NULL__', 2, now() - interval '1 hour', NULL, now() - interval '1 day', now() - interval '1 hour', '{\"base_path\":\"\"}', NULL)",
+    "INSERT INTO notifications (id, notification_type, user_id, data, read, created_at, updated_at, high_priority) VALUES (9201, 38, 1, '{}', FALSE, now() - interval '8 days', now() - interval '8 days', TRUE), (9202, 38, 1, '{}', FALSE, now() - interval '6 days', now() - interval '6 days', TRUE)"
+  ],
+  "enqueue": [
+    [
+      "notify_admins_of_problems",
+      {}
+    ]
+  ],
+  "jobs_from_jobs": [],
+  "recorded_from": {
+    "case": "7c16ffd88660fb400730a81cc7ba1747f78f00bec240f9d33d74144eb43a89c0",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}

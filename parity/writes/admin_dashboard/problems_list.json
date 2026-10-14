@@ -1,0 +1,161 @@
+{
+  "name": "problems_list",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/problem-checks.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/problem_checks.json"
+    }
+  ],
+  "started_at": "2026-10-14T14:24:33.060024",
+  "transaction_started_at": "2026-10-14T14:24:30.767877",
+  "responses": [
+    {
+      "status": 200,
+      "body": [
+        {
+          "id": 9002,
+          "identifier": "failing_emails",
+          "target": "__NULL__",
+          "last_run_at": "2026-10-14T14:14:30.767Z",
+          "ignored": false,
+          "status": "passing"
+        },
+        {
+          "id": 9001,
+          "identifier": "force_https",
+          "target": "__NULL__",
+          "last_run_at": "2026-10-14T14:14:30.767Z",
+          "ignored": false,
+          "status": "failing"
+        },
+        {
+          "id": 9003,
+          "identifier": "host_names",
+          "target": "__NULL__",
+          "last_run_at": "2026-10-14T14:14:30.767Z",
+          "ignored": true,
+          "status": "failing"
+        },
+        {
+          "id": 9005,
+          "identifier": "twitter_login",
+          "target": "__NULL__",
+          "last_run_at": null,
+          "ignored": false,
+          "status": "passing"
+        },
+        {
+          "id": 9004,
+          "identifier": "upcoming_change_stable_opted_out",
+          "target": "rename_faq_to_guidelines",
+          "last_run_at": "2026-10-14T14:19:30.767Z",
+          "ignored": false,
+          "status": "failing"
+        }
+      ]
+    },
+    {
+      "status": 200,
+      "body": [
+        {
+          "id": 9002,
+          "identifier": "failing_emails",
+          "target": "__NULL__",
+          "last_run_at": "2026-10-14T14:14:30.767Z",
+          "ignored": false,
+          "status": "passing"
+        },
+        {
+          "id": 9001,
+          "identifier": "force_https",
+          "target": "__NULL__",
+          "last_run_at": "2026-10-14T14:14:30.767Z",
+          "ignored": false,
+          "status": "failing"
+        },
+        {
+          "id": 9003,
+          "identifier": "host_names",
+          "target": "__NULL__",
+          "last_run_at": "2026-10-14T14:14:30.767Z",
+          "ignored": true,
+          "status": "failing"
+        },
+        {
+          "id": 9005,
+          "identifier": "twitter_login",
+          "target": "__NULL__",
+          "last_run_at": null,
+          "ignored": false,
+          "status": "passing"
+        },
+        {
+          "id": 9004,
+          "identifier": "upcoming_change_stable_opted_out",
+          "target": "rename_faq_to_guidelines",
+          "last_run_at": "2026-10-14T14:19:30.767Z",
+          "ignored": false,
+          "status": "failing"
+        }
+      ]
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 222,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "f3QUzjY9Ysxod2sKXbUdk7ICIWQ=",
+            "created_at": "2026-10-14T14:24:32.458875",
+            "rotated_at": "2026-10-14T14:24:32.456765",
+            "updated_at": "2026-10-14T14:24:32.458875",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "f3QUzjY9Ysxod2sKXbUdk7ICIWQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 222,
+            "seen_at": "2026-10-14T14:24:33.067553",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "f3QUzjY9Ysxod2sKXbUdk7ICIWQ=",
+            "created_at": "2026-10-14T14:24:32.458875",
+            "rotated_at": "2026-10-14T14:24:32.456765",
+            "updated_at": "2026-10-14T14:24:32.458875",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "f3QUzjY9Ysxod2sKXbUdk7ICIWQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "setup": [
+    "DELETE FROM problem_check_trackers",
+    "INSERT INTO problem_check_trackers (id, identifier, target, blips, last_run_at, next_run_at, last_success_at, last_problem_at, details, ignored_at) VALUES (9001, 'force_https', '__NULL__', 4, now() - interval '10 minutes', NULL, NULL, now() - interval '10 minutes', '{\"base_path\":\"\"}', NULL), (9002, 'failing_emails', '__NULL__', 0, now() - interval '10 minutes', NULL, now() - interval '10 minutes', now() - interval '1 day', '{}', NULL), (9003, 'host_names', '__NULL__', 1, now() - interval '10 minutes', NULL, NULL, now() - interval '10 minutes', '{\"base_path\":\"\"}', now() - interval '1 hour'), (9004, 'upcoming_change_stable_opted_out', 'rename_faq_to_guidelines', 1, now() - interval '5 minutes', now() + interval '55 minutes', NULL, now() - interval '5 minutes', '{\"upcoming_change\":\"Rename FAQ to guidelines\",\"base_path\":\"\"}', NULL), (9005, 'twitter_login', '__NULL__', 0, NULL, NULL, NULL, NULL, '{}', NULL)"
+  ],
+  "recorded_from": {
+    "case": "6ca6a06e7bc6a0a83bf4625fa037c36df1db876b58f2558dc68acec12d986ed7",
+    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
+    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+  }
+}
